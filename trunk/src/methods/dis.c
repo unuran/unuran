@@ -144,10 +144,12 @@ static void _unur_dis_debug_table( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
-#define DISTR   distr->data.discr
-#define PAR     par->data.dis
-#define GEN     gen->data.dis
-#define SAMPLE  gen->sample.discr
+#define DISTR_IN  distr->data.discr
+
+#define PAR       par->data.dis
+#define GEN       gen->data.dis
+#define DISTR     gen->distr.data.discr
+#define SAMPLE    gen->sample.discr
 
 /*---------------------------------------------------------------------------*/
 
@@ -181,7 +183,7 @@ unur_dis_new( struct unur_distr *distr )
     return NULL; }
   COOKIE_CHECK(distr,CK_DISTR_DISCR,NULL);
 
-  if (DISTR.prob == NULL) {
+  if (DISTR_IN.prob == NULL) {
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"probability vector");
     return NULL;
   }
@@ -322,8 +324,8 @@ unur_dis_init( struct unur_par *par )
   if (!gen) { free(par); return NULL; }
 
   /* probability vector */
-  prob = par->DISTR.prob;
-  n_prob = par->DISTR.n_prob;
+  prob = par->DISTR_IN.prob;
+  n_prob = par->DISTR_IN.n_prob;
 
   /* computation of cumulated probabilities */
   for( i=0, probh=0.; i<n_prob; i++ ) {
@@ -488,9 +490,8 @@ _unur_dis_create( struct unur_par *par )
   /* set generator identifier */
   _unur_set_genid(gen,GENTYPE);
 
-  /* copy pointer to distribution object */
-  /* (we do not copy the entire object)  */
-  gen->distr = par->distr;
+  /* copy distribution object into generator object */
+  memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
 
   /* routines for sampling and destroying generator */
   SAMPLE = unur_dis_sample;
@@ -505,7 +506,7 @@ _unur_dis_create( struct unur_par *par )
   _unur_copy_debugflag(par,gen);    /* copy debugging flags into generator object */
 
   /* length of probability vector */
-  n_prob = par->DISTR.n_prob;
+  n_prob = par->DISTR_IN.n_prob;
 
   /* store method in generator structure */
   gen->method = par->method;
@@ -563,12 +564,12 @@ _unur_dis_debug_init( struct unur_par *par, struct unur_gen *gen )
   _unur_print_if_default(par,DIS_SET_VARIANT);
   fprintf(log,"\n%s:\n",gen->genid);
 
-  _unur_distr_discr_debug(gen->distr,gen->genid,(gen->debug & DIS_DEBUG_PRINTVECTOR));
+  _unur_distr_discr_debug( &(gen->distr),gen->genid,(gen->debug & DIS_DEBUG_PRINTVECTOR));
 
   fprintf(log,"%s: sampling routine = unur_dis_sample()\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
-  fprintf(log,"%s: length of probability vector = %d\n",gen->genid,par->DISTR.n_prob);
+  fprintf(log,"%s: length of probability vector = %d\n",gen->genid,par->DISTR_IN.n_prob);
   fprintf(log,"%s: length of guide table = %d   (rel. = %g%%",
 	  gen->genid,GEN.guide_size,100.*PAR.guide_factor);
   _unur_print_if_default(par,DIS_SET_GUIDEFACTOR);

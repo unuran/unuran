@@ -154,10 +154,12 @@ static void _unur_srou_debug_init( struct unur_par *par, struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
-#define DISTR   distr->data.cont
-#define PAR     par->data.srou
-#define GEN     gen->data.srou
-#define SAMPLE  gen->sample.cont
+#define DISTR_IN  distr->data.cont
+
+#define PAR       par->data.srou
+#define GEN       gen->data.srou
+#define DISTR     gen->distr.data.cont
+#define SAMPLE    gen->sample.cont
 
 #define PDF(x) ((*(GEN.pdf))((x),GEN.pdf_param,GEN.n_pdf_param))
 
@@ -198,7 +200,7 @@ unur_srou_new( struct unur_distr *distr )
     return NULL; }
   COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
 
-  if (DISTR.pdf == NULL) {
+  if (DISTR_IN.pdf == NULL) {
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"p.d.f.");
     return NULL;
   }
@@ -419,7 +421,7 @@ unur_srou_init( struct unur_par *par )
   GEN.um = sqrt(fm);
 
   /* width of rectangle */
-  vm = gen->DISTR.area / GEN.um;
+  vm = DISTR.area / GEN.um;
 
   if (par->set & SROU_SET_FMODE) {
     /* cdf at mode known */
@@ -711,9 +713,8 @@ _unur_srou_create( struct unur_par *par )
   /* magic cookies */
   COOKIE_SET(gen,CK_SROU_GEN);
 
-  /* copy pointer to distribution object */
-  /* (we do not copy the entire object)  */
-  gen->distr = par->distr;
+  /* copy distribution object into generator object */
+  memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
 
   /* set generator identifier */
   _unur_set_genid(gen,GENTYPE);
@@ -727,22 +728,22 @@ _unur_srou_create( struct unur_par *par )
   gen->destroy = unur_srou_free;
 
   /* copy some parameters into generator object */
-  GEN.pdf = gen->DISTR.pdf;               /* p.d.f. of distribution          */
-  GEN.pdf_param   = gen->DISTR.params;    /* parameters of p.d.f.            */
-  GEN.n_pdf_param = gen->DISTR.n_params;  /* number of parameters            */
+  GEN.pdf = DISTR.pdf;               /* p.d.f. of distribution          */
+  GEN.pdf_param   = DISTR.params;    /* parameters of p.d.f.            */
+  GEN.n_pdf_param = DISTR.n_params;  /* number of parameters            */
 
   /* get mode */
-  GEN.mode = gen->DISTR.mode;             /* mode of p.d.f.                  */
+  GEN.mode = DISTR.mode;             /* mode of p.d.f.                  */
 
   /* mode must be in domain */
-  if ( (GEN.mode < gen->DISTR.domain[0]) ||
-       (GEN.mode > gen->DISTR.domain[1]) ) {
+  if ( (GEN.mode < DISTR.domain[0]) ||
+       (GEN.mode > DISTR.domain[1]) ) {
     /* there is something wrong.
        assume: user has change domain without changing mode.
        but then, she probably has not updated area and is to large */
     _unur_warning(GENTYPE,UNUR_ERR_INIT,"area and cdf at mode might be wrong");
-    GEN.mode = max(GEN.mode,gen->DISTR.domain[0]);
-    GEN.mode = min(GEN.mode,gen->DISTR.domain[1]);
+    GEN.mode = max(GEN.mode,DISTR.domain[0]);
+    GEN.mode = min(GEN.mode,DISTR.domain[1]);
   }
 
   gen->method = par->method;         /* indicates method                     */
@@ -782,7 +783,7 @@ _unur_srou_debug_init( struct unur_par *par, struct unur_gen *gen )
   fprintf(log,"%s: method  = srou (simple universal ratio-of-uniforms)\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
-  _unur_distr_cont_debug( gen->distr, gen->genid );
+  _unur_distr_cont_debug( &(gen->distr), gen->genid );
 
   fprintf(log,"%s: sampling routine = unur_srou_sample",gen->genid);
   if (par->variant & SROU_VARFLAG_VERIFY)

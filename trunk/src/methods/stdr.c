@@ -116,10 +116,12 @@ static void _unur_stdr_debug_init( struct unur_par *par, struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
-#define DISTR   distr->data.cont
-#define PAR     par->data.stdr
-#define GEN     gen->data.stdr
-#define SAMPLE  gen->sample.cont
+#define DISTR_IN  distr->data.cont
+
+#define PAR       par->data.stdr
+#define GEN       gen->data.stdr
+#define DISTR     gen->distr.data.cont
+#define SAMPLE    gen->sample.cont
 
 #define PDF(x) ((*(GEN.pdf))((x),GEN.pdf_param,GEN.n_pdf_param))
 
@@ -160,7 +162,7 @@ unur_stdr_new( struct unur_distr *distr )
     return NULL; }
   COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
 
-  if (DISTR.pdf == NULL) {
+  if (DISTR_IN.pdf == NULL) {
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"p.d.f.");
     return NULL;
   }
@@ -347,7 +349,7 @@ unur_stdr_init( struct unur_par *par )
 
   /* compute parameters */
   GEN.um = sqrt(GEN.fm);
-  vm = gen->DISTR.area / GEN.um;
+  vm = DISTR.area / GEN.um;
 
   if (par->set & STDR_SET_FMODE) {
     /* cdf at mode known */
@@ -355,19 +357,19 @@ unur_stdr_init( struct unur_par *par )
     GEN.vr = vm + GEN.vl;
     GEN.xl = GEN.vl/GEN.um;
     GEN.xr = GEN.vr/GEN.um;
-    GEN.A  = 2 * gen->DISTR.area;
-    GEN.al = (par->DISTR.domain[0] < GEN.mode) ? (PAR.Fmode * gen->DISTR.area) : 0.;
-    GEN.ar = (par->DISTR.domain[1] > GEN.mode) ? (GEN.al + gen->DISTR.area) : GEN.A;
+    GEN.A  = 2 * DISTR.area;
+    GEN.al = (par->DISTR_IN.domain[0] < GEN.mode) ? (PAR.Fmode * DISTR.area) : 0.;
+    GEN.ar = (par->DISTR_IN.domain[1] > GEN.mode) ? (GEN.al + DISTR.area) : GEN.A;
     /* Compute areas below hat in left tails and inside domain of pdf */
-    if ( (par->DISTR.domain[0] > -INFINITY) &&
-	 (par->DISTR.domain[0] < GEN.mode) )
-      GEN.Aleft = GEN.vl * GEN.vl / (GEN.mode - par->DISTR.domain[0]);
+    if ( (par->DISTR_IN.domain[0] > -INFINITY) &&
+	 (par->DISTR_IN.domain[0] < GEN.mode) )
+      GEN.Aleft = GEN.vl * GEN.vl / (GEN.mode - par->DISTR_IN.domain[0]);
     else
       GEN.Aleft = 0.;
     
-    if ( (par->DISTR.domain[1] < INFINITY) &&
-	 (par->DISTR.domain[1] > GEN.mode) )
-      GEN.Ain = GEN.A - GEN.vr * GEN.vr / (par->DISTR.domain[1] - GEN.mode);
+    if ( (par->DISTR_IN.domain[1] < INFINITY) &&
+	 (par->DISTR_IN.domain[1] > GEN.mode) )
+      GEN.Ain = GEN.A - GEN.vr * GEN.vr / (par->DISTR_IN.domain[1] - GEN.mode);
     else
       GEN.Ain = GEN.A;
     GEN.Ain -= GEN.Aleft;
@@ -382,12 +384,12 @@ unur_stdr_init( struct unur_par *par )
     GEN.vr = vm;
     GEN.xl = GEN.vl/GEN.um;
     GEN.xr = GEN.vr/GEN.um;
-    GEN.A  = 4 * gen->DISTR.area;
-    GEN.al = gen->DISTR.area;
-    GEN.ar = 3 * gen->DISTR.area;
+    GEN.A  = 4 * DISTR.area;
+    GEN.al = DISTR.area;
+    GEN.ar = 3 * DISTR.area;
     /* Compute areas below hat in left tails and inside domain of pdf */
-    if (par->DISTR.domain[0] > -INFINITY) {
-      left = par->DISTR.domain[0] - GEN.mode;
+    if (par->DISTR_IN.domain[0] > -INFINITY) {
+      left = par->DISTR_IN.domain[0] - GEN.mode;
       GEN.Aleft = (GEN.xl > left) 
 	? (GEN.vl * GEN.vl / (-left)) 
 	: (GEN.al + GEN.fm * (left - GEN.xl));
@@ -395,8 +397,8 @@ unur_stdr_init( struct unur_par *par )
     else 
       GEN.Aleft = 0.;
     
-    if (par->DISTR.domain[1] < INFINITY) {
-      right = par->DISTR.domain[1] - GEN.mode;
+    if (par->DISTR_IN.domain[1] < INFINITY) {
+      right = par->DISTR_IN.domain[1] - GEN.mode;
       GEN.Ain = (GEN.xr < right) 
 	? (GEN.A - GEN.vr * GEN.vr / right)
 	: (GEN.ar - GEN.fm * (GEN.xr - right));
@@ -618,9 +620,8 @@ _unur_stdr_create( struct unur_par *par )
   /* magic cookies */
   COOKIE_SET(gen,CK_STDR_GEN);
 
-  /* copy pointer to distribution object */
-  /* (we do not copy the entire object)  */
-  gen->distr = par->distr;
+  /* copy distribution object into generator object */
+  memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
 
   /* set generator identifier */
   _unur_set_genid(gen,GENTYPE);
@@ -630,22 +631,22 @@ _unur_stdr_create( struct unur_par *par )
   gen->destroy = unur_stdr_free;
 
   /* copy some parameters into generator object */
-  GEN.pdf = gen->DISTR.pdf;               /* p.d.f. of distribution          */
-  GEN.pdf_param   = gen->DISTR.params;    /* parameters of p.d.f.            */
-  GEN.n_pdf_param = gen->DISTR.n_params;  /* number of parameters            */
+  GEN.pdf = DISTR.pdf;               /* p.d.f. of distribution          */
+  GEN.pdf_param   = DISTR.params;    /* parameters of p.d.f.            */
+  GEN.n_pdf_param = DISTR.n_params;  /* number of parameters            */
 
   /* get mode */
-  GEN.mode = gen->DISTR.mode;             /* mode of p.d.f.                  */
+  GEN.mode = DISTR.mode;             /* mode of p.d.f.                  */
 
   /* mode must be in domain */
-  if ( (GEN.mode < gen->DISTR.domain[0]) ||
-       (GEN.mode > gen->DISTR.domain[1]) ) {
+  if ( (GEN.mode < DISTR.domain[0]) ||
+       (GEN.mode > DISTR.domain[1]) ) {
     /* there is something wrong.
        assume: user has change domain without changing mode.
        but then, she probably has not updated area and is to large */
     _unur_warning(GENTYPE,UNUR_ERR_INIT,"area and cdf at mode might be wrong");
-    GEN.mode = max(GEN.mode,gen->DISTR.domain[0]);
-    GEN.mode = min(GEN.mode,gen->DISTR.domain[1]);
+    GEN.mode = max(GEN.mode,DISTR.domain[0]);
+    GEN.mode = min(GEN.mode,DISTR.domain[1]);
   }
 
   gen->method = par->method;         /* indicates method                     */
@@ -685,7 +686,7 @@ _unur_stdr_debug_init( struct unur_par *par, struct unur_gen *gen )
   fprintf(log,"%s: method  = stdr (simple universal transformed density rection)\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
-  _unur_distr_cont_debug( gen->distr, gen->genid );
+  _unur_distr_cont_debug( &(gen->distr), gen->genid );
 
   fprintf(log,"%s: sampling routine = unur_stdr_sample",gen->genid);
   if (par->variant & STDR_VARFLAG_VERIFY)

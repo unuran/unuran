@@ -29,18 +29,17 @@
 /*  #define RUN_TESTS       (~0x0u & ~UNUR_TEST_N_URNG) */
 #define RUN_TESTS       (~0x0u & ~UNUR_TEST_SCATTER)
 
-
 /* define which tests should run (1) or not (0) */
-#define RUN_DAU           0
-#define RUN_DIS           0
+#define RUN_DAU           1
+#define RUN_DIS           1
 
-#define RUN_UTDR          0
-#define RUN_AROU          0
-#define RUN_SROU          0
-#define RUN_STDR          0
-#define RUN_TDRSQRT       0
-#define RUN_TDRLOG        0
-#define RUN_TABL          0
+#define RUN_UTDR          1
+#define RUN_AROU          1
+#define RUN_SROU          1
+#define RUN_STDR          1
+#define RUN_TDRSQRT       1
+#define RUN_TDRLOG        1
+#define RUN_TABL          1
 
 #define RUN_NORMAL        1
 #define RUN_GAMMA         1
@@ -48,7 +47,7 @@
 #define RUN_CAUCHY        1
 #define RUN_UNIFORM       1
 
-#define RUN_RECT          0
+#define RUN_RECT          1
 
 #define RUN_CSTD          1
 
@@ -62,6 +61,7 @@ int main()
 { 
   double     *prob;    /* probability vector */
   struct unur_par *par;
+  struct unur_gen *gen;
   double fpar[2];
 /*    double stp[10]; */
   double slopes[10];
@@ -84,7 +84,7 @@ int main()
   // unur_distr_cont_set_pdfarea(distr_normal,0.01);
 
 
-  fpar[0] = 1.;
+  fpar[0] = 3.;
   distr_gamma = unur_distr_gamma(fpar,1);
 
   fpar[0] = 5.2;
@@ -113,7 +113,7 @@ int main()
 
 #if RUN_CSTD == 1
 
-#if 0
+#if 1
   distr_xxx = unur_distr_normal(NULL,0);
   // unur_distr_cont_set_domain(distr_xxx,3,UNUR_INFINITY);
   par = unur_cstd_new(distr_xxx);
@@ -178,19 +178,25 @@ int main()
   unur_distr_free(distr_xxx);
 #endif
 
-  fpar[0] = 7.;
-  fpar[1] = 5.;
-  distr_xxx = unur_distr_beta(fpar,2);
-  par = unur_cstd_new(distr_xxx);
-  unur_run_tests(par,RUN_TESTS);
-  unur_distr_free(distr_xxx);
+/*    fpar[0] = 7.; */
+/*    fpar[1] = 5.; */
+/*    distr_xxx = unur_distr_beta(fpar,2); */
+/*    par = unur_cstd_new(distr_xxx); */
+/*    unur_run_tests(par,RUN_TESTS); */
+/*    unur_distr_free(distr_xxx); */
 
   fpar[0] = 0.5;
   fpar[1] = 0.2;
   distr_xxx = unur_distr_beta(fpar,2);
   par = unur_cstd_new(distr_xxx);
   unur_run_tests(par,RUN_TESTS);
-  unur_distr_free(distr_xxx);
+/*    gen = unur_init(par); */
+/*    { */
+/*      int i; */
+/*      for (i=0;i<10;i++) */
+/*        printf("\n\nx = %g\n\n",unur_sample_cont(gen)); */
+/*    } */
+
 
 #endif
 
@@ -459,10 +465,11 @@ int main()
 #endif
 
 #if RUN_TABL == 1
-    
+
+  fpar[0] = ALPHA;
   par = unur_tabl_new(distr_gamma);
-  unur_set_domain(par,0.,50.);
-  unur_set_variant(par,1UL);
+  unur_tabl_set_boundary(par,0.,50.);
+  unur_tabl_set_variant(par,1UL);
   slopes[0] = slopes[2] = unur_mode_gamma(fpar,1);
   slopes[1] = 0.;
   slopes[3] = 50.;

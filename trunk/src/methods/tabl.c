@@ -202,10 +202,12 @@ static void _unur_tabl_debug_intervals( struct unur_gen *gen, int print_areas );
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
-#define DISTR   distr->data.cont
-#define PAR     par->data.tabl
-#define GEN     gen->data.tabl
-#define SAMPLE  gen->sample.cont
+#define DISTR_IN  distr->data.cont
+
+#define PAR       par->data.tabl
+#define GEN       gen->data.tabl
+#define DISTR     gen->distr.data.cont
+#define SAMPLE    gen->sample.cont
 
 #define PDF(x) ((*(GEN.pdf))((x),GEN.pdf_param,GEN.n_pdf_param))
 
@@ -241,7 +243,7 @@ unur_tabl_new( struct unur_distr *distr )
     return NULL; }
   COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
 
-  if (DISTR.pdf == NULL) {
+  if (DISTR_IN.pdf == NULL) {
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"p.d.f.");
     return NULL;
   }
@@ -1044,9 +1046,8 @@ _unur_tabl_create( struct unur_par *par )
   /* set generator identifier */
   _unur_set_genid(gen,GENTYPE);
 
-  /* copy pointer to distribution object */
-  /* (we do not copy the entire object)  */
-  gen->distr = par->distr;
+  /* copy distribution object into generator object */
+  memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
 
   /* routines for sampling and destroying generator */
   SAMPLE = (par->variant & TABL_VARFLAG_VERIFY) ? unur_tabl_sample_check : unur_tabl_sample;
@@ -1066,16 +1067,16 @@ _unur_tabl_create( struct unur_par *par )
   GEN.mblocks     = NULL;
 
   /* copy some parameters into generator object */
-  GEN.pdf = gen->DISTR.pdf;           /* p.d.f. of distribution              */
+  GEN.pdf = DISTR.pdf;           /* p.d.f. of distribution              */
 
-  GEN.pdf_param   = gen->DISTR.params;
-  GEN.n_pdf_param = gen->DISTR.n_params;
+  GEN.pdf_param   = DISTR.params;
+  GEN.n_pdf_param = DISTR.n_params;
 
   /* the boundaries for our computation limits are intersection of the       */
   /* domain of the distribution and the given computation boundaries.        */
   if (par->distr->set & UNUR_DISTR_SET_DOMAIN) {
-    PAR.bleft = max(PAR.bleft,par->DISTR.domain[0]);
-    PAR.bright = min(PAR.bright,par->DISTR.domain[1]);
+    PAR.bleft = max(PAR.bleft,par->DISTR_IN.domain[0]);
+    PAR.bright = min(PAR.bright,par->DISTR_IN.domain[1]);
   }
   GEN.bleft       = PAR.bleft;         /* left boundary of domain            */
   GEN.bright      = PAR.bright;        /* right boundary of domain           */
@@ -1257,7 +1258,7 @@ _unur_tabl_get_starting_intervals_from_mode( struct unur_par *par, struct unur_g
   COOKIE_CHECK(gen,CK_TABL_GEN,0);
 
   /* compute mode */
-  mode = par->DISTR.mode;   /* (exact!) location of mode of p.d.f. */
+  mode = par->DISTR_IN.mode;   /* (exact!) location of mode of p.d.f. */
 
   /* init linked list of intervals */
   GEN.n_ivs = 0;
@@ -1362,7 +1363,7 @@ _unur_tabl_split_a_starting_intervals( struct unur_par *par,
   iv = iv_slope;        /* pointer to actual interval */
   iv_last = iv_slope;   /* pointer to last interval in list */
   /* (maximal) area of bar (= hat in one interval) */
-  bar_area = par->DISTR.area * PAR.area_fract;
+  bar_area = par->DISTR_IN.area * PAR.area_fract;
 
   switch (iv->slope) {
   case +1:
@@ -1759,7 +1760,7 @@ _unur_tabl_debug_init( struct unur_par *par, struct unur_gen *gen )
   fprintf(log,"%s: method  = rejection from piecewise constant hat\n",gen->genid);
   empty_line();
 
-  _unur_distr_cont_debug( gen->distr, gen->genid );
+  _unur_distr_cont_debug( &(gen->distr), gen->genid );
 
   fprintf(log,"%s: sampling routine = unur_tabl_sample",gen->genid);
   if (par->variant & TABL_VARFLAG_VERIFY)

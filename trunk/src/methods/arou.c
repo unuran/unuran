@@ -247,10 +247,13 @@ static void _unur_arou_debug_printratio( double v, double u, char *string );
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
-#define DISTR   distr->data.cont
-#define PAR     par->data.arou
-#define GEN     gen->data.arou
-#define SAMPLE  gen->sample.cont
+
+#define DISTR_IN  distr->data.cont
+
+#define PAR       par->data.arou
+#define GEN       gen->data.arou
+#define DISTR     gen->distr.data.cont
+#define SAMPLE    gen->sample.cont
 
 #define PDF(x) ((*(GEN.pdf))((x),GEN.pdf_param,GEN.n_pdf_param))
 #define dPDF(x) ((*(GEN.dpdf))((x),GEN.pdf_param,GEN.n_pdf_param))
@@ -287,11 +290,11 @@ unur_arou_new( struct unur_distr *distr )
     return NULL; }
   COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
 
-  if (DISTR.pdf == NULL) {
+  if (DISTR_IN.pdf == NULL) {
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"p.d.f.");
     return NULL;
   }
-  if (DISTR.dpdf == NULL) {
+  if (DISTR_IN.dpdf == NULL) {
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"derivative of p.d.f.");
     return NULL;
   }
@@ -324,7 +327,7 @@ unur_arou_new( struct unur_distr *distr )
 
   /* we use the mode (if known) as center of the distribution */
   if (distr->set & UNUR_DISTR_SET_MODE) {
-    PAR.center = DISTR.mode;
+    PAR.center = DISTR_IN.mode;
     par->set |= AROU_SET_CENTER;
   }
   else
@@ -935,9 +938,8 @@ _unur_arou_create( struct unur_par *par )
   /* set generator identifier */
   _unur_set_genid(gen,GENTYPE);
 
-  /* copy pointer to distribution object */
-  /* (we do not copy the entire object)  */
-  gen->distr = par->distr;
+  /* copy distribution object into generator object */
+  memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
 
   /* routines for sampling and destroying generator */
   SAMPLE = (par->variant & AROU_VARFLAG_VERIFY) ? unur_arou_sample_check : unur_arou_sample;
@@ -955,14 +957,14 @@ _unur_arou_create( struct unur_par *par )
   GEN.Asqueeze    = 0.;
 
   /* copy some parameters into generator object */
-  GEN.pdf = gen->DISTR.pdf;           /* p.d.f. of distribution              */
-  GEN.dpdf = gen->DISTR.dpdf;         /* derivative of p.d.f.                */
+  GEN.pdf = DISTR.pdf;                /* p.d.f. of distribution              */
+  GEN.dpdf = DISTR.dpdf;              /* derivative of p.d.f.                */
 
-  GEN.pdf_param   = gen->DISTR.params;
-  GEN.n_pdf_param = gen->DISTR.n_params;
+  GEN.pdf_param   = DISTR.params;
+  GEN.n_pdf_param = DISTR.n_params;
 
-  GEN.bleft = gen->DISTR.domain[0];   /* left boundary of domain             */
-  GEN.bright = gen->DISTR.domain[1];  /* right boundary of domain            */
+  GEN.bleft = DISTR.domain[0];       /* left boundary of domain             */
+  GEN.bright = DISTR.domain[1];      /* right boundary of domain            */
 
   GEN.guide_factor = PAR.guide_factor; /* relative size of guide tables      */
 
@@ -1809,7 +1811,7 @@ _unur_arou_debug_init( struct unur_par *par, struct unur_gen *gen )
   fprintf(log,"%s: method  = ratio-of-uniforms method with enveloping polygon\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
-  _unur_distr_cont_debug( gen->distr, gen->genid );
+  _unur_distr_cont_debug( &(gen->distr), gen->genid );
 
   fprintf(log,"%s: sampling routine = unur_arou_sample",gen->genid);
   if (par->variant & AROU_VARFLAG_VERIFY)

@@ -172,7 +172,7 @@ struct unur_gen {
   
   UNUR_URNG_TYPE  urng;       /* pointer to uniform random number generator  */
 
-  struct unur_distr *distr;   /* pointer to distribution object              */
+  struct unur_distr distr;    /* distribution object                         */
   
 #if UNUR_DEBUG & UNUR_DB_COOKIES  /* use magic cookies */
   unsigned cookie;            /* magic cookie                                */

@@ -161,8 +161,8 @@ _unur_test_chi2_discr( struct unur_gen *gen,
   }
 
   /* pointer to distribution object */
-  prob = (gen->distr)->data.discr.prob;
-  n_prob = (gen->distr)->data.discr.n_prob;
+  prob = gen->distr.data.discr.prob;
+  n_prob = gen->distr.data.discr.n_prob;
 
   /* check argument: need probability vector */
   if (prob == NULL) {
@@ -237,7 +237,7 @@ _unur_test_chi2_cont(struct unur_gen *gen,
      /*                                                                      */
      /*----------------------------------------------------------------------*/
 {
-#define DISTR   gen->distr->data.cont
+#define DISTR   gen->distr.data.cont
 
   double F, Fl, Fr, Fdelta;  /* value of cdf (at left and right boundary point) */
   _UNUR_FUNCTION_CONT *cdf;  /* pointer to c.d.f. */

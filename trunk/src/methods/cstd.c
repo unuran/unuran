@@ -85,12 +85,14 @@ static void _unur_cstd_debug_init( struct unur_par *par, struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
-#define DISTR   distr->data.cont
-#define PAR     par->data.cstd
-#define GEN     gen->data.cstd
-#define SAMPLE  gen->sample.cont
+#define DISTR_IN  distr->data.cont
 
-#define CDF(x) ((*(gen->DISTR.cdf))((x),GEN.pdf_param,GEN.n_pdf_param))
+#define PAR       par->data.cstd
+#define GEN       gen->data.cstd
+#define DISTR     gen->distr.data.cont
+#define SAMPLE    gen->sample.cont
+
+#define CDF(x) ((*(DISTR.cdf))((x),GEN.pdf_param,GEN.n_pdf_param))
 
 /*---------------------------------------------------------------------------*/
 
@@ -128,7 +130,7 @@ unur_cstd_new( struct unur_distr *distr )
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"standard distribution");
     return NULL;
   }
-  if (DISTR.init == NULL) {
+  if (DISTR_IN.init == NULL) {
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"init() for special generators");
     return NULL;
   }
@@ -188,7 +190,7 @@ unur_cstd_set_variant( struct unur_par *par, unsigned variant )
   par->variant = variant;
 
   /* check variant. run special init routine only in test mode */
-  if (par->DISTR.init != NULL && par->DISTR.init(par,NULL) ) {
+  if (par->DISTR_IN.init != NULL && par->DISTR_IN.init(par,NULL) ) {
     par->set |= CSTD_SET_VARIANT;    /* changelog */
     return 1;
   }
@@ -222,7 +224,7 @@ unur_cstd_init( struct unur_par *par )
   /* check arguments */
   CHECK_NULL(par,NULL);
   COOKIE_CHECK(par,CK_CSTD_PAR,NULL);
-  CHECK_NULL(par->DISTR.init,NULL);
+  CHECK_NULL(par->DISTR_IN.init,NULL);
 
   /* check input */
   if ( par->method != UNUR_METH_CSTD ) {
@@ -235,8 +237,8 @@ unur_cstd_init( struct unur_par *par )
   if (!gen) { free(par); return NULL; }
 
   /* run special init routine for generator */
-  if (par->DISTR.init != NULL)
-    par->DISTR.init(par,gen);
+  if (par->DISTR_IN.init != NULL)
+    par->DISTR_IN.init(par,gen);
 
   /* init successful ?? */
   if (SAMPLE == NULL) {
@@ -253,13 +255,13 @@ unur_cstd_init( struct unur_par *par )
       _unur_error(GENTYPE,UNUR_ERR_INIT,"domain changed for non inversion method");
       free(par); unur_cstd_free(gen); return NULL; 
     }
-    else if (par->DISTR.cdf == NULL) {
+    else if (par->DISTR_IN.cdf == NULL) {
       _unur_error(GENTYPE,UNUR_ERR_INIT,"domain changed, c.d.f. required");
       free(par); unur_cstd_free(gen); return NULL; 
     }
     /* compute umin and umax */
-    GEN.umin = (par->DISTR.domain[0] > -INFINITY) ? CDF(par->DISTR.domain[0]) : 0.;
-    GEN.umax = (par->DISTR.domain[1] < INFINITY)  ? CDF(par->DISTR.domain[1]) : 1.;
+    GEN.umin = (par->DISTR_IN.domain[0] > -INFINITY) ? CDF(par->DISTR_IN.domain[0]) : 0.;
+    GEN.umax = (par->DISTR_IN.domain[1] < INFINITY)  ? CDF(par->DISTR_IN.domain[1]) : 1.;
   }
 
 #if UNUR_DEBUG & UNUR_DB_INFO
@@ -352,9 +354,8 @@ _unur_cstd_create( struct unur_par *par )
   /* set generator identifier */
   _unur_set_genid(gen,GENTYPE);
 
-  /* copy pointer to distribution object */
-  /* (we do not copy the entire object)  */
-  gen->distr = par->distr;
+  /* copy distribution object into generator object */
+  memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
 
   /* routines for sampling and destroying generator */
   SAMPLE = NULL;    /* will be set in unur_cstd_init() */
@@ -365,8 +366,8 @@ _unur_cstd_create( struct unur_par *par )
   GEN.n_gen_param = 0;   /* (computed in special GEN.init()  */
 
   /* copy some parameters into generator object */
-  GEN.pdf_param   = gen->DISTR.params;
-  GEN.n_pdf_param = gen->DISTR.n_params;
+  GEN.pdf_param   = DISTR.params;
+  GEN.n_pdf_param = DISTR.n_params;
   GEN.umin        = 0;    /* cdf at left boundary of domain  */
   GEN.umax        = 1;    /* cdf at right boundary of domain */
 
@@ -411,7 +412,7 @@ _unur_cstd_debug_init( struct unur_par *par, struct unur_gen *gen )
   fprintf(log,"%s:\n",gen->genid);
 
   /* distribution */
-  _unur_distr_cont_debug( gen->distr, gen->genid );
+  _unur_distr_cont_debug( &(gen->distr), gen->genid );
 
   /* sampling routine */
   fprintf(log,"%s: sampling routine = ",gen->genid);

@@ -82,7 +82,7 @@ unur_make_scatterplot( struct unur_gen *gen )
         (UNUR_DEBUG & UNUR_DB_INFO) )
 /*---------------------------------------------------------------------------*/
 {
-#define DISTR   gen->distr->data.cont
+#define DISTR   gen->distr.data.cont
 
   static int can_run_plotting_program = 1;  /* store failure */
 

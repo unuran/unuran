@@ -1,5 +1,9 @@
 -----------------------------------------------------------------------------
 
+docu: examples werden jetzt erst mit make check kompiliert.
+
+-----------------------------------------------------------------------------
+
 wenn man ein eigenes build directory waehlt, kann man die docu nicht mehr 
 erstellen, da @image{figures/....} die datei nicht mehr finden kann.
 

@@ -19,7 +19,7 @@ EXAMPLES = \
  example_vemp  \
  example_FuncStr
 
-noinst_PROGRAMS = $(EXAMPLES)
+check_PROGRAMS = $(EXAMPLES)
 
 TESTS = $(EXAMPLES)
 

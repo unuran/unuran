@@ -92,7 +92,7 @@
       @code{PS} is faster than @code{GW}. @code{IA} uses less uniform
       random numbers and is therefore faster than @code{PS}.
 
-      It is also possible to evaluate the CDF of the hat distribution
+      It is also possible to evaluate the inverse of the CDF of the hat distribution
       directly using the unur_tdr_eval_invcdfhat() call.
       
       There are lots of parameters for these methods, see below.

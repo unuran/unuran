@@ -179,6 +179,11 @@ double unur_distr_discr_eval_cdf( int k, UNUR_DISTR *distribution );
    If the corresponding function is not available for the @var{distribution},
    @code{UNUR_INFINITY} is returned and @code{unur_errno} is set to
    @code{UNUR_ERR_DISTR_DATA}.
+
+   @emph{IMPORTANT:}
+   In the case of a truncated standard distribution,
+   unur_distr_discr_eval_cdf() always returns the CDF of the
+   @emph{untruncated} distribution!
 */
 
 

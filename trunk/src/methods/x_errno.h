@@ -185,6 +185,18 @@
       sampling error.
       @end ftable
 
+      @item Errors that occurred while parsing strings.
+      @ftable @code
+      @item UNUR_ERR_STR
+      error in string.
+      @item UNUR_ERR_STR_UNKNOWN
+      unknown keyword.
+      @item UNUR_ERR_STR_SYNTAX
+      syntax error.
+      @item UNUR_ERR_STR_INVALID
+      invalid parameter.
+      @end ftable
+
       @item Other run time errors.
       @ftable @code
       @item UNUR_ERR_ROUNDOFF
@@ -249,6 +261,16 @@ enum {
   UNUR_ERR_GEN_CONDITION  = 0x33u,    /* condition for method violated       */
   UNUR_ERR_GEN_INVALID    = 0x34u,    /* invalid generator object            */
   UNUR_ERR_GEN_SAMPLING   = 0x35u,    /* sampling error                      */
+
+  /** string parser **/
+  /*
+    @code{UNUR_ERR_STR_...}
+    Errors that occurred while parsing strings.
+  */
+  UNUR_ERR_STR            = 0x41u,    /* error in stringparser               */
+  UNUR_ERR_STR_UNKNOWN    = 0x42u,    /* unknown key word in string          */
+  UNUR_ERR_STR_SYNTAX     = 0x43u,    /* syntax error in string              */
+  UNUR_ERR_STR_INVALID    = 0x44u,    /* invalid parameter in argument       */
 
   /** misc **/
   /*

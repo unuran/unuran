@@ -7,6 +7,7 @@ INCLUDES = \
  -I$(top_srcdir)/src/tests
 
 check_PROGRAMS = \
+ run_test_with_Mathematica \
  t_distr \
  t_corder \
  t_timing \
@@ -42,7 +43,6 @@ TESTS = \
  t_utdr
 
 # commented out
-# run_test_with_Mathematica
 # t_timing
 
 noinst_HEADERS = \
@@ -75,11 +75,11 @@ EXTRA_DIST = \
 data:
 	math -initfile test_with_Mathematica.m
 
-# run_test_with_Mathematica.c: test_with_Mathematica.m
-#	math -initfile test_with_Mathematica.m
+run_test_with_Mathematica.c: test_with_Mathematica.m
+	math -initfile test_with_Mathematica.m
 
-#run_test_with_Mathematica_SOURCES = run_test_with_Mathematica.c test_with_Mathematica.c 
-#run_test_with_Mathematica_LDADD = $(top_builddir)/src/libunuran.a
+run_test_with_Mathematica_SOURCES = run_test_with_Mathematica.c test_with_Mathematica.c 
+run_test_with_Mathematica_LDADD = $(top_builddir)/src/libunuran.a
 
 # run tests for methods ...
 

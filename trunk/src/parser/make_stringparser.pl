@@ -142,9 +142,6 @@ sub make_list_of_distributions {
     # print info on screen
     print STDERR "Distributions:\n" if $VERBOSE;
 
-    # make code 
-    $code .= "\t distr = NULL;\n\n";
-
     # make switch for first letter of distribution name
     $code .= "\t switch (*distribution) {\n";
 
@@ -442,7 +439,6 @@ sub make_list_of_methods {
     @method_list = sort @method_list;
 
     # make code 
-    $code .= "\t par = NULL;\n\n";
 
     # make switch for first letter of method name
     $code .= "\t switch (*method) {\n";
@@ -612,9 +608,6 @@ sub make_list_of_par_sets {
     # get list of all methods 
     my @method_list = sort (keys %{$set_commands});
 
-    # set result indicator
-    $code = "\t result = FALSE;\n\n";
-
     # make switch for methods
     $code .= "\t switch (par->method) {\n";
 
@@ -649,7 +642,7 @@ sub make_list_of_par_sets {
 
 	# end of switch for first letter
 	$code .= "\t\t }\n";
-
+	$code .= "\t\t break;\n";
     }
 
     # end of switch for methods

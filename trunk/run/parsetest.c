@@ -19,7 +19,9 @@ int main(){
   UNUR_GEN *gen;
 
   /* test1 */
-  strcpy(str, "distr=normal(0, 1):prng = MT19937(123): method=tdr; c=-0.5; variant_ia; cpoints=(-3,-2,-1,0,1,2,3)");
+  //strcpy(str, "distr=normal(0, 1):prng = MT19937(123): method=tdr; c=-0.5; variant_ia; cpoints=(-3,-2,-1,0,1,2,3)");
+  strcpy(str, "distr=normal(0, 1):prng = MT19937(123): method=tdr; c=-0.5; variant_ia; cpoints=5,(-3,-2,-1,0,1,2,3)");
+  //strcpy(str, "distr=normal(0, 1):prng = MT19937(123): method=tdr; c=-0.5; variant_ia; cpoints=10");
   printf("%s\n", str);
   gen = unur_str2gen(str);
   for ( i=0; i<5; i++){

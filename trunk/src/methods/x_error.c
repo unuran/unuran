@@ -126,6 +126,16 @@ unur_get_strerror ( const int unur_errno )
   case UNUR_ERR_GEN_SAMPLING:
     return "(generator) sampling error";
     
+    /** string parser **/
+  case UNUR_ERR_STR:
+    return "(parser) invalid string";
+  case UNUR_ERR_STR_UNKNOWN:
+    return "(parser) unknown keyword";
+  case UNUR_ERR_STR_SYNTAX:
+    return "(parser) syntax error";
+  case UNUR_ERR_STR_INVALID:
+    return "(parser) invalid parameter";
+
     /** misc **/
   case UNUR_ERR_ROUNDOFF:
     return "(serious) round-off error";

@@ -222,7 +222,8 @@ _unur_distr_cont_free( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  _unur_check_NULL( NULL,distr,/*void*/ );
+  if( distr == NULL ) /* nothing to do */
+    return;
   _unur_check_distr_object( distr, CONT, /*void*/ );
 
   if (DISTR.pdftree)  _unur_fstr_free(DISTR.pdftree);
@@ -231,6 +232,28 @@ _unur_distr_cont_free( struct unur_distr *distr )
 
   free( distr );
 } /* end of _unur_distr_cont_free() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_distr_cont_clear( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* frees all memory blocks in distribution object inside generator      */
+     /* object.                                                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_distr *distr = &(gen->distr);
+
+  /* check arguments */
+  COOKIE_CHECK(distr,CK_DISTR_CONT,/*void*/);
+
+  if (DISTR.pdftree)  _unur_fstr_free(DISTR.pdftree);
+  if (DISTR.dpdftree) _unur_fstr_free(DISTR.dpdftree);
+  if (DISTR.cdftree)  _unur_fstr_free(DISTR.cdftree);
+} /* end of unur_distr_cont_clear() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -255,7 +278,7 @@ unur_distr_cont_set_pdf( struct unur_distr *distr, UNUR_FUNCT_CONT *pdf )
 
   /* we do not allow overwriting a pdf */
   if (DISTR.pdf != NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of pdf not allowed");
+    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of PDF not allowed");
     return 0;
   }
 
@@ -294,7 +317,7 @@ unur_distr_cont_set_dpdf( struct unur_distr *distr, UNUR_FUNCT_CONT *dpdf )
   
   /* we do not allow overwriting a dpdf */
   if (DISTR.dpdf != NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of dpdf not allowed");
+    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of dPDF not allowed");
     return 0;
   }
 
@@ -332,7 +355,7 @@ unur_distr_cont_set_cdf( struct unur_distr *distr, UNUR_FUNCT_CONT *cdf )
   
   /* we do not allow overwriting a cdf */
   if (DISTR.cdf != NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of cdf not allowed");
+    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of CDF not allowed");
     return 0;
   }
 
@@ -368,9 +391,9 @@ unur_distr_cont_set_pdfstr( struct unur_distr *distr, const char *pdfstr )
   _unur_check_distr_object( distr, CONT, 0 );
   _unur_check_NULL( NULL,pdfstr,0 );
 
-  /* we do not allow overwriting a pdf */
+  /* we do not allow overwriting a PDF */
   if (DISTR.pdf != NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of pdf not allowed");
+    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of PDF not allowed");
     return 0;
   }
 
@@ -414,9 +437,9 @@ unur_distr_cont_set_cdfstr( struct unur_distr *distr, const char *cdfstr )
   _unur_check_NULL( NULL,distr,0 );
   _unur_check_distr_object( distr, CONT, 0 );
 
-  /* we do not allow overwriting a pdf */
+  /* we do not allow overwriting a CDF */
   if (DISTR.cdf != NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of cdf not allowed");
+    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of CDF not allowed");
     return 0;
   }
 
@@ -485,7 +508,7 @@ _unur_distr_cont_eval_cdf_tree( double x, struct unur_distr *distr )
      /*   distr ... pointer to distribution object                           */
      /*                                                                      */
      /* return:                                                              */
-     /*   PDF at x                                                           */
+     /*   CDF at x                                                           */
      /*----------------------------------------------------------------------*/
 {
   return ((DISTR.cdftree) ? _unur_fstr_eval_tree(DISTR.cdftree,x) : 0.);

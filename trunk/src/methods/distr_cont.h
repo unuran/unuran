@@ -120,25 +120,6 @@ int unur_distr_cont_set_cdf( UNUR_DISTR *distribution, UNUR_FUNCT_CONT *cdf );
 */
 
 
-int unur_distr_cont_set_pdfstr( UNUR_DISTR *distribution, const char *pdfstr );
-/* 
-   This function provides an alternative way to set a PDF and its
-   derivative of the @var{distribution}.
-   @var{pdfstr} is a character string that contains the formula
-   for the PDF, see ..... for details.
-   See also the remarks for the unur_distr_cont_set_pdf() call.
-
-   It is not possible to call this funtion twice or to call this
-   function after a unur_distr_cont_set_pdf() call.
-*/
-
-int unur_distr_cont_set_cdfstr( UNUR_DISTR *distribution, const char *cdfstr );
-/* 
-   This function provides an alternative way to set a CDF; analogously
-   to the unur_distr_cont_set_pdfstr() call.
-*/
-
-
 UNUR_FUNCT_CONT *unur_distr_cont_get_pdf( UNUR_DISTR *distribution );
 /* */
 
@@ -168,6 +149,24 @@ double unur_distr_cont_eval_cdf( double x, UNUR_DISTR *distribution );
    If the corresponding function is not available for the distribution,
    @code{UNUR_INFINITY} is returned and @code{unur_errno} is set to
    @code{UNUR_ERR_DISTR_DATA}.
+*/
+
+int unur_distr_cont_set_pdfstr( UNUR_DISTR *distribution, const char *pdfstr );
+/* 
+   This function provides an alternative way to set a PDF and its
+   derivative of the @var{distribution}.
+   @var{pdfstr} is a character string that contains the formula
+   for the PDF, see ..... for details.
+   See also the remarks for the unur_distr_cont_set_pdf() call.
+
+   It is not possible to call this funtion twice or to call this
+   function after a unur_distr_cont_set_pdf() call.
+*/
+
+int unur_distr_cont_set_cdfstr( UNUR_DISTR *distribution, const char *cdfstr );
+/* 
+   This function provides an alternative way to set a CDF; analogously
+   to the unur_distr_cont_set_pdfstr() call.
 */
 
 char *unur_distr_cont_get_pdfstr( struct unur_distr *distribution );

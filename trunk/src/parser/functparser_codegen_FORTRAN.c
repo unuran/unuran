@@ -4,9 +4,9 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE:      functparser_codegen_C.c                                      *
+ *   FILE:      functparser_codegen_FORTRAN.c                                *
  *                                                                           *
- *   Make C code for function given by its tree.                             *
+ *   Make FORTRAN code for function given by its tree.                       *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -33,13 +33,13 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-/* Codes for special C functions (must be added to code)                     */
+/* Codes for special FORTRAN functions (must be added to code)               */
 /* (use bits in integer)                                                     */
 
 enum {
-  C_FUNCT_ERROR = 0x80000000u,      /* error                                 */
+  FUNCT_ERROR = 0x80000000u,        /* error                                 */
 
-  C_FUNCT_SGN   = 0x00000001u,      /* sign function                         */
+  FUNCT_SGN   = 0x00000001u,        /* sign function                         */
 };
 
 /*---------------------------------------------------------------------------*/
@@ -51,7 +51,7 @@ enum {
 /*--------------------------------------------------------------------------*/
 
 int 
-_unur_fstr_tree2C ( FILE *out, const struct ftreenode *root,
+_unur_fstr_tree2F ( FILE *out, const struct ftreenode *root,
 		    const char *variable, const char *funct_name )
      /*----------------------------------------------------------------------*/
      /* Produce string from function tree.                                   */
@@ -60,7 +60,7 @@ _unur_fstr_tree2C ( FILE *out, const struct ftreenode *root,
      /*   out        ... output stream                                       */
      /*   root       ... pointer to root of function tree                    */
      /*   variable   ... pointer to name of variable                         */
-     /*   funct_name ... pointer to name of C function                       */
+     /*   funct_name ... pointer to name of FORTRAN function                 */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... success                                                      */
@@ -72,17 +72,17 @@ _unur_fstr_tree2C ( FILE *out, const struct ftreenode *root,
 
   /* check arguments */
   _unur_check_NULL( GENTYPE,root,0 );
-  _unur_check_NULL( GENTYPE,symbol[root->token].node2C,0 );
+  _unur_check_NULL( GENTYPE,symbol[root->token].node2F,0 );
 
-  /* make body of C routine */
-  rcode = symbol[root->token].node2C (&output,root,variable);
+  /* make body of FORTRAN routine */
+  rcode = symbol[root->token].node2F (&output,root,variable);
   *(output.string + output.length) = '\0';
-  if (rcode & C_FUNCT_ERROR) return 0;
+  if (rcode & FUNCT_ERROR) return 0;
 
   /* print code for special functions (if necessary) */ 
-  _unur_fstr_C_specfunct (out,rcode);
+  _unur_fstr_F_specfunct (out,rcode);
 
-  /* print C routine */
+  /* print FORTRAN routine */
   fprintf (out,"static double %s (double %s)\n",funct_name,variable );
   fprintf (out,"{\n\treturn (%s);\n}\n",output.string);
 
@@ -91,7 +91,7 @@ _unur_fstr_tree2C ( FILE *out, const struct ftreenode *root,
 
   return 1;
 
-} /* end of _unur_fstr_tree2C() */
+} /* end of _unur_fstr_tree2F() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -99,7 +99,7 @@ _unur_fstr_tree2C ( FILE *out, const struct ftreenode *root,
 /** Create function string and source code.                                 **/
 /*****************************************************************************/
 
-/* C_xxxx ( struct concat *output, const struct ftreenode *node, const char *variable ) */
+/* F_xxxx ( struct concat *output, const struct ftreenode *node, const char *variable ) */
 /*---------------------------------------------------------------------------*/
 /* Produce string from function subtree rooted at node.                      */
 /*                                                                           */
@@ -113,43 +113,43 @@ _unur_fstr_tree2C ( FILE *out, const struct ftreenode *root,
 /*---------------------------------------------------------------------------*/
 
 unsigned
-C_error ( struct concat *output, const struct ftreenode *node, const char *variable )
+F_error ( struct concat *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* Error (This should not happen).                                      */
      /*----------------------------------------------------------------------*/
 {
   _unur_error(GENTYPE,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-  return C_FUNCT_ERROR;
-} /* end of C_error() */
+  return FUNCT_ERROR;
+} /* end of F_error() */
 
 /*---------------------------------------------------------------------------*/
 
 unsigned
-C_const ( struct concat *output, const struct ftreenode *node, const char *variable )
+F_const ( struct concat *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for constant                                                  */
      /*----------------------------------------------------------------------*/
 {
   _unur_fstr_print( output, NULL, node->val );
   return 0u;
-} /* end of C_const() */
+} /* end of F_const() */
 
 /*---------------------------------------------------------------------------*/
 
 unsigned
-C_var ( struct concat *output, const struct ftreenode *node, const char *variable )
+F_var ( struct concat *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for variable                                                  */
      /*----------------------------------------------------------------------*/
 {
   _unur_fstr_print( output, variable, 0 );
   return 0u;
-} /* end of C_var() */
+} /* end of F_var() */
 
 /*---------------------------------------------------------------------------*/
 
 unsigned
-C_prefix_generic ( struct concat *output, const struct ftreenode *node,
+F_prefix_generic ( struct concat *output, const struct ftreenode *node,
 		   const char *variable, const char *symb )
      /*----------------------------------------------------------------------*/
      /* print prefix operator (function). generic version                    */
@@ -165,66 +165,66 @@ C_prefix_generic ( struct concat *output, const struct ftreenode *node,
   _unur_fstr_print( output, "(", 0 );
 
   if (left) {
-    rcode |= symbol[left->token].node2C (output,left,variable);
+    rcode |= symbol[left->token].node2F (output,left,variable);
     _unur_fstr_print( output, ",", 0 );
   }
   if (right) {
-    rcode |= symbol[right->token].node2C (output,right,variable);
+    rcode |= symbol[right->token].node2F (output,right,variable);
   }
 
   _unur_fstr_print( output, ")", 0 );
 
   return rcode;
-} /* end of C_prefix_generic() */
+} /* end of F_prefix_generic() */
 
 /*---------------------------------------------------------------------------*/
 
 unsigned
-C_prefix ( struct concat *output, const struct ftreenode *node, const char *variable )
+F_prefix ( struct concat *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for prefix operator (function)                                */
      /*----------------------------------------------------------------------*/
 {
-  return C_prefix_generic(output,node,variable,symbol[node->token].name);
-} /* end of C_prefix() */
+  return F_prefix_generic(output,node,variable,symbol[node->token].name);
+} /* end of F_prefix() */
 
 /*---------------------------------------------------------------------------*/
 
 unsigned
-C_power ( struct concat *output, const struct ftreenode *node, const char *variable )
+F_power ( struct concat *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for power function                                            */
      /*----------------------------------------------------------------------*/
 {
-  return C_prefix_generic(output,node,variable,"pow");
-} /* end of C_power() */
+  return F_prefix_generic(output,node,variable,"pow");
+} /* end of F_power() */
 
 /*---------------------------------------------------------------------------*/
 
 unsigned
-C_abs ( struct concat *output, const struct ftreenode *node, const char *variable )
+F_abs ( struct concat *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for absolute value function                                   */
      /*----------------------------------------------------------------------*/
 {
-  return C_prefix_generic(output,node,variable,"fabs");
-} /* end of C_power() */
+  return F_prefix_generic(output,node,variable,"fabs");
+} /* end of F_power() */
 
 /*---------------------------------------------------------------------------*/
 
 unsigned
-C_sgn ( struct concat *output, const struct ftreenode *node, const char *variable )
+F_sgn ( struct concat *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for sign function                                            */
      /*----------------------------------------------------------------------*/
 {
-  return (C_FUNCT_SGN | C_prefix_generic(output,node,variable,"_acg_sgn"));
-} /* end of C_power() */
+  return (FUNCT_SGN | F_prefix_generic(output,node,variable,"_acg_sgn"));
+} /* end of F_power() */
 
 /*---------------------------------------------------------------------------*/
 
 unsigned
-C_infix_generic ( struct concat *output, const struct ftreenode *node,
+F_infix_generic ( struct concat *output, const struct ftreenode *node,
 		  const char *variable, const char *symb )
      /*----------------------------------------------------------------------*/
      /* print infix operator (binary operator). generic version              */
@@ -237,56 +237,56 @@ C_infix_generic ( struct concat *output, const struct ftreenode *node,
 
   if (left==NULL || right==NULL)
     /* error */
-    return C_FUNCT_ERROR;
+    return FUNCT_ERROR;
 
   /* '(' left node right ')' */
   _unur_fstr_print( output, "(", 0 );
-  rcode |= symbol[left->token].node2C (output,left,variable);
+  rcode |= symbol[left->token].node2F (output,left,variable);
   _unur_fstr_print( output, symb, 0 );
-  rcode |= symbol[right->token].node2C (output,right,variable);
+  rcode |= symbol[right->token].node2F (output,right,variable);
   _unur_fstr_print( output, ")", 0 );
 
   return rcode;
 
-} /* end of C_infix_generic() */
+} /* end of F_infix_generic() */
 
 /*---------------------------------------------------------------------------*/
 
 unsigned
-C_infix ( struct concat *output, const struct ftreenode *node, const char *variable )
+F_infix ( struct concat *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for infix operator (binary operator).                         */
      /*----------------------------------------------------------------------*/
 {
-  return C_infix_generic(output,node,variable,symbol[node->token].name);
-} /* end of C_infix() */
+  return F_infix_generic(output,node,variable,symbol[node->token].name);
+} /* end of F_infix() */
 
 /*---------------------------------------------------------------------------*/
 
 unsigned
-C_equal ( struct concat *output, const struct ftreenode *node, const char *variable )
+F_equal ( struct concat *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for equality operator                                         */
      /*----------------------------------------------------------------------*/
 {
-  return C_infix_generic(output,node,variable,"==");
-} /* end of C_equal() */
+  return F_infix_generic(output,node,variable,"==");
+} /* end of F_equal() */
 
 /*---------------------------------------------------------------------------*/
 
 unsigned
-C_unequal ( struct concat *output, const struct ftreenode *node, const char *variable )
+F_unequal ( struct concat *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for inequality operator                                       */
      /*----------------------------------------------------------------------*/
 {
-  return C_infix_generic(output,node,variable,"!=");
-} /* end of C_unequal() */
+  return F_infix_generic(output,node,variable,"!=");
+} /* end of F_unequal() */
 
 /*---------------------------------------------------------------------------*/
 
 unsigned
-C_minus ( struct concat *output, const struct ftreenode *node, const char *variable )
+F_minus ( struct concat *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for minus operator                                            */
      /*----------------------------------------------------------------------*/
@@ -298,30 +298,30 @@ C_minus ( struct concat *output, const struct ftreenode *node, const char *varia
 
   if (left==NULL || right==NULL)
     /* error */
-    return C_FUNCT_ERROR;
+    return FUNCT_ERROR;
 
   /* '(' [left] '-' right ')' */
   _unur_fstr_print( output, "(", 0 );
   if (!(left->type == S_UCONST && left->val == 0.))
     /* there is no need to print "0 - ..." */
-    rcode |= symbol[left->token].node2C (output,left,variable);
+    rcode |= symbol[left->token].node2F (output,left,variable);
   _unur_fstr_print( output, "-", 0 );
-  rcode |= symbol[right->token].node2C (output,right,variable);
+  rcode |= symbol[right->token].node2F (output,right,variable);
   _unur_fstr_print( output, ")", 0 );
 
   return rcode;
-} /* end of C_minus() */
+} /* end of F_minus() */
 
 /*---------------------------------------------------------------------------*/
 
 unsigned
-C_mod ( struct concat *output, const struct ftreenode *node, const char *variable )
+F_mod ( struct concat *output, const struct ftreenode *node, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for mudolus function                                          */
      /*----------------------------------------------------------------------*/
 {
-  return C_infix_generic(output,node,variable,"%");
-} /* end of C_mod() */
+  return F_infix_generic(output,node,variable,"%");
+} /* end of F_mod() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -332,9 +332,9 @@ C_mod ( struct concat *output, const struct ftreenode *node, const char *variabl
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_fstr_C_specfunct ( FILE *out, unsigned flags )
+_unur_fstr_F_specfunct ( FILE *out, unsigned flags )
      /*----------------------------------------------------------------------*/
-     /* Print C code for special functions                                   */
+     /* Print FORTRAN code for special functions                             */
      /*                                                                      */
      /* parameters:                                                          */
      /*   flags ... bit array with flags for special functions               */
@@ -343,19 +343,19 @@ _unur_fstr_C_specfunct ( FILE *out, unsigned flags )
      /*   1 on success                                                       */
      /*----------------------------------------------------------------------*/
 {
-  if (flags & C_FUNCT_SGN) {
-    _unur_fstr_C_sgn(out);
+  if (flags & FUNCT_SGN) {
+    _unur_fstr_F_sgn(out);
   }
 
   return 1;
-} /* end of _unur_fstr_C_specfunct() */
+} /* end of _unur_fstr_F_specfunct() */
 
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_fstr_C_sgn ( FILE *out )
+_unur_fstr_F_sgn ( FILE *out )
      /*----------------------------------------------------------------------*/
-     /* Print C code for special functions                                   */
+     /* Print FORTRAN code for special functions                             */
      /*                                                                      */
      /* parameters: none                                                     */
      /*                                                                      */
@@ -373,6 +373,6 @@ _unur_fstr_C_sgn ( FILE *out )
   fprintf(out,"#endif /* _ACG_FUNCT_SGN */\n\n");
 
   return 1;
-} /* end of _unur_fstr_C_specfunct() */
+} /* end of _unur_fstr_F_specfunct() */
 
 /*---------------------------------------------------------------------------*/

@@ -607,6 +607,22 @@ static int _unur_fstr_C_sgn ( FILE *out );
 
 
 /**-------------------------------------------------------------------------**/
+/** functparser_codegen_FORTRAN.c                                           **/
+/**   Make FORTRAN code for function given by its tree.                     **/
+/**-------------------------------------------------------------------------**/
+
+static int _unur_fstr_F_specfunct ( FILE *out, unsigned flags );
+/*---------------------------------------------------------------------------*/
+/* Print FORTRAN code for special functions                                  */ 
+/*---------------------------------------------------------------------------*/
+
+static int _unur_fstr_F_sgn ( FILE *out );
+/*---------------------------------------------------------------------------*/
+/* Print FORTRAN code for sign function                                      */ 
+/*---------------------------------------------------------------------------*/
+
+
+/**-------------------------------------------------------------------------**/
 /** functparser_debug.c                                                     **/
 /**   Debugging tools for function parser.                                  **/
 /**-------------------------------------------------------------------------**/
@@ -663,6 +679,7 @@ static void _unur_fstr_debug_deriv (const struct ftreenode *funct,
 #include "functparser_deriv.c"
 #include "functparser_stringgen.c"
 #include "functparser_codegen_C.c"
+#include "functparser_codegen_FORTRAN.c"
 #include "functparser_debug.c"
 /*---------------------------------------------------------------------------*/
 

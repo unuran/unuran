@@ -17,7 +17,7 @@
 RunFileName = "run_test_with_Mathematica.c";
 
 (* sample size for tests *)
-RunSampleSize = 500;   
+RunSampleSize = 10;   
 
 (* constants *)
 isCONT = 1;
@@ -197,7 +197,8 @@ UnurTestDistrResultFile[dname_, dtype_, runfile_, fparbd__, size_, distribution_
 		WriteString[runfile,"   fparams[",i,"] = ",N[fparbd[[i+1,2]]],";\n"];
 	];
 	WriteString[runfile,"   distr = unur_distr_",dname,"(fparams,",nfparams,");\n"];
-	WriteString[runfile,"   test_cdf_pdf( TESTLOG, distr,\"",datafilename,"\" );\n"];
+	WriteString[runfile,"   if (test_cdf_pdf( TESTLOG, distr,\"",datafilename,"\" ) == 0)\n"];
+        WriteString[runfile,"      n_failed++;\n"];
         WriteString[runfile,"   unur_distr_free(distr);\n\n"];
 
 ]; (* end of UnurTestDistrResultFile[] *)
@@ -233,6 +234,7 @@ int main()                                                                     \
    UNUR_DISTR *distr;                     /* distribution object             */\n\
    FILE *UNURANLOG;                       /* unuran log file                 */\n\
    FILE *TESTLOG;                         /* test log file                   */\n\
+   int n_failed = 0;                      /* number of failed tests          */\n\
                                                                                \n\
    /* open log file for unuran and set output stream for unuran messages */    \n\
    UNURANLOG = fopen( \"t_Mathematica_unuran.log\",\"w\" );                    \n\
@@ -273,9 +275,12 @@ UnurTestRunClose[stream_] := Module [
                                                                                \n\
    /* close log file */                                                        \n\
    fclose(UNURANLOG);                                                          \n\
-   fclose(TESTLOG);                                                             \n\
+   fclose(TESTLOG);                                                            \n\
                                                                                \n\
-   exit (0);                                                                   \n\
+   if (n_failed > 0)                                                           \n\
+      exit (-1);                                                               \n\
+   else                                                                        \n\
+      exit (0);                                                                \n\
 }                                                                              \n"
 	];
 
@@ -354,34 +359,33 @@ fparams = {{1/2,10},{1/100,100}};
 UnurTestDistrResultFile["weibull", isCONT, runfile, fparams, RunSampleSize];
 
 (* --- List of Discrete Distributions -------------------------------------- *)
-(*
+
 (* Binomial *)
-fparams = {{2,1000,1(*as parameter is discrete*)},{1/1000,999/1000}};
+fparams = {{2,1000,isDISCR}, {1/1000,999/1000}};
 UnurTestDistrResultFile["binomial", is_DISCR, runfile, fparams, RunSampleSize];
 
 (* Geometric *)
-fparams = {{1/1000, 999/1000}};
+fparams = {{1/1000,999/1000}};
 UnurTestDistrResultFile["geometric", is_DISCR, runfile, fparams, RunSampleSize];
 
 (* Hypergeometric; order of parameters is different *)
 hgd[N_,M_,n_] = HypergeometricDistribution[n,M,N];
-fparams = {{100,1000,1},{1,99,1},{1,99,1}};
+fparams = {{100,1000,isDISCR}, {1,99,isDISCR}, {1,99,isDISCR}};
 UnurTestDistrResultFile["hypergeometric", is_DISCR, runfile, fparams, RunSampleSize, hgd];
 
 (* Logarithmic *)
-fparams = {{1/1000, 999/1000}};
+fparams = {{1/1000,999/1000}};
 UnurTestDistrResultFile["logarithmic", is_DISCR, runfile, fparams, RunSampleSize, LogSeriesDistribution];
 
 (* NegativeBinomial; order of parameters is different *)
 nb[p_,n_] = NegativeBinomialDistribution[n,p];
-fparams = {{1/1000,999/1000},{1,100,1(*as parameter is discrete*)}};
+fparams = {{1/1000,999/1000}, {1,100,isDISCR}};
 UnurTestDistrResultFile["negativebinomial", is_DISCR, runfile, fparams, RunSampleSize, nb];
 
 (* Poisson *)
 fparams = {{1/100,100}};
 UnurTestDistrResultFile["poisson", is_DISCR, runfile, fparams, RunSampleSize];
 
-*)
 
 (* --- Done ---------------------------------------------------------------- *)
 

@@ -39,7 +39,8 @@ int test_cdf_pdf( FILE *LOG, UNUR_DISTR *distr, char *datafile )
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... if test was successful                                       */
-     /*   0 ... difference too large                                         */
+     /*   0 ... failed (difference too large)                                */
+     /*  -1 ... could not run test                                           */
      /*----------------------------------------------------------------------*/
 {
 #define BUFSIZE      1024       /* size of line buffer */
@@ -119,7 +120,7 @@ int test_cdf_pdf( FILE *LOG, UNUR_DISTR *distr, char *datafile )
   if ( (fp = fopen(datafile,"r")) == NULL ) {
     printf("%s: ERROR: could not open file %s \n", dname,datafile);
     fprintf(LOG,"%s: ERROR: could not open file %s \n", dname,datafile);
-    return(-1.);
+    return -1;
   }
 
   /* read file */
@@ -135,7 +136,7 @@ int test_cdf_pdf( FILE *LOG, UNUR_DISTR *distr, char *datafile )
     if (n_fparams < 0 || n_fparams >= MAX_FPARAMS) {
       printf("%s: ERROR: invalid number of parameters for distribution: %d \n", dname,n_fparams);
       fprintf(LOG,"%s: ERROR: invalid number of parameters for distribution: %d \n", dname,n_fparams);
-      return(-1.);
+      return -1;
     }
 
     /* read parameters */
@@ -280,13 +281,14 @@ int test_cdf_pdf( FILE *LOG, UNUR_DISTR *distr, char *datafile )
 
   /* print result on screen */
   printf("%-17s ... ", dname );
-  if (n_failed > 0) 
+  if (n_failed > 0) {
     printf("failed!!\n");
-  else
+    return 0;
+  }
+  else {
     printf("ok\n");
-
-  /* end */
-  return 0;
+    return 1;
+  }
 
 #undef BUFSIZE
 #undef MAX_FPARAMS

@@ -95,6 +95,7 @@
 #include <methods/hinv.h>
 #include <methods/hrb.h>
 #include <methods/hrd.h>
+#include <methods/hri.h>
 #include <methods/ninv.h>
 #include <methods/srou.h>
 #include <methods/ssr.h>

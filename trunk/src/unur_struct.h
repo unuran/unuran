@@ -111,6 +111,7 @@ typedef void _UNUR_SAMPLING_ROUTINE_VEC(struct unur_gen *gen, double *vec);
 #include <methods/hinv_struct.h>
 #include <methods/hrb_struct.h>
 #include <methods/hrd_struct.h>
+#include <methods/hri_struct.h>
 #include <methods/ninv_struct.h>
 #include <methods/srou_struct.h>
 #include <methods/ssr_struct.h>
@@ -148,6 +149,7 @@ struct unur_par {
     struct unur_hinv_par  hinv;
     struct unur_hrb_par   hrb;
     struct unur_hrd_par   hrd;
+    struct unur_hri_par   hri;
     struct unur_ninv_par  ninv;
     struct unur_srou_par  srou;
     struct unur_ssr_par   ssr;
@@ -194,6 +196,7 @@ struct unur_gen {
     struct unur_hinv_gen  hinv;
     struct unur_hrb_gen   hrb;
     struct unur_hrd_gen   hrd;
+    struct unur_hri_gen   hri;
     struct unur_ninv_gen  ninv;
     struct unur_srou_gen  srou;
     struct unur_ssr_gen   ssr;

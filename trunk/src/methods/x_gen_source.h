@@ -75,6 +75,7 @@ UNUR_GEN *_unur_empl_clone( const UNUR_GEN *gen );
 UNUR_GEN *_unur_hinv_clone( const UNUR_GEN *gen );
 UNUR_GEN *_unur_hrb_clone( const UNUR_GEN *gen );
 UNUR_GEN *_unur_hrd_clone( const UNUR_GEN *gen );
+UNUR_GEN *_unur_hri_clone( const UNUR_GEN *gen );
 UNUR_GEN *_unur_ninv_clone( const UNUR_GEN *gen );
 UNUR_GEN *_unur_srou_clone( const UNUR_GEN *gen );
 UNUR_GEN *_unur_ssr_clone( const UNUR_GEN *gen );

@@ -1604,9 +1604,9 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
     dfx   = PDF(x);   /* update derivative sof fx at x  */
     fxabs = fabs(fx); /* update absolute value of fx    */
  
-
     /* stopping criterion */
-    if ( fabs(x-xold) <= fabs(x) * GEN.rel_x_resolution ){
+    if ( fabs(x-xold) <= fabs(x) * GEN.rel_x_resolution 
+         && fabs(fx) < GEN.rel_x_resolution ) {
       break;   /* no improvement with newton-step -> finished */
     }
 

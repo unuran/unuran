@@ -12,14 +12,17 @@
 # the file stringpars.c
 #
 
-# where relevant information is stored
+# where relevant information is stored:
 $Methinfopath = "../src/methods/";
 $Distinfofile = "../src/distributions/unuran_distributions.h";
 
-
-open Outfile,  "> ./stringpars.c" or die "can't open file: $!";
+# from the Basefile and the info found in the source of UNURAN
+# the file Outfile is generated
 open Basefile, "< ./stringpars.c.base" or die "can't open file: $!";
+open Outfile,  "> ./stringpars.c"      or die "can't open file: $!";
 
+
+# go through the basefile
 while ( <Basefile> ){
 
     if ( $_ !~/^s*=INPUT/){
@@ -47,11 +50,11 @@ while ( <Basefile> ){
 close Basefile;
 close Outfile;
 
-# #######################################################################################
+# ##################################################################
 #
 # macro assignments: known methods -- integers
 #
-# #######################################################################################
+# ##################################################################
 sub known_methods{
 
     #initialize counter
@@ -287,3 +290,7 @@ sub method_info{
 
     close INFILE;
 }
+
+
+
+

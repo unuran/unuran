@@ -182,7 +182,7 @@ sub method_info{
     } # end of foreach-loop
 
     print Outfile "{\n\t\t\tmethod = UNKNOWN;\n";
-    print Outfile "\t\t\tfprintf(stderr, \"Unknown method\\n\");\n";
+    print Outfile "\t\t\tfprintf(stderr, \"ERROR: Unknown method: %s\\n\",value);\n";
     print Outfile "\t\t\tbreak;\n\t\t}\n\t}\n";
 
 

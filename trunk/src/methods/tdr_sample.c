@@ -101,6 +101,7 @@ _unur_tdr_gw_sample( struct unur_gen *gen )
      /*      U ~ U(- area below right hat,0)                                 */
      /*----------------------------------------------------------------------*/
 { 
+  UNUR_URNG *urng;             /* pointer to uniform random number generator */
   struct unur_tdr_interval *iv, *pt;
   double U, V, X;
   double sqx, hx, fx;
@@ -109,10 +110,13 @@ _unur_tdr_gw_sample( struct unur_gen *gen )
   /* check arguments */
   CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_TDR_GEN,0.);
 
+  /* main URNG */
+  urng = gen->urng;
+
   while (1) {
 
     /* sample from U(0,1) */
-    U = _unur_call_urng(gen->urng);
+    U = _unur_call_urng(urng);
 
     /* look up in guide table and search for segment */
     iv =  GEN.guide[(int) (U * GEN.guide_size)];
@@ -156,7 +160,7 @@ _unur_tdr_gw_sample( struct unur_gen *gen )
 
       /* accept or reject */
       hx = pt->fx * exp(pt->dTfx*(X - pt->x));    /* value of hat at x */   
-      V = _unur_call_urng(gen->urng) * hx;  /* a random point between 0 and hat at x */
+      V = _unur_call_urng(urng) * hx;  /* a random point between 0 and hat at x */
       
       /* below mininum of density in interval ? */
       if (V <= iv->fx && V <= iv->next->fx)
@@ -184,7 +188,7 @@ _unur_tdr_gw_sample( struct unur_gen *gen )
       /* accept or reject */
       Thx = pt->Tfx + pt->dTfx * (X - pt->x);     /* transformed hat at x */ 
       hx = 1./(Thx*Thx);
-      V = _unur_call_urng(gen->urng) * hx;  /* a random point between 0 and hat at x */
+      V = _unur_call_urng(urng) * hx;  /* a random point between 0 and hat at x */
 
       /* below mininum of density in interval ? */
       if (V <= iv->fx && V <= iv->next->fx)
@@ -251,6 +255,7 @@ _unur_tdr_gw_sample_check( struct unur_gen *gen )
      /*   return 0.                                                          */
      /*----------------------------------------------------------------------*/
 { 
+  UNUR_URNG *urng;             /* pointer to uniform random number generator */
   struct unur_tdr_interval *iv, *pt;
   double U, V, X;
   double fx, sqx, hx;
@@ -260,10 +265,13 @@ _unur_tdr_gw_sample_check( struct unur_gen *gen )
   /* check arguments */
   CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_TDR_GEN,0.);
 
+  /* main URNG */
+  urng = gen->urng;
+
   while (1) {
 
     /* sample from U(0,1) */
-    U = _unur_call_urng(gen->urng);
+    U = _unur_call_urng(urng);
 
     /* look up in guide table and search for segment */
     iv =  GEN.guide[(int) (U * GEN.guide_size)];
@@ -360,7 +368,7 @@ _unur_tdr_gw_sample_check( struct unur_gen *gen )
 #endif
 
     /* accept or reject */
-    V = _unur_call_urng(gen->urng) * hx;  /* a random point between 0 and hat at X */
+    V = _unur_call_urng(urng) * hx;  /* a random point between 0 and hat at X */
 
     /* below mininum of density in interval ? */
     if (V <= iv->fx && V <= iv->next->fx)
@@ -585,6 +593,7 @@ _unur_tdr_ps_sample_check( struct unur_gen *gen )
      /*                                                                      */
      /*----------------------------------------------------------------------*/
 {
+  UNUR_URNG *urng;             /* pointer to uniform random number generator */
   struct unur_tdr_interval *iv;
   double U, V, X;
   double fx, hx, Thx, sqx;
@@ -594,10 +603,13 @@ _unur_tdr_ps_sample_check( struct unur_gen *gen )
   /* check arguments */
   CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_TDR_GEN,0.);
 
+  /* main URNG */
+  urng = gen->urng;
+
   while (1) {
 
     /* sample from U(0,1) */
-    U = _unur_call_urng(gen->urng);
+    U = _unur_call_urng(urng);
 
     /* look up in guide table and search for segment */
     iv =  GEN.guide[(int) (U * GEN.guide_size)];
@@ -653,7 +665,7 @@ _unur_tdr_ps_sample_check( struct unur_gen *gen )
     } /* end switch */
 
     /* accept or reject */
-    V = _unur_call_urng(gen->urng);
+    V = _unur_call_urng(urng);
 
     /* squeeze rejection */
     if (V <= iv->sq)
@@ -777,6 +789,7 @@ _unur_tdr_ia_sample( struct unur_gen *gen )
      /*      U ~ U(-area below left hat, area below left hat)                */
      /*----------------------------------------------------------------------*/
 { 
+  UNUR_URNG *urng;             /* pointer to uniform random number generator */
   struct unur_tdr_interval *iv;
   int use_ia;
   double U, V, X;
@@ -785,10 +798,13 @@ _unur_tdr_ia_sample( struct unur_gen *gen )
   /* check arguments */
   CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_TDR_GEN,0.);
 
+  /* main URNG */
+  urng = gen->urng;
+
   while (1) {
 
     /* sample from U(0,1) */
-    U = _unur_call_urng(gen->urng);
+    U = _unur_call_urng(urng);
 
     /* look up in guide table and search for segment */
     iv =  GEN.guide[(int) (U * GEN.guide_size)];
@@ -874,7 +890,7 @@ _unur_tdr_ia_sample( struct unur_gen *gen )
     } /* end switch */
 
     /* rejection from region between hat and (proportional) squeeze */
-    V = _unur_call_urng(gen->urng);
+    V = _unur_call_urng(urng);
 
     /* get uniform random number between squeeze(X) and hat(X) */
     V = (iv->sq + (1 - iv->sq) * V) * hx;
@@ -922,6 +938,7 @@ _unur_tdr_ia_sample_check( struct unur_gen *gen )
      /*                                                                      */
      /*----------------------------------------------------------------------*/
 {
+  UNUR_URNG *urng;             /* pointer to uniform random number generator */
   struct unur_tdr_interval *iv;
   int use_ia;
   double U, V, X;
@@ -931,10 +948,13 @@ _unur_tdr_ia_sample_check( struct unur_gen *gen )
   /* check arguments */
   CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_TDR_GEN,0.);
 
+  /* main URNG */
+  urng = gen->urng;
+
   while (1) {
 
     /* sample from U(0,1) */
-    U = _unur_call_urng(gen->urng);
+    U = _unur_call_urng(urng);
 
     /* look up in guide table and search for segment */
     iv =  GEN.guide[(int) (U * GEN.guide_size)];
@@ -1046,7 +1066,7 @@ _unur_tdr_ia_sample_check( struct unur_gen *gen )
       return X;
 
     /* rejection from region between hat and (proportional) squeeze */
-    V = _unur_call_urng(gen->urng);
+    V = _unur_call_urng(urng);
 
     /* get uniform random number between squeeze(X) and hat(X) */
     V = (iv->sq + (1 - iv->sq) * V) * hx;

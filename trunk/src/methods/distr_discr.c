@@ -123,16 +123,16 @@ unur_distr_discr_new( void )
   for (i=0; i<UNUR_DISTR_MAXPARAMS; i++)
     DISTR.params[i] = 0.;
 
-  DISTR.norm_constant = 1.;        /* (log of) normalization constant for p.m.f.
+  DISTR.norm_constant = 1.;        /* (log of) normalization constant for PMF
 				      (initialized to avoid accidently floating
 				      point exception                        */
 
-  /* DISTR.domain[0] = ?;             left boundary of domain                */
-  /* DISTR.domain[1] = ?;             right boundary of domain               */
+  DISTR.trunc[0] = DISTR.domain[0] = 0;         /* left boundary of domain   */
+  DISTR.trunc[1] = DISTR.domain[1] = INT_MAX;   /* right boundary of domain  */
 
   /* DISTR.mode      = 0.;            location of mode                       */
 
-  DISTR.sum     = 1.;              /* sum over p.m.f.                        */
+  DISTR.sum     = 1.;              /* sum over PMF                           */
   DISTR.upd_sum = NULL;            /* funct for computing sum                */
 
   distr->set = 0u;                 /* no parameters set                      */
@@ -472,6 +472,84 @@ unur_distr_discr_get_pmfparams( struct unur_distr *distr, double **params )
 /*---------------------------------------------------------------------------*/
 
 int
+unur_distr_discr_set_domain( struct unur_distr *distr, int left, int right )
+     /*----------------------------------------------------------------------*/
+     /* set the left and right borders of the domain of the distribution     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*   left  ... left boundary point                                      */
+     /*   right ... right boundary point                                     */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   INT_MIN and INT_MAX are interpreted as (minus) infinity            */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, 0 );
+  _unur_check_distr_object( distr, DISCR, 0 );
+
+  /* check new parameter for distribution */
+  if (left >= right) {
+    _unur_error(NULL,UNUR_ERR_DISTR_SET,"domain, left >= right");
+    return 0;
+  }
+
+  DISTR.trunc[0] = DISTR.domain[0] = left;
+  DISTR.trunc[1] = DISTR.domain[1] = right;
+
+  /* changelog */
+  distr->set |= UNUR_DISTR_SET_DOMAIN;
+
+  /* if distr is an object for a standard distribution, this   */
+  /* not the original domain of it. (not a "standard domain")  */
+  /* However, since we have changed the domain, we assume      */
+  /* that this is not a truncated distribution.                */
+  /* At last we have to mark all derived parameters as unknown */
+  distr->set &= ~(UNUR_DISTR_SET_STDDOMAIN |
+		  UNUR_DISTR_SET_TRUNCATED | 
+		  UNUR_DISTR_SET_MASK_DERIVED );
+
+  /* o.k. */
+  return 1;
+
+} /* end of unur_distr_discr_set_domain() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_distr_discr_get_domain( struct unur_distr *distr, int *left, int *right )
+     /*----------------------------------------------------------------------*/
+     /* set the left and right borders of the domain of the distribution     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*   left  ... left boundary point                                      */
+     /*   right ... right boundary point                                     */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   INT_MIN and INT_MAX are interpreted as (minus) infinity            */
+     /*   if no boundaries have been set [0,INT_MAX] is returned.            */
+     /*----------------------------------------------------------------------*/
+{
+  /* in case of error the boundaries are set to +/- INFINITY */
+  *left = 0;
+  *right = INT_MAX;
+
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, 0 );
+  _unur_check_distr_object( distr, DISCR, 0 );
+
+  /* o.k. */
+  *left  = DISTR.domain[0];
+  *right = DISTR.domain[1];
+
+  return 1;
+} /* end of unur_distr_discr_get_domain() */
+
+/*---------------------------------------------------------------------------*/
+
+int
 unur_distr_discr_set_pmfsum( struct unur_distr *distr, double sum )
      /*----------------------------------------------------------------------*/
      /* set sum over p.m.f.                                                  */
@@ -604,7 +682,7 @@ _unur_distr_discr_debug( struct unur_distr *distr, char *genid, int printvector 
   fprintf(log,"%s:\ttype = discrete univariate distribution\n",genid);
   fprintf(log,"%s:\tname = %s\n",genid,distr->name);
 
-  if ( DISTR.n_params > 0 ) {
+  if ( DISTR.pmf ) {
     /* have probability mass function */
     fprintf(log,"%s:\tp.m.f with %d argument(s)\n",genid,DISTR.n_params);
     for( i=0; i<DISTR.n_params; i++ )
@@ -624,20 +702,27 @@ _unur_distr_discr_debug( struct unur_distr *distr, char *genid, int printvector 
     fprintf(log,"\n%s:\n",genid);
   }
 
+  /* domain */
+  if ( DISTR.pmf )
+    /* have probability mass function */
+    fprintf(log,"%s:\tdomain for pmf = (%d, %d)",genid,DISTR.domain[0],DISTR.domain[1]);
 
+  if (DISTR.n_prob>0)
+    /* have probability vector */
+    fprintf(log,"%s:\tdomain for pv = (%d, %d)",genid,DISTR.domain[0],DISTR.domain[0]-1+DISTR.n_prob);
+
+  _unur_print_if_default(distr,UNUR_DISTR_SET_DOMAIN);
+  fprintf(log,"\n%s:\n",genid);
+
+  
   /*      if (distr->set & UNUR_DISTR_SET_MODE) */
   /*        fprintf(log,"%s:\tmode = %g\n",genid,DISTR.mode); */
   /*      else */
   /*        fprintf(log,"%s:\tmode unknown\n",genid); */
   
-  /*    fprintf(log,"%s:\tdomain = (%g, %g)",genid,DISTR.domain[0],DISTR.domain[1]); */
-  /*    _unur_print_if_default(distr,UNUR_DISTR_SET_DOMAIN); */
-  
   /*      fprintf(log,"\n%s:\tsum over p.m.f. = %g",genid,DISTR.sum); */
   /*      _unur_print_if_default(distr,UNUR_DISTR_SET_PMFSUM); */
   
-  fprintf(log,"%s:\n",genid);
-
 } /* end of _unur_distr_discr_debug() */
 
 /*---------------------------------------------------------------------------*/

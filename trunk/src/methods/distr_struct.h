@@ -101,8 +101,9 @@ struct unur_distr_discr {
   int (*upd_sum)(struct unur_distr *distr);  /* funct for computing sum      */
 
   /* other parameters */
-  /** TODO **/
   int domain[2];                /* boundary of domain                        */
+  int trunc[2];                 /* boundary of truncated domain              */
+  /** trunc[] not supported yet **/
 
   int  (*init)(struct unur_par *par,struct unur_gen *gen);
                                 /* pointer to special init routine           */

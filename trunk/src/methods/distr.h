@@ -994,6 +994,32 @@ int unur_distr_discr_get_pmfparams(UNUR_DISTR *distribution,double **params);
    NULL.
 */
 
+int unur_distr_discr_set_domain( UNUR_DISTR *distribution, int left, int right );
+/* 
+   Set the left and right borders of the domain of the
+   distribution. This can also be used truncate an existing
+   distribution. For setting the boundary to +/- infinity use
+   @code{INT_MAX} and @code{INT_MIN}, respectively.
+   If @code{right} is not strictly greater than @code{left} no domain
+   is set and @code{unur_errno} is set to @code{UNUR_ERR_DISTR_SET}.
+   It is allowed to use this call to increase the domain.
+   If the probability vector of the discrete distribution is used,
+   than the right boudary is ignored (and internally set to 
+   left + size of PV - 1).
+   Notice that @code{INT_MAX} and @code{INT_MIN} are interpreted as
+   (minus) infinity.
+   Default is [0,INT_MAX].
+*/
+
+int unur_distr_discr_get_domain( UNUR_DISTR *distribution, int *left, int *right );
+/* 
+   Get the left and right borders of the domain of the
+   distribution. If the domain is not set explicitly 
+   the interval [0,INT_MAX] is assumed and returned.
+   There is no error reported in this case.
+*/
+
+
 /* 
    Derived parameters.
 */   

@@ -41,7 +41,8 @@
 /* Defining infinity                                                         */
 /* (we use the largest possible value to indicate infinity)                  */
 #include <math.h>
-#define UNUR_INFINITY  HUGE_VAL     
+
+#define UNUR_INFINITY      HUGE_VAL     
 
 /*---------------------------------------------------------------------------*/
 /* True and false                                                            */

@@ -232,8 +232,8 @@ _unur_set_params_binomial( UNUR_DISTR *distr, const double *params, int n_params
 
   /* set (standard) domain: [0, n] */
   if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
-    DISTR.domain[0] = 0;             /* left boundary  */
-    DISTR.domain[1] = (int)(n+0.5);  /* right boundary */
+    DISTR.domain[0] = 0;        /* left boundary  */
+    DISTR.domain[1] = nh;       /* right boundary */
   }
 
   return UNUR_SUCCESS;

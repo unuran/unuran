@@ -455,7 +455,7 @@ unur_arou_set_darsfactor( struct unur_par *par, double factor )
 
   return 1;
 
-} /* end of unur_arou_arou_darsfactor() */
+} /* end of unur_arou_set_darsfactor() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -2433,7 +2433,7 @@ _unur_arou_segment_arcmean( struct unur_arou_segment *seg )
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 
-static void
+void
 _unur_arou_debug_init( const struct unur_par *par, const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* write info about generator after setup into logfile                  */
@@ -2518,7 +2518,7 @@ _unur_arou_debug_init( const struct unur_par *par, const struct unur_gen *gen )
 
 /*****************************************************************************/
 
-static void 
+void 
 _unur_arou_debug_dars_start( const struct unur_par *par, const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* print header before runniung DARS into logfile                       */
@@ -2547,7 +2547,7 @@ _unur_arou_debug_dars_start( const struct unur_par *par, const struct unur_gen *
 
 /*---------------------------------------------------------------------------*/
 
-static void
+void
 _unur_arou_debug_dars( const struct unur_par *par, const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* print infor after generator has run DARS into logfile                */
@@ -2578,7 +2578,7 @@ _unur_arou_debug_dars( const struct unur_par *par, const struct unur_gen *gen )
 
 /*****************************************************************************/
 
-static void
+void
 _unur_arou_debug_free( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* write info about generator before destroying into logfile            */
@@ -2606,7 +2606,7 @@ _unur_arou_debug_free( const struct unur_gen *gen )
 
 /*****************************************************************************/
 
-static void
+void
 _unur_arou_debug_segments( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* write list of segments into logfile                                  */
@@ -2688,7 +2688,7 @@ _unur_arou_debug_segments( const struct unur_gen *gen )
 
 /*****************************************************************************/
 
-static void
+void
 _unur_arou_debug_split_start( const struct unur_gen *gen,
 			      const struct unur_arou_segment *seg, 
 			      double x, double fx )
@@ -2739,7 +2739,7 @@ _unur_arou_debug_split_start( const struct unur_gen *gen,
 
 /*****************************************************************************/
 
-static void
+void
 _unur_arou_debug_split_stop( const struct unur_gen *gen, 
 			     const struct unur_arou_segment *seg_left,
 			     const struct unur_arou_segment *seg_right )
@@ -2832,7 +2832,7 @@ _unur_arou_debug_split_stop( const struct unur_gen *gen,
 
 /*****************************************************************************/
 
-static void
+void
 _unur_arou_debug_printratio( double v, double u, char *string )
      /*----------------------------------------------------------------------*/
      /* evaluate ratio v/u and write result on string.                       */

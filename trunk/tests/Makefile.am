@@ -7,6 +7,7 @@ INCLUDES = \
  -I$(top_srcdir)/src/tests
 
 check_PROGRAMS = \
+ test_functionparser \
  t_distr \
  t_stringparser \
  t_corder \
@@ -89,6 +90,9 @@ run_test_with_Mathematica.c: test_with_Mathematica.m
 
 ## run_test_with_Mathematica_SOURCES = run_test_with_Mathematica.c test_with_Mathematica.c 
 ## run_test_with_Mathematica_LDADD = $(top_builddir)/src/libunuran.a
+
+test_functionparser_LDADD = $(top_builddir)/src/libunuran.a
+
 
 # run tests for methods ...
 

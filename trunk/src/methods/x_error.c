@@ -135,6 +135,8 @@ unur_get_strerror ( const int unur_errno )
     return "(parser) syntax error";
   case UNUR_ERR_STR_INVALID:
     return "(parser) invalid parameter";
+  case UNUR_ERR_FSTR_SYNTAX:
+    return "(function parser) syntax error";
 
     /** misc **/
   case UNUR_ERR_ROUNDOFF:

@@ -54,6 +54,10 @@ struct unur_distr_cont {
   double domain[2];             /* boundary of domain                        */
   double trunc[2];              /* boundary of truncated domain              */
 
+  struct ftreenode *pdftree;    /* pointer to function tree for PDF          */
+  struct ftreenode *dpdftree;   /* pointer to function tree for dPDF         */
+  struct ftreenode *cdftree;    /* pointer to function tree for CDF          */
+
   int (*set_params)(struct unur_distr *distr, double *params, int n_params );
                                 /* function for setting parameters and domain*/
   int (*upd_mode)(struct unur_distr *distr);

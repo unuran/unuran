@@ -392,7 +392,7 @@ static struct symbols symbol[] = {
 
   /* arithmetic operators */
   {"+"   , S_ADD_OP  , 2, 0.0 , v_plus   , d_add   },
-  {"-"   , S_ADD_OP  , 3, 0.0 , v_minus  , d_add   },
+  {"-"   , S_ADD_OP  , 2, 0.0 , v_minus  , d_add   },
   {"*"   , S_MUL_OP  , 4, 0.0 , v_mul    , d_mul   },
   {"/"   , S_MUL_OP  , 4, 0.0 , v_div    , d_div   },
   {"^"   , S_HPR_OP  , 5, 0.0 , v_power  , d_power },
@@ -492,8 +492,9 @@ struct concat {
 /** Prototypes                                                              **/
 /*****************************************************************************/
 
+static struct ftreenode *_unur_fstr_2_tree (const char *functstr, int withDefFunct);
 /*---------------------------------------------------------------------------*/
-/* Evaluate function tree                                                    */
+/* Compute funtion tree from string.                                         */
 /*---------------------------------------------------------------------------*/
 
 static double _unur_fstr_eval_node (const struct ftreenode *node, const double x);
@@ -771,6 +772,48 @@ _unur_fstr2tree (const char *functstr)
      /* error:                                                               */
      /*   return NULL                                                        */
      /*----------------------------------------------------------------------*/
+{
+  return _unur_fstr_2_tree( functstr, FALSE );
+} /* end of _unur_fstr2tree() */
+
+/*---------------------------------------------------------------------------*/
+
+struct ftreenode *
+_unur_fstr2tree_DefFunct (const char *functstr)
+     /*----------------------------------------------------------------------*/
+     /* Compute funtion tree from string.                                    */
+     /* (Same as _unur_fstr2tree() but string must start with "f(x)=".       */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   functstr ... string containing function definition                 */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to root of function tree (function term only!)             */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  return _unur_fstr_2_tree( functstr, TRUE );
+} /* end of _unur_fstr2tree_DefFunct() */
+
+/*---------------------------------------------------------------------------*/
+
+struct ftreenode *
+_unur_fstr_2_tree (const char *functstr, int withDefFunct)
+     /*----------------------------------------------------------------------*/
+     /* Compute funtion tree from string.                                    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   functstr     ... string containing function definition             */
+     /*   withDefFunct ... whether string is assumed to start with "f(x)="   */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to root of function tree                                   */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
 { 
   struct parser_data *pdata;
   struct ftreenode *root;
@@ -803,7 +846,16 @@ _unur_fstr2tree (const char *functstr)
   }
 
   /* parse list of token */
-  root = _unur_FunctDefinition(pdata);
+  if (withDefFunct) {
+    struct ftreenode *tmp = _unur_FunctDefinition(pdata);
+    root = tmp->right;
+    /* clear left subtree */
+    _unur_fstr_free(tmp->left);
+    free(tmp);
+  }
+  else {
+    root = _unur_Expression(pdata);
+  }
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
@@ -842,10 +894,7 @@ _unur_fstr_eval_tree (const struct ftreenode *root, const double x)
      /*   result of computation                                              */
      /*----------------------------------------------------------------------*/
 {  
-  if (root->symbol[0] == '=')    /** TODO: gefaehrlich wegen "==" **/
-    return _unur_fstr_eval_node( root->right, x );
-  else
-    return _unur_fstr_eval_node( root, x );
+  return _unur_fstr_eval_node( root, x );
 } /* end of _unur_fstr_eval_tree() */
 
 /*---------------------------------------------------------------------------*/
@@ -916,13 +965,7 @@ _unur_fstr_make_derivative ( const struct ftreenode *root )
   /* check arguments */
   _unur_check_NULL( GENTYPE,root,NULL );
 
-  if (root->symbol[0] == '=') {    /** TODO: gefaehrlich wegen "==" **/
-    /* copy left hand side of function definition */
-    deriv = _unur_fstr_create_node("=",0.,root->token,NULL,NULL);
-    deriv->left = _unur_fstr_dup_tree(root->left);
-    /* derivative of right branch */
-    deriv->right = (root->right) ? (*symbol[root->right->token].dcalc)(root->right) : NULL;
-  }
+  deriv = (root) ? (*symbol[root->token].dcalc)(root) : NULL;
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
@@ -2423,7 +2466,6 @@ double v_sgn    (double l, double r) { return ((r<0.) ? -1. : ((r>0.) ? 1. : 0.)
 struct ftreenode *
 d_dummy (const struct ftreenode *node)
 {
-  /** error **/
   return NULL;
 }
 /*---------------------------------------------------------------------------*/
@@ -2557,6 +2599,17 @@ d_power (const struct ftreenode *node)
      /*                              /   \                                   */
      /*                             X    (Y-1)                               */
      /*                                                                      */
+     /* case: l constant                                                     */
+     /* (l^r)' = r' * l^r * ln(l)                                            */
+     /*                                                                      */
+     /*        '^'                '*'                                        */
+     /*       /   \     ==>      /   \                                       */
+     /*      X     Y            Y'   _'*'_                                   */
+     /*     / \                     /     \                                  */
+     /*  NULL  NULL              "ln"     '^'                                */
+     /*                          /  \    /   \                               */
+     /*                       NULL   X  X     Y                              */
+     /*                                                                      */
      /* otherwise:                                                           */
      /* (l^r)' = l^(r-1) * ( r * l' + l * ln(l) * r' )                       */
      /*                                                                      */
@@ -2575,10 +2628,18 @@ d_power (const struct ftreenode *node)
 {
   struct ftreenode *left = node->left;
   struct ftreenode *right = node->right;
-  struct ftreenode *d_left;
+  struct ftreenode *d_left, *d_right;
   struct ftreenode *br_right;
+  struct ftreenode *dup_node;
 
   if (right->type == S_UCONST || right->type == S_SCONST ) {
+     /*    '^'                  '*'                                          */
+     /*   /   \       ==>      /   \                                         */
+     /*  X     Y              X'   '*'                                       */
+     /*       / \                 /   \                                      */
+     /*   NULL   NULL            Y    '^'                                    */
+     /*                              /   \                                   */
+     /*                             X    (Y-1)                               */
     /* derivative of left branch */
     d_left  = (left)  ? (*symbol[left->token].dcalc) (left)  : NULL;
     /* make a copy of the branches of node */
@@ -2592,7 +2653,43 @@ d_power (const struct ftreenode *node)
     return _unur_fstr_create_node("*",0.,s_mul,d_left,br_right);
   }
 
+  else if (left->type == S_UCONST || left->type == S_SCONST ) {
+     /*        '^'                '*'                                        */
+     /*       /   \     ==>      /   \                                       */
+     /*      X     Y            Y'   _'*'_                                   */
+     /*     / \                     /     \                                  */
+     /*  NULL  NULL              "ln"     '^'                                */
+     /*                          /  \    /   \                               */
+     /*                       NULL   X  X     Y                              */
+     /*                                                                      */
+    /* find symbol "ln" */
+    int s_ln = _unur_fstr_find_symbol("ln",_ans_start,_ans_end);
+
+    /* derivative of right branch */
+    d_right = (right) ? (*symbol[right->token].dcalc) (right)  : NULL;
+    /* make copies of branches */
+    left = _unur_fstr_dup_tree(node->left);
+    dup_node = _unur_fstr_dup_tree(node);
+    /* make right branch */
+    br_right = _unur_fstr_create_node("ln",0.,s_ln,NULL,left);
+    br_right = _unur_fstr_create_node("*",0.,s_mul,br_right,dup_node);
+    /* subtree */
+    return _unur_fstr_create_node("*",0.,s_mul,d_right,br_right);
+  }
+
   else {
+     /*    '^'                  ______'*'_____                               */
+     /*   /   \       ==>      /              \                              */
+     /*  X     Y             '^'            __'+'__                          */
+     /*                     /   \          /       \                         */
+     /*                    X    '-'      '*'       '*'                       */
+     /*                        /   \    /   \     /   \                      */
+     /*                       Y     1  Y     X'  X    '*'                    */
+     /*                                              /   \                   */
+     /*                                             Y'   "ln"                */
+     /*                                                 /    \               */
+     /*                                             NULL      X              */
+     /*                                                                      */
     /** TODO **/
     return NULL;
   }
@@ -2644,6 +2741,7 @@ d_ln    (const struct ftreenode *node)
 /*---------------------------------------------------------------------------*/
 struct ftreenode *
 d_log   (const struct ftreenode *node)
+     /* case: l = const                                                      */
      /* (log(l,r))' = r' / (r * ln(l))                                       */
      /*                                                                      */
      /*     "log"            '/'                                             */
@@ -2653,30 +2751,38 @@ d_log   (const struct ftreenode *node)
      /*                       Y    "ln"                                      */
      /*                            /  \                                      */
      /*                         NULL   X                                     */
+     /*                                                                      */
+     /* otherwise:                                                           */
+     /*                                                                      */
+     /*                                                                      */
+     /*                                                                      */
+     /*                                                                      */
+     /*                                                                      */
 {
   struct ftreenode *left = node->left;
   struct ftreenode *right = node->right;
   struct ftreenode *d_right;
   struct ftreenode *br_right, *sub_right;
 
-  /* find symbol "ln" */
-  int s_ln = _unur_fstr_find_symbol("ln",_ans_start,_ans_end);
+  if (left->type == S_UCONST || left->type == S_SCONST ) {
+    /* find symbol "ln" */
+    int s_ln = _unur_fstr_find_symbol("ln",_ans_start,_ans_end);
+    /* derivative of right branch */
+    d_right = (right) ? (*symbol[right->token].dcalc)(right) : NULL;
+    /* make a copies of both branches of node */
+    left  = _unur_fstr_dup_tree(node->left);
+    right = _unur_fstr_dup_tree(node->right);
+    /* right branch of new tree */
+    sub_right = _unur_fstr_create_node("ln",0.,s_ln,NULL,left);
+    br_right = _unur_fstr_create_node("*",0.,s_mul,right,sub_right);
+    /* subtree */
+    return _unur_fstr_create_node("/",0.,s_div,d_right,br_right);
+  }
 
-  /* derivative of right branch */
-  d_right = (right) ? (*symbol[right->token].dcalc)(right) : NULL;
-
-  /* make a copies of both branches of node */
-  left  = _unur_fstr_dup_tree(node->left);
-  right = _unur_fstr_dup_tree(node->right);
-
-  /* right branch of new tree */
-  sub_right = _unur_fstr_create_node("ln",0.,s_ln,NULL,left);
-  br_right = _unur_fstr_create_node("*",0.,s_mul,right,sub_right);
-
-  /* subtree */
-  return _unur_fstr_create_node("*",0.,s_mul,d_right,br_right);
-
-  return NULL;
+  else {
+    /** TODO **/
+    return NULL;
+  }
 }
 /*---------------------------------------------------------------------------*/
 struct ftreenode *
@@ -2981,9 +3087,16 @@ _unur_fstr_node2string ( struct concat *output, const struct ftreenode *node,
 
     /* left branch */
     if (left) {
-      parenthesis = ( (symb && symb[0]=='^' && left->type==S_UCONST && left->val<0.) ||
-		      ( priority > symbol[left->token].info && 
-			left->type != S_SFUNCT && left->type != S_UFUNCT ) );
+      /* always use parenthesis ... */
+      parenthesis = 1;
+      /* ... except ... */
+      if (left->type == S_SCONST || left->type == S_UCONST || 
+	  left->type == S_SFUNCT || left->type == S_UFUNCT || 
+	  ( left->type == S_UIDENT && left->val >= 0. ) ||
+	  priority < symbol[left->token].info ||
+	  ( priority == symbol[left->token].info && 
+	    (type == S_ADD_OP) ) )
+	parenthesis = 0;
       if (parenthesis) _unur_fstr_print( output, "(", 0. );
       _unur_fstr_node2string(output,left,variable,function);
       if (parenthesis) _unur_fstr_print( output, ")", 0. );
@@ -2996,9 +3109,14 @@ _unur_fstr_node2string ( struct concat *output, const struct ftreenode *node,
 
     /* right branch */
     if (right) {
-      parenthesis = ( (symb && symb[0]=='^' && right->type==S_UCONST && right->val<0.) ||
-		      ( priority > symbol[right->token].info && 
-			right->type != S_SFUNCT && right->type != S_UFUNCT) );
+      /* always use parenthesis ... */
+      parenthesis = 1;
+      /* ... except ... */
+      if (right->type == S_SCONST || right->type == S_UCONST ||
+	  right->type == S_SFUNCT || right->type == S_UFUNCT || 
+	  ( right->type == S_UIDENT && right->val >= 0. ) ||
+	  priority < symbol[right->token].info )
+	parenthesis = 0;
       if (parenthesis) _unur_fstr_print( output, "(", 0. );
       _unur_fstr_node2string(output,right,variable,function);
       if (parenthesis) _unur_fstr_print( output, ")", 0. );
@@ -3075,7 +3193,7 @@ _unur_fstr_error_scan (const struct parser_data *pdata, const char *symb)
   int wsp;
   
   /* set unuran error code */
-  unur_errno = UNUR_ERR_STR_UNKNOWN;
+  unur_errno = UNUR_ERR_FSTR_SYNTAX;
 
   /* print unknown symbol */
   _unur_stream_printf_simple ( "%s: error: unknown symbol `%s'\n",GENTYPE,symb);
@@ -3112,6 +3230,9 @@ _unur_fstr_error_parse ( struct parser_data *pdata, int errno )
 { 
   int i;
 
+  /* set unuran error code */
+  unur_errno = UNUR_ERR_FSTR_SYNTAX;
+
   _unur_stream_printf_simple ( "%s: error: %s\n",GENTYPE,_unur_fstr_error_code(errno));
 
   _unur_stream_printf_simple ( "%s: ",GENTYPE );
@@ -3124,9 +3245,6 @@ _unur_fstr_error_parse ( struct parser_data *pdata, int errno )
 
   _unur_stream_printf_simple ( "\n%s:\n",GENTYPE );
 
-  /* set unuran error code */
-  unur_errno = UNUR_ERR_STR_UNKNOWN;
-  
   /* set parser error */
   if (!pdata->errno) pdata->errno = errno;
 
@@ -3327,14 +3445,14 @@ _unur_fstr_debug_deriv (const struct ftreenode *funct, const struct ftreenode *d
 
   fprintf(log,"%s: Derivative df/dx of \n",GENTYPE);
   str = _unur_fstr_tree2string(funct,"x","f");
-  fprintf(log,"%s:   %s\n",GENTYPE,str);
+  fprintf(log,"%s:  f(x) = %s\n",GENTYPE,str);
   free (str);
 
   str = _unur_fstr_tree2string(deriv,"x","df");
-  fprintf(log,"%s:   %s\n",GENTYPE,str);
+  fprintf(log,"%s:  f'(x) = %s\n",GENTYPE,str);
   free (str);
 
-  _unur_fstr_debug_tree(NULL,deriv);
+  /*    _unur_fstr_debug_tree(NULL,deriv); */
 
   fprintf(log,"%s:\n",GENTYPE);
 

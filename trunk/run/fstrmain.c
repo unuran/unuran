@@ -16,20 +16,18 @@ int main()
 /*    double          argument; */
   double          value;
 
-  char fstr[MAXLENGTH] = "f(x) = -exp(x-3.) +  ln(2*3-5) + pi + x + 3 * x + pi + 1 + 3.4 * x^2 - 5 * x^4 + 365.4 + ln(x) + not(x>9) + log(2,exp(x)) + 1.5e-1-1.098612 + (x < 10^2)    ";
+#if 0
+  char fstr[MAXLENGTH] = "f(x) = -exp(x-3.) +  ln(2*3-5) + pi + x + 3 * x + pi + 1 + 3.4 * x^2 - (5 * x^4 + 365.4 + ln(x) + not(x>9) + log(2,exp(x)) + 1.5e-1-1.098612) + (x < 10^2)    ";
 
+  parsetree = _unur_fstr2tree_DefFunct(fstr);
 
+#else
 
-
-/*    _unur_fstr_init(); */
-  
-  /* Einlesen einer Funktion als string */
-/*    printf("\n\nFunktion eingeben:\n"); */
-  /*       readln(input_string); */
-  /*       if (strcmp(input_string,"") == 0) break; */
-  /*       parsetree = _unur_fstr2tree(input_string,&errcode,&errpos); */
+  char fstr[MAXLENGTH] = "-exp(x-3.) +  ln(2*3-5) + pi + x + 3 * x + pi + 1 + 3.4 * x^2 - (5 * x^4 + 365.4 + ln(x) + not(x>9) + log(2,exp(x)) + 1.5e-1-1.098612) + (x < 10^2)    ";
 
   parsetree = _unur_fstr2tree(fstr);
+
+#endif
     
   if  (parsetree == NULL)  {  
     printf("Fehler!\n");
@@ -57,25 +55,6 @@ int main()
 
 
   dev_tree = _unur_fstr_make_derivative(parsetree);
-
-  /* if (value==nan) {
-     printf("Fehler\n");
-     break; }
-  */     
-
-  /*-----------------------------------------------------------------*/
-  /* Stringausgabe    */
-
-/*    Ntree2string(parsetree,input_string); */
-/*    printf("\nParse-Baum als String:\n%s\n",input_string);  */
-  /*-----------------------------------------------------------------*/
-  /*  Ableitung */
-
-  /*       readln(input_string); */
-    
-  /*     show_symb_tab(); */
-
-/*    printf("\n Wert: %f \n",value); */
 
    
   /* Speicher fuer tree freigeben */

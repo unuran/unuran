@@ -92,7 +92,9 @@ int unur_cstd_set_variant( UNUR_PAR *parameters, unsigned variant );
    If the selected variant number is not implemented, this call has no effect.
 */
 
-int unur_cstd_chg_param( UNUR_GEN *gen, double *params, int n_params );
+/*...........................................................................*/
+
+int unur_cstd_chg_param( UNUR_GEN *generator, double *params, int n_params );
 /* 
    Change array of parameters of distribution in given generator object.
    Notice that it is not possible to change the number of parameters.
@@ -103,7 +105,7 @@ int unur_cstd_chg_param( UNUR_GEN *gen, double *params, int n_params );
    (It is not required to call (=>) unur_reinit() afterwards.)
 */
 
-int unur_cstd_chg_domain( struct unur_gen *gen, double left, double right );
+int unur_cstd_chg_domain( UNUR_GEN *generator, double left, double right );
 /* 
    Change left and right border of the domain of the (truncated) distribution.
    This is only possible of the inversion method is used.

@@ -102,4 +102,5 @@ MAINTAINERCLEANFILES = \
  unuran-ref.html \
  unuran-ref.txt \
  unuran-ref.pdf \
+ mdate-sh \
  $(texi_generated)

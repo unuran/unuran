@@ -45,7 +45,14 @@
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
-/* include main header file                                                  */
+/* include main header files                                                  */
+
+#include <float.h>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#include <config.h>
 #include <unuran.h>
 
 #include <unuran_errno.h>

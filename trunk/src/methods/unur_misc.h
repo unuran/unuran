@@ -45,6 +45,12 @@
 #include <stdio.h>
 
 /*---------------------------------------------------------------------------*/
+/* Defining infinity                                                         */
+/* (we use the largest possible value to indicate infinity)                  */
+#include <math.h>
+#define UNUR_INFINITY  HUGE_VAL     
+
+/*---------------------------------------------------------------------------*/
 /* set debugging flag for generator                                          */
 int unur_set_debug( struct unur_par *parameter, unsigned debug );
 int unur_set_default_debug( struct unur_par *parameter, unsigned debug );

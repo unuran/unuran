@@ -37,21 +37,6 @@
 #define __UNURAN_CONFIG_H_SEEN
 /*---------------------------------------------------------------------------*/
 
-#include <config.h> /* ??????? */
-
-
-/** falscher platz !! **/
-#include <float.h>
-#include <stdlib.h>
-/*---------------------------------------------------------------------------*/
-/* Defining infinity                                                         */
-/* (we use the largest possible value to indicate infinity)                  */
-#include <math.h>
-#define UNUR_INFINITY  HUGE_VAL     
-
-
-
-
 /*---------------------------------------------------------------------------*/
 /* write info about generator and trace of generation into logfile.          */
 #define UNUR_ENABLE_LOGGING

@@ -42,7 +42,7 @@
 #define __SOURCE_DISTRIBUTIONS_LIB_H_SEEN
 /*---------------------------------------------------------------------------*/
 
-#include <unuran_config.h>
+#include <source_unuran.h>
 #include <source_stddistr.h>
 #include <source_specfunct.h>
 #include <unuran_distributions.h>

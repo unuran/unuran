@@ -11,6 +11,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include <stdio.h>
+#include <malloc.h>
 
 #include <unuran.h>
 #include <unuran_distributions.h>
@@ -364,8 +365,8 @@ int main()
 #endif
 
 #if 1
-  fpar[0] = 10.;
-  distr_xxx = unur_distr_geometric(fpar,2);
+  fpar[0] = 0.2;
+  distr_xxx = unur_distr_geometric(fpar,1);
   par = unur_dstd_new(distr_xxx);
   unur_run_tests(par,RUN_TESTS);
 #endif

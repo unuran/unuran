@@ -117,18 +117,7 @@ unur_get_dimension( struct unur_gen *gen )
   /* check arguments */
   CHECK_NULL(gen,0);
 
-  switch (gen->method) {
-  case UNUR_METH_RECT:
-    COOKIE_CHECK(gen,CK_RECT_GEN,0);
-    return gen->data.rect.dim;
-    break;
-  default:
-    /* method unknown assume dim = 1 */
-    /** TODO: distinguish between univariate --> dim = 1 and
-	unknown multivariate **/
-    return 1.;
-  }
-
+  return (gen->distr.dim);
 } /* end of unur_get_dimension() */
 
 /*---------------------------------------------------------------------------*/

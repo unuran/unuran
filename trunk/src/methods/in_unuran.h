@@ -106,7 +106,6 @@ typedef int UNUR_VFUNCT_CVEC(double *result, double *x, struct unur_distr *distr
 /* methods for continuous multivariate distributions */
 #include <vmt.h>
 #include <vempk.h>
-#include <rect.h>
 
 /* wrapper for special generators for standard distributions */
 #include <cstd.h>     /* continuous */

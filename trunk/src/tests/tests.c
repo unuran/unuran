@@ -200,10 +200,6 @@ _unur_print_method( struct unur_par *par )
     COOKIE_CHECK(par,CK_UTDR_PAR,0);
     printf("METHOD:\t\ttransformed density rejection, 3-point method (UTDR)\n");
     break;
-  case UNUR_METH_RECT:
-    COOKIE_CHECK(par,CK_RECT_PAR,0);
-    printf("METHOD:\t\tuniformly distributed in hypercube (RECT)\n");
-    break;
   case UNUR_METH_CSTD:
     COOKIE_CHECK(par,CK_CSTD_PAR,0);
     printf("METHOD:\t\tspecial (CSTD)\n");

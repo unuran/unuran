@@ -83,8 +83,6 @@
 #define CK_VMT_GEN       0x00200011u
 #define CK_VEMPK_PAR     0x00100020u
 #define CK_VEMPK_GEN     0x00100021u
-#define CK_RECT_PAR      0x00200090u
-#define CK_RECT_GEN      0x00200091u
 
 #define CK_CSTD_PAR      0x10000010u
 #define CK_CSTD_GEN      0x10000011u

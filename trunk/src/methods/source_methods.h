@@ -77,7 +77,6 @@
 
 #define UNUR_METH_VMT      0x40010000u
 #define UNUR_METH_VEMPK    0x40020000u
-#define UNUR_METH_RECT     0x40080000u
 
 /* generators for standard distributions */
 #define UNUR_METH_CSTD     0x2000f100u   /* is of type UNUR_METH_CONT !!  */

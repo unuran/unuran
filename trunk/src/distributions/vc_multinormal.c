@@ -92,7 +92,9 @@ static const char distr_name[] = "multinormal";
 /* function prototypes                                                       */
 
     static double _unur_pdf_multinormal( const double *x, const UNUR_DISTR *distr );
-    static int _unur_dpdf_multinormal( double *result, const double *x, const UNUR_DISTR *distr );
+    static double _unur_logpdf_multinormal( const double *x, const UNUR_DISTR *distr );
+/*     static int _unur_dpdf_multinormal( double *result, const double *x, const UNUR_DISTR *distr ); */
+    static int _unur_dlogpdf_multinormal( double *result, const double *x, const UNUR_DISTR *distr );
 /** TODO:
     static int _unur_upd_mode_multinormal( UNUR_DISTR *distr );
     static int _unur_upd_area_multinormal( UNUR_DISTR *distr );
@@ -102,6 +104,14 @@ static const char distr_name[] = "multinormal";
 
 double
 _unur_pdf_multinormal( const double *x, const UNUR_DISTR *distr )
+{ 
+  return exp( _unur_logpdf_multinormal( x, distr ) );
+} /* end of _unur_pdf_multinormal() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_logpdf_multinormal( const double *x, const UNUR_DISTR *distr )
 { 
 #define idx(a,b) ((a)*dim+(b))
 
@@ -118,7 +128,7 @@ _unur_pdf_multinormal( const double *x, const UNUR_DISTR *distr )
     /* standard form */
     xx=0.;
     for (i=0; i<dim; i++) { xx += x[i]*x[i]; }
-    return exp(-xx/2. - LOGNORMCONSTANT);  
+    return (-xx/2. - LOGNORMCONSTANT);  
   }
 
   /* general form */
@@ -131,7 +141,7 @@ _unur_pdf_multinormal( const double *x, const UNUR_DISTR *distr )
     /* maybe it would be better to use the variable "result" for the function-value */
     /* and the return-value to indicate UNUR_SUCCESS or UNUR_FAILURE like in the */
     /* evaluation of _unur_dpdf_multinormal() ? */
-    return -1.;
+    return UNUR_INFINITY;
   }
 
   mean = DISTR.mean;
@@ -146,20 +156,19 @@ _unur_pdf_multinormal( const double *x, const UNUR_DISTR *distr )
     xx += (x[i]-mean[i])*cx;
   }
   
-  return exp(-xx/2. - LOGNORMCONSTANT);
+  return (-xx/2. - LOGNORMCONSTANT);
 
 #undef idx
-} /* end of _unur_pdf_multinormal() */
+} /* end of _unur_logpdf_multinormal() */
 
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_dpdf_multinormal( double *result, const double *x, const UNUR_DISTR *distr )
+_unur_dlogpdf_multinormal( double *result, const double *x, const UNUR_DISTR *distr )
 {
 #define idx(a,b) ((a)*dim+(b))
 
   int i,j, dim;
-  double fx;
   double *mean;
   const double *covar_inv;
     
@@ -173,20 +182,16 @@ _unur_dpdf_multinormal( double *result, const double *x, const UNUR_DISTR *distr
     return UNUR_FAILURE;
   }
   
-  fx = _unur_pdf_multinormal(x, distr);
-
   for (i=0; i<dim; i++) {
-    result[i]=0;
-    for (j=0; j<dim; j++) {
-      result[i] += (x[j]-mean[j]) * (covar_inv[idx(i,j)]+covar_inv[idx(j,i)]);
-    }    
-    result[i] *= - fx / 2.;
+    result[i] = 0.;
+    for (j=0; j<dim; j++) 
+      result[i] += -0.5 * (x[j]-mean[j]) * (covar_inv[idx(i,j)]+covar_inv[idx(j,i)]);
   }
   
   return UNUR_SUCCESS; 
 
 #undef idx
-} /* end of _unur_dpdf_multinormal() */
+} /* end of _unur_dlogpdf_multinormal() */
 
 /*---------------------------------------------------------------------------*/
 #if 0
@@ -253,8 +258,10 @@ unur_distr_multinormal( int dim, const double *mean, const double *covar )
   }
 
   /* functions */
-  DISTR.pdf  = _unur_pdf_multinormal;     /* pointer to p.d.f.               */
-  DISTR.dpdf = _unur_dpdf_multinormal;    /* pointer to derivative of p.d.f. */
+  DISTR.pdf     = _unur_pdf_multinormal;       /* pointer to PDF */
+  DISTR.logpdf  = _unur_logpdf_multinormal;    /* pointer to logPDF */
+  DISTR.dpdf    = _unur_distr_cvec_eval_dpdf_from_dlogpdf;  /* pointer to derivative of PDF */
+  DISTR.dlogpdf = _unur_dlogpdf_multinormal;    /* pointer to derivative of logPDF */
 
   /* set standardized marginal distributions */
   stdmarginal = unur_distr_normal(NULL,0);

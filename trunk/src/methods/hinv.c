@@ -143,6 +143,11 @@ static double _unur_hinv_sample( struct unur_gen *gen );
 /* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/
 
+static double _unur_hinv_eval_approxinvcdf( struct unur_gen *gen, double u );
+/*---------------------------------------------------------------------------*/
+/* evaluate Hermite interpolation of inverse CDF at u.                       */
+/*---------------------------------------------------------------------------*/
+
 static void _unur_hinv_free( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* destroy generator object.                                                 */
@@ -1441,12 +1446,7 @@ _unur_hinv_sample( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 { 
   double U,X;
-  int i;
-
-  /* Notice: 
-     This routine has some parts in common with unur_hinv_estimate_error(). 
-     Whenever changes are made here, also check that subroutine!
-  */
+/*    int i; */
 
   /* check arguments */
   CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_HINV_GEN,0.);
@@ -1454,16 +1454,8 @@ _unur_hinv_sample( struct unur_gen *gen )
   /* sample from U( Umin, Umax ) */
   U = GEN.Umin + _unur_call_urng(gen->urng) * (GEN.Umax - GEN.Umin);
 
-  /* look up in guide table and search for interval */
-  i =  GEN.guide[(int) (GEN.guide_size*U)];
-  while (U > GEN.intervals[i+GEN.order+2])
-    i += GEN.order+2;
-
-  /* rescale uniform random number */
-  U = (U-GEN.intervals[i])/(GEN.intervals[i+GEN.order+2] - GEN.intervals[i]);
-
-  /* evaluate polynome */
-  X = _unur_hinv_eval_polynomial( U, GEN.intervals+i+1, GEN.order );
+  /* compute inverse CDF */
+  X = _unur_hinv_eval_approxinvcdf(gen,U);
 
   if (X<DISTR.trunc[0]) return DISTR.trunc[0];
   if (X>DISTR.trunc[1]) return DISTR.trunc[1];
@@ -1471,6 +1463,85 @@ _unur_hinv_sample( struct unur_gen *gen )
   return X;
 
 } /* end of _unur_hinv_sample() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_hinv_eval_approxinvcdf( struct unur_gen *gen, double u )
+     /*----------------------------------------------------------------------*/
+     /* evaluate Hermite interpolation of inverse CDF at u                   */
+     /* (internal call)                                                      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*   u   ... argument for inverse CDF (0<=u<=1, no validation!)         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   double (approximate inverse CDF)                                   */
+     /*----------------------------------------------------------------------*/
+{ 
+  int i;
+
+  /* check arguments */
+  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_HINV_GEN,0.);
+
+  /* look up in guide table and search for interval */
+  i =  GEN.guide[(int) (GEN.guide_size*u)];
+  while (u > GEN.intervals[i+GEN.order+2])
+    i += GEN.order+2;
+
+  /* rescale uniform random number */
+  u = (u-GEN.intervals[i])/(GEN.intervals[i+GEN.order+2] - GEN.intervals[i]);
+
+  /* evaluate polynome */
+  return _unur_hinv_eval_polynomial( u, GEN.intervals+i+1, GEN.order );
+
+} /* end of _unur_hinv_eval_approxinvcdf() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+unur_hinv_eval_approxinvcdf( struct unur_gen *gen, double u )
+     /*----------------------------------------------------------------------*/
+     /* evaluate Hermite interpolation of inverse CDF at u                   */
+     /* (user call)                                                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*   u   ... argument for inverse CDF (0<=u<=1)                         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   double (approximate inverse CDF)                                   */
+     /*----------------------------------------------------------------------*/
+{ 
+  double x;
+
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, gen, INFINITY );
+  if ( gen->method != UNUR_METH_HINV ) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_INVALID,"");
+    return INFINITY; 
+  }
+  COOKIE_CHECK(gen,CK_HINV_GEN,0.);
+
+  if ( u<0. || u>1.) {
+    _unur_warning(gen->genid,UNUR_ERR_DOMAIN,"argument u not in [0,1]");
+  }
+
+  /* validate argument */
+  if (u<=0.) return DISTR.domain[0];
+  if (u>=1.) return DISTR.domain[1];
+
+  /* compute inverse CDF */
+  x = _unur_hinv_eval_approxinvcdf(gen,u);
+
+  /* validate range */
+  if (x<DISTR.domain[0]) x = DISTR.domain[0];
+  if (x>DISTR.domain[1]) x = DISTR.domain[1];
+
+  return x;
+
+} /* end of unur_hinv_eval_approxinvcdf() */
 
 /*****************************************************************************/
 /**  Auxilliary Routines                                                    **/
@@ -1504,16 +1575,9 @@ unur_hinv_estimate_error( const UNUR_GEN *gen, int samplesize, double *max_error
     /* sample from U( Umin, Umax ) */
     U = GEN.Umin + _unur_call_urng(gen->urng) * (GEN.Umax - GEN.Umin);
     ualt=U;
-    /* look up in guide table and search for interval */
-    i =  GEN.guide[(int) (GEN.guide_size*U)];
-    while (U > GEN.intervals[i+GEN.order+2])
-      i += GEN.order+2;
-    
-    /* rescale uniform random number */
-    U = (U-GEN.intervals[i])/(GEN.intervals[i+GEN.order+2] - GEN.intervals[i]);
 
-    /* evaluate polynome */
-    X = _unur_hinv_eval_polynomial( U, GEN.intervals+i+1, GEN.order );
+    /* compute inverse CDF */
+    X = _unur_hinv_eval_approxinvcdf(gen,U);
 
     if (X<DISTR.trunc[0]) { X = DISTR.trunc[0]; outside_interval++; }
     if (X>DISTR.trunc[1]) { X = DISTR.trunc[1]; outside_interval++; }

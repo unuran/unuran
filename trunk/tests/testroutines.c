@@ -125,6 +125,23 @@ int check_expected_INFINITY( FILE *LOG, int line, double x )
 
 } /* end of check_expected_INFINITY() */
 
+int check_expected_negINFINITY( FILE *LOG, int line, double x )
+{
+  int failed = 0;
+
+  fprintf(LOG,"line %4d: -INFINITY expected ...\t",line);
+  if (x > -UNUR_INFINITY) {
+    failed = 1;
+    fprintf(LOG," Failed\n");
+  }
+  else
+    fprintf(LOG," ok\n");
+
+  fflush(LOG);
+  return failed;
+
+} /* end of check_expected_negINFINITY() */
+
 int check_expected_INTMAX( FILE *LOG, int line, int k )
 {
   int failed = 0;

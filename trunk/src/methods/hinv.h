@@ -208,6 +208,20 @@ int unur_hinv_get_n_intervals( const UNUR_GEN *generator );
    It returns @code{0} in case of an error.
 */
 
+double unur_hinv_eval_approxinvcdf( UNUR_GEN *generator, double u );
+/*
+   Evaluate Hermite interpolation of inverse CDF at @var{u}.
+   If @var{u} is out of the domain [0,1] then @code{unur_errno} is set
+   to @code{UNUR_ERR_DOMAIN} and the respective bound of
+   the domain of the distribution are returned (which is
+   @code{-UNUR_INFINITY} or @code{UNUR_INFINITY} in the case of
+   unbounded domains).
+
+   @emph{Notice}: This function always evaluates the inverse CDF of
+   the given distribution. A call to unur_hinv_chg_truncated() call
+   has no effect.
+*/
+
 int unur_hinv_chg_truncated( UNUR_GEN *generator, double left, double right );
 /*
    Changes the borders of the domain of the (truncated) distribution. 
@@ -229,7 +243,7 @@ int unur_hinv_chg_truncated( UNUR_GEN *generator, double left, double right );
    not changed in case of an error.
 */
 
-int unur_hinv_estimate_error(  const UNUR_GEN *generator, int samplesize, double *max_error, double *MAE );
+int unur_hinv_estimate_error( const UNUR_GEN *generator, int samplesize, double *max_error, double *MAE );
 /*
    Estimate maximal u-error and mean absolute error (MAE) for @var{generator}
    by means of Monte-Carlo simulation with sample size @var{samplesize}.

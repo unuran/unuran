@@ -333,7 +333,7 @@ int main()
  
   /* extra test for changeing the domain of the generator object */
 
-  printf("test for checking unur_chg_domain(): normal"); 
+  printf("test for checking unur_chg_truncated(): normal"); 
   
   distr = unur_distr_normal(NULL,0);
   par = unur_hinv_new(distr);

@@ -141,6 +141,8 @@ unur_get_strerror ( const int unur_errno )
     return "(function parser) cannot derivate function";
 
     /** misc **/
+  case UNUR_ERR_DOMAIN:
+    return "argument out of domain";
   case UNUR_ERR_ROUNDOFF:
     return "(serious) round-off error";
    case UNUR_ERR_MALLOC:

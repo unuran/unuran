@@ -66,6 +66,7 @@ int check_expected_setfailed( FILE *LOG, int line, int ok );
 
 /* check for INFINITY */
 int check_expected_INFINITY( FILE *LOG, int line, double x );
+int check_expected_negINFINITY( FILE *LOG, int line, double x );
 int check_expected_INTMAX( FILE *LOG, int line, int k );
 
 /* check for reinit */

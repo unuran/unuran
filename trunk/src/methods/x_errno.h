@@ -203,6 +203,8 @@
 
       @item Other run time errors.
       @ftable @code
+      @item UNUR_ERR_DOMAIN
+      argument out of domain.
       @item UNUR_ERR_ROUNDOFF
       (serious) round-off error.
       @item UNUR_ERR_MALLOC
@@ -283,6 +285,7 @@ enum {
     @code{UNUR_ERR_...}
     Other errors.
   */
+  UNUR_ERR_DOMAIN         = 0x01u,    /* argument out of domain              */
   UNUR_ERR_ROUNDOFF       = 0x02u,    /* (serious) round-off error           */
   UNUR_ERR_MALLOC         = 0x03u,    /* virtual memory exhausted            */
   UNUR_ERR_NULL           = 0x04u,    /* invalid NULL pointer                */ 

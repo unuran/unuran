@@ -202,6 +202,13 @@ int unur_test_moments( UNUR_GEN *generator, double *moments, int n_moments, int 
    size @var{samplesize}. The result is stored into the array
    @var{moments}.
    @var{n_moments} must be an integer between @code{1} and @code{4}.
+   For multivariate distributions the moments are stored consecutively 
+   for each dimension and the provided @var{moments}-array must have 
+   a length of at least (@var{n_moments}+1) * @var{dim}, where @var{dim}
+   is the dimension of the multivariate distribution.
+   The @var{m}'th moment for the @var{d}'th dimension (0<=@var{d}<@var{dim}) 
+   is thus stored in the array element 
+   @var{moments}[@var{d}*@var{n_moments}+@var{m}]
 
    If @var{verbosity} is TRUE the result is written to the output
    stream @var{out}.

@@ -220,7 +220,7 @@ unur_mcorr_new( const struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_mcorr_set_eigenvalues( UNUR_PAR *par, double *eigenvalues )
+unur_mcorr_set_eigenvalues( UNUR_PAR *par, const double *eigenvalues )
      /*----------------------------------------------------------------------*/
      /* sets the (optional) eigenvalues of the correlation matrix            */
      /*----------------------------------------------------------------------*/
@@ -230,7 +230,7 @@ unur_mcorr_set_eigenvalues( UNUR_PAR *par, double *eigenvalues )
   /* check arguments */
   _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
   _unur_check_par_object( par, MCORR );
-  CHECK_NULL( eigenvalues, UNUR_ERR_NULL );
+  _unur_check_NULL( GENTYPE, eigenvalues, UNUR_ERR_NULL );
 
   /* check for eigenvalues */
   for (i=0; i<PAR->dim; i++)

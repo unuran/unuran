@@ -119,7 +119,7 @@ UNUR_PAR *unur_mcorr_new( const UNUR_DISTR *distribution );
    Get default parameters for generator.
 */
 
-int unur_mcorr_set_eigenvalues( UNUR_PAR *par, double *eigenvalues );
+int unur_mcorr_set_eigenvalues( UNUR_PAR *par, const double *eigenvalues );
 /*
    Sets the (optional) eigenvalues of the correlation matrix.
    If set, then the Marsaglia and Olkin algorithm will be used 

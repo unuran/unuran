@@ -37,25 +37,34 @@
  *                                                                           *
  *****************************************************************************/
 
+/* 
+   =METHOD  DAU  (Discrete) Alias-Urn method
+
+   DAU samples from arbitrary but finite probability vectors of length
+   N. The algorithmus is based on an ingeneous method by A.J. Walker
+   and requires a table of size (at least) N and needs only one
+   comparison for each generated random variate.
+
+   There is no reinit() routine.
+*/
+
 /*---------------------------------------------------------------------------*/
 /* Routines for user interface                                               */
 
+/* =ROUTINES */
+
 UNUR_PAR *unur_dau_new( UNUR_DISTR *distribution );
-/* get default parameters for generator                                      */
-
-UNUR_GEN *_unur_dau_init( UNUR_PAR *parameters );
-/* initialize new generator                                                  */
-
-int _unur_dau_sample( UNUR_GEN *generator );
-/* sample from generator                                                     */
-
-void _unur_dau_free( UNUR_GEN *generator );
-/* destroy generator object                                                  */
+/* Get default parameters for generator.                                     */
 
 /*...........................................................................*/
 
 int unur_dau_set_urnfactor( UNUR_PAR *parameters, double factor );
-/* set factor for relative size of urn                                       */
+/* 
+   Set size of urn table relative to length of probability vector.  It
+   must not be less than 1. Larger tables result in (slightly) faster
+   generation times but require a more expensive setup. However sizes
+   larger than 2 are not recommended; default is 1.
+*/
 
 /*---------------------------------------------------------------------------*/
 

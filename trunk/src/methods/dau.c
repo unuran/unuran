@@ -134,9 +134,30 @@
 
 /*---------------------------------------------------------------------------*/
 
+static struct unur_gen *_unur_dau_init( struct unur_par *par );
+/*---------------------------------------------------------------------------*/
+/* Initialize new generator.                                                 */
+/*---------------------------------------------------------------------------*/
+
 static struct unur_gen *_unur_dau_create( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 /* create new (almost empty) generator object.                               */
+/*---------------------------------------------------------------------------*/
+
+/* No reinit() cal                                                           */
+/*  static int _unur_dau_reinit( struct unur_gen *gen );                     */
+/*---------------------------------------------------------------------------*/
+/* Re-initialize (existing) generator.                                       */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_dau_sample( UNUR_GEN *generator );
+/*---------------------------------------------------------------------------*/
+/* sample from generator                                                     */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_dau_free( struct unur_gen *gen);
+/*---------------------------------------------------------------------------*/
+/* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -413,6 +434,72 @@ _unur_dau_init( struct unur_par *par )
 
 } /* end of _unur_dau_init() */
 
+/*---------------------------------------------------------------------------*/
+
+static struct unur_gen *
+_unur_dau_create( struct unur_par *par)
+     /*----------------------------------------------------------------------*/
+     /* allocate memory for generator                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter for building generator object         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to (empty) generator object with default settings          */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_gen *gen;
+
+  /* check arguments */
+  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_DAU_PAR,NULL);
+
+  /* allocate memory for generator object */
+  gen = _unur_malloc(sizeof(struct unur_gen));
+
+  /* magic cookies */
+  COOKIE_SET(gen,CK_DAU_GEN);
+
+  /* set generator identifier */
+  gen->genid = _unur_set_genid(GENTYPE);
+
+  /* copy distribution object into generator object */
+  memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
+
+  /* routines for sampling and destroying generator */
+  SAMPLE = _unur_dau_sample;
+  gen->destroy = _unur_dau_free;
+  gen->reinit = _unur_reinit_error;
+
+  /* copy some parameters into generator object */
+  GEN.len = DISTR.n_prob;           /* length of probability vector          */
+  gen->method = par->method;        /* indicates used method                 */
+  gen->variant = 0u;                /* only the default variant is possible  */
+  gen->set = par->set;              /* indicates parameter settings          */
+  gen->debug = par->debug;          /* debuging flags                        */
+  gen->urng = par->urng;            /* pointer to urng                       */
+
+  gen->urng_aux = NULL;             /* no auxilliary URNG required           */
+  gen->gen_aux = NULL;              /* no auxilliary generator objects       */
+  gen->gen_aux_2 = NULL;
+
+  /* size of table */
+  GEN.urn_size = (int)(GEN.len * PAR.urn_factor);
+  if (GEN.urn_size < GEN.len)
+    /* do not use a table that is smaller then length of probability vector */
+    GEN.urn_size = GEN.len;
+
+  /* allocate memory for the tables */
+  GEN.jx = _unur_malloc( GEN.urn_size * sizeof(int) );
+  GEN.qx = _unur_malloc( GEN.urn_size * sizeof(double) );
+
+  /* return pointer to (almost empty) generator object */
+  return gen;
+
+} /* end of _unur_dau_create() */
+
 /*****************************************************************************/
 
 int
@@ -486,69 +573,6 @@ _unur_dau_free( struct unur_gen *gen )
 /**  Auxilliary Routines                                                    **/
 /*****************************************************************************/
 
-static struct unur_gen *
-_unur_dau_create( struct unur_par *par)
-     /*----------------------------------------------------------------------*/
-     /* allocate memory for generator                                        */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   par ... pointer to parameter for building generator object         */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   pointer to (empty) generator object with default settings          */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return NULL                                                        */
-     /*----------------------------------------------------------------------*/
-{
-  struct unur_gen *gen;
-
-  /* check arguments */
-  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_DAU_PAR,NULL);
-
-  /* allocate memory for generator object */
-  gen = _unur_malloc(sizeof(struct unur_gen));
-
-  /* magic cookies */
-  COOKIE_SET(gen,CK_DAU_GEN);
-
-  /* set generator identifier */
-  gen->genid = _unur_set_genid(GENTYPE);
-
-  /* copy distribution object into generator object */
-  memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
-
-  /* routines for sampling and destroying generator */
-  SAMPLE = _unur_dau_sample;
-  gen->destroy = _unur_dau_free;
-  gen->reinit = _unur_reinit_error;
-
-  /* copy some parameters into generator object */
-  GEN.len = DISTR.n_prob;           /* length of probability vector          */
-  gen->method = par->method;        /* indicates used method                 */
-  gen->variant = 0u;                /* only the default variant is possible  */
-  gen->set = par->set;              /* indicates parameter settings          */
-  gen->debug = par->debug;          /* debuging flags                        */
-  gen->urng = par->urng;            /* pointer to urng                       */
-
-  gen->urng_aux = NULL;             /* no auxilliary URNG required           */
-  gen->gen_aux = NULL;              /* no auxilliary generator objects       */
-  gen->gen_aux_2 = NULL;
-
-  /* size of table */
-  GEN.urn_size = (int)(GEN.len * PAR.urn_factor);
-  if (GEN.urn_size < GEN.len)
-    /* do not use a table that is smaller then length of probability vector */
-    GEN.urn_size = GEN.len;
-
-  /* allocate memory for the tables */
-  GEN.jx = _unur_malloc( GEN.urn_size * sizeof(int) );
-  GEN.qx = _unur_malloc( GEN.urn_size * sizeof(double) );
-
-  /* return pointer to (almost empty) generator object */
-  return gen;
-
-} /* end of _unur_dau_create() */
 
 /*****************************************************************************/
 /**  Debugging utilities                                                    **/

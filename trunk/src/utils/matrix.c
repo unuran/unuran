@@ -54,10 +54,10 @@ static int _unur_matrix_permutation_swap (int dim, int *p, int i, int j);
 static int _unur_matrix_LU_decomp (int dim, double *A, int *P, int *signum);
 /* Factorise a general dim x dim matrix A into P A = L U.                    */
 
-static int _unur_matrix_backsubstitution_dtrsv(int dim, double *A, double *X);
+static int _unur_matrix_backsubstitution_dtrsv(int dim, double *LU, double *X);
 /* ????? */
 
-static int _unur_matrix_forwardsubstitution_dtrsv(int dim, double *A, double *X);
+static int _unur_matrix_forwardsubstitution_dtrsv(int dim, double *LU, double *X);
 /* ????? */
 
 static int _unur_matrix_LU_invert (int dim, double *LU, int *p, double *inverse);
@@ -229,12 +229,12 @@ _unur_matrix_LU_decomp (int dim, double *A, int *p, int *signum)
 /*---------------------------------------------------------------------------*/
 
 int 
-_unur_matrix_backsubstitution_dtrsv(int dim, double *A, double *X)
+_unur_matrix_backsubstitution_dtrsv(int dim, double *LU, double *X)
      /*----------------------------------------------------------------------*/
      /*                                                                      */
      /* input:								     */
      /*   dim ... number of columns and rows of				     */
-     /*   A   ... dim x dim -matrix					     */
+     /*   LU  ... dim x dim -matrix that contains LU decomposition of matrix */
      /*   X   ... vector 						     */
      /*                                                                      */
      /* output:								     */
@@ -250,25 +250,24 @@ _unur_matrix_backsubstitution_dtrsv(int dim, double *A, double *X)
   int ix,jx,i,j;
 
   /* check arguments */
-  CHECK_NULL(A,UNUR_ERR_NULL);
+  CHECK_NULL(LU,UNUR_ERR_NULL);
   CHECK_NULL(X,UNUR_ERR_NULL);
 
   /* backsubstitution */
   ix = (dim - 1);
    
-  X[ix] = X[ix] / A[idx(ix,ix)];
+  X[ix] = X[ix] / LU[idx(ix,ix)];
  
-  ix --;
+  ix--;
   for (i = dim - 1; i > 0 && i--;) {
     double tmp = X[ix];
     jx = ix + 1;
     for (j = i + 1; j < dim; j++) {
-      double Aij = A[idx(i,j)];
-      tmp -= Aij * X[jx];
+      tmp -= LU[idx(i,j)] * X[jx];
       jx ++;
     }
       
-    X[ix] = tmp / A[idx(i,i)];
+    X[ix] = tmp / LU[idx(i,i)];
     ix --;
   }
 
@@ -280,12 +279,12 @@ _unur_matrix_backsubstitution_dtrsv(int dim, double *A, double *X)
 /*---------------------------------------------------------------------------*/
 
 int 
-_unur_matrix_forwardsubstitution_dtrsv(int dim, double *A, double *X)
+_unur_matrix_forwardsubstitution_dtrsv(int dim, double *LU, double *X)
      /*----------------------------------------------------------------------*/
      /*                                                                      */
      /* input:								     */
      /*   dim ... number of columns and rows of				     */
-     /*   A   ... dim x dim -matrix					     */
+     /*   LU  ... dim x dim -matrix that contains LU decomposition of matrix */
      /*   X   ... vector 						     */
      /*                                                                      */
      /* output:								     */
@@ -301,18 +300,17 @@ _unur_matrix_forwardsubstitution_dtrsv(int dim, double *A, double *X)
   int ix,jx,i,j;
 
   /* check arguments */
-  CHECK_NULL(A,UNUR_ERR_NULL);
+  CHECK_NULL(LU,UNUR_ERR_NULL);
   CHECK_NULL(X,UNUR_ERR_NULL);
 
   /* forward substitution */
   ix = 0;
-  ix ++;
+  ix++;
   for (i = 1; i < dim; i++) {
     double tmp = X[ix];
     jx = 0;
     for (j = 0; j < i; j++) {
-      double Aij = A[idx(i,j)];
-      tmp -= Aij * X[jx];
+      tmp -= LU[idx(i,j)] * X[jx];
       jx += 1;
     }
     X[ix] = tmp;
@@ -519,7 +517,7 @@ _unur_matrix_qf (int dim, double *x, double *A)
   return outersum;
 
 #undef idx
-} /* end of _unur_matrix_quadratic_form() */
+} /* end of _unur_matrix_qf() */
 
 /*---------------------------------------------------------------------------*/
 

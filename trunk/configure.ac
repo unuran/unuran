@@ -97,6 +97,7 @@ AC_CONFIG_FILES([\
 	src/uniform/Makefile \
 	src/utils/Makefile \
 	doc/Makefile \
+	doc/src/Makefile \
         tests/Makefile \
 	examples/Makefile \
 	experiments/Makefile ])

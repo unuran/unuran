@@ -45,6 +45,7 @@ check_PROGRAMS = \
  t_tdr \
  t_unif \
  t_utdr \
+ t_vmt \
  t_timing_dsrou \
  t_timing_ninv \
  $(MATHEMATICA_PROGS)
@@ -76,6 +77,7 @@ TESTS = \
  t_tdr \
  t_unif \
  t_utdr \
+ t_vmt \
  $(MATHEMATICA_TESTS)
 
 
@@ -113,6 +115,7 @@ EXTRA_DIST = \
  tdr.conf \
  unif.conf \
  utdr.conf \
+ vmt.conf \
  timing_dsrou.conf \
  timing_ninv.conf
 
@@ -221,6 +224,9 @@ t_unif_LDADD = $(top_builddir)/src/libunuran.a
 t_utdr_SOURCES = t_utdr.c testroutines.c
 t_utdr_LDADD = $(top_builddir)/src/libunuran.a
 
+t_vmt_SOURCES = t_vmt.c testroutines.c
+t_vmt_LDADD = $(top_builddir)/src/libunuran.a
+
 t_timing_dsrou_SOURCES = t_timing_dsrou.c testroutines.c
 t_timing_dsrou_LDADD = $(top_builddir)/src/libunuran.a
 
@@ -300,11 +306,14 @@ t_tabl.c: tabl.conf make_test_files.pl
 t_tdr.c: tdr.conf make_test_files.pl
 	./make_test_files.pl tdr.conf            > t_tdr.c
 
+t_unif.c: unif.conf make_test_files.pl
+	./make_test_files.pl unif.conf           > t_unif.c
+
 t_utdr.c: utdr.conf make_test_files.pl
 	./make_test_files.pl utdr.conf           > t_utdr.c
 
-t_unif.c: unif.conf make_test_files.pl
-	./make_test_files.pl unif.conf           > t_unif.c
+t_vmt.c: vmt.conf make_test_files.pl
+	./make_test_files.pl vmt.conf            > t_vmt.c
 
 t_timing_dsrou.c: timing_dsrou.conf make_test_files.pl
 	./make_test_files.pl timing_dsrou.conf   > t_timing_dsrou.c

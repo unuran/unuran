@@ -976,7 +976,9 @@ sub print_test_command {
       if ($test_command =~ /^\s*compare_double_sequence_gen\s*$/ or
 	  $test_command =~ /^\s*compare_double_sequence_gen_start\s*$/ or
 	  $test_command =~ /^\s*compare_int_sequence_gen\s*$/ or
-	  $test_command =~ /^\s*compare_int_sequence_gen_start\s*$/ ) {
+	  $test_command =~ /^\s*compare_int_sequence_gen_start\s*$/ or
+	  $test_command =~ /^\s*compare_cvec_sequence_gen\s*$/ or
+	  $test_command =~ /^\s*compare_cvec_sequence_gen_start\s*$/ ) {
 	  $test_command =~ s/\s+//g;
 	  print "$last_C_line\;\n";
 	  print "n_tests_failed += $test_command\( TESTLOG, $INPUT_LINE_NUMBER, gen, COMPARE_SAMPLE_SIZE );\n";

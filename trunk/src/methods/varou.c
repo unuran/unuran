@@ -621,7 +621,6 @@ _unur_varou_clone( const struct unur_gen *gen )
   /* copy other data */
   CLONE.dim = GEN.dim;
   CLONE.vmax = GEN.vmax;
-  CLONE.aux_dim = GEN.aux_dim;
   CLONE.center = unur_distr_cvec_get_center(clone->distr);
   CLONE.n_vertex = GEN.n_vertex;
   CLONE.max_cones = GEN.max_cones;

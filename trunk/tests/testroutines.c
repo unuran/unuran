@@ -175,6 +175,7 @@ int compare_double_sequence_par_start( FILE *LOG, int line, struct prng *urng, U
   UNUR_GEN *gen;
   int i;
 
+  /* allocate memory for storing sequence */
   if (double_sequence_A == NULL) {
     double_sequence_A = malloc( sample_size * sizeof(double) );
     abort_if_NULL(LOG,line, double_sequence_A);
@@ -200,6 +201,7 @@ int compare_double_sequence_urng_start( FILE *LOG, int line, struct prng *urng, 
 {
   int i;
   
+  /* allocate memory for storing sequence */
   if (double_sequence_A == NULL) {
     double_sequence_A = malloc( sample_size * sizeof(double) );
     abort_if_NULL(LOG, line, double_sequence_A);
@@ -261,6 +263,15 @@ int compare_double_sequence_gen_start( FILE *LOG, int line, struct prng *urng, U
 {
   int i;
 
+  /* check generator object */
+  if (gen==NULL) {
+    /* error */
+    free (double_sequence_A);
+    double_sequence_A = NULL;
+    return 1;
+  }
+
+  /* allocate memory for storing sequence */
   if (double_sequence_A == NULL) {
     double_sequence_A = malloc( sample_size * sizeof(double) );
     abort_if_NULL(LOG,line, double_sequence_A);
@@ -286,6 +297,12 @@ int compare_double_sequence_gen( FILE *LOG, int line, struct prng *urng, UNUR_GE
   int ok = TRUE;
   double x;
   int failed = 0;
+
+  /* check generator object and stored sequence */
+  if (gen==NULL || double_sequence_A==NULL) {
+    /* error */
+    return 1;
+  }
 
   /* reset uniform RNG */
   prng_reset(urng);
@@ -323,6 +340,7 @@ int compare_int_sequence_par_start( FILE *LOG, int line, struct prng *urng, UNUR
   UNUR_GEN *gen;
   int i;
 
+  /* allocate memory for storing sequence */
   if (int_sequence_A == NULL) {
     int_sequence_A = malloc( sample_size * sizeof(int) );
     abort_if_NULL(LOG, line, int_sequence_A);
@@ -385,6 +403,15 @@ int compare_int_sequence_gen_start( FILE *LOG, int line, struct prng *urng, UNUR
 {
   int i;
 
+  /* check generator object */
+  if (gen==NULL) {
+    /* error */
+    free (int_sequence_A);
+    int_sequence_A = NULL;
+    return 1;
+  }
+
+  /* allocate memory for storing sequence */
   if (int_sequence_A == NULL) {
     int_sequence_A = malloc( sample_size * sizeof(int) );
     abort_if_NULL(LOG, line, int_sequence_A);
@@ -408,6 +435,12 @@ int compare_int_sequence_gen( FILE *LOG, int line, struct prng *urng, UNUR_GEN *
   int i;
   int ok = TRUE;
   int failed = 0;
+
+  /* check generator object and stored sequence */
+  if (gen==NULL || int_sequence_A==NULL) {
+    /* error */
+    return 1;
+  }
 
   /* init generator */
   prng_reset(urng);

@@ -156,10 +156,14 @@ UNUR_GEN *unur_str2gen( const char *string );
 
    @item double  @r{(}token@r{):}
       The token is interpreted as a floating point number.
+      @code{inf} is transformed to @code{UNUR_INFINITY}.
 
    @item double, double  @r{(}token, token @r{or} list@r{):}
       The two tokens or the first two entries in the list are interpreted as
       a floating point numbers.
+      @code{inf} is transformed to @code{UNUR_INFINITY}. However using
+      @code{inf} in the list might not work for all versions of C. Thus it
+      is recommended to use two single tokens instead of a list.
 
    @item int, double*  @r{(}[token,] list @r{or} token@r{):}
       @itemize @minus
@@ -249,6 +253,8 @@ UNUR_GEN *unur_str2gen( const char *string );
    @smallexample
       max_sqhratio = 0.9
    @end smallexample
+   Additionally the keyword @code{debug} can be used to set debugging
+   flags (see @xref{Debug,Debugging,Debugging}. for details).
    
    If this block is omitted, a suitable default method is used. Notice
    however that the default method may change in future versions of

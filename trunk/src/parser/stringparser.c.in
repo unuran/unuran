@@ -77,9 +77,12 @@
  *                'false' and 'off' are transformed to 0.                    *
  *                a missing argument is transformed to 1.                    *
  *      unsigned: string is interpreted as hexadecimal number.               *
- *      double:   none                                                       *
+ *      double:   'inf[...]' is transformed to INFINITY.                     *
  *      double, double: Instead of two doubles, a list with at least two     *
  *                numbers can be given.                                      *
+ *                'inf' is transformed to infinity. However if a list is     *
+ *                used 'inf' might not be supported dependent on the         *
+ *                implementation of strtod().                                *
  *      int, double*: If the first argument is missing, it is replaced       *
  *                by the size of the array.                                  *
  *                If the second argument is missing, the NULL pointer is     *
@@ -87,6 +90,7 @@
  *      double*, int: Only for distributions!                                *
  *                If the second argument 'int' is missing, it is replaced    *
  *                by the size of the array.                                  *
+ *   Important: there is no support for 'infinity' in lists!                 * 
  *   (See also the source below for more details.)                           *
  *                                                                           *
  *****************************************************************************
@@ -793,7 +797,7 @@ _unur_str_distr_set_i (UNUR_DISTR *distr, const char *key, char *type_args, char
   if ( !strcmp(type_args, "t") ) {
     iarg = _unur_atoi( args[0] );
   }
-  else if ( !strcmp(type_args, "v") ) {
+  else if ( strlen(type_args) == 0 ) {
     iarg = 1;
   }
   else {
@@ -1274,17 +1278,27 @@ _unur_str_par_set( UNUR_PAR *par, const char *key, char *value, struct malloc_li
 =INPUT list_of_par_sets
 
    if (result == UNKNOWN_PARAM) {
-     /* unknown parameter */
-     _unur_error_unknown(key,"parameter for given method");
-     return FALSE;
+     /* no valid parameter found */
+     /* try extra keywords */
+     if ( !strcmp(key, "debug") ) {
+       /* n = 1; type = u:  UNUR_PAR *parameters, unsigned DEBUG */
+       result = _unur_str_par_set_u(par,key,type_args,args,unur_set_debug);
+     }
    }
-   else if (result == FALSE) {
-     /* invalid data for parameter */
-     _unur_error_invalid(key,"set call");
-     return FALSE;
-   }
-
-   return result;
+  
+  /* check result */
+  if (result == UNKNOWN_PARAM) {
+    /* unknown parameter */
+    _unur_error_unknown(key,"parameter for given method");
+    return FALSE;
+  }
+  else if (result == FALSE) {
+    /* invalid data for parameter */
+    _unur_error_invalid(key,"set call");
+    return FALSE;
+  }
+  
+  return result;
 
 #undef UNKNOWN_PARAM
 
@@ -1380,7 +1394,7 @@ _unur_str_par_set_i (UNUR_PAR *par, const char *key, char *type_args, char **arg
   if ( !strcmp(type_args, "t") ) {
     iarg = _unur_atoi( args[0] );
   }
-  else if ( !strcmp(type_args, "v") ) {
+  else if ( strlen(type_args) == 0 ) {
     iarg = 1;
   }
   else {
@@ -2216,6 +2230,13 @@ _unur_atod ( const char *str )
      /*   double                                                             */
      /*----------------------------------------------------------------------*/
 {
+  if ( !strncmp(str,"inf",3) )
+    return INFINITY;
+
+  else if ( !strncmp(str,"-inf",4) )
+    return -INFINITY;
+
+  else
     return atof(str);
 } /* end of _unur_atod() */
 

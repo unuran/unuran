@@ -103,7 +103,6 @@
 /* this parameter define the maximal number of cones that will be created.   */
 #define VAROU_MAX_CONES_DEFAULT 1000
 
-
 /*---------------------------------------------------------------------------*/
 
 long N_INTERVALS=40; /* TODO: move this parameter into generator object */
@@ -317,7 +316,8 @@ unur_varou_set_cones( struct unur_par *par, long ncones  )
      /*                                                                      */
      /* return:                                                              */
      /*   UNUR_SUCCESS ... on success                                        */
-     /*   error code   ... on error                                          */
+     /*   UNUR_FAILURE ... when number of cones is too small to provide      */
+     /*                    an initialization (ncones < 2^dim)                */
      /*                                                                      */
      /* comment:                                                             */
      /*   when not set, the default VAROU_MAX_CONES_DEFAULT will be used     */
@@ -327,6 +327,9 @@ unur_varou_set_cones( struct unur_par *par, long ncones  )
   _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
   _unur_check_par_object( par, VAROU );
 
+  /* check if the number of cones sufficies for an initial splitting */
+  if (pow(2, PAR.dim) > ncones) return UNUR_FAILURE;
+  
   /* setting the number of cones */
   PAR.max_cones = ncones ;
 
@@ -442,6 +445,13 @@ _unur_varou_init( struct unur_par *par )
     return NULL; 
   }
 
+  /* check if initial cones can be computed */ 
+  if (pow(2, GEN.dim) > GEN.max_cones) {
+    _unur_error(GENTYPE,UNUR_ERR_PAR_INVALID,"max_cones too small");
+    free(par); _unur_varou_free(gen);
+    return NULL;
+  }
+  
   /* compute bounding rectangle */
   if (_unur_varou_rectangle(gen)!=UNUR_SUCCESS) {
     free(par); _unur_varou_free(gen);

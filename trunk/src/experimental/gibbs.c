@@ -567,7 +567,7 @@ _unur_gibbs_random_unit_vector( struct unur_gen *gen,
   }
 
   /* normalize direction vector */
-  
+  _unur_vector_normalize(dim, direction);
 }
 
 /*---------------------------------------------------------------------------*/

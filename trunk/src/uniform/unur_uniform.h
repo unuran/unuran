@@ -38,10 +38,6 @@
 #define UNUR_UNIFORM_H_SEEN
 /*---------------------------------------------------------------------------*/
 
-#include <unuran_config.h>
-
-/*---------------------------------------------------------------------------*/
-
 /* Combined multiple recursive generator by Pierre L'Ecuyer and Renee Touzin */
 /* Copyright (c) 2002 Renee Touzin.                                          */
 

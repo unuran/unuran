@@ -273,7 +273,7 @@
 /* ... */
 /* #define UNURAN_HAS_PRNG 1 */
 /* #define UNURAN_HAS_RNGSTREAMS 1 */
-#define UNURAN_HAS_GSL 1
+/* #define UNURAN_HAS_GSL 1 */
 
 /*---------------------------------------------------------------------------*/
 #endif  /* UNURAN_CONFIG_H_SEEN */

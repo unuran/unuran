@@ -1050,9 +1050,10 @@ sub scan_ROUTINES {
 	$fkt =~ s/\s+(\*+)/$1 /g;
 
 	# get argument list of function
-	(my $fkt_decl, my $fn_args) = split /\s+[\(\)]\s+/, $fkt, 3; 
+	(my $fkt_decl, my $fn_args) = split /\s+\(\s+/, $fkt, 2;
+	$fn_args =~ s/\s*\)\s*$//;
 	my @argslist = split /\s*\,\s*/, $fn_args;
-	
+
 	# $fkt_decl should contain of at least two words
 	unless ($fkt_decl =~ /^\s*(.*)\s+([\*\w+]+)\s*$/ ) {
 	    die "type or name missing for function: '$fkt_decl'";
@@ -1089,7 +1090,16 @@ sub scan_ROUTINES {
 		if ($first) { $first = 0; }
 		else { $fkt_block .= ", "; }
 		if ($arg_name) {
-		    $fkt_block .= "$type \@var\{$arg_name\}";
+		    # we have to take care of args that are function points
+		    if ($arg_name =~ /\s*\(/ ) {
+			$arg_name =~ s/\s*\(\s*/\(/g;
+			$arg_name =~ s/\s*\((\* )*(.*?)\s*\)\s*(.*)/\($1\@var\{$2\}\)$3/;
+			$fkt_block .= "$type $arg_name";
+		    }
+		    else {
+			$arg_name =~ s/(.*?)(\s*\))*\s*$/\@var\{$1\}$2/; 
+			$fkt_block .= "$type $arg_name";
+		    }
 		}
 		else {
 		    $fkt_block .= "$type";

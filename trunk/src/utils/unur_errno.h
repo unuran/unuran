@@ -109,14 +109,14 @@ const char *unur_get_strerror ( const int unur_errno );
 
 #define _unur_error(genid,errortype,str) \
    do { \
-      _unur_stream_printf((genid),__FILE__,__LINE__,"error: %s", \
-                          unur_get_strerror( (errortype) ) ); \
+      _unur_stream_printf((genid),__FILE__,__LINE__,"error: %s %s", \
+                          unur_get_strerror(errortype), (str) ); \
    } while (0)
 
 #define _unur_warning(genid,errortype,str) \
    do { \
-      _unur_stream_printf((genid),__FILE__,__LINE__,"warning: %s", \
-                          unur_get_strerror( (errortype) ) ); \
+      _unur_stream_printf((genid),__FILE__,__LINE__,"warning: %s %s", \
+                          unur_get_strerror(errortype), (str) ); \
    } while (0)
 
 /*---------------------------------------------------------------------------*/

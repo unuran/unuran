@@ -214,3 +214,6 @@ makeinfo.
 	replaced by a semicolon. 
 	(This restrictions are due to texinfo).
 
+@unurimage	same as @image. But it will be easier to add vertical 
+	spaces later.
+

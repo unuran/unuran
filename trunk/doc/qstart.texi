@@ -510,6 +510,9 @@ int main()
 @node Arbitrary
 @section Arbitrary distributions
 
+See @ref{Selfmade}
+
+
 @node Continuous
 @section Continuous Distributions
 
@@ -636,6 +639,8 @@ Notation:
 
 @node Readymade
 @section Ready-made distributions
+For information about the following distributions see
+@ref{Continuous} or  @ref{Discrete}.
 @include qstart_distr_ref.texi
 
 
@@ -657,6 +662,7 @@ Notation:
 * UTDRref:: Universal Transformed Density Rejection (3-point method)
 @end menu
 
+For information about the Methods see @ref{Description}.
 @include qstart_function_reference.texi
 
 @c --------------------------------------------------------------------

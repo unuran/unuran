@@ -825,6 +825,8 @@ _unur_utdr_hat( struct unur_gen *gen )
 
   try = 0.;
   trys = 0.;
+  tly = 0.;
+  tlys = 0.;
   dl = 0.;
   dr = 0.;
 

@@ -29,6 +29,7 @@
 
 /*---------------------------------------------------------------------------*/
 /* enable/disable tests                                                      */
+/* (comment out the methods or distributions that are not tested)            */
 
 /* methods                                                                   */
 #define T_SROU

@@ -270,6 +270,8 @@ void test_srou_init( void )
   check_errorcode( UNUR_ERR_GEN_DATA );
   unur_distr_free(distr);
 
+  /* test finished */
+  test_ok &= (test_failed) ? 0 : 1;
   (test_failed) ? printf("--> failed] ") : printf("--> ok] ");
 
 } /* end of test_srou_init() */
@@ -278,13 +280,30 @@ void test_srou_init( void )
 
 void test_srou_reinit( void )
 {
-  /* nothing to do */
+  UNUR_DISTR *distr;
+  UNUR_PAR *par;
+  UNUR_GEN *gen;
 
+  /* start test */
   printf("[reinit ");  fflush(stdout);
   fprintf(TESTLOG,"\n[reinit]\n");
 
   test_failed = 0;
 
+  /* check whether succesfully executed */
+  distr = unur_distr_normal(NULL,0);
+  par = unur_srou_new(distr);
+  gen = unur_init(par);
+  fprintf(TESTLOG,"line %4d: reinit ...\t\t\t",__LINE__);  
+  if (!unur_reinit(gen)) {
+    ++test_failed;
+    fprintf(TESTLOG," Failed\n");
+  }
+  else
+    fprintf(TESTLOG," ok\n");
+
+  /* test finished */
+  test_ok &= (test_failed) ? 0 : 1;
   (test_failed) ? printf("--> failed] ") : printf("--> ok] ");
 
 } /* end of test_srou_reinit() */

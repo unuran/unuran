@@ -127,7 +127,7 @@ _unur_malloc_gen( struct unur_par *par )
   gen = _unur_malloc( sizeof(struct unur_gen) );
 
   /* copy distribution object into generator object */
-  gen->distr = _unur_distr_clone( par->distr );
+  gen->distr = (par->distr) ? _unur_distr_clone(par->distr) : NULL;
 
   /* copy some parameters into generator object */
   gen->method = par->method;        /* indicates method and variant          */

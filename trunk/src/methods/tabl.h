@@ -243,6 +243,12 @@ int unur_tabl_set_verify( UNUR_PAR *parameters, int verify );
 int unur_tabl_chg_verify( UNUR_GEN *generator, int verify );
 /* 
    Turn verifying of algorithm while sampling on/off.
+   If the condition squeeze(@i{x}) <= PDF(@i{x}) <= hat(@i{x}) is
+   violated for some @i{x} then @code{unur_errno} is set to
+   @code{UNUR_ERR_GEN_CONDITION}. However notice that this might
+   happen due to round-off errors for a few values of
+   @i{x} (less than 1%).
+
    Default is FALSE.
 */
 

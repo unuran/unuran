@@ -153,6 +153,12 @@ int unur_dari_set_verify( UNUR_PAR *parameters, int verify );
 int unur_dari_chg_verify( UNUR_GEN *generator, int verify );
 /* 
    Turn verifying of algorithm while sampling on/off.
+   If the condition is violated for some @i{x} then @code{unur_errno}
+   is set to @code{UNUR_ERR_GEN_CONDITION}. However notice that this
+   might happen due to round-off errors for a few values of
+   @i{x} (less than 1%).
+
+   Default is FALSE.
 */
 
 /*...........................................................................*/

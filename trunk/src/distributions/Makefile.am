@@ -16,6 +16,7 @@ libunuran_distributions_a_SOURCES = \
  chi.c         chi_gen.c \
  chisquare.c \
  exponential.c exponential_gen.c \
+ extremeI.c    extremeI_gen.c \
  gamma.c       gamma_gen.c \
  gig.c         gig_gen.c \
  laplace.c     laplace_gen.c \

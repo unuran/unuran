@@ -329,11 +329,19 @@ int main()
   unur_run_tests(par,RUN_TESTS);
 #endif
 
-#if 1
+#if 0
   fpar[0] = 11.;
   fpar[1] = 5.;
   fpar[2] = 1.;
   distr_xxx = unur_distr_burr(fpar,3);
+  par = unur_cstd_new(distr_xxx);
+  unur_run_tests(par,RUN_TESTS);
+#endif
+
+#if 1
+  fpar[0] = 2.;
+  fpar[1] = 5.;
+  distr_xxx = unur_distr_extremeI(fpar,2);
   par = unur_cstd_new(distr_xxx);
   unur_run_tests(par,RUN_TESTS);
 #endif

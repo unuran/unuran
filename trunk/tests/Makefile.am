@@ -49,6 +49,7 @@ check_PROGRAMS = \
  t_vmt \
  t_timing_dsrou \
  t_timing_ninv \
+ test_special_hinv \
  $(MATHEMATICA_PROGS)
 
 TESTS = \
@@ -80,6 +81,7 @@ TESTS = \
  t_utdr \
  t_vempk \
  t_vmt \
+ test_special_hinv \
  $(MATHEMATICA_TESTS)
 
 
@@ -238,6 +240,9 @@ t_timing_dsrou_LDADD = $(top_builddir)/src/libunuran.a
 
 t_timing_ninv_SOURCES = t_timing_ninv.c testroutines.c
 t_timing_ninv_LDADD = $(top_builddir)/src/libunuran.a
+
+test_special_hinv_SOURCES = test_special_hinv.c
+test_special_hinv_LDADD = $(top_builddir)/src/libunuran.a
 
 
 t_distr.c: distr.conf make_test_files.pl

@@ -601,11 +601,20 @@ unur_hinv_chg_truncated( struct unur_gen *gen, double left, double right )
      /*   the new boundary points may be +/- INFINITY                        */
      /*----------------------------------------------------------------------*/
 {
-  double Umin, Umax;
+  double Umin, Umax, Uminbound, Umaxbound;
 
   /* check arguments */
   _unur_check_NULL( GENTYPE,gen,0 );
   _unur_check_gen_object(gen, HINV);
+
+  /* compute Uminbound and Umaxbound using the u-value of the first and 
+     the last design point. */
+  /* this setting of Uminbound and Umaxbound guarantees that in the 
+     sampling algorithm U is always in a range where a table
+     is available for the inverse CDF.
+     So this is a safe guard against segfault for U=0. or U=1. */ 
+  Uminbound = max(0.,GEN.intervals[0]);
+  Umaxbound = min(1.,GEN.intervals[(GEN.N-1)*(GEN.order+2)]);
 
   /* check new parameter for generator */
   /* (the truncated domain must be a subset of the domain) */
@@ -647,12 +656,8 @@ unur_hinv_chg_truncated( struct unur_gen *gen, double left, double right )
   /* copy new boundaries into generator object */
   DISTR.trunc[0] = left;
   DISTR.trunc[1] = right;
-  GEN.Umin = Umin;
-  GEN.Umax = Umax;
-
-  /** TODO **/
-/*    GEN.Umin = max(Umin,GEN.Umin); */
-/*    GEN.Umax = min(Umax,GEN.Umax); */
+  GEN.Umin = max(Umin, Uminbound);
+  GEN.Umax = min(Umax, Umaxbound);
 
   /* changelog */
   gen->distr->set |= UNUR_DISTR_SET_TRUNCATED;
@@ -745,7 +750,6 @@ _unur_hinv_init( struct unur_par *par )
      sampling algorithm U is always in a range where a table
      is available for the inverse CDF.
      So this is a safe guard against segfault for U=0. or U=1. */ 
-
   /* These values for Umin and Umax are only changed in 
      unur_hinv_chg_truncated(). */
 
@@ -1439,6 +1443,11 @@ _unur_hinv_sample( struct unur_gen *gen )
   double U,X;
   int i;
 
+  /* Notice: 
+     This routine has some parts in common with unur_hinv_estimate_error(). 
+     Whenever changes are made here, also check that subroutine!
+  */
+
   /* check arguments */
   CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_HINV_GEN,0.);
 
@@ -1468,7 +1477,7 @@ _unur_hinv_sample( struct unur_gen *gen )
 /*****************************************************************************/
 
 int
-unur_hinv_estimate_error(  const UNUR_GEN *gen, int samplesize, double *max_error, double *MAE )
+unur_hinv_estimate_error( const UNUR_GEN *gen, int samplesize, double *max_error, double *MAE )
      /*----------------------------------------------------------------------*/
      /* Estimate maximal u-error and mean absolute error (MAE) by means of   */
      /* Monte-Carlo simulation.                                              */
@@ -1486,7 +1495,7 @@ unur_hinv_estimate_error(  const UNUR_GEN *gen, int samplesize, double *max_erro
 { 
   double U, ualt, X;
   double max=0., average=0., uerror, errorat=0.;
-  int i, j;
+  int i, j, outside_interval=0;
 
   /* check arguments */
   CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_HINV_GEN,0.);
@@ -1506,8 +1515,8 @@ unur_hinv_estimate_error(  const UNUR_GEN *gen, int samplesize, double *max_erro
     /* evaluate polynome */
     X = _unur_hinv_eval_polynomial( U, GEN.intervals+i+1, GEN.order );
 
-    if (X<DISTR.trunc[0]) X= DISTR.trunc[0];
-    if (X>DISTR.trunc[1]) X= DISTR.trunc[1];
+    if (X<DISTR.trunc[0]) { X = DISTR.trunc[0]; outside_interval++; }
+    if (X>DISTR.trunc[1]) { X = DISTR.trunc[1]; outside_interval++; }
 
     uerror = fabs(ualt-CDF(X));
 
@@ -1518,8 +1527,10 @@ unur_hinv_estimate_error(  const UNUR_GEN *gen, int samplesize, double *max_erro
     }
     /* printf("j %d uerror %e maxerror %e average %e\n",j,uerror,max,average/(j+1)); */
   }
-
-  /* printf("maximal error occured at x= %.16e\n",errorat); */
+  /*
+  printf("maximal error occured at x= %.16e percentage outside interval %e \n",
+	 errorat,(double)outside_interval/(double)samplesize); 
+  */
 
   *max_error = max;
   *MAE = average/samplesize;

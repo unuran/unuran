@@ -801,7 +801,7 @@ _unur_dari_hat( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   int sign[2] = {-1,1};
-  int b[2], d, i;
+  int b[2], d, i, j;
   double v[2], at[2];
   double t0 = 1.;
   char setup = 1;
@@ -875,7 +875,8 @@ _unur_dari_hat( struct unur_gen *gen )
 	GEN.n[0] = GEN.n[1]- GEN.size + 1;
       }
       /* initialize table */
-      memset( GEN.hb, 0, GEN.size * sizeof(char) );
+      for (j=0; j<GEN.size; j++)
+	GEN.hb[j] = 0;
     }
 
     /* setup == 1 first try, up to now ok,  ==2 second try, up to now ok */

@@ -4,14 +4,14 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: x_gen_source.h                                                    *
+ *   FILE: sinv_struct.h                                                     *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         defines macros and function prototypes for handling               *
- *         generator objects.                                                *
+ *         declares structures for method SINV                               *
+ *         (Spline approximation for INVerse of CDF)                         *
  *                                                                           *
  *   USAGE:                                                                  *
- *         only included in source_unuran.h                                  *
+ *         only included in source_struct.h                                  *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -38,52 +38,68 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-/* Invoke generators (macros to avoid function calls)                        */  
+/* Information for constructing the generator                                */
 
-#define _unur_init(par)               (par)->init(par)
-
-#define _unur_sample_discr(gen)       (gen)->sample.discr(gen)
-#define _unur_sample_cont(gen)        (gen)->sample.cont(gen)
-#define _unur_sample_vec(gen,vector)  (gen)->sample.cvec(gen,vector)
-
-#define _unur_free(gen)               do {if(gen) (gen)->destroy(gen);} while(0)
+struct unur_sinv_par { 
+  double  u_resolution;      /* maximal error in u                           */
+  double  bleft;             /* left border of the domain                    */
+  double  bright;            /* right border of the domain                   */
+};
 
 /*---------------------------------------------------------------------------*/
-/* get type of transformation method                                         */
+/* store information about splines                                           */
 
-#define _unur_gen_is_discr(gen) ( (((gen)->method & UNUR_MASK_TYPE) == UNUR_METH_DISCR) ? 1 : 0 )
-#define _unur_gen_is_cont(gen)  ( (((gen)->method & UNUR_MASK_TYPE) == UNUR_METH_CONT)  ? 1 : 0 )
-#define _unur_gen_is_vec(gen)   ( (((gen)->method & UNUR_MASK_TYPE) == UNUR_METH_VEC)   ? 1 : 0 )
+#define UNUR_SINV_SPLINE_ORDER   (3)
 
-/*---------------------------------------------------------------------------*/
-/* aux routine when no sampling routine is available                         */
+struct unur_sinv_interval {
 
-double _unur_sample_cont_error( UNUR_GEN *gen );
+  double spline[UNUR_SINV_SPLINE_ORDER+1];   /* coefficients of spline       */
+  double  bl, br;                   /* boundary of spline interval           */
 
-/*---------------------------------------------------------------------------*/
-/* copy (clone) generator objects                                            */
+  struct unur_sinv_interval *next;  /* pointer to next element in list       */
 
-UNUR_GEN *_unur_arou_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_cstd_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_dari_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_dau_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_dgt_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_dsrou_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_dstd_clone ( const UNUR_GEN *gen );
-UNUR_GEN *_unur_empk_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_ninv_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_sinv_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_srou_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_ssr_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_tabl_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_tdr_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_unif_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_utdr_clone( const UNUR_GEN *gen );
-UNUR_GEN *_unur_vempk_clone( const UNUR_GEN *gen );    /** TODO **/
-UNUR_GEN *_unur_vmt_clone( const UNUR_GEN *gen );    /** TODO **/
-
-/* no such routines:                                                         */
-/* UNUR_GEN *_unur_auto_clone( const UNUR_GEN *gen );                        */
-
+#ifdef UNUR_COOKIES
+  unsigned cookie;      /* magic cookie                                      */
+#endif
+};
 
 /*---------------------------------------------------------------------------*/
+/* The generator object                                                      */
+
+struct unur_sinv_gen { 
+  double  u_resolution;      /* maximal error in u                           */
+  double  bleft;             /* left border of the domain                    */
+  double  bright;            /* right border of the domain                   */
+
+  struct unur_sinv_interval *splines; /* pointer to splines                  */
+
+  double  Umin, Umax;        /* bounds for iid random variable in respect to
+                                the given (truncated) domain of the distr.   */
+  double  CDFmin, CDFmax;    /* CDF-bounds of domain                         */
+};
+
+/*---------------------------------------------------------------------------*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

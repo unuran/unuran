@@ -43,6 +43,7 @@ libmethods_a_SOURCES = \
  dsrou.c dsrou.h dsrou_struct.h \
  dstd.c  dstd.h  dstd_struct.h \
  ninv.c  ninv.h  ninv_struct.h \
+ sinv.c  sinv.h  sinv_struct.h \
  srou.c  srou.h  srou_struct.h \
  ssr.c   ssr.h   ssr_struct.h \
  tabl.c  tabl.h  tabl_struct.h \

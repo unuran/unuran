@@ -63,8 +63,10 @@
 #define CK_AROU_PAR      0x00100010u
 #define CK_AROU_GEN      0x00100011u
 #define CK_AROU_SEG      0x00100012u
-#define CK_NINV_PAR      0x00100030u
-#define CK_NINV_GEN      0x00100031u
+#define CK_NINV_PAR      0x00100020u
+#define CK_NINV_GEN      0x00100021u
+#define CK_SINV_PAR      0x00100030u
+#define CK_SINV_GEN      0x00100031u
 #define CK_SROU_PAR      0x00100040u
 #define CK_SROU_GEN      0x00100041u
 #define CK_SSR_PAR       0x00100050u

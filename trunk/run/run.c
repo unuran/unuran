@@ -41,13 +41,14 @@ int main()
 
   distr = unur_distr_uniform(fpm,2);
   par = unur_utdr_new(distr);
-  gen = unur_init(par);
-  unur_test_chi2( gen, 10, 100, 0, 1 );
-  unur_free(gen);
+  //  gen = unur_init(par);
+  // unur_test_chi2( gen, 10, 100, 0, 1,stdout );
+  unur_run_tests( par, RUN_TESTS );
+  //  unur_free(gen);
   unur_distr_free(distr);
 
   
-
+#if 0
   distr = unur_distr_uniform(NULL,0);
   par = unur_utdr_new(distr);
   gen = unur_init(par);
@@ -65,8 +66,6 @@ int main()
   unur_free(gen);
   unur_distr_free(distr);
 
-
-#if 0
 
 
   distrh = unur_distr_hypergeometric(fpmh,3);

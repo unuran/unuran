@@ -173,6 +173,11 @@ static void _unur_ninv_debug_init( struct unur_gen *gen );
 /* print after generator has been initialized has completed.                 */
 /*---------------------------------------------------------------------------*/
 
+static void _unur_ninv_debug_start( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* print starting points or table for algorithms into logfile.               */
+/*---------------------------------------------------------------------------*/
+
 static void _unur_ninv_debug_sample_regula( struct unur_gen *gen, 
 					    double u, double x, double fx, int iter );
 /*---------------------------------------------------------------------------*/
@@ -625,6 +630,7 @@ unur_ninv_chg_table( struct unur_gen *gen, int tbl_pnts )
      /*   0 ... on error                                                     */
      /*----------------------------------------------------------------------*/
 {
+  int ok;
 
   /* check arguments */
   CHECK_NULL(gen, 0);
@@ -632,8 +638,16 @@ unur_ninv_chg_table( struct unur_gen *gen, int tbl_pnts )
   /*  free(GEN.table);   not freed, because realloc() is used */ 
   /*  free(GEN.f_table); not freed, because realloc() is used */
   GEN.table_size = (tbl_pnts >= 10) ? tbl_pnts : 10;
+
+  ok = _unur_ninv_create_table(gen); 
+
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  if (gen->debug & NINV_DEBUG_CHG) 
+    if (ok) _unur_ninv_debug_start( gen );
+#endif
   
-  return _unur_ninv_create_table(gen);  
+  return ok;
 
 } /* end of unur_ninv_chg_table() */
 
@@ -735,6 +749,8 @@ unur_ninv_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
      /*   0 ... on error                                                     */
      /*----------------------------------------------------------------------*/
 {
+  int ok;
+
   /* check arguments */
   CHECK_NULL(gen,0);
   _unur_check_gen_object(gen, NINV);
@@ -759,10 +775,20 @@ unur_ninv_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
 
   /* regenerate table */
   if (GEN.table != NULL)
-    return _unur_ninv_create_table(gen);
+    ok = _unur_ninv_create_table(gen);
 
   else /* or compute starting points */
-    return unur_ninv_chg_start( gen, 0., 0. );
+    ok = unur_ninv_chg_start( gen, 0., 0. );
+
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  if (gen->debug & NINV_DEBUG_CHG) {
+    _unur_distr_cont_debug( &(gen->distr), gen->genid );
+    if (ok) _unur_ninv_debug_start( gen );
+  }
+#endif
+
+  return ok;
 
 } /* end of unur_ninv_chg_pdfparams() */
 
@@ -959,14 +985,13 @@ _unur_ninv_compute_start( struct unur_gen *gen )
     GEN.s[0] = _unur_ninv_regula(gen,u);
 
     /* right percentile */
-    //    GEN.s[1] = min( DISTR.domain[1], GEN.s[0]+20. );
+    GEN.s[1] = min( DISTR.domain[1], GEN.s[0]+20. );
     u = GEN.CDFmin + 0.5*(1.+INTERVAL_COVERS)*(GEN.CDFmax-GEN.CDFmin);
     GEN.s[1] = _unur_ninv_regula(gen,u);
     
     /* compute CDF at starting points */
     GEN.CDFs[0] = CDF(GEN.s[0]);
     GEN.CDFs[1] = CDF(GEN.s[1]);
-
 
     break;    /* case REGULA end */
 
@@ -975,7 +1000,6 @@ _unur_ninv_compute_start( struct unur_gen *gen )
     /* get arbitrary points */
     GEN.s[0] = max( DISTR.domain[0], -9.987655 );
     GEN.s[1] = min( DISTR.domain[1], GEN.s[0]+20. );
- 
     GEN.CDFs[0] = CDF(GEN.s[0]); 
     GEN.CDFs[1] = CDF(GEN.s[1]);
 
@@ -1189,11 +1213,11 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
   /* ! no problems with INFINITY !  */
   if ( x1 < DISTR.trunc[0] || x1 >= DISTR.trunc[1] ){
     x1 = DISTR.trunc[0];
-    f1 = CDF(x1);
+    f1 = GEN.Umin;    /* = CDF(x1) */
   }
   if ( x2 > DISTR.trunc[1] || x2 <= DISTR.trunc[0] ){
     x2 = DISTR.trunc[1];
-    f2 = CDF(x2);
+    f2 = GEN.Umax;    /* = CDF(x2) */
   }
 
   /* compute function value at interval boundaries */
@@ -1221,9 +1245,9 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
     /* increase step width */
     if (step_count < MAX_STEPS)
       step *= 2.;
-    else{
- 	_unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,
-         "Regula Falsi can't find interval with sign change");
+    else {
+      _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,
+		  "Regula Falsi can't find interval with sign change");
       return INFINITY;
     }
   }  /* while end -- interval found */ 
@@ -1254,7 +1278,6 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
     if ( f2 == 0. || _unur_FP_same(fa, f2) )
       break; /* -> finished */
 
-
     
     length = x2 - a;  /* oriented length  */
     lengthabs = fabs(length);
@@ -1267,7 +1290,7 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
     /* secant or bisection step   */
     dx = ( _unur_FP_same(f1,f2) ) ? length/2. : f2*(x2-x1)/(f2-f1) ;  
     
-    /* minimaler schritt */
+    /* minimal step */
     if ( fabs(dx) < GEN.rel_x_resolution * x2abs ){
       dx = lengthsgn * 0.99 * GEN.rel_x_resolution * x2abs;
       while (x2 == x2 - dx){ /* dx too small  */
@@ -1359,7 +1382,6 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
   /* initialize starting point */
   if (GEN.table_on) {
 
-#if 1
     /* 0 <= i <= table_size-2  */
     if ( _unur_FP_same(GEN.CDFmin,GEN.CDFmax) ) {
       /* CDF values in table too close, so we use median point since 
@@ -1372,60 +1394,31 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
       else if (i > GEN.table_size - 2) i = GEN.table_size - 2;
     }
 
-    if (GEN.table[i+1] == INFINITY){
+    if (_unur_FP_is_infinity(GEN.table[i+1])) {
       x  = GEN.table[i];
       fx = GEN.f_table[i];
     }
-    else{
+    else {
       x  = GEN.table[i+1];
       fx = GEN.f_table[i+1];
     }
 
-    /** TODO !!! **/
-
-
-#else
-  if ( _unur_FP_same( GEN.Umin, GEN.Umax) ){
-    _unur_warning(gen->genid, UNUR_ERR_GEN_CONDITION, "CDF constant");
-    return INFINITY;     /** TODO: warum INFINITY ? **/
   }
 
-    /* i is between 0 and table_size-1 */
-    i  = (int) ( U *
-      ( (GEN.Umax-GEN.Umin)/(GEN.CDFmax-GEN.CDFmin) +
-         GEN.Umin - GEN.CDFmin ) *
-      ( GEN.table_size - 2 ) );
-
-    /* neccessary if domain is expanded -> start with extreme tblpts */
-    i = (i < 0) ? 0 : i;
-    i = (i > GEN.table_size - 1) ? GEN.table_size -1 : i;
-    if (GEN.table[i+1] == INFINITY){
-      x  = GEN.table[i];
-      fx = GEN.f_table[i];
-    }
-    else{
-      x  = GEN.table[i+1];
-      fx = GEN.f_table[i+1];
-    }
-    /*  fx = GEN.CDFmin + 
-             (i+1)*((GEN.CDFmax-GEN.CDFmin)/(GEN.table_size-1.0));  */
-#endif
-
-  }
-  else{
-    x     = GEN.s[0];
-    fx    = GEN.CDFs[0];
+  else { /* no table */
+    x  = GEN.s[0];
+    fx = GEN.CDFs[0];
   }
 
   /* in case of truncated domain there might be a better starting point */
   /* ! no problem with INFINITY ! */
   if ( x < DISTR.trunc[0] ){
     x  = DISTR.trunc[0];
-    fx = CDF(x);
+    fx = GEN.Umin;    /* = CDF(x) */
   }
-  if ( x > DISTR.trunc[1] ){
+  else if ( x > DISTR.trunc[1] ){
     x  = DISTR.trunc[1];
-    fx = CDF(x);
+    fx = GEN.Umax;    /* = CDF(x) */
   }
 
   fx   -= U;
@@ -1442,7 +1435,7 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
 
     flat_count = 0;
     while (dfx == 0.) {   /* function flat at x */
-      //printf("step: %g, x: %g, fx: %g, dfx: %g\n",step, x, fx, dfx);
+      /* printf("step: %g, x: %g, fx: %g, dfx: %g\n",step, x, fx, dfx); */
 
       if (fx == 0.)  /* exact hit -> leave while-loop */
 	break; 
@@ -1455,13 +1448,13 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
       fxtmp    = CDF(xtmp) - U;
       fxtmpabs = fabs(fxtmp);
 
-      if ( fxtmpabs < fxabs ){        /* improvement, update x            */
-	//printf("fxabs: %g tmpabs: %g\n", fxabs, fxtmpabs);
+      if ( fxtmpabs < fxabs ) {       /* improvement, update x            */
+	/* printf("fxabs: %g tmpabs: %g\n", fxabs, fxtmpabs); */
         step = 1.;     /* set back stepsize */
         x     = xtmp;
         fx    = fxtmp;
       }
-      else if ( fxtmp*fx < 0. ){/*step was too large, dont update x */
+      else if ( fxtmp*fx < 0. ) { /*step was too large, dont update x */
         step /= 2.;                      
       } 
       else{                           /* step was too short, update x     */
@@ -1475,29 +1468,25 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
      
       if (flat_count < MAX_FLAT_COUNT)
 	flat_count++;
-      else{
+      else {
 	_unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,
-         "Newton's method can't leave flat region");
+		    "Newton's method can't leave flat region");
 	return INFINITY;
       }
-
+      
     }   /* end of while-loop, (leaving flat region) */
+    
+    step = 1.;   /* set back stepsize */
 
-   step = 1.;   /* set back stepsize */
-
-   if (fx == 0.)  /* exact hit -> finished */
-     break;
-
-
-    do{    /* newton-step  (damped if nececcary) */
-        damp /= 2.;
-        xtmp = x - damp * fx/dfx;
-        fxtmp = CDF(xtmp) - U;
-    }while ( fabs(fxtmp)-fxabs >= fxabs * GEN.rel_x_resolution );  /* no improvement */
-//while (fabs(fxtmp) > fxabs);   /* no improvement */
+    if (fx == 0.)  /* exact hit -> finished */
+      break;
 
 
-
+    do {    /* newton-step  (damped if nececcary) */
+      damp /= 2.;
+      xtmp = x - damp * fx/dfx;
+      fxtmp = CDF(xtmp) - U;
+    } while (fabs(fxtmp) > fxabs * (1.+GEN.rel_x_resolution));   /* no improvement */
     
     /* updation variables according to newton-step      */
     damp  = 2.;       /* set back factor for damping    */
@@ -1525,6 +1514,7 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
   return x;
 
 } /* end of _unur_ninv_sample_newton() */
+
 /*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/
@@ -1583,7 +1573,6 @@ _unur_ninv_debug_init( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   FILE *log;
-  int i;
 
   /* check arguments */
   CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_NINV_GEN,/*void*/);
@@ -1608,6 +1597,31 @@ _unur_ninv_debug_init( struct unur_gen *gen )
   }
   fprintf(log,"%s:\n",gen->genid);
 
+  _unur_ninv_debug_start(gen);
+
+  fprintf(log,"%s:\n",gen->genid);
+
+} /* end of _unur_ninv_debug_init() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_ninv_debug_start( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* print starting points or table for algorithms into logfile           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{
+  FILE *log;
+  int i;
+
+  /* check arguments */
+  CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_NINV_GEN,/*void*/);
+
+  log = unur_get_stream();
+
   if (GEN.table_on) {
     fprintf(log,"%s: use table (size = %d)\n",gen->genid,GEN.table_size);
     if (gen->debug & NINV_DEBUG_TABLE)
@@ -1623,7 +1637,7 @@ _unur_ninv_debug_init( struct unur_gen *gen )
 
   fprintf(log,"%s:\n",gen->genid);
 
-} /* end of _unur_ninv_debug_init() */
+} /* end of _unur_ninv_debug_start() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -1698,18 +1712,3 @@ _unur_ninv_debug_chg_truncated( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 #endif   /* end UNUR_ENABLE_LOGGING */
 /*---------------------------------------------------------------------------*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

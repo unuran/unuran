@@ -33,7 +33,8 @@
 
 /*---------------------------------------------------------------------------*/
 
-#define CHI_TEST_INTERVALS 100
+#define CHI_TEST_INTERVALS 100  /* number of intervals for chi^2 test        */
+#define CHI_TEST_VERBOSITY 2    /* verbosity level for chi^2 test: 0 | 1 | 2 */
 
 /*---------------------------------------------------------------------------*/
 /* enable/disable tests                                                      */

@@ -517,10 +517,10 @@ int run_validate_chi2( FILE *LOG, int line, UNUR_GEN *gen, char todo )
 
     switch (type) {
     case UNUR_DISTR_CONT:
-      pval = unur_test_chi2( gen, CHI_TEST_INTERVALS, 0, 20, 0);
+      pval = unur_test_chi2( gen, CHI_TEST_INTERVALS, 0, 20, CHI_TEST_VERBOSITY, LOG);
       break;
     case UNUR_DISTR_DISCR:
-      pval = unur_test_chi2( gen, CHI_TEST_INTERVALS, 100000, 20, 0);
+      pval = unur_test_chi2( gen, CHI_TEST_INTERVALS, 100000, 20, CHI_TEST_VERBOSITY, LOG);
       break;
     default:
       fprintf(stderr,"this should not happen\n");

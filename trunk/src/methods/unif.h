@@ -38,11 +38,24 @@
  *                                                                           *
  *****************************************************************************/
 
+/*
+   =METHOD  UNIF  wrapper for UNIForm random number generator
+
+   UNIF is a simple wrapper that makes it possible to use a uniform
+   random number generators as a UNURAN generator. There are no
+   parameters for this method.
+*/
+
 /*---------------------------------------------------------------------------*/
 /* Routines for user interface                                               */
 
+/* =ROUTINES */
+
 UNUR_PAR *unur_unif_new( void );
-/* get default parameters for generator                                      */
+/* 
+   Get default parameters for generator.                                     
+   UNIF does not need a distribution object.
+*/
 
 /*---------------------------------------------------------------------------*/
 

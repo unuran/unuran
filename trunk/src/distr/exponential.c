@@ -71,8 +71,10 @@
 
 #include <unur_distr.h>
 
+#include <unur_cookies.h>
 #include <unur_errno.h>
 #include <unur_math.h>
+#include <unur_umalloc.h>
 #include <unur_utils.h>
 
 /*---------------------------------------------------------------------------*/
@@ -89,21 +91,13 @@ unur_pdf_exponential( double x, double *param, int n_param )
   switch (n_param) {
 
   case 2:  /* non standard */
-    CHECK_NULL(param,RETURN_NULL);
-#if CHECKARGS
-    if (sigma <= 0.) {
-      _unur_error(distr_name ,UNUR_ERR_DISTR,"scale parameter sigma <= 0.");
-      return 0.;
-    }
-#endif
     /* standardize */
     x = (x-theta) / sigma;
-
   case 0:  /* standard */
     return ( (x<0.) ? 0. : exp(-x) );
 
   default:
-    _unur_error(distr_name ,UNUR_ERR_NPARAM,"");
+    _unur_error(distr_name,UNUR_ERR_NPARAM,"");
     return 0.;
   }
 
@@ -117,20 +111,12 @@ unur_dpdf_exponential( double x, double *param, int n_param )
   switch (n_param) {
 
   case 2:  /* non standard */
-    CHECK_NULL(param,RETURN_NULL);
-#if CHECKARGS
-    if (sigma <= 0.) {
-      _unur_error("Exponential distribution",UNUR_ERR_DISTR,"scale parameter sigma <= 0.");
-      return 0.;
-    }
-#endif
     return ( (x<theta) ? 0. : -exp( -(x-theta)/sigma ) / sigma);
-
   case 0:  /* standard */
     return ( (x<0.) ? 0. : -exp(-x) );
 
   default:
-    _unur_error(distr_name ,UNUR_ERR_NPARAM,"");
+    _unur_error(distr_name,UNUR_ERR_NPARAM,"");
     return 0.;
   }
 
@@ -144,21 +130,13 @@ unur_cdf_exponential( double x, double *param, int n_param )
   switch (n_param) {
 
   case 2:  /* non standard */
-    CHECK_NULL(param,RETURN_NULL);
-#if CHECKARGS
-    if (sigma <= 0.) {
-      _unur_error(distr_name ,UNUR_ERR_DISTR,"scale parameter sigma <= 0.");
-      return 0.;
-    }
-#endif
     /* standardize */
     x = (x-theta) / sigma;
-
   case 0:  /* standard */
     return ( (x<0.) ? 0. : 1.-exp(-x) );
     
   default:
-    _unur_error(distr_name ,UNUR_ERR_NPARAM,"");
+    _unur_error(distr_name,UNUR_ERR_NPARAM,"");
     return 0.;
   }
 
@@ -172,20 +150,12 @@ unur_area_exponential( double *param, int n_param )
   switch (n_param) {
 
   case 2:  /* non standard */
-    CHECK_NULL(param,RETURN_NULL);
-#if CHECKARGS
-    if (sigma <= 0.) {
-      _unur_error(distr_name ,UNUR_ERR_DISTR,"scale parameter sigma <= 0.");
-      return 0.;
-    }
-#endif
     return sigma;
-
   case 0:  /* standard */
     return 1.;
     
   default:
-    _unur_error(distr_name ,UNUR_ERR_NPARAM,"");
+    _unur_error(distr_name,UNUR_ERR_NPARAM,"");
     return 0.;
   }
 
@@ -199,32 +169,99 @@ unur_mode_exponential( double *param, int n_param )
   switch (n_param) {
 
   case 2:  /* non standard */
-    CHECK_NULL(param,RETURN_NULL);
-#if CHECKARGS
-    if (sigma <= 0.) {
-      _unur_error(distr_name ,UNUR_ERR_DISTR,"scale parameter sigma <= 0.");
-      return 0.;
-    }
-#endif
     return theta;
-
   case 0:  /* standard */
     return 0.;
     
   default:
-    _unur_error(distr_name ,UNUR_ERR_NPARAM,"");
+    _unur_error(distr_name,UNUR_ERR_NPARAM,"");
     return 0.;
   }
 
 } /* end of unur_mode_exponential() */
 
 /*---------------------------------------------------------------------------*/
+struct unur_distr *
+unur_distr_exponential( double *params, int n_params )
+{
+#define DISTR distr->data.cont
+  register struct unur_distr *distr;
+
+  /* check new parameter for generator */
+  if (n_params < 0 || n_params > 2) {
+    _unur_warning(distr_name,UNUR_ERR_GENERIC,"invalid number parameter");
+    return NULL;
+  }
+  if (n_params > 0)
+    CHECK_NULL(params,RETURN_NULL);
+
+  /* allocate structure */
+  distr = _unur_malloc( sizeof(struct unur_distr) );
+
+  /* set magic cookie */
+  COOKIE_SET(distr,CK_DISTR_CONT);
+
+  /* set type of distribution */
+  distr->type = UNUR_DISTR_CONT;
+
+  /* set distribution id */
+  distr->id = UNUR_DISTR_EXPONENTIAL;
+
+  /* name of distribution */
+  distr->name = distr_name;
+                
+  /* functions */
+  DISTR.pdf  = unur_pdf_exponential;  /* pointer to p.d.f.               */
+  DISTR.dpdf = unur_dpdf_exponential; /* pointer to derivative of p.d.f. */
+  DISTR.cdf  = unur_cdf_exponential;  /* pointer to c.d.f.               */
+
+  /* copy parameters */
+  switch (n_params) {
+  case 0:
+    DISTR.params[0] = 1.;        /* default for sigma */
+    DISTR.params[1] = 0.;        /* default for theta */
+    break;
+  case 1:
+    DISTR.params[0] = params[0]; /* sigma */
+    DISTR.params[1] = 0.;        /* default for theta */
+    n_params = 2;
+    break;
+  case 2:
+    DISTR.params[0] = params[0];  /* sigma */
+    DISTR.params[1] = params[1];  /* theta */
+    break;
+  }
+
+  /* check parameter sigma */
+  if (DISTR.params[0] <= 0.) {
+    _unur_error(distr_name,UNUR_ERR_DISTR,"scale parameter sigma <= 0.");
+    free( distr ); return NULL;
+  }
+
+  /* number of arguments */
+  DISTR.n_params = n_params;
+
+  /* mode and area below p.d.f. */
+  DISTR.mode = unur_mode_exponential(DISTR.params,DISTR.n_params);
+  DISTR.area = unur_area_exponential(DISTR.params,DISTR.n_params);
+
+  /* domain */
+  DISTR.domain[0] = DISTR.params[1]; /* left boundary  */
+  DISTR.domain[1] = INFINITY;        /* right boundary */
+
+  /* indicate which parameters are set */
+  distr->set = ( UNUR_DISTR_SET_PARAMS | 
+		 UNUR_DISTR_SET_DOMAIN |
+		 UNUR_DISTR_SET_MODE   |
+		 UNUR_DISTR_SET_PDFAREA );
+
+  /* return pointer to object */
+  return distr;
+
+#undef DISTR
+} /* end of unur_distr_exponential() */
+
+/*---------------------------------------------------------------------------*/
 #undef sigma 
 #undef theta 
 /*---------------------------------------------------------------------------*/
-
-
-
-
-
-

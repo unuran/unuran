@@ -63,17 +63,10 @@ struct unur_gen *unur_test_timing( struct unur_par *par, int log_samplesize );
 int unur_test_count_urn( struct unur_gen *gen, int samplesize );
 
 /* Chi^2 tests                                                               */
-double unur_test_chi2( struct unur_gen *gen, 
-		       double (*cdf)(double x, double *fparam, int n_fparam),
-		       int intervals, int samplesize, int classmin, int output );
+double unur_test_chi2( struct unur_gen *gen, int intervals, int samplesize, int classmin, int output );
 
 /* make scatterplot of generated numbers                                     */
-int unur_make_scatterplot( struct unur_gen *gen, 
-			   double (*cdf)(double x, double *fparam, int n_fparam) );
-
-/* sample from generator and transform to uniform by means of the c.d.f.     */
-double _unur_sample_cont_transformed( struct unur_gen *gen, 
-				      double (*cdf)(double x, double *fparam, int n_fparam) );
+int unur_make_scatterplot( struct unur_gen *gen );
 
 /* possible tests                                                            */
 #define UNUR_TEST_ALL      ~(0UL)     /* make all possible tests */

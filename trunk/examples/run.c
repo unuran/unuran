@@ -71,6 +71,8 @@ int main()
   struct unur_distr *distr_cauchy;
   struct unur_distr *distr_uniform;
 
+  struct unur_distr *distr_xxx;
+
   /* ------------------------- */
 
   distr_normal = unur_distr_normal(NULL,0);
@@ -96,30 +98,19 @@ int main()
 
 #if RUN_CSTD == 1
 
-/*    par = unur_cstd_new("  normal (0 , 1 ) "); */
-/*    unur_run_tests(par,RUN_TESTS,unur_cdf_normal); */
-
-  par = unur_cstd_new("normal");
+  distr_xxx = unur_distr_normal(NULL,0);
+  par = unur_cstd_new(distr_xxx);
   unur_run_tests(par,RUN_TESTS,unur_cdf_normal);
 
-/*    par = unur_cstd_new("gamma"); */
-/*    unur_run_tests(par,RUN_TESTS,unur_cdf_gamma); */
-
-  par = unur_cstd_new("gamma(5)");
+  fpar[0] = 5.;
+  distr_xxx = unur_distr_gamma(fpar,1);
+  par = unur_cstd_new(distr_xxx);
   unur_run_tests(par,RUN_TESTS,unur_cdf_gamma);
 
-/*    par = unur_cstd_new("gamma(5,2)"); */
-/*    unur_run_tests(par,RUN_TESTS,unur_cdf_gamma); */
-
-/*    par = unur_cstd_new("gamma(5,3,-3)"); */
-/*    unur_run_tests(par,RUN_TESTS,unur_cdf_gamma); */
-
-/*    par = unur_cstd_new("exponential"); */
-/*    unur_run_tests(par,RUN_TESTS,unur_cdf_exponential); */
-
-  par = unur_cstd_new("exponential(5)");
+  fpar[0] = 5.;
+  distr_xxx = unur_distr_exponential(fpar,1);
+  par = unur_cstd_new(distr_xxx);
   unur_run_tests(par,RUN_TESTS,unur_cdf_exponential);
-
 
 #endif
 

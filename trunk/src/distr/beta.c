@@ -111,7 +111,7 @@ unur_pdf_beta(double x, double *params, int n_params)
     return (pow(x,p-1.) * pow(1.-x,q-1.));
     
   default:
-    _unur_error(distr_name ,UNUR_ERR_NPARAM,"");
+    _unur_error(distr_name,UNUR_ERR_NPARAM,"");
     return 0.;
   }
 
@@ -143,7 +143,7 @@ unur_dpdf_beta(double x, double *params, int n_params)
     return (pow(x,p-2.) * pow(1.-x,q-2.) * ( (p-1.)*(1.-x) - (q-1.)*x ) * factor);
     
   default:
-    _unur_error(distr_name ,UNUR_ERR_NPARAM,"");
+    _unur_error(distr_name,UNUR_ERR_NPARAM,"");
     return 0.;
   }
 
@@ -166,7 +166,7 @@ unur_cdf_beta(double x, double *params, int n_params)
     return _unur_cdf_beta_ext(x,p,q);
 
   default:
-    _unur_error(distr_name ,UNUR_ERR_NPARAM,"");
+    _unur_error(distr_name,UNUR_ERR_NPARAM,"");
     return 0.;
   }
 
@@ -201,7 +201,7 @@ unur_mode_beta(double *params, int n_params)
     return mode;
 
   default:
-    _unur_error(distr_name ,UNUR_ERR_NPARAM,"");
+    _unur_error(distr_name,UNUR_ERR_NPARAM,"");
     return 0.;
   }
   
@@ -222,7 +222,7 @@ unur_area_beta(double *params, int n_params)
     return exp(_unur_gammaln(p) + _unur_gammaln(q) - _unur_gammaln(p+q) + (b-a)*(p+q-1.) );
 
   default:
-    _unur_error(distr_name ,UNUR_ERR_NPARAM,"");
+    _unur_error(distr_name,UNUR_ERR_NPARAM,"");
     return 0.;
   }
 
@@ -233,12 +233,13 @@ unur_area_beta(double *params, int n_params)
 struct unur_distr *
 unur_distr_beta( double *params, int n_params )
 {
+#define DISTR distr->data.cont
   register struct unur_distr *distr;
 
   /* check new parameter for generator */
   CHECK_NULL(params,RETURN_NULL);
   if (n_params != 2 && n_params != 4) {
-    _unur_warning(NULL,UNUR_ERR_GENERIC,"invalid number parameter");
+    _unur_warning(distr_name,UNUR_ERR_GENERIC,"invalid number parameter");
     return NULL;
   }
 
@@ -251,56 +252,63 @@ unur_distr_beta( double *params, int n_params )
   /* set type of distribution */
   distr->type = UNUR_DISTR_CONT;
 
+  /* set distribution id */
+  distr->id = UNUR_DISTR_BETA;
+
+  /* name of distribution */
+  distr->name = distr_name;
+
   /* functions */
-  distr->data.cont.pdf  = unur_pdf_beta;     /* pointer to p.d.f.            */
-  distr->data.cont.dpdf = unur_dpdf_beta;    /* pointer to derivative of p.d.f. */
-  distr->data.cont.cdf  = unur_cdf_beta;     /* pointer to c.d.f.            */
+  DISTR.pdf  = unur_pdf_beta;     /* pointer to p.d.f.            */
+  DISTR.dpdf = unur_dpdf_beta;    /* pointer to derivative of p.d.f. */
+  DISTR.cdf  = unur_cdf_beta;     /* pointer to c.d.f.            */
 
   /* copy parameters */
-  distr->data.cont.params[0] = params[0];    /* p */
-  distr->data.cont.params[1] = params[1];    /* q */
+  DISTR.params[0] = params[0];    /* p */
+  DISTR.params[1] = params[1];    /* q */
   switch (n_params) {
   case 2:
-    distr->data.cont.params[2] = 0.;         /* default for a */
-    distr->data.cont.params[3] = 1.;         /* default for b */
+    DISTR.params[2] = 0.;         /* default for a */
+    DISTR.params[3] = 1.;         /* default for b */
     break;
   case 4:
-    distr->data.cont.params[2] = params[2];  /* a */
-    distr->data.cont.params[3] = params[3];  /* b */
+    DISTR.params[2] = params[2];  /* a */
+    DISTR.params[3] = params[3];  /* b */
     break;
   }
 
   /* check parameters p and q */
-  if (distr->data.cont.params[0] <= 0. || distr->data.cont.params[1] <= 0.) {
+  if (DISTR.params[0] <= 0. || DISTR.params[1] <= 0.) {
     _unur_error(distr_name,UNUR_ERR_DISTR,"p <= 0 or q <= 0.");
     free( distr ); return NULL;
   }
   /* check parameters a and b */
-  if (distr->data.cont.params[2] >= distr->data.cont.params[3]) {
+  if (DISTR.params[2] >= DISTR.params[3]) {
     _unur_error(distr_name ,UNUR_ERR_DISTR,"invalid domain: a >= b!");
     free( distr ); return NULL;
   }
 
   /* number of arguments */
-  distr->data.cont.n_params = n_params;
+  DISTR.n_params = n_params;
 
   /* mode and area below p.d.f. */
-  distr->data.cont.mode = unur_mode_beta(distr->data.cont.params,distr->data.cont.n_params);
-  distr->data.cont.area = unur_area_beta(distr->data.cont.params,distr->data.cont.n_params);
+  DISTR.mode = unur_mode_beta(DISTR.params,DISTR.n_params);
+  DISTR.area = unur_area_beta(DISTR.params,DISTR.n_params);
 
   /* domain */
-  distr->data.cont.domain[0] = distr->data.cont.params[2]; /* left boundary  */
-  distr->data.cont.domain[1] = distr->data.cont.params[3]; /* right boundary */
+  DISTR.domain[0] = DISTR.params[2]; /* left boundary  */
+  DISTR.domain[1] = DISTR.params[3]; /* right boundary */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_PARAMS | 
 		 UNUR_DISTR_SET_DOMAIN |
 		 UNUR_DISTR_SET_MODE   |
 		 UNUR_DISTR_SET_PDFAREA );
-                
+
   /* return pointer to object */
   return distr;
 
+#undef DISTR
 } /* end of unur_distr_beta() */
 
 /*---------------------------------------------------------------------------*/

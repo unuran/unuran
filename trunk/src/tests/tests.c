@@ -111,11 +111,11 @@ unur_run_tests( struct unur_par *par, unsigned long tests,
 
   /* run chi2-test*/
   if (tests & UNUR_TEST_CHI2)
-    unur_test_chi2(gen,cdf,TEST_CHI2_INTERVALS,0,0,TEST_CHI2_VERBOSE);
+    unur_test_chi2(gen,TEST_CHI2_INTERVALS,0,0,TEST_CHI2_VERBOSE);
 
   /* make scatterplot */
   if (tests & UNUR_TEST_SCATTER)
-     unur_make_scatterplot(gen, cdf);
+     unur_make_scatterplot(gen);
     
   /* free generator */
   unur_free(gen);

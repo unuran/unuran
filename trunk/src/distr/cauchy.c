@@ -123,12 +123,13 @@ unur_area_cauchy(double *params, int n_params)
 struct unur_distr *
 unur_distr_cauchy( double *params, int n_params )
 {
+#define DISTR distr->data.cont
   register struct unur_distr *distr;
 
   /* check new parameter for generator */
   CHECK_NULL(params,RETURN_NULL);
   if (n_params != 2) {
-    _unur_warning(NULL,UNUR_ERR_GENERIC,"invalid number parameter");
+    _unur_warning(distr_name,UNUR_ERR_GENERIC,"invalid number parameter");
     return NULL;
   }
 
@@ -141,31 +142,37 @@ unur_distr_cauchy( double *params, int n_params )
   /* set type of distribution */
   distr->type = UNUR_DISTR_CONT;
 
+  /* set distribution id */
+  distr->id = UNUR_DISTR_CAUCHY;
+
+  /* name of distribution */
+  distr->name = distr_name;
+                
   /* functions */
-  distr->data.cont.pdf  = unur_pdf_cauchy;   /* pointer to p.d.f.            */
-  distr->data.cont.dpdf = unur_dpdf_cauchy;  /* pointer to derivative of p.d.f. */
-  distr->data.cont.cdf  = unur_cdf_cauchy;   /* pointer to c.d.f.            */
+  DISTR.pdf  = unur_pdf_cauchy;   /* pointer to p.d.f.            */
+  DISTR.dpdf = unur_dpdf_cauchy;  /* pointer to derivative of p.d.f. */
+  DISTR.cdf  = unur_cdf_cauchy;   /* pointer to c.d.f.            */
 
   /* copy parameters */
-  distr->data.cont.params[0] = params[0];    /* theta */
-  distr->data.cont.params[1] = params[1];    /* lambda */
+  DISTR.params[0] = params[0];    /* theta */
+  DISTR.params[1] = params[1];    /* lambda */
 
   /* check parameter lambda */
-  if (distr->data.cont.params[1] <= 0.) {
-    _unur_error(distr_name ,UNUR_ERR_DISTR,"lambda <= 0.");
+  if (DISTR.params[1] <= 0.) {
+    _unur_error(distr_name,UNUR_ERR_DISTR,"lambda <= 0.");
     free( distr ); return NULL;
   }
 
   /* number of arguments */
-  distr->data.cont.n_params = n_params;
+  DISTR.n_params = n_params;
 
   /* mode and area below p.d.f. */
-  distr->data.cont.mode = unur_mode_cauchy(distr->data.cont.params,distr->data.cont.n_params);
-  distr->data.cont.area = unur_area_cauchy(distr->data.cont.params,distr->data.cont.n_params);
+  DISTR.mode = unur_mode_cauchy(DISTR.params,DISTR.n_params);
+  DISTR.area = unur_area_cauchy(DISTR.params,DISTR.n_params);
 
   /* domain */
-  distr->data.cont.domain[0] = -INFINITY;   /* left boundary  */
-  distr->data.cont.domain[1] = INFINITY;    /* right boundary */
+  DISTR.domain[0] = -INFINITY;   /* left boundary  */
+  DISTR.domain[1] = INFINITY;    /* right boundary */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_PARAMS | 
@@ -176,11 +183,10 @@ unur_distr_cauchy( double *params, int n_params )
   /* return pointer to object */
   return distr;
 
+#undef DISTR
 } /* end of unur_distr_cauchy() */
 
 /*---------------------------------------------------------------------------*/
 #undef theta 
 #undef lambda
 /*---------------------------------------------------------------------------*/
-
-

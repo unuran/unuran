@@ -104,23 +104,23 @@
  *****************************************************************************/
 
 /*  Beta distribution [3; ch.25, p.210]                                      */
+struct unur_distr *unur_distr_beta(double *params, int n_params);
 double unur_pdf_beta(double x, double *params, int n_params);
 double unur_dpdf_beta(double x, double *params, int n_params);
 double unur_cdf_beta(double x, double *params, int n_params);
 double unur_mode_beta(double *params, int n_params);
 double unur_area_beta(double *params, int n_params);
-struct unur_distr *unur_distr_beta(double *params, int n_params);
 
 /* Burr ?? distribution                                                      */
 /** TODO **/
 
 /*  Cauchy distribution [2; ch.16, p.299]                                    */
+struct unur_distr *unur_distr_cauchy(double *params, int n_params);
 double unur_pdf_cauchy(double x, double *params, int n_params);
 double unur_dpdf_cauchy(double x, double *params, int n_params);
 double unur_cdf_cauchy(double x, double *params, int n_params);
 double unur_mode_cauchy(double *params, int n_params);
 double unur_area_cauchy(double *params, int n_params);
-struct unur_distr *unur_distr_cauchy(double *params, int n_params);
 
 /*  Chisquare distribution [2; ch.18, p.416]                                 */
 double unur_pdf_chisquare(double x, double *params, int n_params);
@@ -131,6 +131,7 @@ double unur_cdf_chisquare(double x, double *params, int n_params);
 /** TODO **/
 
 /*  Exponential distribution [2; ch.19, p.494]                               */
+struct unur_distr *unur_distr_exponential(double *params, int n_params);
 double unur_pdf_exponential(double x, double *params, int n_params);
 double unur_dpdf_exponential(double x, double *params, int n_params);
 double unur_cdf_exponential(double x, double *params, int n_params);
@@ -138,12 +139,12 @@ double unur_area_exponential(double *params, int n_params);
 double unur_mode_exponential(double *params, int n_params);
 
 /*  Gamma distribution [2; ch.17, p.337]                                     */
+struct unur_distr *unur_distr_gamma(double *params, int n_params);
 double unur_pdf_gamma(double x, double *params, int n_params);
 double unur_dpdf_gamma(double x, double *params, int n_params);
 double unur_cdf_gamma(double x, double *params, int n_params);
 double unur_mode_gamma(double *params, int n_params);
 double unur_area_gamma(double *params, int n_params);
-struct unur_distr *unur_distr_gamma(double *params, int n_params);
 
 /* Generalized inverse Gaussian distribution                                 */
 /** TODO **/
@@ -164,12 +165,12 @@ double unur_pdf_lomax(double x, double *params, int n_params);
 double unur_dpdf_lomax(double x, double *params, int n_params);
 
 /*  Normal distribution [2; ch.13, p.80]                                     */
+struct unur_distr *unur_distr_normal( double *params, int n_params );
 double unur_pdf_normal(double x, double *params, int n_params);
 double unur_dpdf_normal(double x, double *params, int n_params);
 double unur_cdf_normal(double x, double *params, int n_params);
 double unur_mode_normal(double *params, int n_params);
 double unur_area_normal(double *params, int n_params);
-struct unur_distr *unur_distr_normal( double *params, int n_params );
 
 /*  Pareto distribution (of first kind) [2; ch.20, p.574]                    */
 double unur_pdf_pareto(double x, double *params, int n_params);
@@ -200,12 +201,12 @@ double unur_pdf_student(double x, double *params, int n_params);
 double unur_dpdf_student(double x, double *params, int n_params);
 
 /* Uniform distribution                                                      */
+struct unur_distr *unur_distr_uniform(double *params, int n_params);
 double unur_pdf_uniform(double x, double *params, int n_params);
 double unur_dpdf_uniform(double x, double *params, int n_params);
 double unur_cdf_uniform(double x, double *params, int n_params);
 double unur_mode_uniform(double *params, int n_params);
 double unur_area_uniform(double *params, int n_params);
-struct unur_distr *unur_distr_uniform(double *params, int n_params);
 
 /* Weibull distribution                                                      */
 /** TODO **/

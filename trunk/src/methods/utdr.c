@@ -573,7 +573,7 @@ _unur_utdr_debug_init( struct unur_par *par, struct unur_gen *gen,
   fprintf(log,"%s: method  = utdr (transformed density rejection with 3 points of contact)\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
-  _unur_distr_debug_cont( gen );
+  _unur_distr_debug_cont( gen->distr, gen->genid );
 
   fprintf(log,"%s: sampling routine = unur_utdr_sample",gen->genid);
   if (par->method & UNUR_MASK_SCHECK)

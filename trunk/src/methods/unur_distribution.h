@@ -71,6 +71,9 @@ struct unur_distr {
   } data;                           /* data for distribution                 */
 
   unsigned int type;                /* type of distribution                  */
+  unsigned int id;                  /* identifier for distribution           */
+  char *name;                       /* name of distribution                  */
+
   unsigned int set;                 /* indicate changed parameters           */
 
 #if UNUR_DEBUG & UNUR_DB_COOKIES    /* use magic cookies */
@@ -96,9 +99,21 @@ enum {
 }; 
 
 /*---------------------------------------------------------------------------*/
-/* function prototypes for manipulating distribution object                  */
+/* indentifiers for standard distributions                                   */
 
-/*   struct unur_distr *unur_distr_new( char *distr ); */
+enum {
+  UNUR_DISTR_GENERIC  = 0x0u,
+
+  UNUR_DISTR_BETA,
+  UNUR_DISTR_CAUCHY,
+  UNUR_DISTR_EXPONENTIAL,
+  UNUR_DISTR_GAMMA,
+  UNUR_DISTR_NORMAL,
+  UNUR_DISTR_UNIFORM,
+};
+
+/*---------------------------------------------------------------------------*/
+/* function prototypes for manipulating distribution object                  */
 
 /* create a new distribution object                                          */
 struct unur_distr *unur_distr_new_cont( void );
@@ -129,6 +144,9 @@ void unur_distr_copy( struct unur_distr *distr1, struct unur_distr *distr2 );
 
 void unur_distr_free( struct unur_distr *distr );
 /* free distribution object                                                  */
+
+void _unur_distr_debug_cont( struct unur_distr *distr, char *genid );
+/* write info about distribution into logfile                                */
 
 /*---------------------------------------------------------------------------*/
 #endif  /* __UNUR_DISTRIBUTION_H_SEEN */

@@ -95,7 +95,7 @@ unur_pdf_normal( double x, double *params, int n_params )
   case 0:  /* standard */
     return exp(-x*x/2.); 
   default:
-    _unur_error(distr_name ,UNUR_ERR_NPARAM,"");
+    _unur_error(distr_name,UNUR_ERR_NPARAM,"");
     return 0.;
   }
 
@@ -116,7 +116,7 @@ unur_dpdf_normal( double x, double *params, int n_params )
   case 0:  /* standard */
     return ( -x * exp(-x*x/2.) * factor );
   default:
-    _unur_error(distr_name ,UNUR_ERR_NPARAM,"");
+    _unur_error(distr_name,UNUR_ERR_NPARAM,"");
     return 0.;
   }
 
@@ -134,7 +134,7 @@ unur_cdf_normal( double x, double *params, int n_params )
   case 0:  /* standard */
     return _unur_cdf_normal_ext(x);
   default:
-    _unur_error(distr_name ,UNUR_ERR_NPARAM,"");
+    _unur_error(distr_name,UNUR_ERR_NPARAM,"");
     return 0.;
   }
 
@@ -152,7 +152,7 @@ unur_mode_normal( double *params, int n_params )
   case 0:  /* standard */
     return 0.;
   default:
-    _unur_error(distr_name ,UNUR_ERR_NPARAM,"");
+    _unur_error(distr_name,UNUR_ERR_NPARAM,"");
     return 0.;
   }
 } /* end of unur_mode_normal() */
@@ -169,7 +169,7 @@ unur_area_normal( double *params, int n_params )
   case 0:  /* standard */
     return M_SQRTPI * M_SQRT2;
   default:
-    _unur_error(distr_name ,UNUR_ERR_NPARAM,"");
+    _unur_error(distr_name,UNUR_ERR_NPARAM,"");
     return 0.;
   }
 
@@ -180,11 +180,12 @@ unur_area_normal( double *params, int n_params )
 struct unur_distr *
 unur_distr_normal( double *params, int n_params )
 {
+#define DISTR distr->data.cont
   register struct unur_distr *distr;
 
   /* check new parameter for generator */
   if (n_params < 0 || n_params > 2) {
-    _unur_warning(NULL,UNUR_ERR_GENERIC,"invalid number parameter");
+    _unur_warning(distr_name,UNUR_ERR_GENERIC,"invalid number parameter");
     return NULL;
   }
   if (n_params > 0)
@@ -193,50 +194,56 @@ unur_distr_normal( double *params, int n_params )
   /* allocate structure */
   distr = _unur_malloc( sizeof(struct unur_distr) );
 
-  /* set magiv cookie */
+  /* set magic cookie */
   COOKIE_SET(distr,CK_DISTR_CONT);
 
   /* set type of distribution */
   distr->type = UNUR_DISTR_CONT;
 
+  /* set distribution id */
+  distr->id = UNUR_DISTR_NORMAL;
+
+  /* name of distribution */
+  distr->name = distr_name;
+                
   /* functions */
-  distr->data.cont.pdf  = unur_pdf_normal;   /* pointer to p.d.f.            */
-  distr->data.cont.dpdf = unur_dpdf_normal;  /* pointer to derivative of p.d.f. */
-  distr->data.cont.cdf  = unur_cdf_normal;   /* pointer to c.d.f.            */
+  DISTR.pdf  = unur_pdf_normal;   /* pointer to p.d.f.            */
+  DISTR.dpdf = unur_dpdf_normal;  /* pointer to derivative of p.d.f. */
+  DISTR.cdf  = unur_cdf_normal;   /* pointer to c.d.f.            */
 
   /* copy parameters */
   switch (n_params) {
   case 0:
-    distr->data.cont.params[0] = 0.;        /* default for mu */
-    distr->data.cont.params[1] = 1.;        /* default for sigma */
+    DISTR.params[0] = 0.;        /* default for mu */
+    DISTR.params[1] = 1.;        /* default for sigma */
     break;
   case 1:
-    distr->data.cont.params[0] = params[0]; /* mu */
-    distr->data.cont.params[1] = 1.;        /* default for sigma */
+    DISTR.params[0] = params[0]; /* mu */
+    DISTR.params[1] = 1.;        /* default for sigma */
     n_params = 2;
     break;
   case 2:
-    distr->data.cont.params[0] = params[0];  /* mu */
-    distr->data.cont.params[1] = params[1];  /* sigma */
+    DISTR.params[0] = params[0];  /* mu */
+    DISTR.params[1] = params[1];  /* sigma */
     break;
   }
 
   /* check parameter sigma */
-  if (distr->data.cont.params[1] <= 0.) {
+  if (DISTR.params[1] <= 0.) {
     _unur_error(distr_name ,UNUR_ERR_DISTR,"scale parameter sigma <= 0.");
     free( distr ); return NULL;
   }
 
   /* number of arguments */
-  distr->data.cont.n_params = n_params;
+  DISTR.n_params = n_params;
 
   /* mode and area below p.d.f. */
-  distr->data.cont.mode = unur_mode_normal(distr->data.cont.params,distr->data.cont.n_params);
-  distr->data.cont.area = unur_area_normal(distr->data.cont.params,distr->data.cont.n_params);
+  DISTR.mode = unur_mode_normal(DISTR.params,DISTR.n_params);
+  DISTR.area = unur_area_normal(DISTR.params,DISTR.n_params);
 
   /* domain */
-  distr->data.cont.domain[0] = -INFINITY;   /* left boundary  */
-  distr->data.cont.domain[1] = INFINITY;    /* right boundary */
+  DISTR.domain[0] = -INFINITY;   /* left boundary  */
+  DISTR.domain[1] = INFINITY;    /* right boundary */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_PARAMS | 
@@ -247,6 +254,7 @@ unur_distr_normal( double *params, int n_params )
   /* return pointer to object */
   return distr;
 
+#undef DISTR
 } /* end of unur_distr_normal() */
 
 /*---------------------------------------------------------------------------*/

@@ -45,21 +45,22 @@
 /* Information for constructing the generator                                */
 
 struct unur_cstd_par { 
-  char *definition; /* description of standard distribution */
+  unsigned int variant;   /* indicates generator to be used                  */
 };
 
 /*---------------------------------------------------------------------------*/
 /* The generator object                                                      */
 
 struct unur_cstd_gen { 
-  double dist_param[UNUR_MAX_DIST_PARAMS]; /* parameters for standard distribution */
-  int    n_dist_param;  /* number of parameters for distribution             */
+  double *pdf_param;      /* parameters for standard distribution            */
+  int     n_pdf_param;    /* number of parameters for distribution           */
+  unsigned int variant;   /* indicates generator to be used                  */
 };
 
 /*---------------------------------------------------------------------------*/
 /* Routines for user interface                                               */
 
-struct unur_par *unur_cstd_new( char *definition );
+struct unur_par *unur_cstd_new( struct unur_distr *distr );
 /* get default parameters for generator                                      */
 
 struct unur_gen *unur_cstd_init( struct unur_par *parameters );

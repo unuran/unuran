@@ -103,7 +103,7 @@ unur_pdf_gamma( double x, double *params, int n_params )
     /*    return ( pow(x,alpha-1.) * exp(-x) ); */
 
   default:
-    _unur_error(distr_name ,UNUR_ERR_NPARAM,"");
+    _unur_error(distr_name,UNUR_ERR_NPARAM,"");
     return 0.;
   }
 
@@ -129,7 +129,7 @@ unur_dpdf_gamma( double x, double *params, int n_params )
     return ( pow(x,alpha-2.) * exp(-x) *  ((alpha-1.) -x) * factor ); 
 
   default:
-    _unur_error(distr_name ,UNUR_ERR_NPARAM,"");
+    _unur_error(distr_name,UNUR_ERR_NPARAM,"");
     return 0.;
   }
 
@@ -150,7 +150,7 @@ unur_cdf_gamma( double x, double *params, int n_params )
     return _unur_cdf_gamma_ext(x,alpha,1.);
 
   default:
-    _unur_error(distr_name ,UNUR_ERR_NPARAM,"");
+    _unur_error(distr_name,UNUR_ERR_NPARAM,"");
     return 0.;
   }
 
@@ -172,7 +172,7 @@ unur_mode_gamma( double *params, int n_params )
     return mode;
 
   default:
-    _unur_error(distr_name ,UNUR_ERR_NPARAM,"");
+    _unur_error(distr_name,UNUR_ERR_NPARAM,"");
     return 0.;
   }
 
@@ -190,7 +190,7 @@ unur_area_gamma( double *params, int n_params )
     return exp(_unur_gammaln(alpha));
 
   default:
-    _unur_error(distr_name ,UNUR_ERR_NPARAM,"");
+    _unur_error(distr_name,UNUR_ERR_NPARAM,"");
     return 0.;
   }
 
@@ -201,12 +201,13 @@ unur_area_gamma( double *params, int n_params )
 struct unur_distr *
 unur_distr_gamma( double *params, int n_params )
 {
+#define DISTR distr->data.cont
   register struct unur_distr *distr;
 
   /* check new parameter for generator */
   CHECK_NULL(params,RETURN_NULL);
   if (n_params < 1 || n_params > 3) {
-    _unur_warning(NULL,UNUR_ERR_GENERIC,"invalid number parameter");
+    _unur_warning(distr_name,UNUR_ERR_GENERIC,"invalid number parameter");
     return NULL;
   }
 
@@ -219,49 +220,55 @@ unur_distr_gamma( double *params, int n_params )
   /* set type of distribution */
   distr->type = UNUR_DISTR_CONT;
 
+  /* set distribution id */
+  distr->id = UNUR_DISTR_GAMMA;
+
+  /* name of distribution */
+  distr->name = distr_name;
+
   /* functions */
-  distr->data.cont.pdf  = unur_pdf_gamma;    /* pointer to p.d.f.            */
-  distr->data.cont.dpdf = unur_dpdf_gamma;   /* pointer to derivative of p.d.f. */
-  distr->data.cont.cdf  = unur_cdf_gamma;    /* pointer to c.d.f.            */
+  DISTR.pdf  = unur_pdf_gamma;    /* pointer to p.d.f.            */
+  DISTR.dpdf = unur_dpdf_gamma;   /* pointer to derivative of p.d.f. */
+  DISTR.cdf  = unur_cdf_gamma;    /* pointer to c.d.f.            */
 
   /* copy parameters */
-  distr->data.cont.params[0] = params[0];    /* alpha */
+  DISTR.params[0] = params[0];    /* alpha */
   switch (n_params) {
   case 1:
-    distr->data.cont.params[1] = 1.;         /* default for beta  */
-    distr->data.cont.params[2] = 0.;         /* default for gamma */
+    DISTR.params[1] = 1.;         /* default for beta  */
+    DISTR.params[2] = 0.;         /* default for gamma */
     break;
   case 2:
-    distr->data.cont.params[1] = params[1];  /* beta */
-    distr->data.cont.params[2] = 0.;         /* default for gamma */
+    DISTR.params[1] = params[1];  /* beta */
+    DISTR.params[2] = 0.;         /* default for gamma */
     n_params = 3;
     break;
   case 3:
-    distr->data.cont.params[1] = params[1];  /* beta */
-    distr->data.cont.params[2] = params[2];  /* gamma */
+    DISTR.params[1] = params[1];  /* beta */
+    DISTR.params[2] = params[2];  /* gamma */
     break;
   }
 
   /* check parameters alpha and beta */
   if (alpha <= 0.) {
-    _unur_error(distr_name ,UNUR_ERR_DISTR,"shape parameter alpha <= 0.");
+    _unur_error(distr_name,UNUR_ERR_DISTR,"shape parameter alpha <= 0.");
     free( distr ); return NULL;
   }
   if (beta <= 0.) {
-    _unur_error(distr_name ,UNUR_ERR_DISTR,"scale parameter beta <= 0.");
+    _unur_error(distr_name,UNUR_ERR_DISTR,"scale parameter beta <= 0.");
     free( distr ); return NULL;
   }
 
   /* number of arguments */
-  distr->data.cont.n_params = n_params;
+  DISTR.n_params = n_params;
 
   /* mode and area below p.d.f. */
-  distr->data.cont.mode = unur_mode_gamma(distr->data.cont.params,distr->data.cont.n_params);
-  distr->data.cont.area = unur_area_gamma(distr->data.cont.params,distr->data.cont.n_params);
+  DISTR.mode = unur_mode_gamma(DISTR.params,DISTR.n_params);
+  DISTR.area = unur_area_gamma(DISTR.params,DISTR.n_params);
 
   /* domain */
-  distr->data.cont.domain[0] = 0;           /* left boundary  */
-  distr->data.cont.domain[1] = INFINITY;    /* right boundary */
+  DISTR.domain[0] = 0;           /* left boundary  */
+  DISTR.domain[1] = INFINITY;    /* right boundary */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_PARAMS | 
@@ -272,6 +279,7 @@ unur_distr_gamma( double *params, int n_params )
   /* return pointer to object */
   return distr;
 
+#undef DISTR
 } /* end of unur_distr_gamma() */
 
 /*---------------------------------------------------------------------------*/

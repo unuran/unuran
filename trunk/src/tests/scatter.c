@@ -38,6 +38,7 @@
 
 #include <unur_cookies.h>
 #include <unur_errno.h>
+#include <unur_math.h>
 #include <unur_utils.h>
 
 /*---------------------------------------------------------------------------*/
@@ -62,8 +63,7 @@ static UNUR_URNG_TYPE _unur_get_babygen( void );
 /*---------------------------------------------------------------------------*/
 
 int
-unur_make_scatterplot( struct unur_gen *gen,
-		       double (*cdf)(double x, double *fparam, int n_fparam))
+unur_make_scatterplot( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* make scatterplot of generated numbers                                */
      /*                                                                      */
@@ -81,8 +81,12 @@ unur_make_scatterplot( struct unur_gen *gen,
       (UNUR_URNG_INVOKE == UNUR_URNG_PRNG) )
 /*---------------------------------------------------------------------------*/
 {
+#define DISTR   gen->distr->data.cont
+
   static int can_run_plotting_program = 1;  /* store failure */
 
+  double Fl, Fr, Fdelta;  /* value of cdf (at left and right boundary point) */
+  unur_function_cont *cdf;                  /* pointer to c.d.f. */
   char *scatter_filename;                   /* name of scatter files */
   FILE *scatter;                            /* file handle for scatter files */
   char *call_graph;                         /* string for system call        */
@@ -96,7 +100,10 @@ unur_make_scatterplot( struct unur_gen *gen,
 
   /* check arguments */
   CHECK_NULL(gen,0);
+  /* we do not check magic cookies here */
 
+  /* c.d.f. required */
+  cdf = DISTR.cdf;
   if (cdf == NULL) {
     _unur_warning("Scatter",UNUR_ERR_GENERIC,"c.d.f. required");
     return 0;
@@ -111,6 +118,17 @@ unur_make_scatterplot( struct unur_gen *gen,
   /* has system call for plotting program been failure */
   if (!can_run_plotting_program)
     return 0;
+
+  /* compute Fl and Fr */
+  Fl = (DISTR.domain[0] <= -INFINITY) ? 0. : cdf(DISTR.domain[0],DISTR.params,DISTR.n_params);
+  Fr = (DISTR.domain[1] >=  INFINITY) ? 1. : cdf(DISTR.domain[1],DISTR.params,DISTR.n_params);
+  Fdelta = Fr - Fl;
+
+  /* Fr - Fl <= 0. is a fatal error */
+  if (Fdelta <= 0.) {
+    _unur_warning(gen->genid,UNUR_ERR_GENERIC,"Fdelta <= 0.");
+    return -1.;
+  }
 
   /* which subsequence of the underlying urng should be used 
      for comparation? */
@@ -151,19 +169,19 @@ unur_make_scatterplot( struct unur_gen *gen,
   if (scatter == NULL) return 0;
 
   /* set starting value */
-  store = _unur_sample_cont_transformed(gen,cdf);
+  store = cdf( unur_sample_cont(gen), DISTR.params, DISTR.n_params );
 
   /* sampling */
   for (n_urn = 0; n_urn < UNUR_BABYGEN_PERIOD; ++n_urn ) {
 
-     /* invoke generator and scale sample according to cdf */
-     new = _unur_sample_cont_transformed(gen,cdf);
+    /* invoke generator and scale sample according to cdf */
+    new = cdf( unur_sample_cont(gen), DISTR.params, DISTR.n_params );
 
-     /* write pair samples into scatter file */  
-     fprintf(scatter,"%f %f\n",store, new); 
-
-     /* move frame for pair one position ahead */     
-     store = new;
+    /* write pair samples into scatter file */  
+    fprintf(scatter,"%f %f\n",store, new); 
+    
+    /* move frame for pair one position ahead */     
+    store = new;
   }
 
   /* close scatter file */
@@ -199,6 +217,7 @@ unur_make_scatterplot( struct unur_gen *gen,
   /* o.k. */
   return 1;
 
+#undef DISTR
 } /* end of unur_make_scatterplot() */
 /*---------------------------------------------------------------------------*/
 #else

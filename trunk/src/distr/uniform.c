@@ -82,7 +82,7 @@ unur_pdf_uniform( double x, double *params, int n_params )
     return ((x < 0. || x > 1.) ? 0. : 1.);
     
   default:
-    _unur_error(distr_name ,UNUR_ERR_NPARAM,"");
+    _unur_error(distr_name,UNUR_ERR_NPARAM,"");
     return 0.;
   }
 
@@ -112,7 +112,7 @@ unur_cdf_uniform( double x, double *params, int n_params )
     return x;
     
   default:
-    _unur_error(distr_name ,UNUR_ERR_NPARAM,"");
+    _unur_error(distr_name,UNUR_ERR_NPARAM,"");
     return 0.;
   }
 
@@ -131,7 +131,7 @@ unur_mode_uniform( double *params, int n_params )
     return 0.5;
     
   default:
-    _unur_error(distr_name ,UNUR_ERR_NPARAM,"");
+    _unur_error(distr_name,UNUR_ERR_NPARAM,"");
     return 0.;
   }
 
@@ -140,7 +140,7 @@ unur_mode_uniform( double *params, int n_params )
 /*---------------------------------------------------------------------------*/
 
 double
-unur_area_uniform(double *params, int n_params)
+unur_area_uniform( double *params, int n_params )
 { 
   switch (n_params) {
   case 2:  /* non standard */
@@ -150,7 +150,7 @@ unur_area_uniform(double *params, int n_params)
     return 1.;
     
   default:
-    _unur_error(distr_name ,UNUR_ERR_NPARAM,"");
+    _unur_error(distr_name,UNUR_ERR_NPARAM,"");
     return 0.;
   }
 
@@ -161,11 +161,12 @@ unur_area_uniform(double *params, int n_params)
 struct unur_distr *
 unur_distr_uniform( double *params, int n_params )
 {
+#define DISTR distr->data.cont
   register struct unur_distr *distr;
 
   /* check new parameter for generator */
   if (n_params != 0 && n_params != 2) {
-    _unur_warning(NULL,UNUR_ERR_GENERIC,"invalid number parameter");
+    _unur_warning(distr_name,UNUR_ERR_GENERIC,"invalid number parameter");
     return NULL;
   }
   if (n_params>0)
@@ -180,39 +181,45 @@ unur_distr_uniform( double *params, int n_params )
   /* set type of distribution */
   distr->type = UNUR_DISTR_CONT;
 
+  /* set distribution id */
+  distr->id = UNUR_DISTR_UNIFORM;
+
+  /* name of distribution */
+  distr->name = distr_name;
+
   /* functions */
-  distr->data.cont.pdf  = unur_pdf_uniform;  /* pointer to p.d.f.            */
-  distr->data.cont.dpdf = unur_dpdf_uniform; /* pointer to derivative of p.d.f. */
-  distr->data.cont.cdf  = unur_cdf_uniform;  /* pointer to c.d.f.            */
+  DISTR.pdf  = unur_pdf_uniform;  /* pointer to p.d.f.            */
+  DISTR.dpdf = unur_dpdf_uniform; /* pointer to derivative of p.d.f. */
+  DISTR.cdf  = unur_cdf_uniform;  /* pointer to c.d.f.            */
 
   /* copy parameters */
   switch (n_params) {
   case 0:
-    distr->data.cont.params[0] = 0.;         /* default for a */
-    distr->data.cont.params[1] = 1.;         /* default for b */
+    DISTR.params[0] = 0.;         /* default for a */
+    DISTR.params[1] = 1.;         /* default for b */
     break;
   case 2:
-    distr->data.cont.params[0] = params[0];  /* a */
-    distr->data.cont.params[1] = params[1];  /* b */
+    DISTR.params[0] = params[0];  /* a */
+    DISTR.params[1] = params[1];  /* b */
     break;
   }
 
   /* check parameters a and b */
-  if (distr->data.cont.params[0] >= distr->data.cont.params[1]) {
-    _unur_error(distr_name ,UNUR_ERR_DISTR,"invalid domain: a >= b!");
+  if (DISTR.params[0] >= DISTR.params[1]) {
+    _unur_error(distr_name,UNUR_ERR_DISTR,"invalid domain: a >= b!");
     free( distr ); return NULL;
   }
 
   /* number of arguments */
-  distr->data.cont.n_params = n_params;
+  DISTR.n_params = n_params;
 
   /* mode and area below p.d.f. */
-  distr->data.cont.mode = unur_mode_uniform(distr->data.cont.params,distr->data.cont.n_params);
-  distr->data.cont.area = unur_area_uniform(distr->data.cont.params,distr->data.cont.n_params);
+  DISTR.mode = unur_mode_uniform(DISTR.params,DISTR.n_params);
+  DISTR.area = unur_area_uniform(DISTR.params,DISTR.n_params);
 
   /* domain */
-  distr->data.cont.domain[0] = distr->data.cont.params[0]; /* left boundary  */
-  distr->data.cont.domain[1] = distr->data.cont.params[1]; /* right boundary */
+  DISTR.domain[0] = DISTR.params[0]; /* left boundary  */
+  DISTR.domain[1] = DISTR.params[1]; /* right boundary */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_PARAMS | 
@@ -223,6 +230,7 @@ unur_distr_uniform( double *params, int n_params )
   /* return pointer to object */
   return distr;
 
+#undef DISTR
 } /* end of unur_distr_uniform() */
 
 /*---------------------------------------------------------------------------*/

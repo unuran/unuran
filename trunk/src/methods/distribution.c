@@ -49,10 +49,14 @@
 
 /*---------------------------------------------------------------------------*/
 
+static char unknown_distr_name[] = "Unknown";
+
+/*---------------------------------------------------------------------------*/
+
 struct unur_distr *
 unur_distr_new_cont( void )
      /*----------------------------------------------------------------------*/
-     /* create a new distribution object                                     */
+     /* create a new (empty) distribution object                             */
      /* type: univariate continuous with given p.d.f.                        */
      /*                                                                      */
      /* parameters:                                                          */
@@ -65,6 +69,7 @@ unur_distr_new_cont( void )
      /*   return NULL                                                        */
      /*----------------------------------------------------------------------*/
 {
+#define DISTR distr->data.cont
   register struct unur_distr *distr;
   int i;
 
@@ -72,33 +77,40 @@ unur_distr_new_cont( void )
   distr = _unur_malloc( sizeof(struct unur_distr) );
   if (!distr) return NULL;
 
-  /* set magiv cookie */
+  /* set magic cookie */
   COOKIE_SET(distr,CK_DISTR_CONT);
 
   /* set type of distribution */
   distr->type = UNUR_DISTR_CONT;
 
-  /* set defaults                                                                */
-  distr->data.cont.pdf       = NULL;          /* pointer to p.d.f.               */
-  distr->data.cont.dpdf      = NULL;          /* pointer to derivative of p.d.f. */
-  distr->data.cont.cdf       = NULL;          /* pointer to c.d.f.               */
+  /* set id to generic distribution */
+  distr->id = UNUR_DISTR_GENERIC;
 
-  distr->data.cont.n_params  = 0;             /* number of parameters of the pdf */
-  /* initialize parameters of the p.d.f.        */
+  /* name of distribution */
+  distr->name = unknown_distr_name;
+
+  /* set defaults                                                            */
+  DISTR.pdf       = NULL;          /* pointer to p.d.f.                      */
+  DISTR.dpdf      = NULL;          /* pointer to derivative of p.d.f.        */
+  DISTR.cdf       = NULL;          /* pointer to c.d.f.                      */
+
+  DISTR.n_params  = 0;             /* number of parameters of the pdf        */
+  /* initialize parameters of the p.d.f.                                     */
   for (i=0; i<UNUR_DISTR_MAXPARAMS; i++)
-    distr->data.cont.params[i] = 0.;
+    DISTR.params[i] = 0.;
 
-  distr->data.cont.mode      = 0.;            /* location of mode                */
-  distr->data.cont.area      = 1.;            /* area below p.d.f.               */
-  distr->data.cont.domain[0] = -INFINITY;     /* left boundary of domain         */
-  distr->data.cont.domain[1] = INFINITY;      /* right boundary of domain        */
+  DISTR.mode      = 0.;            /* location of mode                       */
+  DISTR.area      = 1.;            /* area below p.d.f.                      */
+  DISTR.domain[0] = -INFINITY;     /* left boundary of domain                */
+  DISTR.domain[1] = INFINITY;      /* right boundary of domain               */
 
-  distr->set = 0u;                            /* no parameters set               */
-                
+  distr->set = 0u;                 /* no parameters set                      */
+  
   /* return pointer to object */
   return distr;
 
-} /* end of unur_distr_new() */
+#undef DISTR
+} /* end of unur_distr_new_cont() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -240,7 +252,6 @@ unur_distr_set_params( struct unur_distr *distr, double *params, int n_params )
 
   /* o.k. */
   return 1;
-
 } /* end of unur_distr_set_param() */
 
 /*---------------------------------------------------------------------------*/
@@ -277,7 +288,6 @@ unur_distr_set_mode( struct unur_distr *distr, double mode )
 
   /* o.k. */
   return 1;
-
 } /* end of unur_distr_set_mode() */
 
 /*---------------------------------------------------------------------------*/
@@ -414,47 +424,47 @@ unur_distr_free( struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_distr_debug_cont( struct unur_gen *gen )
+_unur_distr_debug_cont( struct unur_distr *distr, char *genid )
      /*----------------------------------------------------------------------*/
      /* write info about distribution into logfile                           */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
+     /*   distr ... pointer to distribution object                           */
+     /*   genid ... pointer to generator id                                  */
      /*----------------------------------------------------------------------*/
 {
-#define DISTR gen->distr->data.cont
+#define DISTR distr->data.cont
 
   FILE *log;
   int i;
 
   /* check arguments */
-  CHECK_NULL(gen,/*void*/);
-  COOKIE_CHECK(gen->distr,CK_DISTR_CONT,/*void*/);
+  CHECK_NULL(distr,/*void*/);
+  COOKIE_CHECK(distr,CK_DISTR_CONT,/*void*/);
 
   log = unur_get_stream();
 
-  fprintf(log,"%s:\n",gen->genid);
-  fprintf(log,"%s: distribution:\n",gen->genid);
-  fprintf(log,"%s:\ttype = continuous univariate distribution\n",gen->genid);
+  fprintf(log,"%s: distribution:\n",genid);
+  fprintf(log,"%s:\ttype = continuous univariate distribution\n",genid);
+  fprintf(log,"%s:\tname = %s\n",genid,distr->name);
 
-  fprintf(log,"%s:\tp.d.f with %d arguments\n",gen->genid,DISTR.n_params);
+  fprintf(log,"%s:\tp.d.f with %d argument(s)\n",genid,DISTR.n_params);
   for( i=0; i<DISTR.n_params; i++ )
-      fprintf(log,"%s:\t\tparam[%d] = %g\n",gen->genid,i,DISTR.params[i]);
+      fprintf(log,"%s:\t\tparam[%d] = %g\n",genid,i,DISTR.params[i]);
 
-  if (gen->distr->set & UNUR_DISTR_SET_MODE)
-    fprintf(log,"%s:\tmode = %g\n",gen->genid,DISTR.mode);
+  if (distr->set & UNUR_DISTR_SET_MODE)
+    fprintf(log,"%s:\tmode = %g\n",genid,DISTR.mode);
   else
-    fprintf(log,"%s:\tmode unknown\n",gen->genid);
+    fprintf(log,"%s:\tmode unknown\n",genid);
 
-  fprintf(log,"%s:\tdomain = (%g, %g)",gen->genid,DISTR.domain[0],DISTR.domain[1]);
-  _unur_print_if_default(gen->distr,UNUR_DISTR_SET_DOMAIN);
+  fprintf(log,"%s:\tdomain = (%g, %g)",genid,DISTR.domain[0],DISTR.domain[1]);
+  _unur_print_if_default(distr,UNUR_DISTR_SET_DOMAIN);
 
-  fprintf(log,"\n%s:\tarea below p.d.f. = %g",gen->genid,DISTR.area);
-  _unur_print_if_default(gen->distr,UNUR_DISTR_SET_PDFAREA);
-  fprintf(log,"\n%s:\n",gen->genid);
+  fprintf(log,"\n%s:\tarea below p.d.f. = %g",genid,DISTR.area);
+  _unur_print_if_default(distr,UNUR_DISTR_SET_PDFAREA);
+  fprintf(log,"\n%s:\n",genid);
 
 #undef DISTR
 } /* end of _unur_distr_debug_cont() */
 
 /*---------------------------------------------------------------------------*/
-

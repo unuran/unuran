@@ -18,8 +18,7 @@ libtests_a_SOURCES = \
  printsample.c \
  scatter.c \
  tests.c \
- timing.c \
- transformed.c 
+ timing.c
 
 pkginclude_HEADERS = unur_tests.h
 

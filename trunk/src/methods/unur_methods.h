@@ -229,10 +229,6 @@ struct unur_gen {
 
 #endif  /* UNUR_DB_CHECKNULL */
 
-/** TODO: besseren platz fuer diesen prototype **/
-void _unur_distr_debug_cont( struct unur_gen *gen );
-/* write info about distribution into logfile                                */
-
 /*---------------------------------------------------------------------------*/
 #endif  /* __UNUR_METHODS_H_SEEN */
 /*---------------------------------------------------------------------------*/

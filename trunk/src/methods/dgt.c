@@ -198,7 +198,17 @@ unur_dgt_new( struct unur_distr *distr )
   COOKIE_CHECK(distr,CK_DISTR_DISCR,NULL);
 
   if (DISTR_IN.prob == NULL) {
-    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"p.v."); return NULL;
+    /* There is no PV try to compute it.                         */
+    if ( DISTR_IN.pmf
+	 && ( ((DISTR_IN.domain[1] - DISTR_IN.domain[0]) < UNUR_MAX_AUTO_PV)
+	      || ( (distr->set & UNUR_DISTR_SET_PMFSUM) && DISTR_IN.domain[0] > INT_MIN ) ) ) {
+      /* However this requires a PMF and either a bounded domain   */
+      /* or the sum over the PMF.                                  */
+      _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"PV. Try to compute it.");
+    }
+    else {
+      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"PV"); return NULL;
+    }
   }
 
   /* allocate structure */
@@ -323,23 +333,31 @@ _unur_dgt_init( struct unur_par *par )
   double probh;                 /* aux variable for computing cummalate sums */
   double gstep;                 /* step size when computing guide table */
   int i,j;
-
+  
   /* check arguments */
   CHECK_NULL(par,NULL);
-
+  
   /* check input */
   if ( par->method != UNUR_METH_DGT ) {
     _unur_error(GENTYPE,UNUR_ERR_PAR_INVALID,"");
     return NULL; }
   COOKIE_CHECK(par,CK_DGT_PAR,NULL);
-
+  
   /* create a new empty generator object */
   gen = _unur_dgt_create(par);
   if (!gen) { free(par); return NULL; }
-
+  
   /* probability vector */
-  prob = DISTR.prob;
-  n_prob = DISTR.n_prob;
+  if (DISTR.prob) {
+    /* probability vector given by user */
+    prob = DISTR.prob;
+    n_prob = DISTR.n_prob;
+  }
+  else {
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"PV"); 
+    free(par); _unur_free(gen);
+    return NULL;
+  }
 
   /* computation of cumulated probabilities */
   for( i=0, probh=0.; i<n_prob; i++ ) {
@@ -434,9 +452,14 @@ _unur_dgt_create( struct unur_par *par )
   /* copy distribution object into generator object */
   memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
 
-  /* copy probability vector into generator object */
-  DISTR.prob = _unur_malloc( DISTR.n_prob * sizeof(double) );
-  memcpy( DISTR.prob, par->distr->data.discr.prob, DISTR.n_prob * sizeof(double) );
+  /* copy probability vector into generator object (when there is one) */
+  if (DISTR.prob) {
+    DISTR.prob = _unur_malloc( DISTR.n_prob * sizeof(double) );
+    memcpy( DISTR.prob, par->distr->data.discr.prob, DISTR.n_prob * sizeof(double) );
+  }
+  else
+    /* try to compute PV */
+    unur_distr_discr_make_prob(&(gen->distr));
 
   /* no domain given --> left boundary is 0 */
   if (!(gen->distr.set & UNUR_DISTR_SET_DOMAIN))

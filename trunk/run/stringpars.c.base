@@ -14,6 +14,10 @@
  *        =INPUT keyword                                                     *
  *   tags with information found within the source-code and writes it to     *
  *   'stringpars.c'.                                                         *
+ *   The string to parse contains information about the standard             *
+ *   distribution, the choosen method and (optional) the uniform number      *
+ *   generator -- The distribution block must be first.                      *
+ *   These three blocks must be separeted with colons `:'                    *
  *                                                                           *
  *   The string holds information about the standard distribution            *
  *   to sample from and (optional) about the sampling method and the         *
@@ -50,15 +54,13 @@
  *   e.g.: UNURAN provides the command `unur_arou_set_max_sqhratio' to       *
  *   set a parameter. To call this function via the string-interface, the    *
  *   key `max_sqhratio' can be used.                                         *
+ *   If this block is omitted, UNURAN chooses a suitable method.             *
  *                                                                           *
  *   Uniform random number generator:                                        *
  *   The only key allowed is `prng' and the following value is a             *
  *   string which is passed as it is to the PRNG package                     *
  *   For information see the PRNG manual                                     *
- *   The string to parse contains information about the standard             *
- *   distribution, the choosen method and (optional) the uniform number      *
- *   generator -- The distribution block must be first.                      *
- *   These three blocks must be separeted with colons `:'                    *
+ *   If this block is omitted, UNURAN sets a uniform random number generator *
  *                                                                           *
  *****************************************************************************
      $Id$

@@ -126,14 +126,14 @@ _unur_acg_FORTRAN_demo_urng( FILE *out )
 {
   _unur_acg_FORTRAN_print_section_line( out, "Uniform (pseudo-)random number generator");
       
-  fprintf(out,"C  Replace the uniform (pseudo-)random number generator 'unif()'\n");
+  fprintf(out,"C  Replace the uniform (pseudo-)random number generator 'urand()'\n");
   fprintf(out,"C  by a generator of your choice.\n\n");
   fprintf(out,"\n");
 
   fprintf(out,"\n");
   _unur_acg_FORTRAN_print_section_rule(out);
-  _unur_acg_FORTRAN_print_section_line(out,"LCG (Linear Congruential Generator) by G. Marsaglia (1972).");
-  _unur_acg_FORTRAN_print_section_line(out,"  x_(n+1) = 69069 * x_n + 1 mod 2^32");
+  _unur_acg_FORTRAN_print_section_line(out,"LCG (Linear Congruential Generator)        by Park & Miller (1988)");
+  _unur_acg_FORTRAN_print_section_line(out,"  x_(n+1) = 16807 * x_n mod (2^32 - 1)          [Minimal Standard]");
   _unur_acg_FORTRAN_print_section_line(out,"");
   _unur_acg_FORTRAN_print_section_line(out,"WARNING! This short build-in uniform random number generator");
   _unur_acg_FORTRAN_print_section_line(out,"is not state-of-the-art and should not be used for simulations.");
@@ -145,26 +145,34 @@ _unur_acg_FORTRAN_demo_urng( FILE *out )
   fprintf(out,"\n");
 
   /*************************************************************
-   * Marsaglia G. (1972), m = 2^32, a = 69069, c = 1           *
-   * The structure of linear congruential sequences, in:       *
-   * Applications of Number Theory to Numerical Analysis, S.K. *
-   * Zaremba, ed., Academic Press, New York 1972               *
+   * Park and Miller (1988):                                   *
    *************************************************************/
   
-  fprintf(out,"      DOUBLE PRECISION FUNCTION unif()\n");
-  fprintf(out,"\n");
-  fprintf(out,"      INTEGER x\n");
-  fprintf(out,"      DOUBLE PRECISION f\n");
-  fprintf(out,"      PARAMETER (f=2.d0**(-32))\n");
-  fprintf(out,"      DATA x/1804289383/\n");
-  fprintf(out,"      SAVE x\n");
-  fprintf(out,"\n");
-  fprintf(out,"      x = 69069 * x + 1\n");
-  fprintf(out,"      unif = x * f\n");
-  fprintf(out,"      IF (x .LT. 0) unif = unif + 1.d0\n");
-  fprintf(out,"\n");
-  fprintf(out,"      END\n");
-  fprintf(out,"\n");
+  fprintf(out,"      DOUBLE PRECISION FUNCTION urand()\n\n");
+
+  fprintf(out,"      INTEGER a, m, q, r, x, hi, lo, test\n");
+  fprintf(out,"      PARAMETER (a = 16807)\n");
+  fprintf(out,"      PARAMETER (m = 2147483647)\n");
+  fprintf(out,"      PARAMETER (q = 127773)\n");
+  fprintf(out,"      PARAMETER (r = 2836)\n\n");
+
+  fprintf(out,"C     state variable\n");
+  fprintf(out,"      DATA x/173923/\n");
+  fprintf(out,"      SAVE x\n\n");
+
+  fprintf(out,"      hi = x / q\n");
+  fprintf(out,"      lo = MOD(x,q)\n");
+  fprintf(out,"      test = a * lo - r * hi\n");
+  fprintf(out,"      IF (test .gt. 0) THEN\n");
+  fprintf(out,"          x = test\n");
+  fprintf(out,"      ELSE\n");
+  fprintf(out,"          x = test + m\n");
+  fprintf(out,"      END IF\n\n");
+
+  fprintf(out,"      urand = x * 4.656612875245796924105750827D-10\n\n");
+
+  fprintf(out,"      END\n\n");
+
 
   return 1;
 } /* end of _unur_acg_FORTRAN_demo_urng() */

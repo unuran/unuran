@@ -133,8 +133,8 @@ _unur_acg_C_demo_urng( FILE *out )
 
   fprintf(out,"\n");
   _unur_acg_C_print_section_rule(out);
-  _unur_acg_C_print_section_line(out,"LCG (Linear Congruential Generator) by G. Marsaglia (1972).");
-  _unur_acg_C_print_section_line(out,"  x_(n+1) = 69069 * x_n + 1 mod 2^32");
+  _unur_acg_C_print_section_line(out,"LCG (Linear Congruential Generator)      by Park & Miller (1988)");
+  _unur_acg_C_print_section_line(out,"  x_(n+1) = 16807 * x_n mod (2^32 - 1)        [Minimal Standard]");
   _unur_acg_C_print_section_line(out,"");
   _unur_acg_C_print_section_line(out,"WARNING! This short build-in uniform random number generator");
   _unur_acg_C_print_section_line(out,"is not state-of-the-art and should not be used for simulations.");
@@ -146,10 +146,7 @@ _unur_acg_C_demo_urng( FILE *out )
   fprintf(out,"\n");
 
   /*************************************************************
-   * Marsaglia G. (1972), m = 2^32, a = 69069, c = 1           *
-   * The structure of linear congruential sequences, in:       *
-   * Applications of Number Theory to Numerical Analysis, S.K. *
-   * Zaremba, ed., Academic Press, New York 1972               *
+   * Park and Miller (1988):                                   *
    *************************************************************/
   
   fprintf(out,"#ifndef uniform\n");
@@ -157,9 +154,24 @@ _unur_acg_C_demo_urng( FILE *out )
   fprintf(out,"\n");
   fprintf(out,"static double _uniform_demo (void)\n");
   fprintf(out,"{\n");
-  fprintf(out,"\tstatic unsigned long int x = %d;   /* seed  */\n",rand());
-  fprintf(out,"\tx = 69069 * x + 1;\n");
-  fprintf(out,"\treturn (x * %.20e + %.20e);\n", pow(2.,-32), pow(2.,-33));
+  fprintf(out,"\tstatic unsigned int x = %d;  /* seed  */\n",rand());
+  fprintf(out,"\tint hi, lo, test;\n\n");
+
+  fprintf(out,"#\tdefine a 16807       /* multiplicator */\n");
+  fprintf(out,"#\tdefine m 2147483647  /* modulus */\n");
+  fprintf(out,"#\tdefine q 127773      /* m / a */\n");
+  fprintf(out,"#\tdefine r 2836        /* m %% a */\n\n");
+
+  fprintf(out,"\thi = x / q;\n");
+  fprintf(out,"\tlo = x %% q;\n");
+  fprintf(out,"\ttest = a * lo - r * hi;\n");
+  fprintf(out,"\tx = (test > 0 ) ? test : test + m;\n");
+  fprintf(out,"\treturn (x * 4.656612875245796924105750827e-10);\n\n");
+
+  fprintf(out,"#\tundef a\n");
+  fprintf(out,"#\tundef m\n");
+  fprintf(out,"#\tundef q\n");
+  fprintf(out,"#\tundef r\n");
   fprintf(out,"}\n");
   fprintf(out,"#endif\n\n");
 

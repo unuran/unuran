@@ -62,14 +62,20 @@
       
       The method VMT has been implemented especially to sample from a
       multinormal distribution. Nevertheless it can also be used (or
-      abused) for other distributions. However notice that the univariate
+      abused) for other distributions. However, notice that the univariate
       distribution provided by a unur_vmt_set_marginalgen() call should
       have mean 0 and standard deviation 1. Otherwise mu and Sigma are
       not the mean vector and covariance matrix, respectively, of the
-      resulting distribution. Moreover notice that except for the
+      resulting distribution. Moreover, notice that except for the
       multinormal distribution the given univariate distribution is
       @emph{not} the marginal distribution of the resulting random
       vector.
+
+      @emph{Important:} Only mean vector and covariance matrix of the
+      given distribution object are used. Any other entries (like its
+      pdf) are completely ignored. Thus the generated random vectors
+      are determined by the unur_vmt_set_marginalgen() call (and mean
+      vector and covariance matrix).
 
    =END
 */

@@ -312,7 +312,7 @@ unur_distr_burr( double *params, int n_params )
   CHECK_NULL(params,NULL);
 
   /* get new (empty) distribution object */
-  distr = _unur_distr_cont_new();
+  distr = unur_distr_cont_new();
 
   /* get type of distribution and 
      set distribution id           */

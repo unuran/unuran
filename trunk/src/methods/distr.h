@@ -149,6 +149,11 @@ int unur_distr_is_cemp( UNUR_DISTR *distribution );
    Routines for handling univariate continuous distributions (CONT).
 */
 
+UNUR_DISTR *unur_distr_cont_new( void );
+/* 
+   Create a new (empty) object for univariate continuous distribution.
+*/
+
 /* Essential parameters. */
 
 int unur_distr_cont_set_pdf( UNUR_DISTR *distribution, void *pdf );
@@ -306,6 +311,11 @@ double unur_distr_cont_get_pdfarea( UNUR_DISTR *distribution );
    Routines for handling empirical univariate continuous distributions (CEMP).
 */
 
+UNUR_DISTR *unur_distr_cemp_new( void );
+/* 
+   Create a new (empty) object for empirical univariate continuous distribution.
+*/
+
 /* Essential parameters */
 
 int unur_distr_cemp_set_data( UNUR_DISTR *distribution, double *sample, int n_sample );
@@ -326,6 +336,12 @@ int unur_distr_cemp_get_data( UNUR_DISTR *distribution, double **sample );
 /* 
    Routines for handling univariate discrete distributions (DISCR).
 */
+
+UNUR_DISTR *unur_distr_discr_new( void );
+/* 
+   Create a new (empty) object for univariate discrete distribution.
+*/
+
 
 /* Essential parameters. */
 
@@ -426,6 +442,11 @@ double unur_distr_discr_get_pmfarea(UNUR_DISTR *distribution);
    Routines for handling empirical univariate discrete distributions (DEMP).
 */
 
+UNUR_DISTR *unur_distr_demp_new( void );
+/* 
+   Create a new (empty) object for empirical univariate discrete distribution.
+*/
+
 /* Essential parameters */
 
 int unur_distr_demp_set_prob( UNUR_DISTR *distribution, double *prob, int n_prob );
@@ -445,12 +466,3 @@ int unur_distr_demp_get_prob( UNUR_DISTR *distribution, double **prob );
 */
 
 /*---------------------------------------------------------------------------*/
-
-
-
-
-
-
-
-
-

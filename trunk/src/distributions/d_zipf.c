@@ -94,7 +94,7 @@ unur_distr_zipf( double *params, int n_params )
   CHECK_NULL(params,NULL);
 
   /* get new (empty) distribution object */
-  distr = _unur_distr_discr_new();
+  distr = unur_distr_discr_new();
 
   /* set distribution id */
   distr->id = UNUR_DISTR_ZIPF;

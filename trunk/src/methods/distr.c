@@ -78,13 +78,13 @@ unur_distr_new( unsigned int type )
 {
   switch (type) {
   case UNUR_DISTR_CONT:
-    return _unur_distr_cont_new();
+    return unur_distr_cont_new();
   case UNUR_DISTR_DISCR:
-    return _unur_distr_discr_new();
+    return unur_distr_discr_new();
   case UNUR_DISTR_DEMP:
-    return _unur_distr_demp_new();
+    return unur_distr_demp_new();
   case UNUR_DISTR_CEMP:
-    return _unur_distr_cemp_new();
+    return unur_distr_cemp_new();
   default:
     _unur_error(NULL,UNUR_ERR_DISTR_UNKNOWN,"");
     return NULL;

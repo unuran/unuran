@@ -62,7 +62,7 @@ static const char unknown_distr_name[] = "unknown";
 /*---------------------------------------------------------------------------*/
 
 struct unur_distr *
-_unur_distr_demp_new( void )
+unur_distr_demp_new( void )
      /*----------------------------------------------------------------------*/
      /* create a new (empty) distribution object                             */
      /* type: univariate discete                                             */
@@ -106,7 +106,7 @@ _unur_distr_demp_new( void )
   /* return pointer to object */
   return distr;
 
-} /* end of _unur_distr_demp_new() */
+} /* end of unur_distr_demp_new() */
 
 /*---------------------------------------------------------------------------*/
 

@@ -7,7 +7,7 @@ noinst_LTLIBRARIES = libutils.la
 
 libutils_la_SOURCES = \
  debug.c  debug.h debug_source.h \
- eigensystem.c 	  eigensystem_source.h \
+ eigensystem.c \
  error.c  \
  matrix.c 	  matrix_source.h \
  slist.c  slist.h slist_struct.h \

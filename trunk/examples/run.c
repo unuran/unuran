@@ -34,7 +34,7 @@
 #define RUN_DAU           1
 #define RUN_DIS           1
 
-#define RUN_UTDR          0
+#define RUN_UTDR          1
 #define RUN_AROU          1
 #define RUN_TDRSQRT       1
 #define RUN_TDRLOG        1
@@ -79,6 +79,8 @@ int main()
 
   distr_normal = unur_distr_normal(NULL,0);
   unur_distr_cont_set_domain(distr_normal,3,UNUR_INFINITY);
+  unur_distr_cont_set_pdfarea(distr_normal,0.01);
+
 
   fpar[0] = 3.;
   distr_gamma = unur_distr_gamma(fpar,1);

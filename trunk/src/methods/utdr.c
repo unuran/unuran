@@ -355,8 +355,7 @@ unur_utdr_init( struct unur_par *par )
 	tlys = -1./sqrt(tlys);
       else {
 	_unur_warning(gen->genid,UNUR_ERR_INIT,"f(tlx)=0!!, Perhaps pdf or mode or domain wrong\n");
-	free(par); unur_utdr_free(gen);
-	return NULL; 
+	goto error;
       }
 
       GEN.sal =  (GEN.hm - tlys) / (GEN.mode - GEN.tlx);
@@ -408,8 +407,7 @@ unur_utdr_init( struct unur_par *par )
           trys= -1./trys;
         else {
           _unur_warning(gen->genid,UNUR_ERR_INIT,"f(trx)=0!!, Perhaps pdf or mode or domain wrong\n");
-          free(par); unur_utdr_free(gen);
-          return NULL;
+	  goto error;
         }
   
         /* siehe 1.2. !! */
@@ -462,8 +460,7 @@ unur_utdr_init( struct unur_par *par )
     else { 
       if (setupok==0 || GEN.volcompl > 8. * pdf_area || GEN.volcompl < 0.5 * pdf_area) {
         _unur_warning(gen->genid,UNUR_ERR_INIT,"Area below hat too large! Perhaps pdf or mode wrong\n");
-        free(par); unur_utdr_free(gen);
-        return NULL; 
+	goto error;
       }
     }
 
@@ -474,6 +471,15 @@ unur_utdr_init( struct unur_par *par )
   free(par);
 
   return gen;
+
+ error:
+#if UNUR_DEBUG & UNUR_DB_INFO
+    /* write info into log file */
+    if (gen->debug) _unur_utdr_debug_init(par,gen,try,trys,cfac,setupok);
+#endif
+  free(par); 
+  unur_utdr_free(gen);
+  return NULL;
 
 } /* end of unur_utdr_init() */
 
@@ -617,9 +623,14 @@ _unur_utdr_create( struct unur_par *par )
   GEN.pdf = gen->DISTR.pdf;               /* p.d.f. of distribution          */
   GEN.pdf_param   = gen->DISTR.params;    /* parameters of p.d.f.            */
   GEN.n_pdf_param = gen->DISTR.n_params;  /* number of parameters            */
-  GEN.mode = gen->DISTR.mode;             /* mode of p.d.f.                  */
   GEN.il = gen->DISTR.domain[0];          /* left boundary of domain         */
   GEN.ir = gen->DISTR.domain[1];          /* right boundary of domain        */
+
+  /* get mode */
+  GEN.mode = gen->DISTR.mode;             /* mode of p.d.f.                  */
+  /* mode must be in domain */
+  GEN.mode = max(GEN.mode,GEN.il);
+  GEN.mode = min(GEN.mode,GEN.ir);
 
   gen->method = par->method;         /* indicates method                     */
   gen->variant = par->variant;       /* indicates variant                    */

@@ -123,7 +123,7 @@ print <<EOX;
 # ----------------------------------------------------------------
 # Load packages
 
-use CGI qw/:standard *blockquote *font/;
+use CGI qw/:standard -nosticky *blockquote *font/;
 use CGI::Pretty;
 
 # ----------------------------------------------------------------

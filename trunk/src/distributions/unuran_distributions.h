@@ -230,8 +230,16 @@ UNUR_DISTR *unur_distr_multinormal(int dim, double *mean, double *covar);
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
+/* Binomial distribution  [1; ch.3, p.105]                                   */
+UNUR_DISTR *unur_distr_binomial(double *params, int n_params);
+
+/*---------------------------------------------------------------------------*/
 /* Geometric distribution  [1; ch.5.2, p.201]                                */
 UNUR_DISTR *unur_distr_geometric(double *params, int n_params);
+
+/*---------------------------------------------------------------------------*/
+/* Hypergometric distribution  [1; ch.6, p.237]                              */
+UNUR_DISTR *unur_distr_hypergeometric(double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
 /* Logarithmic distribution  [1; ch.7, p.285]                                */

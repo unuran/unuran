@@ -63,18 +63,83 @@ static const char distr_name[] = "logarithmic";
 #define DISTR distr->data.discr
 #define NORMCONSTANT (distr->data.discr.norm_constant)
 
+/*---------------------------------------------------------------------------*/
+
+/* no CDF for distribution */
+#undef  HAVE_CDF
+
+/*---------------------------------------------------------------------------*/
+
 /* function prototypes                                                       */
 static double _unur_pmf_logarithmic(int k, UNUR_DISTR *distr);
-/*  static double _unur_cdf_logarithmic(int k, UNUR_DISTR *distr);       */
+#ifdef HAVE_CDF
+static double _unur_cdf_logarithmic(int k, UNUR_DISTR *distr);      
+#endif
+
+static int _unur_upd_mode_logarithmic( UNUR_DISTR *distr );
+static int _unur_upd_sum_logarithmic( UNUR_DISTR *distr );
 
 /*---------------------------------------------------------------------------*/
 
 double
 _unur_pmf_logarithmic(int k, UNUR_DISTR *distr)
 { 
-  register double *params = DISTR.params;
-  return ((k<1) ? 0. : pow( theta, k ) / k * NORMCONSTANT);
+  return ((k<1) ? 0. : pow( DISTR.theta, k ) / k * NORMCONSTANT);
 } /* end of _unur_pmf_logarithmic() */
+
+/*---------------------------------------------------------------------------*/
+
+#ifdef HAVE_CDF
+
+double
+_unur_cdf_logarithmic(int k, UNUR_DISTR *distr)
+{ 
+  /** TODO: CDF **/
+  return 0.;
+} /* end of _unur_cdf_logarithmic() */
+
+#endif
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_upd_mode_logarithmic( UNUR_DISTR *distr )
+{
+  DISTR.mode = 1;
+
+  /* mode must be in domain */
+  if (DISTR.mode < DISTR.domain[0]) 
+    DISTR.mode = DISTR.domain[0];
+  else if (DISTR.mode > DISTR.domain[1]) 
+    DISTR.mode = DISTR.domain[1];
+
+  /* o.k. */
+  return 1;
+} /* end of _unur_upd_mode_logarithmic() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_upd_sum_logarithmic( UNUR_DISTR *distr )
+{
+  /* normalization constant */
+  NORMCONSTANT = -1. / log( 1.-DISTR.theta);
+
+  if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
+    DISTR.sum = 1.;
+    return 1;
+  }
+  
+#ifdef HAVE_CDF
+  /* else */
+  DISTR.sum = ( _unur_cdf_logarithmic( DISTR.domain[1],distr) 
+		 - _unur_cdf_logarithmic( DISTR.domain[0]-1,distr) );
+  return 1;
+#else
+  return 0;
+#endif
+
+} /* end of _unur_upd_sum_logarithmic() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -104,8 +169,10 @@ unur_distr_logarithmic( double *params, int n_params )
   DISTR.init = _unur_stdgen_logarithmic_init;
    
   /* functions */
-  DISTR.pmf  = _unur_pmf_logarithmic;   /* pointer to PMF            */
-  /* DISTR.cdf  = _unur_cdf_logarithmic;   pointer to CDF            */
+  DISTR.pmf  = _unur_pmf_logarithmic;   /* pointer to PMF */
+#ifdef HAVE_CDF
+  DISTR.cdf  = _unur_cdf_logarithmic;   /* pointer to CDF */
+#endif           
 
   /* copy parameters */
   DISTR.theta = theta;
@@ -119,21 +186,25 @@ unur_distr_logarithmic( double *params, int n_params )
   /* number of arguments */
   DISTR.n_params = n_params;
 
-  /* log of normalization constant */
+  /* normalization constant */
   NORMCONSTANT = -1. / log( 1.-DISTR.theta);
 
+  /* domain: [1, infinity] */
+  DISTR.domain[0] = 1;           /* left boundary  */
+  DISTR.domain[1] = INT_MAX;     /* right boundary */
+
   /* mode and sum over PMF */
-  /*    DISTR.mode = 0.; */
+  DISTR.mode = 1;
   DISTR.sum = 1.;
 
-  /* domain: [0, infinity] */
-  DISTR.domain[0] = 1.;          /* left boundary  */
-  DISTR.domain[1] = INT_MAX;     /* right boundary */
+  /* function for updating derived parameters */
+  DISTR.upd_mode = _unur_upd_mode_logarithmic; /* funct for computing mode */
+  DISTR.upd_sum  = _unur_upd_sum_logarithmic; /* funct for computing sum */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |
 		 UNUR_DISTR_SET_STDDOMAIN |
-                 /* UNUR_DISTR_SET_MODE   |  */
+		 UNUR_DISTR_SET_MODE | 
 		 UNUR_DISTR_SET_PMFSUM );
                 
   /* return pointer to object */
@@ -142,6 +213,6 @@ unur_distr_logarithmic( double *params, int n_params )
 } /* end of unur_distr_logarithmic() */
 
 /*---------------------------------------------------------------------------*/
-#undef nu
+#undef theta
 #undef DISTR
 /*---------------------------------------------------------------------------*/

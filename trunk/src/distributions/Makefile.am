@@ -33,7 +33,9 @@ libdistributions_a_SOURCES = \
  c_triangular.c  c_triangular_gen.c \
  c_uniform.c     c_uniform_gen.c \
  c_weibull.c     c_weibull_gen.c \
+ d_binomial.c    d_binomial_gen.c \
  d_geometric.c   d_geometric_gen.c \
+ d_hypergeometric.c d_hypergeometric_gen.c \
  d_logarithmic.c d_logarithmic_gen.c \
  d_negativebinomial.c d_negativebinomial_gen.c \
  d_poisson.c     d_poisson_gen.c \

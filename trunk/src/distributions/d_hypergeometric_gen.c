@@ -4,9 +4,9 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE:      d_negativebinomial_gen.c                                     *
+ *   FILE:      d_hypergeometric_gen.c                                       *
  *                                                                           *
- *   Special generators for Negative Binomial distribution                   *
+ *   Special generators for Hypergeometric distribution                      *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -48,16 +48,17 @@
 
 #define uniform()  _unur_call_urng(gen->urng) /* call for uniform prng       */
 
-#define MAX_gen_params   1     /* maximal number of parameters for generator */
+#define MAX_gen_params   100     /** TODO:  maximal number of parameters for generator */
 
 /* parameters */
-#define p  (DISTR.params[0])
-#define r  (DISTR.params[1])
+#define N  params[0]
+#define M  params[1]
+#define n  params[2]
 
 /*---------------------------------------------------------------------------*/
 /* init routines for special generators                                      */
 
-inline static int negativebinomial_nbp_init( struct unur_gen *gen );
+inline static int hypergeometric_xxxx_init( struct unur_gen *gen );
 
 /*---------------------------------------------------------------------------*/
 
@@ -70,9 +71,9 @@ inline static int negativebinomial_nbp_init( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 
 int 
-_unur_stdgen_negativebinomial_init( struct unur_par *par, struct unur_gen *gen )
+_unur_stdgen_hypergeometric_init( struct unur_par *par, struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* initialize special generator for Negative Binomial distribution      */
+     /* initialize special generator for Hypergeometric distribution         */
      /* if gen == NULL then only check existance of variant.                 */
      /*                                                                      */
      /* parameters:                                                          */
@@ -88,9 +89,10 @@ _unur_stdgen_negativebinomial_init( struct unur_par *par, struct unur_gen *gen )
   switch ((par) ? par->variant : gen->variant) {
 
   case 0:  /* DEFAULT */
-  case 1:  /* Compound method */
-    _unur_dstd_set_sampling_routine( par,gen,_unur_stdgen_sample_negativebinomial_nbp );
-    return negativebinomial_nbp_init( gen );
+  case 1:  /** TODO: XXXX  method */
+    //    _unur_dstd_set_sampling_routine( par,gen,_unur_stdgen_sample_hypergeometric_xxxx );
+    //    return hypergeometric_xxxx_init( gen );
+    return 0;
 
   case UNUR_STDGEN_INVERSION:   /* inversion method */
   default: /* no such generator */
@@ -98,7 +100,7 @@ _unur_stdgen_negativebinomial_init( struct unur_par *par, struct unur_gen *gen )
     return 0;
   }
   
-} /* end of _unur_stdgen_negativebinomial_init() */
+} /* end of _unur_stdgen_hypergeometric_init() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -110,19 +112,21 @@ _unur_stdgen_negativebinomial_init( struct unur_par *par, struct unur_gen *gen )
 
 /*---------------------------------------------------------------------------*/
 
+/** TODO: das ist der header aus WINRAND **/
+
 /*****************************************************************************
  *                                                                           *
- * Negative Binomial Distribution: Compound method                           *
+ *  Hypergeometric Distribution: XXXX method                                 *
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- * FUNCTION:   - samples a random number from the Negative Binomial          *
+ * FUNCTION:   - samples a random number from the Hypergeometric             *
  *               distribution with parameters r (no. of failures given)      *
  *               and p (probability of success) valid for r > 0, 0 < p < 1.  *
  *               If G from Gamma(r) then K from Poiss(pG/(1-p)) is           *
  *               NB(r,p)-distributed.                                        *
  * REFERENCE:  - J.H. Ahrens, U. Dieter (1974): Computer methods for         *
- *               sampling from gamma, beta, Poisson and binomial             *
+ *               sampling from gamma, bet ??????                             *
  *               distributions, Computing 12, 223--246.                      *
  *                                                                           *
  * Implemented by  E. Stadlober,  September 1991                             *
@@ -131,18 +135,10 @@ _unur_stdgen_negativebinomial_init( struct unur_par *par, struct unur_gen *gen )
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#define x   (GEN.gen_param[0])
-
-#define GAMMA    gen->gen_aux    /* pointer to gamma variate generator       */
-#define POISSON  gen->gen_aux_2  /* pointer to poisson variate generator     */
-/*---------------------------------------------------------------------------*/
 
 inline static int
-negativebinomial_nbp_init( struct unur_gen *gen )
+hypergeometric_xxxx_init( struct unur_gen *gen )
 {
-  double gamma_param;   
-  double poisson_param;   
-
   /* check arguments */
   CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_DSTD_GEN,0);
 
@@ -152,52 +148,19 @@ negativebinomial_nbp_init( struct unur_gen *gen )
   }
 
   /* -X- setup code -X- */
-  x = p /(1. - p);
 
-  /* make a gamma variate generator (use default special generator) */
-  gamma_param = r;   /* shape parameter for gamma distribution */
-  if (GAMMA==NULL) {
-    struct unur_distr *distr = unur_distr_gamma(&gamma_param,1);
-    struct unur_par *par = unur_cstd_new( distr );
-    GAMMA = (par) ? _unur_init(par) : NULL;
-    _unur_check_NULL( NULL,GAMMA,0 );
-    /* need same uniform random number generator as negative binomial generator */
-    GAMMA->urng = gen->urng;
-    /* copy debugging flags */
-    GAMMA->debug = gen->debug;
-    /* we do not need the distribution object any more */
-    unur_distr_free( distr );
-  }
-  else  /* re-init mode --> change shape parameter */
-    unur_cstd_chg_pdfparams(GAMMA,&gamma_param,1);
-
-  /* make a poisson variate generator (use default special generator) */
-  if (POISSON==NULL) {
-    struct unur_distr *distr;
-    struct unur_par *par;
-    poisson_param = 1.;   /* shape parameter for poisson distribution (use a dummy value yet) */
-    distr = unur_distr_poisson(&poisson_param,1);
-    par = unur_dstd_new( distr );
-    POISSON = (par) ? _unur_init( par ) : NULL;
-    _unur_check_NULL( NULL,POISSON,0 );
-    /* need same uniform random number generator as negative binomial generator */
-    POISSON->urng = gen->urng;
-    /* copy debugging flags */
-    POISSON->debug = gen->debug;
-  }
-  /* else we are in the re-init mode 
-     --> there is no necessity to make the generator object again */
+  /** TODO: insert setup for generator **/
 
   /* -X- end of setup code -X- */
 
   return 1;
 
-} /* end of poisson_nbp_init() */
+} /* end of hypergeometric_xxxx_init() */
 
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_stdgen_sample_negativebinomial_nbp( struct unur_gen *gen )
+_unur_stdgen_sample_hypergeometric_xxx( struct unur_gen *gen )
 {
   /* -X- generator code -X- */
   double y;
@@ -205,22 +168,15 @@ _unur_stdgen_sample_negativebinomial_nbp( struct unur_gen *gen )
   /* check arguments */
   CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_DSTD_GEN,0);
 
-  /* sample from gamma distribution */
-  y = x * _unur_sample_cont(GAMMA);
-
-  /* sample from poisson distribution */
-  unur_dstd_chg_pdfparams(POISSON,&y,1);
-  return _unur_sample_discr(POISSON);
+  /** TODO: sample code **/
 
   /* -X- end of generator code -X- */
 
-} /* end of _unur_stdgen_sample_negativebinomial_nbp() */
+  return 0.;
+
+} /* end of _unur_stdgen_sample_hypergeometric_xxxx() */
 
 /*---------------------------------------------------------------------------*/
-#undef x
-
-#undef GAMMA
-#undef POISSON
 /*---------------------------------------------------------------------------*/
 
 

@@ -66,18 +66,91 @@ static const char distr_name[] = "zipf";
 #define DISTR distr->data.discr
 /* #define NORMCONSTANT (distr->data.discr.norm_constant) */
 
+/*---------------------------------------------------------------------------*/
+/* no CDF */
+#undef HAVE_CDF
+
+/* no normalization constant */
+#undef HAVE_SUM
+
+/*---------------------------------------------------------------------------*/
+
 /* function prototypes                                                       */
 static double _unur_pmf_zipf(int k, UNUR_DISTR *distr);
-/*  static double _unur_cdf_zipf(int k, UNUR_DISTR *distr);       */
+#ifdef HAVE_CDF
+static double _unur_cdf_zipf(int k, UNUR_DISTR *distr);
+#endif
+
+static int _unur_upd_mode_zipf( UNUR_DISTR *distr );
+#ifdef HAVE_SUM
+static int _unur_upd_sum_zipf( UNUR_DISTR *distr );
+#endif
 
 /*---------------------------------------------------------------------------*/
 
 double
 _unur_pmf_zipf(int k, UNUR_DISTR *distr)
 { 
-  register double *params = DISTR.params;
-  return ((k<1) ? 0. : exp( log(k + tau) * (-rho - 1.) ) );
+  return ((k<1) ? 0. : exp( log(k + DISTR.tau) * (-DISTR.rho - 1.) ) );
 } /* end of _unur_pmf_zipf() */
+
+/*---------------------------------------------------------------------------*/
+
+#ifdef HAVE_CDF
+
+double
+_unur_cdf_zipf(int k, UNUR_DISTR *distr)
+{ 
+  /** TODO: CDF **/
+  return ((k<1) ? 0. : 1.);
+} /* end of _unur_cdf_zipf() */
+
+#endif
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_upd_mode_zipf( UNUR_DISTR *distr )
+{
+  DISTR.mode = 1;
+
+  /* mode must be in domain */
+  if (DISTR.mode < DISTR.domain[0]) 
+    DISTR.mode = DISTR.domain[0];
+  else if (DISTR.mode > DISTR.domain[1]) 
+    DISTR.mode = DISTR.domain[1];
+
+  /* o.k. */
+  return 1;
+} /* end of _unur_upd_mode_zipf() */
+
+/*---------------------------------------------------------------------------*/
+
+#ifdef HAVE_SUM
+
+int
+_unur_upd_sum_zipf( UNUR_DISTR *distr )
+{
+  /* log normalization constant */
+  /** TODO: sum **/
+
+  if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
+    DISTR.sum = 1.;
+    return 1;
+  }
+  
+#ifdef HAVE_CDF
+  /* else */
+  DISTR.sum = ( _unur_cdf_zipf( DISTR.domain[1],distr) 
+		 - _unur_cdf_zipf( DISTR.domain[0]-1,distr) );
+  return 1;
+#else
+  return 0;
+#endif
+
+} /* end of _unur_upd_sum_zipf() */
+
+#endif
 
 /*---------------------------------------------------------------------------*/
 
@@ -107,8 +180,10 @@ unur_distr_zipf( double *params, int n_params )
   DISTR.init = _unur_stdgen_zipf_init;
    
   /* functions */
-  DISTR.pmf  = _unur_pmf_zipf;   /* pointer to PMF            */
-  /* DISTR.cdf  = _unur_cdf_zipf;   pointer to CDF            */
+  DISTR.pmf  = _unur_pmf_zipf;   /* pointer to PMF */
+#ifdef HAVE_CDF
+  DISTR.cdf  = _unur_cdf_zipf;   /* pointer to CDF */
+#endif
 
   /* default parameters */
   DISTR.tau = 0.;
@@ -130,21 +205,29 @@ unur_distr_zipf( double *params, int n_params )
   /* number of arguments */
   DISTR.n_params = n_params;
 
-  /* log of normalization constant */
-
-  /* mode and sum over PMF */
-  /*    DISTR.mode = 0.; */
-  DISTR.sum = 1.;
-
   /* domain: [1, infinity] */
   DISTR.domain[0] = 1;           /* left boundary  */
   DISTR.domain[1] = INT_MAX;     /* right boundary */
 
+  /* log of normalization constant */
+
+  /* mode and sum over PMF */
+  DISTR.mode = 1;
+  DISTR.sum  = 1.;
+
+  /* function for updating derived parameters */
+  DISTR.upd_mode = _unur_upd_mode_zipf; /* funct for computing mode */
+#ifdef HAVE_SUM
+  DISTR.upd_sum  = _unur_upd_sum_zipf;  /* funct for computing area */
+#endif
+
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |
-		 UNUR_DISTR_SET_STDDOMAIN );
-                 /* UNUR_DISTR_SET_MODE   |  */
-                 /* UNUR_DISTR_SET_PMFSUM ); */
+		 UNUR_DISTR_SET_STDDOMAIN |
+#ifdef HAVE_SUM
+		 UNUR_DISTR_SET_PMFSUM |
+#endif
+		 UNUR_DISTR_SET_MODE );
                 
   /* return pointer to object */
   return distr;
@@ -152,6 +235,7 @@ unur_distr_zipf( double *params, int n_params )
 } /* end of unur_distr_zipf() */
 
 /*---------------------------------------------------------------------------*/
-#undef nu
+#undef rho
+#undef tau
 #undef DISTR
 /*---------------------------------------------------------------------------*/

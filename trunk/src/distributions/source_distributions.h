@@ -398,6 +398,13 @@ double _unur_stdgen_sample_weibull_inv( UNUR_GEN *generator );
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
+/* Binomial distribution  [1; ch.3, p.105]                                   */
+
+/* initialize special generator                                              */
+int _unur_stdgen_binomial_init( UNUR_PAR *parameters, UNUR_GEN *generator );
+
+
+/*---------------------------------------------------------------------------*/
 /* Geometric distribution  [1; ch.5.2, p.201]                                */
 
 /* initialize special generator                                              */
@@ -405,6 +412,13 @@ int _unur_stdgen_geometric_init( UNUR_PAR *parameters, UNUR_GEN *generator );
 
 /* Inversion                                                                 */
 int _unur_stdgen_sample_geometric_inv( UNUR_GEN *generator );
+
+
+/*---------------------------------------------------------------------------*/
+/* Hypergometric distribution  [1; ch.6, p.237]                              */
+
+/* initialize special generator                                              */
+int _unur_stdgen_hypergeometric_init( UNUR_PAR *parameters, UNUR_GEN *generator );
 
 
 /*---------------------------------------------------------------------------*/

@@ -4,7 +4,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE:      d_negativebinomial.c                                         *
+ *   FILE:      d_binomial.c                                                 *
  *                                                                           *
  *   REFERENCES:                                                             *
  *                                                                           *
@@ -16,15 +16,15 @@
  *****************************************************************************
  *****************************************************************************
  *                                                                           *
- *  distr: Negative Binomial distribution  [1; ch.5.1, p.200]                *
+ *  distr: Binomial distribution  [1; ch.3, p.105]                           *
  *                                                                           *
- *  pmf:       p(k) = (k+r-1 \choose r-1) * p^k * (1-p)^r                    *
+ *  pmf:       p(k) = (n \choose k) * p^k * (1-p)^(n-k)                      *
  *  domain:    0 <= k < infinity                                             *
  *  constant:  1                                                             *
  *                                                                           *
  *  parameters:                                                              *
- *     0:  0 < p < 1                                                         *
- *     1:      r > 0                                                         *
+ *     0:  n >= 1                                                            *
+ *     1:  0 < p < 1                                                         *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -56,60 +56,72 @@
 
 /*---------------------------------------------------------------------------*/
 
-static const char distr_name[] = "negativebinomial";
+static const char distr_name[] = "binomial";
 
 /*---------------------------------------------------------------------------*/
 /* parameters */
-#define p  params[0]
-#define r  params[1]
+#define n  params[0]
+#define p  params[1]
 
 /*---------------------------------------------------------------------------*/
 
 #define DISTR distr->data.discr
-#define LOGNORMCONSTANT (distr->data.discr.norm_constant)
+/*  #define LOGNORMCONSTANT (distr->data.discr.norm_constant) */
 
 /*---------------------------------------------------------------------------*/
 /* do we have the PMF of the distribution ? */
-#ifdef HAVE_UNUR_SF_LN_GAMMA
+#ifdef HAVE_UNUR_SF_LN_XXXXXX  /** TODO: was immer du fuer den binomial koeffizienten brauchst.
+				  falls du eine andere funktion aus cephes brauchst,
+				  mache dass bitte ueber entsprechende macros in der datei
+				  source_specfunct.h 
+				  schaue aber zuerst im source code von cephes nach, ob
+				  die nicht ohnehin nur lngamma verwenden. **/
 #  define HAVE_PMF
-#  define HAVE_SUM
 #else
 #  undef  HAVE_PMF
-#  undef  HAVE_SUM
 #endif
 
-/* no CDF */
+/** TODO: haben wir eine CDF (kannst du da in cephes nachschauen **/
 #undef HAVE_CDF
 
 /*---------------------------------------------------------------------------*/
 /* function prototypes                                                       */
 #ifdef HAVE_PMF
-static double _unur_pmf_negativebinomial(int k, UNUR_DISTR *distr);
+static double _unur_pmf_binomial(int k, UNUR_DISTR *distr);
 #endif
 #ifdef HAVE_CDF
-static double _unur_cdf_negativebinomial(int k, UNUR_DISTR *distr); 
+static double _unur_cdf_binomial(int k, UNUR_DISTR *distr); 
 #endif
 
-static int _unur_upd_mode_negativebinomial( UNUR_DISTR *distr );
-#ifdef HAVE_SUM
-static int _unur_upd_sum_negativebinomial( UNUR_DISTR *distr );
-#endif
+static int _unur_upd_mode_binomial( UNUR_DISTR *distr );
+static int _unur_upd_sum_binomial( UNUR_DISTR *distr );
 
 /*---------------------------------------------------------------------------*/
 
 #ifdef HAVE_PMF
 
 double
-_unur_pmf_negativebinomial(int k, UNUR_DISTR *distr)
+_unur_pmf_binomial(int k, UNUR_DISTR *distr)
 { 
   register double *params = DISTR.params;
 
   if (k<0) return 0.;
 
   else
-    return (pow( p, (double)k ) * pow( 1.-p, r ) 
-	    * exp( _unur_sf_ln_gamma(k+r) - _unur_sf_ln_gamma(k+1.) - LOGNORMCONSTANT ) );
-} /* end of _unur_pmf_negativebinomial() */
+    return 1.;
+
+  /** TODO: PMF einfuegen. du kannst hier n und p direkt benutzen.
+      es gibt in der schittstelle nach aussen keine integer parameter.
+      daher ist n eine double variable!!
+
+      wenn es unbedingt eine int variable sein muesste musst du sicherheitshalber runden
+      ((int) (n+0.5))
+  **/
+      
+      
+
+
+} /* end of _unur_pmf_binomial() */
 
 #endif
 
@@ -118,29 +130,25 @@ _unur_pmf_negativebinomial(int k, UNUR_DISTR *distr)
 #ifdef HAVE_CDF
 
 double
-_unur_cdf_negativebinomial(int k, UNUR_DISTR *distr)
+_unur_cdf_binomial(int k, UNUR_DISTR *distr)
 { 
   register double *params = DISTR.params;
 
   if (k<0) return 0.;
 
   else
-    return 1.;  /** TODO **/
+    return 1.;  /** TODO: CDF **/
 
-} /* end of _unur_cdf_negativebinomial() */
+} /* end of _unur_cdf_binomial() */
 
 #endif
 
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_upd_mode_negativebinomial( UNUR_DISTR *distr )
+_unur_upd_mode_binomial( UNUR_DISTR *distr )
 {
-  double m;
-
-  m = (DISTR.r * (1. - DISTR.p) - 1.) / DISTR.p;
-
-  DISTR.mode = (m<0) ? 0 : (int) (m+1);
+  DISTR.mode = (int) ((DISTR.n + 1) * DISTR.p);
 
   /* mode must be in domain */
   if (DISTR.mode < DISTR.domain[0]) 
@@ -150,17 +158,14 @@ _unur_upd_mode_negativebinomial( UNUR_DISTR *distr )
 
   /* o.k. */
   return 1;
-} /* end of _unur_upd_mode_negativebinomial() */
+} /* end of _unur_upd_mode_binomial() */
 
 /*---------------------------------------------------------------------------*/
 
-#ifdef HAVE_SUM
-
 int
-_unur_upd_sum_negativebinomial( UNUR_DISTR *distr )
+_unur_upd_sum_binomial( UNUR_DISTR *distr )
 {
-  /* log of normalization constant */
-  LOGNORMCONSTANT = _unur_sf_ln_gamma(DISTR.r);
+  /* log of normalization constant: none */
 
   if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
     DISTR.sum = 1.;
@@ -169,21 +174,19 @@ _unur_upd_sum_negativebinomial( UNUR_DISTR *distr )
   
 #ifdef HAVE_CDF
   /* else */
-  DISTR.sum = ( _unur_cdf_negativebinomial( DISTR.domain[1],distr) 
-		 - _unur_cdf_negativebinomial( DISTR.domain[0]-1,distr) );
+  DISTR.sum = ( _unur_cdf_binomial( DISTR.domain[1],distr) 
+		 - _unur_cdf_binomial( DISTR.domain[0]-1,distr) );
   return 1;
 #else
   return 0;
 #endif
 
-} /* end of _unur_upd_sum_negativebinomial() */
-
-#endif
+} /* end of _unur_upd_sum_binomial() */
 
 /*---------------------------------------------------------------------------*/
 
 struct unur_distr *
-unur_distr_negativebinomial( double *params, int n_params )
+unur_distr_binomial( double *params, int n_params )
 {
   register struct unur_distr *distr;
 
@@ -199,29 +202,29 @@ unur_distr_negativebinomial( double *params, int n_params )
   distr = unur_distr_discr_new();
 
   /* set distribution id */
-  distr->id = UNUR_DISTR_NEGATIVEBINOMIAL;
+  distr->id = UNUR_DISTR_BINOMIAL;
 
   /* name of distribution */
   distr->name = distr_name;
              
   /* how to get special generators */
-  DISTR.init = _unur_stdgen_negativebinomial_init;
+  DISTR.init = _unur_stdgen_binomial_init;
    
   /* functions */
 #ifdef HAVE_PMF
-  DISTR.pmf  = _unur_pmf_negativebinomial;   /* pointer to PMF */
+  DISTR.pmf  = _unur_pmf_binomial;   /* pointer to PMF */
 #endif
 #ifdef HAVE_CDF
-  DISTR.cdf  = _unur_cdf_negativebinomial;   /* pointer to CDF */
+  DISTR.cdf  = _unur_cdf_binomial;   /* pointer to CDF */
 #endif
 
   /* copy parameters */
+  DISTR.n = n;  /** TODO: hier eventuel runden (falls nur int erlaubt sind) **/
   DISTR.p = p;
-  DISTR.r = r;
 
   /* check parameters */
-  if (DISTR.p <= 0. || DISTR.p >= 1. || DISTR.r <= 0.) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"p <= 0 || p >= 1 || r <= 0");
+  if (DISTR.p <= 0. || DISTR.p >= 1. || DISTR.n <= 0.) { 
+    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"p <= 0 || p >= 1 || n <= 0");
     free( distr ); return NULL;
   }
 
@@ -232,35 +235,26 @@ unur_distr_negativebinomial( double *params, int n_params )
   DISTR.domain[0] = 0;           /* left boundary  */
   DISTR.domain[1] = INT_MAX;     /* right boundary */
 
-  /* log of normalization constant */
-#ifdef HAVE_SUM
-  LOGNORMCONSTANT = _unur_sf_ln_gamma(DISTR.r);
-#else
-  LOGNORMCONSTANT = 0.;
-#endif
+  /* log of normalization constant: none */
 
   /* mode and sum over PMF */
-  _unur_upd_mode_negativebinomial(distr);
+  DISTR.mode = (int) ((DISTR.n + 1) * DISTR.p);
   DISTR.sum = 1.;
 
   /* function for updating derived parameters */
-  DISTR.upd_mode = _unur_upd_mode_negativebinomial; /* funct for computing mode */
-#ifdef HAVE_SUM
-  DISTR.upd_sum  = _unur_upd_sum_negativebinomial;  /* funct for computing area */
-#endif
+  DISTR.upd_mode = _unur_upd_mode_binomial; /* funct for computing mode */
+  DISTR.upd_sum  = _unur_upd_sum_binomial;  /* funct for computing area */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |
 		 UNUR_DISTR_SET_STDDOMAIN |
-#ifdef HAVE_SUM
 		 UNUR_DISTR_SET_PMFSUM |
-#endif
 		 UNUR_DISTR_SET_MODE );
                 
   /* return pointer to object */
   return distr;
 
-} /* end of unur_distr_negativebinomial() */
+} /* end of unur_distr_binomial() */
 
 /*---------------------------------------------------------------------------*/
 #undef p

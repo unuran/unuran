@@ -63,18 +63,66 @@ static const char distr_name[] = "geometric";
 #define DISTR distr->data.discr
 /* #define NORMCONSTANT (distr->data.discr.norm_constant) */
 
+/*---------------------------------------------------------------------------*/
+
 /* function prototypes                                                       */
 static double _unur_pmf_geometric(int k, UNUR_DISTR *distr);
-/*  static double _unur_cdf_geometric(int k, UNUR_DISTR *distr);  */
+static double _unur_cdf_geometric(int k, UNUR_DISTR *distr); 
+
+static int _unur_upd_mode_geometric( UNUR_DISTR *distr );
+static int _unur_upd_sum_geometric( UNUR_DISTR *distr );
 
 /*---------------------------------------------------------------------------*/
 
 double
 _unur_pmf_geometric(int k, UNUR_DISTR *distr)
 { 
-  register double *params = DISTR.params;
-  return ((k<0) ? 0. : p * pow( 1.-p, k ));
+  return ((k<0) ? 0. : DISTR.p * pow( 1. - DISTR.p, k ));
 } /* end of _unur_pmf_geometric() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_cdf_geometric(int k, UNUR_DISTR *distr)
+{ 
+  return ((k<0) ? 0. : (1. - pow(1. - DISTR.p, k+1)) );
+} /* end of _unur_cdf_geometric() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_upd_mode_geometric( UNUR_DISTR *distr )
+{
+  DISTR.mode = 0;
+
+  /* mode must be in domain */
+  if (DISTR.mode < DISTR.domain[0]) 
+    DISTR.mode = DISTR.domain[0];
+  else if (DISTR.mode > DISTR.domain[1]) 
+    DISTR.mode = DISTR.domain[1];
+
+  /* o.k. */
+  return 1;
+} /* end of _unur_upd_mode_geometric() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_upd_sum_geometric( UNUR_DISTR *distr )
+{
+  /* normalization constant: none */
+  
+  if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
+    DISTR.sum = 1.;
+    return 1;
+  }
+  
+  /* else */
+  DISTR.sum = ( _unur_cdf_geometric( DISTR.domain[1],distr) 
+		 - _unur_cdf_geometric( DISTR.domain[0]-1,distr) );
+  return 1;
+
+} /* end of _unur_upd_sum_geometric() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -104,8 +152,8 @@ unur_distr_geometric( double *params, int n_params )
   DISTR.init = _unur_stdgen_geometric_init;
    
   /* functions */
-  DISTR.pmf  = _unur_pmf_geometric;   /* pointer to PMF            */
-  /* DISTR.cdf  = _unur_cdf_geometric;   pointer to CDF            */
+  DISTR.pmf  = _unur_pmf_geometric;   /* pointer to PMF */
+  DISTR.cdf  = _unur_cdf_geometric;   /* pointer to CDF */
 
   /* copy parameters */
   DISTR.p = p;
@@ -119,20 +167,24 @@ unur_distr_geometric( double *params, int n_params )
   /* number of arguments */
   DISTR.n_params = n_params;
 
-  /* log of normalization constant */
-
-  /* mode and sum over PMF */
-  /*    DISTR.mode = 0.; */
-  DISTR.sum = 1.;
+  /* log of normalization constant: none */
 
   /* domain: [0,inifinity] */
-  DISTR.domain[0] = 0.;          /* left boundary  */
+  DISTR.domain[0] = 0;           /* left boundary  */
   DISTR.domain[1] = INT_MAX;     /* right boundary */
+
+  /* mode and sum over PMF */
+  DISTR.mode = 0;
+  DISTR.sum = 1.;
+
+  /* function for updating derived parameters */
+  DISTR.upd_mode = _unur_upd_mode_geometric; /* funct for computing mode */
+  DISTR.upd_sum  = _unur_upd_sum_geometric; /* funct for computing sum */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |
 		 UNUR_DISTR_SET_STDDOMAIN |
-                 /* UNUR_DISTR_SET_MODE   |  */
+		 UNUR_DISTR_SET_MODE | 
 		 UNUR_DISTR_SET_PMFSUM );
                 
   /* return pointer to object */
@@ -141,6 +193,6 @@ unur_distr_geometric( double *params, int n_params )
 } /* end of unur_distr_geometric() */
 
 /*---------------------------------------------------------------------------*/
-#undef nu
+#undef p
 #undef DISTR
 /*---------------------------------------------------------------------------*/

@@ -4,7 +4,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE:      d_negativebinomial.c                                         *
+ *   FILE:      d_hypergeometric.c                                           *
  *                                                                           *
  *   REFERENCES:                                                             *
  *                                                                           *
@@ -16,15 +16,16 @@
  *****************************************************************************
  *****************************************************************************
  *                                                                           *
- *  distr: Negative Binomial distribution  [1; ch.5.1, p.200]                *
+ *  distr: Hypergeometric distribution  [1; ch.6, p.237]                     *
  *                                                                           *
- *  pmf:       p(k) = (k+r-1 \choose r-1) * p^k * (1-p)^r                    *
- *  domain:    0 <= k < infinity                                             *
+ *  pmf:       p(k) = (M \choose k) * (N-M \choose n-k) / (N \choose n)      *
+ *  domain:    max(0,n-N+M) <= k <= min(n,M)                                 *
  *  constant:  1                                                             *
  *                                                                           *
  *  parameters:                                                              *
- *     0:  0 < p < 1                                                         *
- *     1:      r > 0                                                         *
+ *     0:  N   >= M                                                          *
+ *     1:  M   >= 1                                                          *
+ *     2:  n   n >= 1                                                        *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -56,60 +57,71 @@
 
 /*---------------------------------------------------------------------------*/
 
-static const char distr_name[] = "negativebinomial";
+static const char distr_name[] = "hypergeometric";
 
 /*---------------------------------------------------------------------------*/
 /* parameters */
-#define p  params[0]
-#define r  params[1]
+#define N  params[0]
+#define M  params[1]
+#define n  params[2]
 
 /*---------------------------------------------------------------------------*/
 
 #define DISTR distr->data.discr
-#define LOGNORMCONSTANT (distr->data.discr.norm_constant)
+/*  #define LOGNORMCONSTANT (distr->data.discr.norm_constant) */
 
 /*---------------------------------------------------------------------------*/
 /* do we have the PMF of the distribution ? */
-#ifdef HAVE_UNUR_SF_LN_GAMMA
+#ifdef HAVE_UNUR_SF_LN_XXXXXX  /** TODO: was immer du fuer den hypergeometric koeffizienten brauchst.
+				  falls du eine andere funktion aus cephes brauchst,
+				  mache dass bitte ueber entsprechende macros in der datei
+				  source_specfunct.h **/
 #  define HAVE_PMF
-#  define HAVE_SUM
 #else
 #  undef  HAVE_PMF
-#  undef  HAVE_SUM
 #endif
 
-/* no CDF */
+/** TODO: haben wir eine CDF (kannst du da in cephes nachschauen **/
 #undef HAVE_CDF
 
 /*---------------------------------------------------------------------------*/
 /* function prototypes                                                       */
 #ifdef HAVE_PMF
-static double _unur_pmf_negativebinomial(int k, UNUR_DISTR *distr);
+static double _unur_pmf_hypergeometric(int k, UNUR_DISTR *distr);
 #endif
 #ifdef HAVE_CDF
-static double _unur_cdf_negativebinomial(int k, UNUR_DISTR *distr); 
+static double _unur_cdf_hypergeometric(int k, UNUR_DISTR *distr); 
 #endif
 
-static int _unur_upd_mode_negativebinomial( UNUR_DISTR *distr );
-#ifdef HAVE_SUM
-static int _unur_upd_sum_negativebinomial( UNUR_DISTR *distr );
-#endif
+static int _unur_upd_mode_hypergeometric( UNUR_DISTR *distr );
+static int _unur_upd_sum_hypergeometric( UNUR_DISTR *distr );
 
 /*---------------------------------------------------------------------------*/
 
 #ifdef HAVE_PMF
 
 double
-_unur_pmf_negativebinomial(int k, UNUR_DISTR *distr)
+_unur_pmf_hypergeometric(int k, UNUR_DISTR *distr)
 { 
   register double *params = DISTR.params;
 
-  if (k<0) return 0.;
+  if (k<0 /** TODO: **/ ) return 0.;
 
   else
-    return (pow( p, (double)k ) * pow( 1.-p, r ) 
-	    * exp( _unur_sf_ln_gamma(k+r) - _unur_sf_ln_gamma(k+1.) - LOGNORMCONSTANT ) );
-} /* end of _unur_pmf_negativebinomial() */
+    return 1.;
+
+  /** TODO: PMF einfuegen. du kannst hier n und p direkt benutzen.
+      es gibt in der schittstelle nach aussen keine integer parameter.
+      daher ist n eine double variable!!
+
+      wenn es unbedingt eine int variable sein muesste musst du sicherheitshalber runden
+      ((int) (n+0.5))
+  **/
+      
+      
+
+
+} /* end of _unur_pmf_hypergeometric() */
 
 #endif
 
@@ -118,29 +130,26 @@ _unur_pmf_negativebinomial(int k, UNUR_DISTR *distr)
 #ifdef HAVE_CDF
 
 double
-_unur_cdf_negativebinomial(int k, UNUR_DISTR *distr)
+_unur_cdf_hypergeometric(int k, UNUR_DISTR *distr)
 { 
   register double *params = DISTR.params;
 
-  if (k<0) return 0.;
+  if (k<0 /** TODO **/ ) return 0.;
+  if (k>1 /** TODO **/ ) return 1.;
 
   else
-    return 1.;  /** TODO **/
+    return 1.;  /** TODO: CDF **/
 
-} /* end of _unur_cdf_negativebinomial() */
+} /* end of _unur_cdf_hypergeometric() */
 
 #endif
 
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_upd_mode_negativebinomial( UNUR_DISTR *distr )
+_unur_upd_mode_hypergeometric( UNUR_DISTR *distr )
 {
-  double m;
-
-  m = (DISTR.r * (1. - DISTR.p) - 1.) / DISTR.p;
-
-  DISTR.mode = (m<0) ? 0 : (int) (m+1);
+  DISTR.mode = (int) ( (DISTR.n + 1) * (DISTR.M + 1.) / (DISTR.N + 2.) );
 
   /* mode must be in domain */
   if (DISTR.mode < DISTR.domain[0]) 
@@ -150,17 +159,14 @@ _unur_upd_mode_negativebinomial( UNUR_DISTR *distr )
 
   /* o.k. */
   return 1;
-} /* end of _unur_upd_mode_negativebinomial() */
+} /* end of _unur_upd_mode_hypergeometric() */
 
 /*---------------------------------------------------------------------------*/
 
-#ifdef HAVE_SUM
-
 int
-_unur_upd_sum_negativebinomial( UNUR_DISTR *distr )
+_unur_upd_sum_hypergeometric( UNUR_DISTR *distr )
 {
-  /* log of normalization constant */
-  LOGNORMCONSTANT = _unur_sf_ln_gamma(DISTR.r);
+  /* log of normalization constant: none */
 
   if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
     DISTR.sum = 1.;
@@ -169,59 +175,59 @@ _unur_upd_sum_negativebinomial( UNUR_DISTR *distr )
   
 #ifdef HAVE_CDF
   /* else */
-  DISTR.sum = ( _unur_cdf_negativebinomial( DISTR.domain[1],distr) 
-		 - _unur_cdf_negativebinomial( DISTR.domain[0]-1,distr) );
+  DISTR.sum = ( _unur_cdf_hypergeometric( DISTR.domain[1],distr) 
+		 - _unur_cdf_hypergeometric( DISTR.domain[0]-1,distr) );
   return 1;
 #else
   return 0;
 #endif
 
-} /* end of _unur_upd_sum_negativebinomial() */
-
-#endif
+} /* end of _unur_upd_sum_hypergeometric() */
 
 /*---------------------------------------------------------------------------*/
 
 struct unur_distr *
-unur_distr_negativebinomial( double *params, int n_params )
+unur_distr_hypergeometric( double *params, int n_params )
 {
   register struct unur_distr *distr;
 
   /* check new parameter for generator */
-  if (n_params < 2) {
+  if (n_params < 3) {
     _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few"); return NULL; }
-  if (n_params > 2) {
+  if (n_params > 3) {
     _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
-    n_params = 2; }
+    n_params = 3; }
   CHECK_NULL(params,NULL);
 
   /* get new (empty) distribution object */
   distr = unur_distr_discr_new();
 
   /* set distribution id */
-  distr->id = UNUR_DISTR_NEGATIVEBINOMIAL;
+  distr->id = UNUR_DISTR_HYPERGEOMETRIC;
 
   /* name of distribution */
   distr->name = distr_name;
              
   /* how to get special generators */
-  DISTR.init = _unur_stdgen_negativebinomial_init;
+  DISTR.init = _unur_stdgen_hypergeometric_init;
    
   /* functions */
 #ifdef HAVE_PMF
-  DISTR.pmf  = _unur_pmf_negativebinomial;   /* pointer to PMF */
+  DISTR.pmf  = _unur_pmf_hypergeometric;   /* pointer to PMF */
 #endif
 #ifdef HAVE_CDF
-  DISTR.cdf  = _unur_cdf_negativebinomial;   /* pointer to CDF */
+  DISTR.cdf  = _unur_cdf_hypergeometric;   /* pointer to CDF */
 #endif
 
   /* copy parameters */
-  DISTR.p = p;
-  DISTR.r = r;
+  /** TODO: hier eventuel runden (falls nur int erlaubt sind) **/
+  DISTR.N = N; 
+  DISTR.M = M; 
+  DISTR.n = n; 
 
   /* check parameters */
-  if (DISTR.p <= 0. || DISTR.p >= 1. || DISTR.r <= 0.) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"p <= 0 || p >= 1 || r <= 0");
+  if (DISTR.M <= 0. /** TODO: || usw. **/ ) {
+    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"M < 0 || usw.");
     free( distr ); return NULL;
   }
 
@@ -229,41 +235,41 @@ unur_distr_negativebinomial( double *params, int n_params )
   DISTR.n_params = n_params;
 
   /* domain: [0, infinity] */
-  DISTR.domain[0] = 0;           /* left boundary  */
-  DISTR.domain[1] = INT_MAX;     /* right boundary */
+  DISTR.domain[0] = max(0,n-N+M);       /* left boundary  */
+  DISTR.domain[1] = min(n,M);           /* right boundary */
 
-  /* log of normalization constant */
-#ifdef HAVE_SUM
-  LOGNORMCONSTANT = _unur_sf_ln_gamma(DISTR.r);
-#else
-  LOGNORMCONSTANT = 0.;
-#endif
+  /** TODO: wie soll man das mit dem domain machen, wenn die parameter
+      der verteilung geaendert werden?? 
+      (das ist die erste verteilung wo das problem auftritt.
+      einfach auf [0,INT_MAX] setzen?
+      oder den benutzer sagen, dass er bei dieser verteilung den domain nicht 
+      veraendern darf??
+  **/
+
+  /* log of normalization constant: none */
 
   /* mode and sum over PMF */
-  _unur_upd_mode_negativebinomial(distr);
+  _unur_upd_mode_hypergeometric(distr);
   DISTR.sum = 1.;
 
   /* function for updating derived parameters */
-  DISTR.upd_mode = _unur_upd_mode_negativebinomial; /* funct for computing mode */
-#ifdef HAVE_SUM
-  DISTR.upd_sum  = _unur_upd_sum_negativebinomial;  /* funct for computing area */
-#endif
+  DISTR.upd_mode = _unur_upd_mode_hypergeometric; /* funct for computing mode */
+  DISTR.upd_sum  = _unur_upd_sum_hypergeometric;  /* funct for computing area */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |
 		 UNUR_DISTR_SET_STDDOMAIN |
-#ifdef HAVE_SUM
 		 UNUR_DISTR_SET_PMFSUM |
-#endif
 		 UNUR_DISTR_SET_MODE );
                 
   /* return pointer to object */
   return distr;
 
-} /* end of unur_distr_negativebinomial() */
+} /* end of unur_distr_hypergeometric() */
 
 /*---------------------------------------------------------------------------*/
-#undef p
-#undef r
+#undef N
+#undef M
+#undef n
 #undef DISTR
 /*---------------------------------------------------------------------------*/

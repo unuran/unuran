@@ -61,20 +61,105 @@ static const char distr_name[] = "poisson";
 #define theta  params[0]
 
 #define DISTR distr->data.discr
-/* #define NORMCONSTANT (distr->data.discr.norm_constant) */
-
-/* function prototypes                                                       */
-static double _unur_pmf_poisson(int k, UNUR_DISTR *distr);
-/*  static double _unur_cdf_poisson(int k, UNUR_DISTR *distr);       */
+/*  #define LOGNORMCONSTANT (distr->data.discr.norm_constant) */
 
 /*---------------------------------------------------------------------------*/
+/* do we have the cdf of the distribution ? */
+#if defined(HAVE_UNUR_SF_GAMMA) && defined(HAVE_UNUR_SF_INCOMPLETE_GAMMA)
+#  define HAVE_CDF
+#else
+#  undef  HAVE_CDF
+#endif
+
+/* can we compute the area below the pdf ? */
+#ifdef HAVE_UNUR_SF_LN_FACTORIAL
+#  define HAVE_PMF
+#else
+#  undef  HAVE_PMF
+#endif
+
+/*---------------------------------------------------------------------------*/
+
+/* function prototypes                                                       */
+#ifdef HAVE_PMF
+static double _unur_pmf_poisson(int k, UNUR_DISTR *distr);
+#endif
+#ifdef HAVE_CDF
+static double _unur_cdf_poisson(int k, UNUR_DISTR *distr);      
+#endif
+
+static int _unur_upd_mode_poisson( UNUR_DISTR *distr );
+static int _unur_upd_sum_poisson( UNUR_DISTR *distr );
+
+/*---------------------------------------------------------------------------*/
+
+#ifdef HAVE_PMF
 
 double
 _unur_pmf_poisson(int k, UNUR_DISTR *distr)
 { 
-  register double *params = DISTR.params;
-  return ((k<0) ? 0. : exp( -theta + k * log(theta) - _unur_sf_ln_factorial(k) ));
+  if (k>=0)
+    return exp( -DISTR.theta + k * log(DISTR.theta) - _unur_sf_ln_factorial(k) );
+  else
+    return 0.;
 } /* end of _unur_pmf_poisson() */
+
+#endif
+
+/*---------------------------------------------------------------------------*/
+
+#ifdef HAVE_CDF
+
+double
+_unur_cdf_poisson(int k, UNUR_DISTR *distr)
+{ 
+  if (k>=0)
+    return ( (k+1.) * _unur_sf_incomplete_gamma(k,DISTR.theta) / _unur_sf_ln_gamma(k+2.) );
+  else
+    return 0.;
+} /* end of _unur_cdf_poisson() */
+
+#endif
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_upd_mode_poisson( UNUR_DISTR *distr )
+{
+  DISTR.mode = (int) DISTR.theta;
+
+  /* mode must be in domain */
+  if (DISTR.mode < DISTR.domain[0]) 
+    DISTR.mode = DISTR.domain[0];
+  else if (DISTR.mode > DISTR.domain[1]) 
+    DISTR.mode = DISTR.domain[1];
+
+  /* o.k. */
+  return 1;
+} /* end of _unur_upd_mode_poisson() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_upd_sum_poisson( UNUR_DISTR *distr )
+{
+  /* log normalization constant: none */
+
+  if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
+    DISTR.sum = 1.;
+    return 1;
+  }
+  
+#ifdef HAVE_CDF
+  /* else */
+  DISTR.sum = ( _unur_cdf_poisson( DISTR.domain[1],distr) 
+		 - _unur_cdf_poisson( DISTR.domain[0]-1,distr) );
+  return 1;
+#else
+  return 0;
+#endif
+
+} /* end of _unur_upd_sum_poisson() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -104,8 +189,12 @@ unur_distr_poisson( double *params, int n_params )
   DISTR.init = _unur_stdgen_poisson_init;
    
   /* functions */
-  DISTR.pmf  = _unur_pmf_poisson;   /* pointer to PMF            */
-  /* DISTR.cdf  = _unur_cdf_poisson;   pointer to CDF            */
+#ifdef HAVE_PMF
+  DISTR.pmf  = _unur_pmf_poisson;   /* pointer to PMF */
+#endif
+#ifdef HAVE_CDF
+  DISTR.cdf  = _unur_cdf_poisson;   /* pointer to CDF */
+#endif
 
   /* copy parameters */
   DISTR.theta = theta;
@@ -119,21 +208,25 @@ unur_distr_poisson( double *params, int n_params )
   /* number of arguments */
   DISTR.n_params = n_params;
 
-  /* log of normalization constant */
+  /* domain: [0, inifinty] */
+  DISTR.domain[0] = 0;           /* left boundary  */
+  DISTR.domain[1] = INT_MAX;     /* right boundary */
+
+  /* log normalization constant: none */
 
   /* mode and sum over PMF */
-  /*    DISTR.mode = 0.; */
+  DISTR.mode = (int) DISTR.theta;
   DISTR.sum = 1.;
 
-  /* domain: [0, inifinty] */
-  DISTR.domain[0] = 0.;          /* left boundary  */
-  DISTR.domain[1] = INT_MAX;     /* right boundary */
+  /* function for updating derived parameters */
+  DISTR.upd_mode = _unur_upd_mode_poisson; /* funct for computing mode */
+  DISTR.upd_sum  = _unur_upd_sum_poisson;  /* funct for computing area */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |
 		 UNUR_DISTR_SET_STDDOMAIN |
-                 /* UNUR_DISTR_SET_MODE   |  */
-		 UNUR_DISTR_SET_PMFSUM );
+		 UNUR_DISTR_SET_PMFSUM |
+		 UNUR_DISTR_SET_MODE );
                 
   /* return pointer to object */
   return distr;
@@ -141,6 +234,6 @@ unur_distr_poisson( double *params, int n_params )
 } /* end of unur_distr_poisson() */
 
 /*---------------------------------------------------------------------------*/
-#undef nu
+#undef theta
 #undef DISTR
 /*---------------------------------------------------------------------------*/

@@ -52,6 +52,15 @@
 #endif
 
 /*---------------------------------------------------------------------------*/
+/* compare two floating point numbers                                        */
+/* (this is copied from ./src/utils/unur_fp_source.h)                        */
+
+#define _unur_FP_equal(a,b) \
+ ((a)==(b) || \
+  fabs((a)-(b)) <= ((fabs(a)<fabs(b))?fabs(a):fabs(b)) * 100. * FLT_EPSILON)
+
+
+/*---------------------------------------------------------------------------*/
 /* check for invalid NULL pointer, that should not happen in this program */
 void abort_if_NULL( FILE *LOG, int line, const void *ptr );
 

@@ -15,14 +15,6 @@
 #include "testunuran.h"
 
 /*---------------------------------------------------------------------------*/
-/* compare two floating point numbers                                        */
-/* (this is copied from ./src/utils/unur_fp_source.h)                        */
-
-#define _unur_FP_equal(a,b) \
- ((a)==(b) || \
- fabs((a)-(b)) <= ((fabs(a)<fabs(b))?fabs(a):fabs(b)) * 100. * FLT_EPSILON)
-
-/*---------------------------------------------------------------------------*/
 /* check whether unur_urng_reset() works                                     */
 
 static int 

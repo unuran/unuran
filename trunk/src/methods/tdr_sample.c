@@ -517,12 +517,13 @@ _unur_tdr_ps_sample( struct unur_gen *gen )
 
     case TDR_VAR_T_SQRT:
       if (iv->dTfx == 0.)
-	X = iv->x + U /iv->fx;
+	X = iv->x + U / iv->fx;
       else {
 	/* it would be less expensive to use:
 	   X = iv->x + iv->Tfx/iv->dTfx * (1. - 1./(1. + iv->dTfx * iv->Tfx * U) )
 	   however, this is unstable for small iv->dTfx */
-	X = iv->x + (iv->Tfx*iv->Tfx*U) / (1.-iv->Tfx*iv->dTfx*U);  
+	/*  	X = iv->x + (iv->Tfx*iv->Tfx*U) / (1.-iv->Tfx*iv->dTfx*U);   */
+	X = iv->x + (U / iv->fx) / (1.-iv->Tfx*iv->dTfx*U);  
 	/* It cannot happen, that the denominator becomes 0 ! */
       }
       break;
@@ -667,7 +668,8 @@ _unur_tdr_ps_sample_check( struct unur_gen *gen )
 	/* it would be less expensive to use:
 	   X = iv->x + iv->Tfx/iv->dTfx * (1. - 1./(1. + iv->dTfx * iv->Tfx * U) )
 	   however, this is unstable for small iv->dTfx */
-	X = iv->x + (iv->Tfx*iv->Tfx*U) / (1.-iv->Tfx*iv->dTfx*U);  
+	/*  	X = iv->x + (iv->Tfx*iv->Tfx*U) / (1.-iv->Tfx*iv->dTfx*U);   */
+	X = iv->x + (U / iv->fx) / (1.-iv->Tfx*iv->dTfx*U);  
 	/* It cannot happen, that the denominator becomes 0 ! */
       }
       break;

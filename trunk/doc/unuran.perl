@@ -57,6 +57,9 @@ $CENABLE = 0;
 $KOMMENT = 0;
 # Kennzeichnet Kommentarbloecke (zur Unterscheidung von Kommentarzeilen)
 $BLOCK   = 0;
+# Das soll ausgedruckt werden
+$PRINT = "";
+
 
 # Deklarations/Beschreibungsbereich der Routinen gefunden
 $ROUTINES = 0;
@@ -97,8 +100,8 @@ while($_ = <>)
 	$KOMMENT = 1;
     }
 
-    # Kommentare enden mit Leerzeile
-    if ($_ =~ /^\s*$/){
+    # Kommentare enden mit Leerzeile 
+    if ($BLOCK == 0 && $_ =~ /^\s*$/){
         $KOMMENT = 0;
         $CENABLE = 0;
     }
@@ -121,6 +124,7 @@ while($_ = <>)
         print OUTFILE "\n\n\@node ", $2, "\n";
         print OUTFILE "\@subsection ", $2, " ", $3, "\n\n";
         print OUTFILE "\@itemize \@minus\{\}\n";
+	$BLOCK=1;
     }
 
    # Suche Funktion und Definitionszeilen
@@ -158,15 +162,16 @@ while($_ = <>)
      # einzelne Kommentarzeile  (beginnnen mit "/*" und enden mit "*/")
      if ( $_ =~ /^(\s*\/\*\s*)(.*)?(\s*\*\/)/ ){
         $BLOCK = 0;
-        print OUTFILE $2, "\n";
+	$PRINT = join  '',$2,"\n";
       }
      # Zeile beginnt mit Kommentarblock-Ende
      elsif ($BLOCK == 1 && $_ =~ /\s*\*\// ){
 	 $BLOCK = 0;
+         $PRINT = "";
      }
      # Kommentarzeile in einem Kommentarblock (nicht erste Zeile)
      elsif( $BLOCK == 1 && $_ =~ /^(\s*)(.*)\s*(\*\/)?/ ){
-         print OUTFILE $2;
+	 $PRINT = join '', $2, " ";
          # Kommentarblocke enten mit "*/"
 	 if ($_ =~ /\*\//){
 	     $BLOCK = 0;
@@ -175,10 +180,16 @@ while($_ = <>)
      # Beginn eines Kommentarblocks (Zeile beginnt mit "/*"
      # und darf "*/" nicht enthalten)
      elsif($_ =~ /^(\s*\/\*\s*)(.*)/ ){
-	print OUTFILE $2;
-        $BLOCK = 1;
+       $PRINT = join '', $2, " ";
+       $BLOCK = 1;
      }
-
+     
+     #  Ausdruck der Kommentare, wobei
+     #  "(=>)" und zeilen die mit einem =BEFEHL beginnen
+     #  nicht gedruckt werden sollen
+     if( $PRINT !~ /(\s*\/\*\s*|\s*)=\w+/ ) { 
+        print OUTFILE join ' ', split /\(=>\)/, $PRINT;
+     }
 
      # Ende einer Kommentarzeile/blocks -> Zeilenumbruch 
      if ($_ =~/\*\//){

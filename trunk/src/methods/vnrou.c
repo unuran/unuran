@@ -316,8 +316,11 @@ unur_vnrou_set_r( struct unur_par *par, double r )
   /* check arguments */
   _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
   _unur_check_par_object( par, VNROU );
-  if (r<0.) r=1.;
+  if (r<0.) {
+    r=1.;
+    _unur_warning("PARAMETER" , UNUR_ERR_GENERIC, "r-parameter set to r=1");  
 
+  }
   /* store data */
   PAR.r = r;
 
@@ -510,8 +513,9 @@ _unur_vnrou_aux_umin(double *x, void *p)
   struct unur_gen *gen;
   
   gen = p; /* typecast from void* to unur_gen* */
-  return (x[GEN.aux_dim]) * pow( _unur_cvec_PDF((x),(gen->distr)), 
-                                 GEN.r / (1.+ GEN.r * GEN.dim) );
+  return (x[GEN.aux_dim] - GEN.center[GEN.aux_dim]) 
+         * pow( _unur_cvec_PDF((x),(gen->distr)), 
+                GEN.r / (1.+ GEN.r * GEN.dim) );
 }
 
 /*---------------------------------------------------------------------------*/
@@ -895,7 +899,7 @@ _unur_vnrou_debug_init( const struct unur_gen *gen )
 
   fprintf(log,"%s:\n",gen->genid);
   fprintf(log,"%s: type    = continuous multivariate random variates\n",gen->genid);
-  fprintf(log,"%s: method  = vnrou (naive ratio-of-uniforms)\n",gen->genid);
+  fprintf(log,"%s: method  = vnrou (naive ratio-of-uniforms) r=%g\n",gen->genid, GEN.r);
   fprintf(log,"%s:\n",gen->genid);
   
   _unur_distr_cvec_debug( gen->distr, gen->genid );

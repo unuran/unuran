@@ -357,7 +357,14 @@ _unur_mcorr_create( struct unur_par *par )
   gen->clone = _unur_mcorr_clone;
 
   /* allocate working array */
-  GEN.H = _unur_xmalloc(GEN.dim * GEN.dim * sizeof(double));
+  if (gen->set && MCORR_SET_EIGENVALUES) {
+    GEN.M = _unur_xmalloc((5*GEN.dim + 2*GEN.dim*GEN.dim) * sizeof(double));
+    GEN.H = NULL;
+  }
+  else {
+    GEN.M = NULL;
+    GEN.H = _unur_xmalloc(GEN.dim * GEN.dim * sizeof(double));
+  }
 
   /* copy optional eigenvalues of the correlation matrix */
   GEN.eigenvalues = NULL;
@@ -399,7 +406,14 @@ _unur_mcorr_clone( const struct unur_gen *gen )
   clone = _unur_generic_clone( gen, GENTYPE );
 
   /* allocate new working array */
-  CLONE.H = _unur_xmalloc(GEN.dim * GEN.dim * sizeof(double));
+  if (gen->set && MCORR_SET_EIGENVALUES) {
+    CLONE.M = _unur_xmalloc((5*GEN.dim + 2*GEN.dim*GEN.dim) * sizeof(double));
+    CLONE.H = NULL;
+  }  
+  else {
+    CLONE.M = NULL;
+    CLONE.H = _unur_xmalloc(GEN.dim * GEN.dim * sizeof(double));
+  }
 
   /* copy optional eigenvalues */
   CLONE.eigenvalues = NULL;
@@ -495,13 +509,14 @@ _unur_mcorr_sample_matr_eigen( struct unur_gen *gen, double *mat )
   }
 
   /* initialization steps */
-  x=_unur_xmalloc(dim*sizeof(double));
-  y=_unur_xmalloc(dim*sizeof(double));
-  z=_unur_xmalloc(dim*sizeof(double));
-  w=_unur_xmalloc(dim*sizeof(double));
-  r=_unur_xmalloc(dim*sizeof(double));
-  E=_unur_xmalloc(dim*dim*sizeof(double));
-  P=_unur_xmalloc(dim*dim*sizeof(double));
+  /* setting working arrays */
+  x=&GEN.M[0*dim];
+  y=&GEN.M[1*dim];
+  z=&GEN.M[2*dim];
+  w=&GEN.M[3*dim];
+  r=&GEN.M[4*dim];
+  E=&GEN.M[5*dim];
+  P=&GEN.M[5*dim+dim*dim];
 
   /* initially E is an identity matrix */
   for (i=0; i<dim; i++)
@@ -533,7 +548,6 @@ _unur_mcorr_sample_matr_eigen( struct unur_gen *gen, double *mat )
       }}
       _unur_warning(gen->genid, UNUR_ERR_GENERIC,"all eigenvalues are ~1 -> identity matrix");
       
-      free(E); free(P); free(x); free(y); free(z); free(w); free(r);
       return;
     }
 
@@ -616,9 +630,6 @@ _unur_mcorr_sample_matr_eigen( struct unur_gen *gen, double *mat )
     }
   }
 
-  free(E); free(P);
-  free(x); free(y); free(z); free(w); free(r);
-
 #undef idx
 } /* end of _unur_mcorr_eigen() */
 
@@ -649,6 +660,7 @@ _unur_mcorr_free( struct unur_gen *gen )
   /* free memory */
   if (GEN.eigenvalues) free(GEN.eigenvalues);
   if (GEN.H)           free(GEN.H);
+  if (GEN.M)           free(GEN.M);
 
   _unur_generic_free(gen);
 

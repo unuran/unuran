@@ -51,6 +51,7 @@ struct unur_mcorr_par {
 struct unur_mcorr_gen { 
   int    dim;          /* dimension (number of rows and columns) of matrix */
   double *H;           /* working array                                    */
+  double *M;           /* working array                                    */
   double *eigenvalues; /* optional eigenvalues of the correlation matrix   */
 };
 

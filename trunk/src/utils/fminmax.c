@@ -36,44 +36,51 @@
 #include <unur_source.h>
 #include "fminmax_source.h"
 
-static double _unur_function_minmax(struct UNUR_FUNCT_GENERIC fs, int minmax, 
+static double _unur_util_find_minmax(struct unur_funct_generic fs, int minmax, 
                              double a, double b, double c, double tol);  
 /* calculation routine for minimum or maximum of a continous function */
+
+static double _unur_util_fmin( struct unur_funct_generic fs, double a, double b, double c, double tol );
+/* wrapper function to calculate minimum of a continuous function in an interval */
+											     static double _unur_util_fmax( struct unur_funct_generic fs, double a, double b, double c, double tol );
+/* wrapper function to calculate maximum of a continuous function in an interval */
+
+
 
 /*---------------------------------------------------------------------------*/
 
 
 /* Wrapper function for the max calculation routine */
 double
-_unur_function_max(fs, a, b, c, tol)  /* An estimate to the max location     */
-     struct UNUR_FUNCT_GENERIC fs;    /* Function struct                     */
-     double a;                          /* Left border | of the range	     */
-     double b;                          /* Right border| the min is seeked   */
-     double c;                          /* first guess for the max           */
-     double tol;                        /* Acceptable tolerance              */
+_unur_util_fmax(
+     struct unur_funct_generic fs,      /* Function struct                   */
+     double a,                          /* Left border | of the range	     */
+     double b,                          /* Right border| the min is seeked   */
+     double c,                          /* first guess for the max           */
+     double tol)                        /* Acceptable tolerance              */
 {
-   return _unur_function_minmax(fs, -1, a, b, c, tol);
-} /* end of _unur_function_max() */
+   return _unur_util_find_minmax(fs, -1, a, b, c, tol);
+} /* end of _unur_util_fmax() */
 
 /*---------------------------------------------------------------------------*/
 
 /* Wrapper function for the min calculation routine */
 double
-_unur_function_min(fs, a, b, c, tol)  /* An estimate to the min location   */
-     struct UNUR_FUNCT_GENERIC fs;    /* Function struct                     */
-     double a;                          /* Left border | of the range	     */
-     double b;                          /* Right border| the min is seeked   */
-     double c;                          /* first guess for the min           */
-     double tol;                        /* Acceptable tolerance              */
+_unur_util_fmin(
+     struct unur_funct_generic fs,      /* Function struct                   */
+     double a,                          /* Left border | of the range	     */
+     double b,                          /* Right border| the min is seeked   */
+     double c,                          /* first guess for the min           */
+     double tol)                        /* Acceptable tolerance              */
 {
-   return _unur_function_minmax(fs, +1,  a, b, c, tol);
-} /* end of _unur_function_min() */
+   return _unur_util_find_minmax(fs, +1,  a, b, c, tol);
+} /* end of _unur_util_fmin() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_function_find_mode( struct UNUR_FUNCT_GENERIC fs, 
-                          double interval_min, double interval_max )
+_unur_util_find_max( struct unur_funct_generic fs, 
+                     double interval_min, double interval_max )
      /*----------------------------------------------------------------------*/
      /* find mode of univariate continuous distribution numerically          */
      /*                                                                      */
@@ -291,7 +298,7 @@ _unur_function_find_mode( struct UNUR_FUNCT_GENERIC fs,
 
   /** TODO: FLT_MIN must be much larger than DBL_MIN **/
 
-  mode = _unur_function_max( fs, x[0], x[2], x[1], FLT_MIN );
+  mode = _unur_util_fmax( fs, x[0], x[2], x[1], FLT_MIN );
   if (!(_unur_FP_is_infinity( mode )) ){
     /* mode successfully computed */
 
@@ -306,7 +313,7 @@ _unur_function_find_mode( struct UNUR_FUNCT_GENERIC fs,
   return mode; /*UNUR_SUCCESS;*/
 
 #undef MAX_SRCH
-} /* end of _unur_function_find_mode() */
+} /* end of _unur_util_find_max() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -372,14 +379,13 @@ _unur_function_find_mode( struct UNUR_FUNCT_GENERIC fs,
 /* in case of any error INFINITY is returned */
 
 double
-_unur_function_minmax(fs, minmax, a, b, c, tol)  
-                                   /* An estimate to the min or max location */
-     struct UNUR_FUNCT_GENERIC fs; /* Function struct                        */
-     int minmax ; 	           /* -1 for maximum, +1 for minimum         */
-     double a;                     /* Left border | of the range	     */
-     double b;                     /* Right border| the min is seeked        */
-     double c;                     /* first guess for the min/max            */
-     double tol;                   /* Acceptable tolerance                   */
+_unur_util_find_minmax(            /* An estimate to the min or max location */
+     struct unur_funct_generic fs, /* Function struct                        */
+     int minmax,  	           /* -1 for maximum, +1 for minimum         */
+     double a,                     /* Left border | of the range	     */
+     double b,                     /* Right border| the min is seeked        */
+     double c,                     /* first guess for the min/max            */
+     double tol)                   /* Acceptable tolerance                   */
 {
 #define f(x) ( (minmax) * ((fs.f)(x, fs.params)) )          
 #define SQRT_EPSILON  (1.e-7)           /* tolerance for relative error      */
@@ -495,7 +501,7 @@ _unur_function_minmax(fs, minmax, a, b, c, tol)
 #undef f
 #undef MAXIT
 #undef SQRT_EPSILON
-} /* end of _unur_function_min() */
+} /* end of _unur_util_find_minmax() */
 
 
 /*---------------------------------------------------------------------------*/

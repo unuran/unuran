@@ -116,6 +116,10 @@
 /*---------------------------------------------------------------------------*/
 /* Variants: none                                                            */
 
+#define SROU_VARFLAG_VERIFY   0x002u   /* run verify mode                    */
+#define SROU_VARFLAG_SQUEEZE  0x004u   /* use universal squeeze if possible  */
+#define SROU_VARFLAG_MIRROR   0x008u   /* use mirror principle               */
+
 /*---------------------------------------------------------------------------*/
 /* Debugging flags (do not use first 8 bits)                                 */
 
@@ -123,9 +127,6 @@
 /* Flags for logging set calls                                               */
 
 #define SROU_SET_FMODE        0x001u   /* cdf at mode is known               */
-#define SROU_VARFLAG_VERIFY   0x002u   /* run verify mode                    */
-#define SROU_VARFLAG_SQUEEZE  0x004u   /* use universal squeeze if possible  */
-#define SROU_VARFLAG_MIRROR   0x008u   /* use mirror principle               */
 
 /*---------------------------------------------------------------------------*/
 
@@ -389,7 +390,7 @@ unur_srou_init( struct unur_par *par )
      /*----------------------------------------------------------------------*/
 { 
   struct unur_gen *gen;
-  double vm;                 /* width of rectangle                           */
+  double vm, fm;             /* width of rectangle, pdf at mode              */
 
   /* check arguments */
   CHECK_NULL(par,NULL);
@@ -404,17 +405,20 @@ unur_srou_init( struct unur_par *par )
   gen = _unur_srou_create(par);
   if (!gen) { free(par); return NULL; }
 
-  /* height of rectangle */
-  GEN.um = sqrt(PDF(GEN.mode));
+  /* compute pdf at mode */
+  fm = PDF(GEN.mode);
 
-  /* height must be positive */
-  if (GEN.um < 0.) {
-    _unur_error(GENTYPE,UNUR_ERR_INIT,"height < 0.");
+  /* fm must be positive */
+  if (fm <= 0.) {
+    _unur_error(GENTYPE,UNUR_ERR_INIT,"pdf(mode) <= 0.");
     free(par); unur_srou_free(gen);
     return NULL;
   }
 
-  /* width of area */
+  /* height of rectangle */
+  GEN.um = sqrt(fm);
+
+  /* width of rectangle */
   vm = gen->DISTR.area / GEN.um;
 
   if (par->set & SROU_SET_FMODE) {

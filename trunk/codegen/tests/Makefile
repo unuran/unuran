@@ -4,5 +4,5 @@ clean:
 	rm -f *~
 	rm -f run_test_*
 	rm -f Urand.java Urand.class
-	rm unuran.log
+	rm -f unuran.log
 

@@ -63,8 +63,6 @@ int _unur_acg_FORTRAN_tdr_ps( struct unur_gen *gen, FILE *out,
 			      const char *rand_name, const char *pdf_name );
 int _unur_acg_JAVA_tdr_ps( struct unur_gen *gen, FILE *out, 
 			   const char *rand_name, const char *pdf_name );
-int _unur_acg_UNURAN_tdr_ps( struct unur_gen *gen, FILE *out, 
-			     const char *rand_name );
 /*---------------------------------------------------------------------------*/
 /* Code generator for method TDR variant PS (proportional squeeze).          */
 /*---------------------------------------------------------------------------*/

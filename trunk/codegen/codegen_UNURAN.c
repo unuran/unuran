@@ -78,8 +78,7 @@ unur_acg_UNURAN( struct unur_gen *gen, FILE *out, const char *distr_name )
   switch (gen->method) {
   case UNUR_METH_TDR:
     return_code =
-      _unur_acg_UNURAN_header( &(gen->distr), out, rand_name ) &&
-      _unur_acg_UNURAN_tdr_ps( gen, out, rand_name );
+      _unur_acg_UNURAN_header( &(gen->distr), out, rand_name );
     break;
   default:
     _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"Cannot make generator code");

@@ -111,24 +111,25 @@ foreach my $d (sort keys %{$list_distr}) {
 
     $UNURAN_exec = "$file_name\_UNURAN";
     $UNURAN_src = "$UNURAN_exec.c";
+    $UNURAN_log = "$file_name\_UNURAN.log";
 
     $C_exec = "$file_name\_C";
     $C_src = "$C_exec.c";
+    $C_log = "$file_name\_C.log";
 
     # Get random variate generators
 
-    # UNURAN version
-    my $UNURAN_code = make_UNURAN_code($distr,$fparam,$seed);
-    unless ($UNURAN_code) {
+    # C version
+    my $C_code = make_C_code($C_log,$distr,$fparam,$seed);
+    unless ($C_code) {
 	print "  .........  cannot create generator.\n";
 	next;
     }
-    print "\n";
-    make_UNURAN_exec($UNURAN_code,$UNURAN_src,$UNURAN_exec);
-
-    # C version
-    my $C_code = make_C_code($distr,$fparam,$seed);
     make_C_exec($C_code,$C_src,$C_exec);
+
+    # UNURAN version
+    my $UNURAN_code = make_UNURAN_code($UNURAN_log,$distr,$fparam,$seed);
+    make_UNURAN_exec($UNURAN_code,$UNURAN_src,$UNURAN_exec);
 
     # Start generators
     open UNURAN, "$UNURAN_exec |" or die "cannot run $UNURAN_exec"; 
@@ -136,12 +137,15 @@ foreach my $d (sort keys %{$list_distr}) {
 
     # Run generatores and compare output
     $C_n_diffs = 0;
+    $n_sample = 0;
 
     while ($UNURAN_out = <UNURAN>) {
 	$C_out = <C>;
-
+	
 	chomp $UNURAN_out;
 	chomp $C_out;
+
+	++$n_sample;
 	
 	($UNURAN_x, $UNURAN_pdfx) = split /\s+/, $UNURAN_out, 2;
 	($C_x, $C_pdfx) = split /\s+/, $C_out, 2;
@@ -151,8 +155,8 @@ foreach my $d (sort keys %{$list_distr}) {
 
 	if ( !FP_equal($C_x,$UNURAN_x) or !FP_equal($C_pdfx,$UNURAN_pdfx) ) {
 	    ++$C_n_diffs;
-	    print "x    = $UNURAN_x\tdifference = $C_x_diff\n";
-	    print "pdfx = $UNURAN_pdfx\tdifference = $C_pdfx_diff\n";
+	    print "\n  C: x    = $UNURAN_x\tdifference = $C_x_diff\n";
+	    print "  C: pdfx = $UNURAN_pdfx\tdifference = $C_pdfx_diff";
 	}
 
     }
@@ -161,6 +165,16 @@ foreach my $d (sort keys %{$list_distr}) {
     close UNURAN;
     close C;
 
+    $errorcode = $n_sample ? 0 : 1;
+
+    if ($C_n_diffs > 0) {
+	print "\n\t ...  C Test FAILED\n";
+	++$errorcode;
+    }
+
+    if ($errorcode == 0) {
+	print "  ...  PASSED\n";
+    }
 }
 
 # ----------------------------------------------------------------
@@ -194,23 +208,13 @@ sub FP_equal
 
 sub make_UNURAN_code
 {
-    my $distr = $_[0];
-    my $fparam = $_[1];
-    my $seed = $_[2];
+    my $logfile = $_[0];
+    my $distr = $_[1];
+    my $fparam = $_[2];
+    my $seed = $_[3];
 
-    my $acg_query = "$ACG -l UNURAN -d $distr";
-    $acg_query .= " -p \"$fparam\"" if $fparam; 
-
-    my $generator = `$acg_query`;
-
-    return "" if $?;
-
-    # read code for generating distribution object from code
-    die unless $generator =~ /(double\s+\*?fpar[^;]*;[^;]+;)/;
-    my $distr_code = $1;
-    
     my $urng = make_UNURAN_urng($seed);
-    my $main = make_UNURAN_main($distr, $distr_code);
+    my $main = make_UNURAN_main($logfile,$distr,$fparam,$seed);
 
     return $urng.$generator.$main;
 
@@ -238,14 +242,14 @@ sub make_UNURAN_urng
 /*   x_(n+1) = 16807 * x_n mod 2^31 - 1    (Minimal Standard)       */
 /* ---------------------------------------------------------------- */
 
-void init_urand(void)
+void useed(unsigned seed)
 {
     static struct prng *urng = NULL;
 
     if (urng == NULL)
-	urng = prng_new("LCG(2147483647,16807,0,$seed)");
-    else
-	prng_seed(urng,$seed);
+	urng = prng_new("LCG(2147483647,16807,0,1)");
+
+    prng_seed(urng,seed);
 
     /* synchronize with other generators */
     prng_get_next(urng);
@@ -266,25 +270,49 @@ EOS
 
 sub make_UNURAN_main
 {
-    my $distr = $_[0];
-    my $distr_code = $_[1];
+    my $logfile = $_[0];
+    my $distr = $_[1];
+    my $fparam = $_[2];
+    my $seed = $_[3];
+
+    my $fpar;
+    my $n_fpar;
+    
+    if ($fparam) {
+	$fparam =~ s/\s+$//g;
+	$n_fpar = 1 + ($fparam =~ s/\s+/,/g);
+	$fpar = "double fpar[] = {$fparam}";
+    }
+    else {
+	$fpar = "double *fpar = NULL";
+	$n_fpar = 0;
+    }
 
     my $code = <<EOS
 
 int main()
 {
+    FILE *logstream = NULL;
     int i;
     double x, fx;
     UNUR_DISTR *distr;
+    UNUR_PAR *par;
+    UNUR_GEN *gen;
+    $fpar;
 
-    {
-	$distr_code
-    }
+    useed($seed);
 
-    init_urand();
+    logstream = fopen("$logfile","w");
+    unur_set_stream(logstream);
+
+    distr = unur\_distr\_$distr(fpar,$n_fpar);
+    par = unur_tdr_new(distr);
+    /* unur_tdr_set_cpoints(par,n_cpoints,NULL); */
+    unur_tdr_set_max_sqhratio(par,0.);
+    gen = unur_init( par );
 
     for (i=0; i<$sample_size; i++) {
-	x = rand\_$distr();
+	x = unur_sample_cont(gen);
 	fx = unur_distr_cont_eval_pdf (x,distr);
 	printf("%.17e\\t%.17e\\n",x,fx);
     }
@@ -313,9 +341,6 @@ sub make_UNURAN_exec
     # compile
     system "$GCC -o $exec $src -lunuran -lprng -lm";
 
-
-    
-
 } # end of make_UNURAN_exec()
 
 # ----------------------------------------------------------------
@@ -331,11 +356,12 @@ sub make_UNURAN_exec
 
 sub make_C_code
 {
-    my $distr = $_[0];
-    my $fparam = $_[1];
-    my $seed = $_[2];
+    my $logfile = $_[0];
+    my $distr = $_[1];
+    my $fparam = $_[2];
+    my $seed = $_[3];
 
-    my $acg_query = "$ACG -l C -d $distr";
+    my $acg_query = "$ACG -l C -d $distr -L $logfile";
     $acg_query .= " -p \"$fparam\"" if $fparam; 
 
     my $generator = `$acg_query`;
@@ -343,7 +369,7 @@ sub make_C_code
     return "" if $?;
 
     my $urng = make_C_urng($seed);
-    my $main = make_C_main($distr);
+    my $main = make_C_main($distr,$seed);
 
     return $urng.$generator.$main;
 
@@ -371,7 +397,7 @@ sub make_C_urng
 
 static unsigned int xn = $seed;   /* seed  */
 
-static double urand (void)
+double urand (void)
 {
 #define a 16807
 #define m 2147483647
@@ -394,6 +420,11 @@ static double urand (void)
 #undef r
 }
 
+void useed(unsigned int seed)
+{
+  xn = seed;
+}
+
 EOS
 
     return $code;
@@ -406,6 +437,7 @@ EOS
 sub make_C_main
 {
     my $distr = $_[0];
+    my $seed = $_[1];
 
     my $code = <<EOS
 
@@ -416,6 +448,8 @@ int main()
 {
     int i;
     double x, fx;
+
+    useed($seed);
 
     for (i=0; i<$sample_size; i++) {
 	x = rand\_$distr();

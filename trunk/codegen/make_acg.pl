@@ -28,6 +28,7 @@ print acg_fparams();
 print acg_domain();
 print acg_n_cpoints();
 print acg_language();
+print acg_logfile();
 
 # ----------------------------------------------------------------
 exit 0;
@@ -88,6 +89,9 @@ int get_domain(char *domain, double fdomain[]);
 /* Get number of construction points.                                        */
 int get_n_cpoints(char *n_cpoints);
 
+/* Get name of log file                                                      */
+const char *get_logfile(const char *logfile);
+
 /* ------------------------------------------------------------------------- */
 /* Error messages                                                            */
 /* ------------------------------------------------------------------------- */
@@ -121,6 +125,9 @@ sub acg_main {
 
 int main (int argc, char *argv[]){
 
+  /* pointer to logfile */
+  const char *logfile = NULL;
+  FILE *logstream = NULL;
 
   /* pointer to function returning poiter to UNUR_DISTR */
   UNUR_DISTR * (*distrfunc)() = NULL;
@@ -146,7 +153,7 @@ int main (int argc, char *argv[]){
   /* ------------------------------------------------------------------------*/
   /* read options                                                            */
 
-  while ((c = getopt(argc, argv, "d:p:D:n:l:")) != -1) {
+  while ((c = getopt(argc, argv, "d:p:D:n:l:L:")) != -1) {
     switch (c) {
     case 'd':     /* distribution */
       distrfunc = get_distribution(optarg);
@@ -163,6 +170,9 @@ int main (int argc, char *argv[]){
       break;
     case 'l':     /* progamming language */
       langfunc = get_language(optarg);
+      break;
+    case 'L':
+      logfile = get_logfile(optarg);
       break;
     case '?':    /* Help Message  */
     default:
@@ -181,9 +191,15 @@ int main (int argc, char *argv[]){
   }
 
   /* ------------------------------------------------------------------------*/
-  /* switch off logging */
+  /* logging */
 
-  unur_set_default_debug(UNUR_DEBUG_OFF); 
+  if (logfile) {
+      logstream = fopen(logfile,"w");
+      unur_set_stream(logstream);
+      unur_set_default_debug(UNUR_DEBUG_ALL); 
+  }
+  else   
+      unur_set_default_debug(UNUR_DEBUG_OFF); 
 
   /* ------------------------------------------------------------------------*/
   /* create distribution object */
@@ -273,6 +289,7 @@ usage (void)
   fprintf(stderr," [-D Domain]");
   fprintf(stderr," [-n number of construction points]");
   fprintf(stderr," [-l Language]");
+  fprintf(stderr," [-L log file]");
   fprintf(stderr,"\\n\\n");
   fprintf(stderr,"Default for language: C\\n");
   fprintf(stderr,"PDF parameters are required for some distributions.\\n");
@@ -532,6 +549,36 @@ EOS
 
     return $language;
 } # end of acg_language()
+
+# ----------------------------------------------------------------
+# parse log file name
+# ----------------------------------------------------------------
+
+sub acg_logfile {
+
+    my $logfile = <<EOS;
+
+const char *
+get_logfile(const char *logfile)
+     /*----------------------------------------------------------------------*/
+     /* get pointer to log file name                                         */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*    logfile ... pointer to string with log file name                  */
+     /*                                                                      */
+     /* error:                                                               */
+     /*    abort program                                                     */
+     /*----------------------------------------------------------------------*/
+{
+    return logfile;
+} /* end of get_language() */
+
+/* --------------------------------------------------------------------------*/
+
+EOS
+
+    return $logfile;
+} # end of acg_logfile()
 
 # ----------------------------------------------------------------
 # end

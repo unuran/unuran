@@ -7,8 +7,8 @@ INCLUDES = \
  -I$(top_srcdir)/src/tests
 
 check_PROGRAMS = \
- run_test_with_Mathematica \
  t_distr \
+ t_stringparser \
  t_corder \
  t_timing \
  t_arou \
@@ -24,9 +24,13 @@ check_PROGRAMS = \
  t_tdr \
  t_unif \
  t_utdr
+
+## commented out
+## run_test_with_Mathematica
  
 TESTS = \
  t_distr \
+ t_stringparser \
  t_corder \
  t_arou \
  t_cstd \
@@ -42,8 +46,9 @@ TESTS = \
  t_unif \
  t_utdr
 
-# commented out
-# t_timing
+## commented out
+## run_test_with_Mathematica
+## t_timing
 
 noinst_HEADERS = \
  testunuran.h \
@@ -54,6 +59,7 @@ EXTRA_DIST = \
  make_test_files.pl \
  README.conf \
  distr.conf \
+ stringparser.conf \
  corder.conf \
  timing.conf \
  arou.conf \
@@ -78,13 +84,16 @@ data:
 run_test_with_Mathematica.c: test_with_Mathematica.m
 	math -initfile test_with_Mathematica.m
 
-run_test_with_Mathematica_SOURCES = run_test_with_Mathematica.c test_with_Mathematica.c 
-run_test_with_Mathematica_LDADD = $(top_builddir)/src/libunuran.a
+## run_test_with_Mathematica_SOURCES = run_test_with_Mathematica.c test_with_Mathematica.c 
+## run_test_with_Mathematica_LDADD = $(top_builddir)/src/libunuran.a
 
 # run tests for methods ...
 
 t_distr_SOURCES = t_distr.c testroutines.c
 t_distr_LDADD = $(top_builddir)/src/libunuran.a
+
+t_stringparser_SOURCES = t_stringparser.c testroutines.c
+t_stringparser_LDADD = $(top_builddir)/src/libunuran.a
 
 t_corder_SOURCES = t_corder.c testroutines.c
 t_corder_LDADD = $(top_builddir)/src/libunuran.a
@@ -134,6 +143,9 @@ t_utdr_LDADD = $(top_builddir)/src/libunuran.a
 
 t_distr.c: distr.conf make_test_files.pl
 	./make_test_files.pl distr.conf
+
+t_stringparser.c: stringparser.conf make_test_files.pl
+	./make_test_files.pl stringparser.conf
 
 t_corder.c: corder.conf make_test_files.pl
 	./make_test_files.pl corder.conf

@@ -164,6 +164,12 @@
       Hold all information for creating a generator object. It is
       necessary due to various parameters and switches for each of
       these generation methods. 
+
+      For programming notice that the parameter objects only hold
+      pointer to arrays but do not have their own copy of such an
+      array. Especially, if a dynamically allocated array is used
+      it @emph{must not} be freed until the generator object has
+      been created!
    
    @end itemize
 

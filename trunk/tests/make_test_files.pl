@@ -963,6 +963,13 @@ sub print_test_command {
 	  print OUT "n_tests_failed += $test_command\( TESTLOG, $INPUT_LINE_NUMBER, urng, par, COMPARE_SAMPLE_SIZE );\n";
 	  last SWITCH;
       }
+      if ($test_command =~ /^\s*compare_double_sequence_gen\s*$/ or
+	  $test_command =~ /^\s*compare_double_sequence_gen_start\s*$/ ) {
+	  $test_command =~ s/\s+//g;
+	  print OUT "$last_C_line\;\n";
+	  print OUT "n_tests_failed += $test_command\( TESTLOG, $INPUT_LINE_NUMBER, urng, gen, COMPARE_SAMPLE_SIZE );\n";
+	  last SWITCH;
+      }
       if ($test_command =~ /^\s*compare_double_sequence_urng_start\s*$/ ) {
 	  $test_command =~ s/\s+//g;
 	  print OUT "$last_C_line\;\n";

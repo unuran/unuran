@@ -323,7 +323,7 @@ sub make_list_of_distr_sets {
 	    #   "dd"   ... two arguments of type double required 
 	    #   "Di"   ... a list of doubles and one argument of type int required
 	    #              (the second argument is considered as size of the double array)
-	    if ($type_args =~ /^(void|i|u|d|dd|iD|Di)$/) {
+	    if ($type_args =~ /^(i|d|dd|Di)$/) {
 		my $type = $1;
 		$set .= "\t\t\t\t result = _unur_str_distr_set_$type(distr,key,type_args,args,unur_distr_$distr_type\_set_$command);\n";
 		$set_commands->{$distr_type}->{$command} = $set;
@@ -574,9 +574,14 @@ sub make_list_of_par_sets {
 	    #   "iD"   ... one argument of type int and a list of doubles required
 	    #              (the first argument is considered as size of the double array)
 	    #   "Di"   ... a list of doubles and one argument of type int required
-	    if ($type_args =~ /^(void|i|u|d|dd|iD|Di)$/) {
+	    if ($type_args =~ /^(void|i|u|d|dd)$/) {
 		my $type = $1;
 		$set .= "\t\t\t\t result = _unur_str_par_set_$type(par,key,type_args,args,unur_$method\_set_$command);\n";
+		$set_commands->{$method}->{$command} = $set;
+	    }
+	    elsif ($type_args =~ /^(iD|Di)$/) {
+		my $type = $1;
+		$set .= "\t\t\t\t result = _unur_str_par_set_$type(par,key,type_args,args,unur_$method\_set_$command,mlist);\n";
 		$set_commands->{$method}->{$command} = $set;
 	    }
 

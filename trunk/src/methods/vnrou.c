@@ -632,6 +632,9 @@ _unur_vnrou_rectangle( struct unur_gen *gen )
 	 if (scaled_epsilon>VNROU_HOOKE_EPSILON) scaled_epsilon=VNROU_HOOKE_EPSILON;
 
          /* recalculating extremum with scaled_epsilon and new starting point */
+         faux.f = (UNUR_FUNCT_VGENERIC*) _unur_vnrou_aux_umin;
+         faux.params = gen;
+
          memcpy(xstart, xumin, dim * sizeof(double)); 
          hooke_iters_umin = _unur_hooke( faux, dim, xstart, xend, 
                               VNROU_HOOKE_RHO, scaled_epsilon , VNROU_HOOKE_MAXITER);
@@ -647,6 +650,9 @@ _unur_vnrou_rectangle( struct unur_gen *gen )
 	 if (scaled_epsilon>VNROU_HOOKE_EPSILON) scaled_epsilon=VNROU_HOOKE_EPSILON;
 
          /* recalculating extremum with scaled_epsilon and new starting point */
+         faux.f = (UNUR_FUNCT_VGENERIC*) _unur_vnrou_aux_umax;
+         faux.params = gen;
+
          memcpy(xstart, xumax, dim * sizeof(double)); 
          hooke_iters_umax = _unur_hooke( faux, dim, xstart, xend, 
                               VNROU_HOOKE_RHO, scaled_epsilon , VNROU_HOOKE_MAXITER);

@@ -46,6 +46,10 @@ struct unur_urng_generic {
   void (*resetsub)(void *state);      /* reset current substream             */
   void (*anti)(void *state, int a);   /* set antithetic flag                 */
   void (*delete)(void *state);        /* function for destroying URNG        */
+
+#ifdef UNUR_COOKIES
+  unsigned cookie;            /* magic cookie                                */
+#endif
 };
 
 /* Remark:                                                                   */

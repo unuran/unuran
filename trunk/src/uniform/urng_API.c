@@ -73,7 +73,6 @@ unur_urng_sample (UNUR_URNG *urng)
 
 /*---------------------------------------------------------------------------*/
 
-
 int
 unur_urng_reset (UNUR_URNG *urng)
      /*----------------------------------------------------------------------*/
@@ -93,6 +92,8 @@ unur_urng_reset (UNUR_URNG *urng)
     urng = unur_get_default_urng();
 
 #if UNUR_URNG_TYPE == UNUR_URNG_GENERIC
+
+  COOKIE_CHECK(urng,CK_URNG,UNUR_ERR_COOKIE);
 
   /* first we look for the reset function */
   if (urng->reset != NULL) {
@@ -175,6 +176,9 @@ unur_urng_new( double (*sampleunif)(void *state), void *state )
   urng->resetsub = NULL;
   urng->anti     = NULL;
 
+  /* set magic cookie */
+  COOKIE_SET(urng,CK_URNG);
+
   /* return object */
   return urng;
 } /* end of unur_urng_new() */
@@ -197,6 +201,7 @@ unur_urng_set_seed( UNUR_URNG *urng, void (*setseed)(void *state, unsigned long 
 {
   /* check arguments */
   _unur_check_NULL( "URNG", urng, UNUR_ERR_NULL );
+  COOKIE_CHECK(urng,CK_URNG,UNUR_ERR_COOKIE);
 
   urng->setseed = setseed;
   return UNUR_SUCCESS;
@@ -220,6 +225,7 @@ unur_urng_set_anti( UNUR_URNG *urng, void (*setanti)(void *state, int anti) )
 {
   /* check arguments */
   _unur_check_NULL( "URNG", urng, UNUR_ERR_NULL );
+  COOKIE_CHECK(urng,CK_URNG,UNUR_ERR_COOKIE);
 
   urng->anti = setanti;
   return UNUR_SUCCESS;
@@ -243,6 +249,7 @@ unur_urng_set_reset( UNUR_URNG *urng, void (*reset)(void *state) )
 {
   /* check arguments */
   _unur_check_NULL( "URNG", urng, UNUR_ERR_NULL );
+  COOKIE_CHECK(urng,CK_URNG,UNUR_ERR_COOKIE);
 
   urng->reset = reset;
   return UNUR_SUCCESS;
@@ -266,6 +273,7 @@ unur_urng_set_nextsub( UNUR_URNG *urng, void (*nextsub)(void *state) )
 {
   /* check arguments */
   _unur_check_NULL( "URNG", urng, UNUR_ERR_NULL );
+  COOKIE_CHECK(urng,CK_URNG,UNUR_ERR_COOKIE);
 
   urng->nextsub = nextsub;
   return UNUR_SUCCESS;
@@ -289,6 +297,7 @@ unur_urng_set_resetsub( UNUR_URNG *urng, void (*resetsub)(void *state) )
 {
   /* check arguments */
   _unur_check_NULL( "URNG", urng, UNUR_ERR_NULL );
+  COOKIE_CHECK(urng,CK_URNG,UNUR_ERR_COOKIE);
 
   urng->resetsub = resetsub;
   return UNUR_SUCCESS;
@@ -312,6 +321,7 @@ unur_urng_set_delete( UNUR_URNG *urng, void (*delete)(void *state) )
 {
   /* check arguments */
   _unur_check_NULL( "URNG", urng, UNUR_ERR_NULL );
+  COOKIE_CHECK(urng,CK_URNG,UNUR_ERR_COOKIE);
 
   urng->delete  = delete;
   return UNUR_SUCCESS;
@@ -337,6 +347,8 @@ unur_urng_seed (UNUR_URNG *urng, unsigned long seed)
   if (urng == NULL) 
     /* use default generator */
     urng = unur_get_default_urng();
+
+  COOKIE_CHECK(urng,CK_URNG,UNUR_ERR_COOKIE);
 
   /* check whether we can set the antithetic flag */
   if (urng->setseed == NULL) {
@@ -374,6 +386,8 @@ unur_urng_anti (UNUR_URNG *urng, int anti)
     /* use default generator */
     urng = unur_get_default_urng();
 
+  COOKIE_CHECK(urng,CK_URNG,UNUR_ERR_COOKIE);
+
   /* check whether we can set the antithetic flag */
   if (urng->anti == NULL) {
     _unur_error("URNG",UNUR_ERR_URNG_MISS,"antithetic flag");
@@ -405,6 +419,8 @@ unur_urng_nextsub (UNUR_URNG *urng)
   if (urng == NULL) 
     /* use default generator */
     urng = unur_get_default_urng();
+
+  COOKIE_CHECK(urng,CK_URNG,UNUR_ERR_COOKIE);
 
   /* check whether we can reset the URNG object */
   if (urng->nextsub == NULL) {
@@ -438,6 +454,8 @@ unur_urng_resetsub (UNUR_URNG *urng)
     /* use default generator */
     urng = unur_get_default_urng();
 
+  COOKIE_CHECK(urng,CK_URNG,UNUR_ERR_COOKIE);
+
   /* check whether we can reset the URNG object */
   if (urng->resetsub == NULL) {
     _unur_error("URNG",UNUR_ERR_URNG_MISS,"reset substream");
@@ -467,6 +485,7 @@ unur_urng_free (UNUR_URNG *urng)
 {
   /* check argument */
   _unur_check_NULL( "URNG", urng, UNUR_ERR_NULL );
+  COOKIE_CHECK(urng,CK_URNG,UNUR_ERR_COOKIE);
 
   if (urng->delete != NULL) urng->delete (urng->state);
   free (urng);

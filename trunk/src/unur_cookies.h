@@ -133,6 +133,9 @@
 
 #define CK_SPECIALGEN_CONT 0xd00001u
 
+/* URNG (uniform random number generator objects) */
+#define CK_URNG          0xb0000001u
+
 /* function parser */
 #define CK_FSTR_PDATA    0xa0000001u
 #define CK_FSTR_TNODE    0xa0000002u

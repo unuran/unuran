@@ -661,11 +661,11 @@ _unur_varou_sample_cvec( struct unur_gen *gen, double *vec )
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
-     /*   X   ... random vector (result)                                     */
+     /*   vec ... random vector (result)                                     */
      /*----------------------------------------------------------------------*/
 { 
   int d, dim; /* index used in dimension loops (0 <= d < dim) */
-  long ic; /* running cone index */
+  long ic, ic_sample=0; /* cone index */
   double *UV; /* (dim+1) uniformly distributed in cone */
   double vol;
 
@@ -680,23 +680,26 @@ _unur_varou_sample_cvec( struct unur_gen *gen, double *vec )
   while(1) {
     /* vol is a uniformly distributed variable < sum of all cone volumes */
     vol = GEN.cone_list[GEN.n_cone-1]->sum_volume * _unur_call_urng(gen->urng);
-  
+ 
+    /* obtain cone index of cone in which we should sample */
     for (ic=0; ic<GEN.n_cone; ic++) {  
-      if ( GEN.cone_list[ic]->sum_volume > vol ) {
-
-        /* sampling in cone #ic */
-        _unur_varou_sample_cone(gen, GEN.cone_list[ic], UV);
-
-        /* check if UV is inside the potato volume */
-	if ( pow(UV[dim], 1.+dim) <= _unur_varou_f(gen, UV) ) {
-           for (d=0; d<dim; d++) {  
-             vec[d] = UV[d]/UV[dim]+GEN.center[d] ;
-           }
-  
-           free(UV);
-           return;
-        }
+      if ( GEN.cone_list[ic]->sum_volume > vol ) { 
+        ic_sample=ic; 
+	break; 
       }
+    }
+    
+    /* sampling in cone #ic_sample */
+    _unur_varou_sample_cone(gen, GEN.cone_list[ic_sample], UV);
+
+    /* check if UV is inside the potato volume */
+    if ( pow(UV[dim], 1.+dim) <= _unur_varou_f(gen, UV) ) {
+       for (d=0; d<dim; d++) {  
+         vec[d] = UV[d]/UV[dim]+GEN.center[d] ;
+       }
+  
+       free(UV);
+       return;
     }  
   }
   
@@ -716,7 +719,7 @@ _unur_varou_sample_check( struct unur_gen *gen, double *vec )
      /*----------------------------------------------------------------------*/
 { 
   int d, dim; /* index used in dimension loops (0 <= d < dim) */
-  long ic; /* running cone index */
+  long ic, ic_sample=0; /* cone index */
   double *UV; /* (dim+1) uniformly distributed in cone */
   double vol;
   double norm_factor;
@@ -733,33 +736,37 @@ _unur_varou_sample_check( struct unur_gen *gen, double *vec )
     /* vol is a uniformly distributed variable < sum of all cone volumes */
     vol = GEN.cone_list[GEN.n_cone-1]->sum_volume * _unur_call_urng(gen->urng);
   
+    /* obtain cone index of cone in which we should sample */
     for (ic=0; ic<GEN.n_cone; ic++) {  
       if ( GEN.cone_list[ic]->sum_volume > vol ) {
+        ic_sample=ic;
+	break;
+      }
+    }
+        
+    /* sampling in cone #ic_sample */
+    _unur_varou_sample_cone(gen, GEN.cone_list[ic_sample], UV);
 
-        /* sampling in cone #ic */
-        _unur_varou_sample_cone(gen, GEN.cone_list[ic], UV);
+    /* check if UV is inside the potato volume */
+    if ( pow(UV[dim], 1.+dim) <= _unur_varou_f(gen, UV) ) {
+       for (d=0; d<dim; d++) {  
+         vec[d] = UV[d]/UV[dim]+GEN.center[d] ;
+       }
 
-        /* check if UV is inside the potato volume */
-        if ( pow(UV[dim], 1.+dim) <= _unur_varou_f(gen, UV) ) {
-           for (d=0; d<dim; d++) {  
-             vec[d] = UV[d]/UV[dim]+GEN.center[d] ;
-           }
-
-           /* check hat */
-           norm_factor = _unur_vector_scalar_product( dim+1, 
-                            GEN.cone_list[ic]->normal, 
-                            GEN.cone_list[ic]->spoint )  
+       /* check hat */
+       norm_factor = _unur_vector_scalar_product( dim+1, 
+                            GEN.cone_list[ic_sample]->normal, 
+                            GEN.cone_list[ic_sample]->spoint )  
                        / _unur_vector_scalar_product( dim+1, 
-                            GEN.cone_list[ic]->normal, 
+                            GEN.cone_list[ic_sample]->normal, 
                             UV  ) ; 
 	   
-           if (norm_factor<1) 
-	      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF(x) > hat(x)");
+       if (norm_factor<1) 
+          _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF(x) > hat(x)");
 	   
-           free(UV);
-           return;
-        }
-      }
+       free(UV);
+       return;
+      
     }  
   }
   

@@ -47,7 +47,8 @@
    It requires the p.d.f., the (exact) location of the mode and the area below 
    the given p.d.f. The rejection constant is 4 for all T-concave distributions.
    Optionally the c.d.f. at the mode can be given to increase the performance
-   of the algorithm. Then the rejection constant is reduced to 2 and even a
+   of the algorithm by means of the unur_srou_set_cdfatmode() call.
+   Then the rejection constant is reduced to 2 and even a
    universal squeeze can (but need not be) used.
    A way to increase the performence of the algorithm when the c.d.f. at the
    mode is not provided is the usae of the mirror principle.
@@ -57,16 +58,19 @@
    If the exact location of the mode is not known, then use the approximate
    location and provide the (exact) value of the p.d.f. at the mode by means
    of the unur_stdr_set_pdfatmode() call.
+   But then unur_srou_set_cdfatmode() must not be used.
 
    If the (exact) area below the p.d.f. is not known, then an upper bound can be
    used instead (which of course increases the rejection constant). 
-   But then the squeeze flag must not be set.
+   But then the squeeze flag must not be set and
+   unur_srou_set_cdfatmode() must not be used.
 
    It is even possible to give an upper bound for the p.d.f. only.
    However then the (upper bound for the) area below the p.d.f. has to be 
    multiplied by the ratio between the upper bound and the lower bound of the 
    p.d.f. at the mode.
-   Again seting the squeeze flag is not allowed.
+   Again seting the squeeze flag and using unur_srou_set_cdfatmode()
+   is not allowed.
 
    It is possible to change the parameters and the domain of the chosen 
    distribution without building a new generator object using the

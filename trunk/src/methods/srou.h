@@ -183,6 +183,17 @@ int unur_srou_chg_mode( UNUR_GEN *generator, double mode );
    generator again.
 */
 
+int unur_srou_upd_mode( UNUR_GEN *generator );
+/* 
+   Recompute the mode of the distribution. This call only works when
+   a distribution object from the (=>) UNURAN library of standard
+   distributions is used.
+   Otherwise @code{unur_errno} is set to @code{UNUR_ERR_DISTR_DATA}.
+
+   unur_srou_reinit() must be executed before sampling from the 
+   generator again.
+*/
+
 int unur_srou_chg_cdfatmode( UNUR_GEN *generator, double Fmode );
 /* 
    Change c.d.f. at mode of distribution.
@@ -203,6 +214,20 @@ int unur_srou_chg_pdfarea( UNUR_GEN *generator, double area );
    unur_srou_reinit() must be executed before sampling from the 
    generator again.
 */
+
+
+int unur_srou_upd_pdfarea( UNUR_GEN *generator );
+/*
+   Recompute the area below the p.d.f. of the distribution. 
+   It only works when a distribution objects from the
+   (=>) UNURAN library of standard distributions is used. 
+   Otherwise @code{unur_errno} is set to @code{UNUR_ERR_DISTR_DATA}. 
+
+   unur_srou_reinit() must be executed before sampling from the 
+   generator again.
+*/
+
+
 
 /* =END */
 /*---------------------------------------------------------------------------*/

@@ -106,8 +106,10 @@ static double _unur_dpdf_gamma(double x, UNUR_DISTR *distr);
 #ifdef HAVE_CDF
 static double _unur_cdf_gamma(double x, UNUR_DISTR *distr);
 #endif
-static double _unur_mode_gamma(double *params, int n_params);
+
+static int _unur_upd_mode_gamma( UNUR_DISTR *distr );
 #ifdef HAVE_AREA
+static int _unur_upd_area_gamma( UNUR_DISTR *distr );
 static double _unur_lognormconstant_gamma(double *params, int n_params);
 #endif
 
@@ -177,24 +179,54 @@ _unur_cdf_gamma( double x, UNUR_DISTR *distr )
 
 /*---------------------------------------------------------------------------*/
 
-double
-_unur_mode_gamma( double *params, int n_params )
+int
+_unur_upd_mode_gamma( UNUR_DISTR *distr )
 {
-  register double mode;
+  register double *params = DISTR.params;
 
-  mode = (alpha >= 1.) ? (alpha - 1.) : 0.;
+  DISTR.mode = (alpha >= 1.) ? (alpha - 1.) : 0.;
 
-  switch (n_params) {
-  case 3:  /* non standard */
-    return (mode * beta) + gamma;
-  case 1: default: /* standard */
-    return mode;
-  }
-} /* end of _unur_mode_gamma() */
+  if (DISTR.n_params > 1)
+    DISTR.mode = DISTR.mode * beta + gamma;
+
+  return 1;
+
+} /* end of _unur_upd_mode_gamma() */
 
 /*---------------------------------------------------------------------------*/
 
 #ifdef HAVE_AREA
+
+int
+_unur_upd_area_gamma( UNUR_DISTR *distr )
+{
+  /* log of normalization constant */
+  LOGNORMCONSTANT = _unur_lognormconstant_gamma(DISTR.params,DISTR.n_params);
+  
+  if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
+    DISTR.area = 1.;
+    return 1;
+  }
+  
+  else {
+#ifdef HAVE_CDF
+    DISTR.area = ( _unur_cdf_gamma( DISTR.domain[1],distr) 
+		   - _unur_cdf_gamma( DISTR.domain[0],distr) );
+    if (DISTR.area <= 0.) {
+      /* this must not happen */
+      _unur_warning(distr_name,UNUR_ERR_DISTR_SET,"upd area <= 0");
+      DISTR.area = 1.;   /* 0 might cause a FPE */
+      return 0.;
+    }
+    else
+      return 1;
+#else
+    return 0;
+#endif
+  }
+} /* end of _unur_upd_area_gamma() */
+
+/*---------------------------------------------------------------------------*/
 
 double
 _unur_lognormconstant_gamma( double *params, int n_params )
@@ -279,6 +311,10 @@ unur_distr_gamma( double *params, int n_params )
   /* number of arguments */
   DISTR.n_params = n_params;
 
+  /* domain */
+  DISTR.domain[0] = DISTR.gamma;  /* left boundary  */
+  DISTR.domain[1] = INFINITY;     /* right boundary */
+
   /* log of normalization constant */
 #ifdef HAVE_AREA
   LOGNORMCONSTANT = _unur_lognormconstant_gamma(DISTR.params,DISTR.n_params);
@@ -287,12 +323,14 @@ unur_distr_gamma( double *params, int n_params )
 #endif
 
   /* mode and area below p.d.f. */
-  DISTR.mode = _unur_mode_gamma(DISTR.params,DISTR.n_params);
+  _unur_upd_mode_gamma( distr );
   DISTR.area = 1.;
 
-  /* domain */
-  DISTR.domain[0] = DISTR.gamma;  /* left boundary  */
-  DISTR.domain[1] = INFINITY;     /* right boundary */
+  /* function for updating derived parameters */
+  DISTR.upd_mode  = _unur_upd_mode_gamma; /* funct for computing mode */
+#ifdef HAVE_AREA
+  DISTR.upd_area  = _unur_upd_area_gamma; /* funct for computing area */
+#endif
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

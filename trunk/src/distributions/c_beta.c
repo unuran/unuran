@@ -111,8 +111,9 @@ static double _unur_dpdf_beta(double x, UNUR_DISTR *distr);
 static double _unur_cdf_beta(double x, UNUR_DISTR *distr);
 #endif
 
-inline static double _unur_mode_beta(double *params, int n_params);
+static int _unur_upd_mode_beta( UNUR_DISTR *distr );
 #ifdef HAVE_AREA
+static int _unur_upd_area_beta( UNUR_DISTR *distr );
 inline static double _unur_lognormconstant_beta(double *params, int n_params);
 #endif
 
@@ -192,28 +193,67 @@ _unur_cdf_beta(double x, UNUR_DISTR *distr)
 
 /*---------------------------------------------------------------------------*/
 
-double
-_unur_mode_beta(double *params, int n_params)
-{ 
-  double mode = INFINITY;
+int
+_unur_upd_mode_beta( UNUR_DISTR *distr )
+{
+  register double *params = DISTR.params;
 
   if (p <= 1. && q > 1.)
-    mode = 0.;              /* left limit of domain */
+    DISTR.mode = 0.;              /* left limit of domain */
 
   else if (p > 1. && q <= 1.)
-    mode = 1.;              /* right limit of domain */
+    DISTR.mode = 1.;              /* right limit of domain */
 
   else if (p > 1. && q > 1.)
-    mode = (p - 1.) / (p + q - 2.);
+    DISTR.mode = (p - 1.) / (p + q - 2.);
   
-  /* else p.d.f. is not unimodal */
-  return( (n_params==2 || mode>=INFINITY) ? mode : mode * (b-a) + a );
-    
-} /* end of _unur_mode_beta() */
+  else {
+    /* p.d.f. is not unimodal */
+    DISTR.mode = INFINITY;
+    return 0;
+  }
+
+  if (DISTR.n_params > 2)
+    DISTR.mode = DISTR.mode * (b - a) + a;
+
+  /* o.k. */
+  return 1;
+} /* end of _unur_upd_mode_beta() */
 
 /*---------------------------------------------------------------------------*/
 
 #ifdef HAVE_AREA
+
+int
+_unur_upd_area_beta( UNUR_DISTR *distr )
+{
+  /* log of normalization constant */
+  LOGNORMCONSTANT = _unur_lognormconstant_beta(DISTR.params,DISTR.n_params);
+  
+  if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
+    DISTR.area = 1.;
+    return 1;
+  }
+  
+  else {
+#ifdef HAVE_CDF
+    DISTR.area = ( _unur_cdf_beta( DISTR.domain[1],distr) 
+		   - _unur_cdf_beta( DISTR.domain[0],distr) );
+    if (DISTR.area <= 0.) {
+      /* this must not happen */
+      _unur_warning(distr_name,UNUR_ERR_DISTR_SET,"upd area <= 0");
+      DISTR.area = 1.;   /* 0 might cause a FPE */
+      return 0.;
+    }
+    else
+      return 1;
+#else
+    return 0;
+#endif
+  }
+} /* end of _unur_upd_area_beta() */
+
+/*---------------------------------------------------------------------------*/
 
 double
 _unur_lognormconstant_beta(double *params, int n_params)
@@ -293,6 +333,10 @@ unur_distr_beta( double *params, int n_params )
   /* number of arguments */
   DISTR.n_params = n_params;
 
+  /* domain */
+  DISTR.domain[0] = DISTR.a; /* left boundary  */
+  DISTR.domain[1] = DISTR.b; /* right boundary */
+
   /* log of normalization constant */
 #ifdef HAVE_AREA
   LOGNORMCONSTANT = _unur_lognormconstant_beta(DISTR.params,DISTR.n_params);
@@ -301,12 +345,14 @@ unur_distr_beta( double *params, int n_params )
 #endif
 
   /* mode and area below p.d.f. */
-  DISTR.mode = _unur_mode_beta(DISTR.params,DISTR.n_params);
+  _unur_upd_mode_beta( distr );
   DISTR.area = 1.;
 
-  /* domain */
-  DISTR.domain[0] = DISTR.a; /* left boundary  */
-  DISTR.domain[1] = DISTR.b; /* right boundary */
+  /* function for updating derived parameters */
+  DISTR.upd_mode  = _unur_upd_mode_beta; /* funct for computing mode */
+#ifdef HAVE_AREA
+  DISTR.upd_area  = _unur_upd_area_beta; /* funct for computing area */
+#endif
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

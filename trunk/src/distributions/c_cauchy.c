@@ -70,6 +70,9 @@ static double _unur_pdf_cauchy(double x, UNUR_DISTR *distr);
 static double _unur_dpdf_cauchy(double x, UNUR_DISTR *distr);
 static double _unur_cdf_cauchy(double x, UNUR_DISTR *distr);
 
+static int _unur_upd_mode_cauchy( UNUR_DISTR *distr );
+static int _unur_upd_area_cauchy( UNUR_DISTR *distr );
+
 /*---------------------------------------------------------------------------*/
 
 double
@@ -113,6 +116,42 @@ _unur_cdf_cauchy(double x, UNUR_DISTR *distr)
     return ( 0.5 + atan(x)/M_PI );
   }
 } /* end of _unur_cdf_cauchy() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_upd_mode_cauchy( UNUR_DISTR *distr )
+{
+  DISTR.mode = DISTR.theta; 
+  return 1;
+} /* end of _unur_upd_mode_cauchy() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_upd_area_cauchy( UNUR_DISTR *distr )
+{
+  /* normalization constant */
+  NORMCONSTANT = M_PI * DISTR.lambda;
+
+  if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
+    DISTR.area = 1.;
+    return 1;
+  }
+  
+  else {
+    DISTR.area = ( _unur_cdf_cauchy( DISTR.domain[1],distr) 
+		   - _unur_cdf_cauchy( DISTR.domain[0],distr) );
+    if (DISTR.area <= 0.) {
+      /* this must not happen */
+      _unur_warning(distr_name,UNUR_ERR_DISTR_SET,"upd area <= 0");
+      DISTR.area = 1.;   /* 0 might cause a FPE */
+      return 0.;
+    }
+    else
+      return 1;
+  }
+} /* end of _unur_upd_area_cauchy() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -169,6 +208,10 @@ unur_distr_cauchy( double *params, int n_params )
   /* number of arguments */
   DISTR.n_params = n_params;
 
+  /* domain */
+  DISTR.domain[0] = -INFINITY;   /* left boundary  */
+  DISTR.domain[1] = INFINITY;    /* right boundary */
+
   /* normalization constant */
   NORMCONSTANT = M_PI * DISTR.lambda;
 
@@ -176,9 +219,9 @@ unur_distr_cauchy( double *params, int n_params )
   DISTR.mode = DISTR.theta; 
   DISTR.area = 1.;
 
-  /* domain */
-  DISTR.domain[0] = -INFINITY;   /* left boundary  */
-  DISTR.domain[1] = INFINITY;    /* right boundary */
+  /* function for updating derived parameters */
+  DISTR.upd_mode  = _unur_upd_mode_cauchy; /* funct for computing mode */
+  DISTR.upd_area  = _unur_upd_area_cauchy; /* funct for computing area */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

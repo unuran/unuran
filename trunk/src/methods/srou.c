@@ -517,6 +517,28 @@ unur_srou_chg_mode( struct unur_gen *gen, double mode )
 /*---------------------------------------------------------------------------*/
 
 int
+unur_srou_upd_mode( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* recompute mode of distribution                                       */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen   ... pointer to generator object                              */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(gen,0);
+  _unur_check_gen_object( gen,SROU );
+
+  return unur_distr_cont_upd_mode( &(gen->distr) );
+} /* end of unur_srou_upd_mode() */
+
+/*---------------------------------------------------------------------------*/
+
+int
 unur_srou_chg_cdfatmode( struct unur_gen *gen, double Fmode )
      /*----------------------------------------------------------------------*/
      /* change value of cdf at mode                                          */
@@ -662,6 +684,28 @@ unur_srou_chg_pdfarea( struct unur_gen *gen, double area )
   /* o.k. */
   return 1;
 } /* end of unur_srou_chg_pdfarea() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_srou_upd_pdfarea( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* recompute area below p.d.f. of distribution                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen   ... pointer to generator object                              */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(gen,0);
+  _unur_check_gen_object( gen,SROU );
+
+  return unur_distr_cont_upd_pdfarea( &(gen->distr) );
+} /* end of unur_srou_upd_pdfarea() */
 
 /*****************************************************************************/
 

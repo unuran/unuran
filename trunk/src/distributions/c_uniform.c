@@ -69,6 +69,9 @@ static double _unur_pdf_uniform(double x, UNUR_DISTR *distr);
 static double _unur_dpdf_uniform(double x, UNUR_DISTR *distr);
 static double _unur_cdf_uniform(double x, UNUR_DISTR *distr);
 
+static int _unur_upd_mode_uniform( UNUR_DISTR *distr );
+static int _unur_upd_area_uniform( UNUR_DISTR *distr );
+
 /*---------------------------------------------------------------------------*/
 
 double
@@ -109,6 +112,24 @@ _unur_cdf_uniform( double x, UNUR_DISTR *distr )
     return x;
   }
 } /* end of _unur_cdf_uniform() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_upd_mode_uniform( UNUR_DISTR *distr )
+{
+  DISTR.mode = (DISTR.a + DISTR.b) / 2.;
+  return 1;
+} /* end of _unur_upd_mode_uniform() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_upd_area_uniform( UNUR_DISTR *distr )
+{
+  /* nothing to do */
+  return 1;
+} /* end of _unur_upd_area_uniform() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -165,13 +186,17 @@ unur_distr_uniform( double *params, int n_params )
   /* number of arguments */
   DISTR.n_params = n_params;
 
+  /* domain */
+  DISTR.domain[0] = DISTR.a;      /* left boundary  */
+  DISTR.domain[1] = DISTR.b;      /* right boundary */
+
   /* mode and area below p.d.f. */
   DISTR.mode = (DISTR.a + DISTR.b) / 2.;
   DISTR.area = 1.;
 
-  /* domain */
-  DISTR.domain[0] = DISTR.a;      /* left boundary  */
-  DISTR.domain[1] = DISTR.b;      /* right boundary */
+  /* function for updating derived parameters */
+  DISTR.upd_mode  = _unur_upd_mode_uniform; /* funct for computing mode */
+  DISTR.upd_area  = _unur_upd_area_uniform; /* funct for computing area */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

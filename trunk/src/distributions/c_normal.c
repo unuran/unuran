@@ -160,6 +160,9 @@ int
 _unur_upd_mode_normal( UNUR_DISTR *distr )
 {
   DISTR.mode = DISTR.mu;
+  if (DISTR.domain[0] > DISTR.mode) DISTR.mode = DISTR.domain[0];
+  if (DISTR.domain[1] < DISTR.mode) DISTR.mode = DISTR.domain[1];
+
   return 1;
 } /* end of _unur_upd_mode_normal() */
 
@@ -170,11 +173,28 @@ _unur_upd_area_normal( UNUR_DISTR *distr )
 {
   /* log of normalization constant */
   LOGNORMCONSTANT = log(M_SQRTPI * M_SQRT2 * DISTR.sigma);
-  DISTR.area = 1.;
 
-  /** TODO: truncated distributions!! **/
+  if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
+    DISTR.area = 1.;
+    return 1;
+  }
 
-  return 1;
+  else {
+#ifdef HAVE_CDF
+    DISTR.area = ( _unur_cdf_normal( DISTR.domain[1],distr) 
+		   - _unur_cdf_normal( DISTR.domain[0],distr) );
+    if (DISTR.area <= 0.) {
+      /* this must not happen */
+      _unur_warning(distr_name,UNUR_ERR_DISTR_SET,"upd area <= 0");
+      DISTR.area = 1.;   /* 0 might cause a FPE */
+      return 0.;
+    }
+    else
+      return 1;
+#else
+    return 0;
+#endif
+  }
 } /* end of _unur_upd_area_normal() */
 
 /*---------------------------------------------------------------------------*/
@@ -242,16 +262,16 @@ unur_distr_normal( double *params, int n_params )
   /* number of arguments */
   DISTR.n_params = n_params;
 
+  /* domain */
+  DISTR.domain[0] = -INFINITY;   /* left boundary  */
+  DISTR.domain[1] = INFINITY;    /* right boundary */
+
   /* log of normalization constant */
   LOGNORMCONSTANT = log(M_SQRTPI * M_SQRT2 * DISTR.sigma);
 
   /* mode and area below p.d.f. */
   DISTR.mode = DISTR.mu;
   DISTR.area = 1.;
-
-  /* domain */
-  DISTR.domain[0] = -INFINITY;   /* left boundary  */
-  DISTR.domain[1] = INFINITY;    /* right boundary */
 
   /* function for updating derived parameters */
   DISTR.upd_mode  = _unur_upd_mode_normal; /* funct for computing mode */

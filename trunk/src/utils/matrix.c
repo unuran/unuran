@@ -55,10 +55,10 @@ static int _unur_matrix_LU_decomp (int dim, double *A, int *P, int *signum);
 /* Factorise a general dim x dim matrix A into P A = L U.                    */
 
 static int _unur_matrix_backsubstitution_dtrsv(int dim, double *LU, double *X);
-/* ????? */
+/* Backsubstitution used for inversion alg. _unur_matrix_LU_invert().        */
 
 static int _unur_matrix_forwardsubstitution_dtrsv(int dim, double *LU, double *X);
-/* ????? */
+/* Forwardsubstitution used for inversion alg. _unur_matrix_LU_invert().     */
 
 static int _unur_matrix_LU_invert (int dim, double *LU, int *p, double *inverse);
 /* Compute inverse of matrix with given LU decomposition.                    */
@@ -231,6 +231,7 @@ _unur_matrix_LU_decomp (int dim, double *A, int *p, int *signum)
 int 
 _unur_matrix_backsubstitution_dtrsv(int dim, double *LU, double *X)
      /*----------------------------------------------------------------------*/
+     /* Backsubstitution used for inversion alg. _unur_matrix_LU_invert()    */
      /*                                                                      */
      /* input:								     */
      /*   dim ... number of columns and rows of				     */
@@ -281,6 +282,7 @@ _unur_matrix_backsubstitution_dtrsv(int dim, double *LU, double *X)
 int 
 _unur_matrix_forwardsubstitution_dtrsv(int dim, double *LU, double *X)
      /*----------------------------------------------------------------------*/
+     /* Forwardsubstitution used for inversion alg. _unur_matrix_LU_invert() */
      /*                                                                      */
      /* input:								     */
      /*   dim ... number of columns and rows of				     */
@@ -383,10 +385,12 @@ _unur_matrix_LU_invert (int dim, double *LU, int *p, double *inverse)
 int 
 _unur_matrix_invert_matrix(int dim, double *A, double detmin, double *Ainv, double *det)
      /*-------------------------------------------------------------------------*/
-     /* Calculates the inverse matrix (by means of LU decomposition)         	*/
-     /* If |det(A)| <= detmin a message is printed 				*/
-     /* the array Ainv is computed whenever |det(A)|/dim >= UNUR_EPSILON        */
-     /*	or whenever norm(A)*dim/|det(A)| <= DBL_MAX/2	 			*/
+     /* Calculates the inverse matrix (by means of LU decomposition).         	*/
+     /* If |det(A)| <= detmin a message is printed. 				*/
+     /* The matrix is not inverted if it is ill-conditioned. We use the         */
+     /*    |det(A)| / (dim * ||A||) < detmin                                    */
+     /* where ||A|| denotes the L_1 norm of A.                                  */
+     /* As a side effect det(A) is comuted.                                     */
      /*										*/
      /* input:                                                                  */
      /*   dim    ... dimension of the square matrix A                        	*/
@@ -411,8 +415,9 @@ _unur_matrix_invert_matrix(int dim, double *A, double detmin, double *Ainv, doub
 #define idx(a,b) ((a)*dim+b)
 
   int *p, s, i, j;
-  double *LU;
-  double norm, halfnorm;
+  double *LU;             /* array for storing LU decomposition of matrix A */
+  double norm;            /* L_1 norm of matrix A */
+  double halfnorm;        /* auxilliary variable for computing norm */
   
   /* check arguments */
   CHECK_NULL(A,UNUR_ERR_NULL);
@@ -443,22 +448,17 @@ _unur_matrix_invert_matrix(int dim, double *A, double detmin, double *Ainv, doub
 
   /* calculate matrix norm */
   norm=0.;
-  halfnorm=0.;
   for(i=0;i<dim;i++) {
-    for(j=0;j<dim;j++) {
+    halfnorm=0.;
+    for(j=0;j<dim;j++)
       halfnorm += fabs(A[idx(i,j)]);
-    }
     if (halfnorm > norm) norm=halfnorm;
   }
 
-  if ( fabs(*det)/dim < UNUR_EPSILON ) {
-    _unur_error("matrix",UNUR_ERR_GENERIC,"|det(A)| < dim*UNUR_EPSILON"); 
-    return UNUR_FAILURE; 
-  }
- 
   /* check for ill-conditioned matrix */
-  if ( norm * dim / fabs(*det) > DBL_MAX / 2 ) { 
-    _unur_error("matrix",UNUR_ERR_GENERIC,"matrix not computationally stable");  
+  if ( fabs(*det) / (dim * norm) < detmin ) { 
+    _unur_error("matrix",UNUR_ERR_GENERIC,"matrix ill-conditioned, cannot invert");  
+    free(LU); free(p);
     return UNUR_FAILURE; 
   } 
   

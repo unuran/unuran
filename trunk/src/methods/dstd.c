@@ -339,8 +339,12 @@ _unur_dstd_init( struct unur_par *par )
   if (!gen) { free(par); return NULL; }
 
   /* check for initializing routine for special generator */
-  _unur_check_NULL( gen->genid, DISTR.init, (free(par),NULL) );
-
+  if (DISTR.init == NULL) {
+    _unur_error(gen->genid,UNUR_ERR_NULL,"");
+    free (par);
+    return NULL;
+  }
+  
   /* run special init routine for generator */
   if ( !DISTR.init(par,gen) ) {
     /* init failed --> could not find a sampling routine */

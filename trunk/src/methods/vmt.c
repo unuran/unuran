@@ -350,7 +350,7 @@ _unur_vmt_create( struct unur_par *par )
   gen->gen_aux = NULL;              /* no auxilliary generator objects       */
 
   /* generator for univariate distribution */
-  GEN.uvgen = unur_gen_clone(PAR.uvgen);
+  GEN.uvgen = (PAR.uvgen) ? unur_gen_clone(PAR.uvgen) : NULL;
 
   /* initialize pointer */
   GEN.cholesky = NULL;
@@ -424,7 +424,7 @@ _unur_vmt_clone( const struct unur_gen *gen )
   clone->genid = _unur_set_genid(GENTYPE);
 
   /* copy distribution object into generator object */
-  clone->distr = _unur_distr_cont_clone( gen->distr );
+  clone->distr = _unur_distr_cvec_clone( gen->distr );
 
   /* copy additional data for generator object */
   if (GEN.cholesky) {
@@ -632,7 +632,11 @@ _unur_vmt_debug_init( const struct unur_gen *gen )
   }
   fprintf(log,"%s:\n",gen->genid);
 
-  fprintf(log,"%s: marginal distribution = %s    [genid = %s]\n",gen->genid,GEN.uvgen->distr->name,GEN.uvgen->genid);
+  if (GEN.uvgen)
+    fprintf(log,"%s: marginal distribution = %s    [genid = %s]\n",gen->genid,
+	    GEN.uvgen->distr->name,GEN.uvgen->genid);
+  else
+    fprintf(log,"%s: no marginal distribution given  [error!]\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
   fprintf(log,"%s: sampling routine = _unur_vmt_sample()\n",gen->genid);

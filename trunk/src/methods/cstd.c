@@ -465,7 +465,11 @@ _unur_cstd_init( struct unur_par *par )
   if (!gen) { free(par); return NULL; }
   
   /* check for initializing routine for special generator */
-  _unur_check_NULL( gen->genid, DISTR.init, (free(par),NULL) );
+  if (DISTR.init == NULL) {
+    _unur_error(gen->genid,UNUR_ERR_NULL,"");
+    free (par);
+    return NULL;
+  }
   
   /* reset flag for inversion method */
   PAR.is_inversion = FALSE;

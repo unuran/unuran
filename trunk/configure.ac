@@ -3,7 +3,7 @@ dnl $Id$
 
 dnl Initialize.
 AC_PREREQ(2.57)
-AC_INIT([UNURAN], [0.4.0], [unuran@statistik.wu-wien.ac.at])
+AC_INIT([UNURAN], [0.4.1], [unuran@statistik.wu-wien.ac.at])
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([src/unuran_config.h])
 AC_CONFIG_HEADER([config.h])

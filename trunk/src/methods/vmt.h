@@ -42,9 +42,7 @@
 
    =UP  Methods_for_CVEC
 
-   =REQUIRED mean vector, covariance matrix
-
-   =OPTIONAL marginal distribution (for non-Gaussian distributions)
+   =REQUIRED mean vector, covariance matrix, standardized marginal distributions
 
    =SPEED Set-up: slow,
           Sampling: depends on dimension
@@ -56,26 +54,20 @@
       i.e. L L^t = Sigma, and Y has independent components of the same
       distribution with mean 0 and standard deviation 1.
       
-      By default the standard normal distribution is used for the
-      components of Y. Thus VMT produces multinormal random vectors
-      when this distribution of Y is not set explicitly.
-      
       The method VMT has been implemented especially to sample from a
-      multinormal distribution. Nevertheless it can also be used (or
-      abused) for other distributions. However, notice that the univariate
-      distribution provided by a unur_vmt_set_marginalgen() call should
-      have mean 0 and standard deviation 1. Otherwise mu and Sigma are
-      not the mean vector and covariance matrix, respectively, of the
-      resulting distribution. Moreover, notice that except for the
-      multinormal distribution the given univariate distribution is
-      @emph{not} the marginal distribution of the resulting random
-      vector.
+      multinormal distribution. Nevertheless, it can also be used (or
+      abused) for other distributions. However, notice that the given
+      standardized marginal distributions are not checked; i.e.
+      if the given distributions do not have mean 0 and variance 1
+      then mu and Sigma are not the mean vector and covariance matrix,
+      respectively, of the resulting distribution. 
 
-      @emph{Important:} Only mean vector and covariance matrix of the
-      given distribution object are used. Any other entries (like its
-      pdf) are completely ignored. Thus the generated random vectors
-      are determined by the unur_vmt_set_marginalgen() call (and mean
-      vector and covariance matrix).
+      @strong{Important:} Notice that except for the multinormal
+      distribution the given marginal distribution are distorted by
+      the transformation using the Cholesky matrix. Thus for other
+      (non-multinormal) distributions this method should only be used
+      when everything else fails and some approximate results which
+      might even be not entirely correct are better than no results.
 
    =END
 */

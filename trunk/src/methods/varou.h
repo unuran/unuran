@@ -46,9 +46,9 @@
 
    =OPTIONAL ...
 
-   =SPEED Set-up: slow, Sampling: slow
+   =REF  [WGS91]
 
-   =REF  [...]
+   =SPEED Set-up: slow, Sampling: slow
 
    =DESCRIPTION
       VAROU is an implementation of the multivariate ratio-of-uniforms

@@ -4,10 +4,9 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE:      chis_gen.c                                                   *
+ *   FILE:      student_gen.c                                                *
  *                                                                           *
- *   Special generators for Chi distribution                                 *
- *   (Do not confuse with Chi^2 distribution!)                               *
+ *   Special generators for Student's t distribution                         *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -41,7 +40,7 @@
 /*---------------------------------------------------------------------------*/
 /* init routines for special generators                                      */
 
-inline static void chi_chru_init( struct unur_gen *gen );
+inline static void student_trouo_init( struct unur_gen *gen );
 
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
@@ -65,9 +64,9 @@ inline static void chi_chru_init( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 
 int 
-_unur_stdgen_chi_init( struct unur_par *par, struct unur_gen *gen )
+_unur_stdgen_student_init( struct unur_par *par, struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* initialize special generator for chi distribution                    */
+     /* initialize special generator for Student's distribution              */
      /* if gen == NULL then only check existance of variant.                 */
      /*                                                                      */
      /* parameters:                                                          */
@@ -85,14 +84,19 @@ _unur_stdgen_chi_init( struct unur_par *par, struct unur_gen *gen )
 
   switch (par->variant) {
 
-  case 0:  /* Ratio of Uniforms with shift */    /* Default */
+  case 0:  /* Polar Method */     /* Default */
+    _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_student_tpol );
+    /* no student_tpol_init( gen ) required */
+    return 1;
+
+  case 1:  /* Ratio of Uniforms */
     if (par->distr->data.cont.params[0] < 1.) {
       _unur_error(NULL,UNUR_ERR_GEN_CONDITION,"");
       return 0;
     }
     /* nu >= 1 !!!! */
-    _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_chi_chru );
-    chi_chru_init( gen );
+    _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_student_trouo );
+    student_trouo_init( gen );
     return 1;
 
   case UNUR_STDGEN_INVERSION:   /* inversion method */
@@ -116,15 +120,65 @@ _unur_stdgen_chi_init( struct unur_par *par, struct unur_gen *gen )
 
 /*****************************************************************************
  *                                                                           *
- * Chi Distribution: Ratio of Uniforms with shift                            *
+ * Student's t Distribution: Polar Method                                    *
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- * FUNCTION:   - samples a random number from the Chi distribution with      *    
+ * FUNCTION:   - samples a random number from Student's t distribution with  *    
+ *               parameters nu > 0.                                          *
+ *                                                                           *
+ * REFERENCE:  - R.W. Bailey (1994): Polar generation of random variates     *
+ *               with the t-distribution,                                    *
+ *               Mathematics of Computation 62, 779-781.                     *
+ *                                                                           *
+ * Implemented by F. Niederl, 1994                                           *
+ *****************************************************************************
+ *                                                                           *
+ * The polar method of Box/Muller for generating Normal variates is adapted  *
+ * to the Student-t distribution. The two generated variates are not         *
+ * independent and the expected no. of uniforms per variate is 2.5464.       *
+ *                                                                           *
+ *****************************************************************************
+ *    WinRand (c) 1995 Ernst Stadlober, Institut fuer Statistitk, TU Graz    *
+ *****************************************************************************/
+
+/*
+inline static void student_tpol_init( struct unur_gen *gen )
+
+not required
+
+*/
+
+double
+unur_stdgen_sample_student_tpol( struct unur_gen *gen )
+{
+  /* -X- generator code -X- */
+  double u,v,w;
+
+  do {
+    u = 2. * uniform() - 1.;
+    v = 2. * uniform() - 1.;
+    w = u * u + v * v;
+  } while (w > 1.);
+
+  return(u * sqrt( nu * ( exp(- 2. / nu * log(w)) - 1.) / w));
+  /* -X- end of generator code -X- */
+} /* end of unur_stdgen_sample_student_tpol() */
+
+/*---------------------------------------------------------------------------*/
+
+/*****************************************************************************
+ *                                                                           *
+ * Student's t Distribution: Ratio of Uniforms                               *
+ *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ * FUNCTION:   - samples a random number from Student's t distribution with  *    
  *               parameters nu >= 1.                                         *
  *                                                                           *
- * REFERENCE : - J.F. Monahan (1987): An algorithm for generating chi random *
- *               variables, ACM Trans. Math. Software 13, 168-172.           *
+ * REFERENCE:  - A.J. Kinderman, J.F. Monahan (1980):                        *
+ *               New methods for generating Student's t and gamma variables, *
+ *               Computing 25, 369-377.                                      *
  *                                                                           *
  * Implemented by R. Kremer, 1990                                            *
  *****************************************************************************
@@ -132,17 +186,19 @@ _unur_stdgen_chi_init( struct unur_par *par, struct unur_gen *gen )
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#define b       (GEN.gen_param[0])
-#define vm      (GEN.gen_param[1])
-#define vp      (GEN.gen_param[2])
-#define vd      (GEN.gen_param[3])
+#define c       (GEN.gen_param[0])
+#define e       (GEN.gen_param[1])
+#define p       (GEN.gen_param[2])
+#define q       (GEN.gen_param[3])
+#define r       (GEN.gen_param[4])
+#define vm      (GEN.gen_param[5])
 /*---------------------------------------------------------------------------*/
 
 inline static void
-chi_chru_init( struct unur_gen *gen )
+student_trouo_init( struct unur_gen *gen )
 {
   if (GEN.gen_param == NULL) {
-    GEN.n_gen_param = 4;
+    GEN.n_gen_param = 6;
     GEN.gen_param = _unur_malloc(GEN.n_gen_param * sizeof(double));
   }
 
@@ -152,76 +208,50 @@ chi_chru_init( struct unur_gen *gen )
     return;
   }
 
-  if (nu == 1.)
-    /* no setup step required */
-    return;
-
-  /* else nu > 1 */
-  b = sqrt(nu - 1.);
-  vm = - 0.6065306597 * (1. - 0.25 / (b * b + 1.));
-  vm = (-b > vm) ? -b : vm;
-  vp = 0.6065306597 * (0.7071067812 + b) / (0.5 + b);
-  vd = vp - vm;
+  r = 1. / nu;
+  p = 1. / (1. + r);
+  q = -0.25 * (nu + 1.);
+  c = 4. * pow(p, q);
+  e = 16. / c;
+  vm = (nu>1.0) ? sqrt(p+p) * pow( (1.-r)*p, 0.25*(nu-1.) ) : 1.;
   /* -X- end of setup code -X- */
-} /* end of chi_chru_init() */
+} /* end of student_trouo_init() */
 
 double
-unur_stdgen_sample_chi_chru( struct unur_gen *gen )
+unur_stdgen_sample_student_trouo( struct unur_gen *gen )
 {
   /* -X- generator code -X- */
-  double u,v,z,zz,r;
+  double tru,u,v;
 
-  if (nu == 1.) {
-    while (1) {
-      u = uniform();
-      v = uniform() * 0.857763884960707;
-      z = v / u;
-      if (z < 0) continue;
-      zz = z * z;
-      r = 2.5 - zz;
-      if (z < 0.)
-	r = r + zz * z / (3. * z);
-      if (u < r * 0.3894003915)
-	break;
-      if (zz > (1.036961043 / u + 1.4))
-	continue;
-      if (2 * log(u) < (- zz * 0.5 ))
-	break;
-    }
+  while (1) {
+
+    /* step 1 */
+    u = uniform();
+
+    /* step 2 */
+    v = uniform();
+    v = vm * (v + v - 1.);
+    tru = v / u;
+
+    /* step 3 */
+    if ( c * u <= 5. - tru * tru) 
+      break;
+    if (nu >= 3.) 
+      if (u * (tru * tru + 3.) >= e) 
+	continue;  /* goto 1 */      /* step 4 */
+    if ( u <= pow(1. + tru * tru * r, q))
+      break;
   }
 
-  else { /* nu > 1 */
-    while (1) {
-      u = uniform();
-      v = uniform() * vd + vm;
-      z = v / u;
-      if (z < -b)
-	continue;
-      zz = z * z;
-      r = 2.5 - zz;
-      if (z < 0.0)
-	r = r + zz * z / (3.0 * (z + b));
-      if (u < r * 0.3894003915) {
-	z += b;
-	break;
-      }
-      if (zz > (1.036961043 / u + 1.4))
-	continue;
-      if (2. * log(u) < (log(1.0 + z / b) * b * b - zz * 0.5 - z * b)) {
-	z += b;
-	break;
-      }
-    }
-  }
-  /* -X- end of generator code -X- */
-  
-  return z;
+  return tru;
 
-} /* end of unur_stdgen_sample_chi_chru() */
+} /* end of unur_stdgen_sample_student_trouo() */
 
 /*---------------------------------------------------------------------------*/
-#undef b 
+#undef c
+#undef e
+#undef p
+#undef q
+#undef r
 #undef vm
-#undef vp
-#undef vd
 /*---------------------------------------------------------------------------*/

@@ -72,6 +72,9 @@ int unur_test_count_urn( struct unur_gen *gen, int samplesize );
 /* Chi^2 tests                                                               */
 double unur_test_chi2( struct unur_gen *gen, int intervals, int samplesize, int classmin, int output );
 
+/* moments                                                                   */
+int unur_test_moments( struct unur_gen *gen, int n_moments, double *moments, int samplesize );
+
 /* make scatterplot of generated numbers                                     */
 int unur_make_scatterplot( struct unur_gen *gen );
 

@@ -46,22 +46,22 @@
 
 enum {
   UNUR_DISTR_GENERIC  = 0x0u,
-
-  UNUR_DISTR_BETA,
-  UNUR_DISTR_CAUCHY,
-  UNUR_DISTR_CHI,
-  UNUR_DISTR_CHISQUARE,
-  UNUR_DISTR_EXPONENTIAL,
-  UNUR_DISTR_GAMMA,
-  UNUR_DISTR_LAPLACE,
-  UNUR_DISTR_LOGNORMAL,
-  UNUR_DISTR_LOMAX,
-  UNUR_DISTR_NORMAL,
-  UNUR_DISTR_PARETO,
-  UNUR_DISTR_POWEREXPONENTIAL,
-  UNUR_DISTR_RAYLEIGH,
-  UNUR_DISTR_STUDENT,
-  UNUR_DISTR_UNIFORM,
+  /**                                  pdf   cdf   mode  area  gen   doc     */
+  UNUR_DISTR_BETA,                /*    X     X     X     X     X     .      */
+  UNUR_DISTR_CAUCHY,              /*    X     X     X     X     .     .      */
+  UNUR_DISTR_CHI,                 /*    X     X     X     X     X     .      */
+  UNUR_DISTR_CHISQUARE,           /*    X     X     X     X     .     .      */
+  UNUR_DISTR_EXPONENTIAL,         /*    X     X     X     X     ?     .      */
+  UNUR_DISTR_GAMMA,               /*    X     X     X     X     X     .      */
+  UNUR_DISTR_LAPLACE,             /*    X     X     X     X     .     .      */
+  UNUR_DISTR_LOGNORMAL,           /*    X     .     .     X     .     .      */
+  UNUR_DISTR_LOMAX,               /*    X     X     X     X     .     .      */
+  UNUR_DISTR_NORMAL,              /*    X     X     X     X     X     .      */
+  UNUR_DISTR_PARETO,              /*    X     X     X     X     .     .      */
+  UNUR_DISTR_POWEREXPONENTIAL,    /*    X     .     .     X     .     .      */
+  UNUR_DISTR_RAYLEIGH,            /*    X     X     X     X     .     .      */
+  UNUR_DISTR_STUDENT,             /*    X     .     X     X     ?     .      */
+  UNUR_DISTR_UNIFORM,             /*    X     X     X     X     .     .      */
 };
 
 /*---------------------------------------------------------------------------*/

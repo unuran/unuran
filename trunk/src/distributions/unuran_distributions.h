@@ -111,11 +111,11 @@ int _unur_stdgen_beta_init( struct unur_par *par, struct unur_gen *gen );
 /* initialize new generator                                                  */
 double unur_stdgen_sample_beta_bb( struct unur_gen *gen );
 double unur_stdgen_sample_beta_bc( struct unur_gen *gen );
-  /* Acceptance/Rejection from log-logistic hats */
+/* Acceptance/Rejection from log-logistic hats                               */
 double unur_stdgen_sample_beta_b00( struct unur_gen *gen );
 double unur_stdgen_sample_beta_b01( struct unur_gen *gen );
 double unur_stdgen_sample_beta_b1prs( struct unur_gen *gen );
-  /* Stratified Rejection/Patchwork Rejection */
+/* Stratified Rejection/Patchwork Rejection                                  */
 
 /*---------------------------------------------------------------------------*/
 /* Burr ?? distribution                                                      */
@@ -133,7 +133,7 @@ struct unur_distr *unur_distr_chi(double *params, int n_params);
 int _unur_stdgen_chi_init( struct unur_par *par, struct unur_gen *gen );
 /* initialize new generator                                                  */
 double unur_stdgen_sample_chi_chru( struct unur_gen *gen );
-  /* Ratio of Uniforms with shift */    /* Default */
+/* Ratio of Uniforms with shift                                              */
 
 /*---------------------------------------------------------------------------*/
 /*  Chisquare distribution [2; ch.18, p.416]                                 */
@@ -154,7 +154,7 @@ struct unur_distr *unur_distr_exponential(double *params, int n_params);
 int _unur_stdgen_exponential_init( struct unur_par *par, struct unur_gen *gen );
 /* initialize new generator                                                  */
 double unur_stdgen_sample_exponential_inv( struct unur_gen *gen );
-   /* Inversion method */
+/* Inversion method                                                          */
 
 /*---------------------------------------------------------------------------*/
 /*  Gamma distribution [2; ch.17, p.337]                                     */
@@ -164,7 +164,7 @@ struct unur_distr *unur_distr_gamma(double *params, int n_params);
 int _unur_stdgen_gamma_init( struct unur_par *par, struct unur_gen *gen );
 /* initialize new generator                                                  */
 double unur_stdgen_sample_gamma_gll( struct unur_gen *gen );
-   /* Rejection with log-logistic envelopes */
+/* Rejection with log-logistic envelopes                                     */
 
 /*---------------------------------------------------------------------------*/
 /* Generalized inverse Gaussian distribution                                 */
@@ -194,21 +194,21 @@ struct unur_distr *unur_distr_normal( double *params, int n_params );
  int _unur_stdgen_normal_init( struct unur_par *par, struct unur_gen *gen );
 /* initialize new generator                                                  */
 double unur_stdgen_sample_normal_bm( struct unur_gen *gen );
-   /* Box-Muller method                                                      */
+/* Box-Muller method                                                         */
 double unur_stdgen_sample_normal_pol( struct unur_gen *gen );
-   /* Polarmethod with rejection                                             */
+/* Polarmethod with rejection                                                */
 double unur_stdgen_sample_normal_quo( struct unur_gen *gen );
-   /* Ratio-of-uniforms method with squeeze                                  */
+/* Ratio-of-uniforms method with squeeze                                     */
 double unur_stdgen_sample_normal_nquo( struct unur_gen *gen );
-   /* "Naive" ratio-of-uniforms method                                       */
+/* "Naive" ratio-of-uniforms method                                          */
 double unur_stdgen_sample_normal_leva( struct unur_gen *gen );
-   /* Ratio-of-uniforms method  with quadratic bounding curves               */
+/* Ratio-of-uniforms method  with quadratic bounding curves                  */
 double unur_stdgen_sample_normal_kr( struct unur_gen *gen );
-   /* Kindermann-Ramage method                                               */
+/* Kindermann-Ramage method                                                  */
 double unur_stdgen_sample_normal_acr( struct unur_gen *gen );
-   /* Acceptance-complement ratio                                            */
+/* Acceptance-complement ratio                                               */
 double unur_stdgen_sample_normal_sum( struct unur_gen *gen );
-   /* infamous sum-of-12-uniforms method. NEVER use it!!                     */
+/* infamous sum-of-12-uniforms method. NEVER use it!!                        */
 
 /*---------------------------------------------------------------------------*/
 /*  Pareto distribution (of first kind) [2; ch.20, p.574]                    */
@@ -241,6 +241,15 @@ struct unur_distr *unur_distr_rayleigh(double *params, int n_params);
 /*---------------------------------------------------------------------------*/
 /* Student's t distribution                                                  */
 struct unur_distr *unur_distr_student(double *params, int n_params);
+
+/* special generators */
+int _unur_stdgen_student_init( struct unur_par *par, struct unur_gen *gen );
+/* initialize new generator                                                  */
+double unur_stdgen_sample_student_tpol( struct unur_gen *gen );
+/* Polar Method                                                              */
+double unur_stdgen_sample_student_trouo( struct unur_gen *gen );
+/* Ratio of Uniforms                                                         */
+
 
 /*---------------------------------------------------------------------------*/
 /* Uniform distribution                                                      */

@@ -33,7 +33,7 @@
 #define RUN_DAU           0
 #define RUN_DIS           0
 
-#define RUN_NINV          1
+#define RUN_NINV          0
 #define RUN_UTDR          0
 #define RUN_AROU          0
 #define RUN_SROU          0
@@ -50,7 +50,7 @@
 
 #define RUN_RECT          0
 
-#define RUN_CSTD          0
+#define RUN_CSTD          1
 
 /*---------------------------------------------------------------------------*/
 
@@ -63,6 +63,7 @@ int main()
   double     *prob;    /* probability vector */
   struct unur_par *par;
   struct unur_gen *gen;
+  double moments[10];
   double fpar[2];
 /*    double stp[10]; */
   double slopes[10];
@@ -115,7 +116,7 @@ int main()
 
 #if RUN_CSTD == 1
 
-#if 1
+#if 0
   distr_xxx = unur_distr_normal(NULL,0);
   // unur_distr_cont_set_domain(distr_xxx,3,UNUR_INFINITY);
   par = unur_cstd_new(distr_xxx);
@@ -242,30 +243,18 @@ int main()
 
 #endif
 
-  fpar[0] = 10.;
-  distr_xxx = unur_distr_chi(fpar,1);
+  fpar[0] = 5.;
+  distr_xxx = unur_distr_student(fpar,1);
   par = unur_cstd_new(distr_xxx);
   unur_cstd_set_variant(par,0);
   unur_run_tests(par,RUN_TESTS);
 
   par = unur_cstd_new(distr_xxx);
+  unur_cstd_set_variant(par,0);
   gen = unur_init(par);
-
-  {
-    int i;
-    double x;
-    double x1 = 0.;
-    double x2 = 0.;
-    for (i=0; i<10000; i++) {
-      x = unur_sample_cont(gen);
-      x1 += x;
-      x = x*x;
-      x2 += x;
-    }
-    x1 /= 10000.;
-    x2 /= 10000.;
-    printf("mean = %g, stddev = %g\n",x1, sqrt(x2 - x1*x1));
-  }
+  unur_test_moments(gen,2,moments,10000);
+  printf("mean =\t%g\nstddev =\t%g\n\n",moments[1],sqrt(moments[2]-moments[1]*moments[1]));
+  unur_free(gen);
 
 #endif
 

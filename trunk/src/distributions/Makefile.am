@@ -23,7 +23,7 @@ libunuran_distributions_a_SOURCES = \
  pareto.c \
  powerexponential.c \
  rayleigh.c \
- student.c \
+ student.c     student_gen.c \
  uniform.c
 
 pkginclude_HEADERS = \

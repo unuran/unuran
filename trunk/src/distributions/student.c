@@ -116,7 +116,7 @@ unur_distr_student( double *params, int n_params )
   distr->name = distr_name;
                 
   /* how to get special generators */
-  DISTR.init = NULL;    /* _unur_stdgen_student_init; */
+  DISTR.init = _unur_stdgen_student_init;
 
   /* functions */
   DISTR.pdf  = _unur_pdf_student;  /* pointer to p.d.f.               */

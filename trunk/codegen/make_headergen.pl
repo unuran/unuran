@@ -25,7 +25,7 @@ my $headergen_file = "headergen.c";
 
 # ----------------------------------------------------------------
 # List of distributions
-my $DISTR = read_PDFdata('..');
+my $DISTR = read_PDFdata( $top_srcdir );
 
 # For description of data fields in this list see file `readPDF.pl'.
 

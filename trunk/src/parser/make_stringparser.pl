@@ -132,61 +132,68 @@ sub make_list_of_distributions {
 
     my $code;
 
+    # List of distributions
+    # For description of data fields in this list see file `read_PDF.pl'.
+    my $DISTR = read_PDFdata( $top_srcdir );
+
+
+
+
+
+
     # Get list of all methods
-    my @method_list;
+#    my @method_list;
 
     # Read all header files
-    foreach my $hfile (@methods_h_files) {
+#    foreach my $hfile (@methods_h_files) {
 
 	# Read content of header file
-	open H, "< $methods_dir/$hfile" or  die ("can't open file: $methods_dir/$hfile");
-	my $content = '';
-	while (<H>) { $content .= $_; } 
-	close H;
+#	open H, "< $methods_dir/$hfile" or  die ("can't open file: $methods_dir/$hfile");
+#	my $content = '';
+#	while (<H>) { $content .= $_; } 
+#	close H;
 
 	# We skip over all header files that do not correspond
 	# to a method.
-	next unless $content =~ /[^\n]\s*=METHOD\s+(\w+)/;
+#	next unless $content =~ /[^\n]\s*=METHOD\s+(\w+)/;
 
 	# save ID for method
-	push @method_list, "\L$1";
-    }
+#	push @method_list, "\L$1";
+#    }
 
     # sort list of methods
-    @method_list = sort @method_list;
+#    @method_list = sort @method_list;
 
     # make code 
-    $code .= "\t par = NULL;\n\n";
+#    $code .= "\t par = NULL;\n\n";
 
     # make switch for first letter of method name
-    $code .= "\t switch (*method) {\n";
+#    $code .= "\t switch (*method) {\n";
 
-    my $last_char;
+#    my $last_char;
 
-    foreach my $method (@method_list) {
+#    foreach my $method (@method_list) {
 
-	my $char = substr $method,0,1;
+#	my $char = substr $method,0,1;
 
-	if ($char ne $last_char) {
-	    $code .= "\t\t break;\n" if $last_char;
-	    $code .= "\t case '$char':\n";
-	    $last_char = $char;
-	}
+#	if ($char ne $last_char) {
+#	    $code .= "\t\t break;\n" if $last_char;
+#	    $code .= "\t case '$char':\n";
+#	    $last_char = $char;
+#	}
 
 	# print code
-	$code .= "\t\t if ( !strcmp( method, \"$method\") ) {\n";
-	$code .= "\t\t\t par = unur_$method\_new(distr);\n";
-	$code .= "\t\t\t break;\n";
-	$code .= "\t\t }\n";
-    }
+#	$code .= "\t\t if ( !strcmp( method, \"$method\") ) {\n";
+#	$code .= "\t\t\t par = unur_$method\_new(distr);\n";
+#	$code .= "\t\t\t break;\n";
+#	$code .= "\t\t }\n";
+#    }
 
     # end of switch for first letter
-    $code .= "\t }\n";
+#    $code .= "\t }\n";
 
     # Return result
-#    return $code;
-    
-    return "";
+    return $code;
 
 } # end of make_list_of_distributions()
 

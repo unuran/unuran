@@ -66,7 +66,7 @@ require $test_conf_file;
 
 # ----------------------------------------------------------------
 # List of distributions
-my $DISTR = read_PDFdata("$top_srcdir/..");
+my $DISTR = read_PDFdata( $top_srcdir );
 
 # For description of data fields in this list see file `read_PDF.pl'.
 

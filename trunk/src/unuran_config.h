@@ -78,7 +78,7 @@
 #define UNUR_ENABLE_LOGFILE
 
 /* write warnings and errors to stderr */
-#define UNUR_ENABLE_STDERR
+/*  #define UNUR_ENABLE_STDERR */
 
 
 /*---------------------------------------------------------------------------*/
@@ -116,8 +116,8 @@
 /*---------------------------------------------------------------------------*/
 
 /* set type of uniform generator                                             */
-#define UNUR_URNG_TYPE UNUR_URNG_POINTER
-/*  #define UNUR_URNG_TYPE UNUR_URNG_PRNG */
+/*  #define UNUR_URNG_TYPE UNUR_URNG_POINTER */
+#define UNUR_URNG_TYPE UNUR_URNG_PRNG
 
 /*---------------------------------------------------------------------------*/
 /* Default name of uniform random number generator.                          */

@@ -48,7 +48,7 @@
 
 UNUR_GEN *unur_init( UNUR_PAR *par )
 {                
-  CHECK_NULL(par,NULL);
+  _unur_check_NULL(NULL,par,NULL);
   return (par->init(par));
 } /* end of unur_init() */
 
@@ -137,3 +137,48 @@ unur_get_dimension( struct unur_gen *gen )
 
 /*---------------------------------------------------------------------------*/
 
+const char *
+unur_get_genid( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* get generator id                                                     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to generator id                                            */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(gen,0);
+
+  return gen->genid;
+} /* end of unur_get_genid() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_distr *
+unur_get_distr( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* get pointer to distribution object from generator object             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to distribution object                                     */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(gen,0);
+
+  return &(gen->distr);
+} /* end of unur_get_distr() */
+
+/*---------------------------------------------------------------------------*/

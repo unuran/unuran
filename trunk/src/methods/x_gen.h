@@ -91,3 +91,24 @@ int unur_get_dimension( UNUR_GEN *generator );
 */
 
 /*---------------------------------------------------------------------------*/
+
+const char *unur_get_genid( UNUR_GEN *generator );
+/*
+  Get identifier string for generator.
+  If UNUR_ENABLE_GENID is not defined in unuran_config.h then only the method
+  used for the generator is return.
+*/
+
+/*---------------------------------------------------------------------------*/
+
+UNUR_DISTR *unur_get_distr( UNUR_GEN *generator );
+/* 
+   Get pointer to distribution object from generator object.
+*/
+
+/*---------------------------------------------------------------------------*/
+
+
+
+
+

@@ -85,6 +85,11 @@
    If any of mode, p.d.f. or c.d.f. at the mode, or the area below the mode
    has been changed, then unur_reinit() must be executed.
    (Otherwise the generator produces garbage).
+
+   There exists a test mode that verifies whether the conditions for
+   the method are satisfied or not. It can be switched on by calling 
+   unur_srou_set_verify(). Notice however that sampling is a little
+   bit slower than.
 */
 
 /*---------------------------------------------------------------------------*/

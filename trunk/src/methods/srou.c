@@ -465,11 +465,11 @@ unur_srou_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
   /* check arguments */
   CHECK_NULL(gen,0);
   _unur_check_gen_object( gen,SROU );
-  if (n_params>0) CHECK_NULL(params,0);
+  if (n_params>0) _unur_check_NULL(gen->genid,params,0);
   
   /* check new parameter for generator */
   if (n_params > UNUR_DISTR_MAXPARAMS ) {
-    _unur_error(NULL,UNUR_ERR_DISTR_NPARAMS,"");
+    _unur_error(gen->genid,UNUR_ERR_DISTR_NPARAMS,"");
     return 0;
   }
 
@@ -613,7 +613,7 @@ unur_srou_chg_domain( struct unur_gen *gen, double left, double right )
 
   /* check new parameter for generator */
   if (left >= right) {
-    _unur_warning(NULL,UNUR_ERR_DISTR_SET,"domain, left >= right");
+    _unur_warning(gen->genid,UNUR_ERR_DISTR_SET,"domain, left >= right");
     return 0;
   }
 
@@ -655,7 +655,7 @@ unur_srou_chg_pdfarea( struct unur_gen *gen, double area )
   
   /* check new parameter for generator */
   if (area <= 0.) {
-    _unur_warning(NULL,UNUR_ERR_DISTR_SET,"area <= 0");
+    _unur_warning(gen->genid,UNUR_ERR_DISTR_SET,"area <= 0");
     return 0;
   }
 
@@ -1053,9 +1053,9 @@ _unur_srou_sample_check( struct unur_gen *gen )
       xfx = X * sqrt(fx);
       xfnx = -X * sqrt(fnx);
       if ( ((2.+4.*DBL_EPSILON) * GEN.um*GEN.um < fx + fnx)    /* avoid roundoff error with FP registers */
-	   || (xfx < (1.-DBL_EPSILON) * GEN.vl) 
+	   || (xfx < (1.+DBL_EPSILON) * GEN.vl) 
 	   || (xfx > (1.+DBL_EPSILON) * GEN.vr)
-	   || (xfnx < (1.-DBL_EPSILON) * GEN.vl) 
+	   || (xfnx < (1.+DBL_EPSILON) * GEN.vl) 
 	   || (xfnx > (1.+DBL_EPSILON) * GEN.vr) )
 	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf(x) > hat(x)");
       
@@ -1099,7 +1099,7 @@ _unur_srou_sample_check( struct unur_gen *gen )
 
       /* check hat */
       if ( ( sfx > (1.+DBL_EPSILON) * GEN.um )   /* avoid roundoff error with FP registers */
-	   || (xfx < (1.-DBL_EPSILON) * GEN.vl) 
+	   || (xfx < (1.+DBL_EPSILON) * GEN.vl) 
 	   || (xfx > (1.+DBL_EPSILON) * GEN.vr) )
 	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf(x) > hat(x)");
 
@@ -1111,8 +1111,8 @@ _unur_srou_sample_check( struct unur_gen *gen )
 
 	/* check squeeze */
 	xx = xfx / (GEN.um - sfx);
-	if ( (xx < (1.-DBL_EPSILON) * GEN.xl) ||
-	     (xx > (1.+DBL_EPSILON) * GEN.xr) )
+	if ( (xx > (1.+DBL_EPSILON) * GEN.xl) &&
+	     (xx < (1.+DBL_EPSILON) * GEN.xr) )
 	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf(x) < squeeze(x)");
 
 	/* squeeze acceptance */

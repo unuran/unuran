@@ -100,7 +100,7 @@
 
 #define _unur_check_gen_object( gen,type ) \
   if ( (gen)->method != UNUR_METH_##type ) { \
-    _unur_warning(#type,UNUR_ERR_GEN_INVALID,""); \
+    _unur_warning((gen)->genid,UNUR_ERR_GEN_INVALID,""); \
     return 0; } \
   COOKIE_CHECK((gen),CK_##type##_GEN,0)
 

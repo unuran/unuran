@@ -98,15 +98,16 @@ unur_test_chi2( struct unur_gen *gen,
   /* check arguments */
   _unur_check_NULL(test_name,gen,-1.);
 
-  printf("\nGOODNESS-OF-FIT TESTS:\n");
+  if (verbose >= 1)
+    printf("\nGOODNESS-OF-FIT TESTS:\n");
 
   switch (gen->method & UNUR_MASK_TYPE) {
 
   case UNUR_METH_DISCR:
-    return _unur_test_chi2_discr(gen, 0, classmin, verbose);
+    return _unur_test_chi2_discr(gen, samplesize, classmin, verbose);
 
   case UNUR_METH_CONT:
-    return _unur_test_chi2_cont(gen, intervals, 0, classmin, verbose);
+    return _unur_test_chi2_cont(gen, intervals, samplesize, classmin, verbose);
 
   case UNUR_METH_VEC:
     _unur_error(test_name,UNUR_ERR_GENERIC,"Not implemented for multivariate distributions!");

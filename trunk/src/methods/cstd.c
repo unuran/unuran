@@ -34,7 +34,48 @@
  *****************************************************************************
  *****************************************************************************
  *                                                                           *
- * ..... beschreibung ....                                                   *
+ * CSTD is a wrapper for special generator for Continuous univariate         *
+ * STandarD distributions. It only works for distributions in the UNURAN     *
+ * library of distributions and will refuse to work otherwise.               *
+ * (In detail it rejects a distribution if its id is equal to DISTR_GENERIC, *
+ * the id inserted my the unur_distr_cont_new() call.)                       *
+ *                                                                           *
+ * It calls the initialzation routine provided by the distribution object.   *
+ * This routine has to do all setup steps for the special generator.         *
+ * if no such routine is given, i.e. distr->init==NULL, then unur_cstd_new() *
+ * does not work and the NULL pointer is returned instead of the pointer to  *
+ * a parameter object.                                                       *
+ *                                                                           *
+ * Notice that using a truncated distribution (this can be constructed by    *
+ * changing the default domain of a distribution by means of an              *
+ * unur_distr_cont_set_domain() call) is only allowed if the inversion       *
+ * method is used. Otherwise no parameter object is returned by the          *
+ * unur_cstd_new() call.                                                     *
+ *                                                                           *
+ * Variants (different algorithms for the same distribution) are possible    *
+ * and can be selected by unsigned integers using the                        *
+ * unur_cstd_set_variant() call.                                             *
+ * For possible variants see the generator files for each distribution in    *
+ * the distributions directory. However the following are common to all      *
+ * distributions:                                                            *
+ *    0                     ... the default generator                        *
+ *    UNUR_STDGEN_INVERSION ... the inversion method (if available)          *
+ * unur_cstd_set_variant() return 0 if a variant is not implemented, and 1   *
+ * otherwise. In the first case the selected variant is not changed.         *
+ *                                                                           *
+ * It is possible to change the parameters of the chosen distribution        *
+ * without building a new generator object by means of the                   *
+ * unur_cstd_chg_param() call.                                               *
+ * Notice that it is not possible to change the number of parameters.        *
+ * This function only copies the given arguments into the array of           *
+ * parameters.                                                               *
+ * IMPORTANT: The given parameters are not checked against domain errors     *
+ * (as the unur_<distr>_new() calls do).                                     *
+ *                                                                           *
+ * The domain of a (truncated) distribution can be changed without building  *
+ * a new generator object by means of the unur_cstd_chg_domain() call.       *
+ * Notice that this only works when the inversion method is used. Otherwise  *
+ * nothing happens to the domain and an error message is produced.           *
  *                                                                           *
  *****************************************************************************/
 

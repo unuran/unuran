@@ -158,6 +158,7 @@ sub scan_dir {
     while (<FILES>) {
 	chomp;
 	next unless /^.*\/+(.*\.d?h)$/;
+	next if /\.\#/;
 	next if /source/;        # we are not interested in these files
 	next if /struct/;        # we are not interested in these files
 	$header_files{$1} = $_;  # store file and path of file
@@ -1182,15 +1183,23 @@ sub process_unur_macros {
 
 	# evaluate macro
 	my $replacement = "";
-	if ($macro =~ /\@unurbibref\s*$/) {
-	    $replacement = transform_bibref($body);
-	    substr($line, 0, $macroidx) =~ s/[\s\n]+$/\n/s;
-	    substr($line, $bodyendidx) =~ s/^[\s]+//s;
-	}
-	else {
-	    die "Unknown \@unur macro: $macro";
-	}
+      MACRO: {
+	  if ($macro =~ /\@unurbibref\s*$/) {
+	      $replacement = transform_bibref($body);
+	      substr($line, 0, $macroidx) =~ s/[\s\n]+$/\n/s;
+	      substr($line, $bodyendidx) =~ s/^[\s]+//s;
+	      last MACRO;
+	  }
 
+	  if ($macro =~ /\@unurimage\s*$/) {
+	      $replacement = "\@image{$body}";
+	  }
+
+	  else {
+	      die "Unknown \@unur macro: $macro";
+	  }
+      }
+	
 	# replace macro
 	substr $line, $macroidx, $bodyendidx-$macroidx, $replacement;
     }

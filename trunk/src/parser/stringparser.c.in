@@ -319,12 +319,6 @@ static void _unur_str_debug_set( int level, const char *key, const char *type, .
 #define MAX_SET_ARGS  (10)  
 /* maximal number of arguments for set calls (must be at least 2) */
 
-/* function prototypes */
-UNUR_GEN   * unur_str2gen           (const char *);
-
-
- 
-
 /*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/

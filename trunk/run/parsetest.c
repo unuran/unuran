@@ -5,11 +5,6 @@
 #include <unuran.h>
 
 
-extern void         subst_whitespace(char *, char);
-extern char       * elim_whitespace(char *);
-extern int          parselist(char *, double *);
-extern UNUR_GEN   * unur_str2gen(char *);
-
 /* main -- test program */
 int main(){
 

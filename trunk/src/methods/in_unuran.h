@@ -126,6 +126,11 @@ typedef int UNUR_VFUNCT_CVEC(double *result, double *x, struct unur_distr *distr
 /* wrapper for uniform random number generator */
 #include <unif.h>
 
+/*****************************************************************************/
+/**  String parser                                                          **/
+/*****************************************************************************/
+
+#include <parser.h>
 
 /*****************************************************************************/
 /**  Invoke generators                                                      **/  

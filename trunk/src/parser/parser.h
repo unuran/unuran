@@ -41,7 +41,7 @@
 
 /* =ROUTINES */
 
-UNUR_GEN *unur_str2gen( char *string );
+UNUR_GEN *unur_str2gen( const char *string );
 /* 
    Get ....
 */

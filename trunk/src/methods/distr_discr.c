@@ -1184,17 +1184,19 @@ _unur_distr_discr_debug( struct unur_distr *distr, char *genid, int printvector 
   }
 
   /* domain */
-  if ( DISTR.pmf )
+  if ( DISTR.pmf ) {
     /* have probability mass function */
     fprintf(log,"%s:\tdomain for pmf = (%d, %d)",genid,DISTR.domain[0],DISTR.domain[1]);
-  _unur_print_if_default(distr,UNUR_DISTR_SET_DOMAIN);
-  fprintf(log,"\n%s:\n",genid);
+    _unur_print_if_default(distr,UNUR_DISTR_SET_DOMAIN);
+    fprintf(log,"\n%s:\n",genid);
+  }
 
-  if (DISTR.n_prob>0)
+  if (DISTR.n_prob>0) {
     /* have probability vector */
     fprintf(log,"%s:\tdomain for pv = (%d, %d)",genid,DISTR.domain[0],DISTR.domain[0]-1+DISTR.n_prob);
-  _unur_print_if_default(distr,UNUR_DISTR_SET_DOMAIN);
-  fprintf(log,"\n%s:\n",genid);
+    _unur_print_if_default(distr,UNUR_DISTR_SET_DOMAIN);
+    fprintf(log,"\n%s:\n",genid);
+  }
 
   if (distr->set & UNUR_DISTR_SET_MODE)
     fprintf(log,"%s:\tmode = %d\n",genid,DISTR.mode);

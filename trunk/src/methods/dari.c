@@ -39,9 +39,13 @@
  *****************************************************************************
  *                                                                           *
  *   REFERENCES:                                                             *
- *   [1] Hoermann W. (199?):                                                 *
+ *   [1] Hoermann W. and G.Derflinger (1997):                                *
+ *       An automatic generator for a large class of discrete unimodal       *
+ *       distributions, in A.R. Kaylan and A. Lehmann, ESM 97, pp 139-144    *
  *                                                                           *
- *                                                                           *
+ *   [2] Hoermann W. and G.Derflinger (1996):                                *
+ *       Rejection-inversion to generate variates from monotone discrete     *
+ *       distributions, ACM TOMACS 6(3), 169-184                             *
  *                                                                           *
  *****************************************************************************
  *                                                                           *
@@ -87,7 +91,7 @@ static struct unur_gen *_unur_dari_init( struct unur_par *par );
 
 static int _unur_dari_hat( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* compute hat and squeezes.                                                 */
+/* compute hat.                                                              */
 /*---------------------------------------------------------------------------*/
 
 static struct unur_gen *_unur_dari_create( struct unur_par *par );
@@ -132,7 +136,7 @@ static void _unur_dari_debug_init( struct unur_gen *gen );
 
 #define SAMPLE    gen->sample.discr     /* pointer to sampling routine       */     
 
-#define PMF(x)    _unur_cont_PMF((x),&(gen->distr))   /* call to PMF         */
+#define PMF(x)    _unur_discr_PMF((x),&(gen->distr))   /* call to PMF        */
 
 /*---------------------------------------------------------------------------*/
 
@@ -174,27 +178,19 @@ unur_dari_new( struct unur_distr *distr )
     return NULL;
   }
 
-  /** TODO: brauchst du?? **/
   if (!(distr->set & UNUR_DISTR_SET_MODE)) {
     _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode: try finding it (numerically)"); 
-    /** TODO: das mit dem mode funktioniert noch nicht so wie geplant.
-	die schnittstelle fuer DISCR ist fertig,
-	fuer die standard verteilungen in UNURAN habe ich es noch nicht
-	gemacht **/
     if (!unur_distr_discr_upd_mode(distr)) {
       _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode"); 
       return NULL; 
     }
   }
 
-  /** TODO: brauchst du?? **/
   if (!(distr->set & UNUR_DISTR_SET_PMFSUM))
     if (!unur_distr_discr_upd_pmfsum(distr)) {
       _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"sum over PMF");
       return NULL; 
     }
-
-  /** brauchst du sonst noch was ? **/
 
   /* allocate structure */
   par = _unur_malloc(sizeof(struct unur_par));
@@ -204,16 +200,19 @@ unur_dari_new( struct unur_distr *distr )
   par->distr       = distr;   /* pointer to distribution object              */
 
   /* set default values */
+  PAR.c_factor  = 0.664;
+  /* optimal value for the normal distribution, which is good for all        */
+  /* bell-shaped densities. The minimax approach for that transformation     */
+  /* has c_factor = 2.                                                       */
 
-  /** TODO: default werte **/
+  PAR.squeeze   = 0; /* no squeezes by default as squeezes slow down the     */
+  /* sampling for most distributions if PAR.size is big enough. Squeeze is   */
+  /* important for the speed only when small samples are required or when    */
+  /* the domain of the distribution is very big. (much bigger than PAR.size) */
 
-  PAR.c_factor  = 0.664;   /** TODO: ?? **/
-          /* optimal value for the normal distribution, which is good for 
-	     all bell-shaped densities. The minimax approach for that 
-	     transformation has c_factor=2. */
-
-  PAR.squeeze   = 0;          /* no (??) squeezes by default */
-  PAR.size      = 10;          /* size of table for speeding up generation      */
+  PAR.size      = 100; /*size of table that stores the "rejection point" for */
+  /* all integers close to the mode when needed the first time while         */
+  /* sampling; can speed up the generation considerably.                     */
 
   par->method   = UNUR_METH_DARI;     /* method                              */
   par->variant  = 0u;                 /* default variant                     */
@@ -334,8 +333,7 @@ unur_dari_set_size( struct unur_par *par, int size )
   _unur_check_par_object( par,DARI );
 
   /* check parameter */
-  /** TODO **/
-  if (size <= 0 || size > 1000) {  
+  if (size < 0) {  
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"invalid table size");
     return 0;
   }
@@ -679,11 +677,15 @@ _unur_dari_init( struct unur_par *par )
 } /* end of _unur_dari_init() */
 
 /*---------------------------------------------------------------------------*/
+#define T(x) (-1./sqrt(x))
+#define F(x) (-1./(x))
+#define FM(x) (-1./(x))
+#define N0 (GEN.n[0])
 
 int
 _unur_dari_hat( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* compute hat and squeeze                                              */
+     /* compute hat                                                          */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
@@ -695,10 +697,110 @@ _unur_dari_hat( struct unur_gen *gen )
      /*   1 ... on success                                                   */
      /*   0 ... on error                                                     */
      /*----------------------------------------------------------------------*/
-{ 
+{
+  int sign[2] = {-1,1};
+  int b[2], d, i;
+  double v[2], at[2];
+  double t0 = 1.;
+  char setup = 1;
+  char rep = 1;
+
   /* check arguments */
   CHECK_NULL( gen, 0 );
   COOKIE_CHECK( gen,CK_DARI_GEN, 0 );
+
+  /* check mode. we assume unimodality 
+     since otherwise the PMF would not be T-concave! */
+  if (DISTR.BD_LEFT > DISTR.mode)
+    DISTR.mode = DISTR.BD_LEFT;
+  else if (DISTR.BD_RIGHT < DISTR.mode)
+    DISTR.mode = DISTR.BD_RIGHT;
+
+ 
+  /* Step 0: setup */
+  GEN.m = DISTR.mode;
+  b[0] = DISTR.BD_LEFT;
+  b[1] = DISTR.BD_RIGHT;
+  GEN.pm = PMF(GEN.m);
+  d = max(2, (int)( GEN.c_factor/(GEN.pm/DISTR.sum)));
+
+  /* step 0.1 */
+  do {
+    for(i=0;i<=1;i++) {
+      GEN.x[i] = GEN.m + sign[i] * d;
+      if (sign[i]*GEN.x[i]+1 > sign[i]*b[i]) {
+	v[i] = 0; 
+	GEN.s[i] = b[i];
+      }
+      else {
+	GEN.y[i] = T( PMF(GEN.x[i]) );
+	GEN.ys[i] = sign[i] * (T( PMF(GEN.x[i]+sign[i])) - GEN.y[i]);
+	if (GEN.ys[i]*sign[i] > -DBL_EPSILON) {
+	  setup = -setup; /* indicate that the hat is not ok */
+	  i=1; 
+	}
+        else {
+	  GEN.s[i] = (int)(0.5+GEN.x[i]+(T(GEN.pm)-GEN.y[i])/GEN.ys[i]);
+	  GEN.Hat[i] = ( F(GEN.y[i]+GEN.ys[i]*(GEN.s[i]+sign[i]*1.5-GEN.x[i])) /
+			 GEN.ys[i]-sign[i]*PMF(GEN.s[i]+sign[i]) ); 
+	  at[i]=GEN.x[i] + (FM(GEN.ys[i]*GEN.Hat[i])-GEN.y[i]) / GEN.ys[i]; 
+#if SQUEEZE
+	  GEN.xsq[i] = sign[i]*(at[i]-(GEN.s[i]+sign[i]));
+#endif
+	  v[i]= sign[i]*(F(GEN.y[i]+GEN.ys[i]*(b[i]+sign[i]*0.5-GEN.x[i]))/
+			 GEN.ys[i]-F(GEN.y[i]+GEN.ys[i]*(at[i]-GEN.x[i]))/GEN.ys[i]);
+	}
+      }
+      if (setup>0)
+	GEN.ac[i] = GEN.s[i] + sign[i]*(PMF(GEN.s[i])/GEN.pm-0.5);
+    }
+
+    /* step 0.2 */
+    if(setup>0) {
+      GEN.vc = GEN.pm*(GEN.ac[1]-GEN.ac[0]); 
+      GEN.vt = GEN.vc+v[0]+v[1];
+      GEN.vcr = GEN.vc+v[1];
+
+      /* step 0.3 */ 
+      GEN.n[0] = max(b[0],GEN.m - GEN.size/2);
+      GEN.n[1] = GEN.n[0] + GEN.size - 1;
+      if (GEN.n[1] > b[1]) {
+	GEN.n[1] = b[1];
+	GEN.n[0] = GEN.n[1]- GEN.size + 1;
+      } 
+      for (i=0; i< GEN.size; i++)
+	GEN.hb[i-N0] = 0;
+    }
+
+    /* setup == 1 first try, up to now ok,  ==2 second try, up to now ok */
+    /* setup == -1 first try, not ok,  == -2 second try, not ok          */
+
+    if (setup == 1 || setup == -1) {
+      t0= 2. * DISTR.sum;
+      if (setup==1 && GEN.vt<=t0)
+	rep=0;
+      else { 
+#ifdef UNUR_ENABLE_LOGGING
+	/* write info into log file */
+	if (gen->debug) _unur_dari_debug_init(gen);
+#endif
+	setup = 2;
+	d = ((int)t0) / GEN.pm;
+      }
+    }
+    else 
+      rep=0; 
+  } while(rep);
+
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  if (gen->debug) _unur_dari_debug_init(gen);
+#endif
+
+  if (setup == -2 || GEN.vt > 100.*t0 || GEN.vt <0.) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"; Area below hat too large or zero!! possible reasons: PDF, mode or area below PMF wrong;  or PMF not T-concave");
+    return 0;
+  }
 
   /* o.k. */
   return 1;
@@ -744,9 +846,9 @@ _unur_dari_create( struct unur_par *par )
   gen->destroy = _unur_dari_free;
 
   /* copy some parameters into generator object */
-
-  /** TODO ? **/
-
+  GEN.squeeze = PAR.squeeze;        /* squeeze yes/no?                       */
+  GEN.size = PAR.size;              /* size of auxiliary table; 0 for none   */
+  GEN.c_factor = PAR.c_factor;      /* constant for choice of design point   */
 
   gen->method = par->method;        /* indicates method                      */
   gen->variant = par->variant;      /* indicates variant                     */
@@ -758,8 +860,11 @@ _unur_dari_create( struct unur_par *par )
   gen->gen_aux = NULL;              /* no auxilliary generator objects       */
   gen->gen_aux_2 = NULL;
 
+  /* allocate */
+  GEN.hp = _unur_malloc( PAR.size * sizeof(double) );
+  GEN.hb = _unur_malloc( PAR.size * sizeof(char) );
+
   /* initialize parameters */
-  /** TODO ? **/
 
   /* return pointer to (almost empty) generator object */
   return(gen);
@@ -785,7 +890,7 @@ unur_dari_reinit( struct unur_gen *gen )
   CHECK_NULL(gen,0);
   _unur_check_gen_object( gen,DARI );
 
-  /* compute universal bounding rectangle */
+  /* compute hat  */
   return _unur_dari_hat( gen );
 } /* end of unur_dari_reinit() */
 
@@ -805,12 +910,75 @@ _unur_dari_sample( struct unur_gen *gen )
      /* error:                                                               */
      /*   return 0.                                                          */
      /*----------------------------------------------------------------------*/
-{ 
+{
+  double U, h;
+  double X = 0.;
+  int k,i;
+  int sign[2] = {-1,1};
+
   /* check arguments */
   CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_DARI_GEN,0.);
 
-  
-  return 1.;
+  /* step 1.0 */
+  while (1) {
+    U = _unur_call_urng(gen->urng) * GEN.vt;
+
+    /* step 1.1 */
+    if (U<=GEN.vc) {
+      X = U * (GEN.ac[1]-GEN.ac[0]) / GEN.vc + GEN.ac[0]; 
+      k = (int)(X+0.5);
+      if (k<GEN.m)
+	i=0; 
+      else
+	i=1;
+      if (GEN.squeeze && sign[i]*(GEN.ac[i]-GEN.s[i]) > sign[i]*(X-k))
+	return k;
+      if (sign[i]*k <= sign[i]*GEN.n[i]) {
+	if (!GEN.hb[k-N0]) {
+	  GEN.hp[k-N0] = 0.5 - PMF(k)/GEN.pm;
+	  GEN.hb[k-N0] = 1;
+	}
+	h = GEN.hp[k-N0];
+      }
+      else {
+	h = 0.5-PMF(k)/GEN.pm;
+      }
+      if (h <= sign[i]*(k-X))
+	return k;
+    }
+
+    /*step 1.2*/ 
+    else {
+      if (U<= GEN.vcr) {
+	i = 1;
+	U -= GEN.vc;
+      } 
+      else {
+	i = 0;
+	U -= GEN.vcr;
+      }
+
+      U = GEN.Hat[i] + sign[i]*U; 
+      X = GEN.x[i] + (FM(U*GEN.ys[i])-GEN.y[i]) / GEN.ys[i];
+      k = (int)(X+0.5);
+
+      if (GEN.squeeze && (sign[i]*k <= sign[i]*GEN.x[i]+1) && (GEN.xsq[i] <= sign[i]*(X-k))) 
+	return k;
+
+      if (sign[i]*k <= sign[i]*GEN.n[i]) {
+	if (!GEN.hb[k-N0]) {
+	  GEN.hp[k-N0] = sign[i] * F(GEN.y[i]+GEN.ys[i]*(k+sign[i]*0.5-GEN.x[i])) / GEN.ys[i] - PMF(k);
+	  GEN.hb[k-N0] = 1;
+	}
+	h = GEN.hp[k-N0];
+      }
+      else {
+	h = sign[i] * F(GEN.y[i]+GEN.ys[i]*(k+sign[i]*0.5-GEN.x[i])) / GEN.ys[i]-PMF(k);
+      }
+      if (sign[i]*U >= h)
+	return k;
+    }
+  }
 } /* end of _unur_dari_sample() */
 
 /*****************************************************************************/
@@ -829,12 +997,117 @@ _unur_dari_sample_check( struct unur_gen *gen )
      /* error:                                                               */
      /*   return 0.                                                          */
      /*----------------------------------------------------------------------*/
-{ 
+{
+  double U, h;
+  double X = 0.;
+  int k,i;
+  int sign[2] = {-1,1};
+
   /* check arguments */
   CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_DARI_GEN,0.);
-  
-  return 1;
+
+  /* step 1.0 */
+  while (1) {
+    U = _unur_call_urng(gen->urng) * GEN.vt;
+
+    /* step 1.1 */
+    if (U <= GEN.vc) {
+      X = U * (GEN.ac[1]-GEN.ac[0]) / GEN.vc + GEN.ac[0]; 
+      k = (int)(X+0.5);
+      if (k<GEN.m)
+	i=0; 
+      else
+	i=1;
+      if (GEN.squeeze && sign[i]*(GEN.ac[i]-GEN.s[i]) > sign[i]*(X-k))
+	return k;
+      if (sign[i]*k <= sign[i]*GEN.n[i]) {
+	if (!GEN.hb[k-N0]) {
+	  GEN.hp[k-N0] = 0.5 - PMF(k)/GEN.pm;
+	  GEN.hb[k-N0] = 1;
+	}
+	h = GEN.hp[k-N0];
+	/* CHECKING HAT */
+	if (_unur_FP_less(h,-0.5)) { 
+	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,
+		      "PMF(i) > hat(i) for centerpart");
+	  _unur_stream_printf(gen->genid,__FILE__,__LINE__,
+			      "i %d PMF(x) %e hat(x) %e", k,PMF(k),GEN.pm ); 
+        }
+	/* end CHECKING HAT */
+      }
+      else {
+	h = 0.5 - PMF(k)/GEN.pm;
+	/* CHECKING HAT */
+	if (_unur_FP_less(h,-0.5)) {
+	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,
+		      "PMF(i) > hat(i) for centerpart");
+	  _unur_stream_printf(gen->genid,__FILE__,__LINE__,
+			      "i %d PMF(x) %e hat(x) %e", k,PMF(k),GEN.pm ); 
+        }
+	/* end CHECKING HAT */
+      }
+      if (h <= sign[i]*(k-X))
+	return k;
+    }
+
+    /*step 1.2*/ 
+    else {
+      if (U<= GEN.vcr) {
+	i = 1;
+	U -= GEN.vc;
+      } 
+      else {
+	i = 0;
+	U -= GEN.vcr;
+      }
+
+      U = GEN.Hat[i] + sign[i]*U; 
+      X = GEN.x[i] + (FM(U*GEN.ys[i])-GEN.y[i]) / GEN.ys[i];
+      k = (int)(X+0.5);
+
+      if (GEN.squeeze && (sign[i]*k <= sign[i]*GEN.x[i]+1) && (GEN.xsq[i] <= sign[i]*(X-k))) 
+	return k;
+
+      if (sign[i]*k <= sign[i]*GEN.n[i]) {
+	if(!GEN.hb[k-N0]) {
+	  GEN.hp[k-N0] = sign[i] * F(GEN.y[i]+GEN.ys[i]*(k+sign[i]*0.5-GEN.x[i])) / GEN.ys[i] - PMF(k); 
+
+	  /* CHECKING HAT:
+	     tests if Hat too low i.e.: (H(k+0.5)-p_k < H(k-1/2)) */
+	  if (GEN.hp[k-N0]+UNUR_EPSILON 
+	      < sign[i] * F(GEN.y[i]+GEN.ys[i]*(k-sign[i]*0.5-GEN.x[i])) / GEN.ys[i]) {
+	    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,
+			"PMF(i) > hat(i) for tailpart");
+	    _unur_stream_printf(gen->genid,__FILE__,__LINE__,
+				"i %d PMF(x) %e ", k,PMF(k) ); 
+          }
+	  GEN.hb[k-N0] = 1;
+	}
+	h = GEN.hp[k-N0];
+      }
+      else {
+	h = sign[i] * F(GEN.y[i]+GEN.ys[i]*(k+sign[i]*0.5-GEN.x[i])) / GEN.ys[i] - PMF(k);
+	/* CHECKING HAT:
+	   tests if Hat too low i.e.: (H(k+0.5)-p_k < H(k-1/2)) */
+	if (h+UNUR_EPSILON
+	    < sign[i] * F(GEN.y[i]+GEN.ys[i]*(k-sign[i]*0.5-GEN.x[i]))/GEN.ys[i]) {
+	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,
+		      "PMF(i) > hat(i) for tailpart");
+	  _unur_stream_printf(gen->genid,__FILE__,__LINE__,
+			      "i %d PMF(x) %e ", k,PMF(k) );
+	}
+      }
+      if (sign[i]*U >= h)
+	return k;
+    }
+  }
+
 } /* end of _unur_dari_sample_check() */
+
+#undef N0
+#undef T(x)     /* #define T(x) (-1./sqrt(x))           */
+#undef F(x)     /* #define F(x) (-1./(x))               */
+#undef FM(x)    /* #define FM(x) (-1./(x))              */
 
 /*****************************************************************************/
 
@@ -860,6 +1133,10 @@ _unur_dari_free( struct unur_gen *gen )
 
   /* we cannot use this generator object any more */
   SAMPLE = NULL;   /* make sure to show up a programming error */
+
+  /* free two auxiliary tables */
+  free(GEN.hp);
+  free(GEN.hb);
 
   /* free memory */
   _unur_free_genid(gen);
@@ -890,6 +1167,7 @@ _unur_dari_debug_init( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   FILE *log;
+  int i;
 
   /* check arguments */
   CHECK_NULL(gen,/*void*/);  COOKIE_CHECK(gen,CK_DARI_GEN,/*void*/);
@@ -911,6 +1189,17 @@ _unur_dari_debug_init( struct unur_gen *gen )
   fprintf(log,"%s:\n",gen->genid);
 
   fprintf(log,"%s: Data for hat and squeeze:\n",gen->genid);
+  fprintf(log,"%s:\n",gen->genid);
+
+  fprintf(log,"%s:area below hat: total %f center: %f, left tail %f, right tail %f\n", gen->genid,
+	  GEN.vt, GEN.vc, GEN.vt-GEN.vcr, GEN.vcr-GEN.vc);
+  fprintf(log,"%s: mode %d and mode probability %f\n",gen->genid, GEN.m, GEN.pm); 
+  for(i=0;i<=1;i++) {
+    fprintf(log,"%s:i=%d: x=%d; Hat=%f; ac=%f; s=%d;\n", gen->genid,
+	    i, GEN.x[i], GEN.Hat[i], GEN.ac[i], GEN.s[i]);
+    fprintf(log,"%s:i=%d: xsq=%f; y=%f; ys=%f; n:=%d (for aux.table)\n", gen->genid,
+	    i, GEN.xsq[i], GEN.y[i], GEN.ys[i], GEN.n[i]);
+  }
   fprintf(log,"%s:\n",gen->genid);
 
 } /* end of _unur_dari_debug_init() */

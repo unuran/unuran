@@ -115,9 +115,13 @@ int unur_dari_chg_verify( UNUR_GEN *generator, int verify );
 int unur_dari_set_squeeze( UNUR_PAR *parameters, char squeeze );
 /* 
    Turn utilization of the squeeze of the algorithm on/off.
-   Deafault is off.
-   This squeeze does not resamble the squeeze of continuous tdr. It was
-   especially designed for rejection inversion.
+   As the squeeze is not necessary if the size
+   of the auxiliary table is big enough (for the used distribution).
+   The squeeze is good for speed if the domain of the distribution
+   is very big or if we want to produce small samples. 
+   This squeeze does not resamble the squeeze of continuous tdr!
+   It was especially designed for rejection inversion.
+   Default is off.
 */
 
 int unur_dari_set_size( UNUR_PAR *parameters, int size );

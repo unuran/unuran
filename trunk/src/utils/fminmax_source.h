@@ -35,7 +35,7 @@
 /*---------------------------------------------------------------------------*/
 
 struct UNUR_FUNCT_GENERIC {
-  double (*f)(double _x, void *_params);
+  double (*f)();
   void *params;
 };
 

@@ -134,14 +134,19 @@ _unur_pdf_beta(double x, const UNUR_DISTR *distr)
   if (x > 0. && x < 1.)
     return exp((p-1.)*log(x) + (q-1.)*log(1.-x) - LOGNORMCONSTANT);
 
-  if (x < 0. || x > 1.)
-    /* out of support */
+  if (x==0.) {
+    if (p==1.) return exp(-LOGNORMCONSTANT);
+    if (p<1.)  return UNUR_INFINITY;
     return 0.;
+  }
 
-  if ( (x==0. && p==1.) || (x==1. && q==1.) )
-    return exp(-LOGNORMCONSTANT);
-
-  /* else */
+  if (x==1.) {
+    if (q==1.) return exp(-LOGNORMCONSTANT);
+    if (q<1.)  return UNUR_INFINITY;
+    return 0.;
+  }
+    
+  /* out of support */
   return 0.;
 
 } /* end of _unur_pdf_beta() */
@@ -165,16 +170,21 @@ _unur_dpdf_beta(double x, const UNUR_DISTR *distr)
   if (x > 0. && x < 1.)
     return (exp((p-2.)*log(x) + (q-2.)*log(1.-x) - LOGNORMCONSTANT) * ( (p-1.)*(1.-x) - (q-1.)*x ) * factor );
 
-  if (x < 0. || x > 1.)
-    return 0.;      /* out of support */
-
-  if (x==0. && p==1.)
+  if (x==0.) {
     return (-(q-1.) * exp(-LOGNORMCONSTANT));
+    if (p>3.)  return 0.;
+    /* this is not correct but ... */
+    return UNUR_INFINITY;   /** TODO **/
+  }
 
-  if (x==1. && q==1.)
+  if (x==1.) {
     return ((p-1.) * exp(-LOGNORMCONSTANT));
-
-  /* else */
+    if (q>3.)  return 0.;
+    /* this is not correct but ... */
+    return UNUR_INFINITY;   /** TODO **/
+  }
+    
+  /* out of support */
   return 0.;
 
 } /* end of _unur_dpdf_beta() */

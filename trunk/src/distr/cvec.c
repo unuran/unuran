@@ -209,7 +209,7 @@ _unur_distr_cvec_clone( const struct unur_distr *distr )
     memcpy( CLONE.covar_inv, DISTR.covar_inv, distr->dim * distr->dim * sizeof(double) );
   }
 
-  if (DISTR.covar) {
+  if (DISTR.rankcorr) {
     CLONE.rankcorr = _unur_malloc( distr->dim * distr->dim * sizeof(double) );
     memcpy( CLONE.rankcorr, DISTR.rankcorr, distr->dim * distr->dim * sizeof(double) );
   }

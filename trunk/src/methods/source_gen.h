@@ -62,3 +62,8 @@
 int _unur_reinit_error( UNUR_GEN *gen ); 
 
 /*---------------------------------------------------------------------------*/
+/* aux routine when no sampling routine is available                         */
+
+double _unur_sample_cont_error( UNUR_GEN *gen );
+
+/*---------------------------------------------------------------------------*/

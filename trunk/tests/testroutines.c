@@ -226,7 +226,7 @@ int compare_double_sequence_par( FILE *LOG, int line, struct prng *urng, UNUR_PA
   /* compare sequence */
   for (i=0; i<sample_size; i++) {
     x = unur_sample_cont(gen);	
-    if (double_not_equal(double_sequence_A[i], x)) {
+    if ( double_not_equal(double_sequence_A[i], x)) {
       ok = FALSE;
       break;
     }
@@ -436,7 +436,7 @@ int run_level2( FILE *LOG, int line, double *pvals, int n_pvals )
     n_classes = n_pvals / 6;
   
   /* allocate memory for classes */
-  classes = malloc( n_classes+1 * sizeof(int) );
+  classes = malloc( (n_classes+1) * sizeof(int) );
   for (i=0; i<n_classes+1; i++)
     classes[i] = 0;
   
@@ -472,7 +472,7 @@ int run_chi2( FILE *LOG, int line, int type, UNUR_PAR *par, UNUR_DISTR *distr,
   int failed = 0;
 
   /* set debugging flag */
-  unur_set_debug(par,1);
+  //  unur_set_debug(par,1);
 
   gen = unur_init(par);
   if (gen==NULL) {
@@ -481,7 +481,7 @@ int run_chi2( FILE *LOG, int line, int type, UNUR_PAR *par, UNUR_DISTR *distr,
     print_distr_name( LOG,distr,"");
     fprintf(LOG,"\n");
     printf("0");
-    return 1;
+    return 2;  /* 1 failure would be allowed. but not when init fails! */
   }
 
   /* run chi^2 test */

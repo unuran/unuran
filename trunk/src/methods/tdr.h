@@ -43,16 +43,8 @@
 UNUR_PAR *unur_tdr_new( UNUR_DISTR* distribution );
 /* get default parameters for generator                                      */
 
-UNUR_GEN *_unur_tdr_init( UNUR_PAR *parameters );
-/* initialize new generator                                                  */
 
-double _unur_tdr_sample_log( UNUR_GEN *gen );
-double _unur_tdr_sample_sqrt( UNUR_GEN *gen );
-double _unur_tdr_sample_check( UNUR_GEN *generator );
 /* sample from generator                                                     */
-
-void _unur_tdr_free( UNUR_GEN *generator);
-/* destroy generator object                                                  */
 
 /*...........................................................................*/
 

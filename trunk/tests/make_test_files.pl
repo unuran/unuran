@@ -494,6 +494,11 @@ sub print_test_command {
     my $last_C_line = $_[1];
 
   SWITCH: {
+      if ($test_command =~ /^\s*none\s*/ ) {
+	  $test_command =~ s/\s+//g;
+	  print OUT "$last_C_line\;\n";
+	  last SWITCH;
+      }
       if ($test_command =~ /^\s*expected_NULL\s*/ or 
 	  $test_command =~ /^\s*expected_setfailed\s*/ or 
 	  $test_command =~ /^\s*expected_INFINITY\s*/ or 

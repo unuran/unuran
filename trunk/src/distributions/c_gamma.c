@@ -124,7 +124,8 @@ _unur_dpdf_gamma( double x, UNUR_DISTR *distr )
       return 0.;
     if (alpha == 1.)
       return( -exp(-x) * factor );
-    return ( pow(x,alpha-2.) * exp(-x - LOGNORMCONSTANT) *  ((alpha-1.) -x) * factor ); 
+
+    return ( exp( log(x) * (alpha-2.) - x - LOGNORMCONSTANT) *  ((alpha-1.) -x) * factor ); 
   }
 } /* end of _unur_dpdf_gamma() */
 

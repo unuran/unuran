@@ -112,7 +112,7 @@ int make_list_of_distributions( struct list_distr **return_list )
   ++n_distr; ++list;
 #endif
 
-#ifdef D_CAUCHY
+#ifdef D_CAUCHY 
   /** Cauchy distribution **/
   list->distr = unur_distr_cauchy(NULL,0);
   list->type  = T_Tconcave;
@@ -167,7 +167,7 @@ int make_list_of_distributions( struct list_distr **return_list )
   ++n_distr; ++list;
 
   fpar[0] = 5.;
-  fpar[1] = 1.e-10;
+  fpar[1] = 1.e-5;
   list->distr = unur_distr_gamma(fpar,2);
   list->type  = T_Tconcave;
   list->c_max = 0.;
@@ -175,7 +175,7 @@ int make_list_of_distributions( struct list_distr **return_list )
 
   fpar[0] = 5.;
   fpar[1] = 10.;
-  fpar[2] = 1.e+10;
+  fpar[2] = 1.e+5;
   list->distr = unur_distr_gamma(fpar,3);
   list->type  = T_Tconcave;
   list->c_max = 0.;
@@ -189,8 +189,8 @@ int make_list_of_distributions( struct list_distr **return_list )
   list->c_max = 0.;
   ++n_distr; ++list;
 
-  fpar[0] = 10.;
-  fpar[1] = 1.e-10;
+  fpar[0] = 1.;
+  fpar[1] = 1.e-5;
   list->distr = unur_distr_normal(fpar,2);
   list->type  = T_Tconcave;
   list->c_max = 0.;

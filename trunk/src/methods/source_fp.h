@@ -4,14 +4,14 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: source_unuran.h                                                   *
+ *   FILE: source_fp.h                                                       *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         defines macros and declares structures and function prototypes    *
- *         for all UNURAN source files                                       *
+ *         declares macros for floating point arithmetic.                    *
  *                                                                           *
  *   USAGE:                                                                  *
- *         only included in source files.                                    *
+ *         internal header file.                                             *
+ *         only included in source_unuran.h                                  *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -38,33 +38,36 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef __UNURAN_SOURCE_H_SEEN
-#define __UNURAN_SOURCE_H_SEEN
+#ifndef __SOURCE_FP_H_SEEN
+#define __SOURCE_FP_H_SEEN
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
-/* include main header files                                                  */
+/* Comparisons                                                               */
 
-#include <float.h>
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
+/* a == b */
+#define _FP_equal(a,b) \
+  ( ((a)==0. && (a)==(b)) || \
+    (fabs((a)-(b)) < fabs(b)*DBL_EPSILON) )
 
-#include <config.h>
-#include <in_unuran.h>
+/* a < b */
+#define _FP_less(a,b) \
+  ( ((a)==0. && (a)<(b)) || \
+    ((a)>0. && (a)<(b)*(1.+DBL_EPSILON)) || \
+    ((a)<0. && (a)<(b)*(1.-DBL_EPSILON)) )
 
-#include <source_struct.h>
-#include <source_gen.h>
-#include <source_cookies.h>
-#include <source_debug.h>
-#include <source_math.h>
-#include <source_fp.h>
-#include <source_methods.h>
-#include <source_distr.h>
+/* a > b */
+#define _FP_greater(a,b) \
+  ( ((a)==0. && (a)>(b)) || \
+    ((a)>0. && (a)>(b)*(1.-DBL_EPSILON)) || \
+    ((a)<0. && (a)>(b)*(1.+DBL_EPSILON)) )
 
 /*---------------------------------------------------------------------------*/
-#endif  /* end __UNURAN_SOURCE_H_SEEN */
+#endif  /* __SOURCE_FP_H_SEEN */
 /*---------------------------------------------------------------------------*/
+
+
+
 
 
 

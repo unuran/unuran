@@ -97,10 +97,6 @@ struct unur_tdr_gen {
   struct unur_tdr_interval **guide; /* pointer to guide table                */
   int     guide_size;           /* size of guide table                       */
   double  guide_factor;         /* relative size of guide table              */
-
-  struct unur_tdr_interval *iv_stack; /* stack of allocated intervals        */
-  int     iv_free;              /* position of last free segment in stack    */
-  struct unur_mblock *mblocks;  /* linked list for allocated blocks          */
 };
 
 /*---------------------------------------------------------------------------*/

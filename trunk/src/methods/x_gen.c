@@ -88,6 +88,15 @@ void unur_sample_vec(UNUR_GEN *gen, double *vector)
 } /* end of unur_sample_vec() */
 
 /*---------------------------------------------------------------------------*/
+/* aux routines when no sampling routine is available                         */
+
+double _unur_sample_cont_error( UNUR_GEN *gen )
+{
+  /* no sampling routine available */
+  return INFINITY;
+} /* end of _unur_sample_cont_error() */
+
+/*---------------------------------------------------------------------------*/
 
 void unur_free( UNUR_GEN *gen )
 {                

@@ -41,6 +41,7 @@ noinst_HEADERS = \
  source_cookies.h \
  source_debug.h \
  source_distr.h \
+ source_fp.h \
  source_gen.h \
  source_math.h \
  source_methods.h \

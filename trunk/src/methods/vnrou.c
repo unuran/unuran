@@ -92,8 +92,16 @@
 /* convergence parameters for the hooke optimization algorithm */
 
 #define VNROU_HOOKE_RHO 0.5 
-#define VNROU_HOOKE_EPSILON 0.000001 
+#define VNROU_HOOKE_EPSILON 1e-7 
 #define VNROU_HOOKE_MAXITER 10000
+
+/* scaling factor of computed minimum boundary rectangle */
+/* after we have computed the boundary rectangle (0, vmax)x(umin[d], umax[d])*/
+/* we scale the obtained boundaries with this factor, i.e. :                 */
+/* vmax = vmax * ( 1+ VNROU_RECT_SCALING)                                    */
+/* umin[d] = umin[d] - (umax[d]-umin[d])*VNROU_RECT_SCALING/2.               */
+/* umax[d] = umax[d] + (umax[d]-umin[d])*VNROU_RECT_SCALING/2.               */
+#define VNROU_RECT_SCALING 1e-4
 
 /*---------------------------------------------------------------------------*/
 
@@ -546,9 +554,12 @@ _unur_vnrou_rectangle( struct unur_gen *gen )
 { 
 
   struct unur_funct_vgeneric faux; /* function to be minimized/maximized    */
-  double *xstart, *xend; /* coordinate arrays used in maximum/minimum calculations */
+  double *xstart, *xend, *xumin, *xumax; /* coordinate arrays used in maximum/minimum calculations */
   int d, dim; /* index used in dimension loops (0 <= d < dim) */
-  long hooke_iters; /* actual number of min/max iterations = return value of hooke()*/
+  long hooke_iters_vmax; /* actual number of min/max iterations = return value of hooke()*/
+  long hooke_iters_umin; /* actual number of min/max iterations = return value of hooke()*/
+  long hooke_iters_umax; /* actual number of min/max iterations = return value of hooke()*/
+  double scaled_epsilon; /* to be used in the hooke algorithm */
 
   /* check arguments */
   CHECK_NULL( gen, UNUR_ERR_NULL );
@@ -575,6 +586,8 @@ _unur_vnrou_rectangle( struct unur_gen *gen )
   /* allocate memory for the coordinate vectors */
   xstart = _unur_xmalloc(dim * sizeof(double));
   xend   = _unur_xmalloc(dim * sizeof(double));
+  xumin  = _unur_xmalloc(dim * sizeof(double));
+  xumax  = _unur_xmalloc(dim * sizeof(double));
   
   /* calculation of vmax */
   if (!(gen->set & VNROU_SET_V)) {
@@ -584,14 +597,25 @@ _unur_vnrou_rectangle( struct unur_gen *gen )
       faux.params = gen;
 
       memcpy(xstart, GEN.center, dim * sizeof(double)); 
-      hooke_iters = hooke( faux, dim, xstart, xend, 
-                           VNROU_HOOKE_RHO, VNROU_HOOKE_EPSILON, VNROU_HOOKE_MAXITER);
-
-      if (hooke_iters >= VNROU_HOOKE_MAXITER) {
-         _unur_warning(gen->genid , UNUR_ERR_GENERIC, "Bounding rect uncertain (vmax)");  
-      }
+      hooke_iters_vmax = hooke( faux, dim, xstart, xend, 
+                               VNROU_HOOKE_RHO, VNROU_HOOKE_EPSILON, VNROU_HOOKE_MAXITER);
 
       GEN.vmax = -faux.f(xend, faux.params);
+      
+      if (hooke_iters_vmax >= VNROU_HOOKE_MAXITER) {
+	 scaled_epsilon = VNROU_HOOKE_EPSILON * GEN.vmax;
+	 if (scaled_epsilon>VNROU_HOOKE_EPSILON) scaled_epsilon=VNROU_HOOKE_EPSILON;
+
+         /* recalculating extremum with scaled_epsilon and new starting point */
+         memcpy(xstart, xend, dim * sizeof(double)); 
+         hooke_iters_vmax = hooke( faux, dim, xstart, xend, 
+                              VNROU_HOOKE_RHO, scaled_epsilon , VNROU_HOOKE_MAXITER);
+         GEN.vmax = -faux.f(xend, faux.params);
+         if (hooke_iters_vmax >= VNROU_HOOKE_MAXITER) {
+           _unur_warning(gen->genid , UNUR_ERR_GENERIC, "Bounding rect uncertain (vmax)");  
+         }
+      }
+
   }
 
   /* calculation of umin and umax */
@@ -601,40 +625,75 @@ _unur_vnrou_rectangle( struct unur_gen *gen )
 
       /* setting coordinate dimension to be used by the auxiliary functions */
       GEN.aux_dim  = d;
-   
+  
+      /*-----------------------------------------------------------------------------*/
       /* calculation for umin */
       
       faux.f = (UNUR_FUNCT_VGENERIC*) _unur_vnrou_aux_umin;
       faux.params = gen;
 
-      hooke_iters = hooke( faux, dim, xstart, xend, 
+      hooke_iters_umin = hooke( faux, dim, xstart, xend, 
                            VNROU_HOOKE_RHO, VNROU_HOOKE_EPSILON, VNROU_HOOKE_MAXITER);
-
-      if (hooke_iters >= VNROU_HOOKE_MAXITER) {
-         _unur_warning(gen->genid , UNUR_ERR_GENERIC, "Bounding rect uncertain (umin)");  
-      }
-
       GEN.umin[d] = faux.f(xend, faux.params);
+      
+      /* storing actual endpoint in case we need a recalculation */
+      memcpy(xumin, xend, dim * sizeof(double)); 
 
+      /*-----------------------------------------------------------------------------*/
       /* and now, an analogue calculation for umax */
 
       faux.f = (UNUR_FUNCT_VGENERIC*) _unur_vnrou_aux_umax;
       faux.params = gen;
 
-      hooke_iters = hooke( faux, dim, xstart, xend, 
+      hooke_iters_umax = hooke( faux, dim, xstart, xend, 
                            VNROU_HOOKE_RHO, VNROU_HOOKE_EPSILON, VNROU_HOOKE_MAXITER);
-    
-      if (hooke_iters >= VNROU_HOOKE_MAXITER) {
-         _unur_warning(gen->genid , UNUR_ERR_GENERIC, "Bounding rect uncertain (umax)");  
+      GEN.umax[d] = -faux.f(xend, faux.params);
+      
+      /* storing actual endpoint in case we need a recalculation */
+      memcpy(xumax, xend, dim * sizeof(double)); 
+
+      /*-----------------------------------------------------------------------------*/
+      /* checking if we need to recalculate umin */
+      if (hooke_iters_umin >= VNROU_HOOKE_MAXITER) {
+	 scaled_epsilon = VNROU_HOOKE_EPSILON * (GEN.umax[d]-GEN.umin[d]);
+	 if (scaled_epsilon>VNROU_HOOKE_EPSILON) scaled_epsilon=VNROU_HOOKE_EPSILON;
+
+         /* recalculating extremum with scaled_epsilon and new starting point */
+         memcpy(xstart, xumin, dim * sizeof(double)); 
+         hooke_iters_umin = hooke( faux, dim, xstart, xend, 
+                              VNROU_HOOKE_RHO, scaled_epsilon , VNROU_HOOKE_MAXITER);
+         GEN.umin[d] = faux.f(xend, faux.params);
+         if (hooke_iters_umin >= VNROU_HOOKE_MAXITER) {
+           _unur_warning(gen->genid , UNUR_ERR_GENERIC, "Bounding rect uncertain (umin)");  
+         }
       }
 
-      GEN.umax[d] = -faux.f(xend, faux.params);
+      /* checking if we need to recalculate umax */
+      if (hooke_iters_umax >= VNROU_HOOKE_MAXITER) {
+	 scaled_epsilon = VNROU_HOOKE_EPSILON * (GEN.umax[d]-GEN.umin[d]);
+	 if (scaled_epsilon>VNROU_HOOKE_EPSILON) scaled_epsilon=VNROU_HOOKE_EPSILON;
+
+         /* recalculating extremum with scaled_epsilon and new starting point */
+         memcpy(xstart, xumax, dim * sizeof(double)); 
+         hooke_iters_umax = hooke( faux, dim, xstart, xend, 
+                              VNROU_HOOKE_RHO, scaled_epsilon , VNROU_HOOKE_MAXITER);
+         GEN.umin[d] = faux.f(xend, faux.params);
+         if (hooke_iters_umax >= VNROU_HOOKE_MAXITER) {
+           _unur_warning(gen->genid , UNUR_ERR_GENERIC, "Bounding rect uncertain (umax)");  
+         }
+      }
+    
+      /*-----------------------------------------------------------------------------*/
+      /* additional scaling of boundary rectangle */   
+      GEN.vmax = GEN.vmax * ( 1+ VNROU_RECT_SCALING);
+      GEN.umin[d] = GEN.umin[d] - (GEN.umax[d]-GEN.umin[d])*VNROU_RECT_SCALING/2.;
+      GEN.umax[d] = GEN.umax[d] + (GEN.umax[d]-GEN.umin[d])*VNROU_RECT_SCALING/2.;        
     
     }
   }
 
 
-  free(xstart); free(xend);
+  free(xstart); free(xend); free(xumin); free(xumax);
 
   /* o.k. */
   return UNUR_SUCCESS;

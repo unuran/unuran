@@ -368,7 +368,7 @@ UNUR_DISTR *unur_str2distr( const char *string );
 
 =DESCRIPTION
 
-   blah ...
+@include FuncString.texi
 
 =EON
 */

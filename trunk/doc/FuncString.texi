@@ -1,0 +1,130 @@
+
+
+In unuran it is also possible to define functions (e.g. cdf or pdf) as strings.
+As you can see in @ref{Example_2_str} it is very easy to define a distribution object as a string.
+But of course the possibilities are more restricted as a definition by C-Code (@ref{Example_2}) but there is nearly no difference in time to generate random number.
+
+If you use a self defined function of course you have to proof if your definitions fulfill the qualifications.
+
+It is possible to use the string-defined function with the common interface as well as in the StringAPI.
+
+@subheading common interface 
+
+You can set continous distributions (for more detail information see  @ref{CONT})  and discrete distributions (for more detail information see  @ref{DISCR}) 
+with a character string. For this you use the functions of the form  
+@example 
+unur_distr_<cont/discr>_set_<...>str.
+@end example 
+To get functions in form of an character string you can use function of the form 
+@example 
+unur_distr_<cont/discr>_get_<..>str.
+@end example 
+
+How it works you can see in the following example:
+@example
+#include <unuran.h>
+
+int main()
+@{
+  UNUR_DISTR *distr;    /* distribution object   */
+  char       *functionstring = "1-x*x";
+
+  distr = unur_distr_cont_new();
+  unur_distr_cont_set_pdfstr(distr,functionstring); 
+ 
+
+  printf("functionstring_:\n%s\n",unur_distr_cont_get_pdfstr(distr));
+  unur_distr_free(distr);
+
+  exit (EXIT_SUCCESS);
+@} 
+
+
+@end example
+
+
+
+@subheading String API 
+ In @ref{StringDistr} you can find a description how to use an function string in the string interface. 
+ How it works you can see in @ref{Example_2_str}. 
+
+@subheading symbols and examples
+
+The string isn't case-sensitive and use the usual priorities of operations (sorted from highest to lowest priority: bracket, system functions, relation operators, power, multiplication, addition)
+
+
+
+In the following table you can see all symbols you can use:
+
+@sp 1
+@cartouche
+@multitable {xxxxxxxxxxxxxxxxxxx} {xxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxx}
+@item symbol group     @tab symbols   @tab explanation   @tab examples 
+@item numbers
+@item           @tab @b{0-9}       @tab numbers       @tab 123   
+@item           @tab @b{.}         @tab comma         @tab 165.567  
+@item           @tab @b{e}         @tab exponet       @tab  123e-7
+@item relation operators
+@item           @tab @b{<}         @tab less          @tab 3*(x<1) 
+@item           @tab @b{=}         @tab equal         @tab 3*(2=x)
+@item           @tab @b{==}        @tab equal         @tab 3*(2==x)
+@item           @tab @b{>}         @tab greater       @tab 3*(x>1)
+@item           @tab @b{<=}        @tab less or equal @tab 3*(x<=1)      
+@item           @tab @b{<>}        @tab not equal     @tab 3*(x<>1)
+@item           @tab @b{!=}        @tab not equal     @tab 3*(2!=x)
+@item           @tab @b{>=}        @tab greater or equal @tab 3*(x>=1)
+@item special symbols
+@item           @tab @b{(}         @tab open bracket  @tab 2*(3+x)      
+@item           @tab @b{)}         @tab close bracket @tab 2*(3+x)
+@item           @tab @b{,}         @tab 
+@item arithmetic operators 
+@item           @tab @b{+}         @tab  addition       @tab 2+x
+@item           @tab @b{-}         @tab  subtraction    @tab 2-x
+@item           @tab @b{*}         @tab  multiplication @tab 2*x
+@item           @tab @b{/}         @tab  division       @tab x/2
+@item           @tab @b{^}         @tab  power          @tab x^2
+@item logical operators
+@item           @tab @b{and}       @tab logical and function @tab (3*(2<>x)and(x>2))+x
+@item           @tab @b{or}        @tab logical or function  @tab 3*(2<x)or(x<-1)
+@item           @tab @b{not}       @tab logical no function  @tab 3*not(2<>x)
+@item system constants: 
+@item           @tab @b{pi}        @tab  3,1415...
+@item           @tab @b{e}         @tab  2,7
+@item system functions: 
+@item           @tab @b{mod}      @tab mod(m,n) gives the remainder on devision m by n   @tab mod(x,2)   
+@item           @tab @b{exp}      @tab exponential function @tab exp(-x^2)
+@item           @tab @b{ln}       @tab natural logarithm    @tab ln(x)
+@item           @tab @b{log}      @tab logarithm with given base @tab log(2,x)
+@item           @tab @b{sin}      @tab sine                 @tab sin(x)             
+@item           @tab @b{cos}      @tab cosine               @tab cos(x)
+@item           @tab @b{tan}      @tab tangent              @tab tan(x)
+@item           @tab @b{sec}      @tab secant               @tab sec(x*2)
+@item           @tab @b{sqrt}     @tab square root          @tab sqrt(2*x)
+@item           @tab @b{abs}      @tab absolute value       @tab abs(x)
+@item           @tab @b{sgn}      @tab sign function        @tab sign(x)*3 
+@item variable
+@item           @tab @b{x}        @tab variable             @tab 3*x^2
+@end multitable
+@end cartouche
+@sp 2
+Several complex examples for string-defined 'distributions':
+
+@smallexample 
+-4.7285e-7*x
+
+2.894736*10^2
+
+(sin( ln(3*x*(cos( 3*x^3-4.6789/(x+4)]))))-1
+
+exp(x^2)*(sin(x*cos(x^2-1))+1)*((x-3*pi*x)<1)
+
+(3*(2<>x)and(x>2))+x
+@end smallexample
+
+
+
+
+
+
+
+

@@ -125,7 +125,7 @@ UNUR_GEN *unur_test_timing( UNUR_PAR *parameters, int log_samplesize,
 
    Notice: All timing results are subject to heavy changes. Reruning
    timings usually results in different results. Minor changes in 
-   the source code can cause changes in such timings up to 20 percent.
+   the source code can cause changes in such timings up to 25 percent.
 */
 
 double unur_test_timing_uniform( struct unur_par *par, int log_samplesize );
@@ -139,20 +139,20 @@ double unur_test_timing_exponential( struct unur_par *par, int log_samplesize );
    unur_test_timing() to compute the relative timings results.
 */
 
-int unur_test_timing_total( const UNUR_PAR *parameters, double *time_0, double *time_6 );
+double unur_test_timing_total( const UNUR_PAR *parameters, int samplesize, double max_duration );
 /* 
    Timing. @var{parameters} is an parameter object for which average
-   times for sampling 1 and for sampling 1 million random variates 
-   (including setup). The results in micro seconds are stored in
-   @var{time_0} and @var{time_6}.
-   The sample sizes are selected automatically such that the 
-   total time for sampling takes about 2 seconds.
-
-   It returns @code{1} if the timing procedure was successful.
+   times a sample of size @var{samplesize} (including setup) are
+   estimated. Thus sampling is repeated and the median of these timings 
+   is returned (in micro seconds). The number of iterations is computed
+   automatically such that the total amount of time necessary for the
+   test does not exceed @var{max_duration} (given in seconds).
+   
+   If an error occurs then @code{-1} is returned.
 
    Notice: All timing results are subject to heavy changes. Reruning
    timings usually results in different results. Minor changes in 
-   the source code can cause changes in such timings up to 20 percent.
+   the source code can cause changes in such timings up to 25 percent.
 */
 
 int unur_test_count_urn( UNUR_GEN *generator, int samplesize, int verbosity, FILE *out );

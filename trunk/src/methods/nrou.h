@@ -48,7 +48,7 @@
 
    =SPEED Set-up: slow or fast, Sampling: moderate
 
-   =REF  [HLD04: Sect.2.4]
+   =REF  [HLD04: Sect.2.4 and Sect.6.4]
 
    =DESCRIPTION
       NROU is an implementation of the (generalized) ratio-of-uniforms
@@ -71,9 +71,9 @@
       where @i{c} is the center of the distribution.
       For other values of @i{r} we have
       @display
-      @unurmath{v^+ = \sup\limits_{x}         (PDF(x))^{1/(r+1)},} @*
-      @unurmath{u^- = \inf\limits_{x} (x-\mu) (PDF(x))^{r/(r+1)},} @*
-      @unurmath{u^+ = \sup\limits_{x} (x-\mu) (PDF(x))^{r/(r+1)}.}
+      @unurmath{v^+ = \sup\limits_{x}       (PDF(x))^{1/(r+1)},} @*
+      @unurmath{u^- = \inf\limits_{x} (x-c) (PDF(x))^{r/(r+1)},} @*
+      @unurmath{u^+ = \sup\limits_{x} (x-c) (PDF(x))^{r/(r+1)}.}
       @end display
 
       These bounds can be given directly. Otherwise these are computed

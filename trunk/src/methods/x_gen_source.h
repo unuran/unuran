@@ -61,3 +61,25 @@
 double _unur_sample_cont_error( UNUR_GEN *gen );
 
 /*---------------------------------------------------------------------------*/
+/* copy (clone) generator objects                                            */
+
+UNUR_GEN *_unur_arou_clone( const UNUR_GEN *gen );
+UNUR_GEN *_unur_auto_clone( const UNUR_GEN *gen );
+UNUR_GEN *_unur_cstd_clone( const UNUR_GEN *gen );
+UNUR_GEN *_unur_dari_clone( const UNUR_GEN *gen );
+UNUR_GEN *_unur_dau_clone( const UNUR_GEN *gen );
+UNUR_GEN *_unur_dgt_clone( const UNUR_GEN *gen );
+UNUR_GEN *_unur_dsrou_clone( const UNUR_GEN *gen );
+UNUR_GEN *_unur_dstd_clone ( const UNUR_GEN *gen );    /** TODO **/
+UNUR_GEN *_unur_empk_clone( const UNUR_GEN *gen );
+UNUR_GEN *_unur_ninv_clone( const UNUR_GEN *gen );
+UNUR_GEN *_unur_srou_clone( const UNUR_GEN *gen );
+UNUR_GEN *_unur_ssr_clone( const UNUR_GEN *gen );
+UNUR_GEN *_unur_tabl_clone( const UNUR_GEN *gen );
+UNUR_GEN *_unur_tdr_clone( const UNUR_GEN *gen );
+UNUR_GEN *_unur_unif_clone( const UNUR_GEN *gen );
+UNUR_GEN *_unur_utdr_clone( const UNUR_GEN *gen );
+UNUR_GEN *_unur_vempk_clone( const UNUR_GEN *gen );
+UNUR_GEN *_unur_vmt_clone( const UNUR_GEN *gen );    /** TODO **/
+
+/*---------------------------------------------------------------------------*/

@@ -356,6 +356,7 @@ _unur_vmt_create( struct unur_par *par )
   /* routines for sampling and destroying generator */
   SAMPLE = _unur_vmt_sample_cvec;
   gen->destroy = _unur_vmt_free;
+  gen->clone = _unur_vmt_clone;
 
   /* copy some parameters into generator object */
   GEN.uvgen = PAR.uvgen;            /* generator for univariate distribution */
@@ -409,6 +410,63 @@ _unur_vmt_default_uvgen( void )
   /* o.k. */
   return uvgen;
 } /* end of _unur_vmt_default_uvgen() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_gen *
+_unur_vmt_clone( const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* copy (clone) generator object                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to clone of generator object                               */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{ 
+#define CLONE clone->data.vmt
+
+  struct unur_gen *clone;
+
+  /* check arguments */
+  CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_VMT_GEN,NULL);
+
+  /* allocate memory for generator object */
+  clone = _unur_malloc( sizeof(struct unur_gen) );
+
+  /* copy main part */
+  memcpy( clone, gen, sizeof(struct unur_gen) );
+
+  /* set generator identifier */
+  clone->genid = _unur_set_genid(GENTYPE);
+
+  /* copy distribution object into generator object */
+  _unur_distr_cont_copy( &(clone->distr), &(gen->distr) );
+
+#if 0
+
+  /* copy additional data for generator object */
+  clone->distr.data.cvec.mean _unur_malloc( GEN.dim * sizeof(double) );
+  memcpy( clone->distr.data.cvec.mean, DISTR.mean, GEN.dim * sizeof(double) );
+
+  CLONE.uvgen = unur_gen_clone( GEN.uvgen );
+  /** TODO: clone->gen_aux = CLONE.uvgen;
+      (auch in init() !!! )  **/
+
+  /** double *cholesky;     cholesky factor of covariance matrix          */
+
+  return clone;
+
+#endif
+
+  return NULL;
+
+#undef CLONE
+} /* end of _unur_vmt_clone() */
 
 /*****************************************************************************/
 

@@ -213,6 +213,7 @@ _unur_tdr_create( struct unur_par *par )
 
   /* routines for sampling and destroying generator */
   gen->destroy = _unur_tdr_free;
+  gen->clone = _unur_tdr_clone;
 
   /* sampling routines */
   switch (par->variant & TDR_VARMASK_VARIANT) {
@@ -284,6 +285,77 @@ _unur_tdr_create( struct unur_par *par )
   return(gen);
 
 } /* end of _unur_tdr_create() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_gen *
+_unur_tdr_clone( const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* copy (clone) generator object                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to clone of generator object                               */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{ 
+#define CLONE clone->data.tdr
+
+  struct unur_gen *clone;
+  struct unur_tdr_interval *iv,*next, *clone_iv, *clone_prev;
+
+  /* check arguments */
+  CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_TDR_GEN,NULL);
+
+  /* allocate memory for generator object */
+  clone = _unur_malloc( sizeof(struct unur_gen) );
+
+  /* copy main part */
+  memcpy( clone, gen, sizeof(struct unur_gen) );
+
+  /* set generator identifier */
+  clone->genid = _unur_set_genid(GENTYPE);
+
+  /* copy distribution object into generator object */
+  _unur_distr_cont_copy( &(clone->distr), &(gen->distr) );
+
+  /* copy linked list of intervals */
+  clone_iv = NULL;
+  clone_prev = NULL;
+  for (iv = GEN.iv; iv != NULL; iv = next) {
+    /* copy segment */
+    clone_iv = _unur_malloc( sizeof(struct unur_tdr_interval) );
+    memcpy( clone_iv, iv, sizeof(struct unur_tdr_interval) );
+    if (clone_prev == NULL) {
+      /* starting point of linked list */
+      CLONE.iv = clone_iv;
+      clone_iv->prev = NULL;
+    }
+    else {
+      /* insert into linked list */
+      clone_prev->next = clone_iv;
+      clone_iv->prev = clone_prev;
+    }
+    /* next step */
+    next = iv->next;
+    clone_prev = clone_iv;
+  }
+  /* terminate linked list */
+  if (clone_iv) clone_iv->next = NULL;
+
+  /* make new guide table */
+  CLONE.guide = NULL;
+  _unur_tdr_make_guide_table(clone);
+
+  /* finished clone */
+  return clone;
+
+#undef CLONE
+} /* end of _unur_tdr_clone() */
 
 /*****************************************************************************/
 

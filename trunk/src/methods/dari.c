@@ -694,6 +694,7 @@ _unur_dari_create( struct unur_par *par )
   /* routines for sampling and destroying generator */
   SAMPLE = (par->variant & DARI_VARFLAG_VERIFY) ? _unur_dari_sample_check : _unur_dari_sample;
   gen->destroy = _unur_dari_free;
+  gen->clone = _unur_dari_clone;
 
   /* copy some parameters into generator object */
   GEN.squeeze = PAR.squeeze;        /* squeeze yes/no?                       */
@@ -917,6 +918,55 @@ unur_dari_reinit( struct unur_gen *gen )
   /* compute hat  */
   return _unur_dari_hat( gen );
 } /* end of unur_dari_reinit() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_gen *
+_unur_dari_clone( const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* copy (clone) generator object                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to clone of generator object                               */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{ 
+#define CLONE clone->data.dari
+
+  struct unur_gen *clone;
+
+  /* check arguments */
+  CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_DARI_GEN,NULL);
+
+  /* allocate memory for generator object */
+  clone = _unur_malloc( sizeof(struct unur_gen) );
+
+  /* copy main part */
+  memcpy( clone, gen, sizeof(struct unur_gen) );
+
+  /* set generator identifier */
+  clone->genid = _unur_set_genid(GENTYPE);
+
+  /* copy distribution object into generator object */
+  _unur_distr_discr_copy( &(clone->distr), &(gen->distr) );
+
+  /* copy additional data */
+  if (GEN.size > 0) {
+    CLONE.hp = _unur_malloc( GEN.size * sizeof(double) );
+    memcpy( CLONE.hp, GEN.hp, GEN.size * sizeof(double) );
+    CLONE.hb = _unur_malloc( GEN.size * sizeof(char) );
+    memcpy( CLONE.hb, GEN.hb, GEN.size * sizeof(char) );
+  }
+
+  return clone;
+
+#undef CLONE
+} /* end of _unur_dari_clone() */
 
 /*****************************************************************************/
 

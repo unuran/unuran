@@ -880,6 +880,7 @@ _unur_arou_create( struct unur_par *par )
   /* routines for sampling and destroying generator */
   SAMPLE = (par->variant & AROU_VARFLAG_VERIFY) ? _unur_arou_sample_check : _unur_arou_sample;
   gen->destroy = _unur_arou_free;
+  gen->clone = _unur_arou_clone;
 
   /* set all pointers to NULL */
   GEN.seg         = NULL;
@@ -920,6 +921,77 @@ _unur_arou_create( struct unur_par *par )
   return(gen);
 
 } /* end of _unur_arou_create() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_gen *
+_unur_arou_clone( const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* copy (clone) generator object                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to clone of generator object                               */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{ 
+#define CLONE clone->data.arou
+
+  struct unur_gen *clone;
+  struct unur_arou_segment *seg,*next, *clone_seg, *clone_prev;
+
+  /* check arguments */
+  CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_AROU_GEN,NULL);
+
+  /* allocate memory for generator object */
+  clone = _unur_malloc( sizeof(struct unur_gen) );
+
+  /* copy main part */
+  memcpy( clone, gen, sizeof(struct unur_gen) );
+
+  /* set generator identifier */
+  clone->genid = _unur_set_genid(GENTYPE);
+
+  /* copy distribution object into generator object */
+  _unur_distr_cont_copy( &(clone->distr), &(gen->distr) );
+
+  /* copy linked list of segments */
+  clone_seg = NULL;
+  clone_prev = NULL;
+  for (seg = GEN.seg; seg != NULL; seg = next) {
+    /* copy segment */
+    clone_seg = _unur_malloc( sizeof(struct unur_arou_segment) );
+    memcpy( clone_seg, seg, sizeof(struct unur_arou_segment) );
+    if (clone_prev == NULL) {
+      /* starting point of linked list */
+      CLONE.seg = clone_seg;
+    }
+    else {
+      /* insert into linked list */
+      clone_prev->next = clone_seg;
+      clone_prev->rtp  = clone_seg->ltp;
+      clone_prev->drtp = clone_seg->dltp;
+    }
+    /* next step */
+    next = seg->next;
+    clone_prev = clone_seg;
+  }
+  /* terminate linked list */
+  if (clone_seg) clone_seg->next = NULL;
+
+  /* make new guide table */
+  CLONE.guide = NULL;
+  _unur_arou_make_guide_table(clone);
+
+  /* finished clone */
+  return clone;
+
+#undef CLONE
+} /* end of _unur_arou_clone() */
 
 /*****************************************************************************/
 

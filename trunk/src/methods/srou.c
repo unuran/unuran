@@ -1075,6 +1075,7 @@ _unur_srou_create( struct unur_par *par )
   }
 
   gen->destroy = _unur_srou_free;
+  gen->clone = _unur_srou_clone;
 
   /* mode must be in domain */
   if ( (DISTR.mode < DISTR.BD_LEFT) ||
@@ -1150,6 +1151,47 @@ unur_srou_reinit( struct unur_gen *gen )
 
   return rcode;
 } /* end of unur_srou_reinit() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_gen *
+_unur_srou_clone( const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* copy (clone) generator object                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to clone of generator object                               */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{ 
+#define CLONE clone->data.srou
+
+  struct unur_gen *clone;
+
+  /* check arguments */
+  CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_SROU_GEN,NULL);
+
+  /* allocate memory for generator object */
+  clone = _unur_malloc( sizeof(struct unur_gen) );
+
+  /* copy main part */
+  memcpy( clone, gen, sizeof(struct unur_gen) );
+
+  /* set generator identifier */
+  clone->genid = _unur_set_genid(GENTYPE);
+
+  /* copy distribution object into generator object */
+  _unur_distr_cont_copy( &(clone->distr), &(gen->distr) );
+
+  return clone;
+
+#undef CLONE
+} /* end of _unur_srou_clone() */
 
 /*****************************************************************************/
 

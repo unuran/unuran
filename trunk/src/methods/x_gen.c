@@ -165,3 +165,33 @@ unur_get_distr( const struct unur_gen *gen )
 } /* end of unur_get_distr() */
 
 /*---------------------------------------------------------------------------*/
+
+/*****************************************************************************/
+/**                                                                         **/
+/**  Copy (clone) generator object                                          **/
+/**                                                                         **/
+/*****************************************************************************/
+
+struct unur_gen *
+unur_gen_clone( const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* copy (clone) generator object                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to clone of generator object                               */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( "Clone", gen, NULL );
+  _unur_check_NULL( "Clone", gen->clone, NULL );
+
+  return (gen->clone(gen));
+} /* end of unur_get_clone() */
+
+/*---------------------------------------------------------------------------*/

@@ -206,8 +206,6 @@ struct unur_gen {
     _UNUR_SAMPLING_ROUTINE_VEC   *cvec;
   }               sample;     /* pointer to sampling routine                 */
   
-  void (*destroy)(struct unur_gen *gen); /* pointer to destructor            */ 
-  
   unsigned method;            /* indicates method and generator to be used   */
   unsigned variant;           /* indicates variant of method                 */
   unsigned set;               /* stores which parameters have been changed   */
@@ -221,6 +219,9 @@ struct unur_gen {
   struct unur_gen *gen_aux;   /* pointer to auxiliary generator object       */
 
   unsigned debug;             /* debugging flags                             */
+
+  void (*destroy)(struct unur_gen *gen); /* pointer to destructor            */ 
+  struct unur_gen* (*clone)(const struct unur_gen *gen ); /* clone generator */
 
 #ifdef UNUR_COOKIES
   unsigned cookie;            /* magic cookie                                */

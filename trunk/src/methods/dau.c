@@ -487,6 +487,7 @@ _unur_dau_create( struct unur_par *par)
   /* routines for sampling and destroying generator */
   SAMPLE = _unur_dau_sample;
   gen->destroy = _unur_dau_free;
+  gen->clone = _unur_dau_clone;
 
   /* copy some parameters into generator object */
   GEN.len = DISTR.n_pv;             /* length of probability vector          */
@@ -513,6 +514,53 @@ _unur_dau_create( struct unur_par *par)
   return gen;
 
 } /* end of _unur_dau_create() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_gen *
+_unur_dau_clone( const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* copy (clone) generator object                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to clone of generator object                               */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{ 
+#define CLONE clone->data.dau
+
+  struct unur_gen *clone;
+
+  /* check arguments */
+  CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_DAU_GEN,NULL);
+
+  /* allocate memory for generator object */
+  clone = _unur_malloc( sizeof(struct unur_gen) );
+
+  /* copy main part */
+  memcpy( clone, gen, sizeof(struct unur_gen) );
+
+  /* set generator identifier */
+  clone->genid = _unur_set_genid(GENTYPE);
+
+  /* copy distribution object into generator object */
+  _unur_distr_discr_copy( &(clone->distr), &(gen->distr) );
+
+  /* copy data for generator */
+  CLONE.jx = _unur_malloc( GEN.urn_size * sizeof(int) );
+  memcpy( CLONE.jx, GEN.jx, GEN.urn_size * sizeof(int) );
+  CLONE.qx = _unur_malloc( GEN.urn_size * sizeof(double) );
+  memcpy( CLONE.qx, GEN.qx, GEN.urn_size * sizeof(double) );
+
+  return clone;
+
+#undef CLONE
+} /* end of _unur_dau_clone() */
 
 /*****************************************************************************/
 

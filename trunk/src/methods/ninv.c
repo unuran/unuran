@@ -931,6 +931,7 @@ _unur_ninv_create( struct unur_par *par )
   }
 
   gen->destroy = _unur_ninv_free;
+  gen->clone = _unur_ninv_clone;
 
   /* copy parameters into generator object */
   GEN.max_iter = PAR.max_iter;      /* maximal number of iterations          */
@@ -1125,6 +1126,53 @@ _unur_ninv_create_table( struct unur_gen *gen )
   return 1;
 
 }  /* end of _unur_ninv_create_table() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_gen *
+_unur_ninv_clone( const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* copy (clone) generator object                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to clone of generator object                               */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{ 
+#define CLONE clone->data.ninv
+
+  struct unur_gen *clone;
+
+  /* check arguments */
+  CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_NINV_GEN,NULL);
+
+  /* allocate memory for generator object */
+  clone = _unur_malloc( sizeof(struct unur_gen) );
+
+  /* copy main part */
+  memcpy( clone, gen, sizeof(struct unur_gen) );
+
+  /* set generator identifier */
+  clone->genid = _unur_set_genid(GENTYPE);
+
+  /* copy distribution object into generator object */
+  _unur_distr_cont_copy( &(clone->distr), &(gen->distr) );
+
+  /* copy additional data for generator object */
+  CLONE.table = _unur_malloc( GEN.table_size * sizeof(double) );
+  memcpy( CLONE.table, GEN.table, GEN.table_size * sizeof(double) );
+  CLONE.f_table = _unur_malloc( GEN.table_size * sizeof(double) );
+  memcpy( CLONE.f_table, GEN.f_table, GEN.table_size * sizeof(double) );
+
+  return clone;
+
+#undef CLONE
+} /* end of _unur_ninv_clone() */
 
 /*****************************************************************************/
 

@@ -459,6 +459,7 @@ _unur_dgt_create( struct unur_par *par )
   /* routines for sampling and destroying generator */
   SAMPLE = _unur_dgt_sample;
   gen->destroy = _unur_dgt_free;
+  gen->clone = _unur_dgt_clone;
 
   /* set all pointers to NULL */
   GEN.cumpv = NULL;
@@ -500,6 +501,53 @@ _unur_dgt_create( struct unur_par *par )
   return gen;
 
 } /* end of _unur_dgt_create() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_gen *
+_unur_dgt_clone( const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* copy (clone) generator object                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to clone of generator object                               */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{ 
+#define CLONE clone->data.dgt
+
+  struct unur_gen *clone;
+
+  /* check arguments */
+  CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_DGT_GEN,NULL);
+
+  /* allocate memory for generator object */
+  clone = _unur_malloc( sizeof(struct unur_gen) );
+
+  /* copy main part */
+  memcpy( clone, gen, sizeof(struct unur_gen) );
+
+  /* set generator identifier */
+  clone->genid = _unur_set_genid(GENTYPE);
+
+  /* copy distribution object into generator object */
+  _unur_distr_discr_copy( &(clone->distr), &(gen->distr) );
+
+  /* copy data for distribution */
+  CLONE.cumpv = _unur_malloc( DISTR.n_pv * sizeof(double) );
+  memcpy( CLONE.cumpv, GEN.cumpv, DISTR.n_pv * sizeof(double) );
+  CLONE.guide_table = _unur_malloc( GEN.guide_size * sizeof(int) );
+  memcpy( CLONE.guide_table, GEN.guide_table, GEN.guide_size * sizeof(int) );
+
+  return clone;
+
+#undef CLONE
+} /* end of _unur_dgt_clone() */
 
 /*****************************************************************************/
 

@@ -554,6 +554,7 @@ _unur_cstd_create( struct unur_par *par )
   /* routines for sampling and destroying generator */
   SAMPLE = NULL;      /* will be set in _unur_cstd_init() */
   gen->destroy = _unur_cstd_free;
+  gen->clone = _unur_cstd_clone;
 
   /* defaults */
   GEN.gen_param = NULL;  /* parameters for the generator                     */
@@ -578,6 +579,54 @@ _unur_cstd_create( struct unur_par *par )
   return(gen);
   
 } /* end of _unur_cstd_create() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_gen *
+_unur_cstd_clone( const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* copy (clone) generator object                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to clone of generator object                               */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{ 
+#define CLONE clone->data.cstd
+
+  struct unur_gen *clone;
+
+  /* check arguments */
+  CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_CSTD_GEN,NULL);
+
+  /* allocate memory for generator object */
+  clone = _unur_malloc( sizeof(struct unur_gen) );
+
+  /* copy main part */
+  memcpy( clone, gen, sizeof(struct unur_gen) );
+
+  /* set generator identifier */
+  clone->genid = _unur_set_genid(GENTYPE);
+
+  /* copy distribution object into generator object */
+  _unur_distr_cont_copy( &(clone->distr), &(gen->distr) );
+
+  /* copy parameters for special generators */
+  if (GEN.gen_param)
+    CLONE.gen_param = _unur_malloc( CLONE.n_gen_param * sizeof(double) );
+
+  if (gen->gen_aux)
+    clone->gen_aux = unur_gen_clone( gen->gen_aux );
+
+  return clone;
+
+#undef CLONE
+} /* end of _unur_cstd_clone() */
 
 /*****************************************************************************/
 

@@ -368,6 +368,56 @@ _unur_dstd_init( struct unur_par *par )
 
 } /* end of _unur_dstd_init() */
 
+/*---------------------------------------------------------------------------*/
+
+struct unur_gen *
+_unur_dstd_clone( const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* copy (clone) generator object                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to clone of generator object                               */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{ 
+#define CLONE clone->data.dstd
+
+  struct unur_gen *clone;
+
+  /* check arguments */
+  CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_DSTD_GEN,NULL);
+
+  /* allocate memory for generator object */
+  clone = _unur_malloc( sizeof(struct unur_gen) );
+
+  /* copy main part */
+  memcpy( clone, gen, sizeof(struct unur_gen) );
+
+  /* set generator identifier */
+  clone->genid = _unur_set_genid(GENTYPE);
+
+  /* copy distribution object into generator object */
+  _unur_distr_discr_copy( &(clone->distr), &(gen->distr) );
+
+  /* copy parameters for special generators */
+  if (GEN.gen_param)
+    CLONE.gen_param = _unur_malloc( CLONE.n_gen_param * sizeof(double) );
+  if (GEN.gen_iparam)
+    CLONE.gen_iparam = _unur_malloc( CLONE.n_gen_iparam * sizeof(int) );
+
+  if (gen->gen_aux)
+    clone->gen_aux = unur_gen_clone( gen->gen_aux );
+
+  return clone;
+
+#undef CLONE
+} /* end of _unur_dstd_clone() */
+
 /*****************************************************************************/
 
 /** 
@@ -455,6 +505,7 @@ _unur_dstd_create( struct unur_par *par )
   /* routines for sampling and destroying generator */
   SAMPLE = NULL;    /* will be set in _unur_dstd_init() */
   gen->destroy = _unur_dstd_free;
+  gen->clone = _unur_dstd_clone;
 
   /* defaults */
   GEN.gen_param = NULL;  /* parameters for the generator      */

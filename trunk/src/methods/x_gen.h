@@ -129,10 +129,5 @@ const UNUR_DISTR *unur_get_distr( const UNUR_GEN *generator );
 
 /*---------------------------------------------------------------------------*/
 
-
-
-
-
-
-
+UNUR_GEN *unur_gen_clone( const UNUR_GEN *gen );
 

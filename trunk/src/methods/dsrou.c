@@ -744,6 +744,7 @@ _unur_dsrou_create( struct unur_par *par )
   /* routines for sampling and destroying generator */
   SAMPLE = (par->variant & DSROU_VARFLAG_VERIFY) ? _unur_dsrou_sample_check : _unur_dsrou_sample;
   gen->destroy = _unur_dsrou_free;
+  gen->clone = _unur_dsrou_clone;
 
   /* mode must be in domain */
   if ( (DISTR.mode < DISTR.BD_LEFT) ||
@@ -806,6 +807,47 @@ unur_dsrou_reinit( struct unur_gen *gen )
 
   return result;
 } /* end of unur_dsrou_reinit() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_gen *
+_unur_dsrou_clone( const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* copy (clone) generator object                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to clone of generator object                               */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{ 
+#define CLONE clone->data.dsrou
+
+  struct unur_gen *clone;
+
+  /* check arguments */
+  CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_DSROU_GEN,NULL);
+
+  /* allocate memory for generator object */
+  clone = _unur_malloc( sizeof(struct unur_gen) );
+
+  /* copy main part */
+  memcpy( clone, gen, sizeof(struct unur_gen) );
+
+  /* set generator identifier */
+  clone->genid = _unur_set_genid(GENTYPE);
+
+  /* copy distribution object into generator object */
+  _unur_distr_discr_copy( &(clone->distr), &(gen->distr) );
+
+  return clone;
+
+#undef CLONE
+} /* end of _unur_dsrou_clone() */
 
 /*****************************************************************************/
 

@@ -880,6 +880,7 @@ _unur_empk_create( struct unur_par *par )
   /* routines for sampling and destroying generator */
   SAMPLE = _unur_empk_sample;
   gen->destroy = _unur_empk_free;
+  gen->clone = _unur_empk_clone;
 
   /* copy observed data into generator object */
   GEN.n_observ = par->distr->data.cemp.n_sample;     /* sample size */
@@ -910,6 +911,55 @@ _unur_empk_create( struct unur_par *par )
   return gen;
 
 } /* end of _unur_empk_create() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_gen *
+_unur_empk_clone( const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* copy (clone) generator object                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to clone of generator object                               */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{ 
+#define CLONE clone->data.empk
+
+  struct unur_gen *clone;
+
+  /* check arguments */
+  CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_EMPK_GEN,NULL);
+
+  /* allocate memory for generator object */
+  clone = _unur_malloc( sizeof(struct unur_gen) );
+
+  /* copy main part */
+  memcpy( clone, gen, sizeof(struct unur_gen) );
+
+  /* set generator identifier */
+  clone->genid = _unur_set_genid(GENTYPE);
+
+  /* copy distribution object into generator object */
+  _unur_distr_cemp_copy( &(clone->distr), &(gen->distr) );
+
+  /* copy additional data for generator object */
+  CLONE.observ = _unur_malloc( GEN.n_observ * sizeof(double) );
+  memcpy( CLONE.observ, GEN.observ, GEN.n_observ * sizeof(double) );
+  clone->distr.data.cemp.sample = CLONE.observ;
+
+  CLONE.kerngen = unur_gen_clone( GEN.kerngen );
+  clone->gen_aux = CLONE.kerngen;
+
+  return clone;
+
+#undef CLONE
+} /* end of _unur_empk_clone() */
 
 /*****************************************************************************/
 

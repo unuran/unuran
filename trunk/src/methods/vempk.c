@@ -540,6 +540,7 @@ _unur_vempk_create( struct unur_par *par )
   GEN.n_observ = par->distr->data.cvemp.n_sample;     /* sample size */
   GEN.observ = _unur_malloc( GEN.dim * GEN.n_observ * sizeof(double) );
   memcpy( GEN.observ, DISTR.sample, GEN.dim * GEN.n_observ * sizeof(double) );
+  DISTR.sample = GEN.observ;  /* update pointer in local distribution object */
 
   /* update pointer in build in distribution object to new array */
   DISTR.sample = GEN.observ;
@@ -550,6 +551,7 @@ _unur_vempk_create( struct unur_par *par )
   /* routines for sampling and destroying generator */
   SAMPLE = _unur_vempk_sample_cvec;
   gen->destroy = _unur_vempk_free;
+  gen->clone = _unur_vempk_clone;
 
   /* copy some parameters into generator object */
   GEN.smoothing = PAR.smoothing;    /* smoothing factor                      */
@@ -571,6 +573,58 @@ _unur_vempk_create( struct unur_par *par )
   return gen;
 
 } /* end of _unur_vempk_create() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_gen *
+_unur_vempk_clone( const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* copy (clone) generator object                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to clone of generator object                               */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{ 
+#define CLONE clone->data.vempk
+
+  struct unur_gen *clone;
+
+  /* check arguments */
+  CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_VEMPK_GEN,NULL);
+
+  /* allocate memory for generator object */
+  clone = _unur_malloc( sizeof(struct unur_gen) );
+
+  /* copy main part */
+  memcpy( clone, gen, sizeof(struct unur_gen) );
+
+  /* set generator identifier */
+  clone->genid = _unur_set_genid(GENTYPE);
+
+  /* copy distribution object into generator object */
+  _unur_distr_cont_copy( &(clone->distr), &(gen->distr) );
+
+  /* copy additional data for generator object */
+  CLONE.observ = _unur_malloc( GEN.dim * GEN.n_observ * sizeof(double) );
+  memcpy( CLONE.observ, GEN.observ, GEN.dim * GEN.n_observ * sizeof(double) );
+  clone->distr.data.cvemp.sample = CLONE.observ;
+
+  CLONE.xbar = _unur_malloc( GEN.dim * sizeof(double) );
+  memcpy( CLONE.xbar, GEN.xbar, GEN.dim * sizeof(double) );
+
+  CLONE.kerngen = unur_gen_clone( GEN.kerngen );
+  clone->gen_aux = CLONE.kerngen;
+
+  return clone;
+
+#undef CLONE
+} /* end of _unur_vempk_clone() */
 
 /*****************************************************************************/
 

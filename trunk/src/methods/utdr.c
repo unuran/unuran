@@ -1051,6 +1051,7 @@ _unur_utdr_create( struct unur_par *par )
   /* routines for sampling and destroying generator */
   SAMPLE = (par->variant & UTDR_VARFLAG_VERIFY) ? _unur_utdr_sample_check : _unur_utdr_sample;
   gen->destroy = _unur_utdr_free;
+  gen->clone = _unur_utdr_clone;
 
   /* copy some parameters into generator object */
   GEN.il = DISTR.BD_LEFT;           /* left boundary of domain               */
@@ -1123,6 +1124,47 @@ unur_utdr_reinit( struct unur_gen *gen )
   /* compute universal bounding rectangle */
   return _unur_utdr_hat( gen );
 } /* end of unur_utdr_reinit() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_gen *
+_unur_utdr_clone( const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* copy (clone) generator object                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to clone of generator object                               */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+#define CLONE clone->data.utdr
+
+  struct unur_gen *clone;
+
+  /* check arguments */
+  CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_UTDR_GEN,NULL);
+
+  /* allocate memory for generator object */
+  clone = _unur_malloc( sizeof(struct unur_gen) );
+
+  /* copy main part */
+  memcpy( clone, gen, sizeof(struct unur_gen) );
+
+  /* set generator identifier */
+  clone->genid = _unur_set_genid(GENTYPE);
+
+  /* copy distribution object into generator object */
+  _unur_distr_cont_copy( &(clone->distr), &(gen->distr) );
+
+  return clone;
+
+#undef CLONE
+} /* end of _unur_utdr_clone() */
 
 /*****************************************************************************/
 

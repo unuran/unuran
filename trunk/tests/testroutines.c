@@ -274,7 +274,7 @@ int compare_double_sequence_gen_start( FILE *LOG, int line, UNUR_GEN *gen, int s
   /* check generator object */
   if (gen==NULL) {
     /* error */
-    free (double_sequence_A);
+    if (double_sequence_A) free (double_sequence_A);
     double_sequence_A = NULL;
     return 1;
   }
@@ -452,7 +452,7 @@ int compare_int_sequence_gen_start( FILE *LOG, int line, UNUR_GEN *gen, int samp
   /* check generator object */
   if (gen==NULL) {
     /* error */
-    free (int_sequence_A);
+    if (int_sequence_A) free (int_sequence_A);
     int_sequence_A = NULL;
     return 1;
   }

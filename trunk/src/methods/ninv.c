@@ -394,7 +394,7 @@ int unur_ninv_chg_max_iter(UNUR_GEN *gen, int max_iter )
 
 /*---------------------------------------------------------------------------*/
 
-int unur_ninv_set_x_resolution( struct unur_par *par, double x_resolution)
+int unur_ninv_set_x_resolution(UNUR_PAR *par, double x_resolution)
      /*----------------------------------------------------------------------*/
      /* set maximal relative error in x                                      */
      /*                                                                      */
@@ -428,6 +428,40 @@ int unur_ninv_set_x_resolution( struct unur_par *par, double x_resolution)
   return 1;
 
 } /* end of unur_ninv_set_x_resolutuion() */
+
+/*---------------------------------------------------------------------------*/
+
+int unur_ninv_chg_x_resolution(UNUR_GEN *gen, double x_resolution)
+     /*----------------------------------------------------------------------*/
+     /* set maximal relative error in x                                      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen          ... pointer to generator object                       */
+     /*   x_resolution ... maximal relative error in x                       */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(gen, 0);
+
+  /* check new parameter for generator */
+  if (x_resolution < DBL_EPSILON) {
+    _unur_warning(gen->genid,UNUR_ERR_PAR_SET,"x resolution");
+    return 0;
+  }
+
+  /* store date */
+  GEN.rel_x_resolution = x_resolution;
+
+  /* changelog */
+  gen->set |= NINV_SET_X_RESOLUTION;
+
+  return 1;
+
+} /* end of unur_ninv_chg_x_resolutuion() */
 
 /*---------------------------------------------------------------------------*/
 

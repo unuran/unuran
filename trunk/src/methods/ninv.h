@@ -110,6 +110,12 @@ int unur_ninv_chg_max_iter(UNUR_GEN *gen, int max_iter);
 /* 
    Change the maximum number of iterations of on inversion step.
  */
+
+int unur_ninv_chg_x_resolution(UNUR_GEN *gen, double x_resolution);
+/*
+  Change the maximal relative errer in x
+ */
+
 int unur_ninv_chg_domain(UNUR_GEN *gen, double left, double right );
 /*
    Change the borders of the (truncated) distribution. Notice that

@@ -15,7 +15,13 @@ CLEANFILES = *~
 # clean generated files
 MAINTAINERCLEANFILES = \
  Makefile.in \
- aclocal.m4 \
  configure \
+ aclocal.m4 \
+ config.guess \
  config.h.in \
- stamp-h.in
+ config.sub \
+ depcomp \
+ install-sh \
+ ltmain.sh \
+ missing \
+ mkinstalldirs

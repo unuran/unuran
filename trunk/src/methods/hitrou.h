@@ -44,51 +44,18 @@
 
    =REQUIRED PDF
 
-   =OPTIONAL mode, center, bounding rectangle for acceptance region
+   =OPTIONAL mode, center, bounding rectangle
 
    =SPEED Set-up: fast, Sampling: fast 
 
    =REF  
 
    =DESCRIPTION 
-      HITROU is an implementation of the multivariate
-      ratio-of-uniforms method which uses a (minimal) bounding
-      hyper-rectangle, see also @ref{Ratio-of-Uniforms}.  It uses an
-      additional parameter @i{r} that can be used for adjusting the
-      algorithm to the given distribution to improve performance
-      and/or to make this method applicable.  Larger values of
-      @i{r} increase the class of distributions for which the
-      method works at the expense of higher rejection
-      constants. Moreover, this implementation uses the center 
-      @unurmath{\mu} of the distribution (which is set to the mode or
-      mean by default, see unur_distr_cvec_get_center() for details of
-      its default values).
-
-      The minimal bounding has then the coordinates
-
-      @unurmathdisplay{
-      v^+   = \sup\limits_{x}               (f(x))^{1/r\,d+1}, \\
-      u^-_i = \inf\limits_{x_i} (x_i-\mu_i) (f(x))^{r/r\,d+1}, \\
-      u^+_i = \sup\limits_{x_i} (x_i-\mu_i) (f(x))^{r/r\,d+1}, }
-
-      where @unurmath{x_i} is the @i{i}-th coordinate of point @i{x};
-      @unurmath{\mu_i} is the @i{i}-th coordinate of the center
-      @unurmath{\mu.} 
-      @unurmath{d} denotes the dimension of the distribution.
-      These bounds can either be given directly, or are computed
-      automatically by means of an numerical routine 
-      by Hooke and Jeeves @unurbibref{HJa61} called direct search 
-      (see @file{src/utils/hooke.c} for further references and
-      details). Of course this algorithm can fail, especially when
-      this rectangle is not bounded.
-
-      It is important to note that the algorithm works with 
-      @unurmath{PDF(x-center)} instead of 
-      @unurmath{PDF(x),} i.e. the bounding rectangle has to be
-      provided for @unurmath{PDF(x-center).}
-      This is important as otherwise the acceptance region can become
-      a very long and skinny ellipsoid along a diagonal of the (huge)
-      bounding rectangle.
+      HITROU is a variation of the multivariate
+      ratio-of-uniforms method which uses a hit-and-run random walk
+      algorithm to sample points from the enclosed volume. see also 
+      @ref{Ratio-of-Uniforms}.  
+      
 
    =HOWTOUSE
       For using the VNROU method UNURAN needs the PDF of the

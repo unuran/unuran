@@ -114,11 +114,6 @@
 /*         this few lines of code.                                           */
 
 /*---------------------------------------------------------------------------*/
-/* define the possible compiler switches                                     */
-#define UNUR_URNG_POINTER  2     /* use a pointer to a routine               */
-#define UNUR_URNG_PRNG     3     /* use a pointer to gen. from prng-2.2      */
-
-/*---------------------------------------------------------------------------*/
 #if UNUR_URNG_TYPE == UNUR_URNG_POINTER
 /*---------------------------------------------------------------------------*/
 

@@ -78,7 +78,7 @@
 #include <unur_utils.h>
 
 /*---------------------------------------------------------------------------*/
-static char distr_name[] = "exponential";
+static const char distr_name[] = "exponential";
 
 #define sigma (params[0])
 #define theta (params[1])
@@ -181,6 +181,44 @@ unur_mode_exponential( double *params, int n_params )
 
 /*---------------------------------------------------------------------------*/
 
+/*****************************************************************************/
+/**                                                                         **/
+/**  Make distribution object                                               **/
+/**                                                                         **/
+/*****************************************************************************/
+
+/*---------------------------------------------------------------------------*/
+
+#define SET_DATA(i,routinename,is_inv) \
+  COOKIE_SET(specialgen+(i),CK_SPECIALGEN_CONT); \
+  specialgen[(i)].data.cont.sample = (routinename); \
+  specialgen[(i)].data.cont.is_inversion = is_inv; \
+  specialgen[(i)].routine_name = #routinename
+
+/*---------------------------------------------------------------------------*/
+
+#define EXPONENTIAL_N_VARIANT  1
+
+inline static struct unur_specialgen *
+_unur_distr_exponential_specialgen( void )
+{
+  static struct unur_specialgen *specialgen = NULL;
+
+  if (specialgen == NULL) {
+    /* allocate memory */
+    specialgen = _unur_malloc( EXPONENTIAL_N_VARIANT * sizeof(struct unur_specialgen));
+    if (!specialgen) return NULL;   /* error */
+
+    /* set data. [0] = DEFAULT */
+    SET_DATA(0,unur_cstd_sample_exponential_inv,TRUE);  /* Inversion method */
+  }
+
+  return specialgen;
+
+} /* end of _unur_distr_exponential_specialgen() */ 
+
+/*---------------------------------------------------------------------------*/
+
 struct unur_distr *
 unur_distr_exponential( double *params, int n_params )
 {
@@ -204,6 +242,10 @@ unur_distr_exponential( double *params, int n_params )
   /* name of distribution */
   distr->name = distr_name;
                 
+  /* add list of special generators */
+  distr->n_specialgen = EXPONENTIAL_N_VARIANT;
+  distr->specialgen   = _unur_distr_exponential_specialgen();
+
   /* functions */
   DISTR.pdf  = unur_pdf_exponential;  /* pointer to p.d.f.               */
   DISTR.dpdf = unur_dpdf_exponential; /* pointer to derivative of p.d.f. */

@@ -80,7 +80,7 @@
 
 /*---------------------------------------------------------------------------*/
 
-static char distr_name[] = "gamma";
+static const char distr_name[] = "gamma";
 
 #define alpha (params[0])
 #define beta  (params[1])
@@ -198,6 +198,44 @@ unur_area_gamma( double *params, int n_params )
 
 /*---------------------------------------------------------------------------*/
 
+/*****************************************************************************/
+/**                                                                         **/
+/**  Make distribution object                                               **/
+/**                                                                         **/
+/*****************************************************************************/
+
+/*---------------------------------------------------------------------------*/
+
+#define SET_DATA(i,routinename) \
+  COOKIE_SET(specialgen+(i),CK_SPECIALGEN_CONT); \
+  specialgen[(i)].data.cont.sample = (routinename); \
+  specialgen[(i)].data.cont.is_inversion = FALSE; \
+  specialgen[(i)].routine_name = #routinename
+
+/*---------------------------------------------------------------------------*/
+
+#define GAMMA_N_VARIANT  1
+
+inline static struct unur_specialgen *
+_unur_distr_gamma_specialgen( void )
+{
+  static struct unur_specialgen *specialgen = NULL;
+
+  if (specialgen == NULL) {
+    /* allocate memory */
+    specialgen = _unur_malloc( GAMMA_N_VARIANT * sizeof(struct unur_specialgen));
+    if (!specialgen) return NULL;   /* error */
+
+    /* set data. [0] = DEFAULT */
+    SET_DATA(0,unur_cstd_sample_gamma_gll);    /* Rejection with log-logistic envelopes */
+  }
+
+  return specialgen;
+
+} /* end of _unur_distr_gamma_specialgen() */ 
+
+/*---------------------------------------------------------------------------*/
+
 struct unur_distr *
 unur_distr_gamma( double *params, int n_params )
 {
@@ -219,6 +257,10 @@ unur_distr_gamma( double *params, int n_params )
 
   /* name of distribution */
   distr->name = distr_name;
+
+  /* add list of special generators */
+  distr->n_specialgen = GAMMA_N_VARIANT;
+  distr->specialgen   = _unur_distr_gamma_specialgen();
 
   /* functions */
   DISTR.pdf  = unur_pdf_gamma;    /* pointer to p.d.f.            */

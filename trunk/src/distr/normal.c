@@ -79,7 +79,7 @@
 
 /*---------------------------------------------------------------------------*/
 
-static char distr_name[] = "normal";
+static const char distr_name[] = "normal";
 
 #define mu    (params[0])
 #define sigma (params[1])
@@ -177,6 +177,50 @@ unur_area_normal( double *params, int n_params )
 
 /*---------------------------------------------------------------------------*/
 
+/*****************************************************************************/
+/**                                                                         **/
+/**  Make distribution object                                               **/
+/**                                                                         **/
+/*****************************************************************************/
+
+/*---------------------------------------------------------------------------*/
+
+#define SET_DATA(i,routinename) \
+  COOKIE_SET(specialgen+(i),CK_SPECIALGEN_CONT); \
+  specialgen[(i)].data.cont.sample = (routinename); \
+  specialgen[(i)].data.cont.is_inversion = FALSE; \
+  specialgen[(i)].routine_name = #routinename
+
+/*---------------------------------------------------------------------------*/
+
+#define NORMAL_N_VARIANT  7
+
+inline static struct unur_specialgen *
+_unur_distr_normal_specialgen( void )
+{
+  static struct unur_specialgen *specialgen = NULL;
+
+  if (specialgen == NULL) {
+    /* allocate memory */
+    specialgen = _unur_malloc( NORMAL_N_VARIANT * sizeof(struct unur_specialgen));
+    if (!specialgen) return NULL;   /* error */
+
+    /* set data. [0] = DEFAULT */
+    SET_DATA(0,unur_cstd_sample_normal_bm);    /* Box-Muller method */
+    SET_DATA(1,unur_cstd_sample_normal_pol);   /* Polarmethod with rejection */
+    SET_DATA(2,unur_cstd_sample_normal_nquo);  /* "Naive" ratio-of-uniforms */
+    SET_DATA(3,unur_cstd_sample_normal_quo);   /* Ratio-of-uniforms with squeeze */
+    SET_DATA(4,unur_cstd_sample_normal_leva);  /* Ratio-of-uniforms with quadratic bounding curves */
+    SET_DATA(5,unur_cstd_sample_normal_kr);    /* Kindermann-Ramage method */
+    SET_DATA(6,unur_cstd_sample_normal_acr);   /* Acceptance-complement ratio */
+  }
+
+  return specialgen;
+
+} /* end of _unur_distr_normal_specialgen() */ 
+
+/*---------------------------------------------------------------------------*/
+
 struct unur_distr *
 unur_distr_normal( double *params, int n_params )
 {
@@ -199,6 +243,10 @@ unur_distr_normal( double *params, int n_params )
 
   /* name of distribution */
   distr->name = distr_name;
+
+  /* add list of special generators */
+  distr->n_specialgen = NORMAL_N_VARIANT;
+  distr->specialgen   = _unur_distr_normal_specialgen();
                 
   /* functions */
   DISTR.pdf  = unur_pdf_normal;   /* pointer to p.d.f.            */

@@ -66,7 +66,7 @@
 #include <unur_utils.h>
 
 /*---------------------------------------------------------------------------*/
-static char distr_name[] = "power-exponential";
+static const char distr_name[] = "powerexponential";
 
 #define delta (params[0])
 #define theta (params[1])

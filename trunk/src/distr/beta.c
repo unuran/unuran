@@ -82,7 +82,7 @@
 
 /*---------------------------------------------------------------------------*/
 
-static char distr_name[] = "beta";
+static const char distr_name[] = "beta";
 
 #define p (params[0])
 #define q (params[1])

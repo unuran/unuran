@@ -47,6 +47,34 @@
 typedef double (unur_function_cont)(double x, double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
+/* define object for special generators for continuous distribution          */
+
+struct unur_gen;                    /* we must declare this structure later! */
+
+struct unur_specialgen_cont {
+
+  double (*sample) (struct unur_gen *gen); /* pointer to sampling routine    */
+  unsigned is_inversion;        /* != 0 when inversion method                */
+};
+
+/*---------------------------------------------------------------------------*/
+/* define object for special generators                                      */
+
+struct unur_specialgen {             
+  union {             
+    struct unur_specialgen_cont cont;  /* univariate continuous distribution */
+  } data;                           /* data for distribution                 */
+
+#if UNUR_DEBUG & UNUR_DB_INFO   /* print data about generators */
+  char *routine_name;           /* pointer to name of sampling routine       */
+#endif
+
+#if UNUR_DEBUG & UNUR_DB_COOKIES    /* use magic cookies */
+  unsigned cookie;                  /* magic cookie                          */
+#endif
+};
+
+/*---------------------------------------------------------------------------*/
 /* define object for univariate continuous distribution                      */
 struct unur_distr_cont {
 
@@ -81,9 +109,12 @@ struct unur_distr {
 
   unsigned type;                    /* type of distribution                  */
   unsigned id;                      /* identifier for distribution           */
-  char *name;                       /* name of distribution                  */
+  const char *name;                 /* name of distribution                  */
 
   unsigned set;                     /* indicate changed parameters           */
+
+  int n_specialgen;                 /* number of special generators          */
+  struct unur_specialgen *specialgen; /* pointer to list of special generators */
 
 #if UNUR_DEBUG & UNUR_DB_COOKIES    /* use magic cookies */
   unsigned cookie;                  /* magic cookie                          */
@@ -142,6 +173,9 @@ struct unur_distr *unur_distr_dup( struct unur_distr *distr );
 
 void unur_distr_free( struct unur_distr *distr );
 /* destroy distribution object                                               */
+
+int unur_distr_set_name( struct unur_distr *distr, const char *name );
+/* set name of distribution                                                  */
 
 /*---------------------------------------------------------------------------*/
 /* univariate continuous distributions                                       */

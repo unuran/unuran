@@ -66,7 +66,7 @@
 #include <unur_utils.h>
 
 /*---------------------------------------------------------------------------*/
-static char distr_name[] = "lognormal";
+static const char distr_name[] = "lognormal";
 
 #define zeta  (params[0])
 #define sigma (params[1])

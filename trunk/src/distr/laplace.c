@@ -65,7 +65,7 @@
 #include <unur_utils.h>
 
 /*---------------------------------------------------------------------------*/
-static char distr_name[] = "laplace";
+static const char distr_name[] = "laplace";
 
 #define theta (params[0])
 #define phi   (params[1])

@@ -81,6 +81,8 @@
 #define CK_DISTR_CONT    0xe0000001u
 #define CK_DISTR_DISCR   0xe0000002u
 
+#define CK_SPECIALGEN_CONT 0xd00001u
+
 /*---------------------------------------------------------------------------*/
 /* macros for dealing with magic cookies                                     */
 

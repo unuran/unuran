@@ -65,7 +65,7 @@
 #include <unur_utils.h>
 
 /*---------------------------------------------------------------------------*/
-static char distr_name[] = "pareto";
+static const char distr_name[] = "pareto";
 
 #define k (params[0])
 #define a (params[1])

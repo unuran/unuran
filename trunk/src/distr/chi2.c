@@ -65,7 +65,7 @@
 
 /*---------------------------------------------------------------------------*/
 
-static char distr_name[] = "chi^2";
+static const char distr_name[] = "chi^2";
 
 #define nu (params[0])
 

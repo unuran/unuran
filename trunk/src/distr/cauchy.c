@@ -66,7 +66,7 @@
 
 /*---------------------------------------------------------------------------*/
 
-static char distr_name[] = "cauchy";
+static const char distr_name[] = "cauchy";
 
 #define theta  (params[0])
 #define lambda (params[1])

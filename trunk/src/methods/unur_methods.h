@@ -130,6 +130,12 @@
 
 /* parameters */
 struct unur_par {
+  struct unur_junk {
+    int nix;
+    int karl;
+  } junk;
+
+
   union {             
     struct unur_dau_par   dau;
     struct unur_dis_par   dis;
@@ -162,6 +168,9 @@ struct unur_par {
 
 /* generators */
 struct unur_gen { 
+
+  struct unur_junk junk;
+
   union {   
     struct unur_dau_gen   dau;
     struct unur_dis_gen   dis;
@@ -239,6 +248,8 @@ struct unur_gen {
 /*---------------------------------------------------------------------------*/
 /* we cannot load the next files until all definitions are done              */
 
+/*---------------------------------------------------------------------------*/
+/* misc prototype                                                            */
 #include <unur_misc.h>
 
 /*---------------------------------------------------------------------------*/

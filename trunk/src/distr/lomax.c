@@ -65,7 +65,7 @@
 #include <unur_utils.h>
 
 /*---------------------------------------------------------------------------*/
-static char distr_name[] = "lomax";
+static const char distr_name[] = "lomax";
 
 #define a (params[0])
 #define C (params[1])

@@ -63,8 +63,7 @@
 #include <unur_utils.h>
 
 /*---------------------------------------------------------------------------*/
-
-static char distr_name[] = "uniform";
+static const char distr_name[] = "uniform";
 
 #define a (params[0])
 #define b (params[1])

@@ -64,7 +64,7 @@
 #include <unur_utils.h>
 
 /*---------------------------------------------------------------------------*/
-static char distr_name[] =  "rayleigh";
+static const char distr_name[] =  "rayleigh";
 
 #define sigma (params[0])
 /*---------------------------------------------------------------------------*/

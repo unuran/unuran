@@ -14,12 +14,12 @@ libdistr_a_SOURCES = \
  beta.c \
  cauchy.c \
  chi2.c \
- exponential.c \
- gamma.c \
+ exponential.c exponential_gen.c \
+ gamma.c       gamma_gen.c \
  laplace.c \
  lognormal.c \
  lomax.c \
- normal.c \
+ normal.c      normal_gen.c \
  pareto.c \
  powerexpon.c \
  rayleigh.c \

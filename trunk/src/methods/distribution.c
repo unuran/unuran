@@ -49,7 +49,7 @@
 
 /*---------------------------------------------------------------------------*/
 
-static char unknown_distr_name[] = "unknown";
+static const char unknown_distr_name[] = "unknown";
 
 /*---------------------------------------------------------------------------*/
 
@@ -140,6 +140,29 @@ unur_distr_free( struct unur_distr *distr )
 
 /*---------------------------------------------------------------------------*/
 
+int 
+unur_distr_set_name( struct unur_distr *distr, const char *name )
+     /*----------------------------------------------------------------------*/
+     /* set name of distribution                                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*   name  ... name of distribution                                     */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(distr,0);
+
+  distr->name = name;
+  return 1;
+} /* end of unur_distr_set_name() */
+
+/*---------------------------------------------------------------------------*/
+
 /*****************************************************************************/
 /**                                                                         **/
 /** univariate continuous distributions                                     **/
@@ -184,6 +207,10 @@ unur_distr_cont_new( void )
 
   /* name of distribution */
   distr->name = unknown_distr_name;
+
+  /* list of special generators for distribution                             */
+  distr->n_specialgen = 0;
+  distr->specialgen   = NULL;      /* pointer to list of special generators  */
 
   /* set defaults                                                            */
   DISTR.pdf       = NULL;          /* pointer to p.d.f.                      */

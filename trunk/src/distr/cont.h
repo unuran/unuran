@@ -40,7 +40,7 @@
 /*---------------------------------------------------------------------------*/
 
 /* 
-   =NODE   CONT   Continuous univariate distributions
+   =NODEX   CONT   Continuous univariate distributions
 
    =UP Distribution_objects [10]
 

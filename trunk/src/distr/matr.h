@@ -40,7 +40,7 @@
 /*---------------------------------------------------------------------------*/
 
 /* 
-   =NODE   MATR   MATRix distributions
+   =NODEX   MATR   MATRix distributions
 
    =UP Distribution_objects [45]
 

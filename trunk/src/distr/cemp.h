@@ -40,7 +40,7 @@
 /*---------------------------------------------------------------------------*/
 
 /* 
-   =NODE   CEMP   Continuous empirical univariate distributions
+   =NODEX   CEMP   Continuous empirical univariate distributions
 
    =UP Distribution_objects [20]
 

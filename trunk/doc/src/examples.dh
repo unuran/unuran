@@ -33,7 +33,7 @@
 
 /*---------------------------------------------------------------------------*/
 
-=NODE  Example_0  As short as possible
+=NODEX  Example_0  As short as possible
 =UP Examples [05]
 
 =DESCRIPTION
@@ -48,7 +48,7 @@ Select a distribution and let UNURAN do all necessary steps.
 
 /*---------------------------------------------------------------------------*/
 
-=NODE  Example_0_str  As short as possible (String API)
+=NODEX  Example_0_str  As short as possible (String API)
 =UP Examples [06]
 
 =DESCRIPTION
@@ -63,7 +63,7 @@ Select a distribution and let UNURAN do all necessary steps.
 
 /*---------------------------------------------------------------------------*/
 
-=NODE  Example_1  Select a method
+=NODEX  Example_1  Select a method
 =UP Examples [10]
 
 =DESCRIPTION
@@ -79,7 +79,7 @@ Select method AROU and use it with default parameters.
 /*---------------------------------------------------------------------------*/
 
 
-=NODE  Example_1_str  Select a method (String API)
+=NODEX  Example_1_str  Select a method (String API)
 =UP Examples [11]
 
 =DESCRIPTION
@@ -94,7 +94,7 @@ Select method AROU and use it with default parameters.
 
 /*---------------------------------------------------------------------------*/
 
-=NODE  Example_2  Arbitrary distributions
+=NODEX  Example_2  Arbitrary distributions
 =UP Examples [20]
 
 =DESCRIPTION
@@ -114,7 +114,7 @@ see @ref{Concepts} for an overview and
 
 /*---------------------------------------------------------------------------*/
 
-=NODE  Example_2_str  Arbitrary distributions (String API)
+=NODEX  Example_2_str  Arbitrary distributions (String API)
 =UP Examples [21]
 
 =DESCRIPTION
@@ -134,7 +134,7 @@ see @ref{Concepts} for an overview and
 
 /*---------------------------------------------------------------------------*/
 
-=NODE  Example_3  Change parameters of the method
+=NODEX  Example_3  Change parameters of the method
 =UP Examples [30]
 
 =DESCRIPTION
@@ -154,7 +154,7 @@ For details see @ref{Methods}.
 /*---------------------------------------------------------------------------*/
 
 
-=NODE  Example_3_str  Change parameters of the method (String API)
+=NODEX  Example_3_str  Change parameters of the method (String API)
 =UP Examples [31]
 
 =DESCRIPTION
@@ -173,7 +173,7 @@ For details see @ref{Methods}.
 
 /*---------------------------------------------------------------------------*/
 
-=NODE  Example_4  Change uniform random generator
+=NODEX  Example_4  Change uniform random generator
 =UP Examples [40]
 
 =DESCRIPTION
@@ -199,7 +199,7 @@ modified accordingly.
 
 /*---------------------------------------------------------------------------*/
 
-=NODE  Example_4_str  Change uniform random generator (String API)
+=NODEX  Example_4_str  Change uniform random generator (String API)
 =UP Examples [41]
 
 =DESCRIPTION
@@ -225,7 +225,7 @@ modified accordingly.
 
 /*---------------------------------------------------------------------------*/
 
-=NODE  Example_anti  Sample pairs of antithetic random variates
+=NODEX  Example_anti  Sample pairs of antithetic random variates
 =UP Examples [50]
 
 =DESCRIPTION
@@ -239,7 +239,7 @@ Using Method TDR it is easy to sample pairs of antithetic random variates.
 
 /*---------------------------------------------------------------------------*/
 
-=NODE  Example_anti_str  Sample pairs of antithetic random variates (String API)
+=NODEX  Example_anti_str  Sample pairs of antithetic random variates (String API)
 =UP Examples [51]
 
 =DESCRIPTION
@@ -253,7 +253,7 @@ Using Method TDR it is easy to sample pairs of antithetic random variates.
 
 /*---------------------------------------------------------------------------*/
 
-=NODE  Example_More  More examples
+=NODEX  Example_More  More examples
 =UP Examples [60]
 =DESCRIPTION
 

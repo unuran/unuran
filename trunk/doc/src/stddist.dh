@@ -120,19 +120,19 @@ If @code{DEF} is ommited, the first entry is the default generator.
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-=NODE  Stddist_CONT    UNURAN Library of continuous univariate distributions
+=NODEX  Stddist_CONT    UNURAN Library of continuous univariate distributions
 =UP Stddist [10]
 =EON
 
 /*---------------------------------------------------------------------------*/
 
-=NODE  Stddist_CVEC    UNURAN Library of continuous multivariate distributions
+=NODEX  Stddist_CVEC    UNURAN Library of continuous multivariate distributions
 =UP Stddist [20]
 =EON
 
 /*---------------------------------------------------------------------------*/
 
-=NODE  Stddist_DISCR    UNURAN Library of discrete univariate distributions
+=NODEX  Stddist_DISCR    UNURAN Library of discrete univariate distributions
 =UP Stddist [30]
 =DESCRIPTION
    At the moment there are no CDFs implemented for discrete distribution.
@@ -142,7 +142,7 @@ If @code{DEF} is ommited, the first entry is the default generator.
 
 /*---------------------------------------------------------------------------*/
 
-=NODE  Stddist_MATR    UNURAN Library of random matrices
+=NODEX  Stddist_MATR    UNURAN Library of random matrices
 =UP Stddist [40]
 =EON
 

@@ -37,7 +37,7 @@
  *****************************************************************************/
 
 /* 
-   =NODE  Distribution_objects  Handling distribution objects
+   =NODEX  Distribution_objects  Handling distribution objects
 
    =UP TOP [30]
 
@@ -103,9 +103,10 @@
    =EON
 */
 
-/*
+/*---------------------------------------------------------------------------*/
 
-   =NODE   AllDistr   Functions for all kinds of distribution objects
+/*
+   =NODEX   AllDistr   Functions for all kinds of distribution objects
 
    =UP Distribution_objects [05]
 

@@ -40,7 +40,7 @@
 /*---------------------------------------------------------------------------*/
 
 /* 
-   =NODE   CVEMP   Continuous empirical multivariate distributions
+   =NODEX   CVEMP   Continuous empirical multivariate distributions
 
    =UP Distribution_objects [40]
 

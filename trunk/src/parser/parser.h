@@ -259,7 +259,7 @@ UNUR_PAR *_unur_str2par( const UNUR_DISTR *distribution, const char *string, str
 /*---------------------------------------------------------------------------*/
 /*
 
-=NODE  StringDistr    Distribution String
+=NODEX  StringDistr    Distribution String
 =UP StringAPI [20]
 
 =DESCRIPTION
@@ -312,7 +312,7 @@ UNUR_PAR *_unur_str2par( const UNUR_DISTR *distribution, const char *string, str
 /*---------------------------------------------------------------------------*/
 /*
 
-=NODE  StringMethod   Method String
+=NODEX  StringMethod   Method String
 =UP StringAPI [30]
 
 =DESCRIPTION
@@ -348,7 +348,7 @@ UNUR_PAR *_unur_str2par( const UNUR_DISTR *distribution, const char *string, str
 /*---------------------------------------------------------------------------*/
 /*
 
-=NODE  StringURNG    Uniform RNG String
+=NODEX  StringURNG    Uniform RNG String
 =UP StringAPI [40]
 
 =DESCRIPTION

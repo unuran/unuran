@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-=NODE  Methods_for_CONT    Methods for continuous univariate distributions
+=NODEX  Methods_for_CONT    Methods for continuous univariate distributions
 =UP Methods [10]
 
 =DESCRIPTION
@@ -49,7 +49,7 @@ sample with @command{unur_sample_cont}
 
 /*---------------------------------------------------------------------------*/
 
-=NODE  Methods_for_CEMP    Methods for continuous empirical univariate distributions
+=NODEX  Methods_for_CEMP    Methods for continuous empirical univariate distributions
 =UP Methods [20]
 =DESCRIPTION
 
@@ -81,7 +81,7 @@ EMPL:  Requires an observed sample.
 
 /*---------------------------------------------------------------------------*/
 
-=NODE  Methods_for_CVEC    Methods for continuous multivariate distributions
+=NODEX  Methods_for_CVEC    Methods for continuous multivariate distributions
 =UP Methods [30]
 =DESCRIPTION
 
@@ -100,7 +100,7 @@ VMT: Requires the mean vector and the covariance matrix.
 
 /*---------------------------------------------------------------------------*/
 
-=NODE  Methods_for_CVEMP   Methods for continuous empirical multivariate distributions
+=NODEX  Methods_for_CVEMP   Methods for continuous empirical multivariate distributions
 =UP Methods [40]
 =DESCRIPTION
 
@@ -129,7 +129,7 @@ VEMPK: Requires an observed sample.
 
 /*---------------------------------------------------------------------------*/
 
-=NODE  Methods_for_DISCR   Methods for discrete univariate distributions
+=NODEX  Methods_for_DISCR   Methods for discrete univariate distributions
 =UP Methods [50]
 =DESCRIPTION
 
@@ -166,14 +166,14 @@ sample with @command{unur_sample_discr}
 
 /*---------------------------------------------------------------------------*/
 
-=NODE  Methods_for_MATR    Methods for random matrices
+=NODEX  Methods_for_MATR    Methods for random matrices
 =UP Methods [60]
 =DESCRIPTION
 =EON
 
 /*---------------------------------------------------------------------------*/
 
-=NODE  Methods_for_UNID    Methods for uniform univariate distributions
+=NODEX  Methods_for_UNID    Methods for uniform univariate distributions
 =UP Methods [70]
 =DESCRIPTION
 =EON

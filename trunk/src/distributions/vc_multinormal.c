@@ -93,7 +93,6 @@ static const char distr_name[] = "multinormal";
 
     static double _unur_pdf_multinormal( const double *x, const UNUR_DISTR *distr );
     static double _unur_logpdf_multinormal( const double *x, const UNUR_DISTR *distr );
-/*     static int _unur_dpdf_multinormal( double *result, const double *x, const UNUR_DISTR *distr ); */
     static int _unur_dlogpdf_multinormal( double *result, const double *x, const UNUR_DISTR *distr );
 /** TODO:
     static int _unur_upd_mode_multinormal( UNUR_DISTR *distr );
@@ -124,28 +123,21 @@ _unur_logpdf_multinormal( const double *x, const UNUR_DISTR *distr )
   
   dim = distr->dim;
   
-  if (DISTR.mean == NULL) {
+  if (DISTR.mean == NULL && DISTR.covar == NULL) {
     /* standard form */
     xx=0.;
     for (i=0; i<dim; i++) { xx += x[i]*x[i]; }
     return (-xx/2. - LOGNORMCONSTANT);  
   }
 
-  /* general form */
-  covar_inv = (DISTR.covar_inv == NULL) ? 
-              unur_distr_cvec_get_covar_inv ( ( UNUR_DISTR *) distr ) : DISTR.covar_inv;
-
-  /* check if covar_inv could be computed */
-  if (covar_inv==NULL) {
-    /* what should we return here ? */
-    /* maybe it would be better to use the variable "result" for the function-value */
-    /* and the return-value to indicate UNUR_SUCCESS or UNUR_FAILURE like in the */
-    /* evaluation of _unur_dpdf_multinormal() ? */
-    return UNUR_INFINITY;
-  }
-
   mean = DISTR.mean;
-  
+
+  /* get inverse of covariance matrix */
+  covar_inv = unur_distr_cvec_get_covar_inv((UNUR_DISTR *)distr);
+  if (covar_inv==NULL) 
+    /* inverse of covariance matrix not available */
+    return INFINITY;
+
   xx=0.; /* resetting exponential function argument */
   for (i=0; i<dim; i++) {
     cx=0.; 
@@ -174,14 +166,13 @@ _unur_dlogpdf_multinormal( double *result, const double *x, const UNUR_DISTR *di
     
   dim = distr->dim;
   mean = DISTR.mean;
-  covar_inv = (DISTR.covar_inv == NULL) ?
-              unur_distr_cvec_get_covar_inv ( ( UNUR_DISTR *) distr ) : DISTR.covar_inv;
 
-  /* check if covar_inv could be computed */
-  if (covar_inv==NULL) {
+  /* get inverse of covariance matrix */
+  covar_inv = unur_distr_cvec_get_covar_inv((UNUR_DISTR *)distr);
+  if (covar_inv==NULL) 
+    /* inverse of covariance matrix not available */
     return UNUR_FAILURE;
-  }
-  
+
   for (i=0; i<dim; i++) {
     result[i] = 0.;
     for (j=0; j<dim; j++) 

@@ -59,6 +59,7 @@ scripts:
 	./distr.perl $(distr_PATH)*.c
 	./funcref.perl $(method_PATH)*.h
 	./required.perl $(method_PATH)*.h
+	./internals.perl $(method_PATH)*.h
 
 # make html files
 html:
@@ -71,16 +72,4 @@ clean-local:
 # clean html files
 maintainer-clean:
 	rm -f *.html
-
-
-
-
-
-
-
-
-
-
-
-
 

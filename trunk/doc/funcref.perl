@@ -79,6 +79,10 @@
 #          of the method and written to the output file. 
 #          Comments bevore the function declaration or after
 #          a blank line will be handled as internal information
+#
+# =INT
+#   analog to =ROUTINES, also ends with =END
+#   searches for internal routines
 #    
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -117,11 +121,7 @@ while($_ = <>)
     }
 
     # Region with description of the routines ends with =END
-    if ($_ =~/(^\s*\/\*\s*|^\s*)=END/){
-       # =END only possible if $ROUTINES = 1 (error)
-       if ($ROUTINES = 0){
-           print "\n\nERROR: =END before =ROUTINES\n\n";
-       }
+    if ($ROUTINES == 1 && $_ =~/(^\s*\/\*\s*|^\s*)=END/){
        $ROUTINES = 0;
        # last itemize environment must be finished
        print OUTFILE "\@end itemize\n";

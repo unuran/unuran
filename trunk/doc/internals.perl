@@ -1,11 +1,11 @@
 #!/usr/bin/perl
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# Perl spript extracts the description of a method
-# fo the texinfo format.   
+# Perl spript generating the referernce of the methods/functions
+# of UNURAN in the texinfo format.   
 # 
-# usage:  ./description.perl ../src/methods/*.h
-#      (description.perl is in the directory /unuran/doc/
+# usage:  ./funcref.perl ../src/methods/*.h
+#      (funcref.perl is in the directory /unuran/doc/
 # Input:   header-files
 # Output:  $OUTFILE contains docomentation in texinfo format
 # 
@@ -14,36 +14,13 @@
 #
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
-# This script searches for keywords =METHOD
-# The keyword may only be preceded by white space or `/*'
+# This script searches for keywords beginning with `=...'
+# The keywords may only be preceded by white space or `/*'
 #
-# =METHOD
-# usage:   =METHOD  name [longform]
-#          name and description of a method within a header file
-#
-#          name       ... Name of method (ONE word!)
-#          [longform] ... optional, long form of the name
-#          Beispiel:
-#             =METHODS NINV Numerical INVersion 
-#                     
-#          IMMEDIATLY following lines of comment (up to the first
-#          non-comment-blank line) will be used as description
-#          of the method and written to the output file. 
-#
-# -----------------------------------------------------------------------
-#
-# keywords used by other scripts:
-#          
-# =ROUTINES
-#          C functions between =ROUTINES and =END beginning
-#          with `unur_' and endingd with `(...)' will be 
-#          documented in the output file.
-#
-#          IMMEDIATLY following lines of comment (up to the first
-#          non-comment-blank line) will be used as description
-#          of the method and written to the output file. 
-#          Comments bevore the function declaration or after
-#          a blank line will be handled as internal information
+# =INT
+#   analog to =ROUTINES, also ends with =END
+#   searches for internal routines
+#    
 #          
 # =END     Ends the block beginning with  =ROUTINES.
 #          Function declarations not being within this block
@@ -55,6 +32,10 @@
 # =[A-Z,0-9]* Unknown `=...' key words will produce warnings  
 #
 # =ERRORCODE this key word is not in use
+#
+# -----------------------------------------------------------------------
+#
+# keywords used by other scripts:
 #
 # =DEF
 #    usage: 
@@ -70,6 +51,30 @@
 #    of comment allowed (no blank line in between).
 #  
 #
+# =METHOD
+# usage:   =METHOD  name [longform]
+#          name and description of a method within a header file
+#
+#          name       ... Name of method (ONE word!)
+#          [longform] ... optional, long form of the name
+#          Beispiel:
+#             =METHODS NINV Numerical INVersion 
+#                     
+#          IMMEDIATLY following lines of comment (up to the first
+#          non-comment-blank line) will be used as description
+#          of the method and written to the output file. 
+#          
+# =ROUTINES
+#          C functions between =ROUTINES and =END beginning
+#          with `unur_' and endingd with `(...)' will be 
+#          documented in the output file.
+#
+#          IMMEDIATLY following lines of comment (up to the first
+#          non-comment-blank line) will be used as description
+#          of the method and written to the output file. 
+#          Comments bevore the function declaration or after
+#          a blank line will be handled as internal information
+#
 # =REQUIRED
 #    usage: =REQUIRED Method
 #          (e.g =REQUIRED NINV)
@@ -80,10 +85,6 @@
 #          Comments bevore the function declaration or after
 #          a blank line will be handled as internal information
 #
-# =INT
-#   analog to =ROUTINES, also ends with =END
-#   searches for internal routines
-#    
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
@@ -97,18 +98,35 @@ $BLOCK   = 0;
 $PRINT = "";
 
 # region with declaration of routines found
-$ROUTINES = 0;
+$INTERNAL = 0;
+
+# known data types 
+@TYPES = ("UNUR_PAR", "UNUR_GEN", "struct", "void", "int", "double", "float", "long", "char", "short", "unsigned", "signed");
 
 # permitted key words (no warning)
 @COMMAND =("=METHOD", "=ROUTINES", "=REQUIRED", "=DEF", "=END", "=INT");
 
 # output file:
-open(OUTFILE, ">qstart_method_description.texi");
+open(OUTFILE, ">qstart_internals.texi");
 
 
 while($_ = <>)
 { 
     chomp; 
+
+    # Region with description of the routines begins with =INT
+    if ($_ =~/(^\s*\/\*\s*|^\s*)=INT/){
+	$INTERNAL = 1;
+        # begin of itemize environment -- a funtion - an item
+	print OUTFILE "\@itemize \@minus\{\}\n";
+    }
+
+    # Region with description of the routines ends with =END
+    if ($INTERNAL == 1 && $_ =~/(^\s*\/\*\s*|^\s*)=END/){
+       $INTERNAL = 0;
+       # itemize environment must be ended
+       print OUTFILE "\@end itemize\n";
+    }
 
     # comments start with `/*' (in case of $CENABLE=1)
     if ($CENABLE == 1 && $_ =~/^\s*\/\*/){    
@@ -134,17 +152,34 @@ while($_ = <>)
 	}
     }
    
-    # name and description of a method (=METHOD)
-    if ($_ =~/^(\s*\/\*\s*|\s*)=METHOD\s*(\w+)\s*(.*)/){
-        # comments possible 
-        $CENABLE = 1;
-        # already within a comment
-	$KOMMENT = 1;
-        # formatting the output -- Header, node for new method
-        print OUTFILE "\n\n\@node ", $2, "\n";
-        print OUTFILE "\@subsection ", $2, " ", $3, "\n\n";
-	$BLOCK=1;
-    }
+   # Screening for function declarations
+   foreach $type (@TYPES){
+
+      # Screening for functions with allowed names
+      # (beginning with `unur_'  (`_unur_...' is ignored (-> intern) )
+      if ($_ =~ /_unur/ ){
+          $CENABLE = 0;
+          $KOMMENT = 0;
+      }
+      elsif ( $INTERNAL == 1 && $_ =~/^\s*($type.*)\s*\((.*\))\s*;/){
+           $CENABLE = 1;
+           $DECL = $1;   # string before the braces
+           $FUNC = $2;   # string between the braces 
+           $DECL  =~ /(.*(\s+?|\*))(\w+)/;
+           $DECL1 = $1;
+	   $DECL2 = $3;
+
+           print OUTFILE  "\n\@item \@strong{", $DECL2 , "}\@*\n";
+ 
+           print OUTFILE "\@code{", $DECL1 , "\@b{", $DECL2,"}("; 
+           while ($FUNC =~ /(.*?)(\w*?)\s*?(,|\))/g){
+	      print OUTFILE $1,"\@var{", $2,"}", $3;
+	   }
+           print OUTFILE "}\@\*\n"; 
+
+       }
+  }
+
 
   # output of comments
   if ($KOMMENT == 1){
@@ -178,3 +213,12 @@ while($_ = <>)
  }  # --- if (KOMMENT == 1) ende ---
 
 }
+
+
+
+
+
+
+
+
+

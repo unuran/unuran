@@ -421,8 +421,8 @@ To change any parameter you habe to use the according function call.
 * DSTD:: ???
 * NINV:: Numerical INVersion
 @c * RECT:: experimental multivariate Method
-@c * SROU:: Simple Ratio Of Uniforms
-@c * STDR:: Transformed Density Rejection (with universal bounds)
+* SROU:: Simple Ratio Of Uniforms
+* STDR:: Transformed Density Rejection (with universal bounds)
 @c * TABL:: Ahren
 @c * TDR::  Trandformed Density Rejection
 @c * UNIF:: ???
@@ -469,8 +469,8 @@ Notation:
 * DSTDref:: ???
 * NINVref:: Numerical INVersion
 @c * RECTref:: experimental multivariate Method
-@c * SROUref:: Simple Ratio Of Uniforms
-@c * STDRref:: Transformed Density Rejection (with universal bounds)
+* SROUref:: Simple Ratio Of Uniforms
+* STDRref:: Transformed Density Rejection (with universal bounds)
 @c * TABLref:: Ahren
 @c * TDRref::  Trandformed Density Rejection
 @c * UNIFref:: ???
@@ -503,11 +503,22 @@ Read this random numbers ...
 
 @node Internal
 @chapter internals
-@section ....
+@menu
+* Functions:: Functions for internal use
+* Remarks:: Internal remarks
+@end menu
+
+@node Functions
+@section Internal functions
+ 
+@include qstart_internals.texi
+
+@node Remarks
 @section Internal remarks 
 @enumerate
 @item
-remark at the very beginning: names of the struct too long (unur_distr, unur_par, unur_gen);
+remark at the very beginning:
+names of the struct too long (unur_distr, unur_par, unur_gen);
 better: one struct unur with unur.d, unur.p, unur.g 
 @item
 standard configuration: Log outout to file
@@ -520,6 +531,8 @@ standard configuration: Log outout to file
 @contents
 
 @bye
+
+
 
 
 

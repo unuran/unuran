@@ -34,9 +34,12 @@
 # =ROUTINES
 # =END
 #
+# =INT
+#   analog to =ROUTINES, also ends with =END
+#   searches for internal routines
+#
 # (=>)     This string within a comment won't appear in
 #          the texinfo output. 
-#
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
@@ -51,7 +54,7 @@ $PRINT = "";
 
 
 # permitted key words (no warning)
-@COMMAND =("=METHOD", "=ROUTINES", "=REQUIRED", "=DEF", "=END");
+@COMMAND =("=METHOD", "=ROUTINES", "=REQUIRED", "=DEF", "=END", "=INT");
 
 # output file:
 open(OUTFILE, ">qstart_required.texi");

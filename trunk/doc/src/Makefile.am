@@ -2,7 +2,9 @@
 ## $Id$
 
 EXTRA_DIST = \
+ README \
  texinfo.tex \
+ make_texi.pl \
  examples.dh \
  glossary.dh \
  index.dh \
@@ -18,5 +20,5 @@ CLEANFILES = *~
 
 # clean generated files
 MAINTAINERCLEANFILES = \
- Makefile.in
-
+ Makefile.in \
+ .dep-unuran_src_texi

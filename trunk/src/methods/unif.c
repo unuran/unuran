@@ -88,11 +88,12 @@ static void _unur_unif_free( struct unur_gen *gen);
 /*****************************************************************************/
 
 struct unur_par *
-unur_unif_new( void )
+unur_unif_new( struct unur_distr *dummy )
      /*----------------------------------------------------------------------*/
      /* get default parameters                                               */
      /*                                                                      */
-     /* parameters: none                                                     */
+     /* parameters:                                                          */
+     /*   dummy ... dummy pointer to distribution object (not used!)         */
      /*                                                                      */
      /* return:                                                              */
      /*   default parameters (pointer to structure)                          */

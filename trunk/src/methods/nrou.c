@@ -96,6 +96,7 @@
 #define NROU_SET_U       0x001u     /* set u values of bounding rectangle    */
 #define NROU_SET_V       0x002u     /* set v values of bounding rectangle    */
 #define NROU_SET_CENTER  0x004u     /* set approximate mode of distribution  */
+#define NROU_SET_R       0x008u     /* set r-parameter                       */
 
 /*---------------------------------------------------------------------------*/
 
@@ -140,9 +141,6 @@ static void _unur_nrou_debug_init( const struct unur_gen *gen );
 /* print after generator has been initialized has completed.                 */
 /*---------------------------------------------------------------------------*/
 #endif
-
-struct unur_gen *_gen; /* generator object for bounding rect calculations */
-
 
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
@@ -210,7 +208,8 @@ unur_nrou_new( const struct unur_distr *distr )
   PAR.umax      = 0.;          /* u-boundary of bounding rectangle (unknown) */
   PAR.vmax      = 0.;          /* v-boundary of bounding rectangle (unknown) */
   PAR.center    = 0.;          /* center of distribution (default: 0)        */
-
+  PAR.r         = 1.;          /* r-parameter of the generalized method      */
+  
   par->method   = UNUR_METH_NROU;     /* method and default variant          */
   par->variant  = 0u;                 /* default variant                     */
   par->set      = 0u;                 /* inidicate default parameters        */    
@@ -327,6 +326,41 @@ unur_nrou_set_center( struct unur_par *par, double center )
   return UNUR_SUCCESS;
 
 } /* end of unur_nrou_set_center() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_nrou_set_r( struct unur_par *par, double r )
+     /*----------------------------------------------------------------------*/
+     /* Sets r-parameter of the generalized ratio-of-uniforms method         */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   r ... r-parameter                                                  */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, NROU );
+
+  /* check new parameter for generator */
+  if (r <= 0.) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"r<=0 set to r=1");
+    r=1.;
+  }
+  
+  /* store values */
+  PAR.r = r;
+
+  /* changelog */
+  par->set |= NROU_SET_R;
+
+  return UNUR_SUCCESS;
+
+} /* end of unur_nrou_set_r() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -451,29 +485,33 @@ _unur_nrou_init( struct unur_par *par )
 /*---------------------------------------------------------------------------*/
 
 double 
-_unur_aux_bound_vmax(double x, double *p) {
+_unur_aux_bound_vmax(double x, void *p) {
      /*----------------------------------------------------------------------*/
      /* Auxiliary function used in the computation of the bounding rectangle */
      /*----------------------------------------------------------------------*/
+  struct unur_gen *gen;
+  gen=p; /* typecast from void* to unur_gen* */
    
-  return sqrt( _unur_cont_PDF((x),(_gen->distr)) ); 
+  return sqrt( _unur_cont_PDF((x),(gen->distr)) ); 
 }
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_aux_bound_umax(double x, double *p) {
+_unur_aux_bound_umax(double x, void *p) {
      /*----------------------------------------------------------------------*/
      /* Auxiliary function used in the computation of the bounding rectangle */
      /*----------------------------------------------------------------------*/	
-
-  return (x-p[0]) * sqrt( _unur_cont_PDF((x),(_gen->distr)) );
+  struct unur_gen *gen;
+  gen=p; /* typecast from void* to unur_gen* */
+  
+  return (x-GEN.center) * sqrt( _unur_cont_PDF((x),(gen->distr)) );
 }
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_aux_bound_umin(double x, double *p) {
+_unur_aux_bound_umin(double x, void *p) {
      /*----------------------------------------------------------------------*/
      /* Auxiliary function used in the computation of the bounding rectangle */
      /*----------------------------------------------------------------------*/	
@@ -497,8 +535,7 @@ _unur_nrou_rectangle( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 { 
   struct unur_funct_generic faux; /* function to be minimized/maximized    */
-  double p[1]; /* parameter for auxiliary functions */
-  double x, sx, bx; 
+  double x, cx, sx, bx; /* parameters to be used in min/max search */ 
 
   /* check arguments */
   CHECK_NULL( gen, UNUR_ERR_NULL );
@@ -519,11 +556,8 @@ _unur_nrou_rectangle( struct unur_gen *gen )
     GEN.center = DISTR.mode; 
   }  
 	  
-  /* copy of generator to be used in auxiliary functions */
-  _gen = gen;
-
-  /* parameter to be used in auxiliary functions */
-  p[0]=GEN.center;  
+  /* starting point in min/max algorithm */
+  cx=GEN.center;  
   
   /* calculation of vmax */
   if (!(gen->set & NROU_SET_V)) {
@@ -540,14 +574,14 @@ _unur_nrou_rectangle( struct unur_gen *gen )
     else {
       /* calculating vmax as maximum of sqrt(f(x)) in the domain */
       faux.f = (UNUR_FUNCT_GENERIC*) _unur_aux_bound_vmax;
-      faux.params = NULL;
+      faux.params = gen; ;
   
-      x = _unur_util_find_max(faux, DISTR.BD_LEFT, DISTR.BD_RIGHT, p[0]);
+      x = _unur_util_find_max(faux, DISTR.BD_LEFT, DISTR.BD_RIGHT, cx);
       if (_unur_FP_is_plusminus_infinity(x)) {
          _unur_error(gen->genid , UNUR_ERR_GENERIC, "Bounding rect (vmax)");  
          return UNUR_ERR_GENERIC;
       }
-      GEN.vmax = faux.f(x,p);
+      GEN.vmax = faux.f(x,faux.params);
     }
   }
 
@@ -555,19 +589,19 @@ _unur_nrou_rectangle( struct unur_gen *gen )
   if (!(gen->set & NROU_SET_U)) {
 
     faux.f = (UNUR_FUNCT_GENERIC*) _unur_aux_bound_umin;
-    faux.params = p;
+    faux.params = gen;
 
     /* calculating start point for extremum search routine */
-    sx = _unur_FP_is_plusminus_infinity(DISTR.BD_LEFT) ? p[0]-1.: (p[0]+DISTR.BD_LEFT)/2. ; 
+    sx = _unur_FP_is_plusminus_infinity(DISTR.BD_LEFT) ? cx-1.: (cx+DISTR.BD_LEFT)/2. ; 
     bx = _unur_FP_is_plusminus_infinity(DISTR.BD_LEFT) ? -BD_MAX: DISTR.BD_LEFT;
 
-    x = (DISTR.BD_LEFT == p[0]) ? p[0]: _unur_util_find_max(faux, bx, p[0], sx);
+    x = (DISTR.BD_LEFT == cx) ? cx: _unur_util_find_max(faux, bx, cx, sx);
           
     while (_unur_FP_is_plusminus_infinity(x) && (fabs(bx) >= UNUR_EPSILON) ) { 
        /* _unur_util_find_max() could not yet find a suitable extremum */
        /* trying with a sequence of intervals with decreasing length   */
        bx = bx/10.; sx = bx/2.;  
-       x = _unur_util_find_max(faux, bx, p[0], sx);
+       x = _unur_util_find_max(faux, bx, cx, sx);
     }
          
     if (_unur_FP_is_plusminus_infinity(x)) {
@@ -575,24 +609,24 @@ _unur_nrou_rectangle( struct unur_gen *gen )
        _unur_error(gen->genid , UNUR_ERR_GENERIC, "Bounding rect (umin)");  
        return UNUR_ERR_GENERIC;
     }
-    GEN.umin = -faux.f(x,p);
+    GEN.umin = -faux.f(x,faux.params);
 
     /* and now, an analogue calculation for umax */
 
     faux.f = (UNUR_FUNCT_GENERIC*) _unur_aux_bound_umax;
-    faux.params = p;
+    faux.params = gen;
 
     /* calculating start point for extremum search routine */
-    sx = _unur_FP_is_plusminus_infinity(DISTR.BD_RIGHT) ? p[0]+1.: (p[0]+DISTR.BD_RIGHT)/2. ; 
+    sx = _unur_FP_is_plusminus_infinity(DISTR.BD_RIGHT) ? cx+1.: (cx+DISTR.BD_RIGHT)/2. ; 
     bx = _unur_FP_is_plusminus_infinity(DISTR.BD_RIGHT) ? BD_MAX: DISTR.BD_RIGHT;
 
-    x = (DISTR.BD_RIGHT == p[0]) ? p[0]: _unur_util_find_max(faux, p[0], bx, sx);
+    x = (DISTR.BD_RIGHT == cx) ? cx: _unur_util_find_max(faux, cx, bx, sx);
       
     while (_unur_FP_is_plusminus_infinity(x) && (fabs(bx) >= UNUR_EPSILON) ) { 
        /* _unur_util_find_max() could not yet find a suitable extremum */
        /* trying with a sequence of intervals with decreasing length   */
        bx = bx/10.; sx = bx/2.; 
-       x = _unur_util_find_max(faux, p[0], bx, sx);
+       x = _unur_util_find_max(faux, cx, bx, sx);
     }
            
     if (_unur_FP_is_plusminus_infinity(x)) {
@@ -600,7 +634,7 @@ _unur_nrou_rectangle( struct unur_gen *gen )
        _unur_error(gen->genid , UNUR_ERR_GENERIC, "Bounding rect (umax)");  
        return UNUR_ERR_GENERIC;
     }
-    GEN.umax = faux.f(x,p);
+    GEN.umax = faux.f(x,faux.params);
   }
 
   /* o.k. */
@@ -650,6 +684,7 @@ _unur_nrou_create( struct unur_par *par )
   GEN.umax  = PAR.umax;             /* right u-boundary of bounding rectangle */
   GEN.vmax  = PAR.vmax;             /* upper v-boundary of bounding rectangle */
   GEN.center = PAR.center;          /* center of distribution */
+  GEN.r = PAR.r;                    /* r-parameter of the generalized rou-method */
 
   /* initialize parameters */
 

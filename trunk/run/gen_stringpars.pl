@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+use strict;
+
 # ----------------------------------------------------------------------------
 # $Id$
 # ----------------------------------------------------------------------------
@@ -12,9 +14,20 @@
 # the file stringpars.c
 #
 
+# Methods not supporting by string input
+our @No_String_Methods = ("UNIF");
+
+
 # where relevant information is stored:
-$Methinfopath = "../src/methods/";
-$Distinfofile = "../src/distributions/unuran_distributions.h";
+our $Methinfopath = "../src/methods/";
+our $Distinfofile = "../src/distributions/unuran_distributions.h";
+
+# determine all h-files in $Methinfopath
+opendir (METHDIR, $Methinfopath) or die "can't open directory $!";
+our @all_h_files = grep {/[.]h/ } readdir METHDIR;
+closedir METHDIR;
+
+
 
 # from the Basefile and the info found in the source of UNURAN
 # the file Outfile is generated
@@ -46,9 +59,10 @@ while ( <Basefile> ){
 
 }
 
-
 close Basefile;
 close Outfile;
+
+
 
 # ##################################################################
 #
@@ -58,14 +72,9 @@ close Outfile;
 sub known_methods{
 
     #initialize counter
-    $counter = 0;
+    my $counter = 0;
 
-    # determine all h-files
-    opendir (METHDIR, $Methinfopath) or die "can't open directory $!";
-    @all_h_files = grep {/[.]h/ } readdir METHDIR;
-    closedir METHDIR;
-
-    foreach $hfile (@all_h_files){
+    foreach my $hfile (@all_h_files){
 
 	open INFILE, "< $Methinfopath/$hfile" or  die ("can't open file: $!");
 
@@ -73,7 +82,7 @@ sub known_methods{
 	    if ( $_ =~ /^\s*=METHOD\s+(\w+)/ ){
 		print Outfile "#define \UUNUR_METH_$1\t($counter)\n";
 		$counter++;
-		break;
+		break();
 	    }
 	}
     }
@@ -149,13 +158,6 @@ sub distr_info{
 # #######################################################################################
 sub method_info{
 
-    # Methods not supporting by string input
-    @No_String_Methods = ("UNIF");
-
-    # determine all h-files
-    opendir (METHDIR, $Methinfopath) or die "can't open directory $!";
-    @all_h_files = grep {/[.]h/ } readdir METHDIR;
-    closedir METHDIR;
 
 
     print Outfile "\t/* ************************ */\n";
@@ -165,9 +167,9 @@ sub method_info{
     print Outfile "\t\tif ( no_of_elem != 0 ){\n";
     print Outfile "\t\t\tfprintf(stderr, \"SYNTAX ERROR: No list expected when setting method.\\n\");\n";
     print Outfile "\t\t}\n\t\t";
-    foreach $hfile (@all_h_files){
+    foreach my $hfile (@all_h_files){
         # reset variable
-	$No_String_Method  = 0;
+	my $No_String_Method  = 0;
 	open INFILE, "< $Methinfopath/$hfile" or  die ("can't open file: $!");
 
 
@@ -176,7 +178,7 @@ sub method_info{
 	    if ( $_ =~ /^\s*=METHOD\s+(\w+)/ ){
 
                 # check if method supports string context
-		foreach $method (@No_String_Methods){
+		foreach my $method (@No_String_Methods){
 		    if ( "\U$1" eq $method){
 			$No_String_Method  = 1;
 		    }
@@ -212,17 +214,17 @@ sub method_info{
     print Outfile "\t/* ****************************************** */\n\n\t";
 
 
-    foreach $hfile (@all_h_files){
+    foreach my $hfile (@all_h_files){
 
 	# search routines setting parameters -- method dependent
-	$method = "UNKNOWN"; # initialize method-name to empty string
+	my $method = "UNKNOWN"; # initialize method-name to empty string
 
 	open INFILE,  "< $Methinfopath/$hfile" or  die ("can't open file: $!");
 	while ( $_ =  <INFILE> ){
 
 	    if ( $_ =~ /^\s*=METHOD\s+(\w+)/ ){ # h-file with method description found
 		$method = "\L$1";
-		$METHOD = "\U$method";
+		my $METHOD = "\U$method";
 
 		# key is "method"
 		print Outfile "if ( par->method == UNUR_METH_$METHOD && strcmp(key, \"method\") ){\n\t\t";

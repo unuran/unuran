@@ -1,4 +1,5 @@
 ## Process this file with automake to produce Makefile.in
+## $Id$
 
 SUBDIRS = distr methods stdgen tests uniform utils
 

@@ -40,12 +40,14 @@ int main()
   unur_set_default_urng(urng);
 
   distr = unur_distr_normal(NULL,0);
-  //  unur_distr_cont_set_domain(distr,1,20);
+  unur_distr_cont_set_domain(distr,1,20);
 
   par = unur_tdr_new(distr);
+  unur_tdr_set_variant_ps(par);
+
   gen = unur_init(par);
 
-  unur_tdr_chg_truncated(gen,3,3.1);
+  // unur_tdr_chg_truncated(gen,3,3.1);
 
   unur_test_chi2( gen, 100, 0, 20, 1 );
 

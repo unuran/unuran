@@ -724,8 +724,6 @@ unur_tdr_chg_truncated( struct unur_gen *gen, double left, double right )
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-/*    if (gen->debug & NINV_DEBUG_CHG)  */
-/*      _unur_ninv_debug_chg_truncated( gen ); */
 #endif
   
   /* o.k. */

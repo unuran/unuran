@@ -11,6 +11,7 @@ libdistr_la_SOURCES = \
  corder.c corder.h \
  cemp.c   cemp.h \
  cvec.c   cvec.h \
+ condi.c  condi.h \
  cvemp.c  cvemp.h\
  discr.c  discr.h \
  matr.c	  matr.h

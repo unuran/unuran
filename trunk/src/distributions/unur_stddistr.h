@@ -45,6 +45,7 @@ enum {
   UNUR_DISTR_GENERIC  = 0x0u,
 
   UNUR_DISTR_CORDER,              /* order statistics                        */
+  UNUR_DISTR_CONDI,               /* full conditional distribution           */
 
   /**                                  pdf   cdf   mode  area  gen   doc     */
   UNUR_DISTR_BETA,                /*    X     X     X     X     X     .      */

@@ -38,6 +38,7 @@ check_PROGRAMS = \
  t_distr_cont \
  t_distr_corder \
  t_distr_cvec \
+ t_distr_condi \
  t_distr_cvemp \
  t_distr_discr \
  t_distr_matr \
@@ -105,6 +106,7 @@ EXTRA_DIST = \
  t_distr_cont.conf \
  t_distr_corder.conf \
  t_distr_cvec.conf \
+ t_distr_condi.conf \
  t_distr_cvemp.conf \
  t_distr_discr.conf \
  t_distr_matr.conf \

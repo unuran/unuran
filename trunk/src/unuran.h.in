@@ -76,6 +76,7 @@
 #include <distr/cont.h>
 #include <distr/corder.h>
 #include <distr/cvec.h>
+#include <distr/condi.h>
 #include <distr/cvemp.h>
 #include <distr/discr.h>
 #include <distr/matr.h>

@@ -132,6 +132,9 @@ void _unur_distr_matr_debug( const UNUR_DISTR *distribution, const char *genid )
 void _unur_distr_cvec_debug( const UNUR_DISTR *distribution, const char *genid );
 /* write info about distribution into logfile                                */
 
+void _unur_distr_condi_debug( const UNUR_DISTR *distribution, const char *genid );
+/* write info about distribution into logfile                                */
+
 void _unur_distr_cvemp_debug( const UNUR_DISTR *distribution, const char *genid, int printvector );
 /* write info about distribution into logfile                                */
 

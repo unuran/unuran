@@ -44,9 +44,39 @@
  *****************************************************************************
  *                                                                           *
  *   REFERENCES:                                                             *
+ *   [1] Neumaier A. (to be publishes): Introduction to numerical analysis,  *
+ *       Cambridge University Press                                          *
  *                                                                           *
  *****************************************************************************
  *                                                                           *
+ *  Numerical inversion is a method for generating random variables          *
+ *  using the cdf (and in case of newton's method the pdf).                  *
+ *                                                                           *
+ *  THEOREM:                                                                 *
+ *     Let X be a random variable with cdf F(x).                             *
+ *     Then the F(X) are  uniformly distributed.                             *
+ *                                                                           *
+ *  COROLLARY:                                                               *
+ *     Starting with uniformly distributed random variables U,               *
+ *     the F^(-1)(U) have F(x) as cdf.                                       *
+ *                                                                           *
+ *  Starting with an U, the task is to find a X fulfilling:                  *
+ *    F(X) - U = 0.                                                          *
+ *                                                                           *
+ *  Numerical algorithms to find zeros that are used in NINV are variants of * 
+ *  newton's method (damped newton to guarantee improvement) and             *
+ *  the regula falsi ( stabilized regula falsi preserving sign change; at    *
+ *  first an interval with sign change is determined).                       *
+ *                                                                           *
+ *  In both cases it is possible to specify the maximal number of            *
+ *  iterations, a desired accuracy in X and starting values for the          *
+ *  algorithms.                                                              *
+ *  Instead of starting values it is also possible to use a table            *
+ *  containing suitable starting values.                                     *
+ *  If neither the table nor explicit starting values are used,              *
+ *  NINV chooses as starting values:                                         *
+ *     newton's method:  x:     cdf(x) = 0.5                                 *
+ *     regula falsi:     x1,x2: cdf(x1) = 1 - cdf(x2) = 0.05                 *
  *                                                                           *
  *****************************************************************************/
 

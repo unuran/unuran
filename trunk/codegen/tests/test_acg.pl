@@ -633,7 +633,7 @@ sub make_UNURAN_gen
     my $l = "UNURAN";
 
     # Log file
-    my $Log = "$file_prefix.$test_key.$l";
+    my $Log = "$file_prefix.log.$test_key.$l";
 
     # Get name of distribution
     my $distr_name;
@@ -711,7 +711,7 @@ sub make_C_gen
     my $l = "C";
 
     # Log file
-    my $Log = "$file_prefix.$test_key.$l";
+    my $Log = "$file_prefix.log.$test_key.$l";
 
     # Get name of distribution
     my $distr_name;
@@ -790,7 +790,7 @@ sub make_FORTRAN_gen
     my $l = "FORTRAN";
     
     # Log file
-    my $Log = "$file_prefix.$test_key.$l";
+    my $Log = "$file_prefix.log.$test_key.$l";
     
     # Get name of distribution
     my $distr_name;
@@ -873,7 +873,7 @@ sub make_JAVA_gen
     my $l = "JAVA";
 
     # Log file
-    my $Log = "$file_prefix.$test_key.$l";
+    my $Log = "$file_prefix.log.$test_key.$l";
 
     # Get name of distribution
     my $distr_name;

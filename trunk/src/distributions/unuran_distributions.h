@@ -180,6 +180,12 @@ double unur_stdgen_sample_gamma_gll( struct unur_gen *gen );
 /*  Laplace distribution [3; ch.24, p.164]                                   */
 struct unur_distr *unur_distr_laplace(double *params, int n_params);
 
+/* special generators */
+int _unur_stdgen_laplace_init( struct unur_par *par, struct unur_gen *gen );
+/* initialize new generator                                                  */
+double unur_stdgen_sample_laplace_inv( struct unur_gen *gen );
+/* Inversion method                                                          */
+
 /*---------------------------------------------------------------------------*/
 /* Logistic distribution                                                     */
 /** TODO **/

@@ -48,6 +48,7 @@
 #define T_CORDER
 #define T_TIMING
 
+#define T_AUTO
 #define T_AROU
 #define T_CSTD
 #define T_DARI

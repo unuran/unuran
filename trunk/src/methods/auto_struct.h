@@ -41,7 +41,7 @@
 /* Information for constructing the generator                                */
 
 struct unur_auto_par {
-  int dummy;                       /* No special parameters yet              */
+  int logss;                       /* logarithm of sample size               */
 };
 
 /*---------------------------------------------------------------------------*/

@@ -48,6 +48,11 @@
 /*    bits 25-32 ... trace sampling                                          */
 
 /*---------------------------------------------------------------------------*/
+/* Flags for logging set calls                                               */
+
+#define AUTO_SET_LOGSS          0x001u
+
+/*---------------------------------------------------------------------------*/
 
 #define GENTYPE "AUTO"         /* type of generator                          */
 
@@ -129,6 +134,43 @@ unur_auto_new( struct unur_distr *distr )
   return par;
 
 } /* end of unur_auto_new() */
+
+/*---------------------------------------------------------------------------*/
+
+int 
+unur_auto_set_logss( UNUR_PAR *par, int logss )
+     /*----------------------------------------------------------------------*/
+     /* set common logarithm of sample size                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par   ... pointer to parameter for building generator object       */
+     /*   logss ... common logarithm of sample size                          */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE,par,0 );
+
+  /* check input */
+  _unur_check_par_object( par,AUTO );
+
+  if (logss < 0 ) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"log < 0");
+    return 0;
+  }
+
+  /* store date */
+  PAR.logss = logss;
+
+  /* changelog */
+  par->set |= AUTO_SET_LOGSS;
+
+  return 1;
+
+} /* end of unur_auto_set_logss() */
 
 /*****************************************************************************/
 
@@ -213,9 +255,19 @@ _unur_init_cont( struct unur_par *par_auto )
 {
   struct unur_par *par;
   struct unur_gen *gen;
-  
-  par = NULL;
-  gen = NULL;
+
+  do {
+    /* 1st choice: TDR */
+    par = unur_tdr_new(par_auto->distr);
+    gen = unur_init(par);
+    if (gen) break;
+
+    /* 2nd choice: CSTD */
+    par = unur_cstd_new(par_auto->distr);
+    gen = unur_init(par);
+    if (gen) break;
+
+  } while (0);
 
   return gen;
 } /* end of _unur_init_cont() */
@@ -240,9 +292,12 @@ _unur_init_cvec( struct unur_par *par_auto )
   struct unur_par *par;
   struct unur_gen *gen;
   
-  par = NULL;
-  gen = NULL;
-
+  /* Choose a method: VMT */
+  par = unur_vmt_new(par_auto->distr);
+     
+  /* Create generator object */
+  gen = unur_init(par);
+     
   return gen;
 } /* end of _unur_init_cvec() */
   
@@ -266,8 +321,23 @@ _unur_init_discr( struct unur_par *par_auto )
   struct unur_par *par;
   struct unur_gen *gen;
   
-  par = NULL;
-  gen = NULL;
+  do {
+    /* 1st choice: DARI */
+    par = unur_dari_new(par_auto->distr);
+    gen = unur_init(par);
+    if (gen) break;
+
+    /* 2nd choice: DGT */
+    par = unur_dgt_new(par_auto->distr);
+    gen = unur_init(par);
+    if (gen) break;
+
+    /* 3rd choice: DSTD */
+    par = unur_dstd_new(par_auto->distr);
+    gen = unur_init(par);
+    if (gen) break;
+    
+  } while (0);
 
   return gen;
 } /* end of _unur_init_discr() */
@@ -292,9 +362,12 @@ _unur_init_cemp( struct unur_par *par_auto )
   struct unur_par *par;
   struct unur_gen *gen;
   
-  par = NULL;
-  gen = NULL;
-
+  /* Choose a method: EMPK */
+  par = unur_empk_new(par_auto->distr);
+     
+  /* Create generator object */
+  gen = unur_init(par);
+     
   return gen;
 } /* end of _unur_init_cemp() */
   
@@ -317,10 +390,13 @@ _unur_init_cvemp( struct unur_par *par_auto )
 {
   struct unur_par *par;
   struct unur_gen *gen;
-  
-  par = NULL;
-  gen = NULL;
 
+  /* Choose a method: VEMPK */
+  par = unur_vempk_new(par_auto->distr);
+     
+  /* Create generator object */
+  gen = unur_init(par);
+     
   return gen;
 } /* end of _unur_init_cvemp() */
   

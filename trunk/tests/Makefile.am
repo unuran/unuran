@@ -22,6 +22,7 @@ check_PROGRAMS = \
  t_distr \
  t_stringparser \
  t_corder \
+ t_auto \
  t_arou \
  t_cstd \
  t_dari \
@@ -45,6 +46,7 @@ TESTS = \
  t_distr \
  t_stringparser \
  t_corder \
+ t_auto \
  t_arou \
  t_cstd \
  t_dari \
@@ -74,6 +76,7 @@ EXTRA_DIST = \
  distr.conf \
  stringparser.conf \
  corder.conf \
+ auto.conf \
  arou.conf \
  cstd.conf \
  dari.conf \
@@ -127,6 +130,9 @@ t_stringparser_LDADD = $(top_builddir)/src/libunuran.a
 
 t_corder_SOURCES = t_corder.c testroutines.c
 t_corder_LDADD = $(top_builddir)/src/libunuran.a
+
+t_auto_SOURCES = t_auto.c testroutines.c
+t_auto_LDADD = $(top_builddir)/src/libunuran.a
 
 t_arou_SOURCES = t_arou.c testroutines.c
 t_arou_LDADD = $(top_builddir)/src/libunuran.a
@@ -188,6 +194,9 @@ t_stringparser.c: stringparser.conf make_test_files.pl
 
 t_corder.c: corder.conf make_test_files.pl
 	./make_test_files.pl corder.conf         > t_corder.c
+
+t_auto.c: auto.conf make_test_files.pl
+	./make_test_files.pl auto.conf           > t_auto.c
 
 t_arou.c: arou.conf make_test_files.pl
 	./make_test_files.pl arou.conf           > t_arou.c

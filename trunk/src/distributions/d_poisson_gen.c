@@ -52,8 +52,8 @@ inline static void poisson_pprsc_init( struct unur_gen *gen );
 
 #define uniform()  _unur_call_urng(gen) /* call for uniform prng             */
 
-#define MAX_gen_params  100    /* maximal number of parameters for generator */
-#define MAX_gen_iparams  100   /* maximal number of integer param. for gen.  */
+#define MAX_gen_params   39    /* maximal number of parameters for generator */
+#define MAX_gen_iparams   5    /* maximal number of integer param. for gen.  */
 
 /* parameters */
 #define theta  (DISTR.params[0])    /* shape */

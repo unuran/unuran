@@ -566,6 +566,7 @@ _unur_stdgen_sample_normal_kr( struct unur_gen *gen )
       W = uniform(); 
       z = V - W;
       t = 0.479727404222441 - 0.595507138015940 * min(V,W);
+      if (t<=0.) continue;
     } while (max(V,W)>0.805777924423817 &&
 	     0.053377549506886*fabs(z) > (PIhochK * exp(t*t/(-2)) -0.180025191068563*(XI-fabs(t))) );
     X = (z<0) ? t : -t;

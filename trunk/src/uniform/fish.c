@@ -55,7 +55,7 @@
 /*---------------------------------------------------------------------------*/
 
 /* seed (must not be 0!) */
-#define SEED  (12345L);
+#define SEED  (12345L)
 
 /* status variable */
 static unsigned long x = SEED;

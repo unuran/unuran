@@ -57,12 +57,12 @@
 /*---------------------------------------------------------------------------*/
 
 /* seed (must not be 0!) */
-#define SEED10  (12345L);
-#define SEED11  (23456L);
-#define SEED12  (34067L);
-#define SEED20  (45678L);
-#define SEED21  (56789L);
-#define SEED22  (67890L);
+#define SEED10  (12345L)
+#define SEED11  (23456L)
+#define SEED12  (34067L)
+#define SEED20  (45678L)
+#define SEED21  (56789L)
+#define SEED22  (67890L)
 
 /* status variable */
 static unsigned long x10 = SEED10;

@@ -22,12 +22,12 @@ int main()
 
   /* choose method */
   par = unur_ninv_new(distr);
-  //unur_ninv_use_newton(par);
+  unur_ninv_set_usenewton(par);
 
   /* Set uniform generator in parameter object */   
   unur_set_urng(par, ug);
   
-  unur_ninv_set_table(par, 40);
+  unur_ninv_set_table(par, 100);
 
 
   /* make generator object */

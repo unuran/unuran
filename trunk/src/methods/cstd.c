@@ -52,6 +52,12 @@
 #include <unur_utils.h>
 
 /*---------------------------------------------------------------------------*/
+/* Variants: none                                                            */
+
+/*---------------------------------------------------------------------------*/
+/* Debugging flags (do not use first 8 bits)                                 */
+
+/*---------------------------------------------------------------------------*/
 
 #define GENTYPE "CSTD"         /* type of generator                          */
 
@@ -105,23 +111,23 @@ unur_cstd_new( struct unur_distr *distr )
 { 
   struct unur_par *par;
 
-  /* allocate structure */
-  par = _unur_malloc(sizeof(struct unur_par));
-  COOKIE_SET(par,CK_CSTD_PAR);
-
   /* check arguments */
   CHECK_NULL(distr,NULL);
-  COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
 
   /* check distribution */
   if (distr->type != UNUR_DISTR_CONT) {
-    _unur_error(GENTYPE,UNUR_ERR_GENERIC,"wrong distribution type");
-    return NULL;
-  }
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,"");
+    return NULL; }
+  COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
+
   if (distr->id == UNUR_DISTR_GENERIC) {
-    _unur_error(GENTYPE,UNUR_ERR_GENERIC,"standard distribution required");
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"standard distribution");
     return NULL;
   }
+
+  /* allocate structure */
+  par = _unur_malloc(sizeof(struct unur_par));
+  COOKIE_SET(par,CK_CSTD_PAR);
 
   /* copy input */
   par->distr    = distr;            /* pointer to distribution object        */
@@ -165,6 +171,12 @@ unur_cstd_init( struct unur_par *par )
   /* check arguments */
   CHECK_NULL(par,NULL);
   COOKIE_CHECK(par,CK_CSTD_PAR,NULL);
+
+  /* check input */
+  if ( par->method != UNUR_METH_CSTD ) {
+    _unur_error(GENTYPE,UNUR_ERR_PAR_INVALID,"");
+    return NULL;
+  }
 
   /* create a new empty generator object */
   gen = _unur_cstd_create(par);
@@ -237,6 +249,13 @@ unur_cstd_free( struct unur_gen *gen )
 
   /* magic cookies */
   COOKIE_CHECK(gen,CK_CSTD_GEN,/*void*/);
+
+  /* check input */
+  if ( gen->method != UNUR_METH_CSTD ) {
+    _unur_warning(GENTYPE,UNUR_ERR_GEN_INVALID,"");
+    return;
+  }
+
   /* we cannot use this generator object any more */
   SAMPLE = NULL;   /* make sure to show up a programming error */
 

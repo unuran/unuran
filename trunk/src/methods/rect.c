@@ -48,6 +48,17 @@
 #include <unur_utils.h>
 
 /*---------------------------------------------------------------------------*/
+/* Variants: none                                                            */
+
+/*---------------------------------------------------------------------------*/
+/* Debugging flags (do not use first 8 bits)                                 */
+
+/*---------------------------------------------------------------------------*/
+/* Flags for logging set calls                                               */
+
+#define RECT_SET_DOMAIN           0x001UL
+
+/*---------------------------------------------------------------------------*/
 
 #define GENTYPE "RECT"         /* type of generator                          */
 
@@ -124,6 +135,42 @@ unur_rect_new( int dim )
 
 } /* end of unur_rect_new() */
 
+/*---------------------------------------------------------------------------*/
+
+int
+unur_rect_set_domain_vec( struct unur_par *par, double **domain )
+     /*----------------------------------------------------------------------*/
+     /* set coordinates for domain boundary                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par    ... pointer to parameter for building generator object      */
+     /*   domain ... coordinates of domain boundary                          */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(par,0);
+
+  /* check input */
+  _unur_check_par_object( RECT );
+
+  /* check new parameter for generator */
+  /** TODO **/
+
+  /* store data */
+  par->data.rect.domain = domain;
+
+  /* changelog */
+  par->set |= RECT_SET_DOMAIN;
+
+  /* o.k. */
+  return 1;
+
+} /* end of unur_rect_set_domain_vec() */
+
 /*****************************************************************************/
 
 struct unur_gen *
@@ -145,6 +192,11 @@ unur_rect_init( struct unur_par *par )
 
   /* check arguments */
   CHECK_NULL(par,NULL);
+
+  /* check input */
+  if ( par->method != UNUR_METH_RECT ) {
+    _unur_error(GENTYPE,UNUR_ERR_PAR_INVALID,"");
+    return NULL; }
   COOKIE_CHECK(par,CK_RECT_PAR,NULL);
 
   /* create a new empty generator object */
@@ -206,8 +258,12 @@ unur_rect_free( struct unur_gen *gen )
   if( !gen ) /* nothing to do */
     return;
 
-  /* magic cookies */
+  /* check input */
+  if ( gen->method != UNUR_METH_RECT ) {
+    _unur_warning(GENTYPE,UNUR_ERR_GEN_INVALID,"");
+    return; }
   COOKIE_CHECK(gen,CK_RECT_GEN,/*void*/);
+
   /* we cannot use this generator object any more */
   SAMPLE = NULL;   /* make sure to show up a programming error */
 

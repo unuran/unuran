@@ -43,6 +43,12 @@
 #include <unur_utils.h>
 
 /*---------------------------------------------------------------------------*/
+/* Variants: none                                                            */
+
+/*---------------------------------------------------------------------------*/
+/* Debugging flags (do not use first 8 bits)                                 */
+
+/*---------------------------------------------------------------------------*/
 
 #define GENTYPE "UNIF"         /* type of generator                          */
 
@@ -134,6 +140,11 @@ unur_unif_init( struct unur_par *par )
 
   /* check arguments */
   CHECK_NULL(par,NULL);
+
+  /* check input */
+  if ( par->method != UNUR_METH_UNIF ) {
+    _unur_error(GENTYPE,UNUR_ERR_PAR_INVALID,"");
+    return NULL; }
   COOKIE_CHECK(par,CK_UNIF_PAR,NULL);
 
   /* create a new empty generator object */
@@ -202,8 +213,12 @@ unur_unif_free( struct unur_gen *gen )
   if( !gen ) /* nothing to do */
     return;
 
-  /* magic cookies */
+  /* check input */
+  if ( gen->method != UNUR_METH_UNIF ) {
+    _unur_warning(GENTYPE,UNUR_ERR_GEN_INVALID,"");
+    return; }
   COOKIE_CHECK(gen,CK_UNIF_GEN,/*void*/);
+
   /* we cannot use this generator object any more */
   SAMPLE = NULL;   /* make sure to show up a programming error */
 

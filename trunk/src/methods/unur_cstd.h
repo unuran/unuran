@@ -72,6 +72,10 @@ double unur_cstd_sample( struct unur_gen *generator );
 void unur_cstd_free( struct unur_gen *generator);
 /* destroy generator object                                                  */
 
+/*...........................................................................*/
+
+#define unur_rect_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
+/* set debuging flags                                                        */
 
 /** TODO: use unur_set_*** interface **/
 /*  void cstd_set_1par(struct unur_par *par,double inpval); */

@@ -54,8 +54,6 @@ struct unur_tabl_par {
   double  area_fract;   /* parameter for equal area rule                     */
 
   double  guide_factor; /* relative size of guide table                      */
-
-  unsigned int variant; /* variant of method                                 */
 };
 
 /*---------------------------------------------------------------------------*/
@@ -106,8 +104,6 @@ struct unur_tabl_gen {
   struct unur_tabl_interval *iv_stack; /* stack of allocated intervals       */
   int     iv_free;              /* position of last free segment in stack    */
   struct unur_mblock *mblocks;  /* linked list for allocated blocks          */
-
-  unsigned int variant; /* variant of method                                 */
 };
 
 /*---------------------------------------------------------------------------*/
@@ -126,8 +122,37 @@ double unur_tabl_sample_check( struct unur_gen *generator );
 void unur_tabl_free( struct unur_gen *generator);
 /* destroy generator object                                                  */
 
-int unur_set_tabl_variant( struct unur_par *parameters, unsigned int variant );
+/*...........................................................................*/
+
+int unur_tabl_set_nstp( struct unur_par *par, int n_stp );
+/* set number of construction points for hat at initialization               */
+
+int unur_tabl_set_max_sqhratio( struct unur_par *par, double max_ratio );
+/* set bound for ratio A(squeeze) / A(hat)                                   */
+
+int unur_tabl_set_max_intervals( struct unur_par *par, int max_ivs );
+/* set maximum number of intervals                                           */
+
+int unur_tabl_set_areafraction( struct unur_par *par, double fraction );
+/* set parameter for equal area rule                                         */
+
+int unur_tabl_set_slopes( struct unur_par *par, double *slopes, int n_slopes );
+/* set slopes of p.d.f.                                                      */
+
+int unur_tabl_set_boundary( struct unur_par *par, double left, double right );
+/* set left and right boundary of computation interval                       */
+
+int unur_tabl_set_variant( struct unur_par *parameters, unsigned int variant );
 /* set variant for method                                                    */
+
+int unur_tabl_set_guidefactor( struct unur_par *par, double factor );
+/* set factor for relative size of guide table                               */
+
+int unur_tabl_set_verify( struct unur_par *par, int verify );
+/* turn verifying of algorithm while sampling on/off                         */
+
+#define unur_dis_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
+/* set debuging flags                                                        */
 
 /*---------------------------------------------------------------------------*/
 

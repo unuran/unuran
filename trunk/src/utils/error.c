@@ -138,13 +138,27 @@ unur_get_strerror ( const int unur_errno )
     return "";
   case UNUR_ERR_UNIMPLEMENTED:
     return "unimplemented feature";
-    
+
+    /************************************/
+    /** TODO **/
+
+  case UNUR_ERR_DISTR_INVALID:
+    return "invalid distribution type";
+  case UNUR_ERR_PAR_INVALID:
+    return "invalid parameter object";
+  case UNUR_ERR_GEN_INVALID:
+    return "invalid generator object";
+  case UNUR_ERR_DISTR_REQUIRED:
+    return "entry in distribution object required";
+
+    /************************************/
+
   case UNUR_ERR_UNKNOWN:
   default:
     return "unknown error (report this!)";
   }
 
-} /* end if unur_get_strerror() */
+} /* end of unur_get_strerror() */
 
 /*---------------------------------------------------------------------------*/
 

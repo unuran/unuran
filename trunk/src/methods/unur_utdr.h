@@ -77,13 +77,15 @@ double unur_utdr_sample_check( struct unur_gen *generator );  /** TODO **/
 void unur_utdr_free( struct unur_gen *generator);
 /* destroy generator object                                                  */
 
-/** TODO !!! **/
-int unur_utdr_set_c( struct unur_par *parameters );
-/* set constant for choosing design points                                   */
+/*...........................................................................*/
 
-/** TODO !!! **/
-int unur_utdr_set_delta( struct unur_par *parameters );
-/* set constant for numerical approximation of derivative                    */
+int unur_utdr_set_cfactor( struct unur_par *par, double cfactor );
+/* set factor for position of left and right construction point              */
 
+int unur_utdr_set_delta( struct unur_par *par, double delta );
+/* set factor for replacing tangents by secants                              */
+
+#define unur_dis_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
+/* set debuging flags                                                        */
 
 /*---------------------------------------------------------------------------*/

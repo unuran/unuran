@@ -88,9 +88,6 @@ unur_run_tests( struct unur_par *par, unsigned long tests,
   if (! _unur_print_method(par))
     return;  /* unknown method */
 
-  /* we need all available information */
-  unur_set_copyall(par,1);
-
   /* init generator object */
   if (tests & UNUR_TEST_TIME)
     /* evaluate setup time and generation time */

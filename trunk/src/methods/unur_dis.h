@@ -70,6 +70,8 @@ int unur_dis_sample( struct unur_gen *generator );
 void unur_dis_free( struct unur_gen *generator );
 /* destroy generator object                                                  */
 
+/*...........................................................................*/
+
 int unur_dis_set_variant( struct unur_par *par, unsigned long variant );
 /* set variant of method                                                     */
 
@@ -77,6 +79,7 @@ int unur_dis_set_guidefactor( struct unur_par *par, double factor );
 /* set factor for relative size of guide table                               */
 
 #define unur_dis_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
+/* set debuging flags                                                        */
 
 /*---------------------------------------------------------------------------*/
 

@@ -65,6 +65,51 @@ inline int unur_distr_discr_set_prob( struct unur_distr *distr, double *prob, in
 
 /*---------------------------------------------------------------------------*/
 
+struct unur_distr *
+unur_distr_dup( struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* duplicate distribution object                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to source object                                 */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to duplicated distribution object                          */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_distr *distr_new;
+
+  /* check arguments */
+  CHECK_NULL(distr,NULL);
+  
+  /* allocate memory */
+  distr_new = _unur_malloc( sizeof (struct unur_distr) );
+  if (distr_new == NULL) return NULL;
+
+  /* copy main structure */
+  memcpy( distr_new, distr, sizeof( struct unur_distr ) );
+
+  switch (distr->type) {
+  case UNUR_DISTR_CONT:
+    COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
+    break;
+  case UNUR_DISTR_DISCR:
+    COOKIE_CHECK(distr,CK_DISTR_DISCR,NULL);
+    unur_distr_discr_set_prob(distr_new, distr->data.discr.prob, distr->data.discr.n_prob);
+    break;
+  default:
+    _unur_warning(NULL,UNUR_ERR_UNKNOWNDISTR,"");
+  }
+
+  return distr_new;
+
+} /* end of unur_distr_dup() */
+
+/*---------------------------------------------------------------------------*/
+
 void
 unur_distr_free( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/

@@ -4,11 +4,11 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: unur_rect.h                                                       *
+ *   FILE: unur_misc.h                                                       *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         declares structures and function prototypes for method RECT       *
- *         (uniformly distributed in (multidimensional) RECTangle            *
+ *         defines function prototypes for miscelleanous routines            *
+ *         parameters in generator objects.                                  *
  *                                                                           *
  *   USAGE:                                                                  *
  *         only used in unur_methods.h                                       *
@@ -38,43 +38,42 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-/* Information for constructing the generator                                */
+#ifndef __UNUR_MISC_H_SEEN
+#define __UNUR_MISC_H_SEEN
+/*---------------------------------------------------------------------------*/
 
-struct unur_rect_par { 
-  int      dim;         /* dimension                                         */
-  double **domain;      /* vertices of rectangle                             */
-};
 
 /*---------------------------------------------------------------------------*/
-/* The generator object                                                      */
-
-struct unur_rect_gen { 
-  int      dim;         /* dimension                                         */
-  double **domain;      /* vertices of rectangle                             */
-};
+/* set debugging flag for generator                                          */
+int unur_set_debug( struct unur_par *parameter, unsigned long debug );
 
 /*---------------------------------------------------------------------------*/
-/* Routines for user interface                                               */
+/* set, get or change uniform RNG for generator                              */
 
-struct unur_par *unur_rect_new( int dim );
-/* get default parameters for generator                                      */
-
-struct unur_gen *unur_rect_init( struct unur_par *parameters );
-/* initialize new generator                                                  */
-
-void unur_rect_sample_vec( struct unur_gen *gen, double *vec );
-/* sample from generator                                                     */
-
-void unur_rect_free( struct unur_gen *generator);
-/* destroy generator object                                                  */
-
-/*...........................................................................*/
-
-int unur_rect_set_domain_vec( struct unur_par *par, double **domain );
-/* set coordinates for domain boundary                                       */
-
-#define unur_rect_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
-/* set debuging flags                                                        */
+int unur_set_urng( struct unur_par *par, UNUR_URNG_TYPE urng );
+UNUR_URNG_TYPE unur_chg_urng( struct unur_gen *gen, UNUR_URNG_TYPE urng );
+UNUR_URNG_TYPE unur_get_urng( struct unur_gen *gen );
 
 /*---------------------------------------------------------------------------*/
+/* get and set default uniform RNG                                           */
+/* (defined in src/utils/urng.c)                                             */
+
+UNUR_URNG_TYPE unur_get_default_urng( void );
+UNUR_URNG_TYPE unur_set_default_urng( UNUR_URNG_TYPE urng_new );
+
+/*---------------------------------------------------------------------------*/
+/* get dimension of generator for (multivariate) distribution                */
+
+int unur_get_dimension( struct unur_gen *gen );
+
+/*---------------------------------------------------------------------------*/
+#endif  /* __UNUR_MISC_H_SEEN */
+/*---------------------------------------------------------------------------*/
+
+
+
+
+
+
+
 

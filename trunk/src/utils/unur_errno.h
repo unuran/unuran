@@ -98,7 +98,19 @@ enum {
   UNUR_ERR_UNKNOWNDISTR  = 2000, /* cannot handle this distribution */
 
   /** TODO ??? **/
-  UNUR_ERR_DISTR         = 1111  /* invalid parameter for distribution        */
+  UNUR_ERR_DISTR         = 1111,  /* invalid parameter for distribution        */
+
+
+  /************************************************************/
+  /** TODO **/
+
+
+  UNUR_ERR_DISTR_INVALID = 500,   /* invalid distribution type */
+  UNUR_ERR_PAR_INVALID   = 501,   /* invalid parameter object */
+  UNUR_ERR_GEN_INVALID   = 502,   /* invalid generator object */
+
+  UNUR_ERR_DISTR_REQUIRED = 503,   /* entry in distribution object required */
+
 };
 
 

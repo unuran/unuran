@@ -89,7 +89,6 @@ struct unur_arou_gen {
   double  bleft;                /* left boundary of domain                   */
   double  bright;               /* right boundary of domain                  */
 
-  double  center;               /* (approximate) location of mode            */
   double  max_ratio;            /* limit for ratio r_n = |P^s| / |P^e|       */
 
   struct unur_arou_segment **guide;  /* pointer to guide table               */
@@ -123,7 +122,33 @@ double unur_arou_sample_check( struct unur_gen *generator );
 void unur_arou_free( struct unur_gen *generator);
 /* destroy generator object                                                  */
 
+/*...........................................................................*/
+
+int unur_arou_set_cpoints( struct unur_par *par, int n_stp, double *stp );
+/* set construction points for envelope and/or its number for initialization */
+
+int unur_arou_set_guidefactor( struct unur_par *par, double factor );
+/* set factor for relative size of guide table                               */
+
+int unur_arou_set_max_sqhratio( struct unur_par *par, double max_ratio );
+/* set bound for ratio A(squeeze) / A(hat)                                   */
+
+int unur_arou_set_max_segments( struct unur_par *par, int max_segs );
+/* set maximum number of segments                                            */
+
 int unur_arou_set_center( struct unur_par *par, double center );
 /* set center (approximate mode) of p.d.f.                                   */
 
+int unur_arou_set_usecenter( struct unur_par *par, int usecenter );
+/* set flag for using center as construction point                           */
+
+int unur_arou_set_verify( struct unur_par *par, int verify );
+/* turn verifying of algorithm while sampling on/off                         */
+
+#define unur_arou_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
+/* set debuging flags                                                        */
+
 /*---------------------------------------------------------------------------*/
+
+
+

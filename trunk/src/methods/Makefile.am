@@ -12,14 +12,12 @@ noinst_LIBRARIES = libmethods.a
 
 libmethods_a_SOURCES = \
  distribution.c \
+ misc.c \
  arou.c \
- chg.c  \
  cstd.c \
  dau.c  \
  dis.c  \
- get.c  \
  rect.c \
- set.c  \
  tabl.c \
  tdr.c  \
  unif.c \
@@ -28,12 +26,12 @@ libmethods_a_SOURCES = \
 pkginclude_HEADERS = \
  unur_methods.h \
  unur_distribution.h \
+ unur_misc.h  \
  unur_arou.h \
  unur_cstd.h \
  unur_dau.h  \
  unur_dis.h  \
  unur_rect.h \
- unur_set.h  \
  unur_tabl.h \
  unur_tdr.h  \
  unur_unif.h \

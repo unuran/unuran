@@ -4,7 +4,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE:      tdr.h                                                        *
+ *   FILE:      tdr.c                                                        *
  *                                                                           *
  *   TYPE:      continuous univariate random variate                         *
  *   METHOD:    transformed density rejection                                *
@@ -267,7 +267,7 @@
  *     points.) As a consequence 0 starting points are allowed.              *
  *                                                                           *
  * (2) To make use of the automatic generation of starting points call       *
- *     `unur_set_cpoints()´ with the NULL pointer as the second argument     *
+ *     `unur_set_cpoints()´ with the NULL pointer as the last argument       *
  *     and the number of construction points (besides the boundary points    *
  *     and the mode) as its third argument.                                  *
  *                                                                           *
@@ -296,6 +296,37 @@
 #include <unur_errno.h>
 #include <unur_math.h>
 #include <unur_utils.h>
+
+/*---------------------------------------------------------------------------*/
+/* Variants                                                                  */
+
+#define TDR_VARFLAG_VERIFY     0x100UL   /* flag for verifying mode          */
+#define TDR_VARFLAG_USECENTER  0x200UL   /* flag whether center is used as cpoint or not */
+#define TDR_VARFLAG_USEMODE    0x400UL   /* flag whether mode is used as cpoint or not */
+
+#define TDR_VARMASK_T          0x003UL   /* indicates transformation         */
+#define TDR_VAR_T_SQRT         0x001UL   /* T(x) = -1/sqrt(x)                */
+#define TDR_VAR_T_LOG          0x002UL   /* T(x) = log(x)                    */
+#define TDR_VAR_T_POW          0x003UL   /* T(x) = -x^c                      */
+
+/*---------------------------------------------------------------------------*/
+/* Debugging flags (do not use first 8 bits)                                 */
+
+#define TDR_DEBUG_SPLIT        0x010UL
+#define TDR_DEBUG_SAMPLE       0x020UL
+#define TDR_DEBUG_IV           0x040UL
+
+/*---------------------------------------------------------------------------*/
+/* Flags for logging set calls                                               */
+
+#define TDR_SET_MODE           0x001UL
+#define TDR_SET_CENTER         0x002UL
+#define TDR_SET_STP            0x004UL
+#define TDR_SET_N_STP          0x008UL
+#define TDR_SET_GUIDEFACTOR    0x010UL
+#define TDR_SET_C              0x020UL
+#define TDR_SET_MAX_SQHRATIO   0x040UL
+#define TDR_SET_MAX_IVS        0x080UL
 
 /*---------------------------------------------------------------------------*/
 
@@ -415,20 +446,6 @@ static void _unur_tdr_debug_split_stop( struct unur_gen *gen,
 
 /*---------------------------------------------------------------------------*/
 
-/* indicate variant of method */
-#define TDR_MASK_T      0x03UL          /* indicates transformation */
-
-#define TDR_METH_SQRT   0x01UL
-#define TDR_METH_LOG    0x02UL
-#define TDR_METH_POW    0x03UL
-
-/* Special debugging flags (do not use the first 3 bits) */
-#define TDR_DB_SPLIT    0x010UL
-#define TDR_DB_SAMPLE   0x020UL
-#define TDR_DB_IV       0x040UL
-
-/*---------------------------------------------------------------------------*/
-
 /*****************************************************************************/
 /**  User Interface                                                         **/
 /*****************************************************************************/
@@ -452,19 +469,19 @@ unur_tdr_new( struct unur_distr* distr )
 
   /* check arguments */
   CHECK_NULL(distr,NULL);
-  COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
 
   /* check distribution */
   if (distr->type != UNUR_DISTR_CONT) {
-    _unur_error(GENTYPE,UNUR_ERR_GENERIC,"wrong distribution type");
-    return NULL;
-  }
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,"");
+    return NULL; }
+  COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
+
   if (DISTR.pdf == NULL) {
-    _unur_error(GENTYPE,UNUR_ERR_GENERIC,"p.d.f. required");
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"p.d.f.");
     return NULL;
   }
   if (DISTR.dpdf == NULL) {
-    _unur_error(GENTYPE,UNUR_ERR_GENERIC,"derivative of p.d.f. required");
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"derivative of p.d.f.");
     return NULL;
   }
 
@@ -476,8 +493,6 @@ unur_tdr_new( struct unur_distr* distr )
   par->distr              = distr;  /* pointer to distribution object        */
 
   /* set default values */
-  PAR.mode                = 0.;     /* (exact!) location of mode             */
-
   PAR.guide_factor        = 3.;     /* size of guide table / number of intervals */
 
   PAR.c_T                 = -0.5;   /* parameter for transformation (-1. <= c < 0.) */
@@ -490,12 +505,26 @@ unur_tdr_new( struct unur_distr* distr )
 				       where ambigous region is too small, i.e. if 
 				       area / ((A_hat - A_squeeze)/number of segments) < bound_for_adding */
  
-  par->method             = UNUR_METH_TDR;  /* method and default variant    */
-  par->variant            = 0UL;            /* default variant               */
-  par->set                = 0UL;    /* inidicate default parameters          */    
-  par->urng               = unur_get_default_urng(); /* use default urng     */
+  par->method   = UNUR_METH_TDR;                 /* method                   */
+  par->variant  = ( TDR_VARFLAG_USECENTER |     /* default variant          */
+		    TDR_VARFLAG_USEMODE );
+
+  par->set      = 0UL;              /* inidicate default parameters          */    
+  par->urng     = unur_get_default_urng(); /* use default urng     */
 
   _unur_set_debugflag_default(par); /* set default debugging flags           */
+
+  /* we use the mode (if known) as center of the distribution */
+  if (distr->set & UNUR_DISTR_SET_MODE) {
+    PAR.center = DISTR.mode;
+    PAR.mode = DISTR.mode;
+    par->set |= TDR_SET_CENTER;
+    par->set |= TDR_SET_MODE;
+  }
+  else {
+    PAR.center = 0.;        /* the default */
+    PAR.mode = 0.;          /* initialize variable */
+  }
 
   /* routine for starting generator */
   par->init = unur_tdr_init;
@@ -503,6 +532,354 @@ unur_tdr_new( struct unur_distr* distr )
   return par;
 
 } /* end of unur_tdr_new() */
+
+/*****************************************************************************/
+
+int
+unur_tdr_set_cpoints( struct unur_par *par, int n_stp, double *stp )
+     /*----------------------------------------------------------------------*/
+     /* set construction points for envelope                                 */
+     /* and/or its number for initialization                                 */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par    ... pointer to parameter for building generator object      */
+     /*   n_stp  ... number of starting points                               */
+     /*   stp    ... pointer to array of starting points                     */
+     /*              (NULL for changing only the number of default points)   */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  int i;
+
+  /* check arguments */
+  CHECK_NULL(par,0);
+
+  /* check input */
+  _unur_check_par_object( TDR );
+
+  /* check starting construction points */
+  /* we always use the boundary points as additional starting points,
+     so we do not count these here! */
+  if (n_stp < 0 ) {
+    _unur_warning(GENTYPE,UNUR_ERR_SET,"number of starting points < 0");
+    return 0;
+  }
+
+  if (stp) 
+    /* starting points must be strictly monontonically increasing */
+    for( i=1; i<n_stp; i++ )
+      if (stp[i] <= stp[i-1]) {
+	_unur_warning(GENTYPE,UNUR_ERR_SET,"starting points not strictly monotonically increasing");
+	return 0;
+      }
+
+  /* store date */
+  PAR.starting_cpoints = stp;
+  PAR.n_starting_cpoints = n_stp;
+
+  /* changelog */
+  par->set |= TDR_SET_N_STP | ((stp) ? TDR_SET_STP : 0);
+
+  return 1;
+
+} /* end of unur_tdr_set_cpoints() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_tdr_set_guidefactor( struct unur_par *par, double factor )
+     /*----------------------------------------------------------------------*/
+     /* set factor for relative size of guide table                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par    ... pointer to parameter for building generator object      */
+     /*   factor ... relative size of table                                  */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(par,0);
+
+  /* check input */
+  _unur_check_par_object( TDR );
+
+  /* check new parameter for generator */
+  if (factor < 0) {
+    _unur_warning(GENTYPE,UNUR_ERR_SET,"relative table size < 0");
+    return 0;
+  }
+
+  /* store date */
+  PAR.guide_factor = factor;
+
+  /* changelog */
+  par->set |= TDR_SET_GUIDEFACTOR;
+
+  return 1;
+
+} /* end of unur_tdr_set_guidefactor() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_tdr_set_max_sqhratio( struct unur_par *par, double max_ratio )
+     /*----------------------------------------------------------------------*/
+     /* set bound for ratio A(squeeze) / A(hat)                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par       ... pointer to parameter for building generator object   */
+     /*   max_ratio ... upper bound for ratio to add a new construction point*/
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(par,0);
+
+  /* check input */
+  _unur_check_par_object( TDR );
+
+  /* check new parameter for generator */
+  if (max_ratio < 0. || max_ratio > 1. ) {
+    _unur_warning(GENTYPE,UNUR_ERR_SET,"ratio Atotal / Asqueeze not in [0,1]");
+    return 0;
+  }
+
+  /* store date */
+  PAR.max_ratio = max_ratio;
+
+  /* changelog */
+  par->set |= TDR_SET_MAX_SQHRATIO;
+
+  return 1;
+
+} /* end of unur_tdr_set_max_sqhratio() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_tdr_set_max_intervals( struct unur_par *par, int max_ivs )
+     /*----------------------------------------------------------------------*/
+     /* set maximum number of intervals                                      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par       ... pointer to parameter for building generator object   */
+     /*   max_ivs   ... maximum number of intervals                          */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(par,0);
+
+  /* check input */
+  _unur_check_par_object( TDR );
+
+  /* check new parameter for generator */
+  if (max_ivs < 1 ) {
+    _unur_warning(GENTYPE,UNUR_ERR_SET,"maximum number of intervals < 1");
+    return 0;
+  }
+
+  /* store date */
+  PAR.max_ivs = max_ivs;
+
+  /* changelog */
+  par->set |= TDR_SET_MAX_IVS;
+
+  return 1;
+
+} /* end of unur_tdr_set_max_intervals() */
+
+/*---------------------------------------------------------------------------*/
+
+
+int
+unur_tabl_set_center( struct unur_par *par, double center )
+     /*----------------------------------------------------------------------*/
+     /* set center (approximate mode) of p.d.f.                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par    ... pointer to parameter for building generator object      */
+     /*   center ... center of p.d.f.                                        */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(par,0);
+
+  /* check input */
+  _unur_check_par_object( TDR );
+
+  /* store data */
+  PAR.center = center;
+
+  /* changelog */
+  par->set |= TDR_SET_CENTER;
+
+  /* o.k. */
+  return 1;
+
+} /* end of unur_tabl_set_center() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_tdr_set_usecenter( struct unur_par *par, int usecenter )
+     /*----------------------------------------------------------------------*/
+     /* set flag for using center as construction point                      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par       ... pointer to parameter for building generator object   */
+     /*   usecenter ... 0 = do not use,  !0 = use                            */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   using center as construction point is the default                  */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(par,0);
+
+  /* check input */
+  _unur_check_par_object( TDR );
+
+  /* we use a bit in variant */
+  par->variant = (usecenter) ? (par->variant | TDR_VARFLAG_USECENTER) : (par->variant & (~TDR_VARFLAG_USECENTER));
+
+  /* o.k. */
+  return 1;
+
+} /* end of unur_tdr_set_usecenter() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_tdr_set_usemode( struct unur_par *par, int usemode )
+     /*----------------------------------------------------------------------*/
+     /* set flag for using (exact) mode as construction point                */
+     /* (this overwrites "use_center"!)                                      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par       ... pointer to parameter for building generator object   */
+     /*   usemode   ... 0 = do not use,  !0 = use                            */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   using mode as construction point is the default                    */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(par,0);
+
+  /* check input */
+  _unur_check_par_object( TDR );
+
+  /* we use a bit in variant */
+  par->variant = (usemode) ? (par->variant | TDR_VARFLAG_USEMODE) : (par->variant & (~TDR_VARFLAG_USEMODE));
+
+  /* o.k. */
+  return 1;
+
+} /* end of unur_tdr_set_usemode() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_tdr_set_c( struct unur_par *par, double c )
+     /*----------------------------------------------------------------------*/
+     /* set parameter c for transformation T_c                               */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par  ... pointer to parameter for building generator object        */
+     /*   c    ... parameter c                                               */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(par,0);
+
+  /* check input */
+  _unur_check_par_object( TDR );
+
+  /* check new parameter for generator */
+  if (c > 0.) {
+    _unur_warning(GENTYPE,UNUR_ERR_SET,"c > 0");
+    return 0;
+  }
+  if (c <= -1.) {
+    _unur_warning(GENTYPE,UNUR_ERR_SET,"c <= -1 only if domain is bounded. Use `TABL' method then.");
+    return 0;
+  }
+  if (c != 0 && c > -0.5) {
+    _unur_warning(GENTYPE,UNUR_ERR_SET,"-0.5 < c < 0 not recommended. using c = -0.5 instead.");
+    c = -0.5;
+  }
+    
+  /* store date */
+  PAR.c_T = c;
+
+  /* changelog */
+  par->set |= TDR_SET_C;
+
+  return 1;
+
+} /* end of unur_tdr_set_c() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_tdr_set_verify( struct unur_par *par, int verify )
+     /*----------------------------------------------------------------------*/
+     /* turn verifying of algorithm while sampling on/off                    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par    ... pointer to parameter for building generator object      */
+     /*   verify ... 0 = no verifying,  !0 = verifying                       */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   no verifying is the default                                        */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(par,0);
+
+  /* check input */
+  _unur_check_par_object( TDR );
+
+  /* we use a bit in variant */
+  par->variant = (verify) ? (par->variant | TDR_VARFLAG_VERIFY) : (par->variant & (~TDR_VARFLAG_VERIFY));
+
+  /* o.k. */
+  return 1;
+
+} /* end of unur_tdr_set_verify() */
 
 /*****************************************************************************/
 
@@ -525,6 +902,11 @@ unur_tdr_init( struct unur_par *par )
 
   /* check arguments */
   CHECK_NULL(par,NULL);
+
+  /* check input */
+  if ( par->method != UNUR_METH_TDR ) {
+    _unur_error(GENTYPE,UNUR_ERR_PAR_INVALID,"");
+    return NULL; }
   COOKIE_CHECK(par,CK_TDR_PAR,NULL);
 
   /* create a new empty generator object */
@@ -865,16 +1247,16 @@ unur_tdr_sample_check( struct unur_gen *gen )
     if (pt->dTfx == 0.)
       x = pt->x + u/pt->fx;
     else
-      switch( gen->method & TDR_MASK_T ) {
-      case TDR_METH_LOG:
+      switch( gen->variant & TDR_VARMASK_T ) {
+      case TDR_VAR_T_LOG:
 	x = pt->x + log(pt->dTfx / pt->fx * u + 1.) / pt->dTfx;     /** TODO: possible over/underflow **/
 	break;
-      case TDR_METH_SQRT:
+      case TDR_VAR_T_SQRT:
 	x = pt->x + (pt->Tfx*pt->Tfx*u) / (1.-pt->Tfx*pt->dTfx*u);  
 	/* It cannot happen, that the denominator becomes 0 (in theory!) */
 	/** TODO: underflow possible ?? **/
 	break;
-      case TDR_METH_POW:
+      case TDR_VAR_T_POW:
 	/** TODO **/
 	x = 0.;
 	break;
@@ -888,18 +1270,18 @@ unur_tdr_sample_check( struct unur_gen *gen )
     Tsqx = (iv->Asqueeze > 0.) ? (iv->Tfx + iv->sq * (x - iv->x)) : -INFINITY; /* transformed squeeze at x */ 
 
     /** TODO: possible over/underflow in the following calculations (?) **/
-    switch( gen->method & TDR_MASK_T ) {
-    case TDR_METH_LOG:
+    switch( gen->variant & TDR_VARMASK_T ) {
+    case TDR_VAR_T_LOG:
       Tfx = (fx>0.) ? log(fx) : -INFINITY;
       hx = pt->fx * exp(pt->dTfx*(x - pt->x));    /* value of hat at x */   
       sqx = (iv->Asqueeze > 0.) ? iv->fx * exp(iv->sq*(x - iv->x)) : 0.;     /* value of squeeze at x */
       break;
-    case TDR_METH_SQRT:
+    case TDR_VAR_T_SQRT:
       Tfx = (fx>0.) ? -1./sqrt(fx) : -INFINITY;
       hx = 1./(Thx*Thx);
       sqx = (iv->Asqueeze > 0.) ? 1./(Tsqx*Tsqx) : 0.;
       break;
-    case TDR_METH_POW:
+    case TDR_VAR_T_POW:
       /** TODO **/
       Tfx = 0.;
       hx = 0.;
@@ -928,7 +1310,7 @@ unur_tdr_sample_check( struct unur_gen *gen )
 
 #if UNUR_DEBUG & UNUR_DB_INFO
     /* write info into log file (in case error) */
-    if (error && (gen->debug & TDR_DB_SAMPLE)) 
+    if (error && (gen->debug & TDR_DEBUG_SAMPLE)) 
       _unur_tdr_debug_sample( gen, iv, pt, x, fx, hx, sqx ); 
 #endif
 
@@ -971,8 +1353,12 @@ unur_tdr_free( struct unur_gen *gen )
   if( !gen ) /* nothing to do */
     return;
 
-  /* magic cookies */
+  /* check input */
+  if ( gen->method != UNUR_METH_TDR ) {
+    _unur_warning(GENTYPE,UNUR_ERR_GEN_INVALID,"");
+    return; }
   COOKIE_CHECK(gen,CK_TDR_GEN,/*void*/);
+
   /* we cannot use this generator object any more */
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
@@ -1030,30 +1416,30 @@ _unur_tdr_create( struct unur_par *par )
   gen->distr = par->distr;
 
   /* which transformation */
-  if      (PAR.c_T == 0.)    variant = TDR_METH_LOG;
-  else if (PAR.c_T == -0.5)  variant = TDR_METH_SQRT;
-  else                       variant = TDR_METH_POW;
-  par->method = (par->method & (~TDR_MASK_T)) | variant;
+  if      (PAR.c_T == 0.)    variant = TDR_VAR_T_LOG;
+  else if (PAR.c_T == -0.5)  variant = TDR_VAR_T_SQRT;
+  else                       variant = TDR_VAR_T_POW;
+  par->variant = (par->variant & (~TDR_VARMASK_T)) | variant;
 
   /** TODO: remove this **/
-  if ((par->method & TDR_MASK_T) == TDR_METH_POW) {
+  if ((par->variant & TDR_VARMASK_T) == TDR_VAR_T_POW) {
     _unur_warning(gen->genid,UNUR_ERR_INIT,"c != 0. and c != -0.5 not implemented!");
     return NULL;
   }
 
   /* routines for sampling and destroying generator */
   gen->destroy = unur_tdr_free;
-  if (par->method & UNUR_MASK_SCHECK)
+  if (par->variant & TDR_VARFLAG_VERIFY)
     SAMPLE = unur_tdr_sample_check;
   else
-    switch( par->method & TDR_MASK_T ) {
-    case TDR_METH_LOG:
+    switch( par->variant & TDR_VARMASK_T ) {
+    case TDR_VAR_T_LOG:
       SAMPLE = unur_tdr_sample_log;
       break;
-    case TDR_METH_SQRT:
+    case TDR_VAR_T_SQRT:
       SAMPLE = unur_tdr_sample_sqrt;
       break;
-    case TDR_METH_POW:
+    case TDR_VAR_T_POW:
       /** TODO **/
       SAMPLE = NULL;
       break;
@@ -1098,6 +1484,16 @@ _unur_tdr_create( struct unur_par *par )
   _unur_copy_urng_pointer(par,gen); /* pointer to urng into generator object */
   _unur_copy_debugflag(par,gen);    /* copy debugging flags into generator object */
 
+  /* mode known ?? */
+  if (!(par->set & TDR_SET_MODE))
+    /* we cannot use the mode as construction point */
+    par->variant = par->variant & (~TDR_VARFLAG_USEMODE);
+
+  /* center known ?? */
+  if (!(par->set & TDR_SET_CENTER))
+    /* we cannot use the center as construction point */
+    par->variant = par->variant & (~TDR_VARFLAG_USECENTER);
+
   /* return pointer to (almost empty) generator object */
   return(gen);
 
@@ -1111,13 +1507,10 @@ _unur_tdr_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
      /* list of construction points for starting intervals.                  */
      /* if not provided as arguments compute these                           */
      /* by means of the "equiangular rule" from AROU.                        */
-     /** TODO (?) **/
      /*                                                                      */
      /* parameters:                                                          */
      /*   par ... pointer to parameter for building generator object         */
      /*   gen ... pointer to generator object                                */
-     /*   use_boundary ... indicates whether boundary  points are used as    */
-     /*                    construction points.                              */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... if successful                                                */
@@ -1127,16 +1520,19 @@ _unur_tdr_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
   struct unur_tdr_interval *iv;
   double left_angle, right_angle, diff_angle, angle;
   double x, x_last, fx, fx_last;
-  int i, use_mode, is_mode, was_mode, is_increasing;
-  double mode_shift = 0.;
+  int use_center, use_mode, is_mode, was_mode;
+  int i, is_increasing;
+  double extra_cpoint;
 
   /* check arguments */
   COOKIE_CHECK(par,CK_TDR_PAR,0);
   COOKIE_CHECK(gen,CK_TDR_GEN,0);
 
+  /* initialize boolean */
+  is_mode = was_mode = FALSE;
+
   /* use mode as construction point ? */
-  use_mode = (par->method & UNUR_MASK_MODE) ? TRUE : FALSE;
-  is_mode = was_mode = FALSE;    /* initialize boolean */
+  use_mode = (par->variant & TDR_VARFLAG_USEMODE) ? TRUE : FALSE;
 
   /* check mode */
   if (use_mode &&
@@ -1145,16 +1541,31 @@ _unur_tdr_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
     use_mode = 0;
   }
 
+  /* use center as construction point ? */
+  use_center = FALSE;
+  if (!use_mode) {
+    use_center = (par->variant & TDR_VARFLAG_USECENTER) ? TRUE : FALSE;
+    /* check center */
+    if (use_center &&
+	( PAR.center < GEN.bleft || PAR.center > GEN.bright ) ) {
+      _unur_warning(gen->genid,UNUR_ERR_INIT,"center out of domain.");
+      use_center = 0;
+    }
+  }
+
+  /* add extra construction point        */
+  /* (use either mode or center or none) */
+  extra_cpoint = use_mode ? PAR.mode : (use_center ? PAR.center : 0. );
+
   /* reset counter of intervals */
   GEN.n_ivs = 0;
 
   /* prepare for computing construction points */
   if (!PAR.starting_cpoints) {
-    /* move mode into  x = 0 ? */
-    mode_shift = use_mode ? PAR.mode : 0.;
+    /* move center into  x = 0 */
     /* angles of boundary of domain */
-    left_angle =  ( GEN.bleft <= -INFINITY ) ? -M_PI/2. : atan(GEN.bleft - mode_shift);  
-    right_angle = ( GEN.bright >= INFINITY )  ? M_PI/2.  : atan(GEN.bright - mode_shift);
+    left_angle =  ( GEN.bleft <= -INFINITY ) ? -M_PI/2. : atan(GEN.bleft - PAR.center);  
+    right_angle = ( GEN.bright >= INFINITY )  ? M_PI/2.  : atan(GEN.bright - PAR.center);
     /* we use equal distances between the angles of the cpoints   */
     /* and the boundary points                                    */
     diff_angle = (right_angle-left_angle) / (PAR.n_starting_cpoints + 1);
@@ -1192,7 +1603,7 @@ _unur_tdr_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
       else {
 	/* compute construction points by means of "equiangular rule" */
 	angle += diff_angle;                /** TODO: angle >= M_PI/2. !! **/
-	x = tan( angle ) + mode_shift;      /** TODO: possible over/underflow **/
+	x = tan( angle ) + PAR.center;      /** TODO: possible over/underflow **/
       }
     }
     else {
@@ -1201,17 +1612,17 @@ _unur_tdr_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
       x = GEN.bright;
     }
 
-    /* insert mode ? */
-    if (use_mode && x >= PAR.mode) {
-      use_mode = FALSE;   /* we use the mode only once (of course) */
-      is_mode = TRUE;     /* the next construction point is the mode */
-      if (x>PAR.mode) {
-	x = PAR.mode;     /* use the mode now ... */
+    /* insert mode or center ? */
+    if ((use_mode || use_center) && x >= extra_cpoint) {
+      is_mode = use_mode;              /* the next construction point is the mode */
+      use_center = use_mode = FALSE;   /* we use the mode only once (of course) */
+      if (x>extra_cpoint) {
+	x = extra_cpoint;     /* use the mode now ... */
 	--i;              /* and push the orignal starting point back on stack */
 	if (!PAR.starting_cpoints)
 	  angle -= diff_angle; /* we have to compute the starting point in this case */
       }
-      /* else: x==PAR.mode --> nothing to do */
+      /* else: x == extra_cpoint --> nothing to do */
     }
     else
       is_mode = FALSE;
@@ -1406,18 +1817,18 @@ _unur_tdr_interval_new( struct unur_gen *gen, double x, double fx, int is_mode )
     return iv;
   }
 
-  switch( gen->method & TDR_MASK_T ) {
-  case TDR_METH_LOG:
+  switch( gen->variant & TDR_VARMASK_T ) {
+  case TDR_VAR_T_LOG:
     iv->Tfx = log(fx);                                     /** TODO: possible over/underflow **/
     iv->dTfx = (is_mode) ? 0. : (1./fx * dPDF(x));         /** TODO: possible over/underflow **/
     /* we can set dPDF(x) = 0. for the mode */
     break;
-  case TDR_METH_SQRT:
+  case TDR_VAR_T_SQRT:
     iv->Tfx = -1./sqrt(fx);                                /** TODO: possible over/underflow **/
     iv->dTfx = (is_mode) ? 0. : (0.5/pow(fx,1.5) * dPDF(x));  /** TODO: possible over/underflow **/
     if (isnan(iv->dTfx)) iv->dTfx = INFINITY;              /** TODO: isnan is not ANSI C **/
     break;
-  case TDR_METH_POW:
+  case TDR_VAR_T_POW:
     /** TODO **/
     iv->Tfx = -pow(fx,GEN.c_T);                           /** TODO: possible over/underflow **/
     iv->dTfx = (is_mode) ? 0. : (GEN.c_T*pow(fx,GEN.c_T-1.) * dPDF(x)); /** TODO: possible over/underflow **/
@@ -1635,9 +2046,9 @@ _unur_tdr_interval_area( struct unur_gen *gen, struct unur_tdr_interval *iv, dou
        (x>= INFINITY && slope>=0.)  )   /* we have set (Tf)'(x) = INFINITY, if f(x)=0 */
     return INFINITY;
 
-  switch( gen->method & TDR_MASK_T ) {
+  switch( gen->variant & TDR_VARMASK_T ) {
 
-  case TDR_METH_LOG:
+  case TDR_VAR_T_LOG:
     /* T(x) = log(x) */
     if (slope != 0.) {                         
       /** TODO: cannot use this case if slope is `very small' **/
@@ -1650,7 +2061,7 @@ _unur_tdr_interval_area( struct unur_gen *gen, struct unur_tdr_interval *iv, dou
       area = iv->fx * (x - iv->x);
     break;
 
-  case TDR_METH_SQRT:
+  case TDR_VAR_T_SQRT:
     /* T(x) = -1./sqrt(x) */
     if (slope != 0.) {
       /** TODO: cannot use this case if slope is `very small' **/
@@ -1671,7 +2082,7 @@ _unur_tdr_interval_area( struct unur_gen *gen, struct unur_tdr_interval *iv, dou
       area = iv->fx * (x - iv->x);
     break;
 
-  case TDR_METH_POW:
+  case TDR_VAR_T_POW:
     /* T(x) = -1./x^c */
     /** TODO **/
     break;
@@ -1709,7 +2120,7 @@ _unur_tdr_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_old
 
 #if UNUR_DEBUG & UNUR_DB_INFO
   /* write info into log file */
-  if (gen->debug & TDR_DB_SPLIT) 
+  if (gen->debug & TDR_DEBUG_SPLIT) 
     _unur_tdr_debug_split_start( gen,iv_oldl,x,fx );
 #endif
 
@@ -1764,7 +2175,7 @@ _unur_tdr_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_old
       _unur_warning(gen->genid,UNUR_ERR_SAMPLE,"Cannot split interval at given point.");
 #if UNUR_DEBUG & UNUR_DB_INFO
       /* write info into log file */
-      if (gen->debug & TDR_DB_SPLIT) 
+      if (gen->debug & TDR_DEBUG_SPLIT) 
 	_unur_tdr_debug_split_stop( gen,iv_oldl,iv_newr );
 #endif
       
@@ -1787,7 +2198,7 @@ _unur_tdr_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_old
   
 #if UNUR_DEBUG & UNUR_DB_INFO
   /* write info into log file */
-  if (gen->debug & TDR_DB_SPLIT) 
+  if (gen->debug & TDR_DEBUG_SPLIT) 
     _unur_tdr_debug_split_stop( gen,iv_oldl,iv_newr );
 #endif
 
@@ -1965,48 +2376,56 @@ _unur_tdr_debug_init( struct unur_par *par, struct unur_gen *gen )
   fprintf(log,"%s: type    = continuous univariate random variates\n",gen->genid);
   fprintf(log,"%s: method  = transformed density rejection\n",gen->genid);
   fprintf(log,"%s: transformation T_c(x) = ",gen->genid);
-  switch( gen->method & TDR_MASK_T ) {
-  case TDR_METH_LOG:
+  switch( gen->variant & TDR_VARMASK_T ) {
+  case TDR_VAR_T_LOG:
     fprintf(log,"log(x)  ... c = 0");                   break;
-  case TDR_METH_SQRT:
+  case TDR_VAR_T_SQRT:
     fprintf(log,"-1/sqrt(x)  ... c = -1/2");            break;
-  case TDR_METH_POW:
+  case TDR_VAR_T_POW:
     fprintf(log,"-x^(%g)  ... c = %g",PAR.c_T,PAR.c_T); break;
   }
-  _unur_print_if_default(par,UNUR_SET_TDR_C);
+  _unur_print_if_default(par,TDR_SET_C);
   fprintf(log,"\n%s:\n",gen->genid);
 
   _unur_distr_cont_debug( gen->distr, gen->genid );
 
   fprintf(log,"%s: sampling routine = unur_tdr_sample_",gen->genid);
-  if (par->method & UNUR_MASK_SCHECK)
+  if (par->variant & TDR_VARFLAG_VERIFY)
     fprintf(log,"check()\n");
   else
-    switch( gen->method & TDR_MASK_T ) {
-    case TDR_METH_LOG:   
+    switch( gen->variant & TDR_VARMASK_T ) {
+    case TDR_VAR_T_LOG:   
       fprintf(log,"log()\n");   break;
-    case TDR_METH_SQRT:
+    case TDR_VAR_T_SQRT:
       fprintf(log,"sqrt()\n");  break;
-    case TDR_METH_POW:
+    case TDR_VAR_T_POW:
       fprintf(log,"pow()\n");   break;
     }
   fprintf(log,"%s:\n",gen->genid);
 
+  fprintf(log,"%s: center = %g",gen->genid,PAR.center);
+  _unur_print_if_default(par,TDR_SET_CENTER);
+  if (par->variant & TDR_VARFLAG_USEMODE)
+    fprintf(log,"\n%s: use mode as construction point",gen->genid);
+  else if (par->variant & TDR_VARFLAG_USECENTER)
+    fprintf(log,"\n%s: use center as construction point",gen->genid);
+  fprintf(log,"\n%s:\n",gen->genid);
+
   fprintf(log,"%s: maximum number of intervals        = %d",gen->genid,PAR.max_ivs);
-  _unur_print_if_default(par,UNUR_SET_MAX_IVS);
+  _unur_print_if_default(par,TDR_SET_MAX_IVS);
   fprintf(log,"\n%s: bound for ratio  Atotal / Asqueeze = %g%%",gen->genid,PAR.max_ratio*100.);
-  _unur_print_if_default(par,UNUR_SET_MAX_RATIO);
+  _unur_print_if_default(par,TDR_SET_MAX_SQHRATIO);
   fprintf(log,"\n%s:\n",gen->genid);
 
   fprintf(log,"%s: sampling from list of intervals: indexed search (guide table method)\n",gen->genid);
   fprintf(log,"%s:    relative guide table size = %g%%",gen->genid,100.*PAR.guide_factor);
-  _unur_print_if_default(par,UNUR_SET_FACTOR);
+  _unur_print_if_default(par,TDR_SET_GUIDEFACTOR);
   fprintf(log,"\n%s:\n",gen->genid);
 
   fprintf(log,"%s: number of starting points = %d",gen->genid,PAR.n_starting_cpoints);
-  _unur_print_if_default(par,UNUR_SET_N_STP);
+  _unur_print_if_default(par,TDR_SET_N_STP);
   fprintf(log,"\n%s: starting points:",gen->genid);
-  if (par->set & UNUR_SET_STP)
+  if (par->set & TDR_SET_STP)
     for (i=0; i<PAR.n_starting_cpoints; i++) {
       if (i%5==0) fprintf(log,"\n%s:\t",gen->genid);
       fprintf(log,"   %#g,",PAR.starting_cpoints[i]);
@@ -2076,7 +2495,7 @@ _unur_tdr_debug_intervals( struct unur_gen *gen )
   log = unur_get_stream();
 
   fprintf(log,"%s:Intervals: %d\n",gen->genid,GEN.n_ivs);
-  if (gen->debug & TDR_DB_IV) {
+  if (gen->debug & TDR_DEBUG_IV) {
     fprintf(log,"%s: Nr.            tp          f(tp)        T(f(tp))    d(T(f(tp)))        squeeze\n",gen->genid);
     for (iv = GEN.iv, i=0; iv->next!=NULL; iv=iv->next, i++) {
       COOKIE_CHECK(iv,CK_TDR_IV,/*void*/); 
@@ -2097,7 +2516,7 @@ _unur_tdr_debug_intervals( struct unur_gen *gen )
   }
     
   /* print and sum areas below squeeze and hat */
-  if (gen->debug & TDR_DB_IV) {
+  if (gen->debug & TDR_DEBUG_IV) {
     fprintf(log,"%s:Areas in intervals:\n",gen->genid);
     fprintf(log,"%s: Nr.\tbelow squeeze\t\t  below hat (left and right)\t\t  cumulated\n",gen->genid);
     sAsqueeze = sAhatl = sAhatr = 0.;

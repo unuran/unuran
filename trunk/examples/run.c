@@ -110,16 +110,19 @@ int main()
   distr_xxx = unur_distr_normal(NULL,0);
   par = unur_cstd_new(distr_xxx);
   unur_run_tests(par,RUN_TESTS,unur_cdf_normal);
+  unur_distr_free(distr_xxx);
 
   fpar[0] = 5.;
   distr_xxx = unur_distr_gamma(fpar,1);
   par = unur_cstd_new(distr_xxx);
   unur_run_tests(par,RUN_TESTS,unur_cdf_gamma);
+  unur_distr_free(distr_xxx);
 
   fpar[0] = 5.;
   distr_xxx = unur_distr_exponential(fpar,1);
   par = unur_cstd_new(distr_xxx);
   unur_run_tests(par,RUN_TESTS,unur_cdf_exponential);
+  unur_distr_free(distr_xxx);
 
 #endif
 
@@ -182,7 +185,6 @@ int main()
 
   /* get default parameters for new generator */
   par = unur_utdr_new(distr_normal);
-  unur_set_factor(par,3.);
 
   /* run tests */
   unur_run_tests(par,RUN_TESTS,unur_cdf_normal);
@@ -194,8 +196,9 @@ int main()
 #if RUN_AROU == 1
 
   par = unur_arou_new(distr_normal);
-  unur_set_cpoints(par,30,NULL);
-  unur_set_max_shratio(par,1.);
+  unur_arou_set_cpoints(par,30,NULL);
+  unur_arou_set_max_sqhratio(par,1.);
+  unur_arou_set_usecenter(par,0);
 /*    unur_set_debug(par,1); */
 
   /* run tests */
@@ -208,10 +211,9 @@ int main()
 #if RUN_TDRSQRT == 1
 
   par = unur_tdr_new(distr_normal);
-  unur_set_mode(par,0.);
-  unur_set_tdr_c(par,-0.5);
-  unur_set_cpoints(par,30,NULL);
-  unur_set_max_shratio(par,0.);
+  unur_tdr_set_c(par,-0.5);
+  unur_tdr_set_cpoints(par,30,NULL);
+  unur_tdr_set_max_sqhratio(par,0.);
 /*    unur_set_debug(par,1); */
 
   /* run tests */
@@ -224,10 +226,9 @@ int main()
 #if RUN_TDRLOG == 1
 
   par = unur_tdr_new(distr_normal);
-  unur_set_mode(par,0.);
-  unur_set_tdr_c(par,0.);
-  unur_set_cpoints(par,30,NULL);
-  unur_set_max_shratio(par,0.);
+  unur_tdr_set_c(par,0.);
+  unur_tdr_set_cpoints(par,30,NULL);
+  unur_tdr_set_max_sqhratio(par,0.);
 
   /* run tests */
   unur_run_tests(par,RUN_TESTS,unur_cdf_normal);
@@ -237,19 +238,16 @@ int main()
 #endif
 
 #if RUN_TABL == 1
-    
+
   par = unur_tabl_new(distr_normal);
+  unur_tabl_set_boundary(par,-50.,50.);
 
 /*    slopes[0] = slopes[2] = 0.; */
 /*    slopes[1] = -50.; */
 /*    slopes[3] = 50.; */
-/*    unur_set_slopes(par,slopes,2); */
 
-  unur_set_domain(par,-50.,50.);
-  unur_set_variant(par,1UL);
-/*    unur_set_max_intervals(par,1000); */
-/*    unur_set_max_shratio(par,1.); */
-  unur_set_tabl_c(par,0.1);
+/*    unur_tabl_set_variant(par,1UL); */
+  unur_tabl_set_areafraction(par,0.1);
 
   /* run tests */
   unur_run_tests(par,RUN_TESTS,unur_cdf_normal);
@@ -284,8 +282,9 @@ int main()
 
   /* get default parameters for new generator */
   par = unur_arou_new(distr_gamma);
-  unur_set_cpoints(par,30,NULL);
-  unur_set_max_shratio(par,0.99);
+  unur_arou_set_cpoints(par,30,NULL);
+  unur_arou_set_max_sqhratio(par,0.99);
+  unur_arou_set_usecenter(par,0);
 
   /* run tests */
   unur_run_tests(par,RUN_TESTS,unur_cdf_gamma);
@@ -298,10 +297,9 @@ int main()
 
   /* get default parameters for new generator */
   par = unur_tdr_new(distr_gamma);
-  unur_set_mode(par,unur_mode_gamma(fpar,1));
-  unur_set_tdr_c(par,-0.5);
-  unur_set_cpoints(par,30,NULL);
-  unur_set_max_shratio(par,0.);
+  unur_tdr_set_c(par,-0.5);
+  unur_tdr_set_cpoints(par,30,NULL);
+  unur_tdr_set_max_sqhratio(par,0.);
 
   /* run tests */
   unur_run_tests(par,RUN_TESTS,unur_cdf_gamma);
@@ -314,10 +312,9 @@ int main()
 
   /* get default parameters for new generator */
   par = unur_tdr_new(distr_gamma);
-  unur_set_mode(par,unur_mode_gamma(fpar,1));
-  unur_set_tdr_c(par,0.);
-  unur_set_cpoints(par,30,NULL);
-  unur_set_max_shratio(par,0.);
+  unur_tdr_set_c(par,0.);
+  unur_tdr_set_cpoints(par,30,NULL);
+  unur_tdr_set_max_sqhratio(par,0.);
 
   /* run tests */
   unur_run_tests(par,RUN_TESTS,unur_cdf_gamma);
@@ -334,8 +331,8 @@ int main()
   slopes[0] = slopes[2] = unur_mode_gamma(fpar,1);
   slopes[1] = 0.;
   slopes[3] = 50.;
-  unur_set_slopes(par,slopes,2);
-  unur_set_tabl_c(par,0.1);
+  unur_tabl_set_slopes(par,slopes,2);
+  unur_tabl_set_areafraction(par,0.1);
 
   /* run tests */
   unur_run_tests(par,RUN_TESTS,unur_cdf_gamma);
@@ -372,8 +369,9 @@ int main()
 
   /* get default parameters for new generator */
   par = unur_arou_new(distr_beta);
-  unur_set_cpoints(par,30,NULL);
-  unur_set_max_shratio(par,0.);
+  unur_arou_set_cpoints(par,30,NULL);
+  unur_arou_set_max_sqhratio(par,0.);
+  unur_arou_set_usecenter(par,0);
 
   /* run tests */
   unur_run_tests(par,RUN_TESTS,unur_cdf_beta);
@@ -386,10 +384,9 @@ int main()
 
   /* get default parameters for new generator */
   par = unur_tdr_new(distr_beta);
-  unur_set_mode(par,unur_mode_beta(fpar,2));
-  unur_set_tdr_c(par,-0.5);
-  unur_set_cpoints(par,30,NULL);
-  unur_set_max_shratio(par,0.);
+  unur_tdr_set_c(par,-0.5);
+  unur_tdr_set_cpoints(par,30,NULL);
+  unur_tdr_set_max_sqhratio(par,0.);
 
   /* run tests */
   unur_run_tests(par,RUN_TESTS,unur_cdf_beta);
@@ -402,10 +399,9 @@ int main()
 
   /* get default parameters for new generator */
   par = unur_tdr_new(distr_beta);
-  unur_set_mode(par,unur_mode_beta(fpar,2));
-  unur_set_tdr_c(par,0.);
-  unur_set_cpoints(par,30,NULL);
-  unur_set_max_shratio(par,0.);
+  unur_tdr_set_c(par,0.);
+  unur_tdr_set_cpoints(par,30,NULL);
+  unur_tdr_set_max_sqhratio(par,0.);
 
   /* run tests */
   unur_run_tests(par,RUN_TESTS,unur_cdf_beta);
@@ -415,11 +411,11 @@ int main()
 #endif
 
 #if RUN_TABL == 1
-    
+
   par = unur_tabl_new(distr_beta);
-  unur_set_domain(par,0.,1.);
+
 /*    unur_set_variant(par,1UL); */
-  unur_set_tabl_c(par,0.1);
+  unur_tabl_set_areafraction(par,0.1);
 
   /* run tests */
   unur_run_tests(par,RUN_TESTS,unur_cdf_beta);
@@ -457,8 +453,9 @@ int main()
 
   /* get default parameters for new generator */
   par = unur_arou_new(distr_cauchy);
-  unur_set_cpoints(par,30,NULL);
-  unur_set_max_shratio(par,0.);
+  unur_arou_set_cpoints(par,30,NULL);
+  unur_arou_set_max_sqhratio(par,0.);
+  unur_arou_set_usecenter(par,0);
 
   /* run tests */
   unur_run_tests(par,RUN_TESTS,unur_cdf_cauchy);
@@ -471,10 +468,9 @@ int main()
 
   /* get default parameters for new generator */
   par = unur_tdr_new(distr_cauchy);
-  unur_set_mode(par,unur_mode_cauchy(fpar,2));
-  unur_set_tdr_c(par,-0.5);
-  unur_set_cpoints(par,30,NULL);
-  unur_set_max_shratio(par,0.);
+  unur_tdr_set_c(par,-0.5);
+  unur_tdr_set_cpoints(par,30,NULL);
+  unur_tdr_set_max_sqhratio(par,0.);
 
   /* run tests */
   unur_run_tests(par,RUN_TESTS,unur_cdf_cauchy);
@@ -487,10 +483,9 @@ int main()
 
   /* get default parameters for new generator */
   par = unur_tdr_new(distr_cauchy);
-  unur_set_mode(par,unur_mode_cauchy(fpar,2));
-  unur_set_tdr_c(par,0.);
-  unur_set_cpoints(par,30,NULL);
-  unur_set_max_shratio(par,0.);
+  unur_tdr_set_c(par,0.);
+  unur_tdr_set_cpoints(par,30,NULL);
+  unur_tdr_set_max_sqhratio(par,0.);
 
   /* run tests */
   unur_run_tests(par,RUN_TESTS,unur_cdf_cauchy);
@@ -500,11 +495,12 @@ int main()
 #endif
 
 #if RUN_TABL == 1
-    
+
   par = unur_tabl_new(distr_cauchy);
-  unur_set_domain(par,-50.,50.);
+  unur_tabl_set_boundary(par,-50.,50.);
+    
 /*    unur_set_variant(par,1UL); */
-  unur_set_tabl_c(par,0.1);
+  unur_tabl_set_areafraction(par,0.1);
 
   /* run tests */
   unur_run_tests(par,RUN_TESTS,unur_cdf_cauchy);
@@ -537,8 +533,9 @@ int main()
 #if RUN_AROU == 1
 
   par = unur_arou_new(distr_uniform);
-  unur_set_cpoints(par,30,NULL);
-  unur_set_max_shratio(par,1.);
+  unur_arou_set_cpoints(par,30,NULL);
+  unur_arou_set_max_sqhratio(par,1.);
+  unur_arou_set_usecenter(par,0);
 
   /* run tests */
   unur_run_tests(par,RUN_TESTS,unur_cdf_uniform);
@@ -550,10 +547,11 @@ int main()
 #if RUN_TDRSQRT == 1
 
   par = unur_tdr_new(distr_uniform);
-/*    unur_set_mode(par,0.5); */
-  unur_set_tdr_c(par,-0.5);
-  unur_set_cpoints(par,30,NULL);
-  unur_set_max_shratio(par,1.);
+  unur_tdr_set_c(par,-0.5);
+  unur_tdr_set_cpoints(par,30,NULL);
+  unur_tdr_set_max_sqhratio(par,1.);
+  unur_tdr_set_usemode(par,0);
+
 /*    unur_set_debug(par,1); */
 
   /* run tests */
@@ -566,10 +564,9 @@ int main()
 #if RUN_TDRLOG == 1
 
   par = unur_tdr_new(distr_uniform);
-  unur_set_mode(par,0.5);
-  unur_set_tdr_c(par,0.);
-  unur_set_cpoints(par,30,NULL);
-  unur_set_max_shratio(par,0.);
+  unur_tdr_set_c(par,0.);
+  unur_tdr_set_cpoints(par,30,NULL);
+  unur_tdr_set_max_sqhratio(par,0.);
 
   /* run tests */
   unur_run_tests(par,RUN_TESTS,unur_cdf_uniform);
@@ -579,13 +576,11 @@ int main()
 #endif
 
 #if RUN_TABL == 1
-    
-  par = unur_tabl_new(distr_uniform);
-  unur_set_domain(par,-1.5,2.5);
-/*    unur_set_variant(par,1UL); */
-  unur_set_tabl_c(par,0.25);
 
-  unur_set_max_shratio(par,1.);
+  par = unur_tabl_new(distr_uniform);
+  unur_tabl_set_boundary(par,-1.5,2.5);
+  unur_tabl_set_areafraction(par,0.25);
+  unur_tabl_set_max_sqhratio(par,1.);
 
   /* run tests */
   unur_run_tests(par,RUN_TESTS,unur_cdf_uniform);

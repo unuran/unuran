@@ -4,7 +4,8 @@
 AM_CFLAGS = -Wall
 
 INCLUDES = \
- -I$(top_srcdir)/src
+ -I$(top_srcdir)/src \
+ -I$(top_srcdir)/src/methods
 
 noinst_LIBRARIES = libutils.a
 

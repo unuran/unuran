@@ -2,6 +2,12 @@
 -----------------------------------------------------------------------------
 
 (*) set:
+	ersetze unur_set_... befehle durch unur_<methode>_set... befehle (?)
+	soll dabei immer der unur_par structure ueberprueft werden??
+
+-----------------------------------------------------------------------------
+
+(*) set:
 	unur_set_mode() und unur_set_usemode().
 	ersters sollte den usemode setzen/nicht setzen ??
 

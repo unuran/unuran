@@ -73,6 +73,40 @@
 #include <unur_utils.h>
 
 /*---------------------------------------------------------------------------*/
+/* Variants                                                                  */
+
+#define TABL_VARFLAG_VERIFY       0x001UL   /* flag for verifying mode           */
+
+/* indicate how to split interval */
+#define TABL_VARMASK_SPLIT        0x0f0UL /* split at        computation     convergence of hat */
+#define TABL_VARFLAG_SPLIT_POINT  0x000UL /* sampled point    none            slowest          */
+#define TABL_VARFLAG_SPLIT_MEAN   0x010UL /* mean point       slower          better           */
+#define TABL_VARFLAG_SPLIT_ARC    0x020UL /* "arcmean"        very slow       very good for almost unbounded domain */
+
+/* indicate if starting intervals have to be split */
+#define TABL_VARMASK_STP          0xf00UL
+#define TABL_VARFLAG_STP_A        0x100UL /* use equal area rule (SPLIT A in [1])   */
+#define TABL_VARFLAG_STP_B        0x200UL /* use main subdivisions (SPLIT B in [1]) */
+
+/*---------------------------------------------------------------------------*/
+/* Debugging flags (do not use first 8 bits)                                 */
+
+#define TABL_DEBUG_IV             0x010UL /* show intervals                        */
+#define TABL_DEBUG_A_IV           0x020UL /* show intervals after split A, before split B */
+
+/*---------------------------------------------------------------------------*/
+/* Flags for logging set calls                                               */
+
+#define TABL_SET_GUIDEFACTOR      0x01UL
+#define TABL_SET_VARIANT          0x02UL
+#define TABL_SET_SLOPES           0x04UL
+#define TABL_SET_AREAFRACTION     0x08UL
+#define TABL_SET_MAX_IVS          0x10UL
+#define TABL_SET_MAX_SQHRATIO     0x20UL
+#define TABL_SET_N_STP            0x40UL
+#define TABL_SET_BOUNDARY         0x80UL
+
+/*---------------------------------------------------------------------------*/
 
 #define GENTYPE "TABL"         /* type of generator                          */
 
@@ -167,24 +201,6 @@ static void _unur_tabl_debug_intervals( struct unur_gen *gen, int print_areas );
 
 /*---------------------------------------------------------------------------*/
 
-/* indicate variant of method */
-
-#define TABL_MASK_SPLIT    0x003u   /* indicates how to split interval */
-/*                                     split at        computation     convergence of hat */
-#define TABL_SPLIT_POINT   0x000u   /* sampled point    none            slowest          */
-#define TABL_SPLIT_MEAN    0x001u   /* mean point       slower          better           */
-#define TABL_SPLIT_ARC     0x002u   /* "arcmean"        very slow       very good for almost unbounded domain */
-
-#define TABL_MASK_STP      0x0f0u   /* indicates if starting intervals have to be split */
-#define TABL_STP_SPLIT_A   0x010u   /* use equal area rule (SPLIT A in [1])   */
-#define TABL_STP_SPLIT_B   0x020u   /* use main subdivisions (SPLIT B in [1]) */
-
-/* Special debugging flags (do not use the first 3 bits) */
-#define TABL_DB_IV         0x01u    /* show intervals                        */
-#define TABL_DB_A_IV       0x02u    /* show intervals after split A, before split B */
-
-/*---------------------------------------------------------------------------*/
-
 #define min(x,y)   (((x)<(y)) ? (x) : (y))
 #define max(x,y)   (((x)>(y)) ? (x) : (y))
 
@@ -213,15 +229,15 @@ unur_tabl_new( struct unur_distr *distr )
 
   /* check arguments */
   CHECK_NULL(distr,NULL);
-  COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
 
   /* check distribution */
   if (distr->type != UNUR_DISTR_CONT) {
-    _unur_error(GENTYPE,UNUR_ERR_GENERIC,"wrong distribution type");
-    return NULL;
-  }
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,"");
+    return NULL; }
+  COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
+
   if (DISTR.pdf == NULL) {
-    _unur_error(GENTYPE,UNUR_ERR_GENERIC,"p.d.f. required");
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"p.d.f.");
     return NULL;
   }
 
@@ -236,9 +252,6 @@ unur_tabl_new( struct unur_distr *distr )
   PAR.slopes        = NULL;      /* pointer to slopes of p.d.f.              */
   PAR.n_slopes      = 0;         /* number of slopes                         */
 
-  PAR.bleft         = 0.;        /* left boundary of domain (no useful default) */
-  PAR.bright        = 0.;        /* right boundary of domain (left = right --> cannot make hat) */
-
   PAR.n_starting_cpoints = 30;   /* number of starting points                */
   PAR.area_fract    = 0.25;      /* parameter for equal area rule (default from [1] ) */
 
@@ -248,17 +261,29 @@ unur_tabl_new( struct unur_distr *distr )
   PAR.guide_factor  = 1.; /* guide table has same size as array of intervals */
 
   par->method       = UNUR_METH_TABL;         /* indicate method             */
-  par->variant      = 0UL;       /* default variant                          */
-
-  PAR.variant       = (TABL_SPLIT_ARC   |     /* variant: split at arc_mean  */
-		       TABL_STP_SPLIT_A |     /* run SPLIT A on slopes       */
-		       TABL_STP_SPLIT_B  );   /* run SPLIT B on slopes       */
+  par->variant      = (TABL_VARFLAG_SPLIT_ARC   |     /* variant: split at arc_mean  */
+		       TABL_VARFLAG_STP_A |     /* run SPLIT A on slopes       */
+		       TABL_VARFLAG_STP_B  );   /* run SPLIT B on slopes       */
 
 
   par->set          = 0UL;       /* inidicate default parameters             */    
   par->urng         = unur_get_default_urng(); /* use default urng           */
 
   _unur_set_debugflag_default(par); /* set default debugging flags           */
+
+  /* we use the domain to get the boundaries for our computation limits      */
+  /* (but only if the domain is bounded!)                                    */
+  if ( (distr->set & UNUR_DISTR_SET_DOMAIN)
+       && DISTR.domain[0] > -INFINITY
+       && DISTR.domain[1] <  INFINITY ) {
+    PAR.bleft = DISTR.domain[0];
+    PAR.bright = DISTR.domain[1];
+    par->set |= TABL_SET_BOUNDARY;
+  }
+  else {               /* the default */
+    PAR.bleft  = 0.;  /* left boundary of domain (no useful default) */
+    PAR.bright = 0.;  /* right boundary of domain (left = right --> cannot make hat) */
+  }
 
   /* routine for starting generator */
   par->init = unur_tabl_init;
@@ -269,8 +294,272 @@ unur_tabl_new( struct unur_distr *distr )
 
 /*****************************************************************************/
 
+int
+unur_tabl_set_nstp( struct unur_par *par, int n_stp )
+     /*----------------------------------------------------------------------*/
+     /* set number of construction points for hat at initialization          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par    ... pointer to parameter for building generator object      */
+     /*   n_stp  ... number of starting points                               */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(par,0);
+
+  /* check input */
+  _unur_check_par_object( TABL );
+
+  /* check starting construction points */
+  /* we always use the boundary points as additional starting points,
+     so we do not count these here! */
+  if (n_stp < 0 ) {
+    _unur_warning(GENTYPE,UNUR_ERR_SET,"number of starting points < 0");
+    return 0;
+  }
+
+  /* store date */
+  PAR.n_starting_cpoints = n_stp;
+
+  /* changelog */
+  par->set |= TABL_SET_N_STP;
+
+  return 1;
+
+} /* end of unur_tabl_set_nstp() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_tabl_set_max_sqhratio( struct unur_par *par, double max_ratio )
+     /*----------------------------------------------------------------------*/
+     /* set bound for ratio A(squeeze) / A(hat)                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par       ... pointer to parameter for building generator object   */
+     /*   max_ratio ... upper bound for ratio to add a new construction point*/
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(par,0);
+
+  /* check input */
+  _unur_check_par_object( TABL );
+
+  /* check new parameter for generator */
+  if (max_ratio < 0. || max_ratio > 1. ) {
+    _unur_warning(GENTYPE,UNUR_ERR_SET,"ratio Atotal / Asqueeze not in [0,1]");
+    return 0;
+  }
+
+  /* store date */
+  PAR.max_ratio = max_ratio;
+
+  /* changelog */
+  par->set |= TABL_SET_MAX_SQHRATIO;
+
+  return 1;
+
+} /* end of unur_tabl_set_max_sqhratio() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_tabl_set_max_intervals( struct unur_par *par, int max_ivs )
+     /*----------------------------------------------------------------------*/
+     /* set maximum number of intervals                                      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par       ... pointer to parameter for building generator object   */
+     /*   max_ivs   ... maximum number of intervals                          */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(par,0);
+
+  /* check input */
+  _unur_check_par_object( TABL );
+
+  /* check new parameter for generator */
+  if (max_ivs < 1 ) {
+    _unur_warning(GENTYPE,UNUR_ERR_SET,"maximum number of intervals < 1");
+    return 0;
+  }
+
+  /* store date */
+  PAR.max_ivs = max_ivs;
+
+  /* changelog */
+  par->set |= TABL_SET_MAX_IVS;
+
+  return 1;
+
+} /* end of unur_tabl_set_max_intervals() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_tabl_set_areafraction( struct unur_par *par, double fraction )
+     /*----------------------------------------------------------------------*/
+     /* set parameter for equal area rule                                    */
+     /* (each bar has size fraction * area(pdf))                             */           
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par       ... pointer to parameter for building generator object   */
+     /*   fraction  ... fraction of area for bar                             */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(par,0);
+
+  /* check input */
+  _unur_check_par_object( TABL );
+
+  /* check new parameter for generator */
+  if (fraction < 0.) {
+    _unur_warning(GENTYPE,UNUR_ERR_SET,"area factor < 0");
+    return 0;
+  }
+
+  /* store date */
+  PAR.area_fract = fraction;
+
+  /* changelog */
+  par->set |= TABL_SET_AREAFRACTION;
+
+  return 1;
+
+} /* end of unur_tabl_set_areafraction() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_tabl_set_slopes( struct unur_par *par, double *slopes, int n_slopes )
+     /*----------------------------------------------------------------------*/
+     /* set slopes of p.d.f.                                                 */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par      ... pointer to parameter for building generator object    */
+     /*   slopes   ... pointer to list of slopes                             */
+     /*   n_slopes ... number of slopes                                      */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   a slope <a,b> is an interval [a,b] or [b,a]                        */
+     /*   such that pdf(a) >= pdf(b).                                        */
+     /*   slopes must be decreasing, non-overlapping and sorted              */
+     /*----------------------------------------------------------------------*/
+{
+  int i;
+  double al, bl;
+
+  /* check arguments */
+  CHECK_NULL(par,0);
+
+  /* check input */
+  _unur_check_par_object( TABL );
+
+  /* check new parameter for generator */
+  if( n_slopes <= 0 ) {
+    _unur_warning(GENTYPE,UNUR_ERR_SET,"number of slopes <= 0");
+    return 0;
+  }
+
+  /* check slopes */
+  al = slopes[0];
+  bl = slopes[1];
+  for( i=1; i<n_slopes; i++ ) {
+    /* we do not check here if f(a) >= f(b), since we make no calculations heres */
+    if( al > slopes[2*i] || bl > slopes[2*i+1] ) {
+      _unur_warning(GENTYPE,UNUR_ERR_SET,"slopes overlapping or not in ascending order");
+      return 0;
+    }
+    al = slopes[2*i];
+    bl = slopes[2*i+1];
+  }
+
+  /* store date */
+  PAR.slopes = slopes;
+  PAR.n_slopes = n_slopes;
+
+  /* changelog */
+  par->set |= TABL_SET_SLOPES;
+
+  return 1;
+
+} /* end of unur_tabl_set_slopes() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_tabl_set_boundary( struct unur_par *par, double left, double right )
+     /*----------------------------------------------------------------------*/
+     /* set left and right boundary of computation interval                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par   ... pointer to parameter for building generator object       */
+     /*   left  ... left boundary point                                      */
+     /*   right ... right boundary point                                     */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   new boundary points must not be +/- INFINITY                       */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(par,0);
+
+  /* check input */
+  _unur_check_par_object( TABL );
+
+  /* check new parameter for generator */
+  if (left >= right) {
+    _unur_warning(GENTYPE,UNUR_ERR_SET,"domain, left >= right");
+     /*                                                                      */
+    return 0;
+  }
+  if (left <= -INFINITY || right >= INFINITY) {
+    _unur_warning(GENTYPE,UNUR_ERR_SET,"domain, +/- INFINITY not allowed");
+    return 0;
+  }
+
+  /* store date */
+  PAR.bleft = left;
+  PAR.bright = right;
+
+  /* changelog */
+  par->set |= TABL_SET_BOUNDARY;
+
+  return 1;
+
+} /* end of unur_tabl_set_boundary() */
+
+/*---------------------------------------------------------------------------*/
+
 int 
-unur_set_tabl_variant( struct unur_par *par, unsigned int variant )
+unur_tabl_set_variant( struct unur_par *par, unsigned int variant )
      /*----------------------------------------------------------------------*/
      /* set variant of method                                                */
      /*                                                                      */
@@ -281,16 +570,91 @@ unur_set_tabl_variant( struct unur_par *par, unsigned int variant )
 {
   /* check arguments */
   CHECK_NULL(par,0);
-  COOKIE_CHECK(par,CK_TABL_PAR,0);
+
+  /* check input */
+  _unur_check_par_object( TABL );
+
+  /* store date */
+  par->variant = variant;
 
   /* changelog */
-  par->set |= UNUR_SET_VARIANT;
-
-  PAR.variant = variant;
+  par->set |= TABL_SET_VARIANT;
 
   return 1;
 
 } /* end if unur_set_tabl_variant() */
+
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_tabl_set_guidefactor( struct unur_par *par, double factor )
+     /*----------------------------------------------------------------------*/
+     /* set factor for relative size of guide table                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par    ... pointer to parameter for building generator object      */
+     /*   factor ... relative size of table                                  */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(par,0);
+
+  /* check input */
+  _unur_check_par_object( TABL );
+
+  /* check new parameter for generator */
+  if (factor < 0) {
+    _unur_warning(GENTYPE,UNUR_ERR_SET,"relative table size < 0");
+    return 0;
+  }
+
+  /* store date */
+  PAR.guide_factor = factor;
+
+  /* changelog */
+  par->set |= TABL_SET_GUIDEFACTOR;
+
+  return 1;
+
+} /* end of unur_tabl_set_guidefactor() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_tabl_set_verify( struct unur_par *par, int verify )
+     /*----------------------------------------------------------------------*/
+     /* turn verifying of algorithm while sampling on/off                    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par    ... pointer to parameter for building generator object      */
+     /*   verify ... 0 = no verifying,  !0 = verifying                       */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   no verifying is the default                                        */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(par,0);
+
+  /* check input */
+  _unur_check_par_object( TABL );
+
+  /* we use a bit in variant */
+  par->variant = (verify) ? (par->variant | TABL_VARFLAG_VERIFY) : (par->variant & (~TABL_VARFLAG_VERIFY));
+
+  /* o.k. */
+  return 1;
+
+} /* end of unur_tabl_set_verify() */
 
 /*****************************************************************************/
 
@@ -313,6 +677,11 @@ unur_tabl_init( struct unur_par *par )
 
   /* check arguments */
   CHECK_NULL(par,NULL);
+
+  /* check input */
+  if ( par->method != UNUR_METH_TABL ) {
+    _unur_error(GENTYPE,UNUR_ERR_PAR_INVALID,"");
+    return NULL; }
   COOKIE_CHECK(par,CK_TABL_PAR,NULL);
 
   /* create a new empty generator object */
@@ -329,12 +698,12 @@ unur_tabl_init( struct unur_par *par )
 #if UNUR_DEBUG & UNUR_DB_INFO
   /* write info into log file */
   if (gen->debug) _unur_tabl_debug_init(par,gen);
-  if (gen->debug & TABL_DB_A_IV)
+  if (gen->debug & TABL_DEBUG_A_IV)
     _unur_tabl_debug_intervals(gen,FALSE);
 #endif
 
   /* split according to [1], run SPLIT B */
-  if (PAR.variant & TABL_STP_SPLIT_B)
+  if (par->variant & TABL_VARFLAG_STP_B)
     while ( (GEN.n_ivs < PAR.n_starting_cpoints)
 	    && (GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) )
       if (!_unur_tabl_split_b_starting_intervals(par,gen)) {
@@ -440,7 +809,7 @@ unur_tabl_sample_adaptive( struct unur_gen *gen )
       fx = PDF(x);
       /* split interval */
       if (GEN.n_ivs < GEN.max_ivs && GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) {
-      	_unur_tabl_split_interval( gen, iv, x, fx, (GEN.variant & TABL_MASK_SPLIT) );
+      	_unur_tabl_split_interval( gen, iv, x, fx, (gen->variant & TABL_VARMASK_SPLIT) );
   	_unur_tabl_make_guide_table(gen);
 	/** TODO: it is not necessary to update the guide table every time. 
 	    But then (1) some additional bookkeeping is required and
@@ -509,7 +878,7 @@ unur_tabl_sample( struct unur_gen *gen )
       fx = PDF(x);
       /* split interval */
       if (GEN.n_ivs < GEN.max_ivs && GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) {
-      	_unur_tabl_split_interval( gen, iv, x, fx, (GEN.variant & TABL_MASK_SPLIT) );
+      	_unur_tabl_split_interval( gen, iv, x, fx, (gen->variant & TABL_VARMASK_SPLIT) );
 	_unur_tabl_make_guide_table(gen);
 	/** TODO: it is not necessary to update the guide table every time. 
 	    But then (1) some additional bookkeeping is required and
@@ -591,7 +960,7 @@ unur_tabl_sample_check( struct unur_gen *gen )
 	_unur_warning(gen->genid,UNUR_ERR_SAMPLE,"pdf < squeeze. pdf not monotone in interval");
       /* split interval */
       if (GEN.n_ivs < GEN.max_ivs && GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) {
-      	_unur_tabl_split_interval( gen, iv, x, fx, (GEN.variant & TABL_MASK_SPLIT) );
+      	_unur_tabl_split_interval( gen, iv, x, fx, (gen->variant & TABL_VARMASK_SPLIT) );
 	_unur_tabl_make_guide_table(gen);
 	/** TODO: it is not necessary to update the guide table every time. 
 	    But then (1) some additional bookkeeping is required and
@@ -623,8 +992,12 @@ unur_tabl_free( struct unur_gen *gen )
   if( !gen ) /* nothing to do */
     return;
 
-  /* magic cookies */
+  /* check input */
+  if ( gen->method != UNUR_METH_TABL ) {
+    _unur_warning(GENTYPE,UNUR_ERR_GEN_INVALID,"");
+    return; }
   COOKIE_CHECK(gen,CK_TABL_GEN,/*void*/);
+
   /* we cannot use this generator object any more */
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
@@ -682,7 +1055,7 @@ _unur_tabl_create( struct unur_par *par )
   gen->distr = par->distr;
 
   /* routines for sampling and destroying generator */
-  SAMPLE = (par->method & UNUR_MASK_SCHECK) ? unur_tabl_sample_check : unur_tabl_sample;
+  SAMPLE = (par->variant & TABL_VARFLAG_VERIFY) ? unur_tabl_sample_check : unur_tabl_sample;
   gen->destroy = unur_tabl_free;
 
   /* set all pointers to NULL */
@@ -704,19 +1077,17 @@ _unur_tabl_create( struct unur_par *par )
   GEN.pdf_param   = gen->DISTR.params;
   GEN.n_pdf_param = gen->DISTR.n_params;
 
-  GEN.bleft       = PAR.bleft;         /* left boundary of domain               */
-  GEN.bright      = PAR.bright;        /* right boundary of domain              */
+  GEN.bleft       = PAR.bleft;         /* left boundary of domain            */
+  GEN.bright      = PAR.bright;        /* right boundary of domain           */
 
-  GEN.guide_factor = PAR.guide_factor; /* relative size of guide tables         */
+  GEN.guide_factor = PAR.guide_factor; /* relative size of guide tables      */
 
   /* bounds for adding construction points  */
-  GEN.max_ivs   = PAR.max_ivs;         /* maximum number of intervals           */
-  GEN.max_ratio = PAR.max_ratio;       /* bound for ratio  Atotal / Asqueeze    */
+  GEN.max_ivs   = PAR.max_ivs;         /* maximum number of intervals        */
+  GEN.max_ratio = PAR.max_ratio;       /* bound for ratio  Atotal / Asqueeze */
 
-  gen->method = par->method;           /* indicates method                      */
-  gen->variant = par->variant;         /* indicates variant                     */
-
-  GEN.variant = PAR.variant;           /* indicates variant                     */
+  gen->method = par->method;           /* indicates method                   */
+  gen->variant = par->variant;         /* indicates variant                  */
 
   _unur_copy_urng_pointer(par,gen);    /* pointer to urng into generator object */
   _unur_copy_debugflag(par,gen);       /* copy debugging flags into generator object */
@@ -759,7 +1130,7 @@ _unur_tabl_get_starting_intervals( struct unur_par *par, struct unur_gen *gen )
     /* slopes are given */
     return _unur_tabl_get_starting_intervals_from_slopes(par,gen);
 
-  if ( (par->set & UNUR_SET_DOMAIN) && (par->distr->set & UNUR_DISTR_SET_MODE) )
+  if ( (par->set & TABL_SET_BOUNDARY) && (par->distr->set & UNUR_DISTR_SET_MODE) )
     /* no slopes given. need domain and mode */
     /* compute slopes */
     return _unur_tabl_get_starting_intervals_from_mode(par,gen);
@@ -835,7 +1206,7 @@ _unur_tabl_get_starting_intervals_from_slopes( struct unur_par *par, struct unur
     iv->Acum = 0.;
 
     /* estimate domain */
-    if (!(par->set & UNUR_SET_DOMAIN)) {
+    if (!(par->set & TABL_SET_BOUNDARY)) {
       if (iv->slope > 0) {
 	GEN.bleft = min(GEN.bleft,iv->xmin);
 	GEN.bright = max(GEN.bright,iv->xmax);
@@ -847,7 +1218,7 @@ _unur_tabl_get_starting_intervals_from_slopes( struct unur_par *par, struct unur
     }
 
     /* split interval following [1], split A */
-    if (PAR.variant & TABL_STP_SPLIT_A) {
+    if (par->variant & TABL_VARFLAG_STP_A) {
       iv = _unur_tabl_split_a_starting_intervals( par, gen, iv );
       if (iv == NULL) return 0;
     }
@@ -896,29 +1267,29 @@ _unur_tabl_get_starting_intervals_from_mode( struct unur_par *par, struct unur_g
     iv = GEN.iv = _unur_tabl_iv_stack_pop(gen);
     COOKIE_CHECK(iv,CK_TABL_IV,0);
 
-    if (mode <= PAR.bleft) {
+    if (mode <= GEN.bleft) {
       /* only one ascending interval <a,b> = [a,b] */
       iv->xmax = mode;
-      iv->xmin = PAR.bright;
+      iv->xmin = GEN.bright;
       break;
     }
 
-    if (mode >= PAR.bright) {
+    if (mode >= GEN.bright) {
       /* only one descending interval <a,b> = [b,a] */
       iv->xmax = mode;
-      iv->xmin = PAR.bleft;
+      iv->xmin = GEN.bleft;
       break;
     }
 
     /* one descending and one ascending interval */
     iv->xmax = mode;
-    iv->xmin = PAR.bleft;
+    iv->xmin = GEN.bleft;
 
     /* the second interval */
     iv = iv->next = _unur_tabl_iv_stack_pop(gen);  /* all the other intervals */
     COOKIE_CHECK(iv,CK_TABL_IV,0);
     iv->xmax = mode;
-    iv->xmin = PAR.bright;
+    iv->xmin = GEN.bright;
     break;
   }
 
@@ -943,7 +1314,7 @@ _unur_tabl_get_starting_intervals_from_mode( struct unur_par *par, struct unur_g
     iv->Acum = 0.;
 
     /* split interval following [1], split A */
-    if (PAR.variant & TABL_STP_SPLIT_A) {
+    if (par->variant & TABL_VARFLAG_STP_A) {
       iv = _unur_tabl_split_a_starting_intervals( par, gen, iv );
       if (iv == NULL) return 0;
     }
@@ -997,7 +1368,7 @@ _unur_tabl_split_a_starting_intervals( struct unur_par *par,
     /* move from right to left */
     while (iv->Ahat > bar_area) {
       x = iv->xmax - bar_area / iv->fmax;
-      switch (_unur_tabl_split_interval( gen, iv, x, PDF(x), TABL_SPLIT_POINT )) {
+      switch (_unur_tabl_split_interval( gen, iv, x, PDF(x), TABL_VARFLAG_SPLIT_POINT )) {
       case 1:  /* splitting succesful */
 	if (iv_last == iv_slope)
 	  iv_last = iv->next;
@@ -1014,7 +1385,7 @@ _unur_tabl_split_a_starting_intervals( struct unur_par *par,
     /* move from left to right */
     while (iv->Ahat > bar_area) {
       x = iv->xmax + bar_area / iv->fmax;
-      switch (_unur_tabl_split_interval( gen, iv, x, PDF(x), TABL_SPLIT_POINT )) {
+      switch (_unur_tabl_split_interval( gen, iv, x, PDF(x), TABL_VARFLAG_SPLIT_POINT )) {
       case 1:  /* splitting succesful */
 	iv = iv->next; break;
       case -1: /* interval chopped */
@@ -1069,7 +1440,7 @@ _unur_tabl_split_b_starting_intervals( struct unur_par *par,
     COOKIE_CHECK(iv,CK_TABL_IV,0);
     if ((iv->Ahat - iv->Asqueeze) >= Amean) {
       /* new point instead of the interation of [1] we use "arcmean" */
-      switch (_unur_tabl_split_interval( gen, iv, 0., 0., TABL_SPLIT_ARC )) {
+      switch (_unur_tabl_split_interval( gen, iv, 0., 0., TABL_VARFLAG_SPLIT_ARC )) {
       case 1:  /* splitting succesful */
       case -1: /* interval chopped */
 	break; /* nothing to do */
@@ -1123,14 +1494,14 @@ _unur_tabl_split_interval( struct unur_gen *gen,
      (3) use "arc_mean" of interval. 
          converges faster when domain is almost unbounded. */
   switch( split_mode ) {
-  case TABL_SPLIT_POINT:    /* (1) */
+  case TABL_VARFLAG_SPLIT_POINT:    /* (1) */
     /* nothing to do (default) */
     break;
-  case TABL_SPLIT_MEAN:     /* (2) */
+  case TABL_VARFLAG_SPLIT_MEAN:     /* (2) */
     x = 0.5 * (iv_old->xmin + iv_old->xmax); 
     fx = PDF(x);
     break;
-  case TABL_SPLIT_ARC:      /* (3) */
+  case TABL_VARFLAG_SPLIT_ARC:      /* (3) */
     x = _unur_arcmean(iv_old->xmin, iv_old->xmax); 
     fx = PDF(x);
     break;
@@ -1390,46 +1761,45 @@ _unur_tabl_debug_init( struct unur_par *par, struct unur_gen *gen )
   _unur_distr_cont_debug( gen->distr, gen->genid );
 
   fprintf(log,"%s: sampling routine = unur_tabl_sample",gen->genid);
-  if (par->method & UNUR_MASK_SCHECK)
+  if (par->variant & TABL_VARFLAG_VERIFY)
     fprintf(log,"_check()\n");
   else
     fprintf(log,"()\n");
   empty_line();
 
-  /** TODO **/
-  fprintf(log,"%s: domain = (%g, %g)",gen->genid,GEN.bleft,GEN.bright);
-  if (!(par->set & UNUR_SET_DOMAIN))
+  fprintf(log,"%s: computation interval = (%g, %g)",gen->genid,GEN.bleft,GEN.bright);
+  if (!(par->set & TABL_SET_BOUNDARY))
       fprintf(log,"   (computed from given slopes)");
   fprintf(log,"\n");
   empty_line();
 
   fprintf(log,"%s: area fraction for equal area rule = %g ",gen->genid,PAR.area_fract);
-  _unur_print_if_default(par,UNUR_SET_TABL_C);
+  _unur_print_if_default(par,TABL_SET_AREAFRACTION);
   fprintf(log,"\n");
   empty_line();
 
   fprintf(log,"%s: maximum number of intervals        = %d",gen->genid,PAR.max_ivs);
-  _unur_print_if_default(par,UNUR_SET_MAX_IVS);
+  _unur_print_if_default(par,TABL_SET_MAX_IVS);
   fprintf(log,"\n%s: bound for ratio  Atotal / Asqueeze = %g%%",gen->genid,PAR.max_ratio*100.);
-  _unur_print_if_default(par,UNUR_SET_MAX_RATIO);
+  _unur_print_if_default(par,TABL_SET_MAX_SQHRATIO);
   fprintf(log,"\n");
   empty_line();
 
   fprintf(log,"%s: sampling from list of intervals: indexed search (guide table method)\n",gen->genid);
   fprintf(log,"%s:    relative guide table size = %g%%",gen->genid,100.*PAR.guide_factor);
-  _unur_print_if_default(par,UNUR_SET_FACTOR);
+  _unur_print_if_default(par,TABL_SET_GUIDEFACTOR);
   fprintf(log,"\n");
   empty_line();
 
   fprintf(log,"%s: split intervals at ",gen->genid);
-  switch( GEN.variant & TABL_MASK_SPLIT ) {
-  case TABL_SPLIT_MEAN:
+  switch( gen->variant & TABL_VARMASK_SPLIT ) {
+  case TABL_VARFLAG_SPLIT_MEAN:
     fprintf(log,"mean point");
     break;
-  case TABL_SPLIT_ARC:
+  case TABL_VARFLAG_SPLIT_ARC:
     fprintf(log,"\"arcmean\" point");
     break;
-  case TABL_SPLIT_POINT:
+  case TABL_VARFLAG_SPLIT_POINT:
   default: 
     fprintf(log,"sample point");
     break;
@@ -1437,7 +1807,7 @@ _unur_tabl_debug_init( struct unur_par *par, struct unur_gen *gen )
   fprintf(log," when using adaptive sampling.\n");
   empty_line();
 
-  if (par->set & UNUR_SET_SLOPES) {
+  if (par->set & TABL_SET_SLOPES) {
     fprintf(log,"%s: slopes = %d\n",gen->genid,PAR.n_slopes);
     for (i=0; i<PAR.n_slopes; i++) {
       if ( PAR.slopes[2*i] > PAR.slopes[2*i+1] )
@@ -1450,14 +1820,14 @@ _unur_tabl_debug_init( struct unur_par *par, struct unur_gen *gen )
   else
     fprintf(log,"%s: no slopes given. compute from domain and mode.\n",gen->genid);
 
-  if (PAR.variant & TABL_STP_SPLIT_A)
+  if (par->variant & TABL_VARFLAG_STP_A)
     fprintf(log,"%s: split slopes by equal area rule (SPLIT A).\n",gen->genid);
-  if (PAR.variant & TABL_STP_SPLIT_B)
+  if (par->variant & TABL_VARFLAG_STP_B)
     fprintf(log,"%s: split slopes by main subdivision rule (SPLIT B).\n",gen->genid);
   empty_line();
 
   fprintf(log,"%s: number of starting intervals (at least) = %d",gen->genid,PAR.n_starting_cpoints);
-  _unur_print_if_default(par,UNUR_SET_N_STP);
+  _unur_print_if_default(par,TABL_SET_N_STP);
   fprintf(log,"\n");
   empty_line();
 
@@ -1515,7 +1885,7 @@ _unur_tabl_debug_intervals( struct unur_gen *gen, int print_areas )
   log = unur_get_stream();
 
   fprintf(log,"%s: intervals = %d\n",gen->genid,GEN.n_ivs);
-  if (gen->debug & TABL_DB_IV) {
+  if (gen->debug & TABL_DEBUG_IV) {
     fprintf(log,"%s:             <   max       ,   min       >        f(max)          f(min) \n",gen->genid);
     fprintf(log,"%s:\n",gen->genid);
     for (iv = GEN.iv, i=0; iv!=NULL; iv=iv->next, i++) {
@@ -1544,7 +1914,7 @@ _unur_tabl_debug_intervals( struct unur_gen *gen, int print_areas )
   }
 
   /* print and sum areas below squeeze and hat */
-  if (gen->debug & TABL_DB_IV) {
+  if (gen->debug & TABL_DEBUG_IV) {
     fprintf(log,"%s:Areas in intervals:\n",gen->genid);
     fprintf(log,"%s: Nr.\t below squeeze\t\t   below hat\t\t     cumulated\n",gen->genid);
     empty_line();

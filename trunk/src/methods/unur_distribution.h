@@ -136,6 +136,9 @@ enum {
 /*---------------------------------------------------------------------------*/
 /* routines for all distribution objects                                     */
 
+struct unur_distr *unur_distr_dup( struct unur_distr *distr );
+/* duplicate distribution object                                             */
+
 void unur_distr_free( struct unur_distr *distr );
 /* destroy distribution object                                               */
 

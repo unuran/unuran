@@ -94,6 +94,26 @@
 #include <unur_utils.h>
 
 /*---------------------------------------------------------------------------*/
+/* Variants                                                                  */
+
+#define DIS_VAR_DIV         0x1UL     /* compute guide table by division n/k */
+#define DIS_VAR_ADD         0x2UL     /* compute guide table by adding       */
+
+#define DIS_VAR_THRESHOLD   1000      /* above this value: use variant 1, else 2 */
+
+/*---------------------------------------------------------------------------*/
+/* Debugging flags (do not use first 8 bits)                                 */
+
+#define DIS_DEBUG_PRINTVECTOR   0x100UL
+#define DIS_DEBUG_TABLE         0x200UL
+
+/*---------------------------------------------------------------------------*/
+/* Flags for logging set calls                                               */
+
+#define DIS_SET_GUIDEFACTOR    0x010UL
+#define DIS_SET_VARIANT        0x020UL
+
+/*---------------------------------------------------------------------------*/
 
 #define GENTYPE "DIS"         /* type of generator                           */
 
@@ -130,12 +150,6 @@ static void _unur_dis_debug_table( struct unur_gen *gen );
 #define SAMPLE  gen->sample.discr
 
 /*---------------------------------------------------------------------------*/
-/* Debugging flags (do not use first 4 bits)                                 */
-
-#define DIS_DEBUG_PRINTVECTOR   0x10UL
-#define DIS_DEBUG_TABLE         0x20UL
-
-/*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/
 /**  User Interface                                                         **/
@@ -160,15 +174,15 @@ unur_dis_new( struct unur_distr *distr )
 
   /* check arguments */
   CHECK_NULL(distr,NULL);
-  COOKIE_CHECK(distr,CK_DISTR_DISCR,NULL);
 
   /* check distribution */
   if (distr->type != UNUR_DISTR_DISCR) {
-    _unur_error(GENTYPE,UNUR_ERR_GENERIC,"wrong distribution type");
-    return NULL;
-  }
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,"");
+    return NULL; }
+  COOKIE_CHECK(distr,CK_DISTR_DISCR,NULL);
+
   if (DISTR.prob == NULL) {
-    _unur_error(GENTYPE,UNUR_ERR_GENERIC,"probability vector required");
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"probability vector");
     return NULL;
   }
 
@@ -214,16 +228,18 @@ unur_dis_set_variant( struct unur_par *par, unsigned long variant )
 {
   /* check arguments */
   CHECK_NULL(par,0);
-  COOKIE_CHECK(par,CK_DIS_PAR,0);
+
+  /* check input */
+  _unur_check_par_object( DIS );
 
   /* check new parameter for generator */
-  if (variant < 0 || variant > 2) {
-    _unur_warning(GENTYPE,UNUR_ERR_INIT,"invalid variant! use default");
+  if (variant != DIS_VAR_ADD && variant != DIS_VAR_DIV) {
+    _unur_warning(GENTYPE,UNUR_ERR_SET,"invalid variant! use default");
     return 0;
   }
 
   /* changelog */
-  par->set |= UNUR_SET_VARIANT;
+  par->set |= DIS_SET_VARIANT;
 
   par->variant = variant;
 
@@ -248,11 +264,13 @@ unur_dis_set_guidefactor( struct unur_par *par, double factor )
 {
   /* check arguments */
   CHECK_NULL(par,0);
-  COOKIE_CHECK(par,CK_DIS_PAR,0);
+
+  /* check input */
+  _unur_check_par_object( DIS );
 
   /* check new parameter for generator */
   if (factor < 0) {
-    _unur_warning(GENTYPE,UNUR_ERR_INIT,"relative table size < 0");
+    _unur_warning(GENTYPE,UNUR_ERR_SET,"relative table size < 0");
     return 0;
   }
 
@@ -260,7 +278,7 @@ unur_dis_set_guidefactor( struct unur_par *par, double factor )
   PAR.guide_factor = factor;
 
   /* changelog */
-  par->set |= UNUR_SET_FACTOR;
+  par->set |= DIS_SET_GUIDEFACTOR;
 
   return 1;
 
@@ -292,6 +310,11 @@ unur_dis_init( struct unur_par *par )
 
   /* check arguments */
   CHECK_NULL(par,NULL);
+
+  /* check input */
+  if ( par->method != UNUR_METH_DIS ) {
+    _unur_error(GENTYPE,UNUR_ERR_PAR_INVALID,"");
+    return NULL; }
   COOKIE_CHECK(par,CK_DIS_PAR,NULL);
 
   /* create a new empty generator object */
@@ -316,7 +339,7 @@ unur_dis_init( struct unur_par *par )
 
   /* computation of guide-table */
   
-  if (gen->variant == 1) {
+  if (gen->variant == DIS_VAR_DIV) {
     GEN.guide_table[0] = 0;
     for( j=1, i=0; j<GEN.guide_size ;j++ ) {
       while( GEN.cumprob[i]/GEN.sum < ((double)j)/GEN.guide_size ) 
@@ -329,7 +352,7 @@ unur_dis_init( struct unur_par *par )
     }
   }
 
-  else { /* variant 2 */
+  else { /* gen->variant == DIS_VAR_ADD */
     gstep = GEN.sum / GEN.guide_size;
     probh = 0.;
     for( j=0, i=0; j<GEN.guide_size ;j++ ) {
@@ -413,8 +436,12 @@ unur_dis_free( struct unur_gen *gen )
   if (!gen) /* nothing to do */
     return;
 
-  /* magic cookies */
+  /* check input */
+  if ( gen->method != UNUR_METH_DIS ) {
+    _unur_warning(GENTYPE,UNUR_ERR_GEN_INVALID,"");
+    return; }
   COOKIE_CHECK(gen,CK_DIS_GEN,/*void*/);
+
   /* we cannot use this generator object any more */
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
@@ -484,12 +511,8 @@ _unur_dis_create( struct unur_par *par )
   gen->method = par->method;
 
   /* which variant? */
-  if (par->variant > 2) {
-    _unur_warning(gen->genid,UNUR_ERR_INIT,"invalid variant! use default");
-    par->variant = 0;
-  }
   if (par->variant == 0)   /* default variant */
-    par->variant = (n_prob > 1000) ? 1 : 2;
+    par->variant = (n_prob > DIS_VAR_THRESHOLD) ? DIS_VAR_DIV : DIS_VAR_ADD;
   /* store variant in generator structure */
   gen->variant = par->variant;
 
@@ -536,8 +559,8 @@ _unur_dis_debug_init( struct unur_par *par, struct unur_gen *gen )
   fprintf(log,"%s: type    = discrete univariate random variates\n",gen->genid);
   fprintf(log,"%s: method  = indexed search (guide table)\n",gen->genid);
 
-  fprintf(log,"%s: variant = %ld ",gen->genid,gen->variant & UNUR_MASK_VARIANT);
-  _unur_print_if_default(par,UNUR_SET_VARIANT);
+  fprintf(log,"%s: variant = %ld ",gen->genid,gen->variant);
+  _unur_print_if_default(par,DIS_SET_VARIANT);
   fprintf(log,"\n%s:\n",gen->genid);
 
   _unur_distr_discr_debug(gen->distr,gen->genid,(gen->debug & DIS_DEBUG_PRINTVECTOR));
@@ -548,7 +571,7 @@ _unur_dis_debug_init( struct unur_par *par, struct unur_gen *gen )
   fprintf(log,"%s: length of probability vector = %d\n",gen->genid,par->DISTR.n_prob);
   fprintf(log,"%s: length of guide table = %d   (rel. = %g%%",
 	  gen->genid,GEN.guide_size,100.*PAR.guide_factor);
-  _unur_print_if_default(par,UNUR_SET_FACTOR);
+  _unur_print_if_default(par,DIS_SET_GUIDEFACTOR);
   if (GEN.guide_size == 1) 
     fprintf(log,") \t (-->sequential search");
   fprintf(log,")\n%s:\n",gen->genid);

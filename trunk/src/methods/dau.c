@@ -116,6 +116,20 @@
 #include <unur_utils.h>
 
 /*---------------------------------------------------------------------------*/
+/* Variants: none                                                            */
+
+/*---------------------------------------------------------------------------*/
+/* Debugging flags (do not use first 8 bits)                                 */
+
+#define DAU_DEBUG_PRINTVECTOR   0x100UL
+#define DAU_DEBUG_TABLE         0x200UL
+
+/*---------------------------------------------------------------------------*/
+/* Flags for logging set calls                                               */
+
+#define DAU_SET_URNFACTOR       0x010UL
+
+/*---------------------------------------------------------------------------*/
 
 #define GENTYPE "DAU"         /* type of generator                           */
 
@@ -152,12 +166,6 @@ static void _unur_dau_debug_table( struct unur_gen *gen );
 #define SAMPLE  gen->sample.discr
 
 /*---------------------------------------------------------------------------*/
-/* Debugging flags (do not use first 4 bits)                                 */
-
-#define DAU_DEBUG_PRINTVECTOR   0x10UL
-#define DAU_DEBUG_TABLE         0x20UL
-
-/*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/
 /**  User Interface                                                         **/
@@ -182,15 +190,15 @@ unur_dau_new( struct unur_distr *distr )
 
   /* check arguments */
   CHECK_NULL(distr,NULL);
-  COOKIE_CHECK(distr,CK_DISTR_DISCR,NULL);
 
   /* check distribution */
   if (distr->type != UNUR_DISTR_DISCR) {
-    _unur_error(GENTYPE,UNUR_ERR_GENERIC,"wrong distribution type");
-    return NULL;
-  }
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,"");
+    return NULL; }
+  COOKIE_CHECK(distr,CK_DISTR_DISCR,NULL);
+
   if (DISTR.prob == NULL) {
-    _unur_error(GENTYPE,UNUR_ERR_GENERIC,"probability vector required");
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"probability vector");
     return NULL;
   }
 
@@ -204,8 +212,8 @@ unur_dau_new( struct unur_distr *distr )
   /* set default values */
   PAR.urn_factor = 1.;               /* use same size for table              */
 
-  par->method    = UNUR_METH_DAU;    /* method and default variant           */
-  par->variant   = 0UL;              /* default variant                      */
+  par->method    = UNUR_METH_DAU;    /* method                               */
+  par->variant   = 0UL;              /* default variant (no other variants)  */
   par->set       = 0UL;              /* inidicate default parameters         */    
   par->urng      = unur_get_default_urng(); /* use default urng              */
 
@@ -236,11 +244,13 @@ unur_dau_set_urnfactor( struct unur_par *par, double factor )
 {
   /* check arguments */
   CHECK_NULL(par,0);
-  COOKIE_CHECK(par,CK_DAU_PAR,0);
 
+  /* check input */
+  _unur_check_par_object( DAU );
+  
   /* check new parameter for generator */
   if (factor < 1.) {
-    _unur_warning(GENTYPE,UNUR_ERR_INIT,"relative urn size < 1.");
+    _unur_warning(GENTYPE,UNUR_ERR_SET,"relative urn size < 1.");
     return 0;
   }
 
@@ -248,7 +258,7 @@ unur_dau_set_urnfactor( struct unur_par *par, double factor )
   PAR.urn_factor = factor;
 
   /* changelog */
-  par->set |= UNUR_SET_FACTOR;
+  par->set |= DAU_SET_URNFACTOR;
 
   return 1;
 
@@ -281,8 +291,13 @@ unur_dau_init( struct unur_par *par )
 
   /* check arguments */
   CHECK_NULL(par,NULL);
-  COOKIE_CHECK(par,CK_DAU_PAR,NULL);
 
+  /* check input */
+  if ( par->method != UNUR_METH_DAU ) {
+    _unur_error(GENTYPE,UNUR_ERR_PAR_INVALID,"");
+    return NULL; }
+  COOKIE_CHECK(par,CK_DAU_PAR,NULL);
+  
   /* create a new empty generator object */
   gen = _unur_dau_create(par);
   if (!gen) { free(par); return NULL; }
@@ -450,8 +465,12 @@ unur_dau_free( struct unur_gen *gen )
   if( !gen ) /* nothing to do */
     return;
 
-  /* magic cookies */
+  /* check input */
+  if ( gen->method != UNUR_METH_DAU ) {
+    _unur_warning(GENTYPE,UNUR_ERR_GEN_INVALID,"");
+    return; }
   COOKIE_CHECK(gen,CK_DAU_GEN,/*void*/);
+
   /* we cannot use this generator object any more */
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
@@ -508,7 +527,7 @@ _unur_dau_create( struct unur_par *par)
   /* copy some parameters into generator object */
   GEN.len = par->DISTR.n_prob;      /* length of probability vector               */
   gen->method = par->method;        /* indicates used method                      */
-  gen->variant = par->variant;      /* indicates variant                          */
+  gen->variant = 0UL;               /* only the default variant is possible       */
   _unur_copy_urng_pointer(par,gen); /* copy pointer to urng into generator object */
   _unur_copy_debugflag(par,gen);    /* copy debugging flags into generator object */
 
@@ -560,7 +579,7 @@ _unur_dau_debug_init( struct unur_par *par, struct unur_gen *gen )
   fprintf(log,"%s: length of probability vector = %d\n",gen->genid,GEN.len);
   fprintf(log,"%s: size of urn table = %d   (rel. = %g%%",
 	  gen->genid,GEN.urn_size,100.*PAR.urn_factor);
-  _unur_print_if_default(par,UNUR_SET_FACTOR);
+  _unur_print_if_default(par,DAU_SET_URNFACTOR);
   if (GEN.urn_size == GEN.len)
     fprintf(log,")   (--> alias method)\n");
   else

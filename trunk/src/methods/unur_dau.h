@@ -71,10 +71,13 @@ int unur_dau_sample( struct unur_gen *generator );
 void unur_dau_free( struct unur_gen *generator );
 /* destroy generator object                                                  */
 
+/*...........................................................................*/
+
 int unur_dau_set_urnfactor( struct unur_par *par, double factor );
 /* set factor for relative size of urn                                       */
 
 #define unur_dau_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
+/* set debuging flags                                                        */
 
 /*---------------------------------------------------------------------------*/
 

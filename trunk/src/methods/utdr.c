@@ -77,6 +77,18 @@
 #include <unur_utils.h>
 
 /*---------------------------------------------------------------------------*/
+/* Variants: none                                                            */
+
+/*---------------------------------------------------------------------------*/
+/* Debugging flags (do not use first 8 bits)                                 */
+
+/*---------------------------------------------------------------------------*/
+/* Flags for logging set calls                                               */
+
+#define UTDR_SET_CFACTOR        0x001UL
+#define UTDR_SET_DELTA          0x002UL
+
+/*---------------------------------------------------------------------------*/
 
 #define GENTYPE "UTDR"         /* type of generator                          */
 
@@ -138,19 +150,19 @@ unur_utdr_new( struct unur_distr *distr )
 
   /* check arguments */
   CHECK_NULL(distr,NULL);
-  COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
 
   /* check distribution */
   if (distr->type != UNUR_DISTR_CONT) {
-    _unur_error(GENTYPE,UNUR_ERR_GENERIC,"wrong distribution type");
-    return NULL;
-  }
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,"");
+    return NULL; }
+  COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
+
   if (DISTR.pdf == NULL) {
-    _unur_error(GENTYPE,UNUR_ERR_GENERIC,"p.d.f. required");
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"p.d.f.");
     return NULL;
   }
   if (!(distr->set & UNUR_DISTR_SET_MODE)) {
-    _unur_error(GENTYPE,UNUR_ERR_GENERIC,"mode of p.d.f. required");
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode of p.d.f.");
     return NULL;
   }
 
@@ -159,7 +171,7 @@ unur_utdr_new( struct unur_distr *distr )
   COOKIE_SET(par,CK_UTDR_PAR);
 
   /* copy input */
-  par->distr              = distr;  /* pointer to distribution object        */
+  par->distr       = distr;   /* pointer to distribution object              */
 
   /* set default values */
   PAR.c_factor     = 0.664; 
@@ -187,6 +199,85 @@ unur_utdr_new( struct unur_distr *distr )
 
 /*****************************************************************************/
 
+int
+unur_utdr_set_cfactor( struct unur_par *par, double cfactor )
+     /*----------------------------------------------------------------------*/
+     /* set factor for position of left and right construction point         */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par     ... pointer to parameter for building generator object     */
+     /*   cfactor ... factor                                                 */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(par,0);
+
+  /* check input */
+  _unur_check_par_object( UTDR );
+
+  /* check new parameter for generator */
+  /** TODO: welche werte fuer c sind zulaessig / sinnvoll ? **/
+  if (cfactor < 0) {
+    _unur_warning(GENTYPE,UNUR_ERR_SET,"c-factor < 0");
+    return 0;
+  }
+
+  /* store date */
+  PAR.c_factor = cfactor;
+
+  /* changelog */
+  par->set |= UTDR_SET_CFACTOR;
+
+  return 1;
+
+} /* end of unur_utdr_set_cfactor() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_utdr_set_delta( struct unur_par *par, double delta )
+     /*----------------------------------------------------------------------*/
+     /* set factor for replacing tangents by secants                         */
+     /* (which then are move above the transformed density)                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par   ... pointer to parameter for building generator object       */
+     /*   delta ... delta-factor                                             */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(par,0);
+
+  /* check input */
+  _unur_check_par_object( UTDR );
+
+  /* check new parameter for generator */
+  /** TODO: welche werte fuer delta sind zulaessig / sinnvoll ? **/
+  if (delta < 0) {
+    _unur_warning(GENTYPE,UNUR_ERR_SET,"delta < 0");
+    return 0;
+  }
+
+  /* store date */
+  PAR.delta_factor = delta;
+
+  /* changelog */
+  par->set |= UTDR_SET_DELTA;
+
+  return 1;
+
+} /* end of unur_utdr_set_delta() */
+
+/*****************************************************************************/
+
 struct unur_gen *
 unur_utdr_init( struct unur_par *par )
      /*----------------------------------------------------------------------*/
@@ -208,6 +299,15 @@ unur_utdr_init( struct unur_par *par )
   double c,cfac,volc,volr,tly,tlys,try,trys,dl,dr,delta,delta1;
 
   double pdf_area = par->DISTR.area;      /* (approximate) area below p.d.f. */
+
+  /* check arguments */
+  CHECK_NULL(par,NULL);
+
+  /* check input */
+  if ( par->method != UNUR_METH_UTDR ) {
+    _unur_error(GENTYPE,UNUR_ERR_PAR_INVALID,"");
+    return NULL; }
+  COOKIE_CHECK(par,CK_UTDR_PAR,NULL);
 
   /** TODO: inititialisieren notwendig ?? **/
   try = 0.;
@@ -456,8 +556,12 @@ unur_utdr_free( struct unur_gen *gen )
   if( !gen ) /* nothing to do */
     return;
 
-  /* magic cookies */
+  /* check input */
+  if ( gen->method != UNUR_METH_UTDR ) {
+    _unur_warning(GENTYPE,UNUR_ERR_GEN_INVALID,"");
+    return; }
   COOKIE_CHECK(gen,CK_UTDR_GEN,/*void*/);
+
   /* we cannot use this generator object any more */
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
@@ -581,9 +685,15 @@ _unur_utdr_debug_init( struct unur_par *par, struct unur_gen *gen,
   _unur_distr_cont_debug( gen->distr, gen->genid );
 
   fprintf(log,"%s: sampling routine = unur_utdr_sample",gen->genid);
-  if (par->method & UNUR_MASK_SCHECK)
+
+  /** TODO: c_factor, delta_factor **/
+
+#if 0
+  /** TODO **/
+  if (par->variant & UNUR_MASK_SCHECK)
     fprintf(log,"_check()\n");
   else
+#endif
     fprintf(log,"()\n");
   fprintf(log,"%s:\n",gen->genid);
 

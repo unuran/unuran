@@ -39,8 +39,8 @@
  *****************************************************************************
  *                                                                           *
  *   REFERENCES:                                                             *
- *   [1] Leydold J. (1999): Automatic Sampling with the ratio-of-uniforms    *
- *       method, preprint, 15pp.                                             *
+ *   [1] Leydold J. (2000): Automatic Sampling with the ratio-of-uniforms    *
+ *       method, ACM TOMS, forthcoming                                       *
  *                                                                           *
  *   [2] Kinderman, A.J. and Monahan, F.J. (1977): Computer generation of    *
  *       random variables using the ratio of uniform deviates,               *
@@ -128,6 +128,28 @@
 #include <unur_errno.h>
 #include <unur_math.h>
 #include <unur_utils.h>
+
+/*---------------------------------------------------------------------------*/
+/* Variants                                                                  */
+
+#define AROU_VARFLAG_VERIFY     0x1UL   /* flag for verifying mode           */
+#define AROU_VARFLAG_USECENTER  0x2UL   /* flag whether center is used as cpoint or not */
+
+/*---------------------------------------------------------------------------*/
+/* Debugging flags (do not use first 8 bits)                                 */
+
+#define AROU_DEBUG_SPLIT        0x100UL  /* trace splitting of segments      */
+#define AROU_DEBUG_SEGMENTS     0x200UL  /* print list of segments           */
+
+/*---------------------------------------------------------------------------*/
+/* Flags for logging set calls                                               */
+
+#define AROU_SET_CENTER         0x001UL
+#define AROU_SET_STP            0x002UL
+#define AROU_SET_N_STP          0x004UL
+#define AROU_SET_GUIDEFACTOR    0x010UL
+#define AROU_SET_MAX_SQHRATIO   0x020UL
+#define AROU_SET_MAX_SEGS       0x040UL
 
 /*---------------------------------------------------------------------------*/
 
@@ -234,13 +256,6 @@ static void _unur_arou_debug_printratio( double v, double u, char *string );
 #define dPDF(x) ((*(GEN.dpdf))((x),GEN.pdf_param,GEN.n_pdf_param))
 
 /*---------------------------------------------------------------------------*/
-/* Special debugging flags (do not use the first 3 bits) */
-
-#define AROU_DB_SPLIT    0x010UL
-#define AROU_DB_SAMPLE   0x020UL
-#define AROU_DB_SEG      0x040UL
-
-/*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/
 /**  User Interface                                                         **/
@@ -265,19 +280,19 @@ unur_arou_new( struct unur_distr *distr )
 
   /* check arguments */
   CHECK_NULL(distr,NULL);
-  COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
 
   /* check distribution */
   if (distr->type != UNUR_DISTR_CONT) {
-    _unur_error(GENTYPE,UNUR_ERR_GENERIC,"wrong distribution type");
-    return NULL;
-  }
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,"");
+    return NULL; }
+  COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
+
   if (DISTR.pdf == NULL) {
-    _unur_error(GENTYPE,UNUR_ERR_GENERIC,"p.d.f. required");
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"p.d.f.");
     return NULL;
   }
   if (DISTR.dpdf == NULL) {
-    _unur_error(GENTYPE,UNUR_ERR_GENERIC,"derivative of p.d.f. required");
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"derivative of p.d.f.");
     return NULL;
   }
 
@@ -300,17 +315,17 @@ unur_arou_new( struct unur_distr *distr )
 				       where abiguous region is too small, i.e. if 
 				       the area / (|S^e\S^s|/number of segments) < bound_for_adding */
 
-  par->method             = UNUR_METH_AROU;  /* method and default variant   */
-  par->variant            = 0UL;             /* default variant              */
-  par->set                = 0UL;    /* inidicate default parameters          */    
-  par->urng               = unur_get_default_urng(); /* use default urng     */
+  par->method   = UNUR_METH_AROU;          /* method                         */
+  par->variant  = AROU_VARFLAG_USECENTER;  /* default variant                */
+  par->set      = 0UL;                     /* inidicate default parameters   */    
+  par->urng     = unur_get_default_urng(); /* use default urng               */
 
   _unur_set_debugflag_default(par); /* set default debugging flags           */
 
   /* we use the mode (if known) as center of the distribution */
   if (distr->set & UNUR_DISTR_SET_MODE) {
     PAR.center = DISTR.mode;
-    par->set |= UNUR_SET_CENTER;
+    par->set |= AROU_SET_CENTER;
   }
   else
     PAR.center = 0.;        /* the default */
@@ -323,6 +338,174 @@ unur_arou_new( struct unur_distr *distr )
 } /* end of unur_arou_new() */
 
 /*****************************************************************************/
+
+int
+unur_arou_set_cpoints( struct unur_par *par, int n_stp, double *stp )
+     /*----------------------------------------------------------------------*/
+     /* set construction points for envelope                                 */
+     /* and/or its number for initialization                                 */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par    ... pointer to parameter for building generator object      */
+     /*   n_stp  ... number of starting points                               */
+     /*   stp    ... pointer to array of starting points                     */
+     /*              (NULL for changing only the number of default points)   */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  int i;
+
+  /* check arguments */
+  CHECK_NULL(par,0);
+
+  /* check input */
+  _unur_check_par_object( AROU );
+
+  /* check starting construction points */
+  /* we always use the boundary points as additional starting points,
+     so we do not count these here! */
+  if (n_stp < 0 ) {
+    _unur_warning(GENTYPE,UNUR_ERR_SET,"number of starting points < 0");
+    return 0;
+  }
+
+  if (stp) 
+    /* starting points must be strictly monontonically increasing */
+    for( i=1; i<n_stp; i++ )
+      if (stp[i] <= stp[i-1]) {
+	_unur_warning(GENTYPE,UNUR_ERR_SET,"starting points not strictly monotonically increasing");
+	return 0;
+      }
+
+  /* store date */
+  PAR.starting_cpoints = stp;
+  PAR.n_starting_cpoints = n_stp;
+
+  /* changelog */
+  par->set |= AROU_SET_N_STP | ((stp) ? AROU_SET_STP : 0);
+
+  return 1;
+
+} /* end of unur_arou_set_cpoints() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_arou_set_guidefactor( struct unur_par *par, double factor )
+     /*----------------------------------------------------------------------*/
+     /* set factor for relative size of guide table                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par    ... pointer to parameter for building generator object      */
+     /*   factor ... relative size of table                                  */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(par,0);
+
+  /* check input */
+  _unur_check_par_object( AROU );
+
+  /* check new parameter for generator */
+  if (factor < 0) {
+    _unur_warning(GENTYPE,UNUR_ERR_SET,"relative table size < 0");
+    return 0;
+  }
+
+  /* store date */
+  PAR.guide_factor = factor;
+
+  /* changelog */
+  par->set |= AROU_SET_GUIDEFACTOR;
+
+  return 1;
+
+} /* end of unur_arou_set_guidefactor() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_arou_set_max_sqhratio( struct unur_par *par, double max_ratio )
+     /*----------------------------------------------------------------------*/
+     /* set bound for ratio A(squeeze) / A(hat)                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par       ... pointer to parameter for building generator object   */
+     /*   max_ratio ... upper bound for ratio to add a new construction point*/
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(par,0);
+
+  /* check input */
+  _unur_check_par_object( AROU );
+
+  /* check new parameter for generator */
+  if (max_ratio < 0. || max_ratio > 1. ) {
+    _unur_warning(GENTYPE,UNUR_ERR_SET,"ratio Atotal / Asqueeze not in [0,1]");
+    return 0;
+  }
+
+  /* store date */
+  PAR.max_ratio = max_ratio;
+
+  /* changelog */
+  par->set |= AROU_SET_MAX_SQHRATIO;
+
+  return 1;
+
+} /* end of unur_arou_set_max_sqhratio() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_arou_set_max_segments( struct unur_par *par, int max_segs )
+     /*----------------------------------------------------------------------*/
+     /* set maximum number of segments                                       */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par       ... pointer to parameter for building generator object   */
+     /*   max_segs  ... maximum number of segments                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(par,0);
+
+  /* check input */
+  _unur_check_par_object( AROU );
+
+  /* check new parameter for generator */
+  if (max_segs < 1 ) {
+    _unur_warning(GENTYPE,UNUR_ERR_SET,"maximum number of segments < 1");
+    return 0;
+  }
+
+  /* store date */
+  PAR.max_segs = max_segs;
+
+  /* changelog */
+  par->set |= AROU_SET_MAX_SEGS;
+
+  return 1;
+
+} /* end of unur_arou_set_max_segments() */
+
+/*---------------------------------------------------------------------------*/
 
 int
 unur_arou_set_center( struct unur_par *par, double center )
@@ -340,22 +523,86 @@ unur_arou_set_center( struct unur_par *par, double center )
 {
   /* check arguments */
   CHECK_NULL(par,0);
-  COOKIE_CHECK(par,CK_AROU_PAR,0);
 
-  /* check method */
-  if ((par->method & UNUR_MASK_METHOD) != UNUR_METH_AROU) {
-    _unur_warning(GENTYPE,UNUR_ERR_GENERIC,"xxxx");
-    return 0;
-  }
+  /* check input */
+  _unur_check_par_object( AROU );
 
   /* store data */
-  par->data.arou.center = center;
-  par->set |= UNUR_SET_CENTER;
+  PAR.center = center;
+
+  /* changelog */
+  par->set |= AROU_SET_CENTER;
 
   /* o.k. */
   return 1;
 
 } /* end of unur_arou_set_center() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_arou_set_usecenter( struct unur_par *par, int usecenter )
+     /*----------------------------------------------------------------------*/
+     /* set flag for using center as construction point                      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par       ... pointer to parameter for building generator object   */
+     /*   usecenter ... 0 = do not use,  !0 = use                            */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   using center as construction point is the default                  */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(par,0);
+
+  /* check input */
+  _unur_check_par_object( AROU );
+
+  /* we use a bit in variant */
+  par->variant = (usecenter) ? (par->variant | AROU_VARFLAG_USECENTER) : (par->variant & (~AROU_VARFLAG_USECENTER));
+
+  /* o.k. */
+  return 1;
+
+} /* end of unur_arou_set_usecenter() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_arou_set_verify( struct unur_par *par, int verify )
+     /*----------------------------------------------------------------------*/
+     /* turn verifying of algorithm while sampling on/off                    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par    ... pointer to parameter for building generator object      */
+     /*   verify ... 0 = no verifying,  !0 = verifying                       */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   no verifying is the default                                        */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(par,0);
+
+  /* check input */
+  _unur_check_par_object( AROU );
+
+  /* we use a bit in variant */
+  par->variant = (verify) ? (par->variant | AROU_VARFLAG_VERIFY) : (par->variant & (~AROU_VARFLAG_VERIFY));
+
+  /* o.k. */
+  return 1;
+
+} /* end of unur_arou_set_verify() */
 
 /*****************************************************************************/
 
@@ -378,6 +625,11 @@ unur_arou_init( struct unur_par *par )
 
   /* check arguments */
   CHECK_NULL(par,NULL);
+
+  /* check input */
+  if ( par->method != UNUR_METH_AROU ) {
+    _unur_error(GENTYPE,UNUR_ERR_PAR_INVALID,"");
+    return NULL; }
   COOKIE_CHECK(par,CK_AROU_PAR,NULL);
 
   /* create a new empty generator object */
@@ -625,8 +877,12 @@ unur_arou_free( struct unur_gen *gen )
   if( !gen ) /* nothing to do */
     return;
 
-  /* magic cookies */
+  /* check input */
+  if ( gen->method != UNUR_METH_AROU ) {
+    _unur_warning(GENTYPE,UNUR_ERR_GEN_INVALID,"");
+    return; }
   COOKIE_CHECK(gen,CK_AROU_GEN,/*void*/);
+
   /* we cannot use this generator object any more */
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
@@ -684,7 +940,7 @@ _unur_arou_create( struct unur_par *par )
   gen->distr = par->distr;
 
   /* routines for sampling and destroying generator */
-  SAMPLE = (par->method & UNUR_MASK_SCHECK) ? unur_arou_sample_check : unur_arou_sample;
+  SAMPLE = (par->variant & AROU_VARFLAG_VERIFY) ? unur_arou_sample_check : unur_arou_sample;
   gen->destroy = unur_arou_free;
 
   /* set all pointers to NULL */
@@ -708,8 +964,6 @@ _unur_arou_create( struct unur_par *par )
   GEN.bleft = gen->DISTR.domain[0];   /* left boundary of domain             */
   GEN.bright = gen->DISTR.domain[1];  /* right boundary of domain            */
 
-  GEN.center = PAR.center;            /* center (approximate location of mode) */
-
   GEN.guide_factor = PAR.guide_factor; /* relative size of guide tables      */
 
   /* bounds for adding construction points  */
@@ -721,6 +975,11 @@ _unur_arou_create( struct unur_par *par )
   gen->variant = par->variant;      /* indicates variant                     */
   _unur_copy_urng_pointer(par,gen); /* copy pointer to urng into generator object */
   _unur_copy_debugflag(par,gen);    /* copy debugging flags into generator object */
+
+  /* center known ?? */
+  if (!(par->set & AROU_SET_CENTER))
+    /* we cannot use the center as construction point */
+    par->variant = par->variant & (~AROU_VARFLAG_USECENTER);
 
   /* return pointer to (almost empty) generator object */
   return(gen);
@@ -758,12 +1017,11 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
   is_center = was_center = FALSE;
 
   /* use center as construction point ? */
-  /** TODO: UNUR_MASK_MODE does not exist yet !! */
-  use_center = (par->method & UNUR_MASK_MODE) ? TRUE : FALSE;
+  use_center = (par->variant & AROU_VARFLAG_USECENTER) ? TRUE : FALSE;
 
   /* check center */
   if (use_center &&
-      ( GEN.center < GEN.bleft || GEN.center > GEN.bright ) ) {
+      ( PAR.center < GEN.bleft || PAR.center > GEN.bright ) ) {
     _unur_warning(gen->genid,UNUR_ERR_INIT,"center out of domain.");
     use_center = 0;
   }
@@ -775,8 +1033,8 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
   if (!PAR.starting_cpoints) {
     /* move center into  x = 0 */
     /* angles of boundary of domain */
-    left_angle =  ( GEN.bleft <= -INFINITY ) ? -M_PI/2. : atan(GEN.bleft - GEN.center);  
-    right_angle = ( GEN.bright >= INFINITY )  ? M_PI/2.  : atan(GEN.bright - GEN.center);
+    left_angle =  ( GEN.bleft <= -INFINITY ) ? -M_PI/2. : atan(GEN.bleft - PAR.center);  
+    right_angle = ( GEN.bright >= INFINITY )  ? M_PI/2.  : atan(GEN.bright - PAR.center);
     /* we use equal distances between the angles of the cpoints   */
     /* and the boundary points                                    */
     diff_angle = (right_angle-left_angle) / (PAR.n_starting_cpoints + 1);
@@ -789,7 +1047,7 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
   x = x_last = GEN.bleft;
   fx = fx_last = (x <= -INFINITY) ? 0. : PDF(x);
   seg = GEN.seg = _unur_arou_segment_new( gen, x, fx );
-  CHECK_NULL(seg,0);        /* case of error */
+  CHECK_NULL(seg,0);       /* case of error */
   is_increasing = 1;       /* assume pdf(x) is increasing for the first construction points */
 
   /* now all the other points */
@@ -814,7 +1072,7 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
       else {
 	/* compute construction points by means of "equidistance" rule */
 	angle += diff_angle;                /** TODO: angle >= M_PI/2. !! **/
-	x = tan( angle ) + GEN.center;      /** TODO: possible over/underflow **/
+	x = tan( angle ) + PAR.center;      /** TODO: possible over/underflow **/
       }
     }
     else {
@@ -824,16 +1082,16 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
     }
 
     /* insert center ? */
-    if (use_center && x >= GEN.center) {
+    if (use_center && x >= PAR.center) {
       use_center = FALSE;   /* we use the center only once (of course) */
       is_center = TRUE;     /* the next construction point is the center */
-      if (x>GEN.center) {
-	x = GEN.center;   /* use the center now ... */
+      if (x>PAR.center) {
+	x = PAR.center;   /* use the center now ... */
 	--i;              /* and push the orignal starting point back on stack */
 	if (!PAR.starting_cpoints)
 	  angle -= diff_angle; /* we have to compute the starting point in this case */
       }
-      /* else: x == GEN.center --> nothing to do */
+      /* else: x == PAR.center --> nothing to do */
     }
     else
       is_center = FALSE;
@@ -843,6 +1101,7 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
 
     /* value of p.d.f. at starting point */
     fx = (x >= INFINITY) ? 0. : PDF(x);
+
     /* check value of p.d.f. at starting point */
     if (!is_increasing && fx > fx_last) {
       _unur_error(gen->genid,UNUR_ERR_INIT_FAILED,"p.d.f. not unimodal!");
@@ -1242,7 +1501,7 @@ _unur_arou_segment_split( struct unur_gen *gen, struct unur_arou_segment *seg_ol
 
 #if UNUR_DEBUG & UNUR_DB_INFO
     /* write info into log file */
-    if (gen->debug & AROU_DB_SPLIT) 
+    if (gen->debug & AROU_DEBUG_SPLIT) 
       _unur_arou_debug_split_start( gen,seg_oldl,x,fx );
 #endif
 
@@ -1313,7 +1572,7 @@ _unur_arou_segment_split( struct unur_gen *gen, struct unur_arou_segment *seg_ol
       _unur_warning(gen->genid,UNUR_ERR_ADAPT,"Cannot split segment at given point.");
 #if UNUR_DEBUG & UNUR_DB_INFO
       /* write info into log file */
-      if (gen->debug & AROU_DB_SPLIT) 
+      if (gen->debug & AROU_DEBUG_SPLIT) 
 	_unur_arou_debug_split_stop( gen,seg_oldl,seg_newr );
 #endif
       
@@ -1339,7 +1598,7 @@ _unur_arou_segment_split( struct unur_gen *gen, struct unur_arou_segment *seg_ol
 
 #if UNUR_DEBUG & UNUR_DB_INFO
   /* write info into log file */
-  if (gen->debug & AROU_DB_SPLIT) 
+  if (gen->debug & AROU_DEBUG_SPLIT) 
     _unur_arou_debug_split_stop( gen,seg_oldl,seg_newr );
 #endif
   
@@ -1555,31 +1814,33 @@ _unur_arou_debug_init( struct unur_par *par, struct unur_gen *gen )
   _unur_distr_cont_debug( gen->distr, gen->genid );
 
   fprintf(log,"%s: sampling routine = unur_arou_sample",gen->genid);
-  if (par->method & UNUR_MASK_SCHECK)
+  if (par->variant & AROU_VARFLAG_VERIFY)
     fprintf(log,"_check()\n");
   else
     fprintf(log,"()\n");
   fprintf(log,"%s:\n",gen->genid);
 
-  fprintf(log,"%s: center = %g",gen->genid,GEN.center);
-  _unur_print_if_default(par,UNUR_SET_CENTER);
+  fprintf(log,"%s: center = %g",gen->genid,PAR.center);
+  _unur_print_if_default(par,AROU_SET_CENTER);
+  if (par->variant & AROU_VARFLAG_USECENTER)
+    fprintf(log,"\n%s: use center as construction point",gen->genid);
   fprintf(log,"\n%s:\n",gen->genid);
 
   fprintf(log,"%s: maximum number of segments         = %d",gen->genid,PAR.max_segs);
-  _unur_print_if_default(par,UNUR_SET_MAX_IVS);
+  _unur_print_if_default(par,AROU_SET_MAX_SEGS);
   fprintf(log,"\n%s: bound for ratio  Asqueeze / Atotal = %g%%",gen->genid,PAR.max_ratio*100.);
-  _unur_print_if_default(par,UNUR_SET_MAX_RATIO);
+  _unur_print_if_default(par,AROU_SET_MAX_SQHRATIO);
   fprintf(log,"\n%s:\n",gen->genid);
 
   fprintf(log,"%s: sampling from list of segments: indexed search (guide table method)\n",gen->genid);
   fprintf(log,"%s:    relative guide table size = %g%%",gen->genid,100.*PAR.guide_factor);
-  _unur_print_if_default(par,UNUR_SET_FACTOR);
+  _unur_print_if_default(par,AROU_SET_GUIDEFACTOR);
   fprintf(log,"\n%s:\n",gen->genid);
 
   fprintf(log,"%s: number of starting points = %d",gen->genid,PAR.n_starting_cpoints);
-  _unur_print_if_default(par,UNUR_SET_N_STP);
+  _unur_print_if_default(par,AROU_SET_N_STP);
   fprintf(log,"\n%s: starting points:",gen->genid);
-  if (par->set & UNUR_SET_STP)
+  if (par->set & AROU_SET_STP)
     for (i=0; i<PAR.n_starting_cpoints; i++) {
       if (i%5==0) fprintf(log,"\n%s:\t",gen->genid);
       fprintf(log,"   %#g,",PAR.starting_cpoints[i]);
@@ -1649,7 +1910,7 @@ _unur_arou_debug_segments( struct unur_gen *gen )
   log = unur_get_stream();
 
   fprintf(log,"%s:Segments: %d\n",gen->genid,GEN.n_segs);
-  if (gen->debug & AROU_DB_SEG) {
+  if (gen->debug & AROU_DEBUG_SEGMENTS) {
     fprintf(log,"%s: Nr.\t    left touching point\t\t   intersection point\t\t tangent at left touching point\n",gen->genid);
     for (seg = GEN.seg, i=0; seg->next!=NULL; seg=seg->next, i++) {
       COOKIE_CHECK(seg,CK_AROU_SEG,/*void*/); 
@@ -1671,7 +1932,7 @@ _unur_arou_debug_segments( struct unur_gen *gen )
   }
     
   /* print and sum areas inside and outside of squeeze */
-  if (gen->debug & AROU_DB_SEG) {
+  if (gen->debug & AROU_DEBUG_SEGMENTS) {
     fprintf(log,"%s:Areas in segments:\n",gen->genid);
     fprintf(log,"%s: Nr.\t inside squeeze\t\t   outside squeeze\t     total segment\t\tcumulated\n",gen->genid);
     sAin = sAout = 0.;

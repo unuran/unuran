@@ -75,9 +75,6 @@
 /* generators for standard distributions                                     */
 #include <unur_cstd.h>
 
-/* set parameters for generators                                             */
-#include <unur_set.h>
-
 /*---------------------------------------------------------------------------*/
 /* List of methods                                                           */
 
@@ -86,9 +83,12 @@
 #define UNUR_MASK_TYPE     0xf0000000UL   /* indicate type of method           */
 
 /* bits 13-20 are used for flags common to all generators */
-#define UNUR_MASK_SCHECK   0x00001000UL   /* turns check sampling on/off       */
+#define UNUR_MASK_SCHECK   0x00000001UL   /* turns check sampling on/off       */
+// #define UNUR_MASK_MODE     0x00000002UL   /* use mode                          */
+
+
+// #define UNUR_MASK_SCHECK   0x00001000UL   /* turns check sampling on/off       */
 #define UNUR_MASK_MODE     0x00002000UL   /* use mode                          */
-#define UNUR_MASK_COPYALL  0x00004000UL   /* copy all inputs into generator object */
 
 /* discrete, univariate */
 #define UNUR_METH_DISCR    0x10000000UL
@@ -229,6 +229,22 @@ struct unur_gen {
 #endif  /* UNUR_DB_CHECKNULL */
 
 /*---------------------------------------------------------------------------*/
+/* check object                                                              */
+
+/* check if parameter object is of correct type, return 0 otherwise       */
+#define _unur_check_par_object( type ) \
+  if ( par->method != UNUR_METH_##type ) { \
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_INVALID,""); \
+    return 0; } \
+  COOKIE_CHECK(par,CK_##type##_PAR,0)
+
+/*---------------------------------------------------------------------------*/
+/* we cannot load the next files until all definitions are done              */
+
+#include <unur_misc.h>
+
+/*---------------------------------------------------------------------------*/
 #endif  /* __UNUR_METHODS_H_SEEN */
 /*---------------------------------------------------------------------------*/
+
 

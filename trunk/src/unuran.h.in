@@ -101,6 +101,7 @@
 #include <methods/hri.h>
 #include <methods/mcorr.h>
 #include <methods/ninv.h>
+#include <methods/nrou.h>
 #include <methods/srou.h>
 #include <methods/ssr.h>
 #include <methods/tabl.h>

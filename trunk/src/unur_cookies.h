@@ -76,6 +76,8 @@
 #define CK_HRI_GEN       0x001000e1u
 #define CK_NINV_PAR      0x00100030u
 #define CK_NINV_GEN      0x00100031u
+#define CK_NROU_PAR      0x001000c0u
+#define CK_NROU_GEN      0x001000c1u
 #define CK_SROU_PAR      0x00100040u
 #define CK_SROU_GEN      0x00100041u
 #define CK_SSR_PAR       0x00100050u

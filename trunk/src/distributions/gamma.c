@@ -135,7 +135,8 @@ _unur_cdf_gamma( double x, double *params, int n_params )
   case 1: default: /* standard */
     if (x <= 0.)
       return 0.;
-    return _unur_cdf_gamma_ext(x,alpha,1.);
+
+    return _unur_incgamma(x,alpha);
   }
 } /* end of _unur_cdf_gamma() */
 

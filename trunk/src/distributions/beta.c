@@ -135,7 +135,8 @@ _unur_cdf_beta(double x, double *params, int n_params)
     /* out of support of p.d.f.? */
     if (x <= 0.) return 0.;
     if (x >= 1.) return 1.;
-    return _unur_cdf_beta_ext(x,p,q);
+
+    return _unur_incbeta(x,p,q);
   }
 } /* end of _unur_cdf_beta() */
 

@@ -56,9 +56,15 @@
 /*---------------------------------------------------------------------------*/
 /* CEPHES library                                                            */
 
+#if 0
 /* cdf of beta(a,b) distribution */
 extern long double incbetl(long double a, long double b, long double x);
 #define _unur_cdf_beta_ext(x,a,b) ((double)incbetl((long double)(a),(long double)(b),(long double)(x)))
+#endif
+
+/* incomplete beta integral */
+extern long double incbetl(long double a, long double b, long double x);
+#define _unur_incbeta(x,a,b) ((double)incbetl((long double)(a),(long double)(b),(long double)(x)))
 
 /* logarithm of gamma function */
 extern long double lgaml(long double x);
@@ -67,10 +73,6 @@ extern long double lgaml(long double x);
 /* incomplete gamma function */
 extern long double igaml(long double a, long double x);
 #define _unur_incgamma(x,a)  ((double)(igaml((long double)(a),(long double)(x))))
-
-/* cdf of gamma(a,b) distribution */
-extern long double gdtrl(long double a, long double b, long double x);
-#define _unur_cdf_gamma_ext(x,a,b)    ((double)(gdtrl((long double)(b),(long double)(a),(long double)(x))))
 
 /* cdf of normal distribution */
 extern long double ndtrl(long double x);

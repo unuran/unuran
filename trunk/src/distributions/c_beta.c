@@ -101,9 +101,16 @@ _unur_pdf_beta(double x, UNUR_DISTR *distr)
   case 4:                /* non standard */
     x = (x-a) / (b-a);   /* -> standardize */
   case 2: default:       /* standard */
-    if (x <= 0. || x >= 1.)
-      return 0.;         /* out of support */
-    return exp((p-1.)*log(x) + (q-1.)*log(1.-x) - LOGNORMCONSTANT);
+    if (x > 0. && x < 1.)
+      return exp((p-1.)*log(x) + (q-1.)*log(1.-x) - LOGNORMCONSTANT);
+    if (x < 0. || x > 1.)
+      /* out of support */
+      return 0.;
+    if ( (x==0. && p==1.) || (x==1. && q==1.) )
+      return exp(-LOGNORMCONSTANT);
+
+    /* else */
+    return 0.;
   }
 } /* end of _unur_pdf_beta() */
 
@@ -120,10 +127,17 @@ _unur_dpdf_beta(double x, UNUR_DISTR *distr)
     x = (x-a) / (b-a);   /* -> standardize */
     factor = 1./(b-a);
   case 2: default:       /* standard */
-    if (x <= 0. || x >= 1.)
-      return 0.;         /* out of support */
+    if (x > 0. && x < 1.)
+      return (exp((p-2.)*log(x) + (q-2.)*log(1.-x) - LOGNORMCONSTANT) * ( (p-1.)*(1.-x) - (q-1.)*x ) * factor );
+    if (x < 0. || x > 1.)
+      return 0.;      /* out of support */
+    if (x==0. && p==1.)
+      return (-(q-1.) * exp(-LOGNORMCONSTANT));
+    if (x==1. && q==1.)
+      return ((p-1.) * exp(-LOGNORMCONSTANT));
 
-    return (exp((p-2.)*log(x) + (q-2.)*log(1.-x) - LOGNORMCONSTANT) * ( (p-1.)*(1.-x) - (q-1.)*x ) * factor );
+    /* else */
+    return 0.;
   }
 } /* end of _unur_dpdf_beta() */
 
@@ -163,9 +177,7 @@ _unur_mode_beta(double *params, int n_params)
     mode = (p - 1.) / (p + q - 2.);
   
   /* else p.d.f. is not unimodal */
-
-  return( (n_params==2) ? mode : mode * (b-a) + a );
-  /** TODO: possible overflow if mode == INFINITY **/
+  return( (n_params==2 || mode>=INFINITY) ? mode : mode * (b-a) + a );
     
 } /* end of _unur_mode_beta() */
 

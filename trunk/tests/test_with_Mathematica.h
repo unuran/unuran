@@ -22,6 +22,11 @@
 #include <string.h>
 
 #include <unuran.h>
+#include <config.h>
+
+#ifdef WITH_DMALLOC
+#  include <dmalloc.h>
+#endif
 
 /*---------------------------------------------------------------------------*/
 

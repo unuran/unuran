@@ -39,6 +39,9 @@ int main()
   test_cont_cdf_pdf( distr, "t_distr_normal.data", 1. );
   unur_distr_free(distr);
 
+  /* close log file */
+  fclose(UNURANLOG);
+
   exit (0);
 }
 

@@ -50,28 +50,27 @@
 
       @itemize @minus 
       @item Create a @command{new} instance of a continuous univariate
-      distribution; 
+      distribution.
 
       @item Handle and evaluate 
       distribution function (CDF, @command{cdf}), 
-      density (PDF, @command{pdf}) and the 
-      derivative of the density (@command{dpdf}).
+      probability density function (PDF, @command{pdf}) and the 
+      derivative of the density function (@command{dpdf}).
       The following is important:
       @itemize .
       @item @command{pdf} need not be normalized, i.e.,
       any integrable nonnegative function can be used. 
       @item @command{dpdf} must the derivate of the function provided
       as @command{pdf}.
-      @item @command{cdf} must be distribution function, i.e. must be
-      monotonically increasing with range [0,1].
+      @item @command{cdf} must be a distribution function, i.e. it
+      must be monotonically increasing with range [0,1].
       @item If @command{cdf} and @command{pdf} are used together for a
-      pariticular generation method, the @command{pdf} must be the
+      pariticular generation method, then @command{pdf} must be the
       derivate of the @command{cdf}, i.e., it must be normalized.
       @end itemize
 
       @item Set (and change) parameters (@command{pdfparams}) and the
-      area below the graph (@command{pdfarea}) of the given
-      (standard) density.
+      area below the graph (@command{pdfarea}) of the given density.
 
       @item Set the @command{mode} of the distribution. 
 
@@ -84,7 +83,7 @@
       @item Some generation methods require the hazard rate
       (@command{hr}) of the distribution instead of its @command{pdf}.
 
-      @item Alternative, @command{cdf}, @command{pdf}, @command{dpdf},
+      @item Alternatively, @command{cdf}, @command{pdf}, @command{dpdf},
       and @command{hr} can be provided as @command{str}ings instead of
       function pointers.
 
@@ -264,12 +263,12 @@ int unur_distr_cont_set_pdfparams( UNUR_DISTR *distribution, const double *param
    are copied into the distribution object and @code{unur_errno} is set to
    @code{UNUR_ERR_DISTR_NPARAMS}.
 
-   For standard distributions from the UNURAN library the parameters
-   are checked. Moreover the domain is updated automatically unless it
+   For standard distributions from the UNURAN library the parameters 
+   are checked. Moreover, the domain is updated automatically unless it
    has been changed before by a unur_distr_cont_set_domain() call.
    If the given parameters are invalid for the standard distribution,
    then no parameters are set and an error code is returned.
-   Notice that the given parameter list for such distributions are
+   Notice that the given parameter list for such a distribution is
    handled in the same way as in the corresponding @command{new}
    calls, i.e. optional parameters for the PDF that are not present in
    the given list are (re-)set to their default values.

@@ -47,7 +47,7 @@
    =DESCRIPTION
       Empirical univariate distributions are just lists of numbers.
       Thus there are only calls to insert these data.
-      How these data are used to sample the empirical distribution
+      How these data are used to sample from the empirical distribution
       depends from the chosen generation method.  
 
    =END

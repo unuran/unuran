@@ -47,7 +47,11 @@ Newton's method and the regula falsi.
 To speed up the marginal generation time a table with suitable
 starting points can be computed in the setup. Using such a can be
 switched on by a means of a unur_ninv_set_table() call where the table
-size is given as a parameter.
+size is given as a parameter. The table is still useful when the domain is
+changed often. In this case it is neccessary to generate the table in
+respect to the most extreme boundaries; otherwise when using
+a domain exceeding the values of the table only the intersection
+of the given domain with the range of the table will be used!
 
 As a rule of thumb using such a table is approriate when the number of
 generated points exceeds the table size by a factor of 100.
@@ -56,7 +60,8 @@ It is also possible to use this method for generating from truncated
 distributions.
 
 It is also possible to change the parameter of the given distribution
-by a unur_ninv_chg_pdfparams() call.
+by a unur_ninv_chg_pdfparams() call. If a table exists, it will again
+be generated.
 
 There is no need for a unur_reinit() call.
 
@@ -154,7 +159,9 @@ int unur_ninv_chg_table(UNUR_GEN *gen, int no_of_points);
 int unur_ninv_chg_domain(UNUR_GEN *gen, double left, double right);
 /*
    Change the borders of the (truncated) distribution. Notice that
-   neither the starting point(s) nor the table will be changed!
+   neither the starting point(s) will not be changed!
+   When a table is used, the new borders must be within the range
+   of the table, oterwise truncation will happen.
 */
 
 int unur_ninv_chg_pdfparams(UNUR_GEN *generator, double *params, int n_params);
@@ -162,7 +169,7 @@ int unur_ninv_chg_pdfparams(UNUR_GEN *generator, double *params, int n_params);
    Change array of parameters of distribution in given generator object.
    Notice that it is not possible to change the number of parameters.
    This function only copies the given arguments into the array of
-   distribution parameters.
+   distribution parameters. If a table is used, it will again willbe computed.
    IMPORTANT: The given parameters are not checked against domain errors;
    in opposition to the (=>) unur_<distr>_new() call.
 */ 

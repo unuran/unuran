@@ -202,12 +202,12 @@ _unur_fstr_debug_deriv (const struct ftreenode *funct, const struct ftreenode *d
   CHECK_NULL(deriv,/*void*/);  COOKIE_CHECK(deriv,CK_FSTR_TNODE,/*void*/);
 
   fprintf(log,"%s: Derivative df/dx of \n",GENTYPE);
-  str = _unur_fstr_tree2string(funct,"x","f");
+  str = _unur_fstr_tree2string(funct,"x","f",TRUE);
   fprintf(log,"%s:  f(x) = %s\n",GENTYPE,str);
   free (str);
 
   if (deriv) {
-    str = _unur_fstr_tree2string(deriv,"x","df");
+    str = _unur_fstr_tree2string(deriv,"x","df",TRUE);
     fprintf(log,"%s:  f'(x) = %s\n",GENTYPE,str);
     free (str);
   }

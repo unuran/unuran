@@ -573,12 +573,12 @@ static void _unur_fstr_error_deriv (const struct ftreenode *node);
 
 
 /**-------------------------------------------------------------------------**/
-/** functparser_codegen.c                                                   **/
-/**   Make string or programming code for function given by its tree.       **/
+/** functparser_stringgen.c                                                 **/
+/**   Make string for function given by its tree.                           **/
 /**-------------------------------------------------------------------------**/
 
 static int _unur_fstr_node2string ( struct concat *output, const struct ftreenode *node,
-				    const char *variable, const char *function);
+				    const char *variable, const char *function, int spaces );
 /*---------------------------------------------------------------------------*/
 /* Produce string from function tree.                                        */
 /*---------------------------------------------------------------------------*/
@@ -586,6 +586,24 @@ static int _unur_fstr_node2string ( struct concat *output, const struct ftreenod
 static int _unur_fstr_print ( struct concat *output, const char *symb, const double number );
 /*---------------------------------------------------------------------------*/
 /* Print string or number into output string.                                */
+/* The number is only printed if symb is the NULL pointer.                   */
+/*---------------------------------------------------------------------------*/
+
+
+/**-------------------------------------------------------------------------**/
+/** functparser_codegen_C.c                                                 **/
+/**   Make C code for function given by its tree.                           **/
+/**-------------------------------------------------------------------------**/
+
+static int _unur_fstr_node2C ( FILE *out, const struct ftreenode *node,
+			       const char *variable, const char *function );
+/*---------------------------------------------------------------------------*/
+/* Produce C code from function tree.                                        */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_fstr_print_C ( FILE *out, const char *symb, const double number );
+/*---------------------------------------------------------------------------*/
+/* Print string or number into output stream.                                */
 /* The number is only printed if symb is the NULL pointer.                   */
 /*---------------------------------------------------------------------------*/
 
@@ -646,6 +664,7 @@ static void _unur_fstr_debug_deriv (const struct ftreenode *funct,
 #include "functparser_eval.c"
 #include "functparser_deriv.c"
 #include "functparser_codegen.c"
+#include "functparser_codegen_C.c"
 #include "functparser_debug.c"
 /*---------------------------------------------------------------------------*/
 

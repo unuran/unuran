@@ -4,9 +4,9 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE:      functparser_codegen.c                                        *
+ *   FILE:      functparser_codegen_C.c                                      *
  *                                                                           *
- *   Make string or programming code for function given by its tree.         *
+ *   Make C code for function given by its tree.                             *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -40,36 +40,32 @@
 
 /*---------------------------------------------------------------------------*/
 
-char *
-_unur_fstr_tree2string ( const struct ftreenode *root,
-			 const char *variable, const char *function, int spaces )
+int 
+_unur_fstr_tree2C ( FILE *out, const struct ftreenode *root,
+		    const char *variable, const char *function )
      /*----------------------------------------------------------------------*/
      /* Produce string from function tree.                                   */
      /* As a side effect a string is allocated.                              */
      /*                                                                      */
      /* parameters:                                                          */
+     /*   out      ... output stream                                         */
      /*   root     ... pointer to root of function tree                      */
      /*   variable ... pointer to name of variable                           */
      /*   function ... pointer to name of function                           */
-     /*   spaces   ... whether spaces are inserted around binary operators   */
      /*                                                                      */
      /* return:                                                              */
      /*   pointer to output string (should be freed when not used any more)  */
      /*----------------------------------------------------------------------*/
 {
-  struct concat output = {NULL, 0, 0};
-
   /* check arguments */
-  _unur_check_NULL( GENTYPE,root,NULL );
+  _unur_check_NULL( GENTYPE,root,0 );
 
-  /* make string */
-  _unur_fstr_node2string(&output,root,variable,function,spaces);
-  *(output.string + output.length) = '\0';
-  output.string = _unur_realloc(output.string, (output.length+1)*sizeof(char));
+  /* make body of C routine */
+  _unur_fstr_node2C(out,root,variable,function);
 
-  return output.string;
+  return 1;
 
-} /* end of _unur_fstr_tree2string() */
+} /* end of _unur_fstr_tree2C() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -78,18 +74,17 @@ _unur_fstr_tree2string ( const struct ftreenode *root,
 /*****************************************************************************/
 
 int
-_unur_fstr_node2string ( struct concat *output, const struct ftreenode *node,
-			 const char *variable, const char *function, int spaces )
+_unur_fstr_node2C ( FILE *out, const struct ftreenode *node,
+		    const char *variable, const char *function )
      /*----------------------------------------------------------------------*/
      /* Produce string from function subtree rooted at node.                 */
      /* As a side effect a string is allocated.                              */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   output   ... pointer to string for output                          */
+     /*   out      ... output stream                                         */
      /*   root     ... pointer to root of function tree                      */
      /*   variable ... pointer to name of variable                           */
      /*   function ... pointer to name of function                           */
-     /*   spaces   ... whether spaces are inserted around binary operators   */
      /*                                                                      */
      /* return:                                                              */
      /*   1 on success                                                       */
@@ -118,27 +113,27 @@ _unur_fstr_node2string ( struct concat *output, const struct ftreenode *node,
 
   if (type == S_SFUNCT || type == S_UFUNCT) {
     /* node '(' left ',' right ')' */
-    _unur_fstr_print( output, symb, 0 );
-    _unur_fstr_print( output, "(", 0. );
+    _unur_fstr_print_C( out, symb, 0 );
+    _unur_fstr_print_C( out, "(", 0. );
     if (left) {
-      _unur_fstr_node2string(output,left,variable,function,spaces);
-      _unur_fstr_print( output, ",", 0. );
+      _unur_fstr_node2C(out,left,variable,function);
+      _unur_fstr_print_C( out, ",", 0. );
     }
     if (right) {
-      _unur_fstr_node2string(output,right,variable,function,spaces);
+      _unur_fstr_node2C(out,right,variable,function);
     }
-    _unur_fstr_print( output, ")", 0. );
+    _unur_fstr_print_C( out, ")", 0. );
   }
 
   else if (symb && symb[0] == ',') {
     /* left ',' right */
-    _unur_fstr_print( output, ",", 0. );
+    _unur_fstr_print_C( out, ",", 0. );
     if (left) {
-      _unur_fstr_node2string(output,left,variable,function,spaces);
-      _unur_fstr_print( output, ",", 0. );
+      _unur_fstr_node2C(out,left,variable,function);
+      _unur_fstr_print_C( out, ",", 0. );
     }
     if (right) {
-      _unur_fstr_node2string(output,right,variable,function,spaces);
+      _unur_fstr_node2C(out,right,variable,function);
     }
   }    
 
@@ -157,20 +152,20 @@ _unur_fstr_node2string ( struct concat *output, const struct ftreenode *node,
 	  ( priority < symbol[left->token].info && !isalpha(node->symbol[0]) ) ||
 	  ( priority == symbol[left->token].info && (type == S_ADD_OP ) ) )
 	parenthesis = 0;
-      if (parenthesis) _unur_fstr_print( output, "(", 0. );
+      if (parenthesis) _unur_fstr_print_C( out, "(", 0. );
 
       if (left->type == S_UCONST && left->val == 0. && node->symbol[0] == '-')
 	/* there is no need to print "0 - ..." */ ;
       else
-	_unur_fstr_node2string(output,left,variable,function,spaces);
+	_unur_fstr_node2C(out,left,variable,function);
 
-      if (parenthesis) _unur_fstr_print( output, ")", 0. );
+      if (parenthesis) _unur_fstr_print_C( out, ")", 0. );
     }
 
     /* symbol for node */
-    if (operator && spaces) _unur_fstr_print( output, " ", 0. );
-    _unur_fstr_print( output, symb, node->val );
-    if (operator && spaces) _unur_fstr_print( output, " ", 0. );
+    if (operator) _unur_fstr_print_C( out, " ", 0. );
+    _unur_fstr_print_C( out, symb, node->val );
+    if (operator) _unur_fstr_print_C( out, " ", 0. );
 
     /* right branch */
     if (right) {
@@ -182,14 +177,14 @@ _unur_fstr_node2string ( struct concat *output, const struct ftreenode *node,
 	  ( right->type == S_UIDENT && right->val >= 0. ) ||
 	  ( priority < symbol[right->token].info && !isalpha(node->symbol[0]) ) )
 	parenthesis = 0;
-      if (parenthesis) _unur_fstr_print( output, "(", 0. );
-      _unur_fstr_node2string(output,right,variable,function,spaces);
-      if (parenthesis) _unur_fstr_print( output, ")", 0. );
+      if (parenthesis) _unur_fstr_print_C( out, "(", 0. );
+      _unur_fstr_node2C(out,right,variable,function);
+      if (parenthesis) _unur_fstr_print_C( out, ")", 0. );
     }
   }
 
   return 1;
-} /* end of _unur_fstr_node2string() */
+} /* end of _unur_fstr_node2C() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -198,14 +193,15 @@ _unur_fstr_node2string ( struct concat *output, const struct ftreenode *node,
 /*****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
+
 int
-_unur_fstr_print ( struct concat *output, const char *symb, const double number )
+_unur_fstr_print_C ( FILE *out, const char *symb, const double number )
      /*----------------------------------------------------------------------*/
-     /* Print string or number into output string.                           */
+     /* Print string or number into output stream.                           */
      /* The number is only printed if symb is the NULL pointer.              */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   output ... pointer to string for output                            */
+     /*   out    ... output stream                                           */
      /*   symb   ... string to be printed                                    */
      /*   number ... constant to be printed                                  */
      /*                                                                      */
@@ -213,34 +209,14 @@ _unur_fstr_print ( struct concat *output, const char *symb, const double number 
      /*   1 on success                                                       */
      /*----------------------------------------------------------------------*/
 {
-  size_t len;
-
-  /* (possible) length of output string */
-  len = (symb) ? strlen(symb) : 64;
-  
-  /* Resize the allocated memory if necessary */
-  if (output->length + len + 1 > output->allocated) {
-    if (output->string == NULL) {
-      output->allocated = 100;
-      output->string = _unur_malloc( 100*sizeof(char) );
-    }
-    else {
-      output->allocated = (output->allocated + len) * 2;
-      output->string = _unur_realloc( output->string, output->allocated );
-    }
-  }
-
   if (symb)
-    /* copy symbol into output */
-    memcpy( output->string+output->length, symb, len );
+    /* print symbol into output stream */
+    fprintf(out,"%s",symb);
   else
-    /* copy number symbol into output */
-    len = sprintf(output->string+output->length,"%.16g",number);
-
-  /* update length of output string */
-  output->length += len;
+    /* print number into output stream */
+    fprintf(out,"%.16g",number);
 
   return 1;
-} /* end of _unur_fstr_print() */
+} /* end of _unur_fstr_print_C() */
 
 /*---------------------------------------------------------------------------*/

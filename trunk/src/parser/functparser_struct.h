@@ -45,8 +45,8 @@ struct ftreenode {
   int             type;         /* type of token (e.g. S_ADD_OP)             */
   double          val;          /* value of constant or (and)
 				   value of node during evalution of tree    */
-  struct ftreenode *left;        /* pointer to left branch/leave of node      */
-  struct ftreenode *right;       /* pointer to right branch/leave of node     */
+  struct ftreenode *left;       /* pointer to left branch/leave of node      */
+  struct ftreenode *right;      /* pointer to right branch/leave of node     */
 
 #ifdef UNUR_COOKIES
   unsigned cookie;              /* magic cookie                              */

@@ -139,6 +139,10 @@ struct symbols {
   struct ftreenode *(*dcalc)(const struct ftreenode *node, int *error); 
                                           /* pointer to function  
 					     for computing derivate          */
+
+  char   name_C      [SYMBLENGTH];  /* name of C function | operator         */ 
+  char   name_FORTRAN[SYMBLENGTH];  /* name of FORTRAN function | operator   */ 
+
 };
 
 /*---------------------------------------------------------------------------*/
@@ -164,67 +168,82 @@ struct symbols {
 /*     _NAS   ... start of non-alphanumeric symbols (single characters!)     */
 /*     _ANS   ... start of alphanumeric symbols (constants and functions)    */
 /*     _END   ... end of list                                                */
+/*                                                                           */
+/*  Prefix operators (functions) for C or FORTRAN are indicated by an        */
+/*  '@' sign (eg. "@sin"). Operator names without an '@' sign are treated as */
+/*  infix operators (eg. "+").                                               */
+/*                                                                           */
 
 static struct symbols symbol[] = {   
-/* symbol|type |priority | val| eval|      deriv                             */
-  {""    , S_NOSYMBOL, 0, 0.0 , v_dummy  , d_error }, /* void                */
+  /* symbol,	       priority, evaluation routine, C function,             */
+  /*       type,          value,           derivative,   FORTRAN function    */
 
-  /* user defined symbols */                                             
-  {"UCONST",S_UCONST , 9, 0.0 , v_const  , d_const }, /* constant            */
-  {"UFUNCT",S_UFUNCT , 0, 0.0 , v_dummy  , d_error }, /* function            */
-  {"VAR" , S_UIDENT  , 9, 0.0 , v_dummy  , d_var   }, /* variable            */
+  /* void */
+  {""    , S_NOSYMBOL, 0, 0.0 , v_dummy  , d_error, "", "" },
+
+  /* user defined symbols: */                        
+  /*    constant           */                     
+  {"UCONST",S_UCONST , 9, 0.0 , v_const  , d_const, "", "" },
+  /*    function           */
+  {"UFUNCT",S_UFUNCT , 0, 0.0 , v_dummy  , d_error, "", "" },
+  /*    variable           */
+  {"VAR" , S_UIDENT  , 9, 0.0 , v_dummy  , d_var  , "", "" },
+
+  /* marker for relation operators */
+  {"_ROS", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_error, "", "" },
 
   /* relation operators  */
-  {"_ROS", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_error }, /* marker for relation operators */
-  {"<"   , S_REL_OP  , 1, 0.0 , v_less   , d_const },
-  {"="   , S_REL_OP  , 1, 0.0 , v_equal  , d_const },
-  {"=="  , S_REL_OP  , 1, 0.0 , v_equal  , d_const },
-  {">"   , S_REL_OP  , 1, 0.0 , v_greater, d_const },
-  {"<="  , S_REL_OP  , 1, 0.0 , v_less_or, d_const },
-  {"<>"  , S_REL_OP  , 1, 0.0 , v_unequal, d_const },
-  {"!="  , S_REL_OP  , 1, 0.0 , v_unequal, d_const },
-  {">="  , S_REL_OP  , 1, 0.0 , v_grtr_or, d_const },
+  {"<"   , S_REL_OP  , 1, 0.0 , v_less   , d_const, "<" , ".LT." },
+  {"="   , S_REL_OP  , 1, 0.0 , v_equal  , d_const, "==", ".EQ." },
+  {"=="  , S_REL_OP  , 1, 0.0 , v_equal  , d_const, "==", ".EQ." },
+  {">"   , S_REL_OP  , 1, 0.0 , v_greater, d_const, ">" , ".GT." },
+  {"<="  , S_REL_OP  , 1, 0.0 , v_less_or, d_const, "<=", ".LE." },
+  {"<>"  , S_REL_OP  , 1, 0.0 , v_unequal, d_const, "!=", ".NE." },
+  {"!="  , S_REL_OP  , 1, 0.0 , v_unequal, d_const, "!=", ".NE." },
+  {">="  , S_REL_OP  , 1, 0.0 , v_grtr_or, d_const, ">=", ".GE." },
 
-  {"_NAS", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_error }, /* marker for non-alphanumeric symbols */
+  /* marker for non-alphanumeric symbols */
+  {"_NAS", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_error, "", "" },
 
   /* special symbols */
-  {"("   , S_OTHERS  , 0, 0.0 , v_dummy  , d_error },
-  {")"   , S_OTHERS  , 0, 0.0 , v_dummy  , d_error },
-  {","   , S_OTHERS  , 0, 0.0 , v_dummy  , d_error },
+  {"("   , S_OTHERS  , 0, 0.0 , v_dummy  , d_error, "", "" },
+  {")"   , S_OTHERS  , 0, 0.0 , v_dummy  , d_error, "", "" },
+  {","   , S_OTHERS  , 0, 0.0 , v_dummy  , d_error, "", "" },
 
   /* arithmetic operators */
-  {"+"   , S_ADD_OP  , 2, 0.0 , v_plus   , d_add   },
-  {"-"   , S_ADD_OP  , 2, 0.0 , v_minus  , d_add   },
-  {"*"   , S_MUL_OP  , 4, 0.0 , v_mul    , d_mul   },
-  {"/"   , S_MUL_OP  , 4, 0.0 , v_div    , d_div   },
-  {"^"   , S_HPR_OP  , 5, 0.0 , v_power  , d_power },
+  {"+"   , S_ADD_OP  , 2, 0.0 , v_plus   , d_add  , "+"   , "+"  },
+  {"-"   , S_ADD_OP  , 2, 0.0 , v_minus  , d_add  , "-"   , "-"  },
+  {"*"   , S_MUL_OP  , 4, 0.0 , v_mul    , d_mul  , "*"   , "*"  },
+  {"/"   , S_MUL_OP  , 4, 0.0 , v_div    , d_div  , "/"   , "/"  },
+  {"^"   , S_HPR_OP  , 5, 0.0 , v_power  , d_power, "@pow", "**" },
 
-  {"_ANS", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_error }, /* marker for alphanumeric symbols */
+  /* marker for alphanumeric symbols */
+  {"_ANS", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_error, "", "" },
 
   /* logical operators */
-  {"and" , S_MUL_OP  , 2, 0.0 , v_and    , d_const },
-  {"or"  , S_ADD_OP  , 4, 0.0 , v_or     , d_const },
-  {"not" , S_SFUNCT  , 1, 0.0 , v_not    , d_const },
+  {"and" , S_MUL_OP  , 2, 0.0 , v_and    , d_const, "&&", ".AND." },
+  {"or"  , S_ADD_OP  , 4, 0.0 , v_or     , d_const, "||", ".OR."  },
+  {"not" , S_SFUNCT  , 1, 0.0 , v_not    , d_const, "@!", ".NOT." },
 
   /* system constants */
-  {"pi"  , S_SCONST  , 9, M_PI, v_const  , d_const },
-  {"e"   , S_SCONST  , 9, M_E , v_const  , d_const },
+  {"pi"  , S_SCONST  , 9, M_PI, v_const  , d_const, "M_PI", "xxxx" },
+  {"e"   , S_SCONST  , 9, M_E , v_const  , d_const, "M_E ", "xxxx" },
 
   /* system functions */
-  {"mod" , S_SFUNCT  , 2, 0.0 , v_mod    , d_const },
-  {"exp" , S_SFUNCT  , 1, 0.0 , v_exp    , d_exp   },
-  {"ln"  , S_SFUNCT  , 1, 0.0 , v_ln     , d_ln    },
-  {"log" , S_SFUNCT  , 2, 0.0 , v_log    , d_log   },
-  {"sin" , S_SFUNCT  , 1, 0.0 , v_sin    , d_sin   },
-  {"cos" , S_SFUNCT  , 1, 0.0 , v_cos    , d_cos   },
-  {"tan" , S_SFUNCT  , 1, 0.0 , v_tan    , d_tan   },
-  {"sec" , S_SFUNCT  , 1, 0.0 , v_sec    , d_sec   },
-  {"sqrt", S_SFUNCT  , 1, 0.0 , v_sqrt   , d_sqrt  },
-  {"abs" , S_SFUNCT  , 1, 0.0 , v_abs    , d_abs   },
-  {"sgn" , S_SFUNCT  , 1, 0.0 , v_sgn    , d_const },
+  {"mod" , S_SFUNCT  , 2, 0.0 , v_mod    , d_const, "%", "xxxx" },
+  {"exp" , S_SFUNCT  , 1, 0.0 , v_exp    , d_exp  , "@exp", "xxxx" },
+  {"ln"  , S_SFUNCT  , 1, 0.0 , v_ln     , d_ln   , "@log", "xxxx" },
+  {"log" , S_SFUNCT  , 2, 0.0 , v_log    , d_log  , "xxxx", "xxxx" },
+  {"sin" , S_SFUNCT  , 1, 0.0 , v_sin    , d_sin  , "@sin", "xxxx" },
+  {"cos" , S_SFUNCT  , 1, 0.0 , v_cos    , d_cos  , "@cos", "xxxx" },
+  {"tan" , S_SFUNCT  , 1, 0.0 , v_tan    , d_tan  , "xxxx", "xxxx" },
+  {"sec" , S_SFUNCT  , 1, 0.0 , v_sec    , d_sec  , "xxxx", "xxxx" },
+  {"sqrt", S_SFUNCT  , 1, 0.0 , v_sqrt   , d_sqrt , "@sqrt", "xxxx" },
+  {"abs" , S_SFUNCT  , 1, 0.0 , v_abs    , d_abs  , "@fabs", "xxxx" },
+  {"sgn" , S_SFUNCT  , 1, 0.0 , v_sgn    , d_const, "xxxx", "xxxx" },
 
   /* marker for end-of-table */
-  {"_END", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_error },
+  {"_END", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_error, "", "" },
 };
 
 /*  location of special symbols in table                                     */

@@ -71,11 +71,17 @@ void _unur_fstr_free ( struct ftreenode *functtree_root );
 /*---------------------------------------------------------------------------*/
 
 char *_unur_fstr_tree2string ( const struct ftreenode *functtree_root,
-			       const char *variable, const char *function);
+			       const char *variable, const char *function, int spaces );
 /*---------------------------------------------------------------------------*/
 /* Produce string from function tree.                                        */
 /* It returns a pointer to the resulting string. This should be freed when   */
 /* it is not used any more.                                                  */
+/*---------------------------------------------------------------------------*/
+
+int _unur_fstr_tree2C ( FILE *out, const struct ftreenode *root,
+			const char *variable, const char *function );
+/*---------------------------------------------------------------------------*/
+/* Produce C code from function tree.                                        */
 /*---------------------------------------------------------------------------*/
 
 struct ftreenode *_unur_fstr_make_derivative ( const struct ftreenode *functtree_root );

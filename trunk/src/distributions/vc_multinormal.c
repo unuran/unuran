@@ -23,8 +23,8 @@
  *  constant:  (2 pi)^(dim/2) * sqrt(det(Sigma))                             *
  *                                                                           *
  *  parameters:                                                              *
- *     mean  ... mu      (0-vector)                                          *
- *     covar ... Sigma   (identity matrix)                                   *
+ *     0:  mean  ... mu      (0-vector)                                      *
+ *     1:  covar ... Sigma   (identity matrix)                               *
  *                                                                           *
  *****************************************************************************
  *                                                                           *

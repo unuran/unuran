@@ -1,3 +1,83 @@
+/*****************************************************************************
+ *                                                                           *
+ *          UNURAN -- Universal Non-Uniform Random number generator          *
+ *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ *   FILE:      stringpars.c.base / stringpars.c                             *
+ *                                                                           *
+ *                                                                           *
+ *   DESCRIPTION:                                                            *
+ *                                                                           *
+ *   The file stringpars.c.base contains the base of the stringparser.       *
+ *   The perl script <name-it> replaces the                                  *
+ *        =INPUT keyword                                                     *
+ *   tags with information found within the source-code and writes it to     *
+ *   'stringpars.c'.                                                         *
+ *   The string to parse contains information about the standard             *
+ *   distribution, the choosen method and (optional) the uniform number      *
+ *   generator (in this order!).                                             *
+ *   These three blocks must be separeted with colons ':'                    *
+ *                                                                           *
+ *   The information about the distribution and the method must be provided  *
+ *   using a <key>=<value> scheme but the (optional) information about the   *
+ *   uniform number generator is directly passed to the PRNG-package and     *
+ *   therefore the according syntax must be used---see the PRNG manual for   *
+ *   details.                                                                *
+ *   If more then one <key>=<value> pair is needed, they must be separeted   *
+ *   with semicolons ';'.                                                    *
+ *   The <key> is a keyword explained below.                                 *
+ *   The value can be a string, a number or a list of numbers or a string    *
+ *   followed by a list of numbers (examples will be given below), which     *
+ *   depends on the <key>. A list is bounded with parentheses '(' and ')'    *
+ *   and the separator is a komma ','.                                       *
+ *   If the value is a string and a list in beetween only white space        *
+ *   is allowed.                                                             *
+ *                                                                           *
+ *   Distribution:                                                           *
+ *   The key 'distr' is obligatory to be the first  and the corresponding    *
+ *   value must be one  of the implemented standard distributions---with     *
+ *   the parameters.  e.g.: distr=normal(0,1)                                *
+ *   Furthermore it's possible to set the domain via the key 'domain'        *
+ *                                                                           *
+ *   Method:                                                                 *
+ *   The key 'method' is obligatory to be first and the value must be the    *
+ *   name of a method suitable for the choosen standard distribution.        *
+ *   e.g.: method=arou                                                       *
+ *   Of course the keys are dependent on the choosen method. All             *
+ *   corresponding _set_ commands of UNURAN are available and the key is     *
+ *   the string after the 'unur_<methodname>_set_' part of the command.      *
+ *   e.g.: UNURAN provedes the command 'unur_arou_set_max_sqhratio' to       *
+ *   set a parameter. To call this function via the string-interface, the    *
+ *   key 'max_sqhratio' can be used.                                         *
+ *                                                                           *
+ *   Uniform random number generator:                                        *
+ *   The string is passed as it is to the PRNG package                       *
+ *                                                                           *
+ *****************************************************************************
+     $Id$
+ *****************************************************************************
+ *                                                                           *
+ *   Copyright (c) 2000 Wolfgang Hoermann and Josef Leydold                  *
+ *   Dept. for Statistics, University of Economics, Vienna, Austria          *
+ *                                                                           *
+ *   This program is free software; you can redistribute it and/or modify    *
+ *   it under the terms of the GNU General Public License as published by    *
+ *   the Free Software Foundation; either version 2 of the License, or       *
+ *   (at your option) any later version.                                     *
+ *                                                                           *
+ *   This program is distributed in the hope that it will be useful,         *
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of          *
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
+ *   GNU General Public License for more details.                            *
+ *                                                                           *
+ *   You should have received a copy of the GNU General Public License       *
+ *   along with this program; if not, write to the                           *
+ *   Free Software Foundation, Inc.,                                         *
+ *   59 Temple Place, Suite 330, Boston, MA 02111-1307, USA                  *
+ *                                                                           *
+ *****************************************************************************/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

@@ -1,6 +1,16 @@
 #!/usr/bin/perl
 
-# $ID$
+# ----------------------------------------------------------------------------
+# $Id$
+# ----------------------------------------------------------------------------
+#
+# File: gen_stringpars.pl
+#
+# Description:
+# Generates a stringparser from the file stringpars.c.base with
+# information found within the source of UNURAN and writes it to
+# the file stringpars.c
+#
 
 # where relevant information is stored
 $Methinfopath = "../src/methods/";

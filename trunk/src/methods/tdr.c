@@ -377,21 +377,22 @@ static int _unur_tdr_starting_cpoints( struct unur_par *par, struct unur_gen *ge
 /*---------------------------------------------------------------------------*/
 
 static int _unur_tdr_starting_intervals( struct unur_par *par, struct unur_gen *gen );
+static int _unur_tdr_gw_starting_intervals( struct unur_par *par, struct unur_gen *gen );
+static int _unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* compute intervals from given starting construction points.                */
+/*---------------------------------------------------------------------------*/
+
 inline static int _unur_tdr_gw_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval *iv );
 inline static int _unur_tdr_ps_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval *iv );
 /*---------------------------------------------------------------------------*/
-/* compute intervals from given starting construction points.                */
+/* compute all necessary data for interval.                                  */
 /*---------------------------------------------------------------------------*/
 
 static struct unur_tdr_interval *_unur_tdr_interval_new( struct unur_gen *gen, 
 							 double x, double fx, int is_mode );
 /*---------------------------------------------------------------------------*/
 /* make a new segment with left construction point x.                        */
-/*---------------------------------------------------------------------------*/
-
-static int _unur_tdr_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval *iv );
-/*---------------------------------------------------------------------------*/
-/* compute all necessary data for interval.                                  */
 /*---------------------------------------------------------------------------*/
 
 static int _unur_tdr_tangent_intersection_point( struct unur_gen *gen,

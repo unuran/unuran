@@ -537,7 +537,6 @@ _unur_tdr_ps_sample( struct unur_gen *gen )
     if (V <= fx)
       return X;
 
-#if 0
     /* evaluation of pdf is expensive. improve the situation! */
     if (GEN.n_ivs < GEN.max_ivs && GEN.max_ratio * GEN.Atotal > GEN.Asqueeze)
       if ( !_unur_tdr_ps_interval_split(gen, iv, X, fx) ) {
@@ -547,7 +546,6 @@ _unur_tdr_ps_sample( struct unur_gen *gen )
 	SAMPLE = _unur_sample_cont_error;
 	return INFINITY;
       }
-#endif
 
     /* else reject and try again */
   }

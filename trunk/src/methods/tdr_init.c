@@ -484,6 +484,34 @@ _unur_tdr_starting_intervals( struct unur_par *par, struct unur_gen *gen )
      /*   0 ... error                                                        */
      /*----------------------------------------------------------------------*/
 {
+  switch (gen->variant & TDR_VARMASK_VERSION) {
+  case TDR_VAR_VERSION_GW:    /* original version (Gilks&Wild) */
+    return _unur_tdr_gw_starting_intervals(par,gen);
+  case TDR_VAR_VERSION_PS:    /* proportional squeeze */
+  case TDR_VAR_VERSION_IA:    /* immediate acceptance */
+    return _unur_tdr_ps_starting_intervals(par,gen);
+  default:
+    _unur_error(GENTYPE,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+    return -2;
+  }
+} /* end of _unur_tdr_interval_parameter() */
+
+/*---------------------------------------------------------------------------*/
+
+static int
+_unur_tdr_gw_starting_intervals( struct unur_par *par, struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* compute intervals for starting points                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par          ... pointer to parameter list                         */
+     /*   gen          ... pointer to generator object                       */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... success                                                      */
+     /*   0 ... error                                                        */
+     /*----------------------------------------------------------------------*/
+{
   struct unur_tdr_interval *iv, *iv_new, *iv_tmp; 
   double x,fx;              /* construction point, value of p.d.f. at x */
   
@@ -492,30 +520,11 @@ _unur_tdr_starting_intervals( struct unur_par *par, struct unur_gen *gen )
   CHECK_NULL(gen,0);     COOKIE_CHECK(gen,CK_TDR_GEN,0);
   CHECK_NULL(GEN.iv,0);  COOKIE_CHECK(GEN.iv,CK_TDR_IV,0); 
   
-  /* first interval in list */
-  iv = GEN.iv;
-  
-  if ( ((gen->variant & TDR_VARMASK_VERSION) & (TDR_VAR_VERSION_PS | TDR_VAR_VERSION_IA))
-       && (iv->fx > 0) ) {
-    /* If pdf(x) is 0 in the very first interval, there is no construction
-       point in this interval. Then the intersection point in this interval is
-       set to iv->x and hence it is the left boundary of the domain of the p.d.f.
-       Otherwise we need an auxilliary interval to store the left boundary
-       of the domain. */
-    iv->prev = GEN.iv = _unur_tdr_interval_new( gen, -INFINITY, 0., FALSE );
-    GEN.iv->ip = iv->x;
-    GEN.iv->fip = iv->fx;
-    GEN.iv->Asqueeze = GEN.iv->Ahat = GEN.iv->Ahatr = GEN.iv->sq = 0.;
-    GEN.iv->Acum = 0;
-    GEN.iv->prev = NULL;
-    GEN.iv->next = iv;
-  }
-  
   /* compute paramters for all intervals */
-  for( ; iv->next != NULL; ) {
+  for( iv=GEN.iv; iv->next != NULL; ) {
     
     /* compute parameters for interval */
-    switch (_unur_tdr_interval_parameter(gen, iv)) {
+    switch (_unur_tdr_gw_interval_parameter(gen, iv)) {
     case -2:     /* p.d.f. not T-concave */
       return 0;
     case 1:     /* computation of parameters for interval successful */
@@ -574,7 +583,156 @@ _unur_tdr_starting_intervals( struct unur_par *par, struct unur_gen *gen )
   /* o.k. */
   return 1;
 
-} /* end of _unur_tdr_starting_intervals() */
+} /* end of _unur_tdr_gw_starting_intervals() */
+
+/*---------------------------------------------------------------------------*/
+
+static int
+_unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* compute intervals for starting points                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par          ... pointer to parameter list                         */
+     /*   gen          ... pointer to generator object                       */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... success                                                      */
+     /*   0 ... error                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_tdr_interval *iv, *iv_new, *iv_tmp; 
+  double x,fx;              /* construction point, value of p.d.f. at x */
+  double lb, flb;           /* left boundary point of domain of p.d.f.  */
+  
+  /* check arguments */
+  CHECK_NULL(par,0);     COOKIE_CHECK(par,CK_TDR_PAR,0);
+  CHECK_NULL(gen,0);     COOKIE_CHECK(gen,CK_TDR_GEN,0);
+  CHECK_NULL(GEN.iv,0);  COOKIE_CHECK(GEN.iv,CK_TDR_IV,0); 
+
+  /* first interval in list */
+  iv = GEN.iv;
+
+  /* the left boundary of the domain:
+     iv->x in the first interval is always the left boundary of 
+     the domain of the p.d.f. */
+  lb = iv->x;
+  flb = iv->fx;
+
+  /* there is no use for a point iv->x that is not used as a 
+     construction point in versions PS and IA.
+     (In version GW it is used to store the left boundary of the domain
+     of the p.d.f.)
+     Thus we remove it from the list. At such points the slope of the
+     tangents to the transformed density is set to INFINITY. */
+  if (_FP_is_infinity(iv->dTfx)) {
+    GEN.iv = iv->next;
+    free (iv);
+    --GEN.n_ivs;
+    iv = GEN.iv;
+  }
+
+  /* set left boundary:
+     it is stored in iv->ip in the first interval */
+  iv->ip = lb;
+  iv->fip = flb;
+
+  /* compute paramters for all intervals */
+  while (iv) {
+
+#if 1
+    if (iv->next == NULL) {
+      /* the last interval in the list*/
+
+      /* analogously to version GW we want to have a last virtual 
+	 (stopping) interval, that simply stores the right boundary
+	 point and guaranties that the loop in indexed search stops
+	 on an existing interval.
+	 However in the case where iv->x is used as construction point
+	 we have to add such an interval. */
+      if (!_FP_is_infinity(iv->dTfx)) {
+	/* get interval */
+	iv->next = iv_new = _unur_tdr_interval_new( gen, iv->x, 0., FALSE );
+	/* link into list */
+	iv_new->prev = iv;
+	/* copy right boundary of domain */
+	iv_new->ip = iv->x;
+	iv_new->fip = iv->fx;
+	/* make shure that we will never use this interval for sampling. */
+	iv->next->Asqueeze = iv->next->Ahat = iv->next->Ahatr = 0.;
+	iv->Acum = INFINITY;
+	iv->next-> sq = 0.;
+	--(GEN.n_ivs);           /* we do not count this interval */
+	/* we even have to to some additional work */
+      }
+      else
+	/* nothing to do any more */
+	break;
+	
+    }
+#endif
+
+    /* compute parameters for interval */
+    switch (_unur_tdr_ps_interval_parameter(gen, iv)) {
+    case -2:     /* p.d.f. not T-concave */
+      return 0;
+    case 1:     /* computation of parameters for interval successful */
+      /* skip to next interval */
+      iv = iv->next;
+      continue;
+    case -1:    /* interval unbounded */
+      /* split interval */
+      break;
+    case 0:    /* construction points too close */
+      /* we have to remove this last interval from list */
+      /* (the last construction point in the list is a boundary point.
+	 thus we might change the domain of the distribution.
+	 however, we only cut off a piece that is beyond the precesion
+	 of the floating point arithmetic.)  */
+      iv_tmp = iv->next;
+      iv->next = iv->next->next;
+      free(iv_tmp);
+      --(GEN.n_ivs);
+      
+      if (iv->next==NULL) {
+	/* last (virtuel) interval in list.
+	   make shure that we will never use this segment */
+	iv->Asqueeze = iv->Ahat = iv->Ahatr = iv->sq = 0.;
+	iv->Acum = INFINITY;
+      }
+      else
+	/* we need a pointer to the previous entry in the list */
+	iv->next->prev = iv;
+      continue;
+    }
+    
+    /* area below hat infinite.
+       insert new construction point. */
+    x = _unur_arcmean(iv->x,iv->next->x);  /* use mean point in interval */
+    
+    /* value of p.d.f. at x */
+    fx = PDF(x);
+
+    /* add a new interval, but check if we had to used too many intervals */
+    if (GEN.n_ivs >= GEN.max_ivs) {
+      /* we do not want to create too many intervals */
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"cannot create bounded hat!");
+      return 0;
+    }
+    iv_new = _unur_tdr_interval_new( gen, x, fx, FALSE );
+    if (iv_new == NULL) return 0; /* pdf(x) < 0. */
+
+    /* insert into linked list */
+    iv_new->prev = iv;
+    iv_new->next = iv->next;
+    iv->next->prev = iv_new;
+    iv->next = iv_new;
+  }
+
+  /* o.k. */
+  return 1;
+
+} /* end of _unur_tdr_ps_starting_intervals() */
 
 /*****************************************************************************/
 
@@ -667,36 +825,6 @@ _unur_tdr_interval_new( struct unur_gen *gen, double x, double fx, int is_mode )
 /*****************************************************************************/
 
 static int
-_unur_tdr_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval *iv )
-     /*----------------------------------------------------------------------*/
-     /* get new interval and compute left construction point at x.           */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen  ... pointer to generator object                               */
-     /*   iv   ... pointer to interval                                       */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   1 ... if successful                                                */
-     /*   0 ... do not add this construction point                           */
-     /*  -1 ... area = INFINITY                                              */
-     /*  -2 ... error (not p.d.f. T-concave)                                 */
-     /*----------------------------------------------------------------------*/
-{
-  switch (gen->variant & TDR_VARMASK_VERSION) {
-  case TDR_VAR_VERSION_GW:    /* original version (Gilks&Wild) */
-    return _unur_tdr_gw_interval_parameter(gen,iv);
-  case TDR_VAR_VERSION_PS:    /* proportional squeeze */
-  case TDR_VAR_VERSION_IA:    /* immediate acceptance */
-    return _unur_tdr_ps_interval_parameter(gen,iv);
-  default:
-    _unur_error(GENTYPE,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    return -2;
-  }
-} /* end of _unur_tdr_interval_parameter() */
-
-/*---------------------------------------------------------------------------*/
-
-static int
 _unur_tdr_gw_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval *iv )
      /*----------------------------------------------------------------------*/
      /* compute intersection point of tangents and                           */
@@ -722,8 +850,10 @@ _unur_tdr_gw_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval 
   /* check interval on the right side of iv */
   CHECK_NULL(iv->next,0);  COOKIE_CHECK(iv->next,CK_TDR_IV,0); 
 
-  /* get division point of interval 
-     (= intersection point of tangents in almost all cases) */
+  /* get intersection point of tangents.
+     used to partition interval into left hand part (construction point of tangent
+     on the left hand boundary) and right hand part (construction point of tangent
+     on the left hand boundary). */
   if ( !_unur_tdr_tangent_intersection_point(gen,iv,&(iv->ip)) )
     return -2;
 
@@ -811,28 +941,18 @@ _unur_tdr_ps_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval 
   CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_TDR_GEN,0);
   CHECK_NULL(iv,0);   COOKIE_CHECK(iv,CK_TDR_IV,0); 
 
-  /* check interval on the right side of iv */
-  CHECK_NULL(iv->next,0);  COOKIE_CHECK(iv->next,CK_TDR_IV,0); 
-
-  /* get division point of interval 
-     (= intersection point of tangents in almost all cases) */
-  if ( !_unur_tdr_tangent_intersection_point(gen,iv,&(iv->ip)) )
+  /* get intersection point of tangents. it is used as boundaries of intervals.
+     it is stored together with the right hand (i.e. next) construction point. */
+  if ( !_unur_tdr_tangent_intersection_point(gen,iv,&(iv->next->ip)) )
     return -2;
-
-  /* the first interval in the list is just for storing the left 
-     intersection point (i.e. left boundary point of the most left
-     interval). */
-  if (iv == GEN.iv) {
-    iv->Asqueeze = iv->Ahat = iv->Ahatr = iv->fip = iv->sq = 0.;
-    iv->Acum = 0.;
-    return 1;
-  }
+  /* value of pdf at intersection point */
+  iv->next->fip = _FP_is_infinity(iv->next->ip) ? 0. : PDF(iv->next->ip);
 
   /* volume below hat */
   /** TODO: it is not always a good idea to integrate from construction point
       to division point when the hat is increasing in this direction. **/
-  Ahatl = _unur_tdr_interval_area( gen, iv, iv->dTfx, iv->prev->ip);
-  iv->Ahatr = _unur_tdr_interval_area( gen, iv, iv->dTfx, iv->ip);
+  Ahatl = _unur_tdr_interval_area( gen, iv, iv->dTfx, iv->ip);
+  iv->Ahatr = _unur_tdr_interval_area( gen, iv, iv->dTfx, iv->next->ip);
 
   /* areas below head unbounded ? */
   if (Ahatl >= INFINITY || iv->Ahatr >= INFINITY)
@@ -841,31 +961,27 @@ _unur_tdr_ps_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval 
   /* total area */
   iv->Ahat = iv->Ahatr + Ahatl;
 
-  /* value of pdf at intersection point */
-  iv->fip = _FP_is_infinity(iv->ip) ? 0. : PDF(iv->ip);
-
   /* compute squeeze:
      squeeze ration = min_{boundary points} pdf(x) / hat(x) */
   
   /* left boundary point */
-  hx = _unur_tdr_eval_hat(gen,iv,iv->prev->ip);
-  if (_FP_greater(iv->prev->fip, hx)) {
-    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"hat(x) < pdf(x)");
-    return -2;
-  }
-  iv->sq = (_FP_is_infinity(hx) || hx <= 0.) ? 0. : iv->prev->fip / hx;
-
-  /* right boundary point */
   hx = _unur_tdr_eval_hat(gen,iv,iv->ip);
   if (_FP_greater(iv->fip, hx)) {
     _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"hat(x) < pdf(x)");
     return -2;
   }
-  sq = (_FP_is_infinity(hx) || hx <= 0.) ? 0. : iv->fip / hx;
+  iv->sq = (_FP_is_infinity(hx) || hx <= 0.) ? 0. : iv->fip / hx;
+
+  /* right boundary point */
+  hx = _unur_tdr_eval_hat(gen,iv,iv->next->ip);
+  if (_FP_greater(iv->next->fip, hx)) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"hat(x) < pdf(x)");
+    return -2;
+  }
+  sq = (_FP_is_infinity(hx) || hx <= 0.) ? 0. : iv->next->fip / hx;
 
   /* squeeze */
-  if (iv->sq > sq) 
-    iv->sq = sq;
+  if (iv->sq > sq) iv->sq = sq;
 
   /* area below squeeze */
   iv->Asqueeze = iv->Ahat * iv->sq;

@@ -306,17 +306,15 @@ _unur_tdr_ps_debug_intervals( struct unur_gen *gen )
   fprintf(log,"%s:Intervals: %d\n",gen->genid,GEN.n_ivs-1);
   if (GEN.iv) {
     if (gen->debug & TDR_DEBUG_IV) {
-      fprintf(log,"%s: Nr.           tp      right ip        f(tp)     T(f(tp))   d(T(f(tp)))       f(ip)   squ. ratio\n",gen->genid);
-      iv = GEN.iv;
-      COOKIE_CHECK(iv,CK_TDR_IV,/*void*/); 
-      fprintf(log,"%s:[...]:\t\t   %#12.6g\t\t\t\t\t       %#12.6g %#12.6g\n", gen->genid,
-	      iv->ip, iv->fip, iv->sq);
-      //      for (iv = iv->next,i=1; iv->next!=NULL; iv=iv->next, i++) {
-      for (iv = iv->next,i=1; iv!=NULL; iv=iv->next, i++) {
+      fprintf(log,"%s: Nr.       left ip           tp        f(tp)     T(f(tp))   d(T(f(tp)))       f(ip)   squ. ratio\n",gen->genid);
+      for (iv=GEN.iv,i=0; iv->next; iv=iv->next, i++) {
 	COOKIE_CHECK(iv,CK_TDR_IV,/*void*/); 
 	fprintf(log,"%s:[%3d]:%#12.6g %#12.6g %#12.6g %#12.6g %#12.6g %#12.6g %#12.6g\n", gen->genid, i,
-		iv->x, iv->ip, iv->fx, iv->Tfx, iv->dTfx, iv->fip, iv->sq);
+		iv->ip, iv->x, iv->fx, iv->Tfx, iv->dTfx, iv->fip, iv->sq);
       }
+      COOKIE_CHECK(iv,CK_TDR_IV,/*void*/); 
+      fprintf(log,"%s:[...]:%#12.6g\t\t\t\t\t\t       %#12.6g\n", gen->genid,
+	      iv->ip, iv->fip);
     }
     fprintf(log,"%s:\n",gen->genid);
   }
@@ -335,8 +333,8 @@ _unur_tdr_ps_debug_intervals( struct unur_gen *gen )
     fprintf(log,"%s:Areas in intervals:\n",gen->genid);
     fprintf(log,"%s: Nr.\tbelow squeeze\t\t  below hat (left and right)\t\t  cumulated\n",gen->genid);
     sAsqueeze = sAhatl = sAhatr = 0.;
-    if (GEN.iv->next) {
-      for (iv = GEN.iv->next, i=1; iv->next!=NULL; iv=iv->next, i++) {
+    if (GEN.iv) {
+      for (iv=GEN.iv,i=0; iv->next; iv=iv->next, i++) {
 	COOKIE_CHECK(iv,CK_TDR_IV,/*void*/); 
 	sAsqueeze += iv->Asqueeze;
 	sAhatl += iv->Ahat - iv->Ahatr;

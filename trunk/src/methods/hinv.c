@@ -895,6 +895,11 @@ _unur_hinv_interval_adapt( struct unur_gen *gen, struct unur_hinv_interval *iv )
   struct unur_hinv_interval *iv_new, *iv_tmp;
   double x, Fx;
 
+  /* check arguments */
+  CHECK_NULL(gen,NULL);       COOKIE_CHECK(gen,CK_HINV_GEN,NULL);
+  CHECK_NULL(iv,NULL);        COOKIE_CHECK(iv,CK_HINV_IV,NULL);
+  CHECK_NULL(iv->next,NULL);  COOKIE_CHECK(iv->next,CK_HINV_IV,NULL);
+
   /* 1st check: right most interval (of at least 2)
      with CDF greater than GEN.tailcutoff_right */
 
@@ -923,23 +928,22 @@ _unur_hinv_interval_adapt( struct unur_gen *gen, struct unur_hinv_interval *iv )
     return GEN.iv;
   }
 
+  /* center of x-interval as splitting point */
+  p_new = 0.5 * (iv->next->p + iv->p);
+
+  /* we do not split an interval if is too close */
+  if (_unur_FP_same(p_new,iv->p) || _unur_FP_same(p_new,iv->next->p)) {
+    _unur_warning(gen->genid,UNUR_ERR_ROUNDOFF,"u-error might be larger than error bound");
+    /* skip to next interval */
+    _unur_hinv_interval_parameter(gen,iv);
+    return iv->next;
+  }
+
   /* 3rd check: |u_i - u_{i-1}| must not exceed threshold value */
   /* 4th check: monotonicity                                    */
 
   if ( (iv->next->u - iv->u > HINV_MAX_U_LENGTH) ||
        (! _unur_hinv_interval_is_monotone(gen,iv)) ) {
-
-    /* mean of x-interval as splitting point */
-    p_new = 0.5 * (iv->next->p + iv->p);
-
-    if (_unur_FP_same(p_new,iv->p) || _unur_FP_same(p_new,iv->next->p)) {
-      /* cannot make more improvement steps */
-      _unur_warning(gen->genid,UNUR_ERR_ROUNDOFF,"u-error might be larger than error bound");
-      /* skip to next interval */
-      _unur_hinv_interval_parameter(gen,iv);
-      return iv->next;
-    }
-
     /* insert new interval into linked list */
     iv_new = _unur_hinv_interval_new(gen,p_new,CDF(p_new));
     iv_new->next = iv->next;
@@ -957,17 +961,7 @@ _unur_hinv_interval_adapt( struct unur_gen *gen, struct unur_hinv_interval *iv )
   Fx = CDF(x);
 
   if (fabs(Fx - 0.5*(iv->next->u + iv->u)) > GEN.u_resolution) {
-
     /* error in u-direction too large */
-    p_new = 0.5 * (iv->next->p + iv->p);
-
-    if (_unur_FP_same(p_new,iv->p) || _unur_FP_same(p_new,iv->next->p)) {
-      /* cannot make more improvement steps */
-      _unur_warning(gen->genid,UNUR_ERR_ROUNDOFF,"u-error might be larger than error bound");
-      /* skip to next interval */
-      return iv->next;
-    }
-
     /* if possible we use the point x instead of p_new */
     if(fabs(p_new-x)< HINV_XDEVIATION * (iv->next->p - iv->p))
       iv_new = _unur_hinv_interval_new(gen,x,Fx);
@@ -1066,7 +1060,7 @@ _unur_hinv_interval_is_monotone( struct unur_gen *gen, struct unur_hinv_interval
        as approximation we use the same check for order 5*/
   case 3:
     /* we skip the test if computing the bound has too many round-off errors */
-    if (iv->u==0. || iv->next->u==0. || _unur_FP_approx(iv->u,iv->next->u))
+    if (iv->u==0. || _unur_FP_approx(iv->u,iv->next->u))
       return 1;
     /* difference quotient */
     bound = 3.*(iv->next->p - iv->p)/(iv->next->u - iv->u);

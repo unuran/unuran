@@ -404,16 +404,30 @@ sub txt_plot_eval {
 
     foreach my $cmd (@commands) {
       CMD:{
-	  if ($cmd =~ /^\-?\d*\.\d*$/) { 
+	  if ($cmd =~ /^\-?\d*\.?\d*$/) { 
 	      push @stack, $cmd;
 	      last CMD; }
 	  if ($cmd eq "x") { 
 	      push @stack, $x;
 	      last CMD; }
+	  if ($cmd eq "neg") { 
+	      my $a = pop @stack;
+	      push @stack, (-$a);
+	      last CMD; }
 	  if ($cmd eq "mul") { 
 	      my $a = pop @stack;
 	      my $b = pop @stack;
-	      push @stack, $a*$b;
+	      push @stack, ($a*$b);
+	      last CMD; }
+	  if ($cmd eq "sub") { 
+	      my $a = pop @stack;
+	      my $b = pop @stack;
+	      push @stack, ($b-$a);
+	      last CMD; }
+	  if ($cmd eq "exp") { 
+	      my $a = pop @stack;
+	      my $b = pop @stack;
+	      push @stack, ($b ** $a);
 	      last CMD; }
 	  if ($cmd eq "sin") { 
 	      my $a = pop @stack;

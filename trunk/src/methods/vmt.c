@@ -532,7 +532,7 @@ _unur_vmt_free( struct unur_gen *gen )
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 
-static void
+void
 _unur_vmt_debug_init( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* write info about generator into logfile                              */
@@ -542,7 +542,6 @@ _unur_vmt_debug_init( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   FILE *log;
-  int i,j;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_VMT_GEN,RETURN_VOID);
@@ -555,21 +554,6 @@ _unur_vmt_debug_init( const struct unur_gen *gen )
   fprintf(log,"%s:\n",gen->genid);
 
   _unur_distr_cvec_debug( gen->distr, gen->genid );
-
-  fprintf(log,"%s:\tcholesky factor = ",gen->genid);
-  if (DISTR.covar && !GEN.cholesky) {
-    fprintf(log,"[matrix not positive definite !]\n");
-  }
-  else {
-    fprintf(log,"%s\n",(GEN.cholesky ? "" : "[NULL]"));
-    for (j=0; j<GEN.dim; j++) {
-      fprintf(log,"%s:\t   (%7.4f",gen->genid,(GEN.cholesky ? GEN.cholesky[GEN.dim*j] : (j==0?1.:0.)));
-      for (i=1; i<GEN.dim; i++) 
-	fprintf(log,",%7.4f",(GEN.cholesky ? GEN.cholesky[GEN.dim*j+i] : (i==j?1.:0.)));
-      fprintf(log,")\n");
-    }
-  }
-  fprintf(log,"%s:\n",gen->genid);
 
   if (GEN.uvgen)
     fprintf(log,"%s: marginal distribution = %s    [genid = %s]\n",gen->genid,

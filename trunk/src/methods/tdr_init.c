@@ -525,7 +525,7 @@ _unur_tdr_gw_starting_intervals( struct unur_par *par, struct unur_gen *gen )
   
   /* compute paramters for all intervals */
   for( iv=GEN.iv; iv->next != NULL; ) {
-    
+
     /* compute parameters for interval */
     switch (_unur_tdr_gw_interval_parameter(gen, iv)) {
     case -2:     /* PDF not T-concave */
@@ -559,7 +559,7 @@ _unur_tdr_gw_starting_intervals( struct unur_par *par, struct unur_gen *gen )
 	iv->next->prev = iv;
       continue;
     }
-    
+
     /* area below hat infinite.
        insert new construction point. */
     x = _unur_arcmean(iv->x,iv->next->x);  /* use mean point in interval */
@@ -696,7 +696,7 @@ _unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_gen *gen )
 	iv->next->Asqueeze = iv->next->Ahat = iv->next->Ahatr = 0.;
 	iv->Acum = INFINITY;
 	iv->next-> sq = 0.;
-	--(GEN.n_ivs);           /* we do not count this interval */
+	/* --(GEN.n_ivs);           /* we do not count this interval */
 	/* we even have to to some additional work */
       }
       else

@@ -88,7 +88,7 @@ unur_run_tests( struct unur_par *par, unsigned tests)
     /* evaluate setup time and generation time */
     gen = unur_test_timing(par,TEST_TIMING_LOG_SAMPLESIZE);
   else
-    gen = unur_init(par);
+    gen = _unur_init(par);
 
   /* init successful ? */
   if (!gen) return;
@@ -110,7 +110,7 @@ unur_run_tests( struct unur_par *par, unsigned tests)
      unur_make_scatterplot(gen);
 
   /* free generator */
-  unur_free(gen);
+  _unur_free(gen);
 
 } /* end of unur_run_tests() */
 

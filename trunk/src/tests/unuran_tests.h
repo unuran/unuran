@@ -55,28 +55,28 @@
 
 /*---------------------------------------------------------------------------*/
 /* run battery of tests                                                      */
-void unur_run_tests( struct unur_par *par, unsigned tests);
+void unur_run_tests( UNUR_PAR *parameters, unsigned tests);
 
 /*---------------------------------------------------------------------------*/
 /* particular tests                                                          */
 
 /* print a sample                                                            */
-void unur_test_printsample( struct unur_gen *gen, int n_rows, int n_cols );
+void unur_test_printsample( UNUR_GEN *generator, int n_rows, int n_cols );
 
 /* timing                                                                    */
 struct unur_gen *unur_test_timing( struct unur_par *par, int log_samplesize );
 
 /* count used uniform random numbers                                         */
-int unur_test_count_urn( struct unur_gen *gen, int samplesize );
+int unur_test_count_urn( UNUR_GEN *generator, int samplesize );
 
 /* Chi^2 tests                                                               */
-double unur_test_chi2( struct unur_gen *gen, int intervals, int samplesize, int classmin, int output );
+double unur_test_chi2( UNUR_GEN *generator, int intervals, int samplesize, int classmin, int output );
 
 /* moments                                                                   */
-int unur_test_moments( struct unur_gen *gen, int n_moments, double *moments, int samplesize );
+int unur_test_moments( UNUR_GEN *generator, int n_moments, double *moments, int samplesize );
 
 /* make scatterplot of generated numbers                                     */
-int unur_make_scatterplot( struct unur_gen *gen );
+int unur_make_scatterplot( UNUR_GEN *generator );
 
 /*---------------------------------------------------------------------------*/
 #endif  /* __UNURAN_TESTS_H_SEEN */

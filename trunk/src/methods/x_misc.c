@@ -78,7 +78,7 @@ void unur_free( UNUR_GEN *gen )
 {                
   CHECK_NULL(gen,/*void*/);
   gen->destroy(gen);
-} /* end of unur_init() */
+} /* end of unur_free() */
 
 /*---------------------------------------------------------------------------*/
 

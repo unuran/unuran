@@ -398,8 +398,8 @@ unur_cstd_free( struct unur_gen *gen )
   /* free memory */
   _unur_free_genid(gen);
   free(GEN.gen_param);
-  if (gen->gen_aux)   unur_free(gen->gen_aux);
-  if (gen->gen_aux_2) unur_free(gen->gen_aux_2);
+  if (gen->gen_aux)   _unur_free(gen->gen_aux);
+  if (gen->gen_aux_2) _unur_free(gen->gen_aux_2);
   free(gen);
 
 } /* end of unur_cstd_free() */

@@ -287,7 +287,7 @@ _unur_make_uniform_scatter( int start, int skip )
   fclose(scatter);
 
   /* destroy generator object */
-  unur_free(gen);
+  _unur_free(gen);
 
   /* o.k. */
   return 1;

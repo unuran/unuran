@@ -92,7 +92,7 @@ unur_test_timing( struct unur_par *par, int log_samplesize )
 
   /* initialize generator (and estimate setup time) */
   time_start = _unur_get_time();
-  gen = unur_init(par);
+  gen = _unur_init(par);
   time_setup = _unur_get_time();
 
   /* init successful ? */
@@ -206,7 +206,7 @@ _unur_test_timing_uniform( struct unur_par *par, int log_samplesize )
     fastest_time = (_unur_get_time() - fastest_time)/samplesize;
 
     /* free generator object for uniform random number generator */
-    unur_free(gen_urng);
+    _unur_free(gen_urng);
 
   }
 

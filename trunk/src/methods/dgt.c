@@ -439,14 +439,10 @@ _unur_dgt_create( struct unur_par *par )
   COOKIE_SET(gen,CK_DGT_GEN);
 
   /* copy distribution object into generator object */
-  memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
+  _unur_distr_discr_copy( &(gen->distr), par->distr );
 
-  /* copy probability vector into generator object (when there is one) */
-  if (DISTR.pv) {
-    DISTR.pv = _unur_malloc( DISTR.n_pv * sizeof(double) );
-    memcpy( DISTR.pv, par->distr->data.discr.pv, DISTR.n_pv * sizeof(double) );
-  }
-  else {
+  /* we need a PV */
+  if (DISTR.pv == NULL) {
     /* try to compute PV */
     if (unur_distr_discr_make_pv(&(gen->distr)) <= 0) {
       /* not successful */
@@ -566,11 +562,13 @@ _unur_dgt_free( struct unur_gen *gen )
   /* we cannot use this generator object any more */
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
-  /* free memory */
-  _unur_free_genid(gen);
-  if (DISTR.pv)        free(DISTR.pv);
+  /* free two auxiliary tables */
   if (GEN.guide_table) free(GEN.guide_table);
   if (GEN.cumpv)       free(GEN.cumpv);
+
+  /* free memory */
+  _unur_free_genid(gen);
+  _unur_distr_discr_clear(gen);
   free(gen);
 
 } /* end of _unur_dgt_free() */

@@ -121,6 +121,9 @@ struct unur_distr_discr {
   int trunc[2];                 /* boundary of truncated domain              */
   /** trunc[] not supported yet **/
 
+  struct ftreenode *pmftree;    /* pointer to function tree for PMF          */
+  struct ftreenode *cdftree;    /* pointer to function tree for CDF          */
+
   int  (*init)(struct unur_par *par,struct unur_gen *gen);
                                 /* pointer to special init routine           */
 };

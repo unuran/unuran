@@ -182,6 +182,33 @@ double unur_distr_discr_eval_cdf( int k, UNUR_DISTR *distribution );
 */
 
 
+int unur_distr_discr_set_pmfstr( UNUR_DISTR *distribution, const char *pmfstr );
+/* 
+   This function provides an alternative way to set a PMF of the 
+   @var{distribution}.
+   @var{pmfstr} is a character string that contains the formula
+   for the PMF, see ..... for details.
+   See also the remarks for the unur_distr_discr_set_pmf() call.
+
+   It is not possible to call this funtion twice or to call this
+   function after a unur_distr_discr_set_pmf() call.
+*/
+
+int unur_distr_discr_set_cdfstr( UNUR_DISTR *distribution, const char *cdfstr );
+/* 
+   This function provides an alternative way to set a CDF; analogously
+   to the unur_distr_discr_set_pdfstr() call.
+*/
+
+char *unur_distr_discr_get_pmfstr( struct unur_distr *distribution );
+/* */
+
+char *unur_distr_discr_get_cdfstr( struct unur_distr *distribution );
+/* 
+   Get respective string for PMF and CDF of 
+   @var{distribution} that is given via the string interface.
+*/
+
 int unur_distr_discr_set_pmfparams( UNUR_DISTR *distribution, double *params, int n_params );
 /* 
    Set array of parameters for @var{distribution}. There is an upper limit

@@ -683,7 +683,7 @@ _unur_dari_create( struct unur_par *par )
   COOKIE_SET(gen,CK_DARI_GEN);
 
   /* copy distribution object into generator object */
-  memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
+  _unur_distr_discr_copy( &(gen->distr), par->distr );
 
   /* set generator identifier */
   gen->genid = _unur_set_genid(GENTYPE);
@@ -1209,11 +1209,11 @@ _unur_dari_free( struct unur_gen *gen )
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
   /* free two auxiliary tables */
-  if (DISTR.pv) free(DISTR.pv);
   if (GEN.hp)   free(GEN.hp);
   if (GEN.hb)   free(GEN.hb);
 
   /* free memory */
+  _unur_distr_discr_clear(gen);
   _unur_free_genid(gen);
   free(gen);
 

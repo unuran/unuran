@@ -50,6 +50,16 @@ static const char unknown_distr_name[] = "unknown";
 
 /*---------------------------------------------------------------------------*/
 
+static double _unur_distr_discr_eval_pmf_tree( int k, struct unur_distr *distr );
+/*---------------------------------------------------------------------------*/
+/* evaluate function tree for PMF.                                           */
+/*---------------------------------------------------------------------------*/
+
+static double _unur_distr_discr_eval_cdf_tree( int k, struct unur_distr *distr );
+/*---------------------------------------------------------------------------*/
+/* evaluate function tree for CDF.                                           */
+/*---------------------------------------------------------------------------*/
+
 static void _unur_distr_discr_free( struct unur_distr *distr );
 
 /*---------------------------------------------------------------------------*/
@@ -150,12 +160,57 @@ unur_distr_discr_new( void )
   DISTR.sum     = 1.;              /* sum over PMF                           */
   DISTR.upd_sum = NULL;            /* funct for computing sum                */
 
+  DISTR.pmftree    = NULL;         /* pointer to function tree for PMF       */
+  DISTR.cdftree    = NULL;         /* pointer to function tree for CDF       */
+
   distr->set = 0u;                 /* no parameters set                      */
   
   /* return pointer to object */
   return distr;
 
 } /* end of unur_distr_discr_new() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_distr_discr_copy( struct unur_distr *to, struct unur_distr *from )
+     /*----------------------------------------------------------------------*/
+     /* copy distribution object 'from' into distribution object 'to'.       */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   to   ... pointer to target distribution object                     */
+     /*   from ... pointer to source distribution object                     */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+#define FROM from->data.discr
+#define TO   to->data.discr
+
+  /* check arguments */
+  _unur_check_NULL( NULL,from,0 );
+  _unur_check_distr_object( from, DISCR, 0 );
+
+  /* copy distribution object into generator object */
+  memcpy( to, from, sizeof( struct unur_distr ) );
+
+  /* copy function trees into generator object (when there is one) */
+  TO.pmftree  = (FROM.pmftree) ? _unur_fstr_dup_tree(FROM.pmftree) : NULL;
+  TO.cdftree  = (FROM.cdftree) ? _unur_fstr_dup_tree(FROM.cdftree) : NULL;
+
+  /* copy probability vector into generator object (when there is one) */
+  if (FROM.pv) {
+    TO.pv = _unur_malloc( FROM.n_pv * sizeof(double) );
+    memcpy( TO.pv, FROM.pv, FROM.n_pv * sizeof(double) );
+  }
+
+  return 1;
+
+#undef FROM
+#undef TO
+} /* end of _unur_distr_discr_copy() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -171,14 +226,38 @@ _unur_distr_discr_free( struct unur_distr *distr )
   /* check arguments */
   if( distr == NULL ) /* nothing to do */
     return;
+  _unur_check_distr_object( distr, DISCR, /*void*/ );
 
-  COOKIE_CHECK(distr,CK_DISTR_DISCR,/*void*/);
+  if (DISTR.pmftree)  _unur_fstr_free(DISTR.pmftree);
+  if (DISTR.cdftree)  _unur_fstr_free(DISTR.cdftree);
 
   if (DISTR.pv) free( DISTR.pv );
 
   free( distr );
 
 } /* end of unur_distr_discr_free() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_distr_discr_clear( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* frees all memory blocks in distribution object inside generator      */
+     /* object.                                                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_distr *distr = &(gen->distr);
+
+  /* check arguments */
+  COOKIE_CHECK(distr,CK_DISTR_DISCR,/*void*/);
+
+  if (DISTR.pmftree)  _unur_fstr_free(DISTR.pmftree);
+  if (DISTR.cdftree)  _unur_fstr_free(DISTR.cdftree);
+  if (DISTR.pv) free( DISTR.pv );
+} /* end of unur_distr_discr_clear() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -437,9 +516,9 @@ unur_distr_discr_set_pmf( struct unur_distr *distr, UNUR_FUNCT_DISCR *pmf )
     return 0;
   }
 
-  /* we do not allow overwriting a pmf */
+  /* we do not allow overwriting a PMF */
   if (DISTR.pmf != NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of pmf not allowed");
+    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of PMF not allowed");
     return 0;
   }
 
@@ -582,6 +661,185 @@ unur_distr_discr_eval_cdf( int k, struct unur_distr *distr )
 
   return _unur_discr_CDF(k,distr);
 } /* end of unur_distr_discr_eval_cdf() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_distr_discr_set_pmfstr( struct unur_distr *distr, const char *pmfstr )
+     /*----------------------------------------------------------------------*/
+     /* set PMF of distribution via a string interface                       */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr  ... pointer to distribution object                          */
+     /*   pmfstr ... string that describes function term of PMF              */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL,distr,0 );
+  _unur_check_distr_object( distr, DISCR, 0 );
+  _unur_check_NULL( NULL,pmfstr,0 );
+
+  /* it is not possible to set a PMF when a PV is given. */
+  if (DISTR.pv != NULL) {
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"PV given, cannot set PMF");
+    return 0;
+  }
+
+  /* we do not allow overwriting a PMF */
+  if (DISTR.pmf != NULL) {
+    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of PMF not allowed");
+    return 0;
+  }
+
+  /* for derived distributions (e.g. order statistics) not possible */
+  if (distr->base) return 0;
+
+  /* changelog */
+  distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
+  /* derived parameters like mode, area, etc. might be wrong now! */
+
+  /* parse PMF string */
+  if ( (DISTR.pmftree = _unur_fstr2tree(pmfstr)) == NULL )
+    return 0;
+  DISTR.pmf  = _unur_distr_discr_eval_pmf_tree;
+
+  return 1;
+} /* end of unur_distr_discr_set_pmfstr() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_distr_discr_set_cdfstr( struct unur_distr *distr, const char *cdfstr )
+     /*----------------------------------------------------------------------*/
+     /* set CDF of distribution via a string interface                       */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr  ... pointer to distribution object                          */
+     /*   cdfstr ... string that describes function term of CDF              */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL,distr,0 );
+  _unur_check_distr_object( distr, DISCR, 0 );
+
+  /* we do not allow overwriting a CDF */
+  if (DISTR.cdf != NULL) {
+    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of CDF not allowed");
+    return 0;
+  }
+
+  /* for derived distributions (e.g. order statistics) not possible */
+  if (distr->base) return 0;
+
+  /* changelog */
+  distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
+  /* derived parameters like mode, area, etc. might be wrong now! */
+
+  /* parse string */
+  if ( (DISTR.cdftree = _unur_fstr2tree(cdfstr)) == NULL )
+    return 0;
+
+  /* set evaluation function */
+  DISTR.cdf  = _unur_distr_discr_eval_cdf_tree;
+
+  return 1;
+} /* end of unur_distr_discr_set_cdfstr() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_distr_discr_eval_pmf_tree( int k, struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* evaluate function tree for PMF.                                      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   k     ... argument for PMF                                         */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   PMF at k                                                           */
+     /*----------------------------------------------------------------------*/
+{
+  return ((DISTR.pmftree) ? _unur_fstr_eval_tree(DISTR.pmftree,(double)k) : 0.);
+} /* end of _unur_distr_discr_eval_pmf_tree() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_distr_discr_eval_cdf_tree( int k, struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* evaluate function tree for CDF.                                      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   k     ... argument for CDF                                         */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   CDF at k                                                           */
+     /*----------------------------------------------------------------------*/
+{
+  return ((DISTR.cdftree) ? _unur_fstr_eval_tree(DISTR.cdftree,(double)k) : 0.);
+} /* end of _unur_distr_discr_eval_cdf_tree() */
+
+/*---------------------------------------------------------------------------*/
+
+char *
+unur_distr_discr_get_pmfstr( struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* get PMF string that is given via the string interface                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr  ... pointer to distribution object                          */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to resulting string.                                       */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   This string should be freed when it is not used any more.          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL,distr,NULL );
+  _unur_check_distr_object( distr, DISCR, NULL );
+  _unur_check_NULL( NULL,DISTR.pmftree,NULL );
+
+  /* make and return string */
+  return _unur_fstr_tree2string(DISTR.pmftree,"x","PMF");
+} /* end of unur_distr_discr_get_pmfstr() */
+
+/*---------------------------------------------------------------------------*/
+
+char *
+unur_distr_discr_get_cdfstr( struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* get CDF string that is given via the string interface                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr  ... pointer to distribution object                          */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to resulting string.                                       */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   This string should be freed when it is not used any more.          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL,distr,NULL );
+  _unur_check_distr_object( distr, DISCR, NULL );
+  _unur_check_NULL( NULL,DISTR.cdftree,NULL );
+
+  /* make and return string */
+  return _unur_fstr_tree2string(DISTR.cdftree,"x","CDF");
+} /* end of unur_distr_discr_get_cdfstr() */
 
 /*---------------------------------------------------------------------------*/
 

@@ -405,8 +405,8 @@ _unur_dstd_free( struct unur_gen *gen )
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
   /* free memory */
+  _unur_distr_discr_clear(gen);
   _unur_free_genid(gen);
-  if (DISTR.pv)        free( DISTR.pv );
   if (GEN.gen_param)   free(GEN.gen_param);
   if (GEN.gen_iparam)  free(GEN.gen_iparam);
   if (gen->gen_aux)   _unur_free(gen->gen_aux);
@@ -445,7 +445,7 @@ _unur_dstd_create( struct unur_par *par )
   COOKIE_SET(gen,CK_DSTD_GEN);
 
   /* copy distribution object into generator object */
-  memcpy( &(gen->distr), par->distr, sizeof( struct unur_distr ) );
+  _unur_distr_discr_copy( &(gen->distr), par->distr );
 
   /* set generator identifier */
   gen->genid = _unur_set_genid(GENTYPE);

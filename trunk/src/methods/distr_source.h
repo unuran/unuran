@@ -76,15 +76,19 @@
 #define _unur_cvec_dPDF(r,x,distr) ((*((distr)->data.cvec.dpdf)) ((r),(x),(distr)))
 
 /*---------------------------------------------------------------------------*/
-/* destroy distribution object                                               */
-#define _unur_distr_free(distr)    do {if (distr) (distr)->destroy(distr);} while(0)
-
-/*---------------------------------------------------------------------------*/
 /* copy distribution objects                                                 */
 
 int _unur_distr_cont_copy( struct unur_distr *to, struct unur_distr *from );
+int _unur_distr_discr_copy( struct unur_distr *to, struct unur_distr *from );
 /* copy distribution object 'from' into distribution object 'to'.            */
 
+/*---------------------------------------------------------------------------*/
+/* destroy distribution object                                               */
+#define _unur_distr_free(distr)    do {if (distr) (distr)->destroy(distr);} while(0)
+
+void _unur_distr_cont_clear( struct unur_gen *generator );
+void _unur_distr_discr_clear( struct unur_gen *generator );
+/* frees all memory blocks in distribution object inside generator object.   */
 
 /*---------------------------------------------------------------------------*/
 /* debuging routines for distributions                                       */

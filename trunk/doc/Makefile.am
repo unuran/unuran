@@ -40,8 +40,9 @@ EXTRA_DIST = \
  fig-pdf-student.tex \
  fig-pdf-uniform.tex
 
-method_PATH = ../src/methods/
-distr_PATH  = ../src/distributions/
+method_PATH  = ../src/methods/
+distr_PATH   = ../src/distributions/
+example_PATH = ../examples/
 
 # make qstart
 qstart: qstart.texi
@@ -55,6 +56,7 @@ qstart.texi: scripts
 
 # run perl scripts
 scripts:
+	./examples_to_texi.perl $(example_PATH)test[0-9]*.c
 	./change_distr.perl $(method_PATH)distr.h
 	./defaults.perl  $(method_PATH)*.c
 	./description.perl $(method_PATH)*.h

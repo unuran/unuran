@@ -80,12 +80,13 @@ static const char distr_name[] = "logistic";
 #define NORMCONSTANT (distr->data.cont.norm_constant)
 
 /* function prototypes                                                       */
-static double _unur_pdf_logistic(double x, UNUR_DISTR *distr);
-static double _unur_dpdf_logistic(double x, UNUR_DISTR *distr);
-static double _unur_cdf_logistic(double x, UNUR_DISTR *distr);
+static double _unur_pdf_logistic( double x, UNUR_DISTR *distr );
+static double _unur_dpdf_logistic( double x, UNUR_DISTR *distr );
+static double _unur_cdf_logistic( double x, UNUR_DISTR *distr );
 
 static int _unur_upd_mode_logistic( UNUR_DISTR *distr );
 static int _unur_upd_area_logistic( UNUR_DISTR *distr );
+static int _unur_set_params_logistic( UNUR_DISTR *distr, double *params, int n_params );
 
 /*---------------------------------------------------------------------------*/
 
@@ -183,18 +184,58 @@ _unur_upd_area_logistic( UNUR_DISTR *distr )
 
 /*---------------------------------------------------------------------------*/
 
-struct unur_distr *
-unur_distr_logistic( double *params, int n_params )
+int
+_unur_set_params_logistic( UNUR_DISTR *distr, double *params, int n_params )
 {
-  register struct unur_distr *distr;
-
-  /* check new parameter for generator */
+  /* check number of parameters for distribution */
   if (n_params < 0) n_params = 0;
   if (n_params > 2) {
     _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
     n_params = 2; }
   if (n_params > 0)
-    CHECK_NULL(params,NULL);
+    CHECK_NULL(params,0);
+
+  /* check parameter sigma */
+  if (n_params > 0 && beta <= 0.) {
+    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"beta <= 0");
+    return 0;
+  }
+
+  /* copy parameters for standard form: none */
+
+  /* default parameters */
+  DISTR.beta  = 1.;
+  DISTR.alpha = 0.;
+
+  /* copy optional parameters */
+  /* copy parameters */
+  switch (n_params) {
+  case 2:
+    DISTR.alpha = alpha;
+  case 1:
+    DISTR.beta = beta;
+    n_params = 2;           /* number of parameters for non-standard form */
+  default:
+  }
+
+  /* store number of parameters */
+  DISTR.n_params = n_params;
+
+  /* set (standard) domain */
+  if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
+    DISTR.domain[0] = -INFINITY;       /* left boundary  */
+    DISTR.domain[1] = INFINITY;        /* right boundary */
+  }
+
+  return 1;
+} /* end of _unur_set_params_logistic() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_distr *
+unur_distr_logistic( double *params, int n_params )
+{
+  register struct unur_distr *distr;
 
   /* get new (empty) distribution object */
   distr = unur_distr_cont_new();
@@ -213,35 +254,23 @@ unur_distr_logistic( double *params, int n_params )
   DISTR.dpdf = _unur_dpdf_logistic; /* pointer to derivative of PDF */
   DISTR.cdf  = _unur_cdf_logistic;  /* pointer to CDF               */
 
-  /* default parameters */
-  DISTR.beta  = 1.;
-  DISTR.alpha = 0.;
-  
-  /* copy parameters */
-  switch (n_params) {
-  case 2:
-    DISTR.alpha = alpha;
-  case 1:
-    DISTR.beta = beta;
-    n_params = 2;           /* number of parameters for non-standard form */
-  default:
+  /* indicate which parameters are set */
+  distr->set = ( UNUR_DISTR_SET_DOMAIN |
+		 UNUR_DISTR_SET_STDDOMAIN |
+ 		 UNUR_DISTR_SET_MODE   |
+  		 UNUR_DISTR_SET_PDFAREA );
+
+  /* set parameters for distribution */
+  if (!_unur_set_params_logistic(distr,params,n_params)) {
+    free(distr);
+    return NULL;
   }
 
-  /* check parameter sigma */
-  if (DISTR.beta <= 0.) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"beta <= 0");
-    free( distr ); return NULL;
-  }
-
-  /* number of arguments */
-  DISTR.n_params = n_params;
+  /* function for setting parameters and updating domain */
+  DISTR.set_params = _unur_set_params_logistic;
 
   /* normalization constant */
   NORMCONSTANT = 1. / DISTR.beta;
-
-  /* domain */
-  DISTR.domain[0] = -INFINITY;       /* left boundary  */
-  DISTR.domain[1] = INFINITY;        /* right boundary */
 
   /* mode and area below p.d.f. */
   DISTR.mode = DISTR.alpha;
@@ -250,12 +279,6 @@ unur_distr_logistic( double *params, int n_params )
   /* function for updating derived parameters */
   DISTR.upd_mode  = _unur_upd_mode_logistic; /* funct for computing mode */
   DISTR.upd_area  = _unur_upd_area_logistic; /* funct for computing area */
-
-  /* indicate which parameters are set */
-  distr->set = ( UNUR_DISTR_SET_DOMAIN |
-		 UNUR_DISTR_SET_STDDOMAIN |
- 		 UNUR_DISTR_SET_MODE   |
-  		 UNUR_DISTR_SET_PDFAREA );
 
   /* return pointer to object */
   return distr;

@@ -63,12 +63,13 @@ static const char distr_name[] =  "rayleigh";
 #define LOGNORMCONSTANT (distr->data.cont.norm_constant)
 
 /* function prototypes                                                       */
-static double _unur_pdf_rayleigh(double x, UNUR_DISTR *distr);
-static double _unur_dpdf_rayleigh(double x, UNUR_DISTR *distr);
-static double _unur_pdf_rayleigh(double x, UNUR_DISTR *distr);
+static double _unur_pdf_rayleigh( double x, UNUR_DISTR *distr );
+static double _unur_dpdf_rayleigh( double x, UNUR_DISTR *distr );
+static double _unur_pdf_rayleigh( double x, UNUR_DISTR *distr );
 
 static int _unur_upd_mode_rayleigh( UNUR_DISTR *distr );
 static int _unur_upd_area_rayleigh( UNUR_DISTR *distr );
+static int _unur_set_params_rayleigh( UNUR_DISTR *distr, double *params, int n_params );
 
 /*---------------------------------------------------------------------------*/
 
@@ -138,18 +139,48 @@ _unur_upd_area_rayleigh( UNUR_DISTR *distr )
 } /* end of _unur_upd_area_rayleigh() */
 
 /*---------------------------------------------------------------------------*/
+
+int
+_unur_set_params_rayleigh( UNUR_DISTR *distr, double *params, int n_params )
+{
+  /* check number of parameters for distribution */
+  if (n_params < 1) {
+    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few"); return 0; }
+  if (n_params > 1) {
+    _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
+    n_params = 1; }
+  CHECK_NULL(params,0);
+
+  /* check parameter sigma */
+  if (sigma <= 0.) {
+    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"sigma <= 0.");
+    return 0;
+  }
+
+  /* copy parameters for standard form */
+  DISTR.sigma = sigma;
+
+  /* default parameters: none */
+  /* copy optional parameters: none */
+
+  /* store number of parameters */
+  DISTR.n_params = n_params;
+
+  /* set (standard) domain */
+  if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
+    DISTR.domain[0] = 0.;              /* left boundary  */
+    DISTR.domain[1] = INFINITY;        /* right boundary */
+  }
+
+  return 1;
+} /* end of _unur_set_params_rayleigh() */
+
+/*---------------------------------------------------------------------------*/
+
 struct unur_distr *
 unur_distr_rayleigh( double *params, int n_params )
 {
   register struct unur_distr *distr;
-
-  /* check new parameter for generator */
-  if (n_params < 1) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few"); return NULL; }
-  if (n_params > 1) {
-    _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
-    n_params = 1; }
-  CHECK_NULL(params,NULL);
 
   /* get new (empty) distribution object */
   distr = unur_distr_cont_new();
@@ -168,38 +199,31 @@ unur_distr_rayleigh( double *params, int n_params )
   DISTR.dpdf = _unur_dpdf_rayleigh; /* pointer to derivative of PDF */
   DISTR.cdf  = _unur_cdf_rayleigh;  /* pointer to CDF               */
 
-  /* copy parameters */
-  DISTR.sigma = sigma;
-
-  /* check parameter sigma */
-  if (DISTR.sigma <= 0.) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"sigma <= 0.");
-    free( distr ); return NULL;
-  }
-
-  /* number of arguments */
-  DISTR.n_params = n_params;
-
-  /* log of normalization constant */
-  LOGNORMCONSTANT =   2. * log(DISTR.sigma);
-
-  /* domain */
-  DISTR.domain[0] = 0.;              /* left boundary  */
-  DISTR.domain[1] = INFINITY;        /* right boundary */
-
-  /* mode and area below p.d.f. */
-  DISTR.mode = DISTR.sigma;
-  DISTR.area = 1.;
-
-  /* function for updating derived parameters */
-  DISTR.upd_mode  = _unur_upd_mode_rayleigh; /* funct for computing mode */
-  DISTR.upd_area  = _unur_upd_area_rayleigh; /* funct for computing area */
-
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |
 		 UNUR_DISTR_SET_STDDOMAIN |
 		 UNUR_DISTR_SET_MODE   |
 		 UNUR_DISTR_SET_PDFAREA );
+
+  /* set parameters for distribution */
+  if (!_unur_set_params_rayleigh(distr,params,n_params)) {
+    free(distr);
+    return NULL;
+  }
+
+  /* log of normalization constant */
+  LOGNORMCONSTANT =   2. * log(DISTR.sigma);
+
+  /* mode and area below p.d.f. */
+  DISTR.mode = DISTR.sigma;
+  DISTR.area = 1.;
+
+  /* function for setting parameters and updating domain */
+  DISTR.set_params = _unur_set_params_rayleigh;
+
+  /* function for updating derived parameters */
+  DISTR.upd_mode  = _unur_upd_mode_rayleigh; /* funct for computing mode */
+  DISTR.upd_area  = _unur_upd_area_rayleigh; /* funct for computing area */
 
   /* return pointer to object */
   return distr; 

@@ -65,12 +65,13 @@ static const char distr_name[] = "lomax";
 #define NORMCONSTANT (distr->data.cont.norm_constant)
 
 /* function prototypes                                                       */
-static double _unur_pdf_lomax(double x, UNUR_DISTR *distr);
-static double _unur_dpdf_lomax(double x, UNUR_DISTR *distr);
-static double _unur_cdf_lomax(double x, UNUR_DISTR *distr);
+static double _unur_pdf_lomax( double x, UNUR_DISTR *distr );
+static double _unur_dpdf_lomax( double x, UNUR_DISTR *distr );
+static double _unur_cdf_lomax( double x, UNUR_DISTR *distr );
 
 static int _unur_upd_mode_lomax( UNUR_DISTR *distr );
 static int _unur_upd_area_lomax( UNUR_DISTR *distr );
+static int _unur_set_params_lomax( UNUR_DISTR *distr, double *params, int n_params );
 
 /*---------------------------------------------------------------------------*/
 
@@ -137,18 +138,61 @@ _unur_upd_area_lomax( UNUR_DISTR *distr )
 
 /*---------------------------------------------------------------------------*/
 
+int
+_unur_set_params_lomax( UNUR_DISTR *distr, double *params, int n_params )
+{
+  /* check number of parameters for distribution */
+  if (n_params < 1) {
+    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few"); return 0; }
+  if (n_params > 2) {
+    _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
+    n_params = 2; }
+  CHECK_NULL(params,0);
+
+  /* check parameter a */
+  if (a <= 0.) {
+    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"a <= 0");
+    return 0;
+  }
+
+  /* check parameter C */
+  if (n_params > 1 && C <= 0.) {
+    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"C <= 0");
+    return 0;
+  }
+
+  /* copy parameters for standard form */
+  DISTR.a = a;
+
+  /* default parameters */
+  DISTR.C = 1.; 
+
+  /* copy optional parameters */
+  switch (n_params) {
+  case 2:
+    DISTR.C = C;
+  default:
+    n_params = 2;
+  }
+
+  /* store number of parameters */
+  DISTR.n_params = n_params;
+
+  /* set (standard) domain */
+  if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
+    DISTR.domain[0] = 0;               /* left boundary  */
+    DISTR.domain[1] = INFINITY;        /* right boundary */
+  }
+
+  return 1;
+} /* end of _unur_set_params_lomax() */
+
+/*---------------------------------------------------------------------------*/
+
 struct unur_distr *
 unur_distr_lomax( double *params, int n_params )
 {
   register struct unur_distr *distr;
-
-  /* check new parameter for generator */
-  if (n_params < 1) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few"); return NULL; }
-  if (n_params > 2) {
-    _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
-    n_params = 2; }
-  CHECK_NULL(params,NULL);
 
   /* get new (empty) distribution object */
   distr = unur_distr_cont_new();
@@ -167,47 +211,31 @@ unur_distr_lomax( double *params, int n_params )
   DISTR.dpdf = _unur_dpdf_lomax; /* pointer to derivative of PDF */
   DISTR.cdf  = _unur_cdf_lomax;  /* pointer to CDF               */
 
-  /* default parameters */
-  DISTR.C = 1.; 
-  
-  /* copy parameters */
-  DISTR.a = a;
-  switch (n_params) {
-  case 2:
-    DISTR.C = C;
-  default:
-    n_params = 2;
-  }
-
-  /* check parameters */
-  if (DISTR.a <= 0. || DISTR.C <= 0. ) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"a <= 0 or C <= 0");
-    free( distr ); return NULL;
-  }
-
-  /* number of arguments */
-  DISTR.n_params = n_params;
-
-  /* normalization constant */
-  NORMCONSTANT = DISTR.a * pow(DISTR.C,DISTR.a);
-
-  /* domain */
-  DISTR.domain[0] = 0;               /* left boundary  */
-  DISTR.domain[1] = INFINITY;        /* right boundary */
-
-  /* mode and area below p.d.f. */
-  DISTR.mode = 0.;
-  DISTR.area = 1.;
-
-  /* function for updating derived parameters */
-  DISTR.upd_mode  = _unur_upd_mode_lomax; /* funct for computing mode */
-  DISTR.upd_area  = _unur_upd_area_lomax; /* funct for computing area */
-
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |
 		 UNUR_DISTR_SET_STDDOMAIN |
   		 UNUR_DISTR_SET_MODE   | 
   		 UNUR_DISTR_SET_PDFAREA );
+
+  /* set parameters for distribution */
+  if (!_unur_set_params_lomax(distr,params,n_params)) {
+    free(distr);
+    return NULL;
+  }
+
+  /* normalization constant */
+  NORMCONSTANT = DISTR.a * pow(DISTR.C,DISTR.a);
+
+  /* mode and area below p.d.f. */
+  DISTR.mode = 0.;
+  DISTR.area = 1.;
+
+  /* function for setting parameters and updating domain */
+  DISTR.set_params = _unur_set_params_lomax;
+
+  /* function for updating derived parameters */
+  DISTR.upd_mode  = _unur_upd_mode_lomax; /* funct for computing mode */
+  DISTR.upd_area  = _unur_upd_area_lomax; /* funct for computing area */
 
   /* return pointer to object */
   return distr;

@@ -27,6 +27,19 @@
  *     1:  phi > 0   ... scale                                               *
  *                                                                           *
  *****************************************************************************
+ *                                                                           *
+ *  standard form                                                            *
+ *                                                                           *
+ *  pdf:       f(x) = exp(- abs(x))                                          *
+ *  domain:    -infinity < x < infinity                                      *
+ *  constant:  2                                                             *
+ *                                                                           *
+ *  parameters: none                                                         *
+ *                                                                           *
+ *     0:  theta = 0  ... location                                           *
+ *     1:  phi   = 1  ... scale                                              *
+ *                                                                           *
+ *****************************************************************************
      $Id$
  *****************************************************************************
  *                                                                           *
@@ -65,12 +78,13 @@ static const char distr_name[] = "laplace";
 /* #define NORMCONSTANT (distr->data.cont.norm_constant) */
 
 /* function prototypes                                                       */
-static double _unur_pdf_laplace(double x, UNUR_DISTR *distr);
-static double _unur_dpdf_laplace(double x, UNUR_DISTR *distr);
-static double _unur_cdf_laplace(double x, UNUR_DISTR *distr);
+static double _unur_pdf_laplace( double x, UNUR_DISTR *distr );
+static double _unur_dpdf_laplace( double x, UNUR_DISTR *distr );
+static double _unur_cdf_laplace( double x, UNUR_DISTR *distr );
 
 static int _unur_upd_mode_laplace( UNUR_DISTR *distr );
 static int _unur_upd_area_laplace( UNUR_DISTR *distr );
+static int _unur_set_params_laplace( UNUR_DISTR *distr, double *params, int n_params );
 
 /*---------------------------------------------------------------------------*/
 
@@ -149,18 +163,57 @@ _unur_upd_area_laplace( UNUR_DISTR *distr )
 
 /*---------------------------------------------------------------------------*/
 
-struct unur_distr *
-unur_distr_laplace( double *params, int n_params )
+int
+_unur_set_params_laplace( UNUR_DISTR *distr, double *params, int n_params )
 {
-  register struct unur_distr *distr;
-
-  /* check new parameter for generator */
+  /* check number of parameters for distribution */
   if (n_params < 0) n_params = 0;
   if (n_params > 2) {
     _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
     n_params = 2; }
   if (n_params > 0)
-    CHECK_NULL(params,NULL);
+    CHECK_NULL(params,0);
+
+  /* check parameter phi */
+  if (n_params == 2 && phi <= 0.) {
+    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"phi <= 0");
+    return 0;
+  }
+
+  /* copy parameters for standard form: none */
+
+  /* default parameters */
+  DISTR.theta = 0.;
+  DISTR.phi   = 1.;
+
+  /* copy optional parameters */
+  switch (n_params) {
+  case 2:
+    DISTR.phi = phi;
+  case 1:
+    DISTR.theta = theta;
+  default:
+    n_params = 2;           /* number of parameters for non-standard form */
+  }
+
+  /* store number of parameters */
+  DISTR.n_params = n_params;
+
+  /* set (standard) domain */
+  if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
+    DISTR.domain[0] = -INFINITY;       /* left boundary  */
+    DISTR.domain[1] = INFINITY;        /* right boundary */
+  }
+
+  return 1;
+} /* end of _unur_set_params_laplace() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_distr *
+unur_distr_laplace( double *params, int n_params )
+{
+  register struct unur_distr *distr;
 
   /* get new (empty) distribution object */
   distr = unur_distr_cont_new();
@@ -179,46 +232,30 @@ unur_distr_laplace( double *params, int n_params )
   DISTR.dpdf = _unur_dpdf_laplace; /* pointer to derivative of PDF */
   DISTR.cdf  = _unur_cdf_laplace;  /* pointer to CDF               */
 
-  /* default parameters */
-  DISTR.theta = 0.;
-  DISTR.phi   = 1.;
-  
-  /* copy parameters */
-  switch (n_params) {
-  case 2:
-    DISTR.phi = phi;
-  case 1:
-    DISTR.theta = theta;
-    n_params = 2;           /* number of parameters for non-standard form */
-  default:
+  /* indicate which parameters are set */
+  distr->set = ( UNUR_DISTR_SET_DOMAIN |
+		 UNUR_DISTR_SET_STDDOMAIN |
+		 UNUR_DISTR_SET_PDFAREA |
+		 UNUR_DISTR_SET_MODE );
+                
+  /* set parameters for distribution */
+  if (!_unur_set_params_laplace(distr,params,n_params)) {
+    free(distr);
+    return NULL;
   }
 
-  /* check parameter sigma */
-  if (DISTR.phi <= 0.) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"phi <= 0");
-    free( distr ); return NULL;
-  }
-
-  /* number of arguments */
-  DISTR.n_params = n_params;
-
-  /* domain */
-  DISTR.domain[0] = -INFINITY;       /* left boundary  */
-  DISTR.domain[1] = INFINITY;        /* right boundary */
+  /* normalization constant: none */
 
   /* mode and area below p.d.f. */
   DISTR.mode = DISTR.theta;
   DISTR.area = 1.;
 
+  /* function for setting parameters and updating domain */
+  DISTR.set_params = _unur_set_params_laplace;
+
   /* function for updating derived parameters */
   DISTR.upd_mode  = _unur_upd_mode_laplace; /* funct for computing mode */
   DISTR.upd_area  = _unur_upd_area_laplace; /* funct for computing area */
-
-  /* indicate which parameters are set */
-  distr->set = ( UNUR_DISTR_SET_DOMAIN |
-		 UNUR_DISTR_SET_STDDOMAIN |
- 		 UNUR_DISTR_SET_MODE   |
-  		 UNUR_DISTR_SET_PDFAREA );
 
   /* return pointer to object */
   return distr;

@@ -84,10 +84,10 @@ static const char distr_name[] = "student";
 
 /*---------------------------------------------------------------------------*/
 /* function prototypes                                                       */
-static double _unur_pdf_student(double x, UNUR_DISTR *distr);
-static double _unur_dpdf_student(double x, UNUR_DISTR *distr);
+static double _unur_pdf_student( double x, UNUR_DISTR *distr );
+static double _unur_dpdf_student( double x, UNUR_DISTR *distr );
 #if HAVE_UNUR_SF_CDFSTUDENT
-static double _unur_cdf_student(double x, UNUR_DISTR *distr);
+static double _unur_cdf_student( double x, UNUR_DISTR *distr );
 #endif
 
 static int _unur_upd_mode_student( UNUR_DISTR *distr );
@@ -95,6 +95,7 @@ static int _unur_upd_mode_student( UNUR_DISTR *distr );
 static int _unur_upd_area_student( UNUR_DISTR *distr );
 static double _unur_normconstant_student(double *params, int n_params);
 #endif
+static int _unur_set_params_student( UNUR_DISTR *distr, double *params, int n_params );
 
 /*---------------------------------------------------------------------------*/
 
@@ -181,18 +182,47 @@ _unur_normconstant_student( double *params, int n_params )
 
 /*---------------------------------------------------------------------------*/
 
+int
+_unur_set_params_student( UNUR_DISTR *distr, double *params, int n_params )
+{
+  /* check number of parameters for distribution */
+  if (n_params < 1) {
+    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few"); return 0; }
+  if (n_params > 1) {
+    _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
+    n_params = 1; }
+  CHECK_NULL(params,0);
+
+  /* check parameter nu */
+  if (nu <= 0.) {
+    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"nu <= 0.");
+    return 0;
+  }
+
+  /* copy parameters for standard form */
+  DISTR.nu = nu;
+
+  /* default parameters: none */
+  /* copy optional parameters:none */
+
+  /* store number of parameters */
+  DISTR.n_params = n_params;
+
+  /* set (standard) domain */
+  if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
+    DISTR.domain[0] = -INFINITY;       /* left boundary  */
+    DISTR.domain[1] = INFINITY;        /* right boundary */
+  }
+
+  return 1;
+} /* end of _unur_set_params_student() */
+
+/*---------------------------------------------------------------------------*/
+
 struct unur_distr *
 unur_distr_student( double *params, int n_params )
 {
   register struct unur_distr *distr;
-
-  /* check new parameter for generator */
-  if (n_params < 1) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few"); return NULL; }
-  if (n_params > 1) {
-    _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
-    n_params = 1; }
-  CHECK_NULL(params,NULL);
 
   /* get new (empty) distribution object */
   distr = unur_distr_cont_new();
@@ -213,17 +243,19 @@ unur_distr_student( double *params, int n_params )
   DISTR.cdf  = _unur_cdf_student;  /* pointer to CDF               */
 #endif
 
-  /* copy parameters */
-  DISTR.nu = nu;
+  /* indicate which parameters are set */
+  distr->set = ( UNUR_DISTR_SET_DOMAIN |
+		 UNUR_DISTR_SET_STDDOMAIN |
+#ifdef HAVE_AREA
+		 UNUR_DISTR_SET_PDFAREA |
+#endif
+		 UNUR_DISTR_SET_MODE );
 
-  /* check parameter sigma */
-  if (DISTR.nu <= 0.) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"nu <= 0.");
-    free( distr ); return NULL;
+  /* set parameters for distribution */
+  if (!_unur_set_params_student(distr,params,n_params)) {
+    free(distr);
+    return NULL;
   }
-
-  /* number of arguments */
-  DISTR.n_params = n_params;
 
   /* normalization constant */
 #ifdef HAVE_AREA
@@ -232,27 +264,18 @@ unur_distr_student( double *params, int n_params )
   NORMCONSTANT = 1.;
 #endif
 
-  /* domain */
-  DISTR.domain[0] = -INFINITY;        /* left boundary  */
-  DISTR.domain[1] = INFINITY;        /* right boundary */
-
   /* mode and area below p.d.f. */
   DISTR.mode = 0.;
   DISTR.area = 1.;
+
+  /* function for setting parameters and updating domain */
+  DISTR.set_params = _unur_set_params_student;
 
   /* function for updating derived parameters */
   DISTR.upd_mode  = _unur_upd_mode_student; /* funct for computing mode */
 #ifdef HAVE_AREA
   DISTR.upd_area  = _unur_upd_area_student; /* funct for computing area */
 #endif
-
-  /* indicate which parameters are set */
-  distr->set = ( UNUR_DISTR_SET_DOMAIN |
-		 UNUR_DISTR_SET_STDDOMAIN |
-#ifdef HAVE_AREA
-		 UNUR_DISTR_SET_PDFAREA |
-#endif
-		 UNUR_DISTR_SET_MODE );
 
   /* return pointer to object */
   return distr;

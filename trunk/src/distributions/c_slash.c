@@ -64,9 +64,11 @@ static const char distr_name[] = "slash";
 #define NORMCONSTANT (distr->data.cont.norm_constant)
 
 /* function prototypes                                                       */
-static double _unur_pdf_slash(double x, UNUR_DISTR *distr);
-static double _unur_dpdf_slash(double x, UNUR_DISTR *distr);
-/*  static double _unur_cdf_slash(double x, UNUR_DISTR *distr); */
+static double _unur_pdf_slash( double x, UNUR_DISTR *distr );
+static double _unur_dpdf_slash( double x, UNUR_DISTR *distr );
+/*  static double _unur_cdf_slash( double x, UNUR_DISTR *distr ); */
+
+static int _unur_set_params_slash( UNUR_DISTR *distr, double *params, int n_params );
 
 /*---------------------------------------------------------------------------*/
 
@@ -97,14 +99,35 @@ _unur_dpdf_slash(double x, UNUR_DISTR *distr)
 
 /*---------------------------------------------------------------------------*/
 
+int
+_unur_set_params_slash( UNUR_DISTR *distr, double *params, int n_params )
+{
+  /* check number of parameters for distribution */
+  if (n_params > 0)
+    _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
+
+  /* copy parameters for standard form: none */
+  /* default parameters: none */
+  /* copy optional parameters: none */
+
+  /* store number of parameters */
+  DISTR.n_params = 0;
+
+  /* set (standard) domain */
+  if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
+    DISTR.domain[0] = -INFINITY;       /* left boundary  */
+    DISTR.domain[1] = INFINITY;        /* right boundary */
+  }
+
+  return 1;
+} /* end of _unur_set_params_slash() */
+
+/*---------------------------------------------------------------------------*/
+
 struct unur_distr *
 unur_distr_slash( double *params, int n_params )
 {
   register struct unur_distr *distr;
-
-  /* check new parameter for generator */
-  if (n_params > 0)
-    _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
 
   /* get new (empty) distribution object */
   distr = unur_distr_cont_new();
@@ -123,12 +146,17 @@ unur_distr_slash( double *params, int n_params )
   DISTR.dpdf = _unur_dpdf_slash;  /* pointer to derivative of PDF */
   /* DISTR.cdf  = _unur_cdf_slash;   pointer to CDF               */
 
-  /* copy parameters: none */
-
-  /* check parameters: none */
-
-  /* number of arguments */
-  DISTR.n_params = 0;
+  /* indicate which parameters are set */
+  distr->set = ( UNUR_DISTR_SET_DOMAIN |
+		 UNUR_DISTR_SET_STDDOMAIN |
+  		 UNUR_DISTR_SET_MODE   | 
+  		 UNUR_DISTR_SET_PDFAREA );
+                
+  /* set parameters for distribution */
+  if (!_unur_set_params_slash(distr,params,n_params)) {
+    free(distr);
+    return NULL;
+  }
 
   /* normalization constant */
   NORMCONSTANT = 1. / (M_SQRT2 * M_SQRTPI);
@@ -137,16 +165,13 @@ unur_distr_slash( double *params, int n_params )
   DISTR.mode = 0.;
   DISTR.area = 1.;
 
-  /* domain */
-  DISTR.domain[0] = -INFINITY;   /* left boundary  */
-  DISTR.domain[1] = INFINITY;    /* right boundary */
+  /* function for setting parameters and updating domain */
+  DISTR.set_params = _unur_set_params_slash;
 
-  /* indicate which parameters are set */
-  distr->set = ( UNUR_DISTR_SET_DOMAIN |
-		 UNUR_DISTR_SET_STDDOMAIN |
-  		 UNUR_DISTR_SET_MODE   | 
-  		 UNUR_DISTR_SET_PDFAREA );
-                
+  /* function for updating derived parameters */
+  /* DISTR.upd_mode  = _unur_upd_mode_slash;   funct for computing mode */
+  /* DISTR.upd_area  = _unur_upd_area_slash;   funct for computing area */
+
   /* return pointer to object */
   return distr;
 

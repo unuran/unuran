@@ -370,7 +370,7 @@ _unur_tdr_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
 	/* construction points provided by user */
 	x = PAR.starting_cpoints[i];
 	/* check starting point */
-	if (x <= DISTR.BD_LEFT || x >= DISTR.BD_RIGHT) {
+	if (x < DISTR.BD_LEFT || x > DISTR.BD_RIGHT) {
 	  _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"starting point out of domain");
 	  continue;
 	}

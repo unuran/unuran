@@ -24,7 +24,7 @@
  *                                                                           *
  *  parameters:                                                              *
  *     0:  a      ... location                                               *
- *     1:  b >a ... location                                               *
+ *     1:  b (>a) ... location                                               *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -121,8 +121,9 @@ unur_distr_uniform( double *params, int n_params )
   if (n_params < 0) n_params = 0;
   if (n_params == 1)
     _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"");
-  if (n_params > 2)
+  if (n_params > 2) {
     _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
+    n_params = 2; }
   if (n_params > 0)
     CHECK_NULL(params,NULL);
 

@@ -306,8 +306,9 @@ unur_distr_burr( double *params, int n_params )
   /* check new parameter for generator */
   if (n_params < 2) {
     _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few"); return NULL; }
-  if (n_params > 3)
+  if (n_params > 3) {
     _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
+    n_params = 3; }
   CHECK_NULL(params,NULL);
 
   /* get new (empty) distribution object */
@@ -357,8 +358,10 @@ unur_distr_burr( double *params, int n_params )
       free( distr ); return NULL;
     }
   default: /* all other cases */
-    if (n_params == 3)
+    if (n_params == 3) {
       _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
+      n_params = 2;
+    }
   }
 
   /* copy parameters */

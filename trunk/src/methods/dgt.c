@@ -516,7 +516,7 @@ _unur_dgt_sample( struct unur_gen *gen )
   u *= GEN.sum;
   while (GEN.cumprob[j] < u) j++;
 
-  return j;
+  return (j + DISTR.domain[0]);
 
 } /* end of _unur_dgt_sample() */
 

@@ -202,8 +202,12 @@ _unur_test_chi2_discr( struct unur_gen *gen,
 
   /* now run generator */
   for( i=0; i<samplesize; i++ ) {
+    /* sample */
     j = _unur_sample_discr(gen);
-    if (j >= n_prob)   /* check range of random variates !! */
+    /* shift vector */
+    j -= DISTR.domain[0];
+    /* check range of random variates !! */
+    if (j >= n_prob)
       j = n_prob - 1;  /* put into the last bin */
     ++observed[j];
   }

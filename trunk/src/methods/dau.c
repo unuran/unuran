@@ -526,11 +526,12 @@ _unur_dau_sample( struct unur_gen *gen )
   iu = (int) u;
 
   /* immediate return ? */
-  if (iu >= GEN.len) return (GEN.jx[iu]);
+  if (iu >= GEN.len) return (GEN.jx[iu] + DISTR.domain[0]);
 
   /* else choose number or its alias at random */
   u -= iu;   /* reuse of random number */
-  return ((u <= GEN.qx[iu]) ? iu : GEN.jx[iu] );
+
+  return (((u <= GEN.qx[iu]) ? iu : GEN.jx[iu] ) + DISTR.domain[0]);
 
 } /* end of _unur_dau_sample() */
 

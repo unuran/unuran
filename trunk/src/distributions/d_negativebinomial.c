@@ -153,9 +153,9 @@ unur_distr_negativebinomial( double *params, int n_params )
   /*    DISTR.mode = 0.; */
   DISTR.sum = 1.;
 
-  /* domain */
+  /* domain: [0, infinity] */
   DISTR.domain[0] = 0.;          /* left boundary  */
-  DISTR.domain[1] = INFINITY;    /* right boundary */
+  DISTR.domain[1] = INT_MAX;     /* right boundary */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

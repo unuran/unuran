@@ -1170,6 +1170,11 @@ _unur_hitrou_debug_init( const struct unur_gen *gen )
   _unur_print_if_default(gen,HITROU_SET_R);
   fprintf(log,"\n%s:\n",gen->genid);
 
+  /* skip */
+  fprintf(log,"%s: skip = %ld",gen->genid, GEN->skip);
+  _unur_print_if_default(gen,HITROU_SET_SKIP);
+  fprintf(log,"\n%s:\n",gen->genid);
+  
   /* print center */
   _unur_matrix_print_vector( GEN->dim, GEN->center, "center =", log, gen->genid, "\t   ");
 

@@ -710,7 +710,7 @@ sub scan_validate {
 		}
 		print "\trcode = run_validate_chi2(TESTLOG,0,gen,'$todo');\n";
 		print "\tn_tests_failed += (rcode==UNUR_SUCCESS)?0:1;\n";
-		print "\tn_tests_failed += (rcode==UNUR_FAILURE)?1:0;\n";
+		print "\tn_tests_failed += (rcode==UNUR_FAILURE)?10:0;\n";
 		print "\tunur_free(gen);\n";
 		print "\t} while (0);\n\n";
 	    }	    

@@ -614,16 +614,16 @@ unur_tdr_sample_log( struct unur_gen *gen )
     }
 
     /* reuse of uniform random number */
-    u = iv->Acum - u;
+    u -= iv->Acum;    /* result: u in (-A_hat, 0) */
 
     /* left or right side of hat */
-    if (u < iv->Ahatl) {   /* left */
-      pt = iv;
+    if (-u < iv->Ahatr) { /* right */
+      pt = iv->next;
       /* u unchanged */
     }
-    else {                 /* right */
-      pt = iv->next;
-      u = u - iv->Ahatl - iv->Ahatr;
+    else {                /* left */
+      pt = iv;
+      u += iv->Ahatl + iv->Ahatr;
     }
 
     /* random variate */
@@ -799,15 +799,17 @@ unur_tdr_sample_check( struct unur_gen *gen )
      /*                                                                      */
      /*----------------------------------------------------------------------*/
      /*   log(x):                                                            */
-     /*   squeeze(x) = f(x0) * \exp(sq * (x-x0))                             */
+     /*   squeeze(x) = f(x0) * exp(sq * (x-x0))                              */
      /*                                                                      */
-     /*   left hat:                                                          */
-     /*   X = x0 + 1/(Tf)'(x0) * \log( (Tf)'(x0)/f(x0) * U + 1 )             */
-     /*   U ~ U(0,area below left hat)                                       */
+     /*   left hat(x) = f(x0) * exp( (Tf)'(x0) *  (x-x0) )                   */
+     /*   generation:                                                        */
+     /*      X = x0 + 1/(Tf)'(x0) * \log( (Tf)'(x0)/f(x0) * U + 1 )          */
+     /*      U ~ U(0,area below left hat)                                    */
      /*                                                                      */
-     /*   right hat:                                                         */
-     /*   X = x1 + 1/(Tf)'(x1) * \log( (Tf)'(x1)/f(x1) * U + 1 )             */
-     /*   U ~ U(- area below right hat,0)                                    */
+     /*   right hat(x) = f(x1) * exp( (Tf)'(x1) *  (x-x1) )                  */
+     /*   generation:                                                        */
+     /*      X = x1 + 1/(Tf)'(x1) * \log( (Tf)'(x1)/f(x1) * U + 1 )          */
+     /*      U ~ U(- area below right hat,0)                                 */
      /*----------------------------------------------------------------------*/
      /*   T(x) = -1/sqrt(x):                                                 */
      /*                                                                      */
@@ -818,7 +820,7 @@ unur_tdr_sample_check( struct unur_gen *gen )
      /*      X = x0 + (Tf(x0)^2 * U) / (1 - Tf(x0) * (Tf)'(x0) * U)          */
      /*      U ~ U(0,area below left hat)                                    */
      /*                                                                      */
-     /*   right hat(x) = 1 / (Tf(x0) + (Tf)'(x1) * (x-x1))^2                 */
+     /*   right hat(x) = 1 / (Tf(x1) + (Tf)'(x1) * (x-x1))^2                 */
      /*   generation:                                                        */
      /*      X = x1 + (Tf(x1)^2 * U) / (1 - Tf(x1) * (Tf)'(x1) * U)          */
      /*      U ~ U(- area below right hat,0)                                 */

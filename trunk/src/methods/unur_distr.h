@@ -43,16 +43,6 @@
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
-/* Typedefs                                                                  */
-
-/* function that return pointer to sampling routine                          */
-typedef _UNUR_SAMPLING_ROUTINE_CONT *_UNUR_GET_SAMPLING_ROUTINE_CONT(unsigned);
-/* for univariate continuous distribution                                    */
-
-/* function that returns name of sampling routine                            */
-typedef const char *_UNUR_GET_SAMPLING_NAME(void *);
-
-/*---------------------------------------------------------------------------*/
 /* define object for univariate continuous distribution                      */
 struct unur_distr_cont {
 
@@ -67,10 +57,8 @@ struct unur_distr_cont {
   double area;                  /* area below p.d.f.                         */
   double domain[2];             /* boundary of domain                        */
 
-  _UNUR_GET_SAMPLING_ROUTINE_CONT *get_sampling_routine;  /* get pointer to sampling routine */
-#if UNUR_DEBUG & UNUR_DB_INFO
-  _UNUR_GET_SAMPLING_NAME         *get_sampling_name;     /* get name of sampling routine */
-#endif
+  int  (*init)(struct unur_par *par,struct unur_gen *gen);
+                                /* pointer to special init routine           */
 };
 
 /*---------------------------------------------------------------------------*/

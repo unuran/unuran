@@ -211,10 +211,7 @@ unur_distr_normal( double *params, int n_params )
   distr->name = distr_name;
 
   /* how to get special generators */
-  DISTR.get_sampling_routine = _unur_stdgen_normal_get_routine;
-#if UNUR_DEBUG & UNUR_DB_INFO
-  DISTR.get_sampling_name    = _unur_stdgen_normal_routinename;
-#endif
+  DISTR.init = _unur_stdgen_normal_init;
 
   /* functions */
   DISTR.pdf  = unur_pdf_normal;   /* pointer to p.d.f.            */

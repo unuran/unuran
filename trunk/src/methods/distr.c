@@ -213,6 +213,8 @@ unur_distr_cont_new( void )
   DISTR.dpdf      = NULL;          /* pointer to derivative of p.d.f.        */
   DISTR.cdf       = NULL;          /* pointer to c.d.f.                      */
 
+  DISTR.init      = NULL;          /* pointer to special init routine        */
+
   DISTR.n_params  = 0;             /* number of parameters of the pdf        */
   /* initialize parameters of the p.d.f.                                     */
   for (i=0; i<UNUR_DISTR_MAXPARAMS; i++)
@@ -222,11 +224,6 @@ unur_distr_cont_new( void )
   DISTR.area      = 1.;            /* area below p.d.f.                      */
   DISTR.domain[0] = -INFINITY;     /* left boundary of domain                */
   DISTR.domain[1] = INFINITY;      /* right boundary of domain               */
-
-  DISTR.get_sampling_routine = NULL;   /* get pointer to sampling routine    */
-#if UNUR_DEBUG & UNUR_DB_INFO
-  DISTR.get_sampling_name    = NULL;   /* get name of sampling routine       */
-#endif
 
   distr->set = 0u;                 /* no parameters set                      */
   
@@ -447,6 +444,17 @@ unur_distr_cont_set_domain( struct unur_distr *distr, double left, double right 
   /* if distr is an object for a standard distribution, */
   /* we might have truncated the distribution!          */
   distr->set &= ~UNUR_DISTR_SET_STDDOMAIN;
+
+  /* the mode might have been changed.                  */
+  /* if the original mode is not in the new domain,     */
+  /* set the new mode as one of the boundary points.    */
+  if (distr->set & UNUR_DISTR_SET_MODE) {
+    DISTR.mode = max(DISTR.mode,left);
+    DISTR.mode = min(DISTR.mode,right);
+  }
+
+  /* the area below the p.d.f. is probably wrong now */
+  distr->set &= ~UNUR_DISTR_SET_PDFAREA;
 
   /* o.k. */
   return 1;

@@ -49,93 +49,52 @@
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
-#define GEN     gen->data.cstd
+#define GEN        gen->data.cstd
+#define PAR        par->data.cstd
 #define uniform()  (_unur_call_urng(gen))
 
+#define sigma (GEN.pdf_param[0])
+#define theta (GEN.pdf_param[1])
+
 /*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/
 /**                                                                         **/
-/**  get special sampling routine for distribution                          **/
+/**  Inititialize                                                           **/
 /**                                                                         **/
 /*****************************************************************************/
 
-_UNUR_SAMPLING_ROUTINE_CONT *
-_unur_stdgen_exponential_get_routine(unsigned variant)
+/*---------------------------------------------------------------------------*/
+
+int 
+_unur_stdgen_exponential_init( struct unur_par *par, struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* get pointer to sampling routine                                      */
+     /* initialize special generator for exponential distribution            */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   variant ... variant of special generator                           */
+     /*   par ... pointer to parameter for building generator object         */
+     /*   gen ... pointer to generator object                                */
      /*                                                                      */
      /* return:                                                              */
-     /*   pointer to sampling routine                                        */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return NULL                                                        */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
      /*----------------------------------------------------------------------*/
-{
-  switch (variant) {
-  case 0: /* Default */
-  case UNUR_STDGEN_INVERSION:
-    return unur_stdgen_sample_exponential_inv; /* inversion method */
-  default:
-    return NULL;
-  }
-
-} /* end of _unur_stdgen_exponential_get_routine() */
-
-/*---------------------------------------------------------------------------*/
-
-#if UNUR_DEBUG & UNUR_DB_INFO
-
-const char *
-_unur_stdgen_exponential_routinename(void *routine)
-     /*----------------------------------------------------------------------*/
-     /* get name of sampling routine                                         */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   routine ... pointer to sampling routine                            */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   pointer to name of sampling routine                                */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return NULL                                                        */
-     /*----------------------------------------------------------------------*/
-{
-#define routinename(rn) if (routine==(rn)) return #rn
-
-  routinename( unur_stdgen_sample_exponential_inv );
-
-  return NULL;
-
-} /* end of _unur_stdgen_exponential_routinename() */
-
-#endif
-
-/*---------------------------------------------------------------------------*/
-
-/*****************************************************************************/
-/**                                                                         **/
-/**  Wrapper for special generators (WinRand)                               **/
-/**                                                                         **/
-/*****************************************************************************/
-
-/*---------------------------------------------------------------------------*/
-
-double unur_stdgen_sample_exponential_inv( struct unur_gen *gen )
-     /* Inversion method                                                     */
 {
   /* check arguments */
-  CHECK_NULL(gen,0.);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
+  CHECK_NULL(par,0.);
+  COOKIE_CHECK(par,CK_CSTD_PAR,0.);
 
-  /** TODO: da stimmt was nicht!! warum nur ein parameter ?? **/
-
-  return ( -GEN.pdf_param[0] * log(1. - (GEN.umin + uniform() * (GEN.umax-GEN.umin))) );
-
-} /* end of unur_stdgen_sample_exponential_inv() */
+  switch (par->variant) {
+  case 0: /* Default */
+  case UNUR_STDGEN_INVERSION:   /* inversion method */
+    PAR.is_inversion = TRUE;
+    _unur_cstd_set_sampling_routine(par,gen,unur_stdgen_sample_exponential_inv); 
+    return 1;
+  default:
+    return 0;
+  }
+  
+} /* end of _unur_stdgen_exponential_init() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -146,4 +105,29 @@ double unur_stdgen_sample_exponential_inv( struct unur_gen *gen )
 /*****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
+
+double unur_stdgen_sample_exponential_inv( struct unur_gen *gen )
+     /* Inversion method                                                     */
+{
+  /* -X- generator code -X- */
+
+  /* check arguments */
+  CHECK_NULL(gen,0.);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
+
+  /* -X- end of generator code -X- */
+
+  /** TODO: da stimmt was nicht!! warum nur ein parameter ?? **/
+
+  return ( theta - sigma * log(1. - (GEN.umin + uniform() * (GEN.umax-GEN.umin))) );
+
+} /* end of unur_stdgen_sample_exponential_inv() */
+
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+#undef sigma
+#undef theta
+/*---------------------------------------------------------------------------*/
+
 

@@ -58,6 +58,7 @@
 /* Typedefs                                                                  */
 
 struct unur_gen;
+struct unur_par;
 
 typedef double _UNUR_FUNCTION_CONT(double x, double *params, int n_params);
 /* a function for continuous univariate c.d.f., p.d.f. and its derivative    */

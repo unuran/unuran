@@ -150,14 +150,10 @@ double unur_cdf_exponential(double x, double *params, int n_params);
 double unur_area_exponential(double *params, int n_params);
 double unur_mode_exponential(double *params, int n_params);
 /* special generators */
+int _unur_stdgen_exponential_init( struct unur_par *par, struct unur_gen *gen );
+/* initialize new generator                                                  */
 double unur_stdgen_sample_exponential_inv( struct unur_gen *gen );
    /* Inversion method */
-_UNUR_SAMPLING_ROUTINE_CONT *_unur_stdgen_exponential_get_routine(unsigned variant);
-/* get pointer to sampling routine                                           */
-#if UNUR_DEBUG & UNUR_DB_INFO
-const char *_unur_stdgen_exponential_routinename(void *routine);
-/* get name of sampling routine                                              */
-#endif
 
 
 /*---------------------------------------------------------------------------*/
@@ -169,14 +165,10 @@ double unur_cdf_gamma(double x, double *params, int n_params);
 double unur_mode_gamma(double *params, int n_params);
 double unur_area_gamma(double *params, int n_params);
 /* special generators */
+int _unur_stdgen_gamma_init( struct unur_par *par, struct unur_gen *gen );
+/* initialize new generator                                                  */
 double unur_stdgen_sample_gamma_gll( struct unur_gen *gen );
    /* Rejection with log-logistic envelopes */
-_UNUR_SAMPLING_ROUTINE_CONT *_unur_stdgen_gamma_get_routine(unsigned variant);
-/* get pointer to sampling routine                                           */
-#if UNUR_DEBUG & UNUR_DB_INFO
-const char *_unur_stdgen_gamma_routinename(void *routine);
-/* get name of sampling routine                                              */
-#endif
 
 
 /*---------------------------------------------------------------------------*/
@@ -219,6 +211,8 @@ double unur_cdf_normal(double x, double *params, int n_params);
 double unur_mode_normal(double *params, int n_params);
 double unur_area_normal(double *params, int n_params);
 /* special generators */
+int _unur_stdgen_normal_init( struct unur_par *par, struct unur_gen *gen );
+/* initialize new generator                                                  */
 double unur_stdgen_sample_normal_bm( struct unur_gen *gen );
    /* Box-Muller method                                                      */
 double unur_stdgen_sample_normal_pol( struct unur_gen *gen );
@@ -235,12 +229,6 @@ double unur_stdgen_sample_normal_acr( struct unur_gen *gen );
    /* Acceptance-complement ratio                                            */
 double unur_stdgen_sample_normal_sum( struct unur_gen *gen );
    /* infamous sum-of-12-uniforms method. NEVER use it!!                     */
-_UNUR_SAMPLING_ROUTINE_CONT *_unur_stdgen_normal_get_routine(unsigned variant);
-/* get pointer to sampling routine                                           */
-#if UNUR_DEBUG & UNUR_DB_INFO
-const char *_unur_stdgen_normal_routinename(void *routine);
-/* get name of sampling routine                                              */
-#endif
 
 
 /*---------------------------------------------------------------------------*/

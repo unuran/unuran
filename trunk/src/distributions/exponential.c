@@ -215,10 +215,7 @@ unur_distr_exponential( double *params, int n_params )
   distr->name = distr_name;
                 
   /* how to get special generators */
-  DISTR.get_sampling_routine = _unur_stdgen_exponential_get_routine;
-#if UNUR_DEBUG & UNUR_DB_INFO
-  DISTR.get_sampling_name    = _unur_stdgen_exponential_routinename;
-#endif
+  DISTR.init = _unur_stdgen_exponential_init;
 
   /* functions */
   DISTR.pdf  = unur_pdf_exponential;  /* pointer to p.d.f.               */

@@ -128,8 +128,8 @@ unur_cstd_new( struct unur_distr *distr )
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"standard distribution");
     return NULL;
   }
-  if (DISTR.get_sampling_routine == NULL) {
-    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"special generators");
+  if (DISTR.init == NULL) {
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"init() for special generators");
     return NULL;
   }
 
@@ -141,6 +141,9 @@ unur_cstd_new( struct unur_distr *distr )
   par->distr    = distr;            /* pointer to distribution object        */
 
   /* set default values */
+  PAR.sample_routine_name = NULL ;  /* name of sampling routine              */
+  PAR.is_inversion = FALSE;         /* method not based on inversion         */
+
   par->method   = UNUR_METH_CSTD;   /* method                                */
   par->variant  = 0u;               /* default variant                       */
   par->set      = 0u;               /* inidicate default parameters          */    
@@ -165,8 +168,14 @@ unur_cstd_set_variant( struct unur_par *par, unsigned variant )
      /* parameters:                                                          */
      /*   par     ... pointer to parameter for building generator object     */
      /*   variant ... indicator for variant                                  */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
      /*----------------------------------------------------------------------*/
 {
+  unsigned old_variant;
+
   /* check arguments */
   CHECK_NULL(par,0);
   CHECK_NULL(par->distr,0);
@@ -174,23 +183,20 @@ unur_cstd_set_variant( struct unur_par *par, unsigned variant )
   /* check input */
   _unur_check_par_object( CSTD );
 
-  /* check new parameter for generator */
-  if (par->DISTR.get_sampling_routine == NULL)
-    /* this should not happen, since we have made this check in unur_cstd_new() */
-    return 0;
-
-  if ((par->DISTR.get_sampling_routine)(par->variant) == NULL) {
-    _unur_warning(GENTYPE,UNUR_ERR_SET,"unknown variant for special generator");
-    return 0;
-  }
-
   /* store date */
+  old_variant = par->variant;
   par->variant = variant;
 
-  /* changelog */
-  par->set |= CSTD_SET_VARIANT;
+  /* check variant. run special init routine only in test mode */
+  if (par->DISTR.init != NULL && par->DISTR.init(par,NULL) ) {
+    par->set |= CSTD_SET_VARIANT;    /* changelog */
+    return 1;
+  }
 
-  return 1;
+  /* variant not valid */
+  _unur_warning(GENTYPE,UNUR_ERR_SET,"unknown variant for special generator");
+  par->variant = old_variant;
+  return 0;
 
 } /* end if unur_cstd_set_variant() */
 
@@ -216,7 +222,7 @@ unur_cstd_init( struct unur_par *par )
   /* check arguments */
   CHECK_NULL(par,NULL);
   COOKIE_CHECK(par,CK_CSTD_PAR,NULL);
-  CHECK_NULL(par->DISTR.get_sampling_routine,NULL);
+  CHECK_NULL(par->DISTR.init,NULL);
 
   /* check input */
   if ( par->method != UNUR_METH_CSTD ) {
@@ -228,19 +234,21 @@ unur_cstd_init( struct unur_par *par )
   gen = _unur_cstd_create(par);
   if (!gen) { free(par); return NULL; }
 
-  /* routines for sampling from generator */
-  if (par->DISTR.get_sampling_routine != NULL) {
-    SAMPLE = (par->DISTR.get_sampling_routine)(par->variant);
-  }
+  /* run special init routine for generator */
+  if (par->DISTR.init != NULL)
+    par->DISTR.init(par,gen);
+
+  /* init successful ?? */
   if (SAMPLE == NULL) {
+    /* could not find a sampling routine */
     _unur_error(GENTYPE,UNUR_ERR_INIT,"unknown variant for special generator");
     free(par); unur_cstd_free(gen); return NULL; 
   }
-
-  /* domain valid for special generator */
+  
+  /* domain valid for special generator ?? */
   if (!(par->distr->set & UNUR_DISTR_SET_STDDOMAIN)) {
     /* domain has been modified */
-    if ( SAMPLE != (par->DISTR.get_sampling_routine)(UNUR_STDGEN_INVERSION) ) {
+    if ( ! PAR.is_inversion ) { 
       /* this is not the inversion method */
       _unur_error(GENTYPE,UNUR_ERR_INIT,"domain changed for non inversion method");
       free(par); unur_cstd_free(gen); return NULL; 
@@ -272,7 +280,7 @@ unur_cstd_init( struct unur_par *par )
 /** 
     double unur_cstd_sample( struct unur_gen *gen ) {}
     Does not exists !!!
-    Sampling routines are defined in ../std_gen/ for each distributions.
+    Sampling routines are defined in ../distributions/ for each distributions.
 **/
 
 /*****************************************************************************/
@@ -305,6 +313,7 @@ unur_cstd_free( struct unur_gen *gen )
 
   /* free memory */
   _unur_free_genid(gen);
+  free(GEN.gen_param);
   free(gen);
 
 } /* end of unur_cstd_free() */
@@ -351,6 +360,10 @@ _unur_cstd_create( struct unur_par *par )
   SAMPLE = NULL;    /* will be set in unur_cstd_init() */
   gen->destroy = unur_cstd_free;
 
+  /* defaults */
+  GEN.gen_param = NULL;  /* parameters for the generator     */
+  GEN.n_gen_param = 0;   /* (computed in special GEN.init()  */
+
   /* copy some parameters into generator object */
   GEN.pdf_param   = gen->DISTR.params;
   GEN.n_pdf_param = gen->DISTR.n_params;
@@ -385,7 +398,6 @@ _unur_cstd_debug_init( struct unur_par *par, struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   FILE *log;
-  const char *sampling_name;
 
   /* check arguments */
   CHECK_NULL(par,/*void*/);
@@ -402,16 +414,14 @@ _unur_cstd_debug_init( struct unur_par *par, struct unur_gen *gen )
   _unur_distr_cont_debug( gen->distr, gen->genid );
 
   /* sampling routine */
-  sampling_name = NULL;
-  if (par->DISTR.get_sampling_name != NULL) {
-    sampling_name = (par->DISTR.get_sampling_name)(SAMPLE);
-  }
   fprintf(log,"%s: sampling routine = ",gen->genid);
-  if (sampling_name)
-    fprintf(log,"%s()\n",sampling_name);
+  if (PAR.sample_routine_name)
+    fprintf(log,"%s()",PAR.sample_routine_name);
   else
-    fprintf(log,"(Unknown)\n");
-  fprintf(log,"%s:\n",gen->genid);
+    fprintf(log,"(Unknown)");
+  if (PAR.is_inversion)
+    fprintf(log,"   (Inversion)");
+  fprintf(log,"\n%s:\n",gen->genid);
 
   if (!(par->distr->set & UNUR_DISTR_SET_STDDOMAIN)) {
     fprintf(log,"%s: domain has been changed. U in (%g,%g)\n",gen->genid,GEN.umin,GEN.umax);

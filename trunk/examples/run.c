@@ -37,7 +37,7 @@
 #define RUN_UTDR          0
 #define RUN_AROU          0
 #define RUN_SROU          0
-#define RUN_STDR          1
+#define RUN_STDR          0
 #define RUN_TDRSQRT       0
 #define RUN_TDRLOG        0
 #define RUN_TABL          0
@@ -50,7 +50,7 @@
 
 #define RUN_RECT          0
 
-#define RUN_CSTD          0
+#define RUN_CSTD          1
 
 /*---------------------------------------------------------------------------*/
 
@@ -120,6 +120,48 @@ int main()
   unur_run_tests(par,RUN_TESTS);
   unur_distr_free(distr_xxx);
 
+  distr_xxx = unur_distr_normal(NULL,0);
+  par = unur_cstd_new(distr_xxx);
+  unur_cstd_set_variant(par,1);
+  unur_run_tests(par,RUN_TESTS);
+  unur_distr_free(distr_xxx);
+
+  distr_xxx = unur_distr_normal(NULL,0);
+  par = unur_cstd_new(distr_xxx);
+  unur_cstd_set_variant(par,2);
+  unur_run_tests(par,RUN_TESTS);
+  unur_distr_free(distr_xxx);
+
+  distr_xxx = unur_distr_normal(NULL,0);
+  par = unur_cstd_new(distr_xxx);
+  unur_cstd_set_variant(par,3);
+  unur_run_tests(par,RUN_TESTS);
+  unur_distr_free(distr_xxx);
+
+  distr_xxx = unur_distr_normal(NULL,0);
+  par = unur_cstd_new(distr_xxx);
+  unur_cstd_set_variant(par,4);
+  unur_run_tests(par,RUN_TESTS);
+  unur_distr_free(distr_xxx);
+
+  distr_xxx = unur_distr_normal(NULL,0);
+  par = unur_cstd_new(distr_xxx);
+  unur_cstd_set_variant(par,5);
+  unur_run_tests(par,RUN_TESTS);
+  unur_distr_free(distr_xxx);
+
+  distr_xxx = unur_distr_normal(NULL,0);
+  par = unur_cstd_new(distr_xxx);
+  unur_cstd_set_variant(par,6);
+  unur_run_tests(par,RUN_TESTS);
+  unur_distr_free(distr_xxx);
+
+  distr_xxx = unur_distr_normal(NULL,0);
+  par = unur_cstd_new(distr_xxx);
+  unur_cstd_set_variant(par,99);
+  unur_run_tests(par,RUN_TESTS);
+  unur_distr_free(distr_xxx);
+
   fpar[0] = 5.;
   distr_xxx = unur_distr_gamma(fpar,1);
   par = unur_cstd_new(distr_xxx);
@@ -127,7 +169,8 @@ int main()
   unur_distr_free(distr_xxx);
 
   fpar[0] = 5.;
-  distr_xxx = unur_distr_exponential(fpar,1);
+  fpar[1] = 0.;
+  distr_xxx = unur_distr_exponential(fpar,2);
   unur_distr_cont_set_domain(distr_xxx,3,UNUR_INFINITY);
   par = unur_cstd_new(distr_xxx);
   unur_run_tests(par,RUN_TESTS);

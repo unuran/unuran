@@ -43,6 +43,21 @@
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
+/* Macros                                                                    */
+
+/* set routine for sampling                                                  */
+#if UNUR_DEBUG & UNUR_DB_INFO
+#define _unur_cstd_set_sampling_routine(par,gen,routine) \
+   if ((gen)==NULL) return 1;                       /* test existence only */ \
+   (gen)->sample.cont = (routine);                  /* set pointer */ \
+   (par)->data.cstd.sample_routine_name = #routine; /* set routine name */
+#else
+#define _unur_cstd_set_sampling_routine(par,gen,routine) \
+   if ((gen)==NULL) return 1;                       /* test existence only */ \
+   (gen)->sample.cont = (routine);                  /* set pointer */
+#endif
+
+/*---------------------------------------------------------------------------*/
 
 /*****************************************************************************
  *                                                                           *

@@ -45,15 +45,21 @@
 /* Information for constructing the generator                                */
 
 struct unur_cstd_par { 
-  ;                       /* no special parameters for method                */
+  const char *sample_routine_name; /* name of sampling routine               */
+  int  is_inversion;      /* indicate whether method is inversion method     */     
 };
 
 /*---------------------------------------------------------------------------*/
 /* The generator object                                                      */
 
 struct unur_cstd_gen { 
-  double  *pdf_param;     /* parameters for standard distribution            */
-  int      n_pdf_param;   /* number of parameters for distribution           */
+  double *pdf_param;      /* parameters for standard distribution            */
+  int     n_pdf_param;    /* number of parameters for distribution           */
+
+  double *gen_param;      /* parameters for the generator                    */
+  int     n_gen_param;    /* number of parameters for the generator          */
+
+  char    flag;           /* sometimes it is convenient to have a flag       */
 
   double  umin;           /* cdf at left boundary of domain                  */
   double  umax;           /* cdf at right boundary of domain                 */

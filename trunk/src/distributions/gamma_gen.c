@@ -44,113 +44,71 @@
 #include <unur_utils.h>
 
 /*---------------------------------------------------------------------------*/
-/* Prototypes for special generators                                         */
+/* init routines for special generators                                      */
 
-inline static double gll(double a, UNUR_URNG_TYPE urng);
-/* Rejection with log-logistic envelopes                                     */
+inline static void gamma_gll_init( struct unur_gen *gen );
 
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
-#define GEN     gen->data.cstd
-#define uniform()  (_unur_call_urng_prt(urng))
+#define GEN        gen->data.cstd
+#define PAR        par->data.cstd
+#define uniform()  _unur_call_urng(gen)
+
+#define alpha (GEN.pdf_param[0])
+#define beta  (GEN.pdf_param[1])
+#define gamma (GEN.pdf_param[2])
 
 /*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/
 /**                                                                         **/
-/**  get special sampling routine for distribution                          **/
+/**  Inititialize                                                           **/
 /**                                                                         **/
 /*****************************************************************************/
 
-_UNUR_SAMPLING_ROUTINE_CONT *
-_unur_stdgen_gamma_get_routine(unsigned variant)
+/*---------------------------------------------------------------------------*/
+
+int 
+_unur_stdgen_gamma_init( struct unur_par *par, struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* get pointer to sampling routine                                      */
+     /* initialize special generator for gamma distribution                  */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   variant ... variant of special generator                           */
+     /*   par ... pointer to parameter for building generator object         */
+     /*   gen ... pointer to generator object                                */
      /*                                                                      */
      /* return:                                                              */
-     /*   pointer to sampling routine                                        */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return NULL                                                        */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
      /*----------------------------------------------------------------------*/
-{
-  switch (variant) {
-  case 0: /* Default */
-    return unur_stdgen_sample_gamma_gll; /* Rejection with log-logistic envelopes */
-  case UNUR_STDGEN_INVERSION:
-  default:
-    return NULL;
-  }
-
-} /* end of _unur_stdgen_gamma_get_routine() */
-
-/*---------------------------------------------------------------------------*/
-
-#if UNUR_DEBUG & UNUR_DB_INFO
-
-const char *
-_unur_stdgen_gamma_routinename(void *routine)
-     /*----------------------------------------------------------------------*/
-     /* get name of sampling routine                                         */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   routine ... pointer to sampling routine                            */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   pointer to name of sampling routine                                */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return NULL                                                        */
-     /*----------------------------------------------------------------------*/
-{
-#define routinename(rn) if (routine==(rn)) return #rn
-
-  routinename( unur_stdgen_sample_gamma_gll );
-
-  return NULL;
-
-} /* end of _unur_stdgen_gamma_routinename() */
-
-#endif
-
-/*---------------------------------------------------------------------------*/
-
-/*****************************************************************************/
-/**                                                                         **/
-/**  Wrapper for special generators                                         **/
-/**                                                                         **/
-/*****************************************************************************/
-
-/*---------------------------------------------------------------------------*/
-
-double unur_stdgen_sample_gamma_gll( struct unur_gen *gen )
-     /* Rejection with log-logistic envelopes                                */
 {
   /* check arguments */
-  CHECK_NULL(gen,0.);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
+  CHECK_NULL(par,0.);
+  COOKIE_CHECK(par,CK_CSTD_PAR,0.);
 
-  return (gll( GEN.pdf_param[0],gen->urng ) * GEN.pdf_param[1] + GEN.pdf_param[2]);
+  switch (par->variant) {
+  case 0:  /* Rejection with log-logistic envelopes */  /* DEFAULT */
+    _unur_cstd_set_sampling_routine( par,gen,unur_stdgen_sample_gamma_gll );
+    gamma_gll_init( gen );
+    return 1;
+  case UNUR_STDGEN_INVERSION:   /* inversion method */
+  default:
+    return 0;
+  }
 
-} /* end of unur_stdgen_sample_gamma_gll() */
-
+} /* end of _unur_stdgen_gamma_init() */
 
 /*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/
 /**                                                                         **/
-/**  Special generators (WinRand)                                           **/
+/**  Special generators                                                     **/
 /**                                                                         **/
 /*****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
 
-inline double
-gll(double a, UNUR_URNG_TYPE urng)
 /*****************************************************************************
  *                                                                           *
  * Gamma Distribution: Rejection from log-logistic envelopes                 *
@@ -168,27 +126,63 @@ gll(double a, UNUR_URNG_TYPE urng)
  *****************************************************************************
  *    WinRand (c) 1995 Ernst Stadlober, Institut fuer Statistitk, TU Graz    *
  *****************************************************************************/
+
+#define aa  GEN.gen_param[0]
+#define bb  GEN.gen_param[1]
+#define cc  GEN.gen_param[2]
+
+inline static void
+gamma_gll_init( struct unur_gen *gen )
 {
- static double aa,bb,cc,a_in = -1.0;
- double u1,u2,v,r,z,gl;
+  if (GEN.gen_param == NULL) {
+    GEN.gen_param = _unur_malloc(3 * sizeof(double));
+    GEN.n_gen_param = 3;
+  }
 
- if (a != a_in) {
-   a_in = a;
-   aa = (a > 1.0) ? sqrt(a + a - 1.0) : a;
-   bb = a - 1.386294361;
-   cc = a + aa;
- }
- while (1) {
-   u1 = uniform();
-   u2 = uniform();
-   v = log(u1 / (1.0 - u1)) / aa;
-   gl = a * exp(v);
-   r = bb + cc * v - gl;
-   z = u1 * u1 * u2;
-   if (r + 2.504077397 >= 4.5 * z) break;
-   if (r >= log(z)) break;
- }
- return gl;
-} /* end of gll() */
+  /* -X- setup code -X- */
+  aa = (alpha > 1.0) ? sqrt(alpha + alpha - 1.0) : alpha;
+  bb = alpha - 1.386294361;
+  cc = alpha + aa;
+  /* -X- end of setup code -X- */
 
+} /* end of gamma_gll_init() */
+
+double 
+unur_stdgen_sample_gamma_gll( struct unur_gen *gen )
+{
+  /* -X- generator code -X- */
+  double X;
+  double u1,u2,v,r,z;
+
+  /* check arguments */
+  CHECK_NULL(gen,0.);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
+
+  while (1) {
+    u1 = uniform();
+    u2 = uniform();
+    v = log(u1 / (1.0 - u1)) / aa;
+    X = alpha * exp(v);
+    r = bb + cc * v - X;
+    z = u1 * u1 * u2;
+    if (r + 2.504077397 >= 4.5 * z) break;
+    if (r >= log(z)) break;
+  }
+  /* -X- end of generator code -X- */
+
+  return (X * beta + gamma);
+
+} /* end of unur_stdgen_sample_gamma_gll() */
+
+#undef aa
+#undef bb
+#undef cc
+
+/*---------------------------------------------------------------------------*/
+
+
+/*---------------------------------------------------------------------------*/
+#undef alpha
+#undef beta 
+#undef gamma
 /*---------------------------------------------------------------------------*/

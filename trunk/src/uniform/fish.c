@@ -24,7 +24,7 @@
  *      multiplicative congruential number generators with modulus 2^31-1,   *
  *      SIAM Journal Sci. Stat. Comput., 24-45.                              *
  *                                                                           *
- *   Copyright for the original code by Ernst Stadlober.                     * 
+ *   Copyright for generator code by Ernst Stadlober.                        * 
  *                                                                           *
  *****************************************************************************
      $Id$

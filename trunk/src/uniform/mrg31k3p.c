@@ -26,7 +26,7 @@
  *      in: J.A. Jones, R.R. Barton, K. Kang, and P.A. Fishwick (eds.),      *
  *      Proc. 2000 Winter Simulation Conference, 683-689.                    *  
  *                                                                           *
- *   Copyright for the original code by Renee Touzin.                        * 
+ *   Copyright for generator code by Renee Touzin.                           * 
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -58,6 +58,8 @@
 
 double 
 unur_urng_MRG31k3p (void)
+     /* Combined multiple recursive generator.                               */
+     /* Copyright (c) 2002 Renee Touzin.                                     */
 {
 
 # define m1      2147483647
@@ -67,7 +69,7 @@ unur_urng_MRG31k3p (void)
 # define mask12  16777215
 # define mask20  65535
  
-  /* seed */
+  /* seed (must not be 0!) */
   static unsigned long x10 = 12345;
   static unsigned long x11 = 23456;
   static unsigned long x12 = 34567;

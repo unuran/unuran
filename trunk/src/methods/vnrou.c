@@ -65,11 +65,10 @@
 #include <distr/cvec.h>
 #include <utils/fmax_source.h>
 #include <utils/unur_fp_source.h>
+#include <utils/hooke_source.h> 
 #include "unur_methods_source.h"
 #include "x_gen_source.h"
 #include "vnrou.h"
-
-#include <utils/hooke.c> /* it's only used here ... */
 
 /*---------------------------------------------------------------------------*/
 /* Variants:                                                                 */
@@ -555,9 +554,9 @@ _unur_vnrou_rectangle( struct unur_gen *gen )
   struct unur_funct_vgeneric faux; /* function to be minimized/maximized    */
   double *xstart, *xend, *xumin, *xumax; /* coordinate arrays used in maximum/minimum calculations */
   int d, dim; /* index used in dimension loops (0 <= d < dim) */
-  long hooke_iters_vmax; /* actual number of min/max iterations = return value of hooke()*/
-  long hooke_iters_umin; /* actual number of min/max iterations = return value of hooke()*/
-  long hooke_iters_umax; /* actual number of min/max iterations = return value of hooke()*/
+  int hooke_iters_vmax;  /* actual number of min/max iterations = return value of hooke()*/
+  int hooke_iters_umin;  /* actual number of min/max iterations = return value of hooke()*/
+  int hooke_iters_umax;  /* actual number of min/max iterations = return value of hooke()*/
   double scaled_epsilon; /* to be used in the hooke algorithm */
 
   /* check arguments */
@@ -596,8 +595,8 @@ _unur_vnrou_rectangle( struct unur_gen *gen )
       faux.params = gen;
 
       memcpy(xstart, GEN.center, dim * sizeof(double)); 
-      hooke_iters_vmax = hooke( faux, dim, xstart, xend, 
-                               VNROU_HOOKE_RHO, VNROU_HOOKE_EPSILON, VNROU_HOOKE_MAXITER);
+      hooke_iters_vmax = _unur_hooke( faux, dim, xstart, xend, 
+				      VNROU_HOOKE_RHO, VNROU_HOOKE_EPSILON, VNROU_HOOKE_MAXITER);
 
       GEN.vmax = -faux.f(xend, faux.params);
       
@@ -607,7 +606,7 @@ _unur_vnrou_rectangle( struct unur_gen *gen )
 
          /* recalculating extremum with scaled_epsilon and new starting point */
          memcpy(xstart, xend, dim * sizeof(double)); 
-         hooke_iters_vmax = hooke( faux, dim, xstart, xend, 
+         hooke_iters_vmax = _unur_hooke( faux, dim, xstart, xend, 
                               VNROU_HOOKE_RHO, scaled_epsilon , VNROU_HOOKE_MAXITER);
          GEN.vmax = -faux.f(xend, faux.params);
          if (hooke_iters_vmax >= VNROU_HOOKE_MAXITER) {
@@ -631,7 +630,7 @@ _unur_vnrou_rectangle( struct unur_gen *gen )
       faux.f = (UNUR_FUNCT_VGENERIC*) _unur_vnrou_aux_umin;
       faux.params = gen;
 
-      hooke_iters_umin = hooke( faux, dim, xstart, xend, 
+      hooke_iters_umin = _unur_hooke( faux, dim, xstart, xend, 
                            VNROU_HOOKE_RHO, VNROU_HOOKE_EPSILON, VNROU_HOOKE_MAXITER);
       GEN.umin[d] = faux.f(xend, faux.params);
       
@@ -644,7 +643,7 @@ _unur_vnrou_rectangle( struct unur_gen *gen )
       faux.f = (UNUR_FUNCT_VGENERIC*) _unur_vnrou_aux_umax;
       faux.params = gen;
 
-      hooke_iters_umax = hooke( faux, dim, xstart, xend, 
+      hooke_iters_umax = _unur_hooke( faux, dim, xstart, xend, 
                            VNROU_HOOKE_RHO, VNROU_HOOKE_EPSILON, VNROU_HOOKE_MAXITER);
       GEN.umax[d] = -faux.f(xend, faux.params);
       
@@ -659,7 +658,7 @@ _unur_vnrou_rectangle( struct unur_gen *gen )
 
          /* recalculating extremum with scaled_epsilon and new starting point */
          memcpy(xstart, xumin, dim * sizeof(double)); 
-         hooke_iters_umin = hooke( faux, dim, xstart, xend, 
+         hooke_iters_umin = _unur_hooke( faux, dim, xstart, xend, 
                               VNROU_HOOKE_RHO, scaled_epsilon , VNROU_HOOKE_MAXITER);
          GEN.umin[d] = faux.f(xend, faux.params);
          if (hooke_iters_umin >= VNROU_HOOKE_MAXITER) {
@@ -674,7 +673,7 @@ _unur_vnrou_rectangle( struct unur_gen *gen )
 
          /* recalculating extremum with scaled_epsilon and new starting point */
          memcpy(xstart, xumax, dim * sizeof(double)); 
-         hooke_iters_umax = hooke( faux, dim, xstart, xend, 
+         hooke_iters_umax = _unur_hooke( faux, dim, xstart, xend, 
                               VNROU_HOOKE_RHO, scaled_epsilon , VNROU_HOOKE_MAXITER);
          GEN.umin[d] = faux.f(xend, faux.params);
          if (hooke_iters_umax >= VNROU_HOOKE_MAXITER) {

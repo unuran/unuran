@@ -649,7 +649,7 @@ unur_ninv_chg_table( struct unur_gen *gen, int tbl_pnts )
   /* check arguments */
   CHECK_NULL(gen, 0);
 
-  free(GEN.table); /* new table will be generated */  
+  /*  free(GEN.table); not freed, because realloc() is uses */ 
   GEN.table_size = (tbl_pnts >= 10) ? tbl_pnts : 10;
   
   _unur_ninv_create_table(gen);  

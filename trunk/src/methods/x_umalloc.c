@@ -86,6 +86,7 @@ _unur_realloc(void *ptr, size_t size)
   register void *new_ptr;
 
   /* reallocate memory */
+  
   new_ptr = realloc( ptr, size );
 
   /* successful ? */

@@ -19,6 +19,9 @@ include_HEADERS = \
  unuran.h \
  unuran_config.h
 
+EXTRA-DIST = \
+ unuran.h 
+
 unuran.h:	$(top_srcdir)/src/methods/x_gen.o
 	$(top_srcdir)/scripts/merge_h.pl $(top_srcdir)/src/methods/in_unuran.h > unuran.h
 

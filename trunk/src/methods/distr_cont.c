@@ -782,9 +782,11 @@ unur_distr_cont_upd_pdfarea( struct unur_distr *distr )
   }
 
   /* compute area */
-  if (!(DISTR.upd_area)(distr)) {
+  if (!((DISTR.upd_area)(distr)) || DISTR.area <= 0.) {
     /* computing of area failed */
-    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"");
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"upd area <= 0");
+    DISTR.area = 1.;   /* avoid possible floating point exceptions */
+    distr->set &= ~UNUR_DISTR_SET_PDFAREA;
     return 0;
   }
 

@@ -145,19 +145,12 @@ _unur_upd_area_cauchy( UNUR_DISTR *distr )
     DISTR.area = 1.;
     return 1;
   }
+
+  /* else */
+  DISTR.area = ( _unur_cdf_cauchy( DISTR.domain[1],distr) 
+		 - _unur_cdf_cauchy( DISTR.domain[0],distr) );
+  return 1;
   
-  else {
-    DISTR.area = ( _unur_cdf_cauchy( DISTR.domain[1],distr) 
-		   - _unur_cdf_cauchy( DISTR.domain[0],distr) );
-    if (DISTR.area <= 0.) {
-      /* this must not happen */
-      _unur_warning(distr_name,UNUR_ERR_DISTR_SET,"upd area <= 0");
-      DISTR.area = 1.;   /* 0 might cause a FPE */
-      return 0.;
-    }
-    else
-      return 1;
-  }
 } /* end of _unur_upd_area_cauchy() */
 
 /*---------------------------------------------------------------------------*/

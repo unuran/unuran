@@ -23,12 +23,12 @@ AC_PROG_LN_S
 AC_PROG_AWK
 
 dnl Checks for libraries.
-dnl libm: the standard math library
-AC_CHECK_LIB(m, sqrt)
 dnl cephes: Stephen L. Moshier's library of mathematical functions 
 AC_CHECK_LIB(md, lgam)
 dnl prng: Otmar Lendl's library for pseudo random number generators
 AC_CHECK_LIB(prng, prng_new)
+dnl libm: the standard math library
+AC_CHECK_LIB(m, sqrt)
 
 dnl Checks for header files
 AC_HEADER_STDC

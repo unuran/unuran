@@ -6,10 +6,12 @@ Version 0.5.0: ???? 2004
 	  Thus it is possible to return some non-zero error code in case 
 	  of an failure.
 
+	- the API of method VMT has changed
+
 	- added new disribution type MATR for matrix distributions.
 	  (Currently only used for creating random covariance matrices)
 
-	- multivariate distribution objects s now contain marginal distributions.
+	- multivariate distribution objects now contain marginal distributions.
 
 	- unur_distr_cvec_set_covar() now checks for positive definiteness of
 	  given covariance matrix.

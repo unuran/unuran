@@ -1,9 +1,5 @@
 -----------------------------------------------------------------------------
 
-docu: examples werden jetzt erst mit make check kompiliert.
-
------------------------------------------------------------------------------
-
 wenn man ein eigenes build directory waehlt, kann man die docu nicht mehr 
 erstellen, da @image{figures/....} die datei nicht mehr finden kann.
 
@@ -15,45 +11,44 @@ UNURAN BESPRECHUNG vom 11.2.2004
 
 Konkrete Ziele in naechster Zeit:
 
-*multivariate distribution object JL
-*multivariate normal distribution als distribution mit dichte RK
-*test fuer multivariate normal distribution    RK
-*E-mail an Gleb Beliakov, die den design des multivariaten 
-   Verteilungsonbjekts erklaert JL
-*Testsuite fuer verschiedene multivariate Verteilungen JL&RK
-*TDRMV und TDR2DIM in UNURAN eingliedern RK & JL
-*mehrere multivariate distributions (vor allem t-distribution) aufnehmen
-*DOKU Ausfuehrlichere Erklaerungen zu den Methoden und Appendix
-      ueber Inversion, rejection, rou, decomposition und guide table WH
+* multivariate normal distribution als distribution mit dichte RK
+* test fuer multivariate normal distribution    RK
+* E-mail an Gleb Beliakov, die den design des multivariaten 
+    Verteilungsonbjekts erklaert JL
+* Testsuite fuer verschiedene multivariate Verteilungen JL&RK
+* TDRMV und TDR2DIM in UNURAN eingliedern RK & JL
+* mehrere multivariate distributions (vor allem t-distribution) aufnehmen
+* DOKU Ausfuehrlichere Erklaerungen zu den Methoden  WH
+* Vaduvas multivariate RoU  RK
 
 
 Bis Sommer:
 
-*Gleichverteilungschnittstelle mit einer structure und 
+* Gleichverteilungschnittstelle mit einer structure und 
    "wrapped function calls" JL
-*Das Paket von Pierre einbinden und als default verwenden JL
-   Alle Beispiele (auch die Correlation induction) darauf umstellen RK
-*"C-lose" dokumentation des String interfaces und UNURAN R-version GT
-*New UNRUAN release ALLE
-*Visual C++ library und examples der neuen release RK
-*Experimente: Wie macht man Gibbssampling mit UNURAN   WH
+* Das Paket von Pierre einbinden und als default verwenden JL
+    Alle Beispiele (auch die Correlation induction) darauf umstellen RK
+* "C-lose" dokumentation des String interfaces und UNURAN R-version GT
+* New UNRUAN release ALLE
+* Visual C++ library und examples der neuen release RK
+* Experimente: Wie macht man Gibbssampling mit UNURAN   WH
 
-*DOKU: Beispiele zu jeder Methode: WH spater RK
-*DOKU: Seitenumbruch vor jeder neuen Methode JL
+* DOKU: Beispiele zu jeder Methode: WH spater RK
+* DOKU: Seitenumbruch vor jeder neuen Methode JL
 
 
 (bis Sommer oder spaeter)
 
-*Eine Methode Combined (fuer unstetige Dichten und 
+* Eine Methode Combined (fuer unstetige Dichten und 
                         gemischt stetig diskrete Verteilungen)
-*Eine klein version von UNURAN fuer EXCEL
-*DEMO Programme fuer Gibbs sampling, MC integration, QMC etc...
+* Eine klein version von UNURAN fuer EXCEL
+* DEMO Programme fuer Gibbs sampling, MC integration, QMC etc...
 
-*multivariate AROU  JL&RK
-*multivariate Ahrens  WH
+* multivariate AROU  JL&RK
+* multivariate Ahrens  WH
+* domains fuer multivariate verteilungen
+* NaN und Infinity
 
-
-Wolfgang
 
 -----------------------------------------------------------------------------
 

@@ -108,7 +108,7 @@ _unur_pmf_binomial(int k, UNUR_DISTR *distr)
 { 
   register double *params = DISTR.params;
 
-  if ( k<0 || k>n ) return 0.;
+  if ( k<0 || k>(n+0.5) ) return 0.;
 
   else
     return exp( k * log(p) + (n-k) * log(1.-p) +
@@ -130,7 +130,7 @@ _unur_cdf_binomial(int k, UNUR_DISTR *distr)
   if (k<0) return 0.;
 
   else if (k==0) return exp(n*(log(1.-p)));
-  else if(k>=n) return(1.);
+  else if(k>(n-0.5)) return(1.);
   else return(_unur_sf_incomplete_beta(1.-p, n-k, k+1.));
 
 } /* end of _unur_cdf_binomial() */
@@ -169,7 +169,7 @@ _unur_upd_sum_binomial( UNUR_DISTR *distr )
     DISTR.sum = 1.;
     return 1;
   }
-  
+
 #ifdef HAVE_CDF
   /* else */
   DISTR.sum = ( _unur_cdf_binomial( DISTR.domain[1],distr) 
@@ -221,8 +221,8 @@ _unur_set_params_binomial( UNUR_DISTR *distr, double *params, int n_params )
 
   /* set (standard) domain: [0, n] */
   if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
-    DISTR.domain[0] = 0;           /* left boundary  */
-    DISTR.domain[1] = n;           /* right boundary */
+    DISTR.domain[0] = 0;             /* left boundary  */
+    DISTR.domain[1] = (int)(n+0.5);  /* right boundary */
   }
 
   return 1;

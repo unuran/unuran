@@ -31,10 +31,9 @@ check_PROGRAMS = \
  t_distr_cvec \
  t_distr_cvemp \
  t_distr_discr \
- t_stringparser \
- t_corder \
  t_auto \
  t_arou \
+ t_corder \
  t_cstd \
  t_dari \
  t_dau \
@@ -44,6 +43,8 @@ check_PROGRAMS = \
  t_empk \
  t_empl \
  t_hinv \
+ t_hrb \
+ t_hrd \
  t_ninv \
  t_srou \
  t_ssr \
@@ -53,8 +54,14 @@ check_PROGRAMS = \
  t_utdr \
  t_vempk \
  t_vmt \
+ t_stringparser \
  test_special_hinv \
  $(MATHEMATICA_PROGS)
+
+## Troubles with dmalloc:
+##   t_dstd
+##   t_hinv
+##   test_special_hinv
 
 ## t_timing_dsrou \
 ## t_timing_ninv \
@@ -89,6 +96,8 @@ EXTRA_DIST = \
  t_empk.conf \
  t_empl.conf \
  t_hinv.conf \
+ t_hrb.conf \
+ t_hrd.conf \
  t_ninv.conf \
  t_srou.conf \
  t_ssr.conf \

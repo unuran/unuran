@@ -138,7 +138,12 @@ If @code{DEF} is ommited, the first entry is the default generator.
    At the moment there are no CDFs implemented for discrete distribution.
    Thus unur_distr_discr_upd_pmfsum() does not work properly for truncated 
    distribution.
+=EON
 
+/*---------------------------------------------------------------------------*/
+
+=NODE  Stddist_MATR    UNURAN Library of random matrices
+=UP Stddist [40]
 =EON
 
 /*---------------------------------------------------------------------------*/

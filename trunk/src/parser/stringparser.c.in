@@ -237,12 +237,13 @@ static int _unur_str_distr_set_C( UNUR_DISTR *distr, const char *key, char *type
 /*---------------------------------------------------------------------------*/
 
 
-static struct unur_par *_unur_str_par( char *str_method, UNUR_DISTR *distr, struct malloc_list *mlist );
+static struct unur_par *_unur_str_par( char *str_method, const UNUR_DISTR *distr,
+				       struct malloc_list *mlist );
 /*---------------------------------------------------------------------------*/
 /* get parameter object for distribution and method.                         */
 /*---------------------------------------------------------------------------*/
 
-static struct unur_par *_unur_str_par_new( const char *method, UNUR_DISTR *distr );
+static struct unur_par *_unur_str_par_new( const char *method, const UNUR_DISTR *distr );
 /*---------------------------------------------------------------------------*/
 /* get new parameter object for method.                                      */
 /*---------------------------------------------------------------------------*/
@@ -545,6 +546,66 @@ unur_str2gen (const char *string)
 
 /*---------------------------------------------------------------------------*/
 
+struct unur_par *
+unur_str2par (const struct unur_distr *distr, const char *string)
+     /*----------------------------------------------------------------------*/
+     /* get parameter object for distribution and method                     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr  ... pointer to distribution object                          */
+     /*   string ... string that contains description of method              */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   parameter object                                                   */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  UNUR_PAR *par = NULL;           /* parameter object */
+  char *str = NULL;               /* pointer to working string */
+
+  /* (empty) list of allocated memory blocks */ 
+  struct malloc_list mlist = { NULL, 0 };
+
+  /* check arguments */
+  _unur_check_NULL( GENTYPE,distr,NULL );
+  _unur_check_NULL( GENTYPE,string,NULL );
+
+  /* Prepare string for processing:            */
+  /*   Remove all white spaces,                */
+  /*   convert to lower case letters,          */
+  /*   copy into working string                */
+  str = _unur_parser_prepare_string( string );
+
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  if (_unur_default_debugflag)
+    _unur_str_debug_string(0,"[input]",str);
+#endif
+
+  /* get parameter object */
+  par = _unur_str_par(str, distr, &mlist);
+
+  /* free allocated memory blocks */
+/*    _unur_free_malloc_list(&mlist); */
+  /** TODO: fix this memory leak !!!!!! **/
+  if (str) free(str);
+
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  if (_unur_default_debugflag)
+    if ( par != NULL )
+      _unur_str_debug_string(0,"",NULL);
+#endif
+
+  /* return pointer to parameter object */
+  return par;
+
+} /* end of unur_str2par() */
+
+/*---------------------------------------------------------------------------*/
+
 struct unur_distr *
 unur_str2distr (const char *string)
      /*----------------------------------------------------------------------*/
@@ -554,7 +615,7 @@ unur_str2distr (const char *string)
      /*   string ... string that contains description of distribution        */
      /*                                                                      */
      /* return:                                                              */
-     /*   distribution object                                                   */
+     /*   distribution object                                                */
      /*                                                                      */
      /* error:                                                               */
      /*   return NULL                                                        */
@@ -587,8 +648,8 @@ unur_str2distr (const char *string)
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
   if (_unur_default_debugflag)
-     if ( distr != NULL )
-     _unur_str_debug_string(0,"",NULL);
+    if ( distr != NULL )
+      _unur_str_debug_string(0,"",NULL);
 #endif
 
   /* return pointer to distribution object */
@@ -1274,7 +1335,7 @@ _unur_str_distr_set_C (UNUR_DISTR *distr, const char *key, char *type_args, char
 /*---------------------------------------------------------------------------*/
 
 struct unur_par *
-_unur_str_par( char *str_method, UNUR_DISTR *distr, struct malloc_list *mlist )
+_unur_str_par( char *str_method, const UNUR_DISTR *distr, struct malloc_list *mlist )
      /*----------------------------------------------------------------------*/
      /* get parameter object for distribution and method                     */
      /*                                                                      */
@@ -1356,7 +1417,7 @@ _unur_str_par( char *str_method, UNUR_DISTR *distr, struct malloc_list *mlist )
 /*---------------------------------------------------------------------------*/
 
 struct unur_par *
-_unur_str_par_new( const char *method, UNUR_DISTR *distr )
+_unur_str_par_new( const char *method, const UNUR_DISTR *distr )
      /*----------------------------------------------------------------------*/
      /* get new parameter object for method                                  */
      /*                                                                      */

@@ -86,8 +86,17 @@ UNUR_DISTR *unur_str2distr( const char *string );
    @var{string}. 
    See @ref{StringSyntax,,Syntax of String Interface},
    and @ref{StringDistr,,Distribution String},
-   for details. However only the block for the distribution object is
+   for details. However, only the block for the distribution object is
    allowed.
+*/
+
+UNUR_PAR *unur_str2par( const UNUR_DISTR *distribution, const char *string );
+/*
+   Get a parameter object for the givne distribution object and for the 
+   method described in @var{string}. 
+   See @ref{StringSyntax,,Syntax of String Interface},
+   and @ref{StringMethod,,Method String},
+   for details. However, only the block for the method is allowed.
 */
 
 /*

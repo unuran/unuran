@@ -29,7 +29,7 @@
 @c Version ...
 @c
 
-@include version-ref.texi
+@include version.texi
 
 @c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 @c

@@ -86,6 +86,7 @@ scan_verbatim();
 foreach my $s (@othersections) {
     scan_other($s); }
 scan_validate();
+scan_special();
 print_C_routines();
 add_unur_set_verify_routine();
 print_C_main();
@@ -220,7 +221,7 @@ sub scan_main {
 	  if ($title eq "header") {
 	      # additonal part for C header 
 	      $C_header_aux = $body;
-	      $C_header_aux =~ s/[^\n]\d+\://g;   # remove line info
+	      $C_header_aux =~ s/(^|\n)\d+\:/\n/g;   # remove line info
 	      last MAINSUBS;
 	  }
 	  else {
@@ -258,7 +259,7 @@ sub scan_verbatim {
 	my $title = ${$subs}{"title"};
 	my $body = ${$subs}{"body"};
 	if ($title eq "start") {
-	    $body =~ s/[^\n]\d+\://g;   # remove line info
+	    $body =~ s/(^|\n)\d+\:/\n/g;   # remove line info
 	    print $body;
 	}
 	else {
@@ -310,7 +311,7 @@ sub scan_validate {
 	      last VALIDATESUBS; }
 
 	  # remove line info and empty lines
-	  $body =~ s/[^\n]\d+\://g;
+	  $body =~ s/(^|\n)\d+\:/\n/g;
 	  $body =~ s/\n\s*\n/\n/g;
 	  $body =~ s/^\s*\n//;
 
@@ -668,6 +669,74 @@ sub scan_validate {
     undef $DATA{"validate"};
 
 } # end if scan_validate()
+
+
+
+#############################################################################
+#                                                                           #
+#  Scan section [special]                                                   #
+#                                                                           #
+#############################################################################
+
+sub scan_special {
+
+    my $section = "special";
+
+    $DATA{"$section"} or return "";
+
+    $test_routines .= "test_$section();\n";
+
+    print <<EOM;
+/*---------------------------------------------------------------------------*/
+/* [$section] */
+
+void test_$section (void)
+{
+	/* start test */
+	printf("[$section "); fflush(stdout);
+	fprintf(TESTLOG,"\\n[$section]\\n");
+
+	/* set boolean to FALSE */
+	int FAILED = 0;
+  
+EOM
+
+    # There must be only one subsection: [start]
+
+    # scan subsection 
+    foreach my $subs (@{$DATA{$section}}) {
+	my $title = ${$subs}{"title"};
+	my $body = ${$subs}{"body"};
+	if ($title eq "start") {
+	    $body =~ s/(^|\n)\d+\:/\n/g;   # remove line info
+	    print $body;
+	}
+	else {
+	    die "No subsections allowed in [$section]";
+	}
+    }
+
+
+  # print section closing ...
+  print <<EOM;
+
+	/* test finished */
+	test_ok &= (FAILED) ? 0 : 1;
+	(FAILED) ? printf("--> failed] ") : printf("--> ok] ");
+
+#if WITH_DMALLOC
+	dmalloc_vmessage("section = $section  ================================\\n",NULL);
+	dmalloc_log_unfreed();
+#endif
+
+} /* end of test_$section() */
+
+EOM
+
+    # mark as read
+    undef $DATA{$section};
+
+} # end if scan_special()
 
 
 #############################################################################

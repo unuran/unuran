@@ -3,7 +3,7 @@
 #include <unuran_distributions.h>
 
 
-main ()
+int main ()
 {
   struct unur_distr *distr;  /* distribution object */
   struct unur_par   *par;    /* parameter object */
@@ -39,4 +39,5 @@ main ()
   /* destroy generator object */
   unur_free(gen);
 
+  exit (0);
 }

@@ -169,6 +169,10 @@ _unur_print_method( struct unur_par *par )
     COOKIE_CHECK(par,CK_AROU_PAR,0);
     printf("METHOD:\t\tautomatic ratio-of-uniforms method\n");
     break;
+  case UNUR_METH_NINV:
+    COOKIE_CHECK(par,CK_NINV_PAR,0);
+    printf("METHOD:\t\tnumerical inversion of c.d.f.\n");
+    break;
   case UNUR_METH_SROU:
     COOKIE_CHECK(par,CK_SROU_PAR,0);
     printf("METHOD:\t\tsimple universal ratio-of-uniforms method\n");

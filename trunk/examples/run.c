@@ -30,9 +30,10 @@
 #define RUN_TESTS       (~0x0u & ~UNUR_TEST_SCATTER)
 
 /* define which tests should run (1) or not (0) */
-#define RUN_DAU           1
-#define RUN_DIS           1
+#define RUN_DAU           0
+#define RUN_DIS           0
 
+#define RUN_NINV          1
 #define RUN_UTDR          1
 #define RUN_AROU          1
 #define RUN_SROU          1
@@ -49,7 +50,7 @@
 
 #define RUN_RECT          1
 
-#define RUN_CSTD          1
+#define RUN_CSTD          0
 
 /*---------------------------------------------------------------------------*/
 
@@ -255,6 +256,20 @@ int main()
 #if RUN_NORMAL == 1
 
   printf("DISTRIBUTION:\tstandard normal. (mu = 0., sigma = 1.)\n");
+
+#if RUN_NINV == 1
+
+  /* get default parameters for new generator */
+  par = unur_ninv_new(distr_normal);
+  unur_set_debug(par,0x1u);
+  //   unur_ninv_set_x_resolution(par,1.e-5);
+
+  /* run tests */
+  unur_run_tests(par,RUN_TESTS);
+
+  printf("\n------------------------------------------------------------\n\n");
+
+#endif
 
 #if RUN_UTDR == 1
 

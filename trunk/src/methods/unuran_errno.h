@@ -65,11 +65,11 @@ enum {
   UNUR_ERR_GEN_INVALID    = 0x34u,    /* invalid generator object            */
 
   /** misc **/
-  UNUR_ERR_ROUNDOFF       = 0x01u,    /* (serious) round-off error           */
-  UNUR_ERR_MALLOC         = 0x02u,    /* virtual memory exhausted            */
-  UNUR_ERR_NULL           = 0x03u,    /* invalid NULL pointer                */ 
-  UNUR_ERR_COOKIE         = 0x04u,    /* invalid cookie                      */
-  UNUR_ERR_GENERIC        = 0x05u,    /* generic error                       */
+  UNUR_ERR_ROUNDOFF       = 0x02u,    /* (serious) round-off error           */
+  UNUR_ERR_MALLOC         = 0x03u,    /* virtual memory exhausted            */
+  UNUR_ERR_NULL           = 0x04u,    /* invalid NULL pointer                */ 
+  UNUR_ERR_COOKIE         = 0x05u,    /* invalid cookie                      */
+  UNUR_ERR_GENERIC        = 0x06u,    /* generic error                       */
 
   /** compilation switches **/
   UNUR_ERR_COMPILE        = 0x0eu,    /* not available, recompile library    */

@@ -41,8 +41,8 @@
 /* Information for constructing the generator                                */
 
 struct unur_ninv_par { 
-  int max_inter;             /* maximal number of iterations                 */
-  int rel_x_resolution;      /* maximal relative error in x                  */
+  int max_iter;              /* maximal number of iterations                 */
+  double rel_x_resolution;   /* maximal relative error in x                  */
   double sl, sr;             /* interval boundaries at start (left/right)    */
 };
 
@@ -50,7 +50,9 @@ struct unur_ninv_par {
 /* The generator object                                                      */
 
 struct unur_ninv_gen { 
-  double  um;                /* height of rectangle: square root of f(mode)  */
+  int max_iter;              /* maximal number of iterations                 */
+  double rel_x_resolution;   /* maximal relative error in x                  */
+  double sl, sr;             /* interval boundaries at start (left/right)    */
 };
 
 /*---------------------------------------------------------------------------*/
@@ -62,7 +64,8 @@ struct unur_par *unur_ninv_new( struct unur_distr *distr );
 struct unur_gen *unur_ninv_init( struct unur_par *parameters );
 /* initialize new generator                                                  */
 
-double unur_ninv_sample( struct unur_gen *generator );
+double unur_ninv_sample_regula( struct unur_gen *generator );
+double unur_ninv_sample_newton( struct unur_gen *generator );
 /* sample from generator                                                     */
 
 void unur_ninv_free( struct unur_gen *generator);
@@ -70,8 +73,20 @@ void unur_ninv_free( struct unur_gen *generator);
 
 /*...........................................................................*/
 
-int unur_ninv_set_usemirror( struct unur_par *par, int usemirror );
-/* set flag for using mirror principle (default: off)                        */
+int unur_ninv_use_newton( struct unur_par *par );
+/* use Newton's method                                                       */
+
+int unur_ninv_use_regula( struct unur_par *par );
+/* use regula falsi                                                          */
+
+int unur_ninv_set_max_iter( struct unur_par *par, int max_iter );
+/* set number of maximal iterations                                          */
+
+int unur_ninv_set_x_resolution( struct unur_par *par, double x_resolution);
+/* set maximal relative error in x                                           */
+
+int unur_ninv_set_start( struct unur_par *par, double sl, double sr );
+/* set intervals at start (left/right)                                       */
 
 #define unur_ninv_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
 /* set debuging flags                                                        */

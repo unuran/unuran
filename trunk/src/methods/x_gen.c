@@ -408,7 +408,7 @@ _unur_gen_list_clone( struct unur_gen **gen_list, int n_gen_list )
        (set by _unur_gen_list_clone() call)
   */
 
-  if (gen_list[0] == gen_list[1]) {
+  if (n_gen_list > 1 && gen_list[0] == gen_list[1]) {
       clone_list[0] = _unur_gen_clone( gen_list[0] );
       for (i=0; i<n_gen_list; i++)
 	clone_list[i] = clone_list[0];

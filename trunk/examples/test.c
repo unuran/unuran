@@ -17,11 +17,11 @@ int main()
 
   /* choose a implemented distribution: Gaussian */
   distr = unur_distr_normal(NULL, 0);
-  unur_distr_cont_set_domain(distr, -1, 0);
+  //unur_distr_cont_set_domain(distr, -1, 0);
 
   /* choose method */
   par = unur_ninv_new(distr);
-  unur_ninv_use_newton(par);
+  //unur_ninv_use_newton(par);
 
   /* Set uniform generator in parameter object */   
   unur_set_urng(par, ug);    
@@ -34,12 +34,23 @@ int main()
     x = unur_sample_cont(gen);
     printf("%f\n",x);
   }
-  unur_ninv_chg_x_resolution(gen, 1e-2); 
   unur_ninv_chg_max_iter(gen,10);
-  unur_ninv_chg_domain(gen, 0.,1.);
-  unur_ninv_chg_start(gen, 1., 1.);
+  unur_ninv_chg_table(gen);
 
-  for (i=0; i<6; i++) {
+  for (i=0; i<8; i++) {
+    x = unur_sample_cont(gen);
+    printf("%f\n",x);
+  }
+
+  unur_ninv_table_onoff(gen,0);
+
+  for (i=0; i<8; i++) {
+    x = unur_sample_cont(gen);
+    printf("%f\n",x);
+  }
+ unur_ninv_table_onoff(gen,1);
+
+  for (i=0; i<8; i++) {
     x = unur_sample_cont(gen);
     printf("%f\n",x);
   }

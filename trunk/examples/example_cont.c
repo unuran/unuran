@@ -62,11 +62,8 @@ int main()
   unur_distr_cont_set_dpdf(distr, mydpdf);   /* ... and derivative */
   unur_distr_cont_set_mode(distr, 1.5);      /* set mode           */
 
-  /* Choose methoe "TDR" and create parameter object               */
+  /* Choose method "TDR" and create parameter object               */
   par = unur_tdr_new(distr);
-
-  /* destroy distribution object                                   */
-  unur_distr_free(distr);
 
   /* Set some parameters of the method TDR                         */
   unur_tdr_set_variant_ia(par);
@@ -74,6 +71,8 @@ int main()
   unur_tdr_set_c(par, -0.5);
   unur_tdr_set_max_intervals(par, 1000);
   unur_tdr_set_cpoints(par, 10, NULL);
+
+  fprintf(stderr,"junk 5\n");
   
   /* creating generator object -- now sampling is possible         */
   gen = unur_init(par);
@@ -82,6 +81,9 @@ int main()
      fprintf(stderr, "Error creating generation object\n");
      return (1);
   }
+
+  /* destroy distribution object                                   */
+  unur_distr_free(distr);
 
   /* sample some random numbers                                    */
   for (i=0;i<100;i++)

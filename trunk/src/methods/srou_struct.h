@@ -51,6 +51,7 @@ struct unur_srou_gen {
   double  um;                /* height of rectangle: square root of f(mode)  */
   double  vl, vr;            /* left and right boundary of rectangle         */
   double  xl, xr;            /* ratios vl/um and vr/um                       */
+  double  Fmode;             /* cdf at mode                                  */
 };
 
 /*---------------------------------------------------------------------------*/

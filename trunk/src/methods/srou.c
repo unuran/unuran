@@ -138,6 +138,11 @@ static struct unur_gen *_unur_srou_init( struct unur_par *par );
 /* Initialize new generator.                                                 */
 /*---------------------------------------------------------------------------*/
 
+static int _unur_srou_rectangle( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* compute universal bounding rectangle                                      */
+/*---------------------------------------------------------------------------*/
+
 static struct unur_gen *_unur_srou_create( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 /* create new (almost empty) generator object.                               */
@@ -263,7 +268,7 @@ unur_srou_new( struct unur_distr *distr )
 int 
 unur_srou_set_Fmode( struct unur_par *par, double Fmode )
      /*----------------------------------------------------------------------*/
-     /* set cdf at mode                                                      */
+     /* set value of cdf at mode                                             */
      /*                                                                      */
      /* parameters:                                                          */
      /*   par   ... pointer to parameter for building generator object       */
@@ -397,13 +402,206 @@ unur_srou_set_usemirror( struct unur_par *par, int usemirror )
 
 /*****************************************************************************/
 
+int
+unur_srou_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
+     /*----------------------------------------------------------------------*/
+     /* change array of parameters for distribution                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen      ... pointer to generator object                           */
+     /*   params   ... list of arguments                                     */
+     /*   n_params ... number of arguments                                   */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*                                                                      */
+     /* IMPORTANT: The given parameters are not checked against domain       */
+     /*            errors (in opposition to the unur_<distr>_new() call).    */
+     /*                                                                      */
+     /*----------------------------------------------------------------------*/
+{
+  register int i;
+
+  /* check arguments */
+  CHECK_NULL(gen,0);
+  _unur_check_gen_object( gen,SROU );
+  if (n_params>0) CHECK_NULL(params,0);
+  
+  /* check new parameter for generator */
+  if (n_params > UNUR_DISTR_MAXPARAMS ) {
+    _unur_error(NULL,UNUR_ERR_DISTR_NPARAMS,"");
+    return 0;
+  }
+
+  /* copy parameters */
+  DISTR.n_params = n_params;
+  for (i=0; i < n_params; i++)
+    DISTR.params[i] = params[i];
+
+  /* changelog */
+  /* mode and area might be wrong now! 
+     but the user is responsible to change it.
+     so we dont say:
+     gen->distr.set &= ~(UNUR_DISTR_SET_MODE | UNUR_DISTR_SET_PDFAREA );
+     gen->set &= ~SROU_SET_FMODE;
+  */
+
+  /* o.k. */
+  return 1;
+} /* end of unur_srou_chg_pdfparams() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_srou_chg_mode( struct unur_gen *gen, double mode )
+     /*----------------------------------------------------------------------*/
+     /* change mode of distribution                                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen   ... pointer to generator object                              */
+     /*   mode  ... mode                                                     */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(gen,0);
+  _unur_check_gen_object( gen,SROU );
+  
+  /* copy parameters */
+  DISTR.mode = mode;
+
+  /* no changelog required */
+
+  /* o.k. */
+  return 1;
+} /* end of unur_srou_chg_mode() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_srou_chg_Fmode( struct unur_gen *gen, double Fmode )
+     /*----------------------------------------------------------------------*/
+     /* change value of cdf at mode                                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen   ... pointer to generator object                              */
+     /*   Fmode ... cdf at mode                                              */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(gen,0);
+  _unur_check_gen_object( gen,SROU );
+
+  /* check new parameter for generator */
+  if (Fmode < 0. || Fmode > 1.) {
+    _unur_warning(gen->genid,UNUR_ERR_PAR_SET,"cdf(mode)");
+    return 0;
+  }
+  
+  /* copy parameters */
+  GEN.Fmode = Fmode;
+
+  /* changelog */
+  gen->set |= SROU_SET_FMODE;
+
+  /* o.k. */
+  return 1;
+} /* end of unur_srou_chg_Fmode() */
+
+/*---------------------------------------------------------------------------*/
+
+int 
+unur_srou_chg_domain( struct unur_gen *gen, double left, double right )
+     /*----------------------------------------------------------------------*/
+     /* change the left and right borders of the domain of the distribution  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen      ... pointer to generator object                           */
+     /*   left  ... left boundary point                                      */
+     /*   right ... right boundary point                                     */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   the new boundary points may be +/- INFINITY                        */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(gen,0);
+  _unur_check_gen_object( gen,SROU );
+
+  /* check new parameter for generator */
+  if (left >= right) {
+    _unur_warning(NULL,UNUR_ERR_DISTR_SET,"domain, left >= right");
+    return 0;
+  }
+
+  /* copy new boundaries into generator object */
+  DISTR.BD_LEFT = left;
+  DISTR.BD_RIGHT = right;
+
+  /* changelog */
+  gen->distr.set |= UNUR_DISTR_SET_DOMAIN;
+
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+#endif
+  
+  /* o.k. */
+  return 1;
+  
+} /* end of unur_srou_chg_domain() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_srou_chg_pdfarea( struct unur_gen *gen, double area )
+     /*----------------------------------------------------------------------*/
+     /* change area below p.d.f. of distribution                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen   ... pointer to generator object                              */
+     /*   area  ... area                                                     */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(gen,0);
+  _unur_check_gen_object( gen,SROU );
+  
+  /* check new parameter for generator */
+  if (area < 0.) {
+    _unur_warning(NULL,UNUR_ERR_DISTR_SET,"area < 0");
+    return 0;
+  }
+
+  /* copy parameters */
+  DISTR.area = area;
+
+  /* no changelog required */
+
+  /* o.k. */
+  return 1;
+} /* end of unur_srou_chg_pdfarea() */
+
+/*****************************************************************************/
+
 struct unur_gen *
 _unur_srou_init( struct unur_par *par )
      /*----------------------------------------------------------------------*/
      /* initialize new generator                                             */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   params  pointer to paramters for building generator object         */
+     /*   params ... pointer to paramters for building generator object      */
      /*                                                                      */
      /* return:                                                              */
      /*   pointer to generator object                                        */
@@ -477,6 +675,70 @@ _unur_srou_init( struct unur_par *par )
 
 /*---------------------------------------------------------------------------*/
 
+int
+_unur_srou_rectangle( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* compute universal bounding rectangle                                 */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{ 
+  double vm, fm;             /* width of rectangle, pdf at mode              */
+
+  /* check arguments */
+  CHECK_NULL( gen, 0 );
+  COOKIE_CHECK( gen,CK_SROU_GEN, 0 );
+
+  /* compute pdf at mode */
+  fm = PDF(DISTR.mode);
+
+  /* fm must be positive */
+  if (fm <= 0.) {
+    _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"pdf(mode) <= 0.");
+    return 0;
+  }
+
+  /* height of rectangle */
+  GEN.um = sqrt(fm);
+
+  /* width of rectangle */
+  vm = DISTR.area / GEN.um;
+
+  if (gen->set & SROU_SET_FMODE) {
+    /* cdf at mode known */
+    GEN.vl = -GEN.Fmode * vm;
+    GEN.vr = vm + GEN.vl;
+    GEN.xl = GEN.vl/GEN.um;
+    GEN.xr = GEN.vr/GEN.um;
+    /* it does not make sense to use the mirror principle */
+    gen->variant &= ~SROU_VARFLAG_MIRROR;
+  }
+  else {
+    /* cdf at mode unknown */
+    GEN.vl = -vm;
+    GEN.vr = vm;
+    GEN.xl = GEN.vl/GEN.um;
+    GEN.xr = GEN.vr/GEN.um;
+    /* we cannot use universal squeeze */
+    gen->variant &= ~SROU_VARFLAG_SQUEEZE;
+  }
+
+#ifdef UNUR_ENABLE_LOGGING
+    /* write info into log file */
+#endif
+
+  /* o.k. */
+  return 1;
+
+} /* end of _unur_srou_rectangle() */
+
+/*---------------------------------------------------------------------------*/
+
 static struct unur_gen *
 _unur_srou_create( struct unur_par *par )
      /*----------------------------------------------------------------------*/
@@ -529,8 +791,12 @@ _unur_srou_create( struct unur_par *par )
     DISTR.mode = min(DISTR.mode,DISTR.BD_RIGHT);
   }
 
+  /* copy some parameters into generator object */
+  GEN.Fmode = PAR.Fmode;            /* cdf at mode                           */
+
   gen->method = par->method;        /* indicates method                      */
   gen->variant = par->variant;      /* indicates variant                     */
+  gen->set = par->set;              /* indicates parameter settings          */
   gen->debug = par->debug;          /* debuging flags                        */
   gen->urng = par->urng;            /* pointer to urng                       */
 
@@ -560,6 +826,13 @@ _unur_srou_reinit( struct unur_gen *gen )
      /*   0 ... on error                                                     */
      /*----------------------------------------------------------------------*/
 {
+  /* check arguments */
+  CHECK_NULL(gen,0);
+  _unur_check_gen_object( gen,SROU );
+
+
+
+
   return _unur_reinit_error(gen);
 } /* end of _unur_srou_reinit() */
 
@@ -580,35 +853,39 @@ _unur_srou_sample( struct unur_gen *gen )
      /*   return 0.                                                          */
      /*----------------------------------------------------------------------*/
 { 
-  double u,v,x,xx;
+  double U,V,X,x,xx;
 
   /* check arguments */
   CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_SROU_GEN,0.);
 
   while (1) {
     /* generate point uniformly on rectangle */
-    u = _unur_call_urng(gen) * GEN.um;
-    if (u==0.) continue;
-    v = GEN.vl + _unur_call_urng(gen) * (GEN.vr - GEN.vl);
+    while ( (U = _unur_call_urng(gen)) == 0.);
+    U *= GEN.um;
+    V = GEN.vl + _unur_call_urng(gen) * (GEN.vr - GEN.vl);
 
     /* ratio */
-    x = v/u;
+    X = V/U;
+
+    /* compute x */
+    x = X + DISTR.mode;
+
+    /* inside domain ? */
+    if ( (x < DISTR.BD_LEFT) || (x > DISTR.BD_RIGHT) )
+      continue;
 
     /* evaluate squeeze */
     if ( (gen->variant & SROU_VARFLAG_SQUEEZE) &&
-	 (x >= GEN.xl) && 
-	 (x <= GEN.xr ) && 
-	 (u < GEN.um) ) {
-      xx = v / (GEN.um - u);
+	 (X >= GEN.xl) && 
+	 (X <= GEN.xr ) && 
+	 (U < GEN.um) ) {
+      xx = V / (GEN.um - U);
       if ( (xx >= GEN.xl) && (xx <= GEN.xr ) )
-	return (x + DISTR.mode);
+	return x;
     }
 
-    /* compute X */
-    x += DISTR.mode;
-
     /* accept or reject */
-    if (u*u <= PDF(x))
+    if (U*U <= PDF(x))
       return x;
   }
 
@@ -631,31 +908,41 @@ _unur_srou_sample_mirror( struct unur_gen *gen )
      /*   return 0.                                                          */
      /*----------------------------------------------------------------------*/
 { 
-  double u,v,x,fx,uu;
+  double U,V,X,x,fx,uu;
 
   /* check arguments */
   CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_SROU_GEN,0.);
 
   while (1) {
     /* generate point uniformly on rectangle */
-    u = _unur_call_urng(gen) * GEN.um * SQRT2;
-    if (u==0.) continue;
-    v = GEN.vl + _unur_call_urng(gen) * (GEN.vr - GEN.vl);
+    while ( (U = _unur_call_urng(gen)) == 0.);
+    U *= GEN.um * SQRT2;
+    V = GEN.vl + _unur_call_urng(gen) * (GEN.vr - GEN.vl);
 
     /* ratio */
-    x = v/u;
+    X = V/U;
 
     /* evaluate p.d.f. */
-    fx = PDF(x + DISTR.mode);
-    uu = u * u;
+    x = X + DISTR.mode;
+    fx = PDF(x);
+    uu = U * U;
 
     /* accept or reject */
-    if (uu <= fx)
-      return (x + DISTR.mode);
+    if (uu <= fx) {
+      if ( (x < DISTR.BD_LEFT) || (x > DISTR.BD_RIGHT) )
+	continue; /* not inside domain */
+      else
+	return x;
+    }
 
     /* try mirrored p.d.f */
-    if (uu <= fx + PDF(-x + DISTR.mode))
-      return (-x + DISTR.mode);
+    x = -X + DISTR.mode;
+    if (uu <= fx + PDF(x)) {
+      if ( (x < DISTR.BD_LEFT) || (x > DISTR.BD_RIGHT) )
+	continue; /* not inside domain */
+      else
+	return x;
+    }
   }
 
 } /* end of _unur_srou_sample_mirror() */
@@ -677,7 +964,7 @@ _unur_srou_sample_check( struct unur_gen *gen )
      /*   return 0.                                                          */
      /*----------------------------------------------------------------------*/
 { 
-  double u,uu,v,x,fx,sfx,fnx,xfx,xfnx,xx;
+  double U,uu,V,X,x,fx,sfx,fnx,xfx,xfnx,xx;
 
   /* check arguments */
   CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_SROU_GEN,0.);
@@ -687,33 +974,48 @@ _unur_srou_sample_check( struct unur_gen *gen )
 
     while (1) {
       /* generate point uniformly on rectangle */
-      u = _unur_call_urng(gen) * GEN.um * SQRT2;
-      if (u==0.) continue;
-      v = GEN.vl + _unur_call_urng(gen) * (GEN.vr - GEN.vl);
+      while ( (U = _unur_call_urng(gen)) == 0.);
+      U *= GEN.um * SQRT2;
+      V = GEN.vl + _unur_call_urng(gen) * (GEN.vr - GEN.vl);
 
       /* ratio */
-      x = v/u;
+      X = V/U;
 
       /* evaluate p.d.f. */
-      fx = PDF(x + DISTR.mode);
-      fnx = PDF(-x + DISTR.mode);
-      uu = u * u;
+      fx = PDF(X + DISTR.mode);
+      fnx = PDF(-X + DISTR.mode);
+      uu = U * U;
+
+      /* inside domain ? */
+      if (uu <= fx) {
+	x = X + DISTR.mode;
+	if ( (x < DISTR.BD_LEFT) || (x > DISTR.BD_RIGHT) )
+	  continue; /* not inside domain */
+      }
+      else if (uu <= fx + fnx) {
+	x = -X + DISTR.mode;
+	if ( (x < DISTR.BD_LEFT) || (x > DISTR.BD_RIGHT) )
+	  continue; /* not inside domain */
+      }
 
       /* check hat */
-      xfx = x * sqrt(fx);
-      xfnx = -x * sqrt(fnx);
-      if ( (2 * GEN.um*GEN.um < fx + fnx)       /* this comparison is sensitive against round of error! */
-	   || (xfx < GEN.vl) || (xfx > GEN.vr)
-	   || (xfnx < GEN.vl) || (xfnx > GEN.vr) )
+      xfx = X * sqrt(fx);
+      xfnx = -X * sqrt(fnx);
+      if ( ((2.+4.*DBL_EPSILON) * GEN.um*GEN.um < fx + fnx)    /* avoid roundoff error with FP registers */
+	   || (xfx < (1.-DBL_EPSILON) * GEN.vl) 
+	   || (xfx > (1.+DBL_EPSILON) * GEN.vr)
+	   || (xfnx < (1.-DBL_EPSILON) * GEN.vl) 
+	   || (xfnx > (1.+DBL_EPSILON) * GEN.vr) )
 	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf(x) > hat(x)");
-
+      
       /* accept or reject */
       if (uu <= fx)
-	return (x + DISTR.mode);
+	return (X + DISTR.mode);
       
       /* try mirrored p.d.f */
-      if (uu <= fx + fnx)
-	return (-x + DISTR.mode);
+      x = -X + DISTR.mode;
+      if (uu <= fx + PDF(x))
+	return x;
     }
   }
 
@@ -721,39 +1023,43 @@ _unur_srou_sample_check( struct unur_gen *gen )
 
     while (1) {
       /* generate point uniformly on rectangle */
-      u = _unur_call_urng(gen) * GEN.um;
-      if (u==0.) continue;
-      v = GEN.vl + _unur_call_urng(gen) * (GEN.vr - GEN.vl);
-      
+      while ( (U = _unur_call_urng(gen)) == 0.);
+      U *= GEN.um;
+      V = GEN.vl + _unur_call_urng(gen) * (GEN.vr - GEN.vl);
+
       /* ratio */
-      x = v/u;
+      X = V/U;
+
+      /* compute x */
+      x = X + DISTR.mode;
+
+      /* inside domain ? */
+      if ( (x < DISTR.BD_LEFT) || (x > DISTR.BD_RIGHT) )
+	continue;
 
       /* evaluate p.d.f. */
-      fx = PDF(x + DISTR.mode);
+      fx = PDF(x);
 
       /* check hat */
       sfx = sqrt(fx);
-      xfx = x * sfx;
+      xfx = X * sfx;
       if ( ( sfx > (1.+DBL_EPSILON) * GEN.um )   /* avoid roundoff error with FP registers */
-	     || (xfx < (1.-DBL_EPSILON) * GEN.vl) 
+	   || (xfx < (1.-DBL_EPSILON) * GEN.vl) 
 	   || (xfx > (1.+DBL_EPSILON) * GEN.vr) )
 	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"pdf(x) > hat(x)");
 
       /* evaluate squeeze */
       if ( (gen->variant & SROU_VARFLAG_SQUEEZE) &&
-	   (x >= GEN.xl) && 
-	   (x <= GEN.xr ) && 
-	   (u < GEN.um) ) {
-	xx = v / (GEN.um - u);
+	   (X >= GEN.xl) && 
+	   (X <= GEN.xr ) && 
+	   (U < GEN.um) ) {
+	xx = V / (GEN.um - U);
 	if ( (xx >= GEN.xl) && (xx <= GEN.xr ) )
-	  return (x + DISTR.mode);
+	  return x;
       }
-      
-      /* compute X */
-      x += DISTR.mode;
-      
+
       /* accept or reject */
-      if (u*u <= fx)
+      if (U*U <= PDF(x))
 	return x;
     }
   }

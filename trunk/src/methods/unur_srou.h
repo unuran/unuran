@@ -59,7 +59,7 @@ int unur_srou_set_usemirror( UNUR_PAR *parameters, int usemirror );
 
 /*...........................................................................*/
 
-int unur_srou_chg_pdfparam( UNUR_GEN *generator, double *params, int n_params );
+int unur_srou_chg_pdfparams( UNUR_GEN *generator, double *params, int n_params );
 /* 
    Change array of parameters of distribution in given generator object.
    Notice that it is not possible to change the number of parameters.

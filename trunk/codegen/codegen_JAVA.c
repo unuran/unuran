@@ -1,0 +1,145 @@
+/*****************************************************************************
+ *                                                                           *
+ *          UNURAN -- Universal Non-Uniform Random number generator          *
+ *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ *   FILE:      codegen_JAVA.c                                               *
+ *                                                                           *
+ *   DESCRIPTION:                                                            *
+ *      ACG (Automatic Code Generator)                                       *
+ *      (JAVA Version)                                                       *
+ *                                                                           *
+ *****************************************************************************
+     $Id$
+ *****************************************************************************
+ *                                                                           *
+ *   Copyright (c) 2000 Wolfgang Hoermann and Josef Leydold                  *
+ *   Dept. for Statistics, University of Economics, Vienna, Austria          *
+ *                                                                           *
+ *   This program is free software; you can redistribute it and/or modify    *
+ *   it under the terms of the GNU General Public License as published by    *
+ *   the Free Software Foundation; either version 2 of the License, or       *
+ *   (at your option) any later version.                                     *
+ *                                                                           *
+ *   This program is distributed in the hope that it will be useful,         *
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of          *
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
+ *   GNU General Public License for more details.                            *
+ *                                                                           *
+ *   You should have received a copy of the GNU General Public License       *
+ *   along with this program; if not, write to the                           *
+ *   Free Software Foundation, Inc.,                                         *
+ *   59 Temple Place, Suite 330, Boston, MA 02111-1307, USA                  *
+ *                                                                           *
+ *****************************************************************************/
+
+/*---------------------------------------------------------------------------*/
+
+#include <stdarg.h>
+#include "codegen_source.h"
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_acg_JAVA( struct unur_gen *gen, FILE *out, const char *distr_name )
+     /*----------------------------------------------------------------------*/
+     /* Automatic code generator (JAVA version)                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen        ... pointer to generator object                         */
+     /*   out        ... output stream                                       */
+     /*   distr_name ... name of distribution                                */
+     /*                  (used to name routines, if NULL the UNURAN          */
+     /*                   build-in name is used.)                            */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0                                                           */
+     /*----------------------------------------------------------------------*/
+{
+  char *pdf_name, *rand_name;     /* names for function */
+  int return_code;                /* exit status of routine */
+
+  /* check arguments */
+  _unur_check_NULL("unur_acg", gen, 0 );
+
+  /* make name of PDF function and sampling routine */
+  if (distr_name == NULL) 
+    distr_name = unur_distr_get_name( &(gen->distr) );
+
+  pdf_name = _unur_malloc((5+strlen(distr_name)) * sizeof(char));
+  sprintf(pdf_name,"pdf_%s",distr_name);
+
+  rand_name = _unur_malloc((6+strlen(distr_name)) * sizeof(char));
+  sprintf(rand_name,"rand_%s",distr_name);
+
+  /* make code */
+  switch (gen->method) {
+  case UNUR_METH_TDR:
+    return_code =
+      _unur_acg_JAVA_tdr_class_IV ( gen, out ) &&
+      _unur_acg_JAVA_begin_class ( gen, out ) &&
+      _unur_acg_JAVA_PDF ( &(gen->distr), out, pdf_name ) &&
+      _unur_acg_JAVA_tdr_ps( gen, out, rand_name, pdf_name ) &&
+      _unur_acg_JAVA_end_class ( gen, out );
+    break;
+  default:
+    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"Cannot make generator code");
+    return_code = 0;
+  }
+
+  /* clear memory */
+  free(pdf_name);
+  free(rand_name);
+
+  /* make error message in source file if generation failed */
+  if (return_code == 0)
+    fprintf(out,"\n#error Sorry. Could not make generator code!!\n\n");
+
+  /* end */
+  _unur_acg_JAVA_print_sectionheader( out, 1, "End of Generator" );
+
+  return return_code;
+
+} /* end of unur_acg_JAVA() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_acg_JAVA_print_sectionheader( FILE *out, int n_lines, ... )
+     /*----------------------------------------------------------------------*/
+     /* print a section header with n_lines lines to output stream           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   out       ... output stream                                        */
+     /*   n_lines   ... number of lines                                      */
+     /*   ...       ... (optional) arguments to be be printed                */
+     /*----------------------------------------------------------------------*/
+{
+  char *string;     /* string to printed in section header   */
+  va_list ap;       /* pointer to variable list of arguments */
+  const char hrule[] = "/* ---------------------------------------------------------------- */\n";
+
+  /* start of variable parameter list */
+  va_start(ap, n_lines);
+
+  /* write into output stream */
+  fprintf (out, "\n");
+  fprintf (out, hrule);
+  for (; n_lines>0; n_lines--) {
+    string = va_arg( ap, char* );
+    fprintf(out,"/* %-64.64s */\n",string);
+  }
+  fprintf (out, hrule);
+  fprintf (out,"\n");
+        
+  /* end of variable parameter list */
+  va_end(ap);
+
+} /* end of _unur_acg_JAVA_print_sectionheader() */
+
+/*---------------------------------------------------------------------------*/

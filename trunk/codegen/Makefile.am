@@ -15,9 +15,13 @@ include_HEADERS = \
 
 libunuracg_a_SOURCES = \
  PDFgen.c \
- codegen.c \
+ codegen_C.c \
+ codegen_FORTRAN.c \
+ codegen_JAVA.c \
  codegen_source.h \
- tdr_codegen.c
+ tdr_codegen_C.c \
+ tdr_codegen_FORTRAN.c \
+ tdr_codegen_JAVA.c
  
 noinst_PROGRAMS = \
  make_test_PDFgen \

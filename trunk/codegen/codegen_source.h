@@ -44,7 +44,6 @@
 int _unur_acg_C_PDF (UNUR_DISTR *distr, FILE *out, const char *pdf);
 int _unur_acg_FORTRAN_PDF (UNUR_DISTR *distr, FILE *out, const char *pdf);
 int _unur_acg_JAVA_PDF (UNUR_DISTR *distr, FILE *out, const char *pdf);
-
 /*---------------------------------------------------------------------------*/
 /* Code generator for PDFs of UNURAN build-in standard distributions.        */
 /*---------------------------------------------------------------------------*/
@@ -55,14 +54,12 @@ int _unur_acg_FORTRAN_tdr_ps( struct unur_gen *gen, FILE *out,
 			      const char *rand_name, const char *pdf_name );
 int _unur_acg_JAVA_tdr_ps( struct unur_gen *gen, FILE *out, 
 			const char *rand_name, const char *pdf_name );
-
 /*---------------------------------------------------------------------------*/
 /* Code generator for method TDR variant PS (proportional squeeze).          */
 /*---------------------------------------------------------------------------*/
 
 int _unur_acg_C_demo_urng( FILE *out );
 int _unur_acg_FORTRAN_demo_urng( FILE *out );
-int _unur_acg_JAVA_demo_urng( FILE *out );
 /*---------------------------------------------------------------------------*/
 /* Uniform random number generator (for demo mode only).                     */
 /*---------------------------------------------------------------------------*/
@@ -79,16 +76,13 @@ void _unur_acg_FORTRAN_print_double( FILE *out, double x );
 /* Print a double number in FORTRAN format.                                  */
 /*---------------------------------------------------------------------------*/
 
-int _unur_acg_JAVA_begin_class( struct unur_gen *gen, FILE *out, 
-			const char *rand_name, const char *pdf_name );
-int _unur_acg_JAVA_end_class( struct unur_gen *gen, FILE *out, 
-			const char *rand_name, const char *pdf_name );
+int _unur_acg_JAVA_begin_class( struct unur_gen *gen, FILE *out ); 
+int _unur_acg_JAVA_end_class( struct unur_gen *gen, FILE *out );
 /*---------------------------------------------------------------------------*/
 /* JAVA: begin and end of class containing PDF and tdr                       */
 /*---------------------------------------------------------------------------*/
 
-int _unur_acg_JAVA_tdr_class_IV( struct unur_gen *gen, FILE *out, 
-			const char *rand_name, const char *pdf_name );
+int _unur_acg_JAVA_tdr_class_IV( struct unur_gen *gen, FILE *out );
 /*---------------------------------------------------------------------------*/
 /* JAVA: definition of class IV                                              */
 /*---------------------------------------------------------------------------*/

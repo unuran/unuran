@@ -1018,7 +1018,7 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
    x2 =  GEN.s[1];      /* right boudary of interval*/
   }   /* end of if(GEN.table_on = ...)  */
 
-  if (x1-x2 >  -DBL_EPSILON) { 
+  if (x1-x2 >= 0) { 
     xtmp=x1;
     x1 = x2;
     x2 = xtmp + DBL_EPSILON; 

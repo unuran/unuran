@@ -38,8 +38,12 @@
 
 /*---------------------------------------------------------------------------*/
 /* init routines for special generators                                      */
+
+#ifdef HAVE_UNUR_SF_LN_FACTORIAL
 inline static int binomial_bruec_init( struct unur_gen *gen );
-int _unur_stdgen_sample_binomial_bruec( struct unur_gen *gen );
+static int _unur_stdgen_sample_binomial_bruec( struct unur_gen *gen );
+#endif
+
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
@@ -90,7 +94,7 @@ _unur_stdgen_binomial_init( struct unur_par *par, struct unur_gen *gen )
   switch ((par) ? par->variant : gen->variant) {
 
   case 0:  /* DEFAULT */
-  case 1:  /** BRUEC  method */
+  case 1:  /* BRUEC  method */
 #ifdef HAVE_UNUR_SF_LN_FACTORIAL
      if (gen==NULL) return 1; /* test existence only  */
      _unur_dstd_set_sampling_routine( par,gen,_unur_stdgen_sample_binomial_bruec );
@@ -115,6 +119,7 @@ _unur_stdgen_binomial_init( struct unur_par *par, struct unur_gen *gen )
 /**                                                                         **/
 /*****************************************************************************/
 
+#ifdef HAVE_UNUR_SF_LN_FACTORIAL
 
 #define flogfak(k) _unur_sf_ln_factorial(k)
 
@@ -320,9 +325,10 @@ _unur_stdgen_sample_binomial_bruec( struct unur_gen *gen )
 
 
 #undef ln2 
+
 /*---------------------------------------------------------------------------*/
-
-
+#endif  /*  HAVE_UNUR_SF_LN_FACTORIAL */
+/*---------------------------------------------------------------------------*/
 
 
 

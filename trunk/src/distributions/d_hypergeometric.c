@@ -74,8 +74,10 @@ static const char distr_name[] = "hypergeometric";
 /* do we have the PMF of the distribution ? */
 #ifdef HAVE_UNUR_SF_LN_FACTORIAL
 #  define HAVE_PMF
+#  define HAVE_SUM
 #else
 #  undef  HAVE_PMF
+#  undef  HAVE_SUM
 #endif
 
 /** In Cephes there is no CDF for the hypergeometric distribution**/
@@ -91,7 +93,9 @@ static double _unur_cdf_hypergeometric(int k, UNUR_DISTR *distr);
 #endif
 
 static int _unur_upd_mode_hypergeometric( UNUR_DISTR *distr );
+#ifdef HAVE_SUM
 static int _unur_upd_sum_hypergeometric( UNUR_DISTR *distr );
+#endif
 
 /*---------------------------------------------------------------------------*/
 
@@ -156,6 +160,8 @@ _unur_upd_mode_hypergeometric( UNUR_DISTR *distr )
 
 /*---------------------------------------------------------------------------*/
 
+#ifdef HAVE_SUM
+
 int
 _unur_upd_sum_hypergeometric( UNUR_DISTR *distr )
 {
@@ -180,6 +186,8 @@ _unur_upd_sum_hypergeometric( UNUR_DISTR *distr )
 #endif
 
 } /* end of _unur_upd_sum_hypergeometric() */
+
+#endif
 
 /*---------------------------------------------------------------------------*/
 
@@ -221,15 +229,17 @@ unur_distr_hypergeometric( double *params, int n_params )
   nh = (int)(N+0.5);
   if(fabs(nh-N)>0.001)
     _unur_warning(distr_name,UNUR_ERR_DISTR_DOMAIN,"N was rounded to the closets integer value!!,");
-  DISTR.N = nh; 
+  DISTR.N = N = nh; 
+
   nh = (int)(M+0.5);
   if(fabs(nh-M)>0.001)
     _unur_warning(distr_name,UNUR_ERR_DISTR_DOMAIN,"M was rounded to the closets integer value!!,");
-  DISTR.M = nh; 
+  DISTR.M = M = nh; 
+
   nh = (int)(n+0.5);
   if(fabs(nh-n)>0.001)
     _unur_warning(distr_name,UNUR_ERR_DISTR_DOMAIN,"n was rounded to the closets integer value!!,");
-  DISTR.n = nh; 
+  DISTR.n = n = nh; 
 
   /* check parameters */
   if (DISTR.M <= 0. || DISTR.N <=0. || DISTR.n <= 0. || DISTR.n >= DISTR.N || DISTR.M >= DISTR.N ) {
@@ -240,7 +250,7 @@ unur_distr_hypergeometric( double *params, int n_params )
   /* number of arguments */
   DISTR.n_params = n_params;
 
-  /* domain: [0, infinity] */
+  /* domain */
   DISTR.domain[0] = max(0,n-N+M);       /* left boundary  */
   DISTR.domain[1] = min(n,M);           /* right boundary */
 
@@ -252,9 +262,14 @@ unur_distr_hypergeometric( double *params, int n_params )
       veraendern darf??
   **/
 
-  /* log of normalization constant: none */
+  /* log of normalization constant */
+#ifdef HAVE_SUM
   LOGNORMCONSTANT = _unur_sf_ln_factorial(M) + _unur_sf_ln_factorial(N-M) + _unur_sf_ln_factorial(n) +
     _unur_sf_ln_factorial(N-n) - _unur_sf_ln_factorial(N);
+#else
+  LOGNORMCONSTANT = 0.;
+#endif
+  /* log of normalization constant: none */
 
   /* mode and sum over PMF */
   _unur_upd_mode_hypergeometric(distr);
@@ -262,12 +277,16 @@ unur_distr_hypergeometric( double *params, int n_params )
 
   /* function for updating derived parameters */
   DISTR.upd_mode = _unur_upd_mode_hypergeometric; /* funct for computing mode */
+#ifdef HAVE_SUM
   DISTR.upd_sum  = _unur_upd_sum_hypergeometric;  /* funct for computing area */
+#endif
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |
 		 UNUR_DISTR_SET_STDDOMAIN |
+#ifdef HAVE_SUM
 		 UNUR_DISTR_SET_PMFSUM |
+#endif
 		 UNUR_DISTR_SET_MODE );
                 
   /* return pointer to object */

@@ -59,8 +59,10 @@
 /*---------------------------------------------------------------------------*/
 /* init routines for special generators                                      */
 
+#ifdef HAVE_UNUR_SF_LN_FACTORIAL
 inline static int hypergeometric_hruec_init( struct unur_gen *gen );
 int _unur_stdgen_sample_hypergeometric_hruec( struct unur_gen *gen );
+#endif
 
 /*---------------------------------------------------------------------------*/
 
@@ -114,6 +116,8 @@ _unur_stdgen_hypergeometric_init( struct unur_par *par, struct unur_gen *gen )
 /**  Special generators                                                     **/
 /**                                                                         **/
 /*****************************************************************************/
+
+#ifdef HAVE_UNUR_SF_LN_FACTORIAL
 
 #define flogfak(k) _unur_sf_ln_factorial(k)
 /*---------------------------------------------------------------------------*/
@@ -358,6 +362,7 @@ int h_util(int N,int M,int n,int k)
 
 
 /*---------------------------------------------------------------------------*/
+#endif   /*  HAVE_UNUR_SF_LN_FACTORIAL  */
 /*---------------------------------------------------------------------------*/
 
 

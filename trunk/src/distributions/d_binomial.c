@@ -72,8 +72,10 @@ static const char distr_name[] = "binomial";
 /* do we have the PMF of the distribution ? */
 #ifdef HAVE_UNUR_SF_LN_FACTORIAL
 #  define HAVE_PMF
+#  define HAVE_SUM
 #else
 #  undef  HAVE_PMF
+#  undef  HAVE_SUM
 #endif
 
 /** TODO: haben wir eine CDF (kannst du da in cephes nachschauen **/
@@ -82,6 +84,7 @@ static const char distr_name[] = "binomial";
 #else
 #  undef HAVE_CDF
 #endif
+
 /*---------------------------------------------------------------------------*/
 /* function prototypes                                                       */
 #ifdef HAVE_PMF
@@ -92,7 +95,9 @@ static double _unur_cdf_binomial(int k, UNUR_DISTR *distr);
 #endif
 
 static int _unur_upd_mode_binomial( UNUR_DISTR *distr );
+#ifdef HAVE_SUM
 static int _unur_upd_sum_binomial( UNUR_DISTR *distr );
+#endif
 
 /*---------------------------------------------------------------------------*/
 
@@ -152,6 +157,8 @@ _unur_upd_mode_binomial( UNUR_DISTR *distr )
 
 /*---------------------------------------------------------------------------*/
 
+#ifdef HAVE_SUM
+
 int
 _unur_upd_sum_binomial( UNUR_DISTR *distr )
 {
@@ -174,6 +181,8 @@ _unur_upd_sum_binomial( UNUR_DISTR *distr )
 #endif
 
 } /* end of _unur_upd_sum_binomial() */
+
+#endif
 
 /*---------------------------------------------------------------------------*/
 
@@ -227,12 +236,24 @@ unur_distr_binomial( double *params, int n_params )
   /* number of arguments */
   DISTR.n_params = n_params;
 
-  /* domain: [0, infinity] */
+  /* domain: [0, n] */
   DISTR.domain[0] = 0;           /* left boundary  */
-  DISTR.domain[1] = n;          /* right boundary */
+  DISTR.domain[1] = n;           /* right boundary */
 
-  /* log of normalization constant: none */
-  LOGNORMCONSTANT = _unur_sf_ln_factorial(n);
+  /** TODO: wie soll man das mit dem domain machen, wenn die parameter
+      der verteilung geaendert werden?? 
+      (das ist die erste verteilung wo das problem auftritt.
+      einfach auf [0,INT_MAX] setzen?
+      oder den benutzer sagen, dass er bei dieser verteilung den domain nicht 
+      veraendern darf??
+  **/
+
+  /* log of normalization constant */
+#ifdef HAVE_SUM
+  LOGNORMCONSTANT = _unur_sf_ln_factorial(DISTR.n);
+#else
+  LOGNORMCONSTANT = 0.;
+#endif
 
   /* mode and sum over PMF */
   DISTR.mode = (int) ((DISTR.n + 1) * DISTR.p);
@@ -240,12 +261,16 @@ unur_distr_binomial( double *params, int n_params )
 
   /* function for updating derived parameters */
   DISTR.upd_mode = _unur_upd_mode_binomial; /* funct for computing mode */
+#ifdef HAVE_SUM
   DISTR.upd_sum  = _unur_upd_sum_binomial;  /* funct for computing area */
+#endif
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |
 		 UNUR_DISTR_SET_STDDOMAIN |
+#ifdef HAVE_SUM
 		 UNUR_DISTR_SET_PMFSUM |
+#endif
 		 UNUR_DISTR_SET_MODE );
                 
   /* return pointer to object */

@@ -366,6 +366,24 @@ int print_pval( FILE *LOG, UNUR_GEN *gen, double pval, int trial, char todo )
   int failed = 0;
   int l;
 
+  if (pval < 0.) {
+    /* was not able to run test (CDF missing) */
+
+    fprintf(LOG,"   not performed (missing data)\t");
+    /* print distribution name */
+    print_distr_name( LOG,unur_get_distr(gen), unur_get_genid(gen) );
+    fprintf(LOG,"\n");
+
+    printf("X");
+
+    fflush(stdout);
+    fflush(LOG);
+
+    /* test does not count as failed */
+    return 0; 
+    
+  }
+
   fprintf(LOG,"   pval = %8.6f   ",pval);
 
   l = -(int) ((pval > 1e-6) ? (log(pval) / M_LN10) : 6.);
@@ -386,7 +404,7 @@ int print_pval( FILE *LOG, UNUR_GEN *gen, double pval, int trial, char todo )
   default:
     fprintf(LOG,"######"); break;
   }
-
+  
   switch (todo) {
   case '+':
     if (pval < PVAL_LIMIT) {

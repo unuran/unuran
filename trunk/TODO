@@ -1,3 +1,31 @@
+
+Lieber Josef!
+
+Ich bin ja derzeit ein UNURAB Benutzer.
+
+Folgende Dinge sind mir unangenehm aufgefallen Vielleicht koennte man
+daraus TODOs machen?
+
+1. TDR: Ich mach correlation induction und brauche daher sehr grosse
+sqhratio. zB 0.999999.
+Wenn ich auch die maximale Anzahl der Punkte nicht zu gross haben
+moechte (zB 800) bekomme ich manchmal bei der Normalverteilung die
+warning:
+DARS aborted, ratio too small.
+Und dann funktioniert die correlation induction ueberhaupt nicht.
+(Ich schliesse daraus, dass er dann irgendwie auf ARS zurueckfaellt und
+dabei die synchronisierung zerstoert wird????
+
+2. UTDR (oder distribution objects): Ich vermisse (fuer die
+hypergeometric Verteilung) eine Moeglichkeit, die unegfaehre A_f (oder
+einen bound fuer A_f) einzugeben. Natuerlich kann ich die ungefaehre A_f
+einfache als exakte eingeben, aber das kann doch leicht zu
+missverstaendnissen fuehren.
+
+
+
+
+
 ******* Problems and smaller addings for existing library ***************
 
 -----------------------------------------------------------------------------

@@ -29,6 +29,8 @@ int main()
   UNUR_GEN *gen;
   int i;
 
+  double unur_urng_mstd(void);
+
   double fpm[] = {1,5};
 
   unur_set_default_debug(~0u);
@@ -37,6 +39,9 @@ int main()
   distr = unur_distr_normal(NULL,0);
 
   par = unur_tdr_new(distr);
+
+/*    unur_set_urng(par,unur_urng_mstd); */
+
 /*    gen = unur_init(par); */
 /*    unur_srou_chg_domain(gen,0.9,0.95); */
 /*    unur_srou_upd_pdfarea(gen); */

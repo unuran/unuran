@@ -457,6 +457,8 @@ UNUR_DISTR *unur_distr_multinormal(int dim, const double *mean, const double *co
    covariance matrix, where the rows of the matrix are stored
    consecutively in this array. The NULL pointer can be used
    instead the identity matrix.
+   If @var{covar} is not a valid covariance matrix (i.e., not positive
+   definite) then no distribution object is created and NULL is returned.
 
    For standard form of the distribution use the null vector for @var{mean} and 
    the identity matrix for @var{covar}.

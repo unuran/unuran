@@ -71,8 +71,9 @@
       @code{unur_distr_correlation} call
       (@pxref{correlation,,Random Correlation Matrix}).
       Notice that due to round-off errors,
-      there is an (extremely small) chance that the resulting matrix is
-      not positive definite for a Cholesky decomposition algorithm.
+      there is a (small) chance that the resulting matrix is
+      not positive definite for a Cholesky decomposition algorithm,
+      especially when the dimension of the distribution is high.
 
    =END
 */

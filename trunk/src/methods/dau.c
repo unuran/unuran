@@ -503,7 +503,7 @@ _unur_dau_debug_init( struct unur_par *par, struct unur_gen *gen )
 {
   FILE *log;
 
-  log = unur_get_log();
+  log = unur_get_stream();
 
   fprintf(log,"%s:\n",gen->genid);
   fprintf(log,"%s: type    = discrete univariate random variate\n",gen->genid);
@@ -545,7 +545,7 @@ _unur_dau_debug_table( struct unur_gen *gen )
    
   int i, j, m;
   
-  log = unur_get_log();
+  log = unur_get_stream();
   
   /* print head of table */
   fprintf(log,"%s: alias table:\n", gen->genid); 

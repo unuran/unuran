@@ -552,7 +552,7 @@ _unur_cstd_debug_init( struct unur_par *par, struct unur_gen *gen, int succeeded
   int i;
   char *distr_name;
 
-  log = unur_get_log();
+  log = unur_get_stream();
 
   fprintf(log,"%s:\n",gen->genid);
   fprintf(log,"%s: type    = continuous univariate random variates\n",gen->genid);

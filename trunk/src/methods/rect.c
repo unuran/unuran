@@ -297,7 +297,7 @@ _unur_rect_debug_init( struct unur_par *par, struct unur_gen *gen )
 {
   FILE *log;
   
-  log = unur_get_log();
+  log = unur_get_stream();
 
   fprintf(log,"%s:\n",gen->genid);
   fprintf(log,"%s: type    = continuous multivariate random variates\n",gen->genid);

@@ -9,6 +9,7 @@ noinst_LIBRARIES = libutils.a
 
 libutils_a_SOURCES = \
  error.c \
+ stream.c \
  umalloc.c \
  urng.c \
  utils.c

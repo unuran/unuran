@@ -47,102 +47,7 @@
 
 /*---------------------------------------------------------------------------*/
 
-static FILE *_unur_logfile_open( const char *filename );  
-
-/*---------------------------------------------------------------------------*/
-
-static FILE *unur_stream = NULL;
-
-/*---------------------------------------------------------------------------*/
-
-FILE* 
-unur_set_log( FILE *new_stream )
-     /*----------------------------------------------------------------------*/
-     /* (re)set output stream for (error) messages                           */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   new_stream ... pointer to new output stream                        */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   pointer to old stream                                              */
-     /*----------------------------------------------------------------------*/
-{
-  FILE * previous_stream;
-  
-  if (unur_stream == NULL) {
-    unur_stream = _unur_logfile_open(UNUR_LOG_FILE);
-  }
-  
-  previous_stream = unur_stream;
-  unur_stream = new_stream;
-  
-  return previous_stream;
-} /* end of unur_set_log() */
-
-/*---------------------------------------------------------------------------*/
-
-FILE* 
-unur_get_log( void )
-     /*----------------------------------------------------------------------*/
-     /* get output stream for (error) messages                               */
-     /*                                                                      */
-     /* parameters: none                                                     */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   pointer to output stream                                           */
-     /*----------------------------------------------------------------------*/
-{
-  if (unur_stream == NULL) {
-    unur_stream = _unur_logfile_open(UNUR_LOG_FILE);
-  }
-
-  return unur_stream;
-} /* end of unur_get_log() */
-
-/*---------------------------------------------------------------------------*/
-
-static FILE*
-_unur_logfile_open( const char *logfilename )
-     /*----------------------------------------------------------------------*/
-     /* open log file                                                        */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   logfilename ... name of log file                                   */
-     /*----------------------------------------------------------------------*/
-{
-  static FILE* LOG = NULL;
-  time_t started;   
-
-  if (LOG) return LOG;  /* log file already open */
-
-  /* open log file */
-  if (strcmp("stdout",logfilename))
-    LOG = fopen(logfilename,"w");
-  else /* use stdout instead of a log file */
-    LOG = stdout;
-
-#if UNUR_DEBUG & UNUR_DB_STDERR
-  if (!LOG) fprintf(stderr,"warning: cannot open logfile %s\n",logfilename);
-  fflush(stderr);   /* in case of a segmentation fault */
-#endif
-
-  /* write header into log file */
-  fprintf(LOG,"\nUNURAN Universal Non-Uniform RANdom number generator\n\n");
-
-  /* time when created */
-  if (time( &started ) != -1)
-    fprintf(LOG,"%s",ctime(&started));
-
-  fprintf(LOG,"\n====================================================\n\n");
-
-  /* return file handler */
-  return LOG;
-
-} /* end of _unur_open_logfile() */
-
-/*---------------------------------------------------------------------------*/
-
-char* 
+char * 
 _unur_make_genid( const char *gentype )
      /*----------------------------------------------------------------------*/
      /* make a new generator identifier                                      */
@@ -167,12 +72,6 @@ _unur_make_genid( const char *gentype )
   return genid;
 
 } /* end of _unur_make_genid() */
-
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-
-static char GENID_UNKNOWN[] = "UNURAN";
 
 /*---------------------------------------------------------------------------*/
 
@@ -251,102 +150,6 @@ unur_get_strerror ( const int unur_errno )
   }
 
 } /* end if unur_get_strerror() */
-
-/*---------------------------------------------------------------------------*/
-
-void 
-_unur_db_error( const char *genid, int errortype, char *filename, int line, const char *msg, ...)
-     /*----------------------------------------------------------------------*/
-     /* write error message                                                  */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   genid     ... identifier of generator object (NULL if not known)   */
-     /*   errortype ... type of error                                        */
-     /*   filename  ... name of source file (provided by __FILE__)           */
-     /*   line      ... line number in source file (provided by __LINE__)    */
-     /*   msg       ... additional error message                             */
-     /*   ...       ... optional arguments                                   */
-     /*----------------------------------------------------------------------*/
-{
-  va_list ap;
-  const char *errormsg;
-
-  /* generator identifier known ? */
-  if (!genid) genid = GENID_UNKNOWN;
-
-  /* optional argmuents */
-  va_start(ap, msg);
-
-  /* get main warning message */
-  errormsg = unur_get_strerror( errortype );
-
-#if UNUR_DEBUG & UNUR_DB_STDERR   /* write warnings and errors on stderr */
-  fprintf(stderr,"%s: error in %s, line %d: %s ",genid,filename,line,errormsg);
-  vfprintf(stderr,msg,ap);
-  fprintf(stderr,"\n");
-  fflush(stderr);   /* in case of a segmentation fault */
-#endif
-
-#if UNUR_DEBUG & UNUR_DB_LOG      /* write warnings and errors into log file */
-  if (!unur_stream) _unur_logfile_open(UNUR_LOG_FILE);
-  fprintf(unur_stream,"%s: error in %s, line %d: %s ",genid,filename,line,errormsg);
-  vfprintf(unur_stream,msg,ap);
-  fprintf(unur_stream,"\n");
-  fflush(unur_stream);   /* in case of a segmentation fault */
-#endif
-
-  /* terminate list of optional parameters */
-  va_end(ap);
-
-} /* end of _unur_db_error() */
-
-/*---------------------------------------------------------------------------*/
-
-void 
-_unur_db_warning( const char *genid, int errortype, char *filename, int line, const char *msg, ...)
-     /*----------------------------------------------------------------------*/
-     /* write warning                                                        */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   genid     ... identifier of generator object (NULL if not known)   */
-     /*   errortype ... type of error                                        */
-     /*   filename  ... name of source file (provided by __FILE__)           */
-     /*   line      ... line number in source file (provided by __LINE__)    */
-     /*   msg       ... format and additional message                        */
-     /*   ...       ... optional arguments                                   */
-     /*----------------------------------------------------------------------*/
-{
-  va_list ap;
-  const char *errormsg;
-
-  /* generator identifier known ? */
-  if (!genid) genid = GENID_UNKNOWN;
-
-  /* optional argmuents */
-  va_start(ap, msg);
-
-  /* get main warning message */
-  errormsg = unur_get_strerror( errortype );
-
-#if UNUR_DEBUG & UNUR_DB_STDERR   /* write warnings and errors on stderr */
-  fprintf(stderr,"%s: warning in %s, line %d: %s ",genid,filename,line,errormsg);
-  vfprintf(stderr,msg,ap);
-  fprintf(stderr,"\n");
-  fflush(stderr);   /* in case of a segmentation fault */
-#endif
-
-#if UNUR_DEBUG & UNUR_DB_LOG      /* write warnings and errors into log file */
-  if (!unur_stream) _unur_logfile_open(UNUR_LOG_FILE);
-  fprintf(unur_stream,"%s: warning in %s, line %d: %s ",genid,filename,line,errormsg);
-  vfprintf(unur_stream,msg,ap);
-  fprintf(unur_stream,"\n");
-  fflush(unur_stream);   /* in case of a segmentation fault */
-#endif
-
-  /* terminate list of optional parameters */
-  va_end(ap);
-
-} /* end of _unur_db_warning() */
 
 /*---------------------------------------------------------------------------*/
 

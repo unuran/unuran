@@ -1847,7 +1847,7 @@ static void
   CHECK_NULL(par,/*void*/);
   COOKIE_CHECK(par,CK_TDR_PAR,/*void*/);
 
-  log = unur_get_log();
+  log = unur_get_stream();
 
   fprintf(log,"%s:\n",gen->genid);
   fprintf(log,"%s: type    = continuous univariate random variates\n",gen->genid);
@@ -1941,7 +1941,7 @@ static void
   CHECK_NULL(gen,/*void*/);
   COOKIE_CHECK(gen,CK_TDR_GEN,/*void*/);
 
-  log = unur_get_log();
+  log = unur_get_stream();
 
   fprintf(log,"%s:\n",gen->genid);
   fprintf(log,"%s: GENERATOR destroyed **********************\n",gen->genid);
@@ -1973,7 +1973,7 @@ static void
   CHECK_NULL(gen,/*void*/);
   COOKIE_CHECK(gen,CK_TDR_GEN,/*void*/);
 
-  log = unur_get_log();
+  log = unur_get_stream();
 
   fprintf(log,"%s:Intervals: %d\n",gen->genid,GEN.n_ivs);
   if (gen->debug & TDR_DB_IV) {
@@ -2056,7 +2056,7 @@ static void
   COOKIE_CHECK(iv,CK_TDR_IV,/*void*/);
   COOKIE_CHECK(pt,CK_TDR_IV,/*void*/);
 
-  log = unur_get_log();
+  log = unur_get_stream();
 
   fprintf(log,"%s:\n",gen->genid);
   if (iv == pt)
@@ -2105,7 +2105,7 @@ static void
 {
   FILE *log;
 
-  log = unur_get_log();
+  log = unur_get_stream();
 
   fprintf(log,"%s: split interval at x = %g \t\tf(x) = %g\n",gen->genid,x,fx);
   fprintf(log,"%s: old interval:\n",gen->genid);
@@ -2137,7 +2137,7 @@ static void
 {
   FILE *log;
 
-  log = unur_get_log();
+  log = unur_get_stream();
 
   fprintf(log,"%s: inserted point:\n",gen->genid);
   fprintf(log,"%s: x = %g, f(x) = %g, Tf(x)=%g, dTf(x) = %g, squeeze = %g:\n",

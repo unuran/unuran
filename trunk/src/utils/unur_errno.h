@@ -50,13 +50,11 @@
 /*---------------------------------------------------------------------------*/
 /* Function prototypes                                                       */
 
-void _unur_db_error( const char *genid, int errortype, char *filename, int line, const char *msg, ... );
-void _unur_db_warning( const char *genid, int errortype, char *filename, int line, const char *msg, ... );
+FILE *unur_set_stream( FILE *new_stream );
+FILE *unur_get_stream( void );
 
-FILE* unur_set_log( FILE *new_stream );
-FILE* unur_get_log( void );
-
-char* _unur_make_genid( const char *gentype );
+void _unur_stream_printf( const char *genid, char *filename, int line, const char *format, ... );
+char *_unur_make_genid( const char *gentype );
 
 
 /*---------------------------------------------------------------------------*/
@@ -109,8 +107,17 @@ enum {
 const char *unur_get_strerror ( const int unur_errno );
 /* return string that describes error                                        */
 
-#define _unur_error(genid,errortype,str)    _unur_db_error((genid),(errortype),__FILE__,__LINE__,(str))
-#define _unur_warning(genid,errortype,str)  _unur_db_warning((genid),(errortype),__FILE__,__LINE__,(str))
+#define _unur_error(genid,errortype,str) \
+   do { \
+      _unur_stream_printf((genid),__FILE__,__LINE__,"error: %s", \
+                          unur_get_strerror( (errortype) ) ); \
+   } while (0)
+
+#define _unur_warning(genid,errortype,str) \
+   do { \
+      _unur_stream_printf((genid),__FILE__,__LINE__,"warning: %s", \
+                          unur_get_strerror( (errortype) ) ); \
+   } while (0)
 
 /*---------------------------------------------------------------------------*/
 /* an identifier for the generator object                                    */
@@ -144,8 +151,8 @@ const char *unur_get_strerror ( const int unur_errno );
 #else    /* no debugging */
 /*---------------------------------------------------------------------------*/
 
-#define _unur_error(genid,errortype,str) 
-#define _unur_warning(genid,errortype,str)
+#define _unur_error(genid,errortype,str)      do { } while(0)
+#define _unur_warning(genid,errortype,str)    do { } while(0)
 
 #define _unur_set_genid(gen,gentype)
 #define _unur_copy_genid(par,gen)

@@ -55,16 +55,22 @@
 /*---------------------------------------------------------------------------*/
 
 #define _unur_warning_notrequired(par,param) \
-   _unur_db_warning((par)->genid,UNUR_ERR_SET_NOTREQU,__FILE__,__LINE__,\
-                    " - %s",param)
+   do { \
+      _unur_stream_printf((par)->genid,__FILE__,__LINE__,"warning: %s - %s", \
+                          unur_get_strerror(UNUR_ERR_SET_NOTREQU),(param) ); \
+   } while (0)
 
 #define _unur_warning_invalid(par,param) \
-   _unur_db_warning((par)->genid,UNUR_ERR_SET_INVALID,__FILE__,__LINE__,\
-                    " - %s",param)
+   do { \
+      _unur_stream_printf((par)->genid,__FILE__,__LINE__,"warning: %s - %s", \
+                          unur_get_strerror(UNUR_ERR_SET_INVALID),(param) ); \
+   } while (0)
 
 #define _unur_warning_set(par,param) \
-   _unur_db_warning((par)->genid,UNUR_ERR_SET,__FILE__,__LINE__,\
-                    "%s",param)
+   do { \
+      _unur_stream_printf((par)->genid,__FILE__,__LINE__,"warning: %s %s", \
+                          unur_get_strerror(UNUR_ERR_SET),(param) ); \
+   } while (0)
 
 /*---------------------------------------------------------------------------*/
 

@@ -1337,7 +1337,7 @@ _unur_tabl_debug_init( struct unur_par *par, struct unur_gen *gen )
   FILE *log;
   int i;
 
-  log = unur_get_log();
+  log = unur_get_stream();
 
   empty_line();
   fprintf(log,"%s: type    = continuous univariate random variates\n",gen->genid);
@@ -1449,7 +1449,7 @@ _unur_tabl_debug_free( struct unur_gen *gen )
   CHECK_NULL(gen,/*void*/);
   COOKIE_CHECK(gen,CK_TABL_GEN,/*void*/);
 
-  log = unur_get_log();
+  log = unur_get_stream();
 
   empty_line();
   fprintf(log,"%s: GENERATOR destroyed **********************\n",gen->genid);
@@ -1481,7 +1481,7 @@ _unur_tabl_debug_intervals( struct unur_gen *gen, int print_areas )
   CHECK_NULL(gen,/*void*/);
   COOKIE_CHECK(gen,CK_TABL_GEN,/*void*/);
 
-  log = unur_get_log();
+  log = unur_get_stream();
 
   fprintf(log,"%s: intervals = %d\n",gen->genid,GEN.n_ivs);
   if (gen->debug & TABL_DB_IV) {

@@ -87,8 +87,10 @@
 
 #define COOKIE_CHECK(ptr,ck,rval)                                               \
   if((ptr)->cookie!=(ck)) {                                                     \
-    _unur_db_warning(NULL,UNUR_ERR_COOKIE,__FILE__,__LINE__,                    \
-       " (observed = %#lx, expected = %#lx)", (ptr)->cookie, (ck));             \
+    _unur_stream_printf(NULL,__FILE__,__LINE__,                                 \
+			"warning: %s (observed = %#lx, expected = %#lx)",       \
+                        unur_get_strerror(UNUR_ERR_COOKIE),                     \
+                        (ptr)->cookie, (ck));                                   \
     return rval;                                                                \
   }
 

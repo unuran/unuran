@@ -1511,7 +1511,7 @@ _unur_arou_debug_init( struct unur_par *par, struct unur_gen *gen )
   CHECK_NULL(par,/*void*/);
   COOKIE_CHECK(par,CK_AROU_PAR,/*void*/);
 
-  log = unur_get_log();
+  log = unur_get_stream();
 
   fprintf(log,"%s:\n",gen->genid);
   fprintf(log,"%s: type    = continuous univariate random variates\n",gen->genid);
@@ -1588,7 +1588,7 @@ _unur_arou_debug_free( struct unur_gen *gen )
   CHECK_NULL(gen,/*void*/);
   COOKIE_CHECK(gen,CK_AROU_GEN,/*void*/);
 
-  log = unur_get_log();
+  log = unur_get_stream();
 
   fprintf(log,"%s:\n",gen->genid);
   fprintf(log,"%s: GENERATOR destroyed **********************\n",gen->genid);
@@ -1620,7 +1620,7 @@ _unur_arou_debug_segments( struct unur_gen *gen )
   CHECK_NULL(gen,/*void*/);
   COOKIE_CHECK(gen,CK_AROU_GEN,/*void*/);
 
-  log = unur_get_log();
+  log = unur_get_stream();
 
   fprintf(log,"%s:Segments: %d\n",gen->genid,GEN.n_segs);
   if (gen->debug & AROU_DB_SEG) {
@@ -1699,7 +1699,7 @@ _unur_arou_debug_split_start( struct unur_gen *gen,
   FILE *log;
   char ratio[14];
 
-  log = unur_get_log();
+  log = unur_get_stream();
 
   fprintf(log,"%s: split segment at x = %g \t\tf(x) = %g\n",gen->genid,x,fx);
   fprintf(log,"%s: old segment:\n",gen->genid);
@@ -1745,7 +1745,7 @@ _unur_arou_debug_split_stop( struct unur_gen *gen,
   FILE *log;
   char ratio[14];
 
-  log = unur_get_log();
+  log = unur_get_stream();
 
   fprintf(log,"%s: new segments:\n",gen->genid);
 

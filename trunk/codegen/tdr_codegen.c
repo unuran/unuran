@@ -132,13 +132,13 @@ _unur_tdr_ps_codegen( struct unur_gen *gen, FILE *out, const char *distr_name )
   
   for (iv=GEN.iv; iv->next!=NULL; iv=iv->next) {
     fprintf(out,(iv==GEN.iv)?"\t\t{":",\n\t\t{");
-    fprintf(out," %.20g",iv->x);
-    fprintf(out,", %.20g",iv->fx);
-    fprintf(out,", %.20g",iv->Tfx);
-    fprintf(out,", %.20g",iv->dTfx);
-    fprintf(out,", %.20g",iv->sq);
-    fprintf(out,", %.20g",iv->Acum);
-    fprintf(out,", %.20g",iv->Ahatr);
+    fprintf(out," %.20e",iv->x);
+    fprintf(out,", %.20e",iv->fx);
+    fprintf(out,", %.20e",iv->Tfx);
+    fprintf(out,", %.20e",iv->dTfx);
+    fprintf(out,", %.20e",iv->sq);
+    fprintf(out,", %.20e",iv->Acum);
+    fprintf(out,", %.20e",iv->Ahatr);
     fprintf(out," }");
   }
   fprintf(out," };\n");

@@ -23,7 +23,7 @@ my $make_test_PDFgen = "make_test_codegen.c";
 my $test_PDFgen = "test_codegen.c";
 
 # Sample size for test
-my $SAMPLE_SIZE = 10000;
+my $SAMPLE_SIZE = 10;
 
 # ----------------------------------------------------------------
 # List of distributions
@@ -78,7 +78,43 @@ sub make_codegen_tests
     # Get tests
     my @tests = split /\n\s*\n/, $conf_content;
 
-    # Process each test
+    # rule for C files 
+    my $hrule = "/* ----------------------------------------------------------------- */";
+
+#.................................................................
+# C file for tests
+
+    # The C file header 
+    my $test_header = <<EOX;
+\#include <string.h>
+\#include <float.h>
+\#include <unuran.h>
+\#include <config.h>
+
+\#ifdef WITH_DMALLOC
+\#  include <dmalloc.h>
+\#endif
+
+\#if UNUR_URNG_TYPE != UNUR_URNG_PRNG
+\#  error UNUR_URNG_TYPE must be set to UNUR_URNG_PRNG in unuran_config.h
+\#endif
+
+\#define FP_equal(a,b)  ((a)==(b) ||  fabs((a)-(b)) <= ((fabs(a)<fabs(b))?fabs(a):fabs(b))*100*DBL_EPSILON)
+
+/* We use global variables for the uniform random number generators */
+static struct prng *urng1 = NULL;
+static struct prng *urng2 = NULL;
+
+/* Define uniform(); use the second generator */
+\#define uniform()  (prng_get_next(urng2))
+
+$hrule
+
+EOX
+
+#.................................................................
+# Process each test
+
     foreach my $t (@tests) {
 	# There might be empty entries in @tests
 	next unless $t;
@@ -100,9 +136,8 @@ sub make_codegen_tests
 	# Name of test routine
 	++$test_number;
 	my $testroutine = "test\_$distr\_".$test_number;
-	$test_file .= "void $testroutine (FILE *out)\n\{\n";
 
-	# Name of PDF function
+	# Name of distribution for tests
 	my $distr_name = "$distr\_".$test_number;
 
 	# Process parameters
@@ -120,74 +155,120 @@ sub make_codegen_tests
 		    $fpm .= "$p, ";
 		}
 	    }
-	    $fpm =~ s/,\s*$/ \}\;/;
+	    $fpm =~ s/,\s*$/ \}/;
 	}
 	else {
-	    $fpm = "double *fpm = NULL;";
+	    $fpm = "double *fpm = NULL";
 	}
 
 	# Make distribution object
-	my $distribution = "\tUNUR_DISTR *distr;\n";
-	$distribution .= "\tUNUR_GEN *gen;\n";
-	$distribution .= "\t$fpm\n";
-	$distribution .= "\tdistr = unur_distr_$distr(fpm,$n_params);\n";
-	$distribution .= "\tgen = unur_init( unur_tdr_new (distr) );\n";
+	my $distribution = 
+	    "\t{\n".
+	    "\t\t$fpm;\n".
+	    "\t\tdistr = unur_distr_$distr(fpm,$n_params);\n".
+	    "\t}\n";    
 
-	# Add Distribution object to test file
-	$test_file .= $distribution;
-	$test_file .= "\tunurgen(gen,out,\"$distr_name\");\n";
-	$test_file .= "\tunur_distr_free(distr);\n\n";
-	$test_file .= "\tunur_free(gen);\n\n";
-	$test_file .= "\tfprintf(out,\"\\n\");\n";
+	# Make Generator object
+	my $generator = 
+	    "\tpar = unur_tdr_new (distr);\n".
+	    "\tunur_tdr_set_max_sqhratio (par, 0.);\n".
+            "\tgen = unur_init( par );\n";
 
-	# Header for test routine for distribution
-	$test_file .= "\tfprintf(out,\"int $testroutine (void)\\n\{\\n\");\n";
-	$test_file .= "\tfprintf(out,\"\\tint i;\\n\");\n";
-	$test_file .= "\tfprintf(out,\"\\tdouble x, f1, f2;\\n\");\n";
-	$test_file .= "\tfprintf(out,\"\\tint n_failed = 0;\\n\");\n";
-	$test_file .= "\tfprintf(out,\"\\tUNUR_GEN *gen;\\n\");\n";
+# The test routine
+	# Begin of test routines 
+	my $test_test_routine = "int $testroutine (void)\n\{\n";
+	
+	# Declarations for test routines
+	my $test_test_decl = 
+	    "\tUNUR_DISTR *distr;\n".
+            "\tUNUR_PAR *par;\n".
+            "\tUNUR_GEN *gen;\n".
+	    "\tint i;\n".
+	    "\tdouble x1, x2;\n".
+	    "\tint n_failed = 0;\n".
+	    "\n";
 
-	# Write distribution object into test routine
-	foreach $l (split /\n/, $distribution) {
-	    $l =~ s/\t/\\t/g;
-	    $test_file .= "\tfprintf(out,\"$l\\n\");\n";
-	}
+	# Body of test routine
+	my $test_test_body =
+	    "$distribution\n".                          # the distribution object
+	    "$generator\n";                             # the generator object
 
-	# Generator for importance sampling
-	$test_file .= "\tfprintf(out,\"\\tgen = unur_init( unur_tdr_new(distr) );\\n\");\n\n";
+	# Set uniform random number generator
+	$test_test_body .= "\tunur_chg_urng(gen,urng1);\n\n";
 
 	# Print info on screen
-	$test_file .= "\tfprintf(out,\"\\tprintf(\\\"$distr \\\");\\n\");\n";
-	$test_file .= "\tfprintf(out,\"\\tfflush(stdout);\\n\");\n";
-	$test_file .= "\tfprintf(out,\"\\n\");\n";
+	$test_test_body .= "\tprintf(\\\"$distr \\\");\n";
+	$test_test_body .= "\tfflush(stdout);\n\n";
 
-	# Compare PDFs
-#	$test_file .= "\tfprintf(out,\"\\tfor (i=0; i<$SAMPLE_SIZE; i++) \{\\n\");\n";
-#	$test_file .= "\tfprintf(out,\"\\t\\tx  = unur_sample_cont(gen);\\n\");\n";
-#	$test_file .= "\tfprintf(out,\"\\t\\tf1 = unur_distr_cont_eval_pdf (x,distr);\\n\");\n";
-#	$test_file .= "\tfprintf(out,\"\\t\\tf2 = $distr_name (x);\\n\");\n";
+	# Compare generator output
+	$test_test_body .= <<EOX;
+\tfor (i=0; i<$SAMPLE_SIZE; i++) {
+\t\tx1 = unur_sample_cont(gen);
+\t\tx2 = rand_$distr_name();
+   /* \t\tif (!FP_equal(x1,x2)) { */
+\t\t\tfprintf(stderr,\\\"error! %%g, %%g, diff = %%g\\\\n\\\",x1,x2,x1-x2);
+   /* \t\t\t++n_failed; */
+   /* \t\t} */
+\t}
 
-#	$test_file .= "\tfprintf(out,\"\\t\\tif (!FP_equal(f1,f2)) {\\n\");\n";
-#	$test_file .= "\tfprintf(out,\"\\t\\t\\tfprintf(stderr,\\\"error! %%g, %%g, diff = %%g\\\\n\\\",f1,f2,f1-f2);\\n\");\n";
-#	$test_file .= "\tfprintf(out,\"\\t\\t\\t++n_failed;\\n\");\n";
-#	$test_file .= "\tfprintf(out,\"\\t\\t\}\\n\");\n";
-#	$test_file .= "\tfprintf(out,\"\\t\}\\n\");\n\n";
-	$test_file .= "\tfprintf(out,\"\\n\");\n";
+EOX
 
-	# End of test routine
-	$test_file .= "\tfprintf(out,\"\\tunur_distr_free(distr);\\n\");\n";
-	$test_file .= "\tfprintf(out,\"\\tunur_free(gen);\\n\");\n";
-	$test_file .= "\tfprintf(out,\"\\treturn n_failed;\\n\");\n";
-	$test_file .= "\tfprintf(out,\"\}\\n\\n\");\n";
-	$test_file .= "\n";
 
-	$test_file .= "}\n\n";
+        # End of test routine
+	$test_test_body .= "\tunur_distr_free(distr);\n";
+	$test_test_body .= "\tunur_free(gen);\n";
+	$test_test_body .= "\treturn n_failed;\n";
+	$test_test_body .= "\}\n\n";
 
-	# Add test to list
+	# The test routine
+	my $test_test = 
+	    $test_test_routine.
+	    $test_test_decl.
+	    $test_test_body;
+
+# The make test routine
+	# Begin of test routines 
+	my $make_test_routine = "void $testroutine (FILE *out)\n\{\n";
+
+	# Declarations for make test routine
+	my $make_test_decl = 
+	    "\tUNUR_DISTR *distr;\n".
+            "\tUNUR_PAR *par;\n".
+            "\tUNUR_GEN *gen;\n";
+
+	# Body of make test routine
+	my $make_test_body = 
+	    "$distribution\n".                          # the distribution object
+	    "$generator\n".                             # the generator object
+	    "\tunurgen(gen,out,\"$distr_name\");\n\n".  # make code 
+	    "\tunur_distr_free(distr);\n".              # free distribution object
+	    "\tunur_free(gen);\n\n";                    # free generator object
+
+	# Header for test routine for distribution
+	foreach $l (split /\n/, $test_test) { 
+	    $l =~ s/\t/\\t/g;
+	    $make_test_body .= "\tfprintf(out,\"$l\\n\");\n";
+	}
+
+	# End of make test routine
+	$make_test_body .= "}\n\n";
+
+	# The make test routine
+	my $make_test = 
+	    $make_test_routine.
+	    $make_test_decl.
+	    $make_test_body;
+
+	# Add test routine to output
+	$test_file .= $make_test; 
+
+# Add test to list
 	$test_list .= "$testroutine\n";
     }
 
-    # Check for missing CONTinuous distributions
+#.................................................................
+# Check for missing CONTinuous distributions
+
     foreach my $d (sort keys %{$DISTR}) {
 	next unless $DISTR->{$d}->{"=TYPE"} eq "CONT";
 	unless ($test_distr{$d}) {
@@ -195,80 +276,125 @@ sub make_codegen_tests
 	}
     }
 
-    # Make header for C file that creates tests
-    my $test_file_header = 
-	 "\#include <stdio.h>\n"
-	."\#include <stdlib.h>\n"
-	."\#include <string.h>\n"
-        ."\#include <unuran.h>\n"
-        ."\#include \"PDFgen_source.h\"\n\n"
-        ."int unurgen( struct unur_gen *gen, FILE *out, const char *distr_name );\n\n";
+#.................................................................
+# C file that makes test file
 
+    # The C file header 
+    my $make_header = <<EOX;
+\#include <string.h>
+\#include <unuran.h>
+\#include <unurgen.h>
+\#ifdef WITH_DMALLOC
+\#  include <dmalloc.h>
+\#endif
 
-    # Make main()
-    my $test_file_main = "int main(void)\n\{\n";
+$hrule
 
-    # The header for the resulting test file
-    $test_file_main .= "\tFILE *out;\n";
-    $test_file_main .= "\n";
-    $test_file_main .= "\tout = fopen(\"$test_PDFgen\",\"w\");\n";
-    $test_file_main .= "\n";
+EOX
 
-    # The header for the test file
-    $test_file_main .= "\tfprintf(out,\"#include <stdio.h>\\n\");\n";
-    $test_file_main .= "\tfprintf(out,\"#include <stdlib.h>\\n\");\n";
-    $test_file_main .= "\tfprintf(out,\"#include <string.h>\\n\");\n";
-    $test_file_main .= "\tfprintf(out,\"#include <math.h>\\n\");\n";
-    $test_file_main .= "\tfprintf(out,\"#include <float.h>\\n\");\n";
-    $test_file_main .= "\tfprintf(out,\"#include <prng.h>\\n\");\n";
-    $test_file_main .= "\tfprintf(out,\"#include <unuran.h>\\n\");\n";
-    $test_file_main .= "\tfprintf(out,\"#include \\\"PDFgen_source.h\\\"\\n\");\n";
-    $test_file_main .= "\tfprintf(out,\"#include <config.h>\\n\");\n";
-    $test_file_main .= "\tfprintf(out,\"#ifdef WITH_DMALLOC\\n\");\n";
-    $test_file_main .= "\tfprintf(out,\"#  include <dmalloc.h>\\n\");\n";
-    $test_file_main .= "\tfprintf(out,\"#endif\\n\");\n";
-    $test_file_main .= "\tfprintf(out,\"#if UNUR_URNG_TYPE != UNUR_URNG_PRNG\\n\");\n";
-    $test_file_main .= "\tfprintf(out,\"#  error UNUR_URNG_TYPE must be set to UNUR_URNG_PRNG in unuran_config.h\\n\");\n";
-    $test_file_main .= "\tfprintf(out,\"#endif\\n\");\n";
+# The test main()
 
-    $test_file_main .= "\tfprintf(out,\"#define FP_equal(a,b) \");\n";
-    $test_file_main .= "\tfprintf(out,\" ((a)==(b) || \");\n";
-    $test_file_main .= "\tfprintf(out,\" fabs((a)-(b)) <= ((fabs(a)<fabs(b))?fabs(a):fabs(b))*100*DBL_EPSILON)\\n\\n\");\n\n";
+    # Begin of main()
+    my $test_main_routine = "int main(void)\n\{\n";
 
+    # Declarations for main()
+    my $test_main_decl = 
+	"\tFILE *LOG;\n".
+	"\tint n_failed = 0;\n";
 
-    # Call the test routines
+    # Body of make main()
+    my $test_main_body = '';
+
+    # Log files 
+    $test_main_body =
+	"\tLOG = fopen( \\\"test_codegen.log\\\",\\\"w\\\" );\n".
+	"\tunur_set_stream( LOG );\n".
+        "unur_set_default_debug(UNUR_DEBUG_ALL);\n\n";
+
+    # Initialize URNG
+    my $seed = int(rand 123456) + 1;
+    $test_main_body .= "\turng1 = prng_new(\\\"mt19937($seed)\\\");\n";
+    $test_main_body .= "\turng2 = prng_new(\\\"mt19937($seed)\\\");\n";
+    $test_main_body .= "\n";
+
+    # Execute the tests
     foreach my $t (split /\n/, $test_list) {
-	$test_file_main .= "\t$t(out);\n";
+	$test_main_body .= "\tn_failed += $t();\n";
     }
-    $test_file_main .= "\n";
+    $test_main_body .= "\n";
 
-    # Make the main file for the test file
-    $test_file_main .= "\tfprintf(out,\"int main(void)\\n\{\\n\");\n";
-    $test_file_main .= "\tfprintf(out,\"\\tint n_failed = 0;\\n\\n\");\n";
+    # End of main()
+    $test_main_body .= "\tprintf(\\\"\\\\n\\\");\n\n";
+    $test_main_body .= "\tfclose(LOG);\n\n";
+    $test_main_body .= "\texit ((n_failed) ? 1 : 0);\n";
+    $test_main_body .= "}\n\n";
+
+    # test main()
+    my $test_main = 
+	$test_main_routine.
+	    $test_main_decl."\n".
+	$test_main_body;
+
+# The make test main() 
+
+    # Begin of main()
+    my $make_main_routine = "int main(void)\n\{\n";
+
+    # Declarations for make main()
+    my $make_main_decl = 
+	"\tFILE *out;\n".
+	"\tFILE *LOG;\n";
+
+    # Log files 
+    my $make_main_body =
+	"\tLOG = fopen( \"make_test_codegen.log\",\"w\" );\n".
+	"\tunur_set_stream( LOG );\n".
+        "unur_set_default_debug(UNUR_DEBUG_ALL);\n\n";
+
+    # Body of make main()
+    $make_main_body .= 
+	"\tout = fopen(\"$test_PDFgen\",\"w\");\n";
+    $make_main_body .= "\n";
+
+    # Write the header for the test file
+    foreach my $l (split /\n/, $test_header) {
+	$l =~ s/\t/\\t/g;
+	$make_main_body .= "\tfprintf(out,\"$l\\n\");\n";
+    }
+    $make_main_body .= "\n";
+
+    # Write the calls for the test routines
     foreach my $t (split /\n/, $test_list) {
-	$test_file_main .= "\tfprintf(out,\"\\tn_failed += $t();\\n\");\n";
+	$make_main_body .= "\t$t(out);\n";
     }
+    $make_main_body .= "\n";
 
-    $test_file_main .= "\tfprintf(out,\"\\n\");\n";
-    $test_file_main .= "\tfprintf(out,\"\\tprintf(\\\"\\\\n\\\");\\n\");\n";
-    $test_file_main .= "\tfprintf(out,\"\\n\");\n";
+    # Write main for test file
+    foreach my $l (split /\n/, $test_main) {
+	$l =~ s/\t/\\t/g;
+	$make_main_body .= "\tfprintf(out,\"$l\\n\");\n";
+    }
+    $make_main_body .= "\n";
 
-    $test_file_main .= "\tfprintf(out,\"\\n\");\n";
-    $test_file_main .= "\tfprintf(out,\"\\texit ((n_failed) ? 1 : 0);\\n\");\n";
-    $test_file_main .= "\tfprintf(out,\"}\\n\");\n";
+    # End of make main()
+    $make_main_body .= "\tfclose(out);\n";
+    $make_main_body .= "\tfclose(LOG);\n\n";
+    $make_main_body .= "\texit (EXIT_SUCCESS);\n";
+    $make_main_body .= "}\n\n";
 
-    # End if C file
-    $test_file_main .= "\n";
-    $test_file_main .= "\tfclose(out);\n";
-    $test_file_main .= "\n";
-    $test_file_main .= "\texit (0);\n";
-    $test_file_main .= "\}\n\n";
+    # make main()
+    my $make_main =
+	$make_main_routine.
+	$make_main_decl."\n".
+	$make_main_body;
 
-    # Make C file for creating tests
+#.................................................................
+# Make C file for creating tests
+
     open TEST, ">$make_test_PDFgen" or die "cannot open file $make_test_PDFgen\n";
-    print TEST $test_file_header;
+    print TEST $make_header;
     print TEST $test_file;
-    print TEST $test_file_main;
+    print TEST $make_main;
     close TEST;
 
 } # end of make_codegen_tests()

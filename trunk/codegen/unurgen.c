@@ -1,11 +1,16 @@
+/*---------------------------------------------------------------------------*/
+
 #include <source_unuran.h>
 #include "PDFgen_source.h"
 
+/*---------------------------------------------------------------------------*/
+
+int _unur_tdr_ps_codegen( struct unur_gen *gen, FILE *out, const char *distr_name );
 
 /*---------------------------------------------------------------------------*/
 
 int
-unurgen (struct unur_gen *gen, FILE *out, const char *distr_name)
+unurgen( struct unur_gen *gen, FILE *out, const char *distr_name )
 {
   _unur_check_NULL("unurgen", gen, 0 );
 
@@ -18,5 +23,14 @@ unurgen (struct unur_gen *gen, FILE *out, const char *distr_name)
   }
 
 } /* end of unurgen() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unurgen_default_urng( FILE *out, const char *name)
+{
+
+  return 1;
+} /* end of unurgen_default_urng() */
 
 /*---------------------------------------------------------------------------*/

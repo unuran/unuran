@@ -3,7 +3,7 @@
 
 # AUTOMAKE_OPTIONS = 
 
-SUBDIRS = . scripts src examples tests doc
+SUBDIRS = . scripts src examples tests doc codegen
 
 EXTRA_DIST = \
  KNOWN-PROBLEMS \

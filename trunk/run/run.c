@@ -33,12 +33,15 @@ int main()
 
   double fpm[] = {1,5};
 
-  unur_set_default_debug(~0u);
+  unur_set_default_debug(0u);
 /*    unur_set_stream(stdout); */
 
   distr = unur_distr_normal(NULL,0);
 
   par = unur_tdr_new(distr);
+  unur_tdr_set_variant_ia(par);
+
+/*    par = unur_unif_new(NULL); */
 
 /*    unur_set_urng(par,unur_urng_mstd); */
 

@@ -110,11 +110,11 @@ UNUR_GEN *unur_test_timing( UNUR_PAR *parameters, int log_samplesize,
 
    If @var{verbosity} is TRUE then a small table is printed to
    the @code{stdout} with setup time, marginal generation time and
-   average generation 
-   times for generating 10, 100, @dots{} random variates. All times
-   are given in micro seconds and relative to marginal generation time
-   and generation time for the underlying uniform random number
-   (using the UNIF interface).
+   average generation times for generating 10, 100, @dots{} random
+   variates. All times are given in micro seconds and relative to 
+   the generation times for the underlying uniform random number
+   (using the UNIF interface) and an exponential distributed 
+   random variate using the inversion method.
 
    The created generator object is returned.
    If a generator object could not be created successfully, then NULL
@@ -122,8 +122,22 @@ UNUR_GEN *unur_test_timing( UNUR_PAR *parameters, int log_samplesize,
 
    If @var{verbosity} is TRUE the result is written to the output
    stream @var{out}.
+
+   Notice: All timing results are subject to heavy changes. Reruning
+   timings usually results in different results. Minor changes in 
+   the source code can cause changes in such timings up to 20 percent.
 */
 
+double unur_test_timing_uniform( struct unur_par *par, int log_samplesize );
+/* */
+
+double unur_test_timing_exponential( struct unur_par *par, int log_samplesize );
+/* 
+   Marginal generation times for the underlying uniform random number
+   (using the UNIF interface) and an exponential distributed 
+   random variate using the inversion method. These times are used in
+   unur_test_timing() to compute the relative timings results.
+*/
 
 int unur_test_count_urn( UNUR_GEN *generator, int samplesize, int verbosity, FILE *out );
 /* 

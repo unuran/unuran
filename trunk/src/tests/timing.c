@@ -55,7 +55,14 @@ static struct timeval tv;
 static char test_name[] = "Timing";
 /*---------------------------------------------------------------------------*/
 
-static double _unur_test_timing_uniform( struct unur_par *par, int log_samplesize );
+/* compare two doubles (needed for sorting) */
+inline static int
+compare_doubles (const void *a, const void *b)
+{ 
+  const double *da = (const double *) a;
+  const double *db = (const double *) b;
+  return (*da > *db) - (*da < *db);
+}
 
 /*---------------------------------------------------------------------------*/
 
@@ -87,9 +94,11 @@ unur_test_timing( struct unur_par *par,
      /*----------------------------------------------------------------------*/
 {
   struct unur_gen *gen;
+  int k;
+  double x;
   double *vec = NULL;
   int dim = 1;
-  double fast;  
+  double time_uniform, time_exponential;
   double time_start, *time_gen;
   long samples, samplesize, log_samples;
 
@@ -100,8 +109,10 @@ unur_test_timing( struct unur_par *par,
   /* need an array to store timings */
   time_gen = _unur_malloc((log_samplesize+1) * sizeof(double));
 
-  /* fastest possible generation time */
-  fast = _unur_test_timing_uniform( par,log_samplesize );
+  /* marginal generation time for one unifrom random number */
+  time_uniform = unur_test_timing_uniform( par,log_samplesize );
+  /* marginal generation time for one exponential random variate */
+  time_exponential = unur_test_timing_exponential( par,log_samplesize );
 
   /* initialize generator (and estimate setup time) */
   time_start = _unur_get_time();
@@ -128,15 +139,15 @@ unur_test_timing( struct unur_par *par,
     switch (gen->method & UNUR_MASK_TYPE) {
     case UNUR_METH_DISCR:
       for( ; samples < samplesize; samples++ )
-	_unur_sample_discr(gen);
+	k = unur_sample_discr(gen);
       break;
     case UNUR_METH_CONT:
       for( ; samples < samplesize; samples++ )
-	_unur_sample_cont(gen);
+	x = unur_sample_cont(gen);
       break;
     case UNUR_METH_VEC:
       for( ; samples < samplesize; samples++ )
-	_unur_sample_vec(gen,vec);
+	unur_sample_vec(gen,vec);
       break;
     default: /* unknown ! */
       _unur_error(test_name,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
@@ -162,17 +173,24 @@ unur_test_timing( struct unur_par *par,
   /* now print times */
   if (verbosity) {
     fprintf(out,"\nTIMING:\t\t    usec \t relative to \t relative to\n");
-    fprintf(out,"\t\t\t\t uniform\t marginal\n\n");
+    fprintf(out,"\t\t\t\t uniform\t exponential\n\n");
     /* setup time */
     fprintf(out,"   setup time:\t    %#g \t %#g \t %#g\n",
-	   (*time_setup), (*time_setup)/fast, (*time_setup)/(*time_sample));
+	    (*time_setup),
+	    (*time_setup)/time_uniform,
+	    (*time_setup)/time_exponential);
     /* marginal generation time */
-    fprintf(out,"   generation time: %#g \t %#g \t %#g\n",(*time_sample),(*time_sample)/fast,1.);
+    fprintf(out,"   generation time: %#g \t %#g \t %#g\n",
+	    (*time_sample),
+	    (*time_sample)/time_uniform,
+	    (*time_sample)/time_exponential);
     /* generation times */
     fprintf(out,"\n   average generation time for samplesize:\n");
     for( log_samples=1; log_samples<=log_samplesize; log_samples++ )
       fprintf(out,"\t10^%ld:\t    %#g \t %#g \t %#g\n",log_samples,
-	     time_gen[log_samples],time_gen[log_samples]/fast,time_gen[log_samples]/(*time_sample));
+	      time_gen[log_samples],
+	      time_gen[log_samples]/time_uniform,
+	      time_gen[log_samples]/time_exponential);
   }
 
   /* free memory */
@@ -186,25 +204,30 @@ unur_test_timing( struct unur_par *par,
 
 /*---------------------------------------------------------------------------*/
 
-static double
-_unur_test_timing_uniform( struct unur_par *par, int log_samplesize )
+double
+unur_test_timing_uniform( struct unur_par *par, int log_samplesize )
      /*----------------------------------------------------------------------*/
-     /*  estimate fastest possible generation time, i.e., for a routine      */
-     /*  that just calls the uniform random number generator  and returns    */
-     /*  this value.                                                         */
+     /*  estimate generation time for URNG using UNURAN wrapper.             */
      /*                                                                      */
      /* parameters:                                                          */
      /*   par    ... pointer to paramters for building generator object      */
      /*                                                                      */
      /* return:                                                              */
      /*   mean generation time                                               */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return -1                                                          */
      /*----------------------------------------------------------------------*/
 {
-  struct unur_gen *gen_urng;
-  static double fastest_time = 0.;
-  int j;
+#define TIMING_REPETITIONS 11
 
-  if (fastest_time <= 0.) {  
+  struct unur_gen *gen_urng;
+  static double uniform_time = -1.;
+  double time[TIMING_REPETITIONS];
+  double x;
+  int j,n;
+
+  if (uniform_time <= 0.) {  
     /* unknown. have to estimate time first */
     
     /* sample size */
@@ -217,19 +240,98 @@ _unur_test_timing_uniform( struct unur_par *par, int log_samplesize )
     _unur_check_NULL( test_name,gen_urng,-1. );
     unur_chg_urng(gen_urng,par->urng);
 
-    /* evaluate marginal generation time */
-    fastest_time = _unur_get_time();
-    for( j=0; j<samplesize; j++ )
-      _unur_sample_cont(gen_urng);
+    /* evaluate marginal generation times */
+    for( n=0; n<TIMING_REPETITIONS; n++ ) {
+      time[n] = _unur_get_time();
+      for( j=0; j<samplesize; j++ )
+	x = unur_sample_cont(gen_urng);
+      time[n] = (_unur_get_time() - time[n])/samplesize;
+    }
 
-    fastest_time = (_unur_get_time() - fastest_time)/samplesize;
+    /* compute median */
+    qsort( time, TIMING_REPETITIONS, sizeof(double), compare_doubles);
+
+    /* store marginal generation time for uniforms */
+    uniform_time = time[TIMING_REPETITIONS/2];
 
     /* free generator object for uniform random number generator */
     _unur_free(gen_urng);
 
   }
 
-  return fastest_time;
-} /* end of _unur_test_timing_uniform() */
+  return uniform_time;
+
+#undef TIMING_REPETITIONS
+
+} /* end of unur_test_timing_uniform() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+unur_test_timing_exponential( struct unur_par *par, int log_samplesize )
+     /*----------------------------------------------------------------------*/
+     /*  estimate generation time for URNG using UNURAN wrapper.             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par    ... pointer to paramters for building generator object      */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   mean generation time                                               */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return -1                                                          */
+     /*----------------------------------------------------------------------*/
+{
+#define TIMING_REPETITIONS 11
+
+  struct unur_distr *unit_distr;
+  struct unur_par   *unit_par;
+  struct unur_gen   *unit_gen;
+  static double exponential_time = -1.;
+  double time[TIMING_REPETITIONS];
+  double x;
+  int j,n;
+
+  if (exponential_time <= 0.) {  
+    /* unknown. have to estimate time first */
+    
+    /* sample size */
+    int samplesize = 1;
+    for( j=0; j<log_samplesize; j++ )
+      samplesize *= 10;
+
+    /* make generator object for uniform generator */
+    unit_distr = unur_distr_exponential(NULL,0);
+    unit_par = unur_cstd_new(unit_distr);
+    unur_cstd_set_variant(unit_par,UNUR_STDGEN_INVERSION);
+    unit_gen = unur_init(unit_par); 
+    _unur_check_NULL( test_name,unit_gen,-1. );
+    unur_chg_urng(unit_gen,par->urng);
+
+    /* evaluate marginal generation times */
+    for( n=0; n<TIMING_REPETITIONS; n++ ) {
+      time[n] = _unur_get_time();
+      for( j=0; j<samplesize; j++ )
+	x = unur_sample_cont(unit_gen);
+      time[n] = (_unur_get_time() - time[n])/samplesize;
+    }
+
+    /* compute median */
+    qsort( time, TIMING_REPETITIONS, sizeof(double), compare_doubles);
+
+    /* store marginal generation time for uniforms */
+    exponential_time = time[TIMING_REPETITIONS/2];
+
+    /* free generator object for uniform random number generator */
+    unur_distr_free(unit_distr);
+    unur_free(unit_gen);
+
+  }
+
+  return exponential_time;
+
+#undef TIMING_REPETITIONS
+
+} /* end of unur_test_timing_exponential() */
 
 /*---------------------------------------------------------------------------*/

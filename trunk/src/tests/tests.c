@@ -204,6 +204,13 @@ _unur_print_method( struct unur_par *par )
     COOKIE_CHECK(par,CK_CSTD_PAR,0);
     printf("METHOD:\t\tspecial (CSTD)\n");
     break;
+
+    /* misc */
+  case UNUR_METH_UNIF:
+    COOKIE_CHECK(par,CK_UNIF_PAR,0);
+    printf("METHOD:\t\twrapper for uniform (UNIF)\n");
+    break;
+
   default: /* unknown ! */
     _unur_error("Tests",UNUR_ERR_GENERIC,"method unknown!");
     return 0;

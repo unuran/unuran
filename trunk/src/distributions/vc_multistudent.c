@@ -150,7 +150,8 @@ _unur_dlogpdf_multistudent( double *result, const double *x, UNUR_DISTR *distr )
 {
 #define idx(a,b) ((a)*dim+(b))
 
-  int i, dim;
+  int i, j, dim;
+  double xx, cx;
   double *mean;
   const double *covar_inv;
     
@@ -163,14 +164,25 @@ _unur_dlogpdf_multistudent( double *result, const double *x, UNUR_DISTR *distr )
     /* inverse of covariance matrix not available */
     return UNUR_FAILURE;
 
+  /* calculating (x-mean)' Sigma^-1 (x-mean) */  
+  xx=0.; 
+  for (i=0; i<dim; i++) {
+    cx=0.; 
+    /* multiplication of inverse covariance matrix and (x-mean) */
+    for (j=0; j<dim; j++) {
+      cx += covar_inv[idx(i,j)] * (x[j]-mean[j]);
+    }
+    xx += (x[i]-mean[i])*cx;
+  }    
+    
+  /* calculation of the dlogpdf components */
   for (i=0; i<dim; i++) {
     result[i] = 0.;
     
-#if 0    
     for (j=0; j<dim; j++) 
-      /* TODO : */
-      result[i] += -0.5 * (x[j]-mean[j]) * (covar_inv[idx(i,j)]+covar_inv[idx(j,i)]);
-#endif
+      result[i] -= (x[j]-mean[j]) * (covar_inv[idx(i,j)]+covar_inv[idx(j,i)]);
+  
+    result[i] *= .5*(dim+DISTR.nu)/(DISTR.nu+xx);
   }
   
   return UNUR_SUCCESS; 

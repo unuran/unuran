@@ -1,4 +1,4 @@
-Version 0.4.0: ????
+Version 0.4.0: January 2003
 	
 	- added methods HRB, HRD, and HRI for distributions with given
 	  hazard rates (bounded, decreasing, and increasing, resp.)
@@ -6,7 +6,7 @@ Version 0.4.0: ????
 	- added method EMPL (empirical CDF with linear interpolation)
 	  (for sake of completeness; method not recommended)
 
-	- now build shared libraries
+	- support for shared libraries
 
 	- reorganization of source tree
 

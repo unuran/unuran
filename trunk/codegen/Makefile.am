@@ -61,14 +61,14 @@ anuran.pl: make_anuran.pl ../scripts/read_PDF.pl
 
 # clean backup files
 CLEANFILES = \
- PDFgen.c \
- headergen.c \
- acg.c \
- anuran.pl \
  *.log \
  *~
 
 # clean generated files
 MAINTAINERCLEANFILES = \
- Makefile.in
+ Makefile.in \
+ PDFgen.c \
+ headergen.c \
+ acg.c \
+ anuran.pl
 

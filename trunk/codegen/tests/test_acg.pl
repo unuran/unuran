@@ -11,18 +11,18 @@ $| = 1;
 # ----------------------------------------------------------------
 # Directory with sources
 
-my $srcdir = $ENV{'srcdir'} ? $ENV{'srcdir'} : '.';
-$srcdir .= "/..";
+my $top_srcdir = $ENV{'srcdir'} ? $ENV{'srcdir'} : '.';
+$top_srcdir .= "/../..";
 
 # ----------------------------------------------------------------
 # Load routines for reading data about PDF from UNURAN files
   
-require "$srcdir/read_PDF.pl";
+require "$top_srcdir/scripts/read_PDF.pl";
 
 # ----------------------------------------------------------------
 
 my $ACG = "../acg";
-my $default_conf_file = "$srcdir/tests/test_acg_conf.pl";
+my $default_conf_file = "$top_srcdir/codegen/tests/test_acg_conf.pl";
 
 # ----------------------------------------------------------------
 # Prefix for file names
@@ -61,7 +61,7 @@ require $test_conf_file;
 
 # ----------------------------------------------------------------
 # List of distributions
-my $DISTR = read_PDFdata("$srcdir/..");
+my $DISTR = read_PDFdata("$top_srcdir/..");
 
 # For description of data fields in this list see file `read_PDF.pl'.
 

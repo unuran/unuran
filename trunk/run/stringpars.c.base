@@ -513,6 +513,11 @@ UNUR_GEN *make_gen_obj (char *str){
     par = unur_cstd_new(distr);
   }
 
+  /* check if parameter object was generated successfully */
+  if ( par == NULL ){
+     fprintf(stderr, "ERROR: Can't create parameter object.\n");
+  }
+
   /* set uniform random number generator -- if provided */
   if ( urngstr != NULL ){
      make_urng_obj(par, urngstr);

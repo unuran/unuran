@@ -43,6 +43,7 @@ my $DISTR;
 #   $DISTR->{"beta"}->{"=DOC"}                 ... documentation for distribution
 #   $DISTR->{"beta"}->{"=DOC"}->{"=PDF"}       ... formula for PDF
 #   $DISTR->{"beta"}->{"=DOC"}->{"=CONST"}     ... normalization constant for PDF
+#   $DISTR->{"beta"}->{"=DOC"}->{"=CDF"}       ... formula for CDF
 #   $DISTR->{"beta"}->{"=DOC"}->{"=DOMAIN"}    ... domain for PDF
 #   $DISTR->{"beta"}->{"=DOC"}->{"=FPARAM"}    ... list of parameters with constraints
 #      Remark: There exist other fields which are not relevant here
@@ -325,6 +326,7 @@ sub print_data
 
 	print "DOC: PDF    : ".$DISTR->{$d}->{"=DOC"}->{"=PDF"};
 	print "DOC: CONST  : ".$DISTR->{$d}->{"=DOC"}->{"=CONST"};
+	print "DOC: CDF    : ".$DISTR->{$d}->{"=DOC"}->{"=CDF"};
 	print "DOC: DOMAIN : ".$DISTR->{$d}->{"=DOC"}->{"=DOMAIN"};
 	print "DOC: FPARAM :\n".$DISTR->{$d}->{"=DOC"}->{"=FPARAM"}."\n";
 

@@ -346,11 +346,9 @@ UnurTestDistrResultFile["powerexponential", isCONT, datafile, fparams, RunSample
 fparams = {{1/100,100}};
 UnurTestDistrResultFile["rayleigh", isCONT, datafile, fparams, RunSampleSize];
 
-(*  --->
 (* Student *)
 fparams = {{1/100,100}};
 UnurTestDistrResultFile["student", isCONT, datafile, fparams, RunSampleSize, StudentTDistribution];
-*)
 
 (* Triangular *)
 fparams = {{0,1}};

@@ -70,6 +70,7 @@ my %TAGs =
      "=PDF"         => { "scan" => \&scan_PDF },
      "=PMF"         => { "scan" => \&scan_PDF },
      "=CONST"       => { "scan" => \&scan_PDF },
+     "=CDF"         => { "scan" => \&scan_PDF },
      "=DOMAIN"      => { "scan" => \&scan_DOMAIN },
      "=FPARAM"      => { "scan" => \&scan_FPARAM },
      "=STDGEN"      => { "scan" => \&scan_STDGEN },
@@ -444,6 +445,9 @@ sub texi_node {
 	    if ($IN->{$node}->{"=CONST"}) {
 		$TEXI .= "\@item constant:\n".$IN->{$node}->{"=CONST"}."\n";
 	    }
+	    if ($IN->{$node}->{"=CDF"}) {
+		$TEXI .= "\@item CDF:\n".$IN->{$node}->{"=CDF"}."\n";
+	    }
 	    if ($IN->{$node}->{"=DOMAIN"}) {
 		$TEXI .= "\@item domain:\n".$IN->{$node}->{"=DOMAIN"}."\n";
 	    }
@@ -593,6 +597,7 @@ sub scan_DOMAIN {
 sub scan_PDF {
     my $node_name = $_[0];   # name of node
     my $tag = $_[1];         # TAG (node section)
+    my $texentry;            # content of node converted to TeX
 
     # content of node
     my $entry = $IN->{$node_name}->{$tag};
@@ -609,27 +614,35 @@ sub scan_PDF {
     # remove newlines
     $entry =~ s/\n+/ /g;
 
-    # format tex output
-    my $texentry = texify_string($entry);
+    # text mode
+    if ($entry =~ /\@text\{(.*)\}/) {
+	$texentry = $1;
+	$entry = $1;
+    }
 
-    # format other output
-    $entry =~ s/\\over\s+/\//g;
+    else {
+	# format tex output
+	$texentry = "\$".texify_string($entry)."\$";
 
-    $entry =~ s/\\hbox{\s*(\w+)\s*}/ $1 /g;
-    $entry =~ s/\\hfil+\\break/\n\n/g;
+	# format other output
+	$entry =~ s/\\over\s+/\//g;
 
-    $entry =~ s/\\frac\{([^\}]+[\s\+\-]+[^\}]+)\}\{([^\}]+[\s\+\-]+[^\}]+)\}/\($1\)\/\($2\)/g;
-    $entry =~ s/\\frac\{([^\}]+)\}\{([^\}]+[\s\+\-]+[^\}]+)\}/$1\/\($2\)/g;
-    $entry =~ s/\\frac\{([^\}]+[\s\+\-]+[^\}]+)\}\{([^\}]+)\}/\($1\)\/$2/g;
-    $entry =~ s/\\frac\{([^\}]+)\}\{([^\}]+)\}/$1\/$2/g;
+	$entry =~ s/\\hbox{\s*(\w+)\s*}/ $1 /g;
+	$entry =~ s/\\hfil+\\break/\n\n/g;
 
-    $entry =~ s/\{/\(/g;
-    $entry =~ s/\}/\)/g;
+	$entry =~ s/\\frac\{([^\}]+[\s\+\-]+[^\}]+)\}\{([^\}]+[\s\+\-]+[^\}]+)\}/\($1\)\/\($2\)/g;
+	$entry =~ s/\\frac\{([^\}]+)\}\{([^\}]+[\s\+\-]+[^\}]+)\}/$1\/\($2\)/g;
+	$entry =~ s/\\frac\{([^\}]+[\s\+\-]+[^\}]+)\}\{([^\}]+)\}/\($1\)\/$2/g;
+	$entry =~ s/\\frac\{([^\}]+)\}\{([^\}]+)\}/$1\/$2/g;
+
+	$entry =~ s/\{/\(/g;
+	$entry =~ s/\}/\)/g;
+    }
 
     # return result
-    $IN->{$node_name}->{$tag} = "\@iftex\n\@tex\n\$$texentry\$\n\@end tex\n\@end iftex\n";
+    $IN->{$node_name}->{$tag} = "\@iftex\n\@tex\n$texentry\n\@end tex\n\@end iftex\n";
     $IN->{$node_name}->{$tag} .= "\@ifnottex\n$entry\n\@end ifnottex\n";
-
+	
 } # end of scan_PDF()
 
 #############################################################

@@ -77,6 +77,9 @@ normalization constant for given PDF and PMF, resp.
 They must be multiplied by @i{constant} to get the 
 ``real'' PDF and PMF.
 
+@item CDF
+gives information whether the CDF is implemented in UNURAN.
+
 @item domain
 domain PDF and PMF, resp.
 

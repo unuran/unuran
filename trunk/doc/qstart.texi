@@ -141,7 +141,7 @@ use UNURAN with reading as little as possible.
 On basis of the available information about the density,
 one should choose a suitable method (see @ref{Requirements}).
 Then the Examples @ref{Ex1} and @ref{Ex2} in addition
-with a short look at section @ref{GetandSet} should be enough.
+with a short look at section @ref{Do_it_yourself} should be enough.
 
 The function for changing the parameters while sampling can be
 found in @ref{Function Reference}.
@@ -336,7 +336,7 @@ unur_distr_cont_set_cdf(distr, mycdf);
 @*
 What you have to provide for the method you chose
 is documented in @ref{Requirements} and how to provide
-it in @ref{GetandSet}.
+it in @ref{Do_it_yourself}.
 @*
 As in the previous example the following line: 
 @smallexample
@@ -506,7 +506,7 @@ and should always kept in mind when working with computers.
 @node Arbitrary
 @section Arbitrary distributions
 
-See @ref{GetandSet}
+See @ref{Do_it_yourself}
 
 
 @node Continuous
@@ -535,7 +535,7 @@ Some methods allow arbitrary domains with predefined densities
 (e.g. NINV -- numerical inversion):
 And if the domain is changed so might the mode. How to change the
 domain and due to that the mode or mayby another parameter can be
-looked up in @ref{GetandSet}.
+looked up in @ref{Do_it_yourself}.
 
 @include qstart_c_distributions.texi
 
@@ -549,19 +549,14 @@ looked up in @ref{GetandSet}.
 @node Function Reference
 @chapter Function reference
 @menu
-* HandlingObjects:: Generate and destroy generators 
-* GetandSet::  Include your own distributions
+* Do_it_yourself::  Include your own distributions
 * Readymade:: Ready-made distributions
 * MethodsRef::  Functions for Methods
 @end menu
 Notation:
 
-@node HandlingObjects
-@section Generate and destroy generators
-.... perl-script: unurfree, unurdistrfree unurinit
-
-@node GetandSet
-@section Get and Set parameters of distributions and generators
+@node Do_it_yourself
+@section Setting to be done by hand
 @include qstart_geninfo.texi
 @include qstart_change_distr.texi
 

@@ -8,7 +8,6 @@ noinst_LTLIBRARIES = libutils.la
 libutils_la_SOURCES = \
  debug.c  debug.h debug_source.h \
  error.c  \
- histogram.c 	  histogram_source.h \
  matrix.c 	  matrix_source.h \
  slist.c  slist.h slist_struct.h \
  stream.c         stream_source.h \

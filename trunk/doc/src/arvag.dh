@@ -44,9 +44,7 @@
    We just generate a uniformly @unurmath{U(0,1)} distributed random
    number @unurmath{U} and return 
 
-   @display
-   @unurmath{X=F^{-1}(U).} 
-   @end display
+   @unurmathdisplay{X=F^{-1}(U).} 
 
    The following figure shows how the inversion method works for
    the exponential distribution.
@@ -111,7 +109,7 @@
    @unurmath{f(x) = sin(x)/2} on the interval @unurmath{(0,\pi).}
    To generate random variates from this distribution we also can
    sample random points that are uniformly distributed in the region
-   between the graph of @unurmath{f(x)} and the @unurmath{x}-axis,
+   between the graph of @unurmath{f(x)} and the @i{x}-axis,
    i.e., the shaded region in the below figure.
 
    @unurimage{figures/rejection_from_constant_hat}
@@ -124,7 +122,7 @@
    uniform distributions @unurmath{U(0,\pi)} and @unurmath{U(0,0.5).}
    Whenever the point falls into the shaded region below the graph 
    (indicated by dots in the figure), i.e., when @unurmath{Y <
-   sin(X)/2}, we accept it and return @unurmath{X} as a random variate
+   sin(X)/2,} we accept it and return @unurmath{X} as a random variate
    from the distribution with density @unurmath{f(x).} 
    Otherwise we have to reject the point (indicated by small circles
    in the figure), and try again.
@@ -143,7 +141,7 @@
    non-rectangular shaped regions for the envelopes are important and
    we have to solve the problem of sampling points uniformly from such
    domains. Looking again at the example above we notice that the
-   @unurmath{x}-coordinate of the random point @unurmath{(X,Y)} was
+   @i{x}-coordinate of the random point @unurmath{(X,Y)} was
    sampled by inversion from the uniform distribution on the domain of
    the given density. This motivates us to replace the density of the
    uniform distribution by the (multiple of a) density @unurmath{h(x)}
@@ -251,7 +249,7 @@
    @item
    If @unurmath{Y <= f(X)} accept @unurmath{X} as random variate.
    @item
-   Else start again with generating the index @unurmath{J}.
+   Else start again with generating the index @unurmath{J.}
    @end enumerate
    
    The first step can be done in constant time (i.e., independent of
@@ -277,7 +275,7 @@
    The construction of an appropriate hat function for the given
    density is the crucial step for constructing rejection algorithms.
    Equivalently we can try to find an appropriate envelope for the region
-   between the graph of the density and the @unurmath{x}-axis, such
+   between the graph of the density and the @i{x}-axis, such
    that we can easily sample uniformly distributed random points.
    This task could become easier if we can find transformations that map
    the region between the density and the axis into a region of more
@@ -301,9 +299,7 @@
    algorithm is the fact that the region below the density is mapped
    by the transformation 
 
-   @display
-   @unurmath{(X,Y)\mapsto(U,V)=(2\,X\sqrt{Y},2\,\sqrt{Y})}
-   @end display
+   @unurmathdisplay{(X,Y)\mapsto(U,V)=(2\,X\sqrt{Y},2\,\sqrt{Y})}
 
    into a half-disc in such a way that the ratio between the area of 
    the image to the area of the preimage is constant. This is due to
@@ -319,9 +315,7 @@
    @unurmath{X=U/V+\mu} for a pair @unurmath{(U,V)} uniformly
    distributed in the set
 
-   @display
-   @unurmath{A_f= \{(u,v)\colon 0 < v \leq \sqrt{f(u/v+\mu)}\}.}
-   @end display
+   @unurmathdisplay{A_f= \{(u,v)\colon 0 < v \leq \sqrt{f(u/v+\mu)}\}.}
 
    For most distributions it is best to set the constant
    @unurmath{\mu} equal to the mode of the distribution. For sampling
@@ -331,11 +325,10 @@
    contains @unurmath{A_f} (see the above figure).
    It is given by @unurmath{(u^-,u^+)\times (0,v^+)} where
    
-   @display
-   @unurmath{v^+ = \sup\limits_{b_l<x<b_r}         \sqrt{f(x)},} @*
-   @unurmath{u^- = \inf\limits_{b_l<x<b_r} (x-\mu) \sqrt{f(x)},} @*
-   @unurmath{u^+ = \sup\limits_{b_l<x<b_r} (x-\mu) \sqrt{f(x)}.}
-   @end display
+   @unurmathdisplay{
+   v^+ = \sup\limits_{b_l<x<b_r}         \sqrt{f(x)}, \\
+   u^- = \inf\limits_{b_l<x<b_r} (x-\mu) \sqrt{f(x)}, \\
+   u^+ = \sup\limits_{b_l<x<b_r} (x-\mu) \sqrt{f(x)}.}
 
    Then the ratio-of-uniforms method consists of the following simple
    steps: 
@@ -372,22 +365,21 @@
 
    The Ratio-of-Uniforms method can be generalized: If a point
    @unurmath{(U,V)} is uniformly distributed in the set
-   @display
-   @unurmath{A_f= \{(u,v)\colon 0 < v \leq (f(u/v^r+\mu))^{1/(r+1)}\}}
-   @end display
-   then @unurmath{X=U/V^r+\mu} has the denity @unurmath{f(x)}.
+
+   @unurmathdisplay{A_f= \{(u,v)\colon 0 < v \leq (f(u/v^r+\mu))^{1/(r+1)}\}}
+
+   then @unurmath{X=U/V^r+\mu} has the denity @unurmath{f(x).}
    The minimal bounding rectangle of this region is given by 
    @unurmath{(u^-,u^+)\times (0,v^+)} where
    
-   @display
-   @unurmath{v^+ = \sup\limits_{b_l<x<b_r}         (f(x))^{1/(r+1)},} @*
-   @unurmath{u^- = \inf\limits_{b_l<x<b_r} (x-\mu) (f(x))^{r/(r+1)},} @*
-   @unurmath{u^+ = \sup\limits_{b_l<x<b_r} (x-\mu) (f(x))^{r/(r+1)}.}
-   @end display
+   @unurmathdisplay{
+   v^+ = \sup\limits_{b_l<x<b_r}         (f(x))^{1/(r+1)}, \\
+   u^- = \inf\limits_{b_l<x<b_r} (x-\mu) (f(x))^{r/(r+1)}, \\
+   u^+ = \sup\limits_{b_l<x<b_r} (x-\mu) (f(x))^{r/(r+1)}. }
 
    The above algorithm has then to be adjusted accordingly.
    Notice that the original Ratio-of-Uniforms method is the special
-   case with @unurmath{r=1}.
+   case with @unurmath{r=1.}
 
 =EON
 */
@@ -404,9 +396,7 @@
    a discrete random variable @unurmath{X} we can write it
    mathematically in the same way:
 
-   @display
-   @unurmath{X=F^{-1}(U),}
-   @end display
+   @unurmathdisplay{X=F^{-1}(U),}
 
    where @unurmath{F} is the CDF of the desired distribution and 
    @unurmath{U} is a uniform @unurmath{U(0,1)} random number. The
@@ -419,7 +409,7 @@
    To realize this idea on a computer we have to use a search
    algorithm. For the simplest version called @emph{Sequential Search}
    the CDF is computed on-the-fly as sum of the probabilities
-   @unurmath{p(k)}, since this is usually much cheaper than computing
+   @unurmath{p(k),} since this is usually much cheaper than computing
    the CDF directly. It is obvious that the basic form of the search
    algorithm only works for discrete random variables with probability
    mass functions @unurmath{p(k)} for nonnegative @unurmath{k.} The

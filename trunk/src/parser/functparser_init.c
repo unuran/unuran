@@ -198,7 +198,7 @@ _unur_fstr_2_tree (const char *functstr, int withDefFunct)
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-  if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
+  if ((_unur_default_debugflag & UNUR_DEBUG_SETUP) && root)
     _unur_fstr_debug_tree(pdata,root);
 #endif
 

@@ -86,7 +86,7 @@ _unur_fstr_node2string ( struct concat *output, const struct ftreenode *node,
      /*                                                                      */
      /* parameters:                                                          */
      /*   output   ... pointer to string for output                          */
-     /*   root     ... pointer to root of function tree                      */
+     /*   node     ... pointer to node in function tree                      */
      /*   variable ... pointer to name of variable                           */
      /*   function ... pointer to name of function                           */
      /*   spaces   ... whether spaces are inserted around binary operators   */

@@ -137,6 +137,8 @@ int _unur_acg_JAVA_PDF (FILE *out, UNUR_DISTR *distr, const char *pdf)
 int
 _unur_acg_C_PDF_GENERIC (FILE *out, UNUR_DISTR *distr, const char *pdf)
 { 
+  const char *pdf_name;
+
   /* check arguments */
   _unur_check_NULL( NULL, distr, 0 );
   _unur_check_distr_object( distr, CONT, 0 );
@@ -144,17 +146,11 @@ _unur_acg_C_PDF_GENERIC (FILE *out, UNUR_DISTR *distr, const char *pdf)
 
   _unur_acg_C_print_section_title(out,"PDF for distribution.");
 
+  pdf_name = (pdf) ? pdf : "pdf_generic";
+
   fprintf (out,"#include <math.h>\n\n");
-  fprintf (out,"static double %s (double x)\n{\n", ((pdf) ? pdf : "pdf_generic") );
 
-  fprintf (out,"\treturn ( ");
-  if ( ! (_unur_fstr_tree2C ( out, distr->data.cont.pdftree, "x", "f" )) )
-     return 0;
-  fprintf (out," );\n");
-
-  fprintf (out,"}\n");
-
-  return 1;
+  return _unur_fstr_tree2C( out,distr->data.cont.pdftree,"x",pdf_name);
 }
 
 /* ---------------------------------------------------------------- */

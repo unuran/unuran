@@ -176,7 +176,7 @@ _unur_acg_C_demo_urng( FILE *out )
   fprintf(out,"#\tundef q\n");
   fprintf(out,"#\tundef r\n");
   fprintf(out,"}\n");
-  fprintf(out,"#endif\n\n");
+  fprintf(out,"#endif /* uniform */\n\n");
 
   return 1;
 } /* end of _unur_acg_C_demo_urng() */

@@ -1,0 +1,15 @@
+{
+%% parameters for plot
+\psset{xunit=12mm,yunit=40mm}
+\begin{pspicture}(-0.2,-0.1)(5.5,1.1)
+  %% p.d.f.
+  \psplot[plotstyle=curve,linewidth=1pt]%
+  {0}{5}{1 2.7182818 x neg exp sub}
+  %% axis
+  \psaxes[labels=all,ticks=all,linewidth=0.5pt]{->}(5.5,1.1)
+  %% reverse arcs
+  \psline[linewidth=0.5pt]{->}(0,0.95)(2.9957,0.95)(2.9957,0)
+  \psline[linewidth=0.5pt]{->}(0,0.4)(0.5108,0.4)(0.5108,0)
+\end{pspicture}
+}
+

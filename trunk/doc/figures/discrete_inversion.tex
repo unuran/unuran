@@ -1,0 +1,19 @@
+{
+%% parameters for plot
+\psset{xunit=13mm,yunit=40mm}
+\begin{pspicture}(0,-0.1)(5.5,1.1)
+  %% axes
+  \psaxes[linewidth=0.5pt,labels=all,ticks=all,tickstyle=top,Dx=1,Dy=1]{->}(5.5,1.1)
+  %% CDF
+  \psline[linewidth=1.2pt]{-}(0,0.1)(1,0.1)
+  \psline[linewidth=1.2pt]{-}(1,0.4)(2,0.4)
+  \psline[linewidth=1.2pt]{-}(2,0.8)(3,0.8)
+  \psline[linewidth=1.2pt]{-}(3,1)(5,1)
+  \psline[linewidth=0.5pt,linestyle=dashed,dash=4pt 2pt]{-}(1,0.1)(1,0.4)
+  \psline[linewidth=0.5pt,linestyle=dashed,dash=4pt 2pt]{-}(2,0.4)(2,0.8)
+  \psline[linewidth=0.5pt,linestyle=dashed,dash=4pt 2pt]{-}(3,0.8)(3,1)
+  %% reverse arcs
+  \psline[linewidth=1.0pt]{->}(0,0.6)(2,0.6)(2,0)
+\end{pspicture}
+}
+

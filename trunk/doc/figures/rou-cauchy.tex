@@ -1,0 +1,19 @@
+{
+%% parameters for plot
+\psset{xunit=30mm,yunit=40mm}
+\newgray{gray}{0.90}
+\newgray{darkgray}{0.70}
+%% transformed region in ROU
+\begin{pspicture}(-1.1,-0.1)(1.1,0.90)
+  %% region of acceptance
+  \parametricplot[plotstyle=curve,linestyle=none,fillstyle=solid,fillcolor=gray]%
+  {0}{180}{t cos t sin 0.75 mul}
+  %% bounding rectangle
+  \psline[linewidth=1pt](-1,0)(-1,0.75)(1,0.75)(1,0)
+  %% axis
+  \psline[linewidth=0.5pt]{->}(-1.1,0)(1.2,0)
+  \rput[t](1.2,-0.03){$u$\vphantom{$l$}}
+  \psline[linewidth=0.5pt]{->}(0,0)(0,0.90)
+  \rput[r](-0.03,0.90){$v$}
+\end{pspicture}
+}

@@ -527,7 +527,7 @@ _unur_nrou_rectangle( struct unur_gen *gen )
   
   /* calculation of vmax */
   if (!(gen->set & NROU_SET_V)) {
-    faux.f = _unur_aux_bound_vmax;
+    faux.f = (UNUR_FUNCT_GENERIC) _unur_aux_bound_vmax;
     faux.params = NULL;
   
     x = _unur_util_find_max(faux, DISTR.BD_LEFT, DISTR.BD_RIGHT, p[0]);
@@ -536,13 +536,13 @@ _unur_nrou_rectangle( struct unur_gen *gen )
 
   /* calculation of umin and umax */
   if (!(gen->set & NROU_SET_U)) {
-    faux.f = _unur_aux_bound_umin;
+    faux.f = (UNUR_FUNCT_GENERIC) _unur_aux_bound_umin;
     faux.params = p;
 
     x = _unur_util_find_max(faux, DISTR.BD_LEFT, p[0], p[0]);
     GEN.umin = -faux.f(x,p);
 
-    faux.f = _unur_aux_bound_umax;
+    faux.f = (UNUR_FUNCT_GENERIC) _unur_aux_bound_umax;
     faux.params = p;
 
     x = _unur_util_find_max(faux, p[0], DISTR.BD_RIGHT, p[0]);

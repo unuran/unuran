@@ -34,11 +34,34 @@
  *****************************************************************************/
 
 
-
 /* Structure for generic functions */
 
 struct unur_funct_generic {
-  double (*f)();
+  double (*f)(double x, void *params);
   void *params;
 };
-    
+
+
+#define UNUR_FUNCT_GENERIC  double (*) (double, void*)
+/*-------------------------------------------------------------*   
+ * In order to be able to assign a pointer to a user           *
+ * defined function of the form double f(double, double *)     *
+ * to the member .f of unur_funct_generic a typecast           *
+ * should be performed to avoid compiler warnings :            *
+ *                                                             *
+ *   double f(double x, double *parameter) {                   *
+ *     return (expression_of_x_and_parameter);                 *
+ *   }                                                         *
+ *                                                             *
+ *   main () {                                                 *
+ *     struct unur_funct_generic fs;                           *
+ *                                                             *
+ *     fs.f = (UNUR_FUNCT_GENERIC) f ;                         *
+ *   }                                                         *
+ *                                                             *
+ * In the case of pdf's a similar typecast should              *
+ * be performed :                                              *
+ *                                                             *
+ *     fs.f = (UNUR_FUNCT_GENERIC) DISTR.pdf ;                 *
+ *                                                             *
+ *-------------------------------------------------------------*/

@@ -478,7 +478,7 @@ _unur_vempk_init( struct unur_par *par )
   /* copy debugging flags */
   GEN.kerngen->debug = par->debug;
 
-  /* the kernel is an auxilliary generator for method VEMPK, of course */
+  /* the kernel is an auxiliary generator for method VEMPK, of course */
   gen->gen_aux = GEN.kerngen;
   
   /* compute bandwith:

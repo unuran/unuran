@@ -223,9 +223,9 @@ _unur_distr_cvec_clone( const struct unur_distr *distr )
     CLONE.marginals = _unur_malloc (distr->dim * sizeof(struct unur_distr *));
     /* There are (should be) only two possibilities: 
        either all entries in the array point to the same distribution object;
-          (set be unur_distr_cvec_set_marginals() call)
+          (set by unur_distr_cvec_set_marginals() call)
        or each entry has its own copy of some distribution object.
-          (set be unur_distr_cvec_set_marginal_array() call)
+          (set by unur_distr_cvec_set_marginal_array() call)
     */
     if (DISTR.marginals[0] == DISTR.marginals[1]) {
       CLONE.marginals[0] = _unur_distr_clone( DISTR.marginals[0] );
@@ -291,9 +291,9 @@ _unur_distr_cvec_free( struct unur_distr *distr )
   if (DISTR.marginals) {
     /* There are (should be) only two possibilities: 
        either all entries in the array point to the same distribution object;
-          (set be unur_distr_cvec_set_marginals() call)
+          (set by unur_distr_cvec_set_marginals() call)
        or each entry has its own copy of some distribution object.
-          (set be unur_distr_cvec_set_marginal_array() call)
+          (set by unur_distr_cvec_set_marginal_array() call)
     */
     if (DISTR.marginals[0] == DISTR.marginals[1]) {
       _unur_distr_free(DISTR.marginals[0]);

@@ -378,7 +378,6 @@ _unur_test_chi2test( double *prob,
   int i;
 
   /* check arguments */
-  CHECK_NULL(prob,-1.);
   CHECK_NULL(observed,-1.);
 
   /* minimum number of occurrences in a class */

@@ -229,7 +229,7 @@ int main()
         compare_free_memory();
 
 	/* exit */
-	exit( (test_ok) ? 0 : -1 );
+	exit( (test_ok) ? EXIT_SUCCESS : EXIT_FAILURE );
 
 } /* end of main */
 

@@ -122,25 +122,30 @@ it will be better to look for a specific tool for that distribution.
 
 @node Install
 @section Install
-First unzip and untar the package
-./autogen.sh
-./configure --prefix=/home/staff/tirler/
+
+First unzip and untar the package. Then change to the directory
+@file{/unuran} and execute the following commands:
+@smallexample
+autogen.sh
+configure --prefix=HOMEDIRECTORY
 make
 make install
+@end smallexample
+@c
+@* This installs the following files:
+@c
+@smallexample
+$(prefix)/include/unuran_tests.h
+$(prefix)/include/unuran.h
+$(prefix)/include/unuran_config.h
+$(prefix)/lib/libunuran.a
+@end smallexample
 
-
-Then change to the directory  @file{/unuran} and type  @file{make} to compile unuran.
- 
-@menu
-* Now::
-@end menu
-
-@node Now
-@subsection Now
-cvs update @*
-@* Type @file{make} in UNURAN to compile UNURAN
-@* @file{Makefile.am} in @file{/examples} modify in regard to testprogram 
-@* make in @file{/examples}
+@* Now the relevant files are where the C-compiler can find them.
+If every user on your machine should be able to use UNURAN,
+you omit @file{--prefix=HOMEDIRECTORY} when calling @file{configure}
+(as usual the standard value of @file{$(prefix)} is @file{/usr/local}.
+Of course you can do this only if you have the right permissions.
 
 @node Remark
 @section Remark about this document
@@ -176,7 +181,8 @@ Beginning with the basics of using unuran we evolve to examples
 using  more advanced features of UNURAN.
 After the example itself the relevant code will be explained.
 @*call the compiler with:
-@* @file{gcc -Wall  -L../src/methods  -L../src/distributions  -L../src/tests  -L../src/uniform -g -O2  -o test1  test1.o -lunuran_tests -lunuran_distributions -lunuran -luniform -lm -lprng}
+@* @file{gcc -Wall -O2 test.c -lunuran -lprng -lml -lm -o test}
+
 
 @node Ex1
 @section Ex1: As short as possible

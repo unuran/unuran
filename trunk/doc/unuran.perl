@@ -62,7 +62,7 @@ while($_ = <>)
        /^\s*(struct\s*unur_[a-zA-Z_]*)\s*(\*unur_[a-zA-z_]*)(.*)/;
 
        print   OUTFILE "\@unnumberedsubsubsec ", $2, "\n\n";
-       print OUTFILE "\@code\{", "\@i\{", $1,"\} ", "\@b\{",$2, "\}", $3, "\}\n";      
+       print OUTFILE "\@code\{", "\@i\{", $1,"\} ", "\@b\{",$2, "\}", $3, "\}\n\n";      
    }
 
    foreach $type (@TYPES){
@@ -71,14 +71,14 @@ while($_ = <>)
        #Kommentar zur funktion moeglich
        $KOMMENT = 1;
        print OUTFILE  "\n\@unnumberedsubsubsec ", $2 , "\n\n";
-       print OUTFILE "\@code\{", "\@i\{", $1,"\} ", "\@b\{",$2, "\}", $3, "\}\n";
+       print OUTFILE "\@code\{", "\@i\{", $1,"\} ", "\@b\{",$2, "\}", $3, "\}\n\n";
       }
   }
 
 
 # Suche zugehoerige Kommentare
       if($KOMMENT == 1 && $_ =~/^\/\*(.*)(\*\/)$/){
-	  print OUTFILE $1, "\n\n";
+	  print OUTFILE $1, "\n";
       }
 
 

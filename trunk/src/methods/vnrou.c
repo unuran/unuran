@@ -130,6 +130,14 @@ static void _unur_vnrou_free( struct unur_gen *gen);
 /* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
+double _unur_vnrou_aux_vmax(double *x, void *p );
+double _unur_vnrou_aux_umin(double *x, void *p );
+double _unur_vnrou_aux_umax(double *x, void *p );
+/*---------------------------------------------------------------------------*/
+/* Auxiliary functions used in the computation of the bounding rectangle     */
+/*---------------------------------------------------------------------------*/
+
+
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 /* the following functions print debugging information on output stream,     */

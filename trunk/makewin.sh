@@ -19,7 +19,7 @@ export DLLTOOL="${MINGWPATH}/dlltool"
 # run configure in its own build directory
 test -d win || mkdir win;
 make distclean
-(cd win && ../configure --srcdir=.. --prefix=/home/leydold/tmp/win --host=i386-pc-mingw32msvc --enable-shared)
+(cd win && ../configure --srcdir=.. --prefix=/home/kara/unuran/win/tmp --host=i386-pc-mingw32msvc --enable-shared)
 
 # compile
 (cd win && make)

@@ -421,7 +421,7 @@ _unur_varou_sample_cvec( struct unur_gen *gen, double *vec )
 
   dim = GEN.dim;
  
-  /* TODO : CHANGE THIS !!!!!!! */  
+  /* TODO : CHANGE THIS !!!!!!! These are only dummy random values */  
     for (d=0; d<dim; d++) {
       vec[d] = _unur_call_urng(gen->urng) ;
     }

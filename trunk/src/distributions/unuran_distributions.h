@@ -179,6 +179,16 @@ double unur_stdgen_sample_extremeI_inv( struct unur_gen *gen );
 /* Inversion method                                                          */
 
 /*---------------------------------------------------------------------------*/
+/*  Extreme value type II distribution  [3; ch.22, p.2]                      */
+struct unur_distr *unur_distr_extremeI(double *params, int n_params);
+
+/* special generators */
+int _unur_stdgen_extremeII_init( struct unur_par *par, struct unur_gen *gen );
+/* initialize new generator                                                  */
+double unur_stdgen_sample_extremeII_inv( struct unur_gen *gen );
+/* Inversion method                                                          */
+
+/*---------------------------------------------------------------------------*/
 /*  Gamma distribution  [2; ch.17, p.337]                                    */
 struct unur_distr *unur_distr_gamma(double *params, int n_params);
 

@@ -15,6 +15,7 @@ libunuran_tests_a_SOURCES = \
  counturn.c \
  moments.c \
  printsample.c \
+ quantiles.c \
  scatter.c \
  tests.c \
  timing.c

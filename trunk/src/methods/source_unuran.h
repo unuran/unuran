@@ -62,9 +62,10 @@
 #include <source_gen.h>
 #include <source_cookies.h>
 #include <source_debug.h>
-#include <source_math.h>
 #include <source_fp.h>
+#include <source_math.h>
 #include <source_methods.h>
+#include <source_misc.h>
 #include <source_distr.h>
 
 /*---------------------------------------------------------------------------*/

@@ -10,7 +10,7 @@
  *         defines bitmasks to identify used method in generator objects     *
  *                                                                           *
  *   USAGE:                                                                  *
- *         only included in source_masks.h                                   *
+ *         only included in source_unuran.h                                  *
  *                                                                           *
  *                                                                           *
  *                                                                           *

@@ -4,11 +4,10 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: x_umalloc_struct.h                                                *
+ *   FILE: source_misc.h                                                     *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         declares structures for allocating memory and storing allocated   *
- *         blocks in a linked list.                                          *
+ *         prototypes for miscelleous functions                              *
  *                                                                           *
  *   USAGE:                                                                  *
  *         only included in source_struct.h                                  *
@@ -38,23 +37,10 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-/* linked list to store pointers to allocated blocks                         */
-
-struct unur_mblock {
-  void *memptr;                 /* store pointer to allocated block          */
-  struct unur_mblock *next;     /* pointer to next entry in list             */
-#ifdef UNUR_COOKIES
-  unsigned cookie;              /* magic cookie                              */
-#endif
-};
-
-/*---------------------------------------------------------------------------*/
 /* Function prototypes for allocating memory blocks                          */
+
 void *_unur_malloc(size_t size);
 void *_unur_realloc(void *ptr, size_t size);
-
-void  _unur_add_mblocks( struct unur_mblock **mblocks, void *ptr );
-void  _unur_free_mblocks( struct unur_mblock *mblocks );
 
 /*---------------------------------------------------------------------------*/
 

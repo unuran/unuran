@@ -11,7 +11,7 @@
  *         objects.                                                          *
  *                                                                           *
  *   USAGE:                                                                  *
- *         compiling library.                                                *
+ *         only included in source_unuran.h                                  *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -71,13 +71,6 @@ typedef int _UNUR_SAMPLING_ROUTINE_DISCR(struct unur_gen *gen);
 
 /* for multivariate continuous distribution */
 typedef void _UNUR_SAMPLING_ROUTINE_VEC(struct unur_gen *gen, double *vec);
-
-/*****************************************************************************/
-/**  Auxilliary structures                                                  **/
-/*****************************************************************************/
-
-/* structures for blocked memory allocation */
-#include <x_umalloc_struct.h>
 
 /*****************************************************************************/
 /**  Declarations for uniform random number generators                      **/

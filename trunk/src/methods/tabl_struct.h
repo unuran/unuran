@@ -97,10 +97,6 @@ struct unur_tabl_gen {
   int     n_ivs;                /* number of intervals                       */
   int     max_ivs;              /* maximum number of intervals               */
   double  max_ratio;            /* limit for ratio r_n = A(squeeze) / A(hat) */
-
-  struct unur_tabl_interval *iv_stack; /* stack of allocated intervals       */
-  int     iv_free;              /* position of last free segment in stack    */
-  struct unur_mblock *mblocks;  /* linked list for allocated blocks          */
 };
 
 /*---------------------------------------------------------------------------*/

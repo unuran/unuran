@@ -48,9 +48,9 @@ noinst_HEADERS = \
  source_fp.h \
  source_gen.h \
  source_math.h \
+ source_misc.h \
  source_methods.h \
  source_struct.h \
- x_umalloc_struct.h \
  x_debug.h \
  x_errno.h \
  x_gen.h \

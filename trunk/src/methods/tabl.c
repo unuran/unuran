@@ -178,16 +178,6 @@ static int _unur_tabl_make_guide_table( struct unur_gen *gen );
 /* make a guide table for indexed search.                                    */
 /*---------------------------------------------------------------------------*/
 
-static struct unur_tabl_interval *_unur_tabl_iv_stack_pop( struct unur_gen *gen );
-/*---------------------------------------------------------------------------*/
-/* pop an interval from the stack of free intervals.                         */
-/*---------------------------------------------------------------------------*/
-
-/*  static void _unur_tabl_iv_stack_push( struct unur_gen *gen ); */
-/*---------------------------------------------------------------------------*/
-/* push the last popped interval back onto the stack.                         */
-/*---------------------------------------------------------------------------*/
-
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 /* the following functions print debugging information on output stream,     */
@@ -816,9 +806,6 @@ _unur_tabl_create( struct unur_par *par )
   GEN.guide_size  = 0;
   GEN.iv          = NULL;
   GEN.n_ivs       = 0;
-  GEN.iv_stack    = NULL;
-  GEN.iv_free     = 0;
-  GEN.mblocks     = NULL;
 
   /* the boundaries for our computation limits are intersection of the       */
   /* domain of the distribution and the given computation boundaries.        */
@@ -918,6 +905,7 @@ _unur_tabl_sample( struct unur_gen *gen )
     /* look up in guide table and search for interval */
     iv =  GEN.guide[(int) (u * GEN.guide_size)];
     u *= GEN.Atotal;
+
     while (iv->Acum < u)
       iv = iv->next;
 
@@ -937,7 +925,7 @@ _unur_tabl_sample( struct unur_gen *gen )
       fx = PDF(x);
       /* split interval */
       if (GEN.n_ivs < GEN.max_ivs && GEN.max_ratio * GEN.Atotal > GEN.Asqueeze) {
-      	_unur_tabl_split_interval( gen, iv, x, fx, (gen->variant & TABL_VARMASK_SPLIT) );
+	_unur_tabl_split_interval( gen, iv, x, fx, (gen->variant & TABL_VARMASK_SPLIT) );
 	_unur_tabl_make_guide_table(gen);
 	/** TODO: it is not necessary to update the guide table every time. 
 	    But then (1) some additional bookkeeping is required and
@@ -1060,9 +1048,6 @@ _unur_tabl_free( struct unur_gen *gen )
   if (gen->debug) _unur_tabl_debug_free(gen);
 #endif
 
-  /* free linked list of intervals and others */
-  _unur_free_mblocks(GEN.mblocks);
-
   /* free other memory */
   _unur_free_genid(gen);
   free(GEN.guide);
@@ -1154,10 +1139,11 @@ _unur_tabl_get_starting_intervals_from_slopes( struct unur_par *par, struct unur
   for ( i=0; i < 2*PAR.n_slopes; i+=2 ) {
     /* get a new interval and link into list */
     if (i==0)
-      iv = GEN.iv = _unur_tabl_iv_stack_pop(gen);    /* the first interval */
+      iv = GEN.iv = _unur_malloc(sizeof(struct unur_tabl_interval));    /* the first interval */
     else
-      iv = iv->next = _unur_tabl_iv_stack_pop(gen);  /* all the other intervals */
-    COOKIE_CHECK(iv,CK_TABL_IV,0);
+      iv = iv->next = _unur_malloc(sizeof(struct unur_tabl_interval));  /* all the other intervals */
+    ++(GEN.n_ivs);
+    COOKIE_SET(iv,CK_TABL_IV);
 
     /* max and min of p.d.f. in interval */
     iv->xmax = PAR.slopes[i];      
@@ -1236,8 +1222,9 @@ _unur_tabl_get_starting_intervals_from_mode( struct unur_par *par, struct unur_g
   /* compute initial intervals */
   while (1) {
     /* the first interval */
-    iv = GEN.iv = _unur_tabl_iv_stack_pop(gen);
-    CHECK_NULL(iv,0);  COOKIE_CHECK(iv,CK_TABL_IV,0);
+    iv = GEN.iv = _unur_malloc(sizeof(struct unur_tabl_interval));
+    ++(GEN.n_ivs);
+    COOKIE_SET(iv,CK_TABL_IV);
 
     if (DISTR.mode <= GEN.bleft) {
       /* only one ascending interval <a,b> = [a,b] */
@@ -1258,8 +1245,10 @@ _unur_tabl_get_starting_intervals_from_mode( struct unur_par *par, struct unur_g
     iv->xmin = GEN.bleft;
 
     /* the second interval */
-    iv = iv->next = _unur_tabl_iv_stack_pop(gen);  /* all the other intervals */
-    CHECK_NULL(iv,0);  COOKIE_CHECK(iv,CK_TABL_IV,0);
+    iv = iv->next = _unur_malloc(sizeof(struct unur_tabl_interval));  /* all the other intervals */
+    ++(GEN.n_ivs);
+    COOKIE_SET(iv,CK_TABL_IV);
+
     iv->xmax = DISTR.mode;
     iv->xmin = GEN.bright;
     break;
@@ -1439,18 +1428,22 @@ _unur_tabl_split_b_starting_intervals( struct unur_par *par,
 /*  static struct unur_tabl_interval * */
 static int
 _unur_tabl_split_interval( struct unur_gen *gen,
-				struct unur_tabl_interval *iv_old, 
-				double x, double fx, 
-				unsigned split_mode )
+			   struct unur_tabl_interval *iv_old, 
+			   double x, double fx, 
+			   unsigned split_mode )
      /*----------------------------------------------------------------------*/
      /* split interval (replace old one by two new ones in same place)       */
      /* new interval is inserted immedately after old one.                   */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*   iv  ... pointer to interval that has to be split                   */
-     /*   x   ... splitting point                                            */
-     /*   fx  ... value of p.d.f. at splitting point                         */
+     /*   gen        ... pointer to generator object                         */
+     /*   iv_old     ... pointer to interval that has to be split            */
+     /*   x          ... splitting point                                     */
+     /*   fx         ... value of p.d.f. at splitting point                  */
+     /*   split_mode ... how to split interval                               */
+     /*                  TABL_VARFLAG_SPLIT_POINT: split at given point x    */
+     /*                  TABL_VARFLAG_SPLIT_MEAN:  at mean point of interval */
+     /*                  TABL_VARFLAG_SPLIT_ARC:   at arc mean point         */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... splitting successful                                         */
@@ -1509,8 +1502,9 @@ _unur_tabl_split_interval( struct unur_gen *gen,
   }
 
   /* we need a new interval */
-  iv_new = _unur_tabl_iv_stack_pop(gen);
-  CHECK_NULL(iv_new,0);  COOKIE_CHECK(iv_new,CK_TABL_IV,0);
+  iv_new = _unur_malloc(sizeof(struct unur_tabl_interval));
+  ++(GEN.n_ivs);
+  COOKIE_SET(iv_new,CK_TABL_IV);
 
   /* iv_new has the same slope as iv_old */
   iv_new->slope = iv_old->slope;
@@ -1637,72 +1631,7 @@ _unur_tabl_make_guide_table( struct unur_gen *gen )
   return 1;
 } /* end of _unur_tabl_make_guide_table() */
 
-/*****************************************************************************/
-
-static struct unur_tabl_interval *
-_unur_tabl_iv_stack_pop( struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* pop free interval from stack; allocate memory block if necessary.    */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   pointer to interval                                                */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return NULL                                                        */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_TABL_GEN,NULL);
-
-  /* look for an unused segment */
-  if( ! GEN.iv_free ) {
-    /* no more unused segments. make some. */
-    GEN.iv_stack = _unur_malloc( UNUR_MALLOC_SIZE * sizeof(struct unur_tabl_interval) );
-
-    /* reset counter */
-    GEN.iv_free = UNUR_MALLOC_SIZE;
-
-    /* set cookies */
-    COOKIE_SET_ARRAY( GEN.iv_stack, CK_TABL_IV, UNUR_MALLOC_SIZE);
-
-    /* add to list of allocated blocks */
-    _unur_add_mblocks( &(GEN.mblocks), GEN.iv_stack ); 
-  }
-
-  /* update ....                                   */
-  --(GEN.iv_free);   /* pointer to free segments  */
-  ++(GEN.n_ivs);     /* counter for used segments */
-
-  /* return pointer to segment */
-  return (GEN.iv_stack + GEN.iv_free);
-
-} /* end of _unur_tabl_iv_stack_pop() */
-
 /*---------------------------------------------------------------------------*/
-
-#if THIS_IS_NOT_USED_YET & 0
-static void
-_unur_tabl_iv_stack_push( struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* push the last popped interval back onto the stack.                   */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  CHECK_NULL(par,NULL);  COOKIE_CHECK(gen,CK_TABL_GEN,/*void*/);
-
-  /* update counters and pointers */
-  --(GEN.n_ivs);
-  ++(GEN.iv_free);
-} /* end of _unur_tabl_iv_stack_push() */
-#endif
-
-/*-----------------------------------------------------------------*/
 
 /*****************************************************************************/
 /**  Debugging utilities                                                    **/

@@ -234,6 +234,76 @@ struct symbols symbol[] = {
   {"end",0, .0,v_dummy,  d_dummy, 0},
 };
 
+
+
+
+/* --- Import aus SCANNER.C: --- */ 
+extern int ros, roe, aos, aoe, mos, moe, hos, hoe, oss, ose, scs, sce; 
+extern int ucs, uce, uis, uie, ufs, ufe, sfs, sfe; 
+
+extern struct symbols symbol[]; 
+
+extern void init_scanner(void);
+extern void show_symb_tab(void);
+extern int  nxt_symbol(char function[], int *scanposp,  char symb[],
+                       int  *tokenp,    int *symbkindp, int *errposp);
+extern int  find_kind(int token);
+extern int  find_index(char *symb, int start, int end, int nxt_c);
+
+/* --- Prototypen: --- */ 
+struct treenode *string2tree(char *function, int *errcodep, int *errposp);
+static struct treenode *FuncDefinition   (char *f, int *spp, int *ecp, int *epp);
+static struct treenode *DefFuncDesignator(char *f, int *spp, int *ecp, int *epp, 
+                                                                int *ftp);
+static struct treenode *DefParameterlist (char *f, int *spp, int *ecp, int *epp, 
+                                                            int *paranzp);
+static struct treenode *Expression       (char *f, int *spp, int *ecp, int *epp);
+static struct treenode *SimpleExpression (char *f, int *spp, int *ecp, int *epp);
+static struct treenode *VTerm            (char *f, int *spp, int *ecp, int *epp);
+static struct treenode *Term             (char *f, int *spp, int *ecp, int *epp);
+static struct treenode *Factor           (char *f, int *spp, int *ecp, int *epp);
+static struct treenode *bas_exp          (char *f, int *spp, int *ecp, int *epp);
+static struct treenode *FuncDesignator   (char *f, int *spp, int *ecp, int *epp);
+static struct treenode *ActualParameterlist(char *f, int *spp, int *ecp, 
+                                                 int *epp, int corr_panz);
+static struct treenode *create_node(char *symb, int token, int symbkind,
+                double val, struct treenode *left, struct treenode *right);
+static struct treenode *tnalloc (void);
+static struct treenode *set_err (int err_nr, int *errcodep);
+char            *readln  (char *s);
+static char            *erase_back_blancs (char *s); 
+static int             simplification(char *symb, int t, struct treenode *l, 
+                                                      struct treenode *r);
+void            check_reorg (struct treenode *root);
+void            show_tree   (struct treenode *root);
+void            _unur_fstr_free (struct treenode *root);                            
+               
+void            pt_error    (char *function, int errcode, int errpos);
+
+char *errorstrings[] = { 
+     "OK",                                                /* 0*/ 
+     "scan pointer too big",                              /* 1*/ 
+     "unsigned constant area full",                       /* 2*/ 
+     "identifier area full",                              /* 3*/ 
+     "4", "5", "6", "7", 
+     "8", "9", "10", 
+     "operator expected        in string2tree",           /*11*/ 
+     "expected symbol: '='     in FunctionDefinition",    /*12*/ 
+     "user function expected   in DefFuncDesignator",     /*13*/ 
+     "expected symbol: '('     in DefFuncDesignator",     /*14*/ 
+     "expected symbol: ')'     in DefFuncDesignator",     /*15*/ 
+     "user identifier expected in DefParameterlist",      /*16*/ 
+     "user identifier expected in DefParameterlist",      /*17*/ 
+     "expected symbol: ')'     in bas_exp",               /*18*/ 
+     "unknown symbol           in bas_exp",               /*19*/ 
+     "function expected        in FuncDesignator",        /*20*/ 
+     "expected symbol: '('     in FuncDesignator",        /*21*/ 
+     "expected symbol: ')'     in FuncDesignator",        /*22*/ 
+     "expected symbol: ')'     in ActualParameterlist",   /*23*/ 
+     "expected symbol: ','     in ActualParameterlist",   /*24*/ 
+};
+
+
 /************************************************************************/
 
 void  _unur_fstr_init(void)
@@ -550,74 +620,7 @@ if (i < end ) return i;
   }
   return 0;
 }
-
-
-
-/* --- Import aus SCANNER.C: --- */ 
-extern int ros, roe, aos, aoe, mos, moe, hos, hoe, oss, ose, scs, sce; 
-extern int ucs, uce, uis, uie, ufs, ufe, sfs, sfe; 
-
-extern struct symbols symbol[]; 
-
-extern void init_scanner(void);
-extern void show_symb_tab(void);
-extern int  nxt_symbol(char function[], int *scanposp,  char symb[],
-                       int  *tokenp,    int *symbkindp, int *errposp);
-extern int  find_kind(int token);
-extern int  find_index(char *symb, int start, int end, int nxt_c);
-
-/* --- Prototypen: --- */ 
-struct treenode *string2tree(char *function, int *errcodep, int *errposp);
-static struct treenode *FuncDefinition   (char *f, int *spp, int *ecp, int *epp);
-static struct treenode *DefFuncDesignator(char *f, int *spp, int *ecp, int *epp, 
-                                                                int *ftp);
-static struct treenode *DefParameterlist (char *f, int *spp, int *ecp, int *epp, 
-                                                            int *paranzp);
-static struct treenode *Expression       (char *f, int *spp, int *ecp, int *epp);
-static struct treenode *SimpleExpression (char *f, int *spp, int *ecp, int *epp);
-static struct treenode *VTerm            (char *f, int *spp, int *ecp, int *epp);
-static struct treenode *Term             (char *f, int *spp, int *ecp, int *epp);
-static struct treenode *Factor           (char *f, int *spp, int *ecp, int *epp);
-static struct treenode *bas_exp          (char *f, int *spp, int *ecp, int *epp);
-static struct treenode *FuncDesignator   (char *f, int *spp, int *ecp, int *epp);
-static struct treenode *ActualParameterlist(char *f, int *spp, int *ecp, 
-                                                 int *epp, int corr_panz);
-static struct treenode *create_node(char *symb, int token, int symbkind,
-                double val, struct treenode *left, struct treenode *right);
-static struct treenode *tnalloc (void);
-static struct treenode *set_err (int err_nr, int *errcodep);
-char            *readln  (char *s);
-static char            *erase_back_blancs (char *s); 
-static int             simplification(char *symb, int t, struct treenode *l, 
-                                                      struct treenode *r);
-void            check_reorg (struct treenode *root);
-void            show_tree   (struct treenode *root);
-void            _unur_fstr_free (struct treenode *root);                            
-               
-void            pt_error    (char *function, int errcode, int errpos);
-
-char *errorstrings[] = { 
-     "OK",                                                /* 0*/ 
-     "scan pointer too big",                              /* 1*/ 
-     "unsigned constant area full",                       /* 2*/ 
-     "identifier area full",                              /* 3*/ 
-     "4", "5", "6", "7", 
-     "8", "9", "10", 
-     "operator expected        in string2tree",           /*11*/ 
-     "expected symbol: '='     in FunctionDefinition",    /*12*/ 
-     "user function expected   in DefFuncDesignator",     /*13*/ 
-     "expected symbol: '('     in DefFuncDesignator",     /*14*/ 
-     "expected symbol: ')'     in DefFuncDesignator",     /*15*/ 
-     "user identifier expected in DefParameterlist",      /*16*/ 
-     "user identifier expected in DefParameterlist",      /*17*/ 
-     "expected symbol: ')'     in bas_exp",               /*18*/ 
-     "unknown symbol           in bas_exp",               /*19*/ 
-     "function expected        in FuncDesignator",        /*20*/ 
-     "expected symbol: '('     in FuncDesignator",        /*21*/ 
-     "expected symbol: ')'     in FuncDesignator",        /*22*/ 
-     "expected symbol: ')'     in ActualParameterlist",   /*23*/ 
-     "expected symbol: ','     in ActualParameterlist",   /*24*/ 
-}; 
+ 
 /************************************************************************/ 
 
 struct treenode *string2tree(char *function, int *errcodep, int *errposp) 

@@ -15,7 +15,7 @@ int main()
   char            *input_string;
   int             errcode, errpos;
   double          argument;
-
+  double          value;
    _unur_fstr_init();
   
 
@@ -28,18 +28,23 @@ do {
      parsetree = _unur_fstr2tree(input_string,&errcode,&errpos);
     
 
-     if  (errcode>0)  {  
+      if  (errcode>0)  {  
               printf("Fehler\n");
               break;
-            };
+           };
   /*-----------------------------------------------------------------*/
   /* Funktionsauswertung */
 
    do {
      printf("\n Argument: ");
      readln(input_string);
-     argument=atof(input_string); 
-     printf("\n Wert: %f \n", _unur_fstr_eval_tree(parsetree,atof(input_string)));
+     argument=atof(input_string);
+     value=_unur_fstr_eval_tree(parsetree,atof(input_string));
+     /* if (value==nan) {
+       printf("Fehler\n");
+       break; }
+     */     
+printf("\n Wert: %f \n", _unur_fstr_eval_tree(parsetree,atof(input_string)));
     } while (0); 
 
 /*-----------------------------------------------------------------*/

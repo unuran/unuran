@@ -57,7 +57,6 @@ static char test_name[] = "Timing";
 /*---------------------------------------------------------------------------*/
 
 static double _unur_test_timing_uniform( struct unur_par *par, int log_samplesize );
-static double _unur_call_uniform( struct unur_par *par );
 
 /*---------------------------------------------------------------------------*/
 
@@ -182,6 +181,7 @@ _unur_test_timing_uniform( struct unur_par *par, int log_samplesize )
      /*   mean generation time                                               */
      /*----------------------------------------------------------------------*/
 {
+  struct unur_gen *gen_urng;
   static double fastest_time = 0.;
   int j;
 
@@ -193,37 +193,26 @@ _unur_test_timing_uniform( struct unur_par *par, int log_samplesize )
     for( j=0; j<log_samplesize; j++ )
       samplesize *= 10;
 
+    /* make generator object for uniform generator */
+    gen_urng = unur_unif_init( unur_unif_new(0,1) );
+    unur_chg_urng(gen_urng,par->urng);
+
     /* evaluate marginal generation time */
     fastest_time = _unur_get_time();
-    for( j=0; j<samplesize; j++ ) {
-      _unur_call_uniform(par);
-    }
+    for( j=0; j<samplesize; j++ )
+      unur_sample_cont(gen_urng);
+
     fastest_time = (_unur_get_time() - fastest_time)/samplesize;
+
+    /* free generator object for uniform random number generator */
+    unur_free(gen_urng);
+
   }
 
   return fastest_time;
 } /* end of _unur_test_timing_uniform() */
 
 /*---------------------------------------------------------------------------*/
-
-static double
-_unur_call_uniform( struct unur_par *par )
-     /*----------------------------------------------------------------------*/
-     /*  a function that just calls the uniform random number generator      */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   par    ... pointer to paramters for building generator object      */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   uniform random number                                              */
-     /*----------------------------------------------------------------------*/
-{
-  return _unur_call_urng(par);
-} /* end of _unur_call_uniform() */
-
-/*---------------------------------------------------------------------------*/
-
-
 
 
 

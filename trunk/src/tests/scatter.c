@@ -1,3 +1,7 @@
+
+#error method UNIF has changed!
+
+
 /*****************************************************************************
  *                                                                           *
  *          UNURAN -- Universal Non-Uniform Random number generator          *

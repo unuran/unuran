@@ -41,17 +41,11 @@
 /*---------------------------------------------------------------------------*/
 /* Information for constructing the generator                                */
 
-struct unur_unif_par { 
-  int start;            /* starting point in sequence (0 = first number)     */
-  int skip;             /* skip for subsequence (1 = full sequence)          */
-};
+struct unur_unif_par {};
 
 /*---------------------------------------------------------------------------*/
 /* The generator object                                                      */
 
-struct unur_unif_gen { 
-  int start;            /* starting point in sequence                        */
-  int skip;             /* skip for subsequence                              */
-};
+struct unur_unif_gen {};
 
 /*---------------------------------------------------------------------------*/

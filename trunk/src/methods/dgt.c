@@ -134,7 +134,7 @@ static struct unur_gen *_unur_dgt_create( struct unur_par *par );
 /* Re-initialize (existing) generator.                                       */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_dgt_sample( UNUR_GEN *generator );
+static int _unur_dgt_sample( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/

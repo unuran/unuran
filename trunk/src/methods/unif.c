@@ -53,10 +53,32 @@
 
 /*---------------------------------------------------------------------------*/
 
+static struct unur_gen *_unur_unif_init( struct unur_par *par );
+/*---------------------------------------------------------------------------*/
+/* Initialize new generator.                                                 */
+/*---------------------------------------------------------------------------*/
+
 static struct unur_gen *_unur_unif_create( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 /* create new (almost empty) generator object.                               */
 /*---------------------------------------------------------------------------*/
+
+/* No reinit() cal                                                           */
+/*  static int _unur_unif_reinit( struct unur_gen *gen );                     */
+/*---------------------------------------------------------------------------*/
+/* Re-initialize (existing) generator.                                       */
+/*---------------------------------------------------------------------------*/
+
+static double _unur_unif_sample( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* sample from generator                                                     */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_unif_free( struct unur_gen *gen);
+/*---------------------------------------------------------------------------*/
+/* destroy generator object.                                                 */
+/*---------------------------------------------------------------------------*/
+
 
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
@@ -72,13 +94,11 @@ static struct unur_gen *_unur_unif_create( struct unur_par *par );
 /*****************************************************************************/
 
 struct unur_par *
-unur_unif_new( int start, int skip )
+unur_unif_new( void )
      /*----------------------------------------------------------------------*/
      /* get default parameters                                               */
      /*                                                                      */
-     /* parameters:                                                          */
-     /*   start ...  starting point for subsequences (0 = first number)      */
-     /*   skip  ...  skip for subsequence (1 = full sequence)                */
+     /* parameters: none                                                     */
      /*                                                                      */
      /* return:                                                              */
      /*   default parameters (pointer to structure)                          */
@@ -87,9 +107,7 @@ unur_unif_new( int start, int skip )
      /*   return NULL                                                        */
      /*                                                                      */
      /* comment:                                                             */
-     /*   for testing only.                                                  */
-     /*   negative number for start and skip are treated as 0 and 1,         */
-     /*   respectively.                                                      */
+     /*   for testing.                                                       */
      /*----------------------------------------------------------------------*/
 { 
   struct unur_par *par;
@@ -99,8 +117,6 @@ unur_unif_new( int start, int skip )
   COOKIE_SET(par,CK_UNIF_PAR);
 
   /* copy input */
-  PAR.start = start;               /* starting point for subsequence         */
-  PAR.skip = skip;                 /* skip for subsequence                   */
 
   /* set default values */
   par->method   = UNUR_METH_UNIF;  /* method and default variant             */
@@ -136,7 +152,6 @@ _unur_unif_init( struct unur_par *par )
      /*----------------------------------------------------------------------*/
 { 
   struct unur_gen *gen;
-  int i;
 
   /* check arguments */
   CHECK_NULL(par,NULL);
@@ -151,10 +166,6 @@ _unur_unif_init( struct unur_par *par )
   gen = _unur_unif_create(par);
   if (!gen) { free(par); return NULL; }
 
-  /* skip to starting point */
-  for (i=0; i<GEN.start; i++)
-    _unur_call_urng(gen);
-
   /* free parameters */
   free(par);
 
@@ -162,74 +173,7 @@ _unur_unif_init( struct unur_par *par )
 
 } /* end of _unur_unif_init() */
 
-/*****************************************************************************/
-
-double
-_unur_unif_sample( struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* sample from generator                                                */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   double (sample from random variate)                                */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return 0.                                                          */
-     /*----------------------------------------------------------------------*/
-{ 
-  register int i;
-  register double u;
-
-  /* check arguments */
-  CHECK_NULL(gen,0.);
-  COOKIE_CHECK(gen,CK_UNIF_GEN,0.);
-
-  /* sample uniform random number */
-  u = _unur_call_urng(gen);
-
-  /* skip to next starting point in sequence */
-  for (i=1; i<GEN.skip; i++)
-    _unur_call_urng(gen);
-
-  return u;
-
-} /* end of _unur_unif_sample() */
-
-/*****************************************************************************/
-
-void
-_unur_unif_free( struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* deallocate generator object                                          */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*----------------------------------------------------------------------*/
-{ 
-
-  /* check arguments */
-  if( !gen ) /* nothing to do */
-    return;
-
-  /* check input */
-  if ( gen->method != UNUR_METH_UNIF ) {
-    _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
-    return; }
-  COOKIE_CHECK(gen,CK_UNIF_GEN,/*void*/);
-
-  /* we cannot use this generator object any more */
-  SAMPLE = NULL;   /* make sure to show up a programming error */
-
-  /* free memory */
-  free(gen);
-
-} /* end of _unur_unif_free() */
-
-/*****************************************************************************/
-/**  Auxilliary Routines                                                    **/
-/*****************************************************************************/
+/*---------------------------------------------------------------------------*/
 
 static struct unur_gen *
 _unur_unif_create( struct unur_par *par )
@@ -277,13 +221,71 @@ _unur_unif_create( struct unur_par *par )
   gen->gen_aux = NULL;              /* no auxilliary generator objects       */
   gen->gen_aux_2 = NULL;
 
-  GEN.start = PAR.start;    /* starting point for subsequence */
-  GEN.skip = PAR.skip;      /* skip for subsequence */
-
   /* return pointer to (almost empty) generator object */
   return(gen);
   
 } /* end of _unur_unif_create() */
+
+/*****************************************************************************/
+
+double
+_unur_unif_sample( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* sample from generator                                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   double (sample from random variate)                                */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0.                                                          */
+     /*----------------------------------------------------------------------*/
+{ 
+  /* check arguments */
+  CHECK_NULL(gen,0.);
+  COOKIE_CHECK(gen,CK_UNIF_GEN,0.);
+
+  /* sample uniform random number */
+  return _unur_call_urng(gen);
+
+} /* end of _unur_unif_sample() */
+
+/*****************************************************************************/
+
+void
+_unur_unif_free( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* deallocate generator object                                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{ 
+
+  /* check arguments */
+  if( !gen ) /* nothing to do */
+    return;
+
+  /* check input */
+  if ( gen->method != UNUR_METH_UNIF ) {
+    _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
+    return; }
+  COOKIE_CHECK(gen,CK_UNIF_GEN,/*void*/);
+
+  /* we cannot use this generator object any more */
+  SAMPLE = NULL;   /* make sure to show up a programming error */
+
+  /* free memory */
+  free(gen);
+
+} /* end of _unur_unif_free() */
+
+/*****************************************************************************/
+/**  Auxilliary Routines                                                    **/
+/*****************************************************************************/
+
 
 /*****************************************************************************/
 /**  Debugging utilities                                                    **/

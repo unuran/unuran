@@ -154,9 +154,9 @@ static int _unur_srou_reinit( struct unur_gen *gen );
 /* Re-initialize (existing) generator.                                       */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_srou_sample_mirror( UNUR_GEN *generator );
-static double _unur_srou_sample_check( UNUR_GEN *generator );
-static double _unur_srou_sample( UNUR_GEN *generator );
+static double _unur_srou_sample_mirror( struct unur_gen *gen );
+static double _unur_srou_sample_check( struct unur_gen *gen );
+static double _unur_srou_sample( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/

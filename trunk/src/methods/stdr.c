@@ -116,8 +116,8 @@ static int _unur_stdr_reinit( struct unur_gen *gen );
 /* Re-initialize (existing) generator.                                       */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_stdr_sample( UNUR_GEN *generator );
-static double _unur_stdr_sample_check( UNUR_GEN *generator );
+static double _unur_stdr_sample( struct unur_gen *gen );
+static double _unur_stdr_sample_check( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/

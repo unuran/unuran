@@ -41,17 +41,8 @@
 /*---------------------------------------------------------------------------*/
 /* Routines for user interface                                               */
 
-UNUR_PAR *unur_unif_new( int start, int skip );
+UNUR_PAR *unur_unif_new( void );
 /* get default parameters for generator                                      */
-
-UNUR_GEN *_unur_unif_init( UNUR_PAR *parameters );
-/* initialize new generator                                                  */
-
-double _unur_unif_sample( UNUR_GEN *generator );
-/* sample from generator                                                     */
-
-void _unur_unif_free( UNUR_GEN *generator );
-/* destroy generator object                                                  */
 
 /*---------------------------------------------------------------------------*/
 

@@ -17,9 +17,10 @@ libtests_a_SOURCES = \
  moments.c \
  printsample.c \
  quantiles.c \
- scatter.c \
  tests.c \
  timing.c
+
+# scatter.c \ removed from source
 
 include_HEADERS = \
  unuran_tests.h

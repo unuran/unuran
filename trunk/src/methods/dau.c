@@ -150,7 +150,7 @@ static struct unur_gen *_unur_dau_create( struct unur_par *par );
 /* Re-initialize (existing) generator.                                       */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_dau_sample( UNUR_GEN *generator );
+static int _unur_dau_sample( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/

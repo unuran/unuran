@@ -107,42 +107,8 @@
 
 ------------------------------------------------------------------------
 
-Texinfo:
-
-@copyright{} macro verwenden.
-
-------------------------------------------------------------------------
-
-HINV:
-
-> mir ist noch eine kleinigkeit eingefallen. die tatsache, dass
-> unur_hinv_sample() und unur_hinv_estimate_error() viel identischen
-> code gemeinsam haben, gefaellt mir nicht ganz. insbesondere ist es
-> problematisch wenn wir in zukunft in ersterem irgendetwas aendern,
-> darauf aber in der zweiten routine vergessen. ich wuerde daher liefer
-> eine zusatzroutine unur_hin_eval_approxcdf(UNUR_GEN *gen, double u)
-> einfuehren, die von beiden aufgerufen wird. ich denke das sollte auch
-> kaum langsamer sein (falls nicht ohnehin durch inline gleichschnell).
-> was meinst du?
-> 
-> > ich habe gerade gesehen, dass du in unur_hinv_estimate_error()
-> mitzaehlst, wie of
-> 
-> if (X<DISTR.trunc[0]) return DISTR.trunc[0];
-> if (X>DISTR.trunc[1]) return DISTR.trunc[1];
-> 
-> ausgefuehrt wird. ich habe es daher bleiben lassen, die gemeinsamen
-> teile mit ..._sample() auszulagern.
-> ich mache aber sicherheitshalber in ..._sample() eine notiz.
-
-Ich denke, dass Dein Vorschlag von oben sinnvoll ist. Wir koennen ja die
-domainabfrage erst ausserhalb von
-unur_hinv_eval_approxcdf(UNUR_GEN *gen, double u)
-machen, dann ist das kein Problem.
-Soll unur_hinv_eval_approxcdf(UNUR_GEN *gen, double u) auch fuer den
-Benutzer zugaenglich sein?
-Ich koennte das machen, oder Du, oder auch gar nicht, wenn Du schon
-alles fertig hast. Dann machen wir es naechstes mal.
+(*) URNG: make compiler switch. distinguish between uniform RNG that may 
+          return 0. and those that do not.
  
 ------------------------------------------------------------------------
 

@@ -16,15 +16,15 @@
  *****************************************************************************
  *****************************************************************************
  *                                                                           *
- *  Normal (Gaussian) distribution [2; ch.13, p.80]                          *
+ *  distr: Normal (Gaussian) distribution [2; ch.13, p.80]                   *
  *                                                                           *
  *  pdf:       f(x) = exp( -1/2 * ((x-mu)/sigma)^2 )                         *
  *  domain:    -infinity < x < infinity                                      *
  *  constant:  sigma * sqrt(2 pi)                                            *
  *                                                                           *
  *  parameters:                                                              *
- *     0:  mu          ... location                                          *
- *     1:  sigma > 0   ... scale                                             *
+ *     0:  mu          (0.)  ... location                                    *
+ *     1:  sigma > 0   (1.)  ... scale                                       *
  *                                                                           *
  *****************************************************************************
  *                                                                           *

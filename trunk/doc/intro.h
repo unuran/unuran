@@ -136,8 +136,7 @@
    is a structure of the type @code{UNUR_GEN} and 
    @code{unur_sample_cont()} is a double valued function.
    
-   
-   
+   @sp 2
 
    Of course the user has to provide information about the
    internal properties the random numbers should meet. It is a C
@@ -157,29 +156,16 @@
    a function @code{unur_sample_<cont|discr|vec>()}
    to sample random numbers.
    @itemize @bullet
-   @item @code{unur_distr_cont_new()}@*
-        This function is used to create a distribution object
-	if the cdf is continuous.@*
-	Use for sampling: @code{unur_sample_cont()} 
-   @item  @code{unur_distr_cvec_new()}@*
-	This function is used to create a distribution object
-	if you want to sample from a continuous multivariate
-	distribution.@*
-        Use for sampling: @code{unur_sample_vec()}
-   @item @code{unur_distr_discr_new()}@*
-	If your distribution is discrete, use this function to
-	create the distribution object.@*
-        Use for sampling: @code{unur_sample_discr()}
-   @item @code{unur_distr_cemp_new()}@*
-        If you want to create random numbers similar to a given
-	set of numbers, use this function to get a 
-	distribution object.@*
-	Use for sampling: @code{unur_sample_cont()}
-   @item  @code{unur_distr_cvemp_new()}@*
-        If you want to create a vector of random numbers similar
-	to a given set of vectors, this function will produce
-	the distribution object.@*
-	Use for sampling: @code{unur_sample_vec()}
+   @item @code{unur_distr_cont_new()}:
+     univariate continous distributions
+   @item  @code{unur_distr_cvec_new()}:
+     continuous multivariate distributions
+   @item @code{unur_distr_discr_new()}:
+     discrete univariate distributions
+   @item @code{unur_distr_cemp_new()}:
+     empirical continuous univariate distribuions
+   @item  @code{unur_distr_cvemp_new()}:
+     empirical continuous multivariate distributions
    @end itemize
 
    Notice that these commands only create an @emph{empty} structure which
@@ -187,7 +173,9 @@
    fuctions---depending on the type
    @code{<type>} of the distribution object. 
    The function reference of these types of distribution objects
-   are found in the corresponding sections (@pxref{Distribution_objects,Handling distribution objects,Handling distribution objects}). The naming scheme
+   are found in the corresponding sections
+   (@pxref{Distribution_objects,Handling
+   distribution objects,Handling distribution objects}). The naming scheme
    of these functions is designed to indicate the corresponding type of
    the distribution object and the task to be performed. To demonstrate
    this an example will be given:
@@ -203,8 +191,10 @@
    heavily on the method choosen for sampling random numbers. 
   
    The requirements of the methods are indicated in the following tables: 
-   
-   @include unuran_method_requirements.texi
+    
+
+     @include unuran_method_requirements.texi
+
 
    If we want to sample from a continuous distribution and
    the choosen method needs the mode, it can be set with

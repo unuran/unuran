@@ -126,7 +126,7 @@ unur_distr_discr_new( void )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_distr_discr_set_pmf( struct unur_distr *distr, void *pmf )
+unur_distr_discr_set_pmf( struct unur_distr *distr, UNUR_FUNCT_DISCR *pmf )
      /*----------------------------------------------------------------------*/
      /* set p.m.f. of distribution                                           */
      /*                                                                      */
@@ -156,7 +156,7 @@ unur_distr_discr_set_pmf( struct unur_distr *distr, void *pmf )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_distr_discr_set_cdf( struct unur_distr *distr, void *cdf )
+unur_distr_discr_set_cdf( struct unur_distr *distr, UNUR_FUNCT_DISCR *cdf )
      /*----------------------------------------------------------------------*/
      /* set p.d.f. of distribution                                           */
      /*                                                                      */
@@ -184,7 +184,7 @@ unur_distr_discr_set_cdf( struct unur_distr *distr, void *cdf )
 
 /*---------------------------------------------------------------------------*/
 
-void *
+UNUR_FUNCT_DISCR *
 unur_distr_discr_get_pmf( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get pointer to p.d.f. of distribution                                */
@@ -205,7 +205,7 @@ unur_distr_discr_get_pmf( struct unur_distr *distr )
 
 /*---------------------------------------------------------------------------*/
 
-void *
+UNUR_FUNCT_DISCR *
 unur_distr_discr_get_cdf( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get pointer to c.d.f. of distribution                                */

@@ -260,7 +260,7 @@ _unur_test_chi2_cont(struct unur_gen *gen,
 #define DISTR   gen->distr.data.cont
 
   double F, Fl, Fr, Fdelta;  /* value of cdf (at left and right boundary point) */
-  _UNUR_FUNCTION_CONT *cdf;  /* pointer to c.d.f. */
+  UNUR_FUNCT_CONT *cdf;      /* pointer to c.d.f. */
   int *observed;             /* vector for observed occurrences */
   double pval;               /* p-value */
   int i,j;

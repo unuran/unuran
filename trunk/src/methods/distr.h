@@ -156,31 +156,30 @@ UNUR_DISTR *unur_distr_cont_new( void );
 
 /* Essential parameters. */
 
-int unur_distr_cont_set_pdf( UNUR_DISTR *distribution, void *pdf );
+int unur_distr_cont_set_pdf( UNUR_DISTR *distribution, UNUR_FUNCT_CONT *pdf );
 /* See @code{unur_distr_cont_set_cdf}           */
 
-int unur_distr_cont_set_dpdf( UNUR_DISTR *distribution, void *dpdf );
+int unur_distr_cont_set_dpdf( UNUR_DISTR *distribution, UNUR_FUNCT_CONT *dpdf );
 /* See @code{unur_distr_cont_set_cdf}           */
 
-int unur_distr_cont_set_cdf( UNUR_DISTR *distribution, void *cdf );
+int unur_distr_cont_set_cdf( UNUR_DISTR *distribution, UNUR_FUNCT_CONT *cdf );
 /* 
    Set respective pointer to the probability density function (pdf),
    the derivative of the probability density function (dpdf) and the
    cumulative distribution function (cdf) of the distribution.
-   The type of each of these functions must be either
-   double funct(double x) or 
+   The type of each of these functions must be of type
    double funct(double x, UNUR_DISTR *distr).
-   The second form is necessary when parameters for the p.d.f. are
-   used.  */
+   (If no parameters are used for the function use the NULL pointer
+   for the second argument.)
+*/
 
-
-void *unur_distr_cont_get_pdf( UNUR_DISTR *distribution );
+UNUR_FUNCT_CONT *unur_distr_cont_get_pdf( UNUR_DISTR *distribution );
 /* See @code{unur_distr_cont_get_cdf}           */
 
-void *unur_distr_cont_get_dpdf( UNUR_DISTR *distribution );
+UNUR_FUNCT_CONT *unur_distr_cont_get_dpdf( UNUR_DISTR *distribution );
 /* See @code{unur_distr_cont_get_cdf}           */
 
-void *unur_distr_cont_get_cdf( UNUR_DISTR *distribution );
+UNUR_FUNCT_CONT *unur_distr_cont_get_cdf( UNUR_DISTR *distribution );
 /* 
    Get the respective pointer to the p.d.f., the derivative of the 
    p.d.f. and the c.d.f. of the distribution. The pointer is of type
@@ -248,7 +247,8 @@ int unur_distr_cont_get_domain( UNUR_DISTR *distribution, double *left, double *
 /* 
    Derived parameters.
 */   
-/*   The following paramters MUST be set whenever one of the essential
+/*   
+   The following paramters MUST be set whenever one of the essential
    parameters have been set or changed (and the parameter is required
    for the chosen method).
 */
@@ -345,24 +345,23 @@ UNUR_DISTR *unur_distr_discr_new( void );
 
 /* Essential parameters. */
 
-int unur_distr_discr_set_pmf( UNUR_DISTR *distribution, void *pmf );
+int unur_distr_discr_set_pmf( UNUR_DISTR *distribution, UNUR_FUNCT_DISCR *pmf );
 /* See @code{unur_distr_discr_set_cdf}           */
 
-int unur_distr_discr_set_cdf( UNUR_DISTR *distribution, void *cdf );
+int unur_distr_discr_set_cdf( UNUR_DISTR *distribution, UNUR_FUNCT_DISCR *cdf );
 /* 
    Set respective pointer to the probability mass function (pmf) and the
    cumulative distribution function (cdf) of the distribution.
-   The type of each of these functions must be either
-   double funct(int k) or 
+   The type of each of these functions must be of type
    double funct(int k, UNUR_DISTR *distr).
-   The second form is necessary when parameters for the p.m.f. are
-   used.  */
+   (If no parameters are used for the function use the NULL pointer
+   for the second argument.)
+*/
 
-
-void *unur_distr_discr_get_pmf( UNUR_DISTR *distribution );
+UNUR_FUNCT_DISCR *unur_distr_discr_get_pmf( UNUR_DISTR *distribution );
 /* See @code{unur_distr_discr_get_cdf}           */
 
-void *unur_distr_discr_get_cdf( UNUR_DISTR *distribution );
+UNUR_FUNCT_DISCR *unur_distr_discr_get_cdf( UNUR_DISTR *distribution );
 /* 
    Get the respective pointer to the p.m.f. and the c.d.f. of the 
    distribution. The pointer is of type
@@ -406,7 +405,8 @@ int unur_distr_discr_get_pmfparams(UNUR_DISTR *distribution,double **params);
 /* 
    Derived parameters.
 */   
-/*   The following paramters MUST be set whenever one of the essential
+/* 
+   The following paramters MUST be set whenever one of the essential
    parameters have been set or changed (and the parameter is required
    for the chosen method).
 */

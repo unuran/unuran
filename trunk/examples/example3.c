@@ -19,7 +19,7 @@ int main()
   par = unur_ninv_new(distr);
 
   /* change a parameter of the used method */
-  unur_ninv_use_newton(par);
+  unur_ninv_set_usenewton(par);
 
   /* make generator object */
   gen = unur_init(par);

@@ -3,7 +3,7 @@
 #include <unuran.h>
 
 /* desired cdf  -- piecewise parabolic */
-double mycdf(double x)
+double mycdf(double x, UNUR_DISTR *dummy)
 {
    if (x <= 0.0)
      return ( 0.0 );

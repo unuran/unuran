@@ -125,7 +125,7 @@ unur_distr_cont_new( void )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_distr_cont_set_pdf( struct unur_distr *distr, void *pdf )
+unur_distr_cont_set_pdf( struct unur_distr *distr, UNUR_FUNCT_CONT *pdf )
      /*----------------------------------------------------------------------*/
      /* set p.d.f. of distribution                                           */
      /*                                                                      */
@@ -155,7 +155,7 @@ unur_distr_cont_set_pdf( struct unur_distr *distr, void *pdf )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_distr_cont_set_dpdf( struct unur_distr *distr, void *dpdf )
+unur_distr_cont_set_dpdf( struct unur_distr *distr, UNUR_FUNCT_CONT *dpdf )
      /*----------------------------------------------------------------------*/
      /* set derivative of p.d.f. of distribution                             */
      /*                                                                      */
@@ -184,7 +184,7 @@ unur_distr_cont_set_dpdf( struct unur_distr *distr, void *dpdf )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_distr_cont_set_cdf( struct unur_distr *distr, void *cdf )
+unur_distr_cont_set_cdf( struct unur_distr *distr, UNUR_FUNCT_CONT *cdf )
      /*----------------------------------------------------------------------*/
      /* set p.d.f. of distribution                                           */
      /*                                                                      */
@@ -212,7 +212,7 @@ unur_distr_cont_set_cdf( struct unur_distr *distr, void *cdf )
 
 /*---------------------------------------------------------------------------*/
 
-void *
+UNUR_FUNCT_CONT *
 unur_distr_cont_get_pdf( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get pointer to p.d.f. of distribution                                */
@@ -233,7 +233,7 @@ unur_distr_cont_get_pdf( struct unur_distr *distr )
 
 /*---------------------------------------------------------------------------*/
 
-void *
+UNUR_FUNCT_CONT *
 unur_distr_cont_get_dpdf( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get pointer to derivative of p.d.f. of distribution                  */
@@ -254,7 +254,7 @@ unur_distr_cont_get_dpdf( struct unur_distr *distr )
 
 /*---------------------------------------------------------------------------*/
 
-void *
+UNUR_FUNCT_CONT *
 unur_distr_cont_get_cdf( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get pointer to c.d.f. of distribution                                */

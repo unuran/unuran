@@ -40,9 +40,9 @@
 /* define object for univariate continuous distribution                      */
 struct unur_distr_cont {
 
-  _UNUR_FUNCTION_CONT *pdf;     /* pointer to p.d.f.                         */
-  _UNUR_FUNCTION_CONT *dpdf;    /* pointer to derivative of p.d.f.           */
-  _UNUR_FUNCTION_CONT *cdf;     /* pointer to c.d.f.                         */
+  UNUR_FUNCT_CONT *pdf;         /* pointer to p.d.f.                         */
+  UNUR_FUNCT_CONT *dpdf;        /* pointer to derivative of p.d.f.           */
+  UNUR_FUNCT_CONT *cdf;         /* pointer to c.d.f.                         */
 
   double params[UNUR_DISTR_MAXPARAMS + 1];  /* parameters of the p.d.f.      */
   /* params[UNUR_DISTR_MAXPARAMS] is used to store normalization constants!! */
@@ -62,8 +62,8 @@ struct unur_distr_cont {
 /*---------------------------------------------------------------------------*/
 /* define object for univariate discrete distribution                        */
 struct unur_distr_discr {
-  _UNUR_FUNCTION_DISCR *pmf;    /* pointer to probability mass function      */
-  _UNUR_FUNCTION_DISCR *cdf;    /* pointer to c.d.f.                         */
+  UNUR_FUNCT_DISCR *pmf;        /* pointer to probability mass function      */
+  UNUR_FUNCT_DISCR *cdf;        /* pointer to c.d.f.                         */
 
   double params[UNUR_DISTR_MAXPARAMS + 1];  /* parameters of the p.d.f.      */
   /* params[UNUR_DISTR_MAXPARAMS] is used to store normalization constants!! */

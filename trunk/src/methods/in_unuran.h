@@ -61,6 +61,12 @@ typedef struct unur_distr UNUR_DISTR;    /* distribution object              */
 typedef struct unur_par   UNUR_PAR;      /* parameters for generator         */
 typedef struct unur_gen   UNUR_GEN;      /* generator object                 */
 
+/*---------------------------------------------------------------------------*/
+/* functions for continuous univariate c.d.f., p.d.f. and their derivatives  */
+
+typedef double UNUR_FUNCT_CONT(double x, struct unur_distr *distr);
+typedef double UNUR_FUNCT_DISCR(int x, struct unur_distr *distr);
+
 /*****************************************************************************/
 /**  Declarations for uniform random number generators                      **/
 /*****************************************************************************/

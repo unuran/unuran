@@ -73,8 +73,6 @@ static double _unur_dpdf_slash(double x, UNUR_DISTR *distr);
 double
 _unur_pdf_slash(double x, UNUR_DISTR *distr)
 {
-  register double *params = DISTR.params;
-
   if (x == 0.)
     return (0.5 * NORMCONSTANT);
   else

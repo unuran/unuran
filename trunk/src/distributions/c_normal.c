@@ -84,7 +84,7 @@ static double _unur_pdf_normal( double x, UNUR_DISTR *distr );
 static double _unur_dpdf_normal( double x, UNUR_DISTR *distr );
 static double _unur_cdf_normal( double x, UNUR_DISTR *distr );
 static int _unur_upd_mode_normal( UNUR_DISTR *distr );
-static int _unur_upd_area( UNUR_DISTR *distr );
+static int _unur_upd_area_normal( UNUR_DISTR *distr );
 
 /*---------------------------------------------------------------------------*/
 

@@ -498,7 +498,7 @@ _unur_nrou_rectangle( struct unur_gen *gen )
 { 
   struct unur_funct_generic faux; /* function to be minimized/maximized    */
   double p[1]; /* parameter for auxiliary functions */
-  double x, sx, bx;
+  double x, sx, bx; 
 
   /* check arguments */
   CHECK_NULL( gen, UNUR_ERR_NULL );
@@ -601,12 +601,6 @@ _unur_nrou_rectangle( struct unur_gen *gen )
        return UNUR_ERR_GENERIC;
     }
     GEN.umax = faux.f(x,p);
-  }
-
-  /* we want to be on the safe side ... */
-  if (isnan(GEN.umin) || isnan(GEN.umax) || isnan(GEN.vmax)) {
-     _unur_error(gen->genid , UNUR_ERR_GENERIC, "Bounding rect (NaN)");  
-     return UNUR_ERR_GENERIC;
   }
 
   /* o.k. */

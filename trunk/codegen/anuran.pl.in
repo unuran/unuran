@@ -7,22 +7,31 @@
 
 use strict;
 
-# ----------------------------------------------------------------
-# Load packages
+# ################################################################
+#
+# Configuration
+#
 
-use CGI qw/:standard -nosticky *blockquote *font/;
-use CGI::Pretty;
+# ----------------------------------------------------------------
+# location of log file
+
+my $ANURAN_log = "/home/staff/leydold/public_html/anuran.log";
+
+# ----------------------------------------------------------------
+# number of frogs
+
+my $n_frogs = 12;
 
 # ----------------------------------------------------------------
 # URLs ...
 
-my $URL_root   = "";
+my $URL_root   = "http://statistik.wu-wien.ac.at";
 my $URL_arvag  = "$URL_root/arvag";
 my $URL_anuran = "$URL_root/anuran";
 
-my $ANURAN_log = "/home/staff/leydold/public_html/anuran.log";
-
+# ----------------------------------------------------------------
 # ACG Command
+
 my $ACG = "./acg";
 
 # ----------------------------------------------------------------
@@ -30,7 +39,17 @@ my $ACG = "./acg";
 
 my $Gray = "#C0C0C0";
 
+# ################################################################
+
 # ----------------------------------------------------------------
+# Load packages
+
+use CGI qw/:standard -nosticky *blockquote *font/;
+use CGI::Pretty;
+
+# ----------------------------------------------------------------
+# Data
+
 my %labels_menue_distrtypes = 
     ( "cstd" => "Continuous standard distribution",
       "cpdf" => "Continuous distribution with given PDF",
@@ -41,65 +60,19 @@ my @menue_distrtypes = sort keys %labels_menue_distrtypes;
 # ----------------------------------------------------------------
 # Data for distributions
 
-my %labels_menue_distributions = (
-	'beta' => 'Beta distribution',
-	'gamma' => 'Gamma distribution',
-	'normal' => 'Normal distribution',
-	);
+my %labels_menue_cstd_distributions = (
 
-my @menue_distributions = sort keys %labels_menue_distributions;
+=INPUT labels_menue_cstd_distributions
+
+);
+
+my @menue_cstd_distributions = sort keys %labels_menue_cstd_distributions;
 
 my %data_distr = (
-	'cont' => {
-		'=NAME' => 'User defined distribution',
-		'=N_REQ' => '0',
-		'=N_TOT' => '0',
-		'=LEFT' => '-infinity',
-		'=RIGHT' => 'infinity',
-		},
-	'beta' => {
-		'=NAME' => 'Beta distribution',
-		'=PDF' => '(x-a)<SUP>(p-1)</SUP> * (b-x)<SUP>(q-1)</SUP>',
-		'=N_REQ' => '2',
-		'=N_TOT' => '4',
-		'=FPARAMS' => [
-			{'=NAME' => 'p', '=DEF'  => '*', '=COND' => '> 0', '=LOWER' => '0', },
-			{'=NAME' => 'q', '=DEF'  => '*', '=COND' => '> 0', '=LOWER' => '0', },
-			{'=NAME' => 'a', '=DEF'  => '0', '=COND' => '', },
-			{'=NAME' => 'b', '=DEF'  => '1', '=COND' => '> a', '=LOWER' => 'a', },
-			],
-		,
-		'=LEFT' => 'a',
-		'=RIGHT' => 'b',
-		},
-	'gamma' => {
-		'=NAME' => 'Gamma distribution',
-		'=PDF' => '((x-gamma)/beta)<SUP>(alpha-1)</SUP> * exp( -(x-gamma)/beta )',
-		'=N_REQ' => '1',
-		'=N_TOT' => '3',
-		'=FPARAMS' => [
-			{'=NAME' => 'alpha', '=DEF'  => '*', '=COND' => '> 0', '=LOWER' => '0', },
-			{'=NAME' => 'beta', '=DEF'  => '1', '=COND' => '> 0', '=LOWER' => '0', },
-			{'=NAME' => 'gamma', '=DEF'  => '0', '=COND' => '', },
-			],
-		,
-		'=LEFT' => 'gamma',
-		'=RIGHT' => 'infinity',
-		},
-	'normal' => {
-		'=NAME' => 'Normal distribution',
-		'=PDF' => 'exp( -1/2 * ((x-mu)/sigma)<SUP>2</SUP> )',
-		'=N_REQ' => '0',
-		'=N_TOT' => '2',
-		'=FPARAMS' => [
-			{'=NAME' => 'mu', '=DEF'  => '0', '=COND' => '', },
-			{'=NAME' => 'sigma', '=DEF'  => '1', '=COND' => '> 0', '=LOWER' => '0', },
-			],
-		,
-		'=LEFT' => '-infinity',
-		'=RIGHT' => 'infinity',
-		},
-	);
+
+=INPUT data_distributions
+
+);
 
 # ----------------------------------------------------------------
 # abbreviations
@@ -151,7 +124,7 @@ my $n_params  = ($Stdform eq 'yes') ? $n_req : $n_tot;
 # ----------------------------------------------------------------
 # We need a frog
 
-my $frog = ($q->param('Frog') && $step > 1) ? $q->param('Frog') : sprintf("%02d",int(rand 12) + 1);
+my $frog = ($q->param('Frog') && $step > 1) ? $q->param('Frog') : sprintf("%02d",int(rand $n_frogs) + 1);
 
 my $img_frog = 
     "$sp <img SRC='$URL_anuran/frogs/frog$frog.jpg' ALIGN = top> $sp";
@@ -354,7 +327,7 @@ sub anuran_type_distribution
 				       -labels => \%labels_menue_distrtypes),
 			$sp,
 			anuran_submit('2'),
-			endform() ),
+			$q->endform() ),
 	    p().hr().p();
 	return;
     }
@@ -417,9 +390,9 @@ sub anuran_select_cstd
 	    blockquote(	$q->startform (-method => 'GET',
 				       -action => $q->url()),
 			$q->popup_menu(-name   => 'Distribution',
-				       -values => \@menue_distributions,
+				       -values => \@menue_cstd_distributions,
 				       -default=> 'normal',
-				       -labels => \%labels_menue_distributions),
+				       -labels => \%labels_menue_cstd_distributions),
 			p(),
 			$q->checkbox  (-name   => 'Stdform',
 				       -checked=> 'true',
@@ -431,7 +404,7 @@ sub anuran_select_cstd
 				       -label  => ' Truncated domain'),
 			p(),
 			anuran_submit('3'),
-			endform() ),
+			$q->endform() ),
 	    p().hr().p();
 	return;
     }
@@ -488,7 +461,7 @@ sub anuran_select_cpdf
 			$q->hidden('Distribution','cont'),
 			$q->hidden('Truncated','yes'),
 			anuran_submit('3'),
-			endform() ),
+			$q->endform() ),
 	    p().hr().p();
 	return;
     }
@@ -754,7 +727,7 @@ sub anuran_params_distribution
 			$params_show,p(),
 			$domain_show,p(),
 			anuran_submit('4'),
-			endform(), ),
+			$q->endform(), ),
 	    p().hr().p();
 	return;
     }
@@ -822,7 +795,7 @@ sub anuran_properties_generator
 						    'demo'=>' Make complete demo version'}),
 			p(),
 			anuran_submit('5'),
-			endform(), ),
+			$q->endform(), ),
 	    p().hr().p();
 	return;
     }
@@ -916,6 +889,14 @@ sub anuran_code
 	# Make complete demo version ?
 	$gen_opts .= ' -M' if $q->param('Codetype') eq 'demo';
 
+	# insert name
+	if ($q->param('Name')) {
+	    my $name = $q->param('Name');
+	    $name =~ s/distribution//i;
+	    $name =~ s/\s//g;
+	    $gen_opts .= " -N $name";
+	}
+
 	# Method
 	my $method = anuran_get_method();
 
@@ -929,10 +910,12 @@ sub anuran_code
 	print 
 	    'Step 5: ',
 	    b("Generator for $distrname"),
-	    ( ($q->param('Codetype') eq 'demo')
-	      ? ' (Complete demo version)'
-	      : '' ),
-	    $img_frog,
+	    ($q->param('Codetype') eq 'demo') ? ' (Complete demo version)' : '' ,
+	    blockquote( $q->startform (-method => 'GET',
+				       -action => $q->url()),
+			$img_frog,
+			$q->submit('Restart'),
+			$q->endform() ),
 	    p();
 
 	# first check command line

@@ -46,7 +46,7 @@ noinst_HEADERS =
 EXTRA_DIST = \
  make_PDFgen.pl    PDFgen.c.in \
  make_headergen.pl headergen.c.in \
- make_anuran.pl
+ make_anuran.pl    anuran.pl.in 
 
 
 PDFgen.c: make_PDFgen.pl PDFgen.c.in $(top_srcdir)/scripts/read_PDF.pl
@@ -55,8 +55,8 @@ PDFgen.c: make_PDFgen.pl PDFgen.c.in $(top_srcdir)/scripts/read_PDF.pl
 headergen.c: make_headergen.pl headergen.c.in $(top_srcdir)/scripts/read_PDF.pl
 	./make_headergen.pl < headergen.c.in > headergen.c
 
-anuran.pl: make_anuran.pl $(top_srcdir)/scripts/read_PDF.pl
-	./make_anuran.pl > anuran.pl
+anuran.pl: make_anuran.pl anuran.pl.in $(top_srcdir)/scripts/read_PDF.pl
+	./make_anuran.pl < anuran.pl.in > anuran.pl
 
 
 # clean backup files

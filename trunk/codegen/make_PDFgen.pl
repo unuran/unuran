@@ -20,16 +20,10 @@ my $top_srcdir = $ENV{'srcdir'} ? $ENV{'srcdir'} : '.';
 $top_srcdir .= "/..";
 
 # ----------------------------------------------------------------
+# List of standard distributions
 
 require "$top_srcdir/scripts/read_PDF.pl";
 
-# ----------------------------------------------------------------
-
-# C file for code generator  
-#my $PDFgen_file = "PDFgen.c";
-
-# ----------------------------------------------------------------
-# List of distributions
 my $DISTR = read_PDFdata( $top_srcdir );
 
 # For description of data fields in this list see file `readPDF.pl'.

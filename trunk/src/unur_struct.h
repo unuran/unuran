@@ -147,6 +147,7 @@ struct unur_funct_vgeneric {
 /* continuous multivariate distributions */
 #include <methods/vempk_struct.h>
 #include <methods/vmt_struct.h>
+#include <methods/vnrou_struct.h>
 
 /* random matrices */
 #include <methods/mcorr_struct.h>
@@ -188,6 +189,7 @@ struct unur_par {
     struct unur_empl_par  empl;
     struct unur_vmt_par   vmt;
     struct unur_vempk_par vempk;
+    struct unur_vnrou_par vnrou;
     struct unur_cstd_par  cstd;
     struct unur_dstd_par  dstd;
   }               data;       /* data for method                             */
@@ -238,6 +240,7 @@ struct unur_gen {
     struct unur_empl_gen  empl;
     struct unur_vmt_gen   vmt;
     struct unur_vempk_gen vempk;
+    struct unur_vnrou_gen vnrou;
     struct unur_cstd_gen  cstd;
     struct unur_dstd_gen  dstd;
   }               data;       /* data for method                             */

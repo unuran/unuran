@@ -102,6 +102,8 @@
 #define CK_VMT_GEN       0x00200011u
 #define CK_VEMPK_PAR     0x00200020u
 #define CK_VEMPK_GEN     0x00200021u
+#define CK_VNROU_PAR     0x00200030u
+#define CK_VNROU_GEN     0x00200031u
 
 /* generators for random matrices */
 #define CK_MCORR_PAR     0x00400010u

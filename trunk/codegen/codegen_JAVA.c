@@ -200,7 +200,7 @@ _unur_acg_JAVA_print_section_line( FILE *out, const char *format, ... )
 
   /* write into output stream */
   vsprintf(buffer,format,ap);
-  fprintf(out,"* %-64.64s *\n",buffer);
+  fprintf(out,"/* %-66.66s */\n",buffer);
         
   /* end of variable parameter list */
   va_end(ap);

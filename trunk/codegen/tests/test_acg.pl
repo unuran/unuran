@@ -37,6 +37,7 @@ open LOG, ">$file_prefix.log" or die "Cannot open log file $file_prefix.log";
 
 $GCC = "gcc -Wall -ansi -pedantic -I../../src -L../../src";
 $G77 = "g77 -Wall";
+$JAVAC = "javac -w1";
 
 # ----------------------------------------------------------------
 
@@ -49,9 +50,6 @@ my $make_test_codegen = "make_test_codegen.c";
 
 # C file for tests
 my $test_codegen = "test_codegen.c";
-
-# Sample size for test
-my $SAMPLE_SIZE = 100000;
 
 # ----------------------------------------------------------------
 # List of distributions
@@ -721,9 +719,10 @@ sub make_JAVA_code
 
     return "" if $?;
 
+    my $main = "";
 ##    my $main = make_JAVA_main($distr,$seed);
 
-    return $urng.$generator.$main;
+    return $generator.$main;
 
 } # end of make_JAVA_code()
 
@@ -732,6 +731,7 @@ sub make_JAVA_code
 
 #
 # run test_urng.pl to create generator
+#
 
 # ----------------------------------------------------------------
 # Make main for test file (Java version)
@@ -781,7 +781,7 @@ sub make_JAVA_exec
     close SRC;
 
     # compile
-##    system "$GCC -o $exec $src -lm";
+    system "$JAVAC $src";
 
 } # end of make_JAVA_exec()
 

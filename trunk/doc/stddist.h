@@ -115,6 +115,11 @@ gives reference for distribution
 
 =NODE  Stddist_DISCR    UNURAN Library of discrete univariate distributions
 =UP Stddist [30]
+=DESCRIPTION
+   At the moment there are no CDFs implemented for discrete distribution.
+   Thus unur_distr_discr_upd_pmfsum() does not work properly for truncated 
+   distribution.
+
 =EON
 
 /*---------------------------------------------------------------------------*/

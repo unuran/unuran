@@ -33,6 +33,7 @@ make run_test_with_Mathematica
 Detailed results are written into 
 t_Mathematica_test.log.
 
-This test requires Mathematica.
+This test requires Mathematica 4.0.
+(The test fails for version 3.0)
 
 --------------------------------------------------

@@ -133,7 +133,8 @@ static void _unur_norta_free( struct unur_gen *gen);
 /* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_norta_urng_wrapper (void *state);
+static double _unur_norta_urng_wrapper (void *state) { 
+  return ((double*)state)[0]; }
 /*---------------------------------------------------------------------------*/
 /* work-around to call inversion method with given U-value.                  */
 /*---------------------------------------------------------------------------*/
@@ -413,6 +414,7 @@ _unur_norta_clone( const struct unur_gen *gen )
 { 
 #define CLONE clone->data.norta
 
+  int i;
   struct unur_gen *clone;
 
   /* check arguments */
@@ -430,14 +432,18 @@ _unur_norta_clone( const struct unur_gen *gen )
   /* clone marginal distribution */
   CLONE.normaldistr = _unur_distr_clone(GEN.normaldistr);
 
-/*   /\* marginal generators are (also) stored as auxiliary generator *\/ */
-/*   /\* which has already been cloned by generic_clone.              *\/ */
-/*   CLONE.marginalgen_list = clone->gen_aux_list; */
+  /* we need a wrapper to call the inversion method with a given U-value */
+  if (GEN.marginal_urng) 
+    CLONE.marginal_urng = unur_urng_new (_unur_norta_urng_wrapper, CLONE.urng_U) ;
 
+  /* marginal generators */
+  if (GEN.marginalgen_list) {
+    CLONE.marginalgen_list = _unur_gen_list_clone( GEN.marginalgen_list, GEN.dim );
+    for (i=0; i<GEN.dim; i++) 
+      /* set urng: use wrapper function */
+      CLONE.marginalgen_list[i]->urng = CLONE.marginal_urng;
+  }
 
-  /* TODO */
-  CLONE.marginal_urng = NULL;
-  
   return clone;
 
 #undef CLONE
@@ -744,9 +750,9 @@ _unur_norta_free( struct unur_gen *gen )
   /* free urng wrapper */
   if (GEN.marginal_urng) unur_urng_free(GEN.marginal_urng);
 
-/*   /\* the marginal generator is an auxiliary generator for method NORTA, of course *\/ */
-/*   GEN.marginalgen_list = gen->gen_aux_list; */
-
+  /* free marginal generators */
+  if (GEN.marginalgen_list)
+    _unur_gen_list_free( GEN.marginalgen_list, GEN.dim);
 
   /* we cannot use this generator object any more */
   SAMPLE = NULL;   /* make sure to show up a programming error */
@@ -756,13 +762,6 @@ _unur_norta_free( struct unur_gen *gen )
 } /* end of _unur_norta_free() */
 
 /*---------------------------------------------------------------------------*/
-
-/*****************************************************************************/
-/**  Work-around to call inversion method with given U-value.               **/
-/*****************************************************************************/
-
-double 
-_unur_norta_urng_wrapper (void *state) { return ((double*)state)[0]; }
 
 /*****************************************************************************/
 /**  Debugging utilities                                                    **/

@@ -48,13 +48,14 @@ struct unur_norta_par {
 /* The generator object                                                      */
 
 struct unur_norta_gen { 
-  int    dim;                           /* dimension of distribution         */
-  double *copula;                       /* pointer to intermediate copula    */
-  struct unur_distr *normaldistr;       /* standard normal distribution      */
-  struct unur_gen **marginalgen_list;   /* list of generators for marginal distributions */
+  int    dim;                          /* dimension of distribution          */
+  double *copula;                      /* pointer to intermediate copula     */
+  struct unur_distr *normaldistr;      /* standard normal distribution       */
+  struct unur_gen **marginalgen_list;  /* list of generators for marginal distributions */
 
-  UNUR_URNG *marginal_urng;             /* urng used for marginals           */
-  double urng_U[1];                     /* contains U-value for marginal URNG*/
+  /* work-around to call inversion method with given U-value.                */
+  UNUR_URNG *marginal_urng;            /* urng used for marginals            */
+  double urng_U[1];                    /* contains U-value for marginal URNG */
 
   /* Remark: We use gen->gen_aux to store the pointer to the                 */
   /*         multinormal generator.                                          */

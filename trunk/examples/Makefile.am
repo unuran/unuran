@@ -10,6 +10,9 @@ INCLUDES = \
 noinst_PROGRAMS = example1 example2 example3 example4 \
  example_anti example_discr example_cont example_emp  example_vemp
 
+TESTS = example1 example2 example3 example4 \
+ example_anti example_discr example_cont example_emp  example_vemp
+
 example1_SOURCE      = example1.c
 example2_SOURCE      = example2.c
 example3_SOURCE      = example3.c

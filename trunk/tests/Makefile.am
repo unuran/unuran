@@ -93,12 +93,6 @@ t_ssr.c: ssr.conf make_test_files.pl
 t_tdr.c: tdr.conf make_test_files.pl
 	./make_test_files.pl tdr.conf
 
-t_tdr_log.c: tdr_log.conf make_test_files.pl
-	./make_test_files.pl tdr_log.conf
-
-t_tdr_sqrt.c: tdr_sqrt.conf make_test_files.pl
-	./make_test_files.pl tdr_sqrt.conf
-
 t_utdr.c: utdr.conf make_test_files.pl
 	./make_test_files.pl utdr.conf
 

@@ -205,7 +205,11 @@ static struct unur_arou_segment *_unur_arou_segment_new( struct unur_gen *gen, d
 static int _unur_arou_segment_parameter( struct unur_gen *gen, struct unur_arou_segment *seg );
 /*---------------------------------------------------------------------------*/
 /* compute all necessary data for segment.                                   */
-/* return 0 if p.d.f. is not T-concave.                                      */
+/* return:                                                                   */
+/*   1 ... if successful                                                     */
+/*   0 ... do not add this construction point                                */
+/*  -1 ... area = INFINITY                                                   */
+/*  -2 ... error (not p.d.f. T-concave)                                      */
 /*---------------------------------------------------------------------------*/
 
 static int _unur_arou_segment_split( struct unur_gen *gen, struct unur_arou_segment *seg_old, double x, double fx );
@@ -1310,18 +1314,20 @@ _unur_arou_get_starting_segments( struct unur_par *par, struct unur_gen *gen )
          thus we might change the domain of the distribution.
          however, we only cut off a piece that is beyond the precesion
          of the floating point arithmetic.)  */
-      seg_tmp = seg->next;
-      seg->next = seg->next->next;
-      free(seg_tmp);
-      --(GEN.n_segs);
-      
-      if (seg->next==NULL) {
+      if (seg->next != NULL) {
+	seg_tmp = seg->next;
+	seg->next = seg->next->next;
+	seg->rtp = seg->next->ltp;
+	seg->drtp = seg->next->dltp;
+	free(seg_tmp);
+	--(GEN.n_segs);
+      }
+      else { /* seg->next==NULL */
         /* last (virtuel) interval in list.
            make shure that we will never use this segment */
 	seg->Ain = seg->Aout = 0.;
 	seg->Acum = INFINITY;
       }
-
       continue;
     }
 
@@ -1552,7 +1558,7 @@ _unur_arou_segment_parameter( struct unur_gen *gen, struct unur_arou_segment *se
        then we have seg->mid[1] < 0 (Otherwise we have either a round-off error
        or the p.d.f. is not T-concave.) */
     if( seg->mid[1] < 0. ) {
-      /*        _unur_warning(gen->genid,UNUR_ERR_GENERIC,"outer triangle unbounded  2"); */
+      /* _unur_warning(gen->genid,UNUR_ERR_GENERIC,"outer triangle unbounded  2"); */
       seg->Aout = INFINITY;
       return -1;
     }

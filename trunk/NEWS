@@ -1,3 +1,9 @@
+Version 0.4.2: March 2003
+
+	- new interface for unur_tdr_eval_invcdfhat()
+
+	- fixed bug in error handling of method AROU
+
 Version 0.4.1: January 2003
 
 	- use build-in generator as default uniform random number generator

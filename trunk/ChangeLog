@@ -1,3 +1,56 @@
+2003-02-23  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/run/mcrun.c, /home/staff/CVSROOT/unuran/run/Makefile, /home/staff/CVSROOT/unuran/run/run.c:
+	*** empty log message ***
+
+	* /home/staff/CVSROOT/unuran/tests/t_tdr.conf, /home/staff/CVSROOT/unuran/src/methods/tdr_sample.ch, /home/staff/CVSROOT/unuran/src/methods/tdr.c, /home/staff/CVSROOT/unuran/src/methods/tdr.h:
+	new interface for unur_tdr_eval_invcdfhat
+
+2003-02-17  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/Makefile.am: added file to distribution
+
+	* /home/staff/CVSROOT/unuran/examples/example_FuncStr.c:
+	fixed memory leak
+
+	* /home/staff/CVSROOT/unuran/src/methods/arou.c:
+	fixed bug with invalid distributation; assume IEEE FPA
+
+	* /home/staff/CVSROOT/unuran/src/methods/tdr_init.ch:
+	initialized some data in interval struct
+
+	* /home/staff/CVSROOT/unuran/src/methods/hinv.h: fixed docu
+
+2003-02-12  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/Makefile.am:
+	removed dependency to avoid unnecessary remaking of unuran.h
+
+2003-01-31  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/NEWS: update
+
+2003-01-27  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/src/parser/parser.h, /home/staff/CVSROOT/unuran/src/parser/stringparser.c.in:
+	fixed bug with infinity string; removed strtod
+
+	* /home/staff/CVSROOT/unuran/KNOWN-PROBLEMS, /home/staff/CVSROOT/unuran/NEWS:
+	updated list
+
+2003-01-25  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/configure.ac: new version number
+
+	* /home/staff/CVSROOT/unuran/ChangeLog, /home/staff/CVSROOT/unuran/NEWS:
+	updated file
+
+	* /home/staff/CVSROOT/unuran/experiments/Makefile.am: fixed Makefile
+
+2003-01-17  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
+
+	* /home/staff/CVSROOT/unuran/NEWS: updated file
+
 2003-01-17  leydold@alekto.wu-wien.ac.at  <leydold@alekto>
 
 	* /home/staff/CVSROOT/unuran/NEWS: updated file

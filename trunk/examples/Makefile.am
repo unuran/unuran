@@ -1,7 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-AM_CFLAGS = -Wall\
- -L$(top_builddir)/src
+AM_LDFLAGS = -L$(top_builddir)/src
 
 INCLUDES = -I$(top_srcdir)/src
 

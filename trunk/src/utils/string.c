@@ -92,7 +92,7 @@ _unur_string_append ( struct unur_string *string, const char *format, ... )
   }
 
   /* print into string */
-#ifdef HAVE_VSNPRINTF
+#if HAVE_DECL_VSNPRINTF
   /* this is a GNU extension */
   len = vsnprintf (string->text+string->length, MAXSTRINGSIZE, format, ap);
 #else

@@ -1,8 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 ## $Id$
 
-AM_CFLAGS = -Wall
-
 INCLUDES = -I$(top_srcdir)/src
 
 noinst_LTLIBRARIES = libparser.la

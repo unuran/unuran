@@ -1,10 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 ## $Id$
 
-# AUTOMAKE_OPTIONS = 
-
-AM_CFLAGS = -Wall
-
 noinst_PROGRAMS = compute_machine_constants
 
 EXTRA_DIST = \

@@ -65,14 +65,22 @@ AC_TYPE_SIZE_T
 AC_HEADER_TIME
 
 dnl Checks for library functions.
-AC_CHECK_FUNCS([getopt])
-AC_CHECK_FUNCS([floor gettimeofday pow sqrt strcasecmp strchr strtol strtoul vsnprintf])
+AC_CHECK_FUNCS([floor gettimeofday pow sqrt strcasecmp strchr strtol strtoul])
+
+dnl Checks for GNU extensions
+AC_CHECK_DECLS([getopt, vsnprintf])
 
 dnl We need Mathematica(R) for some tests
-AC_CHECK_PROG(have_mathematica,math,true,false)
+AC_CHECK_PROG(have_mathematica,math,true,false) 
 AM_CONDITIONAL(HAVE_MATHEMATICA, test x$have_mathematica = xtrue)
 dnl AM_CONDITIONAL(HAVE_MATHEMATICA,true)
 dnl AM_CONDITIONAL(HAVE_MATHEMATICA,false)
+
+dnl Set flags for compiler
+if test X"$GCC" = Xyes ; then
+	AC_SUBST(AM_CFLAGS,-Wall)
+fi
+
 
 AC_CONFIG_FILES([\
 	Makefile \

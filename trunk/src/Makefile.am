@@ -1,8 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 ## $Id$
 
-AM_CFLAGS = -Wall
-
 SUBDIRS = utils methods specfunct distr distributions parser tests uniform .
 
 SUBLIBS = \

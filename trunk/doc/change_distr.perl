@@ -11,8 +11,8 @@
 # E.JANKA  November 2000
 # $Id$
 #
-# This script scans h-files for "type unur_distr_cont_set_xxx()"
-# or  "type unur_distr_discr_set_xxx()" or "unur_distr_new()"
+# This script scans h-files for "type unur_distr_cont_xxx()"
+# or  "type unur_distr_discr_xxx()" or "unur_distr_new()"
 # and produces texi-output
 #
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

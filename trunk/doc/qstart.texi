@@ -771,11 +771,6 @@ For information about the Methods themselfes, see @ref{Description}.
 @section Internal remarks 
 @enumerate
 @item
-remark at the very beginning:
-names of the struct too long (unur_distr, unur_par, unur_gen);
-better: one struct unur with unur.d, unur.p, unur.g 
-@item
-standard configuration: Log outout to file
 @end enumerate
 
 @ifhtml

@@ -536,7 +536,8 @@ unur_dari_chg_mode( struct unur_gen *gen, int mode )
   /* copy parameters */
   DISTR.mode = mode;
 
-  /** no changelog required ? **/
+  /* changelog */
+  gen->distr.set |= UNUR_DISTR_SET_MODE;
 
   /* o.k. */
   return 1;
@@ -717,8 +718,11 @@ _unur_dari_create( struct unur_par *par )
   GEN.c_factor = PAR.c_factor;      /* constant for choice of design point   */
 
   /* size of auxiliary table; 0 for none
-     it cannot be larger than the given domain */
-  GEN.size = min(PAR.size,DISTR.BD_RIGHT-DISTR.BD_LEFT+1);
+     it cannot be larger than the given domai (avoid overflow) */
+  if ((unsigned)DISTR.BD_RIGHT - (unsigned)DISTR.BD_LEFT < INT_MAX)
+    GEN.size = min(PAR.size,DISTR.BD_RIGHT-DISTR.BD_LEFT+1);
+  else /* length of interval > INT_MAX */
+    GEN.size = PAR.size;
 
   gen->method = par->method;        /* indicates method                      */
   gen->variant = par->variant;      /* indicates variant                     */
@@ -736,7 +740,7 @@ _unur_dari_create( struct unur_par *par )
 
   /* initialize parameters */
   /** TODO: diese initialisierung ist nur zur Sicherheit,
-      man sollte kontrollieren, ob das so wirklich noetig ist*/
+      man sollte kontrollieren, ob das so wirklich noetig ist **/
   GEN.vt=0.;            /* total volume below hat                            */
   GEN.vc=0.;            /* volume below center part                          */
   GEN.vcr=0.;           /* volume center and right together                  */
@@ -814,6 +818,11 @@ _unur_dari_hat( struct unur_gen *gen )
   else if (DISTR.BD_RIGHT < DISTR.mode)
     DISTR.mode = DISTR.BD_RIGHT;
 
+  /* sum must not be zero */
+  if (DISTR.sum <= 0.) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"sum <= 0");
+    return 0;
+  }
  
   /* Step 0: setup */
   GEN.m = DISTR.mode;

@@ -213,10 +213,14 @@ unur_distr_discr_set_pv( struct unur_distr *distr, double *pv, int n_pv )
     return 0;
   }
 
+  /* no domain given --> set left boundary to 0 */
+  if (!(distr->set & UNUR_DISTR_SET_DOMAIN))
+    DISTR.domain[0] = 0;
+
   /* n_pv must not be too large */
-  if (DISTR.domain[0] + n_pv < DISTR.domain[0]) {
-    /* n_pv too large causes overflow */
-        _unur_error(distr->name,UNUR_ERR_DISTR_SET,"length of PV to large");
+  if ( (DISTR.domain[0] > 0) && ((unsigned)DISTR.domain[0] + (unsigned)n_pv > INT_MAX) ) {
+    /* n_pv too large, causes overflow */
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"length of PV too large, overflow");
     return 0;
   }
 
@@ -230,10 +234,6 @@ unur_distr_discr_set_pv( struct unur_distr *distr, double *pv, int n_pv )
   /* copy probability vector */
   memcpy( DISTR.pv, pv, n_pv * sizeof(double) );
   DISTR.n_pv = n_pv;
-
-  /* no domain given --> set left boundary to 0 */
-  if (!(distr->set & UNUR_DISTR_SET_DOMAIN))
-    DISTR.domain[0] = 0;
 
   /* o.k. */
   return 1;
@@ -284,9 +284,10 @@ unur_distr_discr_make_pv( struct unur_distr *distr )
 
   /* compute PV */
 
-  if ( (n_pv = DISTR.domain[1] - DISTR.domain[0]) < UNUR_MAX_AUTO_PV ) {
+  if ((unsigned)DISTR.domain[1] - (unsigned)DISTR.domain[0] < UNUR_MAX_AUTO_PV ) {
 
     /* first case: bounded domain */
+    n_pv = DISTR.domain[1] - DISTR.domain[0];
     pv = _unur_malloc( n_pv * sizeof(double) );
     for (i=0; i<n_pv; i++)
       pv[i] = _unur_discr_PMF(DISTR.domain[0]+i,distr);
@@ -298,25 +299,34 @@ unur_distr_discr_make_pv( struct unur_distr *distr )
     /* second case: domain too big but sum over PMF given       */
 #define MALLOC_SIZE 1000 /* allocate 1000 doubles at once       */
 
-    int n_alloc = 0;     /* number of doubles allocated         */
-    
+    int n_alloc;         /* number of doubles allocated         */
     int max_alloc;       /* maximal number of allocated doubles */
-    
-    max_alloc = min( UNUR_MAX_AUTO_PV, (INT_MAX - DISTR.domain[0] - MALLOC_SIZE) );
-    
+    int size_alloc;      /* size of allocated blocks            */
+
+    /* get maximal size of PV */
+    if ( (DISTR.domain[0] <= 0) || (INT_MAX - DISTR.domain[0] >= UNUR_MAX_AUTO_PV - 1) ) {
+      /* we can have a PV of length UNUR_MAX_AUTO_PV */
+      size_alloc = MALLOC_SIZE;
+      max_alloc = UNUR_MAX_AUTO_PV;
+    }
+    else { /* length of PV must be shorter than UNUR_MAX_AUTO_PV */
+      size_alloc = max_alloc = INT_MAX - DISTR.domain[0];
+    }
+
+    /* init counter */
     n_pv = 0;
     pv = NULL;
     
-    do {
-      n_alloc += MALLOC_SIZE;
+    /* compute PV */
+    for (n_alloc = size_alloc; n_alloc <= max_alloc; n_alloc += size_alloc) {
       pv = _unur_realloc( pv, n_alloc * sizeof(double) );
-      for (i=0; i<MALLOC_SIZE; i++) {
+      for (i=0; i<size_alloc; i++) {
 	sum += pv[n_pv] = _unur_discr_PMF(DISTR.domain[0]+n_pv,distr);
 	n_pv++;
       }
       if ((distr->set & UNUR_DISTR_SET_PMFSUM) && sum > (1.-1.e-8) * DISTR.sum)
 	break;
-    } while (n_alloc <= max_alloc );
+    }
 
     /* we chop off the trailing part of the distribution */
 
@@ -1054,25 +1064,25 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
  
   /* derive three distinct points */
   x[0] = DISTR.domain[0];
-  if (DISTR.pv != NULL)
-    x[1] = DISTR.domain[0] + DISTR.n_pv - 1;
-  else
+  if (DISTR.pv == NULL)
     x[1] =DISTR.domain[1];
-
-  if (x[1] < x[0]) {
-    _unur_error(distr->name,UNUR_ERR_DISTR_DATA,
-		"Overflow: domain too large");
-    return 0;
+  else {
+    /* n_pv must not be too large */
+    if ( (DISTR.domain[0] > 0) && ((unsigned)DISTR.domain[0] + (unsigned)DISTR.n_pv > INT_MAX) ) {
+      /* n_pv too large, causes overflow */
+      _unur_error(distr->name,UNUR_ERR_DISTR_SET,"length of PV too large, overflow");
+      return 0;
+    }
+    x[1] = DISTR.domain[0] + DISTR.n_pv - 1;
   }
   fx[0] = unur_distr_discr_eval_pv(x[0], distr);
   fx[1] = unur_distr_discr_eval_pv(x[1], distr);
 
 
-
   if ( x[0] == x[1] ){            /* domain contains only one point         */
     mode = x[0];
   }
-  else if ( x[1] - x[0] == 1 ){   /* domain contains only two points        */
+  else if ( x[1] == x[0] + 1 ){   /* domain contains only two points        */
     mode = (fx[0] >= fx[1]) ? x[0] : x[1];
   }
   else{                           /* domain contains at least three points  */
@@ -1086,15 +1096,15 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
 
 
     /* at least one of the x[i] should have a positive function value  */
-    if (x[0] == 0.0 && x[1] == 0.0 ){
+    if (fx[0] == 0.0 && fx[1] == 0.0 ){
       int i=1;
-      while (fx[2] == 0 && i < 100){
+      while (fx[2] == 0. && i < 100){
 	x[2]  = (x[1]/100)*i + (x[0]/100)*(100-i); /* integers !!! */
         fx[2] = unur_distr_discr_eval_pv(x[2], distr);
         i++;
       } 
     }
-    if (fx[2] == 0){  /* no success */
+    if (fx[2] == 0.){  /* no success */
       _unur_error(distr->name,UNUR_ERR_DISTR_DATA,
          "In find_mode(): no positive entry in probability vector found
           during 100 trials");

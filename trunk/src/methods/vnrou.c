@@ -741,7 +741,7 @@ _unur_vnrou_sample_cvec( struct unur_gen *gen, double *vec )
      /*   vec ... random vector (result)                                     */
      /*----------------------------------------------------------------------*/
 { 
-  double V,*U,*X;
+  double U, V;
   int d, dim; /* index used in dimension loops (0 <= d < dim) */
 
   /* check arguments */
@@ -750,30 +750,22 @@ _unur_vnrou_sample_cvec( struct unur_gen *gen, double *vec )
 
   dim = GEN.dim;
  
-  /* allocating memory for the U and X arrays */
-  X = _unur_xmalloc(dim*sizeof(double));
-  U = _unur_xmalloc(dim*sizeof(double));
+  while (1) {
 
-sample_try:
     /* generate point uniformly on rectangle */
     while ( (V = _unur_call_urng(gen->urng)) == 0.);
     V *= GEN.vmax;
     for (d=0; d<dim; d++) {
-      U[d] = GEN.umin[d] + _unur_call_urng(gen->urng) * (GEN.umax[d] - GEN.umin[d]);
-      X[d] = U[d]/V + GEN.center[d];
+      U = GEN.umin[d] + _unur_call_urng(gen->urng) * (GEN.umax[d] - GEN.umin[d]);
+      vec[d] = U/V + GEN.center[d];
     }
     
     /* X[] inside domain ? */
-
+    
     /* accept or reject */
-    if (V*V <= PDF(X)) {
-            memcpy(vec, X, dim*sizeof(double));
-            free(X); free(U);
-    }
-    else {
-      goto sample_try;
-    }
-
+    if (V <= pow(PDF(vec),1./(dim+1.)))
+      return;
+  }
 
 } /* end of _unur_vnrou_sample() */
 

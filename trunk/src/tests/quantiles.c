@@ -99,7 +99,7 @@ unur_test_quartiles( UNUR_GEN *gen, double *q0 ,double *q1, double *q2, double *
   /* sampling */
   /* estimate quartiles using algorithm [1]. */
   
-  for (n=1; n<=samplesize; n++) {
+  for (n=0; n<samplesize; n++) {
 
     /* which type of distribution */
     switch (gen->method & UNUR_MASK_TYPE) {
@@ -111,6 +111,7 @@ unur_test_quartiles( UNUR_GEN *gen, double *q0 ,double *q1, double *q2, double *
 
     /* ******************************************* */
     /* PP-algorithm                                */
+
 
     if ( n==0 ){  /* BEGIN OF INITIALIZATION */
 

@@ -442,8 +442,8 @@ struct ftreenode *
 _unur_Bas_Exp (struct parser_data *pdata)
      /*----------------------------------------------------------------------*/
      /*  Base ::= Exponent                                                   */
-     /*  Exponent ::= UnsignedConstant | Identifier | FunctDesignator |      */ 
-     /*               '(' Expression ')'                                     */ 
+     /*  Exponent ::= UnsignedConstant | Identifier | FunctDesignator        */ 
+     /*               | '(' Expression ')'                                   */ 
      /*                                                                      */
      /*       UnsignedConstant                Identifier                     */
      /*      /                \      or     /          \       or            */
@@ -754,7 +754,8 @@ _unur_fstr_simplification (char *symb, int token,
    *       / \           / \
    *   NULL   NULL   NULL   NULL
    */ 
-  if ( ( left  && left->left==NULL  && left->right==NULL  && 
+  if ( ( symb[0] == '/' &&
+	 left  && left->left==NULL  && left->right==NULL  && 
 	 right && right->left==NULL && right->right==NULL &&
 	 strcmp(left->symbol,right->symbol)== 0 ) ) {
     free (left);
@@ -792,8 +793,28 @@ _unur_fstr_reorganize (struct ftreenode *node)
   char symb = node->symbol[0];
 
   /* some booleans */
+  int l_const = left  && (left->type  == S_SCONST || left->type  == S_UCONST); 
+  int r_const = right && (right->type == S_SCONST || right->type == S_UCONST); 
   int rl_0 = (right && right->left && right->left->type == S_UCONST && right->left->val == 0.);
   int ll_0 = (left  && left->left  && left->left->type  == S_UCONST && left->left->val  == 0.);
+
+  /*          Operator            Operator
+   *            /   \      or      /   \        ==>     Const (result of computation)
+   *       Const     Const     NULL     Const
+   */ 
+  if ( (l_const || left==NULL) && r_const && symb!=',') { 
+    /* compute new value */
+    node->val   = ( (left) 
+		    ? (*symbol[node->token].vcalc)(left->val,right->val)
+		    : (*symbol[node->token].vcalc)(0.,right->val) );
+    node->token = s_uconst;
+    node->type  = S_UCONST;
+    node->left  = NULL; 
+    node->right = NULL;
+    if (left)  free(left);
+    if (right) free(right);
+    return 1; 
+  } 
 
   /*            '+'                  '-'  
    *           /   \                /   \ 
@@ -932,7 +953,6 @@ _unur_fstr_create_node (char *symb, double val, int token,
     /* node has been simplified  -->  use left node, remove right node */
   }
   else {
-
     /* make new node */
     node = _unur_malloc(sizeof(struct ftreenode)); 
     node->symbol = symbol[token].name; 

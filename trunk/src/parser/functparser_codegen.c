@@ -224,7 +224,7 @@ _unur_fstr_print ( struct concat *output, const char *symb, const double number 
     memcpy( output->string+output->length, symb, len );
   else
     /* copy number symbol into output */
-    len = sprintf(output->string+output->length,"%g",number);
+    len = sprintf(output->string+output->length,"%.16g",number);
 
   /* update length of output string */
   output->length += len;

@@ -588,7 +588,7 @@ d_sqrt (const struct ftreenode *node)
   br_right = _unur_fstr_create_node("*",0.,s_mul,two,right);
 
   /* subtree */
-  return _unur_fstr_create_node("*",0.,s_mul,d_right,br_right);
+  return _unur_fstr_create_node("/",0.,s_div,d_right,br_right);
 } /* end of d_sqrt() */
 
 /*---------------------------------------------------------------------------*/
@@ -644,6 +644,8 @@ _unur_fstr_dup_tree (const struct ftreenode *root)
      /*----------------------------------------------------------------------*/
 {
   struct ftreenode *dup;
+
+  if (root==NULL) return NULL;
 
   dup = _unur_malloc(sizeof(struct ftreenode));
   memcpy(dup,root,sizeof(struct ftreenode));

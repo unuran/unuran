@@ -41,195 +41,220 @@
  *****************************************************************************
  *                                                                           *
  *   REFERENCES:                                                             *
- *   [1] XXXXXXX (1995): YYYYYYYYYYYYYYYYYYYYY                               *
+ *   [1] Aho, A. and Ullman, J. (1972): The Theory of Parsing, Translating   *
+ *       and Compiling. Prentice-Hall.                                       *
  *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ *  Description:                                                             *
+ *                                                                           *
+ *  Function parser for use with UNURAN. For list of symbols and functions   *
+ *  see functparser_symbols.h.                                               *
+ *                                                                           *
+ *  Important:                                                               *
+ *  Blanks are ignored, e.g. "x>-1 and x < 1" is transformed to              *
+ *  "x>-1andx<1" and thus the parser aborts at the unknwn symbol "andx".     *
+ *  Use parenthesis to solve this problem: (x>-1) and (x<1).                 *
+ *                                                                           *
+ *  The first unknown symbol is treated as the variable.                     *
+ *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ *  Pattern in Backus-Naur notation:                                         *
+ *                                                                           *
+ *---------------------------------------------------------------------------*
+ *                                                                           *
+ *                                                                           *
+ *  FunctDefinition ::= DefFunctDesignator '=' Expression                    *
+ *                                                                           *
+ *                      '='                                                  *
+ *                     /   \                                                 *
+ *    DefFunctDesignator     Expression                                      *
+ *                                                                           *
+ *---------------------------------------------------------------------------*
+ *                                                                           *
+ *  DefFunctDesignator ::= Identifier '(' DefParameterlist ')'               *
+ *                                                                           *
+ *         Identifier                                                        *
+ *        /          \                                                       *
+ *    NULL            DefParameterlist                                       *
+ *                                                                           *
+ *---------------------------------------------------------------------------*
+ *                                                                           *
+ *  DefParameterlist ::= '(' Identifier [ ',' Identifier ] ')'               *
+ *                                                                           *
+ *                                                                           *
+ *         Identifier                                 ','                    *
+ *        /          \      or:                      /   \                   *
+ *    NULL            NULL      more identifiers tree     Identifier         *
+ *                                                     /          \          *
+ *                                                 NULL            NULL      *
+ *                                                                           *
+ *---------------------------------------------------------------------------*
+ *                                                                           *
+ *  Expression ::= SimpleExpression [ RelationOperator SimpleExpression ]    * 
+ *                                                                           *
+ *                                      RelationOperator                     *
+ *   SimpleExpression  or:             /                \                    *
+ *                     SimpleExpression                  SimpleExpression    *
+ *                                                                           *
+ *---------------------------------------------------------------------------*
+ *                                                                           *
+ *  SimpleExpression ::= STerm { AddingOperator Term }                       *
+ *                                                                           *
+ *                                  AddingOperator                           *
+ *    STerm  or:                   /              \                          *
+ *                  more terms tree                Term                      *
+ *                                                                           *
+ *---------------------------------------------------------------------------*
+ *                                                                           *
+ *  STerm ::= [ '+' | '-' ] Term                                             *
+ *                                                                           *
+ *                          '-'                                              *
+ *    Term  or:            /   \                                             *
+ *                      '0'     Term                                         *
+ *                     /   \                                                 *
+ *                 NULL     NULL                                             *
+ *                                                                           *
+ *---------------------------------------------------------------------------*
+ *                                                                           *
+ *  Term ::= Factor [ MultiplyingOperator Factor ]                           *
+ *                                                                           *
+ *                                     MultiplyingOperator                   *
+ *    Factor  or:                     /                   \                  *
+ *                   more factors tree                     Factor            *
+ *                                                                           *
+ *---------------------------------------------------------------------------*
+ *                                                                           *
+ *  Factor ::= Base [ '^' Exponent ]                                         *
+ *                                                                           *
+ *                            '^'                                            *
+ *    Bas_Exp  or:           /   \                                           *
+ *                    Bas_Exp     Bas_Exp                                    *
+ *                                                                           *
+ *---------------------------------------------------------------------------*
+ *                                                                           *
+ *  Base ::= Exponent                                                        *
+ *                                                                           *
+ *---------------------------------------------------------------------------*
+ *                                                                           *
+ *  Exponent ::= UnsignedConstant | Identifier | FunctDesignator             * 
+ *               | '(' Expression ')'                                        *
+ *                                                                           *
+ *         UnsignedConstant                Identifier                        *
+ *        /                \      or     /          \       or               *
+ *    NULL                  NULL      NULL            NULL                   *
+ *                                                                           *
+ *    FunctDesignator  or  Expression                                        *
+ *                                                                           *
+ *---------------------------------------------------------------------------*
+ *                                                                           *
+ *  FunctDesignator ::= FuncIdentifier '(' ActualParameterlist ')'           *
+ *                                                                           *
+ *         Identifier                                                        *
+ *        /          \                                                       *
+ *    NULL            ActualParameterlist                                    *
+ *                                                                           *
+ *---------------------------------------------------------------------------*
+ *                                                                           *
+ *  ActualParameterlist ::= ActualParameter [ ',' ActualParameter ]          *
+ *                                                                           *
+ *                                             ','                           *
+ *    Expression  or:                         /   \                          *
+ *                       more expressions tree     Expression                *
+ *                                                                           *
+ *---------------------------------------------------------------------------*
+ *                                                                           *
+ *  UnsignedConstant::= UnsignedInteger | UnsignedReal                       *
+ *  UnsignedInteger ::= DigitSequence                                        *
+ *  UnsignedReal    ::= UnsignedInteger ['.' DigitSequence] ['e' ScaleFactor]*
+ *  DigitSequence   ::= Digit [ Digit [...] ]                                *
+ *  Digit           ::= '0' | '1' | '2' | ... | '8' | '9'                    *
+ *  ScaleFactor     ::= [Sign] DigitSequence                                 *
+ *  Sign            ::= '+' | '-'                                            *
+ *  Identifier      ::= Letter [ Letter | Digit [...] ]                      *
+ *  Letter          ::= 'a' | 'b' | ... | 'z' | '_'                          *
+ *  RelationOperator::= RelationChar [ RelationChar ]                        *
+ *  RelationChar    ::= '<' | '=' | '>'                                      *
+ *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ *  Simplification rules:                                                    *
+ *                                                                           *
+ *---------------------------------------------------------------------------*
+ *             Exp                    Exp                                    *
+ *            /   \                  /   \                                   *
+ *        NULL    ','       ==>     X     Y                                  *
+ *               /   \                                                       *
+ *              X     Y                                                      *
+ *---------------------------------------------------------------------------*
+ *          Operator            Operator                                     *
+ *            /   \      or      /   \        ==>  Const (compute)           *
+ *       Const     Const     NULL     Const                                  *
+ *---------------------------------------------------------------------------*
+ *          '+'               '*'                                            *
+ *         /   \      or     /   \        ==>     X                          *
+ *        0     X           1     X                                          *
+ *---------------------------------------------------------------------------*
+ *          '+'               '-'                                            *
+ *         /   \      or     /   \      or                                   *
+ *        X     0           X     0                                          *
+ *                                                                           *
+ *          '*'               '/'                                            *     
+ *         /   \      or     /   \      or                                   *
+ *        X     1           X     1                                          *
+ *                                                                           *
+ *          '^'                                                              *
+ *         /   \                        ==>     X                            *
+ *        X     1                                                            *
+ *---------------------------------------------------------------------------*
+ *          '*'               '*'                                            *
+ *         /   \      or     /   \      or                                   *
+ *        0     X           X     0                                          *
+ *                                                                           *
+ *          '/'               '^'                                            *
+ *         /   \      or     /   \      or                                   *
+ *        0     X           0     X                                          *
+ *                                                                           *
+ *         "and"             "and"                                           *
+ *         /   \      or     /   \      ==>     0                            *
+ *        0     X           X     0                                          *
+ *---------------------------------------------------------------------------*
+ *          '^'               '^'                                            *
+ *         /   \      or     /   \        ==>     1                          *
+ *        X     0           1     X                                          *
+ *---------------------------------------------------------------------------*
+ *              '/'                                                          *
+ *          ___/   \___                                                      *
+ *         /           \                                                     *
+ *        X             X        ==>     1                                   *
+ *       / \           / \                                                   *
+ *   NULL   NULL   NULL   NULL                                               *
+ *---------------------------------------------------------------------------*
+ *            '+'                  '-'                                       *
+ *           /   \                /   \                                      *
+ *          X    '-'      ==>    X     Y                                     *
+ *              /   \                                                        *
+ *             0     Y                                                       *
+ *---------------------------------------------------------------------------*
+ *            '-'                  '+'                                       *
+ *           /   \                /   \                                      *
+ *          X    '-'      ==>    X     Y                                     *
+ *              /   \                                                        *
+ *             0     Y                                                       *
+ *---------------------------------------------------------------------------*
+ *            '+'                  '-'                                       *
+ *           /   \                /   \                                      *
+ *         '-'    Y     ==>      Y     X                                     *
+ *        /   \                                                              *
+ *       0     X                                                             *
+ *---------------------------------------------------------------------------*
+ *            '*'                  '-'                                       *
+ *           /   \                /   \                                      *
+ *          X    '-'      ==>    0    '*'                                    *
+ *              /   \                /   \                                   *
+ *             0     Y              X     Y                                  *
  *****************************************************************************/
-
-/*---------------------------------------------------------------------------*/
-/*  FunctDefinition ::= DefFunctDesignator '=' Expression               */
-     /*                    '='                                               */
-     /*                   /   \                                              */
-     /*  DefFunctDesignator     Expression                                   */
-
-/*  DefFunctDesignator ::= Identifier '(' DefParameterlist ')'          */
-     /*                                                                      */
-     /*       Identifier                                                     */
-     /*      /          \                                                    */
-     /*  NULL            DefParameterlist                                    */
-     /*                                                                      */
-
-/*  DefParameterlist ::= '(' Identifier [ ',' Identifier ] ')'          */
-     /*                                                                      */
-     /*       Identifier                                 ','                 */
-     /*      /          \      or:                      /   \                */
-     /*  NULL            NULL      more identifiers tree     Identifier      */
-     /*                                                     /          \     */
-     /*                                                 NULL            NULL */
-
-/* Expression ::= SimpleExpression [ RelationOperator SimpleExpression ] */ 
-     /*                                                                      */
-     /*                                    RelationOperator                  */
-     /* SimpleExpression  or:             /                \                 */
-     /*                   SimpleExpression                  SimpleExpression */
-     /*                                                                      */
-
-/*  SimpleExpression ::= STerm { AddingOperator Term }                  */
-     /*                                                                      */
-     /*                                AddingOperator                        */
-     /*  STerm  or:                   /              \                       */
-     /*                more terms tree                Term                   */
-     /*                                                                      */
-
-/*  STerm ::= [ '+' | '-' ] Term                                        */
-     /*                                                                      */
-     /*                        '-'                                           */
-     /*  Term  or:            /   \                                          */
-     /*                    '0'     Term                                      */
-     /*                   /   \                                              */
-     /*               NULL     NULL                                          */
-     /*                                                                      */
-
-/*  Term ::= Factor [ MultiplyingOperator Factor ]                      */
-     /*                                                                      */
-     /*                                   MultiplyingOperator                */
-     /*  Factor  or:                     /                   \               */
-     /*                 more factors tree                     Factor         */
-     /*                                                                      */
-
-/*  Factor ::= Base [ '^' Exponent ]                                    */
-     /*                                                                      */
-     /*                          '^'                                         */
-     /*  Bas_Exp  or:           /   \                                        */
-     /*                  Bas_Exp     Bas_Exp                                 */
-     /*                                                                      */
-
-/*  Base ::= Exponent                                                   */
-     /*  Exponent ::= UnsignedConstant | Identifier | FunctDesignator |      */ 
-     /*               '(' Expression ')'                                     */ 
-     /*                                                                      */
-     /*       UnsignedConstant                Identifier                     */
-     /*      /                \      or     /          \       or            */
-     /*  NULL                  NULL      NULL            NULL                */
-     /*                                                                      */
-     /*                                                            */
-     /*  FunctDesignator    or Expression          */
-     /*                                                  */
-     /*                                                                      */
-
-/*  FunctDesignator ::= FuncIdentifier '(' ActualParameterlist ')'      */
-     /*                                                                      */
-     /*       Identifier                                                     */
-     /*      /          \                                                    */
-     /*  NULL            ActualParameterlist                                 */
-     /*                                                                      */
-
-/*  ActualParameterlist ::= ActualParameter [ ',' ActualParameter ]     */
-     /*                                                                      */
-     /*                                           ','                        */
-     /*  Expression  or:                         /   \                       */
-     /*                     more expressions tree     Expression             */
-     /*                                                                      */
-
-/*   UnsignedConstant ::= UnsignedInteger | UnsignedReal                */
-/*   UnsignedInteger  ::= DigitSequence                                 */
-/*   UnsignedReal ::= UnsignedInteger ['.' DigitSequence] ['e' ScaleFactor] */
-/*   DigitSequence ::= Digit [ Digit [...] ]                            */
-/*   Digit         ::= '0' | '1' | '2' | ... | '8' | '9'                */
-/*   ScaleFactor ::= [Sign] DigitSequence                               */
-/*   Sign        ::= '+' | '-'                                          */
-/*   Identifier ::= Letter [ Letter | Digit [...] ]                     */
-/*   Letter     ::= 'a' | 'b' | ... | 'z' | '_'                         */
-/*   RelationOperator ::= RelationChar [ RelationChar ]                 */ 
-/*   RelationChar     ::= '<' | '=' | '>'                               */
-
-/** Simplification **/
-
-  /*             Exp                    Exp
-   *            /   \                  /   \ 
-   *        NULL    ','       ==>     X     Y
-   *               /   \ 
-   *              X     Y
-   */ 
-
-  /*          Operator            Operator
-   *            /   \      or      /   \        ==>     Const (result of computation)
-   *       Const     Const     NULL     Const
-   */ 
-
-  /*          '+'               '*'
-   *         /   \      or     /   \        ==>     X
-   *        0     X           1     X
-   */ 
-
-  /*          '+'               '-'  
-   *         /   \      or     /   \      or
-   *        X     0           X     0
-   *
-   *          '*'               '/'         
-   *         /   \      or     /   \      or
-   *        X     1           X     1       
-   *
-   *          '^'
-   *         /   \                        ==>     X
-   *        X     1
-   */ 
-
-  /*          '*'               '*'         
-   *         /   \      or     /   \      or
-   *        0     X           X     0       
-   *
-   *          '/'               '^'         
-   *         /   \      or     /   \      or
-   *        0     X           0     X       
-   *
-   *         "and"             "and"         
-   *         /   \      or     /   \      ==>     0
-   *        0     X           X     0       
-   */
-
-  /*          '^'               '^'
-   *         /   \      or     /   \        ==>     1
-   *        X     0           1     X
-   */ 
-
-  /*              '/'              
-   *          ___/   \___
-   *         /           \ 
-   *        X             X        ==>     1     
-   *       / \           / \
-   *   NULL   NULL   NULL   NULL
-   */ 
-
-/** Reorganization**/
-
-  /*            '+'                  '-'  
-   *           /   \                /   \ 
-   *          X    '-'      ==>    X     Y
-   *              /   \
-   *             0     Y
-   */ 
-
-  /*            '-'                  '+'  
-   *           /   \                /   \ 
-   *          X    '-'      ==>    X     Y
-   *              /   \
-   *             0     Y
-   */ 
-
-  /*            '+'                  '-'  
-   *           /   \                /   \ 
-   *         '-'    Y     ==>      Y     X
-   *        /   \
-   *       0     X
-   */ 
-
-  /*            '*'                  '-'  
-   *           /   \                /   \ 
-   *          X    '-'      ==>    0    '*'
-   *              /   \                /   \
-   *             0     Y              X     Y
-   */ 
-
 
 /*---------------------------------------------------------------------------*/
 

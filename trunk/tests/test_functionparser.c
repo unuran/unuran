@@ -101,6 +101,7 @@ _unur_test_function (void)
   double fx_obs, dfx_obs;       /* observed values for f(x) and f'(x) */
   double fx_rep, dfx_rep;       /* observed values for f(x) and f'(x) 
 				   for reparsed string                */
+  double diff;
   char *repstr = NULL;          /* string generated from parsed tree  */
   
   UNUR_DISTR *distr, *rep;
@@ -168,23 +169,27 @@ _unur_test_function (void)
     /* compare */
     if (!(_unur_FP_approx(fx_exp,fx_obs))) {
       ++failed;
-      fprintf(TESTLOG,"[fx]\tx = %g:\t(exp) = %g\t(obs) = %g  --> error\n",
-	      x,fx_exp,fx_obs);
+      diff = fx_obs - fx_exp;
+      fprintf(TESTLOG,"[fx]\tx = %g:\t(exp) = %g\t(obs) = %g\tdiff = %g  --> error\n",
+	      x,fx_exp,fx_obs,diff);
     }
     if (!(_unur_FP_approx(fx_obs,fx_rep))) {
       ++failed;
-      fprintf(TESTLOG,"[fx]\tx = %g:\t(obs) = %g\t(rep) = %g  --> error\n",
-	      x,fx_obs,fx_rep);
+      diff = fx_rep - fx_obs;
+      fprintf(TESTLOG,"[fx]\tx = %g:\t(obs) = %g\t(rep) = %g\tdiff = %g  --> error\n",
+	      x,fx_obs,fx_rep,diff);
     }
     if (!(_unur_FP_approx(dfx_exp,dfx_obs))) {
       ++failed;
-      fprintf(TESTLOG,"[dfx]\tx = %g:\t(exp) = %g\t(obs) = %g  --> error\n",
-	      x,dfx_exp,dfx_obs);
+      diff = dfx_obs - dfx_exp;
+      fprintf(TESTLOG,"[dfx]\tx = %g:\t(exp) = %g\t(obs) = %g\tdiff = %g  --> error\n",
+	      x,dfx_exp,dfx_obs,diff);
     }
     if (!(_unur_FP_approx(dfx_obs,dfx_rep))) {
       ++failed;
-      fprintf(TESTLOG,"[dfx]\tx = %g:\t(obs) = %g\t(rep) = %g  --> error\n",
-	      x,dfx_obs,dfx_rep);
+      diff = dfx_rep - dfx_obs;
+      fprintf(TESTLOG,"[dfx]\tx = %g:\t(obs) = %g\t(rep) = %g\tdiff = %g  --> error\n",
+	      x,dfx_obs,dfx_rep,diff);
     }
   }
 

@@ -142,7 +142,7 @@ unur_distr_chisquare( double *params, int n_params )
   distr->name = distr_name;
              
   /* how to get special generators */
-  DISTR.init = NULL;            /* _unur_stdgen_chisquare_init; */
+  DISTR.init = _unur_stdgen_chisquare_init;
    
   /* functions */
   DISTR.pdf  = _unur_pdf_chisquare;   /* pointer to p.d.f.            */

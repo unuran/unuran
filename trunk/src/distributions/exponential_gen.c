@@ -4,7 +4,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE:      exponential.c                                                *
+ *   FILE:      exponential_gen.c                                            *
  *                                                                           *
  *   Special generators for Exponential distribution                         *
  *                                                                           *

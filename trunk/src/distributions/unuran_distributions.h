@@ -132,6 +132,12 @@ struct unur_distr *unur_distr_chisquare(double *params, int n_params);
 double _unur_cdf_chisquare(double x, double *params, int n_params);
 /* required for chi^2 tests */
 
+/* special generators */
+int _unur_stdgen_chisquare_init( struct unur_par *par, struct unur_gen *gen );
+/* initialize new generator                                                  */
+double unur_stdgen_sample_chisquare_chru( struct unur_gen *gen );
+  /* Ratio of Uniforms with shift */    /* Default */
+
 /*---------------------------------------------------------------------------*/
 /* Erlang distribution                                                       */
 /** TODO **/

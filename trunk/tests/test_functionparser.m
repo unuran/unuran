@@ -37,7 +37,7 @@ Testsample = {
         {"3*(2<>x)",{-2,2,5}},
  
         {"3*not[2<>x]",{-2,2,5}},
-        {"3*(2<>x)and(x>2)",{-2,2,5}},
+        {"(3*(2<>x)and(x>2))+x",{-2,2,5}},
         {"3*(2<x)or(x<-1)",{-2,2,5}},
     
 	{"exp[-4*X]", {-2, 2, 5}},               (*   system functions  *)
@@ -92,8 +92,10 @@ not[x_]     := Not[x];
 Unprotect[Derivative];
 
 (* --- Relation Operators -------------------------------------------------- *)
-(* Derivative[1][And][x_] := 0;
- Derivative[1][Or][x_] := 0; *)
+Derivative[1,0][And][x_,y_] := 0;
+Derivative[0,1][And][x_,y_] := 0;
+Derivative[1,0][Or] [x_,y_] := 0; 
+Derivative[1,0][Or] [x_,y_] := 0;
 
 Derivative[1][Not] [x_]  := 0;
 Derivative[1][Sign][x_] := 0;

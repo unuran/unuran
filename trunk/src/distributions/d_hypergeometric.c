@@ -68,20 +68,17 @@ static const char distr_name[] = "hypergeometric";
 /*---------------------------------------------------------------------------*/
 
 #define DISTR distr->data.discr
-/*  #define LOGNORMCONSTANT (distr->data.discr.norm_constant) */
+#define LOGNORMCONSTANT (distr->data.discr.norm_constant)
 
 /*---------------------------------------------------------------------------*/
 /* do we have the PMF of the distribution ? */
-#ifdef HAVE_UNUR_SF_LN_XXXXXX  /** TODO: was immer du fuer den hypergeometric koeffizienten brauchst.
-				  falls du eine andere funktion aus cephes brauchst,
-				  mache dass bitte ueber entsprechende macros in der datei
-				  source_specfunct.h **/
+#ifdef HAVE_UNUR_SF_LN_FACTORIAL
 #  define HAVE_PMF
 #else
 #  undef  HAVE_PMF
 #endif
 
-/** TODO: haben wir eine CDF (kannst du da in cephes nachschauen **/
+/** In Cephes there is no CDF for the hypergeometric distribution**/
 #undef HAVE_CDF
 
 /*---------------------------------------------------------------------------*/
@@ -105,18 +102,19 @@ _unur_pmf_hypergeometric(int k, UNUR_DISTR *distr)
 { 
   register double *params = DISTR.params;
 
-  if (k<0 /** TODO: **/ ) return 0.;
+  double x;
+
+  if ( k<max(0,n-N+M) || k > min(n,M) ) return 0.;
+
 
   else
-    return 1.;
+    {
 
-  /** TODO: PMF einfuegen. du kannst hier n und p direkt benutzen.
-      es gibt in der schittstelle nach aussen keine integer parameter.
-      daher ist n eine double variable!!
+    return exp( LOGNORMCONSTANT - _unur_sf_ln_factorial(k) - _unur_sf_ln_factorial(M-k) -
+                _unur_sf_ln_factorial(n-k) - _unur_sf_ln_factorial(N-M-n+k) );
 
-      wenn es unbedingt eine int variable sein muesste musst du sicherheitshalber runden
-      ((int) (n+0.5))
-  **/
+    }
+
       
       
 
@@ -132,13 +130,8 @@ _unur_pmf_hypergeometric(int k, UNUR_DISTR *distr)
 double
 _unur_cdf_hypergeometric(int k, UNUR_DISTR *distr)
 { 
-  register double *params = DISTR.params;
 
-  if (k<0 /** TODO **/ ) return 0.;
-  if (k>1 /** TODO **/ ) return 1.;
-
-  else
-    return 1.;  /** TODO: CDF **/
+  /* Not included in CEPHES-library !!*/
 
 } /* end of _unur_cdf_hypergeometric() */
 
@@ -166,7 +159,11 @@ _unur_upd_mode_hypergeometric( UNUR_DISTR *distr )
 int
 _unur_upd_sum_hypergeometric( UNUR_DISTR *distr )
 {
+  register double *params = DISTR.params;
+
   /* log of normalization constant: none */
+  LOGNORMCONSTANT = _unur_sf_ln_factorial(M) + _unur_sf_ln_factorial(N-M) + _unur_sf_ln_factorial(n) +
+    _unur_sf_ln_factorial(N-n) - _unur_sf_ln_factorial(N);
 
   if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
     DISTR.sum = 1.;
@@ -190,6 +187,7 @@ struct unur_distr *
 unur_distr_hypergeometric( double *params, int n_params )
 {
   register struct unur_distr *distr;
+  int nh;
 
   /* check new parameter for generator */
   if (n_params < 3) {
@@ -220,14 +218,22 @@ unur_distr_hypergeometric( double *params, int n_params )
 #endif
 
   /* copy parameters */
-  /** TODO: hier eventuel runden (falls nur int erlaubt sind) **/
-  DISTR.N = N; 
-  DISTR.M = M; 
-  DISTR.n = n; 
+  nh = (int)(N+0.5);
+  if(fabs(nh-N)>0.001)
+    _unur_warning(distr_name,UNUR_ERR_DISTR_DOMAIN,"N was rounded to the closets integer value!!,");
+  DISTR.N = nh; 
+  nh = (int)(M+0.5);
+  if(fabs(nh-M)>0.001)
+    _unur_warning(distr_name,UNUR_ERR_DISTR_DOMAIN,"M was rounded to the closets integer value!!,");
+  DISTR.M = nh; 
+  nh = (int)(n+0.5);
+  if(fabs(nh-n)>0.001)
+    _unur_warning(distr_name,UNUR_ERR_DISTR_DOMAIN,"n was rounded to the closets integer value!!,");
+  DISTR.n = nh; 
 
   /* check parameters */
-  if (DISTR.M <= 0. /** TODO: || usw. **/ ) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"M < 0 || usw.");
+  if (DISTR.M <= 0. || DISTR.N <=0. || DISTR.n <= 0. || DISTR.n >= DISTR.N || DISTR.M >= DISTR.N ) {
+    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"M, N, n must be > 0 and n<N M<N");
     free( distr ); return NULL;
   }
 
@@ -247,6 +253,8 @@ unur_distr_hypergeometric( double *params, int n_params )
   **/
 
   /* log of normalization constant: none */
+  LOGNORMCONSTANT = _unur_sf_ln_factorial(M) + _unur_sf_ln_factorial(N-M) + _unur_sf_ln_factorial(n) +
+    _unur_sf_ln_factorial(N-n) - _unur_sf_ln_factorial(N);
 
   /* mode and sum over PMF */
   _unur_upd_mode_hypergeometric(distr);
@@ -273,3 +281,12 @@ unur_distr_hypergeometric( double *params, int n_params )
 #undef n
 #undef DISTR
 /*---------------------------------------------------------------------------*/
+
+
+
+
+
+
+
+
+

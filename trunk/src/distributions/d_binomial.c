@@ -66,24 +66,22 @@ static const char distr_name[] = "binomial";
 /*---------------------------------------------------------------------------*/
 
 #define DISTR distr->data.discr
-/*  #define LOGNORMCONSTANT (distr->data.discr.norm_constant) */
+#define LOGNORMCONSTANT (distr->data.discr.norm_constant)
 
 /*---------------------------------------------------------------------------*/
 /* do we have the PMF of the distribution ? */
-#ifdef HAVE_UNUR_SF_LN_XXXXXX  /** TODO: was immer du fuer den binomial koeffizienten brauchst.
-				  falls du eine andere funktion aus cephes brauchst,
-				  mache dass bitte ueber entsprechende macros in der datei
-				  source_specfunct.h 
-				  schaue aber zuerst im source code von cephes nach, ob
-				  die nicht ohnehin nur lngamma verwenden. **/
+#ifdef HAVE_UNUR_SF_LN_FACTORIAL
 #  define HAVE_PMF
 #else
 #  undef  HAVE_PMF
 #endif
 
 /** TODO: haben wir eine CDF (kannst du da in cephes nachschauen **/
-#undef HAVE_CDF
-
+#ifdef HAVE_UNUR_SF_INCOMPLETE_BETA
+# define HAVE_CDF
+#else
+#  undef HAVE_CDF
+#endif
 /*---------------------------------------------------------------------------*/
 /* function prototypes                                                       */
 #ifdef HAVE_PMF
@@ -105,21 +103,11 @@ _unur_pmf_binomial(int k, UNUR_DISTR *distr)
 { 
   register double *params = DISTR.params;
 
-  if (k<0) return 0.;
+  if ( k<0 || k>n ) return 0.;
 
   else
-    return 1.;
-
-  /** TODO: PMF einfuegen. du kannst hier n und p direkt benutzen.
-      es gibt in der schittstelle nach aussen keine integer parameter.
-      daher ist n eine double variable!!
-
-      wenn es unbedingt eine int variable sein muesste musst du sicherheitshalber runden
-      ((int) (n+0.5))
-  **/
-      
-      
-
+    return exp( k * log(p) + (n-k) * log(1.-p) +
+                 LOGNORMCONSTANT - _unur_sf_ln_factorial(k) - _unur_sf_ln_factorial(n-k) ) ;
 
 } /* end of _unur_pmf_binomial() */
 
@@ -136,8 +124,10 @@ _unur_cdf_binomial(int k, UNUR_DISTR *distr)
 
   if (k<0) return 0.;
 
-  else
-    return 1.;  /** TODO: CDF **/
+  else if (k==0) return exp(n*(log(1.-p)));
+  else if(k>=n) return(1.);
+  else return(_unur_sf_incomplete_beta(1.-p, n-k, k+1.));
+
 
 } /* end of _unur_cdf_binomial() */
 
@@ -165,7 +155,9 @@ _unur_upd_mode_binomial( UNUR_DISTR *distr )
 int
 _unur_upd_sum_binomial( UNUR_DISTR *distr )
 {
+  register double *params = DISTR.params;
   /* log of normalization constant: none */
+  LOGNORMCONSTANT = _unur_sf_ln_factorial(n);
 
   if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
     DISTR.sum = 1.;
@@ -189,6 +181,7 @@ struct unur_distr *
 unur_distr_binomial( double *params, int n_params )
 {
   register struct unur_distr *distr;
+  int nh;
 
   /* check new parameter for generator */
   if (n_params < 2) {
@@ -219,7 +212,10 @@ unur_distr_binomial( double *params, int n_params )
 #endif
 
   /* copy parameters */
-  DISTR.n = n;  /** TODO: hier eventuel runden (falls nur int erlaubt sind) **/
+  nh = (int)(n+0.5);
+  if(fabs(nh-n)>0.001)
+    _unur_warning(distr_name,UNUR_ERR_DISTR_DOMAIN,"n was rounded to the closets integer value!!,");
+  DISTR.n = nh;  /** TODO: hier eventuel runden (falls nur int erlaubt sind) **/
   DISTR.p = p;
 
   /* check parameters */
@@ -233,9 +229,10 @@ unur_distr_binomial( double *params, int n_params )
 
   /* domain: [0, infinity] */
   DISTR.domain[0] = 0;           /* left boundary  */
-  DISTR.domain[1] = INT_MAX;     /* right boundary */
+  DISTR.domain[1] = n;          /* right boundary */
 
   /* log of normalization constant: none */
+  LOGNORMCONSTANT = _unur_sf_ln_factorial(n);
 
   /* mode and sum over PMF */
   DISTR.mode = (int) ((DISTR.n + 1) * DISTR.p);
@@ -261,3 +258,14 @@ unur_distr_binomial( double *params, int n_params )
 #undef r
 #undef DISTR
 /*---------------------------------------------------------------------------*/
+
+
+
+
+
+
+
+
+
+
+

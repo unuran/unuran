@@ -17,7 +17,9 @@ As mentioned the string holds information about the standard distribution
 to sample from and (optional) about the sampling method and the
 uniform random number generator invoked.
 Therefore the the string consists of up to three block which must be
-seperated with a colon `:'. The standard distribution block must be first!
+separated with a colon `:'. The standard distribution block must be first!
+Here an example to illustrate that, the details will be explained below:
+unur_str2gen("distr=normal(0,1) : method=arou; max_sqhratio=0.9 : prng=MT19937(133)")
 
 Within each block a piece of information must be provided using
 a <key>=<value> scheme. 
@@ -35,7 +37,9 @@ is allowed.
 Distribution:
 The key `distr' is obligatory, it must be first and the corresponding
 value must be one  of the implemented standard distributions---with
-a list of parameters.  e.g.: distr=normal(0,1)
+a list of parameters.
+e.g.: distr=normal(0,1)
+See the list of standard distributions which parameters must be provided.
 Furthermore it's possible to set the domain via the key `domain'.
 
 Method:
@@ -49,8 +53,10 @@ Of course the following keys dependend on the method choosen at first.
 All corresponding `_set_' commands of UNURAN are available and the key
 is the string after the `unur_<methodname>_set_' part of the command.
 e.g.: UNURAN provides the command `unur_arou_set_max_sqhratio' to
-set a parameter. To call this function via the string-interface, the
-key `max_sqhratio' can be used.
+set a parameter of the method AROU.
+To call this function via the string-interface, the
+key `max_sqhratio' can be used:
+max_sqhratio=0.9
 
 
 Uniform random number generator:
@@ -58,7 +64,9 @@ Use this block only if you are familiar with the PRNG package.
 If this block is omitted, UNURAN chooses a uniform random number generator.
 The only key allowed is `prng' and the following value is a
 string which is passed as it is to the PRNG package
-For information see the PRNG manual.
+E.g. prng=MT19937(133)
+invokes the Mersenne Twisester with the seed 133.
+For more information see the PRNG manual.
 
 
 

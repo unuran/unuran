@@ -270,7 +270,7 @@ EOX
 
 	    # Make code
 	    $make_test_body .=
-		"\tunur_acg(gen,out,\"$distr\_$gen\");\n\n".   # make code 
+		"\tunur_acg_C(gen,out,\"$distr\_$gen\");\n\n".   # make code 
 		"\tunur_distr_free(distr);\n".           # free distribution object
 		"\tunur_free(gen);\n\n";                 # free generator object
 

@@ -41,9 +41,9 @@
 /*---------------------------------------------------------------------------*/
 
 int
-unur_acg( struct unur_gen *gen, FILE *out, const char *distr_name )
+unur_acg_C( struct unur_gen *gen, FILE *out, const char *distr_name )
      /*----------------------------------------------------------------------*/
-     /* Automatic code generator                                             */
+     /* Automatic code generator (C version)                                 */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen        ... pointer to generator object                         */
@@ -102,7 +102,7 @@ unur_acg( struct unur_gen *gen, FILE *out, const char *distr_name )
 
   return return_code;
 
-} /* end of unur_acg() */
+} /* end of unur_acg_C() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -146,32 +146,23 @@ _unur_acg_C_demo_urng( FILE *out )
       "see http://www.math.keio.ac.jp/~matumoto/emt.html" 
       );
 
+  /*************************************************************
+   * Marsaglia G. (1972), m = 2^32, a = 69069, c = 1           *
+   * The structure of linear congruential sequences, in:       *
+   * Applications of Number Theory to Numerical Analysis, S.K. *
+   * Zaremba, ed., Academic Press, New York 1972               *
+   *************************************************************/
+  
   fprintf(out,"#ifndef uniform\n");
-  fprintf(out,"#define uniform() _unur_acg_urng_demo()\n");
+  fprintf(out,"#define uniform() _uniform_demo()\n");
   fprintf(out,"\n");
-  fprintf(out,"static double _unur_acg_urng_demo (void)\n");
+  fprintf(out,"static double _uniform_demo (void)\n");
   fprintf(out,"{\n");
   fprintf(out,"\tstatic unsigned long int x = %d;   /* seed  */\n",rand());
   fprintf(out,"\tx = 69069 * x + 1;\n");
   fprintf(out,"\treturn (x * %.20e + %.20e);\n", pow(2.,-32), pow(2.,-33));
   fprintf(out,"}\n");
   fprintf(out,"#endif\n\n");
-
-#if 0
-/*************************************************************
- * Marsaglia G. (1972), m = 2^32, a = 69069, c = 1           *
- * The structure of linear congruential sequences, in:       *
- * Applications of Number Theory to Numerical Analysis, S.K. *
- * Zaremba, ed., Academic Press, New York 1972               *
- *************************************************************/
-
-double uniform()
-{
-  x=(69069*(x)+1);
-  return(x*2.328306436538696e-10+1.164153218269348e-10);
-}
-#endif
-
 
   return 1;
 } /* end of _unur_acg_demo_urng() */

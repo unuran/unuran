@@ -15,7 +15,6 @@ require "read_PDF.pl";
 
 # C file for code generator  
 my $PDFgen_C_file = "PDFgen.c";
-my $PDFgen_H_file = "PDFgen_source.h";
 
 # ----------------------------------------------------------------
 # List of distributions
@@ -52,8 +51,7 @@ exit 0;
 sub make_PDFgen_C
 {
     my $PDFgen;
-    my $PDFgen_static_prototypes;
-    my $PDFgen_global_prototypes;
+    my $PDFgen_prototypes;
     
     my $empty_line = "\tfprintf (out,\"\\n\");\n";
 
@@ -61,13 +59,10 @@ sub make_PDFgen_C
 # Main
 
     # Mark begin of Main
-    $PDFgen .= make_bar_C("Main");
+    $PDFgen .= make_bar_C("PDF main");
 
     # Function name
     my $function = "int \_unur_acg\_C\_PDF (UNUR_DISTR *distr, FILE *out, const char *pdf)";
-    
-    # Function prototype
-    $PDFgen_global_prototypes .= "$function;\n";
     
     # Function header
     $PDFgen .= "$function\n{\n";
@@ -97,13 +92,13 @@ sub make_PDFgen_C
 	next unless $DISTR->{$d}->{"=TYPE"} eq "CONT";
 
 	# Mark begin of distribution
-	$PDFgen .= make_bar_C("$d: ".$DISTR->{$d}->{"=NAME"});
+	$PDFgen .= make_bar_C("PDF $d: ".$DISTR->{$d}->{"=NAME"});
 
 	# Function name
 	my $function = "int \_unur_acg\_C\_PDF\_$d (UNUR_DISTR *distr, FILE *out, const char *pdf)";
 
 	# Function prototype
-	$PDFgen_static_prototypes .= "static $function;\n";
+	$PDFgen_prototypes .= "static $function;\n";
 
 	# Function header
 	$PDFgen .= "$function\n{\n";
@@ -148,19 +143,13 @@ sub make_PDFgen_C
 # ................................................................
 # Print C code into files
 
-    # Header file
-    open HFILE, ">$PDFgen_H_file" or die "cannot open file $PDFgen_H_file\n";
-    print HFILE $PDFgen_global_prototypes;
-    close HFILE;
-
-    # C file
     open CFILE, ">$PDFgen_C_file" or die "cannot open file $PDFgen_C_file\n";
 
     print CFILE make_bar_C("include header file");
     print CFILE "\#include <codegen_source.h>\n";
 
     print CFILE make_bar_C("local prototypes");
-    print CFILE $PDFgen_static_prototypes;
+    print CFILE $PDFgen_prototypes;
 
     print CFILE $PDFgen;
     close CFILE;

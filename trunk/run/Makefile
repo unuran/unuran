@@ -12,4 +12,4 @@ test: test.c ../src/unuran.h ../src/libunuran.a
 	gcc -I. -I.. -I../src -I../src/tests -L../src -Wall -g -O2 -o test test.c -lunuran -lm -lprng 
 
 clean:
-	rm -f *~ *.o run test unuran.log
+	rm -f *~ *.o run test run_acg unuran.log

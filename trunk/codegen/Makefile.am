@@ -14,7 +14,6 @@ include_HEADERS = \
  unuran_acg.h
 
 libunuracg_a_SOURCES = \
- PDFgen_source.h \
  PDFgen.c \
  codegen.c \
  codegen_source.h \
@@ -48,10 +47,6 @@ EXTRA_DIST = \
 PDFgen.c: make_PDFgen.pl read_PDF.pl
 	./make_PDFgen.pl
 
-PDFgen_source.h: make_PDFgen.pl read_PDF.pl
-	./make_PDFgen.pl
-
-
 make_test_PDFgen.c: $(top_srcdir)/codegen/test.conf make_test_PDFgen.pl read_PDF.pl
 	./make_test_PDFgen.pl $(top_srcdir)/codegen/test.conf
 
@@ -81,7 +76,6 @@ test_codegen_LDADD = $(top_builddir)/src/libunuran.a
 # clean backup files
 CLEANFILES = \
  PDFgen.c \
- PDFgen_source.h \
  make_test_PDFgen.c \
  test_PDFgen.c \
  make_test_codegen.c \
@@ -92,7 +86,6 @@ CLEANFILES = \
 # clean generated files
 MAINTAINERCLEANFILES = \
  PDFgen.c \
- PDFgen_source.h \
  make_test_PDFgen.c \
  test_PDFgen.c \
  make_test_codegen.c \

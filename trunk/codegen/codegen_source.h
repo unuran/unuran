@@ -38,8 +38,12 @@
 /*---------------------------------------------------------------------------*/
 
 #include <source_unuran.h>
-#include "PDFgen_source.h"
 
+/*---------------------------------------------------------------------------*/
+
+int _unur_acg_C_PDF (UNUR_DISTR *distr, FILE *out, const char *pdf);
+/*---------------------------------------------------------------------------*/
+/* Code generator for PDFs of UNURAN build-in standard distributions.        */
 /*---------------------------------------------------------------------------*/
 
 int _unur_tdr_ps_codegen( struct unur_gen *gen, FILE *out, 

@@ -37,9 +37,9 @@
 #define __UNURAN_ACG_H_SEEN
 /*---------------------------------------------------------------------------*/
 
-int unur_acg( struct unur_gen *gen, FILE *out, const char *distr_name );
+int unur_acg_C( struct unur_gen *gen, FILE *out, const char *distr_name );
 /*---------------------------------------------------------------------------*/
-/* Automatic code generator                                                  */
+/* Automatic code generator (C version)                                      */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/

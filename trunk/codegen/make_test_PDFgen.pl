@@ -251,7 +251,7 @@ EOX
     my $make_header = <<EOX;
 \#include <string.h>
 \#include <unuran.h>
-\#include \"PDFgen_source.h\"
+\#include \"codegen_source.h\"
 \#ifdef WITH_DMALLOC
 \#  include <dmalloc.h>
 \#endif

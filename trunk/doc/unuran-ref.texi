@@ -24,20 +24,23 @@
 @c Titlepage ...
 @include unuran_title.texi
 
-@c -----------------------------------------------------
+@c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+@contents
 
 @c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 @c
 @c `Top' Node and Master Menu
 @c
 
-@ifnottex
-@node Top,     Intro,  ,          (dir)     
-@top
-@c    node-name, next,          previous,  up
+@node Top,       Intro,         ,  (dir)     
+@c    node-name,  next, previous,    up
+@top UNURAN -- Universal Non-Uniform RANdom number generators
+
 This is the online-documentation of UNURAN.@*
 Version: @value{VERSION}@*
 Date: @value{UPDATED}
+
 @menu
 * Intro::                  Introduction
 * Examples::               Examples
@@ -46,13 +49,6 @@ Date: @value{UPDATED}
 * Function Reference::     Function Reference
 * Internal::               Internal remarks
 @end menu
-@end ifnottex     
-
-@c --------------------------------------------------------------------
-
-@ifhtml
-Table of @ref{Contents}
-@end ifhtml
 
 @c --------------------------------------------------------------------
 
@@ -590,26 +586,4 @@ For information about the Methods themselfes, see @ref{Description}.
 @end tex
 
 
-@ifhtml
-@anchor{Contents}
-@end ifhtml
-@contents
-
-
 @bye
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

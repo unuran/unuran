@@ -506,35 +506,26 @@ unur_str2gen (const char *string)
   }
 
   /* get parameter object */
-  if ( str_method != NULL ) {
+  if ( str_method != NULL )
     /* method is provided in string */
     par = _unur_str_par(str_method, distr, &mlist);
-  }
-  else {
+  else
     /* otherwise use default method */
-    par = _unur_str2par_default(distr);
-  }
-
-  /* check if parameter object was generated successfully */
-  if ( par == NULL ) {
-    /* error */
-    if (str) free(str);
-    unur_distr_free(distr);
-    _unur_free_malloc_list(&mlist);
-    return NULL;
-  }
-
-  /* set uniform random number generator -- if provided */
-  if ( str_urng != NULL ) {
-    if ((urng = _unur_str2urng(str_urng)) != NULL )
-      unur_set_urng(par, urng); 
-  }
+    par = unur_auto_new(distr);
 
   /* make generator object */
   gen = unur_init(par);
 
   /* destroy distribution object */
   unur_distr_free(distr);
+
+  /* set uniform random number generator -- if provided */
+  if ( str_urng != NULL )
+    if (gen != NULL) {
+      /* we need a valid generator object */
+      if ((urng = _unur_str2urng(str_urng)) != NULL )
+	unur_chg_urng(gen, urng);
+    }
 
   /* free allocated memory blocks */
   _unur_free_malloc_list(&mlist);
@@ -545,7 +536,6 @@ unur_str2gen (const char *string)
   /*    error */
   /*    return NULL; */
   /*  } */
-
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */

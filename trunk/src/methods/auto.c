@@ -118,13 +118,14 @@ unur_auto_new( struct unur_distr *distr )
   COOKIE_SET(par,CK_AUTO_PAR);
 
   /* copy input */
+  par->distr    = distr;           /* pointer to distribution object         */
 
   /* set default values */
   par->method   = UNUR_METH_AUTO;  /* method and default variant             */
   par->variant  = 0u;              /* default variant                        */
   par->set      = 0u;              /* inidicate default parameters           */    
   par->urng     = unur_get_default_urng(); /* use default urng               */
-  par->urng_aux = NULL;                    /* no auxilliary URNG required    */
+  par->urng_aux = par->urng;               /* no special auxilliary URNG     */
 
   par->debug    = _unur_default_debugflag; /* set default debugging flags    */
 
@@ -221,6 +222,13 @@ _unur_auto_init( struct unur_par *par )
     _unur_error(GENTYPE,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
     gen = NULL;
     break;
+  }
+
+  /* copy URNGs and debugging flags */
+  if (gen) {
+    gen->urng = par->urng;
+    gen->urng_aux = par->urng_aux;
+    gen->debug = par->debug;
   }
 
   /* free parameters */

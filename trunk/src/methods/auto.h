@@ -81,6 +81,8 @@ int unur_auto_set_logss( UNUR_PAR *parameters, int logss );
    sample size.
 
    Default is 10.
+
+   Notice: This feature will be used in future releases of UNURAN only.
 */
 
 /* =END */

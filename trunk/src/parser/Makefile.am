@@ -26,7 +26,7 @@ libparser_la_SOURCES = \
 EXTRA_DIST = \
  make_stringparser.pl \
  functparser_doc.dh \
- stringparser_doc.h \
+ stringparser_doc.dh \
  stringparser.c.in
 
 parser_srcdir = $(top_srcdir)/src/parser
@@ -41,5 +41,5 @@ CLEANFILES = *~
 # clean generated files
 MAINTAINERCLEANFILES = \
  stringparser.c \
- stringparser_doc.h \
+ stringparser_doc.dh \
  Makefile.in

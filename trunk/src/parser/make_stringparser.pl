@@ -86,7 +86,7 @@ require "$top_srcdir/scripts/read_PDF.pl";
 
 my $doc_dir = $ENV{'srcdir'} ? $ENV{'srcdir'} : '.';
 
-my $doc_file = "$doc_dir/stringparser_doc.h";
+my $doc_file = "$doc_dir/stringparser_doc.dh";
 
 my $distr_doc_string;
 my $method_doc_string;

@@ -82,6 +82,7 @@ a decimal point, and an exponent indicated by @code{e}.
 @item @code{pi}     @tab @i{pi = 3.1415@dots{}}   @tab @code{3*pi+2}
 @item @code{e}      @tab @i{Euler's constant}     @tab @code{3*e+2} (= 10.15@dots{};
                                                        do not cofuse with @code{3e2} = 300)
+@item @code{inf}    @tab @i{infinity}             @tab (used for domains)             
 @end multitable
 @end cartouche
 

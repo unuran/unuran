@@ -23,7 +23,7 @@ noinst_HEADERS = \
  functparser_source.h \
  functparser_struct.h \
  functparser_symbols.h \
- functparser_codegen.c \
+ functparser_stringgen.c \
  functparser_codegen_C.c \
  functparser_debug.c \
  functparser_deriv.c \

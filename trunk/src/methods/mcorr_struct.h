@@ -41,15 +41,17 @@
 /* Information for constructing the generator                                */
 
 struct unur_mcorr_par { 
-  int dummy;
+  int    dim;          /* dimension (number of rows and columns) of matrix */
+  double *eigenvalues; /* optional eigenvalues of the correlation matrix   */
 };
 
 /*---------------------------------------------------------------------------*/
 /* The generator object                                                      */
 
 struct unur_mcorr_gen { 
-  int dim;          /* dimension (number of rows and columns) of matrix      */
-  double *H;        /* working array                                         */
+  int    dim;          /* dimension (number of rows and columns) of matrix */
+  double *H;           /* working array                                    */
+  double *eigenvalues; /* optional eigenvalues of the correlation matrix   */
 };
 
 /*---------------------------------------------------------------------------*/

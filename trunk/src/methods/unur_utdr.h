@@ -37,31 +37,107 @@
  *                                                                           *
  *****************************************************************************/
 
+/* 
+   =METHOD  UTDR   Universal Transformed Density Rejection
+
+   UTDR is based on the transformed density rejection and uses three almost
+   optimal points for constructing hat and squeezes.
+   It works for all T-concave distributions with T(x) = -1/sqrt(x).
+
+   It requires the p.d.f. and the (exact) location of the mode.
+   Moreover the approximate area below the given p.d.f. is used.
+   (If no area is given for the distribution the algorithm assumes that it
+   is approximately 1.)
+   The rejection constant is bounded from above by <W??>
+   for all T-concave distributions.
+   
+   It is possible to change the parameters and the domain of the chosen 
+   distribution without building a new generator object by using the
+   unur_utdr_chg_pdfparams() and unur_utdr_chg_domain() call, respectively.
+   But then unur_utdr_chg_mode() and unur_utdr_chg_pdfarea() have to be used
+   to reset the corresponding figures whenever these have changed.
+   Before sampling from the distribution again, unur_reinit() must be executed.
+   (Otherwise the generator produces garbage).
+
+   When the p.d.f. does not change at the mode for varying parameters, then
+   this value can be set with unur_utdr_set_pdfatmode() to avoid some 
+   computations. Since this value will not be updated any more when the 
+   parameters of the distribution are changed,
+   the unur_utdr_chg_pdfatmode() call is necessary to do this manually.
+*/
+
+/*---------------------------------------------------------------------------*/
+/* Routines for user interface                                               */
+
+/* =ROUTINES */
+
 /*---------------------------------------------------------------------------*/
 /* Routines for user interface                                               */
 
 UNUR_PAR *unur_utdr_new( UNUR_DISTR *distribution );
 /* get default parameters for generator                                      */
 
-UNUR_GEN *_unur_utdr_init( UNUR_PAR *parameters );
-/* initialize new generator                                                  */
-
-double _unur_utdr_sample( UNUR_GEN *generator );
-double _unur_utdr_sample_check( UNUR_GEN *generator );  /** TODO **/
-/* sample from generator                                                     */
-
-void _unur_utdr_free( UNUR_GEN *generator);
-/* destroy generator object                                                  */
-
 /*...........................................................................*/
-
-int unur_utdr_set_cfactor( UNUR_PAR *parameters, double cfactor );
-/* set factor for position of left and right construction point              */
-
-int unur_utdr_set_delta( UNUR_PAR *parameters, double delta );
-/* set factor for replacing tangents by secants                              */
 
 int unur_utdr_set_verify( UNUR_PAR *parameters, int verify );
 /* turn verifying of algorithm while sampling on/off                         */
 
+int unur_utdr_set_pdfatmode( UNUR_PAR *parameters, double fmode );
+/* Set pdf at mode. if set the p.d.f. at the mode is never changed.          
+   This is to avoid additional computations, when the p.d.f. does not
+   change when parameters of the distributions vary. 
+   It is only useful when the p.d.f. at the mode does not change with
+   changing parameters for the distribution.
+*/
+
+int unur_utdr_set_cfactor( UNUR_PAR *parameters, double cfactor );
+/* set factor for position of left and right construction point.
+   The c_factor is used to find almost optimal construction points for the
+   hat function.
+   There is no need to change this factor it almost all situations.
+*/
+
+int unur_utdr_set_delta( UNUR_PAR *parameters, double delta );
+/* set factor for replacing tangents by secants.
+   higher factors increase the rejection constant but reduces the risk of
+   serious round-off errors.
+   There is no need to change this factor it almost all situations.
+*/
+
+/*...........................................................................*/
+
+int unur_utdr_chg_pdfparams( UNUR_GEN *generator, double *params, int n_params );
+/* 
+   Change array of parameters of distribution in given generator object.
+   Notice that it is not possible to change the number of parameters.
+   This function only copies the given arguments into the array of 
+   distribution parameters.
+   IMPORTANT: The given parameters are not checked against domain errors;
+   in opposition to the (=>) unur_<distr>_new() call.
+*/
+
+int unur_utdr_chg_domain( UNUR_GEN *generator, double left, double right );
+/* Change left and right border of the domain of the 
+   (truncated) distribution.  
+   If the mode changes when the domain of the (truncated) distribution is 
+   changed, then a correspondig unur_utdr_chg_mode() is required.
+   (There is no domain checking as in the unur_init() call.)
+*/
+
+int unur_utdr_chg_mode( UNUR_GEN *generator, double mode );
+/* Change mode of distribution.
+   unur_reinit() must be executed before sampling from the generator again.
+*/
+
+int unur_utdr_chg_pdfatmode( UNUR_GEN *generator, double fmode );
+/* Change p.d.f. at mode of distribution.
+   unur_reinit() must be executed before sampling from the generator again.
+*/
+
+int unur_utdr_chg_pdfarea( UNUR_GEN *generator, double area );
+/* Change area below p.d.f. of distribution.
+   unur_reinit() must be executed before sampling from the generator again.
+*/
+
+/* =END */
 /*---------------------------------------------------------------------------*/

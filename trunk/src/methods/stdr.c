@@ -208,7 +208,8 @@ unur_stdr_new( struct unur_distr *distr )
 
   /* set default values */
   PAR.Fmode     = -1.;                /* c.d.f. at mode (unknown yet)        */
-  PAR.fm        = -1.;                /* p.d.f. at mode (unknown yet)        */
+  PAR.fm        = -1.;                /* p.d.f. at mode (unknown)            */
+  PAR.um        = -1.;                /* square of p.d.f. at mode (unknown)  */
 
   par->method   = UNUR_METH_STDR;     /* method and default variant          */
   par->variant  = 0u;                 /* default variant                     */
@@ -294,6 +295,7 @@ unur_stdr_set_pdfatmode( UNUR_PAR *par, double fmode )
 
   /* store date */
   PAR.fm = fmode;
+  PAR.um = sqrt(fmode);
 
   /* changelog */
   par->set |= STDR_SET_PDFMODE;
@@ -512,6 +514,7 @@ unur_stdr_chg_pdfatmode( struct unur_gen *gen, double fmode )
 
   /* store date */
   GEN.fm = fmode;
+  GEN.um = sqrt(fmode);
 
   /* changelog */
   gen->set |= STDR_SET_PDFMODE;
@@ -681,11 +684,11 @@ _unur_stdr_hat( struct unur_gen *gen )
       _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"pdf(mode) <= 0.");
       return 0;
     }
-    GEN.fm = fm;
+    GEN.fm = fm;        /* pdf at mode */
+    GEN.um = sqrt(fm);  /* square root of pdf at mode */
   }
 
   /* compute parameters */
-  GEN.um = sqrt(GEN.fm);
   vm = DISTR.area / GEN.um;
 
   if (gen->set & STDR_SET_CDFMODE) {
@@ -802,6 +805,7 @@ _unur_stdr_create( struct unur_par *par )
   /* copy some parameters into generator object */
   GEN.Fmode = PAR.Fmode;            /* cdf at mode                           */
   GEN.fm    = PAR.fm;               /* pdf at mode                           */
+  GEN.um    = PAR.um;               /* square root of pdf at mode            */
 
   gen->method = par->method;        /* indicates method                      */
   gen->variant = par->variant;      /* indicates variant                     */

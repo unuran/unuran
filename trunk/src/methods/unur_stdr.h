@@ -44,9 +44,9 @@
    inequalities for constructing (universal) hats and squeezes.
    It works for all T-concave distributions with T(x) = -1/sqrt(x).
 
-   It requires the (exact) location of the mode and the area below the given
-   p.d.f. The rejection constant is 4 for all T-concave distributions with
-   unbounded domain and is less than 4 when the domain is bounded.
+   It requires the p.d.f., the (exact) location of the mode and the area below 
+   the given p.d.f. The rejection constant is 4 for all T-concave distributions
+   with unbounded domain and is less than 4 when the domain is bounded.
    Optionally the c.d.f. at the mode can be given to increase the performance
    of the algorithm. Then the rejection constant is reduced by one half
    and even a universal squeeze can (but need not be) used.
@@ -55,20 +55,19 @@
    
    (The mirror principle is not implemented.)
 
-   If the exact location of the mode is not known, then use an approximation
-   and provide the (exact) value of the p.d.f. at the mode by means of the
-   unur_stdr_set_pdfatmode() call.
+   If the exact location of the mode is not known, then use the approximate
+   location and provide the (exact) value of the p.d.f. at the mode by means
+   of the unur_stdr_set_pdfatmode() call.
 
-   Instead of the (exact) area below the p.d.f. an upper bound can be used
-   (which increases the rejection constant of course). But then the squeeze flag
-   must not be set.
+   If the (exact) area below the p.d.f. is not known, then an upper bound can be
+   used instead (which of course increases the rejection constant). 
+   But then the squeeze flag must not be set.
 
-   It is even possible to give an upper bound for the p.d.f. and an upper bound
-   for the area below the p.d.f. However then the (bound for the) area below the 
-   p.d.f. has to be multiplied by the ratio between the upper bound and the
-   lower bound of the p.d.f. at the mode. Alternatively the upper bound for the 
-   p.d.f. at the mode can be multiplied with the ratio between the upper bound 
-   and the lower bound for area below the p.d.f.
+   It is even possible to give an upper bound for the p.d.f. only.
+   However then the (upper bound for the) area below the p.d.f. has to be 
+   multiplied by the ratio between the upper bound and the lower bound of the 
+   p.d.f. at the mode.
+   Again seting the squeeze flag is not allowed.
 
    It is possible to change the parameters and the domain of the chosen 
    distribution without building a new generator object using the

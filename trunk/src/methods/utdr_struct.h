@@ -41,21 +41,27 @@
 /* Information for constructing the generator                                */
 
 struct unur_utdr_par { 
-  double  c_factor;     /* constant for choosing the design points           */
-  double  delta_factor; /* constant for choosing delta to replace the tangent*/
+  double  fm;               /* p.d.f. at mode                                */
+  double  hm;               /* transformed p.d.f. at mode                    */
+  double  c_factor;         /* constant for choosing the design points       */
+  double  delta_factor;     /* delta to replace the tangent                  */
 };
 
 /*---------------------------------------------------------------------------*/
 /* The generator object                                                      */
 
 struct unur_utdr_gen { 
+  double  il;               /* left border of the domain                     */
+  double  ir;               /* right border of the domain                    */
+  double  fm;               /* p.d.f. at mode                                */
+  double  hm;               /* transformed p.d.f. at mode                    */
 
-  double  il;                   /* left border of the domain                 */
-  double  ir;                   /* right border of the domain                */
-
-  double  vollc,volcompl,voll,fm,hm,
+  double  vollc,volcompl,voll,
     al,ar,col,cor,sal,sar,bl,br,tlx,trx,
     brblvolc,drar,dlal,ooar2,ooal2;/* constants of the hat and for generation*/
+
+  double  c_factor;         /* constant for choosing the design points       */
+  double  delta_factor;     /* delta to replace the tangent                  */
 };
 
 /*---------------------------------------------------------------------------*/

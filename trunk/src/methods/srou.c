@@ -248,7 +248,7 @@ unur_srou_new( struct unur_distr *distr )
 
   /* set default values */
   PAR.Fmode     = -1.;                /* c.d.f. at mode (unknown yet)        */
-  PAR.fmode     = -1.;                /* p.d.f. at mode (unknown yet)        */
+  PAR.um        = -1.;                /* square root of p.d.f. at mode (unknown)*/
 
   par->method   = UNUR_METH_SROU;     /* method and default variant          */
   par->variant  = 0u;                 /* default variant                     */
@@ -332,8 +332,8 @@ unur_srou_set_pdfatmode( UNUR_PAR *par, double fmode )
     return 0;
   }
 
-  /* store date */
-  PAR.fmode = fmode;
+  /* store date (square root of fmode) */
+  PAR.um = sqrt(fmode);
 
   /* changelog */
   par->set |= SROU_SET_PDFMODE;
@@ -583,8 +583,8 @@ unur_srou_chg_pdfatmode( struct unur_gen *gen, double fmode )
     return 0;
   }
 
-  /* store date */
-  GEN.fmode = fmode;
+  /* store date (square root of fmode) */
+  GEN.um = sqrt(fmode);
 
   /* changelog */
   gen->set |= SROU_SET_PDFMODE;
@@ -758,11 +758,8 @@ _unur_srou_rectangle( struct unur_gen *gen )
       _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"pdf(mode) <= 0.");
       return 0;
     }
-    GEN.fmode = fm;
+    GEN.um = sqrt(fm);    /* height of rectangle */
   }
-
-  /* height of rectangle */
-  GEN.um = sqrt(GEN.fmode);
 
   /* width of rectangle */
   vm = DISTR.area / GEN.um;
@@ -849,7 +846,7 @@ _unur_srou_create( struct unur_par *par )
 
   /* copy some parameters into generator object */
   GEN.Fmode = PAR.Fmode;            /* cdf at mode                           */
-  GEN.fmode = PAR.fmode;            /* pdf at mode                           */
+  GEN.um    = PAR.um;               /* square root of pdf at mode            */
 
   gen->method = par->method;        /* indicates method                      */
   gen->variant = par->variant;      /* indicates variant                     */

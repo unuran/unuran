@@ -42,7 +42,7 @@
 
 struct unur_srou_par { 
   double  Fmode;             /* cdf at mode                                  */
-  double  fmode;             /* pdf at mode                                  */
+  double  um;                /* square root of pdf at mode                   */
 };
 
 /*---------------------------------------------------------------------------*/
@@ -53,7 +53,6 @@ struct unur_srou_gen {
   double  vl, vr;            /* left and right boundary of rectangle         */
   double  xl, xr;            /* ratios vl/um and vr/um                       */
   double  Fmode;             /* cdf at mode                                  */
-  double  fmode;             /* pdf at mode                                  */
 };
 
 /*---------------------------------------------------------------------------*/

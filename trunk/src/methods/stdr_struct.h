@@ -41,8 +41,9 @@
 /* Information for constructing the generator                                */
 
 struct unur_stdr_par { 
-  double Fmode;              /* cdf at mode                                  */
-  double fm;                 /* cdf at mode                                  */
+  double  Fmode;             /* cdf at mode                                  */
+  double  fm;                /* pdf at mode                                  */
+  double  um;                /* sqrt of pdf at mode                          */
 };
 
 /*---------------------------------------------------------------------------*/

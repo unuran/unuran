@@ -50,6 +50,7 @@ qstart: qstart.texi
 qstart.texi: scripts
 	tex qstart.texi
 	makeinfo --html qstart.texi
+	makeinfo --no-headers -o qstart.txt qstart.texi
 
 # run perl scripts
 scripts:

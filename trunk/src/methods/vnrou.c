@@ -239,6 +239,8 @@ unur_vnrou_set_u( struct unur_par *par, double *umin, double *umax )
   /* check arguments */
   _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
   _unur_check_par_object( par, VNROU );
+  _unur_check_NULL( GENTYPE, umin, UNUR_ERR_NULL );
+  _unur_check_NULL( GENTYPE, umax, UNUR_ERR_NULL );
 
   /* check new parameter for generator */
   dim = PAR.dim; /* making source code more readable */ 
@@ -316,10 +318,9 @@ unur_vnrou_set_r( struct unur_par *par, double r )
   /* check arguments */
   _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
   _unur_check_par_object( par, VNROU );
-  if (r<0.) {
-    r=1.;
-    _unur_warning("PARAMETER" , UNUR_ERR_GENERIC, "r-parameter set to r=1");  
-
+  if (r <= 0.) {
+    _unur_warning(GENTYPE, UNUR_ERR_PAR_SET, "r<=0; set to r=1");
+    r = 1.;
   }
   /* store data */
   PAR.r = r;
@@ -361,7 +362,6 @@ unur_vnrou_set_center( struct unur_par *par, double *center )
   return UNUR_SUCCESS;
 
 } /* end of unur_vnrou_set_center() */
-
 
 /*---------------------------------------------------------------------------*/
 
@@ -901,7 +901,6 @@ _unur_vnrou_debug_init( const struct unur_gen *gen )
   fprintf(log,"%s:\n",gen->genid);
   fprintf(log,"%s: type    = continuous multivariate random variates\n",gen->genid);
   fprintf(log,"%s: method  = vnrou (naive ratio-of-uniforms)\n",gen->genid);
-  fprintf(log,"%s: r-parameter = %g\n",gen->genid, GEN.r);
   fprintf(log,"%s:\n",gen->genid);
   
   _unur_distr_cvec_debug( gen->distr, gen->genid );
@@ -909,6 +908,11 @@ _unur_vnrou_debug_init( const struct unur_gen *gen )
   fprintf(log,"%s: sampling routine = _unur_vnrou_sample",gen->genid);
   if (gen->variant & VNROU_VARFLAG_VERIFY) fprintf(log,"_check");
   fprintf(log,"()\n%s:\n",gen->genid);
+
+  /* parameters */
+  fprintf(log,"%s: r-parameter = %g",gen->genid, GEN.r);
+  _unur_print_if_default(gen,VNROU_SET_R);
+  fprintf(log,"\n%s:\n",gen->genid);
 
   /* write center[] */
   fprintf(log,"%s: center = (", gen->genid);
@@ -921,11 +925,17 @@ _unur_vnrou_debug_init( const struct unur_gen *gen )
   fprintf(log,"%s:\n",gen->genid);
 
   /* write bounding rectangle */
-  fprintf(log,"%s: Rectangle:\n",gen->genid);
-  fprintf(log,"%s:    vmax = %g\n",gen->genid, GEN.vmax);
+  fprintf(log,"%s: Rectangle:",gen->genid);
+  if (!((gen->set & VNROU_SET_U) && (gen->set & VNROU_SET_V)))
+    fprintf(log,"\t[computed]");
+  else 
+    fprintf(log,"\t[input]");
+  fprintf(log,"\n");
+
+  fprintf(log,"%s:\tvmax = %g\n",gen->genid, GEN.vmax);
   for (d=0; d<dim; d++) {
-  fprintf(log,"%s:    umin[%d],umax[%d] = (%g,%g)\n",gen->genid, d, d, 
-                                                     GEN.umin[d],GEN.umax[d]);
+    fprintf(log,"%s:\tumin[%d],umax[%d] = (%g,%g)\n",gen->genid, 
+	    d, d, GEN.umin[d], GEN.umax[d]);
   }
   fprintf(log,"%s:\n",gen->genid);
 

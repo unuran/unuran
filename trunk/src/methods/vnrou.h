@@ -58,6 +58,25 @@
    =END
 */
 
+
+/* 
+   TODO:
+
+   Set the center (@unurmath{\mu}) of the PDF.
+   For distributions like the gamma distribution with large shape
+   parameters the acceptance region becomes a long inclined skinny
+   oval with a large bounding rectangle and thus an extremely large
+   rejection constant. Using the @var{center} shifts the mode of the
+   distribution near the origin and thus makes the bounding box of the
+   acception region smaller.
+
+   Default: Mode of the distribution if neither unur_nrou_set_rect_u()
+   nor unur_nrou_set_rect_v() are called (and the mode is available
+   for the distribution).
+   Otherwise (if at least one of these two calls has been
+   used) a @code{0}-vector is used as center.
+*/
+
 /*---------------------------------------------------------------------------*/
 /* Routines for user interface                                               */
 
@@ -108,28 +127,11 @@ int unur_vnrou_set_r( UNUR_PAR *parameters, double r );
    Default: @code{1}.
 */
 
-int unur_vnrou_set_center( UNUR_PAR *parameters, double *center );
-/* 
-   Set the center (@unurmath{\mu}) of the PDF.
-   For distributions like the gamma distribution with large shape
-   parameters the acceptance region becomes a long inclined skinny
-   oval with a large bounding rectangle and thus an extremely large
-   rejection constant. Using the @var{center} shifts the mode of the
-   distribution near the origin and thus makes the bounding box of the
-   acception region smaller.
-
-   Default: Mode of the distribution if neither unur_nrou_set_rect_u()
-   nor unur_nrou_set_rect_v() are called (and the mode is available
-   for the distribution).
-   Otherwise (if at least one of these two calls has been
-   used) a @code{0}-vector is used as center.
-*/
-
 int unur_vnrou_set_verify( UNUR_PAR *parameters, int verify );
 /* 
    Turn verifying of algorithm while sampling on/off.
 
-   If the condition squeeze(@i{x}) <= PDF(@i{x}) <= hat(@i{x}) is
+   If the condition PDF(@i{x}) <= hat(@i{x}) is
    violated for some @i{x} then @code{unur_errno} is set to
    @code{UNUR_ERR_GEN_CONDITION}. However notice that this might
    happen due to round-off errors for a few values of

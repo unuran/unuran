@@ -64,8 +64,9 @@
 #include <distr/distr_source.h>
 #include <distr/cvec.h>
 #include <utils/fmax_source.h>
-#include <utils/unur_fp_source.h>
 #include <utils/hooke_source.h> 
+#include <utils/matrix_source.h>
+#include <utils/unur_fp_source.h>
 #include "unur_methods_source.h"
 #include "x_gen_source.h"
 #include "vnrou.h"
@@ -80,7 +81,6 @@
 
 #define VNROU_SET_U       0x001u     /* set u values of bounding rectangle   */
 #define VNROU_SET_V       0x002u     /* set v values of bounding rectangle   */
-#define VNROU_SET_CENTER  0x004u     /* set approximate mode of distribution */
 #define VNROU_SET_R       0x008u     /* set r-parameter                      */
 
 /*---------------------------------------------------------------------------*/
@@ -175,7 +175,6 @@ unur_vnrou_new( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
 { 
   struct unur_par *par;
-  int d; /* index used in dimension-loops (0 <= d < dim) */
 
   /* check arguments */
   _unur_check_NULL( GENTYPE,distr,NULL );
@@ -200,15 +199,13 @@ unur_vnrou_new( const struct unur_distr *distr )
   /* copy number of dimensions from the distribution object */
   PAR.dim = distr->dim;
 
-  /* allocate memory for u-arrays and center */
+  /* allocate memory for u-boundary arrays */
   PAR.umin = _unur_xmalloc( PAR.dim * sizeof(double)); /* bounding rectangle */
   PAR.umax = _unur_xmalloc( PAR.dim * sizeof(double)); /* bounding rectangle */
-  PAR.center = _unur_xmalloc( PAR.dim * sizeof(double)); /* center of distrib*/
 
   /* set default values */
   PAR.r		= 1.; 	      /* r-parameter of the generalized method       */
   PAR.vmax      = 0.;         /* v-boundary of bounding rectangle (unknown)  */
-  for (d=0; d<PAR.dim; d++) PAR.center[d]=0.; /* default center = (0,...,0)  */
 
   par->method   = UNUR_METH_VNROU;    /* method and default variant          */
   par->variant  = 0u;                 /* default variant                     */
@@ -225,7 +222,6 @@ unur_vnrou_new( const struct unur_distr *distr )
 } /* end of unur_vnrou_new() */
 
 /*****************************************************************************/
-
 
 int
 unur_vnrou_set_u( struct unur_par *par, double *umin, double *umax )
@@ -339,36 +335,6 @@ unur_vnrou_set_r( struct unur_par *par, double r )
   return UNUR_SUCCESS;
 
 } /* end of unur_vnrou_set_r() */
-
-/*---------------------------------------------------------------------------*/
-
-int
-unur_vnrou_set_center( struct unur_par *par, double *center )
-     /*----------------------------------------------------------------------*/
-     /* Set the center (approximate mode) of the PDF.                        */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   center ... center of distribution                                  */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   UNUR_SUCCESS ... on success                                        */
-     /*   error code   ... on error                                          */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
-  _unur_check_par_object( par, VNROU );
-
-  /* store data */
-  memcpy(PAR.center, center, PAR.dim * sizeof(double));
-
-  /* changelog */
-  par->set |= VNROU_SET_CENTER;
-
-  /* o.k. */
-  return UNUR_SUCCESS;
-
-} /* end of unur_vnrou_set_center() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -571,16 +537,6 @@ _unur_vnrou_rectangle( struct unur_gen *gen )
   /* dimension of the distribution */
   dim = GEN.dim;
 
-  /* If center has not been set, we'll set it to the (optional) mode          */
-  /* (provided the user has not set any parameters of the bounding rectangle) */
-  /* Otherwise the center defaults to the value set in unur_nrou_new() i.e. 0 */
-  if (!(gen->set & VNROU_SET_CENTER) &&
-       (gen->distr->set & UNUR_DISTR_SET_MODE) && 
-      !(gen->set & VNROU_SET_U) && 
-      !(gen->set & VNROU_SET_V) ) {
-    memcpy(GEN.center, DISTR.mode, dim * sizeof(double)); 
-  }  
-
   /* allocate memory for the coordinate vectors */
   xstart = _unur_xmalloc(dim * sizeof(double));
   xend   = _unur_xmalloc(dim * sizeof(double));
@@ -742,7 +698,9 @@ _unur_vnrou_create( struct unur_par *par )
   
   GEN.umin = PAR.umin;
   GEN.umax = PAR.umax; 
-  GEN.center = PAR.center; 
+
+  /* get center of the distribution */
+  GEN.center = unur_distr_cvec_get_center(gen->distr);
  
   /* initialize parameters */
 
@@ -781,12 +739,13 @@ _unur_vnrou_clone( const struct unur_gen *gen )
   /* allocate memory for u-arrays and center */
   CLONE.umin = _unur_xmalloc( GEN.dim * sizeof(double));
   CLONE.umax = _unur_xmalloc( GEN.dim * sizeof(double));
-  CLONE.center = _unur_xmalloc( GEN.dim * sizeof(double));
   
   /* copy parameters into clone object */
   memcpy(CLONE.umin, GEN.umin, GEN.dim * sizeof(double));
   memcpy(CLONE.umax, GEN.umax, GEN.dim * sizeof(double));
-  memcpy(CLONE.center, GEN.center, GEN.dim * sizeof(double));
+
+  /* copy data */
+  CLONE.center = unur_distr_cvec_get_center(clone->distr);
 
   return clone;
 
@@ -920,7 +879,8 @@ _unur_vnrou_free( struct unur_gen *gen )
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
   /* free memory */
-  free(GEN.umin); free(GEN.umax); free(GEN.center);   
+  if (GEN.umin) free(GEN.umin); 
+  if (GEN.umax) free(GEN.umax);
   _unur_generic_free(gen);
 
 } /* end of _unur_vnrou_free() */
@@ -971,17 +931,10 @@ _unur_vnrou_debug_init( const struct unur_gen *gen )
   _unur_print_if_default(gen,VNROU_SET_R);
   fprintf(log,"\n%s:\n",gen->genid);
 
-  /* write center[] */
-  fprintf(log,"%s: center = (", gen->genid);
-  for (d=0; d<dim; d++) {
-    fprintf(log,"%g", GEN.center[d]);
-    if (d<dim-1) fprintf(log, ", ");
-  }
-  fprintf(log,")\n");
-  
-  fprintf(log,"%s:\n",gen->genid);
+  /* print center */
+  _unur_matrix_print_vector( GEN.dim, GEN.center, "center =", log, gen->genid, "\t   ");
 
-  /* write bounding rectangle */
+  /* print bounding rectangle */
   fprintf(log,"%s: Rectangle:",gen->genid);
   if (!((gen->set & VNROU_SET_U) && (gen->set & VNROU_SET_V)))
     fprintf(log,"\t[computed]");

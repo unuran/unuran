@@ -162,16 +162,9 @@ t_*.c: make_test_files.pl
 
 # run tests with valgrind
 if HAVE_VALGRIND
-
-VALGRINDOPTIONS = -v \
- --tool=memcheck \
- --leak-check=yes \
- --leak-resolution=high \
- --num-callers=40 \
- --show-reachable=yes 
 valgrind: $(check_PROGRAMS)
 	@list='$(check_PROGRAMS)'; for p in $$list; do \
-		valgrind --logfile=valgrind-$$p $(VALGRINDOPTIONS) ./$$p; \
+		$(top_srcdir)/scripts/run_valgrind.sh ./$$p; \
 	done
 
 endif

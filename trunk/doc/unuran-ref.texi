@@ -1,0 +1,615 @@
+
+\input texinfo   @c -*-texinfo-*-
+
+@c $Id$
+
+@c %**start of header
+@setfilename unuran-ref.info
+@settitle    UNURAN User Manual
+@iftex
+@afourpaper
+@end iftex
+@footnotestyle end
+@setchapternewpage odd
+@c %**end of header
+
+@dircategory Scientific software
+@direntry
+* unuran-ref: (unuran-ref).  UNURAN -- Universal Non-Uniform Random number generator
+@end direntry
+
+@c Version ...
+@include version.texi
+
+@c Titlepage ...
+@include title.texi
+
+@c -----------------------------------------------------
+
+@c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+@c
+@c `Top' Node and Master Menu
+@c
+
+@ifnottex
+@node Top,     Intro,  ,          (dir)     
+@top
+@c    node-name, next,          previous,  up
+This is the online-documentation of UNURAN.@*
+Version: @value{VERSION}@*
+Date: @value{UPDATED}
+@menu
+* Intro::                  Introduction
+* Examples::               Examples
+* Methods::                How should the random numbers be created
+* Distributions::          Distributions
+* Function Reference::     Function Reference
+* Internal::               Internal remarks
+@end menu
+@end ifnottex     
+
+@c --------------------------------------------------------------------
+
+@ifhtml
+Table of @ref{Contents}
+@end ifhtml
+
+@c --------------------------------------------------------------------
+
+@node Intro
+@chapter Introduction
+@menu
+* Overview::  Overview
+* Install::   Installing the thing
+* Contact::   Contact the authors
+* Remark::    Remark about this document
+@end menu
+
+
+@node Overview
+@section Overview
+@menu
+* Explain:: What is UNURAN
+* Document:: Usage of this document
+@end menu
+
+@node Explain
+@subsection What is UNURAN
+
+UNURAN (Universal Non-Uniform RAndom Number generator) is
+designed for applications using non-standard distributions
+where no seperate generator is yet available.
+UNURAN is also useful if the parameters of a standard distribution
+should be changed frequently.
+Additionaly there are lots of predefined distributions available
+(see @ref{Distributions}).
+
+UNURAN implements several methods for generating random numbers.
+The choice depents primary on what information about the
+distribution can be provided and---if the user is familar with
+the different methods---on the preferences of the user.
+
+
+@node Document
+@subsection Usage of this document
+
+We tried do design this document in a way one can
+use UNURAN with reading as little as possible.
+On basis of the available information about the density,
+one should choose a suitable method (see @ref{Requirements}).
+Then the Examples @ref{Ex1} and @ref{Ex2} in addition
+with a short look at section @ref{Do_it_yourself} should be enough.
+
+The function for changing the parameters while sampling can be
+found in @ref{Function Reference}.
+
+To use predefined distributions take a look on the list of
+availabe Distributions @ref{Distributions}, Examples @ref{Ex1}
+and @ref{Ex1} and if required also on @ref{Readymade}.   
+
+The greatest deal of this document is for users with knowledge about
+the methods who want to change method-specific parameters and can
+be ignored by all others.
+
+@node Install
+@section Install
+
+@noindent
+First unzip and untar the package. Then change to the directory
+@file{/unuran} and execute the following commands:
+@smallexample
+configure --prefix=HOMEDIRECTORY
+make
+make install
+@end smallexample
+@c
+@noindent This installs the following files:
+@c
+@smallexample
+$(prefix)/include/unuran_tests.h
+$(prefix)/include/unuran.h
+$(prefix)/include/unuran_config.h
+$(prefix)/lib/libunuran.a
+@end smallexample
+
+@noindent If you set the follwing systemvariables:
+@smallexample
+LIBRARY_PATH="HOMEDIRECTORY/lib"
+C_INCLURE_PATH="HOMEDIRECTORY/include"
+@end smallexample
+@noindent
+the relevant files are where the C-compiler can find them.
+If every user on your machine should be able to use UNURAN,
+you omit @file{--prefix=HOMEDIRECTORY} when calling @file{configure}
+(as usual the standard value of @file{$(prefix)} is @file{/usr/local}.
+Of course you can do this only if you have the right permissions.
+
+
+@node Contact
+@section Contact the authors
+
+If you have any problems with UNURAN, suggestions how to improve
+the program or find a bug, please contact us via the UNURAN-homepage:
+@uref{http://statistik.wu-wien.ac.at}
+or via email:
+@email{leydold@@statistik.wu-wien.ac.at}
+
+
+@node Remark
+@section Remark about this document
+
+Great parts of this document are generated automatically from
+the program code by perl scripts.
+@*
+If there are problems with this document because of missing
+@file{.texi}-files, maybe UNURAN hasn't been installed properly.
+In this case it might help reading the short description within
+each script (@file{*.perl}) to learn how to use it.
+@*
+The idea behind this strategy is to hold this document
+easier up-to-date because comments inside the code
+are used and in the ideal case these are simutanuously
+changed with the code itself.
+
+
+@c --------------------------------------------------------------------
+
+
+@node Examples
+@chapter Examples
+@menu
+* Ex1:: As short as possible
+* Ex2:: Use of arbitrary pdf
+* Ex3:: Change function parameters
+* Ex4:: Change the uniform random generator
+@end menu
+
+@*Assuming UNURAN has been installed sucessfully,
+here are some exmples to showing how to obtain random numbers.
+Beginning with the basics of using unuran we evolve to examples
+using  more advanced features of UNURAN.
+After the example itself the relevant code will be explained.
+@*call the compiler with:
+@* @file{gcc -Wall -O2 example.c -lunuran -lprng -lml -lm -o test}
+
+@node Ex1
+@section Ex1: As short as possible
+
+@smallexample
+@include ref_example1.texi
+@end smallexample
+@*
+First you have to include the libraries @code{unuran.h} 
+and @code{unuran_distributions.h} with the commands:
+@smallexample
+#include <unuran.h>
+@end smallexample
+@* 
+These headers provide all functions/features for generating random numbers.
+@*
+The following three pointers to structures: 
+@smallexample
+UNUR_DISTR *distr;  /* distribution */ 
+UNUR_PAR   *par;    /* parameter */
+UNUR_GEN   *gen;    /* generator */
+@end smallexample
+@*
+are neccessary to store the used parameters. It is not neccessary to
+understand the structure in detail to get random numbers. 
+@*
+With
+@smallexample
+ distr = unur_distr_normal(NULL, 0);
+@end smallexample
+@*
+the random numbers will be standard normal distributed.
+The second argument is the number of parameters of the 
+used distribution (see @ref{Continuous} or @ref{Discrete}) and
+the first argument is a pointer to an array holding
+these parameters.
+@*
+With
+@smallexample
+ par = unur_arou_new(distr);
+@end smallexample
+@*
+the method `AROU' is chosen for sampling and a parameter object `par'
+is generated. 
+@*
+For actual sampling it's necessary to build a generator object:
+@smallexample
+gen = unur_init(par)
+@end smallexample
+@*
+(Now the objects @code{distr} and @code{par} have no further use
+and will be destroyed).@*
+The following line shows how actual sampling works:
+@smallexample
+ x = unur_sample_cont(gen);
+@end smallexample
+
+@node Ex2
+@section Ex2: Arbitrary distributions
+
+If you want to sample from a not implementet distribution,
+UNURAN is probably the method of choice.
+You only have to provide a function calculating e.g. the cdf
+(see @ref{Arbitrary} for everything the user can provide).
+What you have to provide depends on the method used for sampling
+(see @ref{Requirements}).
+
+@page
+@smallexample
+@include ref_example2.texi
+@end smallexample
+@*
+The following lines represent a subroutine providing the
+code for calculating the cdf of uniform distributed random
+numbers. The cdf mycdf is piecewise parabolic (the pdf would
+be a triangle over [0,3] with maximum at 1).
+@smallexample
+double mycdf (double x)
+@{
+   if (x <= 0.0)
+     return ( 0.0 );
+   else if (x <= 1.0)
+     return ( x*x/3.0 );
+   else if (x <= 3.0)
+     return( ((-x+6.0)*x-3.0)/6.0 );
+   else
+     return ( 1.0 );
+@}  
+@end smallexample
+@*
+This two lines generate a (continuous) distribution object and
+set the cdf (which is needed by the choosen method
+for generating random numbers (numerical inversion with
+the regula falsi) to the desired function
+(@code{mycdf()} defined above):
+@smallexample
+distr = unur_distr_new(UNUR_DISTR_CONT);
+unur_distr_cont_set_cdf(distr, mycdf);
+@end smallexample
+@*
+What you have to provide for the method you chose
+is documented in @ref{Requirements} and how to provide
+it in @ref{Do_it_yourself}.
+@*
+As in the previous example the following line: 
+@smallexample
+par = unur_ninv_new(distr);
+@end smallexample
+@*
+chooses the method for generating random numbers
+(in this case numerical inversion).
+
+
+@node Ex3
+@section Ex3: Changing Parameters of the method
+
+@* Each method for generating random numbers allows several
+parameters to modify.
+If you don't want UNURAN to choose default values,
+it's possible to change a specific parameters (see @ref{Function Reference});
+ the following example shows you how to do. 
+The important lines are in bold face.
+
+@smallexample
+@include ref_example3.texi
+@end smallexample
+@*
+This example is similar to the first example.
+The first modification is the distribution
+(normal distribution with mean 10.0 and standard deviation 0.5).
+The intention of this example was to demonstrate how to
+change parameters of the choosen method with the following line:
+@smallexample
+unur_ninv_use_newton(par);
+@end smallexample
+@*
+Because the parameter object is destroyed when generating
+the generator object, it is important to change the
+parameters in advance.
+The available parameters are documented in @ref{MethodsRef}.
+
+
+@node Ex4
+@section Ex4: Changing the uniform random generator
+
+If you want to use the PRNG-package, to generate special
+uniformly distributed random numbers 
+@file{unuran_config.c}
+
+@smallexample
+/* set type of uniform generator            */
+/* #define UNUR_URNG_TYPE UNUR_URNG_POINTER */
+#define UNUR_URNG_TYPE UNUR_URNG_PRNG
+@end smallexample
+
+@smallexample
+@include ref_example4.texi
+@end smallexample
+
+@c --------------------------------------------------------------------
+
+
+@node Methods
+@chapter Methods
+@menu
+* Choosing:: Which method should be used
+* Description:: Description of the methods
+* Requirements:: The requirements of the methods
+* Defaults:: The default settings of parameters
+@end menu
+
+@node Choosing
+@section Choosing a method
+
+Choosing a method for random number generation
+depends on the information that can be provided.
+The following table shows the requirements of the available
+methods. The description of the methods can be found in the 
+following sections.
+
+@include unuran_method_requirements.texi
+
+
+@noindent As explained, when using UNURAN, a parameter object
+and a distribution object have to be declared:
+@smallexample
+   UNUR_PAR *par;
+   UNUR_DISTR *distr;
+@end smallexample
+
+@noindent If the distribution object is already initialized,
+you must choose the method for sampling random numbers.
+Let's say, the pdf and the the derivative of the pdf (dpdf) are
+known, then the table says that this information 
+is sufficient for the methods AROU and TDR.
+The following lines sets the method AROU as method of choice
+(notice: the method's name is in lower case letters):
+
+@noindent @code{   par  = unur_arou_new(distr);}
+
+@noindent Usage of  another method can be achived by
+replacing the methods name. 
+
+Each implemented method has some parameters, the
+user can adjust. These parameters are either
+numerical values or decision about the usage of a special
+implementation of the method.
+E.g: AROU can be told an approximation of the mode which should be 2.4:
+@smallexample
+  unur_arou_set_center(par, 2.4);
+@end smallexample
+To change any parameter you habe to use the
+according function call documented in @ref{MethodsRef}.
+All parameters have default settings documented in @ref{Defaults}.
+
+
+@node Description
+@section Description of the methods
+@menu
+* AROU:: Adaptive Ratio Of Uniforms
+* CSTD:: Interface for extern generators
+* DAU::  (Discrete) Alias-Urn
+* DGT:: ???
+* EMPK:: ???
+@c * DIS::  (Discrete) Alias-Urn
+* DSTD:: ???
+* NINV:: Numerical INVersion
+@c * RECT:: experimental multivariate Method
+* SROU:: Simple Ratio Of Uniforms
+* SSR:: Transformed Density Rejection (with universal bounds)
+@c * TABL:: Ahren
+* TDR::  Trandformed Density Rejection
+* UNIF:: ???
+* UTDR:: Universal Transformed Density Rejection (3-point method)
+@end menu
+
+@include ref_methods.texi
+
+@node Requirements
+@section Requirements of the methods
+@include unuran_method_requirements.texi
+
+@node Defaults
+@section Default settings of the parameters
+
+@multitable @columnfractions .07 .93
+@item NINV @tab maximum number of iterations:  @code{40}
+@item @tab relative error in @code{x}:  @code{1.0e-8}
+@item @tab starting points: 0.05 and 0.95 quantile
+@item @tab table is switched off
+@item @tab variant: regula falsi
+@end multitable
+
+@c --------------------------------------------------------------------
+
+@node Distributions
+@chapter Distributions
+@menu
+* Arbitrary::  Arbitrary distributions 
+* Continuous:: Preset continuous distributions
+* Discrete::   Preset discrete distributions
+@end menu
+
+@noindent @strong{WARNING:} Naturally the computational accuracy
+limits the possible parameters. There shouldn't be problems
+when the parameters of a distribution are in a "reasonable" range but
+e.g. the normal distribution N(10^50,1) won't yield the desired results.
+(In this case it would be better generating N(0,1) and THEN
+transform the results.)
+@* Of course computational inaccuracy is not specific to UNURAN
+and should always kept in mind when working with computers.
+
+
+@node Arbitrary
+@section Arbitrary distributions
+
+See @ref{Do_it_yourself}
+
+
+@node Continuous
+@section Continuous Distributions
+
+Although it is not its primary target, many
+distributions are already implemented in UNURAN.
+This section presents these available distributions
+and the belonging parameters.
+
+The syntax of using one of these distributions is always the
+same (see  @ref{Ex1} and @ref{Ex3}) and the actual code for
+each distribution can be looked up in @ref{Readymade}.
+If standard values for parameters of a specific distribution
+are available, it is possible to pass as second argument
+(the number of passed arguments) a number smaller than the
+number of required parameters.
+Of course you have to provide at least as much as parameters
+as the second argument indicates.
+The first paramters (as much as the value of the second argument)
+are set to the provided values and the remaining are set to the
+standard values in the order specified in this section.
+(See @ref{Ex1} (0 parameters provided) and @ref{Ex3} (2 parameters provided).)
+
+Some methods allow arbitrary domains with predefined densities
+(e.g. NINV -- numerical inversion):
+And if the domain is changed so might the mode. How to change the
+domain and due to that the mode or mayby another parameter can be
+looked up in @ref{Do_it_yourself}.
+
+@include ref_distr_cont.texi
+
+@node Discrete
+@section Discrete Distributions
+@include ref_distr_discr.texi
+
+@c --------------------------------------------------------------------
+
+
+@node Function Reference
+@chapter Function reference
+@menu
+* Do_it_yourself::  Include your own distributions
+* Readymade:: Ready-made distributions
+* MethodsRef::  Functions for Methods
+@end menu
+Notation:
+
+@node Do_it_yourself
+@section Setting to be done by hand
+@include ref_geninfo.texi
+@include ref_distr.texi
+
+@node Readymade
+@section Ready-made distributions
+For information about the following distributions see
+@ref{Continuous} or  @ref{Discrete}.
+@include ref_distr_lib.texi
+
+
+@node MethodsRef
+@section Methods
+@menu
+* AROUref:: Adaptive Ratio Of Uniforms
+* CSTDref:: Interface for extern generators
+* DAUref::  (Discrete) Alias-Urn
+* DGTref::  ???
+* EMPKref:: ???
+@c * DISref::  (Discrete) Alias-Urn
+* DSTDref:: ???
+* NINVref:: Numerical INVersion
+@c * RECTref:: experimental multivariate Method
+* SROUref:: Simple Ratio Of Uniforms
+* SSRref:: Transformed Density Rejection (with universal bounds)
+@c * TABLref:: Ahren
+* TDRref::  Trandformed Density Rejection
+* UNIFref:: ???
+* UTDRref:: Universal Transformed Density Rejection (3-point method)
+@end menu
+
+As explained above, the parameter object is destroyed when the
+generator object is generated. Therefore its cruical WHEN using
+the functions below. Some functions will set the parameters before
+the generator object exists. Oters can change parameters during sampling.
+It is quite easy to identify the kind of a specific function
+when looking at the passed arguments.
+
+For information about the Methods themselfes, see @ref{Description}.
+@include ref_method_functions.texi
+
+@c --------------------------------------------------------------------
+
+
+@node Internal
+@chapter Internals
+@menu
+* Functions:: Functions for internal use
+* Remarks:: Internal remarks
+@end menu
+
+@node Functions
+@section Functions for internal use
+ 
+@include ref_internals.texi
+
+@node Remarks
+@section Internal remarks 
+@enumerate
+@item
+@end enumerate
+
+@tex
+  \newcount \tempcounter
+  \tempcounter = \thispage
+  \divide   \tempcounter 2
+  \multiply \tempcounter 2
+  \ifnum \tempcounter < \thispage
+     \page \phantom{Hut}
+  \fi
+@end tex
+
+
+@ifhtml
+@anchor{Contents}
+@end ifhtml
+@contents
+
+
+@bye
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -219,9 +219,9 @@ UNUR_GEN *unur_str2gen( const char *string );
    Or via a @command{unur_distr_<value>_new} call to get an object of a generic
    distribution. However not all generic distributions are supported yet.
    E.g., to get an object for a discrete distribution with probability
-   vector (1,2,3), use 
+   vector (0.5,0.2,0.3), use 
    @smallexample
-      distr = discr; pv = (1,2,3)
+      distr = discr; pv = (0.5,0.2,0.3)
    @end smallexample
 
 =EON

@@ -441,8 +441,6 @@ unur_dari_chg_pmfparams( struct unur_gen *gen, double *params, int n_params )
      /*                                                                      */
      /*----------------------------------------------------------------------*/
 {
-  register int i;
-
   /* check arguments */
   CHECK_NULL(gen,0);
   _unur_check_gen_object( gen,DARI );

@@ -83,10 +83,10 @@
 UNUR_DISTR *unur_distr_condi_new( const UNUR_DISTR *distribution, const double *pos, int k );
 /* 
    Create an object for full conditional distribution for the given
-   @var{distribution} for the @var{k}-thvariable and the other
+   @var{distribution} for the @var{k}-th variable and the other
    variables fixed to @var{pos}.
 
-   @var{distribution} must be a pointer to a univariate continuous
+   @var{distribution} must be a pointer to a multivariate continuous
    distribution. 
    @var{pos} must be a pointer to an array of size @code{dim}, where
    @code{dim} is the dimension of the underlying distribution object.

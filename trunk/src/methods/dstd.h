@@ -44,8 +44,8 @@
    =UP  Methods_for_DISCR
 
    =DESCRIPTION
-      DSTD is a wrapper for special generator for discrete univariate standard
-      distributions. It only works for distributions in the 
+      DSTD is a wrapper for special generators for discrete univariate
+      standard distributions. It only works for distributions in the 
       UNURAN library of standard distributions
       (@pxref{Stddist,Standard distributions,Standard distributions}).
       If a distribution object is provided that is build from scratch,
@@ -122,7 +122,7 @@ int unur_dstd_chg_pdfparams( UNUR_GEN *gen, double *params, int n_params );
    This function only copies the given arguments into the array of 
    distribution parameters.
 
-   @emph{IMPORTANT:} The given parameters are not checked against domain errors;
+   @emph{Important:} The given parameters are not checked against domain errors;
    in opposition to the @command{unur_<distr>_new} calls.
 */
 

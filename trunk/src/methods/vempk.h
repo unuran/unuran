@@ -50,7 +50,7 @@
       very nice properties, as it can be seen as sampling from a
       kernel density estimate. 
       Clearly we have to decide about the density of the noise (called kernel)
-      and about the standard deviation of the noise.
+      and about the covariance matrix of the noise.
       The mathematical theory of kernel density estimation shows us that we
       are comparatively free in choosing the kernel. 
       It also supplies us with a simple formula to compute the optimal

@@ -35,10 +35,10 @@ looked up in
 limits the possible parameters. There shouldn't be problems
 when the parameters of a distribution are in a ``reasonable'' range but
 e.g. the normal distribution N(10^50,1) won't yield the desired results.
-(In this case it would be better generating N(0,1) and THEN
+(In this case it would be better generating N(0,1) and @emph{then}
 transform the results.)
 @* Of course computational inaccuracy is not specific to UNURAN
-and should always kept in mind when working with computers.
+and should always be kept in mind when working with computers.
 
 =EON
 

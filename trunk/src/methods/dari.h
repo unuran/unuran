@@ -71,7 +71,7 @@
       distribution without building a new generator object by using the
       unur_dari_chg_pmfparams() and unur_dari_chg_domain() call, respectively.
       But then unur_dari_chg_mode() and unur_dari_chg_pmfsum() have to be used
-      to reset the corresponding figures whenever these have changed.
+      to reset the corresponding figures whenever they were changed.
       Before sampling from the distribution again, unur_dari_reinit() must be 
       executed. (Otherwise the generator might produce garbage).
       
@@ -109,14 +109,6 @@ int unur_dari_reinit( UNUR_GEN *generator );
    in case of a failure @code{0} is returned.
 */
 
-int unur_dari_set_verify( UNUR_PAR *parameters, int verify );
-/* */
-
-int unur_dari_chg_verify( UNUR_GEN *generator, int verify );
-/* 
-   Turn verifying of algorithm while sampling on/off.
-*/
-
 int unur_dari_set_squeeze( UNUR_PAR *parameters, char squeeze );
 /* 
    Turn utilization of the squeeze of the algorithm on/off.
@@ -144,15 +136,23 @@ int unur_dari_set_size( UNUR_PAR *parameters, int size );
    Default is 100.
 */
 
-int unur_dari_set_cfactor( UNUR_PAR *parameters, double cfactor );
+int unur_dari_set_cpfactor( UNUR_PAR *parameters, double cp_factor );
 /* 
    Set factor for position of the left and right construction point,
    resp. 
-   The c_factor is used to find almost optimal construction points for
-   the hat function.
+   The @var{cp_factor} is used to find almost optimal construction
+   points for the hat function.
    There is no need to change this factor in almost all situations.
 
    Default is ??.
+*/
+
+int unur_dari_set_verify( UNUR_PAR *parameters, int verify );
+/* */
+
+int unur_dari_chg_verify( UNUR_GEN *generator, int verify );
+/* 
+   Turn verifying of algorithm while sampling on/off.
 */
 
 /*...........................................................................*/
@@ -164,7 +164,10 @@ int unur_dari_chg_pmfparams( UNUR_GEN *generator, double *params, int n_params )
    This function only copies the given arguments into the array of 
    distribution parameters.
 
-   @emph{IMPORTANT:} The given parameters are not checked against
+   unur_dari_reinit() must be executed before sampling from the 
+   generator again.
+
+   @emph{Important:} The given parameters are not checked against
    domain errors; in opposition to the @command{unur_<distr>_new} calls.
 */
 
@@ -176,6 +179,9 @@ int unur_dari_chg_domain( UNUR_GEN *generator, int left, int right );
    changed, then a correspondig unur_dari_chg_mode() call is required.
    (There is no domain checking as in the unur_init() call.)
    Use @code{INT_MIN} and @code{INT_MAX} for (minus) infinity.
+
+   unur_dari_reinit() must be executed before sampling from the 
+   generator again.
 */
 
 int unur_dari_chg_mode( UNUR_GEN *generator, int mode );
@@ -189,10 +195,10 @@ int unur_dari_chg_mode( UNUR_GEN *generator, int mode );
 int unur_dari_upd_mode( UNUR_GEN *generator );
 /* 
    Recompute the mode of the distribution. This call only works well
-   for a distribution object from the UNURAN library of standard
+   when a distribution object from the UNURAN library of standard
    distributions is used
    (@pxref{Stddist,Standard distributions,Standard distributions}).
-   Otherwise a (slow) numerical mode finder is used.
+   Otherwise a (slow) numerical mode finder is called.
    If no mode can be found, then @code{0} is returnded and
    @code{unur_errno} is set to @code{UNUR_ERR_DISTR_DATA}.
 

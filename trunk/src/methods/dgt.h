@@ -57,17 +57,18 @@
       Find largest integer I such that F(I) = P(X<=I) <= U.
       @end enumerate
 
-      Step (2) is the crucial step. Using sequential search requires O(N)
-      comparisons, where N is the length of the probability
-      vector. Indexed search however uses a guide table to jump to some
-      I' <= I near I to find X in constant time. Indeed the expected
+      Step (2) is the crucial step. Using sequential search requires
+      @i{O(E(X))} comparisons, where @i{E(X)} is the expectation of
+      the distribution. Indexed search however uses a guide table to
+      jump to some @i{I'} <= @i{I} near @i{I} to find @i{X} in constant
+      time. Indeed the expected 
       number of comparisons is reduced to 2, when the guide table has the
       same size as the probability vector (this is the default). For
       larger guide tables this number becomes smaller (but is always
       larger than 1), for smaller tables it becomes larger. For the limit
       case of table size 1 the algorithm simply does sequential
       search. On the other hand the setup time for guide table is
-      O(N^2) (for size 1 no preprocessing is required).
+      @i{O(N)} (for size 1 no preprocessing is required).
       Moreover for very large guide tables memory effects might
       even reduce the speed of the algorithm. So we do not recommend to
       use guide tables that are more than three times larger than the
@@ -80,7 +81,7 @@
       unur_dgt_set_variant() call: Variants 1 and 2.
       Variant 2 is faster but more sensitive to roundoff errors when the
       guide table is large. By default variant 2 is used for short
-      probability vectors (N<1000) and variant 1 otherwise.
+      probability vectors (@i{N}<1000) and variant 1 otherwise.
       
       By default the probability vector is indexed starting at
       @code{0}. However this can be changed in the distribution object by
@@ -123,7 +124,7 @@ int unur_dgt_set_variant( UNUR_PAR *parameters, unsigned variant );
    Variant @code{2} is faster but more sensitive to roundoff errors
    when the guide table is large. 
    By default variant @code{2} is used for short probability
-   vectors (N<1000) and variant @code{1} otherwise.
+   vectors (@i{N}<1000) and variant @code{1} otherwise.
 */
 
 /* =END */

@@ -50,8 +50,10 @@
       DAU samples from distributions with arbitrary but finite
       probability vectors (PV) of length @i{N}.
       The algorithmus is based on an ingeneous method by A.J. Walker
-      and requires a table of size (at least) @i{N} and needs only one
-      comparison for each generated random variate.
+      and requires a table of size (at least) @i{N}.
+      It needs one random numbers and only one comparison for each
+      generated random variate. The setup time for constructing the
+      tables is @i{O(N)}.
       
       By default the probability vector is indexed starting at
       @code{0}. However this can be changed in the distribution object by

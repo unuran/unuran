@@ -43,7 +43,7 @@
 /*---------------------------------------------------------------------------*/
 
 /* 
-   =NODE  ERRNO  Error handling
+   =NODE  Errno  Error handling
 
    =UP TOP [60]
 
@@ -57,7 +57,7 @@
 /*
    =NODE  Error_reporting  Error reporting
 
-   =UP ERRNO
+   =UP Errno
 
    =DESCRIPTION
       UNURAN routines report an error whenever they cannot perform the
@@ -72,16 +72,17 @@
       Situations like this may happen when using black box algorithms and
       you should check the return values of all routines.
       
-      All ..._set_...(), and ..._chg_...() calls return @code{0} if it was
+      All @command{..._set_...}, and @command{..._chg_...} calls
+      return @code{0} if it was 
       not possible to set or change the desired parameters, e.g. because
-      the given values are out of range, or simple because you have
+      the given values are out of range, or simply because you have
       changed the method but not the corresponding set call and thus an
       invalid parameter or generator object is used.
       
-      All routines that returns a pointer to the requested object will
+      All routines that return a pointer to the requested object will
       return a NULL pointer in case of error.
       (Thus you should always check the pointer to avoid possible
-      segmentation faults. Sampling routines usually to not check the
+      segmentation faults. Sampling routines usually do not check the
       given pointer to the generator object. However you can switch on
       checking for NULL pointer defining the compiler switch 
       @code{UNUR_ENABLE_CHECKNULL} in unuran_config.h to avoid nasty
@@ -89,10 +90,14 @@
       
       The library distinguishes between two major classes of error:
       
-      1. (fatal) errors: the library was not able to construct the
+      @table @emph
+
+      @item (fatal) errors:
+      The library was not able to construct the
       requested object. 
       
-      2. warnings: some problems encounters while construction a generator
+      @item warnings:
+      Some problems encounters while constructing a generator
       object. The routine has tried to solve the problem but the resulting
       object might not be what you want. For example, chosing a special
       variant of a method does not work and the initialization routine
@@ -101,8 +106,9 @@
       is not possible. However it also might happen that 
       changing the domain of a distribution has failed. Then the generator
       produced random variates with too large/too small range, i.e. their
-      distribution is different.
-      
+      distribution is not correct
+      @end table
+
       It is obvious from the example that this distinction between errors
       and warning is rather crude and sometimes arbitrary. 
       
@@ -116,7 +122,7 @@
       error code in @code{unuran_errno} to get more details about the
       reason why a routine failed. You get a short
       description of the error by a unur_get_strerror() call.
-      All The error code numbers have prefix @code{UNUR_ERR_} and expand
+      All the error code numbers have prefix @code{UNUR_ERR_} and expand
       to non-zero constant unsigned integer values. 
       Error codes are divided into six main groups.
 
@@ -292,7 +298,7 @@ extern unsigned unur_errno;
 /* 
    =NODE  Output_streams Output streams
 
-   =UP ERRNO
+   =UP Errno
 
    =DESCRIPTION
       @cindex Error handlers
@@ -305,8 +311,8 @@ extern unsigned unur_errno;
       output streams. Both can be switched on/off by compiler flag
       @code{UNUR_WARNINGS_ON} in unuran_config.h.
       
-      The first stream is the stderr. It can be enabled by defining 
-      the macro @code{UNUR_ENABLE_STDERR} in unuran_config.h.
+      The first stream is @code{stderr}. It can be enabled by defining 
+      the macro @code{UNUR_ENABLE_STDERR} in @file{unuran_config.h}.
       
       The second stream can be set abritrarily by the unur_set_stream()
       call. If no such stream is given by the user a default stream is
@@ -314,7 +320,7 @@ extern unsigned unur_errno;
       into the file unuran.log in the current working directory.
       The name of this file defined by the macro @code{UNUR_LOG_FILE} in
       unuran_config.h. If the stdout should be used, define this macro by 
-      "stdout".
+      @code{"stdout"}.
       
       This output stream is also used to log descriptions of build generator
       objects and for writing debugging information.
@@ -323,7 +329,7 @@ extern unsigned unur_errno;
       This stream is enabled by the compiler switch
       @code{UNUR_ENABLE_LOGFILE} in unuran_config.h. 
       
-      All warnings and error messages as well all debugging information
+      All warnings, error messages and all debugging information
       are written onto the same output stream.
       To destinguish between the messages for different generators define
       the macro @code{UNUR_ENABLE_GENID} in unuran_config.h. Then every
@@ -351,7 +357,7 @@ FILE *unur_set_stream( FILE *new_stream );
   Set new file handle for output stream; the old file handle is
   returned. The NULL pointer is not allowed. (If you want to disable
   logging of debugging information use 
-  unur_set_default_debug(UNUR_DEBUG_OFF) instead.
+  unur_set_default_debug(UNUR_DEBUG_OFF) instead.)
 
   The output stream is used to report errors and warning, and
   debugging information. It is also used to log descriptions of

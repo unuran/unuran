@@ -92,7 +92,9 @@
       This library has been developed by the pLab group at the university
       of Salzburg (Austria, EU) and implemented by Otmar Lendl.
       It is available via anonymous ftp from
-      http://random.mat.sbg.ac.at/ftp/pub/software/gen/.
+      @uref{http://statistik.wu-wien.ac.at/prng/}
+      or from the pLab site at
+      @uref{http://random.mat.sbg.ac.at/}.
       
       It is possible to use other interfaces to URNGs without much
       troubles. If you need such a new interface please email the authors
@@ -184,7 +186,7 @@ UNUR_URNG *unur_get_default_urng( void );
 
 UNUR_URNG *unur_set_default_urng( UNUR_URNG *urng_new );
 /*
-  Change the default URNG for new generator objects. 
+  Change the default URNG for new parameter objects. 
 */
 
 /*---------------------------------------------------------------------------*/

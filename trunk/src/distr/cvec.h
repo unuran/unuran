@@ -160,9 +160,6 @@ const double *unur_distr_cvec_get_mean( const UNUR_DISTR *distribution );
    If the mean vector is not marked as known the NULL pointer is
    returned and @code{unur_errno} is set to
    @code{UNUR_ERR_DISTR_GET}. 
-   (However note that the NULL pointer also indicates the zero
-   vector to avoid unnecessary computations. But then
-   @code{unur_errno} is not set.)
    
    @emph{Important:} Do @strong{not} modify the array that holds the
    mean vector!
@@ -180,31 +177,36 @@ int unur_distr_cvec_set_covar( UNUR_DISTR *distribution, const double *covar );
    @var{distribution}, i.e. it must be symmetric and positive definite and
    its diagonal entries (i.e. the variance of the components of the
    random vector) must be positive.
-   There is no check for the positive definitnes yet.
+   The cholesky factor is computed (and stored) to verify the positive
+   definiteness condition.
 
    A NULL pointer for @var{covar} is interpreted as the
    identity matrix.
 */
 
 const double *unur_distr_cvec_get_covar( const UNUR_DISTR *distribution );
-/* 
-   Get covariance matrix of @var{distribution}. The function returns a
+/* */
+
+const double *unur_distr_cvec_get_cholesky( const UNUR_DISTR *distribution );
+/* */
+
+const double *unur_distr_cvec_get_covar_inv( UNUR_DISTR *distribution );
+/*
+   Get covariance matrix of @var{distribution}, its Cholesky factor,
+   and its inverse, respectively. The function returns a
    pointer to an array of size @code{dim} x @code{dim}.
    The rows of the matrix have to be stored consecutively in this
    array.
-   If the covariance matrix is not marked as known the NULL
+   If the requested matrix is not marked as known the NULL
    pointer is returned and @code{unur_errno} is set to
    @code{UNUR_ERR_DISTR_GET}. 
-   (However note that the NULL pointer also indicates the
-   identity matrix to avoid unnecessary computations. But then
-   @code{unur_errno} is not set.)
 
    @emph{Important:} Do @strong{not} modify the array that holds the
    covariance matrix!
-*/
 
-const double *unur_distr_cvec_get_cholesky( const UNUR_DISTR *distribution );
-const double *unur_distr_cvec_get_covar_inv( const UNUR_DISTR *distribution );
+   @emph{Remark:} The inverse of the covariance matrix is computed 
+   if it is not already stored.
+*/
 
 int unur_distr_cvec_set_pdfparams( UNUR_DISTR *distribution, int par, const double *params, int n_params );
 /* 

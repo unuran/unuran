@@ -90,13 +90,6 @@
 #define NROU_VARFLAG_VERIFY   0x002u   /* run verify mode                    */
 
 /*---------------------------------------------------------------------------*/
-/* Debugging flags                                                           */
-/*    bit  01    ... pameters and structure of generator (do not use here)   */
-/*    bits 02-12 ... setup                                                   */
-/*    bits 13-24 ... adaptive steps                                          */
-/*    bits 25-32 ... trace sampling                                          */
-
-/*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
 
 #define NROU_SET_U       0x001u     /* set u values of bounding rectangle    */
@@ -162,8 +155,7 @@ struct unur_gen *_gen; /* generator object for bounding rect calculations */
 #define BD_LEFT   domain[0]             /* left boundary of domain of distribution */
 #define BD_RIGHT  domain[1]             /* right boundary of domain of distribution */
 
-#define BD_MAX    (DBL_MAX / 100.)      /* constant used for bounding rectangles */
-
+#define BD_MAX    (DBL_MAX/1000.)       /* constant used for bounding rectangles */
 
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */     
 
@@ -506,7 +498,7 @@ _unur_nrou_rectangle( struct unur_gen *gen )
 { 
   struct unur_funct_generic faux; /* function to be minimized/maximized    */
   double p[1]; /* parameter for auxiliary functions */
-  double x;
+  double x, sx, bx;
 
   /* check arguments */
   CHECK_NULL( gen, UNUR_ERR_NULL );
@@ -531,7 +523,7 @@ _unur_nrou_rectangle( struct unur_gen *gen )
   _gen = gen;
 
   /* parameter to be used in auxiliary functions */
-  p[0]=GEN.center;
+  p[0]=GEN.center;  
   
   /* calculation of vmax */
   if (!(gen->set & NROU_SET_V)) {
@@ -551,72 +543,71 @@ _unur_nrou_rectangle( struct unur_gen *gen )
       faux.params = NULL;
   
       x = _unur_util_find_max(faux, DISTR.BD_LEFT, DISTR.BD_RIGHT, p[0]);
+      if (isinf(x)) {
+         _unur_error(gen->genid , UNUR_ERR_GENERIC, "Bounding rect (vmax)");  
+         return UNUR_ERR_GENERIC;
+      }
       GEN.vmax = faux.f(x,p);
     }
   }
 
   /* calculation of umin and umax */
   if (!(gen->set & NROU_SET_U)) {
+
     faux.f = (UNUR_FUNCT_GENERIC*) _unur_aux_bound_umin;
     faux.params = p;
 
-    x = _unur_util_find_max(faux, DISTR.BD_LEFT, p[0], p[0]);
-    if (isinf(x)) {
-      /* _unur_util_find_max() could not find a suitable maximum */
-      if ( isinf(DISTR.BD_LEFT) ) {
-        /* domain is unbound to the left */	 
-        /* checking if a minimum could be expected 'near' DISTR.BD_LEFT */
-        if ( faux.f(-2*BD_MAX,p) <= faux.f(-BD_MAX,p) )  x = -BD_MAX;
-        else {
-          /* this would be a rare case, but maybe increasing the number 
-	     of iterations in the Brent algorithm would help ? */
-          _unur_warning(gen->genid ,UNUR_ERR_SHOULD_NOT_HAPPEN, 
-                        "Boundary rectangle not computed");
-          return UNUR_ERR_SHOULD_NOT_HAPPEN;
-        }
-      }
-      else {
-        /* finite domain to the left */
-	if (DISTR.BD_LEFT == p[0]) x=p[0];
-        else x = _unur_util_find_max(faux, DISTR.BD_LEFT, p[0],
-	         (p[0]+DISTR.BD_LEFT)/2.);
-      }
+    /* calculating start point for extremum search routine */
+    sx = isinf(DISTR.BD_LEFT) ? p[0]-1.: (p[0]+DISTR.BD_LEFT)/2. ; 
+    bx = isinf(DISTR.BD_LEFT) ? -BD_MAX: DISTR.BD_LEFT;
+
+    x = (DISTR.BD_LEFT == p[0]) ? p[0]: _unur_util_find_max(faux, bx, p[0], sx);
+          
+    while (isinf(x) && (fabs(bx) >= UNUR_EPSILON) ) { 
+       /* _unur_util_find_max() could not yet find a suitable extremum */
+       /* trying with a sequence of intervals with decreasing length   */
+       bx = bx/10.; sx = bx/2.;  
+       x = _unur_util_find_max(faux, bx, p[0], sx);
     }
-    
+         
+    if (isinf(x)) {
+       /* not able to compute a boundary recangle ...  */ 
+       _unur_error(gen->genid , UNUR_ERR_GENERIC, "Bounding rect (umin)");  
+       return UNUR_ERR_GENERIC;
+    }
     GEN.umin = -faux.f(x,p);
+
+    /* and now, an analogue calculation for umax */
 
     faux.f = (UNUR_FUNCT_GENERIC*) _unur_aux_bound_umax;
     faux.params = p;
 
-    x = _unur_util_find_max(faux, p[0], DISTR.BD_RIGHT, p[0]);
-    if (isinf(x)) {
-      /* _unur_util_find_max() could not find a suitable maximum */
-      if ( isinf(DISTR.BD_RIGHT) ) {
-        /* domain is unbound to the right */	 
-        /* checking if a maximum could be expected 'near' DISTR.BD_RIGHT */
-        if ( faux.f(BD_MAX,p) <= faux.f(2*BD_MAX,p) )  x = BD_MAX;
-        else {
-	  /* this would be a rare case, but maybe increasing the number 
-	     of iterations in the Brent algorithm would help ? */
-	  _unur_warning(gen->genid ,UNUR_ERR_SHOULD_NOT_HAPPEN, 
-   	                "Boundary rectangle not computed");
-          return UNUR_ERR_SHOULD_NOT_HAPPEN;
-	}
-      }
-      else {
-        /* finite domain to the right */
-	if (DISTR.BD_RIGHT == p[0]) x=p[0];
-        else x = _unur_util_find_max(faux, p[0], DISTR.BD_RIGHT,
-	         (p[0]+DISTR.BD_RIGHT)/2.);
-      
-      }
-    }
+    /* calculating start point for extremum search routine */
+    sx = isinf(DISTR.BD_RIGHT) ? p[0]+1.: (p[0]+DISTR.BD_RIGHT)/2. ; 
+    bx = isinf(DISTR.BD_RIGHT) ? BD_MAX: DISTR.BD_RIGHT;
 
+    x = (DISTR.BD_RIGHT == p[0]) ? p[0]: _unur_util_find_max(faux, p[0], bx, sx);
+      
+    while (isinf(x) && (fabs(bx) >= UNUR_EPSILON) ) { 
+       /* _unur_util_find_max() could not yet find a suitable extremum */
+       /* trying with a sequence of intervals with decreasing length   */
+       bx = bx/10.; sx = bx/2.; 
+       x = _unur_util_find_max(faux, p[0], bx, sx);
+    }
+           
+    if (isinf(x)) {
+       /* not able to compute a boundary recangle ...  */ 
+       _unur_error(gen->genid , UNUR_ERR_GENERIC, "Bounding rect (umax)");  
+       return UNUR_ERR_GENERIC;
+    }
     GEN.umax = faux.f(x,p);
   }
 
-
-  /* TODO : check if umin or umax is NaN */
+  /* we want to be on the safe side ... */
+  if (isnan(GEN.umin) || isnan(GEN.umax) || isnan(GEN.vmax)) {
+     _unur_error(gen->genid , UNUR_ERR_GENERIC, "Bounding rect (NaN)");  
+     return UNUR_ERR_GENERIC;
+  }
 
   /* o.k. */
   return UNUR_SUCCESS;

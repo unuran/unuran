@@ -86,12 +86,12 @@ int unur_ninv_set_x_resolution( struct unur_par *par, double x_resolution);
 /* set maximal relative error in x                                           */
 
 int unur_ninv_set_start( struct unur_par *par, double s1, double s2, double s3 );
-/*---------------------------------------------------------------------------*/
 /* set starting points.                                                      */
-/*   Newton:        s1           starting point                              */
-/*   regular falsi: s1, s2       boundary of starting interval               */
-/*   Muller/Brent:  s1. s2, s3   starting points                             */
-/* arguments that are used by method are ignored.                            */
+/*   Newton:        s1:           starting point                             */
+/*   regular falsi: s1, s2:       boundary of starting interval              */
+/*   Muller/Brent:  s1. s2, s3:   starting points                            */
+/* arguments that are not used by method are ignored.                        */
+
 
 #define unur_ninv_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
 /* set debuging flags                                                        */

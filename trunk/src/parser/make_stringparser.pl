@@ -32,17 +32,15 @@ EOM
 }
 
 ##############################################################################
-# Unsupported Distribution types
+# Supported Distribution types
 #
 my %SUPPORTED_DISTR_TYPES =
     ( 'cont'  => 1,
       'cemp'  => 1,
       'discr' => 1 );
 
-my %UNSUPPORTED_DISTR_TYPES =
-    ( 'corder' => 1,
-      'cvec'   => 1,
-      'cvemp'  => 1 );
+# Unsupported types:
+#   corder, cvec, cvemp
 
 ##############################################################################
 

@@ -50,7 +50,7 @@ int main()
 
 @subheading symbols and examples
 
-The string isn't case-sensitive and use the usual priorities of operations (sorted from highest to lowest priority: bracket, system functions, relation operators, power, multiplication, addition)
+The string isn't case-sensitive and use the usual priorities of operations (sorted from highest to lowest preceedance: bracket, system functions, relation operators, power, multiplication, addition)
 
 
 
@@ -83,18 +83,13 @@ In the following table you can see all symbols you can use:
 @item           @tab @b{*}         @tab  multiplication @tab 2*x
 @item           @tab @b{/}         @tab  division       @tab x/2
 @item           @tab @b{^}         @tab  power          @tab x^2
-@item logical operators
-@item           @tab @b{and}       @tab logical and function @tab (3*(2<>x)and(x>2))+x
-@item           @tab @b{or}        @tab logical or function  @tab 3*(2<x)or(x<-1)
-@item           @tab @b{not}       @tab logical no function  @tab 3*not(2<>x)
 @item system constants: 
 @item           @tab @b{pi}        @tab  3,1415...
 @item           @tab @b{e}         @tab  2,7
 @item system functions: 
 @item           @tab @b{mod}      @tab mod(m,n) gives the remainder on devision m by n   @tab mod(x,2)   
 @item           @tab @b{exp}      @tab exponential function @tab exp(-x^2)
-@item           @tab @b{ln}       @tab natural logarithm    @tab ln(x)
-@item           @tab @b{log}      @tab logarithm with given base @tab log(2,x)
+@item           @tab @b{log}       @tab natural logarithm    @tab log(x)
 @item           @tab @b{sin}      @tab sine                 @tab sin(x)             
 @item           @tab @b{cos}      @tab cosine               @tab cos(x)
 @item           @tab @b{tan}      @tab tangent              @tab tan(x)
@@ -114,7 +109,7 @@ Several complex examples for string-defined 'distributions':
 
 2.894736*10^2
 
-(sin( ln(3*x*(cos( 3*x^3-4.6789/(x+4)]))))-1
+(sin( log(3*x*(cos( 3*x^3-4.6789/(x+4)]))))-1
 
 exp(x^2)*(sin(x*cos(x^2-1))+1)*((x-3*pi*x)<1)
 

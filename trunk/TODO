@@ -1,5 +1,9 @@
 -----------------------------------------------------------------------------
 
+(*) CSTD, DSTD: alle varianten sollten fuer alle parameter funkionieren
+
+-----------------------------------------------------------------------------
+
 (*) DOC: debug flags:
 	bits 2-12  ... setup
 	bits 13-24 ... adaptive steps

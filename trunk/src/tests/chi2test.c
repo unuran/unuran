@@ -395,7 +395,7 @@ _unur_test_chi2test( double *prob,
     factor = samplesize/probsum;
   }
   else   /* uniform distribution on (0,len-1) --> prob[i] = 1/len */
-    factor = samplesize/len;
+    factor = ((double)samplesize)/len;
 
   /* compute chi^2 value */
   for( i=0; i<len; i++ ) {

@@ -118,8 +118,7 @@ int unur_ninv_set_useregula( UNUR_PAR *parameters );
 
 int unur_ninv_set_max_iter( UNUR_PAR *parameters, int max_iter );
 /* 
-   Set number of maximal iterations.
-   Default is @code{40}.
+   Set number of maximal iterations.  Default is @code{40}.
 */
 
 int unur_ninv_set_x_resolution( UNUR_PAR *parameters, double x_resolution);

@@ -280,14 +280,14 @@ unur_test_timing_total( const UNUR_PAR *par, int samplesize, double max_duration
     time_result = time_pilot;
   }
   else {
-    if (repeat_result >= 2) {
+    if (repeat_result >= 3) {
       time_result =  unur_test_timing_total_run(par,size_result,repeat_result);
     }
     else {
       /* do not generate the full sample */
-      repeat_result = 2;
+      repeat_result = 3;
       size_result = (int) ((max_duration - d)/k);
-      size_result /= 4;
+      size_result /= 6;
       time_result =  unur_test_timing_total_run(par,size_result,repeat_result);
       time_2nd =  unur_test_timing_total_run(par,2*size_result,repeat_result);
       /* estimate time from shorter sample sizes */
@@ -415,7 +415,7 @@ unur_test_timing_uniform( struct unur_par *par, int log_samplesize )
      /*   return -1                                                          */
      /*----------------------------------------------------------------------*/
 {
-#define TIMING_REPETITIONS 11
+#define TIMING_REPETITIONS 21
 
   struct unur_gen *gen_urng;
   static double uniform_time = -1.;
@@ -478,7 +478,7 @@ unur_test_timing_exponential( struct unur_par *par, int log_samplesize )
      /*   return -1                                                          */
      /*----------------------------------------------------------------------*/
 {
-#define TIMING_REPETITIONS 11
+#define TIMING_REPETITIONS 21
 
   struct unur_distr *unit_distr;
   struct unur_par   *unit_par;

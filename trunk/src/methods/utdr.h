@@ -45,6 +45,8 @@
    It works for all T-concave distributions with T(x) = -1/sqrt(x).
 
    It requires the p.d.f. and the (exact) location of the mode.
+   Notice if no mode is given at all, a (slow) numerical mode finder will be 
+   used. 
    Moreover the approximate area below the given p.d.f. is used.
    (If no area is given for the distribution the algorithm assumes that it
    is approximately 1.)

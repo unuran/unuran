@@ -60,6 +60,8 @@
    location and provide the (exact) value of the p.d.f. at the mode by means
    of the unur_ssr_set_pdfatmode() call.
    But then unur_ssr_set_cdfatmode() must not be used.
+   Notice if no mode is given at all, a (slow) numerical mode finder will be 
+   used. 
 
    If the (exact) area below the p.d.f. is not known, then an upper bound can be
    used instead (which of course increases the rejection constant). 

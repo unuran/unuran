@@ -193,11 +193,13 @@ unur_utdr_new( struct unur_distr *distr )
     return NULL;
   }
 
-  if (!(distr->set & UNUR_DISTR_SET_MODE))
+  if (!(distr->set & UNUR_DISTR_SET_MODE)) {
+    _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode: try finding it (numerically)"); 
     if (!unur_distr_cont_upd_mode(distr)) {
       _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode"); 
       return NULL; 
     }
+  }
 
   if (!(distr->set & UNUR_DISTR_SET_PDFAREA))
     if (!unur_distr_cont_upd_pdfarea(distr)) {

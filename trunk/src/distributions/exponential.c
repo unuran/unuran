@@ -82,8 +82,14 @@
 static const char distr_name[] = "exponential";
 
 /* parameters */
-#define sigma (params[0])
-#define theta (params[1])
+#define sigma  params[0]
+#define theta  params[1]
+
+/* function prototypes                                                       */
+static double _unur_pdf_exponential(double x, double *params, int n_params);
+static double _unur_dpdf_exponential(double x, double *params, int n_params);
+static double _unur_cdf_exponential(double x, double *params, int n_params);
+
 /*---------------------------------------------------------------------------*/
 
 double
@@ -185,21 +191,21 @@ unur_distr_exponential( double *params, int n_params )
   DISTR.cdf  = _unur_cdf_exponential;  /* pointer to c.d.f.               */
 
   /* default parameters */
-  DISTR.params[0] = 1.;        /* default for sigma */
-  DISTR.params[1] = 0.;        /* default for theta */
+  DISTR.sigma = 1.;
+  DISTR.theta = 0.;
   
   /* copy parameters */
   switch (n_params) {
   case 2:
-    DISTR.params[1] = theta;
+    DISTR.theta = theta;
   case 1:
-    DISTR.params[0] = sigma;
+    DISTR.sigma = sigma;
     n_params = 2;           /* number of parameters for non-standard form */
   default:
   }
 
   /* check parameter sigma */
-  if (DISTR.params[0] <= 0.) {
+  if (DISTR.sigma <= 0.) {
     _unur_error(distr_name,UNUR_ERR_DISTR,"scale parameter sigma <= 0.");
     free( distr ); return NULL;
   }
@@ -208,11 +214,11 @@ unur_distr_exponential( double *params, int n_params )
   DISTR.n_params = n_params;
 
   /* mode and area below p.d.f. */
-  DISTR.mode = DISTR.params[1];   /* theta */
+  DISTR.mode = DISTR.theta;   /* theta */
   DISTR.area = 1.;
 
   /* domain */
-  DISTR.domain[0] = DISTR.params[1]; /* left boundary  */
+  DISTR.domain[0] = DISTR.theta;     /* left boundary  */
   DISTR.domain[1] = INFINITY;        /* right boundary */
 
   /* indicate which parameters are set */

@@ -85,9 +85,17 @@
 static const char distr_name[] = "gamma";
 
 /* parameters */
-#define alpha (params[0])
-#define beta  (params[1])
-#define gamma (params[2])
+#define alpha  params[0]
+#define beta   params[1]
+#define gamma  params[2]
+
+/* function prototypes                                                       */
+static double _unur_pdf_gamma(double x, double *params, int n_params);
+static double _unur_dpdf_gamma(double x, double *params, int n_params);
+static double _unur_cdf_gamma(double x, double *params, int n_params);
+static double _unur_mode_gamma(double *params, int n_params);
+static double _unur_lognormconstant_gamma(double *params, int n_params);
+
 /*---------------------------------------------------------------------------*/
 
 double
@@ -240,26 +248,26 @@ unur_distr_gamma( double *params, int n_params )
   DISTR.cdf  = _unur_cdf_gamma;    /* pointer to c.d.f.            */
 
   /* default parameters */
-  DISTR.params[1] = 1.;         /* default for beta  */
-  DISTR.params[2] = 0.;         /* default for gamma */
+  DISTR.beta  = 1.;
+  DISTR.gamma = 0.;
 
   /* copy parameters */
-  DISTR.params[0] = alpha;
+  DISTR.alpha = alpha;
   switch (n_params) {
   case 3:
-    DISTR.params[2] = gamma;
+    DISTR.gamma = gamma;
   case 2:
-    DISTR.params[1] = beta;
+    DISTR.beta = beta;
     n_params = 3;           /* number of parameters for non-standard form */
   default:
   }
 
   /* check parameters alpha and beta */
-  if (alpha <= 0.) {
+  if (DISTR.alpha <= 0.) {
     _unur_error(distr_name,UNUR_ERR_DISTR,"shape parameter alpha <= 0.");
     free( distr ); return NULL;
   }
-  if (beta <= 0.) {
+  if (DISTR.beta <= 0.) {
     _unur_error(distr_name,UNUR_ERR_DISTR,"scale parameter beta <= 0.");
     free( distr ); return NULL;
   }
@@ -275,7 +283,7 @@ unur_distr_gamma( double *params, int n_params )
   DISTR.area = 1.;
 
   /* domain */
-  DISTR.domain[0] = DISTR.params[2];  /* left boundary  */
+  DISTR.domain[0] = DISTR.gamma;  /* left boundary  */
   DISTR.domain[1] = INFINITY;         /* right boundary */
 
   /* indicate which parameters are set */

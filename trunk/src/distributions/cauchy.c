@@ -70,8 +70,13 @@
 static const char distr_name[] = "cauchy";
 
 /* parameters */
-#define theta  (params[0])
-#define lambda (params[1])
+#define theta  params[0]
+#define lambda params[1]
+
+/* function prototypes                                                       */
+static double _unur_pdf_cauchy(double x, double *params, int n_params);
+static double _unur_dpdf_cauchy(double x, double *params, int n_params);
+static double _unur_cdf_cauchy(double x, double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
 
@@ -146,11 +151,11 @@ unur_distr_cauchy( double *params, int n_params )
   DISTR.cdf  = _unur_cdf_cauchy;   /* pointer to c.d.f.            */
 
   /* copy parameters */
-  DISTR.params[0] = params[0];    /* theta */
-  DISTR.params[1] = params[1];    /* lambda */
+  DISTR.theta  = theta;
+  DISTR.lambda = lambda;
 
   /* check parameter lambda */
-  if (DISTR.params[1] <= 0.) {
+  if (DISTR.lambda <= 0.) {
     _unur_error(distr_name,UNUR_ERR_DISTR,"lambda <= 0.");
     free( distr ); return NULL;
   }
@@ -159,10 +164,10 @@ unur_distr_cauchy( double *params, int n_params )
   DISTR.n_params = n_params;
 
   /* normalization constant */
-  DISTR.NORMCONSTANT = _unur_normconstant_cauchy(DISTR.params,DISTR.n_params);
+  DISTR.NORMCONSTANT = M_PI * DISTR.lambda;
 
   /* mode and area below p.d.f. */
-  DISTR.mode = DISTR.params[0];    /* theta */
+  DISTR.mode = DISTR.theta; 
   DISTR.area = 1.;
 
   /* domain */

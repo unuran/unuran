@@ -68,7 +68,12 @@
 static const char distr_name[] =  "rayleigh";
 
 /* parameters */
-#define sigma (params[0])
+#define sigma  params[0]
+
+/* function prototypes                                                       */
+static double _unur_pdf_rayleigh(double x, double *params, int n_params);
+static double _unur_dpdf_rayleigh(double x, double *params, int n_params);
+static double _unur_pdf_rayleigh(double x, double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
 
@@ -95,22 +100,6 @@ _unur_cdf_rayleigh( double x, double *params, int n_params )
 { 
   return ( (x<=0.) ? 0. : 1. - exp(-x*x/(2.*sigma*sigma)) );
 } /* end of _unur_cdf_rayleigh() */
-
-/*---------------------------------------------------------------------------*/
-
-double
-_unur_mode_rayleigh( double *params, int n_params )
-{ 
-  return sigma;
-} /* end of _unur_mode_rayleigh() */
-
-/*---------------------------------------------------------------------------*/
-
-double
-_unur_lognormconstant_rayleigh( double *params, int n_params )
-{ 
-  return (2. * log(sigma));
-} /* end of _unur_lognormconstant_rayleigh() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -146,10 +135,10 @@ unur_distr_rayleigh( double *params, int n_params )
   DISTR.cdf  = _unur_cdf_rayleigh;  /* pointer to c.d.f.               */
 
   /* copy parameters */
-  DISTR.params[0] = sigma;
+  DISTR.sigma = sigma;
 
   /* check parameter sigma */
-  if (DISTR.params[0] <= 0.) {
+  if (DISTR.sigma <= 0.) {
     _unur_error(distr_name,UNUR_ERR_DISTR,"scale parameter sigma <= 0.");
     free( distr ); return NULL;
   }
@@ -158,10 +147,10 @@ unur_distr_rayleigh( double *params, int n_params )
   DISTR.n_params = n_params;
 
   /* log of normalization constant */
-  DISTR.LOGNORMCONSTANT = _unur_lognormconstant_rayleigh(DISTR.params,DISTR.n_params);
+  DISTR.LOGNORMCONSTANT =   2. * log(DISTR.sigma);
 
   /* mode and area below p.d.f. */
-  DISTR.mode = _unur_mode_rayleigh(DISTR.params,DISTR.n_params); 
+  DISTR.mode = DISTR.sigma;
   DISTR.area = 1.;
 
   /* domain */

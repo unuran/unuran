@@ -69,8 +69,14 @@
 static const char distr_name[] = "lomax";
 
 /* parameters */
-#define a (params[0])
-#define C (params[1])
+#define a params[0]
+#define C params[1]
+
+/* function prototypes                                                       */
+static double _unur_pdf_lomax(double x, double *params, int n_params);
+static double _unur_dpdf_lomax(double x, double *params, int n_params);
+static double _unur_cdf_lomax(double x, double *params, int n_params);
+
 /*---------------------------------------------------------------------------*/
 
 double
@@ -128,19 +134,19 @@ unur_distr_lomax( double *params, int n_params )
   DISTR.cdf  = _unur_cdf_lomax;  /* pointer to c.d.f.               */
 
   /* default parameters */
-  DISTR.params[1] = 1.;        /* default for C */
+  DISTR.C = 1.; 
   
   /* copy parameters */
-  DISTR.params[0] = a;
+  DISTR.a = a;
   switch (n_params) {
   case 2:
-    DISTR.params[1] = C;
+    DISTR.C = C;
   default:
     n_params = 2;
   }
 
   /* check parameters */
-  if (DISTR.params[0] <= 0. || DISTR.params[1] <= 0. ) {
+  if (DISTR.a <= 0. || DISTR.C <= 0. ) {
     _unur_error(distr_name ,UNUR_ERR_DISTR,"a <= 0 or C <= 0.");
     free( distr ); return NULL;
   }
@@ -149,7 +155,7 @@ unur_distr_lomax( double *params, int n_params )
   DISTR.n_params = n_params;
 
   /* normalization constant */
-  DISTR.NORMCONSTANT = a * pow(C,a);
+  DISTR.NORMCONSTANT = DISTR.a * pow(DISTR.C,DISTR.a);
 
   /* mode and area below p.d.f. */
   DISTR.mode = 0.;

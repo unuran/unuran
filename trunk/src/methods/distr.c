@@ -163,6 +163,26 @@ unur_distr_set_name( struct unur_distr *distr, const char *name )
 
 /*---------------------------------------------------------------------------*/
 
+const char *
+unur_distr_get_name( struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* get name of distribution                                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   name of distribution                                               */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(distr,0);
+
+  return distr->name;
+} /* end of unur_distr_get_name() */
+
+/*---------------------------------------------------------------------------*/
+
 /*****************************************************************************/
 /**                                                                         **/
 /** univariate continuous distributions                                     **/
@@ -259,6 +279,29 @@ unur_distr_cont_set_pdf( struct unur_distr *distr, void *pdf )
 
 /*---------------------------------------------------------------------------*/
 
+double
+unur_distr_cont_pdf( struct unur_distr *distr, double x )
+     /*----------------------------------------------------------------------*/
+     /* evaluate p.d.f. of distribution at x                                 */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*   x     ... argument for pdf                                         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pdf(x)                                                             */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(distr,0.);
+  COOKIE_CHECK(distr,CK_DISTR_CONT,0);
+  CHECK_NULL(DISTR.pdf,0.);
+
+  return ((*(DISTR.pdf))(x,DISTR.params,DISTR.n_params));
+} /* end of unur_distr_cont_pdf() */
+
+/*---------------------------------------------------------------------------*/
+
 int
 unur_distr_cont_set_dpdf( struct unur_distr *distr, void *dpdf )
      /*----------------------------------------------------------------------*/
@@ -307,6 +350,29 @@ unur_distr_cont_set_cdf( struct unur_distr *distr, void *cdf )
   DISTR.cdf = cdf;
   return 1;
 } /* end of unur_distr_cont_set_cdf() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+unur_distr_cont_cdf( struct unur_distr *distr, double x )
+     /*----------------------------------------------------------------------*/
+     /* evaluate c.d.f. of distribution at x                                 */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*   x     ... argument for cdf                                         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   cdf(x)                                                             */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(distr,0.);
+  COOKIE_CHECK(distr,CK_DISTR_CONT,0);
+  CHECK_NULL(DISTR.cdf,0.);
+
+  return ((*(DISTR.cdf))(x,DISTR.params,DISTR.n_params));
+} /* end of unur_distr_cont_cdf() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -378,6 +444,32 @@ unur_distr_cont_set_mode( struct unur_distr *distr, double mode )
   /* o.k. */
   return 1;
 } /* end of unur_distr_cont_set_mode() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+unur_distr_cont_get_mode( struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* get mode of distribution                                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   mode of distribution                                               */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(distr,0);
+  COOKIE_CHECK(distr,CK_DISTR_CONT,0);
+
+  /* mode known ? */
+  if ( !(distr->set & UNUR_DISTR_SET_MODE) )
+    _unur_warning(distr->name,UNUR_ERR_UNKNOWN,"mode not known");
+
+  return DISTR.mode;
+
+} /* end of unur_distr_cont_get_mode() */
 
 /*---------------------------------------------------------------------------*/
 

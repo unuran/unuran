@@ -151,6 +151,9 @@ void unur_distr_free( struct unur_distr *distr );
 int unur_distr_set_name( struct unur_distr *distr, const char *name );
 /* set name of distribution                                                  */
 
+const char *unur_distr_get_name( struct unur_distr *distr );
+/* get name of distribution                                                  */
+
 /*---------------------------------------------------------------------------*/
 /* univariate continuous distributions                                       */
 
@@ -160,17 +163,26 @@ struct unur_distr *unur_distr_cont_new( void );
 int unur_distr_cont_set_pdf( struct unur_distr *distr, void *pdf );
 /* set p.d.f. of distribution                                                */
 
+double unur_distr_cont_cdf( struct unur_distr *distr, double x );
+/* evaluate p.d.f. of distribution at x                                      */
+
 int unur_distr_cont_set_dpdf( struct unur_distr *distr, void *dpdf );
 /* set derivative of p.d.f. of distribution                                  */
 
 int unur_distr_cont_set_cdf( struct unur_distr *distr, void *cdf );
 /* set c.d.f. of distribution                                                */
 
+double unur_distr_cont_cdf( struct unur_distr *distr, double x );
+/* evaluate c.d.f. of distribution at x                                      */
+
 int unur_distr_cont_set_params( struct unur_distr *distr, double *params, int n_params );
 /* set array of parameters for distribution                                  */
 
 int unur_distr_cont_set_mode( struct unur_distr *distr, double mode );
 /* set mode of distribution                                                  */
+
+double unur_distr_cont_get_mode( struct unur_distr *distr );
+/* get mode of distribution                                                  */
 
 int unur_distr_cont_set_pdfarea( struct unur_distr *distr, double area );
 /* set area below p.d.f.                                                     */

@@ -69,7 +69,12 @@
 static const char distr_name[] = "student";
 
 /* parameters */
-#define nu (params [0])
+#define nu  params[0]
+
+/* function prototypes                                                       */
+static double _unur_pdf_student(double x, double *params, int n_params);
+static double _unur_dpdf_student(double x, double *params, int n_params);
+static double _unur_normconstant_student(double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
 
@@ -129,10 +134,10 @@ unur_distr_student( double *params, int n_params )
   /* DISTR.cdf = _unur_cdf_student;   pointer to c.d.f.               */
 
   /* copy parameters */
-  DISTR.params[0] = nu;
+  DISTR.nu = nu;
 
   /* check parameter sigma */
-  if (DISTR.params[0] <= 0.) {
+  if (DISTR.nu <= 0.) {
     _unur_error(distr_name , UNUR_ERR_DISTR,"scale parameter nu <= 0.");
     free( distr ); return NULL;
   }

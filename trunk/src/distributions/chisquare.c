@@ -69,7 +69,13 @@
 static const char distr_name[] = "chisquare";
 
 /* parameters */
-#define nu (params[0])
+#define nu  params[0]
+
+/* function prototypes                                                       */
+static double _unur_pdf_chisquare(double x, double *params, int n_params);
+static double _unur_dpdf_chisquare(double x, double *params, int n_params);
+static double _unur_mode_chisquare(double *params, int n_params);
+static double _unur_lognormconstant_chisquare(double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
 
@@ -160,10 +166,10 @@ unur_distr_chisquare( double *params, int n_params )
   DISTR.cdf  = _unur_cdf_chisquare;   /* pointer to c.d.f.            */
 
   /* copy parameters */
-  DISTR.params[0] = nu;
+  DISTR.nu = nu;
 
   /* check parameter lambda */
-  if (DISTR.params[0] <= 0.) {
+  if (DISTR.nu <= 0.) {
     _unur_error(distr_name,UNUR_ERR_DISTR,"shape parameter nu <= 0.");
     free( distr ); return NULL;
   }

@@ -69,8 +69,14 @@
 static const char distr_name[] = "laplace";
 
 /* parameters */
-#define theta (params[0])
-#define phi   (params[1])
+#define theta  params[0]
+#define phi    params[1]
+
+/* function prototypes                                                       */
+static double _unur_pdf_laplace(double x, double *params, int n_params);
+static double _unur_dpdf_laplace(double x, double *params, int n_params);
+static double _unur_cdf_laplace(double x, double *params, int n_params);
+
 /*---------------------------------------------------------------------------*/
 
 double
@@ -139,21 +145,21 @@ unur_distr_laplace( double *params, int n_params )
   DISTR.cdf  = _unur_cdf_laplace;  /* pointer to c.d.f.               */
 
   /* default parameters */
-  DISTR.params[0] = 0.;        /* default for theta */
-  DISTR.params[1] = 1.;        /* default for phi */
+  DISTR.theta = 0.;
+  DISTR.phi   = 1.;
   
   /* copy parameters */
   switch (n_params) {
   case 2:
-    DISTR.params[1] = phi;
+    DISTR.phi = phi;
   case 1:
-    DISTR.params[0] = theta;
+    DISTR.theta = theta;
     n_params = 2;           /* number of parameters for non-standard form */
   default:
   }
 
   /* check parameter sigma */
-  if (DISTR.params[1] <= 0.) {
+  if (DISTR.phi <= 0.) {
     _unur_error(distr_name,UNUR_ERR_DISTR,"scale parameter phi <= 0.");
     free( distr ); return NULL;
   }
@@ -162,7 +168,7 @@ unur_distr_laplace( double *params, int n_params )
   DISTR.n_params = n_params;
 
   /* mode and area below p.d.f. */
-  DISTR.mode = 0.;
+  DISTR.mode = DISTR.theta;
   DISTR.area = 1.;
 
   /* domain */

@@ -70,9 +70,15 @@
 static const char distr_name[] = "powerexponential";
 
 /* parameters */
-#define delta (params[0])
-#define theta (params[1])
-#define phi   (params[2])
+#define delta  params[0]
+#define theta  params[1]
+#define phi    params[2]
+
+/* function prototypes                                                       */
+static double _unur_pdf_powerexponential(double x, double *params, int n_params);
+static double _unur_dpdf_powerexponential(double x, double *params, int n_params);
+static double _unur_lognormconstant_powerexponential(double *params, int n_params);
+
 /*---------------------------------------------------------------------------*/
 
 double
@@ -142,22 +148,22 @@ unur_distr_powerexponential( double *params, int n_params )
   /* DISTR.cdf = _unur_cdf_powerexponential;    pointer to c.d.f.               */
 
   /* default parameters */
-  DISTR.params[1] = 0.;        /* default for theta */
-  DISTR.params[2] = 1.;        /* default for phi   */
+  DISTR.theta = 0.;
+  DISTR.phi   = 1.;
 
   /* copy parameters */
-  DISTR.params[0] = delta;
+  DISTR.delta = delta;
   switch (n_params) {
   case 3:
-    DISTR.params[2] = phi;
+    DISTR.phi = phi;
   case 1:
-    DISTR.params[1] = theta;
+    DISTR.theta = theta;
   default:
     n_params = 3;
   }
 
   /* check parameter sigma */
-  if (DISTR.params[0] <= 0. || DISTR.params[2] <= 0.) {
+  if (DISTR.delta <= 0. || DISTR.phi <= 0.) {
     _unur_error(distr_name ,UNUR_ERR_DISTR,"delta <= 0 or phi <= 0.");
     free( distr ); return NULL;
   }
@@ -179,10 +185,9 @@ unur_distr_powerexponential( double *params, int n_params )
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_PARAMS | 
 		 UNUR_DISTR_SET_DOMAIN |
-		 UNUR_DISTR_SET_STDDOMAIN );
-
+		 UNUR_DISTR_SET_STDDOMAIN |
 /*  		 UNUR_DISTR_SET_MODE   | */
-/*  		 UNUR_DISTR_SET_PDFAREA ); */
+  		 UNUR_DISTR_SET_PDFAREA ); 
 
   /* return pointer to object */
   return distr;

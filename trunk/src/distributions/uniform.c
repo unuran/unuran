@@ -68,8 +68,14 @@
 static const char distr_name[] = "uniform";
 
 /* parameters */
-#define a (params[0])
-#define b (params[1])
+#define a  params[0]
+#define b  params[1]
+
+/* function prototypes                                                       */
+static double _unur_pdf_uniform(double x, double *params, int n_params);
+static double _unur_dpdf_uniform(double x, double *params, int n_params);
+static double _unur_cdf_uniform(double x, double *params, int n_params);
+
 /*---------------------------------------------------------------------------*/
 
 double
@@ -154,19 +160,19 @@ unur_distr_uniform( double *params, int n_params )
   DISTR.cdf  = _unur_cdf_uniform;  /* pointer to c.d.f.            */
 
   /* default parameters */
-  DISTR.params[0] = 0.;         /* default for a */
-  DISTR.params[1] = 1.;         /* default for b */
+  DISTR.a = 0.;
+  DISTR.b = 1.;
 
   /* copy parameters */
   switch (n_params) {
   case 2:
-    DISTR.params[0] = a;
-    DISTR.params[1] = b;
+    DISTR.a = a;
+    DISTR.b = b;
   default:
   }
 
   /* check parameters a and b */
-  if (DISTR.params[0] >= DISTR.params[1]) {
+  if (DISTR.a >= DISTR.b) {
     _unur_error(distr_name,UNUR_ERR_DISTR,"invalid domain: a >= b!");
     free( distr ); return NULL;
   }
@@ -175,12 +181,12 @@ unur_distr_uniform( double *params, int n_params )
   DISTR.n_params = n_params;
 
   /* mode and area below p.d.f. */
-  DISTR.mode = (DISTR.params[0]+DISTR.params[1]) / 2.;  /* (a+b)/2 */
+  DISTR.mode = (DISTR.a + DISTR.b) / 2.;
   DISTR.area = 1.;
 
   /* domain */
-  DISTR.domain[0] = DISTR.params[0]; /* left boundary  */
-  DISTR.domain[1] = DISTR.params[1]; /* right boundary */
+  DISTR.domain[0] = DISTR.a;      /* left boundary  */
+  DISTR.domain[1] = DISTR.b;      /* right boundary */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_PARAMS | 

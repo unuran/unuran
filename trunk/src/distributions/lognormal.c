@@ -70,9 +70,14 @@
 static const char distr_name[] = "lognormal";
 
 /* parameters */
-#define zeta  (params[0])
-#define sigma (params[1])
-#define theta (params[2])
+#define zeta   params[0]
+#define sigma  params[1]
+#define theta  params[2]
+
+/* function prototypes                                                       */
+static double _unur_pdf_lognormal(double x, double *params, int n_params);
+static double _unur_dpdf_lognormal(double x, double *params, int n_params);
+
 /*---------------------------------------------------------------------------*/
 
 double
@@ -137,20 +142,20 @@ unur_distr_lognormal( double *params, int n_params )
   /* DISTR.cdf = _unur_cdf_lognormal; pointer to c.d.f.               */
 
   /* default parameters */
-  DISTR.params[2] = 0.;        /* default for theta */
+  DISTR.theta = 0.;        /* default for theta */
   
   /* copy parameters */
-  DISTR.params[0] = zeta;
-  DISTR.params[1] = sigma;
+  DISTR.zeta = zeta;
+  DISTR.sigma = sigma;
   switch (n_params) {
   case 3:
-    DISTR.params[1] = theta;
+    DISTR.theta = theta;
   default:
     n_params = 3;
   }
 
   /* check parameter sigma */
-  if (DISTR.params[1] <= 0.) {
+  if (DISTR.sigma <= 0.) {
     _unur_error(distr_name,UNUR_ERR_DISTR,"scale parameter sigma <= 0.");
     free( distr ); return NULL;
   }
@@ -159,14 +164,14 @@ unur_distr_lognormal( double *params, int n_params )
   DISTR.n_params = n_params;
 
   /* normalization constant */
-  DISTR.NORMCONSTANT = sigma * sqrt(2.*M_PI);
+  DISTR.NORMCONSTANT = DISTR.sigma * sqrt(2.*M_PI);
 
   /* mode and area below p.d.f. */
   /* DISTR.mode = unur_mode_lognormal(DISTR.params,DISTR.n_params); */
   DISTR.area = 1.;
 
   /* domain */
-  DISTR.domain[0] = DISTR.params[2]; /* left boundary  */
+  DISTR.domain[0] = DISTR.theta;     /* left boundary  */
   DISTR.domain[1] = INFINITY;        /* right boundary */
 
   /* indicate which parameters are set */

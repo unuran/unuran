@@ -87,10 +87,17 @@
 static const char distr_name[] = "beta";
 
 /* parameters */
-#define p (params[0])
-#define q (params[1])
-#define a (params[2])
-#define b (params[3])
+#define p  params[0]
+#define q  params[1]
+#define a  params[2]
+#define b  params[3]
+
+/* function prototypes                                                       */
+static double _unur_pdf_beta(double x, double *params, int n_params);
+static double _unur_dpdf_beta(double x, double *params, int n_params);
+static double _unur_cdf_beta(double x, double *params, int n_params);
+static double _unur_mode_beta(double *params, int n_params);
+static double _unur_lognormconstant_beta(double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
 
@@ -253,28 +260,28 @@ unur_distr_beta( double *params, int n_params )
   DISTR.cdf  = _unur_cdf_beta;    /* pointer to c.d.f.               */
 
   /* default parameters */
-  DISTR.params[2] = 0.;           /* default for a */
-  DISTR.params[3] = 1.;           /* default for b */
+  DISTR.a = 0.;           /* default for a */
+  DISTR.b = 1.;           /* default for b */
 
   /* copy parameters */
-  DISTR.params[0] = p;
-  DISTR.params[1] = q;
+  DISTR.p = p;
+  DISTR.q = q;
   switch (n_params) {
   case 4:
-    DISTR.params[3] = b;
+    DISTR.b = b;
   case 3:
-    DISTR.params[2] = a;
+    DISTR.a = a;
     n_params = 4;              /* number of parameters for non-standard form */
   default:
   }
 
   /* check parameters p and q */
-  if (DISTR.params[0] <= 0. || DISTR.params[1] <= 0.) {
+  if (DISTR.p <= 0. || DISTR.q <= 0.) {
     _unur_error(distr_name,UNUR_ERR_DISTR,"p <= 0 or q <= 0.");
     free( distr ); return NULL;
   }
   /* check parameters a and b */
-  if (DISTR.params[2] >= DISTR.params[3]) {
+  if (DISTR.a >= DISTR.b) {
     _unur_error(distr_name ,UNUR_ERR_DISTR,"invalid domain: a >= b!");
     free( distr ); return NULL;
   }
@@ -290,8 +297,8 @@ unur_distr_beta( double *params, int n_params )
   DISTR.area = 1.;
 
   /* domain */
-  DISTR.domain[0] = DISTR.params[2]; /* left boundary  */
-  DISTR.domain[1] = DISTR.params[3]; /* right boundary */
+  DISTR.domain[0] = DISTR.a; /* left boundary  */
+  DISTR.domain[1] = DISTR.b; /* right boundary */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_PARAMS | 

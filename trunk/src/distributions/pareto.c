@@ -69,8 +69,14 @@
 static const char distr_name[] = "pareto";
 
 /* parameters */
-#define k (params[0])
-#define a (params[1])
+#define k  params[0]
+#define a  params[1]
+
+/* function prototypes                                                       */
+static double _unur_pdf_pareto(double x, double *params, int n_params);
+static double _unur_dpdf_pareto(double x, double *params, int n_params);
+static double _unur_cdf_pareto(double x, double *params, int n_params);
+
 /*---------------------------------------------------------------------------*/
 
 double
@@ -94,14 +100,6 @@ _unur_cdf_pareto( double x, double *params, int n_params )
 { 
   return ( (x<k) ? 0. : (1. - pow(k/x,a)) );
 } /* end of _unur_cdf_pareto() */
-
-/*---------------------------------------------------------------------------*/
-
-double
-_unur_normconstant_pareto( double *params, int n_params )
-{ 
-  return ( a * pow(k,a) );
-} /* end of _unur_normconstant_pareto() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -136,11 +134,11 @@ unur_distr_pareto( double *params, int n_params )
   DISTR.cdf  = _unur_cdf_pareto;  /* pointer to c.d.f.               */
 
   /* copy parameters */
-  DISTR.params[0] = k;
-  DISTR.params[1] = a;
+  DISTR.k = k;
+  DISTR.a = a;
 
   /* check parameters k and a */
-  if (DISTR.params[0] <= 0. || DISTR.params[1] <= 0.) {
+  if (DISTR.k <= 0. || DISTR.a <= 0.) {
     _unur_error(distr_name ,UNUR_ERR_DISTR,"k <= 0 or a <= 0.");
     free( distr ); return NULL;
   }
@@ -149,14 +147,14 @@ unur_distr_pareto( double *params, int n_params )
   DISTR.n_params = n_params;
 
   /* log of normalization constant */
-  DISTR.NORMCONSTANT = _unur_normconstant_pareto(DISTR.params,DISTR.n_params);
+  DISTR.NORMCONSTANT = DISTR.a * pow(DISTR.k,DISTR.a);
 
   /* mode and area below p.d.f. */
-  DISTR.mode = DISTR.params[0];    /* k */
+  DISTR.mode = DISTR.k;
   DISTR.area = 1.;
 
   /* domain */
-  DISTR.domain[0] = DISTR.params[0]; /* left boundary  */
+  DISTR.domain[0] = DISTR.k;         /* left boundary  */
   DISTR.domain[1] = INFINITY;        /* right boundary */
 
   /* indicate which parameters are set */

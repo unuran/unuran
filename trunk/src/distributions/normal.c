@@ -84,8 +84,16 @@
 static const char distr_name[] = "normal";
 
 /* parameters */
-#define mu    (params[0])
-#define sigma (params[1])
+#define mu    params[0]
+#define sigma params[1]
+
+/*---------------------------------------------------------------------------*/
+
+/* function prototypes                                                       */
+static double _unur_pdf_normal(double x, double *params, int n_params);
+static double _unur_dpdf_normal(double x, double *params, int n_params);
+static double _unur_cdf_normal(double x, double *params, int n_params);
+
 /*---------------------------------------------------------------------------*/
 
 double
@@ -145,24 +153,6 @@ _unur_cdf_normal( double x, double *params, int n_params )
 
 /*---------------------------------------------------------------------------*/
 
-double
-_unur_lognormconstant_normal( double *params, int n_params )
-{
-  switch (n_params) {
-
-  case 2:  /* non standard */
-    return( log(M_SQRTPI * M_SQRT2 * sigma) );
-  case 0:  /* standard */
-    return( log(M_SQRTPI * M_SQRT2) );
-  default:
-    _unur_error(distr_name,UNUR_ERR_NPARAM,"");
-    return 0.;
-  }
-
-} /* end of _unur_lognormconstant_normal() */
-
-/*---------------------------------------------------------------------------*/
-
 /*****************************************************************************/
 /**                                                                         **/
 /**  Make distribution object                                               **/
@@ -203,21 +193,21 @@ unur_distr_normal( double *params, int n_params )
   DISTR.cdf  = _unur_cdf_normal;   /* pointer to c.d.f.            */
 
   /* default parameters */
-  DISTR.params[0] = 0.;        /* default for mu */
-  DISTR.params[1] = 1.;        /* default for sigma */
+  DISTR.mu    = 0.;
+  DISTR.sigma = 1.;
 
   /* copy parameters */
   switch (n_params) {
   case 2:
-    DISTR.params[1] = sigma;
+    DISTR.sigma = sigma;
   case 1:
-    DISTR.params[0] = mu;
+    DISTR.mu = mu;
     n_params = 2;           /* number of parameters for non-standard form */
   default:
   }
 
   /* check parameter sigma */
-  if (DISTR.params[1] <= 0.) {
+  if (DISTR.sigma <= 0.) {
     _unur_error(distr_name ,UNUR_ERR_DISTR,"scale parameter sigma <= 0.");
     free( distr ); return NULL;
   }
@@ -226,10 +216,10 @@ unur_distr_normal( double *params, int n_params )
   DISTR.n_params = n_params;
 
   /* log of normalization constant */
-  DISTR.LOGNORMCONSTANT = _unur_lognormconstant_normal(DISTR.params,DISTR.n_params);
+  DISTR.LOGNORMCONSTANT = log(M_SQRTPI * M_SQRT2 * DISTR.sigma);
 
   /* mode and area below p.d.f. */
-  DISTR.mode = DISTR.params[0];    /* mu */
+  DISTR.mode = DISTR.mu;
   DISTR.area = 1.;
 
   /* domain */

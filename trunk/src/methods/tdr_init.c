@@ -696,7 +696,6 @@ _unur_tdr_ps_starting_intervals( struct unur_par *par, struct unur_gen *gen )
 	iv->next->Asqueeze = iv->next->Ahat = iv->next->Ahatr = 0.;
 	iv->Acum = INFINITY;
 	iv->next-> sq = 0.;
-	/* --(GEN.n_ivs);           /* we do not count this interval */
 	/* we even have to to some additional work */
       }
       else

@@ -11,80 +11,67 @@ int main()
 {
   struct treenode *parsetree;
 /*    struct treenode *dev_tree; */
-  char            *input_string;
+  char            input_string[MAXLENGTH];
   int             errcode, errpos;
-  double          argument;
+/*    double          argument; */
   double          value;
-   _unur_fstr_init();
+
+  char fstr[MAXLENGTH] = "f(x) = -1 +  ln(2*3-5) + pi + 1 + x + 3 * x + pi + 3.4 * x^2 - 5 * x^4 + 365.4 + ln(x) + not(x>9) + log(2,exp(x)) - 1.098612 + (x < 10^2)    ";
+
+
+  _unur_fstr_init();
   
-
-do {
   /* Einlesen einer Funktion als string */
-     printf("\n\nFunktion eingeben:\n");
-     input_string= (char *)malloc(MAXLENGTH*sizeof(char));
-     readln(input_string);
-     if (strcmp(input_string,"") == 0) break;
-     parsetree = _unur_fstr2tree(input_string,&errcode,&errpos);
-    
+  printf("\n\nFunktion eingeben:\n");
+  /*       readln(input_string); */
+  /*       if (strcmp(input_string,"") == 0) break; */
+  /*       parsetree = _unur_fstr2tree(input_string,&errcode,&errpos); */
 
-      if  (errcode>0)  {  
-              printf("Fehler: %d\n",errcode);
-/*                break; */
-           };
+  parsetree = _unur_fstr2tree(fstr,&errcode,&errpos);
+    
+  if  (errcode>0)  {  
+    printf("Fehler: %d\n",errcode);
+    exit (EXIT_FAILURE);
+  };
 
   /*-----------------------------------------------------------------*/
   /* Funktionsauswertung */
 
-   do {
-     printf("\n Argument: ");
-     readln(input_string);
-     argument=atof(input_string);
-     value=_unur_fstr_eval_tree(parsetree,atof(input_string));
-     /* if (value==nan) {
-       printf("Fehler\n");
-       break; }
-     */     
-printf("\n Wert: %f \n", _unur_fstr_eval_tree(parsetree,atof(input_string)));
-    } while (0); 
+  printf("\n Argument: ");
+  /*       readln(input_string); */
+  /*       argument=atof(input_string); */
+  /*       value=_unur_fstr_eval_tree(parsetree,atof(input_string)); */
 
-/*-----------------------------------------------------------------*/
- /* Stringausgabe    */
+  value = _unur_fstr_eval_tree(parsetree,3.);
+  printf("\n Wert: %f \n",value);
 
-     Ntree2string(parsetree,input_string);
-     printf("\nParse-Baum als String:\n%s\n",input_string); 
+  /* if (value==nan) {
+     printf("Fehler\n");
+     break; }
+  */     
 
- /*-----------------------------------------------------------------*/
- /*  Ableitung */
+  /*-----------------------------------------------------------------*/
+  /* Stringausgabe    */
 
-     readln(input_string);
- 
-#if 0
-   do {
-     printf("\nArgument fuer Ableitung:\n");readln(input_string);
-     dev_tree=_unur_fstr_make_derivative(parsetree);
+  Ntree2string(parsetree,input_string);
+  printf("\nParse-Baum als String:\n%s\n",input_string); 
+
+  /*-----------------------------------------------------------------*/
+  /*  Ableitung */
+
+  /*       readln(input_string); */
     
-     printf("\n Wert: %f \n", _unur_fstr_dev_eval_tree(dev_tree,atof(input_string)));
-    } while (0); 
-#endif
-   
-   _unur_fstr_debug_tree(parsetree);
-/*     show_symb_tab(); */
+  _unur_fstr_debug_tree(parsetree);
+  /*     show_symb_tab(); */
 
+  printf("\n Wert: %f \n",value);
 
    
-   /* Speicher fuer tree freigeben */
-     _unur_fstr_free(parsetree);
-/*       _unur_fstr_free(dev_tree); */
-     free (input_string);
- 
-     
+  /* Speicher fuer tree freigeben */
+  _unur_fstr_free(parsetree);
+
   
-  
-
-}    while (0);
- return 0;
-
-
+  exit(EXIT_SUCCESS);
 }  
 
 

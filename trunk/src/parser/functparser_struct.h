@@ -64,7 +64,7 @@ struct symbols {
   int             type;         /* type of symbol */
   int             info;              /* Prioritaet bzw. Argumentanzahl  */ 
   double           val;               /* Konstanten: numerischer Wert    */ 
-  double           (*vcalc)(int t, double l, double r);        
+  double           (*vcalc)(double l, double r);        
                                      /* Zeiger auf Berechnungsfunktion  */ 
   char            *(*dcalc)(char *par,struct treenode *w,
                             char *l, char *r, char *dl, char *dr,char *s);

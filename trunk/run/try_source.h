@@ -13,7 +13,7 @@
  *   longjumps in case of floating point exceptions.                         *
  *                                                                           *
  *****************************************************************************
- 
+  
  *****************************************************************************
  *                                                                           *
  *   Dept. for Statistics, University of Economics, Vienna, Austria          *
@@ -288,15 +288,26 @@ struct exception_context { \
 
 /* UNURAN */
 
-/* On architectures supporting the IEEE p754 and implementing the isnan() */
-/* and isinf() functions, the CATCH block is executed whenever these      */
-/* functions return positive results.                                     */
-/* On alpha-machines we define the symbol using compiler flag -D'ALPHA'   */
-
-
-#ifndef ALPHA
-#include <fenv.h>
-#endif
+/* On architectures supporting the IEEE p754 standard, the compiler flag  */
+/* -DHAVE_IEEE should be present.                                         */
+/*                                                                        */
+/* When HAVE_IEEE is defined (Intel machines), the TRY macro expands to   */
+/* an empty statement, whereas the CATCH(x) macro is simply an if(x)      */
+/* statement which can be used to check results of previous calculations  */
+/* e.g. :  TRY {x=1/0.;}                                                  */
+/*         CATCH(!isfinite(x)) {printf("x is not finite");}               */
+/*                                                                        */
+/* When HAVE_IEEE is NOT defined (Alpha machines), the TRY macro sets an  */
+/* appropriate jump-mark which is used in a long-jump to recover from a   */
+/* potential floating point exception via the fphandler() function.       */
+/* In this case the program flow resumes with the execution of the        */
+/* statements following the CATCH(x) macro. (x is ignored in this case)   */
+/*                                                                        */
+/* WARNING:                                                               */ 
+/* On intel machines supporting the IEEE p754 standard, the division 1/0. */
+/* yields inf, whereas 1/0 result in a floating point exception.          */
+/* On alpha machines the sqrt(x) of negative x is 0.                      */
+/*                                                                        */
 
 #include <signal.h>
 #include <math.h>
@@ -311,7 +322,7 @@ void fphandler(int sig)
   Throw sig;
 }
 
-#ifdef ALPHA 
+#ifndef HAVE_IEEE 
 
   #define TRY \
   { \
@@ -328,22 +339,9 @@ void fphandler(int sig)
 
 #else
 
-  #define TRY \
-  { \
-    jmp_buf *exception__prev, exception__env; \
-    if (signal(SIGFPE, fphandler)==SIG_ERR) fprintf(stderr, ".");  \
-    exception__prev = the_exception_context->penv; \
-    the_exception_context->penv = &exception__env; \
-    if (setjmp(exception__env) == 0) { \
-    feenableexcept(FE_ALL_EXCEPT); \
-    if (&exception__prev)
+  #define TRY 
 
-
-  #define CATCH(x) \
-  } \
-  } \
-  printf("catch(x) ... x=%f\n",x); \
-  if(isnan(x) || isinf(x))
+  #define CATCH(x) if(x)
 
 #endif 
 

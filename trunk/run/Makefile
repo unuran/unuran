@@ -21,8 +21,8 @@ something: something.c ../src/unuran.h ../src/libunuran.la
 f: ../src/utils/fminmax.c fmain.c ../src/unuran.h ../src/libunuran.la
 	../libtool gcc -I. -I.. -I../src -I../src/tests -ansi -pedantic -o f fmain.c ../src/libunuran.la -lm -lprng 
 
-try: 
-	gcc -lm -ansi -pedantic try.c -o try 
+try: try.c try_source.h 
+	gcc -lm -ansi -pedantic -DHAVE_IEEE try.c -o try 
 
 clean:
 	rm -f *~ *.o run rungen mcrun test something unuran.log

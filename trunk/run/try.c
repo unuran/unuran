@@ -10,29 +10,30 @@
  
 int main() { 
   double x;
-  
+
+  x=1/0.; x+=0.; printf("%g\n",x);
+  x=0/0.; x+=0.; printf("%g\n",x);
+
+  x=sqrt(-1) ; printf("%g\n",x); 
+
   TRY { x=1/1; printf("1/1=%f\n",x); }
-  CATCH(x) fprintf(stderr, "exception in 1/1\n");
+  CATCH(x) fprintf(stderr, "catching 1/1\n");
 
-  TRY { x=0/0; printf("0/0=%f\n",x); }
-  CATCH(x) fprintf(stderr, "exception in 0/0\n");
+ x=17.; 
+  TRY { x=0/0.; printf("0/0=%f\n",x); }
+  CATCH(!(x==x)) x=0 ;
 
-  TRY { x=1/0; printf("1/0=%f\n",x); }
-  CATCH(x) fprintf(stderr, "exception in 1/0\n");
+  printf(">>> %g\n",x);
+  
+ x=17.; 
+
+  TRY { x=1/0.; printf("1/0=%f\n",x); }
+  CATCH(!(x==x)) x=0;
+
+  printf(">>> %g\n",x);
 
   TRY { x=sqrt(-1); printf("sqrt(-1)=%f\n",x); }
-  CATCH(x) {
-    fprintf(stderr, "exception in sqrt(-1)\n");
-
-    TRY { 
-      x=1/1; printf("1/1=%f\n",x); 
-      TRY { x=0/0; printf("0/0=%f\n",x); }
-      CATCH(x) fprintf(stderr, "exception in 0/0\n");
-    }
-    CATCH(x) {
-      fprintf(stderr, "exception in 1/1\n");
-    }
-  }
+  CATCH(x>0) fprintf(stderr, "catching sqrt(-1)\n"); 
 
   return EXIT_SUCCESS;
 }

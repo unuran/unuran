@@ -114,23 +114,24 @@ unur_test_correlation( UNUR_GEN *genx, UNUR_GEN *geny, int samplesize )
 
     factor = (double) ( n*(n-1) );
 
-    dx = (x - mx) / (double) n;
-    dy = (y - my) / (double) n;
+    dx = (x - mx) / n;
+    dy = (y - my) / n;
+    mx = ((n-1)*mx + x) / n;
+    my = ((n-1)*my + y) / n;
 
     sx  += factor * dx*dx;
     sy  += factor * dy*dy;
     sxy += factor * dx*dy;
-    mx  += dx;
-    my  += dy;
+    //printf( "sx:%f sy:%f sxy:%f, c:%f\n",sx,sy,sxy, sxy/(sqrt(sx*sy)) );
 
   }
 
   /* now print results */
   printf("\nCorrelation coefficient:\n");
-    printf( "%f", samplesize*sxy/(sx*sy) );
+    printf( "%f", sxy/(sqrt(sx*sy)) );
   printf("\n");
 
-  return ( samplesize*sxy/(sx*sy) );
+  return ( sxy/(sqrt(sx*sy)) );
 
 } /* end of unur_test_correlation() */
 

@@ -158,9 +158,9 @@
 /*                                                                           */
 /* UNUR_URNG_GENERIC:                                                        */
 /*     This the most flexible interface to URNGs.                            */
-/*     All required data for a URNG are stored in a object. Thus it is       */
-/*     to use all the other generator types listed below without             */
-/*     recompilation.                                                        */
+/*     All required data for a URNG are stored in an object.                 */
+/*     Thus it is possible to use all the other generator types listed       */
+/*     below without recompilation.                                          */
 /*     The URNG objects are created and handled with appropriate calls.      */
 /*     Another advantage of this approach is that a unified interface        */
 /*     to different sources of random numbers is available.                  */
@@ -170,7 +170,10 @@
 /*...........................................................................*/
 /*                                                                           */
 /* The following compiler switches are for backward compatibility.           */
-/* Their usage, however, is DEPRECATED.                                      */
+/* Their usage, however, is DEPRECATED!                                      */
+/*                                                                           */
+/* These sources are still available under the new extended                  */
+/* UNUR_URNG_GENERIC interface.                                              */
 /*                                                                           */
 /* UNUR_URNG_FVOID:                                                          */
 /*     Use a pointer to the routine without an argment, i.e.                 */
@@ -196,23 +199,23 @@
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
-/* Define the possible compiler switches.                                    */
-#define UNUR_URNG_GENERIC    99  /* use a generic interface (recommended)    */
+/* Define the possible sources for uniform (pseudo-) random numbers.         */
+#define UNUR_URNG_GENERIC    99   /* use a generic interface (recommended)   */
 /*...........................................................................*/
-/* For backward compatibility only:                                          */
-/* (These can used more flexible via the generic interface!)                 */
 #define UNUR_URNG_FVOID       1   /* use type `double urng(void)'            */
 #define UNUR_URNG_PRNG        2   /* use prng-3.x                            */
 #define UNUR_URNG_RNGSTREAMS  3   /* use RngStreams                          */
 #define UNUR_URNG_GSL         4   /* use GNU Scientific Library              */
 /*---------------------------------------------------------------------------*/
-/* Set type of uniform random number generator.                              */
+/* Set type of the API to uniform random number generators.                  */
 /* (Define one of the following)                                             */
 
 /* Recommended type */
 #define UNUR_URNG_TYPE UNUR_URNG_GENERIC
 
 /* For backward compatibility only! */
+/* (These random number generators can used more flexible via the            */
+/*  generic interface!)                                                      */
 /* #define UNUR_URNG_TYPE UNUR_URNG_FVOID */
 /* #define UNUR_URNG_TYPE UNUR_URNG_PRNG */
 /* #define UNUR_URNG_TYPE UNUR_URNG_RNGSTREAMS */
@@ -220,6 +223,26 @@
 
 /*---------------------------------------------------------------------------*/
 /* Default generators                                                        */
+
+/* Set a default generator type for the UNUR_URNG_GENERIC interface.         */
+/* (Define one of the following)                                             */
+
+/* IMPORTANT:                                                                */
+/* The corresponding library must be installed and linked when a particular  */
+/* default is chosen (with the exception of type UNUR_URNG_FVOID which       */
+/* included in UNURAN).                                                      */
+/* If you have none of these libraries use UNUR_URNG_FVOID.                  */
+
+#define UNUR_URNG_DEFAULT_TYPE UNUR_URNG_FVOID
+/* #define UNUR_URNG_DEFAULT_TYPE UNUR_URNG_PRNG */
+/* #define UNUR_URNG_DEFAULT_TYPE UNUR_URNG_RNGSTREAMS */
+/* #define UNUR_URNG_DEFAULT_TYPE UNUR_URNG_GSL */
+
+/*...........................................................................*/
+/* Default generators for different sources of uniform random numbers.       */
+/* (These defaults are only used for if the source is chosen via             */
+/*  UNUR_URNG_TYPE / UNUR_URNG_DEFAULT_TYPE.)                                */ 
+
 /* type: FVOID */
 #define UNUR_URNG_DEFAULT_FVOID           (unur_urng_MRG31k3p)
 #define UNUR_URNG_DEFAULT_RESET_FVOID     (unur_urng_MRG31k3p_reset)
@@ -238,8 +261,8 @@
 
 /* ... */
 #define UNURAN_HAS_PRNG 1
-#define UNURAN_HAS_GSL 1
 #define UNURAN_HAS_RNGSTREAMS 1
+#define UNURAN_HAS_GSL 1
 
 
 /*---------------------------------------------------------------------------*/

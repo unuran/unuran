@@ -47,27 +47,42 @@
 /* is defined in unur_API.c */
 
 /* default generators */
-#if defined(UNURAN_HAS_RNGSTREAMS)
-/* use type RNGSTREAMS */
-#  define UNUR_URNG_DEFAULT      (unur_urng_rngstream_new("URNG_main"))
-#  define UNUR_URNG_AUX_DEFAULT  (unur_urng_rngstream_new("URNG_aux"))
 
-#elif defined(UNURAN_HAS_GSL)
-/* use type GSL */
-#  define UNUR_URNG_DEFAULT      (unur_urng_gsl_new(UNUR_URNG_DEFAULT_GSL))
-#  define UNUR_URNG_AUX_DEFAULT  (unur_urng_gsl_new(UNUR_URNG_AUX_DEFAULT_GSL))
-
-#elif defined(UNURAN_HAS_PRNG)
+#if UNUR_URNG_DEFAULT_TYPE == UNUR_URNG_PRNG
 /* use type PRNG */
-#  define UNUR_URNG_DEFAULT      (unur_urng_prng_new(UNUR_URNG_DEFAULT_PRNG))
-#  define UNUR_URNG_AUX_DEFAULT  (unur_urng_prng_new(UNUR_URNG_AUX_DEFAULT_PRNG))
+#  ifndef UNURAN_HAS_PRNG
+#    error Choosen default URNG type requires PRNG library
+#  else 
+#    define UNUR_URNG_DEFAULT      (unur_urng_prng_new(UNUR_URNG_DEFAULT_PRNG))
+#    define UNUR_URNG_AUX_DEFAULT  (unur_urng_prng_new(UNUR_URNG_AUX_DEFAULT_PRNG))
+#  endif
 
-#else
+#elif UNUR_URNG_DEFAULT_TYPE == UNUR_URNG_RNGSTREAMS
+/* use type RNGSTREAMS */
+#  ifndef UNURAN_HAS_RNGSTREAMS
+#    error Choosen default URNG type requires RNGSTREAMS library
+#  else 
+#    define UNUR_URNG_DEFAULT      (unur_urng_rngstream_new("URNG_main"))
+#    define UNUR_URNG_AUX_DEFAULT  (unur_urng_rngstream_new("URNG_aux"))
+#  endif
+
+#elif UNUR_URNG_DEFAULT_TYPE == UNUR_URNG_GSL
+/* use type GSL */
+#  ifndef UNURAN_HAS_GSL
+#    error Choosen default URNG type requires GSL library
+#  else 
+#    define UNUR_URNG_DEFAULT      (unur_urng_gsl_new(UNUR_URNG_DEFAULT_GSL))
+#    define UNUR_URNG_AUX_DEFAULT  (unur_urng_gsl_new(UNUR_URNG_AUX_DEFAULT_GSL))
+#  endif
+
+#elif UNUR_URNG_DEFAULT_TYPE == UNUR_URNG_FVOID
 /* use type FVOID */
 #  define UNUR_URNG_DEFAULT      (unur_urng_fvoid_new(UNUR_URNG_DEFAULT_FVOID, \
 					              UNUR_URNG_DEFAULT_RESET_FVOID))
 #  define UNUR_URNG_AUX_DEFAULT  (unur_urng_fvoid_new(UNUR_URNG_AUX_DEFAULT_FVOID, \
 					              UNUR_URNG_AUX_DEFAULT_RESET_FVOID))
+#else
+#error UNUR_URNG_DEFAULT_TYPE not valid !!
 #endif
 
 /*---------------------------------------------------------------------------*/

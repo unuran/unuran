@@ -219,3 +219,6 @@ makeinfo.
 
 @unurmath	same as @math. But we can use a more sophisticated 
 	typesetting (once upon a time in the future).
+	Warning: making documantation fails when unknown TeX macros 
+	appears, i.e., whenever new macros are used the make_texi.pl 
+	script must be modified (see function transform_tex()).

@@ -21,18 +21,33 @@
 int main()
 {
 
-#if 0
-  printf("/* Include into file `src/unuran_config.h' */\n\n");
+  printf("/** File automatically created by scripts/compute_machine_constants         **/\n\n");
 
-  printf("/* maximum number for that exp() can be computed without overflow */\n");
-  printf("#define UNUR_MAX_ARG_EXP  %20.16f\n\n",log(DBL_MAX)); 
+  printf("/*****************************************************************************\n");
+  printf(" *                                                                           *\n");
+  printf(" *          unuran -- Universal Non-Uniform Random number generator          *\n");
+  printf(" *                                                                           *\n");
+  printf(" *****************************************************************************/\n");
 
-  printf("#define MACHEP  %.21g\n\n",DBL_EPSILON/2); 
+  printf("\n");
 
-#endif
+  printf("/*---------------------------------------------------------------------------*/\n");
+  printf("#ifndef __SOURCE_FP_CONST_H_SEEN\n");
+  printf("#define __SOURCE_FP_CONST_H_SEEN\n");
+  printf("/*---------------------------------------------------------------------------*/\n");
 
-  printf("log(DBL_MAX) = %.21g\n\n",log(DBL_MAX)); 
-  printf("log(DBL_MIN) = %.21g\n\n",log(DBL_MIN)); 
+  printf("/* the machine roundoff error */\n");  
+  printf("#define MACHEP  %.30g\n\n",DBL_EPSILON/2.);
+
+  printf("/* largest argument for exp() */\n");
+  printf("#define MAXLOG  %.30g\n\n",log(DBL_MAX)); 
+
+  printf("/* smallest argument for exp() without underflow */\n");
+  printf("#define MINLOG  %.30g\n\n",log(DBL_MIN)); 
+
+  printf("/*---------------------------------------------------------------------------*/\n");
+  printf("#endif  /* __SOURCE_FP_CONST_H_SEEN */\n");
+  printf("/*---------------------------------------------------------------------------*/\n");
 
   exit (0);
 }

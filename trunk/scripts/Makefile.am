@@ -12,8 +12,20 @@ compute_machine_constants_SOURCE = compute_machine_constants.c
 EXTRA_DIST = \
  merge_h.pl
 
+noinst_HEADERS = \
+ source_fp_const.h
+
+# create files with floating point constants
+source_fp_const.h: compute_machine_constants
+	./compute_machine_constants > source_fp_const.h	
+	cp source_fp_const.h $(top_srcdir)/src/methods/
+
+
 # clean backup files
-CLEANFILES = *~
+CLEANFILES = \
+ *~ \
+ source_fp_const.h
+
 
 # clean generated files
 MAINTAINERCLEANFILES = \

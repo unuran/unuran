@@ -1,7 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 ## $Id$
 
-SUBDIRS = distributions methods specfunct tests uniform
+SUBDIRS = methods specfunct distributions tests uniform .
 
 AM_CFLAGS = -Wall
 

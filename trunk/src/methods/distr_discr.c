@@ -289,7 +289,7 @@ unur_distr_discr_make_pv( struct unur_distr *distr )
     pv = _unur_malloc( n_pv * sizeof(double) );
     for (i=0; i<n_pv; i++)
       pv[i] = _unur_discr_PMF(DISTR.domain[0]+i,distr);
-    
+
     valid = TRUE;
   }
 

@@ -130,6 +130,14 @@ ACM Trans. Math. Software 13, 168-172.
 @i{Improving the Polar Method for Generating a Pair of Random Variables},
 Boeing Sci. Res. Lab., Seattle, Washington.
 
+@anchor{bib:STa89}
+@item [STa89]
+@sc{E. Stadlober} (1989).
+@i{Sampling from Poisson, binomial and hypergeometric distributions:
+ratio of uniforms as a simple and fast alternative},
+Bericht 303, Math. Stat. Sektion,
+Forschungsgesellschaft Joanneum, Graz.
+
 @anchor{bib:ZHa94}
 @item [ZHa94]
 @sc{H. Zechner} (1994).

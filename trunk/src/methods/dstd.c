@@ -549,7 +549,7 @@ _unur_dstd_debug_chg_pmfparams( struct unur_gen *gen )
 
   log = unur_get_stream();
 
-  fprintf(log,"%s:parameters of distribution changed:\n",gen->genid);
+  fprintf(log,"%s: parameters of distribution changed:\n",gen->genid);
   for( i=0; i<DISTR.n_params; i++ )
       fprintf(log,"%s:\tparam[%d] = %g\n",gen->genid,i,DISTR.params[i]);
 
@@ -558,3 +558,7 @@ _unur_dstd_debug_chg_pmfparams( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 #endif   /* end UNUR_ENABLE_LOGGING */
 /*---------------------------------------------------------------------------*/
+
+
+
+

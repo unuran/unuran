@@ -76,8 +76,11 @@ noinst_HEADERS = \
  vmt.h   vmt_struct.h
 
 # clean backup files
-CLEANFILES = *~
+CLEANFILES = \
+ *~ \
+ source_fp_const.h
 
 # clean generated files
 MAINTAINERCLEANFILES = \
  Makefile.in
+

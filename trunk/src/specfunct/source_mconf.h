@@ -110,6 +110,7 @@ Copyright 1984, 1987, 1989, 1995 by Stephen L. Moshier
 
 #include <x_math.h>
 #include <x_math_source.h>
+#include <source_fp_const.h>
 
 /*---------------------------------------------------------------------------*/
 /* We do not make use of floating point formats of various hardware.         */
@@ -154,11 +155,6 @@ extern int merror;
 /* Define constant for floating point arithmetic.                            */
 
 #define MAXNUM  DBL_MAX           /* largest number represented              */
-#define MACHEP  (DBL_EPSILON/2.)  /* the machine roundoff error              */  
-
-/** TODO **/
-#define MAXLOG  709.782712893383973096   /* log(DBL_MAX)                     */
-#define MINLOG  -708.396418532264078749  /* log(DBL_MIN)                     */
 
 /*---------------------------------------------------------------------------*/
 /* Warning: we did not test the library with any of the below compiler       */

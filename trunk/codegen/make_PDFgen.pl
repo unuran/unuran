@@ -45,6 +45,9 @@ $PDFgen .= make_PDFgen_C($DISTR);
 # Make FORTRAN version of code generator
 $PDFgen .= make_PDFgen_FORTRAN($DISTR);
 
+# Make JAVA version of code generator
+$PDFgen .= make_PDFgen_JAVA($DISTR);
+
 # ................................................................
 
 # Print code into file
@@ -140,6 +143,39 @@ sub make_PDFgen_FORTRAN
 
 
 # ----------------------------------------------------------------
+# Make routines for PDF code generator (JAVA version)
+
+sub make_PDFgen_JAVA
+{
+    my $DISTR = $_[0];   # data for distributions
+
+    my $PDFgen;
+    
+    # JAVA version
+    $PDFgen .= make_bar("JAVA version");
+
+    # Main (JAVA)
+    $PDFgen .= make_PDF_main_JAVA( $DISTR );
+
+    # Continuous distributions
+    foreach my $d (sort keys %{$DISTR}) {
+	next unless $DISTR->{$d}->{"=TYPE"} eq "CONT";
+
+	# Function prototype
+	$PDFgen_prototypes .= "static ".get_PDFgen_funct_JAVA($d).";\n";
+
+	# Function for distribution
+	$PDFgen .= make_PDF_distr_JAVA($DISTR,$d);
+    }
+
+    # End
+    return $PDFgen;
+
+} # end of make_PDFgen_JAVA()
+
+
+
+# ----------------------------------------------------------------
 # Main (C version)
 
 sub make_PDF_main_C
@@ -213,6 +249,46 @@ sub make_PDF_main_FORTRAN
     return $gencode;
 
 } # end of make_PDF_main_FORTRAN()
+
+
+# ----------------------------------------------------------------
+# Main (JAVA version)
+
+sub make_PDF_main_JAVA
+{
+    my $DISTR = $_[0];   # data for distributions
+    
+    my $gencode;         # code for creating PDFs
+
+    # Mark begin of Main
+    $gencode .= make_bar("PDF main");
+
+    # Function header
+    $gencode .= "int _unur_acg_JAVA_PDF (UNUR_DISTR *distr, FILE *out, const char *pdf)\n{\n";
+
+    # Check for invalid NULL pointer
+    $gencode .= "\t_unur_check_NULL(\"ACG\", distr, 0 );\n\n";
+
+    # Switch (distribution)
+    $gencode .= "\tswitch (distr->id) {\n";
+    foreach my $d (sort keys %{$DISTR}) {
+	next unless $DISTR->{$d}->{"=TYPE"} eq "CONT";
+	$gencode .= "\tcase ".$DISTR->{$d}->{"=ID"}.":\n";
+	$gencode .= "\t\treturn _unur_acg_JAVA_PDF_$d (distr,out,pdf);\n";
+    }
+    $gencode .= "\tdefault:\n";
+    $gencode .= "\t\t_unur_error(distr->name,UNUR_ERR_GEN_DATA,\"Cannot make PDF\");\n";
+    $gencode .= "\t\treturn 0;\n";
+    $gencode .= "\t}\n";
+    
+    # End of function
+    $gencode .= "}\n";
+
+    return $gencode;
+
+} # end of make_PDF_main_JAVA()
+
+
 
 
 # ----------------------------------------------------------------
@@ -329,6 +405,59 @@ sub make_PDF_distr_FORTRAN
 } # make_PDF_distr_FORTRAN()
 
 
+
+
+# ----------------------------------------------------------------
+# Print PDF code (JAVA version)
+
+sub make_PDF_distr_JAVA
+{
+    my $DISTR = $_[0];   # data for distributions
+    my $d = $_[1];       # distribution
+
+    my $gencode;         # code for creating PDFs
+
+    # Mark begin of distribution
+    $gencode .= make_bar("PDF $d: ".$DISTR->{$d}->{"=NAME"});
+
+    # Function header
+    $gencode .= get_PDFgen_funct_JAVA($d)."\n{\n";
+
+    # Print a short description of PDF
+    $gencode .= 
+	"\t_unur_acg_JAVA_print_sectionheader(out, 1, \"PDF for $d distribution.\");\n\n";
+
+    # compose PDF name
+    $gencode .= 
+	"\tfprintf (out,\"static double %s (double x)\\n{\\n\",".
+        " ((pdf) ? pdf : \"pdf_$d\") );\n";
+
+    # Constants (parameters)
+    $gencode .= 
+	"\tfprintf (out,\"\\t/* parameters for PDF */\\n\");\n";
+
+    #   List of parameters
+    $gencode .= make_PDF_params_JAVA($DISTR,$d);
+
+    #   Normalization constant
+    $gencode .= make_PDF_normconstant_JAVA($DISTR,$d);
+
+    # Body of PDF
+    $gencode .= make_PDF_body_JAVA($DISTR,$d);
+
+    # End of function
+    $gencode .= "\tfprintf (out,\"}\\n\");\n";
+    $gencode .= $empty_line;
+
+    $gencode .= "\n\treturn 1;\n";
+    $gencode .= "}\n";
+
+    return $gencode;
+    
+} # make_PDF_distr_JAVA()
+
+
+
 # ----------------------------------------------------------------
 # Get name of generation routine (C version)
 
@@ -351,6 +480,19 @@ sub get_PDFgen_funct_FORTRAN
     return "int _unur_acg_FORTRAN_PDF_$d (UNUR_DISTR *distr, FILE *out, const char *pdf)";
 
 } # end of get_PDFgen_funct_FORTRAN()
+
+
+# ----------------------------------------------------------------
+# Get name of generation routine (JAVA version)
+
+sub get_PDFgen_funct_JAVA
+{
+    my $d = $_[0];       # distribution
+
+    return "int _unur_acg_JAVA_PDF_$d (UNUR_DISTR *distr, FILE *out, const char *pdf)";
+
+} # end of get_PDFgen_funct_JAVA()
+
 
 
 # ----------------------------------------------------------------
@@ -439,6 +581,49 @@ sub make_PDF_params_FORTRAN
 } # end of make_PDF_params_FORTRAN()
 
 
+
+# ----------------------------------------------------------------
+# Process parameter list (JAVA version)
+
+sub make_PDF_params_JAVA
+{
+    my $DISTR = $_[0];    # data for distributions
+    my $d = $_[1];        # name of distribution
+
+    # whether we have variable number of parameters
+    my $have_n_params = ($DISTR->{$d}->{"=PDF"}->{"=BODY"} =~ /n_params/);
+
+    # parameter list
+    my $params;
+
+    my $n_in_params = $DISTR->{$d}->{"=PDF"}->{"=N_PARAMS"};
+    my $in_params = $DISTR->{$d}->{"=PDF"}->{"=PARAMS"};
+
+    foreach my $i (0 .. $n_in_params - 1) {
+
+	if ($have_n_params) {
+	    $params .=
+		"\tif (".$DISTR->{$d}->{"=PDF"}->{"=DISTR"}.".n_params > $i)\n".
+		"\t\tfprintf (out,\"\\tstatic final double ".
+		$in_params->[$i].
+		" = %.20e;\\n\",".
+		$DISTR->{$d}->{"=PDF"}->{"=DISTR"}.".params[$i]);\n";
+	}
+
+	else {
+	    $params .= 
+		"\tfprintf (out,\"\\tstatic final double ".
+	        $in_params->[$i].
+	        " = %.20e;\\n\",".
+	        $DISTR->{$d}->{"=PDF"}->{"=DISTR"}.".params[$i]);\n";
+	}
+    }
+
+    return $params;
+
+} # end of make_PDF_params_JAVA()
+
+
 # ----------------------------------------------------------------
 # Process normalization constants (C version)
 
@@ -485,6 +670,31 @@ sub make_PDF_normconstant_FORTRAN
 } # end of make_PDF_normconstant_FORTRAN()
 
 
+
+# ----------------------------------------------------------------
+# Process normalization constants (JAVA version)
+
+sub make_PDF_normconstant_JAVA
+{
+    my $DISTR = $_[0];    # data for distributions
+    my $distr = $_[1];    # name of distribution
+
+    if ($DISTR->{$distr}->{"=PDF"}->{"=CONST"}) {
+	if ($DISTR->{$distr}->{"=PDF"}->{"=BODY"} =~ /((LOG)?NORMCONSTANT)/) {
+	    return 
+		"\tfprintf (out,\"\\tstatic final double $1 = %.20e;\\n\\n\",".
+		$DISTR->{$distr}->{"=PDF"}->{"=CONST"}.");\n";
+	}
+    }
+
+    # else
+    return "";
+
+} # end of make_PDF_normconstant_JAVA()
+
+
+
+
 # ----------------------------------------------------------------
 # Process PDF body (C version)
 
@@ -518,6 +728,7 @@ sub make_PDF_body_C
     return $body;
 
 } # end of make_PDF_body_C()
+
 
 # ----------------------------------------------------------------
 # Process PDF body (FORTRAN version)
@@ -636,6 +847,46 @@ sub make_PDF_body_FORTRAN
 } # end of make_PDF_body_FORTRAN()
 
 
+
+# ----------------------------------------------------------------
+# Process PDF body (JAVA version)
+
+sub make_PDF_body_JAVA
+{
+    my $DISTR = $_[0];    # data for distributions
+    my $d = $_[1];        # name of distribution
+
+    # code for PDF as extracted from UNURAN library
+    my $in_body = $DISTR->{$d}->{"=PDF"}->{"=BODY"};
+
+    # at the moment we do DO NOT handle strings the following regular expression
+    if ($in_body =~ /if\s*\(\s*n_params\s*[<>=!]+\s*\d+\s*\)\s*\{/) {
+	die "cannot handle PDF body";
+    } 
+
+    # string for make PDF function
+    my $body = "\tfprintf (out,\"\\t/* compute PDF */\\n\");\n";
+
+    foreach my $l (split /\n/, $in_body) {
+	if ($l =~ /if\s*\(\s*n_params\s*[<>=!]+\s*\d+\s*\)/) {
+	    $l =~ s/n_params/$DISTR->{$d}->{"=PDF"}->{"=DISTR"}.n_params/;
+	    $l =~ s/  /\t/g;
+	    $body .= "$l\n\t";
+	    next;
+	}
+	$l =~ s/  /\\t/g;
+       
+        #remove declaratien "register"
+        $l =~ s/register//;
+
+	$body .= "\tfprintf (out,\"$l\\n\");\n";
+    }
+
+    return $body;
+
+} # end of make_PDF_body_JAVA()
+
+
 # ----------------------------------------------------------------
 # Make bar in PDFgen file
 
@@ -661,4 +912,16 @@ sub make_bar
 } # end of make_bar()
 
 # ----------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
 

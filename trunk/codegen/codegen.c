@@ -113,6 +113,7 @@ unur_acg_FORTRAN( struct unur_gen *gen, FILE *out, const char *distr_name )
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen        ... pointer to generator object                         */
+
      /*   out        ... output stream                                       */
      /*   distr_name ... name of distribution                                */
      /*                  (used to name routines, if NULL the UNURAN          */
@@ -170,7 +171,79 @@ unur_acg_FORTRAN( struct unur_gen *gen, FILE *out, const char *distr_name )
 
 } /* end of unur_acg_FORTRAN() */
 
+
 /*---------------------------------------------------------------------------*/
+
+
+int
+unur_acg_JAVA( struct unur_gen *gen, FILE *out, const char *distr_name )
+     /*----------------------------------------------------------------------*/
+     /* Automatic code generator (JAVA version)                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen        ... pointer to generator object                         */
+     /*   out        ... output stream                                       */
+     /*   distr_name ... name of distribution                                */
+     /*                  (used to name routines, if NULL the UNURAN          */
+     /*                   build-in name is used.)                            */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0                                                           */
+     /*----------------------------------------------------------------------*/
+{
+  char *pdf_name, *rand_name;     /* names for function */
+  int return_code;                /* exit status of routine */
+
+  /* check arguments */
+  _unur_check_NULL("unur_acg", gen, 0 );
+
+  /* make name of PDF function and sampling routine */
+  if (distr_name == NULL) 
+    distr_name = unur_distr_get_name( &(gen->distr) );
+
+  pdf_name = _unur_malloc((5+strlen(distr_name)) * sizeof(char));
+  sprintf(pdf_name,"pdf_%s",distr_name);
+
+  rand_name = _unur_malloc((6+strlen(distr_name)) * sizeof(char));
+  sprintf(rand_name,"rand_%s",distr_name);
+
+  /* make code */
+  switch (gen->method) {
+  case UNUR_METH_TDR:
+    return_code =
+      _unur_acg_JAVA_tdr_class_IV ( gen, out, rand_name, pdf_name ) &&
+      _unur_acg_JAVA_begin_class ( gen, out, rand_name, pdf_name ) &&
+      _unur_acg_JAVA_PDF ( &(gen->distr), out, pdf_name ) &&
+      _unur_acg_JAVA_tdr_ps( gen, out, rand_name, pdf_name ) &&
+      _unur_acg_JAVA_end_class ( gen, out, rand_name, pdf_name );
+    break;
+  default:
+    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"Cannot make generator code");
+    return_code = 0;
+  }
+
+  /* clear memory */
+  free(pdf_name);
+  free(rand_name);
+
+  /* make error message in source file if generation failed */
+  if (return_code == 0)
+    fprintf(out,"\n#error Sorry. Could not make generator code!!\n\n");
+
+  /* end */
+  _unur_acg_JAVA_print_sectionheader( out, 1, "End of Generator" );
+
+  return return_code;
+
+} /* end of unur_acg_JAVA() */
+
+/*---------------------------------------------------------------------------*/
+
+
 
 int
 _unur_acg_C_demo_urng( FILE *out )
@@ -305,6 +378,7 @@ _unur_acg_FORTRAN_demo_urng( FILE *out )
 
 /*---------------------------------------------------------------------------*/
 
+
 void
 _unur_acg_C_print_sectionheader( FILE *out, int n_lines, ... )
      /*----------------------------------------------------------------------*/
@@ -373,6 +447,42 @@ _unur_acg_FORTRAN_print_sectionheader( FILE *out, int n_lines, ... )
 
 } /* end of _unur_acg_FORTRAN_print_sectionheader() */
 
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_acg_JAVA_print_sectionheader( FILE *out, int n_lines, ... )
+     /*----------------------------------------------------------------------*/
+     /* print a section header with n_lines lines to output stream           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   out       ... output stream                                        */
+     /*   n_lines   ... number of lines                                      */
+     /*   ...       ... (optional) arguments to be be printed                */
+     /*----------------------------------------------------------------------*/
+{
+  char *string;     /* string to printed in section header   */
+  va_list ap;       /* pointer to variable list of arguments */
+  const char hrule[] = "/* ---------------------------------------------------------------- */\n";
+
+  /* start of variable parameter list */
+  va_start(ap, n_lines);
+
+  /* write into output stream */
+  fprintf (out, "\n");
+  fprintf (out, hrule);
+  for (; n_lines>0; n_lines--) {
+    string = va_arg( ap, char* );
+    fprintf(out,"/* %-64.64s */\n",string);
+  }
+  fprintf (out, hrule);
+  fprintf (out,"\n");
+        
+  /* end of variable parameter list */
+  va_end(ap);
+
+} /* end of _unur_acg_JAVA_print_sectionheader() */
+
 /*---------------------------------------------------------------------------*/
 
 void
@@ -402,3 +512,13 @@ _unur_acg_FORTRAN_print_double( FILE *out, double x )
 } /* end of _unur_acg_FORTRAN_print_double() */
 
 /*---------------------------------------------------------------------------*/
+
+
+
+
+
+
+
+
+
+

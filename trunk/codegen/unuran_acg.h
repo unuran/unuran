@@ -47,7 +47,15 @@ int unur_acg_FORTRAN( struct unur_gen *gen, FILE *out, const char *distr_name );
 /* Automatic code generator (FORTRAN version)                                */
 /*---------------------------------------------------------------------------*/
 
+int unur_acg_JAVA( struct unur_gen *gen, FILE *out, const char *distr_name );
+/*---------------------------------------------------------------------------*/
+/* Automatic code generator (JAVA version)                                   */
+/*---------------------------------------------------------------------------*/
+
 /*---------------------------------------------------------------------------*/
 #endif   /* __UNURAN_ACG_H_SEEN */ 
 /*---------------------------------------------------------------------------*/
+
+
+
 

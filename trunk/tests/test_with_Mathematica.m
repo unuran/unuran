@@ -99,7 +99,7 @@ UnurTestDistrResultFile["beta",BetaDistribution,{{1.,10.},{1.,100.}},50];
 UnurTestDistrResultFile["gamma",GammaDistribution,{{0.5,10.},{0.01,100.}},50];
 
 (* Normal *)
-UnurTestDistrResultFile["normal",NormalDistribution,{{0.5,10.},{0.01,100.}},5];
+UnurTestDistrResultFile["normal",NormalDistribution,{{0.5,10.},{0.01,100.}},50];
 
 Quit[]
 

@@ -79,12 +79,7 @@ _unur_pdf_uniform( double x, UNUR_DISTR *distr )
 { 
   register double *params = DISTR.params;
 
-  switch (DISTR.n_params) {
-  case 2:  /* non standard */
-    return ((x < a || x > b) ? 0. : 1./(b-a));
-  case 0: default: /* standard */
-    return ((x < 0. || x > 1.) ? 0. : 1.);
-  }
+  return ((x < a || x > b) ? 0. : 1./(b-a));
 } /* end of _unur_pdf_uniform() */
 
 /*---------------------------------------------------------------------------*/
@@ -102,15 +97,13 @@ _unur_cdf_uniform( double x, UNUR_DISTR *distr )
 { 
   register double *params = DISTR.params;
 
-  switch (DISTR.n_params) {
-  case 2:  /* non standard */
-    /* standardize */
-    x = (x-a) / (b-a);
-  case 0: default: /* standard */
-    if (x<=0.) return 0.;
-    if (x>=1.) return 1.;
-    return x;
-  }
+  /* standardize */
+  x = (x-a) / (b-a);
+
+  if (x<=0.) return 0.;
+  if (x>=1.) return 1.;
+  return x;
+
 } /* end of _unur_cdf_uniform() */
 
 /*---------------------------------------------------------------------------*/

@@ -108,13 +108,14 @@ _unur_pdf_normal( double x, UNUR_DISTR *distr )
 { 
   register double *params = DISTR.params;
 
-  switch (DISTR.n_params) {
-  case 2:  /* non standard */
+  if (DISTR.n_params > 0)
     /* standardize */
     x = (x - mu) / sigma;
-  case 0: default: /* standard */
-    return exp(-x*x/2. - LOGNORMCONSTANT); 
-  }
+
+  /* standard form */
+
+  return exp(-x*x/2. - LOGNORMCONSTANT); 
+
 } /* end of _unur_pdf_normal() */
 
 /*---------------------------------------------------------------------------*/
@@ -125,14 +126,16 @@ _unur_dpdf_normal( double x, UNUR_DISTR *distr )
   register double *params = DISTR.params;
   register double factor = 1.;
 
-  switch (DISTR.n_params) {
-  case 2:  /* non standard */
+  if (DISTR.n_params > 0) {
     /* standardize */
     factor = 1./sigma;
     x = (x - mu) / sigma;
-  case 0: default: /* standard */
-    return ( -x * exp(-x*x/2. - LOGNORMCONSTANT) * factor );
   }
+
+  /* standard form */
+
+  return ( -x * exp(-x*x/2. - LOGNORMCONSTANT) * factor );
+
 } /* end of _unur_dpdf_normal() */
 
 /*---------------------------------------------------------------------------*/
@@ -144,13 +147,14 @@ _unur_cdf_normal( double x, UNUR_DISTR *distr )
 {
   register double *params = DISTR.params;
 
-  switch (DISTR.n_params) {
-  case 2:  /* non standard */
+  if (DISTR.n_params > 0)
     /* standardize */
     x = (x - mu) / sigma;
-  case 0: default: /* standard */
-    return _unur_sf_cdfnormal(x);
-  }
+
+  /* standard form */
+
+  return _unur_sf_cdfnormal(x);
+
 } /* end of _unur_cdf_normal() */
 
 #endif

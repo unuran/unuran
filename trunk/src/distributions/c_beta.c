@@ -124,21 +124,25 @@ _unur_pdf_beta(double x, UNUR_DISTR *distr)
 { 
   register double *params = DISTR.params;
 
-  switch (DISTR.n_params) {
-  case 4:                /* non standard */
-    x = (x-a) / (b-a);   /* -> standardize */
-  case 2: default:       /* standard */
-    if (x > 0. && x < 1.)
-      return exp((p-1.)*log(x) + (q-1.)*log(1.-x) - LOGNORMCONSTANT);
-    if (x < 0. || x > 1.)
-      /* out of support */
-      return 0.;
-    if ( (x==0. && p==1.) || (x==1. && q==1.) )
-      return exp(-LOGNORMCONSTANT);
+  if (DISTR.n_params > 2)
+    /* standardize */
+    x = (x-a) / (b-a);
 
-    /* else */
+  /* standard form */
+
+  if (x > 0. && x < 1.)
+    return exp((p-1.)*log(x) + (q-1.)*log(1.-x) - LOGNORMCONSTANT);
+
+  if (x < 0. || x > 1.)
+    /* out of support */
     return 0.;
-  }
+
+  if ( (x==0. && p==1.) || (x==1. && q==1.) )
+    return exp(-LOGNORMCONSTANT);
+
+  /* else */
+  return 0.;
+
 } /* end of _unur_pdf_beta() */
 
 /*---------------------------------------------------------------------------*/
@@ -149,23 +153,29 @@ _unur_dpdf_beta(double x, UNUR_DISTR *distr)
   register double factor = 1.;
   register double *params = DISTR.params;
 
-  switch (DISTR.n_params) {
-  case 4:                /* non standard */
-    x = (x-a) / (b-a);   /* -> standardize */
+  if (DISTR.n_params > 2) {
+    /* standardize */
     factor = 1./(b-a);
-  case 2: default:       /* standard */
-    if (x > 0. && x < 1.)
-      return (exp((p-2.)*log(x) + (q-2.)*log(1.-x) - LOGNORMCONSTANT) * ( (p-1.)*(1.-x) - (q-1.)*x ) * factor );
-    if (x < 0. || x > 1.)
-      return 0.;      /* out of support */
-    if (x==0. && p==1.)
-      return (-(q-1.) * exp(-LOGNORMCONSTANT));
-    if (x==1. && q==1.)
-      return ((p-1.) * exp(-LOGNORMCONSTANT));
-
-    /* else */
-    return 0.;
+    x = (x-a) / (b-a);
   }
+
+  /* standard form */
+
+  if (x > 0. && x < 1.)
+    return (exp((p-2.)*log(x) + (q-2.)*log(1.-x) - LOGNORMCONSTANT) * ( (p-1.)*(1.-x) - (q-1.)*x ) * factor );
+
+  if (x < 0. || x > 1.)
+    return 0.;      /* out of support */
+
+  if (x==0. && p==1.)
+    return (-(q-1.) * exp(-LOGNORMCONSTANT));
+
+  if (x==1. && q==1.)
+    return ((p-1.) * exp(-LOGNORMCONSTANT));
+
+  /* else */
+  return 0.;
+
 } /* end of _unur_dpdf_beta() */
 
 /*---------------------------------------------------------------------------*/
@@ -177,16 +187,18 @@ _unur_cdf_beta(double x, UNUR_DISTR *distr)
 {
   register double *params = DISTR.params;
 
-  switch (DISTR.n_params) {
-  case 4:                /* non standard */
-    x = (x-a) / (b-a);   /* -> standardize */
-  case 2: default:       /* standard */
-    /* out of support of p.d.f.? */
-    if (x <= 0.) return 0.;
-    if (x >= 1.) return 1.;
+  if (DISTR.n_params > 2)
+    /* standardize */
+    x = (x-a) / (b-a);
 
-    return _unur_sf_incomplete_beta(x,p,q);
-  }
+  /* standard form */
+
+  /* out of support of p.d.f.? */
+  if (x <= 0.) return 0.;
+  if (x >= 1.) return 1.;
+
+  return _unur_sf_incomplete_beta(x,p,q);
+
 } /* end of _unur_cdf_beta() */
 
 #endif
@@ -257,14 +269,16 @@ _unur_upd_area_beta( UNUR_DISTR *distr )
 double
 _unur_lognormconstant_beta(double *params, int n_params)
 { 
-  switch (n_params) {
-  case 4:                /* non standard */
+  if (n_params > 2)
+    /* non-standard form */
     /* log( Beta(p,q) * (b-a) ) */
     return (_unur_sf_ln_gamma(p) + _unur_sf_ln_gamma(q) - _unur_sf_ln_gamma(p+q) + log(b-a) );
-  case 2: default:       /* standard */
+
+  else
+    /* standard form */
     /* log( Beta(p,q) ) */
     return (_unur_sf_ln_gamma(p) + _unur_sf_ln_gamma(q) - _unur_sf_ln_gamma(p+q));
-  }
+
 } /* end of _unur_lognormconstant_beta() */
 
 #endif

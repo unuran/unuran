@@ -80,12 +80,14 @@ _unur_pdf_cauchy(double x, UNUR_DISTR *distr)
 { 
   register double *params = DISTR.params;
 
-  switch (DISTR.n_params) {
-  case 2:                      /* non standard */
-    x = (x - theta) / lambda;  /* -> standardize */
-  case 0: default:             /* standard */
-    return (1./((1+x*x)*NORMCONSTANT));
-  }
+  if (DISTR.n_params > 0)
+    /* standardize */
+    x = (x - theta) / lambda; 
+
+  /* standard form */
+
+  return (1./((1+x*x)*NORMCONSTANT));
+
 } /* end of _unur_pdf_cauchy() */
 
 /*---------------------------------------------------------------------------*/
@@ -95,8 +97,11 @@ _unur_dpdf_cauchy(double x, UNUR_DISTR *distr)
 {
   register double *params = DISTR.params;
 
-  /* standardize */
-  x = (x - theta) / lambda;
+  if (DISTR.n_params > 0)
+    /* standardize */
+    x = (x - theta) / lambda; 
+
+  /* standard form */
 
   return ( -2.*x/(lambda*(1+x*x)*(1+x*x)*NORMCONSTANT) );
 
@@ -109,12 +114,14 @@ _unur_cdf_cauchy(double x, UNUR_DISTR *distr)
 {
   register double *params = DISTR.params;
 
-  switch (DISTR.n_params) {
-  case 2:                      /* non standard */
-    x = (x - theta) / lambda;  /* -> standardize */
-  case 0: default:             /* standard */
-    return ( 0.5 + atan(x)/M_PI );
-  }
+  if (DISTR.n_params > 0)
+    /* standardize */
+    x = (x - theta) / lambda; 
+
+  /* standard form */
+
+  return ( 0.5 + atan(x)/M_PI );
+
 } /* end of _unur_cdf_cauchy() */
 
 /*---------------------------------------------------------------------------*/

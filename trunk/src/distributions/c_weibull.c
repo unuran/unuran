@@ -96,19 +96,21 @@ _unur_pdf_weibull( double x, UNUR_DISTR *distr )
 { 
   register double *params = DISTR.params;
 
-  switch (DISTR.n_params) {
-  case 3:  /* non standard */
+  if (DISTR.n_params > 1)
     /* standardize */
     x = (x - zeta) / alpha;
-  case 1: default: /* standard */
-    if (x < 0.)
-      return 0.;
-    if (x==0. && c==1.)
-      return NORMCONSTANT;
 
-    /* else */
-    return (exp (-pow (x, c) + (c-1.) * log (x)) * NORMCONSTANT);
-  }
+  /* standard form */
+
+  if (x < 0.)
+    return 0.;
+
+  if (x==0. && c==1.)
+    return NORMCONSTANT;
+
+  /* else */
+  return (exp (-pow (x, c) + (c-1.) * log (x)) * NORMCONSTANT);
+
 } /* end of _unur_pdf_weibull() */
 
 /*---------------------------------------------------------------------------*/
@@ -120,21 +122,24 @@ _unur_dpdf_weibull( double x, UNUR_DISTR *distr )
   register double factor = 1.;
   register double xc;
 
-  switch (DISTR.n_params) {
-  case 3:  /* non standard */
+  if (DISTR.n_params > 1) {
     /* standardize */
     factor = 1. / alpha;
     x = (x - zeta) / alpha;
-  case 1: default: /* standard */
-    if (x < 0.)
-      return 0.;
-    if (x==0. && c==1.)
-      return 0.; 
-
-    /* else */
-    xc = -pow (x, c);
-    return (exp (xc + (c-2.) * log (x)) * (-1. - c * (xc-1.)) * NORMCONSTANT);
   }
+
+  /* standard form */
+
+  if (x < 0.)
+    return 0.;
+  
+  if (x==0. && c==1.)
+    return 0.; 
+
+  /* else */
+  xc = -pow (x, c);
+  return (exp (xc + (c-2.) * log (x)) * (-1. - c * (xc-1.)) * NORMCONSTANT);
+
 } /* end of unur_dpdf_weibull() */
 
 /*---------------------------------------------------------------------------*/
@@ -144,17 +149,18 @@ _unur_cdf_weibull( double x, UNUR_DISTR *distr )
 { 
   register double *params = DISTR.params;
 
-  switch (DISTR.n_params) {
-  case 3:  /* non standard */
+  if (DISTR.n_params > 1)
     /* standardize */
     x = (x - zeta) / alpha;
-  case 1: default: /* standard */
-    if (x <= 0.)
-      return 0.;
 
-    /* else */
-    return (1. - exp(-pow (x, c)));
-  }
+  /* standard form */
+
+  if (x <= 0.)
+    return 0.;
+
+  /* else */
+  return (1. - exp(-pow (x, c)));
+
 } /* end of _unur_cdf_weibull() */
 
 /*---------------------------------------------------------------------------*/

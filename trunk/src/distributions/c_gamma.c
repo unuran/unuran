@@ -120,18 +120,21 @@ _unur_pdf_gamma( double x, UNUR_DISTR *distr )
 { 
   register double *params = DISTR.params;
 
-  switch (DISTR.n_params) {
-  case 3:  /* non standard */
-  case 2:
-    x = (x-gamma) / beta;     /* standardize */
-  case 1: default: /* standard */
-    if (alpha == 1. && x >= 0.)
-      return exp( -x - LOGNORMCONSTANT);
-    if (x <= 0.)
-      return 0.;
-    return exp( (alpha-1.)*log(x) - x - LOGNORMCONSTANT);
-    /*    return ( pow(x,alpha-1.) * exp(-x) ); */
-  }
+  if (DISTR.n_params > 1)
+    /* standardize */
+    x = (x-gamma) / beta;
+
+  /* standard form */
+
+  if (alpha == 1. && x >= 0.)
+    return exp( -x - LOGNORMCONSTANT);
+
+  if (x <= 0.)
+    return 0.;
+
+  return exp( (alpha-1.)*log(x) - x - LOGNORMCONSTANT);
+  /*    return ( pow(x,alpha-1.) * exp(-x) ); */
+
 } /* end of _unur_pdf_gamma() */
 
 /*---------------------------------------------------------------------------*/
@@ -142,19 +145,22 @@ _unur_dpdf_gamma( double x, UNUR_DISTR *distr )
   register double factor = 1.;
   register double *params = DISTR.params;
 
-  switch (DISTR.n_params) {
-  case 3:  /* non standard */
-  case 2:
+  if (DISTR.n_params > 1) {
+    /* standardize */
     factor = 1./beta;
-    x = (x-gamma) / beta;     /* standardize */
-  case 1: default: /* standard */
-    if (alpha == 1. && x >= 0.)
-      return( -exp(-x - LOGNORMCONSTANT) * factor );
-    if (x <= 0.)
-      return 0.;
-
-    return ( exp( log(x) * (alpha-2.) - x - LOGNORMCONSTANT) *  ((alpha-1.) -x) * factor ); 
+    x = (x-gamma) / beta;
   }
+
+  /* standard form */
+
+  if (alpha == 1. && x >= 0.)
+    return( -exp(-x - LOGNORMCONSTANT) * factor );
+
+  if (x <= 0.)
+    return 0.;
+
+  return ( exp( log(x) * (alpha-2.) - x - LOGNORMCONSTANT) *  ((alpha-1.) -x) * factor ); 
+
 } /* end of _unur_dpdf_gamma() */
 
 /*---------------------------------------------------------------------------*/
@@ -166,16 +172,17 @@ _unur_cdf_gamma( double x, UNUR_DISTR *distr )
 { 
   register double *params = DISTR.params;
 
-  switch (DISTR.n_params) {
-  case 3:  /* non standard */
-  case 2:
-    x = (x-gamma) / beta;     /* standardize */
-  case 1: default: /* standard */
-    if (x <= 0.)
-      return 0.;
+  if (DISTR.n_params > 1)
+    /* standardize */
+    x = (x-gamma) / beta;
 
-    return _unur_sf_incomplete_gamma(x,alpha);
-  }
+  /* standard form */
+
+  if (x <= 0.)
+    return 0.;
+
+  return _unur_sf_incomplete_gamma(x,alpha);
+
 } /* end of _unur_cdf_gamma() */
 
 #endif
@@ -190,6 +197,7 @@ _unur_upd_mode_gamma( UNUR_DISTR *distr )
   DISTR.mode = (alpha >= 1.) ? (alpha - 1.) : 0.;
 
   if (DISTR.n_params > 1)
+    /* de-standardize */
     DISTR.mode = DISTR.mode * beta + gamma;
 
   /* mode must be in domain */
@@ -232,13 +240,14 @@ _unur_upd_area_gamma( UNUR_DISTR *distr )
 double
 _unur_lognormconstant_gamma( double *params, int n_params )
 {
-  switch (n_params) {
-  case 3:  /* non standard */
-  case 2:
+  if (n_params > 1)
+    /* non-standard form */
     return ( _unur_sf_ln_gamma(alpha) + log(beta) );
-  case 1: default: /* standard */
+
+  else
+    /* standard form */
     return (_unur_sf_ln_gamma(alpha));
-  }
+
 } /* end of _unur_lognormconstant_gamma() */
 
 #endif

@@ -92,12 +92,14 @@ _unur_pdf_exponential( double x, UNUR_DISTR *distr )
 {
   register double *params = DISTR.params;
 
-  switch (DISTR.n_params) {
-  case 2:                  /* non standard */
-    x = (x-theta) / sigma; /* -> standardize */
-  case 0: default:         /* standard */
-    return ( (x<0.) ? 0. : exp(-x) / sigma );
-  }
+  if (DISTR.n_params > 0)
+    /* standardize */
+    x = (x - theta) / sigma;
+
+  /* standard form */
+  
+  return ( (x<0.) ? 0. : exp(-x) / sigma );
+
 } /* end of _unur_pdf_exponential() */
 
 /*---------------------------------------------------------------------------*/
@@ -107,12 +109,14 @@ _unur_dpdf_exponential( double x, UNUR_DISTR *distr )
 {
   register double *params = DISTR.params;
 
-  switch (DISTR.n_params) {
-  case 2:                  /* non standard */
+  if (DISTR.n_params > 0)
+    /* non-standard form */
     return ( (x<theta) ? 0. : -exp( -(x-theta)/sigma ) / (sigma*sigma));
-  case 0: default:         /* standard */
+
+  else
+    /* standard form */
     return ( (x<0.) ? 0. : -exp(-x) );
-  }
+
 } /* end of _unur_dpdf_exponential() */
 
 /*---------------------------------------------------------------------------*/
@@ -122,12 +126,14 @@ _unur_cdf_exponential( double x, UNUR_DISTR *distr )
 {
   register double *params = DISTR.params;
 
-  switch (DISTR.n_params) {
-  case 2:                  /* non standard */
-    x = (x-theta) / sigma; /* -> standardize */
-  case 0: default:         /* standard */
-    return ( (x<0.) ? 0. : 1.-exp(-x) );
-  }
+  if (DISTR.n_params > 0)
+    /* standardize */
+    x = (x - theta) / sigma;
+
+  /* standard form */
+  
+  return ( (x<0.) ? 0. : 1.-exp(-x) );
+
 } /* end of _unur_cdf_exponential() */
 
 /*---------------------------------------------------------------------------*/

@@ -103,16 +103,17 @@ _unur_pdf_extremeII( double x, UNUR_DISTR *distr )
   register double xk;
   register double *params = DISTR.params;
 
-  switch (DISTR.n_params) {
-  case 3:  /* non standard */
+  if (DISTR.n_params > 1)
     /* standardize */
     x = (x - zeta) / theta;
-  case 1: default: /* standard */
-    if (x<=0.) return 0.;
 
-    xk = pow( x, -k - 1.);
-    return ( exp( -xk * x) * xk * k / theta );
-  }
+  /* standard form */
+
+  if (x<=0.) return 0.;
+
+  xk = pow( x, -k - 1.);
+  return ( exp( -xk * x) * xk * k / theta );
+
 } /* end of _unur_pdf_extremeII() */
 
 /*---------------------------------------------------------------------------*/
@@ -123,17 +124,19 @@ _unur_dpdf_extremeII( double x, UNUR_DISTR *distr )
   register double xk;
   register double *params = DISTR.params;
 
-  switch (DISTR.n_params) {
-  case 3:  /* non standard */
+  if (DISTR.n_params > 1) {
     /* standardize */
     factor = 1. / theta;
     x = (x - zeta) / theta;
-  case 1: default: /* standard */
-    if (x<=0.) return 0.;
-
-    xk = pow( x, -k);
-    return ( -exp(xk) * k * pow( x, -2.*(k+1.) ) * (xk + k*(xk-1.)) * factor );
   }
+
+  /* standard form */
+
+  if (x<=0.) return 0.;
+
+  xk = pow( x, -k);
+  return ( -exp(xk) * k * pow( x, -2.*(k+1.) ) * (xk + k*(xk-1.)) * factor );
+
 } /* end of unur_dpdf_extremeII() */
 
 /*---------------------------------------------------------------------------*/
@@ -143,15 +146,16 @@ _unur_cdf_extremeII( double x, UNUR_DISTR *distr )
 { 
   register double *params = DISTR.params;
 
-  switch (DISTR.n_params) {
-  case 3:  /* non standard */
+  if (DISTR.n_params > 1)
     /* standardize */
     x = (x - zeta) / theta;
-  case 1: default: /* standard */
-    if (x<=0.) return 0.;
 
-    return ( exp( -pow( x, -k ) ) );
-  }
+  /* standard form */
+
+  if (x<=0.) return 0.;
+
+  return ( exp( -pow( x, -k ) ) );
+
 } /* end of _unur_cdf_extremeII() */
 
 /*---------------------------------------------------------------------------*/

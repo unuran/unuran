@@ -99,13 +99,14 @@ _unur_pdf_extremeI( double x, UNUR_DISTR *distr )
 { 
   register double *params = DISTR.params;
 
-  switch (DISTR.n_params) {
-  case 2:  /* non standard */
+  if (DISTR.n_params > 0)
     /* standardize */
     x = (x - zeta) / theta;
-  case 0: default: /* standard */
-    return ( exp( -exp(-x) - x ) / theta );
-  }
+
+  /* standard form */
+
+  return ( exp( -exp(-x) - x ) / theta );
+
 } /* end of _unur_pdf_extremeI() */
 
 /*---------------------------------------------------------------------------*/
@@ -117,15 +118,17 @@ _unur_dpdf_extremeI( double x, UNUR_DISTR *distr )
   register double expx;
   register double *params = DISTR.params;
 
-  switch (DISTR.n_params) {
-  case 2:  /* non standard */
+  if (DISTR.n_params > 0) {
     /* standardize */
     factor = 1. / (theta * theta);
     x = (x - zeta) / theta;
-  case 0: default: /* standard */
-    expx = exp(-x);
-    return ( exp( -expx + x ) * (expx - 1.) * factor );
   }
+
+  /* standard form */
+
+  expx = exp(-x);
+  return ( exp( -expx + x ) * (expx - 1.) * factor );
+
 } /* end of unur_dpdf_extremeI() */
 
 /*---------------------------------------------------------------------------*/
@@ -135,13 +138,14 @@ _unur_cdf_extremeI( double x, UNUR_DISTR *distr )
 { 
   register double *params = DISTR.params;
 
-  switch (DISTR.n_params) {
-  case 2:  /* non standard */
+  if (DISTR.n_params > 0)
     /* standardize */
     x = (x - zeta) / theta;
-  case 0: default: /* standard */
-    return exp( -exp( -x) );
-  }
+
+  /* standard form */
+
+  return exp( -exp( -x) );
+
 } /* end of _unur_cdf_extremeI() */
 
 /*---------------------------------------------------------------------------*/

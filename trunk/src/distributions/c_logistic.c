@@ -95,14 +95,15 @@ _unur_pdf_logistic( double x, UNUR_DISTR *distr )
   register double *params = DISTR.params;
   register double ex;
 
-  switch (DISTR.n_params) {
-  case 2:  /* non standard */
+  if (DISTR.n_params > 0)
     /* standardize */
     x = (x - alpha) / beta;
-  case 0: default: /* standard */
-    ex = exp(-x);
-    return (NORMCONSTANT * ex / ((1. + ex) * (1. + ex)));
-  }
+
+  /* standard form */
+
+  ex = exp(-x);
+  return (NORMCONSTANT * ex / ((1. + ex) * (1. + ex)));
+
 } /* end of _unur_pdf_logistic() */
 
 /*---------------------------------------------------------------------------*/
@@ -114,15 +115,17 @@ _unur_dpdf_logistic( double x, UNUR_DISTR *distr )
   register double factor = 1.;
   register double ex;
 
-  switch (DISTR.n_params) {
-  case 2:  /* non standard */
+  if (DISTR.n_params > 0) {
     /* standardize */
     factor = 1. / beta;
     x = (x - alpha) / beta;
-  case 0: default: /* standard */
-    ex = exp(x);
-    return (factor * NORMCONSTANT * ex * (1. - ex) / ((1.+ex)*(1.+ex)*(1.+ex)));
   }
+
+  /* standard form */
+
+  ex = exp(x);
+  return (factor * NORMCONSTANT * ex * (1. - ex) / ((1.+ex)*(1.+ex)*(1.+ex)));
+
 } /* end of unur_dpdf_logistic() */
 
 /*---------------------------------------------------------------------------*/
@@ -132,13 +135,14 @@ _unur_cdf_logistic( double x, UNUR_DISTR *distr )
 { 
   register double *params = DISTR.params;
 
-  switch (DISTR.n_params) {
-  case 2:  /* non standard */
+  if (DISTR.n_params > 0)
     /* standardize */
     x = (x - alpha) / beta;
-  case 0: default: /* standard */
-    return ( 1. / (1. + exp(-x)) );
-  }
+
+  /* standard form */
+
+  return ( 1. / (1. + exp(-x)) );
+
 } /* end of _unur_cdf_logistic() */
 
 /*---------------------------------------------------------------------------*/

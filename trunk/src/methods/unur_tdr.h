@@ -54,6 +54,7 @@ struct unur_tdr_par {
   int     n_starting_cpoints;   /* number of construction points at start    */
   int     max_ivs;              /* maximum number of intervals               */
   double  max_ratio;            /* bound for ratio r_n = Atotal / Asqueeze   */
+  double  bound_for_adding;     /* lower bound for relative area             */
 
   double  c_T;                  /* parameter c for transformation T_c        */           
 };
@@ -102,6 +103,7 @@ struct unur_tdr_gen {
   int     n_ivs;                /* number of intervals                       */
   int     max_ivs;              /* maximum number of intervals               */
   double  max_ratio;            /* bound for ratio r_n = Atotal / Asqueeze   */
+  double  bound_for_adding;     /* lower bound for relative area             */
 
   struct unur_tdr_interval **guide; /* pointer to guide table                */
   int     guide_size;           /* size of guide table                       */

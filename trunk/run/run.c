@@ -36,20 +36,34 @@ int main()
   UNUR_GEN   *gen;      /* generator */
   UNUR_URNG *urng;      
 
-  distr = unur_distr_cauchy(NULL,0);
-  unur_distr_cont_set_domain(distr,0.1,1.);
-  unur_distr_cont_upd_mode(distr);
-  unur_distr_cont_upd_pdfarea(distr);
+  fpm[0] = 1.;
+  fpm[1] = 4.;
 
-  par = unur_cstd_new(distr);
-  fpm[0] = 2.;
-  fpm[1] = 5.;
+  distr = unur_distr_uniform(fpm,2);
+  par = unur_utdr_new(distr);
   gen = unur_init(par);
-  unur_cstd_chg_pdfparams(gen,fpm,2);
-
-  unur_test_chi2( gen, 100, 0, 0, 1 );
-
+  unur_test_chi2( gen, 10, 100, 0, 1 );
   unur_free(gen);
+  unur_distr_free(distr);
+
+  
+
+  distr = unur_distr_uniform(NULL,0);
+  par = unur_utdr_new(distr);
+  gen = unur_init(par);
+  if (gen) {
+    unur_utdr_chg_pdfparams(gen,fpm,2);
+    unur_utdr_upd_pdfarea(gen);
+    unur_utdr_upd_mode(gen);
+    unur_utdr_reinit(gen);  
+  }
+  else {
+    printf("error!!!\n");
+    return 0;
+  }
+  unur_test_chi2( gen, 10, 100, 0, 1 );
+  unur_free(gen);
+  unur_distr_free(distr);
 
 
 #if 0
@@ -110,7 +124,6 @@ int main()
   */
 
 
-  unur_distr_free(distr);
   exit (0);
 }
 

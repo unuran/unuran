@@ -103,6 +103,10 @@ int unur_utdr_reinit( UNUR_GEN *generator );
    a new one from scratch.
    If reinitialization has been successful @code{1} is returned,
    in case of a failure @code{0} is returned.
+
+   @emph{Important:} Do not use the @var{generator} object for
+   sampling after a failed reinit, since otherwise it may produce
+   garbage.
 */
 
 int unur_utdr_set_pdfatmode( UNUR_PAR *parameters, double fmode );

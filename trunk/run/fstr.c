@@ -1,3 +1,192 @@
+/*  FunctDefinition ::= DefFunctDesignator '=' Expression               */
+     /*                    '='                                               */
+     /*                   /   \                                              */
+     /*  DefFunctDesignator     Expression                                   */
+
+/*  DefFunctDesignator ::= Identifier '(' DefParameterlist ')'          */
+     /*                                                                      */
+     /*       Identifier                                                     */
+     /*      /          \                                                    */
+     /*  NULL            DefParameterlist                                    */
+     /*                                                                      */
+
+/*  DefParameterlist ::= '(' Identifier [ ',' Identifier ] ')'          */
+     /*                                                                      */
+     /*       Identifier                                 ','                 */
+     /*      /          \      or:                      /   \                */
+     /*  NULL            NULL      more identifiers tree     Identifier      */
+     /*                                                     /          \     */
+     /*                                                 NULL            NULL */
+
+/* Expression ::= SimpleExpression [ RelationOperator SimpleExpression ] */ 
+     /*                                                                      */
+     /*                                    RelationOperator                  */
+     /* SimpleExpression  or:             /                \                 */
+     /*                   SimpleExpression                  SimpleExpression */
+     /*                                                                      */
+
+/*  SimpleExpression ::= STerm { AddingOperator Term }                  */
+     /*                                                                      */
+     /*                                AddingOperator                        */
+     /*  STerm  or:                   /              \                       */
+     /*                more terms tree                Term                   */
+     /*                                                                      */
+
+/*  STerm ::= [ '+' | '-' ] Term                                        */
+     /*                                                                      */
+     /*                        '-'                                           */
+     /*  Term  or:            /   \                                          */
+     /*                    '0'     Term                                      */
+     /*                   /   \                                              */
+     /*               NULL     NULL                                          */
+     /*                                                                      */
+
+/*  Term ::= Factor [ MultiplyingOperator Factor ]                      */
+     /*                                                                      */
+     /*                                   MultiplyingOperator                */
+     /*  Factor  or:                     /                   \               */
+     /*                 more factors tree                     Factor         */
+     /*                                                                      */
+
+/*  Factor ::= Base [ '^' Exponent ]                                    */
+     /*                                                                      */
+     /*                          '^'                                         */
+     /*  Bas_Exp  or:           /   \                                        */
+     /*                  Bas_Exp     Bas_Exp                                 */
+     /*                                                                      */
+
+/*  Base ::= Exponent                                                   */
+     /*  Exponent ::= UnsignedConstant | Identifier | FunctDesignator |      */ 
+     /*               "not" Base | '(' Expression ')'                        */ 
+     /*                                                                      */
+     /*       UnsignedConstant                Identifier                     */
+     /*      /                \      or     /          \       or            */
+     /*  NULL                  NULL      NULL            NULL                */
+     /*                                                                      */
+     /*                              "not"                                   */
+     /*  FunctDesignator    or      /     \         or   Expression          */
+     /*                         NULL       Bas_Exp                           */
+     /*                                                                      */
+
+/*  FunctDesignator ::= FuncIdentifier '(' ActualParameterlist ')'      */
+     /*                                                                      */
+     /*       Identifier                                                     */
+     /*      /          \                                                    */
+     /*  NULL            ActualParameterlist                                 */
+     /*                                                                      */
+
+/*  ActualParameterlist ::= ActualParameter [ ',' ActualParameter ]     */
+     /*                                                                      */
+     /*                                           ','                        */
+     /*  Expression  or:                         /   \                       */
+     /*                     more expressions tree     Expression             */
+     /*                                                                      */
+
+/*   UnsignedConstant ::= UnsignedInteger | UnsignedReal                */
+/*   UnsignedInteger  ::= DigitSequence                                 */
+/*   UnsignedReal ::= UnsignedInteger ['.' DigitSequence] ['e' ScaleFactor] */
+/*   DigitSequence ::= Digit [ Digit [...] ]                            */
+/*   Digit         ::= '0' | '1' | '2' | ... | '8' | '9'                */
+/*   ScaleFactor ::= [Sign] DigitSequence                               */
+/*   Sign        ::= '+' | '-'                                          */
+/*   Identifier ::= Letter [ Letter | Digit [...] ]                     */
+/*   Letter     ::= 'a' | 'b' | ... | 'z' | '_'                         */
+/*   RelationOperator ::= RelationChar [ RelationChar ]                 */ 
+/*   RelationChar     ::= '<' | '=' | '>'                               */
+
+/** Simplification **/
+
+  /*             Exp                    Exp
+   *            /   \                  /   \ 
+   *        NULL    ','       ==>     X     Y
+   *               /   \ 
+   *              X     Y
+   */ 
+
+  /*          Operator            Operator
+   *            /   \      or      /   \        ==>     Const (result of computation)
+   *       Const     Const     NULL     Const
+   */ 
+
+  /*          '+'               '*'
+   *         /   \      or     /   \        ==>     X
+   *        0     X           1     X
+   */ 
+
+  /*          '+'               '-'  
+   *         /   \      or     /   \      or
+   *        X     0           X     0
+   *
+   *          '*'               '/'         
+   *         /   \      or     /   \      or
+   *        X     1           X     1       
+   *
+   *          '^'               "mod"
+   *         /   \      or     /     \    ==>     X
+   *        X     1           X       1
+   */ 
+
+  /*          '*'               '*'         
+   *         /   \      or     /   \      or
+   *        0     X           X     0       
+   *
+   *          '/'               '^'         
+   *         /   \      or     /   \      or
+   *        0     X           0     X       
+   *
+   *         "and"             "and"         
+   *         /   \      or     /   \      or
+   *        0     X           X     0       
+   *
+   *         "mod"      
+   *         /   \                        ==>     0
+   *        0     X     
+   */
+
+  /*          '^'               '^'
+   *         /   \      or     /   \        ==>     1
+   *        X     0           1     X
+   */ 
+
+  /*              '/'              
+   *          ___/   \___
+   *         /           \ 
+   *        X             X        ==>     1     
+   *       / \           / \
+   *   NULL   NULL   NULL   NULL
+   */ 
+
+/** Reorganization**/
+
+  /*            '+'                  '-'  
+   *           /   \                /   \ 
+   *          X    '-'      ==>    X     Y
+   *              /   \
+   *             0     Y
+   */ 
+
+  /*            '-'                  '+'  
+   *           /   \                /   \ 
+   *          X    '-'      ==>    X     Y
+   *              /   \
+   *             0     Y
+   */ 
+
+  /*            '+'                  '-'  
+   *           /   \                /   \ 
+   *         '-'    Y     ==>      Y     X
+   *        /   \
+   *       0     X
+   */ 
+
+  /*            '*'                  '-'  
+   *           /   \                /   \ 
+   *          X    '-'      ==>    0    '*'
+   *              /   \                /   \
+   *             0     Y              X     Y
+   */ 
+
+
 /*---------------------------------------------------------------------------*/
 
 #include <ctype.h>
@@ -40,6 +229,7 @@ static double v_tan    (double l, double r);
 static double v_sec    (double l, double r); 
 static double v_sqr    (double l, double r);
 static double v_abs    (double l, double r);
+static double v_sgn    (double l, double r);
 
 /*---------------------------------------------------------------------------*/
 /* functions for compting derivatives                                        */
@@ -151,7 +341,7 @@ static struct symbols symbol[] = {
   {"*"   , S_MUL_OP  , 4, 0.0 , v_mul    , d_mul   },
   {"/"   , S_MUL_OP  , 4, 0.0 , v_div    , d_div   },
   {"^"   , S_HPR_OP  , 5, 0.0 , v_power  , d_power },
-  {"_ANS" , S_NOSYMBOL, 0, 0.0 , v_dummy  , d_dummy }, /* marker for alphanumeric symbols */
+  {"_ANS", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_dummy }, /* marker for alphanumeric symbols */
   {"mod" , S_MUL_OP  , 4, 0.0 , v_mod    , d_const },
 
   /* logical operators */
@@ -174,6 +364,7 @@ static struct symbols symbol[] = {
   {"sec" , S_SFUNCT  , 1, 0.0 , v_sec    , d_sec   },
   {"sqr" , S_SFUNCT  , 1, 0.0 , v_sqr    , d_sqr   },
   {"abs" , S_SFUNCT  , 1, 0.0 , v_abs    , d_abs   },
+  {"sgn" , S_SFUNCT  , 1, 0.0 , v_sgn    , d_const },
 
   /* marker for end-of-table */
   {"_END", S_NOSYMBOL, 0, 0.0 , v_dummy  , d_dummy },
@@ -471,12 +662,15 @@ static void _unur_fstr_debug_show_tree(const struct parser_data *pdata,
 
 struct ftreenode *
 _unur_fstr2tree(char *functstr)
-
-/*  Wandelt den String 'functstr' in einen Parse-Baum um. 'functstr' muss 
- *  in der Form f(a,b,...)=Expression vorliegen. In *errcodep und *errposp 
- *  wird im Fehlerfall eine Fehlernummer und die -position im String 
- *  'functstr' zurueckgegeben, sonst ist *errcodep Null. 
- */ 
+     /*----------------------------------------------------------------------*/
+     /* Compute funtion tree from string.                                    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   functstr ... string containing function definition                 */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to root of function tree                                   */
+     /*----------------------------------------------------------------------*/
 { 
   struct parser_data *pdata;
   struct ftreenode *root;
@@ -2022,6 +2216,47 @@ _unur_fstr_reorganize (struct ftreenode *node)
 /*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/
+/** Routines for evaluating nodes of the function tree                      **/
+/*****************************************************************************/
+
+/*---------------------------------------------------------------------------*/
+
+double v_dummy  (double l, double r) { return 0.; }
+double v_const  (double l, double r) { return 0.; }  /* nothing to do, value in node */
+
+double v_less   (double l, double r) { return (double)(l <  r); }
+double v_equal  (double l, double r) { return (double)(l == r); }
+double v_greater(double l, double r) { return (double)(l >  r); }
+double v_less_or(double l, double r) { return (double)(l <= r); }
+double v_unequal(double l, double r) { return (double)(l != r); }
+double v_grtr_or(double l, double r) { return (double)(l >= r); }
+
+double v_or     (double l, double r) { return (double)((int)l || (int)r);  }
+double v_xor    (double l, double r) { return (double)((l==0 && r!=0) || (l!=0 && r== 0)); }
+double v_and    (double l, double r) { return (double)((int)l && (int)r); }
+double v_not    (double l, double r) { return (double)(!((int)r))   ; }
+
+double v_plus   (double l, double r) { return (l + r); }
+double v_minus  (double l, double r) { return (l - r); }
+double v_mul    (double l, double r) { return (l * r); }
+double v_div    (double l, double r) { return (l / r); }
+double v_power  (double l, double r) { return pow(l,r); }
+double v_mod    (double l, double r) { return (double)((int)l % (int)r); }
+
+double v_exp    (double l, double r) { return exp(r); }
+double v_ln     (double l, double r) { return log(r); }
+double v_log    (double l, double r) { return log(r)/log(l); }
+double v_sin    (double l, double r) { return sin(r); }
+double v_cos    (double l, double r) { return cos(r); }
+double v_tan    (double l, double r) { return tan(r); }
+double v_sec    (double l, double r) { return 1./cos(r); }
+double v_sqr    (double l, double r) { return sqrt(r); }
+double v_abs    (double l, double r) { return abs(r); }
+double v_sgn    (double l, double r) { return ((r<0.) ? -1. : ((r>0.) ? 1. : 0.)); }
+
+/*---------------------------------------------------------------------------*/
+
+/*****************************************************************************/
 /** Error                                                                   **/
 /*****************************************************************************/
 
@@ -2293,33 +2528,6 @@ _unur_fstr_debug_show_tree(const struct parser_data *pdata,
 /** BAUSTELLE                                                               **/
 /*****************************************************************************/
 
-double v_dummy  (double l, double r) { return 0.0; }
-double v_less   (double l, double r) { return (l <  r); }
-double v_equal  (double l, double r) { return (l == r); }
-double v_greater(double l, double r) { return (l  > r); }
-double v_less_or(double l, double r) { return (l <= r); }
-double v_unequal(double l, double r) { return (l != r); }
-double v_grtr_or(double l, double r) { return (l >= r); }
-double v_or   (double l, double r) { return   l || r;  }
-double v_xor  (double l, double r) { return !(l == r); }
-double v_plus (double l, double r) { return   l +  r;  }
-double v_minus(double l, double r) { return   l -  r;  }
-double v_mul(double l, double r) { return l *  r; }
-double v_and(double l, double r) { return (double)((int)l && (int)r); }
-double v_div(double l, double r) { return l /  r; }
-double v_mod(double l, double r) { return (double)((int)l % (int)r); }
-double v_power(double l, double r) { return pow(l,r); }
-double v_not  (double l, double r) { return (double)(!(int)r)   ; }
-double v_const (double l, double r) { return 0.0; }   /** nothing TODO, value in node **/
-double v_exp (double l, double r) { return exp (  r); }
-double v_ln  (double l, double r) { return log (  r); }
-double v_log (double l, double r) { return log (r)/log(l); }
-double v_sin (double l, double r) { return sin (  r); }
-double v_cos (double l, double r) { return cos (  r); }
-double v_tan (double l, double r) { return tan (  r); }
-double v_sec (double l, double r) { return 1/cos( r); }
-double v_sqr (double l, double r) { return sqrt(  r); }
-double v_abs (double l, double r) { return abs (  r); }
 
 /**************** ****************** ****************** *****************/
 

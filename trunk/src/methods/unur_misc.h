@@ -52,10 +52,16 @@
 
 /*---------------------------------------------------------------------------*/
 /* set debugging flag for generator                                          */
+/*
+ =INT
+ */
 int unur_set_debug( UNUR_PAR *parameters, unsigned debug );
 int unur_chg_debug( UNUR_GEN *generator, unsigned debug );
 int unur_set_default_debug( unsigned debug );
 extern unsigned _unur_default_debugflag;     /* default debugging flags      */
+/*
+ =END
+ */
 
 /* common debug flags                                                        */
 #define UNUR_DEBUG_INIT    0x00000001u    /* bit  01 ... pameters of generator */

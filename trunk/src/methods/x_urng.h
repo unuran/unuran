@@ -243,6 +243,12 @@ int unur_set_urng( UNUR_PAR *parameters, UNUR_URNG *urng );
 /*
   Use the URNG @code{urng} for the new generator. This overwrite the
   default URNG. It also sets the auxiliary URNG to @code{urng}.
+
+  @emph{Important}: For multivariate distributions that use 
+  marginal distributions this call does not work properly.
+  It is then better first to create the generator object (by
+  a unur_init() call) and then change the URNG by means of 
+  unur_chg_urng().
 */
 
 UNUR_URNG *unur_chg_urng( UNUR_GEN *generator, UNUR_URNG *urng );

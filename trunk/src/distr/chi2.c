@@ -124,14 +124,8 @@ unur_distr_chisquare( double *params, int n_params )
     return NULL;
   }
 
-  /* allocate structure */
-  distr = _unur_malloc( sizeof(struct unur_distr) );
-
-  /* set magic cookie */
-  COOKIE_SET(distr,CK_DISTR_CONT);
-
-  /* set type of distribution */
-  distr->type = UNUR_DISTR_CONT;
+  /* get new (empty) distribution object */
+  distr = unur_distr_cont_new();
 
   /* set distribution id */
   distr->id = UNUR_DISTR_CHISQUARE;
@@ -157,8 +151,9 @@ unur_distr_chisquare( double *params, int n_params )
   DISTR.n_params = n_params;
 
   /* mode and area below p.d.f. */
-  DISTR.mode = 0.;    /* unur_mode_chisquared(DISTR.params,DISTR.n_params); */
-  DISTR.area = 1.;    /* unur_area_chisquared(DISTR.params,DISTR.n_params); */
+  /** TODO **/
+  /* DISTR.mode = unur_mode_chisquared(DISTR.params,DISTR.n_params); */
+  /* DISTR.area = unur_area_chisquared(DISTR.params,DISTR.n_params); */
 
   /* domain */
   DISTR.domain[0] = 0        ;   /* left boundary  */

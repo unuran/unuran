@@ -100,14 +100,8 @@ unur_distr_lomax( double *params, int n_params )
   }
   CHECK_NULL(params,RETURN_NULL);
 
-  /* allocate structure */
-  distr = _unur_malloc( sizeof(struct unur_distr) );
-
-  /* set magic cookie */
-  COOKIE_SET(distr,CK_DISTR_CONT);
-
-  /* set type of distribution */
-  distr->type = UNUR_DISTR_CONT;
+  /* get new (empty) distribution object */
+  distr = unur_distr_cont_new();
 
   /* set distribution id */
   distr->id = UNUR_DISTR_LOMAX;
@@ -118,7 +112,7 @@ unur_distr_lomax( double *params, int n_params )
   /* functions */
   DISTR.pdf  = unur_pdf_lomax;  /* pointer to p.d.f.               */
   DISTR.dpdf = unur_dpdf_lomax; /* pointer to derivative of p.d.f. */
-  DISTR.cdf  = NULL;            /* pointer to c.d.f.               */
+  /* DISTR.cdf = unur_cdf_lomax; pointer to c.d.f.               */
 
   /* default parameters */
   DISTR.params[1] = 1.;        /* default for C */
@@ -142,8 +136,8 @@ unur_distr_lomax( double *params, int n_params )
   DISTR.n_params = n_params;
 
   /* mode and area below p.d.f. */
-  DISTR.mode = 0.;   /* unur_mode_lomax(DISTR.params,DISTR.n_params); */
-  DISTR.area = 1.;   /* unur_area_lomax(DISTR.params,DISTR.n_params); */
+  /* DISTR.mode = unur_mode_lomax(DISTR.params,DISTR.n_params); */
+  /* DISTR.area = unur_area_lomax(DISTR.params,DISTR.n_params); */
 
   /* domain */
   DISTR.domain[0] = 0;               /* left boundary  */

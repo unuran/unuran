@@ -211,14 +211,8 @@ unur_distr_gamma( double *params, int n_params )
     return NULL;
   }
 
-  /* allocate structure */
-  distr = _unur_malloc( sizeof(struct unur_distr) );
-
-  /* set magic cookie */
-  COOKIE_SET(distr,CK_DISTR_CONT);
-
-  /* set type of distribution */
-  distr->type = UNUR_DISTR_CONT;
+  /* get new (empty) distribution object */
+  distr = unur_distr_cont_new();
 
   /* set distribution id */
   distr->id = UNUR_DISTR_GAMMA;

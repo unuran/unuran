@@ -101,14 +101,8 @@ unur_distr_rayleigh( double *params, int n_params )
   if (n_params > 0)
     CHECK_NULL(params,RETURN_NULL);
 
-  /* allocate structure */
-  distr = _unur_malloc( sizeof(struct unur_distr) );
-
-  /* set magic cookie */
-  COOKIE_SET(distr,CK_DISTR_CONT);
-
-  /* set type of distribution */
-  distr->type = UNUR_DISTR_CONT;
+  /* get new (empty) distribution object */
+  distr = unur_distr_cont_new();
 
   /* set distribution id */
   distr->id = UNUR_DISTR_RAYLEIGH;
@@ -119,7 +113,7 @@ unur_distr_rayleigh( double *params, int n_params )
   /* functions */
   DISTR.pdf  = unur_pdf_rayleigh;  /* pointer to p.d.f.               */
   DISTR.dpdf = unur_dpdf_rayleigh; /* pointer to derivative of p.d.f. */
-  DISTR.cdf  = NULL;               /* pointer to c.d.f.               */
+  /* DISTR.cdf  = unur_cdf_rayleigh; pointer to c.d.f.               */
 
   /* copy parameters */
   DISTR.params[0] = sigma;
@@ -134,8 +128,8 @@ unur_distr_rayleigh( double *params, int n_params )
   DISTR.n_params = n_params;
 
   /* mode and area below p.d.f. */
-  DISTR.mode = 0.;      /* unur_mode_exponential(DISTR.params,DISTR.n_params); */
-  DISTR.area = 1.;      /* unur_area_exponential(DISTR.params,DISTR.n_params); */
+  /* DISTR.mode = unur_mode_exponential(DISTR.params,DISTR.n_params); */
+  /* DISTR.area = unur_area_exponential(DISTR.params,DISTR.n_params); */
 
   /* domain */
   DISTR.domain[0] = 0.;              /* left boundary  */

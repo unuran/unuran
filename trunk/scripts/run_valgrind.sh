@@ -3,7 +3,7 @@
 # check arguments 
 test -z $1 && echo "Argument missing" && exit 1
 
-VALGRINDOPTIONS="-v --leak-check=yes --leak-resolution=high --num-callers=40 --show-reachable=yes"
+VALGRINDOPTIONS="-v --tool=memcheck --leak-check=yes --leak-resolution=high --num-callers=40 --show-reachable=yes"
 
 PROG=`echo $1 | sed -e "s#\./##"`
 

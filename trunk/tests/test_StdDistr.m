@@ -13,6 +13,11 @@
 
 (* === Set Constants ========================================================*)
 
+If [ Environment["srcdir"] != $Failed, 
+	SrcDir = Environment["srcdir"],
+(* Else *)
+        SrcDir =  "./" ];
+
 (* name of C file for running tests *)
 RunFileName = "t_StdDistr.c";
 
@@ -214,7 +219,7 @@ UnurTestDistrResultFile[dname_, dtype_, runfile_, fparbd__, size_, distribution_
 	{stream, datafilename, distrstring, i, j, nfparams, fparams, x},
 
 	(* compose a file name for output *)
-	datafilename = "t_distr_" <> dname <> ".data";
+	datafilename = "../" <> SrcDir <> "tests/t_distr_" <> dname <> ".data";
 	Print[ datafilename ];
 
 	(* open output stream *)

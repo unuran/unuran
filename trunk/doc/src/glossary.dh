@@ -25,6 +25,9 @@ probability mass function
 @item PV
 (finite) probability vector
 
+@item URNG
+uniform random number generator
+
 @item @math{U(a,b)}
 continuous uniform distribution on the interval @unurmath{(a,b)}
 

@@ -573,24 +573,35 @@ standard values in the order specified in this section.
 
 @end multitable
 
-@* choosing the method:
-@*  @code{ struct unur_par par = unur_NAME_new(struct unur_distr )
-}
-@*
+
+@noindent When using UNURAN, a parameter object
+and a distribution object have to be declared:
+@smallexample
+   UNUR_PAR *par;
+   UNUR_DISTR *distr;
+@end smallexample
+
+@noindent If the distribution object is already initialized,
+you must choose the method for sampling random numbers.
+How to do this is demonstated in the following lines:
+
+@noindent  @code{   par = unur_NAME_new(distr)};
 @* e.g.: 
-@* @code{ par  = unur_ninv_new(distr );
-}
+@* @code{   par  = unur_ninv_new(distr);}
 
-@* choosing the parameters of a method. (This can be a change of a
-numerical parameter (e.g: 2 ..) or decision of a special numerical
-implementation (e.g: Neton- regula falsi)
-To change any parameter you habe to use the according function call.
- All parameters have default settings:
+Each implemented method has some parameters, the
+user can adjust. These parameters are either
+numerical values or decision about the usage of a special
+implementation of the method.
+E.g: NINV should use Newton's method:
+@smallexample
+  unur_ninv_use_newton(par);
+@end smallexample
+To change any parameter you habe to use the
+according function call documented in @ref{MethodsRef}.
+All parameters have default settings documented in @ref{Defaults}.
 
-@* e.g.:  
-@* Numerical inversion with Netwon
-@* @code{  unur_ninv_use_newton(par); );
-}
+
 
 @node Description
 @section Description of the methods

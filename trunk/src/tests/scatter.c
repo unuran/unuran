@@ -56,7 +56,7 @@ static int _unur_make_uniform_scatter( int start, int skip );
 #if UNUR_URNG_INVOKE == UNUR_URNG_POINTER 
 static double _unur_babygen( void );
 #endif
-static UNUR_URNG_TYPE _unur_get_babygen( void );
+static UNUR_URNG *_unur_get_babygen( void );
 
 /*---------------------------------------------------------------------------*/
 
@@ -95,7 +95,7 @@ unur_make_scatterplot( struct unur_gen *gen )
   int start, skip;                      /* parameter for subsequence of urng */
   int error;                            /* exit code of system call          */  
 
-  UNUR_URNG_TYPE urng_bak, urng_babygen; /* pointer to uniform RNG           */
+  UNUR_URNG *urng_bak, *urng_babygen;   /* pointer to uniform RNG            */
 
   /* check arguments */
   _unur_check_NULL(test_name,gen,0);
@@ -251,7 +251,7 @@ _unur_make_uniform_scatter( int start, int skip )
   double store, new;                     /* store generated points           */
   int n_urn;                             /* count number of generated points */
   struct unur_gen *gen;                  /* pointer to generator object      */
-  UNUR_URNG_TYPE urng_babygen;           /* pointer to uniform RNG           */
+  UNUR_URNG *urng_babygen;               /* pointer to uniform RNG           */
 
   /* make string for scatter file name */
 
@@ -309,7 +309,7 @@ _unur_make_uniform_scatter( int start, int skip )
 static int u = 0;   /* state variable of baby generator                      */
 
 /*---------------------------------------------------------------------------*/
-static double
+double
 _unur_babygen( void )
      /*----------------------------------------------------------------------*/
      /* baby generator (LCG with extreme short period)                       */
@@ -324,7 +324,7 @@ _unur_babygen( void )
 
 /*--------------------------------------------------------------------------*/
 
-static UNUR_URNG_TYPE
+UNUR_URNG *
 _unur_get_babygen( void )
      /*----------------------------------------------------------------------*/
      /* evoke baby generator and reset seed                                  */
@@ -333,7 +333,7 @@ _unur_get_babygen( void )
      /*   pointer to uniform random number generator                         */
      /*----------------------------------------------------------------------*/
 {
-  static UNUR_URNG_TYPE urngen = NULL;
+  static UNUR_URNG *urngen = NULL;
 
   /* set babygen */
   if (urngen == NULL)
@@ -349,7 +349,7 @@ _unur_get_babygen( void )
 #elif UNUR_URNG_INVOKE == UNUR_URNG_PRNG
 /*---------------------------------------------------------------------------*/
 
-static UNUR_URNG_TYPE
+UNUR_URNG *
 _unur_get_babygen( void )
      /*----------------------------------------------------------------------*/
      /* evoke baby generator and reset seed                                  */
@@ -358,7 +358,7 @@ _unur_get_babygen( void )
      /*   pointer to uniform random number generator                         */
      /*----------------------------------------------------------------------*/
 {
-  static UNUR_URNG_TYPE urngen = NULL;
+  static UNUR_URNG *urngen = NULL;
 
   /* set babygen */
   if (urngen == NULL) {

@@ -84,16 +84,16 @@ const char *unur_get_strerror ( const int unur_errno );
 /*---------------------------------------------------------------------------*/
 /* set, get or change uniform RNG for generator                              */
 
-int unur_set_urng( UNUR_PAR *parameters, UNUR_URNG_TYPE urng );
-UNUR_URNG_TYPE unur_chg_urng( UNUR_GEN *generator, UNUR_URNG_TYPE urng );
-UNUR_URNG_TYPE unur_get_urng( UNUR_GEN *generator );
+int unur_set_urng( UNUR_PAR *parameters, UNUR_URNG *urng );
+UNUR_URNG *unur_chg_urng( UNUR_GEN *generator, UNUR_URNG *urng );
+UNUR_URNG *unur_get_urng( UNUR_GEN *generator );
 
 /*---------------------------------------------------------------------------*/
 /* get and set default uniform RNG                                           */
 /* (defined in src/utils/urng.c)                                             */
 
-UNUR_URNG_TYPE unur_get_default_urng( void );
-UNUR_URNG_TYPE unur_set_default_urng( UNUR_URNG_TYPE urng_new );
+UNUR_URNG *unur_get_default_urng( void );
+UNUR_URNG *unur_set_default_urng( UNUR_URNG *urng_new );
 
 /*---------------------------------------------------------------------------*/
 /* get dimension of generator for (multivariate) distribution                */

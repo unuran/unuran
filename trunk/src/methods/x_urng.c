@@ -47,11 +47,11 @@
 /*---------------------------------------------------------------------------*/
 /* pointer to default uniform random number generator */
 
-static UNUR_URNG_TYPE urng_default = NULL;
+static UNUR_URNG *urng_default = NULL;
 
 /*---------------------------------------------------------------------------*/
 
-UNUR_URNG_TYPE
+UNUR_URNG *
 unur_get_default_urng( void )
      /*----------------------------------------------------------------------*/
      /* return default uniform random number generator                       */
@@ -90,8 +90,8 @@ unur_get_default_urng( void )
 
 /*---------------------------------------------------------------------------*/
 
-UNUR_URNG_TYPE
-unur_set_default_urng( UNUR_URNG_TYPE urng_new )
+UNUR_URNG *
+unur_set_default_urng( UNUR_URNG *urng_new )
      /*----------------------------------------------------------------------*/
      /* set default uniform random number generator and return old one       */
      /*                                                                      */
@@ -101,7 +101,7 @@ unur_set_default_urng( UNUR_URNG_TYPE urng_new )
      /*   pointer to old  uniform random number generator                    */
      /*----------------------------------------------------------------------*/
 {
-  UNUR_URNG_TYPE urng_old = urng_default;
+  UNUR_URNG *urng_old = urng_default;
 
   /* NULL pointer not allowed */
   _unur_check_NULL("URNG", urng_new, urng_default);
@@ -123,7 +123,7 @@ unur_set_default_urng( UNUR_URNG_TYPE urng_new )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_set_urng( struct unur_par *par, UNUR_URNG_TYPE urng )
+unur_set_urng( struct unur_par *par, UNUR_URNG *urng )
      /*----------------------------------------------------------------------*/
      /* set uniform random number generator                                  */
      /*                                                                      */
@@ -147,7 +147,7 @@ unur_set_urng( struct unur_par *par, UNUR_URNG_TYPE urng )
 
 /*---------------------------------------------------------------------------*/
 
-UNUR_URNG_TYPE
+UNUR_URNG *
 unur_get_urng( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* get uniform random number generator                                  */
@@ -170,8 +170,8 @@ unur_get_urng( struct unur_gen *gen )
 
 /*---------------------------------------------------------------------------*/
 
-UNUR_URNG_TYPE
-unur_chg_urng( struct unur_gen *gen, UNUR_URNG_TYPE urng )
+UNUR_URNG *
+unur_chg_urng( struct unur_gen *gen, UNUR_URNG *urng )
      /*----------------------------------------------------------------------*/
      /* set uniform random number generator                                  */
      /*                                                                      */
@@ -186,7 +186,7 @@ unur_chg_urng( struct unur_gen *gen, UNUR_URNG_TYPE urng )
      /*   return NULL                                                        */
      /*----------------------------------------------------------------------*/
 {
-  UNUR_URNG_TYPE urng_old;
+  UNUR_URNG *urng_old;
 
   /* check arguments */
   CHECK_NULL(gen,NULL);

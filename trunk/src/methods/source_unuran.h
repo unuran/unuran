@@ -58,7 +58,6 @@
 #include <unuran_errno.h>
 #include <source_struct.h>
 #include <source_cookies.h>
-#include <source_distr.h>
 #include <source_math.h>
 #include <source_methods.h>
 

@@ -65,7 +65,7 @@
 double UNUR_URNG_DEFAULT(void);
 
 /* type of uniform random number generator                                   */
-typedef double (*UNUR_URNG_TYPE)(void);
+typedef double (UNUR_URNG)(void);
 
 /* function call to uniform rng */
 #define _unur_call_urng(gen)        ((*(gen->urng))())
@@ -78,7 +78,7 @@ typedef double (*UNUR_URNG_TYPE)(void);
 #include <prng.h>
 
 /* type of uniform random number generator                                   */
-typedef struct prng *UNUR_URNG_TYPE;
+typedef struct prng UNUR_URNG;
 
 /* function call to uniform rng */
 #define _unur_call_urng(gen)        (prng_get_next(gen->urng))

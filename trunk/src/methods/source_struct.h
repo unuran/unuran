@@ -148,8 +148,8 @@ struct unur_par {
   unsigned variant;           /* indicates variant of method                 */
   unsigned set;               /* stores which parameters have been changed   */
 
-  UNUR_URNG_TYPE  urng;       /* pointer to uniform random number generator  */
-  UNUR_URNG_TYPE  urng_aux;   /* pointer to second (auxilliary) uniform RNG  */
+  UNUR_URNG *urng;            /* pointer to uniform random number generator  */
+  UNUR_URNG *urng_aux;        /* pointer to second (auxilliary) uniform RNG  */
 
   struct unur_distr *distr;   /* pointer to distribution object              */
 
@@ -192,8 +192,8 @@ struct unur_gen {
   unsigned variant;           /* indicates variant of method                 */
   unsigned set;               /* stores which parameters have been changed   */
   
-  UNUR_URNG_TYPE  urng;       /* pointer to uniform random number generator  */
-  UNUR_URNG_TYPE  urng_aux;   /* pointer to second (auxilliary) uniform RNG  */
+  UNUR_URNG *urng;            /* pointer to uniform random number generator  */
+  UNUR_URNG *urng_aux;        /* pointer to second (auxilliary) uniform RNG  */
 
   struct unur_distr distr;    /* distribution object                         */
   char *genid;                /* identifier for generator                    */

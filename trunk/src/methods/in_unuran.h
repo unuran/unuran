@@ -169,6 +169,15 @@ struct unur_slist;         /* Structure for simple list.                     */
 #include <x_math.h>
 #include <x_slist.h>
 
+
+#ifndef TRUE
+#define TRUE   (1)
+#endif
+
+#ifndef FALSE
+#define FALSE  (0)
+#endif
+
 /*---------------------------------------------------------------------------*/
 #endif  /* IN_UNURAN_H_SEEN */
 /*---------------------------------------------------------------------------*/

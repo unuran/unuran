@@ -6,13 +6,13 @@ $GCC = "gcc -Wall";
 $G77 = "g77 -Wall";
 
 # Files
-$C_src = "./uniftest.c";
+$C_src = "./uniftest_c.c";
 $C_exec = "./uniftest_c";
 
-$FORTRAN_src = "./uniftest.f";
+$FORTRAN_src = "./uniftest_f.f";
 $FORTRAN_exec = "./uniftest_f";
 
-$JAVA_src = "./uniftest.java";
+$JAVA_src = "./uniftest_java.java";
 $JAVA_exec = "./Uniftest";
 
 ####################################################

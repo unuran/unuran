@@ -7,16 +7,12 @@
 #include <unuran_acg.h>
 
 /* --------------------------------------------------------------------------*/
-/* Error codes                                                               */
+/* Exit codes                                                                */
 
-#define UNUR_ACG_EXIT_SUCCESS       0      /* terminated successfully        */
-#define UNUR_ACG_EXIT_USAGE        -1      /* wrong usage                    */
-#define UNUR_ACG_EXIT_LANGUAGE      1      /* unknown programming language   */
-#define UNUR_ACG_EXIT_DISTRIBUTION  2      /* unknown distribution           */
-#define UNUR_ACG_EXIT_DOMAIN        3      /* invalid domain                 */
-#define UNUR_ACG_EXIT_PAR          10      /* cannot make parameter object   */
-#define UNUR_ACG_EXIT_GEN          20      /* cannot make generator object   */
-#define UNUR_ACG_EXIT_CODE         30      /* cannot generate code           */
+#define ACG_EXIT_SUCCESS       0     /* terminated successfully              */
+#define ACG_EXIT_FAIL_INPUT   -1     /* input error                          */
+#define ACG_EXIT_FAIL_GEN      1     /* cannot create generator object       */
+#define ACG_EXIT_FAIL_CODE     2     /* cannot generator code                */
 
 /* --------------------------------------------------------------------------*/
 
@@ -43,6 +39,11 @@ int get_fparams(char *params, double fparam[]);
 int get_domain(char *domain, double fdomain[]);
 /* --------------------------------------------------------------------------*/
 /* Get domain for distribution.                                              */
+/* --------------------------------------------------------------------------*/
+
+int get_n_cpoints(char *n_cpoints);
+/* --------------------------------------------------------------------------*/
+/* Get number of construction points.                                        */
 /* --------------------------------------------------------------------------*/
 
 /* --------------------------------------------------------------------------*/
@@ -81,17 +82,17 @@ int main (int argc, char *argv[]){
   double fpar[UNUR_DISTR_MAXPARAMS];
   double domain[2];   /* domain for distribution */
 
-  int domainset = 0; /* checks if domain is set        */
+  int domainset = 0;  /* checks if domain is set */
+  int n_params = 0;   /* number of parameters */
+  int n_cpoints = 30; /* number of construction points (default value) */
 
   char c;
-
-  int n_params = 0; /* number of parameters */
 
 
   /* ------------------------------------------------------------------------*/
   /* read options                                                            */
 
-  while ((c = getopt(argc, argv, "d:p:l:D:")) != -1) {
+  while ((c = getopt(argc, argv, "d:p:D:n:l:")) != -1) {
     switch (c) {
     case 'd':     /* distribution */
       distrfunc = get_distribution(optarg);
@@ -103,13 +104,16 @@ int main (int argc, char *argv[]){
       get_domain(optarg,domain);
       domainset = 1;
       break;
+    case 'n':     /* number of construction points */
+      n_cpoints = get_n_cpoints(optarg);
+      break;
     case 'l':     /* progamming language */
       langfunc = get_language(optarg);
       break;
     case '?':    /* Help Message  */
     default:
       usage();
-      exit (UNUR_ACG_EXIT_USAGE);
+      exit (ACG_EXIT_FAIL_INPUT);
     }
   }
 
@@ -119,7 +123,7 @@ int main (int argc, char *argv[]){
   if (distrfunc == NULL){
     fprintf(stderr, "Distribution not set.\n");
     usage();
-    exit (UNUR_ACG_EXIT_USAGE);
+    exit (ACG_EXIT_FAIL_INPUT);
   }
 
   /* ------------------------------------------------------------------------*/
@@ -128,13 +132,13 @@ int main (int argc, char *argv[]){
   distr = distrfunc(fpar, n_params); 
   if (distr == NULL) {
     fprintf(stderr, "Cannot create distribution object.\n");
-    exit (UNUR_ACG_EXIT_DISTRIBUTION);
+    exit (ACG_EXIT_FAIL_INPUT);
   }
 
   if (domainset == 1) {
     if (!unur_distr_cont_set_domain(distr, domain[0], domain[1])) {
       fprintf(stderr, "Cannot set domain for distribution object.\n");
-      exit (UNUR_ACG_EXIT_DOMAIN);
+      exit (ACG_EXIT_FAIL_INPUT);
     }
   }
 
@@ -144,16 +148,16 @@ int main (int argc, char *argv[]){
   par = unur_tdr_new(distr);       /* parameter object    */
   if (par == NULL) {
     fprintf(stderr, "Cannot create parameter object.\n");
-    exit (UNUR_ACG_EXIT_PAR);
+    exit (ACG_EXIT_FAIL_INPUT);
   }
   
   /* test version only */
-  unur_tdr_set_cpoints(par,4,NULL);
+  unur_tdr_set_cpoints(par,n_cpoints,NULL);
 
   gen = unur_init( par );          /* generator object    */
   if (gen == NULL) {
     fprintf(stderr, "Cannot create generator object.\n");
-    exit (UNUR_ACG_EXIT_GEN);
+    exit (ACG_EXIT_FAIL_GEN);
   }
 
   /* ------------------------------------------------------------------------*/
@@ -161,7 +165,7 @@ int main (int argc, char *argv[]){
 
   if (!langfunc( gen, stdout, NULL )) {
     fprintf(stderr, "Cannot generate program code.\n");
-    exit (UNUR_ACG_EXIT_CODE);
+    exit (ACG_EXIT_FAIL_CODE);
   }
 
   /* ------------------------------------------------------------------------*/
@@ -170,7 +174,7 @@ int main (int argc, char *argv[]){
   unur_distr_free(distr);
   unur_free(gen);
 
-  exit (UNUR_ACG_EXIT_SUCCESS);
+  exit (ACG_EXIT_SUCCESS);
 
 } /* end of main() */
 
@@ -192,9 +196,10 @@ usage (void)
   fprintf(stderr,"\n");
   fprintf(stderr,"Usage: %s",progname);
   fprintf(stderr," -d Distribution");
-  fprintf(stderr," [-l Language]");
   fprintf(stderr," [-p PDF parameters]");
   fprintf(stderr," [-D Domain]");
+  fprintf(stderr," [-n number of construction points]");
+  fprintf(stderr," [-l Language]");
   fprintf(stderr,"\n\n");
   fprintf(stderr,"Default for language: C\n");
   fprintf(stderr,"PDF parameters are required for some distributions.\n");
@@ -206,7 +211,7 @@ usage (void)
   fprintf(stderr,"Note parameters and the bounds of the domain are provided\n");
   fprintf(stderr,"within a string seperated by blanks.\n\n");
 
-  exit (UNUR_ACG_EXIT_USAGE);
+  exit (ACG_EXIT_FAIL_INPUT);
 
 } /* end of usage() */
 
@@ -235,7 +240,7 @@ int
   }
   else {
     fprintf(stderr, "Unknown programming language: %s\n",language);
-    exit (UNUR_ACG_EXIT_LANGUAGE);
+    exit (ACG_EXIT_FAIL_INPUT);
   }
 
 } /* end of get_language() */
@@ -262,7 +267,7 @@ UNUR_DISTR *
   }
   else {
     fprintf(stderr, "Unknown distribution: %s\n",distribution);
-    exit (UNUR_ACG_EXIT_DISTRIBUTION);
+    exit (ACG_EXIT_FAIL_INPUT);
   }
 
 } /* end of get_distribution() */
@@ -332,7 +337,7 @@ get_domain(char *domain, double fdomain[])
 
   if (chktoopts == toopts || fdomain[0] >= fdomain[1]) {
     fprintf(stderr, "Passed Domain not correct\n");
-    exit (UNUR_ACG_EXIT_DOMAIN);
+    exit (ACG_EXIT_FAIL_INPUT);
   }
 
   /* o.k. */
@@ -341,4 +346,44 @@ get_domain(char *domain, double fdomain[])
 } /* end of get_domain() */
 
 /* --------------------------------------------------------------------------*/
+
+int
+get_n_cpoints(char *n_cpoints)
+     /*----------------------------------------------------------------------*/
+     /* Get number of construction points.                                   */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*    n_cpoints ... pointer to string with number of cpoints            */
+     /*                                                                      */
+     /* return:                                                              */
+     /*    number of construction points                                     */
+     /*                                                                      */
+     /* error:                                                               */
+     /*    abort program                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  char *toopts;    /* pointer to charakter array */
+  char *chktoopts; /* dito, checks correctness   */
+  int n_cp;
+
+  chktoopts = toopts = n_cpoints;
+  n_cp = strtol(toopts, &toopts,10);
+
+  if (chktoopts == toopts || n_cp < 3) {
+    fprintf(stderr, "Passed n_cpoints not correct, use default instead.\n");
+    n_cp = 30;
+  }
+
+  /* o.k. */
+  return n_cp;
+
+} /* end of get_n_cpoints() */
+
+/* --------------------------------------------------------------------------*/
+
+
+
+
+
+
 

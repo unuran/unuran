@@ -4,16 +4,20 @@
 
 #include "pars.h"
 
+char            *readln  (char *s);
+
+
 #define MAXLENGTH 50
 
-main()
+int main()
 {
-  struct treenode *parsetree,*froot,*dev_tree;
+  struct treenode *parsetree,*dev_tree;
   char            *input_string;
   int             errcode, errpos;
-  double           wert, argument;
+  double           argument;
+  // double           wert;
   //  int             ftok,xtok;
-  int             i; 
+  //  int             i; 
 
    _unur_fstr_init();
   
@@ -25,7 +29,6 @@ do {
      readln(input_string);
      if (strcmp(input_string,"") == 0) break;
      parsetree = _unur_fstr2tree(input_string,&errcode,&errpos);
-     printf("\nAdresse:\n%d\n",parsetree);
      if  (errcode>0) break;
   /*-----------------------------------------------------------------*/
   /* Funktionsauswertung */
@@ -38,7 +41,6 @@ do {
     } while (0); 
  /*-----------------------------------------------------------------*/
  /* Stringausgabe    */
-     printf("\nAdresse:\n%d\n",parsetree);
      Ntree2string(parsetree,input_string);
       printf("\nParse-Baum als String:\n%s\n",input_string); 
  /*-----------------------------------------------------------------*/

@@ -256,7 +256,7 @@ int nxt_symbol(char function[],int *scanposp, char symb[], int *tokenp,
   if (*scanposp > strlen(function)) return 1;
   c = get_ch_after_spaces(function, scanposp);
   *errposp = *scanposp;
-  if (c >= '0' && c <= '9' || c == '.') {           /* UnsignedConstant */
+  if ( (c >= '0' && c <= '9') || c == '.') {           /* UnsignedConstant */
      errcode = get_uc_symbol(function,scanposp,symb);
      if ((*tokenp = find_index(symb,scs,uce,dummy)) <= 0) return 2; }
   else if (c >=  'A' && c <= 'Z') {                       /* Identifier */

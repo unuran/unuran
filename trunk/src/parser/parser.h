@@ -59,6 +59,11 @@
    Notice that the string interface does not implement all features of
    the UNURAN library. For trickier tasks it might be necessary to use
    the UNURAN calls.
+
+   In @ref{Examples}, all examples are given using both the 
+   UNURAN standard API and this convenient string API.
+   The corresponding programm codes are equivalent.
+
 =END
 
 */

@@ -39,7 +39,8 @@ EOM
 my %SUPPORTED_DISTR_TYPES =
     ( 'cont'  => 1,
       'cemp'  => 1,
-      'discr' => 1
+      'discr' => 1,
+      '-x-all-x-' => 1     # set calls unur_distr_set_... for all types
     );
 
 # Unsupported types:
@@ -216,7 +217,7 @@ sub make_list_of_distributions {
 	}
 
 	# print code
-	$code .= "\t\t if ( !strcmp( distribution, \"$distr\") ) {\n";
+	$code .= "\t\t if ( !strcmp( distribution, \"\L$distr\") ) {\n";
 	$code .= "\t\t\t distr = unur_distr_$distr (darray,n_darray);\n";
 	$code .= "\t\t\t break;\n";
 	$code .= "\t\t }\n";
@@ -308,7 +309,7 @@ sub make_list_of_distr_sets {
     foreach my $hfile (sort @methods_h_files) {
 
 	# We skip over all header files with names other than distr_*.h
-	next unless $hfile =~ /^distr\_/;
+	next unless $hfile =~ /^distr(\_.*|\.h)$/;
 
 	# Read content of header file
 	open H, "< $methods_dir/$hfile" or  die ("can't open file: $methods_dir/$hfile");
@@ -316,11 +317,19 @@ sub make_list_of_distr_sets {
 	while (<H>) { $content .= $_; } 
 	close H;
 
-	# there must be a unur_distr_...._new call
-	next unless $content =~ /[^\n]\s*unur\_distr\_(\w+)\_new/;
+	# there must be a unur_distr_..._set call
+	next unless $content =~ /[^\n]\s*unur\_distr\_.*\_set\_/;
 
-	# ID for method
-	my $distr_type = "\L$1";
+	# distribution type
+	my $distr_type;
+	if ($content =~ /[^\n]\s*unur\_distr\_(\w+)\_new/) {
+	    # set calls for special distribution type
+	    $distr_type = "\L$1";
+	}
+	else {
+	    # set calls for all distribution types
+	    $distr_type = "-x-all-x-";
+	}
 
 	# not all generic distributions are supported yet
 	next unless $SUPPORTED_DISTR_TYPES{$distr_type};
@@ -335,19 +344,19 @@ sub make_list_of_distr_sets {
 
 	# Get all set calls
 	foreach my $l (@lines) {
-	    next unless $l =~ /^\s*(\w*\s+)unur\_distr\_$distr_type\_set_(\w+)\s*\((.+)([^\s])\s*$/; 
+	    next unless $l =~ /^\s*(\w*\s+)unur\_distr\_($distr_type\_)?set_(\w+)\s*\((.+)([^\s])\s*$/; 
 
 	    # short name of set command
-	    my $command = $2;
+	    my $command = $3;
 
 	    # full name of command
-	    my $command_name = "unur\_distr\_$distr_type\_set_$command";
+	    my $command_name = "unur\_distr\_".$2."set_$command";
 
 	    # list of arguments
-	    my $args = $3;
+	    my $args = $4;
 
 	    # Check syntax of set command
-	    if ( $4 ne ';' ) {
+	    if ( $5 ne ';' ) {
 		# last character must be a ';'
 		die "Unknown syntax (terminating ';' missing) in $hfile:\n$l\n";
 	    }
@@ -476,66 +485,46 @@ sub make_list_of_distr_sets {
     # get list of all distribution types
     my @distr_type_list = sort (keys %{$set_commands});
 
-    # set result indicator
-    $code .= "\t result = FALSE;\n\n";
-
-    # make switch for methods
-    $code .= "\t switch (distr->type) {\n";
-
     # print docu
     $distr_doc_string .= "List of keys that are available via the String API.\n"
 	."For description see the corresponding UNURAN set calls.\n\n";
     $distr_doc_string .= "\@itemize \@bullet\n";
 
-    foreach my $dt (@distr_type_list) {
+    # first distribution type MUST be -x-all-x-
+    my $dt = shift @distr_type_list;
+    unless ($dt eq "-x-all-x-") {
+	die "first distribution type MUST be '-x-all-x-'\n";
+    }
+    # List of set calls for all distribution types
+    $distr_doc_string .= "\@item All distribution types\n";
+    my $code_x_all_x_ = make_distr_set_calls($dt,$set_commands,$set_doc);
+
+    # List of set calls for distribution types
+    # switch for distribution types
+    $code .= "\n\t switch (distr->type) {\n";
+    foreach $dt (@distr_type_list) {
 
 	# print docu
 	$distr_doc_string .= "\@item \@code{$dt} \@ \@i{(Distribution Type)}\@ \@ \@ \@ "
-	    ."(\@pxref{\U$dt})\n";
+		."(\@pxref{\U$dt})\n";
 
-	# make list of set commands for distributions
-	my @command_list = sort (keys %{$set_commands->{$dt}});
-
-	# make label for method
+	# make label for distribution type
 	$code .= "\t case UNUR_DISTR_\U$dt:\n";
-	
-	# make switch for first letter of key name
-	$code .= "\t\t switch (*key) {\n";
 
-	# print docu
-	$distr_doc_string .= "\@table \@code\n";
+	# make list of all set commands for distribution type
+	$code .= make_distr_set_calls($dt,$set_commands,$set_doc);
 
-	my $last_char;
-
-	foreach my $c (@command_list) {
-
-	    my $char = substr $c,0,1;
-
-	    if ($char ne $last_char) {
-		$code .= "\t\t\t break;\n" if $last_char;
-		$code .= "\t\t case '$char':\n";
-		$last_char = $char;
-	    }
-
-	    $code .= "\t\t\t if ( !strcmp(key, \"$c\") ) {\n";
-	    $code .= $set_commands->{$dt}->{$c};
-	    $code .= "\t\t\t\t break;\n";
-	    $code .= "\t\t\t }\n";
-
-	    # print docu
-	    $distr_doc_string .= $set_doc->{$dt}->{$c};
-	}
-
-	# end of switch for first letter
-	$code .= "\t\t }\n";
+	# end of case for distribution type
 	$code .= "\t\t break;\n";
-
-	# print docu
-	$distr_doc_string .= "\@end table\n\n\@sp 1\n";
     }
-
     # end of switch for distribution types
     $code .= "\t }\n";
+
+    # append list for set calls for all distribution types
+    $code .= "\n\t /* set calls for all distribution types */\n";
+    $code .= "\t if (result == UNKNOWN_PARAM) {\n";
+    $code .= $code_x_all_x_;
+    $code .= "\t }\n\n";
 
     # print docu
     $distr_doc_string .= "\@end itemize\n\n";
@@ -552,6 +541,59 @@ sub make_list_of_distr_sets {
     return $code;
 
 } # end of make_list_of_distr_sets() 
+
+##############################################################################
+#
+# Make subroutine for getting parameter object for method.
+# Print set command.
+#
+sub make_distr_set_calls { 
+    my $dt = $_[0];
+    my $set_commands = $_[1];
+    my $set_doc = $_[2];
+
+    my $code;
+
+    # make list of set commands for distributions
+    my @command_list = sort (keys %{$set_commands->{$dt}});
+    
+    # make switch for first letter of key name
+    $code .= "\t\t switch (*key) {\n";
+
+    # print docu
+    $distr_doc_string .= "\@table \@code\n";
+    
+    my $last_char;
+    
+    foreach my $c (@command_list) {
+	
+	my $char = substr $c,0,1;
+	
+	if ($char ne $last_char) {
+	    $code .= "\t\t\t break;\n" if $last_char;
+	    $code .= "\t\t case '$char':\n";
+	    $last_char = $char;
+	}
+	
+	$code .= "\t\t\t if ( !strcmp(key, \"$c\") ) {\n";
+	$code .= $set_commands->{$dt}->{$c};
+	$code .= "\t\t\t\t break;\n";
+	$code .= "\t\t\t }\n";
+	
+	# print docu
+	$distr_doc_string .= $set_doc->{$dt}->{$c};
+    }
+    
+    # end of switch for first letter
+    $code .= "\t\t }\n";
+
+    # print docu
+    $distr_doc_string .= "\@end table\n\n\@sp 1\n";
+
+    # Return result
+    return $code;
+
+} # end of make_distr_set_calls()
 
 ##############################################################################
 #

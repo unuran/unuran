@@ -776,7 +776,8 @@ _unur_str_distr_set( UNUR_DISTR *distr, const char *key, char *value )
      /*   return 0                                                           */
      /*----------------------------------------------------------------------*/
 {
-  int result = FALSE;      /* result of UNURAN set call (0 or 1) */
+#define UNKNOWN_PARAM (-1)
+  int result = UNKNOWN_PARAM;      /* result of UNURAN set call (0 or 1) */
 
   /* storing arguments of set calls: */
   char type_args[MAX_SET_ARGS+1];  /* array containing info about arguments */
@@ -789,7 +790,6 @@ _unur_str_distr_set( UNUR_DISTR *distr, const char *key, char *value )
   }
 
   /* set result indicator to unknown */
-#define UNKNOWN_PARAM (-1)
   result = UNKNOWN_PARAM;
 
   /* find and execute set call */

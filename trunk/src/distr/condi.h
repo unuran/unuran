@@ -61,6 +61,13 @@
 
       @end itemize
 
+      This distibution type is primarily used for evaluation the
+      conditional distribution and its derivative (as required for,
+      e.g., the Gibbs sampler). The density is not normalized (does
+      not integrate to one). Mode and area are not available and it
+      does not make sense to use any call to set or change parameters
+      except the ones given below.
+
    =END
 */
 

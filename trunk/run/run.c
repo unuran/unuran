@@ -28,39 +28,52 @@ int main()
   UNUR_PAR *par;
   UNUR_GEN *gen;
 
-  double fpm[] = { 2. };
+  double fpm[] = { 0.5 };
 
-  unur_set_default_debug(1u);
+  unur_set_default_debug(~0u);
   unur_set_stream(stdout);
+
+/*    distr = unur_distr_gamma(fpm,1); */
+/*    par = unur_tdr_new( distr ); */
+/*    gen = unur_init(par); */
+/*    unur_distr_free(distr); */
 
   distr = unur_distr_normal(NULL,0);
   par = unur_tdr_new( distr );
-  unur_run_tests(par,UNUR_TEST_TIME);
+  unur_tdr_set_cpoints(par,50,NULL);
+  //  unur_tdr_set_max_intervals(par,1000);
+  unur_tdr_set_variant_gw(par);
+  gen = unur_init(par);
   unur_distr_free(distr);
 
-  distr = unur_distr_normal(NULL,0);
-  par = unur_cstd_new( distr );
-  unur_cstd_set_variant(par,1u);
-  unur_run_tests(par,UNUR_TEST_TIME);
-  unur_distr_free(distr);
+/*    distr = unur_distr_normal(NULL,0); */
+/*    par = unur_tdr_new( distr ); */
+/*    unur_run_tests(par,UNUR_TEST_TIME); */
+/*    unur_distr_free(distr); */
 
-  distr = unur_distr_normal(NULL,0);
-  par = unur_cstd_new( distr );
-  unur_cstd_set_variant(par,3u);
-  unur_run_tests(par,UNUR_TEST_TIME);
-  unur_distr_free(distr);
+/*    distr = unur_distr_normal(NULL,0); */
+/*    par = unur_cstd_new( distr ); */
+/*    unur_cstd_set_variant(par,1u); */
+/*    unur_run_tests(par,UNUR_TEST_TIME); */
+/*    unur_distr_free(distr); */
 
-  distr = unur_distr_normal(NULL,0);
-  par = unur_cstd_new( distr );
-  unur_cstd_set_variant(par,UNUR_STDGEN_DEFAULT);
-  unur_run_tests(par,UNUR_TEST_TIME);
-  unur_distr_free(distr);
+/*    distr = unur_distr_normal(NULL,0); */
+/*    par = unur_cstd_new( distr ); */
+/*    unur_cstd_set_variant(par,3u); */
+/*    unur_run_tests(par,UNUR_TEST_TIME); */
+/*    unur_distr_free(distr); */
 
-  distr = unur_distr_exponential(NULL,0);
-  par = unur_cstd_new( distr );
-  unur_cstd_set_variant(par,UNUR_STDGEN_INVERSION);
-  unur_run_tests(par,UNUR_TEST_TIME);
-  unur_distr_free(distr);
+/*    distr = unur_distr_normal(NULL,0); */
+/*    par = unur_cstd_new( distr ); */
+/*    unur_cstd_set_variant(par,UNUR_STDGEN_DEFAULT); */
+/*    unur_run_tests(par,UNUR_TEST_TIME); */
+/*    unur_distr_free(distr); */
+
+/*    distr = unur_distr_exponential(NULL,0); */
+/*    par = unur_cstd_new( distr ); */
+/*    unur_cstd_set_variant(par,UNUR_STDGEN_INVERSION); */
+/*    unur_run_tests(par,UNUR_TEST_TIME); */
+/*    unur_distr_free(distr); */
 
 /*    distr = unur_distr_powerexponential(fpm,1); */
 /*    par = unur_tdr_new( distr ); */

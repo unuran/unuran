@@ -184,26 +184,9 @@ int unur_tdr_set_usedars( UNUR_PAR *parameters, int usedars );
    maximum number of intervals is reached. Moreover it also aborts
    when no more intervals can be found for splitting.
 
-   The default depends on the given construction points.
-   If the user has provided such points via a unur_tdr_set_cpoints()
-   call, then @var{usedars} is set to FALSE by default, i.e.,
-   there is no further splitting.
-   If the user has only given the number of construction points (or
-   only uses the default number), then @var{usedars} is set to TRUE.
-*/
-
-int unur_tdr_set_darsfactor( UNUR_PAR *parameters, double factor );
-/* 
-   Set factor for ``derandomized adaptive rejection sampling''.
-
-   After computing the starting intervals for the given construction
-   points we use ``derandomized adaptive rejection sampling'' in the
-   setup step to split these intervals further. There all intervals
-   where the area between squeeze and hat is larger than 
-   @var{factor} times the average area between squeeze and hat over
-   all intervals are splitted. This is done by the following rules (in
-   this order, that is if one rule cannot be applied, the next one is
-   used):
+   For finding splitting points the following rules are used (in
+   this order, i.e., is if the first rule cannot be applied, the next
+   one is used):
    @enumerate
    @item
      Use the expected value of adaptive rejection sampling.
@@ -213,18 +196,40 @@ int unur_tdr_set_darsfactor( UNUR_PAR *parameters, double factor );
    @item
      Use the arithmetic mean of the interval boundaries.
    @end enumerate
+   Notice however that for unbounded intervals neither rule 1 nor rule
+   2 can be used.
 
-   If this is done for the initial interval, this procedure is
-   repeated until the ratio between squeeze and hat exceeds the bound
-   given by unur_tdr_set_max_sqhratio() call or the maximum number of
-   intervals is reached. Moreover it also aborts when no more
-   intervals can be found for splitting.
+   As an additional feature, it is possible to choose amoung these
+   rules. 
+   If @var{usedars} is set to @code{1} or TRUE the expectated point is
+   used (rule 1) is used (first, if is not applicaple rule 2 or 3 is
+   used). 
+   If it is set to @code{2} the arc-mean rule is used.
+   If it is set to @code{3} the mean is used.
+   Notice however that for the last case unbounded intervals are not
+   splitted any more.
 
+   The default depends on the given construction points.
+   If the user has provided such points via a unur_tdr_set_cpoints()
+   call, then @var{usedars} is set to FALSE by default, i.e.,
+   there is no further splitting.
+   If the user has only given the number of construction points (or
+   only uses the default number), then @var{usedars} is set to TRUE
+   (i.e., use rule 1).
+*/
+
+int unur_tdr_set_darsfactor( UNUR_PAR *parameters, double factor );
+/* 
+   Set factor for ``derandomized adaptive rejection sampling''.
+   This factor is used to determine the intervals that are ``too
+   large'', that is, all intervals where the area between squeeze and
+   hat is larger than @var{factor} times the average area over all
+   intervals between squeeze and hat.
    Notice that all intervals are splitted when @var{factor} is set to
    @code{0.}, and that there is no splitting at all when @var{factor}
    is set to UNUR_INFINITY.
 
-   Default is @code{0.99}. 
+   Default is @code{0.99}. There is no need to change this parameter.
 */
 
 int unur_tdr_chg_truncated(UNUR_GEN *gen, double left, double right);

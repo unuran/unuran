@@ -1,3 +1,4 @@
+
 /*****************************************************************************
  *                                                                           *
  *          UNURAN -- Universal Non-Uniform Random number generator          *
@@ -93,6 +94,7 @@ unur_tdr_new( struct unur_distr* distr )
 				       where ambigous region is too small, i.e. if 
 				       area / ((A_hat - A_squeeze)/number of segments) < bound_for_adding */
   PAR.darsfactor          = 0.99;   /* factor for derandomized ARS           */ 
+  PAR.darsrule            = 1;      /* rule for finding splitting points in DARS */
  
   par->method   = UNUR_METH_TDR;                 /* method                   */
   par->variant  = ( TDR_VARFLAG_USECENTER |      /* default variant          */
@@ -523,6 +525,15 @@ unur_tdr_set_usedars( struct unur_par *par, int usedars )
 
   /* check input */
   _unur_check_par_object( par,TDR );
+
+  /* check new parameter for generator */
+  if (usedars < 0 || usedars > 3) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"invalid rule for DARS");
+    return 0;
+  }
+    
+  /* set rule for DARS */
+  PAR.darsrule = usedars;
 
   /* we use a bit in variant */
   par->variant = (usedars) ? (par->variant | TDR_VARFLAG_USEDARS) : (par->variant & (~TDR_VARFLAG_USEDARS));

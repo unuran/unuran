@@ -126,6 +126,8 @@ _unur_tdr_debug_init( struct unur_par *par, struct unur_gen *gen )
     _unur_print_if_default(par,TDR_SET_USE_DARS);
     fprintf(log,"\n%s:\tDARS factor = %g",gen->genid,PAR.darsfactor);
     _unur_print_if_default(par,TDR_SET_DARS_FACTOR);
+    fprintf(log,"\n%s:\tDARS rule %d",gen->genid,PAR.darsrule);
+    _unur_print_if_default(par,TDR_SET_USE_DARS);
   }
   else {
     fprintf(log,"%s: Derandomized ARS disabled ",gen->genid);
@@ -183,6 +185,8 @@ _unur_tdr_debug_dars_start( struct unur_par *par, struct unur_gen *gen )
   fprintf(log,"%s:\n",gen->genid);
   fprintf(log,"%s: DARS factor = %g",gen->genid,PAR.darsfactor);
   _unur_print_if_default(par,TDR_SET_DARS_FACTOR);
+  fprintf(log,"\n%s: DARS rule %d",gen->genid,PAR.darsrule);
+  _unur_print_if_default(par,TDR_SET_USE_DARS);
   fprintf(log,"\n%s:\n",gen->genid);
 
   fflush(log);

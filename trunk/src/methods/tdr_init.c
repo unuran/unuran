@@ -275,7 +275,6 @@ _unur_tdr_create( struct unur_par *par )
 
 
 
-
    par->variant &= ~TDR_VARFLAG_USEDARS;
 
 
@@ -1021,7 +1020,7 @@ _unur_tdr_gw_dars( struct unur_par *par, struct unur_gen *gen )
       x1 = iv->next->x;
 
       /* get splitting point */
-      for (rule = 1; rule <= 3; rule++) {
+      for (rule = PAR.darsrule; rule <= 3; rule++) {
 	switch (rule) {
 	case 1:   /* rule 1: expected value */
 	  
@@ -1202,11 +1201,8 @@ _unur_tdr_ps_dars( struct unur_par *par, struct unur_gen *gen )
       if (Adiff <= Alimit) 
 	continue;  /* goto next interval */
 
-      /* store pointer to next interval */
-      iv_next = iv->next;
-
       /* get splitting point */
-      for (rule = 1; rule <= 3; rule++) {
+      for (rule = PAR.darsrule; rule <= 3; rule++) {
 	switch (rule) {
 	case 1:   /* rule 1: expected value */
 	  
@@ -1223,10 +1219,11 @@ _unur_tdr_ps_dars( struct unur_par *par, struct unur_gen *gen )
 	  xAhatr = _unur_tdr_interval_xxarea( gen, iv, iv->dTfx, iv->ip);
 
 	  /* area below hat */
-	  Ahat_gw = (iv->prev->Ahatr + (iv->Ahat - iv->Ahatr));
+	  Ahat_gw = ( ((iv->prev == NULL) ? 0. : iv->prev->Ahatr)
+		      + (iv->Ahat - iv->Ahatr) );
 
 	  /* squeeze */
-	  if (iv->Asqueeze > 0. && iv->prev) {
+	  if (iv->Asqueeze > 0. && iv->prev != NULL) {
 	    /* slope of transformed squeeze for variant GW */
 	    squeeze_gw = (iv->Tfx - iv->prev->Tfx) / (iv->x - iv->prev->x);
 
@@ -1271,16 +1268,17 @@ _unur_tdr_ps_dars( struct unur_par *par, struct unur_gen *gen )
 	  continue;
 	}
 	
-
-	fprintf(stderr,"%d: %g, %g, %g\n",rule,x0,xsp,x1);
-
-	break; /** remove **/
-
 	/* value of PDF at splitting point */
 	fxsp = PDF(xsp);
-	
-	/* now split interval at given point */
-	if ( _unur_tdr_ps_interval_split(gen, iv, xsp, fxsp) ) {
+
+	/* store pointer to next interval */
+	iv_next = iv->next;
+
+	/* now split interval at given point.
+	   we have to take care that xsp might be either in
+	   interval iv or in its preceeding interval, depending
+	   whether xsp is less than iv->ip or not. */
+	if ( _unur_tdr_ps_interval_split(gen, ((xsp<iv->ip)?iv->prev:iv), xsp, fxsp) ) {
 	  /* splitting successful */
 	  ++n_splitted;
 	  
@@ -1312,8 +1310,6 @@ _unur_tdr_ps_dars( struct unur_par *par, struct unur_gen *gen )
       _unur_warning(gen->genid,UNUR_ERR_GENERIC,"DARS aborted: no intervals could be splitted.");
       break;
     }
-
-    break; /** remove !! **/
   }
 
   /* ratio between squeeze and hat o.k. ? */
@@ -2136,8 +2132,13 @@ _unur_tdr_gw_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_
   return ( (success <= -2) ? 0 : 1 );
   }
 
-  /* update guide table */ 
-  _unur_tdr_make_guide_table(gen);
+  /* successful */
+
+  /* update total area below hat and squeeze */
+  GEN.Atotal   = ( GEN.Atotal - iv_bak.Ahat
+		   + iv_oldl->Ahat + ((iv_newr) ? iv_newr->Ahat : 0.) );
+  GEN.Asqueeze = ( GEN.Asqueeze - iv_bak.Asqueeze
+		   + iv_oldl->Asqueeze + ((iv_newr) ? iv_newr->Asqueeze : 0. ) );
 
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
@@ -2310,13 +2311,20 @@ _unur_tdr_ps_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv,
   return ( (success <= -2) ? 0 : 1 );
   }
 
+  /* successful */
+
   /* we have update the pointer to the list */
   if (oldl == NULL && iv_new)
     /* new first entry */
     GEN.iv = iv_new;
 
-  /* update guide table */ 
-  _unur_tdr_make_guide_table(gen);
+  /* update total area below hat and squeeze */
+  GEN.Atotal   = ( GEN.Atotal + (oldr->Ahat - oldr_bak.Ahat)
+		   + ((oldl) ? (oldl->Ahat - oldl_bak.Ahat) : 0.)
+		   + ((iv_new) ? iv_new->Ahat : 0.) );
+  GEN.Asqueeze = ( GEN.Asqueeze + (oldr->Asqueeze - oldr_bak.Asqueeze)
+		   + ((oldl) ? (oldl->Asqueeze - oldl_bak.Asqueeze) : 0.)
+		   + ((iv_new) ? iv_new->Asqueeze : 0.) );
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */

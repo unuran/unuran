@@ -47,10 +47,10 @@ int main()
   distr = unur_distr_beta(fpm,2);
   par = unur_tdr_new( distr );
   unur_tdr_set_cpoints(par,10,NULL);
-  unur_tdr_set_darsfactor(par,0.);
-  // unur_tdr_set_variant_gw(par);
+  //  unur_tdr_set_darsfactor(par,0.);
+  unur_tdr_set_variant_gw(par);
   unur_tdr_set_c(par,0.);
-  // unur_tdr_set_usedars(par,FALSE);
+  //  unur_tdr_set_usedars(par,1);
   gen = unur_init(par);
   unur_distr_free(distr);
 #endif

@@ -54,6 +54,7 @@ struct unur_tdr_par {
 
   double  c_T;                  /* parameter c for transformation T_c        */           
   double  darsfactor;           /* factor for derandomized ARS               */
+  int     darsrule;             /* rule for finding splitting points in DARS */
 };
 
 /*---------------------------------------------------------------------------*/

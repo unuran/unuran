@@ -229,6 +229,10 @@ _unur_tdr_gw_sample( struct unur_gen *gen )
 	    return INFINITY;
 	  }
 	}
+	else {
+	  /* splitting successful --> update guide table */ 
+	  _unur_tdr_make_guide_table(gen);
+	}
       }
       else {
 	/* no more construction points (avoid to many second if statement above */
@@ -400,6 +404,10 @@ _unur_tdr_gw_sample_check( struct unur_gen *gen )
 	    SAMPLE = _unur_sample_cont_error;
 	    return INFINITY;
 	  }
+	}
+	else {
+	  /* splitting successful --> update guide table */ 
+	  _unur_tdr_make_guide_table(gen);
 	}
       }
       else {
@@ -578,6 +586,10 @@ _unur_tdr_ps_sample( struct unur_gen *gen )
 	    return INFINITY;
 	  }
 	}
+	else {
+	  /* splitting successful --> update guide table */ 
+	  _unur_tdr_make_guide_table(gen);
+	}
       }
       else {
 	/* no more construction points (avoid to many second if statement above */
@@ -755,6 +767,10 @@ _unur_tdr_ps_sample_check( struct unur_gen *gen )
 	    SAMPLE = _unur_sample_cont_error;
 	    return INFINITY;
 	  }
+	}
+	else {
+	  /* splitting successful --> update guide table */ 
+	  _unur_tdr_make_guide_table(gen);
 	}
       }
       else {
@@ -951,6 +967,10 @@ _unur_tdr_ia_sample( struct unur_gen *gen )
 	    return INFINITY;
 	  }
 	}
+	else {
+	  /* splitting successful --> update guide table */ 
+	  _unur_tdr_make_guide_table(gen);
+	}
       }
       else {
 	/* no more construction points (avoid to many second if statement above */
@@ -1133,6 +1153,10 @@ _unur_tdr_ia_sample_check( struct unur_gen *gen )
 	    SAMPLE = _unur_sample_cont_error;
 	    return INFINITY;
 	  }
+	}
+	else {
+	  /* splitting successful --> update guide table */ 
+	  _unur_tdr_make_guide_table(gen);
 	}
       }
       else {

@@ -11,7 +11,7 @@
  *         (Universal Transformed Density Rejection; 3-point method)         *
  *                                                                           *
  *   USAGE:                                                                  *
- *         only used in unur_methods.h                                       *
+ *         only included in unuran.h                                         *
  *                                                                           *
  *****************************************************************************
      $Id$

@@ -54,7 +54,7 @@
 
 
 /* set routine for sampling                                                  */
-#if UNUR_DEBUG & UNUR_DB_INFO
+#ifdef UNUR_ENABLE_LOGGING
 #define _unur_cstd_set_sampling_routine(par,gen,routine) \
    do { \
      if ((gen)==NULL) return 1;                       /* test existence only */ \

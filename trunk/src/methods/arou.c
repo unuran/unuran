@@ -122,13 +122,7 @@
 
 /*---------------------------------------------------------------------------*/
 
-#include <unur_methods.h>
-#include <unur_methods_lib.h>
-
-#include <unur_cookies.h>
-#include <unur_errno.h>
-#include <unur_math.h>
-#include <unur_utils.h>
+#include <source_unuran.h>
 
 /*---------------------------------------------------------------------------*/
 /* Variants                                                                  */
@@ -211,7 +205,7 @@ static void _unur_arou_segment_stack_push( struct unur_gen *gen );
 /* push the last popped segment back onto the stack.                         */
 /*---------------------------------------------------------------------------*/
 
-#if UNUR_DEBUG & UNUR_DB_INFO
+#ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 /* the following functions print debugging information on output stream,     */
 /* i.e., into the log file if not specified otherwise.                       */
@@ -665,7 +659,7 @@ unur_arou_init( struct unur_par *par )
   /* make initial guide table */
   _unur_arou_make_guide_table(gen);
 
-#if UNUR_DEBUG & UNUR_DB_INFO
+#ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
   if (gen->debug) _unur_arou_debug_init(par,gen);
 #endif
@@ -894,7 +888,7 @@ unur_arou_free( struct unur_gen *gen )
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
   /* write info into log file */
-#if UNUR_DEBUG & UNUR_DB_INFO
+#ifdef UNUR_ENABLE_LOGGING
   if (gen->debug) _unur_arou_debug_free(gen);
 #endif
 
@@ -1498,7 +1492,7 @@ _unur_arou_segment_split( struct unur_gen *gen, struct unur_arou_segment *seg_ol
   COOKIE_CHECK(gen,CK_AROU_GEN,0);
   COOKIE_CHECK(seg_oldl,CK_AROU_SEG,0);
 
-#if UNUR_DEBUG & UNUR_DB_INFO
+#ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
     if (gen->debug & AROU_DEBUG_SPLIT) 
       _unur_arou_debug_split_start( gen,seg_oldl,x,fx );
@@ -1569,7 +1563,7 @@ _unur_arou_segment_split( struct unur_gen *gen, struct unur_arou_segment *seg_ol
     
       /* new construction point not suitable --> do not add */
       _unur_warning(gen->genid,UNUR_ERR_ADAPT,"Cannot split segment at given point.");
-#if UNUR_DEBUG & UNUR_DB_INFO
+#ifdef UNUR_ENABLE_LOGGING
       /* write info into log file */
       if (gen->debug & AROU_DEBUG_SPLIT) 
 	_unur_arou_debug_split_stop( gen,seg_oldl,seg_newr );
@@ -1595,7 +1589,7 @@ _unur_arou_segment_split( struct unur_gen *gen, struct unur_arou_segment *seg_ol
   /* update guide table */ 
   _unur_arou_make_guide_table(gen);
 
-#if UNUR_DEBUG & UNUR_DB_INFO
+#ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
   if (gen->debug & AROU_DEBUG_SPLIT) 
     _unur_arou_debug_split_stop( gen,seg_oldl,seg_newr );
@@ -1782,7 +1776,9 @@ _unur_arou_segment_stack_push( struct unur_gen *gen )
 /**  Debugging utilities                                                    **/
 /*****************************************************************************/
 
-#if UNUR_DEBUG & UNUR_DB_INFO
+/*---------------------------------------------------------------------------*/
+#ifdef UNUR_ENABLE_LOGGING
+/*---------------------------------------------------------------------------*/
 
 static void
 _unur_arou_debug_init( struct unur_par *par, struct unur_gen *gen )
@@ -2115,5 +2111,6 @@ _unur_arou_debug_printratio( double v, double u, char *string )
 } /* end of _unur_arou_debug_printratio() */
 
 /*****************************************************************************/
-#endif
-
+/*---------------------------------------------------------------------------*/
+#endif    /* end UNUR_ENABLE_LOGGING */
+/*---------------------------------------------------------------------------*/

@@ -4,14 +4,15 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: unur_misc.h                                                       *
+ *   FILE: unur_umalloc.h                                                    *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         defines function prototypes for miscelleanous routines            *
- *         parameters in generator objects.                                  *
+ *         declares structures and function prototypes for allocating        *
+ *         memory and storing allocated blocks in a linked list.             *
  *                                                                           *
  *   USAGE:                                                                  *
- *         only included in unuran.h                                         *
+ *         internal header file.                                             *
+ *         included in umalloc.c, error.c and ../methods/unur_methods.h.     *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -38,39 +39,26 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef __UNUR_MISC_H_SEEN
-#define __UNUR_MISC_H_SEEN
+#ifndef __UNUR_UMALLOC_H_SEEN
+#define __UNUR_UMALLOC_H_SEEN
 /*---------------------------------------------------------------------------*/
 
+#include <unuran_config.h>
 
 /*---------------------------------------------------------------------------*/
-/* set debugging flag for generator                                          */
-int unur_set_debug( struct unur_par *parameter, unsigned debug );
+/* linked list to store pointers to allocated blocks                         */
+
+struct unur_mblock {
+  void *memptr;                 /* store pointer to allocated block          */
+  struct unur_mblock *next;     /* pointer to next entry in list             */
+#ifdef UNUR_COOKIES
+  unsigned cookie;              /* magic cookie                              */
+#endif
+};
 
 /*---------------------------------------------------------------------------*/
-/* set, get or change uniform RNG for generator                              */
-
-int unur_set_urng( struct unur_par *par, UNUR_URNG_TYPE urng );
-UNUR_URNG_TYPE unur_chg_urng( struct unur_gen *gen, UNUR_URNG_TYPE urng );
-UNUR_URNG_TYPE unur_get_urng( struct unur_gen *gen );
-
+#endif  /* __UNUR_UMALLOC_H_SEEN */
 /*---------------------------------------------------------------------------*/
-/* get and set default uniform RNG                                           */
-/* (defined in src/utils/urng.c)                                             */
-
-UNUR_URNG_TYPE unur_get_default_urng( void );
-UNUR_URNG_TYPE unur_set_default_urng( UNUR_URNG_TYPE urng_new );
-
-/*---------------------------------------------------------------------------*/
-/* get dimension of generator for (multivariate) distribution                */
-
-int unur_get_dimension( struct unur_gen *gen );
-
-/*---------------------------------------------------------------------------*/
-#endif  /* __UNUR_MISC_H_SEEN */
-/*---------------------------------------------------------------------------*/
-
-
 
 
 

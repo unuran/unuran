@@ -106,13 +106,7 @@
 
 /*---------------------------------------------------------------------------*/
 
-#include <unur_methods.h>
-#include <unur_methods_lib.h>
-
-#include <unur_cookies.h>
-#include <unur_errno.h>
-#include <unur_math.h>
-#include <unur_utils.h>
+#include <source_unuran.h>
 
 /*---------------------------------------------------------------------------*/
 /* Variants: none                                                            */
@@ -140,7 +134,7 @@ static struct unur_gen *_unur_srou_create( struct unur_par *par );
 /* create new (almost empty) generator object.                               */
 /*---------------------------------------------------------------------------*/
 
-#if UNUR_DEBUG & UNUR_DB_INFO
+#ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 /* the following functions print debugging information on output stream,     */
 /* i.e., into the log file if not specified otherwise.                       */
@@ -447,7 +441,7 @@ unur_srou_init( struct unur_par *par )
     gen->variant &= ~SROU_VARFLAG_SQUEEZE;
   }
 
-#if UNUR_DEBUG & UNUR_DB_INFO
+#ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
     if (gen->debug) _unur_srou_debug_init(par,gen);
 #endif
@@ -759,7 +753,9 @@ _unur_srou_create( struct unur_par *par )
 /**  Debugging utilities                                                    **/
 /*****************************************************************************/
 
-#if UNUR_DEBUG & UNUR_DB_INFO
+/*---------------------------------------------------------------------------*/
+#ifdef UNUR_ENABLE_LOGGING
+/*---------------------------------------------------------------------------*/
 
 static void
 _unur_srou_debug_init( struct unur_par *par, struct unur_gen *gen )
@@ -812,7 +808,6 @@ _unur_srou_debug_init( struct unur_par *par, struct unur_gen *gen )
 
 } /* end of _unur_srou_debug_init() */
 
-#endif
-
-/*****************************************************************************/
-
+/*---------------------------------------------------------------------------*/
+#endif   /* end UNUR_ENABLE_LOGGING */
+/*---------------------------------------------------------------------------*/

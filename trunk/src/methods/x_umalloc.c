@@ -4,11 +4,11 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   file:      printsample.c                                                *
+ *   FILE: x_umalloc.c                                                       *
  *                                                                           *
- *   print a sample of random numbers                                        *
+ *   allocate memory                                                         *
+ *   store allocated blocks in linked list                                   *
  *                                                                           *
- *****************************************************************************
  *****************************************************************************
      $Id$
  *****************************************************************************
@@ -35,77 +35,88 @@
 
 /*---------------------------------------------------------------------------*/
 
-#include <unur_tests.h>
 #include <source_unuran.h>
+
+#include <stdlib.h>
+
+/*---------------------------------------------------------------------------*/
+
+void*
+_unur_malloc(size_t size)
+     /*----------------------------------------------------------------------*/
+     /* allocate memory                                                      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   size ... size of allocated block                                   */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   abort program                                                      */
+     /*----------------------------------------------------------------------*/
+{
+  register void *ptr;
+
+  /* allocate memory */
+  ptr = malloc( size );
+
+  /* successful ? */
+  if (ptr == NULL) {
+    _unur_error(NULL,UNUR_ERR_ALLOC,"");
+    exit (-1);
+  }
+
+  return ptr;
+
+} /* end of _unur_malloc() */
 
 /*---------------------------------------------------------------------------*/
 
 void
-unur_test_printsample( struct unur_gen *gen, int n_rows, int n_cols )
+_unur_add_mblocks( struct unur_mblock **mblocks, void *ptr )
      /*----------------------------------------------------------------------*/
-     /* print a sample of generator output in small (n_rows x n_cols) table  */
+     /* add pointer to allocated block to list                               */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   gen    ... pointer to generator object                             */
-     /*   n_rows ... number of rows                                          */
-     /*   n_cols ... number of columns (for univariate case only)            */
+     /*   mblocks ... pointer to generator object                                */
+     /*   ptr ... allocated block                                            */
      /*----------------------------------------------------------------------*/
 {
-  int i,j,k;
+  register struct unur_mblock *new;
 
-  /* check arguments */
-  CHECK_NULL(gen,/*void*/);
+  /* get new entry */
+  /* (only once. maybe it we could allocate a larger block.
+     but this would require some additional book keeping.) */
+  new = malloc( sizeof(struct unur_mblock) );
+  COOKIE_SET(new,CK_MBLOCK);
 
-  printf("\nSAMPLE: ");              
+  /* store allocated block */
+  new->memptr = ptr;
 
-  switch (gen->method & UNUR_MASK_TYPE) {
-  
-  case UNUR_METH_DISCR:
-    for( j=0; j<n_rows; j++ ) {
-      for(i=0; i<n_cols; i++)
-	printf("%04d ",unur_sample_discr(gen));
-      printf("\n        "); 
-    }
-    break;
+  /* link new entry into list */
+  new->next = *mblocks;
+  *mblocks = new;
 
-  case UNUR_METH_CONT:
-    for( j=0; j<n_rows; j++ ) {
-      for(i=0; i<n_cols; i++)
-	printf("%8.5f ",unur_sample_cont(gen));
-      printf("\n        "); 
-    }
-    break;
-
-  case UNUR_METH_VEC:
-    { /* we need an array for the vector */
-      double *vec;
-      int dim;
-      dim = unur_get_dimension(gen);
-      vec = _unur_malloc( dim * sizeof(double) );
-	
-      for( j=0; j<n_rows; j++ ) {
-	unur_sample_vec(gen,vec);
-	printf("( %8.5f",vec[0]);
-	for (k=1; k<dim; k++)
-	  printf(", %8.5f",vec[k]);
-	printf(" )\n        ");
-      }
-      free(vec);
-    }
-    break;
-  default: /* unknown ! */
-    _unur_warning("Tests",UNUR_ERR_GENERIC,"method unknown!");
-    return;
-  }
-
-  printf("\n");
-
-} /* end of unur_test_printsample() */
+} /* end of _unur_add_mblocks() */
 
 /*---------------------------------------------------------------------------*/
 
+void
+_unur_free_mblocks( struct unur_mblock *block )
+     /*----------------------------------------------------------------------*/
+     /* free all blocks in list of allocate memory and free (destroy) list   */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   blocks ... pointer to list of blocks                               */
+     /*----------------------------------------------------------------------*/
+{
+  register struct unur_mblock *next;
 
+  while (block != NULL) {
+    COOKIE_CHECK(block,CK_MBLOCK,/*void*/);
+    next = block->next;
+    free(block->memptr);  /* free memory block */
+    free(block);          /* free postition in list */
+    block = next;
+  }
+} /* end of _unur_free_mblocks() */
 
-
-
-
+/*---------------------------------------------------------------------------*/

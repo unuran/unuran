@@ -37,13 +37,8 @@
 #include <time.h>       /** TODO: only one of these two is necessary **/
 #include <sys/time.h>
 
+#include <source_unuran.h>
 #include <unur_tests.h>
-#include <unur_methods.h>
-#include <unur_methods_lib.h>
-
-#include <unur_cookies.h>
-#include <unur_errno.h>
-#include <unur_utils.h>
 
 /*---------------------------------------------------------------------------*/
 

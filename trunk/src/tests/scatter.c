@@ -35,13 +35,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include <unur_tests.h>
-#include <unur_methods.h>
-#include <unur_methods_lib.h>
-
-#include <unur_cookies.h>
-#include <unur_errno.h>
-#include <unur_math.h>
-#include <unur_utils.h>
+#include <source_unuran.h>
 
 /*---------------------------------------------------------------------------*/
 
@@ -81,7 +75,7 @@ unur_make_scatterplot( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 #if ( ( (UNUR_URNG_INVOKE == UNUR_URNG_POINTER) || \
         (UNUR_URNG_INVOKE == UNUR_URNG_PRNG) )  && \
-        (UNUR_DEBUG & UNUR_DB_INFO) )
+        defined( UNUR_ENABLE_LOGGING ) )
 /*---------------------------------------------------------------------------*/
 {
 #define DISTR   gen->distr.data.cont
@@ -228,7 +222,7 @@ unur_make_scatterplot( struct unur_gen *gen )
 #else
 /*---------------------------------------------------------------------------*/
 {
-  _unur_warning("Scatter",UNUR_ERR_GENERIC,"Cannot make scatter plot.\n Recompile with different UNUR_URNG_INVOKE!\n Set debug flag UNUR_DB_INFO");
+  _unur_warning("Scatter",UNUR_ERR_GENERIC,"Cannot make scatter plot.\n Recompile with different UNUR_URNG_INVOKE!\n Set flag UNUR_ENABLE_LOGGING");
   return -1;
 } /* end of unur_make_scatterplot() */
 /*---------------------------------------------------------------------------*/

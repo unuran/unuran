@@ -11,7 +11,7 @@
  *         (Adaptive Ratio-Of-Uniforms)                                      *
  *                                                                           *
  *   USAGE:                                                                  *
- *         only used in unur_methods.h                                       *
+ *         only included in unuran.h                                         *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -69,7 +69,7 @@ struct unur_arou_segment {
 
   struct unur_arou_segment *next; /* pointer to next segment in list         */
 
-#if UNUR_DEBUG & UNUR_DB_COOKIES
+#ifdef UNUR_COOKIES
   unsigned cookie;              /* magic cookie                              */
 #endif
 };

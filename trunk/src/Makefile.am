@@ -1,7 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 ## $Id$
 
-SUBDIRS = distributions methods tests uniform utils
+SUBDIRS = distributions methods tests uniform
 
 AM_CFLAGS = -Wall
 
@@ -12,7 +12,6 @@ libunuran_a_SOURCES =
 libunuran_a_LIBADD = \
  methods/*.o \
  distributions/*.o   \
- utils/*.o   \
  tests/*.o   \
  uniform/*.o
 

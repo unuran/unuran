@@ -12,7 +12,7 @@
 
 #include <stdio.h>
 
-#include <unur_methods.h>
+#include <unuran.h>
 #include <unur_distribution.h>
 #include <unur_tests.h>
 

@@ -52,17 +52,10 @@
 
 /*---------------------------------------------------------------------------*/
 
-#include <unur_defs.h>
+#include <source_unuran.h>
 
-#include <unur_methods.h>
 #include <unur_distribution.h>
 #include <unur_distribution_lib.h>
-
-#include <unur_cookies.h>
-#include <unur_errno.h>
-#include <unur_math.h>
-#include <unur_umalloc.h>
-#include <unur_utils.h>
 
 /*---------------------------------------------------------------------------*/
 static const char distr_name[] = "laplace";

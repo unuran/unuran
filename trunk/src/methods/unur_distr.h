@@ -11,7 +11,7 @@
  *         declares function prototypes for manipulating such an object      *
  *                                                                           *
  *   USAGE:                                                                  *
- *         only be used in unur_methods.h and unur_distribution.h            *
+ *         only included in unuran.h                                         *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -85,7 +85,7 @@ struct unur_distr {
 
   unsigned set;                     /* indicate changed parameters           */
 
-#if UNUR_DEBUG & UNUR_DB_COOKIES    /* use magic cookies */
+#ifdef UNUR_COOKIES
   unsigned cookie;                  /* magic cookie                          */
 #endif
 };

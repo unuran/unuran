@@ -69,13 +69,7 @@
 
 /*---------------------------------------------------------------------------*/
 
-#include <unur_methods.h>
-#include <unur_methods_lib.h>
-
-#include <unur_cookies.h>
-#include <unur_errno.h>
-#include <unur_math.h>
-#include <unur_utils.h>
+#include <source_unuran.h>
 
 /*---------------------------------------------------------------------------*/
 /* Variants: none                                                            */
@@ -100,7 +94,7 @@ static struct unur_gen *_unur_utdr_create( struct unur_par *par );
 /* create new (almost empty) generator object.                               */
 /*---------------------------------------------------------------------------*/
 
-#if UNUR_DEBUG & UNUR_DB_INFO
+#ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 /* the following functions print debugging information on output stream,     */
 /* i.e., into the log file if not specified otherwise.                       */
@@ -452,7 +446,7 @@ unur_utdr_init( struct unur_par *par )
       }
     }
 
-#if UNUR_DEBUG & UNUR_DB_INFO
+#ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
     if (gen->debug) _unur_utdr_debug_init(par,gen,try,trys,cfac,setupok);
 #endif
@@ -478,9 +472,9 @@ unur_utdr_init( struct unur_par *par )
   return gen;
 
  error:
-#if UNUR_DEBUG & UNUR_DB_INFO
-    /* write info into log file */
-    if (gen->debug) _unur_utdr_debug_init(par,gen,try,trys,cfac,setupok);
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  if (gen->debug) _unur_utdr_debug_init(par,gen,try,trys,cfac,setupok);
 #endif
   free(par); 
   unur_utdr_free(gen);
@@ -670,7 +664,9 @@ _unur_utdr_create( struct unur_par *par )
 /**  Debugging utilities                                                    **/
 /*****************************************************************************/
 
-#if UNUR_DEBUG & UNUR_DB_INFO
+/*---------------------------------------------------------------------------*/
+#ifdef UNUR_ENABLE_LOGGING
+/*---------------------------------------------------------------------------*/
 
 static void
 _unur_utdr_debug_init( struct unur_par *par, struct unur_gen *gen,
@@ -714,7 +710,6 @@ _unur_utdr_debug_init( struct unur_par *par, struct unur_gen *gen,
 
 } /* end of _unur_utdr_debug_init() */
 
-#endif
-
-/*****************************************************************************/
-
+/*---------------------------------------------------------------------------*/
+#endif   /* end UNUR_ENABLE_LOGGING */
+/*---------------------------------------------------------------------------*/

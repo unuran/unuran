@@ -38,33 +38,6 @@
 #define __UNUR_DEFS__H_SEEN
 /*---------------------------------------------------------------------------*/
 
-#include <config.h> /* ??????? */
-
-/*---------------------------------------------------------------------------*/
-
-#include <float.h>
-#include <math.h>
-#include <stdlib.h>
-
-/*---------------------------------------------------------------------------*/
-/* Defining infinity                                                         */
-/* (we use the largest possible value to indicate infinity)                  */
-#define UNUR_INFINITY  HUGE_VAL     
-
-/*---------------------------------------------------------------------------*/
-/* invoke uniform random number generator                                    */
-#define UNUR_URNG_POINTER  2     /* use a pointer to a routine               */
-#define UNUR_URNG_PRNG     3     /* use a pointer to gen. from prng-2.2      */
-
-/*---------------------------------------------------------------------------*/
-/* debugging flags                                                           */
-#define UNUR_DB_STDERR     0x001u   /* write warnings and errors on stderr   */
-#define UNUR_DB_LOG        0x002u   /* write warnings and infos into logfile */
-#define UNUR_DB_COOKIES    0x004u   /* use magic cookies                     */
-#define UNUR_DB_CHECKNULL  0x008u   /* check for NULL pointer                */
-#define UNUR_DB_CHECKARGS  0x010u   /* check arguments                       */
-#define UNUR_DB_INFO       0x020u  /* write info about generator into logfile */
-
 /*---------------------------------------------------------------------------*/
 /* include library compilation switches and defaults                         */
 #include <unuran_config.h>

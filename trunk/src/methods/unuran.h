@@ -4,14 +4,13 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: unur_methods.h                                                    *
+ *   FILE: unuran.h                                                          *
  *                                                                           *
  *   PURPOSE:                                                                *
  *         defines macros and declares structures and function prototypes    *
  *         for all UNURAN methods                                            *
  *                                                                           *
  *   USAGE:                                                                  *
- *         included in all methods source files.                             *
  *         required for every application of UNURAN.                         *
  *                                                                           *
  *****************************************************************************
@@ -39,12 +38,20 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef __UNUR_METHODS_H_SEEN
-#define __UNUR_METHODS_H_SEEN
+#ifndef __UNURAN_H_SEEN
+#define __UNURAN_H_SEEN
 /*---------------------------------------------------------------------------*/
 
 /* compiler switches and defaults */
-#include <unur_defs.h>
+#include <unuran_config.h>
+
+/** falscher platz !! **/
+/*---------------------------------------------------------------------------*/
+/* structures                                                                */
+struct unur_distr;    /* distribution object      */
+struct unur_par;      /* parameters for generator */
+struct unur_gen;      /* generator object         */
+
 
 /* tools for allocating memory */
 #include <unur_umalloc.h>
@@ -124,7 +131,7 @@ struct unur_par {
   struct unur_distr *distr;   /* pointer to distribution object              */
 
   unsigned debug;             /* debugging flags                             */
-#if UNUR_DEBUG & UNUR_DB_COOKIES  /* use magic cookies */
+#ifdef UNUR_COOKIES
   unsigned cookie;            /* magic cookie                                */
 #endif
 };
@@ -162,7 +169,8 @@ struct unur_gen {
   char *genid;                /* identifier for generator                    */
   
   unsigned debug;             /* debugging flags                             */
-#if UNUR_DEBUG & UNUR_DB_COOKIES  /* use magic cookies */
+
+#ifdef UNUR_COOKIES
   unsigned cookie;            /* magic cookie                                */
 #endif
 };
@@ -170,7 +178,7 @@ struct unur_gen {
 /*---------------------------------------------------------------------------*/
 /* invoke generators                                                         */
 
-#if UNUR_DEBUG & UNUR_DB_CHECKNULL
+#ifdef UNUR_CHECKNULL
 /* check for (invalid) NULL pointer */
 
 #define unur_init(par)                ((par) ? (par)->init(par) : NULL)
@@ -191,14 +199,12 @@ struct unur_gen {
 
 #define unur_free(gen)                (gen)->destroy(gen)
 
-#endif  /* UNUR_DB_CHECKNULL */
+#endif  /* UNUR_CHECKNULL */
 
 /*---------------------------------------------------------------------------*/
 /* misc prototype                                                            */
 #include <unur_misc.h>
 
 /*---------------------------------------------------------------------------*/
-#endif  /* __UNUR_METHODS_H_SEEN */
+#endif  /* __UNURAN_H_SEEN */
 /*---------------------------------------------------------------------------*/
-
-

@@ -37,37 +37,24 @@
 #define __UNURAN_CONFIG_H_SEEN
 /*---------------------------------------------------------------------------*/
 
+#include <config.h> /* ??????? */
+
+
+/** falscher platz !! **/
+#include <float.h>
+#include <stdlib.h>
 /*---------------------------------------------------------------------------*/
+/* Defining infinity                                                         */
+/* (we use the largest possible value to indicate infinity)                  */
+#include <math.h>
+#define UNUR_INFINITY  HUGE_VAL     
+
+
+
 
 /*---------------------------------------------------------------------------*/
-/* Debugging.                                                                 */
-/*                                                                           */
-/* Debugging flags are                                                       */
-/*                                                                           */
-/*   UNUR_DB_STDERR    ...    write warnings and errors on stderr            */
-/*   UNUR_DB_LOG       ...    write warnings and infos into logfile          */
-/*   UNUR_DB_COOKIES   ...    use magic cookies                              */
-/*   UNUR_DB_CHECKNULL ...    check for NULL pointer                         */
-/*   UNUR_DB_CHECKARGS ...    check arguments                                */
-/*   UNUR_DB_INFO      ...    write info about generator into logfile        */
-
-#if 1
-#define UNUR_DEBUG (  \
-          UNUR_DB_STDERR    | \
-          UNUR_DB_LOG       | \
-          UNUR_DB_COOKIES   | \
-          UNUR_DB_CHECKNULL | \
-          UNUR_DB_CHECKARGS | \
-          UNUR_DB_INFO      | \
-0 )
-
-#else
-
-#define UNUR_DEBUG 0
-
-#endif
-
-/*            UNUR_DB_INFO      | \ */
+/* write info about generator and trace of generation into logfile.          */
+#define UNUR_ENABLE_LOGGING
 
 /*---------------------------------------------------------------------------*/
 /* Set default flag for debugging of generators:                             */
@@ -75,7 +62,6 @@
 /*    1  ... write only pameters and resulting structure of generator.       */
 /*    ~0 ... show all available information.                                 */
 /* (Detailed discription of possible flags (besides 1) in generator files.)  */
-
 #define UNUR_DEBUGFLAG_DEFAULT   (~0u)
 
 /*---------------------------------------------------------------------------*/
@@ -84,6 +70,35 @@
 
 /*  #define UNUR_LOG_FILE "unuran.log" */
 #define UNUR_LOG_FILE "stdout"
+
+
+/*---------------------------------------------------------------------------*/
+/* warnings and error messages.                                              */
+
+/* enable warnings and error messages */
+#define UNUR_WARNINGS_ON
+
+/* write warnings and errors into logfile */
+#define UNUR_ENABLE_LOGFILE
+
+/* write warnings and errors to stderr */
+#define UNUR_ENABLE_STDERR
+
+
+/*---------------------------------------------------------------------------*/
+/* check for invalide NULL pointer                                           */
+/* (needs not be enabled unless the user is too lazy to verified pointers    */
+/* to generator objects after initialization.)                               */
+#define UNUR_CHECKNULL
+
+/*---------------------------------------------------------------------------*/
+/* Debugging tools                                                           */
+/* (for development only. there is no need to set these flags unless         */
+/* changes are made in the library.)                                         */
+
+/* use magic cookies to validate type of pointer */
+#define UNUR_COOKIES
+
 
 /*---------------------------------------------------------------------------*/
 /* Invoke uniform random number generator.                                   */
@@ -98,29 +113,29 @@
 /*     Use a pointer to a routine from the plab library                      */
 /*     (see http://random.mat.sbg.ac.at/ftp/pub/software/gen/)               */
 /*                                                                           */
+/* there is no need to change the following two lines!                       */
+#define UNUR_URNG_POINTER  2     /* use a pointer to a routine               */
+#define UNUR_URNG_PRNG     3     /* use a pointer to gen. from prng-2.2      */
+/*---------------------------------------------------------------------------*/
 
+/* set type of uniform generator                                             */
 #define UNUR_URNG_INVOKE UNUR_URNG_POINTER
 /*  #define UNUR_URNG_INVOKE UNUR_URNG_PRNG */
 
 /*---------------------------------------------------------------------------*/
 /* Default name of uniform random number generator.                          */
-
 #if UNUR_URNG_INVOKE == UNUR_URNG_POINTER
-
 /* valid name of a C routine                                                 */
 #define UNUR_URNG_DEFAULT uniform
-
 #elif UNUR_URNG_INVOKE == UNUR_URNG_PRNG
-
 /* valid parameter (char) string for prng-2.2                                */
 #define UNUR_URNG_DEFAULT "LCG(2147483647,950706376,0,1)"
-
 #else
-
 #error UNUR_URNG_INVOKE not valid !!
-
 #endif  /* UNUR_URNG_INVOKE */
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 /** TODO: we have to find a better place for these macros                    */
@@ -130,6 +145,9 @@
 #define UNUR_DISTR_MAXPARAMS  5 /* maximal number of parameters for distribution */
 
 /*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*---------------------------------------------------------------------------*/
 #endif  /* __UNURAN_CONFIG_H_SEEN */
 /*---------------------------------------------------------------------------*/

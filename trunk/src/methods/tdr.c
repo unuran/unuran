@@ -290,13 +290,7 @@
 
 /*---------------------------------------------------------------------------*/
 
-#include <unur_methods.h>
-#include <unur_methods_lib.h>
-
-#include <unur_cookies.h>
-#include <unur_errno.h>
-#include <unur_math.h>
-#include <unur_utils.h>
+#include <source_unuran.h>
 
 /*---------------------------------------------------------------------------*/
 /* Variants                                                                  */
@@ -396,8 +390,7 @@ static void _unur_tdr_iv_stack_push( struct unur_gen *gen );
 /* push the last popped interval back onto the stack.                        */
 /*---------------------------------------------------------------------------*/
 
-
-#if UNUR_DEBUG & UNUR_DB_INFO
+#ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 /* the following functions print debugging information on output stream,     */
 /* i.e., into the log file if not specified otherwise.                       */
@@ -937,7 +930,7 @@ unur_tdr_init( struct unur_par *par )
   /* make initial guide table */
   _unur_tdr_make_guide_table(gen);
 
-#if UNUR_DEBUG & UNUR_DB_INFO
+#ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
   if (gen->debug) _unur_tdr_debug_init(par,gen);
 #endif
@@ -1310,7 +1303,7 @@ unur_tdr_sample_check( struct unur_gen *gen )
       error = 1;
     }
 
-#if UNUR_DEBUG & UNUR_DB_INFO
+#ifdef UNUR_ENABLE_LOGGING
     /* write info into log file (in case error) */
     if (error && (gen->debug & TDR_DEBUG_SAMPLE)) 
       _unur_tdr_debug_sample( gen, iv, pt, x, fx, hx, sqx ); 
@@ -1364,8 +1357,9 @@ unur_tdr_free( struct unur_gen *gen )
   /* we cannot use this generator object any more */
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
+
+#ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-#if UNUR_DEBUG & UNUR_DB_INFO
   if (gen->debug) _unur_tdr_debug_free(gen);
 #endif
 
@@ -2099,7 +2093,7 @@ _unur_tdr_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_old
   COOKIE_CHECK(gen,CK_TDR_GEN,0);
   COOKIE_CHECK(iv_oldl,CK_TDR_IV,0);
 
-#if UNUR_DEBUG & UNUR_DB_INFO
+#ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
   if (gen->debug & TDR_DEBUG_SPLIT) 
     _unur_tdr_debug_split_start( gen,iv_oldl,x,fx );
@@ -2154,7 +2148,7 @@ _unur_tdr_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_old
 
       /* new construction point not suitable --> do not add */
       _unur_warning(gen->genid,UNUR_ERR_SAMPLE,"Cannot split interval at given point.");
-#if UNUR_DEBUG & UNUR_DB_INFO
+#ifdef UNUR_ENABLE_LOGGING
       /* write info into log file */
       if (gen->debug & TDR_DEBUG_SPLIT) 
 	_unur_tdr_debug_split_stop( gen,iv_oldl,iv_newr );
@@ -2177,7 +2171,7 @@ _unur_tdr_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_old
   /* update guide table */ 
   _unur_tdr_make_guide_table(gen);
   
-#if UNUR_DEBUG & UNUR_DB_INFO
+#ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
   if (gen->debug & TDR_DEBUG_SPLIT) 
     _unur_tdr_debug_split_stop( gen,iv_oldl,iv_newr );
@@ -2330,7 +2324,9 @@ _unur_tdr_iv_stack_push( struct unur_gen *gen )
 /**  Debugging utilities                                                    **/
 /*****************************************************************************/
 
-#if UNUR_DEBUG & UNUR_DB_INFO
+/*---------------------------------------------------------------------------*/
+#ifdef UNUR_ENABLE_LOGGING
+/*---------------------------------------------------------------------------*/
 
 static void
 _unur_tdr_debug_init( struct unur_par *par, struct unur_gen *gen )
@@ -2693,5 +2689,6 @@ _unur_tdr_debug_split_stop( struct unur_gen *gen,
 
 } /* end of _unur_tdr_debug_split_stop() */
 
-/*****************************************************************************/
-#endif
+/*---------------------------------------------------------------------------*/
+#endif   /* end UNUR_ENABLE_LOGGING */
+/*---------------------------------------------------------------------------*/

@@ -4,7 +4,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE:      misc.c                                                       *
+ *   FILE: x_misc.c                                                          *
  *                                                                           *
  *   miscelleanous routines                                                  *
  *                                                                           *
@@ -34,14 +34,7 @@
 
 /*---------------------------------------------------------------------------*/
 
-#include <unur_defs.h>
-#include <unur_methods.h>
-#include <unur_methods_lib.h>
-
-#include <unur_cookies.h>
-#include <unur_errno.h>
-#include <unur_math.h>
-#include <unur_utils.h>
+#include <source_unuran.h>
 
 /*---------------------------------------------------------------------------*/
 
@@ -65,7 +58,7 @@ unur_set_debug( struct unur_par *par, unsigned debug )
 {
   CHECK_NULL(par,0);
 
-#if UNUR_DEBUG & UNUR_DB_INFO
+#ifdef UNUR_ENABLE_LOGGING
   par->debug = debug;
   return 1;
 #else
@@ -77,93 +70,6 @@ unur_set_debug( struct unur_par *par, unsigned debug )
   
 /*---------------------------------------------------------------------------*/
 
-/*****************************************************************************/
-/**                                                                         **/
-/**  Set, get or change uniform RNG for generator                           **/
-/**                                                                         **/
-/*****************************************************************************/
-
-/*---------------------------------------------------------------------------*/
-
-int
-unur_set_urng( struct unur_par *par, UNUR_URNG_TYPE urng )
-     /*----------------------------------------------------------------------*/
-     /* set uniform random number generator                                  */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   par     ... pointer to parameter for building generator object     */
-     /*   urng    ... pointer to uniform random number generator             */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   1 ... on success                                                   */
-     /*   0 ... on error                                                     */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  CHECK_NULL(par,0);
-  CHECK_NULL(urng,0);
-
-  par->urng = urng;
-
-  return 1;
-} /* end of unur_set_urng() */
-
-/*---------------------------------------------------------------------------*/
-
-UNUR_URNG_TYPE
-unur_get_urng( struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* get uniform random number generator                                  */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen     ... pointer to generator object                            */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   Pointer to old uniform RNG                                         */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return NULL                                                        */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  CHECK_NULL(gen,NULL);
-
-  return gen->urng;
-
-} /* end of unur_get_urng() */
-
-/*---------------------------------------------------------------------------*/
-
-UNUR_URNG_TYPE
-unur_chg_urng( struct unur_gen *gen, UNUR_URNG_TYPE urng )
-     /*----------------------------------------------------------------------*/
-     /* set uniform random number generator                                  */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen     ... pointer to generator object                            */
-     /*   urng    ... pointer to uniform random number generator             */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   Pointer to old uniform RNG                                         */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return NULL                                                        */
-     /*----------------------------------------------------------------------*/
-{
-  UNUR_URNG_TYPE urng_old;
-
-  /* check arguments */
-  CHECK_NULL(gen,NULL);
-  CHECK_NULL(urng,NULL);
-
-  urng_old = gen->urng;
-
-  gen->urng = urng;
-
-  return urng_old;
-} /* end of unur_chg_urng() */
-
-/*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/
 /**                                                                         **/
@@ -204,6 +110,50 @@ unur_get_dimension( struct unur_gen *gen )
 } /* end of unur_get_dimension() */
 
 /*---------------------------------------------------------------------------*/
+
+/*****************************************************************************/
+/**                                                                         **/
+/**  misc                                                                   **/
+/**                                                                         **/
+/*****************************************************************************/
+
+/*---------------------------------------------------------------------------*/
+
+#define ARCMEAN_HARMONIC 1.e5  /* use harmonic mean when abs larger than this value */
+
+double
+_unur_arcmean( double x0, double x1 )
+     /*----------------------------------------------------------------------*/
+     /* compute "arctan mean" of two numbers.                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   x0, x1 ... two numbers                                             */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   mean                                                               */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   "arctan mean" = tan(0.5*(arctan(x0)+arctan(x1)))                   */
+     /*                                                                      */
+     /*   a combination of arithmetical mean (for x0 and x1 close to 0)      */
+     /*   and the harmonic mean (for |x0| and |x1| large).                   */
+     /*----------------------------------------------------------------------*/
+{
+  /** TODO: possible over/underflow (?) **/
+
+  /* we need x0 < x1 */
+  if (x0>x1) {double tmp = x0; x0=x1; x1=tmp;}
+
+  if (x1 < -ARCMEAN_HARMONIC || x0 > ARCMEAN_HARMONIC)
+    /* use harmonic mean */
+    return 2./(1./x0 + 1./x1);
+  
+  return tan( (((x0<=-INFINITY) ? -M_PI/2. : atan(x0)) + ((x1>=INFINITY) ? M_PI/2. : atan(x1))) / 2. );
+
+} /* end of _unur_arcmean() */
+
+/*---------------------------------------------------------------------------*/
+
 
 
 

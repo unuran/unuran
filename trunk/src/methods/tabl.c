@@ -65,13 +65,7 @@
 
 /*---------------------------------------------------------------------------*/
 
-#include <unur_methods.h>
-#include <unur_methods_lib.h>
-
-#include <unur_cookies.h>
-#include <unur_errno.h>
-#include <unur_math.h>
-#include <unur_utils.h>
+#include <source_unuran.h>
 
 /*---------------------------------------------------------------------------*/
 /* Constants                                                                 */
@@ -173,7 +167,7 @@ static struct unur_tabl_interval *_unur_tabl_iv_stack_pop( struct unur_gen *gen 
 /* push the last popped interval back onto the stack.                         */
 /*---------------------------------------------------------------------------*/
 
-#if UNUR_DEBUG & UNUR_DB_INFO
+#ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 /* the following functions print debugging information on output stream,     */
 /* i.e., into the log file if not specified otherwise.                       */
@@ -696,7 +690,7 @@ unur_tabl_init( struct unur_par *par )
     return NULL;
   }
 
-#if UNUR_DEBUG & UNUR_DB_INFO
+#ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
   if (gen->debug) _unur_tabl_debug_init(par,gen);
   if (gen->debug & TABL_DEBUG_A_IV)
@@ -723,7 +717,7 @@ unur_tabl_init( struct unur_par *par )
   /* make initial guide table */
   _unur_tabl_make_guide_table(gen);
 
-#if UNUR_DEBUG & UNUR_DB_INFO
+#ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
   if (gen->debug)
     _unur_tabl_debug_init_finished(par,gen);
@@ -1002,8 +996,8 @@ unur_tabl_free( struct unur_gen *gen )
   /* we cannot use this generator object any more */
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
+#ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-#if UNUR_DEBUG & UNUR_DB_INFO
   if (gen->debug) _unur_tabl_debug_free(gen);
 #endif
 
@@ -1724,8 +1718,8 @@ _unur_tabl_iv_stack_push( struct unur_gen *gen )
 /**  Debugging utilities                                                    **/
 /*****************************************************************************/
 
-#if UNUR_DEBUG & UNUR_DB_INFO
-
+/*---------------------------------------------------------------------------*/
+#ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 
 #define empty_line() fprintf(log,"%s:\n",gen->genid);
@@ -1966,6 +1960,6 @@ _unur_tabl_debug_intervals( struct unur_gen *gen, int print_areas )
 
 } /* end of _unur_tabl_debug_intervals */
 
-/*****************************************************************************/
-
-#endif
+/*---------------------------------------------------------------------------*/
+#endif   /* end UNUR_ENABLE_LOGGING */
+/*---------------------------------------------------------------------------*/

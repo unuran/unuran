@@ -11,7 +11,7 @@
  *         (Simple universal generator, ratio-of-uniforms method)            *
  *                                                                           *
  *   USAGE:                                                                  *
- *         only used in unur_methods.h                                       *
+ *         only included in unuran.h                                         *
  *                                                                           *
  *****************************************************************************
      $Id$

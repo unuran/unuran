@@ -5,14 +5,17 @@ AM_CFLAGS = -Wall
 
 INCLUDES = \
  -I$(top_srcdir)/src \
- -I$(top_srcdir)/src/distributions \
- -I$(top_srcdir)/src/utils
+ -I$(top_srcdir)/src/distributions
 
 noinst_LIBRARIES = libmethods.a
 
 libmethods_a_SOURCES = \
  distr.c \
- misc.c \
+ x_error.c \
+ x_misc.c \
+ x_stream.c \
+ x_umalloc.c \
+ x_urng.c \
  arou.c \
  cstd.c \
  dau.c  \
@@ -26,7 +29,9 @@ libmethods_a_SOURCES = \
  utdr.c
 
 pkginclude_HEADERS = \
- unur_methods.h \
+ unuran.h \
+ unur_umalloc.h \
+ unur_urng.h \
  unur_distr.h \
  unur_misc.h  \
  unur_arou.h \
@@ -41,8 +46,15 @@ pkginclude_HEADERS = \
  unur_unif.h \
  unur_utdr.h
 
-noinst_HEADERS =  unur_methods_lib.h 
+noinst_HEADERS = \
+ source_unuran.h \
+ source_cookies.h \
+ source_errno.h \
+ source_math.h
 
 # clean backup files too
 clean-local:
 	rm -f *~
+
+
+

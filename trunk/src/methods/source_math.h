@@ -4,14 +4,15 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: unur_misc.h                                                       *
+ *   FILE: source_math.h                                                     *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         defines function prototypes for miscelleanous routines            *
- *         parameters in generator objects.                                  *
+ *         declares macros, constants, structures, function prototypes, etc. *
+ *         for using mathematics in UNURAN.                                  *
  *                                                                           *
  *   USAGE:                                                                  *
- *         only included in unuran.h                                         *
+ *         internal header file.                                             *
+ *         only included in source_unuran.h                                  *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -38,39 +39,61 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef __UNUR_MISC_H_SEEN
-#define __UNUR_MISC_H_SEEN
+#ifndef __SOURCE_MATH_H_SEEN
+#define __SOURCE_MATH_H_SEEN
 /*---------------------------------------------------------------------------*/
 
+/*---------------------------------------------------------------------------*/
+/* Defining infinity (just to avoid writing UNUR_INIFINITY)                  */
+
+#define INFINITY  UNUR_INFINITY    /* This must be already defined !         */
 
 /*---------------------------------------------------------------------------*/
-/* set debugging flag for generator                                          */
-int unur_set_debug( struct unur_par *parameter, unsigned debug );
+/* mathematical constants                                                    */
+
+#ifndef M_E
+#define M_E        2.71828182845904523536028747135      /* e */
+#endif
+
+#ifndef M_SQRT2
+#define M_SQRT2    1.41421356237309504880168872421      /* sqrt(2) */
+#endif
+
+#ifndef M_SQRT3
+#define M_SQRT3    1.73205080756887729352744634151      /* sqrt(3) */
+#endif
+
+#ifndef M_PI
+#define M_PI       3.14159265358979323846264338328      /* pi */
+#endif
+
+#ifndef M_PI_4
+#define M_PI_4     0.78539816339744830966156608458      /* pi/4 */
+#endif
+
+#ifndef M_SQRTPI
+#define M_SQRTPI   1.77245385090551602729816748334      /* sqrt(pi) */
+#endif
+
+#ifndef M_LN10
+#define M_LN10     2.30258509299404568401799145468      /* ln(10) */
+#endif
+
+#ifndef M_LN2
+#define M_LN2      0.69314718055994530941723212146      /* ln(2) */
+#endif
+
+#ifndef M_LNPI
+#define M_LNPI     1.14472988584940017414342735135      /* ln(pi) */
+#endif
+
+#ifndef M_EULER
+#define M_EULER    0.57721566490153286060651209008      /* Euler constant */
+#endif
 
 /*---------------------------------------------------------------------------*/
-/* set, get or change uniform RNG for generator                              */
-
-int unur_set_urng( struct unur_par *par, UNUR_URNG_TYPE urng );
-UNUR_URNG_TYPE unur_chg_urng( struct unur_gen *gen, UNUR_URNG_TYPE urng );
-UNUR_URNG_TYPE unur_get_urng( struct unur_gen *gen );
-
+#endif  /* __SOURCE_MATH_H_SEEN */
 /*---------------------------------------------------------------------------*/
-/* get and set default uniform RNG                                           */
-/* (defined in src/utils/urng.c)                                             */
-
-UNUR_URNG_TYPE unur_get_default_urng( void );
-UNUR_URNG_TYPE unur_set_default_urng( UNUR_URNG_TYPE urng_new );
-
-/*---------------------------------------------------------------------------*/
-/* get dimension of generator for (multivariate) distribution                */
-
-int unur_get_dimension( struct unur_gen *gen );
-
-/*---------------------------------------------------------------------------*/
-#endif  /* __UNUR_MISC_H_SEEN */
-/*---------------------------------------------------------------------------*/
-
-
 
 
 

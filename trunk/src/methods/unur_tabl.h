@@ -11,7 +11,7 @@
  *         (Ahren's TABLe method: piecewise constant hat)                    *
  *                                                                           *
  *   USAGE:                                                                  *
- *         only used in unur_methods.h                                       *
+ *         only included in unuran.h                                         *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -74,7 +74,7 @@ struct unur_tabl_interval {
 
   struct unur_tabl_interval *next;  /* pointer to next element in list       */
 
-#if UNUR_DEBUG & UNUR_DB_COOKIES
+#ifdef UNUR_COOKIES
   unsigned cookie;      /* magic cookie                                      */
 #endif
 };

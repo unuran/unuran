@@ -11,7 +11,7 @@
  *         ((Discrete) Alias-Urn)                                            *
  *                                                                           *
  *   USAGE:                                                                  *
- *         only used in unur_methods.h                                       *
+ *         only included in unuran.h                                         *
  *                                                                           *
  *****************************************************************************
      $Id$

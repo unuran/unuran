@@ -1,84 +1,82 @@
 #!/usr/bin/perl
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# Perl spript zur automatischen Erstellung der   
-# (Methoden-)Funktions- Referenz von UNURAN im TEX-Info Format
+# Perl spript generating the referernce of the methods/functions
+# of UNURAN in the texinfo format.   
 # 
-# 
-# Aufruf:  ./unuran.perl ../src/methods/*.h
-#      (unuran.perl liegt im Verzeichnis /unuran/doc/
+# usage:  ./unuran.perl ../src/methods/*.h
+#      (unuran.perl is in the directory /unuran/doc/
 # Input:   header-files
-# Output:  $OUTFILE enthaelt texinfo-format
+# Output:  $OUTFILE contains docomentation in texinfo format
 # 
 # E. JANKA und G. TIRLER
 # $Id$
 #
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #
-# Das Perl-skrip durchsucht nach folgenden Schluesselworten      
-# und und erzeugt Output wiefolgt:
-# Folgende Schluesselwoerter beginnen mit `=...'
-# Schluesselwort darf nur von Leerzeichen oder `/*'
-# eingeleitet werden
+# This script searches for keywords beginning with `=...'
+# The keywords may only be preceded by white space or `/*'
 #
+# =METHOD  name [longform]
+#          name and description of a method within a header file
 #
-# =METHOD  name [Langtext]
-#          allgem. Beschreibung der Methode in Header file
-#
-#          name       ... Name der Methode, nur EIN Wort!
-#          [Langtext] ... optional, lange Beschreibung
+#          name       ... Name of method (ONE word!)
+#          [longform] ... optional, long form of the name
 #          Beispiel:
 #             =METHODS NINV Numerical INVersion 
 #                     
-#          nachfolgende Kommentarzeilen/Bloecke (bis zur ersten
-#          Nicht-Kommentar-Leerzeile) werden in TEXInfo-format ausgegeben
+#          IMMEDIATLY following comments (up to the first
+#          non-comment-blank line) will be used as description
+#          of the method and written to the output file. 
 #          
 # =ROUTINES
-#          sucht C function zwischen =ROUTINES und =END 
-#          beginnend mit `unur_' und endend mit `(...)'.
+#          C functions between =ROUTINES and =END beginning
+#          with `unur_' and endingd with `(...)' will be 
+#          documented in the output file.
 #
-#          Die unmittelbar nachfolgenden Kommentarbloecke/Zeilen
-#          werden mit einer Nich-Kommentar-Leerzeile abgeschlossen.
-#          Kommentare direkt vor jeder Funktion gelten als
-#          interne Kommentare und werden nicht ausgegeben.
+#          IMMEDIATLY following comments (up to the first
+#          non-comment-blank line) will be used as description
+#          of the method and written to the output file. 
+#          Comments bevore the function declaration or after
+#          a blank line will be handled as internal information
 #          
-# =END     schliesst =ROUTINES ab (notwendig)
+# =END     Ends the block beginning with  =ROUTINES.
+#          Function declarations not being within this block
+#          will be ingored. =END must not be omitted.
 #
 # =OPTIONAL, =REQUIRED
-#          diese beiden Schluesselworte koennen ZWISCHEN
-#          =ROUTINES und =END stehen um die Unterprogramme
-#          genauer zu spezifizieren.
-#          Beide werden von diesem Script aber ignoriert,
-#          erzeugen also keine Warnung.
+#          These key words are allowed BETWEEN =ROUTINES and
+#          and =END and might be used for specification of
+#          the subroutines.
+#          Both will be ingored by this script;
+#          There won't be a warning if used.
 #
-# (=>)     diese Zeichenfolge in Kommentarzeile wird in TEXINFO 
-#          nicht ausgegegben (dient zur spaeteren Verwendung)
+# (=>)     This string within a comment won't appear in
+#          the texinfo output. 
 #
-# =[A-Z,0-9]* Unbekannte '=...' Zeichenfolgen fuehren zu einer  
-#             Warnung.
+# =[A-Z,0-9]* Unknown `=...' key words will produce warnings  
 #
-# =ERRORCODE derzeit ohne Funktion
+# =ERRORCODE not in use
 #
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
-# Kommentare sind nun erlaubt 
+# comments possible 
 $CENABLE = 0;
 # $_ ist Kommentarzeile (bei $CENABLE = 1) 
 $KOMMENT = 0;
-# Kennzeichnet Kommentarbloecke (zur Unterscheidung von Kommentarzeilen)
+# comment with more than just one line
 $BLOCK   = 0;
-# Das soll ausgedruckt werden
+# contains line to be printed
 $PRINT = "";
 
-
-# Deklarations/Beschreibungsbereich der Routinen gefunden
+# region with declaration of routines found
 $ROUTINES = 0;
 
-# bekannte Datentypen 
+# known data types 
 @TYPES = ("UNUR_PAR", "UNUR_GEN", "struct", "void", "int", "double", "float", "long", "char", "short", "unsigned", "signed");
 
-# erlaubte Befehle
+# permitted key words (no warning)
 @COMMAND =("=METHOD", "=ROUTINES", "=REQUIRED", "=OPTIONAL", "=END");
 
 # output file:
@@ -88,36 +86,36 @@ open(OUTFILE, ">qstart_function_reference.texi");
 while($_ = <>)
 { 
     chomp; 
-   
-    # Beschreibung der Routinen beginnt mit =ROUTINES
+
+    # Region with description of the routines begins with =ROUTINES
     if ($_ =~/(^\s*\/\*\s*|^\s*)=ROUTINES/){
      $ROUTINES = 1;  
     }
 
-    # Beschreibung der Routinen endet mit =END
+    # Region with description of the routines ends with =END
     if ($_ =~/(^\s*\/\*\s*|^\s*)=END/){
-       # =END kann nur bei $ROUTINES = 1 erfolgen
+       # =END only possible if $ROUTINES = 1 (error)
        if ($ROUTINES = 0){
            print "\n\nERROR: =END before =ROUTINES\n\n";
        }
        $ROUTINES = 0;
-       # letzte itemize-Umgebung muss beendet werden
+       # last itemize environment must be finished 
        print OUTFILE "\@end itemize\n";
     }
 
 
-    # Kommentare(Bloecke) beginnen mit /* (bei $CENABLE=1)
+    # comments start with `/*' (in case of$CENABLE=1)
     if ($CENABLE == 1 && $_ =~/^\s*\/\*/){    
 	$KOMMENT = 1;
     }
 
-    # Kommentare enden mit Leerzeile 
+    # comments end with a blank line
     if ($BLOCK == 0 && $_ =~ /^\s*$/){
         $KOMMENT = 0;
         $CENABLE = 0;
     }
   
-    # ueberpruefung ob falsches command (z.B.tippfehler?)
+    # check for wrong key worde (e.g. typing error)
     if ($_ =~/^(\s*\/\*\s*|\s*)(=.*?)\W/){
 	$ERROR = 1;
 	foreach $command (@COMMAND){
@@ -130,14 +128,12 @@ while($_ = <>)
 	}
     }
 
-		
-
    
-    # Suche Beschreibung der Methode (=METHOD)
+    # name and description of a method (=METHOD)
     if ($_ =~/^(\s*\/\*\s*|\s*)=METHOD\s*(\w+)\s*(.*)/){
-        # folgende Kommentare werden gedruckt 
+        # comments possible 
         $CENABLE = 1;
-        # sind bereits mitten im Kommentar
+        # already within a comment
 	$KOMMENT = 1;
         print OUTFILE "\n\n\@node ", $2, "\n";
         print OUTFILE "\@subsection ", $2, " ", $3, "\n\n";
@@ -145,19 +141,19 @@ while($_ = <>)
 	$BLOCK=1;
     }
 
-   # Suche Funktion und Definitionszeilen
+   # Screening for function declarations
    foreach $type (@TYPES){
 
-      # Suche Zeile mit erlauben Funktionsdeklarationen
-      # (beginnen mit unur_  (_unur_ nicht erlaubt (-> intern) )
+      # Screening for functions with allowed names
+      # (beginning with `unur_'  (`_unur_...' is ignored (-> intern) )
       if ($_ =~ /_unur/ ){
           $CENABLE = 0;
-          $KOMMENT = 0; # eigentlich enden Kommentare mit Leerzeile
+          $KOMMENT = 0;
       }
       elsif ( $ROUTINES == 1 && $_ =~/^\s*($type.*)\s*\((.*\))\s*;/){
            $CENABLE = 1;
-           $DECL = $1;   # vor der oeffnenden Funktionsklammer
-           $FUNC = $2;   # zwischen den Funktionsklammern 
+           $DECL = $1;   # string bevore the braces
+           $FUNC = $2;   # string between the braces 
            $DECL  =~ /(.*(\s+?|\*))(\w+)/;
            $DECL1 = $1;
 	   $DECL2 = $3;
@@ -174,32 +170,30 @@ while($_ = <>)
   }
 
 
-  # Ausgabe der Kommentare    
+  # output of comments
   if ($KOMMENT == 1){
 
-     # einzelne Kommentarzeile  (beginnnen mit "/*" und enden mit "*/")
+     # comment -- single line  (begins with `/*', ends with `*/')
      if ( $_ =~ /^(\s*\/\*\s*)(.*?)(\s*\*\/)/ ){
 	$PRINT = join  '',$2,"\n";
      }
-     # Kommentarzeile in einem Kommentarblock (nicht erste Zeile)
+     # comment -- more lines (but not the first line)
      elsif( $BLOCK == 1 && $_ =~ /^\s*(\*\/)?(.*?)\s*(\*\/)?$/ ){
 	 $PRINT = join '', $2, " ";
      }
-     # Beginn eines Kommentarblocks (Zeile beginnt mit "/*"
-     # und darf "*/" nicht enthalten (->bereits oben behandelt))
+     # comment -- more lines (first line)
      elsif($_ =~ /^(\s*\/\*\s*)(.*)/ ){
        $PRINT = join '', $2, " ";
        $BLOCK = 1;
      }
      
-     #  Ausdruck der Kommentare, wobei
-     #  "(=>)" und zeilen die mit einem =BEFEHL beginnen
-     #  nicht gedruckt werden sollen
+     # print comments: 
+     #  `(=>)' will be cut and lines with key words are ingored 
      if( $PRINT !~ /(\s*\/\*\s*|\s*)=\w+/ ) { 
         print OUTFILE join ' ', split /\(=>\)/, $PRINT;
      }
 
-     # Kommentarteil ende ("*/") -> Zeilenumbruch, $BLOCK=0 
+     # end of a comment (`*/') -> linebreak, $BLOCK=0 
      if ($_ =~/\*\//){
          print OUTFILE "\@*\n";
          $BLOCK = 0;

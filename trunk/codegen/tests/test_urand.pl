@@ -2,27 +2,23 @@
 # ****************************************************************
 
 # ----------------------------------------------------------------
-
-use strict;
-
-# ----------------------------------------------------------------
 # Compiler
 
-my $GCC = "gcc -Wall -ansi -pedantic";
-my $G77 = "g77 -Wall";
-my $JAVAC = "javac";
+$GCC = "gcc -Wall -ansi -pedantic";
+$G77 = "g77 -Wall";
+$JAVAC = "javac";
 
 # ----------------------------------------------------------------
 # Constants
 
-my $seed = int(rand 12345678) + 1;
-my $sample_size = 10000;
-my $accuracy = 1.0e-15;
+$seed = int(rand 12345678) + 1;
+$sample_size = 10000;
+$accuracy = 1.0e-15;
 
 # ----------------------------------------------------------------
 # Prefix for file names
 
-my $file_prefix = "./run_test_urand";
+$file_prefix = "./run_test_urand";
 
 # ----------------------------------------------------------------
 # Global log file
@@ -32,25 +28,25 @@ open LOG, ">$file_prefix.log" or die "Cannot open log file $file_prefix.log";
 # ----------------------------------------------------------------
 # Files
 
-my $PRNG_exec = "$file_prefix\_PRNG";
-my $PRNG_src = "$PRNG_exec.c";
+$PRNG_exec = "$file_prefix\_PRNG";
+$PRNG_src = "$PRNG_exec.c";
 
-my $C_exec = "$file_prefix\_C";
-my $C_src = "$C_exec.c";
+$C_exec = "$file_prefix\_C";
+$C_src = "$C_exec.c";
 
-my $FORTRAN_exec = "$file_prefix\_FORTRAN";
-my $FORTRAN_src = "$FORTRAN_exec.f";
+$FORTRAN_exec = "$file_prefix\_FORTRAN";
+$FORTRAN_src = "$FORTRAN_exec.f";
 
-my $JAVA_urand_src = "./Urand.java";
-my $JAVA_src = "$file_prefix\_JAVA.java";
-my $JAVA_exec = "$file_prefix\_JAVA";
-my $JAVA_class = $JAVA_exec;
-my $JAVA_class =~ s/^\.\///;
+$JAVA_urand_src = "./Urand.java";
+$JAVA_src = "$file_prefix\_JAVA.java";
+$JAVA_exec = "$file_prefix\_JAVA";
+$JAVA_class = $JAVA_exec;
+$JAVA_class =~ s/^\.\///;
 
 # ----------------------------------------------------------------
 # number of different results
 
-my $n_diffs = 0;
+$n_diffs = 0;
 
 # ----------------------------------------------------------------
 # Make source files
@@ -87,23 +83,23 @@ open JAVA, "java $JAVA_class |";
 # ----------------------------------------------------------------
 # Run generatores and compare output
 
-my $C_n_diffs = 0;
-my $FORTRAN_n_diffs = 0;
-my $JAVA_n_diffs = 0;
+$C_n_diffs = 0;
+$FORTRAN_n_diffs = 0;
+$JAVA_n_diffs = 0;
 
-while (my $PRNG_out = <PRNG>) {
-    my $C_out = <C>;
-    my $FORTRAN_out = <FORTRAN>;
-    my $JAVA_out = <JAVA>;
+while ($PRNG_out = <PRNG>) {
+    $C_out = <C>;
+    $FORTRAN_out = <FORTRAN>;
+    $JAVA_out = <JAVA>;
 
     chomp $PRNG_out;
     chomp $C_out;
     chomp $FORTRAN_out;
     chomp $JAVA_out;
 
-    my $C_diff = abs($PRNG_out - $C_out);
-    my $FORTRAN_diff = abs($PRNG_out - $FORTRAN_out);
-    my $JAVA_diff = abs($PRNG_out - $JAVA_out);
+    $C_diff = abs($PRNG_out - $C_out);
+    $FORTRAN_diff = abs($PRNG_out - $FORTRAN_out);
+    $JAVA_diff = abs($PRNG_out - $JAVA_out);
 
     if ($C_diff > $accuracy) {
 	++$C_n_diffs;
@@ -130,7 +126,7 @@ close JAVA;
 # ----------------------------------------------------------------
 # Results
 
-my $exitcode = 0;
+$exitcode = 0;
 
 if ($C_n_diffs > 0) {
     print_log("C Test FAILED\n");

@@ -29,12 +29,14 @@ Here is an example for the latter case:
 
 @subheading Syntax
 
-The syntax for the function string is case insensitive, white space is
-ingnored. The expressions are similar to most programming languages
-and mathamatical programs (see also the examples below). Especially it
-is influenced by C. The usual preceedence rules are used (from highest
-to lowest preceedence: parenthesis, functions, power, multiplication,
-addition, relation operators).
+The syntax for the function string is case insensitive, white spaces
+are ingnored. The expressions are similar to most programming languages
+and mathamatical programs (see also the examples below). It is especially
+influenced by C. The usual preceedence rules are used (from highest
+to lowest preceedence: functions, power, multiplication,
+addition, relation operators). Use parentheses in case of doubt or 
+when these preceedence should be changed.
+
 Relation operators can be used as indicator functions, i.e. the term
 @code{(x>1)} is evaluted as @code{1} if this relation is satisfied,
 and as @code{0} otherwise.
@@ -43,17 +45,55 @@ The first unknown symbol (letter or word) is interpreted as the
 variable of the function. It is recommended to use @code{x}.
 Only one variable can be used.
 
+@sp 1
+@noindent
+@emph{Important}: The symbol @code{e} is used twice, for Euler's
+constant (= 2.7182@dots{}) and as exponent.
+The multiplication operator @code{*} must not be omitted, i.e.
+@code{2 x} is interpreted as the string @code{2x} (which will result
+in a syntax error). 
+
 
 @subheading List of symbols
 
 @cartouche
 @noindent
-@b{Numbers and constants}
+@b{Numbers}
 @sp 1
-@multitable   {xxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxx} 
-@item @code{[numbers]} @tab numbers @tab 123   
-@item @code{.}     @tab comma       @tab 165.567  
-@item @code{e}     @tab exponet     @tab  123e-7
+@noindent
+Numbers are composed using digits and, optionally, a sign, 
+a decimal point, and an exponent indicated by @code{e}.
+@sp 1
+@multitable {xxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx} 
+@item Symbol        @tab Explanation              @tab Examples 
+@item @code{0@dots{}9} @tab @i{digits}            @tab @code{2343}
+@item @code{.}      @tab @i{decimal point}        @tab @code{165.567} 
+@item @code{-}      @tab @i{negative sign}        @tab @code{-465.223}
+@item @code{e}      @tab @i{exponet}              @tab @code{13.2e-4} (=0.00132)
+@end multitable
+@end cartouche
+
+@sp 1
+@cartouche
+@noindent
+@b{Constants}
+@sp 1
+@multitable {xxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx} 
+@item @code{pi}     @tab @i{pi = 3.1415@dots{}}   @tab @code{3*pi+2}
+@item @code{e}      @tab @i{Euler's constant}     @tab @code{3*e+2} (= 10.15@dots{};
+                                                       do not cofuse with @code{3e2} = 300)
+@end multitable
+@end cartouche
+
+@sp 1
+@cartouche
+@noindent
+@b{Special symbols}
+@sp 1
+@multitable {xxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx} 
+@item @code{(}      @tab @i{opening parenthesis}  @tab @code{2*(3+x)}      
+@item @code{)}      @tab @i{closing parenthesis}  @tab @code{2*(3+x)}
+@item @code{,}      @tab @i{(argument) list separator} @tab @code{mod(13,2)}
 @end multitable
 @end cartouche
 
@@ -62,8 +102,7 @@ Only one variable can be used.
 @noindent
 @b{Relation operators (Indicator functions)}
 @sp 1
-@multitable {xxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxx}
-@item Symbol        @tab Explanation              @tab Examples 
+@multitable {xxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx} 
 @item @code{<}      @tab @i{less than}            @tab @code{(x<1)}
 @item @code{=}      @tab @i{equal}                @tab @code{(2=x)}
 @item @code{==}     @tab @i{same as} @code{=}     @tab @code{(x==3)}
@@ -78,21 +117,9 @@ Only one variable can be used.
 @sp 1
 @cartouche
 @noindent
-@b{Special symbols}
-@sp 1
-@multitable {xxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxx}
-@item @code{(}   @tab open bracket @tab 2*(3+x)      
-@item @code{)}   @tab close bracket @tab 2*(3+x)
-@item @code{,}   @tab 
-@end multitable
-@end cartouche
-
-@sp 1
-@cartouche
-@noindent
 @b{Arithmetic operators}
 @sp 1
-@multitable  {xxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxx}
+@multitable {xxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx} 
 @item @code{+}      @tab @i{addition}             @tab @code{2+x}
 @item @code{-}      @tab @i{subtraction}          @tab @code{2-x}
 @item @code{*}      @tab @i{multiplication}       @tab @code{2*x}
@@ -104,23 +131,10 @@ Only one variable can be used.
 @sp 1
 @cartouche
 @noindent
-@b{system constants}
-@sp 1
-@multitable  {xxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxx}
-@item @code{pi}     @tab @i{pi = 3.1415@dots{}}   @tab @code{3*pi+2}
-@item @code{e}      @tab @i{Euler's constant = 2.7182@dots{}} 
-                                                  @tab @code{3*e+2}
-  						       (do not cofuse with @code{3e2})
-@end multitable
-@end cartouche
-
-@sp 1
-@cartouche
-@noindent
 @b{Functions}
 @sp 1
-@multitable  {xxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxx}
-@item @code{mod}    @tab @code{mod(m,n)} @i{ gives the remainder on devision m by n}   @tab mod(x,2)   
+@multitable {xxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx} 
+@item @code{mod}    @tab @code{mod(m,n)} @i{remainder of devision m over n} @tab mod(x,2)   
 @item @code{exp}    @tab @i{exponential function 
                          (same as @code{e^x})}    @tab @code{exp(-x^2)} (same as @code{e^(-x^2)})
 @item @code{log}    @tab @i{natural logarithm}    @tab @code{log(x)}
@@ -139,166 +153,38 @@ Only one variable can be used.
 @noindent
 @b{Variable}
 @sp 1
-@multitable  {xxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxx}
-@item @code{x}         @tab variable         @tab 3*x^2
+@multitable {xxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx} 
+@item @code{x}      @tab @i{variable}             @tab @code{3*x^2}
 @end multitable
 @end cartouche
 
 
-Especially with relation operators it is very easy to define functions in pieces :
-So you can define the piecewise linear function defined throug the points (-1,0),(0,1),(1,0) with 
+@subheading Examples
+
 @example
-(x>-1)*(x<0)*(1+x) + (x>=0)*(x<1)*(1-x) .
-@end example  
 
+1.231+7.9876*x-1.234e-3*x^2+3.335e-5*x^3
 
+sin(2*pi*x)+x^2
 
-@sp 2
-Several complex examples for string-defined 'distributions':
+exp(-((x-3)/2.1)^2)
 
-@smallexample 
--4.7285e-7*x
+@end example
 
-2.894736*10^2
+@noindent
+It is also possible to define functions using different terms 
+on separate domains. However, instead of constructs using
+@code{if @dots{} then @dots{} else @dots{}}
+indicator functions are available.
 
-(sin( log(3*x*(cos( 3*x^3-4.6789/(x+4)]))))-1
+@noindent
+For example to define the density of triangular distribution
+with domain (-1,1) and mode 0 use
 
-exp(x^2)*(sin(x*cos(x^2-1))+1)*((x-3*pi*x)<1)
-
-(3*(2<>x)and(x>2))+x
-
-(x>-1)*(x<0)*(1+x) + (x>=0)*(x<1)*(1-x
-@end smallexample
+@example
+(x>-1)*(x<0)*(1+x) + (x>=0)*(x<1)*(1-x)
+@end example
 
 =EON
 */
 /*---------------------------------------------------------------------------*/
-
-
-
-
-
-/* junk ....
-
-@subheading symbols and examples
-
-The string isn't case-sensitive and use the usual precendence (the operators in the table below are sorted from highest to lowest precedance).
-The first unknown character string will be interpreted as the variable. Parameters must written as real values.
-
-                    
-In the following table you can see all symbols you can use sorted by symbol groups:
-
-@sp 1
-@multitable   {xxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxx}
-@item         symbols   @tab explanation @tab examples 
-@end multitable
-
-
-@sp 1
-@noindent 
-@multitable   {xxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxx} 
-@item         @b{[figures]} @tab numbers @tab 123   
-@item         @b{. -}     @tab comma, negative numbers       @tab -165.567  
-@item         @b{e}     @tab exponet     @tab  123e-7
-@item         @b{pi}       @tab  pi: 3,1415...   @tab 3*pi+2
-@item         @b{e}        @tab  exponential constant: 2,7182... @tab 3*e+2   
-@end multitable
-
-@sp 1
-@noindent
-@b{special functions}
-@multitable  {xxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxx}
-@item         @b{exp}      @tab exponential function @tab exp(-x^2)
-@item         @b{log}      @tab natural logarithm    @tab log(x)
-@item         @b{sin}      @tab sine                 @tab sin(x)             
-@item         @b{cos}      @tab cosine               @tab cos(x)
-@item         @b{tan}      @tab tangent              @tab tan(x)
-@item         @b{sec}      @tab secant               @tab sec(x*2)
-@item         @b{sqrt}     @tab square root          @tab sqrt(2*x)
-@item         @b{abs}      @tab absolute value       @tab abs(x)
-@item         @b{sgn}      @tab sign function        @tab sign(x)*3 
-@end multitable 
-
-@sp 1
-@noindent
-@multitable {xxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxx} 
-@item        @b{(}   @tab left parenthesis @tab 2*(3+x)      
-@item        @b{)}   @tab right parenthesis @tab 2*(3+x)
-@end multitable
-
-@sp 1
-@noindent
-@b{relation operators}
-@multitable {xxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxx} 
-@item       @b{<}         @tab less             @tab 3*(x<1) 
-@item       @b{=}, @b{==} @tab equal            @tab 3*(2=x), 3*(2==x)
-@item       @b{>}         @tab greater          @tab 3*(x>1)
-@item       @b{<=}        @tab less or equal    @tab 3*(x<=1)      
-@item       @b{<> , !=}   @tab not equal        @tab 3*(x<>1), (x!=1)
-@item       @b{>=}        @tab greater or equal @tab 3*(x>=1)
-@end multitable
-
-
-@sp 1
-@noindent
-@b{binary operators}
-@multitable  {xxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxx}
-@item         @b{^}        @tab  power           @tab x^2
-@item         @b{*}        @tab  multiplication  @tab 2*x
-@item         @b{/}        @tab  division        @tab x/2
-@item         @b{+}        @tab  addition        @tab 2+x
-@item         @b{-}        @tab  subtraction     @tab 2-x
-@end multitable
-
-@sp 2
-Several examples for string-defined 'distributions':
-
-@smallexample 
-
-exp(-x^2/2)/(sqrt(2*pi))
-
-exp(-sqrt(1+x^2)+x/2)
-
-(x<1)*(x>0)*sin(x)
- 
-
-@end smallexample
-
-@sp 2
-@noindent
-@b{Remarks:}
-@itemize @bullet
-@item
-In case of doubt with the predendence please use parentheses.
-
-@item
-The figure 'e' is used both as a system constant written after an operator and as a seperator between mantisse and exponent for the basis 10. 
-
-@item
-Relation operators are very useful to define functions on a limited support and to define piecewise functions. 
-
-
-@item
-Of course it ist better to use for standard distributions build in functions.
-
-@item
-Especially with relation operators it is very easy to define functions in pieces :
-So you can define the piecewise linear function defined throug the points (-1,0),(0,1),(1,0) with 
-@example
-(x>-1)*(x<0)*(1+x) + (x>=0)*(x<1)*(1-x) .
-@end example 
-
-@item 
-It is better to truncate the support as to define a density function which is 0 outside of a special area.
-
-@sp 2
-
-*/
-
-
-
-
-
-
-
-

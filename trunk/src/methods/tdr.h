@@ -419,8 +419,8 @@ int unur_tdr_set_pedantic( UNUR_PAR *parameters, int pedantic );
 double unur_tdr_eval_invcdfhat( const UNUR_GEN *generator, double u, 
 				double *hx, double *fx, double *sqx );
 /* 
-   Evaluate the CDF of the hat distribution at @var{u}. As a
-   side effect the values of the hat, the density, and the squeeze
+   Evaluate the inverse of the CDF of the hat distribution at @var{u}.
+   As a side effect the values of the hat, the density, and the squeeze
    at the computed point @i{x} are stored in @var{hx}, @var{fx}, and
    @var{sqx}, respectively. However, these computations are suppressed
    if the corresponding variable is set to NULL.

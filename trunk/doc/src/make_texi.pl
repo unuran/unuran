@@ -409,6 +409,7 @@ sub texi_node {
     }
     if ($IN->{$node}->{"=NODE_TYPE"} eq "=DISTR") {
 	$title = "\@code{$node}  --  ".$IN->{$node}->{"=TITLE"}."\n";
+	$title .= "\@anchor{funct:unur_distr_$node}\n";
 	$title .= "\@findex unur_distr_$node\n";
     }
 

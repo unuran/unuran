@@ -16,8 +16,10 @@ their structure. Additionally, a short example is provided.
 @comment node-name,     next,          previous, up
 
 @menu
-* Method Functions::            The functions listed here, depend on the desired method.
-* Set Functions::               These functions are invoked to set ceratin parameters.
+* Method Functions::            The functions listed here, depend on the desired 
+                                 method.
+* Set Functions::               These functions are invoked to set ceratin 
+                                 parameters.
 @end menu
 
 @section Routines for User
@@ -38,7 +40,6 @@ syntax used in this library.
 @subsection Method Functions
 @cindex Sample index entry
  
-@cindex Another sample index entry
 
 Method dependend routines for user interface:
 
@@ -177,7 +178,8 @@ The function sets parameter c for transformation T_c  (method TDR only) and  ret
 The function sets the parameter for equal area rule  (method TABL only) and returns 1 in the successful case, NULL otherwise.
 
 
-<slopes> . . . The function sets slopes of p.d.f. (method TABL only) and returns 1 in the successful case, NULL otherwise.
+<slopes> @dots{} @*
+The function sets slopes of p.d.f. (method TABL only) and returns 1 in the successful case, NULL otherwise.
 
 
 @sp 2
@@ -262,13 +264,10 @@ Parameters for debugging (defined in debug.c):
 
 
 @section Example
-@cindex Sample index entry
     
 The chapter Example provides a demo program, using functions of the user 
 inerface as described above (see node @ref{Routines for User})
 
-
-@cindex Another sample index entry
 
 @example
 int main()  @{

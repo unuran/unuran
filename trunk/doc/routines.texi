@@ -14,7 +14,6 @@
 The chapter Function calls  contains documentation of 
 various functions. 
 
-@cindex Another sample index entry
 
 @menu 
 * Methods:: Different methods to generate random numbers
@@ -70,24 +69,28 @@ various functions.
 
 
 @deftypefn {Library Function} struct unur_par *unur_arou_new( 
-double @var{*pdf}(double @var{x},double @var{*pdf_param}, int @var{n_pdf_params}),                                                                            double @var{*dpdf}(double @var{x},double @var{*pdf_param}, int @var{n_pdf_params}) ) 
+double @var{*pdf}(double @var{x},double @var{*pdf_param}, int @var{n_pdf_params}),              double @var{*dpdf}(double @var{x},double @var{*pdf_param}, int @var{n_pdf_params}) ) 
 ...get default parameters for generator             
 @end deftypefn
 
 @deftypefn {Library Function} struct unur_gen *unur_arou_init( 
-struct unur_par @var{*parameters} )                                            ...initialize new generator                          
+struct unur_par @var{*parameters} )                                            
+...initialize new generator                          
 @end deftypefn
 
 @deftypefn {Library Function} double unur_arou_sample( 
-struct unur_gen @var{*generator} )                                             ...sample from generator
+struct unur_gen @var{*generator} )                                             
+...sample from generator
 @end deftypefn
 
 @deftypefn {Library Function} double unur_arou_sample_check( 
-struct unur_gen @var{*generator} )                                             ...sample from generator                             
+struct unur_gen @var{*generator} )                                             
+...sample from generator                             
 @end deftypefn
 
 @deftypefn {Library Function} void unur_arou_free(
-struct unur_gen @var{*generator})                                              ...destroy generator object                          
+struct unur_gen @var{*generator})                                              
+...destroy generator object                          
 @end deftypefn     
 
 
@@ -100,19 +103,23 @@ struct unur_gen @var{*generator})                                              .
 
 
 @deftypefn {Library Function} struct unur_par *unur_cstd_new( 
-char @var{*definition} )                                                       ...get default parameters for generator        
+char @var{*definition} )                                                       
+...get default parameters for generator        
 @end deftypefn            
 
 @deftypefn {Library Function} struct unur_gen *unur_cstd_init( 
-struct unur_par @var{*parameters} )                                            ...initialize new generator
+struct unur_par @var{*parameters} )                                            
+...initialize new generator
 @end deftypefn            
 
 @deftypefn {Library Function} double unur_cstd_sample( 
-struct unur_gen @var{*generator} )                                             ...sample from generator
+struct unur_gen @var{*generator} )                                             
+...sample from generator
 @end deftypefn            
 
 @deftypefn {Library Function} void unur_cstd_free( 
-struct unur_gen @var{*generator})                                              ...destroy generator object                          
+struct unur_gen @var{*generator})                                              
+...destroy generator object                          
 @end deftypefn            
    
 
@@ -127,19 +134,22 @@ struct unur_gen @var{*generator})                                              .
 
 @deftypefn {Library Function} struct unur_par *unur_dau_new( 
 double @var{*probabilities}, int @var{plength})
-      ...get default parameters for generator              
+...get default parameters for generator              
 @end deftypefn     
 
 @deftypefn {Library Function} struct unur_gen *unur_dau_init( 
-struct unur_par @var{*parameters} )                                            ...initialize new generator                         
+struct unur_par @var{*parameters} )                                            
+...initialize new generator                         
 @end deftypefn     
 
 @deftypefn {Library Function} int unur_dau_sample( 
-struct unur_gen @var{*generator} )                                             ...sample from generator                             
+struct unur_gen @var{*generator} )                                             
+...sample from generator                             
 @end deftypefn     
 
 @deftypefn {Library Function} void unur_dau_free( 
-struct unur_gen @var{*generator} )                                             ...destroy generator object                          
+struct unur_gen @var{*generator} )                                             
+...destroy generator object                          
 @end deftypefn     
 
 
@@ -153,19 +163,23 @@ struct unur_gen @var{*generator} )                                             .
 
 
 @deftypefn {Library Function} struct unur_par *unur_dis_new( 
-double @var{*probabilities}, int @var{plength} )                               ...get default parameters for generator                                      
+double @var{*probabilities}, int @var{plength} )                               
+...get default parameters for generator                                      
 @end deftypefn     
 
 @deftypefn {Library Function} struct unur_gen *unur_dis_init( 
-struct unur_par @var{*parameter} )                                             ...initialize new generator                                                  
+struct unur_par @var{*parameter} )                                             
+...initialize new generator                                                  
 @end deftypefn     
 
-@deftypefn {Library Functionint} unur_dis_sample( 
-struct unur_gen @var{*generator} )                                             ...sample from generator                            
+@deftypefn {Library Function} unur_dis_sample( 
+struct unur_gen @var{*generator} )                                             
+...sample from generator                            
 @end deftypefn
    
 @deftypefn {Library Function} void unur_dis_free( 
-struct unur_gen @var{*generator} )                                             ...destroy generator object                          
+struct unur_gen @var{*generator} )                                             
+...destroy generator object                          
 @end deftypefn     
 
 
@@ -181,19 +195,23 @@ double @var{*pdf}(double @var{x},double @var{*pdf_param}, int @var{n_pdf_params}
 @end deftypefn     
 
 @deftypefn {Library Function} struct unur_gen *unur_tabl_init( 
-struct unur_par @var{*parameters} )                                            ...initialize new generator                          
+struct unur_par @var{*parameters} )                                            
+...initialize new generator                          
 @end deftypefn     
 
 @deftypefn {Library Function} double unur_tabl_sample( 
-struct @var{unur_gen *generator} )                                             ...sample from generator
+struct @var{unur_gen *generator} )                                             
+...sample from generator
 @end deftypefn     
 
 @deftypefn {Library Function} double unur_tabl_sample_check( 
-struct @var{unur_gen *generator })                                             ...sample from generator                             
+struct @var{unur_gen *generator })                                             
+...sample from generator                             
 @end deftypefn     
 
 @deftypefn {Library Function} void unur_tabl_free( 
-struct @var{unur_gen *generator})                                              ...destroy generator object                          
+struct @var{unur_gen *generator})                                              
+...destroy generator object                          
 @end deftypefn            
 
 
@@ -206,7 +224,9 @@ struct @var{unur_gen *generator})                                              .
 
 
 @deftypefn {Library Function} struct unur_par *unur_tdr_new( 
-double @var{*pdf}(double @var{x},double @var{*pdf_param}, int @var{n_pdf_params}),                                                                            double @var{*dpdf}(double @var{x},double @var{*pdf_param}, int @var{n_pdf_params}) )                                                                          ...get default parameters for generator
+double @var{*pdf}(double @var{x},double @var{*pdf_param}, int @var{n_pdf_params}),  @*       
+double @var{*dpdf}(double @var{x},double @var{*pdf_param}, int @var{n_pdf_params}) )@*    
+...get default parameters for generator
 @end deftypefn            
 @ifhtml
 <a href= "file:///home/eeyore/staff/mts/local/unuran-0.0.2-jl/doc/unuran-ref.html#SEC40">unif</a href>
@@ -214,23 +234,28 @@ double @var{*pdf}(double @var{x},double @var{*pdf_param}, int @var{n_pdf_params}
 
 
 @deftypefn {Library Function} struct unur_gen *unur_tdr_init( 
-struct unur_par @var{*parameters} )                                            ...initialize new generator                          
+struct unur_par @var{*parameters} )                                            
+...initialize new generator                          
 @end deftypefn            
 
-@deftypefn {Library Function} double unur_tdr_sample_log( struct @var{unur_gen *gen} );
+@deftypefn {Library Function} double unur_tdr_sample_log( 
+struct @var{unur_gen *gen} )
 ...sample from generator
 @end deftypefn            
 
 @deftypefn {Library Function} double unur_tdr_sample_sqrt( 
-struct unur_gen @var{*gen} )                                                   ...sample from generator
+struct unur_gen @var{*gen} )                                                   
+...sample from generator
 @end deftypefn            
 
 @deftypefn {Library Function} double unur_tdr_sample_check( 
-struct unur_gen @var{*generator} )                                             ...sample from generator                                                     
+struct unur_gen @var{*generator} )                                             
+...sample from generator                                                     
 @end deftypefn            
 
 @deftypefn {Library Function} void unur_tdr_free( 
-struct unur_gen @var{*generator})                                              ...destroy generator object                          
+struct unur_gen @var{*generator})
+...destroy generator object                          
 @end deftypefn            
    
 
@@ -243,19 +268,23 @@ struct unur_gen @var{*generator})                                              .
 
 
 @deftypefn {Library Function} struct unur_par *unru_rect_new( 
-int @var{dim} )                                                                ...get default parameters for generator              
+int @var{dim} )                                                                
+...get default parameters for generator              
 @end deftypefn            
 
 @deftypefn {Library Function} struct unur_gen *unur_rect_init( 
-struct unur_par @var{*parameters} )                                            ...initialize new generator
+struct unur_par @var{*parameters} )                                            
+...initialize new generator
 @end deftypefn            
 
 @deftypefn {Library Function} void unur_rect_sample_vec( 
-struct unur_gen @var{*gen}, double @var{*vec} )                                ...sample from generator
+struct unur_gen @var{*gen}, double @var{*vec} )                                
+...sample from generator
 @end deftypefn            
 
 @deftypefn {Library Function} void unur_rect_free ( 
-struct unur_gen @var{*generator} )                                             ...destroy generator 
+struct unur_gen @var{*generator} )                                             
+...destroy generator 
 @end deftypefn
 
 
@@ -269,19 +298,24 @@ struct unur_gen @var{*generator} )                                             .
 
 
 @deftypefn {Library Function} struct unur_par *unur_unif_new( 
-int @var{start}, int @var{skip} )                                              ...get default parameters for generator              
+int @var{start}, int @var{skip} )                                              
+...get default parameters for generator              
 @end deftypefn            
 
 @deftypefn {Library Function} struct unur_gen *unur_unif_init( 
-struct unur_par @var{*parameters} )                                            ...initialize new generator
+struct unur_par @var{*parameters} )                                            
+...initialize new generator
 @end deftypefn            
 
 @deftypefn {Library Function} double unur_unif_sample( 
-struct unur_gen @var{*generator} )                                             ...sample from generator
+struct unur_gen @var{*generator} )                                             
+...sample from generator
 @end deftypefn            
 
 @deftypefn {Library Function} void unur_unif_free( 
-struct unur_gen @var{*generator} )                                             ...destroy generator object                  
+struct unur_gen @var{*generator} )                                             
+...destroy generator object                  
+
 @end deftypefn            
 
 
@@ -294,23 +328,28 @@ struct unur_gen @var{*generator} )                                             .
 
 
 @deftypefn {Library Function} struct unur_par *unur_utdr_new( 
-double @var{*pdf}(double @var{x},double @var{*pdf_param}, int @var{n_pdf_params}),                                                                            double @var{mode})                                                             ...get default parameters for generator             
+double @var{*pdf}(double @var{x},double @var{*pdf_param}, int @var{n_pdf_params}),              double @var{mode})                                                             
+...get default parameters for generator             
 @end deftypefn            
 
 @deftypefn {Library Function} struct unur_gen *unur_utdr_init( 
-struct unur_par @var{*parameters} )                                            ...initialize new generator                          
+struct unur_par @var{*parameters} )                                            
+...initialize new generator                          
 @end deftypefn            
 
 @deftypefn {Library Function} double unur_utdr_sample( 
-struct unur_gen @var{*generator} )                                             ...sample from generator
+struct unur_gen @var{*generator} )                                             
+...sample from generator
 @end deftypefn            
 
 @deftypefn {Library Function} double unur_utdr_sample_check( 
-struct unur_gen @var{*generator} )                                             ...sample from generator
+struct unur_gen @var{*generator} )                                             
+...sample from generator
 @end deftypefn            
 
 @deftypefn {Library Function} void unur_utdr_free( 
-struct unur_gen @var{*generator})                                              ...destroy generator object                          
+struct unur_gen @var{*generator})                                              
+...destroy generator object                          
 @end deftypefn            
    
 
@@ -332,23 +371,28 @@ Parameters for the distribution and its p.d.f.:
 @end ifhtml
 
 @deftypefn {Library Function} int unur_set_domain( 
-struct unur_par @var{*parameter}, double @var{left}, double @var{right} )      ...set the left and right borders of the domain of the distribution          
+struct unur_par @var{*parameter}, double @var{left}, double @var{right} )      
+...set the left and right borders of the domain of the distribution          
 @end deftypefn            
 
 @deftypefn {Library Function} int unur_set_domain_vec( 
-struct unur_par @var{*par}, double @var{**domain} )                            ...set coordinates for domain boundary                                       
+struct unur_par @var{*par}, double @var{**domain} )                            
+...set coordinates for domain boundary                                       
 @end deftypefn            
 
 @deftypefn {Library Function} int unur_set_pdf_param(  
-struct unur_par @var{*parameter}, double @var{*pdf_params}, int @var{n_params} )                                                                              ...set array of parameters for p.d.f.                                        
+struct unur_par @var{*parameter}, double @var{*pdf_params}, int @var{n_params} )
+...set array of parameters for p.d.f.                                        
 @end deftypefn            
 
 @deftypefn {Library Function} int unur_set_mode( 
-struct unur_par @var{*parameter}, double @var{mode} )                          ...set mode of p.d.f.                                                        
+struct unur_par @var{*parameter}, double @var{mode} )                          
+...set mode of p.d.f.                                                        
 @end deftypefn            
 
 @deftypefn {Library Function} int unur_set_pdf_area( 
-struct unur_par @var{*parameter}, double @var{area} )                          ...set the (approximate) area below the pdf (default value 1.)               
+struct unur_par @var{*parameter}, double @var{area} )                          
+...set the (approximate) area below the pdf (default value 1.)               
 @end deftypefn            
 
 @ifhtml
@@ -361,7 +405,8 @@ Parameters for generators of univariate discrete distributions:
 
 
 @deftypefn {Library Function} int unur_set_factor( 
-struct unur_par @var{*parameter}, double @var{factor} )                        ...set factor for relative size of (search|guide|alias) table                
+struct unur_par @var{*parameter}, double @var{factor} )                        
+...set factor for relative size of (search|guide|alias) table                
 @end deftypefn            
 
 @ifhtml
@@ -372,19 +417,23 @@ Parameters for generators of univariate continuous distributions:
 </h3><p></p>
 @end ifhtml
 
-@deftypefn {Library Function} int unur_set_cpoints( struct unur_par @var{*parameter}, int @var{n_stp}, double @var{*starting_cpoints} )                       ...set construction points for hat and/or its number for initialization      
+@deftypefn {Library Function} int unur_set_cpoints( struct unur_par @var{*parameter}, int @var{n_stp}, double @var{*starting_cpoints} )                       
+...set construction points for hat and/or its number for initialization      
 @end deftypefn            
 
 @deftypefn {Library Function} int unur_set_max_ratio( 
-struct unur_par @var{*parameter}, double @var{max_ratio} )                     ...set bound for ratio A(squeeze) / A(hat)                                   
+struct unur_par @var{*parameter}, double @var{max_ratio} )                     
+...set bound for ratio A(squeeze) / A(hat)                                   
 @end deftypefn            
 
 @deftypefn {Library Function} int unur_set_max_intervals( 
-struct unur_par @var{*parameter}, int @var{max_ivs} )                          ...set maximum number of intervals or segments                               
+struct unur_par @var{*parameter}, int @var{max_ivs} )                          
+...set maximum number of intervals or segments                               
 @end deftypefn            
 
 @deftypefn {Library Function} int unur_set_tdr_c( 
-struct unur_par @var{*par}, double @var{c} )                                   ...set parameter c for transformation T_c  (method TDR only)                 
+struct unur_par @var{*par}, double @var{c} )                                   
+...set parameter c for transformation T_c  (method TDR only)                 
 @end deftypefn            
 
 @deftypefn {Library Function} int unur_set_tabl_c( struct @var{unur_par *par}, double @var{c} );
@@ -392,7 +441,8 @@ struct unur_par @var{*par}, double @var{c} )                                   .
 @end deftypefn            
 
 @deftypefn {Library Function} int unur_set_slopes( 
-struct unur_par @var{*par}, double @var{*slopes}, int @var{n_slopes} )         ...set slopes of p.d.f. (method TABL only)                                   
+struct unur_par @var{*par}, double @var{*slopes}, int @var{n_slopes} )         
+...set slopes of p.d.f. (method TABL only)                                   
 @end deftypefn            
 
 @ifhtml
@@ -416,31 +466,38 @@ Parameters for all generators:
 @end ifhtml
 
 @deftypefn {Library Function} int unur_set_urng( 
-struct unur_par @var{*par}, UNUR_URNG_TYPE @var{urng} )                        ...set uniform random number generator                                       
+struct unur_par @var{*par}, UNUR_URNG_TYPE @var{urng} )                        
+...set uniform random number generator                                       
 @end deftypefn            
 
 @deftypefn {Library Function} UNUR_URNG_TYPE unur_chg_urng( 
-struct unur_gen @var{*gen}, UNUR_URNG_TYPE @var{urng} )                        ...change uniform random number generator                                    
+struct unur_gen @var{*gen}, UNUR_URNG_TYPE @var{urng} )                        
+...change uniform random number generator                                    
 @end deftypefn            
 
 @deftypefn {Library Function} UNUR_URNG_TYPE unur_get_urng( 
-struct unur_gen @var{*gen} )                                                   ...get uniform random number generator                                    
+struct unur_gen @var{*gen} )                                                   
+...get uniform random number generator                                    
 @end deftypefn            
 
 @deftypefn {Library Function} int unur_set_variant( 
-struct unur_par @var{*par}, unsigned long @var{variant} )                      ...set variant of method                                                     
+struct unur_par @var{*par}, unsigned long @var{variant} )                      
+...set variant of method                                                     
 @end deftypefn            
 
 @deftypefn {Library Function} int unur_set_check(  
-struct unur_par @var{*parameter}, int @var{check} )                            ...turn testing of sampling on/off 
+struct unur_par @var{*parameter}, int @var{check} )                            
+...turn testing of sampling on/off 
 @end deftypefn            
 
 @deftypefn {Library Function} int unur_set_copyall(  
-struct unur_par @var{*par}, int @var{copy} )                                   ...turn copaing of all inputs into generator object on/off  
+struct unur_par @var{*par}, int @var{copy} )                                   
+...turn copaing of all inputs into generator object on/off  
 @end deftypefn            
 
 @deftypefn {Library Function} int unur_set_debug( 
-struct unur_par @var{*parameter}, unsigned long @var{db} )                     ...set debugging flag for generator                                          
+struct unur_par @var{*parameter}, unsigned long @var{db} )                     
+...set debugging flag for generator                                          
 @end deftypefn            
 
 @ifhtml
@@ -468,11 +525,13 @@ Parameters for debugging (defined in debug.c):
 
 
 @deftypefn {Library Function} double nbm( 
-UNUR_URNG_TYPE  @var{urng})                                                    ...normal distribution 
+UNUR_URNG_TYPE  @var{urng})                                                    
+...normal distribution 
 @end deftypefn            
 
 @deftypefn {Library Function} double gammarand(  
-double @var{a}, UNUR_URNG_TYPE  @var{urng} )                                   ...gamma distribution
+double @var{a}, UNUR_URNG_TYPE  @var{urng} )                                   
+...gamma distribution
 @end deftypefn            
 
 
@@ -506,27 +565,33 @@ particular tests:
 @end ifhtml
 
 @deftypefn {Library Function} void unur_test_printsample( 
-struct unur_gen @var{*gen}, int @var{n_rows}, int @var{n_cols} )               ... print a sample
+struct unur_gen @var{*gen}, int @var{n_rows}, int @var{n_cols} )               
+... print a sample
 @end deftypefn            
 
 @deftypefn {Library Function} struct unur_gen *unur_test_timing( 
-struct unur_par @var{*par}, int @var{log_samplesize} )                         ...timing
+struct unur_par @var{*par}, int @var{log_samplesize} )                         
+...timing
 @end deftypefn            
          
 @deftypefn {Library Function} int unur_test_count_urn( 
-struct unur_gen @var{*gen}, int @var{samplesize} )                             ...count used uniform random numbers
+struct unur_gen @var{*gen}, int @var{samplesize} )                             
+...count used uniform random numbers
 @end deftypefn            
 
 @deftypefn {Library Function} double unur_test_chi2( 
-struct unur_gen @var{*gen},                                               double @var{*cdf}(double @var{x}, double @var{*fparam}, int @var{n_fparam}),            int @var{intervals},                                                      int @var{samplesize},                                                    int @var{classmin},                                                      int @var{output} )                                                       ...chi^2 tests
+struct unur_gen @var{*gen},                                               double @var{*cdf}(double @var{x}, double @var{*fparam}, int @var{n_fparam}),            int @var{intervals},                                                      int @var{samplesize},                                                    int @var{classmin},                                                      int @var{output} )                                                       
+...chi^2 tests
 @end deftypefn            
 
 @deftypefn {Library Function} int unur_make_scatterplot( 
-struct unur_gen @var{*gen},                                               double @var{*cdf}(double @var{x}, double @var{*fparam}, int @var{n_fparam}))        ...make scatterplot of generated numbers
+struct unur_gen @var{*gen},                                               double @var{*cdf}(double @var{x}, double @var{*fparam}, int @var{n_fparam}))        
+...make scatterplot of generated numbers
 @end deftypefn            
 
 @deftypefn {Library Function} double _unur_sample_cont_transformed( 
-struct unur_gen @var{*gen},                                               double @var{*cdf}(double @var{x}, double @var{*fparam}, int @var{n_fparam}) )       ...sample from generator and transform to uniform by means of the c.d.f.
+struct unur_gen @var{*gen},                                               double @var{*cdf}(double @var{x}, double @var{*fparam}, int @var{n_fparam}) )       
+...sample from generator and transform to uniform by means of the c.d.f.
 @end deftypefn            
   
 @c cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
@@ -561,15 +626,26 @@ char @var{*gentype})
 @end deftypefn            
 
 @deftypefn {Library Function} void  _unur_db_error( 
-char @var{*genid},                                                        int @var{errortype},                                                     char @var{*msg},                                                         char @var{*filename},                                                    int @var{line})
+char @var{*genid},                                                        
+int @var{errortype},                                                     
+char @var{*msg},                                                         
+char @var{*filename},                                                    
+int @var{line})
 @end deftypefn            
 
 @deftypefn {Library Function} void  _unur_db_warning(
-char @var{*genid},                                                        int @var{errortype},                                                     char @var{*msg},                                                         char @var{*filename},                                                    int @var{line})
+char @var{*genid},                                                        
+int @var{errortype},                                                     
+char @var{*msg},                                                         
+char @var{*filename},                                                    
+int @var{line})
 @end deftypefn            
 
 @deftypefn {Library Function} void  _unur_db_cookie_warning( 
-unsigned long @var{expected},                                             unsigned long @var{observed},                                            char @var{*filename},                                                    int @var{line})
+unsigned long @var{expected},                                             
+unsigned long @var{observed},                                            
+char @var{*filename},                                                    
+int @var{line})
 @end deftypefn            
 
 @ifhtml
@@ -581,8 +657,21 @@ miscellaneous:
 @end ifhtml
 
 @deftypefn {Library Function} double _unur_arcmean( 
-double @var{x0},                                                          double @var{x1} )
+double @var{x0},                                                          
+double @var{x1} )
 @end deftypefn               
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

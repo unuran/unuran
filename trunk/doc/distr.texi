@@ -21,7 +21,6 @@ The chapter Distribution Library contains documentation of
 various distribution functions. Each of these functions may be the base 
 of the implemented generator.
 
-@cindex Another sample index entry
      
 @enumerate
 @item
@@ -1017,7 +1016,9 @@ pdf_beta_nonstd
 $$
 pdf(x) = ((x-a)^{p-1}) * ((b-x)^{q-1})
 $$
-\afterdisplay">
+\afterdisplay
+@sp 2
+\centerline{\input fig-pdf-beta.tex}
 @end tex
 @ifinfo
 @example
@@ -1118,6 +1119,8 @@ $$
 pdf(x) = {1 \over 1+[(x-\theta)/\lambda]^2}
 $$
 \afterdisplay
+@sp 2
+\centerline{\input fig-pdf-cauchy.tex}
 @end tex
 @ifinfo
 @example
@@ -1172,6 +1175,8 @@ $$
 pdf(x) = x^{\nu \over 2-1} * e^{-x \over 2}
 $$
 \afterdisplay
+@sp 2
+\centerline{\input fig-pdf-chisquare.tex}
 @end tex
 @ifinfo
 @example
@@ -1228,6 +1233,8 @@ $$
 cdf(x) = 1- e^{-(x-\theta) \over \sigma}
 $$
 \afterdisplay
+@sp 2
+\centerline{\input fig-pdf-exponential.tex}
 @end tex
 @ifinfo
 @example
@@ -1374,6 +1381,8 @@ $$
 pdf(x) = (x-\gamma)^{\alpha-1} * e^{(gamma-x) \over \beta}
 $$
 \afterdisplay
+@sp 2
+\centerline{\input fig-pdf-gamma.tex}
 @end tex
 @ifinfo
 @example
@@ -1475,6 +1484,8 @@ $$
 pdf(x) = e^{-|(x-\theta) \over \phi|}
 $$
 \afterdisplay
+@sp 2
+\centerline{\input fig-pdf-laplace.tex}
 @end tex
 @ifinfo
 @example
@@ -1529,6 +1540,8 @@ $$
 pdf(x) = [1 / (x-\theta)] * (e^{-\ln (x-\theta) - \zeta})^2 * {1 \over 2\sigma^2} 
 $$
 \afterdisplay
+@sp 2
+\centerline{\input fig-pdf-lognormal.tex}
 @end tex
 @ifinfo
 @example
@@ -1637,6 +1650,8 @@ $$
 pdf(x) = e^{-(x-\mu)^2 \over 2\sigma}
 $$
 \afterdisplay
+@sp 2
+\centerline{\input fig-pdf-normal.tex}
 @end tex
 @ifinfo
 @example
@@ -1737,6 +1752,8 @@ $$
 pdf(x) = x^{-a-1}
 $$
 \afterdisplay
+@sp 2
+\centerline{\input fig-pdf-pareto.tex}
 @end tex
 @ifinfo
 @example
@@ -1792,6 +1809,8 @@ $$
 pdf(x) = \exp (({-|(x-\theta) \over \phi|}^{2 \over \delta}) * 0.5)
 $$
 \afterdisplay
+@sp 2
+\centerline{\input fig-pdf-powerexponential.tex}
 @end tex
 @ifinfo
 @example
@@ -1800,7 +1819,7 @@ pdf(x) = \exp (((-|(x-\theta) \over \phi|)^(2 \over \delta)) * 0.5)
 @end ifinfo
 @ifhtml
 <p><i>pdf(x) = e<sup>(((-|(x-theta) / phi|)<sup>(2 / delta)</sup>) * 0.5)</sup></i></p>
-<p align=center><img src="fig-pdf-lognormal.png" alt="bild"></p>
+<p align=center><img src="fig-pdf-powerexponential.png" alt="bild"></p>
 @end ifhtml
 
 @ifhtml 
@@ -1846,6 +1865,8 @@ $$
 pdf(x) = x * e^{-x^2 \over 2 * \sigma^2} 
 $$
 \afterdisplay
+@sp 2
+\centerline{\input fig-pdf-rayleigh.tex}
 @end tex
 @ifinfo
 @example
@@ -1900,6 +1921,8 @@ $$
 pdf(x) = (1 + {x^2 \over \nu})^{(-1-\nu) * 0.5}
 $$
 \afterdisplay
+@sp 2
+\centerline{\input fig-pdf-student.tex}
 @end tex
 @ifinfo
 @example
@@ -1954,6 +1977,8 @@ $$
 pdf(x) = {1 \over b-a}
 $$
 \afterdisplay
+@sp 2
+\centerline{\input fig-pdf-uniform.tex}
 @end tex
 @ifinfo
 @example

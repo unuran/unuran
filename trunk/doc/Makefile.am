@@ -3,6 +3,7 @@
 info_TEXINFOS = unuran-ref.texi
 
 unuran_ref_TEXINFOS = \
+ unuran-ref.texi \
  distr.texi \
  intro.texi \
  routines.texi \

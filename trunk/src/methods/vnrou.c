@@ -199,14 +199,12 @@ unur_vnrou_new( const struct unur_distr *distr )
   /* copy number of dimensions from the distribution object */
   PAR.dim = distr->dim;
 
-  /* allocate memory for u-boundary arrays */
-  PAR.umin = _unur_xmalloc( PAR.dim * sizeof(double)); /* bounding rectangle */
-  PAR.umax = _unur_xmalloc( PAR.dim * sizeof(double)); /* bounding rectangle */
 
   /* set default values */
   PAR.r		= 1.; 	      /* r-parameter of the generalized method       */
   PAR.vmax      = 0.;         /* v-boundary of bounding rectangle (unknown)  */
-
+  PAR.umin 	= NULL;       /* u-boundary of bounding rectangle (unknown)  */
+  PAR.umax 	= NULL;       /* u-boundary of bounding rectangle (unknown)  */
   par->method   = UNUR_METH_VNROU;    /* method and default variant          */
   par->variant  = 0u;                 /* default variant                     */
   par->set      = 0u;                 /* inidicate default parameters        */    
@@ -254,10 +252,10 @@ unur_vnrou_set_u( struct unur_par *par, double *umin, double *umax )
     }
   }
   
-  /* store values */
-  memcpy(PAR.umin, umin, PAR.dim * sizeof(double));
-  memcpy(PAR.umax, umax, PAR.dim * sizeof(double));
-
+  /* set values */
+  PAR.umin = umin;
+  PAR.umax = umax;
+  
   /* changelog */
   par->set |= VNROU_SET_U;
 
@@ -691,14 +689,17 @@ _unur_vnrou_create( struct unur_par *par )
   gen->destroy = _unur_vnrou_free;
   gen->clone = _unur_vnrou_clone;
 
+  /* allocate memory for u-boundary arrays */
+  GEN.umin = _unur_xmalloc( PAR.dim * sizeof(double)); /* bounding rectangle */
+  GEN.umax = _unur_xmalloc( PAR.dim * sizeof(double)); /* bounding rectangle */
+
   /* copy parameters into generator object */
   GEN.dim   = PAR.dim;              /* dimension */
   GEN.r     = PAR.r;                /* r-parameter of the vnrou method */  
   GEN.vmax  = PAR.vmax;             /* upper v-boundary of bounding rectangle */
   
-  GEN.umin = PAR.umin;
-  GEN.umax = PAR.umax; 
-
+  if (PAR.umin != NULL) memcpy(GEN.umin, PAR.umin, GEN.dim * sizeof(double));
+  if (PAR.umax != NULL) memcpy(GEN.umax, PAR.umax, GEN.dim * sizeof(double));
   /* get center of the distribution */
   GEN.center = unur_distr_cvec_get_center(gen->distr);
  

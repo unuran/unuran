@@ -106,8 +106,9 @@ Approximative in u-richtung besser zu sein*/
 #define HINV_SET_ORDER          0x001u  /* order of polynomial               */
 #define HINV_SET_U_RESOLUTION   0x002u  /* maximal error in u                */
 #define HINV_SET_STP            0x004u  /* starting design points            */
-#define HINV_SET_GUIDEFACTOR    0x008u  /* relative size of guide table      */
-#define HINV_SET_MAX_IVS        0x010u  /* maximal number of intervals       */
+#define HINV_SET_BOUNDARY       0x008u  /* boundary of computational region  */
+#define HINV_SET_GUIDEFACTOR    0x010u  /* relative size of guide table      */
+#define HINV_SET_MAX_IVS        0x020u  /* maximal number of intervals       */
 
 /*---------------------------------------------------------------------------*/
 
@@ -392,8 +393,8 @@ unur_hinv_set_cpoints( struct unur_par *par, const double *stp, int n_stp )
   _unur_check_par_object( par,HINV );
 
   /* check starting construction points */
-  if (n_stp < 2 || stp==NULL) {
-    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"number of starting points < 2");
+  if (n_stp < 1 || stp==NULL) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"number of starting points < 1");
     return 0;
   }
 
@@ -404,19 +405,9 @@ unur_hinv_set_cpoints( struct unur_par *par, const double *stp, int n_stp )
       return 0;
     }
 
-  /* infinity is not allowed */
-  if (stp[0] <= -INFINITY || stp[n_stp-1] >= INFINITY) {
-    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"starting points infinit");
-    return 0;
-  }
-
   /* store date */
   PAR.stp = stp;
   PAR.n_stp = n_stp;
-
-  /* we use first and last point as boundary for computational interval */
-  PAR.bleft = stp[0];
-  PAR.bright = stp[n_stp-1];
 
   /* changelog */
   par->set |= HINV_SET_STP;
@@ -424,6 +415,53 @@ unur_hinv_set_cpoints( struct unur_par *par, const double *stp, int n_stp )
   return 1;
 
 } /* end of unur_hinv_set_cpoints() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_hinv_set_boundary( struct unur_par *par, double left, double right )
+     /*----------------------------------------------------------------------*/
+     /* set left and right boundary of computation interval                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par   ... pointer to parameter for building generator object       */
+     /*   left  ... left boundary point                                      */
+     /*   right ... right boundary point                                     */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   new boundary points must not be +/- INFINITY                       */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE,par,0 );
+
+  /* check input */
+  _unur_check_par_object( par,HINV );
+
+  /* check new parameter for generator */
+  if (left >= right) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"domain");
+    return 0;
+  }
+  if (left <= -INFINITY || right >= INFINITY) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"domain (+/- INFINITY not allowed)");
+    return 0;
+  }
+
+  /* store date */
+  PAR.bleft = left;
+  PAR.bright = right;
+
+  /* changelog */
+  par->set |= HINV_SET_BOUNDARY;
+
+  return 1;
+
+} /* end of unur_hinv_set_boundary() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -604,8 +642,6 @@ unur_hinv_chg_truncated( struct unur_gen *gen, double left, double right )
   
 } /* end of unur_hinv_chg_truncated() */
 
-/*---------------------------------------------------------------------------*/
-
 /*****************************************************************************/
 
 struct unur_gen *
@@ -643,8 +679,8 @@ _unur_hinv_init( struct unur_par *par )
   DISTR.trunc[1] = DISTR.domain[1];
 
   /* set bounds of U -- in respect to given bounds                          */
-  GEN.Umin = GEN.CDFmin = (DISTR.trunc[0] > -INFINITY) ? CDF(DISTR.trunc[0]) : 0.;
-  GEN.Umax = GEN.CDFmax = (DISTR.trunc[1] < INFINITY)  ? CDF(DISTR.trunc[1]) : 1.;
+  GEN.Umin = GEN.CDFmin = (DISTR.domain[0] > -INFINITY) ? CDF(DISTR.domain[0]) : 0.;
+  GEN.Umax = GEN.CDFmax = (DISTR.domain[1] < INFINITY)  ? CDF(DISTR.domain[1]) : 1.;
 
   if (GEN.CDFmin > GEN.CDFmax) {
     _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"CDF not increasing");
@@ -732,9 +768,9 @@ _unur_hinv_create( struct unur_par *par )
 
   /* initialize variables */
   GEN.N = 0;
-  GEN.guide_size = 0; 
   GEN.iv = NULL;
   GEN.intervals = NULL;
+  GEN.guide_size = 0; 
   GEN.guide = NULL;
 
   /* return pointer to (almost empty) generator object */
@@ -758,17 +794,33 @@ _unur_hinv_create_table( struct unur_par *par, struct unur_gen *gen )
      /*   0 ... on error                                                     */
      /*----------------------------------------------------------------------*/
 {
-  struct unur_hinv_interval *iv;
+  struct unur_hinv_interval *iv, *iv_new;
+  int i;
 
   /* check arguments */
   CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_HINV_GEN,0);
-  
-  /* first and terminating interval */
+
+  /* make starting intervals */
   GEN.iv = _unur_hinv_interval_new(gen,GEN.bleft,CDF(GEN.bleft));
   if (GEN.iv == NULL) return 0;
   GEN.iv->next = _unur_hinv_interval_new(gen,GEN.bright,CDF(GEN.bright));
   if (GEN.iv->next == NULL) return 0;
 
+  /* use starting design points of given */
+  if (PAR.stp) {
+    iv = GEN.iv;
+    for (i=0; i<PAR.n_stp; i++) {
+      if (PAR.stp[i] < GEN.bleft)  continue; /* skip */
+      if (PAR.stp[i] > GEN.bright) break;    /* no more points */
+      iv_new = _unur_hinv_interval_new(gen,PAR.stp[i],CDF(PAR.stp[i]));
+      if (iv_new == NULL) return 0;
+      iv_new->next = iv->next;
+      iv->next = iv_new;
+      iv = iv_new;
+    }
+  }
+
+  /* now split intervals where approximation error is too large */
   for (iv=GEN.iv; iv->next!=NULL; ) {
     COOKIE_CHECK(iv,CK_HINV_IV,0);
     if (GEN.N >= PAR.max_ivs) {
@@ -781,6 +833,9 @@ _unur_hinv_create_table( struct unur_par *par, struct unur_gen *gen )
 
   /* last interval is only used to store right boundary */
   iv->spline[0] = iv->p;
+
+  /* u value of first interval must be CDFmin */
+  GEN.iv->u = GEN.CDFmin;
 
   /* o.k. */
   return 1;
@@ -1096,7 +1151,8 @@ _unur_hinv_list_to_array( struct unur_gen *gen )
 } /* end of _unur_hinv_list_to_array() */
 
 /*---------------------------------------------------------------------------*/
-static int
+
+int
 _unur_hinv_make_guide_table( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* make a guide table for indexed search                                */
@@ -1124,7 +1180,7 @@ _unur_hinv_make_guide_table( struct unur_gen *gen )
   }
 
   delta_U = GEN.CDFmax - GEN.CDFmin;
-  imax = (GEN.N-1) * (GEN.order+2);
+  imax = (GEN.N-2) * (GEN.order+2);
 
   /* u value at end of interval */
 #define u(i)  (((GEN.intervals[(i)+GEN.order+2])-GEN.CDFmin)/delta_U)
@@ -1132,9 +1188,9 @@ _unur_hinv_make_guide_table( struct unur_gen *gen )
   i = 0;
   GEN.guide[0] = 0;
   for( j=1; j<GEN.guide_size ;j++ ) {
-    while( u(i) < (j/(double)GEN.guide_size) )
+    while( u(i) < (j/(double)GEN.guide_size) && i <= imax)
       i += GEN.order+2;
-    if (i >= imax) {
+    if (i > imax) {
       _unur_warning(gen->genid,UNUR_ERR_ROUNDOFF,"guide table");
       break;
     }
@@ -1142,6 +1198,9 @@ _unur_hinv_make_guide_table( struct unur_gen *gen )
   }
 
 #undef u
+
+  /* check i */
+  i = min(i,imax);
 
   /* if there has been an round off error, we have to complete the guide table */
   for( ; j<GEN.guide_size ;j++ )
@@ -1342,8 +1401,8 @@ _unur_hinv_debug_init( const struct unur_par *par, const struct unur_gen *gen )
       if (i%5==0) fprintf(log,"\n%s:\t",gen->genid);
       fprintf(log,"   %#g,",PAR.stp[i]);
     }
-  }
   fprintf(log,"\n%s:\n",gen->genid);
+  }
  
   fprintf(log,"%s: sampling from list of intervals: indexed search (guide table method)\n",gen->genid);
   fprintf(log,"%s:    relative guide table size = %g%%",gen->genid,100.*GEN.guide_factor);

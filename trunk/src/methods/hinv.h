@@ -59,7 +59,7 @@
       with the region @code{[-1.e20,1.e20]}. For the exceptional case
       where this might be too small (or one knows this region and
       wants to avoid this search heuristics) it can be chanced using
-      the unur_hinv_set_cpoints() call.
+      the unur_hinv_set_boundary() call.
       
       It is possible to use this method for generating from truncated
       distributions. It even can be changed for an existing generator
@@ -127,14 +127,24 @@ int unur_hinv_set_cpoints( UNUR_PAR *parameters, const double *stp, int n_stp );
    least two such points. Otherwise the points cannot be used and
    @code{unur_errno} is set to @code{UNUR_ERR_PAR_SET}.
 
-   Notice that the leftmost and the rightmost point are used as
-   boundary point of the region where the Hermite approximation is
-   computated. Thus this call can also be used to define the region
-   where computational important, i.e., to define the cut points for
-   the tails.
-
    @emph{Important}: The boundary point of the computational region
-   must be given in this list!
+   must not be given in this list!
+   Points outside the boundary of the computational region are ignored.
+*/
+
+int unur_hinv_set_boundary( UNUR_PAR *parameters, double left, double right );
+/* 
+   Set the left and right boundary of the computation interval.
+   The piecewise hat is only constructed inside this interval. The
+   probability outside of this region must not be of
+   computational relevance.
+   Of course @code{+/- UNUR_INFINITY} is not allowed.
+
+   @emph{Important}: This call does not change the domain of the
+   given distribution itself. But it restricts the domain for the
+   resulting random variates.
+
+   Default is @code{1.e20}.
 */
 
 int unur_hinv_set_guidefactor( UNUR_PAR *parameters, double factor );

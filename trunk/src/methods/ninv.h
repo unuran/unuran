@@ -60,8 +60,8 @@ It is also possible to use this method for generating from truncated
 distributions.
 
 It is also possible to change the parameter of the given distribution
-by a unur_ninv_chg_pdfparams() call. If a table exists, it will again
-be generated.
+by a unur_ninv_chg_pdfparams() call. If a table exists, it will be
+computed immediately.
 
 There is no need for a unur_reinit() call.
 
@@ -135,7 +135,7 @@ int unur_ninv_set_table(UNUR_PAR *parameters, int no_of_points);
 
 int unur_ninv_chg_max_iter(UNUR_GEN *generator, int max_iter);
 /* 
-   Change the maximum number of iterations of on inversion step.
+   Change the maximum number of iterations of an inversion step.
 */
 
 int unur_ninv_chg_x_resolution(UNUR_GEN *generator, double x_resolution);
@@ -159,9 +159,10 @@ int unur_ninv_chg_table(UNUR_GEN *gen, int no_of_points);
 int unur_ninv_chg_domain(UNUR_GEN *gen, double left, double right);
 /*
    Change the borders of the (truncated) distribution. Notice that
-   neither the starting point(s) will not be changed!
+   the starting point(s) will not be changed!
    When a table is used, the new borders must be within the range
-   of the table, oterwise truncation will happen.
+   of the table, otherwise truncation to the original domain will
+   happen.
 */
 
 int unur_ninv_chg_pdfparams(UNUR_GEN *generator, double *params, int n_params);
@@ -169,7 +170,9 @@ int unur_ninv_chg_pdfparams(UNUR_GEN *generator, double *params, int n_params);
    Change array of parameters of distribution in given generator object.
    Notice that it is not possible to change the number of parameters.
    This function only copies the given arguments into the array of
-   distribution parameters. If a table is used, it will again willbe computed.
+   distribution parameters. If a table is used, it will be computed
+   immediately. (No unur_reinit() call is necessary.)
+
    IMPORTANT: The given parameters are not checked against domain errors;
    in opposition to the (=>) unur_<distr>_new() call.
 */ 

@@ -57,6 +57,7 @@ check_PROGRAMS = \
  t_utdr \
  t_vempk \
  t_vmt \
+ t_vnrou \
  t_stringparser \
  test_special_matrix \
  $(MATHEMATICA_PROGS)
@@ -117,6 +118,7 @@ EXTRA_DIST = \
  t_utdr.conf \
  t_vempk.conf \
  t_vmt.conf \
+ t_vnrou.conf \
  t_timing_dsrou.conf \
  t_timing_ninv.conf
 

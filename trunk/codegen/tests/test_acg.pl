@@ -320,7 +320,7 @@ while (my $UNURAN_out = <UNURAN>) {
 	print LOG "  FORTRAN: x    = $FORTRAN_x\tdifference = $FORTRAN_x_diff\n";
 	print LOG "  FORTRAN: pdfx = $FORTRAN_pdfx\tdifference = $FORTRAN_pdfx_diff\n";
     }
-    if ( $HAVE_JAVA and !FP_equal($JAVA_x,$UNURAN_x) or !FP_equal($JAVA_pdfx,$UNURAN_pdfx) ) {
+    if ( $HAVE_JAVA and (!FP_equal($JAVA_x,$UNURAN_x) or !FP_equal($JAVA_pdfx,$UNURAN_pdfx)) ) {
 	++$JAVA_n_diffs;
 	print LOG "  JAVA: x    = $JAVA_x\tdifference = $JAVA_x_diff\n";
 	print LOG "  JAVA: pdfx = $JAVA_pdfx\tdifference = $JAVA_pdfx_diff\n";

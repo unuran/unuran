@@ -198,6 +198,7 @@ _unur_fstr_node2string ( struct concat *output, const struct ftreenode *node,
 /*****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
+
 int
 _unur_fstr_print ( struct concat *output, const char *symb, const double number )
      /*----------------------------------------------------------------------*/

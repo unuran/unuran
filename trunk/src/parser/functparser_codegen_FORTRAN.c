@@ -130,7 +130,7 @@ F_const ( struct concat *output, const struct ftreenode *node, const char *varia
      /* string for constant                                                  */
      /*----------------------------------------------------------------------*/
 {
-  _unur_fstr_print( output, NULL, node->val );
+  _unur_fstr_print_F( output, NULL, node->val );
   return 0u;
 } /* end of F_const() */
 
@@ -142,7 +142,7 @@ F_var ( struct concat *output, const struct ftreenode *node, const char *variabl
      /* string for variable                                                  */
      /*----------------------------------------------------------------------*/
 {
-  _unur_fstr_print( output, variable, 0 );
+  _unur_fstr_print_F( output, variable, 0 );
   return 0u;
 } /* end of F_var() */
 
@@ -161,18 +161,18 @@ F_prefix_generic ( struct concat *output, const struct ftreenode *node,
   struct ftreenode *right = node->right;   /* right branch of node           */
 
   /* node '(' left ',' right ')' */
-  _unur_fstr_print( output, symb, 0 );
-  _unur_fstr_print( output, "(", 0 );
+  _unur_fstr_print_F( output, symb, 0 );
+  _unur_fstr_print_F( output, "(", 0 );
 
   if (left) {
     rcode |= symbol[left->token].node2F (output,left,variable);
-    _unur_fstr_print( output, ",", 0 );
+    _unur_fstr_print_F( output, ",", 0 );
   }
   if (right) {
     rcode |= symbol[right->token].node2F (output,right,variable);
   }
 
-  _unur_fstr_print( output, ")", 0 );
+  _unur_fstr_print_F( output, ")", 0 );
 
   return rcode;
 } /* end of F_prefix_generic() */
@@ -240,11 +240,11 @@ F_infix_generic ( struct concat *output, const struct ftreenode *node,
     return FUNCT_ERROR;
 
   /* '(' left node right ')' */
-  _unur_fstr_print( output, "(", 0 );
+  _unur_fstr_print_F( output, "(", 0 );
   rcode |= symbol[left->token].node2F (output,left,variable);
-  _unur_fstr_print( output, symb, 0 );
+  _unur_fstr_print_F( output, symb, 0 );
   rcode |= symbol[right->token].node2F (output,right,variable);
-  _unur_fstr_print( output, ")", 0 );
+  _unur_fstr_print_F( output, ")", 0 );
 
   return rcode;
 
@@ -301,13 +301,13 @@ F_minus ( struct concat *output, const struct ftreenode *node, const char *varia
     return FUNCT_ERROR;
 
   /* '(' [left] '-' right ')' */
-  _unur_fstr_print( output, "(", 0 );
+  _unur_fstr_print_F( output, "(", 0 );
   if (!(left->type == S_UCONST && left->val == 0.))
     /* there is no need to print "0 - ..." */
     rcode |= symbol[left->token].node2F (output,left,variable);
-  _unur_fstr_print( output, "-", 0 );
+  _unur_fstr_print_F( output, "-", 0 );
   rcode |= symbol[right->token].node2F (output,right,variable);
-  _unur_fstr_print( output, ")", 0 );
+  _unur_fstr_print_F( output, ")", 0 );
 
   return rcode;
 } /* end of F_minus() */
@@ -374,5 +374,58 @@ _unur_fstr_F_sgn ( FILE *out )
 
   return 1;
 } /* end of _unur_fstr_F_specfunct() */
+
+/*---------------------------------------------------------------------------*/
+
+/*****************************************************************************/
+/** Auxilliary routines                                                     **/
+/*****************************************************************************/
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_fstr_print_F ( struct concat *output, const char *symb, const double number )
+     /*----------------------------------------------------------------------*/
+     /* Print string or number as FORTRAN code into output string.           */
+     /* The number is only printed if symb is the NULL pointer.              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   output ... pointer to string for output                            */
+     /*   symb   ... string to be printed                                    */
+     /*   number ... constant to be printed                                  */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 on success                                                       */
+     /*----------------------------------------------------------------------*/
+{
+  size_t len;
+
+  /* (possible) length of output string */
+  len = (symb) ? strlen(symb) : 64;
+  
+  /* Resize the allocated memory if necessary */
+  if (output->length + len + 1 > output->allocated) {
+    if (output->string == NULL) {
+      output->allocated = 100;
+      output->string = _unur_malloc( 100*sizeof(char) );
+    }
+    else {
+      output->allocated = (output->allocated + len) * 2;
+      output->string = _unur_realloc( output->string, output->allocated );
+    }
+  }
+
+  if (symb)
+    /* copy symbol into output */
+    memcpy( output->string+output->length, symb, len );
+  else
+    /* copy number symbol into output */
+    len = sprintf(output->string+output->length,"%.16e",number);
+
+  /* update length of output string */
+  output->length += len;
+
+  return 1;
+} /* end of _unur_fstr_print_F() */
 
 /*---------------------------------------------------------------------------*/

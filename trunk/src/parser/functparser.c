@@ -595,6 +595,12 @@ static int _unur_fstr_print ( struct concat *output, const char *symb, const dou
 /**   Make C code for function given by its tree.                           **/
 /**-------------------------------------------------------------------------**/
 
+static int _unur_fstr_print_C ( struct concat *output, const char *symb, const double number );
+/*---------------------------------------------------------------------------*/
+/* Print string or number as C code into output string.                      */
+/* The number is only printed if symb is the NULL pointer.                   */
+/*---------------------------------------------------------------------------*/
+
 static int _unur_fstr_C_specfunct ( FILE *out, unsigned flags );
 /*---------------------------------------------------------------------------*/
 /* Print C code for special functions                                        */ 
@@ -610,6 +616,12 @@ static int _unur_fstr_C_sgn ( FILE *out );
 /** functparser_codegen_FORTRAN.c                                           **/
 /**   Make FORTRAN code for function given by its tree.                     **/
 /**-------------------------------------------------------------------------**/
+
+static int _unur_fstr_print_F ( struct concat *output, const char *symb, const double number );
+/*---------------------------------------------------------------------------*/
+/* Print string or number as FORTRAN code into output string.                */
+/* The number is only printed if symb is the NULL pointer.                   */
+/*---------------------------------------------------------------------------*/
 
 static int _unur_fstr_F_specfunct ( FILE *out, unsigned flags );
 /*---------------------------------------------------------------------------*/

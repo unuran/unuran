@@ -454,7 +454,7 @@ _unur_dgt_create( struct unur_par *par )
     if (unur_distr_discr_make_pv(&(gen->distr)) <= 0) {
       /* not successful */
       _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"PV"); 
-      free(gen); return NULL;
+      _unur_dgt_free(gen); return NULL;
     }
   }
 
@@ -567,9 +567,9 @@ _unur_dgt_free( struct unur_gen *gen )
 
   /* free memory */
   _unur_free_genid(gen);
-  free(DISTR.pv);
-  free(GEN.guide_table);
-  free(GEN.cumpv);
+  if (DISTR.pv)        free(DISTR.pv);
+  if (GEN.guide_table) free(GEN.guide_table);
+  if (GEN.cumpv)       free(GEN.cumpv);
   free(gen);
 
 } /* end of _unur_dgt_free() */

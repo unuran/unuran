@@ -1138,7 +1138,7 @@ _unur_arou_free( struct unur_gen *gen )
 
   /* free other memory not stored in list */
   _unur_free_genid(gen);
-  free(GEN.guide);
+  if (GEN.guide) free(GEN.guide);
   free(gen);
 
 } /* end of _unur_arou_free() */

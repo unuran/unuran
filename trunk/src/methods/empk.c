@@ -787,7 +787,14 @@ _unur_empk_init( struct unur_par *par )
 
   /* create a new empty generator object */
   gen = _unur_empk_create(par);
-  if (!gen) { free(par); return NULL; }
+  if (!gen) { 
+    if ( !(par->set & EMPK_SET_KERNGEN))
+      /* we have to destroy the kernel generator created by 
+	 unur_empk_set_kernel() */
+      unur_free( PAR.kerngen );
+    free(par);
+    return NULL;
+  }
 
   /* the kernel is an auxilliary generator for method EMPK, of course */
   gen->gen_aux = GEN.kerngen;

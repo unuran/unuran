@@ -46,7 +46,7 @@
 #define _unur_sample_cont(gen)        (gen)->sample.cont(gen)
 #define _unur_sample_vec(gen,vector)  (gen)->sample.cvec(gen,vector)
 
-#define _unur_free(gen)               (gen)->destroy(gen)
+#define _unur_free(gen)               do {if(gen) (gen)->destroy(gen);} while(0)
 
 /*---------------------------------------------------------------------------*/
 /* get type of transformation method                                         */

@@ -482,7 +482,7 @@ _unur_dau_create( struct unur_par *par)
     if (unur_distr_discr_make_pv(&(gen->distr)) <= 0) {
       /* not successful */
       _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"PV"); 
-      free(gen); return NULL;
+      _unur_dau_free(gen); return NULL;
     }
   }
 
@@ -581,9 +581,9 @@ _unur_dau_free( struct unur_gen *gen )
 
   /* free memory */
   _unur_free_genid(gen);
-  free(DISTR.pv);
-  free(GEN.jx);
-  free(GEN.qx);
+  if (DISTR.pv) free(DISTR.pv);
+  if (GEN.jx)   free(GEN.jx);
+  if (GEN.qx)   free(GEN.qx);
   free(gen);
 
 } /* end of _unur_dau_free() */

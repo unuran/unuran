@@ -1177,8 +1177,8 @@ _unur_dari_free( struct unur_gen *gen )
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
   /* free two auxiliary tables */
-  free(GEN.hp);
-  free(GEN.hb);
+  if (GEN.hp) free(GEN.hp);
+  if (GEN.hb) free(GEN.hb);
 
   /* free memory */
   _unur_free_genid(gen);

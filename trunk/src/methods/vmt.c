@@ -265,7 +265,7 @@ _unur_vmt_init( struct unur_par *par )
     GEN.uvgen = _unur_vmt_default_uvgen();
     if (GEN.uvgen == NULL) {
       _unur_error(gen->genid,UNUR_ERR_GENERIC,"init of marginal generator failt");
-      unur_free(gen);
+      _unur_vmt_free(gen);
       return NULL;
     }
   }
@@ -477,9 +477,9 @@ _unur_vmt_free( struct unur_gen *gen )
 
   /* free memory */
   if (!(gen->set & VMT_SET_UVGEN)) unur_free(GEN.uvgen);
-  free(DISTR.mean);
-  free(DISTR.covar);
-  free(GEN.cholesky);
+  if (DISTR.mean)   free(DISTR.mean);
+  if (DISTR.covar)  free(DISTR.covar);
+  if (GEN.cholesky) free(GEN.cholesky);
   _unur_free_genid(gen);
   free(gen);
 

@@ -638,8 +638,8 @@ _unur_vempk_free( struct unur_gen *gen )
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
   /* free memory */
-  free( GEN.observ );
-  free( GEN.xbar );
+  if (GEN.observ) free( GEN.observ );
+  if (GEN.xbar)   free( GEN.xbar );
   unur_free( GEN.kerngen );
   _unur_free_genid(gen);
   free(gen);

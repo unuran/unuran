@@ -1432,8 +1432,8 @@ _unur_ninv_free( struct unur_gen *gen )
 
   /* free memory */
   _unur_free_genid(gen);
-  free(GEN.table);
-  free(GEN.f_table);
+  if (GEN.table)   free(GEN.table);
+  if (GEN.f_table) free(GEN.f_table);
   free(gen);
 
 } /* end of _unur_ninv_free() */

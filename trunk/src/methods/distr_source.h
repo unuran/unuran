@@ -77,7 +77,7 @@
 
 /*---------------------------------------------------------------------------*/
 /* destroy distribution object                                               */
-#define _unur_distr_free(distr)    (distr)->destroy(distr)
+#define _unur_distr_free(distr)    do {if (distr) (distr)->destroy(distr);} while(0)
 
 /*---------------------------------------------------------------------------*/
 /* debuging routines for distributions                                       */

@@ -59,6 +59,7 @@
 
 /* constants */
 #define CHI2_MAX_SAMPLESIZE 1000000
+#define CHI2_DEFAULT_SAMPLESIZE 1000
 
 /*---------------------------------------------------------------------------*/
 static char test_name[] = "Chi^2-Test";
@@ -591,7 +592,9 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
   (void) memset(idx, 0, dim * sizeof(int));
 
   /* samplesize */
-  if( samplesize <= 0 ) {
+  if( samplesize == 0 ) samplesize = CHI2_DEFAULT_SAMPLESIZE;
+
+  if( samplesize < 0 ) {
     samplesize = abs(samplesize);
   }
   samplesize = min( samplesize, CHI2_MAX_SAMPLESIZE );

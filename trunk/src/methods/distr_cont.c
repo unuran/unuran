@@ -83,7 +83,7 @@ struct unur_distr *
 unur_distr_cont_new( void )
      /*----------------------------------------------------------------------*/
      /* create a new (empty) distribution object                             */
-     /* type: univariate continuous with given PDF                           */
+     /* type: univariate continuous with given p.d.f.                        */
      /*                                                                      */
      /* parameters:                                                          */
      /*   none                                                               */
@@ -124,23 +124,23 @@ unur_distr_cont_new( void )
   distr->destroy = _unur_distr_cont_free;
 
   /* set defaults                                                            */
-  DISTR.pdf       = NULL;          /* pointer to PDF                         */
-  DISTR.dpdf      = NULL;          /* pointer to derivative of PDF           */
-  DISTR.cdf       = NULL;          /* pointer to CDF                         */
+  DISTR.pdf       = NULL;          /* pointer to p.d.f.                      */
+  DISTR.dpdf      = NULL;          /* pointer to derivative of p.d.f.        */
+  DISTR.cdf       = NULL;          /* pointer to c.d.f.                      */
 
   DISTR.init      = NULL;          /* pointer to special init routine        */
 
-  DISTR.n_params  = 0;             /* number of parameters of the PDF        */
-  /* initialize parameters of the PDF                                        */
+  DISTR.n_params  = 0;             /* number of parameters of the pdf        */
+  /* initialize parameters of the p.d.f.                                     */
   for (i=0; i<UNUR_DISTR_MAXPARAMS; i++)
     DISTR.params[i] = 0.;
 
-  DISTR.norm_constant = 1.;        /* (log of) normalization constant for PDF
+  DISTR.norm_constant = 1.;        /* (log of) normalization constant for p.d.f.
 				      (initialized to avoid accidently floating
 				      point exception                        */
 
   DISTR.mode      = INFINITY;      /* location of mode (default: not known)  */
-  DISTR.area      = INFINITY;      /* area below PDF (default: not known)    */
+  DISTR.area      = INFINITY;      /* area below p.d.f. (default: not known) */
 
   DISTR.trunc[0] = DISTR.domain[0] = -INFINITY; /* left boundary of domain   */
   DISTR.trunc[1] = DISTR.domain[1] = INFINITY;  /* right boundary of domain  */
@@ -174,11 +174,11 @@ _unur_distr_cont_free( struct unur_distr *distr )
 int
 unur_distr_cont_set_pdf( struct unur_distr *distr, UNUR_FUNCT_CONT *pdf )
      /*----------------------------------------------------------------------*/
-     /* set PDF of distribution                                              */
+     /* set p.d.f. of distribution                                           */
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr ... pointer to distribution object                           */
-     /*   pdf   ... pointer to PDF                                           */
+     /*   pdf   ... pointer to p.d.f.                                        */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... on success                                                   */
@@ -190,9 +190,9 @@ unur_distr_cont_set_pdf( struct unur_distr *distr, UNUR_FUNCT_CONT *pdf )
   _unur_check_NULL( distr->name,pdf,0 );
   _unur_check_distr_object( distr, CONT, 0 );
 
-  /* we do not allow overwriting a PDF */
+  /* we do not allow overwriting a pdf */
   if (DISTR.pdf != NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of PDF not allowed");
+    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of pdf not allowed");
     return 0;
   }
 
@@ -213,11 +213,11 @@ unur_distr_cont_set_pdf( struct unur_distr *distr, UNUR_FUNCT_CONT *pdf )
 int
 unur_distr_cont_set_dpdf( struct unur_distr *distr, UNUR_FUNCT_CONT *dpdf )
      /*----------------------------------------------------------------------*/
-     /* set derivative of PDF of distribution                                */
+     /* set derivative of p.d.f. of distribution                             */
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr ... pointer to distribution object                           */
-     /*   dpdf   ... pointer to derivative of PDF                            */
+     /*   dpdf   ... pointer to derivative of p.d.f.                         */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... on success                                                   */
@@ -229,9 +229,9 @@ unur_distr_cont_set_dpdf( struct unur_distr *distr, UNUR_FUNCT_CONT *dpdf )
   _unur_check_NULL( distr->name,dpdf,0 );
   _unur_check_distr_object( distr, CONT, 0 );
   
-  /* we do not allow overwriting a dPDF */
+  /* we do not allow overwriting a dpdf */
   if (DISTR.dpdf != NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of dPDF not allowed");
+    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of dpdf not allowed");
     return 0;
   }
 
@@ -251,11 +251,11 @@ unur_distr_cont_set_dpdf( struct unur_distr *distr, UNUR_FUNCT_CONT *dpdf )
 int
 unur_distr_cont_set_cdf( struct unur_distr *distr, UNUR_FUNCT_CONT *cdf )
      /*----------------------------------------------------------------------*/
-     /* set CDF of distribution                                              */
+     /* set p.d.f. of distribution                                           */
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr ... pointer to distribution object                           */
-     /*   cdf   ... pointer to CDF                                           */
+     /*   cdf   ... pointer to c.d.f.                                        */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... on success                                                   */
@@ -267,9 +267,9 @@ unur_distr_cont_set_cdf( struct unur_distr *distr, UNUR_FUNCT_CONT *cdf )
   _unur_check_NULL( distr->name,cdf,0 );
   _unur_check_distr_object( distr, CONT, 0 );
   
-  /* we do not allow overwriting a CDF */
+  /* we do not allow overwriting a cdf */
   if (DISTR.cdf != NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of CDF not allowed");
+    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of cdf not allowed");
     return 0;
   }
 
@@ -289,13 +289,13 @@ unur_distr_cont_set_cdf( struct unur_distr *distr, UNUR_FUNCT_CONT *cdf )
 UNUR_FUNCT_CONT *
 unur_distr_cont_get_pdf( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
-     /* get pointer to PDF of distribution                                   */
+     /* get pointer to p.d.f. of distribution                                */
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr ... pointer to distribution object                           */
      /*                                                                      */
      /* return:                                                              */
-     /*   pointer to PDF                                                     */
+     /*   pointer to p.d.f.                                                  */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
@@ -310,13 +310,13 @@ unur_distr_cont_get_pdf( struct unur_distr *distr )
 UNUR_FUNCT_CONT *
 unur_distr_cont_get_dpdf( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
-     /* get pointer to derivative of PDF of distribution                     */
+     /* get pointer to derivative of p.d.f. of distribution                  */
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr ... pointer to distribution object                           */
      /*                                                                      */
      /* return:                                                              */
-     /*   pointer to derivative of PDF                                       */
+     /*   pointer to derivative of p.d.f.                                    */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
@@ -331,13 +331,13 @@ unur_distr_cont_get_dpdf( struct unur_distr *distr )
 UNUR_FUNCT_CONT *
 unur_distr_cont_get_cdf( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
-     /* get pointer to CDF of distribution                                */
+     /* get pointer to c.d.f. of distribution                                */
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr ... pointer to distribution object                           */
      /*                                                                      */
      /* return:                                                              */
-     /*   pointer to CDF                                                  */
+     /*   pointer to c.d.f.                                                  */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
@@ -352,14 +352,14 @@ unur_distr_cont_get_cdf( struct unur_distr *distr )
 double
 unur_distr_cont_eval_pdf( double x, struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
-     /* evaluate PDF of distribution at x                                    */
+     /* evaluate p.d.f. of distribution at x                                 */
      /*                                                                      */
      /* parameters:                                                          */
      /*   x     ... argument for pdf                                         */
      /*   distr ... pointer to distribution object                           */
      /*                                                                      */
      /* return:                                                              */
-     /*   PDF(x)                                                             */
+     /*   pdf(x)                                                             */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
@@ -379,14 +379,14 @@ unur_distr_cont_eval_pdf( double x, struct unur_distr *distr )
 double
 unur_distr_cont_eval_dpdf( double x, struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
-     /* evaluate derivative of PDF of distribution at x                      */
+     /* evaluate derivative of p.d.f. of distribution at x                   */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   x     ... argument for dPDF                                        */
+     /*   x     ... argument for dpdf                                        */
      /*   distr ... pointer to distribution object                           */
      /*                                                                      */
      /* return:                                                              */
-     /*   (PDF(x))'                                                          */
+     /*   (pdf(x))'                                                          */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
@@ -406,14 +406,14 @@ unur_distr_cont_eval_dpdf( double x, struct unur_distr *distr )
 double
 unur_distr_cont_eval_cdf( double x, struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
-     /* evaluate CDF of distribution at x                                    */
+     /* evaluate c.d.f. of distribution at x                                 */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   x     ... argument for CDF                                         */
+     /*   x     ... argument for cdf                                         */
      /*   distr ... pointer to distribution object                           */
      /*                                                                      */
      /* return:                                                              */
-     /*   CDF(x)                                                             */
+     /*   cdf(x)                                                             */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
@@ -482,7 +482,7 @@ unur_distr_cont_set_pdfparams( struct unur_distr *distr, double *params, int n_p
 int
 unur_distr_cont_get_pdfparams( struct unur_distr *distr, double **params )
      /*----------------------------------------------------------------------*/
-     /* get number of PDF parameters and sets pointer to array params[] of   */
+     /* get number of pdf parameters and sets pointer to array params[] of   */
      /* parameters                                                           */
      /*                                                                      */
      /* parameters:                                                          */
@@ -490,7 +490,7 @@ unur_distr_cont_get_pdfparams( struct unur_distr *distr, double **params )
      /*   params   ... pointer to list of arguments                          */
      /*                                                                      */
      /* return:                                                              */
-     /*   number of PDF parameters                                           */
+     /*   number of pdf parameters                                           */
      /*                                                                      */
      /* error:                                                               */
      /*   return 0                                                           */
@@ -643,7 +643,7 @@ unur_distr_cont_set_mode( struct unur_distr *distr, double mode )
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr ... pointer to distribution object                           */
-     /*   mode  ... mode of PDF                                              */
+     /*   mode  ... mode of p.d.f.                                           */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... on success                                                   */
@@ -743,11 +743,11 @@ unur_distr_cont_get_mode( struct unur_distr *distr )
 int
 unur_distr_cont_set_pdfarea( struct unur_distr *distr, double area )
      /*----------------------------------------------------------------------*/
-     /* set area below PDF                                                   */
+     /* set area below p.d.f.                                                */
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr ... pointer to distribution object                           */
-     /*   area  ... area below PDF                                           */
+     /*   area  ... area below p.d.f.                                        */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... on success                                                   */
@@ -760,7 +760,7 @@ unur_distr_cont_set_pdfarea( struct unur_distr *distr, double area )
 
   /* check new parameter for distribution */
   if (area <= 0.) {
-    _unur_error(NULL,UNUR_ERR_DISTR_SET,"PDF area <= 0");
+    _unur_error(NULL,UNUR_ERR_DISTR_SET,"pdf area <= 0");
     return 0;
   }
 
@@ -779,7 +779,7 @@ unur_distr_cont_set_pdfarea( struct unur_distr *distr, double area )
 int 
 unur_distr_cont_upd_pdfarea( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
-     /* (re-) compute area below PDF of distribution (if possible)           */
+     /* (re-) compute area below p.d.f. of distribution (if possible)        */
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr ... pointer to distribution object                           */
@@ -819,13 +819,13 @@ unur_distr_cont_upd_pdfarea( struct unur_distr *distr )
 double
 unur_distr_cont_get_pdfarea( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
-     /* get area below PDF of distribution                                   */
+     /* get area below p.d.f. of distribution                                */
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr ... pointer to distribution object                           */
      /*                                                                      */
      /* return:                                                              */
-     /*   area below PDF of distribution                                     */
+     /*   area below p.d.f. of distribution                                  */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
@@ -887,7 +887,7 @@ _unur_distr_cont_debug( struct unur_distr *distr, char *genid )
   fprintf(log,"%s:\ttype = continuous univariate distribution\n",genid);
   fprintf(log,"%s:\tname = %s\n",genid,distr->name);
 
-  fprintf(log,"%s:\tPDF with %d argument(s)\n",genid,DISTR.n_params);
+  fprintf(log,"%s:\tp.d.f with %d argument(s)\n",genid,DISTR.n_params);
   for( i=0; i<DISTR.n_params; i++ )
       fprintf(log,"%s:\t\tparam[%d] = %g\n",genid,i,DISTR.params[i]);
 
@@ -899,7 +899,7 @@ _unur_distr_cont_debug( struct unur_distr *distr, char *genid )
   fprintf(log,"%s:\tdomain = (%g, %g)",genid,DISTR.domain[0],DISTR.domain[1]);
   _unur_print_if_default(distr,UNUR_DISTR_SET_DOMAIN);
 
-  fprintf(log,"\n%s:\tarea below PDF = %g",genid,DISTR.area);
+  fprintf(log,"\n%s:\tarea below p.d.f. = %g",genid,DISTR.area);
   _unur_print_if_default(distr,UNUR_DISTR_SET_PDFAREA);
   fprintf(log,"\n%s:\n",genid);
 
@@ -909,10 +909,23 @@ _unur_distr_cont_debug( struct unur_distr *distr, char *genid )
 
 /*---------------------------------------------------------------------------*/
 
-int 
+int
 _unur_distr_cont_find_mode(struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* find mode of univariate continuous distribution numerically          */
+     /*                                                                      */
+     /* This is achieved by the following steps:                             */
+     /* -- Determine a interval containing the mode and a third              */
+     /*    point within ( x0< x1 < x2 )                                      */
+     /*    ++ Determine a region where to search the mode; this will be the  */
+     /*       interval [mode-100, mode+100] if this is no contrdiction to    */
+     /*       the given domain;  `mode' is the best known approx to the mode */
+     /*    ++ Find a point in the interval with a positve pdf                */
+     /*       This is done by two geometric sequences of MAX_SRCH elements   */
+     /*       and find two other points within the given domain              */
+     /*    ++ Unbounded domains: refine x0, x1, x2 until:                    */
+     /*       pdf(x0) < pdf(x1) > pdf(x2)                                    */
+     /* -- invoke a maximization-routine to determine the mode               */
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr ... pointer to distribution object                           */
@@ -923,12 +936,20 @@ _unur_distr_cont_find_mode(struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
 {
 
-  double x[3];  /* mode (and x[2]) should be between x[0] and  x[2] ...*/   
-  double fx[3]; /* ... and the respective funtion values */
-  double step = 1.0;
+  #define MAX_SRCH (50)
+ 
+  int i;
 
-  int unbound_left  = 0; 
-  int unbound_right = 0; 
+  double x[3];   /* mode (and x[2]) should be between x[0] and  x[2] ...*/   
+  double fx[3];  /* ... and the respective funtion values */
+  double mode;   /* (approximative) mode of the distribution  */
+  double mode_l; /* lower bound for mode search */
+  double mode_u; /* upper bound for mode search */
+  double step;
+
+  int unbound_left; 
+  int unbound_right; 
+
 
   /* check arguments */
   _unur_check_NULL( NULL, distr, 0 );
@@ -938,34 +959,160 @@ _unur_distr_cont_find_mode(struct unur_distr *distr )
   distr->set |= UNUR_DISTR_SET_MODE;
 
 
-  if ( _unur_FP_is_minus_infinity(DISTR.domain[0]) ){
-    x[0] = -10.0;    /* arbitrary starting point */
+  mode = unur_distr_cont_get_mode(distr); /* yet best guess for mode */
+
+
+  /* determine where to look for the mode */
+  
+  /* unbounded domain */
+  if ( _unur_FP_is_minus_infinity(DISTR.domain[0]) &&
+       _unur_FP_is_infinity(DISTR.domain[1]) ){
+
     unbound_left = 1;
-  }
-  else{
-    x[0] = DISTR.domain[0];
-  }
-  if ( _unur_FP_is_infinity(DISTR.domain[1]) ){
-    x[2] = 10.0;    /* arbitrary starting point */
     unbound_right = 1;
+
+    x[1]  = mode;
+    fx[1] = DISTR.pdf(x[1], distr);    
+    mode_l = mode - 100.0;
+    mode_u = mode + 100.0;
+
   }
-  else{
-    x[2] = DISTR.domain[1];
+  /* domain unbounded on the right */
+  else if ( ! _unur_FP_is_minus_infinity(DISTR.domain[0]) &&
+              _unur_FP_is_infinity(DISTR.domain[1]) ){
+
+    unbound_left = 0;
+    unbound_right = 1;
+
+    if ( mode >= DISTR.domain[0] ){
+      x[1]  = mode;
+      fx[1] = DISTR.pdf(x[1], distr);
+      mode_l = DISTR.domain[0];
+      mode_u = 2 * mode - DISTR.domain[0];
+    }
+    else{
+      x[1] = DISTR.domain[0] + 100.0;
+      fx[1] = DISTR.pdf(x[1], distr);
+      mode_l = DISTR.domain[0];
+      mode_u = x[1] + 100.0;
+    }
+
   }
-  x[1] = (x[0] + x[2])/2.0;
+  /* domain unbounded on the left */
+  else if ( _unur_FP_is_minus_infinity(DISTR.domain[0]) &&
+          ! _unur_FP_is_infinity(DISTR.domain[1]) ){
 
-  fx[0] = DISTR.pdf(x[0], distr);
-  fx[1] = DISTR.pdf(x[1], distr);
-  fx[2] = DISTR.pdf(x[2], distr);
+    unbound_left = 1;
+    unbound_right = 0;
+
+    if ( mode <= DISTR.domain[1] ){
+      x[1]  = mode;
+      fx[1] = DISTR.pdf(x[1], distr);
+      mode_l = DISTR.domain[1] - 2 * mode;
+      mode_u = DISTR.domain[1];
+    }
+    else{
+      x[1] = DISTR.domain[1] - 100.0;
+      fx[1] = DISTR.pdf(x[1], distr);
+      mode_l = x[1] - 100.0;
+      mode_u = DISTR.domain[1];      
+    }
+
+  }
+  /* domain is bounded */
+  else {  
+
+    unbound_left = 0;
+    unbound_right = 0;
+
+    if ( mode >= DISTR.domain[0] && mode <= DISTR.domain[1] ){
+      x[1]  = mode;
+      fx[1] = DISTR.pdf(x[1], distr);
+    }
+    else{
+      x[1] = DISTR.domain[0]/2.0 + DISTR.domain[1]/2.0;
+      fx[1] = DISTR.pdf(x[1], distr);
+    }
+    mode_l = DISTR.domain[0];
+    mode_u = DISTR.domain[1];
+
+  }
+
+  mode = x[1];  /* not exact mode -- best guess */
 
 
-  if ( _unur_FP_same(fx[0], fx[1]) && _unur_FP_same(fx[1], fx[2])){
-    // TODO error -- flat region ;
-  } 
+  /* find point with pdf > 0.0 -- max MAX_SRCH trials */
+
+  /* search on the left side */
+  step = pow(x[1]-mode_l, 1.0/MAX_SRCH);
+  i = 0;  
+  while (i <= MAX_SRCH && _unur_FP_same(0.0, fx[1]) ){
+    x[1]  = mode - pow(step, i);
+    fx[1] = DISTR.pdf(x[1], distr);
+    i++;
+  }
+	 
+  /* search on the right side */
+  if( _unur_FP_same(0.0, fx[1]) ){
+    step = pow(mode_u-x[1], 1.0/MAX_SRCH);
+    i = 0;
+    while (i <= MAX_SRCH && _unur_FP_same(0.0, fx[1]) ){
+      x[1]  = mode + pow(step, i);
+      fx[1] = DISTR.pdf(x[1], distr);
+      i++;
+    }
+  }
+  
+  /* no success -- exit routine  */   
+  if( _unur_FP_same(fx[1], 0.0) )
+     return 0;  /* can't find mode in flat region  */
+
+  /* x[1] has pdf > 0 or routines already terminated */ 
 
 
+
+  /* determine 3 points in the given domain --
+     at least one with pdf > 0                  */
+  if ( unbound_left ){
+
+    x[2] = x[1];       fx[2] = fx[1];
+    x[1] = x[2] - 1.0; fx[1] = DISTR.pdf(x[1], distr);
+    x[0] = x[2] - 2.0; fx[0] = DISTR.pdf(x[0], distr);
+
+  }
+  else if ( unbound_right ){
+
+    x[0] = x[1];       fx[0] = fx[1];
+    x[1] = x[0] + 1.0; fx[1] = DISTR.pdf(x[1], distr);
+    x[2] = x[0] + 2.0; fx[2] = DISTR.pdf(x[2], distr);
+
+  }
+  else{      /* bounded */
+
+    x[0] = DISTR.domain[0];  fx[0] = DISTR.pdf(x[0], distr);
+    x[2] = DISTR.domain[1];  fx[2] = DISTR.pdf(x[2], distr);
+
+    if ( _unur_FP_same(x[1], DISTR.domain[0])  ||
+         _unur_FP_same(x[1], DISTR.domain[1]) ){
+      x[1]  = DISTR.domain[0]/2.0 + DISTR.domain[1]/2.0; 
+      fx[1] = DISTR.pdf(x[1], distr);
+    }
+    
+  }
+  /* points x[i] with their function values determined */
+
+
+  /* find interval containing the mode of the distribution */
+
+/*    printf("-- x0: %f, fx0: %e\n", x[0], fx[0]); */
+/*    printf("-- x1: %f, fx1: %e\n", x[1], fx[1]); */
+/*    printf("-- x2: %f, fx2: %e\n", x[2], fx[2]); */
+
+
+  step = 1.0;
   if ( unbound_right ){
     while(fx[0] <= fx[1] && fx[1] <= fx[2]){ /* on the left side of the mode */
+
       step *= 2.0;
       x[0]  = x[1]; fx[0] = fx[1];
       x[1]  = x[2]; fx[1] = fx[2];
@@ -973,16 +1120,25 @@ _unur_distr_cont_find_mode(struct unur_distr *distr )
     }
   }
 
+  step = 1.0;  /* reset step size */
   if ( unbound_left ){
     while(fx[0] >= fx[1] && fx[1] >= fx[2]){ /* on the right side of the mode */
+
       step *= 2.0;
       x[2]  = x[1]; fx[2] = fx[1];
       x[1]  = x[0]; fx[1] = fx[0];
       x[0] -= step; fx[0] = DISTR.pdf(x[0], distr);
+
     }
   }
+
   /* now: the mode is between x[0] and x[2]   */
 
+
+
+/*    printf("x0: %f, fx0: %e\n", x[0], fx[0]); */
+/*    printf("x1: %f, fx1: %e\n", x[1], fx[1]); */
+/*    printf("x2: %f, fx2: %e\n", x[2], fx[2]); */
 
 
   // TODO: invoke optimization

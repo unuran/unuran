@@ -401,7 +401,7 @@ _unur_stdgen_sample_gamma_gd( struct unur_gen *gen )
     if (x > 0.) {
       /* Step 6. */
       v = t / (s + s);
-      if (abs(v) > 0.25)
+      if (fabs(v) > 0.25)
 	q = q0 - s * t + 0.25 * t * t + (ss + ss) * log(1. + v);
       else
 	q = q0 + 0.5 * t * t * ((((((((a9 * v + a8) * v + a7) * v + a6) *
@@ -423,7 +423,7 @@ _unur_stdgen_sample_gamma_gd( struct unur_gen *gen )
       
       /* Step 10. New q(t) */
       v = t / (s + s);
-      if (abs(v) > 0.25)
+      if (fabs(v) > 0.25)
 	q = q0 - s * t + 0.25 * t * t + (ss + ss) * log(1. + v);
       else
 	q = q0 + 0.5 * t * t * ((((((((a9 * v + a8) * v + a7) * v + a6) *

@@ -404,41 +404,8 @@ uniformly distributed random numbers
 * Requirements:: The requirements of the methods
 * Defaults:: The default settings of parameters
 @end menu
-@multitable @columnfractions .10 .06 .06 .065 .07 .06 .06
-@item name @tab cdf@footnote{cumulative distribution function} @tab pdf@footnote{distribution function} @tab dpdf@footnote{derivative of pdf} @tab mode@footnote{mode of the distribution} @tab area@footnote{area under pdf} @tab pv@footnote{probability vector}
-@c @item      @tab   @tab   @tab   @tab   @tab    @tab 
-@item AROU @tab     @tab @ x  @tab @ x @tab     @tab     @tab 
-@item CSTD @tab     @tab      @tab     @tab     @tab     @tab 
-@item DAU  @tab     @tab      @tab     @tab     @tab     @tab @ x 
-@item DGT  @tab     @tab      @tab     @tab     @tab     @tab 
-@item DSTD @tab     @tab      @tab     @tab     @tab     @tab 
-@item EMPK @tab     @tab      @tab     @tab     @tab     @tab
-@item NINV @tab @ x @tab (x) @footnote{Only required when inversion is done by Newton's method}              @tab     @tab     @tab     @tab
-@item SROU @tab     @tab @ x  @tab     @tab @ x @tab @ x @tab
-@item SSR  @tab     @tab @ x  @tab     @tab @ x @tab @ x @tab 
-@item TDR  @tab     @tab @ x  @tab @ x @tab     @tab     @tab
-@item UNIF @tab     @tab      @tab     @tab     @tab     @tab
-@item UTDR @tab     @tab @ x  @tab     @tab @ x @tab     @tab
-@end multitable
-@multitable @columnfractions .222 .222 .222 .334
-@item name/references    @tab  parameter (default)   @tab required       @tab remarks
-@item AROU               @tab                        @tab pdf, dpdf       @tab Adaptive Ratio-Of-Uniforms
-@item CSTD               @tab                        @tab                @tab interface for extern generators
-@item DAU                @tab                        @tab prob. vec.     @tab (Discrete) Alias-Urn
-@item DIS                @tab                        @tab prob. vec.     @tab (Discrete) Alias-Urn
-@item TDR [..]           @tab                        @tab                @tab 
-@item NINV               @tab                        @tab                @tab numerical inversion
-@item                    @tab  (regula falsi)        @tab cdf            @tab
-@item                    @tab  newton                @tab cdf, pdf       @tab only for continous cdf
-@item RECT               @tab                        @tab                @tab multi variate experimental
-@item SSR               @tab                        @tab pdf, mode,area under pdf       @tab transformed density rejection with universal bounds
 
-@item SROU               @tab                        @tab pdf, mode,area under pdf      @tab (Simple universal generator, ratio-of-uniforms method
-@item TABL               @tab                        @tab pdf            @tab Ahren
-@item TDR                @tab                        @tab pdf, dpdf      @tab Transformed density rejection
-@item UTDR                @tab                        @tab pdf, mode      @tab Universal Transformed Density Rejection; 3-point method
-
-@end multitable
+@include qstart_requirements.texi
 
 
 @noindent When using UNURAN, a parameter object
@@ -493,11 +460,18 @@ All parameters have default settings documented in @ref{Defaults}.
 
 @node Requirements
 @section Requirements of the methods
-
+@include qstart_requirements.texi
 
 @node Defaults
 @section Default settings of the parameters
 
+@multitable @columnfractions .07 .93
+@item NINV @tab maximum number of iterations:  @code{40}
+@item @tab relative error in @code{x}:  @code{1.0e-8}
+@item @tab starting points: 0.05 and 0.95 quantile
+@item @tab table is switched off
+@item @tab variant: regula falsi
+@end multitable
 
 @c --------------------------------------------------------------------
 

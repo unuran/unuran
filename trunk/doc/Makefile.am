@@ -58,13 +58,11 @@ qstart.texi: scripts
 scripts:
 	./examples_to_texi.perl $(example_PATH)example[0-9]*.c
 	./change_distr.perl $(method_PATH)distr.h
-	./defaults.perl  $(method_PATH)*.c
 	./description.perl $(method_PATH)*.h
 	./distr.perl $(distr_PATH)c_*.c
 	./distr_discrete.perl $(distr_PATH)d_*.c
 	./distrref.perl $(distr_PATH)*.h
 	./funcref.perl $(method_PATH)*.h
-	./required.perl $(method_PATH)*.h
 	./internals.perl $(method_PATH)*.h
 
 # make html files

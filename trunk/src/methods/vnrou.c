@@ -67,7 +67,8 @@
 #include <utils/hooke_source.h> 
 #include <utils/matrix_source.h>
 #include <utils/unur_fp_source.h>
-#include <utils/rou_rectangle_source.h>
+#include <utils/mrou_rectangle_struct.h>
+#include <utils/mrou_rectangle_source.h>
 #include <uniform/urng.h>
 #include "unur_methods_source.h"
 #include "x_gen_source.h"
@@ -461,7 +462,7 @@ _unur_vnrou_rectangle( struct unur_gen *gen )
 { 
 
   int d; /* index used in dimension loops (0 <= d < dim) */
-  struct ROU_RECTANGLE *rr;
+  struct MROU_RECTANGLE *rr;
 
   /* check arguments */
   CHECK_NULL( gen, UNUR_ERR_NULL );
@@ -472,8 +473,8 @@ _unur_vnrou_rectangle( struct unur_gen *gen )
     return UNUR_SUCCESS;
   }
 
-  /* Allocating and filling rou_rectangle struct */
-  rr = _unur_xmalloc(sizeof(struct ROU_RECTANGLE ));
+  /* Allocating and filling mrou_rectangle struct */
+  rr = _unur_mrou_rectangle_new();
 
   rr->distr  = gen->distr;
   rr->dim    = GEN.dim;
@@ -481,9 +482,10 @@ _unur_vnrou_rectangle( struct unur_gen *gen )
   rr->umax   = GEN.umax;
   rr->r      = GEN.r;
   rr->center = GEN.center; 
+  rr->genid  = gen->genid;
   
   /* calculate bounding rectangle */
-  _unur_rou_rectangle(rr);
+  _unur_mrou_rectangle_compute(rr);
 
 
   if (!(gen->set & VNROU_SET_V)) {
@@ -492,7 +494,7 @@ _unur_vnrou_rectangle( struct unur_gen *gen )
   }
 
   if (!(gen->set & VNROU_SET_U)) {
-     /* user has not provided any bounds for u */
+    /* user has not provided any bounds for u */
     for (d=0; d<GEN.dim; d++) {
       GEN.umin[d] = rr->umin[d];
       GEN.umax[d] = rr->umax[d];

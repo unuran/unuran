@@ -60,7 +60,8 @@
 #include <utils/matrix_source.h>
 #include <utils/vector_source.h>
 #include <utils/unur_fp_source.h>
-#include <utils/rou_rectangle_source.h>
+#include <utils/mrou_rectangle_struct.h>
+#include <utils/mrou_rectangle_source.h>
 #include <uniform/urng.h>
 #include "unur_methods_source.h"
 #include "x_gen_source.h"
@@ -1530,14 +1531,14 @@ _unur_varou_rectangle( struct unur_gen *gen )
 { 
 
   int d; /* index used in dimension loops (0 <= d < dim) */
-  struct ROU_RECTANGLE *rr; 
+  struct MROU_RECTANGLE *rr; 
 
   /* check arguments */
   CHECK_NULL( gen, UNUR_ERR_NULL );
   COOKIE_CHECK( gen,CK_VAROU_GEN, UNUR_ERR_COOKIE );
 
   /* Allocating and filling rou_rectangle struct */
-  rr = _unur_xmalloc(sizeof(struct ROU_RECTANGLE ));
+  rr = _unur_mrou_rectangle_new();
 
   rr->distr  = gen->distr;
   rr->dim    = GEN.dim;
@@ -1545,9 +1546,10 @@ _unur_varou_rectangle( struct unur_gen *gen )
   rr->umax   = GEN.umax;
   rr->r      = 1.;
   rr->center = GEN.center;
+  rr->genid  = gen->genid;
 
   /* calculate bounding rectangle */
-  _unur_rou_rectangle(rr);
+  _unur_mrou_rectangle_compute(rr);
 		      
   GEN.vmax = rr->vmax;
   for (d=0; d<GEN.dim; d++) {

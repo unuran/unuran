@@ -8,8 +8,8 @@
  *                                                                           *
  *                                                                           *
  *   DESCRIPTION:                                                            *
- *      declarations for the bounding rectangle calculations used in         *
- *      the RoU-methods                                                      *
+ *      Declarations for the bounding rectangle calculations used in         *
+ *      the multivariate RoU-methods.                                        *
  *                                                                           *
  *****************************************************************************
  *   (c) 2000 Wolfgang Hoermann and Josef Leydold                            *
@@ -32,22 +32,14 @@
  *                                                                           *
  *****************************************************************************/
 
-#include <unur_source.h>
-#include <distr/distr_source.h>
-
-struct ROU_RECTANGLE {
-  UNUR_DISTR *distr;        /* distribution object                           */
-  int    dim;               /* dimension of distribution                     */
-  double r;	            /* r-parameter of the rou method 	             */
-  double *umin, *umax;      /* boundary rectangle u-coordinates              */
-  double vmax;              /* boundary rectangle v-coordinate               */
-  const double *center;     /* center of distribution                        */
-  int aux_dim;              /* parameter used in auxiliary functions         */
-};
-  
+/*---------------------------------------------------------------------------*/
+/* create MROU rectangle object.                                             */
+/*---------------------------------------------------------------------------*/
+struct MROU_RECTANGLE *_unur_mrou_rectangle_new( void );
 
 /*---------------------------------------------------------------------------*/
-/* compute (minimal) bounding rectangle.                                     */
+/* compute (minimal) bounding hyper-rectangle.                               */
 /*---------------------------------------------------------------------------*/
-int _unur_rou_rectangle( struct ROU_RECTANGLE *rr );
+int _unur_mrou_rectangle_compute( struct MROU_RECTANGLE *rr );
 
+/*---------------------------------------------------------------------------*/

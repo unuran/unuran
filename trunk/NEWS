@@ -14,6 +14,12 @@ Version 0.6.0: ???? 200?
 	  directly. This mechanism replaces the _set_ calls for 
 	  all methods that make use of the center.
 
+        - method MCORR is extended to cover generation of random
+	  correlation matrices with given eigenvalues.
+
+	- new method HITROU  
+
+
 Version 0.5.0: August 2004
 
 	- UNU.RAN now makes use of IEEE 754 compliant floating point

@@ -10,13 +10,15 @@ check_PROGRAMS = \
  t_dau \
  t_dgt \
  t_srou \
- t_stdr
+ t_stdr \
+ t_unif
 
 TESTS = \
  t_dau \
  t_dgt \
  t_srou \
- t_stdr
+ t_stdr \
+ t_unif
 
 t_dau_SOURCES = t_dau.c support.c list_of_distributions.c
 t_dau_LDADD = $(top_builddir)/src/libunuran.a -lprng -lml -lm
@@ -29,6 +31,9 @@ t_srou_LDADD = $(top_builddir)/src/libunuran.a -lprng -lml -lm
 
 t_stdr_SOURCES = t_stdr.c support.c list_of_distributions.c
 t_stdr_LDADD = $(top_builddir)/src/libunuran.a -lprng -lml -lm
+
+t_unif_SOURCES = t_unif.c support.c list_of_distributions.c
+t_unif_LDADD = $(top_builddir)/src/libunuran.a -lprng -lml -lm
 
 noinst_HEADERS = t_unuran.h
 

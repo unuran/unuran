@@ -35,8 +35,9 @@
 /* methods                                                                   */
 #define T_DAU
 #define T_DGT
-/*  #define T_SROU */
-/*  #define T_STDR */
+#define T_SROU
+#define T_STDR
+#define T_UNIF
 
 /* continuous univariate distributions                                       */
 #define D_BETA

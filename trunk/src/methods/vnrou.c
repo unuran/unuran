@@ -73,6 +73,23 @@
 #include "vnrou.h"
 
 /*---------------------------------------------------------------------------*/
+/* Constants                                                                 */
+
+/* Convergence parameters for the hooke optimization algorithm */
+
+#define VNROU_HOOKE_RHO     (0.5) 
+#define VNROU_HOOKE_EPSILON (1.e-7) 
+#define VNROU_HOOKE_MAXITER (10000)
+
+/* Scaling factor for the computed minimum bounding rectangle.               */
+/* The computed rectangle  (0, vmax)x(umin[d], umax[d]) is scaled by this    */
+/* factor, i.e. :                                                            */
+/* vmax = vmax * ( 1+ NROU_RECT_SCALING)                                     */
+/* umin[i] = umin[i] - (umax[i]-umin[i])*NROU_RECT_SCALING/2.                */
+/* umax[i] = umax[i] + (umax[i]-umin[i])*NROU_RECT_SCALING/2.                */
+#define VNROU_RECT_SCALING (1.e-4)
+
+/*---------------------------------------------------------------------------*/
 /* Variants:                                                                 */
 
 #define VNROU_VARFLAG_VERIFY   0x002u   /* run verify mode                   */
@@ -87,21 +104,6 @@
 /*---------------------------------------------------------------------------*/
 
 #define GENTYPE "VNROU"         /* type of generator                         */
-
-/*---------------------------------------------------------------------------*/
-/* convergence parameters for the hooke optimization algorithm */
-
-#define VNROU_HOOKE_RHO 0.5 
-#define VNROU_HOOKE_EPSILON 1e-7 
-#define VNROU_HOOKE_MAXITER 10000
-
-/* scaling factor of computed minimum boundary rectangle */
-/* after we have computed the boundary rectangle (0, vmax)x(umin[d], umax[d])*/
-/* we scale the obtained boundaries with this factor, i.e. :                 */
-/* vmax = vmax * ( 1+ VNROU_RECT_SCALING)                                    */
-/* umin[d] = umin[d] - (umax[d]-umin[d])*VNROU_RECT_SCALING/2.               */
-/* umax[d] = umax[d] + (umax[d]-umin[d])*VNROU_RECT_SCALING/2.               */
-#define VNROU_RECT_SCALING 1e-4
 
 /*---------------------------------------------------------------------------*/
 
@@ -272,9 +274,7 @@ unur_vnrou_set_u( struct unur_par *par, double *umin, double *umax )
 
 } /* end of unur_vnrou_set_u() */
 
-
 /*---------------------------------------------------------------------------*/
-
 
 int
 unur_vnrou_set_v( struct unur_par *par, double vmax )
@@ -309,7 +309,6 @@ unur_vnrou_set_v( struct unur_par *par, double vmax )
 
 } /* end of unur_vnrou_set_v() */
 
-
 /*---------------------------------------------------------------------------*/
 
 int
@@ -328,10 +327,13 @@ unur_vnrou_set_r( struct unur_par *par, double r )
   /* check arguments */
   _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
   _unur_check_par_object( par, VNROU );
+
+  /* check new parameter for generator */
   if (r <= 0.) {
-    _unur_warning(GENTYPE, UNUR_ERR_PAR_SET, "r<=0; set to r=1");
-    r = 1.;
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"r<=0");
+    return UNUR_ERR_PAR_SET;
   }
+
   /* store data */
   PAR.r = r;
 
@@ -475,10 +477,10 @@ _unur_vnrou_aux_vmax(double *x, void *p )
      /*----------------------------------------------------------------------*/
 {
   struct unur_gen *gen;
-  
   gen = p; /* typecast from void* to unur_gen* */
+
   return -pow( _unur_cvec_PDF((x),(gen->distr)) , 
-                              1./(1.+ GEN.r * GEN.dim) ); 
+	       1./(1.+ GEN.r * GEN.dim) ); 
 }
 
 /*---------------------------------------------------------------------------*/
@@ -490,11 +492,11 @@ _unur_vnrou_aux_umin(double *x, void *p)
      /*----------------------------------------------------------------------*/	
 {
   struct unur_gen *gen;
-  
   gen = p; /* typecast from void* to unur_gen* */
-  return (x[GEN.aux_dim] - GEN.center[GEN.aux_dim]) 
-         * pow( _unur_cvec_PDF((x),(gen->distr)), 
-                GEN.r / (1.+ GEN.r * GEN.dim) );
+
+  return ( (x[GEN.aux_dim] - GEN.center[GEN.aux_dim]) 
+	   * pow( _unur_cvec_PDF((x),(gen->distr)), 
+		  GEN.r / (1.+ GEN.r * GEN.dim) ) );
 }
 
 /*---------------------------------------------------------------------------*/
@@ -728,6 +730,7 @@ _unur_vnrou_create( struct unur_par *par )
   
   if (PAR.umin != NULL) memcpy(GEN.umin, PAR.umin, GEN.dim * sizeof(double));
   if (PAR.umax != NULL) memcpy(GEN.umax, PAR.umax, GEN.dim * sizeof(double));
+
   /* get center of the distribution */
   GEN.center = unur_distr_cvec_get_center(gen->distr);
  

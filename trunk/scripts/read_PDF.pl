@@ -19,9 +19,17 @@ my %distr_types =
 		   "PDF_prefix"  => "_unur_pdf_",
 		   "PDF_type"    => "double" },
 
+      "CVEC"  => { "file_prefix" => "vc",
+		   "PDF_prefix"  => "-none-",
+		   "PDF_type"    => "-none-" },
+
       "DISCR" => { "file_prefix" => "d",
 		   "PDF_prefix"  => "_unur_pmf_",
-		   "PDF_type"    => "double" } );
+		   "PDF_type"    => "double" },
+
+      "MATR"  => { "file_prefix" => "m",
+		   "PDF_prefix"  => "-none-",
+		   "PDF_type"    => "-none-" } );
 
 # ................................................................
 # List of files
@@ -235,16 +243,22 @@ sub read_distr_file
     my $type = $DISTR->{$distr}->{"=TYPE"};
 
     # Get PDF source
-    my $PDF_name = $distr_types{$type}{"PDF_prefix"}.$distr;
-    my $PDF_pattern = 
-	"(int|double)\\s+"                   # $1: return type  
-	.$PDF_name                           #     name of function
-        ."\\s*\\(([^\\)]*)\\)\\s*"           # $2: arguments of function
-	."([^;])"                            # $3: first character (to distinguish from prototype) 
-	."(.*)"                              # $4: function body
-        ."\\/\\*\\s+end\\s+of\\s+$PDF_name"; # end of function marker
-    $file_content =~ /$PDF_pattern/s
-	or die "cannot find PDF for $distr";
+    my $PDF_name;
+    unless ($distr_types{$type}{"PDF_prefix"} eq "-none-") {
+	$PDF_name = $distr_types{$type}{"PDF_prefix"}.$distr;
+	my $PDF_pattern = 
+	    "(int|double)\\s+"                   # $1: return type  
+	    .$PDF_name                           #     name of function
+	    ."\\s*\\(([^\\)]*)\\)\\s*"           # $2: arguments of function
+	    ."([^;])"                            # $3: first character (to distinguish from prototype) 
+	    ."(.*)"                              # $4: function body
+	    ."\\/\\*\\s+end\\s+of\\s+$PDF_name"; # end of function marker
+	$file_content =~ /$PDF_pattern/s
+	    or die "cannot find PDF for $distr";
+    }
+    else {
+	$PDF_name = "";
+    }
 
     # Store data
     $DISTR->{$distr}->{"=PDF"}->{"=NAME"}  = $PDF_name;  # name of PDF function

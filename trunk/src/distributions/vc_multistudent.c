@@ -194,13 +194,13 @@ _unur_set_params_multistudent( UNUR_DISTR *distr, const double *params, int n_pa
   CHECK_NULL(params,UNUR_ERR_NULL);
 
   /* check parameter m (degrees of freedom) */
-  if ( ((int)nu) < 1 ) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"nu < 1");
+  if ( nu <= 0 ) {
+    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"nu <= 0");
     return UNUR_ERR_DISTR_DOMAIN;
   }
 
   /* copy parameters for standard form */
-  DISTR.nu = (int) nu; 
+  DISTR.nu = nu; 
 
   /* store number of parameters */
   DISTR.n_params = n_params;
@@ -218,7 +218,7 @@ _unur_set_params_multistudent( UNUR_DISTR *distr, const double *params, int n_pa
 /*---------------------------------------------------------------------------*/
 
 struct unur_distr *
-unur_distr_multistudent( int dim, const int df, const double *mean, const double *covar )
+unur_distr_multistudent( int dim, const double df, const double *mean, const double *covar )
 {
   struct unur_distr *distr;
   struct unur_distr *stdmarginal;

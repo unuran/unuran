@@ -494,15 +494,15 @@ UNUR_DISTR *unur_distr_multicauchy(int dim, const double *mean, const double *co
 
 /*---------------------------------------------------------------------------*/
 /* Multistudent distribution                                                 */
-UNUR_DISTR *unur_distr_multistudent(int dim, const int m, const double *mean, const double *covar);
+UNUR_DISTR *unur_distr_multistudent(int dim, const double nu, const double *mean, const double *covar);
 /* 
    =DISTR    multistudent  Multistudent distribution
    =UP       Stddist_CVEC
 
    =DESCRIPTION
-   @code{UNUR_DISTR *unur_distr_multistudent(int dim, const int m, const double *mean, const double *covar)}
+   @code{UNUR_DISTR *unur_distr_multistudent(int dim, const double nu, const double *mean, const double *covar)}
    creates a distribution object for the multivariate Student t-distribution with
-   @var{dim} components and @var{m} degrees of freedom. 
+   @var{dim} components and @var{nu} degrees of freedom. 
    @var{mean} is an array of size @var{dim}.
    A NULL pointer for @var{mean} is interpreted as the zero
    vector (0,@dots{},0).

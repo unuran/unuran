@@ -12,15 +12,8 @@
 
 #include <unuran.h>
 #include <sys/time.h>
-
-/*---------------------------------------------------------------------------*/
-/* Test functions                                                            */
-
-double funct( int dim, double *x );
-/* function to be integrated */
-
-double funct_integral_exact (int dim );
-/* exact result for integration */
+#include <unistd.h>
+#include <string.h>
 
 /*---------------------------------------------------------------------------*/
 /* uniform pseudo- and quasi-random number generators                        */
@@ -37,25 +30,38 @@ void seed_uniform_prng(int seed);
 /*---------------------------------------------------------------------------*/
 /* Run MC computations                                                       */
 
-typedef double MC_COMP(int dim, int sample_size );
+typedef UNUR_GEN *MAKE_GEN(UNUR_DISTR *distr);
+typedef double MC_COMP(MAKE_GEN *make_gen);
 /* type for function */
 
-int run_MC (MC_COMP *MC, char *title, int dim, int sample_size, int n_samples);
+int run_MC (MC_COMP *MC, MAKE_GEN *make_gen, char *title);
 /* master routine for running MC simulations */
 
-double MC_naive( int dim, int sample_size );
+double MC_naive(MAKE_GEN *make_gen);
 /* naive MC, uniformly distributed points in unit cube */
 
-double MC_badhat( int dim, int sample_size );
-double MC_goodhat( int dim, int sample_size );
-double MC_verygoodhat( int dim, int sample_size );
-/* use importance sampling, use exponential distribution, TDR */
+double MC_importance(MAKE_GEN *make_gen);
+UNUR_GEN *use_inversion(UNUR_DISTR *distr);
+UNUR_GEN *use_tdr_bad(UNUR_DISTR *distr);
+UNUR_GEN *use_tdr_better(UNUR_DISTR *distr);
+UNUR_GEN *use_tdr_good(UNUR_DISTR *distr);
+UNUR_GEN *use_tdr_excellent(UNUR_DISTR *distr);
+/* use importance sampling, use exponential distribution */
 
-double MC_badhat_single( int dim, int sample_size );
+double MC_hat_importance(MAKE_GEN *make_gen);
+/* use importance sampling, use tdr hat for exponential distribution */
 
-double MC_hinv( int dim, int sample_size );
-/* use importance sampling, use exponential distribution, HINV */
+double MC_xhat_importance(MAKE_GEN *make_gen);
+/* use importance sampling, use tdr, dim+1 urng, use exponential distribution */
 
+double MC_xsmoothed_importance(MAKE_GEN *make_gen);
+/* use importance sampling, use smoothed tdr, dim+1 urng, use exponential distribution */
+
+double MC_const_importance(MAKE_GEN *make_gen);
+/* use importance sampling, rejection from constant hat for exponential distribution */
+
+double MC_wus(MAKE_GEN *make_gen);
+/* use weighted uniform sampling, use exponential distribution */
 
 /*---------------------------------------------------------------------------*/
 /* timings                                                                   */
@@ -66,57 +72,129 @@ static struct timeval tv;
 /*---------------------------------------------------------------------------*/
 /* printing                                                                  */
 
-void print_result( char *title, int dim, int sample_size, int n_samples, 
-		   double mean, double stddev, double time );
+void print_result( char *title, double xsum, double xsumsqu, double time );
 /* print result */
 
 
 /*---------------------------------------------------------------------------*/
+
+static int sample_size = 10000;    /* sample size for MC integration         */
+static int n_samples = 10;         /* total number of samples                */
+
+/*---------------------------------------------------------------------------*/
+/* Test functions                                                            */
+
+/* dimension */
+static int dim = 5;
+
+/* domain for function to be integrated [0,domain)^dim */
+static double domain = 3.;
+
+static UNUR_DISTR *distr_normal = NULL;
+  
+double funct( double *x )
+{
+  int i;
+  double tmp = 1.;
+  
+  if (distr_normal == NULL) distr_normal = unur_distr_normal(NULL,0);
+  
+  for (i=0; i<dim; i++)
+    tmp *= unur_distr_cont_eval_pdf(x[i],distr_normal);
+  return tmp;
+} /* end of funct() */
+
+double funct_integral_exact( void )
+{
+  static double result = -1.;
+
+  if (result < 0.) { 
+    if (distr_normal == NULL) distr_normal = unur_distr_normal(NULL,0);
+    result = pow(unur_distr_cont_eval_cdf(domain,distr_normal)-0.5,dim);
+  }
+
+  return result;
+} /* end of funct_integral_exact() */
+
+double funct_domain_area( void )
+{
+  static double area = -1;
+  int i;
+  if (area < 0.) {
+    area = 1.;
+    for (i=0; i<dim; i++) area *= domain;
+  }
+  return area;
+
+} /* end of funct_domain_area() */
+
 /*---------------------------------------------------------------------------*/
 
-int main()
+int main (int argc, char *argv[])
 {
-  const int dim = 5;             /* dimensions where function lives on (<=100) */
-  const int sample_size = 10000;    /* sample size for MC integration         */
-  const int n_samples = 10;         /* total number of samples                */
+  char c;
+  int seed = 123;
+
+  /* read options                                                            */
+  while ((c = getopt(argc, argv, "n:m:d:b:s:")) != -1) {
+    switch (c) {
+    case 'n':     /* sample size */
+      sample_size = atoi(optarg);
+      break;
+    case 'm':     /* number of samples */
+      n_samples = atoi(optarg);
+      break;
+    case 'd':     /* dimension */
+      dim = atoi(optarg);
+      if (dim<=0) exit (EXIT_FAILURE);
+      break;
+    case 'b':     /* right boundary of domain  */
+      domain = atof(optarg);
+      if (domain<=0.) exit (EXIT_FAILURE);
+      break;
+    case 's':     /* seed */
+      seed = atoi(optarg);
+      if (seed<=0) seed *= -1;
+      break;
+    default:
+      exit (EXIT_FAILURE);
+    }
+  }
 
   /* set and seed uniform PRNG */
-  seed_uniform_prng(123);
+  seed_uniform_prng(seed);
   unur_set_default_urng (uniform_prng);
 
+  run_MC(MC_naive, NULL, "Naive MC");
 
-  run_MC(MC_naive, "Naive MC", dim, sample_size, n_samples);
-/*    run_MC(MC_badhat, "Importance MC, inversion", dim, sample_size, n_samples); */
-  run_MC(MC_badhat, "Importance MC, bad hat", dim, sample_size, n_samples);
-/*    run_MC(MC_goodhat, "Importance MC, good hat", dim, sample_size, n_samples); */
-/*    run_MC(MC_verygoodhat, "Importance MC, very good hat", dim, sample_size, n_samples); */
-  run_MC(MC_badhat_single, "Importance MC, bad hat, single rejection", dim, sample_size, n_samples);
+/*    run_MC(MC_importance, use_inversion, "Importance MC, inversion"); */
+
+/*    run_MC(MC_importance, use_tdr_bad, "Importance MC, TDR, bad hat"); */
+/*    run_MC(MC_importance, use_tdr_better, "Importance MC, TDR, better hat"); */
+/*    run_MC(MC_importance, use_tdr_good, "Importance MC, TDR, good hat"); */
+/*    run_MC(MC_importance, use_tdr_excellent, "Importance MC, TDR, excellent hat"); */
+
+/*    run_MC(MC_hat_importance, use_tdr_bad, "hat importance MC, TDR, bad hat"); */
+/*    run_MC(MC_hat_importance, use_tdr_better, "hat importance MC, TDR, better hat"); */
+/*    run_MC(MC_hat_importance, use_tdr_good, "hat importance MC, TDR, good hat"); */
+/*    run_MC(MC_hat_importance, use_tdr_excellent, "hat importance MC, TDR, excellent hat"); */
+
+/*    run_MC(MC_xhat_importance, use_tdr_bad, "single importance MC, TDR, bad hat"); */
+  run_MC(MC_xhat_importance, use_tdr_better, "single importance MC, TDR, better hat");
+/*    run_MC(MC_xhat_importance, use_tdr_good, "single importance MC, TDR, good hat"); */
+/*    run_MC(MC_xhat_importance, use_tdr_excellent, "single importance MC, TDR, excellent hat"); */
+
+/*    run_MC(MC_xsmoothed_importance, use_tdr_better, "single importance MC, smoothed TDR, better hat"); */
+
+/*    run_MC(MC_const_importance, NULL, "Importance MC, rejection from constant hat"); */
+
+/*    run_MC(MC_wus, NULL, "weighted uniform sampling MC"); */
 
   /* free working space and exit */
   exit (EXIT_SUCCESS);
 
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-double funct( int dim, double *x )
-     /* function to be integrated          */
-     /* f(x) = \sum_{i=1}^n exp( -i*x_i^2) */
-     /* domain = [0,1]^n                   */
-     /*                                    */
-     /* dim ... dimension (n)              */
-     /* x   ... pointer to argment         */
-{
-  int i;
-  double tmp = 0.;
-  
-  for (i=0; i<dim; i++)
-    tmp -= (i+1.)*x[i]*x[i];
-
-  return exp(tmp);
-
-} /* end of funct() */
+  return EXIT_SUCCESS;
+} /* end of main() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -135,335 +213,12 @@ void seed_uniform_prng( int seed )
   
 /*---------------------------------------------------------------------------*/
 
-double MC_naive( int dim, int sample_size )
-{
-  double *x;         /* aux array for storing vector */
-  int i;             /* counting dimensions     */ 
-  int n_sample;      /* counter for sample size */
-  double sum = 0.;   /* store sum of function values */
-  double result;     /* result of MC integration */
-
-  /* allocate working space */
-  x = malloc (dim * sizeof(double));
-
-  for (n_sample = 0; n_sample < sample_size; ++n_sample) {
-    /* make point uniformly distributed in [0,1]^dim */
-    for (i = 0; i<dim; i++) x[i] = uniform_prng(); 
-    /* compute function value */
-    sum += funct(dim,x);
-  }
-
-  /* free working space and exit */
-  free(x);
-
-  /*result */
-  result = sum / n_sample;
-
-  /* return result */
-  return result;
-
-} /* end of MC_naive() */
-
-/*---------------------------------------------------------------------------*/
-
-double MC_badhat( int dim, int sample_size )
-{
-  double *x;         /* aux array for storing vector */
-  double fx;         /* store value of density for importance sampling */
-  int i;             /* counting dimensions     */ 
-  int n_sample;      /* counter for sample size */
-  double sum = 0.;   /* store sum of function values */
-  double result;     /* result of MC integration */
-  double norm;
-  UNUR_DISTR *distr;
-  UNUR_GEN *gen;
-
-  /* allocate working space */
-  x = malloc (dim * sizeof(double));
-
-  /* get generator for marginal distributions */
-  distr = unur_str2distr("exponential");
-  gen = unur_str2gen("exponential & method=tdr; cpoints=(2); usedars=on; max_sqhratio=0.");
-  
-  /* normalization constant for truncated density */
-  norm = 1.;
-  for (i = 0; i<dim; i++)
-    norm /= unur_distr_cont_eval_cdf(sqrt(i+1.),distr) / sqrt(i+1.);
-
-  for (n_sample = 0; n_sample < sample_size; ++n_sample) {
-
-    /* make point with importance distribution in [0,1]^dim */
-    fx = 1.;
-    for (i = 0; i<dim; i++) {
-      unur_tdr_chg_truncated(gen,0,sqrt(i+1.));
-      x[i] = unur_sample_cont(gen);
-      fx *= unur_distr_cont_eval_pdf(x[i],distr);
-      x[i] /= sqrt(i+1.);
-    }
-    /* compute function value */
-    sum += funct(dim,x) / (norm * fx);
-  }
-
-  /* free working space and exit */
-  free(x);
-  unur_distr_free(distr);
-  unur_free(gen);
-
-  /* result */
-  result = sum / sample_size;
-
-  /* return result */
-  return result;
-
-} /* end of MC_badhat() */
-
-/*---------------------------------------------------------------------------*/
-
-double MC_goodhat( int dim, int sample_size )
-{
-  double *x;         /* aux array for storing vector */
-  double fx;         /* store value of density for importance sampling */
-  int i;             /* counting dimensions     */ 
-  int n_sample;      /* counter for sample size */
-  double sum = 0.;   /* store sum of function values */
-  double result;     /* result of MC integration */
-  double norm;
-  UNUR_DISTR *distr;
-  UNUR_GEN *gen;
-
-  /* allocate working space */
-  x = malloc (dim * sizeof(double));
-
-  /* get generator for marginal distributions */
-  distr = unur_str2distr("exponential");
-  gen = unur_str2gen("exponential & method=tdr; cpoints=(1); usedars=on; max_sqhratio=0.5");
-  
-  /* normalization constant for truncated density */
-  norm = 1.;
-  for (i = 0; i<dim; i++)
-    norm /= unur_distr_cont_eval_cdf(sqrt(i+1.),distr) / sqrt(i+1.);
-
-  for (n_sample = 0; n_sample < sample_size; ++n_sample) {
-
-    /* make point with importance distribution in [0,1]^dim */
-    fx = 1.;
-    for (i = 0; i<dim; i++) {
-      unur_tdr_chg_truncated(gen,0,sqrt(i+1.));
-      x[i] = unur_sample_cont(gen);
-      fx *= unur_distr_cont_eval_pdf(x[i],distr);
-      x[i] /= sqrt(i+1.);
-    }
-    /* compute function value */
-    sum += funct(dim,x) / (norm * fx);
-  }
-
-  /* free working space and exit */
-  free(x);
-  unur_distr_free(distr);
-  unur_free(gen);
-
-  /* result */
-  result = sum / sample_size;
-
-  /* return result */
-  return result;
-
-} /* end of MC_goodhat() */
-
-/*---------------------------------------------------------------------------*/
-
-double MC_verygoodhat( int dim, int sample_size )
-{
-  double *x;         /* aux array for storing vector */
-  double fx;         /* store value of density for importance sampling */
-  int i;             /* counting dimensions     */ 
-  int n_sample;      /* counter for sample size */
-  double sum = 0.;   /* store sum of function values */
-  double result;     /* result of MC integration */
-  double norm;
-  UNUR_DISTR *distr;
-  UNUR_GEN *gen;
-
-  /* allocate working space */
-  x = malloc (dim * sizeof(double));
-
-  /* get generator for marginal distributions */
-  distr = unur_str2distr("exponential");
-  gen = unur_str2gen("exponential & method=tdr; cpoints=(1); usedars=on; max_sqhratio=0.99");
-  
-  /* normalization constant for truncated density */
-  norm = 1.;
-  for (i = 0; i<dim; i++)
-    norm /= unur_distr_cont_eval_cdf(sqrt(i+1.),distr) / sqrt(i+1.);
-
-  for (n_sample = 0; n_sample < sample_size; ++n_sample) {
-
-    /* make point with importance distribution in [0,1]^dim */
-    fx = 1.;
-    for (i = 0; i<dim; i++) {
-      unur_tdr_chg_truncated(gen,0,sqrt(i+1.));
-      x[i] = unur_sample_cont(gen);
-      fx *= unur_distr_cont_eval_pdf(x[i],distr);
-      x[i] /= sqrt(i+1.);
-    }
-    /* compute function value */
-    sum += funct(dim,x) / (norm * fx);
-  }
-
-  /* free working space and exit */
-  free(x);
-  unur_distr_free(distr);
-  unur_free(gen);
-
-  /* result */
-  result = sum / sample_size;
-
-  /* return result */
-  return result;
-
-} /* end of MC_verygoodhat() */
-
-/*---------------------------------------------------------------------------*/
-
-double MC_badhat_single( int dim, int sample_size )
-{
-  double *x;         /* aux array for storing vector */
-  int i;             /* counting dimensions     */ 
-  int n_sample;      /* counter for sample size */
-  double sum = 0.;   /* store sum of function values */
-  double result;     /* result of MC integration */
-  double norm;
-  double *Umax;
-  double U,V;
-  double hx, fx;
-  double hxt, fxt;
-  UNUR_DISTR *distr;
-  UNUR_GEN *gen;
-
-  /* allocate working space */
-  x = malloc (dim * sizeof(double));
-  Umax = malloc (dim * sizeof(double));
-
-  /* get generator for marginal distributions */
-  distr = unur_str2distr("exponential");
-  gen = unur_str2gen("exponential & method=tdr; cpoints=(2); usedars=on; max_sqhratio=0.");
-  
-  /* normalization constant for truncated density */
-  norm = 1.;
-  for (i = 0; i<dim; i++)
-    norm /= unur_distr_cont_eval_cdf(sqrt(i+1.),distr) / sqrt(i+1.);
-
-  for (i = 0; i<dim; i++)
-    Umax[i] = _unur_tdr_eval_cdfhat(gen, sqrt(i+1.)); /*  / unur_tdr_get_hatarea(gen); */
-
-  for (i = 0; i<dim; i++)
-    printf("%d %g\n",i,Umax[i]);
-
-  for (n_sample = 0; n_sample < sample_size; ++n_sample) {
-
-    /* make point with importance distribution in [0,1]^dim */
-/*      while (1) { */
-    hx = fx = 1.;
-    for (i = 0; i<dim; i++) {
-      unur_tdr_chg_truncated(gen,0,sqrt(i+1.));
-      while(1) {
-/*  	U = GEN.Umin + _unur_call_urng(urng) * (GEN.Umax - GEN.Umin); */
-	U = uniform_prng(); // * Umax[i];
-	x[i] = unur_tdr_eval_invcdfhat(gen, U, &hxt, &fxt, NULL);
-	/*  	  hx *= hxt; */
-	/*  	  fx *= fxt; */
-	V = uniform_prng();
-	if (V*hxt <= fxt)
-	  break;
-      }
-      fx *= fxt;
-      x[i] /= sqrt(i+1.);
-    }
-/*        V = uniform_prng(); */
-/*        if (V*hx <= fx) */
-/*        break; */
-/*      } */
-
-    /* compute function value */
-    sum += funct(dim,x) / (norm * fx);
-  }
-
-  /* free working space and exit */
-  free(x);
-  free(Umax);
-  unur_distr_free(distr);
-  unur_free(gen);
-
-  /* result */
-  result = sum / sample_size;
-
-  /* return result */
-  return result;
-
-} /* end of MC_badhat_single() */
-
-/*---------------------------------------------------------------------------*/
-
-double MC_hinv( int dim, int sample_size )
-{
-  double *x;         /* aux array for storing vector */
-  double fx;         /* store value of density for importance sampling */
-  int i;             /* counting dimensions     */ 
-  int n_sample;      /* counter for sample size */
-  double sum = 0.;   /* store sum of function values */
-  double result;     /* result of MC integration */
-  double norm;
-  UNUR_DISTR *distr;
-  UNUR_GEN *gen;
-
-  /* allocate working space */
-  x = malloc (dim * sizeof(double));
-
-  /* get generator for marginal distributions */
-  distr = unur_str2distr("exponential");
-  gen = unur_str2gen("exponential & method=hinv");
-  
-  /* normalization constant for truncated density */
-  norm = 1.;
-  for (i = 0; i<dim; i++)
-    norm /= unur_distr_cont_eval_cdf(sqrt(i+1.),distr) / sqrt(i+1.);
-
-  for (n_sample = 0; n_sample < sample_size; ++n_sample) {
-
-    /* make point with importance distribution in [0,1]^dim */
-    fx = 1.;
-    for (i = 0; i<dim; i++) {
-      unur_tdr_chg_truncated(gen,0,sqrt(i+1.));
-      x[i] = unur_sample_cont(gen);
-      fx *= unur_distr_cont_eval_pdf(x[i],distr);
-      x[i] /= sqrt(i+1.);
-    }
-    /* compute function value */
-    sum += funct(dim,x) / (norm * fx);
-  }
-
-  /* free working space and exit */
-  free(x);
-  unur_distr_free(distr);
-  unur_free(gen);
-
-  /* result */
-  result = sum / sample_size;
-
-  /* return result */
-  return result;
-
-} /* end of MC_hinv() */
-
-/*---------------------------------------------------------------------------*/
-
-int run_MC (MC_COMP *MC, char *title, int dim, int sample_size, int n_samples)
+int run_MC (MC_COMP *MC, MAKE_GEN *make_gen, char *title)
 {
   double integral;
   double sum, sumsqu;
-  double mean, stddev;
   double start, stop;
-  int sample;
+  int m;
 
   /* reset counter for urng */
   n_urng = 0;
@@ -472,101 +227,424 @@ int run_MC (MC_COMP *MC, char *title, int dim, int sample_size, int n_samples)
   sum = sumsqu = 0.;
   start = get_time();
 
-  for (sample = 0; sample < n_samples; ++sample) {
-    integral = MC( dim, sample_size );
+  for (m = 0; m < n_samples; ++m) {
+    integral = MC(make_gen);
     sum += integral;
     sumsqu += integral*integral;
   }
 
   stop = get_time();
 
-  mean = sum / n_samples;
-  stddev = sqrt(sumsqu / n_samples - mean*mean);
-
-  print_result( title, dim, sample_size, n_samples, mean, stddev, stop-start );
+  print_result( title, sum, sumsqu, stop-start );
 
   return 1;
-
 } /* end of run_MC() */
 
 /*---------------------------------------------------------------------------*/
 
-void print_result( char *title, int dim, int sample_size, int n_samples, 
-		   double mean, double stddev, double time )
+double MC_naive( MAKE_GEN *dummy )
+{
+  double *x;         /* aux array for storing vector */
+  int i;             /* counting dimensions     */ 
+  int n;             /* counter for sample size */
+  double sum = 0.;   /* store sum of function values */
+  double area = funct_domain_area();
+
+  /* allocate working space */
+  x = malloc (dim * sizeof(double));
+
+  for (n = 0; n < sample_size; ++n) {
+    /* make point uniformly distributed in [0,domain)^dim */
+    for (i = 0; i<dim; i++) x[i] = domain * uniform_prng(); 
+    /* compute function value */
+    sum += funct(x);
+  }
+
+  /* free working space and exit */
+  free(x);
+
+  /* return result */
+  return (area * sum/sample_size);
+
+} /* end of MC_naive() */
+
+/*---------------------------------------------------------------------------*/
+
+double MC_importance( MAKE_GEN *make_gen )
+{
+  double *x;         /* aux array for storing vector */
+  double fx;         /* store value of density for importance sampling */
+  int i;             /* counting dimensions     */ 
+  int n;             /* counter for sample size */
+  double sum = 0.;   /* store sum of function values */
+  double norm;
+  UNUR_DISTR *distr;
+  UNUR_GEN *gen;
+
+  /* allocate working space */
+  x = malloc (dim * sizeof(double));
+
+  /* get generator for marginal distributions */
+  distr = unur_distr_exponential(NULL,0);
+  unur_distr_cont_set_domain(distr,0.,domain);
+  gen = make_gen(distr);
+  
+  /* normalization constant for truncated density */
+  norm = pow(unur_distr_cont_eval_cdf(domain,distr),-dim);
+
+  for (n = 0; n < sample_size; ++n) {
+    /* make point with importance distribution */
+    fx = 1.;
+    for (i = 0; i<dim; i++) {
+      x[i] = unur_sample_cont(gen);
+      fx *= unur_distr_cont_eval_pdf(x[i],distr);
+    }
+    /* compute function value */
+    sum += funct(x) / (norm * fx);
+  }
+
+  /* free working space and exit */
+  free(x);
+  unur_distr_free(distr);
+  unur_free(gen);
+
+  /* return result */
+  return (sum / sample_size);
+
+} /* end of MC_importance() */
+
+UNUR_GEN *use_inversion(UNUR_DISTR *distr)
+{
+  UNUR_PAR *par = unur_cstd_new(distr);
+  unur_cstd_set_variant(par,UNUR_STDGEN_INVERSION);
+  return unur_init(par);
+}
+
+UNUR_GEN *use_tdr_bad(UNUR_DISTR *distr)
+{
+  UNUR_PAR *par = unur_tdr_new(distr);
+  unur_tdr_set_cpoints(par,1,NULL);
+  unur_tdr_set_usedars(par,0);
+  unur_tdr_set_max_sqhratio(par,0.5);
+  unur_tdr_set_variant_ps(par);
+  unur_tdr_set_c(par,-0.5);
+  return unur_init(par);
+}
+
+UNUR_GEN *use_tdr_better(UNUR_DISTR *distr)
+{
+  UNUR_PAR *par = unur_tdr_new(distr);
+  unur_tdr_set_cpoints(par,3,NULL);
+  unur_tdr_set_usedars(par,1);
+  unur_tdr_set_max_sqhratio(par,0.9);
+  unur_tdr_set_variant_ps(par);
+  unur_tdr_set_c(par,-0.5);
+  return unur_init(par);
+}
+
+UNUR_GEN *use_tdr_good(UNUR_DISTR *distr)
+{
+  UNUR_PAR *par = unur_tdr_new(distr);
+  unur_tdr_set_cpoints(par,3,NULL);
+  unur_tdr_set_usedars(par,1);
+  unur_tdr_set_max_sqhratio(par,0.99);
+  unur_tdr_set_variant_ps(par);
+  unur_tdr_set_c(par,-0.5);
+  return unur_init(par);
+}
+
+UNUR_GEN *use_tdr_excellent(UNUR_DISTR *distr)
+{
+  UNUR_PAR *par = unur_tdr_new(distr);
+  unur_tdr_set_cpoints(par,3,NULL);
+  unur_tdr_set_usedars(par,1);
+  unur_tdr_set_max_sqhratio(par,0.999);
+  unur_tdr_set_variant_ps(par);
+  unur_tdr_set_c(par,-0.5);
+  return unur_init(par);
+}
+
+/*---------------------------------------------------------------------------*/
+
+double MC_hat_importance( MAKE_GEN *make_gen )
+{
+  double *x;         /* aux array for storing vector */
+  double hx;         /* store value of hat of density for importance sampling */
+  int i;             /* counting dimensions     */ 
+  int n;             /* counter for sample size */
+  double sum = 0.;   /* store sum of function values */
+  double norm;
+  UNUR_DISTR *distr;
+  UNUR_GEN *gen;
+
+  /* allocate working space */
+  x = malloc (dim * sizeof(double));
+
+  /* get generator for marginal distributions */
+  distr = unur_distr_exponential(NULL,0);
+  unur_distr_cont_set_domain(distr,0.,domain);
+  gen = make_gen(distr);
+  
+  /* normalization constant for hat of truncated density */
+  norm = pow(unur_tdr_get_hatarea(gen),-dim);
+
+  for (n = 0; n < sample_size; ++n) {
+    /* make point with importance distribution */
+    hx = 1.;
+    for (i = 0; i<dim; i++) {
+      double fxi,hxi,sqxi;
+      x[i] = unur_tdr_eval_invcdfhat(gen,uniform_prng(),&hxi,&fxi,&sqxi);
+      hx *= hxi;
+    }
+    /* compute function value */
+    sum += funct(x) / (norm * hx);
+  }
+
+  /* free working space and exit */
+  free(x);
+  unur_distr_free(distr);
+  unur_free(gen);
+
+  /* return result */
+  return (sum / sample_size);
+
+} /* end of MC_hat_importance() */
+
+/*---------------------------------------------------------------------------*/
+
+double MC_xhat_importance( MAKE_GEN *make_gen )
+{
+  double *x;         /* aux array for storing vector */
+  double fx;         /* store value of density for importance sampling */
+  double hx;         /* store value of hat of density for importance sampling */
+  double sqx;        /* store value of squeeze of density for importance sampling */
+  int i;             /* counting dimensions     */ 
+  int n;             /* counter for sample size */
+  double sum = 0.;   /* store sum of function values */
+  double norm;
+  double V;
+  UNUR_DISTR *distr;
+  UNUR_GEN *gen;
+
+  /* allocate working space */
+  x = malloc (dim * sizeof(double));
+
+  /* get generator for marginal distributions */
+  distr = unur_distr_exponential(NULL,0);
+  unur_distr_cont_set_domain(distr,0.,domain);
+  gen = make_gen(distr);
+  
+  /* normalization constant for hat of truncated density */
+  norm = pow(unur_distr_cont_eval_cdf(domain,distr),-dim);
+
+  for (n = 0; n < sample_size; ++n) {
+    /* make point with importance distribution */
+    while (1) {
+      hx = fx = sqx = 1.;
+      for (i = 0; i<dim; i++) {
+	double fxi,hxi,sqxi;
+	x[i] = unur_tdr_eval_invcdfhat(gen,uniform_prng(),&hxi,&fxi,&sqxi);
+	hx *= hxi;
+	fx *= fxi;
+	sqx *= sqxi;
+      }
+      V = uniform_prng() * hx;
+      if (V <= sqx || V <= fx) break;
+    }
+    /* compute function value */
+    sum += funct(x) / (norm * fx);
+  }
+
+  /* free working space and exit */
+  free(x);
+  unur_distr_free(distr);
+  unur_free(gen);
+
+  /* return result */
+  return (sum / sample_size);
+
+} /* end of MC_xhat_importance() */
+
+/*---------------------------------------------------------------------------*/
+
+double MC_xsmoothed_importance( MAKE_GEN *make_gen )
+{
+  double *x;         /* aux array for storing vector */
+  double fx;         /* store value of density for importance sampling */
+  double hx;         /* store value of hat of density for importance sampling */
+  double sqx;        /* store value of squeeze of density for importance sampling */
+  int i;             /* counting dimensions     */ 
+  double sum = 0.;   /* store sum of function values */
+  double w;          /* weight of generated point */
+  double wsum = 0.;  /* sum of weights */
+  double norm;
+  double V;
+  UNUR_DISTR *distr;
+  UNUR_GEN *gen;
+
+  /* allocate working space */
+  x = malloc (dim * sizeof(double));
+
+  /* get generator for marginal distributions */
+  distr = unur_distr_exponential(NULL,0);
+  unur_distr_cont_set_domain(distr,0.,domain);
+  gen = make_gen(distr);
+  
+  /* normalization constant for hat of truncated density */
+  norm = pow(unur_distr_cont_eval_cdf(domain,distr),-dim);
+
+  /* make point with importance distribution */
+  do {
+    hx = fx = sqx = 1.;
+    for (i = 0; i<dim; i++) {
+      double fxi,hxi,sqxi;
+      x[i] = unur_tdr_eval_invcdfhat(gen,uniform_prng(),&hxi,&fxi,&sqxi);
+      hx *= hxi;
+      fx *= fxi;
+      sqx *= sqxi;
+    }
+    V = uniform_prng() * hx;
+    /* compute weights */
+    if (V <= sqx || V <= fx) 
+      w = 1.;
+    else
+      w = 0.;
+    wsum += w;
+    /* compute function value */
+    sum += w * funct(x) / (norm * fx);
+  } while (wsum < sample_size-0.5);
+
+  /* free working space and exit */
+  free(x);
+  unur_distr_free(distr);
+  unur_free(gen);
+
+  /* return result */
+  return (sum / sample_size);
+
+} /* end of MC_xsmoothed_importance() */
+
+/*---------------------------------------------------------------------------*/
+
+double MC_const_importance( MAKE_GEN *dummy )
+{
+  double *x;         /* aux array for storing vector */
+  double fx;         /* store value of density for importance sampling */
+  int i;             /* counting dimensions     */ 
+  int n;             /* counter for sample size */
+  double sum = 0.;   /* store sum of function values */
+  double M;
+  UNUR_DISTR *distr;
+  double norm;
+
+  /* allocate working space */
+  x = malloc (dim * sizeof(double));
+
+  /* get generator for marginal distributions */
+  distr = unur_distr_exponential(NULL,0);
+  unur_distr_cont_set_domain(distr,0.,domain);
+  
+  /* normalization constant for hat of truncated density */
+  norm = pow(unur_distr_cont_eval_cdf(domain,distr),-dim);
+  M = unur_distr_cont_eval_pdf(0.,distr);
+
+  for (n = 0; n < sample_size; ++n) {
+    do {
+      /* make point uniformly distributed in [0,domain)^dim */
+      fx = 1.;
+      for (i = 0; i<dim; i++) {
+	x[i] = domain * uniform_prng(); 
+	fx *= unur_distr_cont_eval_pdf(x[i],distr);
+      } 
+    } while (uniform_prng() * M >= fx);
+    /* compute function value */
+    sum += funct(x) / (norm * fx);
+  }
+
+  /* free working space and exit */
+  free(x);
+
+  /* return result */
+  return (sum/sample_size);
+
+} /* end of MC_const_importance() */
+
+/*---------------------------------------------------------------------------*/
+
+double MC_wus( MAKE_GEN *dummy )
+{
+  double *x;         /* aux array for storing vector */
+  double fx;         /* store value of density for importance sampling */
+  int i;             /* counting dimensions     */ 
+  int n;             /* counter for sample size */
+  double sum = 0.;   /* store sum of function values */
+  double fsum = 0.;  /* store sum of density values */
+  double norm;
+  UNUR_DISTR *distr;
+
+  /* allocate working space */
+  x = malloc (dim * sizeof(double));
+
+  /* importance distribution */
+  distr = unur_distr_exponential(NULL,0);
+  unur_distr_cont_set_domain(distr,0.,domain);
+  
+  /* normalization constant for truncated density */
+  norm = pow(unur_distr_cont_eval_cdf(domain,distr),-dim);
+
+  for (n = 0; n < sample_size; ++n) {
+    fx = 1.;
+    for (i = 0; i<dim; i++) {
+      x[i] = domain * uniform_prng(); 
+      fx *= unur_distr_cont_eval_pdf(x[i],distr);
+    }
+    /* compute function value */
+    sum += funct(x);
+    fsum += fx;
+  }
+
+  /* free working space and exit */
+  free(x);
+  unur_distr_free(distr);
+
+  /* return result */
+  return (sum / (norm * fsum));
+
+} /* end of MC_wus() */
+
+/*---------------------------------------------------------------------------*/
+
+void print_result( char *title, double xsum, double xsumsqu, double time )
      /* print result */
 {
-  double exact = funct_integral_exact(dim);
+  double mean, stddev, rmse;
+  double exact = funct_integral_exact();
+
+  static double stddev_unit = -1.;
+  static double rmse_unit = -1.;
+
+  mean = xsum / n_samples;
+  stddev = sqrt((xsumsqu - n_samples*mean*mean)/(n_samples-1));
+  rmse = sqrt((xsumsqu - 2*exact*xsum + n_samples*exact*exact)/n_samples);
+  mean /= exact;
+  stddev /= exact;
+  rmse /= exact;
+
+  if (stddev_unit < 0.) stddev_unit = stddev;
+  if (rmse_unit < 0.) rmse_unit = rmse;
 
   printf ("%s\n", title);
   printf ("\tdim     = %d\n", dim);
+  printf ("\tdomain  = [0,%g)\n", domain);
   printf ("\tsamples = %d \t (sample size = %d)\n", n_samples, sample_size);
   printf ("\t#urn    = %g\n", ((double)n_urng)/(n_samples*sample_size));
+  printf ("\texact   = %g\n", 1.);
   printf ("\tmean    = %g\n", mean);
-  printf ("\tstddev  = %g (%g%%)\n", stddev, 100.*stddev/mean);
-  printf ("\texact   = %g\n", exact);
-  printf ("\terror   = %g (%g%%)\n", mean-exact, 100.*(mean-exact)/exact);
+  printf ("\terror   = %g\n", fabs(mean-1.));
+  printf ("\tstddev  = %g\t(Reff = %g)\n", stddev,stddev_unit/stddev);
+  printf ("\trmse    = %g\t(Reff = %g)\n", rmse,rmse_unit/rmse);
   printf ("\ttime    = %d ms\n", (int)((time/n_samples)/1.e3));
   printf ("\n");
 } /* end of print_result() */
 
 /*---------------------------------------------------------------------------*/
-
-double funct_integral_exact (int dim )
-{
-  double data[100] = 
-    { 0.74682413281242703, 0.59814400666130410, 0.50434356023143881, 0.44104069538121084, \
-      0.39571230961051354, 0.36160814735365850, 0.33490105817655928, 0.31330868732130717, \
-      0.29540244941984041, 0.28024739050664274, 0.26720674335186228, 0.25583143052938306, \
-      0.24579504080564116, 0.23685407997867067, 0.22882279832973735, 0.22155672794739224, \
-      0.21494160010412462, 0.20888568914041529, 0.20331440033476209, 0.19816636482997365, \
-      0.19339056992497953, 0.18894421535395370, 0.18479108808019950, 0.18090031363879588, \
-      0.17724538509027910, 0.17380339947509397, 0.17055445132438055, 0.16748114642265756, \
-      0.16456820862355452, 0.16180215937964007, 0.15917105461020218, 0.15666426716443734, \
-      0.15427230582764102, 0.15198666383034363, 0.14979969134027405, 0.14770448757545967, \
-      0.14569480906717378, 0.14376499129129276, 0.14190988142510872, 0.14012478040994822, \
-      0.13840539283493047, 0.13674778342396566, 0.13514833912180541, 0.13360373594713928, \
-      0.13211090992020037, 0.13066703148589484, 0.12926948294637178, 0.12791583849331106, \
-      0.12660384649325114, 0.12533141373155003, 0.12409659136408728, 0.12289756236218159, \
-      0.12173263026670363, 0.12060020909304461, 0.11949881425029427, 0.11842705435636683, \
-      0.11738362384644484, 0.11636729628544092, 0.11537691830657834, 0.11441140410797112, \
-      0.11346973044749433, 0.11255093208348863, 0.11165409761511313, 0.11077836568159475, \
-      0.10992292148434307, 0.10908699360000995, 0.10826985105616018, 0.10747080064435617, \
-      0.10668918444820866, 0.10592437756635953, 0.10517578601248646, 0.10444284477629169, \
-      0.10372501603109048, 0.10302178747507787, 0.10233267079464885, 0.10165720023929806, \
-      0.10099493129864889, 0.10034543947307326, 0.099708319130176738, 0.099083182440150275, \
-      0.098469658383639779, 0.097867391826367331, 0.097276042655260457, 0.096695284971315475, \
-      0.096124806334843435, 0.095564307059127779, 0.095013499548866183, 0.094472107680079087, \
-      0.093939866218447792, 0.093416520273298812, 0.092901824784681209, 0.092395544041192357, \
-      0.091897451226397168, 0.091407327991858247, 0.090924964054951337, 0.090450156819783457, \
-      0.089982711019661553, 0.089522438379678589, 0.089069157298092852, 0.088622692545275801 };
-
-  double result = 1.;
-  int i;
-
-  if (dim<0 || dim>99) {
-    fprintf(stderr,"dim out of domain in line %d\n",__LINE__);
-    return -1.;
-    abort();
-  }
-
-  for (i=0; i<dim; i++) 
-    result *= data[i];
-
-  return result;
-  
-} /* end of funct_integral_exact() */
-
-/*---------------------------------------------------------------------------*/
-
-
-
-
-
-
-
-
-
-
-
-
-

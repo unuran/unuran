@@ -63,10 +63,12 @@
       a simple formula to compute the optimal standarddeviation of the noise,
       called bandwidth (or window width) of the kernel.
 
-      For most applications it is perfectly ok to use the default values offered.
-      Unless you have some knowledge on density estimation we do not recommend
-      to change anything. Only exception is the case that you are especially
-      interested in a fast sampling algorithm. Then use the call
+      For most applications it is perfectly ok to use the default
+      values offered. Unless you have some knowledge on density
+      estimation we do not recommend to change anything. 
+      There is one exceptions:
+      In the case that you are especially 
+      interested in a fast sampling algorithm use the call
 
       @smallexample
       unur_empk_set_kernel(par, UNUR_DISTR_BOXCAR);
@@ -79,6 +81,15 @@
       
       All other parameters are only useful for people knowing the theory
       of kernel density estimation.
+      However, this might be necessary when resampling from data with
+      two or more sharp distinct peaks the used window width is too
+      large and thus the density estimation is oversmoothed. Then it
+      is recommended to decrease the window width using the 
+      unur_empk_set_smoothing() call. A smoothing factor of @code{1}
+      is the default. A smoothing factor of @code{0} leads to naive
+      resampling of the data. Thus an appropriate value between these
+      extremes should be choosen. We recommend to consult a reference
+      on kernel smoothing when doing so. 
 
    =END
 */

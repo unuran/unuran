@@ -414,12 +414,9 @@ _unur_dau_init( struct unur_par *par )
       GEN.qx[*npoor] = 1.;      /* set probability to 1 (we assume that it is very close to one) */
       --poor;                   /* remove from list */
     }
-    if (fabs(sum) > TOLERANCE) {
-      /* sum of deviations too large --> serious error */
-      _unur_error(gen->genid,UNUR_ERR_ROUNDOFF,"squared histogram");
-      _unur_dau_free(gen); free(par); free(begin);
-      return NULL; 
-    }
+    if (fabs(sum) > UNUR_EPSILON)
+      /* sum of deviations very large */
+      _unur_warning(gen->genid,UNUR_ERR_ROUNDOFF,"squared histogram");
   }
 
   /* free lists of strips */

@@ -957,7 +957,9 @@ sub print_test_command {
 	  $test_command =~ /^\s*compare_int_sequence_gen\s*$/ or
 	  $test_command =~ /^\s*compare_int_sequence_gen_start\s*$/ or
 	  $test_command =~ /^\s*compare_cvec_sequence_gen\s*$/ or
-	  $test_command =~ /^\s*compare_cvec_sequence_gen_start\s*$/ ) {
+	  $test_command =~ /^\s*compare_cvec_sequence_gen_start\s*$/ or
+	  $test_command =~ /^\s*compare_matr_sequence_gen\s*$/ or
+	  $test_command =~ /^\s*compare_matr_sequence_gen_start\s*$/ ) {
 	  $test_command =~ s/\s+//g;
 	  print "$last_C_line\;\n";
 	  print "n_tests_failed += ($test_command\(TESTLOG,$lineno,gen,COMPARE_SAMPLE_SIZE)==UNUR_SUCCESS)?0:1;\n";

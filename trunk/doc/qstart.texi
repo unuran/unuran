@@ -6,15 +6,16 @@
 @c $Id$
 
 
-
-
 @c %**start of header
 @setfilename qstart.info
 @settitle    UNURAN User Manual
 @iftex
 @afourpaper
 @end iftex
+@paragraphindent 0
 @c %**end of header
+
+
 
 @dircategory Scientific software
 @direntry
@@ -22,43 +23,39 @@
 @end direntry
 
 
-@setchapternewpage odd
-@paragraphindent 0
-
 
 @c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 @c
 @c `Top' Node and Master Menu
 @c
-     
 
 
+@ifnottex
+@node Top,     Intro,  ,          (dir)     
+@top Hier
+@c    node-name, next,          previous,  up
+@end ifnottex     
+Hier steht also Text in tex und auch sonst -- the top node summary
+@menu
+* Intro:: Introduction
+@end menu
 
-
-@c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-@c
-@c The Body of the Document
-@c
-
-
-@c @node    Introduction, Structure Overview , Top,      Top
-@c @comment node-name,    next,                previous, up
-     
-@c @menu
-@c @c  * Copying::             Your rights and freedoms.
-@c * Structure Overview::      Here we show a flow chart in order to elucidate the
-@c                             structure of the diffenrent objects.
-@c * Routines for User::       The function syntax used in the user
-@c                            interface is described here.
-@c * Example::                 This chaper provides a short demo program.
-@c @end menu
 
 @c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 @c
 @c Introduction ...
 @c
+
+@node Intro
 @chapter Introduction
+@menu
+* Overview:: Overview
+* Install:: Installing the thing
+* Start::        Getting Started
+@end menu
+@node Overview
 @section Overview
+@node Install
 @section Install
 @subsection now
 cvs update @*
@@ -66,7 +63,7 @@ cvs update @*
 @* Makefile.am in /examples modify in regard to testprogram 
 @* make in /examples
 
-
+@node Start
 @section Getting start
 @*Beginning example
 @*call the compiler with:
@@ -75,17 +72,14 @@ cvs update @*
 Code:
 
 @example
-
 /* my first UNURAN program */ 
 
 #include <unuran.h>
 #include <unuran_distributions.h>
 #include <unuran_tests.h>
 
-
-
 int main()
-{
+@{
   double x;
   int    i;
 
@@ -107,13 +101,14 @@ int main()
   gen = unur_init(par);
 
   /* sample */
-  for (i=0;i<100;i++) {
+  for (i=0;i<100;i++) @{
   x = unur_sample_cont(gen);
   printf("%f\n",x);
-  }
-} 
+  @}
+@} 
 @end example
- First you have to include the libraries @code{unuran.h} and @code{unuran_distributions.h} with the commands:
+
+First you have to include the libraries @code{unuran.h} and @code{unuran_distributions.h} with the commands:
 
 @example
 #include <unuran.h>
@@ -138,7 +133,7 @@ and with
  par = unur_arou_new(distr);
 @end example
 we have genarate the parameters of the method 'arou'
-Now its possible to change default parameters of the method with @code {
+Now its possible to change default parameters of the method with @code{
  unur_arou_set_max_sqhratio(par,0.99);}
 @*
 
@@ -163,10 +158,10 @@ The important lines are in bold face.
 #include <unuran_tests.h>
 @b{
 double trig (double x)
-{  return ( (x<0.) ? 0. : (x>1.) ?1. : x ); }  
+@{  return ( (x<0.) ? 0. : (x>1.) ?1. : x ); @}  
 }
 int main()
-{
+@{
   double x;
   int    i;
 
@@ -187,10 +182,10 @@ int main()
 
 
   /* sample */
-  for (i=0;i<100;i++) {
+  for (i=0;i<100;i++) @{
   x = unur_sample_cont(gen1);
   printf("%f\n",x);
-  }
+  @}
  
 
 
@@ -199,7 +194,7 @@ int main()
   unur_free(gen1);
 
   exit (0);
-}
+@}
 @end example
 
 If want to change the parameters of a method:
@@ -214,13 +209,13 @@ The important lines are in bold face.
 #include <unuran_tests.h>
 
 double trig (double x)
-{  return ( (x<0.) ? 0. : (x>1.) ? 1. : x ); }  
+@{  return ( (x<0.) ? 0. : (x>1.) ? 1. : x ); @}  
 @b{ double pdftrig (double x)
-{  return ( (0.<x || x<1.) ? 0. : 1.); }
+@{  return ( (0.<x || x<1.) ? 0. : 1.); @}
 }
 
 int main()
-{
+@{
   double x;
   int    i;
 
@@ -244,16 +239,16 @@ int main()
   gen1 = unur_init(par1);
 
   /* sample */
-  for (i=0;i<100;i++) {
+  for (i=0;i<100;i++) @{
   x = unur_sample_cont(gen1);
   printf("%f\n",x);
-  }
+  @}
 
   /* destroy generator object */
   unur_free(gen1);
 
   exit (0);
-}
+@}
 @end example
 
 @chapter methods
@@ -341,6 +336,8 @@ standard configuration: Log outout to file
 @c
 
 
+
+@contents
 
 
 @bye

@@ -19,7 +19,10 @@ If [ Environment["srcdir"] != $Failed,
         SrcDir =  "./" ];
 
 (* name of C file for running tests *)
-RunFileName = "t_StdDistr.c";
+SrcFileName = "t_StdDistr.c";
+
+(* name of data file for running tests *)
+DataFileName = "t_StdDistr.data";
 
 (* sample size for tests *)
 RunSampleSize = 100;
@@ -205,10 +208,11 @@ UnurTestDistrResultLine[stream_, distr_, dtype_, fparams__, x_] := Module [
 
 (* --- make file with results for given distribution ----------------------- *)
 
-UnurTestDistrResultFile[dname_, dtype_, runfile_, fparbd__, size_, distribution___] := Module [ 
+UnurTestDistrResultFile[dname_, dtype_, datafile_, fparbd__, size_, distribution___] := Module [ 
 	(*	dname   ... UNURAN name of distribution                      *)
 	(*	dtype   ... type of distribution (CONT|DISCR|...)            *)
-	(*	runfile ... output stream for C file running tests           *)
+	(*	srcfile ... output stream for C file running tests           *)
+	(*	datafile... output stream for data for running tests         *)
 	(*	fparbd  ... bounds for parameters for distribution           *)
 	(*		    (use isDISCR as 3rd entry in list for            *)
 	(*		    discrete parameters)                             *)
@@ -216,16 +220,9 @@ UnurTestDistrResultFile[dname_, dtype_, runfile_, fparbd__, size_, distribution_
 	(*	distribution ... (optional)				     *)
 	
 	(* local variables *)
-	{stream, datafilename, distrstring, i, j, nfparams, fparams, x},
+	{distr, distrAPI, distrstring, i, j, nfparams, fparams, x},
 
-	(* compose a file name for output *)
-	datafilename = "../" <> SrcDir <> "tests/t_distr_" <> dname <> ".data";
-	Print[ datafilename ];
-
-	(* open output stream *)
-	stream = OpenWrite[datafilename];
-
-	(* distribution *)
+	(* name of distribution for Mathematica *)
 	If [ Length[{distribution}] > 0,
 		(* distribution given as third argument *)
 		distr = distribution,
@@ -240,6 +237,19 @@ UnurTestDistrResultFile[dname_, dtype_, runfile_, fparbd__, size_, distribution_
 	(* number of parameters for distribution *)
 	nfparams = Length[fparbd];
 
+	(* compose string for UNURAN string API *)
+	distrAPI = dname <> "(";
+	For [ i=0, i<nfparams, i++,
+		distrAPI = distrAPI <> ToString[ N[fparbd[[i+1,2]]] ];
+		If [ i<nfparams-1, distrAPI = distrAPI <> ", " ];
+	];
+	distrAPI = distrAPI <> ")";
+	Print[ distrAPI ];
+
+	(* print distribution into data file *)
+	WriteString[datafile,"distr=" <> distrAPI <> "\n"];
+
+	(* print results into data file *)
 	Do[
 		(* make parameters for distribution at random *)
 		fparams = 
@@ -256,229 +266,137 @@ UnurTestDistrResultFile[dname_, dtype_, runfile_, fparbd__, size_, distribution_
 		If [ dtype == isCONT, x = N[x] ];
 
 		(* print line with this parameters *)
-		UnurTestDistrResultLine[stream,distr,dtype,fparams,x],
+		UnurTestDistrResultLine[datafile,distr,dtype,fparams,x],
 
 	{i,size} ];
 
-	(* close output stream *)
-	Close[stream];
-
-	(* print test line into C file running tests *)
-
-	(* list of parameters. we use upper bound *)
-	For [ i=0, i<nfparams, i++,
-		WriteString[runfile,"   fparams[",i,"] = ",N[fparbd[[i+1,2]]],";\n"];
-	];
-	WriteString[runfile,"   distr = unur_distr_",dname,"(fparams,",nfparams,");\n"];
-	WriteString[runfile,"   if (test_cdf_pdf( TESTLOG, distr,\"",datafilename,"\" ) == 0)\n"];
-        WriteString[runfile,"      n_failed++;\n"];
-        WriteString[runfile,"   unur_distr_free(distr);\n\n"];
+	(* empty line as separator between distributions *)
+	WriteString[datafile,"\n"];
 
 ]; (* end of UnurTestDistrResultFile[] *)
 
-(* --- Open C file for output----------------------------------------------- *)
-
-UnurTestRunOpen[filename_] := Module [
-	(*	filename ... name of output file                             *)
-
-	(* local variables *)
-	{stream},
-
-	(* open file for writing *)
-	stream = OpenWrite[filename];
-
-	(* write file preamble *)
-	WriteString[stream,"\
-/***************************************************************************** \n\
- *                                                                           * \n\
- *          UNURAN -- Universal Non-Uniform Random number generator          * \n\
- *                                                                           * \n\
- *****************************************************************************/\n\
-                                                                               \n\
-/*---------------------------------------------------------------------------*/\n\
-/*  #define DEBUG 1 */                                                         \n\
-/*---------------------------------------------------------------------------*/\n\
-#include \"test_StdDistr.h\"                                                   \n\
-/*---------------------------------------------------------------------------*/\n\
-                                                                               \n\
-int main()                                                                     \n\
-{                                                                              \n\
-   double fparams[UNUR_DISTR_MAXPARAMS];  /* parameters of distribution      */\n\
-   UNUR_DISTR *distr;                     /* distribution object             */\n\
-   FILE *UNURANLOG;                       /* unuran log file                 */\n\
-   FILE *TESTLOG;                         /* test log file                   */\n\
-   int n_failed = 0;                      /* number of failed tests          */\n\
-                                                                               \n\
-   /* open log file for unuran and set output stream for unuran messages */    \n\
-   UNURANLOG = fopen( \"t_Mathematica_unuran.log\",\"w\" );                    \n\
-   if (UNURANLOG == NULL) exit (-1);                                           \n\
-   unur_set_stream( UNURANLOG );                                               \n\
-                                                                               \n\
-   /* open log file for testing */                                             \n\
-   TESTLOG = fopen( \"t_Mathematica_test.log\",\"w\" );                        \n\
-   if (TESTLOG == NULL) exit (-1);                                             \n\
-                                                                               \n\
-   /* write header into log file */                                            \n\
-   {                                                                           \n\
-      time_t started;                                                          \n\
-      fprintf(TESTLOG,\"\\nUNURAN - Universal Non-Uniform RANdom number generator\\n\\n\");\n\
-      if (time( &started ) != -1)                                              \n\
-         fprintf(TESTLOG,\"%s\",ctime(&started));                              \n\
-      fprintf(TESTLOG,\"\\n======================================================\\n\\n\");\n\
-      fprintf(TESTLOG,\"(Search for string \\\"data\\\" to find new section.)\\n\\n\");\n\
-   }                                                                           \n\
-                                                                               \n"
-	];
-
-	(* return stream handler *)
-	Return[ stream ];
-
-]; (* end of UnurTestRunOpen[] *)
-
-(* --- Close output file -------------------------------------------------- *)
-
-UnurTestRunClose[stream_] := Module [
-	(*	stream ... output stream                                    *)
-
-	(* local variables: none *)
-	{},
-
-	(* write file postamble *)
-	WriteString[stream,"\
-                                                                               \n\
-   /* close log file */                                                        \n\
-   fclose(UNURANLOG);                                                          \n\
-   fclose(TESTLOG);                                                            \n\
-                                                                               \n\
-   if (n_failed > 0)                                                           \n\
-      exit (-1);                                                               \n\
-   else                                                                        \n\
-      exit (0);                                                                \n\
-}                                                                              \n"
-	];
-
-	(* close stream *)
-	Close[stream];
-
-]; (* end of UnurTestRunClose[] *)
 
 (* === Start of Main ======================================================= *)
 
-(* Open C file *)
-runfile = UnurTestRunOpen[ RunFileName ];
+(* Open data file *)
+datafile = OpenWrite[ DataFileName ];
 
 (* --- List of Continuous Distributions ------------------------------------ *)
 
 (* Beta *)
 fparams = {{1,10}, {1,100}};
-UnurTestDistrResultFile["beta", isCONT, runfile, fparams, RunSampleSize];
+UnurTestDistrResultFile["beta", isCONT, datafile, fparams, RunSampleSize];
 
 (* Cauchy *)
 fparams = {{-100,100},{1/100,100}};
-UnurTestDistrResultFile["cauchy", isCONT, runfile, fparams, RunSampleSize];
+UnurTestDistrResultFile["cauchy", isCONT, datafile, fparams, RunSampleSize];
 
 (* Chi *)
 fparams = {{1,100}};
-UnurTestDistrResultFile["chi", isCONT, runfile, fparams, RunSampleSize];
+UnurTestDistrResultFile["chi", isCONT, datafile, fparams, RunSampleSize];
 
 (* Chisquare *)
 fparams = {{1,100}};
-UnurTestDistrResultFile["chisquare", isCONT, runfile, fparams, RunSampleSize, ChiSquareDistribution];
+UnurTestDistrResultFile["chisquare", isCONT, datafile, fparams, RunSampleSize, ChiSquareDistribution];
 
 (* Exponential -- parameters differ *)
 fparams = {{1/100,100}};
 ed[mu_] = ExponentialDistribution[1/mu];
-UnurTestDistrResultFile["exponential", isCONT, runfile, fparams, RunSampleSize, ed];
+UnurTestDistrResultFile["exponential", isCONT, datafile, fparams, RunSampleSize, ed];
 
+(*  --->
 (* ExtremeValue I *)
 fparams = {{-100,100},{1/100,100}};
-UnurTestDistrResultFile["extremeI",isCONT, runfile, fparams, RunSampleSize, ExtremeValueDistribution];
+UnurTestDistrResultFile["extremeI",isCONT, datafile, fparams, RunSampleSize, ExtremeValueDistribution];
 
 (* ExtremeValue II *)
 fparams = {{1/100,100}, {-100,100}, {1/100,100}};
-UnurTestDistrResultFile["extremeII",isCONT, runfile, fparams, RunSampleSize, ExtremeValueIIDistribution];
+UnurTestDistrResultFile["extremeII",isCONT, datafile, fparams, RunSampleSize, ExtremeValueIIDistribution];
+*)
 
 (* Gamma *)
 fparams = {{1/2,10}, {1/100,100}};
-UnurTestDistrResultFile["gamma", isCONT, runfile, fparams, RunSampleSize];
+UnurTestDistrResultFile["gamma", isCONT, datafile, fparams, RunSampleSize];
 
 (* Laplace *)
 fparams = {{-100,100}, {1/100,100}};
-UnurTestDistrResultFile["laplace", isCONT, runfile, fparams, RunSampleSize];
+UnurTestDistrResultFile["laplace", isCONT, datafile, fparams, RunSampleSize];
 
 (* Lomax *)
 fparams = {{1/100,100}, {1/100,100}};
-UnurTestDistrResultFile["lomax", isCONT, runfile, fparams, RunSampleSize];
+UnurTestDistrResultFile["lomax", isCONT, datafile, fparams, RunSampleSize];
 
 (* Logistic *)
 fparams = {{-100,100},{1/100,100}};
-UnurTestDistrResultFile["logistic", isCONT, runfile, fparams, RunSampleSize];
+UnurTestDistrResultFile["logistic", isCONT, datafile, fparams, RunSampleSize];
 
 (* Normal *)
 fparams = {{-100,100}, {1/100,100}};
-UnurTestDistrResultFile["normal", isCONT, runfile, fparams, RunSampleSize];
+UnurTestDistrResultFile["normal", isCONT, datafile, fparams, RunSampleSize];
 
 (* Pareto *)
 fparams = {{1/100,100},{1/100,100}};
-UnurTestDistrResultFile["pareto", isCONT, runfile, fparams, RunSampleSize];
+UnurTestDistrResultFile["pareto", isCONT, datafile, fparams, RunSampleSize];
 
 (* Powerexponential *)
 fparams = {{1/1000,3}};
-UnurTestDistrResultFile["powerexponential", isCONT, runfile, fparams, RunSampleSize];
+UnurTestDistrResultFile["powerexponential", isCONT, datafile, fparams, RunSampleSize];
 
 (* Rayleigh *)
 fparams = {{1/100,100}};
-UnurTestDistrResultFile["rayleigh", isCONT, runfile, fparams, RunSampleSize];
+UnurTestDistrResultFile["rayleigh", isCONT, datafile, fparams, RunSampleSize];
 
+(*  --->
 (* Student *)
 fparams = {{1/100,100}};
-UnurTestDistrResultFile["student", isCONT, runfile, fparams, RunSampleSize, StudentTDistribution];
+UnurTestDistrResultFile["student", isCONT, datafile, fparams, RunSampleSize, StudentTDistribution];
+*)
 
 (* Triangular *)
 fparams = {{0,1}};
-UnurTestDistrResultFile["triangular", isCONT, runfile, fparams, RunSampleSize];
+UnurTestDistrResultFile["triangular", isCONT, datafile, fparams, RunSampleSize];
 
 (* Uniform *)
 fparams = {{-100,1}, {1001/1000,100}};
-UnurTestDistrResultFile["uniform", isCONT, runfile, fparams, RunSampleSize];
+UnurTestDistrResultFile["uniform", isCONT, datafile, fparams, RunSampleSize];
 
 (* Weibull *)
 fparams = {{1/2,10},{1/100,100}};
-UnurTestDistrResultFile["weibull", isCONT, runfile, fparams, RunSampleSize];
+UnurTestDistrResultFile["weibull", isCONT, datafile, fparams, RunSampleSize];
 
 (* --- List of Discrete Distributions -------------------------------------- *)
 
 (* Binomial *)
 fparams = {{2,1000,isDISCR}, {1/1000,999/1000}};
-UnurTestDistrResultFile["binomial", is_DISCR, runfile, fparams, RunSampleSize];
+UnurTestDistrResultFile["binomial", is_DISCR, datafile, fparams, RunSampleSize];
 
 (* Geometric *)
 fparams = {{1/1000,999/1000}};
-UnurTestDistrResultFile["geometric", is_DISCR, runfile, fparams, RunSampleSize];
+UnurTestDistrResultFile["geometric", is_DISCR, datafile, fparams, RunSampleSize];
 
 (* Hypergeometric; order of parameters is different *)
 hgd[N_,M_,n_] = HypergeometricDistribution[n,M,N];
 fparams = {{100,1000,isDISCR}, {1,99,isDISCR}, {1,99,isDISCR}};
-UnurTestDistrResultFile["hypergeometric", is_DISCR, runfile, fparams, RunSampleSize, hgd];
+UnurTestDistrResultFile["hypergeometric", is_DISCR, datafile, fparams, RunSampleSize, hgd];
 
 (* Logarithmic *)
 fparams = {{1/1000,999/1000}};
-UnurTestDistrResultFile["logarithmic", is_DISCR, runfile, fparams, RunSampleSize, LogSeriesDistribution];
+UnurTestDistrResultFile["logarithmic", is_DISCR, datafile, fparams, RunSampleSize, LogSeriesDistribution];
 
 (* NegativeBinomial; order of parameters is different *)
 nb[p_,n_] = NegativeBinomialDistribution[n,p];
 fparams = {{1/1000,999/1000}, {1,100,isDISCR}};
-UnurTestDistrResultFile["negativebinomial", is_DISCR, runfile, fparams, RunSampleSize, nb];
+UnurTestDistrResultFile["negativebinomial", is_DISCR, datafile, fparams, RunSampleSize, nb];
 
 (* Poisson *)
 fparams = {{1/100,100}};
-UnurTestDistrResultFile["poisson", is_DISCR, runfile, fparams, RunSampleSize];
+UnurTestDistrResultFile["poisson", is_DISCR, datafile, fparams, RunSampleSize];
 
 
 (* --- Done ---------------------------------------------------------------- *)
 
-(* close C file *)
-UnurTestRunClose[runfile];
+(* close data file *)
+Close[datafile];
 
 (* === Exit ================================================================ *)
 

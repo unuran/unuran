@@ -16,8 +16,19 @@
 /*  #define DEBUG 1 */
 
 /*---------------------------------------------------------------------------*/
+#include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
 
-#include "test_StdDistr.h"
+#include <unuran.h>
+#include <config.h>
+
+#ifdef WITH_DMALLOC
+#  include <dmalloc.h>
+#endif
+/*---------------------------------------------------------------------------*/
 
 /* PDF test: maximal difference allowed (relative to maximal value) */
 #define MAX_REL_DIFF 1.e-10
@@ -28,13 +39,129 @@
 
 /*---------------------------------------------------------------------------*/
 
+/* name of data file */
+static const char datafile[] = "t_StdDistr.data";
+
+/* number of failed tests */
+static int n_failed = 0;    
+
+/* file handles */
+static FILE *DATA;            /* file with data    */
+static FILE *UNURANLOG;       /* unuran log file   */
+static FILE *TESTLOG;         /* test log file     */
+
+/*---------------------------------------------------------------------------*/
+
+static int _unur_test_StdDistr (void);
+/* main loop for testing standard distributions */
+
+static int test_cdf_pdf( UNUR_DISTR *distr, char *datafile );
+/* compare CDF, PDF and dPDF for continuous univariate distributions         */
+
+static int modetest_cont( UNUR_DISTR *distr);
+static int modetest_discr( UNUR_DISTR *distr);
+/* test mode of distribution */
+
+/*---------------------------------------------------------------------------*/
+
 #define MAX(a,b) ( ((a) < (b)) ? (b) : (a))
 #define MIN(a,b) ( ((a) > (b)) ? (b) : (a))
 
 /*---------------------------------------------------------------------------*/
 
+int main()                                                                     
+{                                                                              
+   /* open log file for unuran and set output stream for unuran messages */    
+   if ( (UNURANLOG = fopen( "t_StdDistr_unuran.log","w" )) == NULL )
+     exit (-1);                                           
+   unur_set_stream( UNURANLOG );
+          
+   /* open log file for testing */                                             
+   if ( (TESTLOG = fopen( "t_StdDistr_test.log","w" )) == NULL )
+     exit (-1);                                             
+                                                                               
+   /* write header into log file */                                            
+   {                                                                           
+     time_t started;                                                          
+     fprintf(TESTLOG,"\nUNURAN - Universal Non-Uniform RANdom number generator\n\n");
+     if (time( &started ) != -1)                                              
+       fprintf(TESTLOG,"%s",ctime(&started));                              
+     fprintf(TESTLOG,"\n======================================================\n\n");
+     fprintf(TESTLOG,"(Search for string \"distr=\" to find new section.)\n\n");
+   }                                                                           
+
+   /* open data file */
+   if ( (DATA = fopen( datafile,"r" )) == NULL ) {
+     printf("ERROR: could not open file %s \n", datafile);
+     fprintf(TESTLOG,"ERROR: could not open file %s \n", datafile);
+     exit (77);  /* ignore this error */                                             
+   }
+
+   /* run tests on all distributions */
+   while (_unur_test_StdDistr());
+
+   /* close files */
+   fclose (UNURANLOG);
+   fclose (TESTLOG);
+   fclose (DATA);
+                                                                               
+   /* end */
+   if (n_failed > 0) {
+     printf("[StdDistr --> failed]\n");
+     exit (-1);
+   }
+   else {
+     printf("[StdDistr --> ok]\n");
+     exit (0);
+   }
+} /* end of main() */                                                                              
+
+/*---------------------------------------------------------------------------*/
+
 int
-test_cdf_pdf( FILE *LOG, UNUR_DISTR *distr, char *datafile )
+_unur_test_StdDistr (void)
+{
+#define BUFSIZE      1024       /* size of line buffer */
+
+  char buffer[BUFSIZE];         /* buffer for reading line */
+  char dstr[BUFSIZE];           /* distribution string */
+
+  UNUR_DISTR *distr;                     /* distribution object             */
+
+  /* find next function string */
+  while (1) {
+    /* read next line */
+    fgets(buffer, BUFSIZE, DATA);
+    if (feof(DATA)) return 0;
+    if (strncmp(buffer,"distr=",6)==0) break;
+  }
+
+  /* get function string */
+  strcpy( dstr, buffer+6 );
+  /* remove newline character */
+  dstr[strlen(dstr)-1] = '\0';
+  
+  /* make distribution object with given function as PDF */
+  if ( (distr = unur_str2distr(dstr)) == NULL ) {
+    printf("ERROR: syntax error in \"%s\"\n", dstr);
+    fprintf(TESTLOG,"ERROR: syntax error in \"%s\"\n", dstr);
+    exit (-1);                                             
+  }
+
+  /* now run test */
+  if (test_cdf_pdf( distr,dstr ) == 0)
+    n_failed++;
+  unur_distr_free(distr);
+  
+  return 1;
+
+#undef BUFSIZE
+} /* end of _unur_test_StdDistr() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+test_cdf_pdf( UNUR_DISTR *distr, char *distrAPI )
      /*----------------------------------------------------------------------*/
      /* test CDF, PDF and derivative of PDF by comparing to data             */
      /* read from file created by Mathematica.                               */
@@ -43,9 +170,8 @@ test_cdf_pdf( FILE *LOG, UNUR_DISTR *distr, char *datafile )
      /*   n   par[1] par[2] ... par[n]   x   CDF   PDF   dPDF                */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   LOG      ... file handle for log file                              */
      /*   distr    ... pointer to distribution object                        */
-     /*   datafile ... name of file where data are stored                    */
+     /*   distrAPI ... string that contains name for distribution            */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... if test was successful                                       */
@@ -56,8 +182,6 @@ test_cdf_pdf( FILE *LOG, UNUR_DISTR *distr, char *datafile )
 #define BUFSIZE      1024       /* size of line buffer */
 #define MAX_FPARAMS  10         /* maximal number of parameters for distribution */
 
-  FILE *fp;                     /* file handle for input file */
-  int lineno;                   /* line number in file */
   char buffer[BUFSIZE];         /* buffer for reading line */
   char *ptr_buffer;             /* pointer into buffer */
 
@@ -117,35 +241,29 @@ test_cdf_pdf( FILE *LOG, UNUR_DISTR *distr, char *datafile )
   }
 
   /* print info into log file */
-  fprintf(LOG,"%s: %s ...\n", dname, datafile);
+  fprintf(TESTLOG,"%s: distr= %s ...\n", dname, distrAPI);
 
   if (!have_CDF)
-    fprintf(LOG,"%s: no CDF!\n", dname);
+    fprintf(TESTLOG,"%s: no CDF!\n", dname);
   if (!have_PDF)
-    fprintf(LOG,"%s: no PDF!\n", dname);
+    fprintf(TESTLOG,"%s: no PDF!\n", dname);
   if (!have_dPDF)
-    fprintf(LOG,"%s: no dPDF!\n", dname);
+    fprintf(TESTLOG,"%s: no dPDF!\n", dname);
 
-  /* open file for reading */
-  if ( (fp = fopen(datafile,"r")) == NULL ) {
-    printf("%s: ERROR: could not open file %s \n", dname,datafile);
-    fprintf(LOG,"%s: ERROR: could not open file %s \n", dname,datafile);
-    return -1;
-  }
-
-  /* read file */
-  for (lineno = 0;; ++lineno) {
+  /* read data file */
+  while (1) {
 
     /* read next line */
-    fgets(buffer, BUFSIZE-1, fp);
-    if (feof(fp)) break;
+    fgets(buffer, BUFSIZE-1, DATA);
+    if (feof(DATA) || isspace(buffer[0])) break;
+    
     ptr_buffer = buffer;
 
     /* get number of parameters */
     n_fparams = strtol(buffer, &ptr_buffer, 10);
     if (n_fparams < 0 || n_fparams >= MAX_FPARAMS) {
       printf("%s: ERROR: invalid number of parameters for distribution: %d \n", dname,n_fparams);
-      fprintf(LOG,"%s: ERROR: invalid number of parameters for distribution: %d \n", dname,n_fparams);
+      fprintf(TESTLOG,"%s: ERROR: invalid number of parameters for distribution: %d \n", dname,n_fparams);
       return -1;
     }
 
@@ -171,20 +289,20 @@ test_cdf_pdf( FILE *LOG, UNUR_DISTR *distr, char *datafile )
 
 #ifdef DEBUG
     /* print data */
-    fprintf(LOG, "%s: n_fparams = %d\n", dname, n_fparams);
+    fprintf(TESTLOG, "%s: n_fparams = %d\n", dname, n_fparams);
 
     /* print parameters */
     for (i=0; i<n_fparams; i++)
-      fprintf(LOG, "%s: \t%d: %g\n", dname, i, fparams[i]);
+      fprintf(TESTLOG, "%s: \t%d: %g\n", dname, i, fparams[i]);
 
     /* print argument x (or k) */
     if (is_DISCR)
-      fprintf(LOG, "%s: expected k = %d:\t", dname, k);
+      fprintf(TESTLOG, "%s: expected k = %d:\t", dname, k);
     else  /* is_CONT */
-      fprintf(LOG, "%s: expected x = %g:\t", dname, x);
+      fprintf(TESTLOG, "%s: expected x = %g:\t", dname, x);
 
     /* print CDF, PDF and derivative of PDF at x */
-    fprintf(LOG, "%g, %g, %g\n", CDF_e, PDF_e, dPDF_e);
+    fprintf(TESTLOG, "%g, %g, %g\n", CDF_e, PDF_e, dPDF_e);
 #endif
 
     if (is_DISCR) {
@@ -217,17 +335,17 @@ test_cdf_pdf( FILE *LOG, UNUR_DISTR *distr, char *datafile )
 #ifdef DEBUG
     /* print argument x (or k) */
     if (is_DISCR)
-      fprintf(LOG, "%s: observed k = %d:\t", dname, k);
+      fprintf(TESTLOG, "%s: observed k = %d:\t", dname, k);
     else  /* is_CONT */
-      fprintf(LOG, "%s: observed x = %g:\t", dname, x);
+      fprintf(TESTLOG, "%s: observed x = %g:\t", dname, x);
 
     /* print CDF, PDF and derivative of PDF at x */
-    fprintf(LOG, "%g, %g, %g\n",CDF_o,PDF_o,dPDF_o);
+    fprintf(TESTLOG, "%g, %g, %g\n",CDF_o,PDF_o,dPDF_o);
 
     /* print differences */
-    fprintf(LOG, "%s: diff     x = %g:\t", dname,x);
-    fprintf(LOG, "%g, %g, %g\n",CDF_d, PDF_d, dPDF_d);
-    fprintf(LOG, "%s:\n", dname);
+    fprintf(TESTLOG, "%s: diff     x = %g:\t", dname,x);
+    fprintf(TESTLOG, "%g, %g, %g\n",CDF_d, PDF_d, dPDF_d);
+    fprintf(TESTLOG, "%s:\n", dname);
 #endif
     
     /* absolute values */
@@ -251,53 +369,50 @@ test_cdf_pdf( FILE *LOG, UNUR_DISTR *distr, char *datafile )
 
     /* test mode of distribution */
     if (is_DISCR) {
-      if (modetest_discr(LOG,distr) == 0)
+      if (modetest_discr(distr) == 0)
 	++n_failed;
     }
     else { /* is_CONT */
-      if (modetest_cont(LOG,distr) == 0)
+      if (modetest_cont(distr) == 0)
 	++n_failed;
     }
 
   }
 
-  /* close file handle */
-  fclose(fp);
-
   /* print info on screen */
-  fprintf(LOG, "%s: \tmaximal difference:\n", dname);
+  fprintf(TESTLOG, "%s: \tmaximal difference:\n", dname);
 
   if (have_CDF) {
-    fprintf(LOG,"%s: \t\tCDF  = %g ... ", dname,CDF_md);
+    fprintf(TESTLOG,"%s: \t\tCDF  = %g ... ", dname,CDF_md);
     if (CDF_md > MAX_REL_DIFF * CDF_me) {
-      fprintf(LOG, "failed!!\n");
+      fprintf(TESTLOG, "failed!!\n");
       ++n_failed;
     }
     else
-      fprintf(LOG, "ok\n");
+      fprintf(TESTLOG, "ok\n");
   }
 
   if (have_PDF) {
-    fprintf(LOG,"%s: \t\tPDF  = %g ... ", dname,PDF_md);
+    fprintf(TESTLOG,"%s: \t\tPDF  = %g ... ", dname,PDF_md);
     if (PDF_md > MAX_REL_DIFF * PDF_me) {
-      fprintf(LOG, "failed!!\n");
+      fprintf(TESTLOG, "failed!!\n");
       ++n_failed;
     }
     else
-      fprintf(LOG, "ok\n");
+      fprintf(TESTLOG, "ok\n");
   }
 
   if (have_dPDF) {
-    fprintf(LOG,"%s: \t\tdPDF = %g ... ", dname,dPDF_md);
+    fprintf(TESTLOG,"%s: \t\tdPDF = %g ... ", dname,dPDF_md);
     if (dPDF_md > MAX_REL_DIFF * dPDF_me) {
-      fprintf(LOG, "failed!!\n");
+      fprintf(TESTLOG, "failed!!\n");
       ++n_failed;
     }
     else
-      fprintf(LOG, "ok\n");
+      fprintf(TESTLOG, "ok\n");
   }
 
-  fprintf(LOG, "\n----------------------------------------\n\n");
+  fprintf(TESTLOG, "\n----------------------------------------\n\n");
 
   /* print result on screen */
   printf("%-17s ... ", dname );
@@ -316,12 +431,11 @@ test_cdf_pdf( FILE *LOG, UNUR_DISTR *distr, char *datafile )
 
 /*---------------------------------------------------------------------------*/
 
-int modetest_cont( FILE *LOG, UNUR_DISTR *distr)
+int modetest_cont( UNUR_DISTR *distr)
      /*----------------------------------------------------------------------*/
      /* Tests whether the mode of continuous distribution is correct.        */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   LOG      ... file handle for log file                              */
      /*   distr    ... pointer to distribution object                        */
      /*                                                                      */
      /* return:                                                              */
@@ -344,7 +458,7 @@ int modetest_cont( FILE *LOG, UNUR_DISTR *distr)
   if (!unur_distr_cont_upd_mode(distr) ) {
     /* cannot read mode */
     printf("%s: ERROR: cannot get mode\n", dname);
-    fprintf(LOG,"%s: ERROR: cannot get mode\n", dname);
+    fprintf(TESTLOG,"%s: ERROR: cannot get mode\n", dname);
     return -1;
   }    
   m = unur_distr_cont_get_mode(distr); 
@@ -360,7 +474,7 @@ int modetest_cont( FILE *LOG, UNUR_DISTR *distr)
   fm = unur_distr_cont_eval_pdf(m, distr);
 
 #ifdef DEBUG
-  fprintf(LOG,"%s: mode: m = %.20g, f(m) = %.20g\n", dname,m,fm);
+  fprintf(TESTLOG,"%s: mode: m = %.20g, f(m) = %.20g\n", dname,m,fm);
 #endif
 
   /* test PDF left and right of mode */
@@ -378,23 +492,23 @@ int modetest_cont( FILE *LOG, UNUR_DISTR *distr)
     fx = unur_distr_cont_eval_pdf(x, distr);
 
 #ifdef DEBUG
-    fprintf(LOG,"%s:       x = %.20g, f(x) = %.20g", dname,x,fx);
+    fprintf(TESTLOG,"%s:       x = %.20g, f(x) = %.20g", dname,x,fx);
 #endif
 
     if(fm * (1.+EPSY) < fx) {
 #ifdef DEBUG
-      fprintf(LOG," ... failed! f(mode) not maximal!");
+      fprintf(TESTLOG," ... failed! f(mode) not maximal!");
 #endif
       ++n_failed;
     }
 
 #ifdef DEBUG
-    fprintf(LOG,"\n");
+    fprintf(TESTLOG,"\n");
 #endif
   }
 
 #ifdef DEBUG
-    fprintf(LOG,"%s:\n",dname);
+    fprintf(TESTLOG,"%s:\n",dname);
 #endif
 
   /* end */
@@ -404,12 +518,11 @@ int modetest_cont( FILE *LOG, UNUR_DISTR *distr)
 
 /*---------------------------------------------------------------------------*/
 
-int modetest_discr( FILE *LOG, UNUR_DISTR *distr)
+int modetest_discr( UNUR_DISTR *distr)
      /*----------------------------------------------------------------------*/
      /* Tests whether the mode of discr distribution is correct.             */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   LOG      ... file handle for log file                              */
      /*   distr    ... pointer to distribution object                        */
      /*                                                                      */
      /* return:                                                              */
@@ -431,7 +544,7 @@ int modetest_discr( FILE *LOG, UNUR_DISTR *distr)
   if (!unur_distr_discr_upd_mode(distr) ) {
     /* cannot read mode */
     printf("%s: ERROR: cannot get mode\n", dname);
-    fprintf(LOG,"%s: ERROR: cannot get mode\n", dname);
+    fprintf(TESTLOG,"%s: ERROR: cannot get mode\n", dname);
     return -1;
   }    
   m = unur_distr_discr_get_mode(distr); 
@@ -440,7 +553,7 @@ int modetest_discr( FILE *LOG, UNUR_DISTR *distr)
   fm = unur_distr_discr_eval_pmf(m, distr);
 
 #ifdef DEBUG
-  fprintf(LOG,"%s: mode: m = %d, f(m) = %.20g\n", dname,m,fm);
+  fprintf(TESTLOG,"%s: mode: m = %d, f(m) = %.20g\n", dname,m,fm);
 #endif
 
   /* test PMF left and right of mode */
@@ -453,23 +566,23 @@ int modetest_discr( FILE *LOG, UNUR_DISTR *distr)
     fx = unur_distr_discr_eval_pmf(x, distr);
 
 #ifdef DEBUG
-    fprintf(LOG,"%s:       x = %d, f(x) = %.20g", dname,x,fx);
+    fprintf(TESTLOG,"%s:       x = %d, f(x) = %.20g", dname,x,fx);
 #endif
 
     if(fm * (1.+EPSY) < fx) {
 #ifdef DEBUG
-      fprintf(LOG," ... failed! f(mode) not maximal!");
+      fprintf(TESTLOG," ... failed! f(mode) not maximal!");
 #endif
       ++n_failed;
     }
 
 #ifdef DEBUG
-    fprintf(LOG,"\n");
+    fprintf(TESTLOG,"\n");
 #endif
   }
 
 #ifdef DEBUG
-    fprintf(LOG,"%s:\n",dname);
+    fprintf(TESTLOG,"%s:\n",dname);
 #endif
 
   /* end */

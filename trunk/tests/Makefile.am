@@ -8,8 +8,8 @@ INCLUDES = \
 
 # Special files for tests with Mathematica
 if HAVE_MATHEMATICA
-MATHEMATICA_PROGS = t_StdDistr  test_functionparser
-MATHEMATICA_TESTS = t_StdDistr  test_functionparser
+MATHEMATICA_PROGS = test_StdDistr  test_functionparser
+MATHEMATICA_TESTS = test_StdDistr  test_functionparser
 else
 MATHEMATICA_PROGS = 
 MATHEMATICA_TESTS = 
@@ -61,8 +61,7 @@ TESTS = \
 ## t_timing
 
 noinst_HEADERS = \
- testunuran.h \
- test_StdDistr.h
+ testunuran.h
 
 EXTRA_DIST = \
  test_StdDistr.m \
@@ -94,14 +93,13 @@ EXTRA_DIST = \
 
 if HAVE_MATHEMATICA
 
-data:
+test_StdDistr_SOURCES = test_StdDistr.c
+test_StdDistr_LDADD = $(top_builddir)/src/libunuran.a
+test_StdDistr_DEPENDENCIES = $(top_builddir)/src/libunuran.a t_StdDistr.data
+
+t_StdDistr.data: test_StdDistr.m
 	math -initfile $(top_srcdir)/tests/test_StdDistr.m
 
-t_StdDistr.c: test_StdDistr.m
-	math -initfile $(top_srcdir)/tests/test_StdDistr.m
-
-t_StdDistr_SOURCES = t_StdDistr.c test_StdDistr.c
-t_StdDistr_LDADD = $(top_builddir)/src/libunuran.a
 
 test_functionparser_SOURCES = test_functionparser.c
 test_functionparser_LDADD = $(top_builddir)/src/libunuran.a

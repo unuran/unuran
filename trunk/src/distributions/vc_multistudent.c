@@ -75,7 +75,7 @@ static const char distr_name[] = "multistudent";
 
 /*---------------------------------------------------------------------------*/
 /* parameters */
-#define df  params[0]
+#define nu  params[0]
 
 /*---------------------------------------------------------------------------*/
 
@@ -111,16 +111,13 @@ _unur_logpdf_multistudent( const double *x, UNUR_DISTR *distr )
   double xx; /* argument used in the evaluation of exp(-xx/2) */
   double cx; /* element of multiplication of covariance matrix and x */
   
-  double m; /* degrees of freedom : m = DISTR.df = DISTR.params[0] */
-  
-  m = DISTR.df;
   dim = distr->dim;
   
   if (DISTR.mean == NULL && DISTR.covar == NULL) {
     /* standard form */
     xx=0.;
     for (i=0; i<dim; i++) { xx += x[i]*x[i]; }
-    return ( - (dim+m)/2. * log(1+xx) + LOGNORMCONSTANT);  
+    return ( - (dim+DISTR.nu)/2. * log(1+xx/DISTR.nu) + LOGNORMCONSTANT);  
   }
 
   mean = DISTR.mean;
@@ -141,7 +138,7 @@ _unur_logpdf_multistudent( const double *x, UNUR_DISTR *distr )
     xx += (x[i]-mean[i])*cx;
   }
   
-  return (- (dim+m)/2. * log(1+xx) + LOGNORMCONSTANT);
+  return (- (dim+DISTR.nu)/2. * log(1+xx/DISTR.nu) + LOGNORMCONSTANT);
 
 #undef idx
 } /* end of _unur_logpdf_multistudent() */
@@ -197,13 +194,13 @@ _unur_set_params_multistudent( UNUR_DISTR *distr, const double *params, int n_pa
   CHECK_NULL(params,UNUR_ERR_NULL);
 
   /* check parameter m (degrees of freedom) */
-  if ( ((int)df) < 1 ) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"df < 1");
+  if ( ((int)nu) < 1 ) {
+    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"nu < 1");
     return UNUR_ERR_DISTR_DOMAIN;
   }
 
   /* copy parameters for standard form */
-  DISTR.params[0] = (int) params[0]; 
+  DISTR.nu = (int) nu; 
 
   /* store number of parameters */
   DISTR.n_params = n_params;
@@ -221,7 +218,7 @@ _unur_set_params_multistudent( UNUR_DISTR *distr, const double *params, int n_pa
 /*---------------------------------------------------------------------------*/
 
 struct unur_distr *
-unur_distr_multistudent( int dim, const int m, const double *mean, const double *covar )
+unur_distr_multistudent( int dim, const int df, const double *mean, const double *covar )
 {
   struct unur_distr *distr;
   struct unur_distr *stdmarginal;
@@ -259,7 +256,7 @@ unur_distr_multistudent( int dim, const int m, const double *mean, const double 
   DISTR.dpdf    = _unur_distr_cvec_eval_dpdf_from_dlogpdf;  /* pointer to derivative of PDF */
   DISTR.dlogpdf = _unur_dlogpdf_multistudent;    /* pointer to derivative of logPDF */
 
-  par = m; /* degrees of freedom */
+  par = df; /* degrees of freedom */
   
   /* set standardized marginal distributions */
   stdmarginal = unur_distr_student(&par,1);
@@ -276,9 +273,12 @@ unur_distr_multistudent( int dim, const int m, const double *mean, const double 
 
   /* log of normalization constant */
   /* constant:  Gamma((dim+1)/2) / ( pi^((dim+1)/2) * sqrt(det(Sigma)) )  */
+  
+ /*  constant:  Gamma((dim+df)/2)                                          */
+ /*          / ( Gamma(df/2) (df*pi)^(dim/2) * sqrt(det(Sigma)) )          */
   det_covar = (DISTR.covar == NULL) ? 1. : _unur_matrix_determinant(dim, DISTR.covar);
-  LOGNORMCONSTANT = _unur_sf_ln_gamma((distr->dim+m)/2.) - _unur_sf_ln_gamma(m/2.)
-                  - ( distr->dim * log(m*M_PI) + log(det_covar) ) / 2.;
+  LOGNORMCONSTANT = _unur_sf_ln_gamma((distr->dim+df)/2.) - _unur_sf_ln_gamma(df/2.)
+                  - ( distr->dim * log(df*M_PI) + log(det_covar) ) / 2.;
 
   /* mode */
   DISTR.mode = _unur_xmalloc( distr->dim * sizeof(double) );

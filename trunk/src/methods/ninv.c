@@ -114,14 +114,6 @@ static void _unur_ninv_debug_sample_regula( struct unur_gen *gen,
 #define CDF(x) ((*(DISTR.cdf))((x),DISTR.params,DISTR.n_params))    /* call to p.d.f. */
 #define PDF(x) ((*(DISTR.pdf))((x),DISTR.params,DISTR.n_params))    /* call to p.d.f. */
 
-/*---------------------------------------------------------------------------*/
-/* macros                                                                    */
-
-/* sign of x                                                                 */
-#define sgn(x) (((x)<0) ? -1 : 1 )
-
-
-/*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/
 /**  User Interface                                                         **/
@@ -164,13 +156,13 @@ unur_ninv_new( struct unur_distr *distr )
 
   /* set default values */
   PAR.max_iter  = 40;              /* maximal number of iterations           */
-  PAR.rel_x_resolution = 1.0e-16;  /* maximal relative error in x            */
+  PAR.rel_x_resolution = 1.0e-8 ;  /* maximal relative error in x            */
   PAR.s[0]      = -10.;            /* left boundary of interval              */
   PAR.s[1]      = 10.;             /* right boundary of interval             */
 
   par->method   = UNUR_METH_NINV;          /* method and default variant     */
   par->variant  = NINV_VARFLAG_REGULA;     /* default variant                */
-  par->set      = 0u;                      /* inidicate default parameters   */    
+  par->set      = 0u;                      /* inidicate default parameters   */
   par->urng     = unur_get_default_urng(); /* use default urng               */
 
   par->genid    = _unur_set_genid(GENTYPE);/* set generator id               */
@@ -436,15 +428,15 @@ unur_ninv_sample_regula( struct unur_gen *gen )
      /*   return 0.                                                          */
      /*----------------------------------------------------------------------*/
 { 
-  double x1, x2, a, xtmp;  /* points for RF */
+  double x1, x2, a, xtmp;  /* points for RF        */
+  double x2abs;            /* absolute value of x2 */
   double f1, f2, ftmp;     /* function values at x1, x2, xtmp */
   double length;           /* (gerichtete) laenge des Intervalls mit ZW */ 
-  double lengthrel;        /* relative length of interval */
-  int  lengthsgn;    /* "richtung" des Intervalls */
-  double step;              /* Vergr"o"sert Startinvervall bis ZW gefunden */
+  double lengthabs;        /* absolute length of interval */
+  int  lengthsgn;          /* "richtung" des Intervalls */
+  double step;             /* Vergr"o"sert Startinvervall bis ZW gefunden */
   double dx;               /* RF-Schrittgr"o"se */
-  int count = 0;     /* Z"ahler f"ur "keine ZW" */
-  int count2 = 0;    /* Z"ahler f"ur "kein Fortschritt" */
+  int count = 0;           /* Z"ahler f"ur "keine ZW" */
   int i;                   /* Schleifenzahler */
     
   double u;     /* uniform random number */
@@ -455,6 +447,7 @@ unur_ninv_sample_regula( struct unur_gen *gen )
   /* initialize starting interval */
   x1 =  GEN.s[0];      /* left boudary of interval */
   x2 =  GEN.s[1];      /* right boudary of interval */
+
   if (x1>=x2) {
     _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,""); return 0.; }
 
@@ -469,65 +462,84 @@ unur_ninv_sample_regula( struct unur_gen *gen )
   step = 1.;  /* Startintervall zu klein -> um 2^n * gap vergr"o"sern */ 
   while ( f1*f2 > 0. ) {
     if ( f1 > 0. ) {/* untere Grenze zu gross */    
+      x2  = x1;  
+      f2  = f1;
       x1 -= step;   
       f1 = CDF(x1) - u;
     }
     else {         /* obere Grenze zu klein */
+      x1  = x2;
+      f1  = f2;
       x2 += step;
       f2 = CDF(x2) - u;
     }
+
     /* increase step width */
-    step *= 2.; 
-  }  
-  a = x1;
+    step *= 2.;
+  }  /* while end -- interval found */ 
+
+
+  a     = x1;       /* a und x2 soll immer ZW enthalten */
 
   /* Sekantensuche, ZW wird beibehalten */
   for (i=0; i < GEN.max_iter; i++) { /* noch zu andernde schleife */
     count++;
-
+     
     /* f2 immer kleiner (besser), notfalls Tausch */
     if ( fabs(f1) < fabs(f2) ) {   /* Dreieckstausch */
       xtmp = x1; ftmp = f1;
       x1 = x2;   f1 = f2;
       x2 = xtmp; f2 = ftmp;
     }
+
+    x2abs = fabs(x2);   /* absolute value of x2 */
+
     
-    if ( f2 == 0. ) 
-      /* genauer Treffer -- sehr unwahrscheinlich */
+    if ( f2 == 0. )
+      /* genauer Treffer  */
       break; /* -> finished */
-    
-    if ( f1*f2 <= 0) {  /* ZeichenWechsel vorhanden */
+
+
+    if ( f1*f2 <= 0) {  /* ZeichenWechsel vorhanden             */
       count = 0;   /* zaehler fuer bisektion wird rueckgestellt */
-      a = x1;      /* [a, x2] enthaelt ZW */
+      a    = x1;   /* [a, x2] enthaelt ZW                       */
     }
     
     length = x2 - a;  /* gerichtete laenge */
-    //    lengthrel = fabs(length) / ((fabs(x1)<fabs(x2)) ? fabs(x2) : fabs(x1));
-    lengthrel = fabs(length);
-    lengthsgn = sgn(length);
- 
-    if ( lengthrel < GEN.rel_x_resolution || count2 > 1 )
-      /* x-genauigkeit erreicht -> finished */
+    lengthabs = fabs(length);
+    lengthsgn = (length < 0.) ? -1. : 1.;
+    
+    if ( lengthabs <= GEN.rel_x_resolution * x2abs  )
+      /* relative x-genauigkeit erreicht -> finished */
       break; /* -> finished */
 
-   /* Sekanten-Schritt */
-    dx = ( f1-f2==0. ) ? 0. : f2*(x2-x1)/(f2-f1) ;  
-
-    if (fabs(dx) <= GEN.rel_x_resolution) {
-      count2++;       /* 2mal hintereinander kein fortschritt -> abbruch */
-      dx = length/2.; /* Bisektionsschritt */
-    }    
-    else   /* Abbruch-Z"ahler r"uckgesetzt */
-      count2 = 0;  
+  
+    /* Sekanten-Schritt  oder Bisektion */
+    dx = ( f1-f2==0. ) ? length/2. : f2*(x2-x1)/(f2-f1) ;  
     
-    /* kein  ZW  || Schritt fuhrt aus Intervall  */
-    if ( count > 1 || (lengthrel-GEN.rel_x_resolution) <= dx*lengthsgn  )  /** TODO **/
+    /* minimaler schritt */
+    if ( fabs(dx) < GEN.rel_x_resolution * x2abs ){
+      dx = lengthsgn * 0.99 * GEN.rel_x_resolution * x2abs;
+      while (x2 == x2 - dx){ /* dx zu klein */
+	if ( dx != 2.*dx)    /* am genauigkeits-limit des rechners */
+	  dx = 2.*dx;
+        else
+	  dx = length/2.;    /* Bisektion */
+      }
+    }
+
+       
+    /* Bisektionsschritt, wenn:                             */  
+    /* kein  ZW  || Schritt fuhrt aus Intervall             */
+    if ( count > 1 || 
+        (lengthabs-GEN.rel_x_resolution*x2abs)/(dx*lengthsgn) <= 1. )
       dx = length/2.; /* Bisektionsschritt */
   
+
     /* Update der Punkte */    
     x1 = x2;       f1 = f2;
     x2 = x2-dx;    f2 = CDF(x2) - u; 
- 
+    
   }  /* for-schleife ende */
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -535,8 +547,7 @@ unur_ninv_sample_regula( struct unur_gen *gen )
     if (gen->debug & NINV_DEBUG_SAMPLE)
       _unur_ninv_debug_sample_regula( gen,u,x2,f2,i );
 #endif
-
-  return x2;
+   return x2;
 
 } /* end of unur_ninv_sample_regula() */
 

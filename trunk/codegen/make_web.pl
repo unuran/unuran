@@ -173,9 +173,22 @@ EOX
     foreach my $d (sort keys %{$DISTR}) { 
 	next unless $DISTR->{$d}->{"=TYPE"} eq "CONT";
 
+	# parameters for PDF
 	$get_distr_PDFparams .= 
 	    "\t   case \"$d\":\n".
-	    scan_FPARAM($DISTR->{$d}->{"=DOC"}->{"=FPARAM"}).
+	    scan_FPARAM($DISTR->{$d}->{"=DOC"}->{"=FPARAM"});
+	   
+	# domain
+	my $domain = $DISTR->{$d}->{"=DOC"}->{"=DOMAIN"};
+	chomp $domain;
+	(my $left, my $right) = split /\s*[<>=]+\s*x\s*[<>=]+\s*/, $domain, 2;
+
+	$get_distr_PDFparams .= 
+	    "\t\t \$distr_domain_left = \"$left\";\n".
+	    "\t\t \$distr_domain_right = \"$right\";\n";
+	
+	# end of data
+	$get_distr_PDFparams .= 
 	    "\t\t break;\n";
     }
 
@@ -219,8 +232,6 @@ $get_distr_PDFparams
 \t\t\t while (list (\$key, \$val) = each(\$HTTP_GET_VARS)) {
 \t\t\t\t if ( preg_match ("/^Std_param_(\\d+)/", \$key, \$matches ) ) {
 \t\t\t\t\t \$distr_param[\$matches[1]] = \$val;
-\t\t\t\t\t \$distr_param_FORM_list .= 
-\t\t\t\t\t\t "echo \\"    <INPUT type=\\\\\\"hidden\\\\\\" name=\\\\\\"\$key\\\\\\" value=\\\\\\"\$val\\\\\\">\\n";
 \t\t\t\t }
 \t\t\t }
 \t\t\t # Read optional parameters for distribution (use defaults)
@@ -278,35 +289,40 @@ $get_distr_PDFparams
 \t\t if (\$distr_n_requir < \$distr_n_total) {
 \t\t\t # Standardform exists
 
-\t\t\t echo "    <INPUT TYPE=\\"radio\\" NAME=\\"Stdform\\" VALUE=\\"yes\\" checked> Standardform\\n";
-\t\t\t echo "    <BLOCKQUOTE>\\n";
-\t\t\t for (\$i = 0; \$i < \$distr_n_requir; \$i++) {
-\t\t\t\t echo "    \$distr_param_name[\$i] = \\n";
-\t\t\t\t echo "    <INPUT TYPE=\\"text\\" NAME=\\"Std_param_\$i\\" SIZE=10 MAXLENGTH=10>\\n";
-\t\t\t\t echo (\$distr_param_cond[\$i] ? "    &nbsp;&nbsp;&nbsp;(\$distr_param_cond[\$i])" : "");
-\t\t\t\t echo "    <BR>\\n";
-\t\t\t }
-\t\t\t if (\$distr_n_total > \$distr_n_requir) {
-\t\t\t\t echo "    <P><FONT COLOR=\\"$Gray\\">(&nbsp;&nbsp;&nbsp;\\n";
-\t\t\t\t for (\$i = \$distr_n_requir; \$i < \$distr_n_total; \$i++) {
-\t\t\t\t\t echo "    \$distr_param_name[\$i] = \$distr_param_default[\$i]\\n"; 
-\t\t\t\t\t echo "&nbsp;&nbsp;&nbsp;";
+\t\t\t if (\$Stdform != "no") {
+\t\t\t\t echo "    <INPUT TYPE=\\"radio\\" NAME=\\"Stdform\\" VALUE=\\"yes\\" checked> Standardform\\n";
+\t\t\t\t echo "    <BLOCKQUOTE>\\n";
+\t\t\t\t for (\$i = 0; \$i < \$distr_n_requir; \$i++) {
+\t\t\t\t\t echo "    \$distr_param_name[\$i] = \\n";
+\t\t\t\t\t echo "    <INPUT TYPE=\\"text\\" NAME=\\"Std_param_\$i\\" SIZE=10 MAXLENGTH=10>\\n";
+\t\t\t\t\t echo (\$distr_param_cond[\$i] ? "    &nbsp;&nbsp;&nbsp;(\$distr_param_cond[\$i])" : "");
+\t\t\t\t\t echo "    <BR>\\n";
 \t\t\t\t }
-\t\t\t\t echo ")</FONT></P>\\n";
+\t\t\t\t if (\$distr_n_total > \$distr_n_requir) {
+\t\t\t\t\t echo "    <P><FONT COLOR=\\"$Gray\\">(&nbsp;&nbsp;&nbsp;\\n";
+\t\t\t\t\t for (\$i = \$distr_n_requir; \$i < \$distr_n_total; \$i++) {
+\t\t\t\t\t\t echo "    \$distr_param_name[\$i] = \$distr_param_default[\$i]\\n"; 
+\t\t\t\t\t\t echo "&nbsp;&nbsp;&nbsp;";
+\t\t\t\t\t }
+\t\t\t\t\t echo ")</FONT></P>\\n";
+\t\t\t\t }
+\t\t\t\t echo "    </BLOCKQUOTE>\\n";
 \t\t\t }
-\t\t\t echo "    </BLOCKQUOTE>\\n";
 
-\t\t\t echo "    <INPUT TYPE=\\"radio\\" NAME=\\"Stdform\\" VALUE=\\"no\\"> Non-Standardform\\n";
-\t\t\t echo "    <BLOCKQUOTE>\\n";
-\t\t\t for (\$i = 0; \$i < \$distr_n_total; \$i++) {
-\t\t\t\t echo "    \$distr_param_name[\$i] = \\n";
-\t\t\t\t echo "    <INPUT TYPE=\\"text\\" NAME=\\"param_\$i\\" ";
-\t\t\t\t echo ((\$i<\$distr_n_requir) ? "" : "VALUE=\\"\$distr_param_default[\$i]\\" ");
-\t\t\t\t echo "SIZE=10 MAXLENGTH=10>\\n";
-\t\t\t\t echo (\$distr_param_cond[\$i] ? "    &nbsp;&nbsp;&nbsp;(\$distr_param_cond[\$i])" : "");
-\t\t\t\t echo "    <BR>\\n";
+\t\t\t if (\$Stdform != "yes") {
+\t\t\t\t \$checked = (\$Stdform == "no") ? "checked" : ""; 
+\t\t\t\t echo "    <INPUT TYPE=\\"radio\\" NAME=\\"Stdform\\" VALUE=\\"no\\" \$checked> Non-Standardform\\n";
+\t\t\t\t echo "    <BLOCKQUOTE>\\n";
+\t\t\t\t for (\$i = 0; \$i < \$distr_n_total; \$i++) {
+\t\t\t\t\t echo "    \$distr_param_name[\$i] = \\n";
+\t\t\t\t\t echo "    <INPUT TYPE=\\"text\\" NAME=\\"param_\$i\\" ";
+\t\t\t\t\t echo ((\$i<\$distr_n_requir) ? "" : "VALUE=\\"\$distr_param_default[\$i]\\" ");
+\t\t\t\t\t echo "SIZE=10 MAXLENGTH=10>\\n";
+\t\t\t\t\t echo (\$distr_param_cond[\$i] ? "    &nbsp;&nbsp;&nbsp;(\$distr_param_cond[\$i])" : "");
+\t\t\t\t\t echo "    <BR>\\n";
+\t\t\t\t }
+\t\t\t\t echo "    </BLOCKQUOTE>\\n";
 \t\t\t }
-\t\t\t echo "    </BLOCKQUOTE>\\n";
 \t\t }
 
 \t\t else {
@@ -321,9 +337,13 @@ $get_distr_PDFparams
 \t\t }
 
 \t\t echo "    <P>\\n";
-\t\t echo "    <INPUT type=\\"hidden\\" name=\\"step\\" value=\\"2\\">\\n";
-\t\t echo "    <INPUT type=\\"hidden\\" name=\\"distribution\\" value=\\"\$distribution\\">\\n";
-\t\t echo "    <INPUT type=\\"submit\\" value=\\"Continue\\">\\n";
+\t\t echo "    <INPUT TYPE=checkbox NAME=\\"Truncated\\" VALUE=\\"yes\\">\\n";
+\t\t echo "       Truncated domain\\n";
+
+\t\t echo "    <P>\\n";
+\t\t echo "    <INPUT type=hidden name=\\"step\\" value=\\"2\\">\\n";
+\t\t echo "    <INPUT type=hidden name=\\"distribution\\" value=\\"\$distribution\\">\\n";
+\t\t echo "    <INPUT type=submit value=\\"Continue\\">\\n";
 \t\t echo "  </FORM>\\n";
 \t\t echo "</BLOCKQUOTE>\\n";
 \t }
@@ -353,35 +373,153 @@ EOX
 
  else {
 
-\t echo "Step 3: <STRONG>Domain for \$distr_name</STRONG><BR>\\n";
+\t \$std_left = "-infinity";
+\t \$std_right = "infinity";
+
+\t for (\$i = 0; \$i < \$distr_n_total; \$i++) {
+\t\t if (\$distr_domain_left == \$distr_param_name[\$i]) {
+\t\t\t \$std_left = \$distr_param[\$i];
+\t\t }
+\t\t if (\$distr_domain_right == \$distr_param_name[\$i]) {
+\t\t\t \$std_right = \$distr_param[\$i];
+\t\t }
+\t }
+
+\t if (isset(\$left)) {
+\t\t \$left = (\$std_left == "-infinity") ? \$left : max(\$left,\$std_left);
+\t }
+\t else {
+\t\t \$left = \$std_left;
+\t }
+\t if (isset(\$right)) {
+\t\t \$right = (\$std_right == "infinity") ? \$right : min(\$right,\$std_right);
+\t }
+\t else {
+\t\t \$right = \$std_right;
+\t }
+
+
+\t if (\$Truncated != "yes" && \$step == 2) {
+\t\t \$step = 3; # nothing to do
+\t }
+
+\t if (\$Truncated != "yes") {
+\t\t \$Truncated = "no";
+\t }
+
+\t echo "Step 3: <STRONG>Domain for \$distr_name</STRONG>\\n";
 
 # CASE: Distribution selected, Parameters and Domain given
 \t if (\$step > 2) {
-
+\t\t echo "<BLOCKQUOTE>\\n";
+\t\t echo "  domain = ( \$left, \$right )";
+\t\t echo "&nbsp;&nbsp;&nbsp;";
+\t\t echo ((\$Truncated == "yes") ? "(truncated)" : "")."\\n";
+\t\t echo "</BLOCKQUOTE>\\n";
 \t }
 
 # CASE: Distribution selected and Parameters given, input domain
 \t if (\$step == 2) {
-
 \t\t echo "<BLOCKQUOTE>\\n";
-\t\t echo "  <FORM method=\\"GET\\" action=\\"anuran.php\\">\\n";
-
-\t\t echo "    <INPUT TYPE=\\"radio\\" NAME=\\"Stddomain\\" VALUE=\\"yes\\" checked> Standarddomain\\n";
+\t\t echo "  <FORM METHOD=\\"GET\\" ACTION=\\"anuran.php\\">\\n";
+\t\t echo "    left = <INPUT TYPE=text NAME=\\"left\\" VALUE=\\"\$left\\" SIZE=10 MAXLENGTH=10>\\n";
 \t\t echo "    <BR>\\n";
-
-
-\t\t echo "    <INPUT TYPE=\\"radio\\" NAME=\\"Stddomain\\" VALUE=\\"no\\"> Truncated\\n";
-\t\t echo "    <BR>\\n";
-
+\t\t echo "    right = <INPUT TYPE=text NAME=\\"right\\" VALUE=\\"\$right\\" SIZE=10 MAXLENGTH=10>\\n";
 \t\t echo "    <P>\\n";
-\t\t echo "    <INPUT type=\\"hidden\\" name=\\"step\\" value=\\"3\\">\\n";
-\t\t echo "    <INPUT type=\\"hidden\\" name=\\"distribution\\" value=\\"\$distribution\\">\\n";
-\t\t echo "    <INPUT type=\\"hidden\\" name=\\"Stdform\\" value=\\"\$Stdform\\">\\n";
-\t\t \$distr_param_FORM_list;
-\t\t echo "    <INPUT type=\\"submit\\" value=\\"Continue\\">\\n";
-\t\t echo "  </FORM>\\n";
+\t\t echo "\$distr_param_FORM_list\\n";
+\t\t echo "    <INPUT TYPE=hidden NAME=\\"step\\" VALUE=\\"3\\">\\n";
+\t\t echo "    <INPUT TYPE=hidden NAME=\\"distribution\\" VALUE=\\"\$distribution\\">\\n";
+\t\t echo "    <INPUT TYPE=hidden NAME=\\"Stdform\\" VALUE=\\"\$Stdform\\">\\n";
+\t\t echo "    <INPUT TYPE=hidden NAME=\\"Truncated\\" VALUE=\\"\$Truncated\\">\\n";
+
+\t\t if (\$Stdform == "yes") {
+\t\t\t for (\$i = 0; \$i < \$distr_n_params; \$i++) {
+\t\t\t\t echo "    <INPUT TYPE=hidden NAME=\\"Std_param_\$i\\" VALUE=\\"\$distr_param[\$i]\\">\\n";
+\t\t\t }
+\t\t }
+\t\t else {
+\t\t\t for (\$i = 0; \$i < \$distr_n_params; \$i++) {
+\t\t\t\t echo "    <INPUT TYPE=hidden NAME=\\"param_\$i\\" VALUE=\\"\$distr_param[\$i]\\">\\n";
+\t\t\t }
+\t\t }
+
+\t\t echo "    <INPUT TYPE=submit VALUE=\\"Continue\\">\\n";
 \t\t echo "</BLOCKQUOTE>\\n";
 \t }
+
+ }
+
+?>
+
+<P><HR><P>
+
+EOX
+
+# ................................................................
+# Step omega: Make generator code 
+
+    $PHP .= <<EOX;
+<?php
+
+# CASE: data are missing
+ if (\$step < 3) {
+\t echo "<FONT COLOR=\\"$Gray\\">\\n";
+\t echo "Step 4: <STRONG>Generator for ";
+\t echo ((\$step < 1) ? "distribution" : \$distr_name);
+\t echo "</STRONG></FONT><BR>\\n";
+ }
+
+ else {
+
+\t unset(\$unuran);
+
+\t \$unuran .= "int main(void)\\n";
+\t \$unuran .= "{\\n";
+
+\t \$unuran .= "\t UNUR_DISTR *distr;\\n";
+\t \$unuran .= "\t UNUR_PAR   *par;\\n";
+\t \$unuran .= "\t UNUR_GEN   *gen;\\n";
+\t \$unuran .= "\\n";
+
+\t if (\$distr_n_params > 0) {
+\t\t \$unuran .= "\t int n_fparams = \$distr_n_params;\\n";
+\t\t \$unuran .= "\t double fparams[] = { ";
+\t\t \$unuran .= \$distr_param[0];
+\t\t for (\$i = 1; \$i < \$distr_n_params; \$i++) {
+\t\t\t \$unuran .= ", \$distr_param[\$i]";
+\t\t }
+\t\t \$unuran .= " };\\n";
+\t }
+\t else {
+\t\t \$unuran .= "\t int n_fparams = 0;\\n";
+\t\t \$unuran .= "\t double *fparams = NULL;\\n";
+\t }
+\t \$unuran .= "\\n";
+
+\t \$unuran .= "\t distr = unur_distr_\$distribution(fparams, n_fparams);\\n";
+\t if (\$Truncated == "yes") {
+\t\t \$unuran .= "\t unur_distr_cont_set_domain( distr, \$left, \$right );\\n";
+\t }
+\t \$unuran .= "\\n";
+
+\t \$unuran .= "\t par = unur_tdr_new(distr);\\n";
+\t \$unuran .= "\t unur_tdr_set_cpoints(par, 30, NULL);\\n";
+\t \$unuran .= "\t unur_tdr_set_variant_ps(par);\\n";
+\t \$unuran .= "\\n";
+
+\t \$unuran .= "\t gen = unur_init(par);\\n";
+\t \$unuran .= "\\n";
+
+\t \$unuran .= "\t unur_distr_free(distr);\\n";
+\t \$unuran .= "\t unur_free(gen);\\n";
+\t \$unuran .= "\\n";
+
+\t \$unuran .= "\t exit (EXIT_SUCCESS);\\n";
+\t \$unuran .= "}\\n";
+
+
+\t echo "<PRE>\$unuran</PRE>\\n";
+
 
  }
 

@@ -36,15 +36,29 @@ int main()
 
   double fpm[] = {1,5};
 
-  unur_set_default_debug(0u);
+  unur_set_default_debug(~0u);
 /*    unur_set_stream(stdout); */
 
 /*    distr = unur_distr_normal(NULL,0); */
 /*    par = unur_tdr_new(distr); */
 /*    unur_tdr_set_variant_ia(par); */
 
-  distr = unur_str2distr("normal");
-  par = _unur_str2par(distr,"method=tdr; variant_ia",&mlist);
+/*    distr = unur_str2distr("normal"); */
+/*    par = _unur_str2par(distr,"method=tdr; variant_ia",&mlist); */
+
+  gen = unur_str2gen("normal; domain=(0.,inf); orderstatistics=(10,7) & \
+		      method = arou; max_sqhratio = 0.; cpoints=5");
+
+
+/*    distr = unur_str2distr("normal; domain=(0.,inf); orderstatistics=(10,7)"); */
+/*    par = _unur_str2par(distr,"method = arou; max_sqhratio = 0.; cpoints=5",&mlist); */
+/*    gen = unur_init(par); */
+/*    _unur_slist_free(mlist); */
+
+  for (i=0; i<10; i++)
+    printf("%g\n",unur_sample_cont(gen));
+
+  unur_free(gen);
 
 /*    par = unur_unif_new(NULL); */
 
@@ -58,36 +72,9 @@ int main()
 
 /*    unur_test_chi2(gen, 10, 100, 5, 1, stdout); */
 
-  time_0 = unur_test_timing_total(par, 1, 0.1 );
-  printf("time_0 = %g\n\n",time_0);
-  
-  time = unur_test_timing_total(par, 10, 0.1 );
-  printf("time_1 = %g (%g)\n\n",time,(time-time_0)/9);
+/*    unur_run_tests(par,RUN_TESTS); */
 
-  time = unur_test_timing_total(par, 100, 0.1 );
-  printf("time_2 = %g (%g)\n\n",time,(time-time_0)/99);
-
-  time = unur_test_timing_total(par, 1000, 0.1 );
-  printf("time_3 = %g (%g)\n\n",time,(time-time_0)/999);
-  
-  time = unur_test_timing_total(par, 10000, 0.1 );
-  printf("time_4 = %g (%g)\n\n",time,(time-time_0)/9999);
-
-  time = unur_test_timing_total(par, 100000, 0.1 );
-  printf("time_5 = %g (%g)\n\n",time,(time-time_0)/99999);
-
-  time = unur_test_timing_total(par, 1000000, 0.1 );
-  printf("time_6 = %g (%g)\n\n",time,(time-time_0)/999999);
-
-  time = unur_test_timing_total(par, 10000000, 0.1 );
-  printf("time_7 = %g (%g)\n\n",time,(time-time_0)/9999999);
-
-  time = unur_test_timing_total(par, 100000000, 0.1 );
-  printf("time_8 = %g (%g)\n\n",time,(time-time_0)/99999999);
-
-  unur_run_tests(par,RUN_TESTS);
-
-  _unur_slist_free(mlist);
+/*    _unur_slist_free(mlist); */
 
   return 0;
 

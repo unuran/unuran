@@ -121,7 +121,7 @@
 /* However checking against an invalid NULL pointer can be switched on for   */
 /* each pointer that occurs by defining  UNUR_ENABLE_CHECKNULL.              */
 
-/*  #define UNUR_ENABLE_CHECKNULL 1 */
+#define UNUR_ENABLE_CHECKNULL 1
 
 
 /*---------------------------------------------------------------------------*/

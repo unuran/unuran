@@ -215,6 +215,13 @@ _unur_distr_cont_copy( struct unur_distr *to, struct unur_distr *from )
     to->name = to->name_str;
   }
 
+  /* for a derived distribution we also have to copy the underlying */
+  /* distribution object                                            */
+  if (from->base != NULL) {
+    to->base = _unur_malloc( sizeof(struct unur_distr) );
+    return _unur_distr_cont_copy( to->base, from->base );
+  }
+
   return 1;
 
 #undef FROM

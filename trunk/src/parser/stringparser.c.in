@@ -174,7 +174,14 @@ static struct unur_distr *_unur_str_distr_new( char *distribution );
 /* get new distribution object.                                              */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_str_distr_set( UNUR_DISTR *distr, const char *key, char *value );
+static struct unur_distr *_unur_str_distr_make_os( UNUR_DISTR *distr, 
+						   const char *key,
+						   char *type_args, char **args );
+/*---------------------------------------------------------------------------*/
+/* Make distribution object for order statistics of given distribution.      */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_str_distr_set( UNUR_DISTR **ptr_distr, const char *key, char *value );
 /*---------------------------------------------------------------------------*/
 /* set parameters for distribution.                                          */
 /*---------------------------------------------------------------------------*/
@@ -197,16 +204,19 @@ static int _unur_str_distr_set_i( UNUR_DISTR *distr, const char *key, char *type
 /*---------------------------------------------------------------------------*/
 /* integer.                                                                  */
 /*---------------------------------------------------------------------------*/
+
 static int _unur_str_distr_set_ii( UNUR_DISTR *distr, const char *key, char *type_args, char **args,
 				   distr_set_ii set );
 /*---------------------------------------------------------------------------*/
 /* 2 integers.                                                               */
 /*---------------------------------------------------------------------------*/
+
 static int _unur_str_distr_set_d( UNUR_DISTR *distr, const char *key, char *type_args, char **args,
 				  distr_set_d set );
 /*---------------------------------------------------------------------------*/
 /* double.                                                                   */
 /*---------------------------------------------------------------------------*/
+
 static int _unur_str_distr_set_dd( UNUR_DISTR *distr, const char *key, char *type_args, char **args,
 				   distr_set_dd set );
 /*---------------------------------------------------------------------------*/
@@ -262,31 +272,38 @@ static int _unur_str_par_set_void( UNUR_PAR *par, const char *key, char *type_ar
 /*---------------------------------------------------------------------------*/
 /* void (no argument required).                                              */
 /*---------------------------------------------------------------------------*/
+
 static int _unur_str_par_set_i( UNUR_PAR *par, const char *key, char *type_args, char **args,
 				par_set_i set );
 /*---------------------------------------------------------------------------*/
 /* integer.                                                                  */
 /*---------------------------------------------------------------------------*/
+
 static int _unur_str_par_set_u( UNUR_PAR *par, const char *key, char *type_args, char **args,
 				par_set_u set );
 /*---------------------------------------------------------------------------*/
 /* unsigned integer.                                                         */
 /*---------------------------------------------------------------------------*/
+
 static int _unur_str_par_set_d( UNUR_PAR *par, const char *key, char *type_args, char **args,
 				par_set_d set );
 /*---------------------------------------------------------------------------*/
 /* double.                                                                   */
 /*---------------------------------------------------------------------------*/
+
 static int _unur_str_par_set_dd( UNUR_PAR *par, const char *key, char *type_args, char **args,
 				 par_set_dd set );
+
 /*---------------------------------------------------------------------------*/
 /* 2 doubles.                                                                */
 /*---------------------------------------------------------------------------*/
+
 static int _unur_str_par_set_iD( UNUR_PAR *par, const char *key, char *type_args, char **args,
 				 par_set_iD set, struct unur_slist *mlist );
 /*---------------------------------------------------------------------------*/
 /* integer & array of doubles.                                               */
 /*---------------------------------------------------------------------------*/
+
 static int _unur_str_par_set_Di( UNUR_PAR *par, const char *key, char *type_args, char **args,
 				 par_set_Di set, struct unur_slist *mlist );
 /*---------------------------------------------------------------------------*/
@@ -710,7 +727,7 @@ _unur_str_distr( char *str_distr )
 
     /* set parameters for distribution */
     else {
-      if (!_unur_str_distr_set(distr, key, value) ) {
+      if (!_unur_str_distr_set(&distr, key, value) ) {
 	/* error */
 	_unur_distr_free(distr);
 	/* _unur_error(GENTYPE,UNUR_ERR_STR,"setting distribution failed");  */
@@ -794,15 +811,104 @@ _unur_str_distr_new( char *distribution )
 
 /*---------------------------------------------------------------------------*/
 
+static struct unur_distr *
+_unur_str_distr_make_os (UNUR_DISTR *distr, const char *key, char *type_args, char **args)
+     /*----------------------------------------------------------------------*/
+     /* Make distribution object for order statistics of given distribution. */
+     /* The given distribution `distr' is destroyed.                         */
+     /* The list of arguments and their types are given as string.           */
+     /*                                                                      */
+     /* type: "ii"   (int,int)                                               */
+     /*                                                                      */
+     /* input: "tt"  (exactly two single tokens)                             */
+     /*        "L"   (exactly one list)                                      */
+     /*                                                                      */
+     /* action:                                                              */
+     /*    if "tt": convert both to int.                                     */
+     /*             execute set call.                                        */
+     /*    if "L":  convert list entries to int.                             */
+     /*             execute set call with first two entries.                 */
+     /*                (error if list has less than two entries)             */
+     /*    otherwise: error                                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr     ... pointer to distribution object                       */
+     /*   key       ... name of parameter to be set                          */
+     /*   type_args ... contains types of arguments. Possible values:        */
+     /*                   't'   for single token                             */
+     /*                   'L'   for a list                                   */
+     /*   args      ... array of pointers to argument strings                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to distribution object for order statistics                */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  int *iarray = NULL;                 /* pointer to working array            */
+  struct unur_distr *os = NULL;       /* pointer to order statistics object  */
+
+  /* either exactly two arguments are given */
+  if ( !strcmp(type_args, "tt") ) {
+    iarray = _unur_malloc( 2*sizeof(double) );
+    iarray[0] = _unur_atoi( args[0] );
+    iarray[1] = _unur_atoi( args[1] );
+  }
+
+  /* or one list with 2 entries is given */
+  else if ( !strcmp(type_args, "L") ) {
+    if ( _unur_parse_ilist( args[0], &iarray ) < 2 ) {
+      free (iarray);
+      iarray = NULL;
+    }
+  }
+
+  if (iarray == NULL ) {
+    /* data list empty (incorrect syntax) */
+    _unur_error_args(key);
+#ifdef UNUR_ENABLE_LOGGING
+    /* write info into log file */
+    if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
+      _unur_str_debug_set(2,key,"!");
+#endif
+    return NULL;
+  }
+
+  /* now make object to order statistics */
+
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
+    _unur_str_debug_set(2,key,"ii",iarray[0],iarray[1] );
+#endif
+
+  os =  unur_distr_corder_new( distr, iarray[0], iarray[1] );
+
+  /* free memory */
+  _unur_distr_free(distr);
+  free (iarray);
+  
+  /* return order statistics (or NULL we could not make such a thing) */
+  return os;
+
+} /* end of _unur_str_distr_make_os() */
+
+/*---------------------------------------------------------------------------*/
+
 int
-_unur_str_distr_set( UNUR_DISTR *distr, const char *key, char *value )
+_unur_str_distr_set( UNUR_DISTR **ptr_distr, const char *key, char *value )
      /*----------------------------------------------------------------------*/
      /* set parameters for distribution                                      */
      /*                                                                      */
+     /* it also makes a distribution object for an order statistics for      */
+     /* the given distribution when the key word "orderstatistics" occurs.   */
+     /* Thus the distribution object itself might be changed.                */
+     /*                                                                      */
      /* parameters:                                                          */
-     /*   distr ... pointer to parameter for building generator object       */
-     /*   key   ... string that contains key for parameter                   */
-     /*   value ... string that contains list of arguments for parameter     */
+     /*   ptr_distr ... holds pointer to distribution object                 */
+     /*   key       ... string that contains key for parameter               */
+     /*   value     ... string that contains list of arguments for parameter */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... on success                                                   */
@@ -815,14 +921,21 @@ _unur_str_distr_set( UNUR_DISTR *distr, const char *key, char *value )
 #define UNKNOWN_PARAM (-1)
   int result = UNKNOWN_PARAM;      /* result of UNURAN set call (0 or 1) */
 
+  /* derefence pointer to distribution object */
+  struct unur_distr *distr = *ptr_distr;
+
   /* storing arguments of set calls: */
   char type_args[MAX_SET_ARGS+1];  /* array containing info about arguments */
   char *args[MAX_SET_ARGS+1];      /* pointers to argument strings */
 
+  /* no set calls for order statistics allowed !! */
+  if (distr->id == UNUR_DISTR_CORDER)
+    return 0;
+
   /* tokenize argument string */
   if (_unur_str_set_args( value, type_args, args, MAX_SET_ARGS ) < 0) {
     /* error */
-    return FALSE;
+    return 0;
   }
 
   /* set result indicator to unknown */
@@ -831,21 +944,31 @@ _unur_str_distr_set( UNUR_DISTR *distr, const char *key, char *value )
   /* find and execute set call */
 =INPUT list_of_distr_sets
 
-   if (result == UNKNOWN_PARAM) {
-     /* unknown parameter */
-     _unur_error_unknown(key,"parameter for given distribution");
-     return FALSE;
-   }
-   else if (result == FALSE) {
-     /* invalid data for parameter */
-     _unur_error_invalid(key,"set call");
-     return FALSE;
-   }
-
-   return result;
-
+   /* special keyword */
+   if (result == UNKNOWN_PARAM)
+     if (distr->type == UNUR_DISTR_CONT) {
+       if ( !strcmp(key, "orderstatistics") ) {
+	 /* make order statistics and replace distribution object */
+	 *ptr_distr = _unur_str_distr_make_os (distr, key, type_args, args);
+	 result = (*ptr_distr == NULL) ? 0 : 1;
+       }
+     }
+  
+  if (result == UNKNOWN_PARAM) {
+    /* unknown parameter */
+    _unur_error_unknown(key,"parameter for given distribution");
+    return 0;
+  }
+  else if (result == 0) {
+    /* invalid data for parameter */
+    _unur_error_invalid(key,"set call");
+    return 0;
+  }
+  
+  return result;
+  
 #undef UNKNOWN_PARAM
-
+  
 } /* end of _unur_str_distr_set() */
 
 /*---------------------------------------------------------------------------*/
@@ -1455,7 +1578,7 @@ _unur_str_par_set( UNUR_PAR *par, const char *key, char *value, struct unur_slis
      /*   return 0                                                           */
      /*----------------------------------------------------------------------*/
 {
-  int result = FALSE;              /* result of UNURAN set call (0 or 1) */
+  int result = 0;                  /* result of UNURAN set call (0 or 1) */
 
   /* storing arguments of set calls: */
   char type_args[MAX_SET_ARGS+1];  /* array containing info about arguments */
@@ -1464,7 +1587,7 @@ _unur_str_par_set( UNUR_PAR *par, const char *key, char *value, struct unur_slis
   /* tokenize argument string */
   if (_unur_str_set_args( value, type_args, args, MAX_SET_ARGS ) < 0) {
     /* error */
-    return FALSE;
+    return 0;
   }
 
   /* set result indicator to unknown */
@@ -1487,12 +1610,12 @@ _unur_str_par_set( UNUR_PAR *par, const char *key, char *value, struct unur_slis
   if (result == UNKNOWN_PARAM) {
     /* unknown parameter */
     _unur_error_unknown(key,"parameter for given method");
-    return FALSE;
+    return 0;
   }
-  else if (result == FALSE) {
+  else if (result == 0) {
     /* invalid data for parameter */
     _unur_error_invalid(key,"set call");
-    return FALSE;
+    return 0;
   }
   
   return result;

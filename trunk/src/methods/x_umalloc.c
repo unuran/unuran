@@ -70,6 +70,36 @@ _unur_malloc(size_t size)
 
 /*---------------------------------------------------------------------------*/
 
+void*
+_unur_realloc(void *ptr, size_t size)
+     /*----------------------------------------------------------------------*/
+     /* reallocate memory                                                    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   ptr  ... address of memory block previously allocated by malloc.   */
+     /*   size ... size of reallocated block                                 */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   abort program                                                      */
+     /*----------------------------------------------------------------------*/
+{
+  register void *new_ptr;
+
+  /* reallocate memory */
+  new_ptr = remalloc( ptr, size );
+
+  /* successful ? */
+  if (new_ptr == NULL) {
+    _unur_error(NULL,UNUR_ERR_MALLOC,"");
+    exit (EXIT_FAILURE);
+  }
+
+  return new_ptr;
+
+} /* end of _unur_realloc() */
+
+/*---------------------------------------------------------------------------*/
+
 void
 _unur_add_mblocks( struct unur_mblock **mblocks, void *ptr )
      /*----------------------------------------------------------------------*/

@@ -51,6 +51,8 @@ struct unur_mblock {
 /*---------------------------------------------------------------------------*/
 /* Function prototypes for allocating memory blocks                          */
 void *_unur_malloc(size_t size);
+void *_unur_realloc(void *ptr, size_t size);
+
 void  _unur_add_mblocks( struct unur_mblock **mblocks, void *ptr );
 void  _unur_free_mblocks( struct unur_mblock *mblocks );
 

@@ -62,6 +62,11 @@
       unur_arou_set_verify() and unur_arou_chg_verify(), respectively.
       Notice however that sampling is (much) slower then.
       
+      For densities with modes not close to 0 it is suggested either
+      to set the mode of the distribution or to use the
+      unur_tdr_set_center() call for provide some information about
+      the main part of the PDF to avoid numerical problems.
+
    =END
 */
 
@@ -118,6 +123,9 @@ int unur_arou_set_center( UNUR_PAR *parameters, double center );
    It is used to find construction points by means of a heuristical
    rule of thumb. If the mode is given the center is set equal to the
    mode.
+
+   It is suggested to use this call to provide some information about
+   the main part of the PDF to avoid numerical problems.
 */
 
 

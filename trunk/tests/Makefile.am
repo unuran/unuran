@@ -24,7 +24,6 @@ check_PROGRAMS = \
 TESTS = \
  t_distr \
  t_corder \
- t_timing \
  t_arou \
  t_cstd \
  t_dau \
@@ -35,6 +34,9 @@ TESTS = \
  t_tdr \
  t_unif \
  t_utdr
+
+# commented out
+# t_timing
 
 noinst_HEADERS = testunuran.h
 

@@ -137,7 +137,7 @@ unur_distr_cont_new( void )
 				      (initialized to avoid accidently floating
 				      point exception                        */
 
-  DISTR.mode      = 0.;            /* location of mode (default: not known)  */
+  DISTR.mode      = INFINITY;      /* location of mode (default: not known)  */
   DISTR.area      = 1.;            /* area below p.d.f. (default: not known) */
 
   DISTR.trunc[0] = DISTR.domain[0] = -INFINITY; /* left boundary of domain   */
@@ -728,7 +728,11 @@ unur_distr_cont_get_mode( struct unur_distr *distr )
     }
     else {
       /* compute mode */
-      unur_distr_cont_upd_mode( distr );
+      if (!unur_distr_cont_upd_mode( distr )) {
+	/* finding mode not successfully */
+	_unur_error(distr->name,UNUR_ERR_DISTR_GET,"mode");
+	return INFINITY;
+      }
     }
   }
 
@@ -964,7 +968,7 @@ _unur_distr_cont_find_mode(struct unur_distr *distr )
   }
 
   /* first guess for mode */
-  mode = DISTR.mode; /* yet best guess for mode */
+  mode = (_unur_FP_is_infinity(DISTR.mode)) ? 0. : DISTR.mode;
 
   /* determine where to look for the mode */
   

@@ -205,8 +205,10 @@ char *unur_distr_discr_get_pmfstr( struct unur_distr *distribution );
 
 char *unur_distr_discr_get_cdfstr( struct unur_distr *distribution );
 /* 
-   Get respective string for PMF and CDF of 
-   @var{distribution} that is given via the string interface.
+   Get pointer to respective string for PMF and CDF
+   of @var{distribution} that is given via the string interface.
+   This call allocates memory to produce this string. It should be
+   freed when it is not used any more.
 */
 
 int unur_distr_discr_set_pmfparams( UNUR_DISTR *distribution, double *params, int n_params );

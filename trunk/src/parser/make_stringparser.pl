@@ -984,7 +984,6 @@ sub comment_for_orderstatistics {
 \@item orderstatistics = \@i{<int>}, \@i{<int>} | (\@i{<list>})
     Make order statistics for given distribution. The first parameter
     gives the sample size, the second parameter its rank.
-    It must be the last keyword for a distribution string.
     (see \@pxref{funct:unur_distr_corder_new,,\@command{unur_distr_corder_new}})
 EOS
 

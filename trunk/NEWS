@@ -1,5 +1,7 @@
 Version 0.4.4: July 2003
 
+	- "orderstatistics" need not be last entry in string API
+
 	- replaced unur_tabl_set_variant_setup() by unur_tabl_set_usedars()
           with a slightly different interface.
 

@@ -198,8 +198,8 @@
 /*---------------------------------------------------------------------------*/
 
 /* Set type of uniform random number generator.                              */
-/*  #define UNUR_URNG_TYPE UNUR_URNG_FVOID */
-#define UNUR_URNG_TYPE UNUR_URNG_PRNG
+#define UNUR_URNG_TYPE UNUR_URNG_FVOID
+/*  #define UNUR_URNG_TYPE UNUR_URNG_PRNG */
 /*  #define UNUR_URNG_TYPE UNUR_URNG_RNGSTREAM */
 /*  #define UNUR_URNG_TYPE UNUR_URNG_GSL */
 /*  #define UNUR_URNG_TYPE UNUR_URNG_GENERIC */

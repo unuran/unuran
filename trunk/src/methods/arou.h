@@ -137,6 +137,7 @@ int unur_arou_set_pedantic( UNUR_PAR *parameters, int pedantic );
    Default is TRUE.
 */
 
+/* =END */
 /*---------------------------------------------------------------------------*/
 
 

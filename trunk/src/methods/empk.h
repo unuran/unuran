@@ -91,7 +91,7 @@ int unur_empk_set_alpha( UNUR_PAR *parameters, double alpha );
   alpha is used to compute the optimal bandwidth from the point of
   view of minimizing the mean integrated square error (MISE).
   alpha depends on the type of kernel K being used and is given by 
-     alpha(K) = Var(K)^(-2/5){ \int K(t)^2 dt}^(1/5)
+     alpha(K) = Var(K)^(-2/5)@{ \int K(t)^2 dt@}^(1/5)
   For standard kernels (see above) alpha is computed by the algorithm.
   For all other kernels, it must be given. 
 */
@@ -153,4 +153,6 @@ int unur_empk_set_positive( UNUR_PAR *parameters, int positive );
   Default is FALSE.
 */
 
+
+/* =END */
 /*---------------------------------------------------------------------------*/

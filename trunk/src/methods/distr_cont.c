@@ -143,6 +143,7 @@ unur_distr_cont_new( void )
   DISTR.trunc[0] = DISTR.domain[0] = -INFINITY; /* left boundary of domain   */
   DISTR.trunc[1] = DISTR.domain[1] = INFINITY;  /* right boundary of domain  */
 
+  DISTR.set_params = NULL;         /* funct for setting parameters and domain*/
   DISTR.upd_mode  = _unur_distr_cont_find_mode;  /* funct for computing mode */
   DISTR.upd_area  = NULL;          /* funct for computing area               */
 
@@ -895,7 +896,7 @@ _unur_distr_cont_debug( struct unur_distr *distr, char *genid )
   fprintf(log,"%s:\ttype = continuous univariate distribution\n",genid);
   fprintf(log,"%s:\tname = %s\n",genid,distr->name);
 
-  fprintf(log,"%s:\tp.d.f with %d argument(s)\n",genid,DISTR.n_params);
+  fprintf(log,"%s:\tPDF with %d argument(s)\n",genid,DISTR.n_params);
   for( i=0; i<DISTR.n_params; i++ )
       fprintf(log,"%s:\t\tparam[%d] = %g\n",genid,i,DISTR.params[i]);
 

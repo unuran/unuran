@@ -54,8 +54,12 @@ struct unur_distr_cont {
   double domain[2];             /* boundary of domain                        */
   double trunc[2];              /* boundary of truncated domain              */
 
-  int (*upd_mode)(struct unur_distr *distr);   /* funct for computing mode   */
-  int (*upd_area)(struct unur_distr *distr);   /* funct for computing area   */
+  int (*set_params)(struct unur_distr *distr, double *params, int n_params );
+                                /* function for setting parameters and domain*/
+  int (*upd_mode)(struct unur_distr *distr);
+                                /* function for computing mode               */
+  int (*upd_area)(struct unur_distr *distr);
+                                /* function for computing area               */
 
   int  (*init)(struct unur_par *par,struct unur_gen *gen);
                                 /* pointer to special init routine           */

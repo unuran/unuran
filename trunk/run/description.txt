@@ -1,0 +1,58 @@
+String Interface for Standard Distributions
+
+The easiest way to use UNURAN with standard distributions
+is to use its string interface.
+The command `unur_str2gen' takes a single string with information
+about the desired standard distribution and optional about the
+generation method and even the uniform random generator and it returns
+a pointer to a generator object. Be aware that using the string interface
+is only possible with implemented standard distributions and many other
+features of UNRAN can't get accessed when using it. In exchange it is
+easier to use because more of the implementation of UNURAN is hidden.
+For trickier tasks it will be necessary to go deeper in the Concepts of
+UNURAN.
+
+The string interface:
+As mentioned the string holds information about the standard distribution
+to sample from and (optional) about the sampling method and the
+uniform random number generator invoked.
+Therefore the the string consists of up to three block which must be
+seperated with a colon `:'. The standard distribution block must be first!
+
+Within each block a piece of information must be provided using
+a <key>=<value> scheme. 
+If more then one piece of information is needed, 
+the <key>=<value> pairs must be separeted with semicolons `;'.
+The <key> is a keyword explained below.
+The value can be a string, a number or a list of numbers or a string
+followed by a list of numbers (examples will be given below),
+depending on the <key>. A list must be  bounded with parentheses
+`(' and `)' and the list separator is a komma `,'.
+If the value is a string and a list in beetween only white space
+is allowed.
+
+
+Distribution:
+The key `distr' is obligatory, it must be first and the corresponding
+value must be one  of the implemented standard distributions---with
+a list of parameters.  e.g.: distr=normal(0,1)
+Furthermore it's possible to set the domain via the key `domain'.
+
+Method:
+The key `method' is obligatory, it must be first and the value must be the
+name of a method suitable for the choosen standard distribution.
+e.g.: method=arou
+Of course the following keys dependend on the method choosen at first.
+All corresponding `_set_' commands of UNURAN are available and the key
+is the string after the `unur_<methodname>_set_' part of the command.
+e.g.: UNURAN provides the command `unur_arou_set_max_sqhratio' to
+set a parameter. To call this function via the string-interface, the
+key `max_sqhratio' can be used.
+
+Uniform random number generator:
+The string is passed as it is to the PRNG package
+For information see the PRNG manual
+
+
+
+

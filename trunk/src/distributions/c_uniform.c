@@ -168,9 +168,9 @@ unur_distr_uniform( double *params, int n_params )
   DISTR.init = _unur_stdgen_uniform_init;
 
   /* functions */
-  DISTR.pdf  = _unur_pdf_uniform;  /* pointer to p.d.f.            */
-  DISTR.dpdf = _unur_dpdf_uniform; /* pointer to derivative of p.d.f. */
-  DISTR.cdf  = _unur_cdf_uniform;  /* pointer to c.d.f.            */
+  DISTR.pdf  = _unur_pdf_uniform;  /* pointer to PDF               */
+  DISTR.dpdf = _unur_dpdf_uniform; /* pointer to derivative of PDF */
+  DISTR.cdf  = _unur_cdf_uniform;  /* pointer to CDF               */
 
   /* default parameters */
   DISTR.a = 0.;

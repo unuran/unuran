@@ -180,10 +180,10 @@ unur_distr_powerexponential( double *params, int n_params )
   DISTR.init = _unur_stdgen_powerexponential_init;
    
   /* functions */
-  DISTR.pdf  = _unur_pdf_powerexponential;  /* pointer to p.d.f.               */
-  DISTR.dpdf = _unur_dpdf_powerexponential; /* pointer to derivative of p.d.f. */
+  DISTR.pdf  = _unur_pdf_powerexponential;  /* pointer to PDF               */
+  DISTR.dpdf = _unur_dpdf_powerexponential; /* pointer to derivative of PDF */
 #ifdef HAVE_CDF
-  DISTR.cdf  = _unur_cdf_powerexponential;  /* pointer to c.d.f.               */
+  DISTR.cdf  = _unur_cdf_powerexponential;  /* pointer to CDF               */
 #endif
 
   /* copy parameter */

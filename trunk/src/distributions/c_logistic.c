@@ -166,9 +166,9 @@ unur_distr_logistic( double *params, int n_params )
   DISTR.init = _unur_stdgen_logistic_init;
 
   /* functions */
-  DISTR.pdf  = _unur_pdf_logistic;  /* pointer to p.d.f.               */
-  DISTR.dpdf = _unur_dpdf_logistic; /* pointer to derivative of p.d.f. */
-  DISTR.cdf  = _unur_cdf_logistic;  /* pointer to c.d.f.               */
+  DISTR.pdf  = _unur_pdf_logistic;  /* pointer to PDF               */
+  DISTR.dpdf = _unur_dpdf_logistic; /* pointer to derivative of PDF */
+  DISTR.cdf  = _unur_cdf_logistic;  /* pointer to CDF               */
 
   /* default parameters */
   DISTR.beta  = 1.;

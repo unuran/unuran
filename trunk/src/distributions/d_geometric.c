@@ -104,8 +104,8 @@ unur_distr_geometric( double *params, int n_params )
   DISTR.init = _unur_stdgen_geometric_init;
    
   /* functions */
-  DISTR.pmf  = _unur_pmf_geometric;   /* pointer to p.m.f.            */
-  /* DISTR.cdf  = _unur_cdf_geometric;   pointer to c.d.f.            */
+  DISTR.pmf  = _unur_pmf_geometric;   /* pointer to PMF            */
+  /* DISTR.cdf  = _unur_cdf_geometric;   pointer to CDF            */
 
   /* copy parameters */
   DISTR.p = p;
@@ -121,7 +121,7 @@ unur_distr_geometric( double *params, int n_params )
 
   /* log of normalization constant */
 
-  /* mode and sum over p.m.f. */
+  /* mode and sum over PMF */
   /*    DISTR.mode = 0.; */
   DISTR.sum = 1.;
 

@@ -104,8 +104,8 @@ unur_distr_poisson( double *params, int n_params )
   DISTR.init = _unur_stdgen_poisson_init;
    
   /* functions */
-  DISTR.pmf  = _unur_pmf_poisson;   /* pointer to p.m.f.            */
-  /* DISTR.cdf  = _unur_cdf_poisson;   pointer to c.d.f.            */
+  DISTR.pmf  = _unur_pmf_poisson;   /* pointer to PMF            */
+  /* DISTR.cdf  = _unur_cdf_poisson;   pointer to CDF            */
 
   /* copy parameters */
   DISTR.theta = theta;
@@ -121,7 +121,7 @@ unur_distr_poisson( double *params, int n_params )
 
   /* log of normalization constant */
 
-  /* mode and sum over p.m.f. */
+  /* mode and sum over PMF */
   /*    DISTR.mode = 0.; */
   DISTR.sum = 1.;
 

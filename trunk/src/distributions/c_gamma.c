@@ -275,10 +275,10 @@ unur_distr_gamma( double *params, int n_params )
   DISTR.init = _unur_stdgen_gamma_init;
 
   /* functions */
-  DISTR.pdf  = _unur_pdf_gamma;    /* pointer to p.d.f.            */
-  DISTR.dpdf = _unur_dpdf_gamma;   /* pointer to derivative of p.d.f. */
+  DISTR.pdf  = _unur_pdf_gamma;    /* pointer to PDF               */
+  DISTR.dpdf = _unur_dpdf_gamma;   /* pointer to derivative of PDF */
 #ifdef HAVE_CDF
-  DISTR.cdf  = _unur_cdf_gamma;    /* pointer to c.d.f.            */
+  DISTR.cdf  = _unur_cdf_gamma;    /* pointer to CDF               */
 #endif
 
   /* default parameters */

@@ -179,9 +179,9 @@ unur_distr_extremeII( double *params, int n_params )
   DISTR.init = _unur_stdgen_extremeII_init;
 
   /* functions */
-  DISTR.pdf  = _unur_pdf_extremeII;  /* pointer to p.d.f.               */
-  DISTR.dpdf = _unur_dpdf_extremeII; /* pointer to derivative of p.d.f. */
-  DISTR.cdf  = _unur_cdf_extremeII;  /* pointer to c.d.f.               */
+  DISTR.pdf  = _unur_pdf_extremeII;  /* pointer to PDF                  */
+  DISTR.dpdf = _unur_dpdf_extremeII; /* pointer to derivative of PDF    */
+  DISTR.cdf  = _unur_cdf_extremeII;  /* pointer to CDF                  */
 
   /* default parameters */
   DISTR.zeta  = 0.;

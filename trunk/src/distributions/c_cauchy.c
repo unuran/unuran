@@ -181,8 +181,8 @@ unur_distr_cauchy( double *params, int n_params )
   DISTR.init = _unur_stdgen_cauchy_init;
 
   /* functions */
-  DISTR.pdf  = _unur_pdf_cauchy;   /* pointer to PMF                  */
-  DISTR.dpdf = _unur_dpdf_cauchy;  /* pointer to derivative of PMF    */
+  DISTR.pdf  = _unur_pdf_cauchy;   /* pointer to PDF                  */
+  DISTR.dpdf = _unur_dpdf_cauchy;  /* pointer to derivative of PDF    */
   DISTR.cdf  = _unur_cdf_cauchy;   /* pointer to CDF                  */
 
   /* default parameters */

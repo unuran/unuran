@@ -143,9 +143,9 @@ unur_distr_student( double *params, int n_params )
   DISTR.init = _unur_stdgen_student_init;
 
   /* functions */
-  DISTR.pdf  = _unur_pdf_student;  /* pointer to p.d.f.               */
-  DISTR.dpdf = _unur_dpdf_student; /* pointer to derivative of p.d.f. */
-  /* DISTR.cdf = _unur_cdf_student;   pointer to c.d.f.               */
+  DISTR.pdf  = _unur_pdf_student;  /* pointer to PDF               */
+  DISTR.dpdf = _unur_dpdf_student; /* pointer to derivative of PDF */
+  /* DISTR.cdf = _unur_cdf_student;   pointer to CDF               */
 
   /* copy parameters */
   DISTR.nu = nu;

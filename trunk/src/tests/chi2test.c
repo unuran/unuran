@@ -51,7 +51,7 @@
 
 /* constant */
 #define CHI2_SIZE_PMF_VECTOR   100 /* size of probability vector when 
-					only p.m.f. is given.  */
+					only PMF is given.  */
 /** TODO: make more flexible **/
 
 /*---------------------------------------------------------------------------*/
@@ -169,9 +169,9 @@ _unur_test_chi2_discr( struct unur_gen *gen,
 #if 0
   /* check argument: need probability vector */
   if (prob == NULL) {
-    /* no probability vector  -->  p.m.f. required */
+    /* no probability vector  -->  PMF required */
     if (DISTR.pmf == NULL) {
-      _unur_error(test_name,UNUR_ERR_GENERIC,"probability vector or p.m.f. required");
+      _unur_error(test_name,UNUR_ERR_GENERIC,"probability vector or PMF required");
       return -1.;
     }
     /* have to make own probability vector */

@@ -137,9 +137,9 @@ unur_distr_laplace( double *params, int n_params )
   DISTR.init = _unur_stdgen_laplace_init;
 
   /* functions */
-  DISTR.pdf  = _unur_pdf_laplace;  /* pointer to p.d.f.               */
-  DISTR.dpdf = _unur_dpdf_laplace; /* pointer to derivative of p.d.f. */
-  DISTR.cdf  = _unur_cdf_laplace;  /* pointer to c.d.f.               */
+  DISTR.pdf  = _unur_pdf_laplace;  /* pointer to PDF               */
+  DISTR.dpdf = _unur_dpdf_laplace; /* pointer to derivative of PDF */
+  DISTR.cdf  = _unur_cdf_laplace;  /* pointer to CDF               */
 
   /* default parameters */
   DISTR.theta = 0.;

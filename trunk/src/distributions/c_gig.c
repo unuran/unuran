@@ -156,9 +156,9 @@ unur_distr_gig( double *params, int n_params )
   DISTR.init = _unur_stdgen_gig_init;
    
   /* functions */
-  DISTR.pdf  = _unur_pdf_gig;   /* pointer to p.d.f.            */
-  DISTR.dpdf = _unur_dpdf_gig;  /* pointer to derivative of p.d.f. */
-  DISTR.cdf  = NULL;            /* _unur_cdf_gig; pointer to c.d.f. */
+  DISTR.pdf  = _unur_pdf_gig;   /* pointer to PDF                */
+  DISTR.dpdf = _unur_dpdf_gig;  /* pointer to derivative of PDF  */
+  DISTR.cdf  = NULL;            /* _unur_cdf_gig; pointer to CDF */
 
   /* default parameters */
   DISTR.eta  = 1.;

@@ -119,9 +119,9 @@ unur_distr_slash( double *params, int n_params )
   DISTR.init = _unur_stdgen_slash_init;
    
   /* functions */
-  DISTR.pdf  = _unur_pdf_slash;   /* pointer to p.d.f.            */
-  DISTR.dpdf = _unur_dpdf_slash;  /* pointer to derivative of p.d.f. */
-  /* DISTR.cdf  = _unur_cdf_slash;   pointer to c.d.f.            */
+  DISTR.pdf  = _unur_pdf_slash;   /* pointer to PDF               */
+  DISTR.dpdf = _unur_dpdf_slash;  /* pointer to derivative of PDF */
+  /* DISTR.cdf  = _unur_cdf_slash;   pointer to CDF               */
 
   /* copy parameters: none */
 

@@ -342,9 +342,9 @@ unur_distr_burr( double *params, int n_params )
   DISTR.init = _unur_stdgen_burr_init;
 
   /* functions */
-  /* DISTR.pdf  = _unur_pdf_burr;  pointer to p.d.f.               */
-  /* DISTR.dpdf = _unur_dpdf_burr; pointer to derivative of p.d.f. */
-  DISTR.cdf  = _unur_cdf_burr;  /* pointer to c.d.f.               */
+  /* DISTR.pdf  = _unur_pdf_burr;  pointer to PDF                  */
+  /* DISTR.dpdf = _unur_dpdf_burr; pointer to derivative of PDF    */
+  DISTR.cdf  = _unur_cdf_burr;  /* pointer to CDF                  */
 
   /* check number of parameters for == 3 */
   switch (distr->id) {

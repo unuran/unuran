@@ -131,9 +131,9 @@ unur_distr_lognormal( double *params, int n_params )
   DISTR.init = NULL;         /* _unur_stdgen_lognormal_init; */
 
   /* functions */
-  DISTR.pdf  = _unur_pdf_lognormal;  /* pointer to p.d.f.               */
-  DISTR.dpdf = _unur_dpdf_lognormal; /* pointer to derivative of p.d.f. */
-  /* DISTR.cdf = _unur_cdf_lognormal; pointer to c.d.f.               */
+  DISTR.pdf  = _unur_pdf_lognormal;  /* pointer to PDF               */
+  DISTR.dpdf = _unur_dpdf_lognormal; /* pointer to derivative of PDF */
+  /* DISTR.cdf = _unur_cdf_lognormal; pointer to CDF                 */
 
   /* default parameters */
   DISTR.theta = 0.;        /* default for theta */

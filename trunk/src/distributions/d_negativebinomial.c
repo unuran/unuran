@@ -130,9 +130,9 @@ unur_distr_negativebinomial( double *params, int n_params )
    
   /* functions */
 #ifdef HAVE_PMF
-  DISTR.pmf  = _unur_pmf_negativebinomial;   /* pointer to p.m.f.            */
+  DISTR.pmf  = _unur_pmf_negativebinomial;   /* pointer to PMF            */
 #endif
-  /* DISTR.cdf  = _unur_cdf_negativebinomial;   pointer to c.d.f.            */
+  /* DISTR.cdf  = _unur_cdf_negativebinomial;   pointer to CDF            */
 
   /* copy parameters */
   DISTR.p = p;
@@ -149,7 +149,7 @@ unur_distr_negativebinomial( double *params, int n_params )
 
   /* log of normalization constant */
 
-  /* mode and sum over p.m.f. */
+  /* mode and sum over PMF */
   /*    DISTR.mode = 0.; */
   DISTR.sum = 1.;
 

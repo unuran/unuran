@@ -124,9 +124,9 @@ unur_distr_pareto( double *params, int n_params )
   DISTR.init = NULL;            /* _unur_stdgen_pareto_init; */
 
   /* functions */
-  DISTR.pdf  = _unur_pdf_pareto;  /* pointer to p.d.f.               */
-  DISTR.dpdf = _unur_dpdf_pareto; /* pointer to derivative of p.d.f. */
-  DISTR.cdf  = _unur_cdf_pareto;  /* pointer to c.d.f.               */
+  DISTR.pdf  = _unur_pdf_pareto;  /* pointer to PDF               */
+  DISTR.dpdf = _unur_dpdf_pareto; /* pointer to derivative of PDF */
+  DISTR.cdf  = _unur_cdf_pareto;  /* pointer to CDF               */
 
   /* copy parameters */
   DISTR.k = k;

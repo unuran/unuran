@@ -135,9 +135,9 @@ unur_distr_triangular( double *params, int n_params )
   DISTR.init = _unur_stdgen_triangular_init;
 
   /* functions */
-  DISTR.pdf  = _unur_pdf_triangular;  /* pointer to p.d.f.               */
-  DISTR.dpdf = _unur_dpdf_triangular; /* pointer to derivative of p.d.f. */
-  DISTR.cdf  = _unur_cdf_triangular;  /* pointer to c.d.f.               */
+  DISTR.pdf  = _unur_pdf_triangular;  /* pointer to PDF               */
+  DISTR.dpdf = _unur_dpdf_triangular; /* pointer to derivative of PDF */
+  DISTR.cdf  = _unur_cdf_triangular;  /* pointer to CDF               */
 
   /* default parameters */
   DISTR.H = 0.5;   /* default is symmetric triangular distribution */

@@ -165,10 +165,10 @@ unur_distr_chi( double *params, int n_params )
   DISTR.init = _unur_stdgen_chi_init;
    
   /* functions */
-  DISTR.pdf  = _unur_pdf_chi;   /* pointer to p.d.f.            */
-  DISTR.dpdf = _unur_dpdf_chi;  /* pointer to derivative of p.d.f. */
+  DISTR.pdf  = _unur_pdf_chi;   /* pointer to PDF               */
+  DISTR.dpdf = _unur_dpdf_chi;  /* pointer to derivative of PDF */
 #ifdef HAVE_CDF
-  DISTR.cdf  = _unur_cdf_chi;   /* pointer to c.d.f.            */
+  DISTR.cdf  = _unur_cdf_chi;   /* pointer to CDF               */
 #endif
 
   /* copy parameters */

@@ -125,9 +125,9 @@ unur_distr_rayleigh( double *params, int n_params )
   DISTR.init = NULL;    /* _unur_stdgen_rayleigh_init; */
                 
   /* functions */
-  DISTR.pdf  = _unur_pdf_rayleigh;  /* pointer to p.d.f.               */
-  DISTR.dpdf = _unur_dpdf_rayleigh; /* pointer to derivative of p.d.f. */
-  DISTR.cdf  = _unur_cdf_rayleigh;  /* pointer to c.d.f.               */
+  DISTR.pdf  = _unur_pdf_rayleigh;  /* pointer to PDF               */
+  DISTR.dpdf = _unur_dpdf_rayleigh; /* pointer to derivative of PDF */
+  DISTR.cdf  = _unur_cdf_rayleigh;  /* pointer to CDF               */
 
   /* copy parameters */
   DISTR.sigma = sigma;

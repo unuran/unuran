@@ -124,9 +124,9 @@ unur_distr_lomax( double *params, int n_params )
   DISTR.init = NULL;            /* _unur_stdgen_lomax_init; */
 
   /* functions */
-  DISTR.pdf  = _unur_pdf_lomax;  /* pointer to p.d.f.               */
-  DISTR.dpdf = _unur_dpdf_lomax; /* pointer to derivative of p.d.f. */
-  DISTR.cdf  = _unur_cdf_lomax;  /* pointer to c.d.f.               */
+  DISTR.pdf  = _unur_pdf_lomax;  /* pointer to PDF               */
+  DISTR.dpdf = _unur_dpdf_lomax; /* pointer to derivative of PDF */
+  DISTR.cdf  = _unur_cdf_lomax;  /* pointer to CDF               */
 
   /* default parameters */
   DISTR.C = 1.; 

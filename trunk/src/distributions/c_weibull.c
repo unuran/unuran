@@ -182,9 +182,9 @@ unur_distr_weibull( double *params, int n_params )
   DISTR.init = _unur_stdgen_weibull_init;
 
   /* functions */
-  DISTR.pdf  = _unur_pdf_weibull;  /* pointer to p.d.f.               */
-  DISTR.dpdf = _unur_dpdf_weibull; /* pointer to derivative of p.d.f. */
-  DISTR.cdf  = _unur_cdf_weibull;  /* pointer to c.d.f.               */
+  DISTR.pdf  = _unur_pdf_weibull;  /* pointer to PDF               */
+  DISTR.dpdf = _unur_dpdf_weibull; /* pointer to derivative of PDF */
+  DISTR.cdf  = _unur_cdf_weibull;  /* pointer to CDF               */
 
   /* default parameters */
   DISTR.alpha = 1.;

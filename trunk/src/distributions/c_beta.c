@@ -300,8 +300,8 @@ unur_distr_beta( double *params, int n_params )
   DISTR.init = _unur_stdgen_beta_init;
 
   /* functions */
-  DISTR.pdf  = _unur_pdf_beta;    /* pointer to PMF                  */
-  DISTR.dpdf = _unur_dpdf_beta;   /* pointer to derivative of PMF    */
+  DISTR.pdf  = _unur_pdf_beta;    /* pointer to PDF                  */
+  DISTR.dpdf = _unur_dpdf_beta;   /* pointer to derivative of PDF    */
 #ifdef HAVE_CDF
   DISTR.cdf  = _unur_cdf_beta;    /* pointer to CDF                  */
 #endif

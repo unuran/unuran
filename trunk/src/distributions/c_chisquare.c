@@ -170,10 +170,10 @@ unur_distr_chisquare( double *params, int n_params )
   DISTR.init = NULL;
    
   /* functions */
-  DISTR.pdf  = _unur_pdf_chisquare;   /* pointer to p.d.f.            */
-  DISTR.dpdf = _unur_dpdf_chisquare;  /* pointer to derivative of p.d.f. */
+  DISTR.pdf  = _unur_pdf_chisquare;   /* pointer to PDF               */
+  DISTR.dpdf = _unur_dpdf_chisquare;  /* pointer to derivative of PDF */
 #ifdef HAVE_CDF
-  DISTR.cdf  = _unur_cdf_chisquare;   /* pointer to c.d.f.            */
+  DISTR.cdf  = _unur_cdf_chisquare;   /* pointer to CDF               */
 #endif
 
   /* copy parameters */

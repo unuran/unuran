@@ -104,8 +104,8 @@ unur_distr_logarithmic( double *params, int n_params )
   DISTR.init = _unur_stdgen_logarithmic_init;
    
   /* functions */
-  DISTR.pmf  = _unur_pmf_logarithmic;   /* pointer to p.m.f.            */
-  /* DISTR.cdf  = _unur_cdf_logarithmic;   pointer to c.d.f.            */
+  DISTR.pmf  = _unur_pmf_logarithmic;   /* pointer to PMF            */
+  /* DISTR.cdf  = _unur_cdf_logarithmic;   pointer to CDF            */
 
   /* copy parameters */
   DISTR.theta = theta;
@@ -122,7 +122,7 @@ unur_distr_logarithmic( double *params, int n_params )
   /* log of normalization constant */
   NORMCONSTANT = -1. / log( 1.-DISTR.theta);
 
-  /* mode and sum over p.m.f. */
+  /* mode and sum over PMF */
   /*    DISTR.mode = 0.; */
   DISTR.sum = 1.;
 

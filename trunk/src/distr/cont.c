@@ -1496,8 +1496,8 @@ _unur_distr_cont_find_mode( struct unur_distr *distr )
     return UNUR_ERR_DISTR_DATA;
   }
 
-  fs.f = (UNUR_FUNCT_GENERIC) DISTR.pdf;  
- 
+  fs.f = (UNUR_FUNCT_GENERIC*) DISTR.pdf;
+
   mode = _unur_util_find_max(fs, DISTR.domain[0], DISTR.domain[1], DISTR.mode);
 
   if (!(_unur_FP_is_infinity( mode )) ){

@@ -118,10 +118,11 @@ unur_distr_cvec_new(  int dim )
 
   DISTR.init      = NULL;          /* pointer to special init routine        */
 
-  DISTR.n_params  = 0;             /* number of parameters of the pdf        */
   /* initialize parameters of the p.d.f.                                     */
-  for (i=0; i<UNUR_DISTR_MAXPARAMS; i++)
+  for (i=0; i<UNUR_DISTR_MAXPARAMS; i++) {
+    DISTR.n_params[i] = 0;
     DISTR.params[i] = NULL;
+  }
 
   DISTR.norm_constant = 1.;        /* (log of) normalization constant for p.d.f.
 				      (initialized to avoid accidently floating
@@ -347,8 +348,8 @@ unur_distr_cvec_set_pdfparams( struct unur_distr *distr, int par, double *params
      /* parameters:                                                          */
      /*   distr    ... pointer to distribution object                        */
      /*   par      ... which parameter is set                                */
-     /*   params   ... list of arguments                                     */
-     /*   n_params ... number of arguments                                   */
+     /*   params   ... parameter array with number `par'                     */
+     /*   n_params ... length of parameter array                             */
      /*                                                                      */
      /* return:                                                              */
      /*   1 ... on success                                                   */
@@ -372,6 +373,9 @@ unur_distr_cvec_set_pdfparams( struct unur_distr *distr, int par, double *params
   /* copy parameters */
   memcpy( DISTR.params[par], params, n_params*sizeof(double) );
 
+  /* set length of array */
+  DISTR.n_params[par] = n_params;
+
   /* changelog */
   distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
   /* derived parameters like mode, area, etc. might be wrong now! */
@@ -391,10 +395,10 @@ unur_distr_cvec_get_pdfparams( struct unur_distr *distr, int par, double **param
      /* parameters:                                                          */
      /*   distr    ... pointer to distribution object                        */
      /*   par      ... which parameter is read                               */
-     /*   params   ... pointer to list of arguments                          */
+     /*   params   ... pointer to parameter array with number `par'          */
      /*                                                                      */
      /* return:                                                              */
-     /*   number of pdf parameters                                           */
+     /*   length of parameter array with number `par'                        */
      /*                                                                      */
      /* error:                                                               */
      /*   return 0                                                           */
@@ -413,7 +417,7 @@ unur_distr_cvec_get_pdfparams( struct unur_distr *distr, int par, double **param
   
   *params = DISTR.params[par];
 
-  return (*params) ? 1 : 0;
+  return (*params) ? DISTR.n_params[par] : 0;
 } /* end of unur_distr_cvec_get_pdfparams() */
 
 /*---------------------------------------------------------------------------*/

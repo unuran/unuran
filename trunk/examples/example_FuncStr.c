@@ -15,6 +15,7 @@
 int main()
 {
   UNUR_DISTR *distr;    /* distribution object */
+  char *pdfstr;
 
   /* Get empty distribution object for a continuous distribution */
   distr = unur_distr_cont_new();
@@ -23,11 +24,13 @@ int main()
   unur_distr_cont_set_pdfstr(distr,"1-x*x");
   unur_distr_cont_set_domain(distr,-1.,1.);
  
-  /* Read function string */
-  printf("functionstring: %s\n",unur_distr_cont_get_pdfstr(distr));
+  /* Read function string from distribution object */
+  pdfstr = unur_distr_cont_get_pdfstr(distr);
+  printf("functionstring: %s\n",pdfstr);
 
-  /* Destroy distribution object */
+  /* Destroy distribution object and clear memory */
   unur_distr_free(distr);
+  free (pdfstr);
 
   exit (EXIT_SUCCESS);
 

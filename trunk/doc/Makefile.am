@@ -32,7 +32,7 @@ EXTRA_DIST = \
  $(scripts)
 
 # generated texi files ...
-unuran_src.texi: $(sripts)
+unuran_src.texi: $(sripts) unuran.texi
 	./make_texi.pl $(top_srcdir) > unuran_src.texi
 
 example_dir  = $(top_srcdir)/examples
@@ -43,15 +43,15 @@ $(unuran_examples): $(example_dir)/example*.c
 SUFFIXES = .html .txt .pdf
 
 # make html file ...
-.texi.html: unuran.info
+.texi.html:
 	$(MAKEINFO) --html $< -o $@
 
 # make plain text file ...
-.texi.txt: unuran.info
+.texi.txt:
 	$(MAKEINFO) --fill-column=80 --no-headers --number-sections $< -o $@
 
 # make pdf file ...
-.texi.pdf: unuran.info
+.texi.pdf:
 	texi2pdf $<
 
 # abbreviations

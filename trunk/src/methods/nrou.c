@@ -722,7 +722,7 @@ _unur_nrou_sample( struct unur_gen *gen )
       continue;
 
     /* accept or reject */
-    if (U*U <= PDF(X))
+    if (V*V <= PDF(X))
       return X;
   }
 
@@ -779,7 +779,7 @@ _unur_nrou_sample_check( struct unur_gen *gen )
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF(x) > hat(x)");
     
     /* accept or reject */
-    if (U*U <= PDF(X))
+    if (V*V <= PDF(X))
       return X;
   }
 

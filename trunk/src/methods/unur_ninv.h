@@ -4,15 +4,14 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: source_methods.h                                                  *
+ *   FILE: unur_ninv.h                                                       *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         defines bitmasks to identify used method in generator objects     *
+ *         declares structures and function prototypes for method NINV       *
+ *         (Numerical inversion of cumulative distribution function)         *
  *                                                                           *
  *   USAGE:                                                                  *
- *         only included in source_masks.h                                   *
- *                                                                           *
- *                                                                           *
+ *         only included in unuran.h                                         *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -39,61 +38,41 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef __SOURCE_METHODS_H_SEEN
-#define __SOURCE_METHODS_H_SEEN
-/*---------------------------------------------------------------------------*/
+/* Information for constructing the generator                                */
 
-/*****************************************************************************/
-/**  Bitmask to indicate methods                                            **/
-/*****************************************************************************/
+struct unur_ninv_par { 
+  double Fmode;              /* cdf at mode                                  */
+};
 
 /*---------------------------------------------------------------------------*/
-/* bitmasks                                                                  */
+/* The generator object                                                      */
 
-#define UNUR_MASK_TYPE     0xff000000u   /* indicate type of method           */
-
-/* discrete distributions */
-#define UNUR_METH_DISCR    0x10000000u
-
-#define UNUR_METH_DAU      0x10000001u
-#define UNUR_METH_DIS      0x10000002u
-
-/* continuous distributions */
-#define UNUR_METH_CONT     0x20000000u
-
-#define UNUR_METH_AROU     0x20000100u
-#define UNUR_METH_NINV     0x20000200u
-#define UNUR_METH_SROU     0x20000300u
-#define UNUR_METH_STDR     0x20000400u
-#define UNUR_METH_TABL     0x20000500u
-#define UNUR_METH_TDR      0x20000600u
-#define UNUR_METH_UNIF     0x20000700u
-#define UNUR_METH_UTDR     0x20000800u
-
-/* multivariate continuous distributions */
-#define UNUR_METH_VEC      0x40000000u
-
-#define UNUR_METH_RECT     0x40010000u
-
-/* generators for standard distributions */
-#define UNUR_METH_CSTD     0x2000ff00u   /* is of type UNUR_METH_CONT !! */
-
-/* to indicate unkown type */
-#define UNUR_METH_UNKNOWN  0xff000000u
-
-/*****************************************************************************/
-/**  Macros                                                                 **/
-/*****************************************************************************/
+struct unur_ninv_gen { 
+  double  um;                /* height of rectangle: square root of f(mode)  */
+};
 
 /*---------------------------------------------------------------------------*/
-/* check if parameter object is of correct type, return 0 otherwise       */
+/* Routines for user interface                                               */
 
-#define _unur_check_par_object( type ) \
-  if ( par->method != UNUR_METH_##type ) { \
-    _unur_warning(#type,UNUR_ERR_PAR_INVALID,""); \
-    return 0; } \
-  COOKIE_CHECK(par,CK_##type##_PAR,0)
+struct unur_par *unur_ninv_new( struct unur_distr *distr );
+/* get default parameters for generator                                      */
+
+struct unur_gen *unur_ninv_init( struct unur_par *parameters );
+/* initialize new generator                                                  */
+
+double unur_ninv_sample( struct unur_gen *generator );
+/* sample from generator                                                     */
+
+void unur_ninv_free( struct unur_gen *generator);
+/* destroy generator object                                                  */
+
+/*...........................................................................*/
+
+int unur_ninv_set_usemirror( struct unur_par *par, int usemirror );
+/* set flag for using mirror principle (default: off)                        */
+
+#define unur_ninv_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
+/* set debuging flags                                                        */
 
 /*---------------------------------------------------------------------------*/
-#endif  /* end __SOURCE_METHODS_H_SEEN */
-/*---------------------------------------------------------------------------*/
+

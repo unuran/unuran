@@ -20,6 +20,7 @@ libunuran_a_SOURCES = \
  cstd.c \
  dau.c  \
  dis.c  \
+ ninv.c \
  rect.c \
  srou.c \
  stdr.c \
@@ -39,6 +40,7 @@ pkginclude_HEADERS = \
  unur_cstd.h \
  unur_dau.h  \
  unur_dis.h  \
+ unur_ninv.h  \
  unur_rect.h \
  unur_srou.h \
  unur_stdr.h \

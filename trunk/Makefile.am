@@ -10,6 +10,12 @@ EXTRA_DIST = \
  MANIFEST \
  autogen.sh
 
-# clean backup files too
-clean-local:
-	rm -f *~
+# clean backup files
+CLEANFILES = *~
+
+# clean generated files
+MAINTAINERCLEANFILES = \
+ Makefile.in \
+ aclocal.m4 \
+ configure \
+ stamp-h.in

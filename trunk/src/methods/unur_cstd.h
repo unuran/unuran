@@ -66,8 +66,11 @@ struct unur_par *unur_cstd_new( struct unur_distr *distr );
 struct unur_gen *unur_cstd_init( struct unur_par *parameters );
 /* initialize new generator                                                  */
 
-double unur_cstd_sample( struct unur_gen *generator );
-/* sample from generator                                                     */
+/** 
+    double unur_cstd_sample( struct unur_gen *gen );
+    Does not exists !!!
+    Sampling routines are defined in ../std_gen/ for each distributions.
+**/
 
 void unur_cstd_free( struct unur_gen *generator);
 /* destroy generator object                                                  */
@@ -76,10 +79,6 @@ void unur_cstd_free( struct unur_gen *generator);
 
 #define unur_rect_set_debug(par,debugflags)  unur_set_debug((par),(debugflags))
 /* set debuging flags                                                        */
-
-/** TODO: use unur_set_*** interface **/
-/*  void cstd_set_1par(struct unur_par *par,double inpval); */
-/*  void cstd_set_2par(struct unur_par *par,double inpval1,double inpval2); */
 
 /*---------------------------------------------------------------------------*/
 

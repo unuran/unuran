@@ -582,8 +582,7 @@ unur_tabl_set_variant( struct unur_par *par, unsigned int variant )
 
   return 1;
 
-} /* end if unur_set_tabl_variant() */
-
+} /* end if unur_tabl_set_variant() */
 
 /*---------------------------------------------------------------------------*/
 

@@ -46,19 +46,26 @@
 /*---------------------------------------------------------------------------*/
 
 #include <unur_defs.h>
-#include <unur_urng.h>
+#include <unur_methods.h>
 
 /*---------------------------------------------------------------------------*/
 
-
 /*---------------------------------------------------------------------------*/
-/* normal distribution                                                       */
-double nbm(UNUR_URNG_TYPE urng);
+/* exponential distribution                                                  */
+
+double unur_cstd_sample_exponential_inv( struct unur_gen *gen );
+/* Inversion method                                                          */
 
 /*---------------------------------------------------------------------------*/
 /* gamma distribution                                                        */
-double gammarand(double a, UNUR_URNG_TYPE urng);
+double unur_cstd_sample_gamma_gammarand( struct unur_gen *gen );
+/* ???? method                                                    */
 
+/*---------------------------------------------------------------------------*/
+/* normal distribution                                                       */
+
+double unur_cstd_sample_normal_bm( struct unur_gen *gen );
+/* Box-Muller method                                                         */
 
 /*---------------------------------------------------------------------------*/
 #endif  /* __UNUR_STDGEN_H_SEEN */

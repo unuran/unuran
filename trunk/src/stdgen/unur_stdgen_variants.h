@@ -4,9 +4,14 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE:      gamma.c                                                      *
+ *   FILE: unur_stdgen.h                                                     *
  *                                                                           *
- *   Special generators for Gamma distribution                               *
+ *   PURPOSE:                                                                *
+ *         defines list of variants for special generators                   *
+ *         for standard distributions.                                       *
+ *                                                                           *
+ *   USAGE:                                                                  *
+ *         only included in ../methods/cstd.c !!!                            *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -33,84 +38,74 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
+#ifndef __UNUR_STDGEN_VARIANTS_H_SEEN
+#define __UNUR_STDGEN_VARIANTS_H_SEEN
+/*---------------------------------------------------------------------------*/
 
+#include <unur_defs.h>
 #include <unur_methods.h>
-#include <unur_stdgen.h>
-
-#include <unur_cookies.h>
-#include <unur_errno.h>
-#include <unur_math.h>
-#include <unur_utils.h>
-
-/*---------------------------------------------------------------------------*/
-/* Prototypes for special generators                                         */
-
-inline static double gammarand(double a, UNUR_URNG_TYPE urng);
-
-/*---------------------------------------------------------------------------*/
-/* abbreviations */
-
-#define GEN     gen->data.cstd
 
 /*---------------------------------------------------------------------------*/
 
-/*****************************************************************************/
-/**                                                                         **/
-/**  Wrapper for special generators (WinRand)                               **/
-/**                                                                         **/
-/*****************************************************************************/
+/* declare type of routine for sampling 
+   from univariate continuous distribution                                   */
+typedef double (_unur_sampling_routine_cont)( struct unur_gen *gen );
 
 /*---------------------------------------------------------------------------*/
 
-double unur_cstd_sample_gamma_gammarand( struct unur_gen *gen )
-     /* ???? method                                                    */
-{
-  /* check arguments */
-  CHECK_NULL(gen,0.);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,0.);
+/* the first entry [0] is the default variant */
 
-  return (gammarand( GEN.pdf_param[0],gen->urng ) * GEN.pdf_param[1] + GEN.pdf_param[2]);
+/*---------------------------------------------------------------------------*/
+/* exponential distribution                                                  */
 
-} /* end of unur_cstd_sample_gamma_gammarand() */
+#define CSTD_EXPONENTIAL_N_VAR  1
+
+static _unur_sampling_routine_cont *
+_cstd_exponential_var[CSTD_EXPONENTIAL_N_VAR] = {
+  /* 0 */  unur_cstd_sample_exponential_inv              /* Inversion method */
+};
+
+#if UNUR_DEBUG & UNUR_DB_INFO
+static char *_cstd_exponential_varname[CSTD_EXPONENTIAL_N_VAR] = {
+  /* 0 */  "unur_cstd_sample_exponential_inv"            /* Inversion method */
+};
+#endif
 
 
 /*---------------------------------------------------------------------------*/
+/* gamma distribution                                                        */
 
-/*****************************************************************************/
-/**                                                                         **/
-/**  Special generators (WinRand)                                           **/
-/**                                                                         **/
-/*****************************************************************************/
+#define CSTD_GAMMA_N_VAR  1
+
+static _unur_sampling_routine_cont *
+_cstd_gamma_var[CSTD_GAMMA_N_VAR] = {
+  /* 0 */  unur_cstd_sample_gamma_gammarand              /* ???? method      */
+};
+
+#if UNUR_DEBUG & UNUR_DB_INFO
+static char *_cstd_gamma_varname[CSTD_GAMMA_N_VAR] = {
+  /* 0 */  "unur_cstd_sample_gamma_gammarand"            /* ???? method      */
+};
+#endif
+
 
 /*---------------------------------------------------------------------------*/
+/* normal distribution                                                       */
 
-/**********************************************************************/
-/*Gamma rng using Acceptance Rejection with log-logistic envelopes*/
+#define CSTD_NORMAL_N_VAR  1
 
-double gammarand(double a, UNUR_URNG_TYPE urng)
-{
- static double aa,bb,cc,a_in = -1.0;
- double u1,u2,v,r,z,gl;
+static _unur_sampling_routine_cont *
+_cstd_normal_var[CSTD_NORMAL_N_VAR] = {
+  /* 0 */  unur_cstd_sample_normal_bm                   /* Box-Muller method */
+};
 
- if (a != a_in)
-   {
-    a_in = a;
-    aa = (a > 1.0)? sqrt(a + a - 1.0) : a;
-    bb = a - 1.386294361;
-    cc = a + aa;
-   }
- for(;;)
-   {
-    u1 = _unur_call_urng_prt(urng);
-    u2 = _unur_call_urng_prt(urng);
-    v = log(u1 / (1.0 - u1)) / aa;
-    gl = a * exp(v);
-    r = bb + cc * v - gl;
-    z = u1 * u1 * u2;
-    if (r + 2.504077397 >= 4.5 * z) break;
-    if (r >= log(z)) break;
-   }
- return(gl);
-}
-/************************************************************/
+#if UNUR_DEBUG & UNUR_DB_INFO
+static char *_cstd_normal_varname[CSTD_NORMAL_N_VAR] = {
+  /* 0 */  "unur_cstd_sample_normal_bm"                 /* Box-Muller method */
+};
+#endif
 
+
+/*---------------------------------------------------------------------------*/
+#endif  /* __UNUR_STDGEN_VARIANTS_H_SEEN */
+/*---------------------------------------------------------------------------*/

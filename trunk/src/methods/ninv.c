@@ -466,7 +466,7 @@ int unur_ninv_chg_x_resolution(UNUR_GEN *gen, double x_resolution)
 /*---------------------------------------------------------------------------*/
 
 int
-unur_ninv_set_start( struct unur_par *par, double s1, double s2)
+unur_ninv_set_start(UNUR_PAR *par, double s1, double s2)
      /*----------------------------------------------------------------------*/
      /* set starting points.                                                 */
      /*   Newton:        s1           starting point                         */
@@ -503,6 +503,56 @@ unur_ninv_set_start( struct unur_par *par, double s1, double s2)
 
 /*---------------------------------------------------------------------------*/
 
+
+int unur_ninv_chg_start(UNUR_GEN *gen, double s1, double s2)
+     /*----------------------------------------------------------------------*/
+     /* set starting points.                                                 */
+     /*   Newton:        s1           starting point                         */
+     /*   regular falsi: s1, s2       boundary of starting interval          */
+     /* arguments that are used by method are ignored.                       */
+     /*                                                                      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen   ... pointer to generator object                              */
+     /*                                                                      */
+     /*                                                                      */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(gen, 0);
+
+  /* store date */
+  if ( s1 <= s2 ){
+     GEN.s[0] = s1;
+     GEN.s[1] = s2;
+  }
+  else{
+     GEN.s[0] = s2;
+     GEN.s[1] = s1;
+  }
+
+ if (GEN.s[0] == GEN.s[1] && GEN.table_on == 0) {
+      /* length of interval == 0 -> choose bounderies with                   */
+      /*  INTERVAL_COVERS *100% chance for sign change in interval           */
+      GEN.s[0] = -10.;      /* arbitrary starting value                      */
+      GEN.s[1] =  10.;      /* arbitrary starting value                      */
+      GEN.s[0] = _unur_ninv_regula(gen, (1.-INTERVAL_COVERS)/2. );
+      GEN.s[1] = GEN.s[0] + 10.;   /* arbitrary interval length              */
+      GEN.s[1] = _unur_ninv_regula(gen, (1.+INTERVAL_COVERS)/2. );
+    }
+
+  /* changelog */
+  gen->set |= NINV_SET_START;
+
+  return 1;
+
+} /* end of unur_ninv_chg_start() */
+
+/*---------------------------------------------------------------------------*/
 
 
 

@@ -77,13 +77,15 @@
 /* call pdf's and cdf's                                                      */
 /* (no checking for NULL pointer !)                                          */
 
-#define _unur_cont_PDF(x,distr)    ((*((distr)->data.cont.pdf)) ((x),(distr)))
-#define _unur_cont_dPDF(x,distr)   ((*((distr)->data.cont.dpdf))((x),(distr)))
-#define _unur_cont_CDF(x,distr)    ((*((distr)->data.cont.cdf)) ((x),(distr)))
-#define _unur_cont_HR(x,distr)     ((*((distr)->data.cont.hr))  ((x),(distr)))
+#define _unur_cont_PDF(x,distr)     ((*((distr)->data.cont.pdf)) ((x),(distr)))
+#define _unur_cont_dPDF(x,distr)    ((*((distr)->data.cont.dpdf))((x),(distr)))
+#define _unur_cont_logPDF(x,distr)  ((*((distr)->data.cont.logpdf)) ((x),(distr)))
+#define _unur_cont_dlogPDF(x,distr) ((*((distr)->data.cont.dlogpdf))((x),(distr)))
+#define _unur_cont_CDF(x,distr)     ((*((distr)->data.cont.cdf)) ((x),(distr)))
+#define _unur_cont_HR(x,distr)      ((*((distr)->data.cont.hr))  ((x),(distr)))
 
-#define _unur_discr_PMF(x,distr)   ((*((distr)->data.discr.pmf))((x),(distr)))
-#define _unur_discr_CDF(x,distr)   ((*((distr)->data.discr.cdf))((x),(distr)))
+#define _unur_discr_PMF(x,distr)    ((*((distr)->data.discr.pmf))((x),(distr)))
+#define _unur_discr_CDF(x,distr)    ((*((distr)->data.discr.cdf))((x),(distr)))
 
 #define _unur_cvec_PDF(x,distr)       ((*((distr)->data.cvec.pdf)) ((x),(distr)))
 #define _unur_cvec_dPDF(r,x,distr)    ((*((distr)->data.cvec.dpdf)) ((r),(x),(distr)))
@@ -92,6 +94,9 @@
 
 /*---------------------------------------------------------------------------*/
 /* wrapper functions for PDF when only logPDF is given                       */
+
+double _unur_distr_cont_eval_pdf_from_logpdf( double x, const struct unur_distr *distr );
+double _unur_distr_cont_eval_dpdf_from_dlogpdf( double x, const struct unur_distr *distr );
 
 double _unur_distr_cvec_eval_pdf_from_logpdf( const double *x, struct unur_distr *distr );
 int _unur_distr_cvec_eval_dpdf_from_dlogpdf( double *result, const double *x, struct unur_distr *distr );

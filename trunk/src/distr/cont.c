@@ -153,6 +153,8 @@ unur_distr_cont_new( void )
   /* set defaults                                                            */
   DISTR.pdf       = NULL;          /* pointer to PDF                         */
   DISTR.dpdf      = NULL;          /* pointer to derivative of PDF           */
+  DISTR.logpdf    = NULL;          /* pointer to logPDF                      */
+  DISTR.dlogpdf   = NULL;          /* pointer to derivative of logPDF        */
   DISTR.cdf       = NULL;          /* pointer to CDF                         */
   DISTR.hr        = NULL;          /* pointer to HR                          */
 
@@ -301,7 +303,7 @@ unur_distr_cont_set_pdf( struct unur_distr *distr, UNUR_FUNCT_CONT *pdf )
   _unur_check_distr_object( distr, CONT, UNUR_ERR_DISTR_INVALID );
 
   /* we do not allow overwriting a pdf */
-  if (DISTR.pdf != NULL) {
+  if (DISTR.pdf != NULL || DISTR.logpdf != NULL) {
     _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of PDF not allowed");
     return UNUR_ERR_DISTR_SET;
   }
@@ -340,7 +342,7 @@ unur_distr_cont_set_dpdf( struct unur_distr *distr, UNUR_FUNCT_CONT *dpdf )
   _unur_check_distr_object( distr, CONT, UNUR_ERR_DISTR_INVALID );
   
   /* we do not allow overwriting a dpdf */
-  if (DISTR.dpdf != NULL) {
+  if (DISTR.dpdf != NULL || DISTR.dlogpdf != NULL ) {
     _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of dPDF not allowed");
     return UNUR_ERR_DISTR_SET;
   }
@@ -355,6 +357,136 @@ unur_distr_cont_set_dpdf( struct unur_distr *distr, UNUR_FUNCT_CONT *dpdf )
   DISTR.dpdf = dpdf;
   return UNUR_SUCCESS;
 } /* end of unur_distr_cont_set_dpdf() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_distr_cont_set_logpdf( struct unur_distr *distr, UNUR_FUNCT_CONT *logpdf )
+     /*----------------------------------------------------------------------*/
+     /* set logPDF of distribution                                           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr  ... pointer to distribution object                          */
+     /*   logpdf ... pointer to logPDF                                       */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_NULL( distr->name, logpdf, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CONT, UNUR_ERR_DISTR_INVALID );
+
+  /* we do not allow overwriting a pdf */
+  if (DISTR.pdf != NULL || DISTR.logpdf != NULL) {
+    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of logPDF not allowed");
+    return UNUR_ERR_DISTR_SET;
+  }
+
+  /* for derived distributions (e.g. order statistics) not possible */
+  if (distr->base) return UNUR_ERR_DISTR_INVALID;
+
+  /* changelog */
+  distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
+  /* derived parameters like mode, area, etc. might be wrong now! */
+
+  DISTR.logpdf = logpdf;
+  DISTR.pdf = _unur_distr_cont_eval_pdf_from_logpdf;
+
+  return UNUR_SUCCESS;
+
+} /* end of unur_distr_cont_set_logpdf() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_distr_cont_eval_pdf_from_logpdf( double x, const struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* evaluate PDF of distribution at x                                    */
+     /* wrapper when only logPDF is given                                    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   x     ... argument for pdf                                         */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   PDF(x)                                                             */
+     /*----------------------------------------------------------------------*/
+{
+  if (DISTR.logpdf == NULL) {
+    _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"");
+    return INFINITY;
+  }
+
+  return exp(_unur_cont_logPDF(x,distr));
+} /* end of _unur_distr_cont_eval_pdf_from_logpdf() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_distr_cont_set_dlogpdf( struct unur_distr *distr, UNUR_FUNCT_CONT *dlogpdf )
+     /*----------------------------------------------------------------------*/
+     /* set derivative of logPDF of distribution                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr   ... pointer to distribution object                         */
+     /*   dlogpdf ... pointer to derivative of logPDF                        */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_NULL( distr->name, dlogpdf, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CONT, UNUR_ERR_DISTR_INVALID );
+  
+  /* we do not allow overwriting a dpdf */
+  if (DISTR.dpdf != NULL || DISTR.dlogpdf != NULL ) {
+    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of dlogPDF not allowed");
+    return UNUR_ERR_DISTR_SET;
+  }
+
+  /* for derived distributions (e.g. order statistics) not possible */
+  if (distr->base) return UNUR_ERR_DISTR_INVALID;
+
+  /* changelog */
+  distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
+  /* derived parameters like mode, area, etc. might be wrong now! */
+
+  DISTR.dlogpdf = dlogpdf;
+  DISTR.dpdf = _unur_distr_cont_eval_dpdf_from_dlogpdf;
+
+  return UNUR_SUCCESS;
+} /* end of unur_distr_cont_set_dlogpdf() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_distr_cont_eval_dpdf_from_dlogpdf( double x, const struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* evaluate derivative of PDF of distribution at x                      */
+     /* wrapper when only derivative of logPDF is given                      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   x      ... argument for dPDF                                       */
+     /*   distr  ... pointer to distribution object                          */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   dPDF(x)   ... on success                                           */
+     /*   INFINITY  ... on error                                             */
+     /*----------------------------------------------------------------------*/
+{
+  if (DISTR.logpdf == NULL || DISTR.dlogpdf == NULL) {
+    _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"");
+    return INFINITY;
+  }
+
+  return exp(_unur_cont_logPDF(x,distr)) * _unur_cont_dlogPDF(x,distr);
+} /* end of _unur_distr_cont_eval_dpdf_from_dlogpdf() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -794,6 +926,48 @@ unur_distr_cont_get_dpdf( const struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 UNUR_FUNCT_CONT *
+unur_distr_cont_get_logpdf( const struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* get pointer to logPDF of distribution                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to logPDF                                                  */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, NULL );
+  _unur_check_distr_object( distr, CONT, NULL );
+
+  return DISTR.logpdf;
+} /* end of unur_distr_cont_get_logpdf() */
+
+/*---------------------------------------------------------------------------*/
+
+UNUR_FUNCT_CONT *
+unur_distr_cont_get_dlogpdf( const struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* get pointer to derivative of logPDF of distribution                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to derivative of logPDF                                       */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, NULL );
+  _unur_check_distr_object( distr, CONT, NULL );
+
+  return DISTR.dlogpdf;
+} /* end of unur_distr_cont_get_dlogpdf() */
+
+/*---------------------------------------------------------------------------*/
+
+UNUR_FUNCT_CONT *
 unur_distr_cont_get_cdf( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get pointer to CDF of distribution                                   */
@@ -886,6 +1060,60 @@ unur_distr_cont_eval_dpdf( double x, const struct unur_distr *distr )
 
   return _unur_cont_dPDF(x,distr);
 } /* end of unur_distr_cont_eval_dpdf() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+unur_distr_cont_eval_logpdf( double x, const struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* evaluate logPDF of distribution at x                                 */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   x     ... argument for logPDF                                      */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   logPDF(x)                                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, INFINITY );
+  _unur_check_distr_object( distr, CONT, INFINITY );
+
+  if (DISTR.logpdf == NULL) {
+    _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"");
+    return INFINITY;
+  }
+
+  return _unur_cont_logPDF(x,distr);
+} /* end of unur_distr_cont_eval_logpdf() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+unur_distr_cont_eval_dlogpdf( double x, const struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* evaluate derivative of logPDF of distribution at x                   */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   x     ... argument for dlogPDF                                     */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   (pdf(x))'                                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, INFINITY );
+  _unur_check_distr_object( distr, CONT, INFINITY );
+
+  if (DISTR.dlogpdf == NULL) {
+    _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"");
+    return INFINITY;
+  }
+
+  return _unur_cont_dlogPDF(x,distr);
+} /* end of unur_distr_cont_eval_dlogpdf() */
 
 /*---------------------------------------------------------------------------*/
 

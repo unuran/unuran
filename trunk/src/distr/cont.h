@@ -69,6 +69,13 @@
       derivate of the @command{cdf}, i.e., it must be normalized.
       @end itemize
 
+      @item Handle and evaluate 
+      the logarithm of the probability density function (logPDF,
+      @command{logpdf}) and the derivative of the logarithm of the
+      density function (@command{dlogpdf}).
+
+      Some methods use the logarithm of the density if available.
+
       @item Set (and change) parameters (@command{pdfparams}) and the
       area below the graph (@command{pdfarea}) of the given density.
 
@@ -179,7 +186,8 @@ int unur_distr_cont_set_cdf( UNUR_DISTR *distribution, UNUR_FUNCT_CONT *cdf );
    @code{UNUR_INFINITY}.
 
    It is not possible to change such a function. Once the PDF or
-   CDF is set it cannot be overwritten. This also holds when the PDF
+   CDF is set it cannot be overwritten. This also holds when the 
+   logPDF is given or when the PDF
    is given by the unur_distr_cont_set_pdfstr() call.
    A new distribution object has to be used instead.
 */
@@ -219,6 +227,27 @@ double unur_distr_cont_eval_cdf( double x, const UNUR_DISTR *distribution );
    In the case of a truncated standard distribution these calls always
    return the respective values of the @emph{untruncated} distribution!
 */
+
+int unur_distr_cont_set_logpdf( UNUR_DISTR *distribution, UNUR_FUNCT_CONT *logpdf );
+/* */
+
+int unur_distr_cont_set_dlogpdf( UNUR_DISTR *distribution, UNUR_FUNCT_CONT *dlogpdf );
+/* */
+
+UNUR_FUNCT_CONT *unur_distr_cont_get_logpdf( const UNUR_DISTR *distribution );
+/* */
+
+UNUR_FUNCT_CONT *unur_distr_cont_get_dlogpdf( const UNUR_DISTR *distribution );
+/* */
+
+double unur_distr_cont_eval_logpdf( double x, const UNUR_DISTR *distribution );
+/* */
+
+double unur_distr_cont_eval_dlogpdf( double x, const UNUR_DISTR *distribution );
+/* 
+   Analogous calls for the logarithm of the density function.
+*/
+
 
 int unur_distr_cont_set_pdfstr( UNUR_DISTR *distribution, const char *pdfstr );
 /* 

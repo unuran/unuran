@@ -14,6 +14,7 @@ libutils_la_SOURCES = \
  fmax.c 	  fmax_source.h \
  hooke.c 	  hooke_source.h \
  matrix.c 	  matrix_source.h \
+ rou_rectangle.c  rou_rectangle_source.h \
  slist.c  slist.h slist_struct.h \
  stream.c         stream_source.h \
  string.c         string_source.h string_struct.h \

@@ -89,8 +89,8 @@ UNUR_GEN *unur_str2gen( const char *string );
    number generator invoked. The interpretation of the string is not
    case-sensitive, all white spaces are ignored.
 
-   The string consists of up to three blocks, separated by colons
-   @code{:}.
+   The string consists of up to three blocks, separated by ampersands
+   @code{&}.
 
    Each block consists of @code{<key>=<value>} pairs, separated by
    semicolons @code{;}.

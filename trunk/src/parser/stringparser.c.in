@@ -19,9 +19,9 @@
  *   letters transformed into their lower case counterparts and spaces are   *
  *   eliminated (i.e. the working string does not contain any white space    *
  *   characters any more.) Then the working string is splitted into several  *
- *   blocks, separated by colons ':'. Each block consists of <key>=<value>   *
- *   pairs, separated by semicolons ';'. The first key in each block is      *
- *   used to indicate the corresponding block.                               *
+ *   blocks, separated by ampersands '&'. Each block consists of             *
+ *   <key>=<value> pairs, separated by semicolons ';'. The first key in      *
+ *   each block is used to indicate the corresponding block.                 *
  *                                                                           *
  *   We have three different blocks (yet):                                   *
  *      distr  ... contains the definition of the distribution               *
@@ -454,15 +454,15 @@ unur_str2gen (const char *string)
     _unur_str_debug_string(0,"[input]",str);
 #endif
 
-  /* split string into blocks separated by colons ':' */
+  /* split string into blocks separated by ampersands '&' */
 
   /* the first block must contain the distribution */
-  str_distr = strtok(str, ":");
+  str_distr = strtok(str, "&");
 
   /* new get all the other tokens */
-  for ( token  = strtok(NULL, ":"); 
+  for ( token  = strtok(NULL, "&"); 
         token != NULL;     
-        token  = strtok(NULL, ":") ) {
+        token  = strtok(NULL, "&") ) {
 
     /* get type of block */
     if (!strncmp(token,"method=",7)) {

@@ -28,8 +28,8 @@ AC_CANONICAL_HOST
 
 dnl Checks for programs.
 AC_PROG_MAKE_SET
-AC_PROG_CXX
 AC_PROG_CC
+AC_PROG_CXX
 AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_LN_S
@@ -81,22 +81,6 @@ AC_CHECK_DECLS(isnan,,,[#include <math.h>])
 AC_CHECK_DECLS(INFINITY,,,[#include <math.h>])
 AC_CHECK_DECLS(HUGE_VAL,,,[#include <math.h>])
 
-dnl We need Mathematica(R) for some tests
-AC_CHECK_PROG(have_mathematica,math,true,false) 
-AM_CONDITIONAL(HAVE_MATHEMATICA, test x$have_mathematica = xtrue)
-dnl AM_CONDITIONAL(HAVE_MATHEMATICA,true)
-dnl AM_CONDITIONAL(HAVE_MATHEMATICA,false)
-
-dnl check for Valgrind
-dnl (Valgrind is a GPL'd system for debugging and profiling x86-Linux programs)
-AC_CHECK_PROG(have_valgrind,valgrind,true,false) 
-AM_CONDITIONAL(HAVE_VALGRIND, test x$have_valgrind = xtrue)
-
-dnl Set flags for compiler
-if test X"$GCC" = Xyes ; then
-	AC_SUBST(AM_CFLAGS,-Wall)
-fi
-
 dnl Check IEEE comparisons, whether "x != x" is true for NaNs
 AC_CACHE_CHECK([for IEEE comparisons], ac_cv_c_ieee_comparisons,
 [AC_RUN_IFELSE([AC_LANG_SOURCE([[
@@ -119,6 +103,23 @@ if test "$ac_cv_c_ieee_comparisons" != no ; then
   AC_DEFINE([HAVE_IEEE_COMPARISONS], [1], 
       [Define to 1 if "x != x" is true for NaNs])
   AC_SUBST(HAVE_IEEE_COMPARISONS)
+fi
+
+
+dnl We need Mathematica(R) for some tests
+AC_CHECK_PROG(have_mathematica,math,true,false) 
+AM_CONDITIONAL(HAVE_MATHEMATICA, test x$have_mathematica = xtrue)
+dnl AM_CONDITIONAL(HAVE_MATHEMATICA,true)
+dnl AM_CONDITIONAL(HAVE_MATHEMATICA,false)
+
+dnl check for Valgrind
+dnl (Valgrind is a GPL'd system for debugging and profiling x86-Linux programs)
+AC_CHECK_PROG(have_valgrind,valgrind,true,false) 
+AM_CONDITIONAL(HAVE_VALGRIND, test x$have_valgrind = xtrue)
+
+dnl Set flags for compiler
+if test X"$GCC" = Xyes ; then
+	AC_SUBST(AM_CFLAGS,-Wall)
 fi
 
 

@@ -44,6 +44,7 @@ struct unur_nrou_par {
   double  umin, umax;        /* u boundary for bounding rectangle            */
   double  vmax;              /* v boundary for bounding rectangle            */
   double  center;            /* center of distribution                       */
+  double  r;		     /* r-parameter                                  */
 };
 
 /*---------------------------------------------------------------------------*/
@@ -53,6 +54,7 @@ struct unur_nrou_gen {
   double  umin, umax;        /* u boundary for bounding rectangle            */
   double  vmax;              /* v boundary for bounding rectangle            */
   double  center;            /* center of distribution                       */
+  double  r;		     /* r-parameter                                  */
 };
 
 /*---------------------------------------------------------------------------*/

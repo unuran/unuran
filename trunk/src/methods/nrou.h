@@ -131,6 +131,18 @@ int unur_nrou_set_v( UNUR_PAR *parameters, double vmax );
    Default: not set.
 */
 
+int unur_nrou_set_r( UNUR_PAR *parameters, double r );
+/*
+   Sets the parameter @var{r} of the generalized ratio-of-uniforms 
+   method.
+   
+   @emph{Notice}: This parameter must satisfy @var{r}>0.
+   Setting to a nonpositive value is ignored and in this case the
+   default value value is used instead.
+
+   Default: @code{1}.
+*/
+
 int unur_nrou_set_center( UNUR_PAR *parameters, double center );
 /* 
    Set the center (@unurmath{\mu}) of the PDF.

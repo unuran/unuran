@@ -225,6 +225,20 @@ unur_stdgen_sample_poisson_pdtabl( struct unur_gen *gen )
 #undef p 
 #undef pp
 /*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+#define l     (GEN.gen_iparam[0])
+
+#define s     (GEN.gen_param[0])
+#define d     (GEN.gen_param[1])
+#define omega (GEN.gen_param[2])
+#define b1    (GEN.gen_param[3])
+#define b2    (GEN.gen_param[4])
+#define c     (GEN.gen_param[5])
+#define c0    (GEN.gen_param[6])
+#define c1    (GEN.gen_param[7])
+#define c2    (GEN.gen_param[8])
+#define c3    (GEN.gen_param[9])
+
 #define NORMAL  GEN.gen_aux    /* pointer to normal variate generator        */
 /*---------------------------------------------------------------------------*/
 
@@ -238,6 +252,8 @@ poisson_pdac_init( struct unur_gen *gen )
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
     GEN.gen_param = _unur_malloc(GEN.n_gen_param * sizeof(double));
+    GEN.n_gen_iparam = MAX_gen_iparams;
+    GEN.gen_iparam = _unur_malloc(GEN.n_gen_param * sizeof(int));
   }
 
   /* -X- setup code -X- */
@@ -247,156 +263,171 @@ poisson_pdac_init( struct unur_gen *gen )
   /* need same uniform random number generator as slash generator */
   NORMAL->urng = gen->urng;
 
+  s = sqrt(theta);
+  d = 6. * theta * theta;
+  l = (int)(theta - 1.1484);
+
+  /* Step P. Preparations for steps Q and H */
+  omega = 0.3989423 / s;
+  b1 = 0.416666666667e-1 / theta;
+  b2 = 0.3 * b1 * b1;
+  c3 = 0.1428571 * b1 * b2;
+  c2 = b2 - 15.0 * c3;
+  c1 = b1 - 6.0 * b2 + 45.0 * c3;
+  c0 = 1.0 - b1 + 3.0 * b2 - 15.0 * c3;
+  c = 0.1069 / theta;
+
   /* -X- end of setup code -X- */
 
 } /* end of poisson_pdac_init() */
 
-
-// #define my  (DISTR.params[0])    /* shape */
+/*---------------------------------------------------------------------------*/
+#define  a0  -0.5000000002
+#define  a1   0.3333333343
+#define  a2  -0.2499998565
+#define  a3   0.1999997049
+#define  a4  -0.1666848753
+#define  a5   0.1428833286
+#define  a6  -0.1241963125
+#define  a7   0.1101687109
+#define  a8  -0.1142650302
+#define  a9   0.1055093006
+/*---------------------------------------------------------------------------*/
 
 int
 unur_stdgen_sample_poisson_pdac( struct unur_gen *gen )
      /* Theta >= 10: acceptance complement */
 {
   /* -X- generator code -X- */
- static double theta_prev = -1.0, theta_alt = -1.0,
-                         a0 =-0.5000000002, a1 = 0.3333333343, a2 =-0.2499998565,
-                         a3 = 0.1999997049, a4 =-0.1666848753, a5 = 0.1428833286,
-                         a6 =-0.1241963125, a7 = 0.1101687109, a8 =-0.1142650302,
-                         a9 = 0.1055093006;
- static long fac[] = {
-                                1,1,2,6,24,120,720,5040,40320,362880
-                          };
- static long l;
- static double s,d;
- double t,g,theta_k;
+  /* factorial for 0 <= k <= 9 */
+  const static int fac[] = {1,1,2,6,24,120,720,5040,40320,362880};
 
- static double omega,b1,b2,c0,c1,c2,c3,c;
- double gx,gy,px,py,e,x,xx,delta,v;
- long sign;
+  double t,g,theta_k;
+  double gx,gy,px,py,x,xx,delta,v;
+  int sign;
 
- double u;
- long k;
-
+  double E, U;
+  int K;
 
   /* check arguments */
   CHECK_NULL(gen,0.); COOKIE_CHECK(gen,CK_DSTD_GEN,0.);
 
 
-          if (theta_prev != theta)
-                 {
-        theta_prev = theta;
-        s = sqrt(theta);
-        d = 6.0 * theta * theta;
-        l = (long int)(theta - 1.1484);
-                 }
-          t = unur_sample_cont(NORMAL);             /* Step N. Normal sample */
-          g = theta + s * t;
-          if (g >= 0.0)
-                 {
-        k = (long int)(g);
-        if (k >= l) return(k);     /* Step I. Immediate acceptance */
-        u = uniform();           /* Step S. Squeeze acceptance */
-        theta_k = theta - k;
-        if (d * u >= theta_k * theta_k * theta_k) return(k);
-                 }
-          if (theta_alt != theta)    /* Step P. Preparations for steps Q and H */
-                 {
-        theta_alt = theta;
-        omega = 0.3989423 / s;
-        b1 = 0.416666666667e-1 / theta;
-        b2 = 0.3 * b1 * b1;
-        c3 = 0.1428571 * b1 * b2;
-        c2 = b2 - 15.0 * c3;
-        c1 = b1 - 6.0 * b2 + 45.0 * c3;
-        c0 = 1.0 - b1 + 3.0 * b2 - 15.0 * c3;
-        c = 0.1069 / theta;
-                 }
-          if (g >= 0.0)
-                 {
-        /* FUNCTION F */
-        if (k < 10)
-          {
-                px = -theta;
-                py = exp(k * log(theta)) / fac[k];
-          }
-        else  /* k >= 10 */
-          {
-                delta = 0.83333333333e-1 / k;
-                delta = delta - 4.8*delta*delta*delta*(1.0-1.0/(3.5*k*k));
-                v = (theta_k) / (double)k;
-                if (fabs(v) > 0.25)
-                  {
-                        px = k * log(1.0 + v) - theta_k - delta;
-                  }
-                else
-                  {
-                        px = k * v * v;
-                        px *= ((((((((a9*v+a8)*v+a7)*v+a6)*v+a5)*v+
-                                 a4)*v+a3)*v+a2)*v+a1)*v+a0;
-                        px -= delta;
-                  }
-                py = 0.3989422804 / sqrt((double)k);
-          }
-        x = (0.5 - theta_k) / s;
-        xx = x * x;
-        gx = -0.5 * xx;
-        gy = omega * (((c3 * xx + c2) * xx + c1) * xx + c0);
-                                        /* Step Q. Quotient acceptance */
-        if (gy * (1.0 - u)  <= py * exp(px - gx)) return(k);
-                 }
-          for(;;)
-                 {
-        do
-          {
-                e = - log(uniform()); /* Step E. Double exponential sample */
-                u = uniform();
-                u = u + u - 1.0;
-                sign = (u < 0.0)? -1 : 1;
-                t = 1.8 + e * sign;
-          }
-        while (t <= -0.6744);
-        k = (long int)(theta + s * t);
-        theta_k = theta-k;
-        /* FUNCTION F */
-        if (k < 10)
-          {
-                px = -theta;
-                py = exp(k * log(theta)) / fac[k];
-          }
-        else  /* k >= 10 */
-          {
-                delta = 0.83333333333e-1 / (double)k;
-                delta = delta - 4.8*delta*delta*delta*(1.0-1.0/(3.5*k*k));
-                v = (theta_k) / (double)k;
-                if (fabs(v) > 0.25)
-                  {
-                        px = k * log(1.0 + v) - theta_k - delta;
-                  }
-                else
-                  {
-                        px = k * v * v;
-                                  px *= ((((((((a9*v+a8)*v+a7)*v+a6)*v+a5)*v+
-                                 a4)*v+a3)*v+a2)*v+a1)*v+a0;
-                        px -= delta;
-                  }
-                py = 0.3989422804 / sqrt((double)k);
-          }
-        x = (0.5 - theta_k) / s;
-        xx = x * x;
-        gx = -0.5 * xx;
-        gy = omega * (((c3 * xx + c2) * xx + c1) * xx + c0);
-                 /* Step H. Hat acceptance */
-        if (c * sign * u <= py * exp(px + e) - gy * exp(gx + e)) return(k);
-                 }
+  /* Step N. Normal sample */
+  t = unur_sample_cont(NORMAL);
+  g = theta + s * t;
 
+  if (g >= 0.) {
+    K = (int) g;
+    /* Step I. Immediate acceptance */
+    if (K >= l) 
+      return K;
+    /* Step S. Squeeze acceptance */
+    U = uniform();
+    theta_k = theta - K;
+    if (d * U >= theta_k * theta_k * theta_k)
+      return K;
 
+    /* FUNCTION F */
+    if (K < 10) {
+      px = -theta;
+      py = exp(K * log(theta)) / fac[K];
+    }
+    else {  /* k >= 10 */
+      delta = 0.83333333333e-1 / (double)K;
+      delta = delta - 4.8 * delta*delta*delta * (1.-1./(3.5*K*K));
+      v = (theta_k) / (double)K;
+      if (fabs(v) > 0.25)
+	px = K * log(1. + v) - theta_k - delta;
+      else {
+	px = K * v * v;
+	px *= ((((((((a9*v+a8)*v+a7)*v+a6)*v+a5)*v+
+		  a4)*v+a3)*v+a2)*v+a1)*v+a0;
+	px -= delta;
+      }
+      py = 0.3989422804 / sqrt((double)K);
+    }
+    x = (0.5 - theta_k) / s;
+    xx = x * x;
+    gx = -0.5 * xx;
+    gy = omega * (((c3 * xx + c2) * xx + c1) * xx + c0);
+    /* end FUNCTION F */
+
+    /* Step Q. Quotient acceptance */
+    if (gy * (1.0 - U)  <= py * exp(px - gx))
+      return K;
+  }
+
+  /* Step E. Double exponential sample */
+  while (1) {
+    do {
+      E = - log(uniform());
+      U = uniform();
+      U = U + U - 1.;
+      sign = (U < 0.) ? -1 : 1;
+      t = 1.8 + E * sign;
+    } while (t <= -0.6744);
+    K = (int)(theta + s * t);
+    theta_k = theta - K;
+
+    /* FUNCTION F */
+    if (K < 10) {
+      px = -theta;
+      py = exp(K * log(theta)) / fac[K];
+    }
+    else { /* k >= 10 */
+      delta = 0.83333333333e-1 / (double)K;
+      delta = delta - 4.8*delta*delta*delta*(1.0-1.0/(3.5*K*K));
+      v = (theta_k) / (double)K;
+      if (fabs(v) > 0.25)
+	px = K * log(1. + v) - theta_k - delta;
+      else {
+	px = K * v * v;
+	px *= ((((((((a9*v+a8)*v+a7)*v+a6)*v+a5)*v+
+		  a4)*v+a3)*v+a2)*v+a1)*v+a0;
+	px -= delta;
+      }
+      py = 0.3989422804 / sqrt((double)K);
+    }
+    x = (0.5 - theta_k) / s;
+    xx = x * x;
+    gx = -0.5 * xx;
+    gy = omega * (((c3 * xx + c2) * xx + c1) * xx + c0);
+    /* end FUNCTION F */
+
+    /* Step H. Hat acceptance */
+    if (c * sign * U <= py * exp(px + E) - gy * exp(gx + E)) 
+      return K;
+  }
 
   /* -X- end of generator code -X- */
   
 } /* end of unur_stdgen_sample_poisson_pdac() */
 
 /*---------------------------------------------------------------------------*/
+#undef  a0
+#undef  a1
+#undef  a2
+#undef  a3
+#undef  a4
+#undef  a5
+#undef  a6
+#undef  a7
+#undef  a8
+#undef  a9
+
+#undef l
+#undef s
+#undef d
+#undef omega
+#undef b1
+#undef b2
+#undef c 
+#undef c0
+#undef c1
+#undef c2
+#undef c3
+
 #undef NORMAL
 /*---------------------------------------------------------------------------*/
 

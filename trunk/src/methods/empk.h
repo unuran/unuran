@@ -54,7 +54,9 @@
       given by an observed sample. The idea is that simply choosing a random
       point from the sample and to return it with some added noise results
       in a method that has very nice properties, as it can be seen as sampling
-      from a kernel density estimate.
+      from a kernel density estimate. If the underlying distribution is
+      continuous, especially the fine structur of the resulting empirical
+      distribution is much better than using only resampling without noise.
 
       Clearly we have to decide about the density of the noise (called kernel)
       and about the standard deviation of the noise.
@@ -66,31 +68,49 @@
       For most applications it is perfectly ok to use the default
       values offered. Unless you have some knowledge on density
       estimation we do not recommend to change anything. 
-      There is one exceptions:
+      There are two exceptions:
+
+      @enumerate A
+      @item
+      In the case that the unknown underlying distribution is not continuous
+      but discrete you should "turn off" the adding of the noise by setting:
+      @smallexample
+      unur_empk_set_smoothing(par, 0.)
+      @end smallexample
+
+      @item
       In the case that you are especially 
       interested in a fast sampling algorithm use the call
-
       @smallexample
       unur_empk_set_kernel(par, UNUR_DISTR_BOXCAR);
       @end smallexample
-
       to change the used noise distribution from the default Gaussian
       distribution to the uniform distribution.
       For other possible kernels see unur_empk_set_kernel()
       and unur_empk_set_kernelgen() below.
-      
+      @end enumerate
+
       All other parameters are only useful for people knowing the theory
-      of kernel density estimation.
-      However, this might be necessary when resampling from data with
-      two or more sharp distinct peaks the used window width is too
-      large and thus the density estimation is oversmoothed. Then it
-      is recommended to decrease the window width using the 
+      of kernel density estimation. It is not necessary to change them if
+      the true underlying distribution is somehow comparable with a 
+      bell-shaped curve, even skewed or with some not too sharp extra peaks.
+      In all these cases the simple robust reference method implemented to 
+      find a good standard deviation of the noise (i.e. the bandwidth of
+      kernel density estimation) should give sensible results.
+      However, it might be necessary to overwrite this automatic method
+      to find the bandwidth eg. when resampling from data with
+      two or more sharp distinct peaks. Then the distribution has nearly
+      discrete components as well and our automatic method may
+      easily choose too large a bandwidth which results in an
+      empirical distribution which is oversmoothed (i.e. it has
+      lower peaks than the original distribution). Then it
+      is recommended to decrease the bandwidth using the 
       unur_empk_set_smoothing() call. A smoothing factor of @code{1}
       is the default. A smoothing factor of @code{0} leads to naive
       resampling of the data. Thus an appropriate value between these
       extremes should be choosen. We recommend to consult a reference
-      on kernel smoothing when doing so. 
-
+      on kernel smoothing when doing so; but it is not a simple problem
+      to determine an optimal bandwidth for distributions with sharp peaks.
    =END
 */
 
@@ -130,7 +150,7 @@ int unur_empk_set_kernel( UNUR_PAR *parameters, unsigned kernel);
 
    It is not possible to call unur_empk_set_kernel() twice.
 
-   Default is a Gaussian kernel.
+   Default is the Gaussian kernel.
 */
 
 int unur_empk_set_kernelgen( UNUR_PAR *parameters, const UNUR_GEN *kernelgen, double alpha, double kernelvar );
@@ -157,10 +177,10 @@ int unur_empk_set_kernelgen( UNUR_PAR *parameters, const UNUR_GEN *kernelgen, do
 
    Notice that the uniform random number generator of the kernel
    generator is overwritten during the unur_init() call and at each
-   unur_chg_urng() call with generator for the empirical
+   unur_chg_urng() call with the uniform generator used for the empirical
    distribution.
 
-   Default is a Gaussian kernel.
+   Default is the Gaussian kernel.
 */
 
 int unur_empk_set_beta( UNUR_PAR *parameters, double beta );
@@ -219,3 +239,4 @@ int unur_empk_set_positive( UNUR_PAR *parameters, int positive );
 /* =END */
 
 /*---------------------------------------------------------------------------*/
+

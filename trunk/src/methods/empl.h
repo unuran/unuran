@@ -50,14 +50,14 @@
    =REF  [HLa00]
 
    =DESCRIPTION
-      EMPD generates random variates from an empirical distribution
+      EMPL generates random variates from an empirical distribution
       that is given by an observed sample. This is done by linear
       interpolation of the empirical CDF. Although this
       method is suggested in the books of Law and Keltn (2000) and
-      Bratly, Fox, and Schrage (1987) we do discourage this method at
+      Bratly, Fox, and Schrage (1987) we do not recommend this method at
       all since it has many theoretical drawbacks:
-      The mean and variance of empirical distribution function do not
-      coincide with mean and variance of the given sample. Moreover,
+      The variance of empirical distribution function does not
+      coincide with the variance of the given sample. Moreover,
       when the sample increases the empirical density function
       does not converge to the density of the underlying random
       variate. Notice that the range of the generated point set is

@@ -49,11 +49,13 @@
    =SPEED Set-up: fast, Sampling: slow
 
    =DESCRIPTION
-      Generates random variate with given hazard rate. It requires an
+      Generates random variate with given hazard rate. It requires that
+      the distribution object contains a hazard rate and it requires an
       upper bound for the hazard rate which must be set using
       unur_hrb_set_upperbound() call. If no such upper bound is given
-      it is assumed that it is achieved at the left hand boundary of
-      the domain of the distribution.
+      it is assumed that the upper bound can be achieved by evaluating 
+      the hazard rate at the left hand boundary of the domain of the 
+      distribution.
 
       It is important to note that the domain of the distribution can
       be set via a unur_distr_cont_set_domain() call.
@@ -106,5 +108,3 @@ int unur_hrb_chg_verify( UNUR_GEN *generator, int verify );
 
 /* =END */
 /*---------------------------------------------------------------------------*/
-
-

@@ -48,8 +48,9 @@
 
    =DESCRIPTION
       Generates random variate with given non-increasing hazard rate. 
-      Decreasing hazard rate means that the corresponding PDF of the
-      distribution has heaver tails than the exponential distribution
+      It is necessary that the distribution object contains this hazard rate.
+      Decreasing hazard rate implies that the corresponding PDF of the
+      distribution has heavier tails than the exponential distribution
       (which has constant hazard rate).
 
       It is important to note that the domain of the distribution can
@@ -59,7 +60,7 @@
       If no domain is given by the user then the left hand boundary is
       set to @code{0}.
       
-      For distributions with do not have decreasing hazard rates but
+      For distributions which do not have decreasing hazard rates but
       are bounded from above use method HRB. 
       For distributions with increasing hazard rate method HRI is
       required.
@@ -93,5 +94,3 @@ int unur_hrd_chg_verify( UNUR_GEN *generator, int verify );
 
 /* =END */
 /*---------------------------------------------------------------------------*/
-
-

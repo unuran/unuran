@@ -58,6 +58,7 @@ struct unur_ninv_gen {
   double *table;             /* table with possible starting values for NINV */
   double Umin, Umax;         /* bounds for iid random variable in respect to
                                 the given bounds of the distribution         */
+  double CDFmin, CDFmax;     /* CDF-bounds of the table                      */
   int  table_on;             /* if TRUE a table for starting points is used  */
   int  table_size;           /* size of table                                */
 };

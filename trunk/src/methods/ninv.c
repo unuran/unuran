@@ -151,6 +151,11 @@ static double _unur_ninv_newton( struct unur_gen *gen, double u);
 /* algorithm: newton method                                                  */
 /*---------------------------------------------------------------------------*/
 
+static int _unur_ninv_create_table(UNUR_GEN *gen);
+/*---------------------------------------------------------------------------*/
+/* create the table with starting points                                     */
+/*---------------------------------------------------------------------------*/
+
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 /* the following functions print debugging information on output stream,     */
@@ -609,40 +614,66 @@ int unur_ninv_chg_table(UNUR_GEN *gen, int tbl_pnts)
      /*   0 ... on error                                                     */
      /*----------------------------------------------------------------------*/
 {
-  int i;
 
   /* check arguments */
   CHECK_NULL(gen, 0);
 
-  free(GEN.table);   
+  free(GEN.table); /* new table will be generated */  
   GEN.table_size = (tbl_pnts >= 10) ? tbl_pnts : 10;
-  GEN.table = (double *) malloc(GEN.table_size*sizeof(double));
+  
+  _unur_ninv_create_table(gen);  
 
-      GEN.s[0] = - 10.;  /* arbitrary starting values                        */
-      GEN.s[1] =   10.;
-      GEN.table_on = FALSE;   /* table can't be used to calculate itself         */
-
-      for (i=0; i<GEN.table_size/2; i++){
-	GEN.table[i] =
-           _unur_ninv_regula(gen, (i+1.)/(GEN.table_size+1.) );
-        GEN.table[GEN.table_size-1-i] = 
-           _unur_ninv_regula(gen, ((GEN.table_size-1.-i)+1.)/(GEN.table_size+1.) );
-         
-        GEN.s[0] = GEN.table[i];
-        GEN.s[1] = GEN.table[GEN.table_size-1-i];
- 
-      }  /* end of for()                                                     */
-
-      if (GEN.table_size/2 != GEN.table_size/2.){  /*  GEN.table_size is odd ?     */
-         GEN.table[GEN.table_size/2] =  
-           _unur_ninv_regula(gen, ((GEN.table_size/2)+1.)/(GEN.table_size+1.) );
-      }
-
-  GEN.table_on = TRUE;
-
+  /* ok */
   return 1;
 
 } /* end of unur_ninv_chg_table() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_ninv_create_table(UNUR_GEN *gen)
+{
+  int i;
+
+  /* check arguments */
+  CHECK_NULL(gen, 0);
+  _unur_check_gen_object(gen, NINV);
+
+  GEN.table = (double *) malloc(GEN.table_size*sizeof(double));
+
+  GEN.s[0] = - 10.;  /* arbitrary starting values                        */
+  GEN.s[1] =   10.;
+  GEN.table_on = FALSE;   /* table can't be used to calculate itself     */
+
+  GEN.CDFmin = GEN.Umin;
+  GEN.CDFmax = GEN.Umax;
+
+  GEN.table[0] = DISTR.BD_LEFT;
+  GEN.table[GEN.table_size-1] = DISTR.BD_RIGHT;
+       
+  for (i=1; i<GEN.table_size/2; i++){
+    GEN.table[i] =
+      _unur_ninv_regula(gen, i/(GEN.table_size-1.) );
+    GEN.table[GEN.table_size-1-i] = 
+      _unur_ninv_regula(gen, ((GEN.table_size-i-1))/(GEN.table_size-1.) );
+
+    GEN.s[0] = (GEN.table[i] <= -INFINITY)? GEN.table[i+1]: GEN.table[i]; 
+    GEN.s[1] = (GEN.table[i] >= INFINITY)?
+      GEN.table[GEN.table_size-i-2]: GEN.table[GEN.table_size-i-1];
+ 
+  }  /* end of for()                                                     */
+
+  if (GEN.table_size/2 != GEN.table_size/2.){ /* GEN.table_size is odd ? */
+    GEN.table[GEN.table_size/2] =
+      _unur_ninv_regula(gen, ((GEN.table_size/2))/(GEN.table_size-1.) );
+  }
+
+  GEN.table_on = TRUE;
+
+  /* o.k. */
+  return 1;
+
+}  /* end of _unur_ninv_create_table() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -759,7 +790,6 @@ _unur_ninv_init( struct unur_par *par )
      /*----------------------------------------------------------------------*/
 { 
   struct unur_gen *gen;
-  int i;
 
   /* check arguments */
   _unur_check_NULL( GENTYPE,par,NULL );
@@ -810,34 +840,13 @@ _unur_ninv_init( struct unur_par *par )
   }  /* end of switch  */
 
   
+  GEN.CDFmin = -INFINITY;  /* reset in _unur_ninv_create_table()             */
+  GEN.CDFmax =  INFINITY;  /* reset in _unur_ninv_create_table()             */
  
   /* generating the table with potential starting values                     */
   if (GEN.table_on){
-
-      GEN.table = (double *) malloc(GEN.table_size*sizeof(double));      
-
-      GEN.s[0] = - 10.;  /* arbitrary starting values                        */
-      GEN.s[1] =   10.;
-      GEN.table_on = FALSE;   /* table can't be used to calculate itself         */
-
-      for (i=0; i<GEN.table_size/2; i++){
-	GEN.table[i] =
-           _unur_ninv_regula(gen, (i+1.)/(GEN.table_size+1.) );
-        GEN.table[GEN.table_size-1-i] = 
-           _unur_ninv_regula(gen, ((GEN.table_size-1.-i)+1.)/(GEN.table_size+1.) );
-         
-        GEN.s[0] = GEN.table[i];
-        GEN.s[1] = GEN.table[GEN.table_size-1-i];
- 
-      }  /* end of for()                                                     */
-
-      if (GEN.table_size/2 != GEN.table_size/2.){  /*  GEN.table_size is odd ?     */
-         GEN.table[GEN.table_size/2] =  
-           _unur_ninv_regula(gen, ((GEN.table_size/2)+1.)/(GEN.table_size+1.) );
-      }
-      
-      GEN.table_on = TRUE;
-
+    /* Umin and Umax are already set */
+    _unur_ninv_create_table(gen);
   }
   else{
        GEN.table = NULL;
@@ -979,44 +988,55 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
   /* check arguments */
   CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_NINV_GEN,0.);
 
-  /* rescale u in respect to given bounds */
-  u = GEN.Umin + u * (GEN.Umax-GEN.Umin);
-
-
   /* initialize starting interval */
   if (GEN.table_on){
-    i = (int) (u * (GEN.table_size+1));  /* i is between 0 and table_size */
 
-    if ( i == 0){
-      x1 = 2.*GEN.table[0] - GEN.table[1];
-      x2 = GEN.table[0];
-    }
-    else if ( i == GEN.table_size){
-      x1 = GEN.table[GEN.table_size-1];
-      x2 = 2.*GEN.table[GEN.table_size-1] - GEN.table[GEN.table_size-2];
+    /* 0 <= i < table_size-1  */
+    i = (int) ( u * 
+      ( (GEN.Umax-GEN.Umin)/(GEN.CDFmax-GEN.CDFmin) +
+	GEN.Umin - GEN.CDFmin ) *
+      (GEN.table_size-1.0) );
+
+    if ( ! _FP_is_minus_infinity(GEN.table[i]) ){
+      x1 = GEN.table[i];
+      f1 = GEN.CDFmin + i*((GEN.CDFmax-GEN.CDFmin)/(GEN.table_size-1.0));
     }
     else{
-    x1 = GEN.table[i-1];
-    x2 = GEN.table[i];
+      x1 = 2. * GEN.table[i+1] - GEN.table[i+2];
+      f1 = CDF(x1);
+    }
+    if( ! _FP_is_infinity(GEN.table[i+1]) ){
+      x2 = GEN.table[i+1];
+      f2 = GEN.CDFmin + (i+1)*((GEN.CDFmax-GEN.CDFmin)/(GEN.table_size-1.0));
+    }
+    else{
+      x2 = 2. * GEN.table[i] - GEN.table[i-1];
+      f2 = CDF(x2);
     }
 
   }
+  else { /* no table    */
 
-  else { /* no table */
    x1 =  GEN.s[0];      /* left boudary of interval */
-   x2 =  GEN.s[1];      /* right boudary of interval*/
-  }   /* end of if(GEN.table_on)  */
+   f1 =  CDF(x1);
+   x2 =  GEN.s[1];      /* right boudary of interval*/   
+   f2 =  CDF(x2);
+
+  }   /* end of if()    */
 
   if (x1-x2 >= 0) { 
-    xtmp=x1;
-    x1 = x2;
-    x2 = xtmp + DBL_EPSILON; 
+    xtmp = x1; ftmp = f1;
+    x1   = x2; f1   = f2;
+    x2 = xtmp + DBL_EPSILON;
+    f2 = CDF(x2); 
   }
 
- 
-  /* compute c.d.f. at interval boundaries */
-  f1 = CDF(x1) - u;
-  f2 = CDF(x2) - u;
+  /* rescale u in respect to given bounds */
+  u = GEN.Umin + u * ( GEN.Umax - GEN.Umin );
+
+  /* compute function value at interval boundaries */
+  f1 -= u;
+  f2 -= u;
 
   /* search for interval with changing signs */
   step = 1.;     /* interval too small -> make it bigger ( + 2^n * gap ) */ 
@@ -1159,27 +1179,33 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
   /* check arguments */
   CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_NINV_GEN,0.);
 
-  /* rescale u in respect to given bounds */
-  U = U*GEN.Umax + (1.0-U)*GEN.Umin;
-
-  damp = 2.;        /* to be halved at least once */  
-  step = 1.;
-
-
   /* initialize starting point */
   if (GEN.table_on){
-    i = (int) floor(U*GEN.table_size);  /* i is between 0 and table_size-1 */
-    x = GEN.table[i];
+    /* i is between 0 and table_size-1 */
+    i  = (int) U *
+      ( (GEN.Umax-GEN.Umin)/(GEN.CDFmax-GEN.CDFmin) +
+         GEN.Umin - GEN.CDFmin ) *
+      ( GEN.table_size - 2 );
+    x  = GEN.table[i+1];
+    fx = GEN.CDFmin + (i+1)*((GEN.CDFmax-GEN.CDFmin)/(GEN.table_size-1.0));
   }
   else{
     x     = GEN.s[0];
+    fx    = CDF(x);
   }
 
-  fx    = CDF(x) - U;
+
+  /* rescale u in respect to given bounds */
+  U = U*GEN.Umax + (1.0-U)*GEN.Umin;
+
+  fx   -= U;
   dfx   = PDF(x);
   fxabs = fabs(fx);
   xold  = x;    /* there is no old value yet */
   fxold = fx;   /* there is no old value yet */ 
+
+  damp = 2.;        /* to be halved at least once */  
+  step = 1.;
   
   /* begin for-loop:  newton-iteration  */
   for (i=0; i < GEN.max_iter; i++) {

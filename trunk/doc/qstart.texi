@@ -8,6 +8,7 @@
 @iftex
 @afourpaper
 @end iftex
+@paragraphindent 0
 @c %**end of header
 
 
@@ -20,7 +21,8 @@
 
 @dircategory Scientific software
 @direntry
-* unuran-ref: (unuran-ref).  UNURAN -- Universal Non-Uniform Random number generator
+* unuran-ref: (unuran-ref).  UNURAN -- Universal Non-Uniform Random
+number generator
 @end direntry
 
 @ifinfo
@@ -61,10 +63,13 @@ Date: @value{DATE}
 @end menu
 @end ifnottex     
 
+@c --------------------------------------------------------------------
 
 @ifhtml
 Table of @ref{Contents}
 @end ifhtml
+
+@c --------------------------------------------------------------------
 
 @node Intro
 @chapter Introduction
@@ -90,6 +95,10 @@ cvs update @*
 @* Makefile.am in /examples modify in regard to testprogram 
 @* make in /examples
 
+
+@c --------------------------------------------------------------------
+
+
 @node Examples
 @chapter Examples
 @menu
@@ -106,7 +115,7 @@ unuran.
 
 @node Ex1
 @section Ex1: As short as possible
-Code: test1.c
+Name: test1.c
 
 @smallexample
 /* my first UNURAN program: test1.c*/
@@ -123,7 +132,6 @@ int main()
   struct unur_distr *distr;  /* distribution */
   struct unur_par *par;      /* parameter */
   struct unur_gen *gen;      /* generator */
-
 
   /* choose a implemented distribution: Gaussian */
   distr = unur_distr_normal(NULL, 0);
@@ -143,36 +151,43 @@ int main()
   return 0;
 @}    
 @end smallexample
-
+@*
 First you have to include the libraries @code{unuran.h} 
 and @code{unuran_distributions.h} with the commands:
 @smallexample
 #include <unuran.h>
 #include <unuran_distributions.h> 
-@end smallexample 
-This headers provide all functions/features for generating random numbers.
-These three structures 
+@end smallexample
+@* 
+These headers provide all functions/features for generating random numbers.
+@*
+The following three structures: 
 @smallexample
 struct unur_distr *distr;  /* distribution */ 
   struct unur_par *par;    /* parameter */
   struct unur_gen *gen;    /* generator */
 @end smallexample
+@*
 are necesssary to store the used parameters. It is not necessary to understand the structure in detail to get random numbers. 
 @*
 With
 @smallexample
  distr = unur_distr_normal(NULL, 0);
 @end smallexample
+@*
 we choose that the random numbers will be standard normal distributed,
 and with
 @smallexample
  par = unur_arou_new(distr);
 @end smallexample
-we choose the method 'arou' for sampling.@*
+@*
+we choose the method `AROU' for sampling.
+@*
 For actual sampling it's necessary to build a generator object:
 @smallexample
 gen = unur_init(par)
 @end smallexample
+@*
 (Now the objects distr and par have no further use and will be destroyed).@*
 The following line shows how actual sampling works:
 @smallexample
@@ -293,6 +308,9 @@ int main()
 @}
 @end smallexample
 
+@c --------------------------------------------------------------------
+
+
 @node Methods
 @chapter Methods
 
@@ -335,12 +353,18 @@ To change any parameter you habe to use the according function call.
 @* @code{  unur_ninv_use_newton(par); );
 }
 
+@c --------------------------------------------------------------------
+
+
 @node FAQ
 @chapter FAQ
 @subsection Q1: I have a simulation program in FORTRAN. How can I use your
 library.
 
 Use the following program xyz.c which produce afile with randoom numbers. Read this random numbers ... 
+
+@c --------------------------------------------------------------------
+
 
 @node Function Reference
 @chapter Function reference
@@ -379,8 +403,14 @@ Notation:
 @include qstart_function_reference.texi
 
 
+@c --------------------------------------------------------------------
+
+
 @node Distributions
 @chapter distributions
+
+@c --------------------------------------------------------------------
+
 
 @node Internal
 @chapter internals

@@ -276,6 +276,8 @@ _unur_vmt_init( struct unur_par *par )
   /* the marginal generator is an auxilliary generator for method VMT, of course */
   gen->gen_aux = GEN.uvgen;
 
+
+  /** TODO !!!!!! **/
   /* cholesky factor of covariance matrix */
   if (DISTR.covar) /* always true since default is identity matrix */
     GEN.cholesky =  DISTR.cholesky;  

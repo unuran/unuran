@@ -110,7 +110,7 @@ _unur_pdf_multinormal( const double *x, const UNUR_DISTR *distr )
   const double *covar_inv; 
   
   double xx; /* argument used in the evaluation of exp(-xx/2) */
-  double *cx; /* multiplication of covariance matrix and x */
+  double cx; /* element of multiplication of covariance matrix and x */
   
   dim = distr->dim;
   
@@ -137,17 +137,14 @@ _unur_pdf_multinormal( const double *x, const UNUR_DISTR *distr )
   mean = DISTR.mean;
   
   xx=0.; /* resetting exponential function argument */
-  cx = _unur_malloc(dim * sizeof(double));
   for (i=0; i<dim; i++) {
-    cx[i]=0.; 
+    cx=0.; 
     /* multiplication of inverse covariance matrix and (x-mean) */
     for (j=0; j<dim; j++) {
-      cx[i] += covar_inv[idx(i,j)] * (x[j]-mean[j]);
+      cx += covar_inv[idx(i,j)] * (x[j]-mean[j]);
     }
-    xx += (x[i]-mean[i])*cx[i];
+    xx += (x[i]-mean[i])*cx;
   }
-
-  free(cx);
   
   return exp(-xx/2. - LOGNORMCONSTANT);
 

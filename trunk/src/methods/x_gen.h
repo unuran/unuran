@@ -84,12 +84,14 @@ void   unur_sample_mat(UNUR_GEN *generator, double *matrix);
 /*
   Sample from generator object. The three routines depend on the type
   of the generator object (discrete or continuous univariate
-  distribution, or multivariate distribution).
+  distribution, multivariate distribution, or random matrix).
+
+  @emph{Notice:} UNURAN uses arrays of @code{double}s to handle
+  matrices. There the rows of the matrix are stored consecutively.
 
   @strong{Important:} These routines do @strong{not} check if
   generator is an invalid NULL pointer.
 */
-
 
 /*---------------------------------------------------------------------------*/
 /* Destroy (free) generator object                                           */

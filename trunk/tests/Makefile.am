@@ -7,30 +7,28 @@ INCLUDES = \
  -I$(top_srcdir)/src/tests
 
 check_PROGRAMS = \
- t_distr \
  t_arou \
+ t_distr \
  t_dau \
  t_dgt \
  t_srou \
  t_ssr \
  t_tdr \
- t_tdr_log \
- t_tdr_sqrt \
  t_unif \
  t_utdr
 
 TESTS = \
- t_distr \
  t_arou \
+ t_distr \
  t_dau \
  t_dgt \
  t_srou \
  t_ssr \
  t_tdr \
- t_tdr_log \
- t_tdr_sqrt \
  t_unif \
  t_utdr
+
+noinst_HEADERS = testunuran.h
 
 EXTRA_DIST = \
  make_test_files.pl \
@@ -42,43 +40,35 @@ EXTRA_DIST = \
  srou.conf \
  ssr.conf \
  tdr.conf \
- tdr_log.conf \
- tdr_sqrt.conf \
  unif.conf \
  utdr.conf
 
 
-t_distr_SOURCES = t_distr.c testroutines.c list_of_distributions.c
+t_distr_SOURCES = t_distr.c testroutines.c
 t_distr_LDADD = $(top_builddir)/src/libunuran.a -lprng -lml -lm
 
-t_arou_SOURCES = t_arou.c testroutines.c list_of_distributions.c
+t_arou_SOURCES = t_arou.c testroutines.c
 t_arou_LDADD = $(top_builddir)/src/libunuran.a -lprng -lml -lm
 
-t_dau_SOURCES = t_dau.c testroutines.c list_of_distributions.c
+t_dau_SOURCES = t_dau.c testroutines.c
 t_dau_LDADD = $(top_builddir)/src/libunuran.a -lprng -lml -lm
 
-t_dgt_SOURCES = t_dgt.c testroutines.c list_of_distributions.c
+t_dgt_SOURCES = t_dgt.c testroutines.c
 t_dgt_LDADD = $(top_builddir)/src/libunuran.a -lprng -lml -lm
 
-t_srou_SOURCES = t_srou.c testroutines.c list_of_distributions.c
+t_srou_SOURCES = t_srou.c testroutines.c
 t_srou_LDADD = $(top_builddir)/src/libunuran.a -lprng -lml -lm
 
-t_ssr_SOURCES = t_ssr.c testroutines.c list_of_distributions.c
+t_ssr_SOURCES = t_ssr.c testroutines.c
 t_ssr_LDADD = $(top_builddir)/src/libunuran.a -lprng -lml -lm
 
-t_tdr_SOURCES = t_tdr.c testroutines.c list_of_distributions.c
+t_tdr_SOURCES = t_tdr.c testroutines.c
 t_tdr_LDADD = $(top_builddir)/src/libunuran.a -lprng -lml -lm
 
-t_tdr_log_SOURCES = t_tdr_log.c testroutines.c list_of_distributions.c
-t_tdr_log_LDADD = $(top_builddir)/src/libunuran.a -lprng -lml -lm
-
-t_tdr_sqrt_SOURCES = t_tdr_sqrt.c testroutines.c list_of_distributions.c
-t_tdr_sqrt_LDADD = $(top_builddir)/src/libunuran.a -lprng -lml -lm
-
-t_unif_SOURCES = t_unif.c  testroutines.c list_of_distributions.c
+t_unif_SOURCES = t_unif.c  testroutines.c
 t_unif_LDADD = $(top_builddir)/src/libunuran.a -lprng -lml -lm
 
-t_utdr_SOURCES = t_utdr.c testroutines.c list_of_distributions.c
+t_utdr_SOURCES = t_utdr.c testroutines.c
 t_utdr_LDADD = $(top_builddir)/src/libunuran.a -lprng -lml -lm
 
 
@@ -114,9 +104,6 @@ t_utdr.c: utdr.conf make_test_files.pl
 
 t_unif.c: unif.conf make_test_files.pl
 	./make_test_files.pl unif.conf
-
-
-noinst_HEADERS = testunuran.h
 
 # clean backup files
 CLEANFILES = *~ *.log

@@ -347,20 +347,14 @@ void print_distr_name( FILE *LOG, UNUR_DISTR *distr, const char *genid )
 } /* end of print_distr_name() */
 
 /*---------------------------------------------------------------------------*/
-/* print p-value of statistical test */
+/* check p-value of statistical test and print result */
 
-int print_pval( FILE *LOG, double pval, int trial )
+int print_pval( FILE *LOG, const char *test, UNUR_GEN *gen, double pval, int trial, char todo )
 {
-  int l;
   int failed = 0;
+  int l;
 
-  if (pval < 0.) {
-    /* test has not been executed */
-    fprintf(LOG,"pval = (0)\t      Not performed");
-    printf(".");
-    return 0;
-  }
-
+  fprintf(LOG,"%6s: ",test);
   fprintf(LOG,"pval = %8.6f   ",pval);
 
   l = -(int) ((pval > 1e-6) ? (log(pval) / M_LN10) : 6.);
@@ -381,130 +375,119 @@ int print_pval( FILE *LOG, double pval, int trial )
   default:
     fprintf(LOG,"######"); break;
   }
-    
-  if (pval < PVAL_LIMIT) {
-    failed = 1;
-    if (trial > 1) {
-      fprintf(LOG,"\t Failed");
-      printf("X");
+
+  switch (todo) {
+  case '+':
+    if (pval < PVAL_LIMIT) {
+      failed = 1;
+      if (trial > 1) {
+	fprintf(LOG,"\t Failed");
+	printf("!(+)");
+      }
+      else {
+	fprintf(LOG,"\t Try again");
+	printf("?");
+      }
     }
     else {
-      fprintf(LOG,"\t Try again");
-      printf("?");
+      fprintf(LOG,"\t ok");
+      printf("+");
     }
+    break;
+  case '-':
+    if (pval < PVAL_LIMIT) {
+      /* in this case it is expected to fail */
+      failed = 0;
+      fprintf(LOG,"\t ok (expected to fail)");
+      printf("-");
+    }
+    else {
+      /* the test has failed which was not what we have expected */
+      failed = 1;
+      fprintf(LOG,"\t Not ok (expected to fail)");
+      printf("!(-)");
+    }
+    break;
+  default:
+    fprintf(stderr,"invalid test symbol\n");
+    exit (-1);
   }
-  else {
-    fprintf(LOG,"\t ok");
-    printf("+");
-  }
-  fflush(stdout);
-
-  fflush(LOG);
-  return failed;
-  
-} /* end of print_pval() */
-
-/*---------------------------------------------------------------------------*/
-/* check p-value of statistical test */
-
-int check_pval( FILE *LOG, int line, UNUR_GEN *gen, double pval, int trial )
-{
-  int failed = 0;
-
-  fprintf(LOG,"line %4d: ",line);
-  failed = print_pval(LOG,pval,trial);
 
   /* print distribution name */
   fprintf(LOG,"\t");
   print_distr_name( LOG,unur_get_distr(gen), unur_get_genid(gen) );
   fprintf(LOG,"\n");
 
+  fflush(stdout);
   fflush(LOG);
   return failed;
 
-} /* end of check_pval() */
+} /* end of print_pval() */
 
 /*---------------------------------------------------------------------------*/
-/* run level 2 test on collected p-values */
+/* run chi2 test */
 
-int run_level2( FILE *LOG, int line, double *pvals, int n_pvals )
+int run_validate_chi2( FILE *LOG, int line, UNUR_GEN *gen, char todo )
 {
+  const char *distr_name;
+  static const char *last_distr_name = "";
+  unsigned int type;
   int i;
-  int *classes;
-  int n_classes;
-  double pval2;
-  int failed = 0;
-
-  if (pvals==NULL)
-    /* nothing to do */
-    return 0;
-
-  /* number classes */
-  n_classes = (int) (sqrt(n_pvals)+0.5);
-  if (n_pvals/n_classes < 6)
-    /* classes would have too few entries */
-    n_classes = n_pvals / 6;
-  
-  /* allocate memory for classes */
-  classes = malloc( (n_classes+1) * sizeof(int) );
-  for (i=0; i<n_classes+1; i++)
-    classes[i] = 0;
-  
-  /* count bins */
-  for (i=0; i<n_pvals; i++)
-    ++(classes[ (int)(pvals[i] * n_classes) ]);
-
-  /* run test */
-  pval2 = _unur_test_chi2test( NULL, classes, n_classes, 5, 0 );
-
-  /* print result */
-  printf(" Level-2-test(%d)",n_pvals);
-  fprintf(LOG,"line %4d: ",line);
-  failed = print_pval(LOG,pval2,100);
-  fprintf(LOG,"\tLevel 2 Test (n=%d) (not powerful)\n",n_pvals);
-
-  /* clear */
-  free(classes);
-
-  fflush(LOG);
-  return failed;
-
-} /* end of run_level2() */
-
-/*---------------------------------------------------------------------------*/
-/* run chi^2 tests */
-
-int run_chi2( FILE *LOG, int line, int type, UNUR_PAR *par, UNUR_DISTR *distr,
-	      double **list_pvals, int *size_pvals, int *n_pvals )
-{
-  UNUR_GEN *gen;
   double pval;
-  int i;
   int failed = 0;
 
-  /* set debugging flag */
-/*    unur_set_debug(par,1); */
+  if (todo == '.') {
+    /* nothing to do */
+    printf(".");  fflush(stdout);
+    return 0;
+  }
 
-  gen = unur_init(par);
-  if (gen==NULL) {
-    /* this must not happen */
-    fprintf(LOG,"line %4d: pval =     Initialization failed\t\t",line);
-    print_distr_name( LOG,distr,"");
-    fprintf(LOG,"\n");
-    printf("0");
-    fflush(LOG);
-    return 2;
+  if (todo == '0') {
+    /* initialization of generator is expected to fail */
+    if (gen == NULL) {
+      printf("0");  fflush(stdout);
+      return 0;
+    }
+    else {
+      /* error */
+      printf("!(0)");  fflush(stdout);
+      return 2;
+    }
+  }
+
+  if (gen == NULL) {
+    if (todo == '-') {
+      printf("0");  fflush(stdout);
+      return 0;
+    }
+    else {
+      /* initialization failed --> cannot run test */
+      printf("!(+)");  fflush(stdout);
+      return 2;
+    }
+  }
+
+  /* get name of distribution */
+  distr_name = unur_distr_get_name( unur_get_distr(gen) );
+
+  /* get type of distribution */
+  type = unur_distr_get_type( unur_get_distr(gen) );
+
+  if (strcmp(distr_name,last_distr_name) ) {
+    /* different distributions */
+    last_distr_name = distr_name;
+    printf(" %s",distr_name); fflush(stdout);
   }
 
   /* run chi^2 test */
   for (i=1; i<=2; i++) {
-
     /* we run the test twice when it fails the first time */
+
     switch (type) {
-    case CONTINUOUS:
+    case UNUR_DISTR_CONT:
       pval = unur_test_chi2( gen, CHI_TEST_INTERVALS, 0, 20, 0);
       break;
-    case DISCRETE:
+    case UNUR_DISTR_DEMP:
       pval = unur_test_chi2( gen, CHI_TEST_INTERVALS, 100000, 20, 0);
       break;
     default:
@@ -512,28 +495,23 @@ int run_chi2( FILE *LOG, int line, int type, UNUR_PAR *par, UNUR_DISTR *distr,
       exit (-1);
     }
 
-    failed += check_pval(LOG,line,gen,pval,i);
-
-    /* store p-value */
-    if (*n_pvals >= *size_pvals) {
-      /* no space left in list: enlarge with 100 entries */
-      *size_pvals += 100;
-      *list_pvals = realloc( *list_pvals, *size_pvals * sizeof(double) );
-    }
-    /* append to list */
-    (*list_pvals)[(*n_pvals)++] = pval;
-
-    if (pval >= PVAL_LIMIT || pval < 0.) 
-      /* test succeeded or not performed */
-      break; 
+    if ( print_pval(LOG,"chi2",gen,pval,i,todo) )
+      /* test failed */
+      failed++;
+    else
+      /* test ok */
+      break;
   }
 
-  unur_free(gen);
-
-  fflush(LOG);
   return failed;
 
-} /* end of run_chi2() */
+} /* end of run_validate_chi2() */
 
 /*---------------------------------------------------------------------------*/
+
+
+
+
+
+
 

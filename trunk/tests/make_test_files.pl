@@ -1,7 +1,5 @@
 #!/usr/bin/perl
 
-$| =1;
-
 ############################################################
 # $Id$
 
@@ -126,8 +124,6 @@ while (1) {
 	if ( $subsection =~ /data/ ) {
 	    #read data ...
 	    if (/^\s*method\s*:\s*(\w+)/)        { $method = $1; }
-	    if (/^\s*type\s*:\s*(\w+)/)          { $gen_type = $1; }
-	    if (/^\s*distributions\s*:\s*(.+)$/) { $distr_type = $1; }
 	    if (/^\s*urng\s*:\s*(.+)[\s\n]/)     { $urng = $1; }
 	}
 	elsif ( $subsection =~ /header/ ) {
@@ -148,8 +144,6 @@ $C_header_aux =~ s/\\#/#/g;
 
 # check data ...
 die "Data missing" unless (defined $method and
-			   defined $gen_type and
-			   defined $distr_type and 
 			   defined $urng);
 
 # name of method 
@@ -157,13 +151,6 @@ $method =~ tr/[A-Z]/[a-z]/;
 $METHOD = $method;
 $METHOD =~ tr/[a-z]/[A-Z]/;
 
-
-# which distributions ...
-my @distr_lines = split /,/, $distr_type;
-$test_distribution_type = "1";
-foreach (@distr_lines) {
-    $test_distribution_type .= " && (list_of_distr[n]. $_)";
-}
 
 ############################################################
 #                                                          #
@@ -240,22 +227,32 @@ EOM
 
 ############################################################
 #                                                          #
-#  scan all section until [verbatim]                       #
+#  scan all section until [validate]                       #
 #                                                          #
 ############################################################
 
     $section = $next_section;
 
-until ($section =~ /verbatim/) {
+until ($section =~ /validate/) {
     $next_section = scan_section($section);
     $section = $next_section;
 }
 
 ############################################################
 #                                                          #
+#  validate                                                #
+#                                                          #
+############################################################
+
+scan_validate();
+
+############################################################
+#                                                          #
 #  verbatim                                                #
 #                                                          #
 ############################################################
+
+print OUT "/*---------------------------------------------------------------------------*/\n\n";
 
 # scan section ...
 while (<IN>) {
@@ -487,13 +484,177 @@ EOM
 
 ############################################################
 #                                                          #
-#  subroutine: print test command                          #
+#  subroutine: scan validate section                       #
 #                                                          #
 ############################################################
 
-@run_validate_chi2_commands = {};
+sub scan_validate {
+    my $section = "validate";   # name of section
+    my $next_section;
 
-$run_validate_chi2_done = 0;
+    my @generators;
+    my @distributions;
+    my $chi2;
+
+    # search for begin of next (sub) section ...
+    $_ = <IN> until /^\[/;
+	
+    # skip section marker
+    $_ = <IN> if /^\[$section\]/;
+
+    # scan section ...
+    while (1) {
+	
+	# search for begin of next (sub) section ...
+	$_ = <IN> until /^\[/;
+	
+	# check (sub) section name ...
+	unless (/^\[($section)/) {
+	    die "wrong subsection" if /-/;
+	    # next section ...
+	    /\[(.*)\]/;
+	    $next_section = $1;
+	    last;
+	}
+	
+	# skip section marker
+	next if /^\[$section\]/;
+	
+	# get subsection name ...
+	die "wrong section" unless /^\[$section\s+\-\s+(.*):/;
+	$subsection = $1;
+	
+	# there should be a closing ] ...
+	die "closing ] missing" unless /\]\s*$/;
+	
+	# go to next line
+	$_ = <IN>;
+	
+	# scan subsection body ...
+	while (1) {
+	    # search for non-empty line ...
+	    $_ = <IN> until /\w+/;
+	    
+	    # scan till next empty line of opening [ ...
+	    my $line = "";
+	    while (1) {
+		if ( /^\#/ ) {
+		    # comment line
+		    $_ = <IN>;		# next line ...
+		    next;
+		}
+		last unless /\w+/;   # empty line
+		last if /^\[/;       # start of next (sub) section
+		
+		# convert line starting with ~ ...
+		s/~/unur_$method\_$section/ if /^~/;
+
+		# append line ...
+		$line .= $_;
+		
+		# next line ...
+		$_ = <IN>;
+	    }
+	    last if /^\[/;       # start of next (sub) section
+
+	    # skip over empty lines between comment lines
+	    next if $line =~ /^[\s\n]*$/;
+
+            # transform \# --> #
+	    $line =~ s/\\#/#/g;
+	    
+	    # subsection generators
+	    if ($subsection eq "generators") {
+		push @generators, $line;
+		next;
+	    }
+	    
+	    if ($subsection eq "distributions") {
+		push @distributions, $line;
+		next;
+	    }
+
+	    if ($subsection eq "test chi2") {
+		$chi2 .= $line;
+		next;
+	    }
+	}
+    }
+
+    # number of given distributions
+    $n_distributions = $#distributions + 1;
+
+    # analyse tests
+    my @chi2tests = split /\n/, $chi2; 
+    die "wrong number of chi2 tests" unless ($#chi2tests <= $#distributions);
+
+    # print out ...
+    print OUT "/*---------------------------------------------------------------------------*/\n\n";
+    print OUT "void test_validate (void)\n{\n";
+
+    print OUT "\tUNUR_DISTR *distr[$n_distributions];\n";
+    print OUT "\tUNUR_PAR *par;\n";
+    print OUT "\tUNUR_GEN *gen;\n";
+    print OUT "\tint n_tests_failed = 0;\n";
+
+    print OUT "\tdouble *darray;\n";
+    print OUT "\tdouble fpar[10];\n";
+
+    print OUT "\n\t/* start test */\n";
+    print OUT "\tprintf(\"[validate \"); fflush(stdout);\n";
+    print OUT "\tfprintf(TESTLOG,\"\\n[validate]\\n\");\n\n";
+    print OUT "\t/* reset counter */\n\tn_tests_failed = 0;\n\n";
+
+    print OUT "\tunur_set_default_debug(~UNUR_DEBUG_SAMPLE);\n";
+
+    print OUT "\n/* distributions: $n_distributions */\n";
+    foreach (@distributions) {
+	print OUT "$_\n\n";
+    }
+
+    print OUT "\n/* tests: ".($#generators+1)*$n_distributions." */\n\n";
+
+    foreach $test (@chi2tests) {
+	die "invalide test line" unless ($test =~ /<(\d+)>/);
+	my $n_distr = $1;
+	print OUT "/* distribution [$n_distr] */\n\n";
+	$test =~ s/\#.+$//;    # remove comments
+	$test =~ s/^\s+//;
+	$test =~ s/\s+$//;
+	my @gentest = split /\s+/, $test;
+	shift @gentest;
+	die "invalide number of test indicators" unless ($#gentest == $#generators);
+	foreach (@generators) {
+	    my $gen = $_;
+	    $gen =~ s/par\[(\d+)\]/par/g;
+	    $gen =~ s/\@distr\@/distr\[$n_distr\]/g;
+	    $todo = shift @gentest;
+	    print OUT "\tunur_errno = 0;\n";
+	    print OUT $gen;
+	    if ( $todo eq '.' ) {
+		# nothing to do
+		print OUT "\tgen = NULL;\n"; }
+	    else {
+		print OUT "\tgen = unur_init(par);\n"; }
+	    print OUT "\tn_tests_failed += run_validate_chi2( TESTLOG, 0, gen, '$todo' );\n";
+	    print OUT "\tunur_free(gen);\n\n";
+	}	    
+    }
+
+    print OUT "\n\t/* test finished */\n";
+    print OUT "\ttest_ok &= (n_tests_failed) ? 0 : 1;\n";
+    print OUT "\t(n_tests_failed) ? printf(\" --> failed] \") : printf(\" --> ok] \");\n";
+    print OUT "\n} /* end of test_validate */\n\n";
+
+    # return name of next section ...
+    return $next_section;
+} # end of scan_validate()
+
+############################################################
+#                                                          #
+#  subroutine: print test command                          #
+#                                                          #
+############################################################
 
 sub print_test_command {
     my $test_command = $_[0];
@@ -532,17 +693,6 @@ sub print_test_command {
       if ($test_command =~ /^\s*run_verify_generator\s*$/) {
 	  print OUT "$last_C_line\;\n";
 	  print OUT "$test_command( TESTLOG,$INPUT_LINE_NUMBER, par );\n";
-	  last SWITCH;
-      }
-      if ($test_command =~ /^\s*run_validate_chi2\s*\{(.*)/) {
-	  unless ($run_validate_chi2_done) {
-	      # we only print this command once !
-	      print OUT "run_validate_chi2( $INPUT_LINE_NUMBER );\n";
-	      $run_validate_chi2_done = 1;
-	  }
-	  # append tests to list ...
-	  split /[\{\}]/, $test_command;
-	  push @run_validate_chi2_commands, $_[1];
 	  last SWITCH;
       }
 
@@ -589,13 +739,6 @@ static FILE *UNURANLOG;             /* unuran log file                       */
 static int test_ok = TRUE;          /* all tests ok (boolean)                */
 static int n_tests_failed;          /* number of failed tests                */
 
-static struct list_distr *list_of_distr = NULL;  /* list of distributions    */
-static int n_distr = 0;             /* number of distributions in list       */
-
-static double *list_pvals = NULL; /* list of collected p-values              */
-static int size_pvals = 0;        /* size of list                            */
-static int n_pvals = 0;           /* number of collected p-values            */
-
 /*---------------------------------------------------------------------------*/
 
 void test_new( void );
@@ -608,7 +751,6 @@ void test_sample( void );
 void test_validate( void );
 
 void run_verify_generator( FILE *LOG, int line, UNUR_PAR *par );
-void run_validate_chi2( int line );
 
 int unur_$method\_set_verify( UNUR_PAR *par, int );
 
@@ -650,70 +792,6 @@ void run_verify_generator( FILE *LOG, int line, UNUR_PAR *par )
 
 } /* end of run_verify_generator() */
 
-/*---------------------------------------------------------------------------*/
-/* run chi2 test */
-
-void run_validate_chi2( int line )
-{
-	UNUR_DISTR *distr;
-	const char *distr_name;
-	const char *last_distr_name = "";
-	UNUR_PAR *par;
-	int n;
-
-	/* we need a list of distributions */
-	if (list_of_distr == NULL)
-		 n_distr = make_list_of_distributions( &list_of_distr );
-
-	/* run chi^2 tests on test distributions */
-	for (n=0; n<n_distr; n++) {
-
-		/* test type of distribution */
-		if( !($test_distribution_type) )
-			/* we cannot use this method for this distribution */
-			continue;
-
-		/* get pointer to distribution */
-		distr = list_of_distr[n].distr;
-
-		/* get name of distribution */
-		distr_name = unur_distr_get_name(distr);
-
-		if (strcmp(distr_name,last_distr_name) ) {
-		/* different distributions */
-			last_distr_name = distr_name;
-			printf(" %s",distr_name); fflush(stdout);
-		}
-
-		/* run tests */
-EOM
-    my $TYPE = ($gen_type =~ "cont") ? "CONTINUOUS" : "DISCRETE";
-    foreach (@run_validate_chi2_commands) {
-	s/[\s\n]+/ /g;
-	print OUT <<EOM;
-		{
-			$_
-			n_tests_failed += run_chi2( TESTLOG,$INPUT_LINE_NUMBER, $TYPE, par, distr, 
-                                  &list_pvals, &size_pvals, &n_pvals );
-
-
-		}
-EOM
-    }
-    print OUT <<EOM;
-	}
-	/* run level 2 test on collected p-values */
-	n_tests_failed += run_level2(TESTLOG, $INPUT_LINE_NUMBER, list_pvals, n_pvals);
-
-	/* one test might fail */
-	if (n_tests_failed == 1)
-	    n_tests_failed = 0;
-
-} /* end of run_validate_chi2() */
-
-/*...........................................................................*/
-
-  
 EOM
 
 } # end of print_C_routines()

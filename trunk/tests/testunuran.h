@@ -45,39 +45,11 @@
 #define T_UNIF
 #define T_UTDR
 
-/* continuous univariate distributions                                       */
-#define D_BETA
-#define D_CAUCHY
-#define D_GAMMA
-#define D_NORMAL
-#define D_UNIFORM
-
-/* discrete univariate distributions                                         */
-#define D_PV_RANDOM
-#define D_PV_GEOMETRIC
-
 /*---------------------------------------------------------------------------*/
 /* global variables                                                          */
 
 /* tresholds */
 #define PVAL_LIMIT 1e-3             /* treshold for p-value for stat. test   */
-
-/* distributions */
-struct list_distr {
-  UNUR_DISTR *distr;                /* pointer to distribution object        */
-  unsigned    type;                 /* type of distribution                  */
-  double      c_max;                /* maximal value for c to be T_c concave */
-};
-
-/* distribution types  */
-#define T_Tconcave   0x00000001     /* univariate continuous T_c-concave     */
-#define T_fpv        0x00000100     /* univariate discrete finite prob. vector */
-
-#define CONTINUOUS   1
-#define DISCRETE     2
-
-extern struct list_distr *list_of_distr;  /* pointer to list of distributions */
-extern int n_distr;                 /* number of distributions               */
 
 /*---------------------------------------------------------------------------*/
 /* True and false                                                            */
@@ -95,9 +67,6 @@ extern int n_distr;                 /* number of distributions               */
 #endif
 
 /*---------------------------------------------------------------------------*/
-/* make list of distributions                                                */
-int make_list_of_distributions( struct list_distr **list_of_distr );
-
 /* check for invalid NULL pointer, that should not happen in this program */
 void abort_if_NULL( FILE *LOG, int line, void *ptr );
 
@@ -131,18 +100,11 @@ int compare_int_sequence_par( FILE *LOG, int line, struct prng *urng, UNUR_PAR *
 /* print name of distribution */
 void print_distr_name( FILE *LOG, UNUR_DISTR *distr, const char *genid );
 
-/* check p-value of statistical test */
-int check_pval( FILE *LOG, int line, UNUR_GEN *gen, double pval, int trial );
+/* check p-value of statistical test and print result */
+int print_pval( FILE *LOG, const char *test, UNUR_GEN *gen, double pval, int trial, char todo );
 
-/* print p-value of statistical test */
-int print_pval( FILE *LOG, double pval, int trial );
-
-/* run level 2 test on collected p-values */
-int run_level2( FILE *LOG, int line, double *pvals, int n_pvals );
-
-/* run chi^2 tests */
-int run_chi2( FILE *LOG, int line, int type, UNUR_PAR *par, UNUR_DISTR *distr,
-	      double **list_pvals, int *size_pvals, int *n_pvals );
+/* run chi2 test */
+int run_validate_chi2( FILE *LOG, int line, UNUR_GEN *gen, char todo );
 
 /*---------------------------------------------------------------------------*/
 

@@ -219,6 +219,7 @@ _unur_test_chi2_discr( struct unur_gen *gen,
   for( i=0; i<samplesize; i++ ) {
     /* sample */
     j = _unur_sample_discr(gen);
+    if (verbose >= 3) fprintf(out,"i = %d\n",j);
     /* shift vector */
     j -= DISTR.domain[0];
     /* check range of random variates !! */
@@ -338,7 +339,14 @@ _unur_test_chi2_cont( struct unur_gen *gen,
 
   /* now run generator */
   for( i=0; i<samplesize; i++ ) {
-    F = cdf( _unur_sample_cont(gen), gen->distr );
+    if (verbose >= 3) {
+      double x = _unur_sample_cont(gen);
+      F = cdf( x, gen->distr );
+      fprintf(out,"x = %g\n",x);
+    }
+    else {
+      F = cdf( _unur_sample_cont(gen), gen->distr );
+    }
     F = (F-Fl)/Fdelta;
     j = (int)(intervals * F);
     if (j > intervals) {   

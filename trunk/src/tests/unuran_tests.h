@@ -184,8 +184,9 @@ double unur_test_chi2( UNUR_GEN *generator, int intervals, int samplesize, int c
    @var{verbosity} controls the output of the routine. If it is set
    to @code{1} then the result is written to the output stream
    @var{out}. If it is set to @code{2} additionally the list of
-   expected and observed data is printed. There is no output when it
-   is set to @code{0}.
+   expected and observed data is printed.
+   If it is set to @code{3} then all generated numbers are printed.
+   There is no output when it is set to @code{0}.
 */
 
 int unur_test_moments( UNUR_GEN *generator, double *moments, int n_moments, int samplesize,

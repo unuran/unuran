@@ -133,9 +133,9 @@ _unur_acg_JAVA_tdr_ps( struct unur_gen *gen,
 
   fprintf(out, "\t\tstatic final IV[] iv = {\n");
   for ( iv=GEN.iv , i=0; i<GEN.n_ivs; iv=iv->next, i++){
-    fprintf(out, "\t\t\t\tnew IV( "); /* zeilenklammer auf */
-    fprintf(out, "%.20e, ",iv->x);
-    switch (gen->variant & TDR_VARMASK_T) {
+    fprintf(out, "\t\t\tnew IV(\t"); /* zeilenklammer auf */
+    fprintf(out, "%.20e, ",iv->x);             /* x         */
+    switch (gen->variant & TDR_VARMASK_T) {    /* fx or Tfx */
     case TDR_VAR_T_LOG:
       fprintf(out, "%.20e, ",iv->fx);
       break;
@@ -146,12 +146,12 @@ _unur_acg_JAVA_tdr_ps( struct unur_gen *gen,
       _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
       return 0;
     }
-    fprintf(out, "\n\t\t  ");
-    fprintf(out, "%.20e, ",iv->dTfx);
-    fprintf(out, "%.20e, ",iv->sq);
-    fprintf(out, "\n\t\t  ");
-    fprintf(out, "%.20e, ",iv->Acum);
-    fprintf(out, "%.20e ",iv->Ahatr);
+    fprintf(out, "\n\t\t\t\t");
+    fprintf(out, "%.20e, ",iv->dTfx);           /* dTfx   */
+    fprintf(out, "%.20e, ",iv->sq);             /* sq     */
+    fprintf(out, "\n\t\t\t\t");
+    fprintf(out, "%.20e, ",iv->Acum);           /* Acum   */
+    fprintf(out, "%.20e ",iv->Ahatr);           /* Ahatr  */
     fprintf(out, (i<GEN.n_ivs-1)? "),\n" : ")\n"); /* zeilenklammer zu */
   }
   fprintf(out, "\t\t};\n\n");

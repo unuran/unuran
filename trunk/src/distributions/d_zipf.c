@@ -76,15 +76,16 @@ static const char distr_name[] = "zipf";
 /*---------------------------------------------------------------------------*/
 
 /* function prototypes                                                       */
-static double _unur_pmf_zipf(int k, UNUR_DISTR *distr);
+static double _unur_pmf_zipf( int k, UNUR_DISTR *distr );
 #ifdef HAVE_CDF
-static double _unur_cdf_zipf(int k, UNUR_DISTR *distr);
+static double _unur_cdf_zipf( int k, UNUR_DISTR *distr );
 #endif
 
 static int _unur_upd_mode_zipf( UNUR_DISTR *distr );
 #ifdef HAVE_SUM
 static int _unur_upd_sum_zipf( UNUR_DISTR *distr );
 #endif
+static int _unur_set_params_zipf( UNUR_DISTR *distr, double *params, int n_params );
 
 /*---------------------------------------------------------------------------*/
 
@@ -154,18 +155,63 @@ _unur_upd_sum_zipf( UNUR_DISTR *distr )
 
 /*---------------------------------------------------------------------------*/
 
+int
+_unur_set_params_zipf( UNUR_DISTR *distr, double *params, int n_params )
+{
+  int nh;
+
+  /* check number of parameters for distribution */
+  if (n_params < 1) {
+    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few"); return 0; }
+  if (n_params > 2) {
+    _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
+    n_params = 2; }
+  CHECK_NULL(params,0);
+
+  /* check parameter rho */
+  if (rho <= 0.) {
+    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"rho <= 0");
+    return 0;
+  }
+
+  /* check parameter tau */
+  if (n_params > 1 && tau < 0.) {
+    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"tau < 0");
+    return 0;
+  }
+
+  /* copy parameters for standard form */
+  DISTR.rho = rho;
+
+  /* default parameters */
+  DISTR.tau = 0.;
+
+  /* copy optional parameters */
+  switch (n_params) {
+  case 2:
+    DISTR.tau = tau;
+  default:
+    n_params = 2;
+  }
+
+  /* store number of parameters */
+  DISTR.n_params = n_params;
+
+  /* set (standard) domain: [1, infinity] */
+  if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
+    DISTR.domain[0] = 1;           /* left boundary  */
+    DISTR.domain[1] = INT_MAX;     /* right boundary */
+  }
+
+  return 1;
+} /* end of _unur_set_params_zipf() */
+
+/*---------------------------------------------------------------------------*/
+
 struct unur_distr *
 unur_distr_zipf( double *params, int n_params )
 {
   register struct unur_distr *distr;
-
-  /* check new parameter for generator */
-  if (n_params < 1) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few"); return NULL; }
-  if (n_params > 2) {
-    _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
-    n_params = 2; }
-  CHECK_NULL(params,NULL);
 
   /* get new (empty) distribution object */
   distr = unur_distr_discr_new();
@@ -185,42 +231,6 @@ unur_distr_zipf( double *params, int n_params )
   DISTR.cdf  = _unur_cdf_zipf;   /* pointer to CDF */
 #endif
 
-  /* default parameters */
-  DISTR.tau = 0.;
-  
-  /* copy parameters */
-  DISTR.rho = rho;
-  switch (n_params) {
-  case 2:
-    DISTR.tau = tau;
-  default:
-  }
-
-  /* check parameters */
-  if (DISTR.rho <= 0. || DISTR.tau < 0.) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"rho <= 0 || tau < 0");
-    free( distr ); return NULL;
-  }
-
-  /* number of arguments */
-  DISTR.n_params = n_params;
-
-  /* domain: [1, infinity] */
-  DISTR.domain[0] = 1;           /* left boundary  */
-  DISTR.domain[1] = INT_MAX;     /* right boundary */
-
-  /* log of normalization constant */
-
-  /* mode and sum over PMF */
-  DISTR.mode = 1;
-  DISTR.sum  = 1.;
-
-  /* function for updating derived parameters */
-  DISTR.upd_mode = _unur_upd_mode_zipf; /* funct for computing mode */
-#ifdef HAVE_SUM
-  DISTR.upd_sum  = _unur_upd_sum_zipf;  /* funct for computing area */
-#endif
-
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |
 		 UNUR_DISTR_SET_STDDOMAIN |
@@ -229,6 +239,27 @@ unur_distr_zipf( double *params, int n_params )
 #endif
 		 UNUR_DISTR_SET_MODE );
                 
+  /* set parameters for distribution */
+  if (!_unur_set_params_zipf(distr,params,n_params)) {
+    free(distr);
+    return NULL;
+  }
+
+  /* log of normalization constant */
+
+  /* mode and sum over PMF */
+  DISTR.mode = 1;
+  DISTR.sum  = 1.;
+
+  /* function for setting parameters and updating domain */
+  DISTR.set_params = _unur_set_params_zipf;
+
+  /* function for updating derived parameters */
+  DISTR.upd_mode = _unur_upd_mode_zipf; /* funct for computing mode */
+#ifdef HAVE_SUM
+  DISTR.upd_sum  = _unur_upd_sum_zipf;  /* funct for computing area */
+#endif
+
   /* return pointer to object */
   return distr;
 

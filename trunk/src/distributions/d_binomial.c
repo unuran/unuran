@@ -78,7 +78,6 @@ static const char distr_name[] = "binomial";
 #  undef  HAVE_SUM
 #endif
 
-/** TODO: haben wir eine CDF (kannst du da in cephes nachschauen **/
 #ifdef HAVE_UNUR_SF_INCOMPLETE_BETA
 # define HAVE_CDF
 #else
@@ -88,16 +87,17 @@ static const char distr_name[] = "binomial";
 /*---------------------------------------------------------------------------*/
 /* function prototypes                                                       */
 #ifdef HAVE_PMF
-static double _unur_pmf_binomial(int k, UNUR_DISTR *distr);
+static double _unur_pmf_binomial( int k, UNUR_DISTR *distr );
 #endif
 #ifdef HAVE_CDF
-static double _unur_cdf_binomial(int k, UNUR_DISTR *distr); 
+static double _unur_cdf_binomial( int k, UNUR_DISTR *distr ); 
 #endif
 
 static int _unur_upd_mode_binomial( UNUR_DISTR *distr );
 #ifdef HAVE_SUM
 static int _unur_upd_sum_binomial( UNUR_DISTR *distr );
 #endif
+static int _unur_set_params_binomial( UNUR_DISTR *distr, double *params, int n_params );
 
 /*---------------------------------------------------------------------------*/
 
@@ -132,7 +132,6 @@ _unur_cdf_binomial(int k, UNUR_DISTR *distr)
   else if (k==0) return exp(n*(log(1.-p)));
   else if(k>=n) return(1.);
   else return(_unur_sf_incomplete_beta(1.-p, n-k, k+1.));
-
 
 } /* end of _unur_cdf_binomial() */
 
@@ -186,19 +185,55 @@ _unur_upd_sum_binomial( UNUR_DISTR *distr )
 
 /*---------------------------------------------------------------------------*/
 
+int
+_unur_set_params_binomial( UNUR_DISTR *distr, double *params, int n_params )
+{
+  int nh;
+
+  /* check number of parameters for distribution */
+  if (n_params < 2) {
+    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few"); return 0; }
+  if (n_params > 2) {
+    _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
+    n_params = 2; }
+  CHECK_NULL(params,0);
+
+  /* check parameters */
+  if (p <= 0. || p >= 1. || n <= 0.) { 
+    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"p <= 0 || p >= 1 || n <= 0");
+    return 0;
+  }
+
+  /* copy parameters for standard form */
+
+  /* round parameter n */
+  nh = (int)(n+0.5);
+  if(fabs(nh-n)>0.001)
+    _unur_warning(distr_name,UNUR_ERR_DISTR_DOMAIN,"n was rounded to the closest integer value");
+  DISTR.n = nh;
+  DISTR.p = p;
+
+  /* default parameters: none */
+  /* copy optional parameters: none */
+
+  /* store number of parameters */
+  DISTR.n_params = n_params;
+
+  /* set (standard) domain: [0, n] */
+  if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
+    DISTR.domain[0] = 0;           /* left boundary  */
+    DISTR.domain[1] = n;           /* right boundary */
+  }
+
+  return 1;
+} /* end of _unur_set_params_binomial() */
+
+/*---------------------------------------------------------------------------*/
+
 struct unur_distr *
 unur_distr_binomial( double *params, int n_params )
 {
   register struct unur_distr *distr;
-  int nh;
-
-  /* check new parameter for generator */
-  if (n_params < 2) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few"); return NULL; }
-  if (n_params > 2) {
-    _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
-    n_params = 2; }
-  CHECK_NULL(params,NULL);
 
   /* get new (empty) distribution object */
   distr = unur_distr_discr_new();
@@ -220,33 +255,19 @@ unur_distr_binomial( double *params, int n_params )
   DISTR.cdf  = _unur_cdf_binomial;   /* pointer to CDF */
 #endif
 
-  /* copy parameters */
-  nh = (int)(n+0.5);
-  if(fabs(nh-n)>0.001)
-    _unur_warning(distr_name,UNUR_ERR_DISTR_DOMAIN,"n was rounded to the closets integer value!!,");
-  DISTR.n = nh;  /** TODO: hier eventuel runden (falls nur int erlaubt sind) **/
-  DISTR.p = p;
+  /* indicate which parameters are set */
+  distr->set = ( UNUR_DISTR_SET_DOMAIN |
+		 UNUR_DISTR_SET_STDDOMAIN |
+#ifdef HAVE_SUM
+		 UNUR_DISTR_SET_PMFSUM |
+#endif
+		 UNUR_DISTR_SET_MODE );
 
-  /* check parameters */
-  if (DISTR.p <= 0. || DISTR.p >= 1. || DISTR.n <= 0.) { 
-    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"p <= 0 || p >= 1 || n <= 0");
-    free( distr ); return NULL;
+  /* set parameters for distribution */
+  if (!_unur_set_params_binomial(distr,params,n_params)) {
+    free(distr);
+    return NULL;
   }
-
-  /* number of arguments */
-  DISTR.n_params = n_params;
-
-  /* domain: [0, n] */
-  DISTR.domain[0] = 0;           /* left boundary  */
-  DISTR.domain[1] = n;           /* right boundary */
-
-  /** TODO: wie soll man das mit dem domain machen, wenn die parameter
-      der verteilung geaendert werden?? 
-      (das ist die erste verteilung wo das problem auftritt.
-      einfach auf [0,INT_MAX] setzen?
-      oder den benutzer sagen, dass er bei dieser verteilung den domain nicht 
-      veraendern darf??
-  **/
 
   /* log of normalization constant */
 #ifdef HAVE_SUM
@@ -259,19 +280,14 @@ unur_distr_binomial( double *params, int n_params )
   DISTR.mode = (int) ((DISTR.n + 1) * DISTR.p);
   DISTR.sum = 1.;
 
+  /* function for setting parameters and updating domain */
+  DISTR.set_params = _unur_set_params_binomial;
+
   /* function for updating derived parameters */
   DISTR.upd_mode = _unur_upd_mode_binomial; /* funct for computing mode */
 #ifdef HAVE_SUM
   DISTR.upd_sum  = _unur_upd_sum_binomial;  /* funct for computing area */
 #endif
-
-  /* indicate which parameters are set */
-  distr->set = ( UNUR_DISTR_SET_DOMAIN |
-		 UNUR_DISTR_SET_STDDOMAIN |
-#ifdef HAVE_SUM
-		 UNUR_DISTR_SET_PMFSUM |
-#endif
-		 UNUR_DISTR_SET_MODE );
                 
   /* return pointer to object */
   return distr;
@@ -283,14 +299,3 @@ unur_distr_binomial( double *params, int n_params )
 #undef r
 #undef DISTR
 /*---------------------------------------------------------------------------*/
-
-
-
-
-
-
-
-
-
-
-

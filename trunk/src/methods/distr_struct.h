@@ -105,8 +105,12 @@ struct unur_distr_discr {
   int    mode;                  /* location of mode                          */
   double sum;                   /* sum over PMF                              */
 
-  int (*upd_mode)(struct unur_distr *distr); /* funct for computing mode     */
-  int (*upd_sum)(struct unur_distr *distr);  /* funct for computing sum      */
+  int (*set_params)(struct unur_distr *distr, double *params, int n_params );
+                                /* function for setting parameters and domain*/
+  int (*upd_mode)(struct unur_distr *distr);
+                                /* function for computing mode               */
+  int (*upd_sum)(struct unur_distr *distr);
+                                /* function for computing sum                */
 
   /* other parameters */
   int domain[2];                /* boundary of domain                        */

@@ -84,16 +84,17 @@ static const char distr_name[] = "negativebinomial";
 /*---------------------------------------------------------------------------*/
 /* function prototypes                                                       */
 #ifdef HAVE_PMF
-static double _unur_pmf_negativebinomial(int k, UNUR_DISTR *distr);
+static double _unur_pmf_negativebinomial( int k, UNUR_DISTR *distr );
 #endif
 #ifdef HAVE_CDF
-static double _unur_cdf_negativebinomial(int k, UNUR_DISTR *distr); 
+static double _unur_cdf_negativebinomial( int k, UNUR_DISTR *distr ); 
 #endif
 
 static int _unur_upd_mode_negativebinomial( UNUR_DISTR *distr );
 #ifdef HAVE_SUM
 static int _unur_upd_sum_negativebinomial( UNUR_DISTR *distr );
 #endif
+static int _unur_set_params_negativebinomial( UNUR_DISTR *distr, double *params, int n_params );
 
 /*---------------------------------------------------------------------------*/
 
@@ -182,18 +183,48 @@ _unur_upd_sum_negativebinomial( UNUR_DISTR *distr )
 
 /*---------------------------------------------------------------------------*/
 
+int
+_unur_set_params_negativebinomial( UNUR_DISTR *distr, double *params, int n_params )
+{
+  /* check number of parameters for distribution */
+  if (n_params < 2) {
+    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few"); return 0; }
+  if (n_params > 2) {
+    _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
+    n_params = 2; }
+  CHECK_NULL(params,0);
+
+  /* check parameters */
+  if (p <= 0. || p >= 1. || r <= 0.) {
+    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"p <= 0 || p >= 1 || r <= 0");
+    return 0;
+  }
+
+  /* copy parameters for standard form */
+  DISTR.p = p;
+  DISTR.r = r;
+
+  /* default parameters: none */
+  /* copy optional parameters: none */
+
+  /* store number of parameters */
+  DISTR.n_params = n_params;
+
+  /* set (standard) domain: [0, infinity] */
+  if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
+    DISTR.domain[0] = 0;           /* left boundary  */
+    DISTR.domain[1] = INT_MAX;     /* right boundary */
+  }
+
+  return 1;
+} /* end of _unur_set_params_negativebinomial() */
+
+/*---------------------------------------------------------------------------*/
+
 struct unur_distr *
 unur_distr_negativebinomial( double *params, int n_params )
 {
   register struct unur_distr *distr;
-
-  /* check new parameter for generator */
-  if (n_params < 2) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few"); return NULL; }
-  if (n_params > 2) {
-    _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
-    n_params = 2; }
-  CHECK_NULL(params,NULL);
 
   /* get new (empty) distribution object */
   distr = unur_distr_discr_new();
@@ -215,22 +246,19 @@ unur_distr_negativebinomial( double *params, int n_params )
   DISTR.cdf  = _unur_cdf_negativebinomial;   /* pointer to CDF */
 #endif
 
-  /* copy parameters */
-  DISTR.p = p;
-  DISTR.r = r;
-
-  /* check parameters */
-  if (DISTR.p <= 0. || DISTR.p >= 1. || DISTR.r <= 0.) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"p <= 0 || p >= 1 || r <= 0");
-    free( distr ); return NULL;
+  /* indicate which parameters are set */
+  distr->set = ( UNUR_DISTR_SET_DOMAIN |
+		 UNUR_DISTR_SET_STDDOMAIN |
+#ifdef HAVE_SUM
+		 UNUR_DISTR_SET_PMFSUM |
+#endif
+		 UNUR_DISTR_SET_MODE );
+                
+  /* set parameters for distribution */
+  if (!_unur_set_params_negativebinomial(distr,params,n_params)) {
+    free(distr);
+    return NULL;
   }
-
-  /* number of arguments */
-  DISTR.n_params = n_params;
-
-  /* domain: [0, infinity] */
-  DISTR.domain[0] = 0;           /* left boundary  */
-  DISTR.domain[1] = INT_MAX;     /* right boundary */
 
   /* log of normalization constant */
 #ifdef HAVE_SUM
@@ -243,20 +271,15 @@ unur_distr_negativebinomial( double *params, int n_params )
   _unur_upd_mode_negativebinomial(distr);
   DISTR.sum = 1.;
 
+  /* function for setting parameters and updating domain */
+  DISTR.set_params = _unur_set_params_negativebinomial;
+
   /* function for updating derived parameters */
   DISTR.upd_mode = _unur_upd_mode_negativebinomial; /* funct for computing mode */
 #ifdef HAVE_SUM
   DISTR.upd_sum  = _unur_upd_sum_negativebinomial;  /* funct for computing area */
 #endif
 
-  /* indicate which parameters are set */
-  distr->set = ( UNUR_DISTR_SET_DOMAIN |
-		 UNUR_DISTR_SET_STDDOMAIN |
-#ifdef HAVE_SUM
-		 UNUR_DISTR_SET_PMFSUM |
-#endif
-		 UNUR_DISTR_SET_MODE );
-                
   /* return pointer to object */
   return distr;
 

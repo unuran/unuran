@@ -71,13 +71,14 @@ static const char distr_name[] = "logarithmic";
 /*---------------------------------------------------------------------------*/
 
 /* function prototypes                                                       */
-static double _unur_pmf_logarithmic(int k, UNUR_DISTR *distr);
+static double _unur_pmf_logarithmic( int k, UNUR_DISTR *distr );
 #ifdef HAVE_CDF
-static double _unur_cdf_logarithmic(int k, UNUR_DISTR *distr);      
+static double _unur_cdf_logarithmic( int k, UNUR_DISTR *distr );      
 #endif
 
 static int _unur_upd_mode_logarithmic( UNUR_DISTR *distr );
 static int _unur_upd_sum_logarithmic( UNUR_DISTR *distr );
+static int _unur_set_params_logarithmic( UNUR_DISTR *distr, double *params, int n_params );
 
 /*---------------------------------------------------------------------------*/
 
@@ -143,18 +144,47 @@ _unur_upd_sum_logarithmic( UNUR_DISTR *distr )
 
 /*---------------------------------------------------------------------------*/
 
+int
+_unur_set_params_logarithmic( UNUR_DISTR *distr, double *params, int n_params )
+{
+  /* check number of parameters for distribution */
+  if (n_params < 1) {
+    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few"); return 0; }
+  if (n_params > 1) {
+    _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
+    n_params = 1; }
+  CHECK_NULL(params,0);
+
+  /* check parameter theta */
+  if (theta <= 0. || theta >= 1.) {
+    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"theta <= 0 || theta >= 1");
+    return 0;
+  }
+
+  /* copy parameters for standard form */
+  DISTR.theta = theta;
+
+  /* default parameters: none */
+  /* copy optional parameters: none */
+
+  /* store number of parameters */
+  DISTR.n_params = n_params;
+
+  /* set (standard) domain: [1, infinity] */
+  if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
+    DISTR.domain[0] = 1;           /* left boundary  */
+    DISTR.domain[1] = INT_MAX;     /* right boundary */
+  }
+
+  return 1;
+} /* end of _unur_set_params_logarithmic() */
+
+/*---------------------------------------------------------------------------*/
+
 struct unur_distr *
 unur_distr_logarithmic( double *params, int n_params )
 {
   register struct unur_distr *distr;
-
-  /* check new parameter for generator */
-  if (n_params < 1) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few"); return NULL; }
-  if (n_params > 1) {
-    _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
-    n_params = 1; }
-  CHECK_NULL(params,NULL);
 
   /* get new (empty) distribution object */
   distr = unur_distr_discr_new();
@@ -174,39 +204,32 @@ unur_distr_logarithmic( double *params, int n_params )
   DISTR.cdf  = _unur_cdf_logarithmic;   /* pointer to CDF */
 #endif           
 
-  /* copy parameters */
-  DISTR.theta = theta;
-
-  /* check parameter */
-  if (DISTR.theta <= 0. || DISTR.theta >= 1.) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"theta <= 0 || theta >= 1");
-    free( distr ); return NULL;
-  }
-
-  /* number of arguments */
-  DISTR.n_params = n_params;
-
-  /* normalization constant */
-  NORMCONSTANT = -1. / log( 1.-DISTR.theta);
-
-  /* domain: [1, infinity] */
-  DISTR.domain[0] = 1;           /* left boundary  */
-  DISTR.domain[1] = INT_MAX;     /* right boundary */
-
-  /* mode and sum over PMF */
-  DISTR.mode = 1;
-  DISTR.sum = 1.;
-
-  /* function for updating derived parameters */
-  DISTR.upd_mode = _unur_upd_mode_logarithmic; /* funct for computing mode */
-  DISTR.upd_sum  = _unur_upd_sum_logarithmic; /* funct for computing sum */
-
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |
 		 UNUR_DISTR_SET_STDDOMAIN |
 		 UNUR_DISTR_SET_MODE | 
 		 UNUR_DISTR_SET_PMFSUM );
                 
+  /* set parameters for distribution */
+  if (!_unur_set_params_logarithmic(distr,params,n_params)) {
+    free(distr);
+    return NULL;
+  }
+
+  /* normalization constant */
+  NORMCONSTANT = -1. / log( 1.-DISTR.theta);
+
+  /* mode and sum over PMF */
+  DISTR.mode = 1;
+  DISTR.sum = 1.;
+
+  /* function for setting parameters and updating domain */
+  DISTR.set_params = _unur_set_params_logarithmic;
+
+  /* function for updating derived parameters */
+  DISTR.upd_mode = _unur_upd_mode_logarithmic; /* funct for computing mode */
+  DISTR.upd_sum  = _unur_upd_sum_logarithmic; /* funct for computing sum */
+
   /* return pointer to object */
   return distr;
 

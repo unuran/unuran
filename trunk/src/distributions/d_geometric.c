@@ -66,11 +66,12 @@ static const char distr_name[] = "geometric";
 /*---------------------------------------------------------------------------*/
 
 /* function prototypes                                                       */
-static double _unur_pmf_geometric(int k, UNUR_DISTR *distr);
-static double _unur_cdf_geometric(int k, UNUR_DISTR *distr); 
+static double _unur_pmf_geometric( int k, UNUR_DISTR *distr );
+static double _unur_cdf_geometric( int k, UNUR_DISTR *distr ); 
 
 static int _unur_upd_mode_geometric( UNUR_DISTR *distr );
 static int _unur_upd_sum_geometric( UNUR_DISTR *distr );
+static int _unur_set_params_geometric( UNUR_DISTR *distr, double *params, int n_params );
 
 /*---------------------------------------------------------------------------*/
 
@@ -126,18 +127,47 @@ _unur_upd_sum_geometric( UNUR_DISTR *distr )
 
 /*---------------------------------------------------------------------------*/
 
+int
+_unur_set_params_geometric( UNUR_DISTR *distr, double *params, int n_params )
+{
+  /* check number of parameters for distribution */
+  if (n_params < 1) {
+    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few"); return 0; }
+  if (n_params > 1) {
+    _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
+    n_params = 1; }
+  CHECK_NULL(params,0);
+
+  /* check parameter p */
+  if (p <= 0. || p >= 1.) {
+    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"p <= 0 || p >= 1");
+    return 0;
+  }
+
+  /* copy parameters for standard form */
+  DISTR.p = p;
+
+  /* default parameters: none */
+  /* copy optional parameters: none */
+
+  /* store number of parameters */
+  DISTR.n_params = n_params;
+
+  /* set (standard) domain: [0,inifinity] */
+  if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
+    DISTR.domain[0] = 0;           /* left boundary  */
+    DISTR.domain[1] = INT_MAX;     /* right boundary */
+  }
+
+  return 1;
+} /* end of _unur_set_params_geometric() */
+
+/*---------------------------------------------------------------------------*/
+
 struct unur_distr *
 unur_distr_geometric( double *params, int n_params )
 {
   register struct unur_distr *distr;
-
-  /* check new parameter for generator */
-  if (n_params < 1) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few"); return NULL; }
-  if (n_params > 1) {
-    _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
-    n_params = 1; }
-  CHECK_NULL(params,NULL);
 
   /* get new (empty) distribution object */
   distr = unur_distr_discr_new();
@@ -155,38 +185,31 @@ unur_distr_geometric( double *params, int n_params )
   DISTR.pmf  = _unur_pmf_geometric;   /* pointer to PMF */
   DISTR.cdf  = _unur_cdf_geometric;   /* pointer to CDF */
 
-  /* copy parameters */
-  DISTR.p = p;
-
-  /* check parameters */
-  if (DISTR.p <= 0. || DISTR.p >= 1.) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"p <= 0 || p >= 1");
-    free( distr ); return NULL;
-  }
-
-  /* number of arguments */
-  DISTR.n_params = n_params;
-
-  /* log of normalization constant: none */
-
-  /* domain: [0,inifinity] */
-  DISTR.domain[0] = 0;           /* left boundary  */
-  DISTR.domain[1] = INT_MAX;     /* right boundary */
-
-  /* mode and sum over PMF */
-  DISTR.mode = 0;
-  DISTR.sum = 1.;
-
-  /* function for updating derived parameters */
-  DISTR.upd_mode = _unur_upd_mode_geometric; /* funct for computing mode */
-  DISTR.upd_sum  = _unur_upd_sum_geometric; /* funct for computing sum */
-
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |
 		 UNUR_DISTR_SET_STDDOMAIN |
 		 UNUR_DISTR_SET_MODE | 
 		 UNUR_DISTR_SET_PMFSUM );
                 
+  /* set parameters for distribution */
+  if (!_unur_set_params_geometric(distr,params,n_params)) {
+    free(distr);
+    return NULL;
+  }
+
+  /* log of normalization constant: none */
+
+  /* mode and sum over PMF */
+  DISTR.mode = 0;
+  DISTR.sum = 1.;
+
+  /* function for setting parameters and updating domain */
+  DISTR.set_params = _unur_set_params_geometric;
+
+  /* function for updating derived parameters */
+  DISTR.upd_mode = _unur_upd_mode_geometric; /* funct for computing mode */
+  DISTR.upd_sum  = _unur_upd_sum_geometric; /* funct for computing sum */
+
   /* return pointer to object */
   return distr;
 

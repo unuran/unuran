@@ -102,7 +102,7 @@ _unur_pdf_logistic( double x, UNUR_DISTR *distr )
 
   /* standard form */
 
-  ex = exp(-x);
+  ex = exp( -fabs(x) );
 
   return (NORMCONSTANT * ex / ((1. + ex) * (1. + ex)));
 
@@ -125,8 +125,11 @@ _unur_dpdf_logistic( double x, UNUR_DISTR *distr )
 
   /* standard form */
 
-  ex = exp(x);
-  return (factor * NORMCONSTANT * ex * (1. - ex) / ((1.+ex)*(1.+ex)*(1.+ex)));
+  ex = exp(-fabs(x));
+  if (x<0)
+    factor = -factor;
+
+  return (factor * NORMCONSTANT * ex * (ex - 1.) / ((1.+ex)*(1.+ex)*(1.+ex)));
 
 } /* end of unur_dpdf_logistic() */
 

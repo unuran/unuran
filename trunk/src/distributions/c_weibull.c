@@ -109,6 +109,9 @@ _unur_pdf_weibull( double x, UNUR_DISTR *distr )
   if (x==0. && c==1.)
     return NORMCONSTANT;
 
+  if (x==0. && c!=1.)
+    return 0.;
+
   /* else */
   return (exp (-pow (x, c) + (c-1.) * log (x)) * NORMCONSTANT);
 

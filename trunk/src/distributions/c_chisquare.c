@@ -109,7 +109,7 @@ _unur_pdf_chisquare(double x, UNUR_DISTR *distr)
   if (nu == 2.)
     return exp(-x/2. - LOGNORMCONSTANT);
 
-  return (pow(x,nu/2. - 1.) * exp(-x/2. - LOGNORMCONSTANT));
+  return exp( log(x) * (nu/2. - 1.) - x/2. - LOGNORMCONSTANT );
 
 } /* end of _unur_pdf_chisquare() */
 
@@ -127,7 +127,8 @@ _unur_dpdf_chisquare(double x, UNUR_DISTR *distr)
   if (nu == 2.)
     return ( -exp(-x/2. - LOGNORMCONSTANT) / 2. );
 
-  return ( pow(x,nu/2. - 2.) * exp(-x/2. - LOGNORMCONSTANT) * (nu - 2. - x)/2. );
+  return ( exp( log(x) * (nu/2. - 2.) - x/2. - LOGNORMCONSTANT) * (nu - 2. - x)/2. );
+
 } /* end of _unur_dpdf_chisquare() */
 
 /*---------------------------------------------------------------------------*/

@@ -64,14 +64,15 @@ sub make_codegen_tests
     my $test_list;
     my $test_number = 0;
 
-    # Mark distributions for which tests exist
-    my %test_distr;
-
     # Read the test.conf file
     open CONF, $test_conf_file or die "cannot open file $test_conf_file\n";
     my $conf_content;
     while (<CONF>) {
 	next if /^\#/;
+	if (/^\s+[^\s\n]/) {
+	    # concatenate lines
+	    $conf_content =~ s/\n$//;
+	}
 	$conf_content .= $_;
     }
     close CONF;
@@ -81,6 +82,94 @@ sub make_codegen_tests
 
     # rule for C files 
     my $hrule = "/* ----------------------------------------------------------------- */";
+
+#.................................................................
+# Get list of distributions 
+
+    my $test_distr;
+    my $n_distr = 0;
+    
+    foreach my $test (@tests) {
+	# There might be empty entries in @tests
+	next unless $test;
+	
+	# use local copy
+	my $t = $test;
+	
+	# Get name and parameters of distribution
+	$t =~ /DISTR:\s*(\w+)\s*\(([^\)]*)\)/ or next;
+
+	# Store data
+	my $distr = $1;
+	my $params = $2;
+
+	# Check for existing distribution
+	die "Unknown distribution: $distr" unless $DISTR->{$distr};
+	
+	# Process parameters
+	my @param_list = split /\,/, $params;
+	my $n_params = $#param_list + 1;
+	my $fpm;
+	if ($n_params > 0) {
+	    $fpm = "double fpm[] = { ";
+	    foreach my $p (@param_list) {
+		if ($p =~ /(.+)\.\.(.+)/) {
+		    $fpm .= ($1>0) ? exp(log($1)+rand()*(log($2)-log($1))) : $1+rand()*($2-$1);
+		    $fpm .= ", ";
+		}
+		else {
+		    $fpm .= "$p, ";
+		}
+	    }
+	    $fpm =~ s/,\s*$/ \}/;
+	}
+	else {
+	    $fpm = "double *fpm = NULL";
+	}
+
+	# Make distribution object
+	$test_distr->{"$distr\_$n_distr"} =
+	    "\t{\n".
+	    "\t\t$fpm;\n".
+	    "\t\tdistr = unur_distr_$distr(fpm,$n_params);\n".
+	    "\t}\n";    
+
+	# increment counter for distributions
+	++$n_distr;
+    }
+
+#.................................................................
+# Check for missing CONTinuous distributions
+
+    foreach my $d (sort keys %{$DISTR}) {
+	next unless $DISTR->{$d}->{"=TYPE"} eq "CONT";
+	unless ($test_distr->{$d}) {
+	    print STDERR "test missing for distribution \"$d\"\n";
+	}
+    }
+
+#.................................................................
+# Get list of generation methods
+
+    my $test_gen;
+    my $n_gen = 0;
+    
+    foreach my $test (@tests) {
+	# There might be empty entries in @tests
+	next unless $test;
+	
+	# use local copy
+	my $t = $test;
+
+	# Get name and commands for generation method
+	$t =~ /PAR:\s*(par\s*=\s*unur\_([a-z]+)\_new.+)$/ or next;
+
+	# Store data
+	$test_gen->{"$2\_$n_gen"} = $1;
+
+	# increment counter for distributions
+	++$n_gen;
+    }	
 
 #.................................................................
 # C file for tests
@@ -116,96 +205,64 @@ EOX
 #.................................................................
 # Process each test
 
-    foreach my $t (@tests) {
-	# There might be empty entries in @tests
-	next unless $t;
+    # Each distribution 
+    foreach my $d (keys %{$test_distr}) {
 
-	# Get name and parameters of distribution
-	$t =~ /DISTR:\s*(\w+)\s*\(([^\)]*)\)/
-	    or die "cannot find valid distribution tag for test";
+	# use local copy
+	my $distr = $d;
+
+	# Each generation method
+	foreach my $g (keys %{$test_gen}) {
+
+	    # use local copy
+	    my $gen = $g;
+
+	    # Name of test routine
+	    my $testroutine = "test\_$distr\_$gen";
+
+	    # Distribution object
+	    my $distribution = $test_distr->{$distr};
 	
-	# Store data
-	my $distr = $1;
-	my $params = $2;
-
-	# Mark distribution
-	$test_distr{$distr} = 1;
-
-	# Check for existing distribution
-	die "Unknown distribution: $distr" unless $DISTR->{$distr};
-
-	# Name of test routine
-	++$test_number;
-	my $testroutine = "test\_$distr\_".$test_number;
-
-	# Name of distribution for tests
-	my $distr_name = "$distr\_".$test_number;
-
-	# Process parameters
-	my @param_list = split /\,/, $params;
-	my $n_params = $#param_list + 1;
-	my $fpm;
-	if ($n_params > 0) {
-	    $fpm = "double fpm[] = { ";
-	    foreach my $p (@param_list) {
-		if ($p =~ /(.+)\.\.(.+)/) {
-		    $fpm .= ($1>0) ? exp(log($1)+rand()*(log($2)-log($1))) : $1+rand()*($2-$1);
-		    $fpm .= ", ";
-		}
-		else {
-		    $fpm .= "$p, ";
-		}
+	    # Generator object
+	    my $generator;
+	    foreach my $l (split /\;/, $test_gen->{$gen}) {
+		$l =~ s/^\s+//;
+		$l =~ s/\s+$//;
+		$generator .= "\t$l;\n";
 	    }
-	    $fpm =~ s/,\s*$/ \}/;
-	}
-	else {
-	    $fpm = "double *fpm = NULL";
-	}
-
-	# Make distribution object
-	my $distribution = 
-	    "\t{\n".
-	    "\t\t$fpm;\n".
-	    "\t\tdistr = unur_distr_$distr(fpm,$n_params);\n".
-	    "\t}\n";    
-
-	# Make Generator object
-	my $generator = 
-	    "\tpar = unur_tdr_new (distr);\n".
-	    "\tunur_tdr_set_max_sqhratio (par, 0.);\n".
-            "\tgen = unur_init( par );\n";
+	    $generator .=  "\tgen = unur_init( par );\n";
 
 # The test routine
-	# Begin of test routines 
-	my $test_test_routine = "int $testroutine (void)\n\{\n";
-	
-	# Declarations for test routines
-	my $test_test_decl = 
-	    "\tUNUR_DISTR *distr;\n".
-            "\tUNUR_PAR *par;\n".
-            "\tUNUR_GEN *gen;\n".
-	    "\tint i;\n".
-	    "\tdouble x1, x2;\n".
-	    "\tint n_failed = 0;\n".
-	    "\n";
+	    # Begin of test routines 
+	    my $test_test_routine = "int $testroutine (void)\n\{\n";
+	    
+	    # Declarations for test routines
+	    my $test_test_decl = 
+		"\tUNUR_DISTR *distr;\n".
+		"\tUNUR_PAR *par;\n".
+		"\tUNUR_GEN *gen;\n".
+         	"\tint i;\n".
+		"\tdouble x1, x2;\n".
+		"\tint n_failed = 0;\n".
+		"\n";
 
-	# Body of test routine
-	my $test_test_body =
-	    "$distribution\n".                          # the distribution object
-	    "$generator\n";                             # the generator object
+	    # Body of test routine
+	    my $test_test_body =
+		"$distribution\n".         # the distribution object
+		"$generator\n";            # the generator object
 
-	# Set uniform random number generator
-	$test_test_body .= "\tunur_chg_urng(gen,urng1);\n\n";
+	    # Set uniform random number generator
+	    $test_test_body .= "\tunur_chg_urng(gen,urng1);\n\n";
 
-	# Print info on screen
-	$test_test_body .= "\tprintf(\\\"$distr \\\");\n";
-	$test_test_body .= "\tfflush(stdout);\n\n";
+	    # Print info on screen
+	    $test_test_body .= "\tprintf(\\\"$distr \\\");\n";
+	    $test_test_body .= "\tfflush(stdout);\n\n";
 
-	# Compare generator output
-	$test_test_body .= <<EOX;
+	    # Compare generator output
+	    $test_test_body .= <<EOX;
 \tfor (i=0; i<$SAMPLE_SIZE; i++) {
 \t\tx1 = unur_sample_cont(gen);
-\t\tx2 = rand_$distr_name();
+\t\tx2 = rand_$distr();
 \t\tif (!FP_equal(x1,x2)) {
 \t\t\tfprintf(stderr,\\\"error! %%g, %%g, diff = %%g\\\\n\\\",x1,x2,x1-x2);
 \t\t\t++n_failed;
@@ -214,65 +271,56 @@ EOX
 
 EOX
 
-        # End of test routine
-	$test_test_body .= "\tunur_distr_free(distr);\n";
-	$test_test_body .= "\tunur_free(gen);\n";
-	$test_test_body .= "\treturn n_failed;\n";
-	$test_test_body .= "\}\n\n";
-
-	# The test routine
-	my $test_test = 
-	    $test_test_routine.
-	    $test_test_decl.
-	    $test_test_body;
+            # End of test routine
+            $test_test_body .= "\tunur_distr_free(distr);\n";
+	    $test_test_body .= "\tunur_free(gen);\n";
+	    $test_test_body .= "\treturn n_failed;\n";
+	    $test_test_body .= "\}\n\n";
+	    
+	    # The test routine
+	    my $test_test = 
+		$test_test_routine.
+		$test_test_decl.
+		$test_test_body;
 
 # The make test routine
-	# Begin of test routines 
-	my $make_test_routine = "void $testroutine (FILE *out)\n\{\n";
+	    # Begin of test routines 
+	    my $make_test_routine = "void $testroutine (FILE *out)\n\{\n";
 
-	# Declarations for make test routine
-	my $make_test_decl = 
-	    "\tUNUR_DISTR *distr;\n".
-            "\tUNUR_PAR *par;\n".
-            "\tUNUR_GEN *gen;\n";
+	    # Declarations for make test routine
+	    my $make_test_decl = 
+		"\tUNUR_DISTR *distr;\n".
+                "\tUNUR_PAR *par;\n".
+                "\tUNUR_GEN *gen;\n";
 
-	# Body of make test routine
-	my $make_test_body = 
-	    "$distribution\n".                          # the distribution object
-	    "$generator\n".                             # the generator object
-	    "\tunurgen(gen,out,\"$distr_name\");\n\n".  # make code 
-	    "\tunur_distr_free(distr);\n".              # free distribution object
-	    "\tunur_free(gen);\n\n";                    # free generator object
+	    # Body of make test routine
+	    my $make_test_body = 
+		"$distribution\n".                       # the distribution object
+		"$generator\n".                          # the generator object
+		"\tunurgen(gen,out,\"$distr\");\n\n".    # make code 
+		"\tunur_distr_free(distr);\n".           # free distribution object
+		"\tunur_free(gen);\n\n";                 # free generator object
 
-	# Header for test routine for distribution
-	foreach $l (split /\n/, $test_test) { 
-	    $l =~ s/\t/\\t/g;
-	    $make_test_body .= "\tfprintf(out,\"$l\\n\");\n";
-	}
+	    # Header for test routine for distribution
+	    foreach $l (split /\n/, $test_test) { 
+		$l =~ s/\t/\\t/g;
+		$make_test_body .= "\tfprintf(out,\"$l\\n\");\n";
+	    }
 
-	# End of make test routine
-	$make_test_body .= "}\n\n";
+	    # End of make test routine
+	    $make_test_body .= "}\n\n";
 
-	# The make test routine
-	my $make_test = 
-	    $make_test_routine.
-	    $make_test_decl.
-	    $make_test_body;
+	    # The make test routine
+	    my $make_test = 
+		$make_test_routine.
+		$make_test_decl.
+		$make_test_body;
 
-	# Add test routine to output
-	$test_file .= $make_test; 
-
+	    # Add test routine to output
+	    $test_file .= $make_test; 
+	    
 # Add test to list
-	$test_list .= "$testroutine\n";
-    }
-
-#.................................................................
-# Check for missing CONTinuous distributions
-
-    foreach my $d (sort keys %{$DISTR}) {
-	next unless $DISTR->{$d}->{"=TYPE"} eq "CONT";
-	unless ($test_distr{$d}) {
-	    print STDERR "test missing for distribution \"$d\"\n";
+	    $test_list .= "$testroutine\n";
 	}
     }
 
@@ -400,3 +448,5 @@ EOX
 } # end of make_codegen_tests()
 
 # ----------------------------------------------------------------
+
+

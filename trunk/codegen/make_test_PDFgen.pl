@@ -85,8 +85,7 @@ sub make_PDFgen_tests
 	next unless $t;
 
 	# Get name and parameters of distribution
-	$t =~ /DISTR:\s*(\w+)\s*\(([^\)]*)\)/
-	    or die "cannot find valid distribution tag for test";
+	$t =~ /DISTR:\s*(\w+)\s*\(([^\)]*)\)/ or next;
 	
 	# Store data
 	my $distr = $1;

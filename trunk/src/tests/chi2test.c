@@ -603,10 +603,6 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
     for (j=0; j<dim; j++) {
       idx[j] = (int)( dimintervals[j] * _unur_sf_cdfnormal(z[j]) );
 
-/* debugging */
-printf("sample=%d idx[%d]=%d\n",i, j, idx[j]);
-
-
       if (idx[j]==dimintervals[j]) idx[j]--; /* cdf can return 1 ? */
       bg[j][idx[j]] += 1 ;
       sumintervals += dimintervals[j];

@@ -909,7 +909,8 @@ _unur_vnrou_debug_init( const struct unur_gen *gen )
 {
   FILE *log;
   int d, dim; /* index used in dimension loops (0 <= d < dim) */
-  
+  double vol;
+
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_VNROU_GEN,RETURN_VOID);
 
@@ -943,11 +944,15 @@ _unur_vnrou_debug_init( const struct unur_gen *gen )
     fprintf(log,"\t[input]");
   fprintf(log,"\n");
 
+  vol = GEN.vmax;
   fprintf(log,"%s:\tvmax = %g\n",gen->genid, GEN.vmax);
   for (d=0; d<dim; d++) {
+    vol *= (GEN.umax[d]-GEN.umin[d]);
     fprintf(log,"%s:\tumin[%d],umax[%d] = (%g,%g)\n",gen->genid, 
 	    d, d, GEN.umin[d], GEN.umax[d]);
   }
+  fprintf(log,"%s:\n",gen->genid);
+  fprintf(log,"%s:\tvolume = %g\t(hat = %g)\n",gen->genid, vol, vol*(GEN.r*GEN.dim+1));
   fprintf(log,"%s:\n",gen->genid);
 
 } /* end of _unur_vnrou_debug_init() */

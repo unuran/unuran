@@ -42,9 +42,10 @@
 
 /*---------------------------------------------------------------------------*/
 
-int _unur_acg_C_header (UNUR_DISTR *distr, FILE *out, const char *class);
+int _unur_acg_C_header (UNUR_DISTR *distr, FILE *out, const char *rand);
 int _unur_acg_FORTRAN_header (UNUR_DISTR *distr, FILE *out, const char *rand);
 int _unur_acg_JAVA_header (UNUR_DISTR *distr, FILE *out, const char *rand);
+int _unur_acg_UNURAN_header (UNUR_DISTR *distr, FILE *out, const char *rand);
 /*---------------------------------------------------------------------------*/
 /* Code generator for file header.                                           */
 /*---------------------------------------------------------------------------*/
@@ -61,7 +62,9 @@ int _unur_acg_C_tdr_ps( struct unur_gen *gen, FILE *out,
 int _unur_acg_FORTRAN_tdr_ps( struct unur_gen *gen, FILE *out, 
 			      const char *rand_name, const char *pdf_name );
 int _unur_acg_JAVA_tdr_ps( struct unur_gen *gen, FILE *out, 
-			const char *rand_name, const char *pdf_name );
+			   const char *rand_name, const char *pdf_name );
+int _unur_acg_UNURAN_tdr_ps( struct unur_gen *gen, FILE *out, 
+			     const char *rand_name );
 /*---------------------------------------------------------------------------*/
 /* Code generator for method TDR variant PS (proportional squeeze).          */
 /*---------------------------------------------------------------------------*/

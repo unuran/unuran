@@ -100,7 +100,7 @@ static const char progname[] = "acg";
 /* ------------------------------------------------------------------------- */
 
 /* Print usage message.                                                      */
-static void usage (void);
+void usage (void);
 
 /* Get pointer for code generator for given language.                        */
 int (*get_language(const char *language)) ();

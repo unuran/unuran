@@ -26,10 +26,12 @@ libunuracg_a_SOURCES = \
  codegen_C.c \
  codegen_FORTRAN.c \
  codegen_JAVA.c \
+ codegen_UNURAN.c \
  codegen_source.h \
  tdr_codegen_C.c \
  tdr_codegen_FORTRAN.c \
- tdr_codegen_JAVA.c
+ tdr_codegen_JAVA.c \
+ tdr_codegen_UNURAN.c
  
 noinst_PROGRAMS = \
  make_test_PDFgen \

@@ -52,6 +52,11 @@ int unur_acg_JAVA( struct unur_gen *gen, FILE *out, const char *distr_name );
 /* Automatic code generator (JAVA version)                                   */
 /*---------------------------------------------------------------------------*/
 
+int unur_acg_UNURAN( struct unur_gen *gen, FILE *out, const char *distr_name );
+/*---------------------------------------------------------------------------*/
+/* Automatic code generator (UNURAN version)                                 */
+/*---------------------------------------------------------------------------*/
+
 /*---------------------------------------------------------------------------*/
 #endif   /* __UNURAN_ACG_H_SEEN */ 
 /*---------------------------------------------------------------------------*/

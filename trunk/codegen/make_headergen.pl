@@ -39,14 +39,8 @@ my $headergen;
 
 # ................................................................
 
-# Make C version of code generator
+# Make code generators
 $headergen .= make_headergen($DISTR);
-
-# Make FORTRAN version of code generator
-## $headergen .= make_headergen_FORTRAN($DISTR);
-
-# Make JAVA version of code generator
-## $headergen .= make_headergen_JAVA($DISTR);
 
 # ................................................................
 
@@ -79,7 +73,7 @@ my $empty_line = "\tfprintf (out,\"\\n\");\n";
 
 
 # ----------------------------------------------------------------
-# Make routines for ACG header code generator (C version)
+# Make routines for ACG header code generator
 
 sub make_headergen
 {
@@ -109,6 +103,7 @@ sub make_headergen
     $headergen .= make_header_main_C( $DISTR );
     $headergen .= make_header_main_FORTRAN( $DISTR );
     $headergen .= make_header_main_JAVA( $DISTR );
+    $headergen .= make_header_main_UNURAN( $DISTR );
 
     # Continuous distributions
     foreach my $d (sort keys %{$DISTR}) {
@@ -209,6 +204,34 @@ EOX
     return $gencode;
 
 } # end of make_header_main_JAVA()
+
+# ----------------------------------------------------------------
+# Main (UNURAN version)
+
+sub make_header_main_UNURAN
+{
+    my $DISTR = $_[0];   # data for distributions
+    
+    my $gencode;         # code for creating ACG header
+
+    # Mark begin of Main
+    $gencode .= make_bar("ACG header main (UNURAN version)");
+
+    # ACG
+    $gencode .= <<EOX;
+int _unur_acg_UNURAN_header (UNUR_DISTR *distr, FILE *out, const char *rand)
+{
+\t_unur_check_NULL(\"ACG_UNURAN\", distr, 0 );
+\thrule = hrule_C;
+\tsformat = sformat_C;
+\tsynopsis = synopsis_C;
+\treturn _unur_acg_header_switch (distr,out,rand);
+}
+EOX
+
+    return $gencode;
+
+} # end of make_header_main_UNURAN()
 
 # ----------------------------------------------------------------
 # Switch for distributions 

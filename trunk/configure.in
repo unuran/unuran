@@ -84,8 +84,6 @@ AC_CONFIG_FILES([\
 	src/uniform/Makefile \
 	src/utils/Makefile \
 	doc/Makefile \
-	codegen/Makefile \
-	codegen/tests/Makefile \
         tests/Makefile \
 	examples/Makefile \
 	experiments/Makefile ])

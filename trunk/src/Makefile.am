@@ -29,7 +29,9 @@ noinst_HEADERS = \
  unur_struct.h \
  unur_typedefs.h
 
-## unuran.h: unuran.h.in $(top_srcdir)/src/*.h $(top_srcdir)/src/*/*.h 
+
+# make unuran.h (process file unuran.h.in)
+sinclude .dep-unuran_h
 unuran.h: unuran.h.in 
 	$(top_srcdir)/scripts/merge_h.pl $(top_srcdir)/src/unuran.h.in > unuran.h
 
@@ -39,4 +41,5 @@ CLEANFILES = *~
 # clean generated files
 MAINTAINERCLEANFILES = \
  Makefile.in \
+ .dep-unuran_h \
  unuran.h

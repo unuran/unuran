@@ -2289,16 +2289,15 @@ _unur_free_malloc_list( struct malloc_list *mlist )
      /*----------------------------------------------------------------------*/
 {
   int i;
-  void *mptr;
 
   /* check arguments */
   if (mlist == NULL || mlist->n_ptr == 0 || mlist->ptr == NULL)
     return;
 
   /* free memory blocks */
-  mptr = *(mlist->ptr);
-  for (i=0; i < mlist->n_ptr; i++, mptr++)
-    if (mptr) free(mptr);
+  for (i=0; i < mlist->n_ptr; i++)
+    if (mlist->ptr[i]) free(mlist->ptr[i]); 
+
   free( mlist->ptr);
 
   /* clear list */

@@ -10,7 +10,7 @@
  *   METHOD:    naive ratio-of-uniforms method                               *
  *                                                                           *
  *   DESCRIPTION:                                                            *
- *      Given PDF and (optinally) a bounding rectangle for the acceptance    *
+ *      Given PDF and (optionally) a bounding rectangle for the acceptance   *
  *      region.                                                              *
  *      Produce a value x consistent with its density                        *
  *      The bounding rectangle is computed numerically if it is not given.   * 
@@ -513,25 +513,42 @@ _unur_nrou_rectangle( struct unur_gen *gen )
     return UNUR_SUCCESS;
   }
 
-  /* Failure when v-interval is set but not the u-interval ??? */
-  /*
-  if (!(gen->set & NROU_SET_U) && (gen->set & NROU_SET_V)) {
-    return UNUR_FAILURE;
-  }
-  */
-  
+  /* If center has not been set, we'll set it to the (optional) mode          */
+  /* (provided the user has not set any parameters of the bounding rectangle) */
+  /* Otherwise the center defaults to the value set in unur_nrou_new() i.e. 0 */
+  if (!(gen->set & NROU_SET_CENTER) &&
+       (gen->distr->set & UNUR_DISTR_SET_MODE) && 
+      !(gen->set & NROU_SET_U) && 
+      !(gen->set & NROU_SET_V) ) {
+    GEN.center = DISTR.mode; 
+  }  
+	  
   /* copy of generator to be used in auxiliary functions */
   _gen = gen;
 
+  /* parameter to be used in auxiliary functions */
   p[0]=GEN.center;
   
   /* calculation of vmax */
   if (!(gen->set & NROU_SET_V)) {
-    faux.f = (UNUR_FUNCT_GENERIC*) _unur_aux_bound_vmax;
-    faux.params = NULL;
+    /* user has not provided any upper bound for v */
+
+    /* we start to check if optional mode is present */
+    if ( (gen->distr->set & UNUR_DISTR_SET_MODE) &&
+         (DISTR.mode >= DISTR.BD_LEFT) &&
+	 (DISTR.mode <= DISTR.BD_RIGHT) ) {
+	 
+      /* setting vmax to be sqrt(f(mode)) */
+      GEN.vmax = sqrt(PDF(DISTR.mode));
+    }
+    else {
+      /* calculating vmax as maximum of sqrt(f(x)) in the domain */
+      faux.f = (UNUR_FUNCT_GENERIC*) _unur_aux_bound_vmax;
+      faux.params = NULL;
   
-    x = _unur_util_find_max(faux, DISTR.BD_LEFT, DISTR.BD_RIGHT, p[0]);
-    GEN.vmax = faux.f(x,p);
+      x = _unur_util_find_max(faux, DISTR.BD_LEFT, DISTR.BD_RIGHT, p[0]);
+      GEN.vmax = faux.f(x,p);
+    }
   }
 
   /* calculation of umin and umax */
@@ -548,6 +565,10 @@ _unur_nrou_rectangle( struct unur_gen *gen )
     x = _unur_util_find_max(faux, p[0], DISTR.BD_RIGHT, p[0]);
     GEN.umax = faux.f(x,p);
   }
+
+  /* TODO : check for (umin,umax) sanity 
+            e.g. cauchy-like distributions */
+
 
   /* o.k. */
   return UNUR_SUCCESS;
@@ -582,18 +603,6 @@ _unur_nrou_create( struct unur_par *par )
   /* magic cookies */
   COOKIE_SET(gen,CK_NROU_GEN);
 
-#if TODO
-  /* check for required data: mode */
-  if (!(gen->distr->set & UNUR_DISTR_SET_MODE)) {
-    _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode: try finding it (numerically)"); 
-    if (unur_distr_cont_upd_mode(gen->distr)!=UNUR_SUCCESS) {
-      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode"); 
-      _unur_distr_free(gen->distr); free(gen);
-      return NULL; 
-    }
-  }
-#endif
-
   /* set generator identifier */
   gen->genid = _unur_set_genid(GENTYPE);
 
@@ -602,19 +611,6 @@ _unur_nrou_create( struct unur_par *par )
 
   gen->destroy = _unur_nrou_free;
   gen->clone = _unur_nrou_clone;
-
-#if 0
-  /* mode must be in domain */
-  if ( (DISTR.mode < DISTR.BD_LEFT) ||
-       (DISTR.mode > DISTR.BD_RIGHT) ) {
-    /* there is something wrong.
-       assume: user has change domain without changing mode.
-       but then, she probably has not updated area and is to large */
-    _unur_warning(GENTYPE,UNUR_ERR_GEN_DATA,"area and/or CDF at mode");
-    DISTR.mode = max(DISTR.mode,DISTR.BD_LEFT);
-    DISTR.mode = min(DISTR.mode,DISTR.BD_RIGHT);
-  }
-#endif
 
   /* copy some parameters into generator object */
   GEN.umin  = PAR.umin;             /* left u-boundary of bounding rectangle */
@@ -744,7 +740,7 @@ _unur_nrou_sample_check( struct unur_gen *gen )
     U = GEN.umin + _unur_call_urng(gen->urng) * (GEN.umax - GEN.umin);
     
     /* compute x */
-    X = U/V + DISTR.mode;
+    X = U/V + GEN.center;
     
     /* inside domain ? */
     if ( (X < DISTR.BD_LEFT) || (X > DISTR.BD_RIGHT) )
@@ -757,7 +753,7 @@ _unur_nrou_sample_check( struct unur_gen *gen )
        in direction X = V/U has the coordinates
        ( X * sqrt(fx), sqrt(fx) ). */
     sfx = sqrt(fx);
-    xfx = (X-DISTR.mode) * sfx;
+    xfx = (X-GEN.center) * sfx;
     
     /* check hat */
     if ( ( sfx > (1.+DBL_EPSILON) * GEN.vmax )   /* avoid roundoff error with FP registers */

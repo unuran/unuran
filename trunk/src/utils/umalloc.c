@@ -45,7 +45,7 @@
 /*---------------------------------------------------------------------------*/
 
 void*
-_unur_malloc(size_t size)
+_unur_xmalloc(size_t size)
      /*----------------------------------------------------------------------*/
      /* allocate memory                                                      */
      /*                                                                      */
@@ -69,12 +69,12 @@ _unur_malloc(size_t size)
 
   return ptr;
 
-} /* end of _unur_malloc() */
+} /* end of _unur_xmalloc() */
 
 /*---------------------------------------------------------------------------*/
 
 void*
-_unur_realloc(void *ptr, size_t size)
+_unur_xrealloc(void *ptr, size_t size)
      /*----------------------------------------------------------------------*/
      /* reallocate memory                                                    */
      /*                                                                      */
@@ -100,7 +100,7 @@ _unur_realloc(void *ptr, size_t size)
 
   return new_ptr;
 
-} /* end of _unur_realloc() */
+} /* end of _unur_xrealloc() */
 
 /*---------------------------------------------------------------------------*/
 #endif   /* WITH_DMALLOC */

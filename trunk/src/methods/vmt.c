@@ -165,7 +165,7 @@ unur_vmt_new( const struct unur_distr *distr )
     return NULL; }
 
   /* allocate structure */
-  par = _unur_malloc(sizeof(struct unur_par));
+  par = _unur_xmalloc(sizeof(struct unur_par));
   COOKIE_SET(par,CK_VMT_PAR);
 
   /* copy input */
@@ -231,7 +231,7 @@ _unur_vmt_init( struct unur_par *par )
   else {
     int i,j;
     int failed = FALSE;
-    struct unur_gen **marginalgens = _unur_malloc( GEN.dim * sizeof(struct unur_gen*) );
+    struct unur_gen **marginalgens = _unur_xmalloc( GEN.dim * sizeof(struct unur_gen*) );
     for (i=0; i<GEN.dim; i++) {
       marginalgens[i] = unur_init( unur_auto_new( DISTR.stdmarginals[i] ) );
       if (marginalgens[i]==NULL) {

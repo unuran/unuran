@@ -90,7 +90,7 @@ unur_test_printsample( struct unur_gen *gen, int n_rows, int n_cols, FILE *out )
       double *vec;
       int dim;
       dim = unur_get_dimension(gen);
-      vec = _unur_malloc( dim * sizeof(double) );
+      vec = _unur_xmalloc( dim * sizeof(double) );
 	
       for( j=0; j<n_rows; j++ ) {
 	_unur_sample_vec(gen,vec);

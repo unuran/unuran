@@ -90,7 +90,7 @@ unur_distr_set_name( struct unur_distr *distr, const char *name )
 
   /* allocate memory for storing string */
   len = strlen(name) + 1;
-  name_str = _unur_realloc(distr->name_str,len);
+  name_str = _unur_xrealloc(distr->name_str,len);
 
   /* copy string */
   memcpy( name_str, name, len );

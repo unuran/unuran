@@ -65,7 +65,7 @@ _unur_fstr_parser_init ( const char *fstr )
   }
 
   /* allocate memory for parser object */
-  pdata = _unur_malloc(sizeof(struct parser_data));
+  pdata = _unur_xmalloc(sizeof(struct parser_data));
   COOKIE_SET(pdata,CK_FSTR_PDATA);
 
   /* make a working copy of the function string,                */
@@ -83,9 +83,9 @@ _unur_fstr_parser_init ( const char *fstr )
   }
 
   /* make arrays to store tokens in string */
-  pdata->token = _unur_malloc( (pdata->len_fstr+1) * sizeof(int) );
-  pdata->tpos  = _unur_malloc( (pdata->len_fstr+1) * sizeof(char *) );
-  pdata->tstr  = _unur_malloc( (2*pdata->len_fstr+1) * sizeof(char) );
+  pdata->token = _unur_xmalloc( (pdata->len_fstr+1) * sizeof(int) );
+  pdata->tpos  = _unur_xmalloc( (pdata->len_fstr+1) * sizeof(char *) );
+  pdata->tstr  = _unur_xmalloc( (2*pdata->len_fstr+1) * sizeof(char) );
 
   /* initialize arrays */
   pdata->n_tokens = 0;

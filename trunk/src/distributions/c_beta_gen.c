@@ -190,7 +190,7 @@ beta_bc_init( struct unur_gen *gen )
 
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
-    GEN.gen_param = _unur_malloc(GEN.n_gen_param * sizeof(double));
+    GEN.gen_param = _unur_xmalloc(GEN.n_gen_param * sizeof(double));
   }
 
   /* -X- setup code -X- */
@@ -306,7 +306,7 @@ beta_bb_init( struct unur_gen *gen )
 
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
-    GEN.gen_param = _unur_malloc(GEN.n_gen_param * sizeof(double));
+    GEN.gen_param = _unur_xmalloc(GEN.n_gen_param * sizeof(double));
   }
 
   /* -X- setup code -X- */
@@ -438,7 +438,7 @@ beta_b00_init( struct unur_gen *gen )
 
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
-    GEN.gen_param = _unur_malloc(GEN.n_gen_param * sizeof(double));
+    GEN.gen_param = _unur_xmalloc(GEN.n_gen_param * sizeof(double));
   }
 
   /* -X- setup code -X- */
@@ -538,7 +538,7 @@ beta_b01_init( struct unur_gen *gen )
 
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
-    GEN.gen_param = _unur_malloc(GEN.n_gen_param * sizeof(double));
+    GEN.gen_param = _unur_xmalloc(GEN.n_gen_param * sizeof(double));
   }
 
   /* -X- setup code -X- */
@@ -673,7 +673,7 @@ beta_b1prs_init( struct unur_gen *gen )
 
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
-    GEN.gen_param = _unur_malloc(GEN.n_gen_param * sizeof(double));
+    GEN.gen_param = _unur_xmalloc(GEN.n_gen_param * sizeof(double));
   }
 
   /* -X- setup code -X- */

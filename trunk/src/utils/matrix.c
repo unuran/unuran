@@ -357,7 +357,7 @@ _unur_matrix_LU_invert (int dim, double *LU, int *p, double *inverse)
   CHECK_NULL(inverse,UNUR_ERR_NULL);
 
   /* allocate working array */
-  vector = _unur_malloc(dim*sizeof(double));
+  vector = _unur_xmalloc(dim*sizeof(double));
 
   for (i = 0; i < dim; i++){
     for(j=0;j<dim;j++) vector[j] = 0.;
@@ -429,8 +429,8 @@ _unur_matrix_invert_matrix(int dim, const double *A, double detmin, double *Ainv
   }
 
   /* allocate working space */
-  p = _unur_malloc(dim*sizeof(int));
-  LU = _unur_malloc(dim*dim*sizeof(double));
+  p = _unur_xmalloc(dim*sizeof(int));
+  LU = _unur_xmalloc(dim*dim*sizeof(double));
 
   /* compute LU decomposition */
   memcpy(LU, A, dim*dim*sizeof(double));
@@ -505,8 +505,8 @@ _unur_matrix_determinant ( int dim, const double *A )
   if (dim==1) return A[0];
 
   /* allocate working space */
-  p = _unur_malloc(dim*sizeof(int));
-  LU = _unur_malloc(dim*dim*sizeof(double));
+  p = _unur_xmalloc(dim*sizeof(int));
+  LU = _unur_xmalloc(dim*dim*sizeof(double));
 
   /* compute LU decomposition */
   memcpy(LU, A, dim*dim*sizeof(double));

@@ -111,7 +111,7 @@ unur_distr_discr_new( void )
   register int i;
 
   /* allocate structure */
-  distr = _unur_malloc( sizeof(struct unur_distr) );
+  distr = _unur_xmalloc( sizeof(struct unur_distr) );
   if (!distr) return NULL;
 
   /* set magic cookie */
@@ -205,7 +205,7 @@ _unur_distr_discr_clone( const struct unur_distr *distr )
   _unur_check_distr_object( distr, DISCR, NULL );
 
   /* allocate memory */
-  clone = _unur_malloc( sizeof(struct unur_distr) );
+  clone = _unur_xmalloc( sizeof(struct unur_distr) );
   
   /* copy distribution object into clone */
   memcpy( clone, distr, sizeof( struct unur_distr ) );
@@ -216,14 +216,14 @@ _unur_distr_discr_clone( const struct unur_distr *distr )
 
   /* copy probability vector into generator object (when there is one) */
   if (DISTR.pv) {
-    CLONE.pv = _unur_malloc( DISTR.n_pv * sizeof(double) );
+    CLONE.pv = _unur_xmalloc( DISTR.n_pv * sizeof(double) );
     memcpy( CLONE.pv, DISTR.pv, DISTR.n_pv * sizeof(double) );
   }
 
   /* copy user name for distribution */
   if (distr->name_str) {
     len = strlen(distr->name_str) + 1;
-    clone->name_str = _unur_malloc(len);
+    clone->name_str = _unur_xmalloc(len);
     memcpy( clone->name_str, distr->name_str, len );
     clone->name = clone->name_str;
   }
@@ -307,7 +307,7 @@ unur_distr_discr_set_pv( struct unur_distr *distr, const double *pv, int n_pv )
      (it is cheaper to do it when unur_init() is called */
 
   /* allocate memory for probability vector */
-  DISTR.pv = _unur_malloc( n_pv * sizeof(double) );
+  DISTR.pv = _unur_xmalloc( n_pv * sizeof(double) );
   if (!DISTR.pv) return UNUR_ERR_MALLOC;
 
   /* copy probability vector */
@@ -362,7 +362,7 @@ unur_distr_discr_make_pv( struct unur_distr *distr )
 
     /* first case: bounded domain */
     n_pv = DISTR.domain[1] - DISTR.domain[0];
-    pv = _unur_malloc( n_pv * sizeof(double) );
+    pv = _unur_xmalloc( n_pv * sizeof(double) );
     if (DISTR.pmf) {
       for (i=0; i<n_pv; i++)
 	pv[i] = _unur_discr_PMF(DISTR.domain[0]+i,distr);
@@ -408,7 +408,7 @@ unur_distr_discr_make_pv( struct unur_distr *distr )
 
     /* compute PV */
     for (n_alloc = size_alloc; n_alloc <= max_alloc; n_alloc += size_alloc) {
-      pv = _unur_realloc( pv, n_alloc * sizeof(double) );
+      pv = _unur_xrealloc( pv, n_alloc * sizeof(double) );
 
       if (DISTR.pmf) {
 	for (i=0; i<size_alloc; i++) {

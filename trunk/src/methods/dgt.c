@@ -218,7 +218,7 @@ unur_dgt_new( const struct unur_distr *distr )
   }
 
   /* allocate structure */
-  par = _unur_malloc( sizeof(struct unur_par) );
+  par = _unur_xmalloc( sizeof(struct unur_par) );
   COOKIE_SET(par,CK_DGT_PAR);
 
   /* copy input */
@@ -473,7 +473,7 @@ _unur_dgt_create( struct unur_par *par )
     gen->variant = (n_pv > DGT_VAR_THRESHOLD) ? DGT_VARFLAG_DIV : DGT_VARFLAG_ADD;
 
   /* allocation for cummulated probabilities */
-  GEN.cumpv = _unur_malloc( n_pv * sizeof(double) );
+  GEN.cumpv = _unur_xmalloc( n_pv * sizeof(double) );
 
   /* size of guide table */
   GEN.guide_size = (int)( n_pv * PAR.guide_factor);
@@ -482,7 +482,7 @@ _unur_dgt_create( struct unur_par *par )
     GEN.guide_size = 1;
 
   /* allocate memory for the guide table */
-  GEN.guide_table = _unur_malloc( GEN.guide_size * sizeof(int) );
+  GEN.guide_table = _unur_xmalloc( GEN.guide_size * sizeof(int) );
 
   /* return pointer to (almost empty) generator object */
   return gen;
@@ -517,9 +517,9 @@ _unur_dgt_clone( const struct unur_gen *gen )
   clone = _unur_generic_clone( gen, GENTYPE );
 
   /* copy data for distribution */
-  CLONE.cumpv = _unur_malloc( DISTR.n_pv * sizeof(double) );
+  CLONE.cumpv = _unur_xmalloc( DISTR.n_pv * sizeof(double) );
   memcpy( CLONE.cumpv, GEN.cumpv, DISTR.n_pv * sizeof(double) );
-  CLONE.guide_table = _unur_malloc( GEN.guide_size * sizeof(int) );
+  CLONE.guide_table = _unur_xmalloc( GEN.guide_size * sizeof(int) );
   memcpy( CLONE.guide_table, GEN.guide_table, GEN.guide_size * sizeof(int) );
 
   return clone;

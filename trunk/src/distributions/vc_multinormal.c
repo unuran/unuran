@@ -274,7 +274,7 @@ unur_distr_multinormal( int dim, const double *mean, const double *covar )
   LOGNORMCONSTANT = ( distr->dim * log(2 * M_PI) + log(det_covar) ) / 2.;
 
   /* mode */
-  DISTR.mode = _unur_malloc( distr->dim * sizeof(double) );
+  DISTR.mode = _unur_xmalloc( distr->dim * sizeof(double) );
   memcpy( DISTR.mode, DISTR.mean, distr->dim * sizeof(double) );
 
   /* volume below p.d.f. */

@@ -185,7 +185,7 @@ unur_dari_new( const struct unur_distr *distr )
   }
 
   /* allocate structure */
-  par = _unur_malloc(sizeof(struct unur_par));
+  par = _unur_xmalloc(sizeof(struct unur_par));
   COOKIE_SET(par,CK_DARI_PAR);
 
   /* copy input */
@@ -713,8 +713,8 @@ _unur_dari_create( struct unur_par *par )
     GEN.size = PAR.size;
 
   /* allocate */
-  GEN.hp = (GEN.size > 0) ? _unur_malloc( GEN.size * sizeof(double) ) : NULL;
-  GEN.hb = (GEN.size > 0) ? _unur_malloc( GEN.size * sizeof(char) )   : NULL;
+  GEN.hp = (GEN.size > 0) ? _unur_xmalloc( GEN.size * sizeof(double) ) : NULL;
+  GEN.hb = (GEN.size > 0) ? _unur_xmalloc( GEN.size * sizeof(char) )   : NULL;
 
   /* initialize parameters */
   /** TODO: diese initialisierung ist nur zur Sicherheit,
@@ -944,9 +944,9 @@ _unur_dari_clone( const struct unur_gen *gen )
 
   /* copy additional data */
   if (GEN.size > 0) {
-    CLONE.hp = _unur_malloc( GEN.size * sizeof(double) );
+    CLONE.hp = _unur_xmalloc( GEN.size * sizeof(double) );
     memcpy( CLONE.hp, GEN.hp, GEN.size * sizeof(double) );
-    CLONE.hb = _unur_malloc( GEN.size * sizeof(char) );
+    CLONE.hb = _unur_xmalloc( GEN.size * sizeof(char) );
     memcpy( CLONE.hb, GEN.hb, GEN.size * sizeof(char) );
   }
   

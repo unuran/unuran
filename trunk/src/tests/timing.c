@@ -120,7 +120,7 @@ unur_test_timing( struct unur_par *par,
   if (log_samplesize < 2) log_samplesize = 2;
 
   /* need an array to store timings */
-  time_gen = _unur_malloc((log_samplesize+1) * sizeof(double));
+  time_gen = _unur_xmalloc((log_samplesize+1) * sizeof(double));
 
   /* marginal generation time for one unifrom random number */
   time_uniform = unur_test_timing_uniform( par,log_samplesize );
@@ -129,7 +129,7 @@ unur_test_timing( struct unur_par *par,
 
   /* we need an array for the vector */
   if (_unur_gen_is_vec(par))
-    vec = _unur_malloc( par->distr->dim * sizeof(double) );
+    vec = _unur_xmalloc( par->distr->dim * sizeof(double) );
 
   /* initialize generator (and estimate setup time) */
   time_start = _unur_get_time();
@@ -346,17 +346,17 @@ double unur_test_timing_total_run( const struct unur_par *par, int samplesize, i
     return -1.;
 
   /* we need an array for storing timing results */
-  time = _unur_malloc( n_repeat * sizeof(double) );
+  time = _unur_xmalloc( n_repeat * sizeof(double) );
 
   /* we need an array for a random vector */
   if (_unur_gen_is_vec(par))
-    vec = _unur_malloc( par->distr->dim * sizeof(double) );
+    vec = _unur_xmalloc( par->distr->dim * sizeof(double) );
 
   /* make samples */
   for (rep = 0; rep < n_repeat; rep++) {
 
     /* make a working copy of parameter object */
-    par_tmp = _unur_malloc(sizeof(struct unur_par));
+    par_tmp = _unur_xmalloc(sizeof(struct unur_par));
     memcpy (par_tmp, par, sizeof(struct unur_par));
 
     /* start timer */

@@ -151,7 +151,7 @@ chi_chru_init( struct unur_gen *gen )
 
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
-    GEN.gen_param = _unur_malloc(GEN.n_gen_param * sizeof(double));
+    GEN.gen_param = _unur_xmalloc(GEN.n_gen_param * sizeof(double));
   }
 
   /* -X- setup code -X- */

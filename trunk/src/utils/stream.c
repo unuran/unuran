@@ -277,7 +277,7 @@ _unur_read_data( const char *filename, int no_of_entries, double **ar )
   }
 
   /* allocate memory for data */
-  data = _unur_malloc(memfactor * datasize * sizeof(double));
+  data = _unur_xmalloc(memfactor * datasize * sizeof(double));
 
   /* open the file with the data */
   fp = fopen(filename, "r");
@@ -295,7 +295,7 @@ _unur_read_data( const char *filename, int no_of_entries, double **ar )
     /* if necessary allocate more memory for array */
     if (i > memfactor*datasize - no_of_entries-2){
       memfactor++;
-      data = _unur_realloc(data, memfactor*datasize*sizeof(double));
+      data = _unur_xrealloc(data, memfactor*datasize*sizeof(double));
     }
 
     /* ignore all lines not starting with a double number */
@@ -323,7 +323,7 @@ _unur_read_data( const char *filename, int no_of_entries, double **ar )
   }   /* end of for -- read lines of file  */ 
 
   /* allocate exactly the memory needed */
-  data = _unur_realloc( data, (i+1) * sizeof(double) );
+  data = _unur_xrealloc( data, (i+1) * sizeof(double) );
 
   /* o.k. */
   *ar = data;

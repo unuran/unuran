@@ -341,7 +341,7 @@ unur_arou_new( const struct unur_distr *distr )
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"derivative of PDF"); return NULL; }
 
   /* allocate structure */
-  par = _unur_malloc( sizeof(struct unur_par) );
+  par = _unur_xmalloc( sizeof(struct unur_par) );
   COOKIE_SET(par,CK_AROU_PAR);
 
   /* copy input */
@@ -1097,7 +1097,7 @@ _unur_arou_clone( const struct unur_gen *gen )
   clone_prev = NULL;
   for (seg = GEN.seg; seg != NULL; seg = next) {
     /* copy segment */
-    clone_seg = _unur_malloc( sizeof(struct unur_arou_segment) );
+    clone_seg = _unur_xmalloc( sizeof(struct unur_arou_segment) );
     memcpy( clone_seg, seg, sizeof(struct unur_arou_segment) );
     if (clone_prev == NULL) {
       /* starting point of linked list */
@@ -1728,7 +1728,7 @@ _unur_arou_segment_new( struct unur_gen *gen, double x, double fx )
   }
 
   /* we need a new segment */
-  seg = _unur_malloc( sizeof(struct unur_arou_segment) );
+  seg = _unur_xmalloc( sizeof(struct unur_arou_segment) );
   seg->next = NULL; /* add eol marker */
   ++(GEN.n_segs);   /* increment counter for segments */
   COOKIE_SET(seg,CK_AROU_SEG);
@@ -2323,7 +2323,7 @@ _unur_arou_make_guide_table( struct unur_gen *gen )
      (we allocate blocks for maximal guide table.) */
   if (!GEN.guide) {
     int max_guide_size = (GEN.guide_factor > 0.) ? (GEN.max_segs * GEN.guide_factor) : 1;
-    GEN.guide = _unur_malloc( max_guide_size * sizeof(struct unur_arou_segment*) );
+    GEN.guide = _unur_xmalloc( max_guide_size * sizeof(struct unur_arou_segment*) );
   }
 
   /* first we need cumulated areas in segments */

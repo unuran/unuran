@@ -1013,7 +1013,7 @@ _unur_fstr_create_node (char *symb, double val, int token,
   }
   else {
     /* make new node */
-    node = _unur_malloc(sizeof(struct ftreenode)); 
+    node = _unur_xmalloc(sizeof(struct ftreenode)); 
     COOKIE_SET(node,CK_FSTR_TNODE);
 
     node->symbol = symbol[token].name; 

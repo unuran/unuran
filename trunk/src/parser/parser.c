@@ -69,7 +69,7 @@ _unur_parser_prepare_string( const char *str )
   /* length of string */
   len = strlen(str)+1;
   /* allocate memory for copy */
-  new = _unur_malloc( len * sizeof(char) );
+  new = _unur_xmalloc( len * sizeof(char) );
   /* copy memory */
   ptr = memcpy(new,str,len);
 

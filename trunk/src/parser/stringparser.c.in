@@ -856,7 +856,7 @@ _unur_str_distr_make_os (UNUR_DISTR *distr, const char *key, char *type_args, ch
 
   /* either exactly two arguments are given */
   if ( !strcmp(type_args, "tt") ) {
-    iarray = _unur_malloc( 2*sizeof(double) );
+    iarray = _unur_xmalloc( 2*sizeof(double) );
     iarray[0] = _unur_atoi( args[0] );
     iarray[1] = _unur_atoi( args[1] );
   }
@@ -2383,7 +2383,7 @@ _unur_parse_ilist( char *liststr, int **iarray )
     if (n_iarray >= n_alloc) {
       /* no --> allocate memory */
       n_alloc += 100;
-      iarr = _unur_realloc( iarr, n_alloc * sizeof(double) );
+      iarr = _unur_xrealloc( iarr, n_alloc * sizeof(double) );
     }
     
     /* get int */
@@ -2458,7 +2458,7 @@ _unur_parse_dlist( char *liststr, double **darray )
     if (n_darray >= n_alloc) {
       /* no --> allocate memory */
       n_alloc += 100;
-      darr = _unur_realloc( darr, n_alloc * sizeof(double) );
+      darr = _unur_xrealloc( darr, n_alloc * sizeof(double) );
     }
 
     /* extract double and write to array and increase counter */

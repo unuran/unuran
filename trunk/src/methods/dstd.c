@@ -200,7 +200,7 @@ unur_dstd_new( const struct unur_distr *distr )
   }
 
   /* allocate structure */
-  par = _unur_malloc(sizeof(struct unur_par));
+  par = _unur_xmalloc(sizeof(struct unur_par));
   COOKIE_SET(par,CK_DSTD_PAR);
 
   /* copy input */
@@ -406,11 +406,11 @@ _unur_dstd_clone( const struct unur_gen *gen )
 
   /* copy parameters for special generators */
   if (GEN.gen_param) {
-    CLONE.gen_param = _unur_malloc( GEN.n_gen_param * sizeof(double) );
+    CLONE.gen_param = _unur_xmalloc( GEN.n_gen_param * sizeof(double) );
     memcpy( CLONE.gen_param, GEN.gen_param, GEN.n_gen_param * sizeof(double) );
   }
   if (GEN.gen_iparam) {
-    CLONE.gen_iparam = _unur_malloc( GEN.n_gen_iparam * sizeof(int) );
+    CLONE.gen_iparam = _unur_xmalloc( GEN.n_gen_iparam * sizeof(int) );
     memcpy( CLONE.gen_iparam, GEN.gen_iparam, GEN.n_gen_iparam * sizeof(int) );
   }
 

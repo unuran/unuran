@@ -260,7 +260,7 @@ unur_ninv_new( const struct unur_distr *distr )
   /* if default variant is Newton's method, then we also need the PDF ! */
 
   /* allocate structure */
-  par = _unur_malloc(sizeof(struct unur_par));
+  par = _unur_xmalloc(sizeof(struct unur_par));
   COOKIE_SET(par,CK_NINV_PAR);
 
   /* copy input */
@@ -1053,8 +1053,8 @@ _unur_ninv_create_table( struct unur_gen *gen )
   CHECK_NULL(gen, UNUR_ERR_NULL);
   _unur_check_gen_object(gen, NINV, UNUR_ERR_GEN_INVALID);
 
-  GEN.table    = _unur_realloc( GEN.table,   table_size * sizeof(double));
-  GEN.f_table  = _unur_realloc( GEN.f_table, table_size * sizeof(double));
+  GEN.table    = _unur_xrealloc( GEN.table,   table_size * sizeof(double));
+  GEN.f_table  = _unur_xrealloc( GEN.f_table, table_size * sizeof(double));
 
   /* get arbitrary points */
   GEN.s[0] = max( DISTR.domain[0], -10.);
@@ -1142,9 +1142,9 @@ _unur_ninv_clone( const struct unur_gen *gen )
 
   /* copy additional data for generator object */
   if (GEN.table) {
-    CLONE.table = _unur_malloc( GEN.table_size * sizeof(double) );
+    CLONE.table = _unur_xmalloc( GEN.table_size * sizeof(double) );
     memcpy( CLONE.table, GEN.table, GEN.table_size * sizeof(double) );
-    CLONE.f_table = _unur_malloc( GEN.table_size * sizeof(double) );
+    CLONE.f_table = _unur_xmalloc( GEN.table_size * sizeof(double) );
     memcpy( CLONE.f_table, GEN.f_table, GEN.table_size * sizeof(double) );
   }
 

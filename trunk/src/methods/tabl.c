@@ -270,7 +270,7 @@ unur_tabl_new( const struct unur_distr *distr )
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"PDF"); return NULL; }
 
   /* allocate structure */
-  par = _unur_malloc( sizeof(struct unur_par) );
+  par = _unur_xmalloc( sizeof(struct unur_par) );
   COOKIE_SET(par,CK_TABL_PAR);
 
   /* copy input */
@@ -1095,7 +1095,7 @@ _unur_tabl_clone( const struct unur_gen *gen )
   clone_prev = NULL;
   for (iv = GEN.iv; iv != NULL; iv = next) {
     /* copy segment */
-    clone_iv = _unur_malloc( sizeof(struct unur_tabl_interval) );
+    clone_iv = _unur_xmalloc( sizeof(struct unur_tabl_interval) );
     memcpy( clone_iv, iv, sizeof(struct unur_tabl_interval) );
     if (clone_prev == NULL) {
       /* starting point of linked list */
@@ -1433,9 +1433,9 @@ _unur_tabl_get_starting_intervals_from_slopes( struct unur_par *par, struct unur
   for ( i=0; i < 2*PAR.n_slopes; i+=2 ) {
     /* get a new interval and link into list */
     if (i==0)
-      iv = GEN.iv = _unur_malloc(sizeof(struct unur_tabl_interval));    /* the first interval */
+      iv = GEN.iv = _unur_xmalloc(sizeof(struct unur_tabl_interval));    /* the first interval */
     else
-      iv = iv->next = _unur_malloc(sizeof(struct unur_tabl_interval));  /* all the other intervals */
+      iv = iv->next = _unur_xmalloc(sizeof(struct unur_tabl_interval));  /* all the other intervals */
     ++(GEN.n_ivs);
     COOKIE_SET(iv,CK_TABL_IV);
 
@@ -1532,7 +1532,7 @@ _unur_tabl_get_starting_intervals_from_mode( struct unur_par *par, struct unur_g
   /* compute initial intervals */
   while (1) {
     /* the first interval */
-    iv = GEN.iv = _unur_malloc(sizeof(struct unur_tabl_interval));
+    iv = GEN.iv = _unur_xmalloc(sizeof(struct unur_tabl_interval));
     ++(GEN.n_ivs);
     COOKIE_SET(iv,CK_TABL_IV);
 
@@ -1555,7 +1555,7 @@ _unur_tabl_get_starting_intervals_from_mode( struct unur_par *par, struct unur_g
     iv->xmin = GEN.bleft;
 
     /* the second interval */
-    iv = iv->next = _unur_malloc(sizeof(struct unur_tabl_interval));  /* all the other intervals */
+    iv = iv->next = _unur_xmalloc(sizeof(struct unur_tabl_interval));  /* all the other intervals */
     ++(GEN.n_ivs);
     COOKIE_SET(iv,CK_TABL_IV);
 
@@ -1892,7 +1892,7 @@ _unur_tabl_split_interval( struct unur_gen *gen,
   }
 
   /* we need a new interval */
-  iv_new = _unur_malloc(sizeof(struct unur_tabl_interval));
+  iv_new = _unur_xmalloc(sizeof(struct unur_tabl_interval));
   ++(GEN.n_ivs);
   COOKIE_SET(iv_new,CK_TABL_IV);
 
@@ -1984,7 +1984,7 @@ _unur_tabl_make_guide_table( struct unur_gen *gen )
      (we allocate blocks for maximal guide table.) */
   if (!GEN.guide) {
     int max_guide_size = (GEN.guide_factor > 0.) ? (GEN.max_ivs * GEN.guide_factor) : 1;
-    GEN.guide = _unur_malloc( max_guide_size * sizeof(struct unur_tabl_interval*) );
+    GEN.guide = _unur_xmalloc( max_guide_size * sizeof(struct unur_tabl_interval*) );
   }
 
   /* first we need the cumulated areas of rectangles */

@@ -116,7 +116,7 @@ unur_auto_new( const struct unur_distr *distr )
   _unur_check_NULL(GENTYPE,distr,NULL);
 
   /* allocate structure */
-  par = _unur_malloc(sizeof(struct unur_par));
+  par = _unur_xmalloc(sizeof(struct unur_par));
   COOKIE_SET(par,CK_AUTO_PAR);
 
   /* copy input */

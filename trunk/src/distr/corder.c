@@ -139,7 +139,7 @@ unur_distr_corder_new( const struct unur_distr *distr, int n, int k )
   }
 
   /* allocate structure */
-  os = _unur_malloc( sizeof(struct unur_distr) );
+  os = _unur_xmalloc( sizeof(struct unur_distr) );
   if (!os) return NULL;
 
   /* set magic cookie */

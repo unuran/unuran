@@ -227,7 +227,7 @@ _unur_generic_create( struct unur_par *par )
   struct unur_gen *gen;
 
   /* allocate memory for generator object */
-  gen = _unur_malloc( sizeof(struct unur_gen) );
+  gen = _unur_xmalloc( sizeof(struct unur_gen) );
 
   /* copy distribution object into generator object */
   gen->distr = (par->distr) ? _unur_distr_clone(par->distr) : NULL;
@@ -269,7 +269,7 @@ _unur_generic_clone( const struct unur_gen *gen, const char *type )
   struct unur_gen *clone;
 
   /* allocate memory for generator object */
-  clone = _unur_malloc( sizeof(struct unur_gen) );
+  clone = _unur_xmalloc( sizeof(struct unur_gen) );
 
   /* copy main part */
   memcpy( clone, gen, sizeof(struct unur_gen) );
@@ -355,7 +355,7 @@ _unur_gen_list_set( struct unur_gen *gen, int n_gen_list )
   }
   
   /* allocate memory for array */
-  gen_list = _unur_malloc (n_gen_list * sizeof(struct unur_gen *));
+  gen_list = _unur_xmalloc (n_gen_list * sizeof(struct unur_gen *));
   
   /* copy pointer */
   for (i=0; i<n_gen_list; i++)
@@ -398,7 +398,7 @@ _unur_gen_list_clone( struct unur_gen **gen_list, int n_gen_list )
     _unur_check_NULL( "gen_list_clone", *(gen_list+i), NULL );
 
   /* allocate memory for array */
-  clone_list = _unur_malloc (n_gen_list * sizeof(struct unur_gen *));
+  clone_list = _unur_xmalloc (n_gen_list * sizeof(struct unur_gen *));
 
   /* make copy of generator objects */
   /* There are (should be) only two possibilities: 

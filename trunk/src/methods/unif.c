@@ -111,7 +111,7 @@ unur_unif_new( const struct unur_distr *dummy )
   struct unur_par *par;
 
   /* allocate structure */
-  par = _unur_malloc(sizeof(struct unur_par));
+  par = _unur_xmalloc(sizeof(struct unur_par));
   COOKIE_SET(par,CK_UNIF_PAR);
 
   /* there is no need for a distribution object */

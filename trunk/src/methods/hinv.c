@@ -278,7 +278,7 @@ unur_hinv_new( const struct unur_distr *distr )
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"CDF"); return NULL; }
 
   /* allocate structure */
-  par = _unur_malloc(sizeof(struct unur_par));
+  par = _unur_xmalloc(sizeof(struct unur_par));
   COOKIE_SET(par,CK_HINV_PAR);
 
   /* copy input */
@@ -1053,7 +1053,7 @@ _unur_hinv_interval_new( struct unur_gen *gen, double p, double u )
   }
 
   /* we need new interval */
-  iv = _unur_malloc( sizeof(struct unur_hinv_interval) );
+  iv = _unur_xmalloc( sizeof(struct unur_hinv_interval) );
   COOKIE_SET(iv,CK_HINV_IV);
 
   /* compute and store data */
@@ -1286,7 +1286,7 @@ _unur_hinv_make_guide_table( struct unur_gen *gen )
   if (!GEN.guide) {
     GEN.guide_size = GEN.N * GEN.guide_factor;
     if (GEN.guide_size <= 0) GEN.guide_size = 1; 
-    GEN.guide = _unur_malloc( GEN.guide_size * sizeof(int) );
+    GEN.guide = _unur_xmalloc( GEN.guide_size * sizeof(int) );
   }
 
   imax = (GEN.N-2) * (GEN.order+2);
@@ -1347,9 +1347,9 @@ _unur_hinv_clone( const struct unur_gen *gen )
   clone = _unur_generic_clone( gen, GENTYPE );
 
   /* copy tables for generator object */
-  CLONE.intervals = _unur_malloc( GEN.N*(GEN.order+2) * sizeof(double) );
+  CLONE.intervals = _unur_xmalloc( GEN.N*(GEN.order+2) * sizeof(double) );
   memcpy( CLONE.intervals, GEN.intervals, GEN.N*(GEN.order+2) * sizeof(double) );
-  CLONE.guide = _unur_malloc( GEN.guide_size * sizeof(int) );
+  CLONE.guide = _unur_xmalloc( GEN.guide_size * sizeof(int) );
   memcpy( CLONE.guide, GEN.guide, GEN.guide_size * sizeof(int) );
 
   return clone;

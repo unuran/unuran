@@ -100,7 +100,7 @@ _unur_fstr_dup_tree (const struct ftreenode *root)
   /* check arguments */
   COOKIE_CHECK(root,CK_FSTR_TNODE,NULL);
 
-  dup = _unur_malloc(sizeof(struct ftreenode));
+  dup = _unur_xmalloc(sizeof(struct ftreenode));
   memcpy(dup,root,sizeof(struct ftreenode));
   if (root->left)  dup->left  = _unur_fstr_dup_tree(root->left);
   if (root->right) dup->right = _unur_fstr_dup_tree(root->right);

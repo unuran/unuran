@@ -161,7 +161,7 @@ unur_mcorr_new( const struct unur_distr *distr )
   COOKIE_CHECK(distr,CK_DISTR_MATR,NULL);
 
   /* allocate structure */
-  par = _unur_malloc(sizeof(struct unur_par));
+  par = _unur_xmalloc(sizeof(struct unur_par));
   COOKIE_SET(par,CK_MCORR_PAR);
 
   /* copy input */
@@ -287,7 +287,7 @@ _unur_mcorr_create( struct unur_par *par )
   gen->clone = _unur_mcorr_clone;
 
   /* allocate working array */
-  GEN.H = _unur_malloc(GEN.dim * GEN.dim * sizeof(double));
+  GEN.H = _unur_xmalloc(GEN.dim * GEN.dim * sizeof(double));
 
   /* return pointer to (almost empty) generator object */
   return gen;
@@ -322,7 +322,7 @@ _unur_mcorr_clone( const struct unur_gen *gen )
   clone = _unur_generic_clone( gen, GENTYPE );
 
   /* allocate new working array */
-  CLONE.H = _unur_malloc(GEN.dim * GEN.dim * sizeof(double));
+  CLONE.H = _unur_xmalloc(GEN.dim * GEN.dim * sizeof(double));
 
   return clone;
 

@@ -234,7 +234,7 @@ unur_dau_new( const struct unur_distr *distr )
   }
 
   /* allocate structure */
-  par = _unur_malloc( sizeof(struct unur_par) );
+  par = _unur_xmalloc( sizeof(struct unur_par) );
   COOKIE_SET(par,CK_DAU_PAR);
 
   /* copy input */
@@ -348,7 +348,7 @@ _unur_dau_init( struct unur_par *par )
   }
 
   /* make list of poor and rich strips */
-  begin = _unur_malloc( (GEN.urn_size+2) * sizeof(int) );
+  begin = _unur_xmalloc( (GEN.urn_size+2) * sizeof(int) );
   poor = begin;                    /* poor strips are stored at the beginning ... */
   rich = begin + GEN.urn_size + 1; /* ... rich strips at the end of the list      */
 
@@ -496,8 +496,8 @@ _unur_dau_create( struct unur_par *par)
     GEN.urn_size = GEN.len;
 
   /* allocate memory for the tables */
-  GEN.jx = _unur_malloc( GEN.urn_size * sizeof(int) );
-  GEN.qx = _unur_malloc( GEN.urn_size * sizeof(double) );
+  GEN.jx = _unur_xmalloc( GEN.urn_size * sizeof(int) );
+  GEN.qx = _unur_xmalloc( GEN.urn_size * sizeof(double) );
 
   /* return pointer to (almost empty) generator object */
   return gen;
@@ -532,9 +532,9 @@ _unur_dau_clone( const struct unur_gen *gen )
   clone = _unur_generic_clone( gen, GENTYPE );
 
   /* copy data for generator */
-  CLONE.jx = _unur_malloc( GEN.urn_size * sizeof(int) );
+  CLONE.jx = _unur_xmalloc( GEN.urn_size * sizeof(int) );
   memcpy( CLONE.jx, GEN.jx, GEN.urn_size * sizeof(int) );
-  CLONE.qx = _unur_malloc( GEN.urn_size * sizeof(double) );
+  CLONE.qx = _unur_xmalloc( GEN.urn_size * sizeof(double) );
   memcpy( CLONE.qx, GEN.qx, GEN.urn_size * sizeof(double) );
 
   return clone;

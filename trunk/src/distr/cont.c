@@ -122,7 +122,7 @@ unur_distr_cont_new( void )
   int i;
 
   /* allocate structure */
-  distr = _unur_malloc( sizeof(struct unur_distr) );
+  distr = _unur_xmalloc( sizeof(struct unur_distr) );
   if (!distr) return NULL;
 
   /* set magic cookie */
@@ -216,7 +216,7 @@ _unur_distr_cont_clone( const struct unur_distr *distr )
   _unur_check_distr_object( distr, CONT, NULL );
 
   /* allocate memory */
-  clone = _unur_malloc( sizeof(struct unur_distr) );
+  clone = _unur_xmalloc( sizeof(struct unur_distr) );
   
   /* copy distribution object into clone */
   memcpy( clone, distr, sizeof( struct unur_distr ) );
@@ -230,7 +230,7 @@ _unur_distr_cont_clone( const struct unur_distr *distr )
   /* copy user name for distribution */
   if (distr->name_str) {
     len = strlen(distr->name_str) + 1;
-    clone->name_str = _unur_malloc(len);
+    clone->name_str = _unur_xmalloc(len);
     memcpy( clone->name_str, distr->name_str, len );
     clone->name = clone->name_str;
   }

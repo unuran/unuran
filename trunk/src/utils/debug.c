@@ -133,7 +133,7 @@ _unur_make_genid( const char *gentype )
   char *genid;
 
   /* allocate memory for identifier */
-  genid = _unur_malloc(sizeof(char)*(strlen(gentype) + 6));
+  genid = _unur_xmalloc(sizeof(char)*(strlen(gentype) + 6));
 
   /* make new identifier */
   ++count; count %= 1000;      /* 1000 different generators should be enough */

@@ -39,13 +39,13 @@
 /*---------------------------------------------------------------------------*/
 #ifdef WITH_DMALLOC
 /*---------------------------------------------------------------------------*/
-#define _unur_malloc(size)        xmalloc((size))
-#define _unur_realloc(ptr,size)   xrealloc((ptr),(size))
+#define _unur_xmalloc(size)        xmalloc((size))
+#define _unur_xrealloc(ptr,size)   xrealloc((ptr),(size))
 /*---------------------------------------------------------------------------*/
 #else
 /*---------------------------------------------------------------------------*/
-void *_unur_malloc(size_t size);
-void *_unur_realloc(void *ptr, size_t size);
+void *_unur_xmalloc(size_t size);
+void *_unur_xrealloc(void *ptr, size_t size);
 /*---------------------------------------------------------------------------*/
 #endif   /* WITH_DMALLOC */
 /*---------------------------------------------------------------------------*/

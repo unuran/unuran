@@ -250,7 +250,7 @@ unur_vempk_new( const struct unur_distr *distr )
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"size of observed sample"); return NULL; }
 
   /* allocate structure */
-  par = _unur_malloc(sizeof(struct unur_par));
+  par = _unur_xmalloc(sizeof(struct unur_par));
   COOKIE_SET(par,CK_VEMPK_PAR);
 
   /* copy input */
@@ -457,8 +457,8 @@ _unur_vempk_init( struct unur_par *par )
   if (!gen) { free(par); return NULL; }
 
   /* compute mean vector and covariance matrix of sample */
-  GEN.xbar = _unur_malloc( GEN.dim * sizeof(double) );
-  S  = _unur_malloc( GEN.dim * GEN.dim * sizeof(double) );
+  GEN.xbar = _unur_xmalloc( GEN.dim * sizeof(double) );
+  S  = _unur_xmalloc( GEN.dim * GEN.dim * sizeof(double) );
   compute_mean_covar( DISTR.sample, DISTR.n_sample, GEN.dim, GEN.xbar, S );
   
   /* make a distribution object for multinormal distribution */
@@ -597,7 +597,7 @@ _unur_vempk_clone( const struct unur_gen *gen )
   CLONE.observ = clone->distr->data.cvemp.sample;   /* observations in distribution object */
 
   if (GEN.xbar) {
-    CLONE.xbar = _unur_malloc( GEN.dim * sizeof(double) );
+    CLONE.xbar = _unur_xmalloc( GEN.dim * sizeof(double) );
     memcpy( CLONE.xbar, GEN.xbar, GEN.dim * sizeof(double) );
   }
 

@@ -189,9 +189,9 @@ poisson_pdtabl_init( struct unur_gen *gen )
 
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
-    GEN.gen_param = _unur_malloc(GEN.n_gen_param * sizeof(double));
+    GEN.gen_param = _unur_xmalloc(GEN.n_gen_param * sizeof(double));
     GEN.n_gen_iparam = MAX_gen_iparams;
-    GEN.gen_iparam = _unur_malloc(GEN.n_gen_param * sizeof(int));
+    GEN.gen_iparam = _unur_xmalloc(GEN.n_gen_param * sizeof(int));
   }
 
   /* -X- setup code -X- */
@@ -283,9 +283,9 @@ poisson_pdac_init( struct unur_gen *gen )
 
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
-    GEN.gen_param = _unur_malloc(GEN.n_gen_param * sizeof(double));
+    GEN.gen_param = _unur_xmalloc(GEN.n_gen_param * sizeof(double));
     GEN.n_gen_iparam = MAX_gen_iparams;
-    GEN.gen_iparam = _unur_malloc(GEN.n_gen_param * sizeof(int));
+    GEN.gen_iparam = _unur_xmalloc(GEN.n_gen_param * sizeof(int));
   }
 
   /* -X- setup code -X- */
@@ -557,9 +557,9 @@ poisson_pprsc_init( struct unur_gen *gen )
 
   if (GEN.gen_param == NULL) {
     GEN.n_gen_param = MAX_gen_params;
-    GEN.gen_param = _unur_malloc(GEN.n_gen_param * sizeof(double));
+    GEN.gen_param = _unur_xmalloc(GEN.n_gen_param * sizeof(double));
     GEN.n_gen_iparam = MAX_gen_iparams;
-    GEN.gen_iparam = _unur_malloc(GEN.n_gen_param * sizeof(int));
+    GEN.gen_iparam = _unur_xmalloc(GEN.n_gen_param * sizeof(int));
   }
 
   /* -X- setup code -X- */

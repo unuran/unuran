@@ -55,7 +55,7 @@ _unur_string_new ( void )
 {
   struct unur_string *string;
   
-  string = _unur_malloc(sizeof(struct unur_string));
+  string = _unur_xmalloc(sizeof(struct unur_string));
   string->text = NULL;
   string->length = 0;
   string->allocated = 0;
@@ -88,7 +88,7 @@ _unur_string_append ( struct unur_string *string, const char *format, ... )
   /* Resize the allocated memory if necessary */
   while (string->length + MAXSTRINGSIZE + 1 > string->allocated) {
     string->allocated += MEMBLOCKSIZE;
-    string->text = _unur_realloc( string->text, string->allocated );
+    string->text = _unur_xrealloc( string->text, string->allocated );
   }
 
   /* print into string */
@@ -134,7 +134,7 @@ _unur_string_appendtext ( struct unur_string *string, const char *text )
   /* Resize the allocated memory if necessary */
   while (string->length + len + 1 > string->allocated) {
     string->allocated += MEMBLOCKSIZE;
-    string->text = _unur_realloc( string->text, string->allocated );
+    string->text = _unur_xrealloc( string->text, string->allocated );
   }
 
   /* copy text into string */

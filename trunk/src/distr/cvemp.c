@@ -88,7 +88,7 @@ unur_distr_cvemp_new( int dim )
   }
 
   /* allocate structure */
-  distr = _unur_malloc( sizeof(struct unur_distr) );
+  distr = _unur_xmalloc( sizeof(struct unur_distr) );
   if (!distr) return NULL;
 
   /* set magic cookie */
@@ -150,21 +150,21 @@ _unur_distr_cvemp_clone( const struct unur_distr *distr )
   _unur_check_distr_object( distr, CVEMP, NULL );
 
   /* allocate memory */
-  clone = _unur_malloc( sizeof(struct unur_distr) );
+  clone = _unur_xmalloc( sizeof(struct unur_distr) );
   
   /* copy distribution object into clone */
   memcpy( clone, distr, sizeof( struct unur_distr ) );
 
   /* copy data about sample into generator object (when there is one) */
   if (DISTR.sample) {
-    CLONE.sample = _unur_malloc( DISTR.n_sample * distr->dim * sizeof(double) );
+    CLONE.sample = _unur_xmalloc( DISTR.n_sample * distr->dim * sizeof(double) );
     memcpy( CLONE.sample, DISTR.sample, DISTR.n_sample * distr->dim * sizeof(double) );
   }
 
   /* copy user name for distribution */
   if (distr->name_str) {
     len = strlen(distr->name_str) + 1;
-    clone->name_str = _unur_malloc(len);
+    clone->name_str = _unur_xmalloc(len);
     memcpy( clone->name_str, distr->name_str, len );
     clone->name = clone->name_str;
   }
@@ -232,7 +232,7 @@ unur_distr_cvemp_set_data( struct unur_distr *distr, const double *sample, int n
   }
 
   /* allocate memory for sample */
-  DISTR.sample = _unur_malloc( n_sample * distr->dim * sizeof(double) );
+  DISTR.sample = _unur_xmalloc( n_sample * distr->dim * sizeof(double) );
   if (!DISTR.sample) return UNUR_ERR_MALLOC;
 
   /* copy observed sample */

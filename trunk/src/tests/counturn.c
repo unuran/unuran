@@ -175,7 +175,7 @@ unur_test_count_urn( struct unur_gen *gen, int samplesize, int verbosity, FILE *
       double *vec;
       int dim;
       dim = unur_get_dimension(gen);
-      vec = _unur_malloc( dim * sizeof(double) );
+      vec = _unur_xmalloc( dim * sizeof(double) );
       for( j=0; j<samplesize; j++ )
 	_unur_sample_vec(gen,vec);
       free(vec);

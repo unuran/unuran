@@ -223,7 +223,7 @@ _unur_test_chi2_discr( struct unur_gen *gen,
   n_pv = DISTR.n_pv;
 
   /* allocate memory for observations */
-  observed = _unur_malloc( n_pv * sizeof(int));
+  observed = _unur_xmalloc( n_pv * sizeof(int));
 
   /* clear array */
   for( i=0; i<n_pv; i++ )
@@ -329,7 +329,7 @@ _unur_test_chi2_cont( struct unur_gen *gen,
     intervals = CHI2_INTERVALS_DEFAULT;
 
   /* allocate memory for observations */
-  observed = _unur_malloc( intervals * sizeof(int));
+  observed = _unur_xmalloc( intervals * sizeof(int));
 
   /* clear array */
   for( i=0; i<intervals; i++ )
@@ -455,7 +455,7 @@ _unur_test_chi2_cemp( struct unur_gen *gen,
     intervals = CHI2_INTERVALS_DEFAULT;
 
   /* allocate memory for observations */
-  observed = _unur_malloc( intervals * sizeof(int));
+  observed = _unur_xmalloc( intervals * sizeof(int));
 
   /* clear array */
   for( i=0; i<intervals; i++ )
@@ -602,8 +602,8 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
   if (DISTR.stdmarginals==NULL) {
     _unur_error(gen->distr->name,UNUR_ERR_DISTR_REQUIRED,"standardized marginals");
     return -2.; }
-  marginals = _unur_malloc(dim * sizeof(UNUR_DISTR *));
-  marginal_cdf = _unur_malloc(dim * sizeof(UNUR_FUNCT_CONT *));
+  marginals = _unur_xmalloc(dim * sizeof(UNUR_DISTR *));
+  marginal_cdf = _unur_xmalloc(dim * sizeof(UNUR_FUNCT_CONT *));
   for (i=0; i<dim; i++) {
     marginals[i] = DISTR.stdmarginals[i];
     marginal_cdf[i] = unur_distr_cont_get_cdf(DISTR.stdmarginals[i]);
@@ -614,7 +614,7 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
   }
 
   /* setup of intervals for each dimension */
-  n_intervals_marginal = _unur_malloc(dim * sizeof(int));
+  n_intervals_marginal = _unur_xmalloc(dim * sizeof(int));
   n_intervals_total = 1;
   itmp = n_intervals;
   for (i=0; i<dim; i++) {
@@ -630,11 +630,11 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
   }
 
   /* allocate working space memory */  
-  X   = _unur_malloc( dim * sizeof(double));
-  U   = _unur_malloc( dim * sizeof(double));
-  Linv  = _unur_malloc( dim * dim * sizeof(double));
-  bm  = _unur_malloc( dim * n_intervals * sizeof(int)); /* bins for marginal tests */
-  b  = _unur_malloc( n_intervals_total * sizeof(int)); /* bins for chi2 test */
+  X   = _unur_xmalloc( dim * sizeof(double));
+  U   = _unur_xmalloc( dim * sizeof(double));
+  Linv  = _unur_xmalloc( dim * dim * sizeof(double));
+  bm  = _unur_xmalloc( dim * n_intervals * sizeof(int)); /* bins for marginal tests */
+  b  = _unur_xmalloc( n_intervals_total * sizeof(int)); /* bins for chi2 test */
   
   /* check if memory could be allocated */
   if ( !(n_intervals_marginal && X && U && bm && Linv && b) )  {

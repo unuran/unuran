@@ -311,7 +311,7 @@ _unur_tdr_clone( const struct unur_gen *gen )
   clone_prev = NULL;
   for (iv = GEN.iv; iv != NULL; iv = next) {
     /* copy segment */
-    clone_iv = _unur_malloc( sizeof(struct unur_tdr_interval) );
+    clone_iv = _unur_xmalloc( sizeof(struct unur_tdr_interval) );
     memcpy( clone_iv, iv, sizeof(struct unur_tdr_interval) );
     if (clone_prev == NULL) {
       /* starting point of linked list */
@@ -1459,7 +1459,7 @@ _unur_tdr_interval_new( struct unur_gen *gen, double x, double fx, int is_mode )
   }
 
   /* we need a new segment */
-  iv = _unur_malloc( sizeof(struct unur_tdr_interval) );
+  iv = _unur_xmalloc( sizeof(struct unur_tdr_interval) );
   iv->next = NULL; /* add eol marker */
   ++(GEN.n_ivs);   /* increment counter for intervals */
   COOKIE_SET(iv,CK_TDR_IV);
@@ -2491,7 +2491,7 @@ _unur_tdr_make_guide_table( struct unur_gen *gen )
      (we allocate blocks for maximal guide table.) */
   if (!GEN.guide) {
     int max_guide_size = (GEN.guide_factor > 0.) ? (GEN.max_ivs * GEN.guide_factor) : 1;
-    GEN.guide = _unur_malloc( max_guide_size * sizeof(struct unur_tdr_interval*) );
+    GEN.guide = _unur_xmalloc( max_guide_size * sizeof(struct unur_tdr_interval*) );
   }
 
   /* first we need cumulated areas in intervals */

@@ -214,7 +214,7 @@ unur_cstd_new( const struct unur_distr *distr )
   }
 
   /* allocate structure */
-  par = _unur_malloc(sizeof(struct unur_par));
+  par = _unur_xmalloc(sizeof(struct unur_par));
   COOKIE_SET(par,CK_CSTD_PAR);
 
   /* copy input */
@@ -613,7 +613,7 @@ _unur_cstd_clone( const struct unur_gen *gen )
 
   /* copy parameters for special generators */
   if (GEN.gen_param)
-    CLONE.gen_param = _unur_malloc( CLONE.n_gen_param * sizeof(double) );
+    CLONE.gen_param = _unur_xmalloc( CLONE.n_gen_param * sizeof(double) );
 
   return clone;
 

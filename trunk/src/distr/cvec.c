@@ -105,7 +105,7 @@ unur_distr_cvec_new( int dim )
   }
 
   /* allocate structure */
-  distr = _unur_malloc( sizeof(struct unur_distr) );
+  distr = _unur_xmalloc( sizeof(struct unur_distr) );
   if (!distr) return NULL;
 
   /* set magic cookie */
@@ -191,39 +191,39 @@ _unur_distr_cvec_clone( const struct unur_distr *distr )
   _unur_check_distr_object( distr, CVEC, NULL );
 
   /* allocate memory */
-  clone = _unur_malloc( sizeof(struct unur_distr) );
+  clone = _unur_xmalloc( sizeof(struct unur_distr) );
   
   /* copy distribution object into clone */
   memcpy( clone, distr, sizeof( struct unur_distr ) );
 
   /* copy data about distribution */
   if (DISTR.mean) {
-    CLONE.mean = _unur_malloc( distr->dim * sizeof(double) );
+    CLONE.mean = _unur_xmalloc( distr->dim * sizeof(double) );
     memcpy( CLONE.mean, DISTR.mean, distr->dim * sizeof(double) );
   }
 
   if (DISTR.covar) {
-    CLONE.covar = _unur_malloc( distr->dim * distr->dim * sizeof(double) );
+    CLONE.covar = _unur_xmalloc( distr->dim * distr->dim * sizeof(double) );
     memcpy( CLONE.covar, DISTR.covar, distr->dim * distr->dim * sizeof(double) );
   }
 
   if (DISTR.cholesky) {
-    CLONE.cholesky = _unur_malloc( distr->dim * distr->dim * sizeof(double) );
+    CLONE.cholesky = _unur_xmalloc( distr->dim * distr->dim * sizeof(double) );
     memcpy( CLONE.cholesky, DISTR.cholesky, distr->dim * distr->dim * sizeof(double) );
   }
 
   if (DISTR.covar_inv) {
-    CLONE.covar_inv = _unur_malloc( distr->dim * distr->dim * sizeof(double) );
+    CLONE.covar_inv = _unur_xmalloc( distr->dim * distr->dim * sizeof(double) );
     memcpy( CLONE.covar_inv, DISTR.covar_inv, distr->dim * distr->dim * sizeof(double) );
   }
 
   if (DISTR.rankcorr) {
-    CLONE.rankcorr = _unur_malloc( distr->dim * distr->dim * sizeof(double) );
+    CLONE.rankcorr = _unur_xmalloc( distr->dim * distr->dim * sizeof(double) );
     memcpy( CLONE.rankcorr, DISTR.rankcorr, distr->dim * distr->dim * sizeof(double) );
   }
 
   if (DISTR.mode) {
-    CLONE.mode = _unur_malloc( distr->dim * sizeof(double) );
+    CLONE.mode = _unur_xmalloc( distr->dim * sizeof(double) );
     memcpy( CLONE.mode, DISTR.mode, distr->dim * sizeof(double) );
   }
 
@@ -235,7 +235,7 @@ _unur_distr_cvec_clone( const struct unur_distr *distr )
   
   for (i=0; i<UNUR_DISTR_MAXPARAMS; i++) {
     if (DISTR.params[i]) {
-      CLONE.params[i] = _unur_malloc( DISTR.n_params[i] * sizeof(double) );
+      CLONE.params[i] = _unur_xmalloc( DISTR.n_params[i] * sizeof(double) );
       memcpy( CLONE.params[i], DISTR.params[i], DISTR.n_params[i] * sizeof(double) );
     }
   }
@@ -243,7 +243,7 @@ _unur_distr_cvec_clone( const struct unur_distr *distr )
   /* copy user name for distribution */
   if (distr->name_str) {
     len = strlen(distr->name_str) + 1;
-    clone->name_str = _unur_malloc(len);
+    clone->name_str = _unur_xmalloc(len);
     memcpy( clone->name_str, distr->name_str, len );
     clone->name = clone->name_str;
   }
@@ -490,7 +490,7 @@ unur_distr_cvec_set_mean( struct unur_distr *distr, const double *mean )
 
   /* we have to allocate memory first */
   if (DISTR.mean == NULL)
-    DISTR.mean = _unur_malloc( distr->dim * sizeof(double) );
+    DISTR.mean = _unur_xmalloc( distr->dim * sizeof(double) );
 
   if (mean)
     /* mean vector given --> copy */
@@ -571,9 +571,9 @@ unur_distr_cvec_set_covar( struct unur_distr *distr, const double *covar )
 
   /* we have to allocate memory first */
   if (DISTR.covar == NULL)
-    DISTR.covar = _unur_malloc( dim * dim * sizeof(double) );
+    DISTR.covar = _unur_xmalloc( dim * dim * sizeof(double) );
   if (DISTR.cholesky == NULL)
-    DISTR.cholesky = _unur_malloc( dim * dim * sizeof(double) );   
+    DISTR.cholesky = _unur_xmalloc( dim * dim * sizeof(double) );   
 
   /* if covar == NULL --> use identity matrix */
   if (covar==NULL) { 
@@ -715,7 +715,7 @@ unur_distr_cvec_get_covar_inv ( struct unur_distr *distr )
 
   /* allocate memory */
   if (DISTR.covar_inv == NULL)
-    DISTR.covar_inv = _unur_malloc( dim * dim * sizeof(double) );   
+    DISTR.covar_inv = _unur_xmalloc( dim * dim * sizeof(double) );   
 
   /* calculate inverse covariance matrix */
   if ( !(distr->set & UNUR_DISTR_SET_COVAR_INV) )
@@ -766,7 +766,7 @@ unur_distr_cvec_set_rankcorr( struct unur_distr *distr, const double *rankcorr )
 
   /* we have to allocate memory first */
   if (DISTR.rankcorr == NULL)
-    DISTR.rankcorr = _unur_malloc( dim * dim * sizeof(double) );
+    DISTR.rankcorr = _unur_xmalloc( dim * dim * sizeof(double) );
 
   /* if rankcorr == NULL --> use identity matrix */
   if (rankcorr==NULL) { 
@@ -799,7 +799,7 @@ unur_distr_cvec_set_rankcorr( struct unur_distr *distr, const double *rankcorr )
     memcpy( DISTR.rankcorr, rankcorr, dim * dim * sizeof(double) );
 
     /* compute Cholesky decomposition and check for positive definitness */
-    cholesky = _unur_malloc( dim * dim * sizeof(double) );   
+    cholesky = _unur_xmalloc( dim * dim * sizeof(double) );   
     if (_unur_matrix_cholesky_decomposition(dim, rankcorr, cholesky) != UNUR_SUCCESS) {
       _unur_error(distr->name, UNUR_ERR_DISTR_DOMAIN, 
 		  "rankcorriance matrix not positive definite");
@@ -885,7 +885,7 @@ unur_distr_cvec_set_marginals ( struct unur_distr *distr, struct unur_distr *mar
   clone = _unur_distr_clone( marginal );
 
   /* allocate memory for array */
-  DISTR.marginals = _unur_malloc (distr->dim * sizeof(struct unur_distr *));
+  DISTR.marginals = _unur_xmalloc (distr->dim * sizeof(struct unur_distr *));
 
   /* copy pointer */
   for (i=0; i<distr->dim; i++)
@@ -932,7 +932,7 @@ unur_distr_cvec_set_stdmarginals ( struct unur_distr *distr, struct unur_distr *
   clone = _unur_distr_clone( stdmarginal );
 
   /* allocate memory for array */
-  DISTR.stdmarginals = _unur_malloc (distr->dim * sizeof(struct unur_distr *));
+  DISTR.stdmarginals = _unur_xmalloc (distr->dim * sizeof(struct unur_distr *));
 
   /* copy pointer */
   for (i=0; i<distr->dim; i++)
@@ -980,7 +980,7 @@ unur_distr_cvec_set_marginal_array ( struct unur_distr *distr, struct unur_distr
     _unur_distr_cvec_marginals_free(DISTR.marginals, distr->dim);
 
   /* allocate memory for array */
-  DISTR.marginals = _unur_malloc (distr->dim * sizeof(struct unur_distr *));
+  DISTR.marginals = _unur_xmalloc (distr->dim * sizeof(struct unur_distr *));
 
   /* make copy of marginal distribution objects */
   for (i=0; i<distr->dim; i++) 
@@ -1028,7 +1028,7 @@ unur_distr_cvec_set_stdmarginal_array ( struct unur_distr *distr, struct unur_di
     _unur_distr_cvec_marginals_free(DISTR.stdmarginals, distr->dim);
 
   /* allocate memory for array */
-  DISTR.stdmarginals = _unur_malloc (distr->dim * sizeof(struct unur_distr *));
+  DISTR.stdmarginals = _unur_xmalloc (distr->dim * sizeof(struct unur_distr *));
 
   /* make copy of standardized marginal distribution objects */
   for (i=0; i<distr->dim; i++) 
@@ -1073,7 +1073,7 @@ unur_distr_cvec_set_marginal_list ( struct unur_distr *distr, ... )
   _unur_check_distr_object( distr, CVEC, UNUR_ERR_DISTR_INVALID );
 
   /* allocate memory for array */
-  marginal_list = _unur_malloc (distr->dim * sizeof(struct unur_distr *));
+  marginal_list = _unur_xmalloc (distr->dim * sizeof(struct unur_distr *));
   for (i=0; i<distr->dim; i++) marginal_list[i] = NULL;
 
   /* make copy of marginal distribution objects */
@@ -1143,7 +1143,7 @@ unur_distr_cvec_set_stdmarginal_list ( struct unur_distr *distr, ... )
   _unur_check_distr_object( distr, CVEC, UNUR_ERR_DISTR_INVALID );
 
   /* allocate memory for array */
-  stdmarginal_list = _unur_malloc (distr->dim * sizeof(struct unur_distr *));
+  stdmarginal_list = _unur_xmalloc (distr->dim * sizeof(struct unur_distr *));
   for (i=0; i<distr->dim; i++) stdmarginal_list[i] = NULL;
 
   /* make copy of standardized marginal distribution objects */
@@ -1281,7 +1281,7 @@ _unur_distr_cvec_marginals_clone ( struct unur_distr **marginals, int dim )
   }
 
   /* allocate memory for array */
-  clone = _unur_malloc (dim * sizeof(struct unur_distr *));
+  clone = _unur_xmalloc (dim * sizeof(struct unur_distr *));
 
   if (_unur_distr_cvec_marginals_are_equal(marginals)) {
       clone[0] = _unur_distr_clone( marginals[0] );
@@ -1383,7 +1383,7 @@ unur_distr_cvec_set_pdfparams( struct unur_distr *distr, int par, const double *
   }
 
   /* allocate memory */
-  _unur_realloc( DISTR.params[par], n_params * sizeof(double) );
+  _unur_xrealloc( DISTR.params[par], n_params * sizeof(double) );
 
   /* copy parameters */
   memcpy( DISTR.params[par], params, n_params*sizeof(double) );
@@ -1459,7 +1459,7 @@ unur_distr_cvec_set_mode( struct unur_distr *distr, const double *mode )
   /* mode already set ? */
   if (DISTR.mode == NULL) {
     /* we have to allocate memory first */
-    DISTR.mode = _unur_malloc( distr->dim * sizeof(double) );
+    DISTR.mode = _unur_xmalloc( distr->dim * sizeof(double) );
   }
 
   /* copy data */

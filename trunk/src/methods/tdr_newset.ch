@@ -74,7 +74,7 @@ unur_tdr_new( const struct unur_distr* distr )
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"derivative of PDF"); return NULL; }
 
   /* allocate structure */
-  par = _unur_malloc( sizeof(struct unur_par) );
+  par = _unur_xmalloc( sizeof(struct unur_par) );
   COOKIE_SET(par,CK_TDR_PAR);
 
   /* copy input */

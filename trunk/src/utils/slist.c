@@ -53,7 +53,7 @@ _unur_slist_new( void )
   struct unur_slist *slist;
 
   /* allocate structure */
-  slist = _unur_malloc(sizeof(struct unur_slist));
+  slist = _unur_xmalloc(sizeof(struct unur_slist));
   COOKIE_SET(slist,CK_SLIST);
 
   /* initialize */
@@ -139,7 +139,7 @@ _unur_slist_append( struct unur_slist *slist, void *element )
   COOKIE_CHECK(slist,CK_SLIST,UNUR_ERR_COOKIE);
 
   /* allocate memory for the list of blocks */
-  slist->ptr = _unur_realloc(slist->ptr,(slist->n_ptr+1)*sizeof(void *));
+  slist->ptr = _unur_xrealloc(slist->ptr,(slist->n_ptr+1)*sizeof(void *));
 
   /* store allocated element */
   slist->ptr[slist->n_ptr] = element;

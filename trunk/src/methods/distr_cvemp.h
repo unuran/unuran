@@ -63,7 +63,9 @@ UNUR_DISTR *unur_distr_cvemp_new( int dim );
    empirical univariate distribution.
 */
 
-/* Essential parameters */
+/* ==DOC
+   @subsubheading Essential parameters
+*/
 
 int unur_distr_cvemp_set_data( UNUR_DISTR *distribution, double *sample, int n_sample );
 /* 

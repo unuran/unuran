@@ -60,12 +60,12 @@ UNUR_DISTR *unur_distr_discr_new( void );
 */
 
 
-/* Essential parameters. */
+/* ==DOC
+   @subsubheading Essential parameters
 
-/* 
    There are two interfaces for discrete univariate distributions:
    Either provide a (finite) probability vector.
-   Or provide a probability mass function (p.m.f.). For the latter
+   Or provide a probability mass function (PMF). For the latter
    case there exist also a couple of derived parameters that are not
    required when a probability vector is given.
 
@@ -92,8 +92,9 @@ int unur_distr_discr_get_prob( UNUR_DISTR *distribution, double **prob );
    @code{0} is returned and @code{prob} is set to NULL.
 */
 
+
 int unur_distr_discr_set_pmf( UNUR_DISTR *distribution, UNUR_FUNCT_DISCR *pmf );
-/* See @code{unur_distr_discr_set_cdf}           */
+/* */
 
 int unur_distr_discr_set_cdf( UNUR_DISTR *distribution, UNUR_FUNCT_DISCR *cdf );
 /* 
@@ -113,8 +114,9 @@ int unur_distr_discr_set_cdf( UNUR_DISTR *distribution, UNUR_FUNCT_DISCR *cdf );
 
 */
 
+
 UNUR_FUNCT_DISCR *unur_distr_discr_get_pmf( UNUR_DISTR *distribution );
-/* See @code{unur_distr_discr_get_cdf}           */
+/* */
 
 UNUR_FUNCT_DISCR *unur_distr_discr_get_cdf( UNUR_DISTR *distribution );
 /* 
@@ -125,8 +127,9 @@ UNUR_FUNCT_DISCR *unur_distr_discr_get_cdf( UNUR_DISTR *distribution );
    the NULL pointer is returned.
 */
 
+
 double unur_distr_discr_eval_pmf( int k, UNUR_DISTR *distribution );
-/* See @code{unur_distr_discr_eval_cdf}           */
+/* */
 
 double unur_distr_discr_eval_cdf( int k, UNUR_DISTR *distribution );
 /* 
@@ -184,10 +187,9 @@ int unur_distr_discr_get_domain( UNUR_DISTR *distribution, int *left, int *right
 */
 
 
-/* 
-   Derived parameters.
-*/   
-/* 
+/* ==DOC
+   @subsubheading Derived parameters
+
    The following paramters MUST be set whenever one of the essential
    parameters have been set or changed (and the parameter is required
    for the chosen method).

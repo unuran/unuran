@@ -36,57 +36,62 @@
  *                                                                           *
  *****************************************************************************/
 
-/*
-  For handling distributions objects of type @code{UNUR_DISTR} are
-  used. All data about a distribution are stored on this object. 
-  UNURAN provides functions that return such objects for standard
-  distributions ((=>) UNURAN library of standard distributions).
-  It is then possible to change this distribution object by various
-  set calls. Moreover it is possible to build a distribution object
-  entirely from scratch. For this purpose there exists an
-  unur_distr_<type>_new() call for each object type that returns an
-  empty object of this type (eg. univariate contiuous) which can be
-  filled with the appropriate set calls.
+/* 
+   =DISTRIBUTION  general  [0]  Handling distribution objects
 
-  Notice that there are essential data about a distribution, eg. the
-  PDF, a list of (shape, scale, location) parameters for the
-  distribution, and the domain of (truncated) distributions.
-  And there exist parameters that are/can be derived from these,
-  eg. the mode of the distribution or the area below the given PDF
-  (which need not be normalized for may methods).
-  UNURAN keeps track of parameters which are known. Thus if one of the
-  essential parameters is changed all derived parameters are marked as
-  unknown and must be set again if these are required for a the
-  chosen generator method.
+   =DESCRIPTION
+      For handling distributions objects of type @code{UNUR_DISTR} are
+      used. All data about a distribution are stored on this object. 
+      UNURAN provides functions that return such objects for standard
+      distributions ((=>) UNURAN library of standard distributions).
+      It is then possible to change this distribution object by various
+      set calls. Moreover it is possible to build a distribution object
+      entirely from scratch. For this purpose there exists an
+      unur_distr_<type>_new() call for each object type that returns an
+      empty object of this type (eg. univariate contiuous) which can be
+      filled with the appropriate set calls.
+      
+      Notice that there are essential data about a distribution, eg. the
+      PDF, a list of (shape, scale, location) parameters for the
+      distribution, and the domain of (truncated) distributions.
+      And there exist parameters that are/can be derived from these,
+      eg. the mode of the distribution or the area below the given PDF
+      (which need not be normalized for may methods).
+      UNURAN keeps track of parameters which are known. Thus if one of the
+      essential parameters is changed all derived parameters are marked as
+      unknown and must be set again if these are required for a the
+      chosen generator method.
+      
+      The library can handle truncated distributions, that is,
+      distribution that are derived from (standard) distribution by simply
+      restrict its domain to a subset. There is a subtle difference
+      between changing the domain by a unur_distr_cont_set_domain() call
+      and changing the (truncated) domain for an existing generator object
+      by a unur_<method>_chg_truncated() call (if available).
+      The domain of the given distribuiton is used to create the generator
+      object. This is always handled as the domain of a non-truncated
+      distribution (although it really was derived from one UNURAN
+      standard distributions by resetting the domain). This domain can
+      then be restricted to a subset for the generator object. 
+      Generator methods that require a recreation of the generator object
+      Notice: when the domain is changed have a unur_<method>_chg_domain()
+      instead. For this call there are of course no restrictions on the
+      given domain (i.e., it is possible to increase the domain of the
+      distribution).
+      
+      For the objects provided by the ((=>) UNURAN library of standard
+      distributions calls for updating these parameters exist (one for
+      each parameter to avoid computational overhead since not all
+      parameters are required for all generator methods).
+      
+      All the following calls only handle distribution object. Since every
+      generator object has its own copy of a distribution object, there are 
+      calls for a chosen method that change this copy of distribution object.
+      NEVER extract the distribution object out of the generator object and 
+      run one of the below set calls on it.
+      (How should the poor generator object know what has happend?)
 
-  The library can handle truncated distributions, that is,
-  distribution that are derived from (standard) distribution by simply
-  restrict its domain to a subset. There is a subtle difference
-  between changing the domain by a unur_distr_cont_set_domain() call
-  and changing the (truncated) domain for an existing generator object
-  by a unur_<method>_chg_truncated() call (if available).
-  The domain of the given distribuiton is used to create the generator
-  object. This is always handled as the domain of a non-truncated
-  distribution (although it really was derived from one UNURAN
-  standard distributions by resetting the domain). This domain can
-  then be restricted to a subset for the generator object. 
-  Generator methods that require a recreation of the generator object
-  Notice: when the domain is changed have a unur_<method>_chg_domain()
-  instead. For this call there are of course no restrictions on the
-  given domain (i.e., it is possible to increase the domain of the
-  distribution).
-
-  For the objects provided by the ((=>) UNURAN library of standard
-  distributions calls for updating these parameters exist (one for
-  each parameter to avoid computational overhead since not all
-  parameters are required for all generator methods).
-
-  All the following calls only handle distribution object. Since every
-  generator object has its own copy of a distribution object, there are 
-  calls for a chosen method that change this copy of distribution object.
-  NEVER extract the distribution object out of the generator object and 
-  run one of the below set calls on it.
-  (How should the poor generator object know what has happend?)
+   =END
 */
 
 /*---------------------------------------------------------------------------*/
@@ -106,13 +111,16 @@ enum {
   Parameters common to all distributions.
 */
 
+/* =ROUTINES */
+
 void unur_distr_free( UNUR_DISTR *distribution );
 /* 
    Destroy a distribution object.
 */
 
-
 int unur_distr_set_name( UNUR_DISTR *distribution, const char *name );
+/* */
+
 const char *unur_distr_get_name( UNUR_DISTR *distribution );
 /* 
    Set and get name of distribution.
@@ -124,6 +132,7 @@ int unur_distr_get_dim( UNUR_DISTR *distribution );
    Get number of components of random vector (its dimension).
 */
 
+
 unsigned int unur_distr_get_type( UNUR_DISTR *distribution );
 /* 
    Get type of distribution. See description of unur_distr_new() for
@@ -133,24 +142,28 @@ unsigned int unur_distr_get_type( UNUR_DISTR *distribution );
 
 int unur_distr_is_cont( UNUR_DISTR *distribution );
 /* 
-   Test if distribution is a univariate continuous distribution.
+   TRUE if distribution is a univariate continuous distribution.
 */
 
 int unur_distr_is_cvec( UNUR_DISTR *distribution );
 /* 
-   Test if distribution is a multivariate continuous distribution.
+   TRUE if distribution is a multivariate continuous distribution.
 */
 
 int unur_distr_is_cemp( UNUR_DISTR *distribution );
 /* 
-   Test if distribution is an empirical univariate continuous distribution,
+   TRUE if distribution is an empirical univariate continuous distribution,
    i.e. a sample.
 */
 
 int unur_distr_is_discr( UNUR_DISTR *distribution );
 /* 
-   Test if distribution is a univariate discrete distribution.
+   TRUE if distribution is a univariate discrete distribution.
 */
 
+/* =END */
+
 /*---------------------------------------------------------------------------*/
+
+
 

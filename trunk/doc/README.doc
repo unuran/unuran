@@ -87,6 +87,11 @@ The following TAGs are valid:
 	The text consists of blocks which are separated by one or more
 	blank lines outside of C comments (everything within a C
 	comment is treated as a single line).
+	In particular blocks end at a `*/' followed by an empty line.
+
+	IMPORTANT:
+	A function with no description should be immediately followed
+	by `/* */' (on the next line).
 
 	All C comment markers `/*' and `*/' are removed.
 

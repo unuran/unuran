@@ -59,7 +59,9 @@ UNUR_DISTR *unur_distr_cemp_new( void );
    Create a new (empty) object for empirical univariate continuous distribution.
 */
 
-/* Essential parameters */
+/* ==DOC
+   @subsubheading Essential parameters
+*/
 
 int unur_distr_cemp_set_data( UNUR_DISTR *distribution, double *sample, int n_sample );
 /* 

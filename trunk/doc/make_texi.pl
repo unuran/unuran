@@ -173,6 +173,7 @@ sub scan_ROUTINES {
 		    "UNUR_DISTR",
 		    "UNUR_FUNCT_CONT",
 		    "struct",
+		    "const",
 		    "void",
 		    "int",
 		    "double",
@@ -214,6 +215,7 @@ sub scan_ROUTINES {
     # process blocks
     my $fkt_block = '';
     foreach $block (@blocks) {
+
 	# remove anyting that starts with an #
 	$block =~ s/^\#.*$//mg;
 
@@ -224,52 +226,61 @@ sub scan_ROUTINES {
 	# skill over empty blocks
 	next unless $block;
 
+	# "verbatim" block ?
+	if ($block =~/^\s*==DOC/) {
+	    # remove subTAG and copy text verbatim
+	    $block =~ s/^\s*==DOC\s*//;
+	    $proc .= "$block\n\n";
+	    next;  # block
+	}
+
 	# split into function declaration and its description
 	(my $fkt, my $body) = split /\;/, $block, 2; 
+
+	# check function type
+	my $type_ok = 0;
+	foreach $type (@C_TYPES) {
+	    if ("$fkt " =~ /^\s*$type /) {
+		$type_ok = 1;
+		last;
+	    }
+	}
+	# if this is not a valid type, skip to next block.
+	next unless $type_ok;
 
 	# add blanks around braces
 	$fkt =~ s/\(/ \( /g;
 	$fkt =~ s/\)/ \) /g;
 
-	# get function type
-	(my $fn_type, my $rest) = split /[\s]+/, $fkt, 2;
+	# get argument list of function
+	(my $fkt_decl, my $fn_args) = split /\s+[\(\)]\s+/, $fkt, 3; 
+	$fn_args =~ s/\s+(\*+)/$1 /g;	# move pointer '*' from argument name to type
+	my @argslist = split /\s*\,\s*/, $fn_args;
+
+	# $fkt_decl should contain of at least two words
+	unless ($fkt_decl =~ /^\s*(.*)\s+([\*\w+]+)\s*$/ ) {
+	    die "type or name missing for function: '$fkt_decl'";
+	}
+	
+	# get function type and name
+	# the first part in $fkt_decl is the function type,
+	# the last word is the function name
+	my $fn_type = $1;
+	my $fn_name = $2;
 
 	# pointer ?
 	my $pointer = (($fn_type =~ /(\*+)$/) ? $1 : '');
-
-	# check function type
-	my $type_ok = 0;
-	foreach $type (@C_TYPES) {
-	    if ($fn_type eq $type) {
-		$type_ok = 1;
-		last;
-	    }
-	}
-	
-	# if this is not a valid type, skip to next block.
-	next unless $type_ok;
-
-	# get function name
-	(my $fn_name, $rest) = split /[\s\(]+/, $rest, 2;
-
-	# pointer ?
 	unless ($pointer) {
 	    if ($fn_name =~ /^(\*+)/) {
 		$pointer = $1;
 		$fn_name =~ s/^(\*+)//;
 	    }
 	}
-
-	# argument list of function
-	$rest =~ s/\s*\)\s*$//;     # remove trailing brace ')'
-	$rest =~ s/\s+(\*+)/$1 /g;  # move pointer '*' from argument name to type
-
-	my @argslist = split /\s*\,\s*/, $rest;
 	
 	# write entry
 	my $first = 1;
 	$fkt_block .= (($defblock_open) ? "\@deftypefnx" : "\@deftypefn");
-	$fkt_block .= " %%%Function%%% $fn_type$pointer $fn_name (";
+	$fkt_block .= " %%%Function%%% \{$fn_type$pointer\} $fn_name (";
 	foreach $arg (@argslist) {
 	    (my $type, my $arg_name) = split /\s+/, $arg, 2;
 	    if ($first) { $first = 0; }
@@ -303,7 +314,7 @@ sub scan_ROUTINES {
 	}
     }
 
-    die "last function without description" if $defblock_open;
+    die "last function without description: $fkt_block" if $defblock_open;
 
     # store new lines
     $$entry = $proc;
@@ -314,3 +325,8 @@ sub scan_ROUTINES {
 
 ############################################################
 
+sub scan_DESCRIPTION {
+    return;
+} # end of scan_DESCRIPTION() 
+
+############################################################

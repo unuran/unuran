@@ -21,7 +21,7 @@
 			 "scan" => \&scan_METHOD_ABSTRACT },
      
      "=DESCRIPTION" => { "required" => "yes",
-			 "scan" => \&scan_METHOD_DESCRIPTION },
+			 "scan" => \&scan_DESCRIPTION },
      
      "=ROUTINES"    => { "required" => "yes",
 			 "scan" => \&scan_ROUTINES },
@@ -139,12 +139,6 @@ sub scan_METHOD_ABSTRACT {
 
 ############################################################
 
-sub scan_METHOD_DESCRIPTION {
-    return;
-}
-
-############################################################
-
 sub format_METHOD {
 
     # check distribution types
@@ -213,7 +207,7 @@ sub format_METHOD {
 	    $texi_METHODs .= $in_METHODs->{$method}->{"=DESCRIPTION"}."\n\n";
 
 	    # function reference 
-	    $texi_METHODs .= "\n\@unnumberedsubsubsec Function reference\n\n";
+	    $texi_METHODs .= "\n\@subsubheading Function reference\n\n";
 	    $texi_METHODs .= $in_METHODs->{$method}->{"=ROUTINES"}."\n\n";
 
 	    # end of header file

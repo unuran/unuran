@@ -63,7 +63,9 @@ UNUR_DISTR *unur_distr_cvec_new( int dim );
    univariate distribution.
 */
 
-/* Essential parameters. */
+/* ==DOC
+   @subsubheading Essential parameters
+*/
 
 int unur_distr_cvec_set_pdf( UNUR_DISTR *distribution, UNUR_FUNCT_CVEC *pdf );
 /* 
@@ -241,10 +243,9 @@ int unur_distr_cvec_get_pdfparams( UNUR_DISTR *distribution, int par, double **p
    Warning: Do not change the entries in @var{params}!
 */
 
-/* 
-   Derived parameters.
-*/   
-/*   
+/* ==DOC
+   @subsubheading Derived parameters
+
    The following paramters MUST be set whenever one of the essential
    parameters have been set or changed (and the parameter is required
    for the chosen method).

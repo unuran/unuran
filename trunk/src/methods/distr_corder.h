@@ -82,8 +82,8 @@ UNUR_DISTR *unur_distr_corder_get_distribution( UNUR_DISTR *distribution );
 
 
 
-/* 
-   Essential parameters.
+/* ==DOC
+   @subsubheading Essential parameters
 */
 
 int unur_distr_corder_set_rank( UNUR_DISTR *distribution, int n, int k );
@@ -101,7 +101,7 @@ int unur_distr_corder_get_rank( UNUR_DISTR *distribution, int *n, int *k );
    In case of error @code{0} is returned.
 */
 
-/* 
+/* ==DOC
    Additionally most of the set and get calls for continuous
    univariate distributions work. The most important exceptions are
    that the PDF and CDF cannot be changed and
@@ -199,10 +199,9 @@ int unur_distr_corder_get_rank( UNUR_DISTR *distribution, int *n, int *k );
    (Macro)
 */
 
-/* 
-   Derived parameters.
-*/   
-/*   
+/* ==DOC
+   @subsubheading Derived parameters
+
    The following paramters MUST be set whenever one of the essential
    parameters have been set or changed (and the parameter is required
    for the chosen method).

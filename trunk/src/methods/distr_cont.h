@@ -58,21 +58,21 @@ UNUR_DISTR *unur_distr_cont_new( void );
    Create a new (empty) object for univariate continuous distribution.
 */
 
-/* 
-   Essential parameters.
+/* ==DOC
+   @subsubheading Essential parameters
 */
 
 int unur_distr_cont_set_pdf( UNUR_DISTR *distribution, UNUR_FUNCT_CONT *pdf );
-/* See @code{unur_distr_cont_set_cdf}           */
+/* */
 
 int unur_distr_cont_set_dpdf( UNUR_DISTR *distribution, UNUR_FUNCT_CONT *dpdf );
-/* See @code{unur_distr_cont_set_cdf}           */
+/* */
 
 int unur_distr_cont_set_cdf( UNUR_DISTR *distribution, UNUR_FUNCT_CONT *cdf );
 /* 
-   Set respective pointer to the probability density function (pdf),
-   the derivative of the probability density function (dpdf) and the
-   cumulative distribution function (cdf) of the distribution.
+   Set respective pointer to the probability density function (PDF),
+   the derivative of the probability density function (dPDF) and the
+   cumulative distribution function (CDF) of the distribution.
    The type of each of these functions must be of type
    double funct(double x, UNUR_DISTR *distr).
 
@@ -109,10 +109,10 @@ int unur_distr_cont_set_cdf( UNUR_DISTR *distribution, UNUR_FUNCT_CONT *cdf );
 */
 
 UNUR_FUNCT_CONT *unur_distr_cont_get_pdf( UNUR_DISTR *distribution );
-/* See @code{unur_distr_cont_get_cdf}           */
+/* */
 
 UNUR_FUNCT_CONT *unur_distr_cont_get_dpdf( UNUR_DISTR *distribution );
-/* See @code{unur_distr_cont_get_cdf}           */
+/* */
 
 UNUR_FUNCT_CONT *unur_distr_cont_get_cdf( UNUR_DISTR *distribution );
 /* 
@@ -124,10 +124,10 @@ UNUR_FUNCT_CONT *unur_distr_cont_get_cdf( UNUR_DISTR *distribution );
 */
 
 double unur_distr_cont_eval_pdf( double x, UNUR_DISTR *distribution );
-/* See @code{unur_distr_cont_eval_cdf}           */
+/* */
 
 double unur_distr_cont_eval_dpdf( double x, UNUR_DISTR *distribution );
-/* See @code{unur_distr_cont_eval_cdf}           */
+/* */
 
 double unur_distr_cont_eval_cdf( double x, UNUR_DISTR *distribution );
 /* 
@@ -190,10 +190,9 @@ int unur_distr_cont_get_truncated( UNUR_DISTR *distribution, double *left, doubl
 */
 
 
-/* 
-   Derived parameters.
-*/   
-/*   
+/* ==DOC
+   @subsubheading Derived parameters
+
    The following paramters MUST be set whenever one of the essential
    parameters have been set or changed (and the parameter is required
    for the chosen method).

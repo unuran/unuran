@@ -7,6 +7,9 @@
      "=ROUTINES"    => { "required" => "yes",
 			 "scan" => \&scan_ROUTINES },
      
+     "=DESCRIPTION" => { "required" => "no",
+			 "scan" => \&scan_DESCRIPTION },
+     
      "=END"         => { "required" => "no",
 			 "scan" => \&scan_END },
      );
@@ -118,8 +121,11 @@ sub format_DISTR {
 	$texi_DISTRs .= "\@node $distr\n";
 	$texi_DISTRs .= "\@section ".$in_DISTRs->{$distr}->{"=NAME"}." ($distr)\n";
 
+	# description for distribution
+	$texi_DISTRs .= $in_DISTRs->{$distr}->{"=DESCRIPTION"}."\n\n";
+
 	# function reference
-	$texi_DISTRs .= "\n\@unnumberedsubsec Function reference\n\n";
+	$texi_DISTRs .= "\n\@subheading Function reference\n\n";
 	$texi_DISTRs .= $in_DISTRs->{$distr}->{"=ROUTINES"}."\n\n";
 
 	# end of header file

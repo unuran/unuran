@@ -84,6 +84,12 @@ typedef int UNUR_VFUNCT_CVEC(double *result, double *x, struct unur_distr *distr
 /*****************************************************************************/
 
 #include <distr.h>
+#include <distr_cemp.h>
+#include <distr_cont.h>
+#include <distr_corder.h>
+#include <distr_cvec.h>
+#include <distr_cvemp.h>
+#include <distr_discr.h>
 
 /*****************************************************************************/
 /**  Function prototypes for manipulating generator objects                 **/

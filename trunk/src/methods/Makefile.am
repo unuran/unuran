@@ -53,7 +53,8 @@ noinst_HEADERS = \
  x_math.h x_math_source.h \
  x_umalloc_source.h \
  x_urng.h \
- distr.h distr_struct.h distr_source.h \
+ distr.h distr_cemp.h distr_cont.h distr_corder.h distr_cvec.h distr_cvemp.h \
+   distr_discr.h distr_struct.h distr_source.h \
  arou.h  arou_struct.h \
  empk.h  empk_struct.h \
  cstd.h  cstd_struct.h \

@@ -1462,7 +1462,7 @@ unur_distr_cont_set_pdfparams_vec( struct unur_distr *distr, int par, const doub
 
   /* check new parameter for distribution */
   if (par < 0 || par >= UNUR_DISTR_MAXPARAMS ) {
-    _unur_error(NULL,UNUR_ERR_DISTR_NPARAMS,"");
+    _unur_error(NULL,UNUR_ERR_DISTR_NPARAMS,"invalid parameter position");
     return UNUR_ERR_DISTR_NPARAMS;
   }
 
@@ -1509,7 +1509,7 @@ unur_distr_cont_get_pdfparams_vec( const struct unur_distr *distr, int par, cons
 
   /* check new parameter for distribution */
   if (par < 0 || par >= UNUR_DISTR_MAXPARAMS ) {
-    _unur_error(NULL,UNUR_ERR_DISTR_NPARAMS,"");
+    _unur_error(NULL,UNUR_ERR_DISTR_NPARAMS,"invalid parameter position");
     *param_vecs = NULL;
     return 0;
   }

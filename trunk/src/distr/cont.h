@@ -326,10 +326,7 @@ int unur_distr_cont_set_pdfparams_vec( UNUR_DISTR *distribution, int par, const 
    appropriate nonnegative number.)
 
    The entries of a this parameter are given by the array @var{param_vec}
-   of size @var{n_param_vec}. Notice that using this interface an
-   An (@i{n} x @i{m})-matrix has to be stored in an array of length
-   @var{n_params} = @i{n} times @i{m}; where the rows of the matrix
-   are stored consecutively in this array.
+   of size @var{n_param_vec}. 
 
    If an error occurs no parameters are copied into the parameter
    object @code{unur_errno} is set to @code{UNUR_ERR_DISTR_DATA}.
@@ -345,17 +342,6 @@ int unur_distr_cont_get_pdfparams_vec( const UNUR_DISTR *distribution, int par, 
 
    @emph{Important:} Do @strong{not} change the entries in @var{param_vecs}!
 */
-
-
-/* ==DOC
-   @subsubheading Derived parameters
-
-   The following paramters @strong{must} be set whenever one of the
-   essential parameters has been set or changed (and the parameter is
-   required for the chosen method).
-*/
-
-
 
 
 int unur_distr_cont_set_logpdfstr( UNUR_DISTR *distribution, const char *logpdfstr );

@@ -1,4 +1,3 @@
-
 /*****************************************************************************
  *                                                                           *
  *          UNURAN -- Universal Non-Uniform Random number generator          *
@@ -86,12 +85,13 @@
 
 #define HINV_XDEVIATION    (0.05)
 /* Used for splitting intervals. When the u-error is estimated for an        */
-/* interval then the CDF is evaluate in the center of the x-interval. This   */
-/* could be used as splitting point of the interval. However, this might     */
-/* result in slow convergence. A much more stable point is the center of     */
-/* the u-interval. However, this requires an additional evalution of the     */
-/* CDF. Thus we use the following rule: if CDF(center of x-interval) is      */
-/* close to the center of the u-interval use the first, otherwise use the    */
+/* interval then the CDF is evaluated in the approximate center of the       */
+/* u-interval. This could be used as splitting point of the interval.        */
+/* However, this might result in slow convergence. A much more stable        */
+/* point is the center of the x-interval. However, this requires an          */
+/* additional evalution of the CDF.                                          */
+/* Thus we use the following rule: If CDF(approx. center of u-int) is        */
+/* close to the center of the x-interval use the first, otherwise use the    */
 /* latter. HINV_XDEVIATION is the threshold value for relative distance      */
 /* between these two points.                                                 */
 /* As a rule-of-thumb larger values of HINV_XDEVIATION result in more        */
@@ -159,7 +159,8 @@ static struct unur_hinv_interval *_unur_hinv_interval_new( struct unur_gen *gen,
 /*---------------------------------------------------------------------------*/
 
 static struct unur_hinv_interval *_unur_hinv_interval_adapt( struct unur_gen *gen, 
-							     struct unur_hinv_interval *iv );
+							     struct unur_hinv_interval *iv, 
+							     int *error_count_shortinterval );
 /*---------------------------------------------------------------------------*/
 /* check parameters in interval and split or truncate where necessary.       */
 /*---------------------------------------------------------------------------*/
@@ -224,9 +225,15 @@ static void _unur_hinv_debug_chg_truncated( const struct unur_gen *gen);
 
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */
 
-#define CDF(x)    _unur_cont_CDF((x),(gen->distr))  /* call to CDF           */
-#define PDF(x)    _unur_cont_PDF((x),(gen->distr))  /* call to PDF           */
-#define dPDF(x)   _unur_cont_dPDF((x),(gen->distr)) /* call to derivative of PDF */
+/* CDF, PDF, and dPDF are rescaled such that the CDF is a "real" CDF with    */
+/* u (range) in (0,1) on the interval (DISTR.domain[0], DISTR.domain[1]).    */
+/* call to CDF: */
+#define CDF(x)  ((_unur_cont_CDF((x),(gen->distr))-GEN.CDFmin)/(GEN.CDFmax-GEN.CDFmin))
+/* call to PDF: */
+#define PDF(x)  (_unur_cont_PDF((x),(gen->distr))/(GEN.CDFmax-GEN.CDFmin)) 
+/* call to derivative of PDF: */   
+#define dPDF(x) (_unur_cont_dPDF((x),(gen->distr))/(GEN.CDFmax-GEN.CDFmin))
+
 
 /*****************************************************************************/
 /**  User Interface                                                         **/
@@ -259,8 +266,6 @@ unur_hinv_new( const struct unur_distr *distr )
 
   if (DISTR_IN.cdf == NULL) {
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"CDF"); return NULL; }
-
-  /* if default variant is Newton's method, then we also need the PDF ! */
 
   /* allocate structure */
   par = _unur_malloc(sizeof(struct unur_par));
@@ -366,9 +371,12 @@ unur_hinv_set_u_resolution( struct unur_par *par, double u_resolution )
   _unur_check_par_object( par,HINV );
 
   /* check new parameter for generator */
-  if (u_resolution < DBL_EPSILON) {
+  if (u_resolution < 5.*DBL_EPSILON) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"u-resolution");
     return 0;
+  }
+  if (u_resolution < UNUR_EPSILON) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"u-resolution so small that problems may occur");
   }
 
   /* store date */
@@ -642,6 +650,10 @@ unur_hinv_chg_truncated( struct unur_gen *gen, double left, double right )
   GEN.Umin = Umin;
   GEN.Umax = Umax;
 
+  /** TODO **/
+/*    GEN.Umin = max(Umin,GEN.Umin); */
+/*    GEN.Umax = min(Umax,GEN.Umax); */
+
   /* changelog */
   gen->distr->set |= UNUR_DISTR_SET_TRUNCATED;
 
@@ -693,10 +705,10 @@ _unur_hinv_init( struct unur_par *par )
   DISTR.trunc[1] = DISTR.domain[1];
 
   /* set bounds of U -- in respect to given bounds                          */
-  GEN.Umin = GEN.CDFmin = (DISTR.domain[0] > -INFINITY) ? CDF(DISTR.domain[0]) : 0.;
-  GEN.Umax = GEN.CDFmax = (DISTR.domain[1] < INFINITY)  ? CDF(DISTR.domain[1]) : 1.;
+  GEN.CDFmin = (DISTR.domain[0] > -INFINITY) ? _unur_cont_CDF((DISTR.domain[0]),(gen->distr)) : 0.;
+  GEN.CDFmax = (DISTR.domain[1] < INFINITY)  ? _unur_cont_CDF((DISTR.domain[1]),(gen->distr)) : 1.;
 
-  if (GEN.CDFmin > GEN.CDFmax) {
+  if (!_unur_FP_less(GEN.CDFmin,GEN.CDFmax)) {
     _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"CDF not increasing");
     _unur_hinv_free(gen); free(par); return NULL;
   }
@@ -709,7 +721,7 @@ _unur_hinv_init( struct unur_par *par )
   if (DISTR.domain[1] >= INFINITY || PDF(DISTR.domain[1])<=0.) {
     GEN.tailcutoff_right = min(HINV_TAILCUTOFF, 0.1*GEN.u_resolution);
     GEN.tailcutoff_right = max(GEN.tailcutoff_right,2*DBL_EPSILON);
-    GEN.tailcutoff_right = 1.- GEN.tailcutoff_right;
+    GEN.tailcutoff_right = 1. - GEN.tailcutoff_right;
   }
 
   /* compute splines */
@@ -724,6 +736,18 @@ _unur_hinv_init( struct unur_par *par )
 
   /* copy linked list into array */
   _unur_hinv_list_to_array( gen );
+
+  /* adjust minimal and maximal U value */
+  GEN.Umin = max(0.,GEN.intervals[0]);
+  GEN.Umax = min(1.,GEN.intervals[(GEN.N-1)*(GEN.order+2)]);
+
+  /* this setting of Umin and Umax guarantees that in the 
+     sampling algorithm U is always in a range where a table
+     is available for the inverse CDF.
+     So this is a safe guard against segfault for U=0. or U=1. */ 
+
+  /* These values for Umin and Umax are only changed in 
+     unur_hinv_chg_truncated(). */
 
   /* make initial guide table */
   _unur_hinv_make_guide_table(gen);
@@ -829,7 +853,8 @@ _unur_hinv_create_table( struct unur_par *par, struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   struct unur_hinv_interval *iv, *iv_new;
-  int i;
+  int i, error_count_shortinterval=0;
+  double Fx;
 
   /* check arguments */
   CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_HINV_GEN,0);
@@ -844,15 +869,32 @@ _unur_hinv_create_table( struct unur_par *par, struct unur_gen *gen )
   if (PAR.stp) {
     iv = GEN.iv;
     for (i=0; i<PAR.n_stp; i++) {
-      if (PAR.stp[i] < GEN.bleft)  continue; /* skip */
-      if (PAR.stp[i] > GEN.bright) break;    /* no more points */
-      iv_new = _unur_hinv_interval_new(gen,PAR.stp[i],CDF(PAR.stp[i]));
+      if (!_unur_FP_greater(PAR.stp[i],GEN.bleft)) continue; /* skip */
+      if (!_unur_FP_less(PAR.stp[i],GEN.bright))   break;    /* no more points */
+ 
+      Fx = CDF(PAR.stp[i]);
+      iv_new = _unur_hinv_interval_new(gen,PAR.stp[i],Fx);
       if (iv_new == NULL) return 0;
       iv_new->next = iv->next;
       iv->next = iv_new;
       iv = iv_new;
+
+      if (Fx > GEN.tailcutoff_right)
+	/* there is no need to add another starting point in the r.h. tail */
+	break;
     }
   }
+
+  else /* mode - if known - is inserted as "default design point" */
+    if( (gen->distr->set & UNUR_DISTR_SET_MODE) &&
+        _unur_FP_greater(DISTR.mode, GEN.bleft) && 
+        _unur_FP_less(DISTR.mode, GEN.bright) ) {
+      iv = GEN.iv;
+      iv_new = _unur_hinv_interval_new(gen,DISTR.mode,CDF(DISTR.mode));
+      if (iv_new == NULL) return 0;
+      iv_new->next = iv->next;
+      iv->next = iv_new;
+    }
 
   /* now split intervals where approximation error is too large */
   for (iv=GEN.iv; iv->next!=NULL; ) {
@@ -862,14 +904,11 @@ _unur_hinv_create_table( struct unur_par *par, struct unur_gen *gen )
       _unur_error(GENTYPE,UNUR_ERR_GEN_CONDITION,"too many intervals");
       return 0; 
     }
-    iv = _unur_hinv_interval_adapt(gen,iv);
+    iv = _unur_hinv_interval_adapt(gen,iv, &error_count_shortinterval);
   }
 
   /* last interval is only used to store right boundary */
   iv->spline[0] = iv->p;
-
-  /* u value of first interval must be CDFmin */
-  GEN.iv->u = GEN.CDFmin;
 
   /* o.k. */
   return 1;
@@ -878,13 +917,16 @@ _unur_hinv_create_table( struct unur_par *par, struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 static struct unur_hinv_interval *
-_unur_hinv_interval_adapt( struct unur_gen *gen, struct unur_hinv_interval *iv )
+_unur_hinv_interval_adapt( struct unur_gen *gen, struct unur_hinv_interval *iv,
+                           int *error_count_shortinterval )
      /*----------------------------------------------------------------------*/
      /* check parameters in interval and split or truncate where necessary.  */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
      /*   iv  ... pointer to interval                                        */
+     /*   error_count_shortinterval ... pointer to errorcount to supress too */
+     /*                                 many error messages                  */
      /*                                                                      */
      /* return:                                                              */
      /*   iv       ... if splitted                                           */
@@ -932,8 +974,15 @@ _unur_hinv_interval_adapt( struct unur_gen *gen, struct unur_hinv_interval *iv )
   p_new = 0.5 * (iv->next->p + iv->p);
 
   /* we do not split an interval if is too close */
-  if (_unur_FP_same(p_new,iv->p) || _unur_FP_same(p_new,iv->next->p)) {
-    _unur_warning(gen->genid,UNUR_ERR_ROUNDOFF,"u-error might be larger than error bound");
+  /*  changing the below FP_equal to FP_same can strongly increase the number of
+      intervals needed and may slightly decrease the MAError. In both cases the
+      required u-precision is not reached due to numerical problems with very steep CDF*/
+  if (_unur_FP_equal(p_new,iv->p) || _unur_FP_equal(p_new,iv->next->p)) {
+    if(!(*error_count_shortinterval)){ 
+      _unur_warning(gen->genid,UNUR_ERR_ROUNDOFF,
+		     "one or more intervals very short; possibly due to numerical problems with a pole");
+      (*error_count_shortinterval)++;
+    } 
     /* skip to next interval */
     _unur_hinv_interval_parameter(gen,iv);
     return iv->next;
@@ -960,7 +1009,7 @@ _unur_hinv_interval_adapt( struct unur_gen *gen, struct unur_hinv_interval *iv )
   x = _unur_hinv_eval_polynomial( 0.5, iv->spline, GEN.order );
   Fx = CDF(x);
 
-  if (fabs(Fx - 0.5*(iv->next->u + iv->u)) > GEN.u_resolution) {
+  if (!(fabs(Fx - 0.5*(iv->next->u + iv->u)) < GEN.u_resolution)) {
     /* error in u-direction too large */
     /* if possible we use the point x instead of p_new */
     if(fabs(p_new-x)< HINV_XDEVIATION * (iv->next->p - iv->p))
@@ -1232,7 +1281,6 @@ _unur_hinv_make_guide_table( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   int i,j, imax;
-  double delta_U;
 
   /* check arguments */
   CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_HINV_GEN,0);
@@ -1245,11 +1293,10 @@ _unur_hinv_make_guide_table( struct unur_gen *gen )
     GEN.guide = _unur_malloc( GEN.guide_size * sizeof(int) );
   }
 
-  delta_U = GEN.CDFmax - GEN.CDFmin;
   imax = (GEN.N-2) * (GEN.order+2);
 
   /* u value at end of interval */
-#define u(i)  (((GEN.intervals[(i)+GEN.order+2])-GEN.CDFmin)/delta_U)
+# define u(i)  (GEN.intervals[(i)+GEN.order+2])
 
   i = 0;
   GEN.guide[0] = 0;
@@ -1263,7 +1310,7 @@ _unur_hinv_make_guide_table( struct unur_gen *gen )
     GEN.guide[j]=i;
   }
 
-#undef u
+# undef u
 
   /* check i */
   i = min(i,imax);
@@ -1399,7 +1446,7 @@ _unur_hinv_sample( struct unur_gen *gen )
   U = GEN.Umin + _unur_call_urng(gen->urng) * (GEN.Umax - GEN.Umin);
 
   /* look up in guide table and search for interval */
-  i =  GEN.guide[(int) (GEN.guide_size*(U-GEN.CDFmin)/(GEN.CDFmax-GEN.CDFmin))];
+  i =  GEN.guide[(int) (GEN.guide_size*U)];
   while (U > GEN.intervals[i+GEN.order+2])
     i += GEN.order+2;
 
@@ -1420,6 +1467,67 @@ _unur_hinv_sample( struct unur_gen *gen )
 /**  Auxilliary Routines                                                    **/
 /*****************************************************************************/
 
+int
+unur_hinv_estimate_error(  const UNUR_GEN *gen, int samplesize, double *max_error, double *MAE )
+     /*----------------------------------------------------------------------*/
+     /* Estimate maximal u-error and mean absolute error (MAE) by means of   */
+     /* Monte-Carlo simulation.                                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen        ... pointer to generator object                         */
+     /*   samplesize ... sample size for Monte Carlo simulation              */
+     /*   max_error  ... pointer to double for storing maximal u-error       */
+     /*   MEA        ... pointer to double for storing MA u-error            */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   1 ... on success                                                   */
+     /*   0 ... on error                                                     */
+     /*----------------------------------------------------------------------*/
+{ 
+  double U, ualt, X;
+  double max=0., average=0., uerror, errorat=0.;
+  int i, j;
+
+  /* check arguments */
+  CHECK_NULL(gen,0.);  COOKIE_CHECK(gen,CK_HINV_GEN,0.);
+
+  for(j=0;j<samplesize;j++) {  
+    /* sample from U( Umin, Umax ) */
+    U = GEN.Umin + _unur_call_urng(gen->urng) * (GEN.Umax - GEN.Umin);
+    ualt=U;
+    /* look up in guide table and search for interval */
+    i =  GEN.guide[(int) (GEN.guide_size*U)];
+    while (U > GEN.intervals[i+GEN.order+2])
+      i += GEN.order+2;
+    
+    /* rescale uniform random number */
+    U = (U-GEN.intervals[i])/(GEN.intervals[i+GEN.order+2] - GEN.intervals[i]);
+
+    /* evaluate polynome */
+    X = _unur_hinv_eval_polynomial( U, GEN.intervals+i+1, GEN.order );
+
+    if (X<DISTR.trunc[0]) X= DISTR.trunc[0];
+    if (X>DISTR.trunc[1]) X= DISTR.trunc[1];
+
+    uerror = fabs(ualt-CDF(X));
+
+    average += uerror;
+    if(uerror>max) {
+      max = uerror;
+      errorat = X;
+    }
+    /* printf("j %d uerror %e maxerror %e average %e\n",j,uerror,max,average/(j+1)); */
+  }
+
+  /* printf("maximal error occured at x= %.16e\n",errorat); */
+
+  *max_error = max;
+  *MAE = average/samplesize;
+
+  /* o.k. */
+  return 1;
+
+} /* end of unur_hinv_estimate_error() */
 
 /*****************************************************************************/
 /**  Debugging utilities                                                    **/
@@ -1566,3 +1674,7 @@ _unur_hinv_debug_chg_truncated( const struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 #endif   /* end UNUR_ENABLE_LOGGING */
 /*---------------------------------------------------------------------------*/
+
+
+
+

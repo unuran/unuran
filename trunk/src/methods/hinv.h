@@ -58,7 +58,7 @@
       u-resulution. For finding these cut points the algorithm starts 
       with the region @code{[-1.e20,1.e20]}. For the exceptional case
       where this might be too small (or one knows this region and
-      wants to avoid this search heuristics) it can be chanced using
+      wants to avoid this search heuristics) it can be changed using
       the unur_hinv_set_boundary() call.
       
       It is possible to use this method for generating from truncated
@@ -67,20 +67,26 @@
 
       This method is not exact, as it only produces random variates of 
       the approximated distribution. Nevertheless, the numerical error
-      can be made as small as desired by means of the
-      unur_hinv_set_u_resolution(). Notice that small values of the
-      u-resultion increases the cost for the setup step.
+      in "u-direction" (i.e. for X = "approximate inverse CDF"(U) 
+      |U-CDF(X)|) can be controlled by means of the 
+      unur_hinv_set_u_resolution(). Notice that very small values of the
+      u-resolution are possible but may increase the cost for the setup step.
       
-      Sometimes it might be necessary to set some design points for
-      the computing the Hermite interpolation. Such points may be
-      points where the density is not differentialble or is an
-      inflection points. Notice that there is no necessity to do
+      As the possible maximal error is only estimated in the setup
+      it may be necessary to set some special design points for
+      computing the Hermite interpolation to guarantee that the
+      maximal u-error can not be bigger than desired. Such points are
+      points where the density is not differentiable or has a local
+      extremum. Notice that there is no necessity to do
       so. However, if you do not provide these points to the algorithm
-      there might be a (very) small chance that the approximation
+      there might be a small chance that the approximation
       error is larger than the given u-resolution, or that the
       required number of intervals is larger than necessary.
       Setting such design points can be done using the
       unur_hinv_set_cpoints() call.
+      If the mode for a unimodal distribution is set in the distribution
+      object this mode is automatically used as design-point if the
+      unur_hinv_set_cpoints() call is not used.
       
    =END
 */
@@ -104,18 +110,27 @@ int unur_hinv_set_order( UNUR_PAR *parameters, int order);
 /* 
    Set order of Hermite interpolation. Valid orders are
    @code{1}, @code{3}, and @code{5}.
-   Notice that @var{order} greater than 1 requires the density 
-   of the distribution, and @var{order} greater than 3 even
-   requires the derivative of the density.
+   Notice that @var{order} greater than @code{1} requires the density 
+   of the distribution, and @var{order} greater than @code{3} even
+   requires the derivative of the density. Using @var{order} @code{1}
+   results for most distributions in a huge number of intervals
+   and is therefore not recommended. If the maximal error in
+   u-direction is very small (say smaller than @code{1.e-10}),
+   @var{order} @code{5} is recommended as it leads to considerably 
+   fewer design points.
 
-   Default is @code{3} if the density is given
-   and @code{1} otherwise.
+   Default is @code{3} if the density is given and @code{1} otherwise.
 */
 
 int unur_hinv_set_u_resolution( UNUR_PAR *parameters, double u_resolution);
 /* 
    Set maximal error in u-direction. However, the given u-error must not
-   be smaller than machine epsilon (@code{DBL_EPSILON}).
+   be smaller than machine epsilon (@code{DBL_EPSILON}) and should not be
+   too close to this value. As the resoultion of most uniform random
+   number sources is 2^(-32) = @code{2.3e-10}, a value of @code{1.e-10}
+   leads to an inversion algorithm that could be called exact. For most
+   simulations slighly bigger values for the maximal error are enough
+   as well. 
 
    Default is @code{10^-8}.
 */
@@ -123,15 +138,31 @@ int unur_hinv_set_u_resolution( UNUR_PAR *parameters, double u_resolution);
 int unur_hinv_set_cpoints( UNUR_PAR *parameters, const double *stp, int n_stp );
 /* 
    Set starting construction points (nodes) for Hermite interpolation. 
+      
+   As the possible maximal error is only estimated in the setup
+   it may be necessary to set some special design points for
+   computing the Hermite interpolation to guarantee that the
+   maximal u-error can not be bigger than desired. We suggest to 
+   include as special design points all local extrema of the density,
+   all points where the density is not differentiable, and isolated
+   points inside of the domain with density 0. 
+   If there is an interval with density constant equal to 0 inside of
+   the given domain of the density, both endpoints of this interval 
+   should be included as special design points. Notice that there is no
+   necessity to do so. However, if these points are not provided to
+   the algorithm the approximation error might be larger than the
+   given u-resolution, or the required number of intervals could be
+   larger than necessary.
 
    @emph{Important}: Notice that the given points must be in
-   increasing order and they must be disjoint. There also must be at
-   least two such points. Otherwise the points cannot be used and
-   @code{unur_errno} is set to @code{UNUR_ERR_PAR_SET}.
+   increasing order and they must be disjoint. 
 
    @emph{Important}: The boundary point of the computational region
    must not be given in this list!
    Points outside the boundary of the computational region are ignored.
+
+   Default is for unimodal densities - if known - the mode of the 
+   density, if it is not equal to the border of the domain. 
 */
 
 int unur_hinv_set_boundary( UNUR_PAR *parameters, double left, double right );
@@ -163,16 +194,17 @@ int unur_hinv_set_max_intervals( UNUR_PAR *parameters, int max_ivs );
 /* 
    Set maximum number of intervals. No generator object is created if
    the necessary number of intervals for the Hermite interpolation 
-   exceed @var{max_ivs}. It is used to prevent the algorithm to eat up
-   all memory in badly shaped CDFs.
+   exceeds @var{max_ivs}. It is used to prevent the algorithm to eat up
+   all memory for very badly shaped CDFs.
 
-   Default is @code{1.e6}.
+   Default is @code{1000000} (1.e6).
 */
 
 int unur_hinv_get_n_intervals( const UNUR_GEN *generator );
 /* 
-   Get number of intervals used for Hermite interpolation in 
-   generator object.
+   Get number of nodes (design points) used for Hermite interpolation in 
+   the generator object. The number of intervals is the number of
+   nodes - 1.
    It returns @code{0} in case of an error.
 */
 
@@ -197,12 +229,13 @@ int unur_hinv_chg_truncated( UNUR_GEN *generator, double left, double right );
    not changed in case of an error.
 */
 
-int unur_hinv_estimate_error(  const UNUR_GEN *generator, double *max_error, double *MAE );
+int unur_hinv_estimate_error(  const UNUR_GEN *generator, int samplesize, double *max_error, double *MAE );
 /*
    Estimate maximal u-error and mean absolute error (MAE) for @var{generator}
-   by means of Monte-Carlo simulation with sample size 10^6.
+   by means of Monte-Carlo simulation with sample size @var{samplesize}.
    The results are stored in @var{max_error} and @var{MAE}, respectively.
-   It return @code{1} if successful. 
+
+   It returns @code{1} if successful. 
 */
 
 /* =END */

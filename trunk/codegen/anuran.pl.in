@@ -117,6 +117,9 @@ my $Stdform   = $q->param('Stdform');
 my $Truncated = $q->param('Truncated');
 my $PDF       = $q->param('PDF');
 
+# we have to take care that no dangerous characters are used
+$PDF =~ s/[^\w\d\.\(\)\,\-\+\*\/\^\<\>\=\!]//g;
+
 # set some defaults
 unless ($distrname) {
     $distrname = $data_distr{$distr}{'=NAME'};
@@ -929,6 +932,7 @@ sub anuran_code
 	    $name =~ s/distribution//i;     # remove string "distribution"
 	    $name =~ s/\s//g;               # remove white space
 	    $name =~ s/\(.*$//;             # cut after first parenthesis
+	    $name =~ s/[^\w\d]/_/g;         # remove all non alphanumeric characters
 	    $gen_opts .= " -N $name";
 	}
 
@@ -968,10 +972,10 @@ sub anuran_code
 
 	# print result
 	my $ACG_query = "$ACG $gen_opts $gen";
-	print
-	    "<PRE>\n",
-	    `$ACG_query`,
-	    "\n</PRE>\n";
+	my $ACG_result = `$ACG_query`;
+	$ACG_result =~ s/\</\&lt;/g;
+	$ACG_result =~ s/\</\&lt;/g;
+	print "<PRE>\n".$ACG_result."\n</PRE>\n";
 
 	# get exit code of ACG call 
 	if ($?) {
@@ -1219,8 +1223,14 @@ sub anuran_help_2_cpdf
 	blockquote('Insert the name and PDF for the distribution:'.
                    '<ul>'.
                    '<li><code>Name</code>'.
-		   blockquote('Insert a string. This string is used for the name of the generator.').
-		   '<li><code>(Multiple of) density</code>'.
+		   blockquote('Insert a string. '.
+			      'This string is used for the name of the generator and '.
+			      'for making subroutine names. '.
+			      'For the latter non-alphanumeric characters are mapped '.
+			      'to underscore \'<code>_</code>\', and '.
+			      'the word \'<code>distribution</code>\' will be discarded. <p>'.
+			      'It is not the name of some standard distribution.').
+		   '<li><code>Density</code>'.
 		   blockquote('Insert the density for the desired distribution. ' .
 			      'It is not necessary that the given function integrates to one, ' .
 			      'e.g., you can insert <code>"exp(-(x^2)/2)"</code> for your ' .
@@ -1320,7 +1330,3 @@ sub anuran_help_4
 
 
 ###################################################################
-
-
-
-

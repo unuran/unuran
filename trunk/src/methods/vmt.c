@@ -43,9 +43,18 @@
  *   REFERENCES:                                                             *
  *   [1] Devroye, L. (1986): Non-Uniform Random Variate Generation, New-York *
  *                                                                           *
+ *   [2] Hoermann, W., J. Leydold, and G. Derflinger (2004):                 *
+ *       Automatic Nonuniform Random Variate Generation, Springer, Berlin.   *
+ *                                                                           *
  *****************************************************************************
  *                                                                           *
- * ..... beschreibung ....                                                   *
+ *  VMT generates random vectors for distributions with given mean           *
+ *  vector mu and covariance matrix Sigma. It produces random vectors        *
+ *  of the form X = L Y + mu, where L is the Cholesky factor of Sigma,       *
+ *  i.e. L L^t = Sigma, and Y has independent components of the same         *
+ *  distribution with mean 0 and standard deviation 1.                       *
+ *                                                                           *
+ *  See [2], Sect.11.1.6, Alg.11.3.                                          *
  *                                                                           *
  *****************************************************************************/
 

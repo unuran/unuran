@@ -47,11 +47,14 @@
    =SPEED Set-up: slow,
           Sampling: depends on dimension
 
+   =REF  [HLD04: Sect.11.1.6, Alg.11.3.]
+
    =DESCRIPTION
       VMT generates random vectors for distributions with given mean
-      vector mu and covariance matrix Sigma. It produces random vectors
-      of the form X = L Y + mu, where L is the Cholesky factor of Sigma,
-      i.e. L L^t = Sigma, and Y has independent components of the same
+      vector mu and covariance matrix @unurmath{Sigma.} It produces random vectors
+      of the form @unurmath{X = L Y + mu,} where @unurmath{L} is the
+      Cholesky factor of Sigma, i.e. @unurmath{L L^t = Sigma,} and
+      @unurmath{Y} has independent components of the same 
       distribution with mean 0 and standard deviation 1.
       
       The method VMT has been implemented especially to sample from a
@@ -68,6 +71,15 @@
       (non-multinormal) distributions this method should only be used
       when everything else fails and some approximate results which
       might even be not entirely correct are better than no results.
+
+   =HOWTOUSE
+      Create a multivariate generator object, set mean vector and
+      covariance matrix by means of the unur_distr_cvec_set_mean() and  
+      unur_distr_cvec_set_covar() call. Set standard marginal 
+      distributions using unur_distr_cvec_set_stdmarginals() , 
+      unur_distr_cvec_set_stdmarginal_array() , or 
+      unur_distr_cvec_set_marginal_list().
+      There are no optional parameters for this method.
 
    =END
 */

@@ -1467,8 +1467,8 @@ unur_distr_cont_set_pdfparams_vec( struct unur_distr *distr, int par, const doub
   }
 
   /* allocate memory */
-  _unur_xrealloc( DISTR.param_vecs[par], n_param_vec * sizeof(double) );
-
+  DISTR.param_vecs[par] = _unur_xrealloc( DISTR.param_vecs[par], n_param_vec * sizeof(double) );
+  
   /* copy parameters */
   memcpy( DISTR.param_vecs[par], param_vec, n_param_vec*sizeof(double) );
 

@@ -166,8 +166,15 @@ sample with @command{unur_sample_discr}
 
 /*---------------------------------------------------------------------------*/
 
-=NODE  Methods_for_UNID    Methods for uniform univariate distributions
+=NODE  Methods_for_MATR    Methods for random matrices
 =UP Methods [60]
+=DESCRIPTION
+=EON
+
+/*---------------------------------------------------------------------------*/
+
+=NODE  Methods_for_UNID    Methods for uniform univariate distributions
+=UP Methods [70]
 =DESCRIPTION
 =EON
 

@@ -17,19 +17,46 @@
       {"Funktion_als_string",{kleinster_Funktionswert,maximaler_Funktionswert,\
 Anzahl_Funktionswerte}       *)
 Testsample = {
-	{"3+5", {-2, 2, 5}},
-      	{"3*x", {-2, 2, 5}},
-      	{"exp[-4*X]", {-2, 2, 5}},
+         {"3.45+x", {-2, 2, 5}},                (* arithmetic operator *)
+         {"x-4.673", {-2, 2, 5}},
+         {"3*x", {-2, 2, 5}},
+         {"x/5.8", {-2, 2, 5}},
+	 {"x^12-3.345+5", {-2, 2, 5}},
+      	 {"3*x", {-2, 2, 5}},
+         {"2.894736*10^2", {-2, 2, 5}},
+
+	 {"3*(x^5-x^4/(1.5-x))", {-2, 2, 5}},    (*  brackets  *)
+
+        {"3*(x>1)" ,{-2,2,5}},
+        {"3*(x<1)" ,{-2,2,5}},
+        {"3*(x>=1)",{-2,2,5}},
+        {"3*(x<=1)",{-2,2,5}},
+        {"3*(x==1)",{-2,2,5}},
+        {"3*(2==x)",{-2,2,5}},
+        {"3*(x<>1)",{-2,2,5}},
+        {"3*(2<>x)",{-2,2,5}},
+    
+	{"exp[-4*X]", {-2, 2, 5}},               (*   system functions  *)
+        
+        {"ln[x]",{1,6,6}},
+        {"log[3,x]",{1,6,6}},  
+        {"sqrt[x]",{1,6,6}},
+        {"sin[x]",{1,6,6}},
+        {"mod[x,3]",{1,6,6}},
+        {"sgn[x,3]",{-2,2,5}},
+        {"sec[x]",{-2,2,5}},
       	{"exp[-x^2]+Log[2,4]-Pi*Sin[x+x*2]", {-5, 2, 4}},
         {"Sin[x]*3*Ln[x]",   {2, 4, 2}  },
       	{"exp[x^2]*(cos[x]<1)", {-3, 8, 5}},
-        {"abs[x]-3*x", {-2, 2, 5}}
-};
+	 {"abs[x]-3*x", {-2, 2, 5}},
+
+        {"exp[x^2]*(sin[x*cos[x^2-1]]+1)*((x-3*pi*x)<1)", {-3148,789,5}} };
+  
 
 
 (* === Set Constants ========================================================*)
 
-(* name of datafile file for running tests *)
+(* name of datafile file for running tests *)test_f
 DataFile = "t_functionparser.data"; 
 
 
@@ -42,12 +69,14 @@ e  = E;
 
 (* --- Functions ----------------------------------------------------------- *)
 
+mod[x_,y_]  := Mod[x,y]
 exp[x_]     := Exp[x];
 ln[x_]      := Log[x];
 log[x_, y_] := Log[x, y];
 sin[x_]     := Sin[x];
 cos[x_]     := Cos[x];
 tan[x_]     := Tan[x];
+sec[x_]     := 1/Cos[x];
 sqrt[x_]    := Sqrt[x];
 abs[x_]     := Abs[x];
 sgn[x_]     := Sign[x];    
@@ -59,13 +88,26 @@ Unprotect[Derivative];
 
 (* --- Relation Operators -------------------------------------------------- *)
 
-(** TODO: <=, >=, ==, <>, = **)
+(** TODO:  , <>, = **)
+
+Derivative[1, 0][Unequal][x_, y_] := 0;
+Derivative[0, 1][Unequal][x_, y_] := 0;
 
 Derivative[1, 0][Greater][x_, y_] := 0;
 Derivative[0, 1][Greater][x_, y_] := 0;
 
+Derivative[1, 0][GreaterEqual][x_, y_] := 0;
+Derivative[0, 1][GreaterEqual][x_, y_] := 0;
+
 Derivative[1, 0][Less][x_, y_] := 0;
 Derivative[0, 1][Less][x_, y_] := 0;
+
+Derivative[1, 0][LessEqual][x_, y_] := 0;
+Derivative[0, 1][LessEqual][x_, y_] := 0;
+
+Derivative[1, 0][Mod][x_, y_] := 0;
+Derivative[0, 1][Mod][x_, y_] := 0;
+
 
 (* --- Functions ----------------------------------------------------------- *)
 
@@ -142,19 +184,27 @@ UnurWriteLine[xarg_,funct_] := Module [
 	{
 	  xval, (* numerical value of argument x                             *)
 	  fx,   (* value of function at x                                    *)
-	  dfx   (* value of derivative of function at x                      *)
-	},
+	  dfx,  (* value of derivative of function at x                      *)
+	  fstr  (* functtion term                                            *)
+        },
 
 	(* argument *)
 	xval = N[xarg];
 	WriteString[DataFile, CForm[xval],"\t"];
 
+	(*  replace '<>' -> '!='   *)
+      
+        fstr = StringReplace[funct, {"<>" -> "!="}]; 
+    (* fstr = StringReplace[funct,{"="->"=="}]; 
+     WriteString["stdout",fstr,"\n"]; *)
+
+
 	(* function *)
-	fx = N[ToExpression[funct]] /. x -> xval /. {True -> 1, False -> 0};
+	fx = N[ToExpression[fstr]] /. x -> xval /. {True -> 1, False -> 0};
 	WriteString[DataFile, CForm[fx],"\t"];
 
 	(* derivative *)
-	dfx = N[ D[ ToExpression[funct], x ]] /. x -> xval /. {True -> 1, False -> 0};
+	dfx = N[ D[ ToExpression[fstr], x ]] /. x -> xval /. {True -> 1, False -> 0};
 	WriteString[DataFile, CForm[dfx],"\n"];
 
 ]; (* end of UnurWriteLine[] *)

@@ -12,12 +12,16 @@
 @c %**end of header
 
 
-@c Dies ist das neue UNURAN -Einfuehrung  
+@c Dies ist das neue UNURAN-Einfuehrung  
 @c Janka & Tirler                
 @c $Id$
 
+
+
 @set VERSION 0.05
 @set DATE November 2000
+
+
 
 @dircategory Scientific software
 @direntry
@@ -36,9 +40,14 @@ last updated @value{DATE}
 @subtitle Generating random numbers
 @subtitle Version: @value{VERSION}
 @subtitle Date: @value{DATE}
+
+@author Josef Leydold
+@author Wolfgang H@"ormann
+@author Erich Janka
+
 @page
 @vskip 0pt plus 1filll
-Copyright 2000 Josef Leydold, Institut fuer Statistik, WU Wien
+Copyright 2000 Josef Leydold, Institut f@"ur Statistik, WU Wien
 
 Permission is granted to make and distribute verbatim
 copies of this manual provided the copyright notice and

@@ -173,7 +173,7 @@
 /* Variants:                                                                 */
 
 #define EMPK_VARFLAG_VARCOR     0x001u   /* use variance correction          */
-#define EMPK_VARFLAG_POSITIVE   0x002u   /* use variance correction          */
+#define EMPK_VARFLAG_POSITIVE   0x002u   /* only positive values             */
 
 /*---------------------------------------------------------------------------*/
 /* Debugging flags                                                           */

@@ -99,6 +99,9 @@ int unur_set_cpoints( struct unur_par *parameter, int n_stp, double *starting_cp
 int unur_set_max_shratio( struct unur_par *parameter, double max_ratio );
 /* set bound for ratio A(squeeze) / A(hat)                                   */
 
+double unur_get_shratio( struct unur_gen *gen );
+/* get ratio A(squeeze) / A(hat)                                             */
+
 int unur_set_max_intervals( struct unur_par *parameter, int max_ivs );
 /* set maximum number of intervals or segments                               */
 

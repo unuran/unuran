@@ -4,7 +4,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: stream.x                                                          *
+ *   FILE: stream.c                                                          *
  *                                                                           *
  *   routines for output streams and reading data                            *
  *                                                                           *

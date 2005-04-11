@@ -333,7 +333,7 @@ _unur_pdf_condi( double x, const struct unur_distr *condi )
   else {   /* use direction vector */
     memcpy(XARG, POSITION, dim * sizeof(double) );
     for (i=0; i<dim; i++)
-      XARG[i] = x*DIRECTION[i];
+      XARG[i] += x*DIRECTION[i];
   }
 
   return _unur_cvec_PDF(XARG,condi->base);
@@ -368,7 +368,7 @@ _unur_dpdf_condi( double x, const struct unur_distr *condi )
   else {   /* use direction vector */
     memcpy(XARG, POSITION, dim * sizeof(double) );
     for (i=0; i<dim; i++)
-      XARG[i] = x*DIRECTION[i];
+      XARG[i] += x*DIRECTION[i];
     _unur_cvec_dPDF(GRADF, XARG, condi->base);
     for (df=0.,i=0; i<dim; i++)
       df += GRADF[i]*DIRECTION[i];

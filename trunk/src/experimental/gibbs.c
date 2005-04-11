@@ -456,8 +456,9 @@ _unur_gibbs_sample_cvec( struct unur_gen *gen, double *vec )
      /*   vec ... random vector (result)                                     */
      /*----------------------------------------------------------------------*/
 {
-  int dim; 
+  int d, dim; 
   long skip;
+  double x;
   
   /* possibly move this to the gibbs generator structure */
   UNUR_PAR *par_conditional = NULL;
@@ -489,7 +490,15 @@ _unur_gibbs_sample_cvec( struct unur_gen *gen, double *vec )
           "Cannot create aux conditional generator");
       }
       else {
-        GEN->point_current[GEN->coordinate] = unur_sample_cont(gen_conditional);
+        /* sample from full conditional */
+        x = unur_sample_cont(gen_conditional);
+	
+	if ( gen->variant == GIBBS_VARIANT_COORDINATE ) {
+	  GEN->point_current[GEN->coordinate] = x;
+	}  
+        if ( gen->variant == GIBBS_VARIANT_RANDOM_DIRECTION ) {
+	  for (d=0; d<dim; d++) GEN->point_current[d] += x * GEN->direction[d];	  
+	}
       }
     
       /* free allocated memory */

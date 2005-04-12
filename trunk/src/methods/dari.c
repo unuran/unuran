@@ -1186,43 +1186,6 @@ _unur_dari_sample_check( struct unur_gen *gen )
     }
   }
   
-  
-  
-#if 0
-  if (sign[i]*k <= sign[i]*GEN->n[i]) {
-    if(!GEN->hb[k-N0]) {
-      GEN->hp[k-N0] = sign[i] * F(GEN->y[i]+GEN->ys[i]*(k+sign[i]*0.5-GEN->x[i])) / GEN->ys[i] - PMF(k); 
-      
-      /* CHECKING HAT:
-	 tests if Hat too low i.e.: (H(k+0.5)-p_k < H(k-1/2)) */
-      if (GEN->hp[k-N0]+UNUR_EPSILON 
-	  < sign[i] * F(GEN->y[i]+GEN->ys[i]*(k-sign[i]*0.5-GEN->x[i])) / GEN->ys[i]) {
-	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,
-		    "PMF(i) > hat(i) for tailpart");
-	_unur_stream_printf(gen->genid,__FILE__,__LINE__,
-			    "i %d PMF(x) %e ", k,PMF(k) ); 
-      }
-      GEN->hb[k-N0] = 1;
-    }
-    h = GEN->hp[k-N0];
-  }
-  else {
-    h = sign[i] * F(GEN->y[i]+GEN->ys[i]*(k+sign[i]*0.5-GEN->x[i])) / GEN->ys[i] - PMF(k);
-    /* CHECKING HAT:
-       tests if Hat too low i.e.: (H(k+0.5)-p_k < H(k-1/2)) */
-    if (h+UNUR_EPSILON
-	< sign[i] * F(GEN->y[i]+GEN->ys[i]*(k-sign[i]*0.5-GEN->x[i]))/GEN->ys[i]) {
-      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,
-		  "PMF(i) > hat(i) for tailpart");
-      _unur_stream_printf(gen->genid,__FILE__,__LINE__,
-			  "i %d PMF(x) %e ", k,PMF(k) );
-    }
-  }
-  if (sign[i]*U >= h)
-    return k;
-  
-#endif
-
 } /* end of _unur_dari_sample_check() */
 
 #undef N0

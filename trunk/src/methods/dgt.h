@@ -46,7 +46,7 @@
 
    =SPEED Set-up: slow (linear with the vector-length), Sampling: very fast
 
-   =REF  [CAa74]
+   =REF  [CAa74] [HLD04: Sect.3.1.2]
 
    =DESCRIPTION
       DGT samples from arbitrary but finite probability vectors. Random
@@ -95,6 +95,12 @@
       must be given or the sum over the PMF. In the latter case the
       domain of the distribution is trucated (see
       unur_distr_discr_make_pv() for details).
+
+   =HOWTOUSE
+      Create an object for a discrete distribution either by setting a
+      probability vector or a PMF. The performance can be slightly
+      influenced by setting the size of the used table which can be
+      changed by unur_dgt_set_guidefactor().
 
    =END
 */

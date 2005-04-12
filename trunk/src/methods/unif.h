@@ -48,6 +48,11 @@
       random number generator as a UNURAN generator. There are no
       parameters for this method.
 
+   =HOWTOUSE
+      Create a generator object with NULL as argument. The created generator
+      object returns raw random numbers from the underlying uniform 
+      random number generator.
+
    =END
 */
 

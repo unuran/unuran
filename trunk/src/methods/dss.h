@@ -74,6 +74,10 @@
       It uses actually uses the first one in this list (in this
       ordering) that could be found.
 
+   =HOWTOUSE
+      It works with a discrete distribution object with contains at
+      least the PV, the PMF, or the CDF. 
+
    =END
 */
 

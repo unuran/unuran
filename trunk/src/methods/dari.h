@@ -46,12 +46,12 @@
 
    =SPEED Set-up: moderate, Sampling: fast
 
-   =REF  [HDa96]
+   =REF  [HDa96] [HLD04: Sect.10.2, Alg.10.4]
 
    =DESCRIPTION
       DARI is based on rejection inversion, which can be seen as an
       adaptation of transformed density rejection to discrete
-      distributions. The used transformation is  -1/sqrt(x).
+      distributions. The used transformation is @unurmath{-1/\sqrt{x}}.
 
       DARI uses three almost optimal points for constructing the
       (continuous) hat. Rejection is then done in horizontal
@@ -62,12 +62,22 @@
       times), and good marginal speed, especially if an auxiliary
       array is used to store values during generation.
       
-      DARI works for all T-(-1/2)-concave distributions. It requires the PMF
+      DARI works for all @unurmath{T_{-1/2}}-concave distributions. It requires the PMF
       and the location of the mode. Moreover the approximate sum over the PMF
       is used. (If no sum is given for the distribution the algorithm
       assumes that it is approximately 1.)
-      The rejection constant is bounded from above by 4 for all T-concave
+      The rejection constant is bounded from above by 4 for all @i{T}-concave
       distributions.
+
+   =HOWTOUSE
+      DARI works for discrete distribution object with given PMF.   
+      The sum over probabilities should be approximately
+      one. Otherwise it must be set by a unur_distr_discr_set_pmfsum()
+      call to its (approximate) value.
+
+      The size of an auxiliary table can be set by unur_dari_set_tablesize().
+      The expected number of evaluations can be reduced by switching
+      the use of squeezes by means of unur_dari_set_squeeze().
 
       It is possible to change the parameters and the domain of the chosen 
       distribution without building a new generator object by using the
@@ -144,6 +154,7 @@ int unur_dari_set_cpfactor( UNUR_PAR *parameters, double cp_factor );
    resp. 
    The @var{cp_factor} is used to find almost optimal construction
    points for the hat function.
+   The @var{cp_factor} must be positive and should not exceed 2.
    There is no need to change this factor in almost all situations.
 
    Default is @code{0.664}.

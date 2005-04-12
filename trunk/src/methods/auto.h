@@ -61,6 +61,9 @@
 
       For an example see @ref{Example_0,As short as possible,Example: As short as possible}.
 
+   =HOWTOUSE
+      Create a generator object for the given distribution object.
+
    =END
 */
 

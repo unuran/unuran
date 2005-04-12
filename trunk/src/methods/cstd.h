@@ -58,6 +58,12 @@
       provided, the NULL pointer is returned.
 
       For some distributions more than one special generator
+      is possible. 
+
+   =HOWTOUSE
+      Create a distribution object for a standard distribution
+      from the UNURAN library (@pxref{Stddist,,Standard distributions}).
+      For some distributions more than one special generator
       (@emph{variants}) is possible. These can be choosen by a
       unur_cstd_set_variant() call. For possible variants 
       @pxref{Stddist,,Standard distributions}.
@@ -82,7 +88,8 @@
       is possible but requires the inversion method.
    
       It is possible to change the parameters and the domain of the chosen 
-      distribution without building a new generator object.
+      distribution without building a new generator object
+      by means of unur_cstd_chg_pmfparams().
 
    =END
 */

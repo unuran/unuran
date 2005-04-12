@@ -46,24 +46,30 @@
 
    =SPEED Set-up: fast, Sampling: slow
 
-   =REF  [LJa01]
+   =REF  [LJa01] [HLD04: Sect.10.3.2, Alg.10.6]
 
    =DESCRIPTION
-      DSROU is based on the ratio-of-uniforms method but uses universal 
+      DSROU is based on the ratio-of-uniforms method
+      (@pxref{Ratio-of-Uniforms}) but uses universal 
       inequalities for constructing a (universal) bounding rectangle.
-      It works for all T-concave distributions with T(x) = -1/sqrt(x).
+      It works for all @i{T}-concave distributions with 
+      @unurmath{T(x) = -1/\sqrt{x}}.
+
+      The method requires the PMF, the (exact) location of the mode
+      and the sum over the given PDF. The rejection constant is 4 for
+      all @i{T}-concave distributions. Optionally the CDF at the mode
+      can be given to increase the performance of the algorithm. Then
+      the rejection constant is reduced to 2.
       
-      It requires the PMF, the (exact) location of the mode and the
-      sum over the given PDF. The rejection constant is 4 for all
-      T-concave distributions. Optionally the CDF at mode can
-      be given to increase the performance of the algorithm by means
-      of the unur_dsrou_set_cdfatmode() call. Then the rejection
-      constant is reduced to 2.
-      
-      If the (exact) sum over the PMF is not known, then an upper
-      bound can be used instead (which of course increases the
-      rejection constant). But then unur_dsrou_set_cdfatmode()
-      must not be called.
+   =HOWTOUSE
+      The method works for @i{T}-concave discrete distributions with
+      given PMF. The sum over of the PMF or an upper bound of this sum
+      must be known. 
+
+      Optionally the CDF at the mode can be given to increase the
+      performance using unur_dsrou_set_cdfatmode().
+      However, this @strong{must not} be called if the sum over the
+      PMF is replaced by an upper bound.
       
       It is possible to change the parameters and the domain of the
       chosen distribution without building a new generator object

@@ -46,7 +46,7 @@
 
    =SPEED Set-up: slow (linear with the vector-length), Sampling: very fast
 
-   =REF  [WAa77]
+   =REF  [WAa77] [HLD04: Sect.3.2]
 
    =DESCRIPTION
       DAU samples from distributions with arbitrary but finite
@@ -65,6 +65,12 @@
       given. However then additionally a bounded (not too large) domain
       must be given or the sum over the PMF (see
       unur_distr_discr_make_pv() for details).
+
+   =HOWTOUSE
+      Create an object for a discrete distribution either by setting a
+      probability vector or a PMF. The performance can be slightly
+      influenced by setting the size of the used table which can be
+      changed by unur_dau_set_urnfactor().
 
    =END
 */

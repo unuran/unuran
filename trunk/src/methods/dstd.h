@@ -56,11 +56,17 @@
       If a distribution object is provided that is build from scratch,
       or no special generator for the given standard distribution is
       provided, the NULL pointer is returned.
+
+      For some distributions more than one special generator
+      is possible. 
       
+   =HOWTOUSE
+      Create a distribution object for a standard distribution
+      from the UNURAN library (@pxref{Stddist,,Standard distributions}).
       For some distributions more than one special generator
       (@emph{variants}) is possible. These can be choosen by a
       unur_dstd_set_variant() call. For possible variants 
-      @pxref{Stddist,,Standard distributions}.
+      @xref{Stddist,,Standard distributions}.
       However the following are common to all distributions:
 
       @table @code
@@ -80,6 +86,10 @@
       changing the default domain of a distribution by means of
       unur_distr_discr_set_domain() call)
       is possible but requires the inversion method.
+
+      It is possible to change the parameters and the domain of the chosen 
+      distribution without building a new generator object
+      by means of unur_dstd_chg_pmfparams().
 
    =END
 */

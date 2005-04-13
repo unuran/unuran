@@ -47,7 +47,7 @@
    =SPEED Set-up: slow,
           Sampling: slow (depends on dimension)
 
-   =REF  [HLa00]
+   =REF  [HLa00] [HLD04: Sect.12.2.1]
 
    =DESCRIPTION
       VEMPK generates random variates from a multivariate empirical
@@ -68,7 +68,18 @@
       as the given sample is implemented.
       However it is possible to choose between a variance corrected
       version or those with optimal MISE.
-      Additionally a smoothing factor can be set.
+      Additionally a smoothing factor can be set to adjust the
+      estimated density to non-bell-shaped data densities.
+
+   =HOWTOUSE
+      VEMPK uses empirical distributions. The main parameter would be
+      the choice if of kernel density. However, currently only
+      Gaussian kernels are supported. The parameters for the density
+      are computed by a simple but robust method. However, it is
+      possible to control its behavior by changing the smoothing
+      factor. 
+      Additionally, variance correction can be swithed on (at the
+      price of suboptimal MISE).
 
    =END
 

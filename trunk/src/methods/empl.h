@@ -47,13 +47,13 @@
    =SPEED Set-up: slow (as sample is sorted),
           Sampling: very fast (inversion) 
 
-   =REF  [HLa00]
+   =REF  [HLa00] [HLD04: Sect.12.1.3]
 
    =DESCRIPTION
       EMPL generates random variates from an empirical distribution
       that is given by an observed sample. This is done by linear
       interpolation of the empirical CDF. Although this
-      method is suggested in the books of Law and Keltn (2000) and
+      method is suggested in the books of Law and Kelton (2000) and
       Bratly, Fox, and Schrage (1987) we do not recommend this method at
       all since it has many theoretical drawbacks:
       The variance of empirical distribution function does not
@@ -71,8 +71,16 @@
       histogram, then we think that naive resampling is still better
       than linear interpolation.
 
+   =HOWTOUSE
+      EMPL creates and samples from an empiral distribution by linear
+      interpolation of the empirical CDF. There are no parameters to
+      set.
+
       @noindent
-      @emph{Important}: Using this method is not recommended!
+      @emph{Important}: We do not recommend to use this method! Use
+      method EMPK
+      (@pxref{EMPK,,EMPirical distribution with Kernel smoothing})
+      instead.
 
    =END
 */

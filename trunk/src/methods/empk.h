@@ -47,7 +47,7 @@
    =SPEED Set-up: slow (as sample is sorted),
           Sampling: fast (depends on kernel)
 
-   =REF  [HLa00]
+   =REF  [HLa00] [HLD04: Sect.12.1.2]
 
    =DESCRIPTION
       EMPK generates random variates from an empirical distribution that is
@@ -65,33 +65,31 @@
       a simple formula to compute the optimal standarddeviation of the noise,
       called bandwidth (or window width) of the kernel.
 
-      For most applications it is perfectly ok to use the default
-      values offered. Unless you have some knowledge on density
-      estimation we do not recommend to change anything. 
-      There are two exceptions:
+      The variance of the estimated density is slightly larger than
+      that of the observed sample. However, this can be easily
+      corrected if required.
+      
+      There is also a correction (mirroring technique) for
+      distributions with non-negative support.
 
-      @enumerate A
-      @item
-      In the case that the unknown underlying distribution is not continuous
-      but discrete you should "turn off" the adding of the noise by setting:
-      @smallexample
-      unur_empk_set_smoothing(par, 0.)
-      @end smallexample
+      A simple robust reference method is implemented to find a good
+      standard deviation of the noise (i.e. the bandwidth of 
+      kernel density estimation). For some cases 
+      (e.g. densities with two or more sharp distinct peaks) there
+      kernel density estimation can be adjusted by changing the
+      smoothness factor and the so called beta factor.
 
-      @item
-      In the case that you are especially 
-      interested in a fast sampling algorithm use the call
-      @smallexample
-      unur_empk_set_kernel(par, UNUR_DISTR_BOXCAR);
-      @end smallexample
-      to change the used noise distribution from the default Gaussian
-      distribution to the uniform distribution.
-      For other possible kernels see unur_empk_set_kernel()
-      and unur_empk_set_kernelgen() below.
-      @end enumerate
+   =HOWTOUSE
+      EMPK uses empirical distributions. The main parameter is the
+      choice if of kernel density. The most important kernels can be 
+      set by unur_empk_set_kernel(). Additionally generators for other
+      kernels can be used by using unur_empk_set_kernelgen() instead.
+      Additionally variance correction and a correction for
+      non-negative variates can be switched on.
 
-      All other parameters are only useful for people knowing the theory
-      of kernel density estimation. It is not necessary to change them if
+      The two other parameters (smoothing factor and beta factor) are
+      only useful for people knowing the theory of kernel density
+      estimation. It is not necessary to change them if 
       the true underlying distribution is somehow comparable with a 
       bell-shaped curve, even skewed or with some not too sharp extra peaks.
       In all these cases the simple robust reference method implemented to 
@@ -111,6 +109,30 @@
       extremes should be choosen. We recommend to consult a reference
       on kernel smoothing when doing so; but it is not a simple problem
       to determine an optimal bandwidth for distributions with sharp peaks.
+
+      In general, for most applications it is perfectly ok to use the
+      default values offered. Unless you have some knowledge on
+      density estimation we do not recommend to change anything. 
+      There are two exceptions:
+
+      @enumerate A
+      @item
+      In the case that the unknown underlying distribution is not continuous
+      but discrete you should "turn off" the adding of the noise by setting:
+      @smallexample
+      unur_empk_set_smoothing(par, 0.)
+      @end smallexample
+
+      @item
+      In the case that you are especially 
+      interested in a fast sampling algorithm use the call
+      @smallexample
+      unur_empk_set_kernel(par, UNUR_DISTR_BOXCAR);
+      @end smallexample
+      to change the used noise distribution from the default Gaussian
+      distribution to the uniform distribution.
+      @end enumerate
+
    =END
 */
 

@@ -339,7 +339,6 @@ _unur_mcorr_init_HH( struct unur_gen *gen )
     _unur_distr_free( normaldistr );
     if (NORMAL == NULL) {
       _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"Cannot create aux Gaussian generator");
-      _unur_free(gen);
       return UNUR_FAILURE;
     }
     /* need same uniform random number generator and debugging flags */
@@ -382,12 +381,10 @@ _unur_mcorr_init_eigen( struct unur_gen *gen )
   }
   
   /* scaling values */
-  if (!_unur_FP_same(sum_eigenvalues, (double) GEN->dim)) {
+  if (!_unur_FP_equal(sum_eigenvalues, (double) GEN->dim))
     _unur_warning(GENTYPE, UNUR_ERR_GENERIC,"scaling sum(eigenvalues) -> dim");
-    for (i=0; i<GEN->dim; i++) {
-      GEN->eigenvalues[i] *= GEN->dim / sum_eigenvalues;
-    }
-  }
+  for (i=0; i<GEN->dim; i++)
+    GEN->eigenvalues[i] *= GEN->dim / sum_eigenvalues;
 
   return UNUR_SUCCESS;
 
@@ -716,7 +713,7 @@ _unur_mcorr_sample_matr_eigen( struct unur_gen *gen, double *mat )
     }
   }
 
-  /* symmetrization (necessery due to rounding-errors) */
+  /* symmetrization (necessary due to rounding-errors) */
   for (i=0; i<dim; i++) {
     for (j=(i+1); j<dim; j++) {
       mat[idx(i,j)] = (mat[idx(i,j)]+mat[idx(j,i)])/2.;

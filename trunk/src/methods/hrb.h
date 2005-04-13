@@ -48,14 +48,22 @@
 
    =SPEED Set-up: fast, Sampling: slow
 
+   =REF  [HLD04: Sect.9.1.4, Alg.9.4]
+
    =DESCRIPTION
-      Generates random variate with given hazard rate. It requires that
-      the distribution object contains a hazard rate and it requires an
-      upper bound for the hazard rate which must be set using
+      Generates random variate with given hazard rate which must be
+      bounded from above. It uses the thinning method with a constant 
+      dominating hazard function.
+
+   =HOWTOUSE
+      HRB requires a hazard function for a continuous distribution
+      together with an upper bound. The latter has to be set using the 
       unur_hrb_set_upperbound() call. If no such upper bound is given
       it is assumed that the upper bound can be achieved by evaluating 
       the hazard rate at the left hand boundary of the domain of the 
-      distribution.
+      distribution. Notice, however, that for decreasing hazard rate
+      the method HRD (@pxref{HRD,,Hazard Rate Decreasing}) is much
+      faster and thus the prefered method.
 
       It is important to note that the domain of the distribution can
       be set via a unur_distr_cont_set_domain() call.
@@ -67,10 +75,8 @@
       computing the hazard rate should return @code{UNUR_INFINITY}
       right of this domain.
 
-      For distributions with decreasing hazard rates use method 
-      HRD, which is faster.
-      For distributions with increasing hazard rate method HRI is
-      required.
+      For distributions with increasing hazard rate method HRI 
+      (@pxref{HRI,,Hazard Rate Increasing}) is required.
 
    =END
 */

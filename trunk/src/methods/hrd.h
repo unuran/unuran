@@ -46,12 +46,19 @@
 
    =SPEED Set-up: fast, Sampling: slow
 
+   =REF  [HLD04: Sect.9.1.5, Alg.9.5]
+
    =DESCRIPTION
-      Generates random variate with given non-increasing hazard rate. 
-      It is necessary that the distribution object contains this hazard rate.
-      Decreasing hazard rate implies that the corresponding PDF of the
-      distribution has heavier tails than the exponential distribution
-      (which has constant hazard rate).
+      Generates random variate with given non-increasing hazard rate.
+      It is necessary that the distribution object contains this
+      hazard rate. Decreasing hazard rate implies that the
+      corresponding PDF of the distribution has heavier tails than the
+      exponential distribution (which has constant hazard rate).
+
+   =HOWTOUSE
+      HRD requires a hazard function for a continuous distribution
+      with non-increasing hazard rate. There are no parameters for
+      this method.
 
       It is important to note that the domain of the distribution can
       be set via a unur_distr_cont_set_domain() call. However, only
@@ -61,9 +68,10 @@
       set to @code{0}.
       
       For distributions which do not have decreasing hazard rates but
-      are bounded from above use method HRB. 
-      For distributions with increasing hazard rate method HRI is
-      required.
+      are bounded from above use method HRB
+      (@pxref{HRB,,Hazard Rate Bounded}).
+      For distributions with increasing hazard rate method HRI 
+      (@pxref{HRI,,Hazard Rate Increasing}) is required.
 
    =END
 */

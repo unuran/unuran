@@ -660,7 +660,7 @@ _unur_matrix_cholesky_decomposition (int dim, const double *S, double *L )
       sum1 += L[idx(j,k)] * L[idx(j,k)];
     }
 
-    if (S[idx(j,j)] <= sum1) {
+    if (!(S[idx(j,j)] > sum1)) {
       /* covariance matrix not positive definite */
       return UNUR_FAILURE;
     }

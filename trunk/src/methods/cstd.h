@@ -89,7 +89,7 @@
    
       It is possible to change the parameters and the domain of the chosen 
       distribution without building a new generator object
-      by means of unur_cstd_chg_pmfparams().
+      by means of unur_cstd_chg_pdfparams().
 
    =END
 */

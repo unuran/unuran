@@ -137,6 +137,7 @@ static void _unur_gibbs_random_unit_vector( struct unur_gen *gen,
 #define GIBBS_VARIANT_COORDINATE       0x0001u /* coordinate sampler(default)*/
 #define GIBBS_VARIANT_RANDOM_DIRECTION 0x0002u /* random direction sampler   */
 
+
 /*****************************************************************************/
 /**  Public: User Interface (API)                                           **/
 /*****************************************************************************/
@@ -386,6 +387,7 @@ _unur_gibbs_create( struct unur_par *par )
   /* allocate memory for current point and random direction */
   GEN->point_current = _unur_xmalloc( (PAR->dim) * sizeof(double));
   GEN->direction = _unur_xmalloc( (PAR->dim) * sizeof(double));
+  GEN->tdr_points = _unur_xmalloc( 2* (PAR->dim) * sizeof(double));
 
   /* copy parameters into generator object */
   GEN->dim   = PAR->dim;              /* dimension */
@@ -396,6 +398,8 @@ _unur_gibbs_create( struct unur_par *par )
   GEN->coordinate = 0;
   for (d=0; d<GEN->dim; d++) {
     GEN->point_current[d]=0.;
+    GEN->tdr_points[2*d]=0.;
+    GEN->tdr_points[2*d+1]=0.;
   }
 
   /* return pointer to (almost empty) generator object */
@@ -432,12 +436,14 @@ _unur_gibbs_clone( const struct unur_gen *gen )
 
   CLONE->point_current = _unur_xmalloc( (GEN->dim) * sizeof(double));
   CLONE->direction = _unur_xmalloc( (GEN->dim) * sizeof(double));
+  CLONE->tdr_points = _unur_xmalloc( 2* (GEN->dim) * sizeof(double));
 
   /* copy parameters into clone object */
   CLONE->skip = GEN->skip;
 
   memcpy(CLONE->point_current, GEN->point_current, (GEN->dim) * sizeof(double));
   memcpy(CLONE->direction, GEN->direction, (GEN->dim) * sizeof(double));
+  memcpy(CLONE->tdr_points, GEN->tdr_points, 2 * (GEN->dim) * sizeof(double));
   
   return clone;
 
@@ -475,14 +481,23 @@ _unur_gibbs_sample_cvec( struct unur_gen *gen, double *vec )
 
       if ( gen->variant == GIBBS_VARIANT_COORDINATE ) {
           distr_conditional = unur_distr_condi_new(gen->distr, GEN->point_current, NULL, GEN->coordinate);
+          par_conditional = unur_tdr_new(distr_conditional);
+          unur_tdr_set_usedars(par_conditional, 0); /* do not use dars */
+          
+#if 0
+	  /* check if we have start points */
+	  if (!(GEN->tdr_points[2*GEN->coordinate]==0. && GEN->tdr_points[2*GEN->coordinate+1]==0.))
+	    unur_tdr_set_cpoints(par_conditional, 2, &GEN->tdr_points[2*GEN->coordinate]);
+#endif      
       }
       
       if ( gen->variant == GIBBS_VARIANT_RANDOM_DIRECTION ) {
           _unur_gibbs_random_unit_vector(gen, dim, GEN->direction);
           distr_conditional = unur_distr_condi_new(gen->distr, GEN->point_current, GEN->direction, GEN->coordinate);
+          par_conditional = unur_tdr_new(distr_conditional);
+          unur_tdr_set_usedars(par_conditional, 0); /* do not use dars */
       }
-      
-      par_conditional = unur_tdr_new(distr_conditional);
+            
       gen_conditional = unur_init(par_conditional);
       
       if (gen_conditional==NULL) {
@@ -495,6 +510,11 @@ _unur_gibbs_sample_cvec( struct unur_gen *gen, double *vec )
 	
 	if ( gen->variant == GIBBS_VARIANT_COORDINATE ) {
 	  GEN->point_current[GEN->coordinate] = x;
+#if 0  
+	  /* calculating new tdr starting points for this coordinate */
+	  GEN->tdr_points[2*GEN->coordinate] = unur_tdr_eval_invcdfhat(gen_conditional, 0.1, NULL, NULL, NULL);  
+	  GEN->tdr_points[2*GEN->coordinate+1] = unur_tdr_eval_invcdfhat(gen_conditional, 0.9, NULL, NULL, NULL);  
+#endif	
 	}  
         if ( gen->variant == GIBBS_VARIANT_RANDOM_DIRECTION ) {
 	  for (d=0; d<dim; d++) GEN->point_current[d] += x * GEN->direction[d];	  
@@ -545,6 +565,8 @@ _unur_gibbs_free( struct unur_gen *gen )
   /* free memory */
   if (GEN->point_current) free(GEN->point_current);
   if (GEN->direction) free(GEN->direction);
+  if (GEN->tdr_points) free(GEN->tdr_points);
+  
   _unur_generic_free(gen);
 
 } /* end of _unur_gibbs_free() */

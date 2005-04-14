@@ -52,6 +52,7 @@ struct unur_gibbs_gen {
   long   skip;              /* skip-parameter of the hitrou method           */
   double *point_current;    /* current point                                 */
   double *direction;        /* random direction                              */
+  double *tdr_points;       /* starting points for the tdr method in each dim*/
   int    coordinate;        /* current coordinate used for stepping          */
   long   pdfcount;          /* counting the number of PDF calls              */
 };

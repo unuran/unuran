@@ -66,6 +66,7 @@ struct unur_hitrou_gen {
   double *point_random;     /* random point, can be inside shape or not      */
   double *x;                /* working point in the (xy)-coordinate system   */
   long pdfcount;            /* counting the number of PDF calls              */
+  int coordinate;           /* current coordinate used for stepping          */
   int shape_flag;           /* 0=RoU shape, 1=test rect, 2=simplex, 3=2simpl */
   double *test_rectangle;   /* (dim+1) array : relative size of test rect    */
   long simplex_jumps;       /* counter for jumps for double-simplex shape    */

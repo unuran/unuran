@@ -157,7 +157,12 @@ static int _unur_hitrou_inside_shape( UNUR_GEN *gen );
 #define PDF(x)    _unur_cvec_PDF((x),(gen->distr))    /* call to PDF         */
 
 #define NORMAL    gen->gen_aux        /* pointer to normal variate generator */
+
 /*---------------------------------------------------------------------------*/
+/* Variants                                                                  */
+#define HITROU_VARIANT_COORDINATE       0x0001u /* coordinate sampler        */
+#define HITROU_VARIANT_RANDOM_DIRECTION 0x0002u /* random direction sampler  */
+
 
 /*****************************************************************************/
 /**  Public: User Interface (API)                                           **/
@@ -213,7 +218,7 @@ unur_hitrou_new( const struct unur_distr *distr )
   PAR->u_planes  = 0;      /* do not calculate the bounding u-planes      */
   PAR->adaptive = 1;      /* reusing outside points as new line-segment ends */
   par->method   = UNUR_METH_HITROU;   /* method and default variant          */
-  par->variant  = 0u;                 /* default variant                     */
+  par->variant  = HITROU_VARIANT_RANDOM_DIRECTION; /* default variant        */
   par->set      = 0u;                 /* inidicate default parameters        */
   par->urng     = unur_get_default_urng(); /* use default urng               */
   par->urng_aux = NULL;                    /* no auxilliary URNG required    */
@@ -433,6 +438,45 @@ unur_hitrou_set_adaptive( struct unur_par *par, int adaptive_flag )
 
 }
 
+/*****************************************************************************/
+
+int 
+unur_hitrou_set_variant_coordinate( UNUR_PAR *par ) {
+     /*----------------------------------------------------------------------*/
+     /* Coordinate Sampler :                                                 */
+     /* Sampling along the coordinate directions (cyclic).                   */
+     /*----------------------------------------------------------------------*/
+
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, HITROU );
+            
+  par->variant  = HITROU_VARIANT_COORDINATE;
+  
+  /* ok */
+  return UNUR_SUCCESS;
+} /* end of unur_hitrou_set_variant_coordinate() */
+
+/*****************************************************************************/
+
+int 
+unur_hitrou_set_variant_random_direction( UNUR_PAR *par ) {
+     /*----------------------------------------------------------------------*/
+     /* Random Direction Sampler :                                           */
+     /* Sampling along the random directions.                                */
+     /* This is the default.                                                 */
+     /*----------------------------------------------------------------------*/
+  
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, HITROU );
+  
+  par->variant  = HITROU_VARIANT_RANDOM_DIRECTION;
+  
+  /* ok */
+  return UNUR_SUCCESS;
+} /* end of unur_hitrou_set_variant_random_direction() */
+
 
 /*****************************************************************************/
 /**  Private                                                                **/
@@ -463,6 +507,11 @@ _unur_hitrou_init( struct unur_par *par )
     _unur_error(GENTYPE,UNUR_ERR_PAR_INVALID,"");
     return NULL; }
   COOKIE_CHECK(par,CK_HITROU_PAR,NULL);
+
+  if ( PAR->u_planes==0 && par->variant == HITROU_VARIANT_COORDINATE) {
+    _unur_error(GENTYPE,UNUR_ERR_PAR_INVALID,"strip + coordinate samlper not possible");
+    return NULL; 
+  }
 
   /* create a new empty generator object */
   gen = _unur_hitrou_create(par);
@@ -620,6 +669,9 @@ _unur_hitrou_create( struct unur_par *par )
   gen->destroy = _unur_hitrou_free;
   gen->clone = _unur_hitrou_clone;
 
+  /* variant of sampling method */
+  gen->variant = par->variant;        
+    
   /* allocate memory for u-boundary arrays */
   GEN->umin = _unur_xmalloc( PAR->dim * sizeof(double)); /* bounding rectangle */
   GEN->umax = _unur_xmalloc( PAR->dim * sizeof(double)); /* bounding rectangle */
@@ -655,6 +707,7 @@ _unur_hitrou_create( struct unur_par *par )
   GEN->pdfcount = 0;
   GEN->simplex_jumps = 0;
   GEN->shape_flag = 0;
+  GEN->coordinate = 0;  
   for (d=0; d<GEN->dim+1; d++) {
     GEN->point_current[d]=0.;
     GEN->point_random[d]=0.;
@@ -749,35 +802,75 @@ _unur_hitrou_sample_cvec( struct unur_gen *gen, double *vec )
   dim = GEN->dim;
 
   for (skip=0; skip<=GEN->skip; skip++) {
-
-    /* generate random direction vector in (U,V) space */
-    _unur_hitrou_random_direction(gen, dim+1, GEN->direction);
-
-    /* some random initialization in order to avoid compiler warnings */
+ 
+    /* initialization */
     lmin=0; lmax=0;
+   
+    if (gen->variant == HITROU_VARIANT_RANDOM_DIRECTION) {
+      /* generate random direction vector in (U,V) space */
+      _unur_hitrou_random_direction(gen, dim+1, GEN->direction);
+    
+      /* calculate lambda parameters for the intersections with v=vmax and v=0 */
+      lambda = (GEN->vmax - GEN->point_current[dim]) / GEN->direction[dim];
+      if (lambda>0) lmax = lambda;
+      if (lambda<0) lmin = lambda;
 
-    /* calculate lambda parameters for the intersections with v=vmax and v=0 */
-    lambda = (GEN->vmax - GEN->point_current[dim]) / GEN->direction[dim];
-    if (lambda>0) lmax = lambda;
-    if (lambda<0) lmin = lambda;
+      lambda = (0 - GEN->point_current[dim]) / GEN->direction[dim];
+      if (lambda>0) lmax = lambda;
+      if (lambda<0) lmin = lambda;
+      
+      if (GEN->u_planes==1) {
+        /* calculate the intersections alont all other coordinate directions */
+        for (d=0; d<dim; d++) {
+          lambda = (GEN->umin[d] - GEN->point_current[d]) / GEN->direction[d];
+          if (lambda>0 && lambda<lmax) lmax = lambda;
+          if (lambda<0 && lambda>lmin) lmin = lambda;
 
-    lambda = (0 - GEN->point_current[dim]) / GEN->direction[dim];
-    if (lambda>0) lmax = lambda;
-    if (lambda<0) lmin = lambda;
-
-    if (GEN->u_planes==1) {
-      /* calculate the intersections alont all other coordinate directions */
-      for (d=0; d<dim; d++) {
-        lambda = (GEN->umin[d] - GEN->point_current[d]) / GEN->direction[d];
-        if (lambda>0 && lambda<lmax) lmax = lambda;
-        if (lambda<0 && lambda>lmin) lmin = lambda;
-
-        lambda = (GEN->umax[d] - GEN->point_current[d]) / GEN->direction[d];
-        if (lambda>0 && lambda<lmax) lmax = lambda;
-        if (lambda<0 && lambda>lmin) lmin = lambda;
+          lambda = (GEN->umax[d] - GEN->point_current[d]) / GEN->direction[d];
+          if (lambda>0 && lambda<lmax) lmax = lambda;
+          if (lambda<0 && lambda>lmin) lmin = lambda;
+        }
       }
     }
+    
+    if (gen->variant == HITROU_VARIANT_COORDINATE) {
+        
+	/* calculate the intersections alont the current coordinate direction */
+	
+	/* setting current direction vector */
+	for (d=0; d<=dim; d++) 
+	  GEN->direction[d]=0.;
+	
+	d = GEN->coordinate;
+        GEN->direction[d]=1.;
+	
+	if (d==dim) {
+	  /* calculate lambda parameters for the intersections with v=vmax and v=0 */
+          lambda = (GEN->vmax - GEN->point_current[dim]) / GEN->direction[dim];
+          if (lambda>0) lmax = lambda;
+          if (lambda<0) lmin = lambda;
 
+          lambda = (0 - GEN->point_current[dim]) / GEN->direction[dim];
+          if (lambda>0) lmax = lambda;
+          if (lambda<0) lmin = lambda;
+
+	}
+	
+	else {
+	  /* calculate lambda parameters for the intersections with u[d]-planes */
+	  lambda = (GEN->umin[d] - GEN->point_current[d]) / GEN->direction[d];
+          if (lambda>0) lmax = lambda;
+          if (lambda<0) lmin = lambda;
+
+          lambda = (GEN->umax[d] - GEN->point_current[d]) / GEN->direction[d];
+          if (lambda>0) lmax = lambda;
+          if (lambda<0) lmin = lambda;
+        }
+    
+    }
+    
+    
+    /* until we find an inside point */
     while (1) {
 
       lambda = lmin + (lmax-lmin) * _unur_call_urng(gen->urng);
@@ -799,6 +892,10 @@ _unur_hitrou_sample_cvec( struct unur_gen *gen, double *vec )
         break; /* jump out of the while() loop */
       }
     }
+
+    /* prepare next coordinate direction */
+    GEN->coordinate = GEN->coordinate + 1; 
+    if (GEN->coordinate > dim) GEN->coordinate = 0;
 
   }
 
@@ -1163,6 +1260,10 @@ _unur_hitrou_debug_init( const struct unur_gen *gen )
   fprintf(log,"%s:\n",gen->genid);
   fprintf(log,"%s: type    = continuous multivariate random variates\n",gen->genid);
   fprintf(log,"%s: method  = hitrou (hit and run ratio-of-uniforms)\n",gen->genid);
+  if (gen->variant == HITROU_VARIANT_COORDINATE) 
+    fprintf(log,"%s: variant = coordinate sampler \n",gen->genid);
+  if (gen->variant == HITROU_VARIANT_RANDOM_DIRECTION) 
+    fprintf(log,"%s: variant = random direction sampler \n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
   _unur_distr_cvec_debug( gen->distr, gen->genid );

@@ -205,6 +205,25 @@ int unur_hitrou_set_adaptive( UNUR_PAR *parameters, int adaptive_flag );
    Default: @code{1}.
 */
 
+int unur_hitrou_set_variant_coordinate( UNUR_PAR *par );
+/* 
+   Coordinate Sampler :
+   Sampling along the coordinate directions (cyclic).
+*/
+
+/*...........................................................................*/
+
+int unur_hitrou_set_variant_random_direction( UNUR_PAR *par );
+/* 
+   Random Direction Sampler :
+   Sampling along the random directions.
+   
+   This is the default.
+*/
+
+/*...........................................................................*/
+
+
 
 /* =END */
 /*---------------------------------------------------------------------------*/

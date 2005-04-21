@@ -480,11 +480,13 @@ _unur_gibbs_sample_cvec( struct unur_gen *gen, double *vec )
   for (skip=0; skip<=GEN->skip; skip++) {
 
       if ( gen->variant == GIBBS_VARIANT_COORDINATE ) {
-          distr_conditional = unur_distr_condi_new(gen->distr, GEN->point_current, NULL, GEN->coordinate);
-          par_conditional = unur_tdr_new(distr_conditional);
+          distr_conditional = unur_distr_condi_new(gen->distr, GEN->point_current, NULL, GEN->coordinate);         
+	  par_conditional = unur_arou_new(distr_conditional);
+	  
+#if 0	  
+	  par_conditional = unur_tdr_new(distr_conditional);
           unur_tdr_set_usedars(par_conditional, 0); /* do not use dars */
           
-#if 0
 	  /* check if we have start points */
 	  if (!(GEN->tdr_points[2*GEN->coordinate]==0. && GEN->tdr_points[2*GEN->coordinate+1]==0.))
 	    unur_tdr_set_cpoints(par_conditional, 2, &GEN->tdr_points[2*GEN->coordinate]);
@@ -494,8 +496,12 @@ _unur_gibbs_sample_cvec( struct unur_gen *gen, double *vec )
       if ( gen->variant == GIBBS_VARIANT_RANDOM_DIRECTION ) {
           _unur_gibbs_random_unit_vector(gen, dim, GEN->direction);
           distr_conditional = unur_distr_condi_new(gen->distr, GEN->point_current, GEN->direction, GEN->coordinate);
+	  par_conditional = unur_arou_new(distr_conditional);
+	  
+#if 0	  
           par_conditional = unur_tdr_new(distr_conditional);
           unur_tdr_set_usedars(par_conditional, 0); /* do not use dars */
+#endif      
       }
             
       gen_conditional = unur_init(par_conditional);

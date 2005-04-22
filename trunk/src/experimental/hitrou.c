@@ -122,15 +122,11 @@ static struct unur_gen *_unur_hitrou_clone( const struct unur_gen *gen);
 
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
-/* the following functions print debugging information on output stream,     */
+/* the following function print debugging information on output stream,      */
 /* i.e., into the log file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 static void _unur_hitrou_debug_init ( const struct unur_gen *gen );
-static void _unur_hitrou_debug_shape( const struct unur_gen *gen );
 
-/*---------------------------------------------------------------------------*/
-/* print after generator has been initialized has completed.                 */
-/*---------------------------------------------------------------------------*/
 #endif
 
 static void _unur_hitrou_random_direction( struct unur_gen *gen,
@@ -139,10 +135,17 @@ static void _unur_hitrou_random_direction( struct unur_gen *gen,
 /* generte a random direction vector                                         */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_hitrou_inside_shape( UNUR_GEN *gen );
+static int _unur_hitrou_inside_shape( UNUR_GEN *gen, double *uv );
 /*---------------------------------------------------------------------------*/
-/* check if GEN->random_point is inside shape                                 */
+/* check if point uv[] is inside shape                                       */
 /*---------------------------------------------------------------------------*/
+
+static void _unur_hitrou_x_to_uv( UNUR_GEN *gen, double *x, double *uv );
+static void _unur_hitrou_uv_to_x( UNUR_GEN *gen, double *uv, double *x );
+/*---------------------------------------------------------------------------*/
+/* transforming between x[] and uv[] coordinates                             */
+/*---------------------------------------------------------------------------*/
+
 
 
 /*---------------------------------------------------------------------------*/
@@ -163,6 +166,10 @@ static int _unur_hitrou_inside_shape( UNUR_GEN *gen );
 #define HITROU_VARIANT_COORDINATE       0x0001u /* coordinate sampler        */
 #define HITROU_VARIANT_RANDOM_DIRECTION 0x0002u /* random direction sampler  */
 
+#define HITROU_INITIAL_POINTS 20 /* random directions used for initial point */
+
+/* increase strip positions (vmax) by this factor */
+#define HITROU_ADAPTIVE_MULTIPLIER 1.1 
 
 /*****************************************************************************/
 /**  Public: User Interface (API)                                           **/
@@ -208,15 +215,15 @@ unur_hitrou_new( const struct unur_distr *distr )
   /* copy number of dimensions from the distribution object */
   PAR->dim = distr->dim;
 
-
   /* set default values */
   PAR->r   = 1.;         /* r-parameter of the generalized method       */
-  PAR->skip      = 0;         /* number of skipped points in chain           */
-  PAR->vmax      = 0.;        /* v-boundary of bounding rectangle (unknown)  */
-  PAR->umin  = NULL;       /* u-boundary of bounding rectangle (unknown)  */
-  PAR->umax  = NULL;       /* u-boundary of bounding rectangle (unknown)  */
-  PAR->u_planes  = 0;      /* do not calculate the bounding u-planes      */
-  PAR->adaptive = 1;      /* reusing outside points as new line-segment ends */
+  PAR->skip      = 0;    /* number of skipped points in chain           */
+  PAR->vmax      = 0.;   /* v-boundary of bounding rectangle (unknown)  */
+  PAR->umin  = NULL;     /* u-boundary of bounding rectangle (unknown)  */
+  PAR->umax  = NULL;     /* u-boundary of bounding rectangle (unknown)  */
+  PAR->bounding_rectangle = 0; /* do not calculate the bounding rect */
+  PAR->adaptive_points = 1; /* reusing outside points as new line-segment ends */
+  PAR->adaptive_strip = 0;  /* usage of adaptive algorithm for the strip position */
   par->method   = UNUR_METH_HITROU;   /* method and default variant          */
   par->variant  = HITROU_VARIANT_RANDOM_DIRECTION; /* default variant        */
   par->set      = 0u;                 /* inidicate default parameters        */
@@ -385,12 +392,12 @@ unur_hitrou_set_skip( struct unur_par *par, long skip )
 /*****************************************************************************/
 
 int
-unur_hitrou_set_u_planes( struct unur_par *par, int u_planes )
+unur_hitrou_use_bounding_rectangle( struct unur_par *par, int flag )
      /*----------------------------------------------------------------------*/
-     /* Set the flag for the calculating and using the u-planes              */
+     /* Set the flag for the calculating and usage of the bounding rectangle */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   u_planes ... 1:use u-planes, 0:don't use u-planes                  */
+     /*   flag ... 1:use bounding rectangle, 0:use infinite strip            */
      /*                                                                      */
      /* return:                                                              */
      /*   UNUR_SUCCESS ... on success                                        */
@@ -402,23 +409,23 @@ unur_hitrou_set_u_planes( struct unur_par *par, int u_planes )
   _unur_check_par_object( par, HITROU );
 
   /* check new parameter for generator */
-  if (u_planes != 0 && u_planes != 1) {
-    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"invalid flag for u_planes");
+  if (flag != 0 && flag != 1) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"invalid flag for bounding rect");
     return UNUR_ERR_PAR_SET;
   }
 
   /* store data */
-  PAR->u_planes = u_planes;
+  PAR->bounding_rectangle = flag;
 
   /* o.k. */
   return UNUR_SUCCESS;
 
-} /* end of unur_hitrou_set_u_planes() */
+} /* end of unur_hitrou_use_bounding_rectangle() */
 
 /*****************************************************************************/
 
 int 
-unur_hitrou_set_adaptive( struct unur_par *par, int adaptive_flag )
+unur_hitrou_set_adaptive_points( struct unur_par *par, int adaptive_flag )
 {
   /* check arguments */
   _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
@@ -431,12 +438,35 @@ unur_hitrou_set_adaptive( struct unur_par *par, int adaptive_flag )
   }
 
   /* store data */
-  PAR->adaptive = adaptive_flag;
+  PAR->adaptive_points = adaptive_flag;
 
   /* o.k. */
   return UNUR_SUCCESS;
 
-}
+} /* end of unur_hitrou_set_adaptive_points() */
+
+/*****************************************************************************/
+
+int 
+unur_hitrou_set_adaptive_strip( struct unur_par *par, int adaptive_flag )
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, HITROU );
+
+  /* check new parameter for generator */
+  if (adaptive_flag!=0 && adaptive_flag!=1) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"adaptive_flag must be 0 or 1");
+    return UNUR_ERR_PAR_SET;
+  }
+
+  /* store data */
+  PAR->adaptive_strip = adaptive_flag;
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+
+} /* end of unur_hitrou_set_adaptive_strip() */
 
 /*****************************************************************************/
 
@@ -498,7 +528,9 @@ _unur_hitrou_init( struct unur_par *par )
      /*----------------------------------------------------------------------*/
 {
   struct unur_gen *gen;
-
+  int d, i;
+  double pdf, pdf_max;
+  
   /* check arguments */
   CHECK_NULL(par,NULL);
 
@@ -508,7 +540,7 @@ _unur_hitrou_init( struct unur_par *par )
     return NULL; }
   COOKIE_CHECK(par,CK_HITROU_PAR,NULL);
 
-  if ( PAR->u_planes==0 && par->variant == HITROU_VARIANT_COORDINATE) {
+  if ( PAR->bounding_rectangle==0 && par->variant == HITROU_VARIANT_COORDINATE) {
     _unur_error(GENTYPE,UNUR_ERR_PAR_INVALID,"strip + coordinate samlper not possible");
     return NULL; 
   }
@@ -538,16 +570,47 @@ _unur_hitrou_init( struct unur_par *par )
     NORMAL->debug = gen->debug;
   }
 
-  /* compute bounding rectangle */
-  if (_unur_hitrou_rectangle(gen)!=UNUR_SUCCESS) {
-    _unur_par_free(par); _unur_hitrou_free(gen);
-    return NULL;
+  if (PAR->bounding_rectangle==0 && PAR->adaptive_strip==1) {
+    /* we are using an adaptive strip */
+    
+    /* do we have an vmax set ? */
+    if (GEN->vmax==0) GEN->vmax=1.; /* initial value for strip position */
+
+    /* we look for an interior point along different random directions */
+    for (pdf_max=0, i=1; i<=HITROU_INITIAL_POINTS; i++) {
+    
+      /* choose a random direction */
+      _unur_hitrou_random_direction(gen, GEN->dim+1, GEN->direction);
+      _unur_hitrou_uv_to_x( gen, GEN->direction, GEN->x );
+
+      /* check if this point is better (having higher value of pdf) */
+      pdf = PDF(GEN->x);
+      if (pdf_max < pdf ) {
+        /* update current max of the pdf */
+	pdf_max = pdf;
+	
+	/* point_random[] on the RoU-surface along the given direction */
+        _unur_hitrou_x_to_uv( gen, GEN->x, GEN->point_random );
+                
+        /* get the middle point */
+        for (d=0; d<=GEN->dim; d++)
+          GEN->point_current[d] = GEN->point_random[d] / 2;	  
+      }
+      
+    } /* next random direction */    
+        
   }
+  else {
 
-  /* set initial point inside RoU shape */
-  GEN->point_current[GEN->dim]=GEN->vmax/2.; /* all other coordinates are already 0 */
-
-
+    /* compute bounding rectangle */
+    if (_unur_hitrou_rectangle(gen)!=UNUR_SUCCESS) {
+      _unur_par_free(par); _unur_hitrou_free(gen);
+      return NULL;
+    }
+    /* set initial point inside RoU shape */
+    GEN->point_current[GEN->dim]=GEN->vmax/2.; /* all other coordinates are already 0 */      
+  }
+  
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
     if (gen->debug) _unur_hitrou_debug_init(gen);
@@ -597,7 +660,7 @@ _unur_hitrou_rectangle( struct unur_gen *gen )
   rr->umax   = GEN->umax;
   rr->r      = GEN->r;
   rr->center = GEN->center;
-  rr->u_planes = GEN->u_planes;
+  rr->bounding_rectangle = GEN->bounding_rectangle;
   rr->genid  = gen->genid;
   
   /* setting dummy initialization values (stupid compiler !) */
@@ -694,8 +757,9 @@ _unur_hitrou_create( struct unur_par *par )
   GEN->r     = PAR->r;                /* r-parameter of the hitrou method */
   GEN->vmax  = PAR->vmax;             /* upper v-boundary of bounding rectangle */
   GEN->skip  = PAR->skip;             /* number of skipped poins in chain */
-  GEN->u_planes = PAR->u_planes;      /* flag to calculate and use u-planes */
-  GEN->adaptive = PAR->adaptive;    /* reusing outside points for line-segment */
+  GEN->bounding_rectangle = PAR->bounding_rectangle; /* using bounding rect flag */
+  GEN->adaptive_points = PAR->adaptive_points;  /* reusing outside points for line-segment */
+  GEN->adaptive_strip = PAR->adaptive_strip;    /* using adaptive strip flag */
   
   if (PAR->umin != NULL) memcpy(GEN->umin, PAR->umin, GEN->dim * sizeof(double));
   if (PAR->umax != NULL) memcpy(GEN->umax, PAR->umax, GEN->dim * sizeof(double));
@@ -706,7 +770,6 @@ _unur_hitrou_create( struct unur_par *par )
   /* initialize parameters */
   GEN->pdfcount = 0;
   GEN->simplex_jumps = 0;
-  GEN->shape_flag = 0;
   GEN->coordinate = 0;  
   for (d=0; d<GEN->dim+1; d++) {
     GEN->point_current[d]=0.;
@@ -760,7 +823,9 @@ _unur_hitrou_clone( const struct unur_gen *gen )
   CLONE->skip = GEN->skip;
   CLONE->r = GEN->r;
   CLONE->vmax = GEN->vmax;
-  CLONE->u_planes = GEN->u_planes;
+  CLONE->bounding_rectangle = GEN->bounding_rectangle;
+  CLONE->adaptive_points = GEN->adaptive_points;
+  CLONE->adaptive_strip = GEN->adaptive_strip;
 
   memcpy(CLONE->umin, GEN->umin, GEN->dim * sizeof(double));
   memcpy(CLONE->umax, GEN->umax, GEN->dim * sizeof(double));
@@ -810,6 +875,18 @@ _unur_hitrou_sample_cvec( struct unur_gen *gen, double *vec )
       /* generate random direction vector in (U,V) space */
       _unur_hitrou_random_direction(gen, dim+1, GEN->direction);
     
+#if 0      
+      /* TODO ... */
+      _unur_hitrou_uv_to_x( gen, GEN->direction, GEN->x );
+      
+      V = pow(PDF(x), 1./(GEN->r * GEN->dim + 1.));
+      while (V < GEN->vmax) {
+        GEN->vmax *= HITROU_ADAPTIVE_MULTIPLIER;
+      }
+#endif
+        
+      
+      
       /* calculate lambda parameters for the intersections with v=vmax and v=0 */
       lambda = (GEN->vmax - GEN->point_current[dim]) / GEN->direction[dim];
       if (lambda>0) lmax = lambda;
@@ -819,7 +896,7 @@ _unur_hitrou_sample_cvec( struct unur_gen *gen, double *vec )
       if (lambda>0) lmax = lambda;
       if (lambda<0) lmin = lambda;
       
-      if (GEN->u_planes==1) {
+      if (GEN->bounding_rectangle==1) {
         /* calculate the intersections alont all other coordinate directions */
         for (d=0; d<dim; d++) {
           lambda = (GEN->umin[d] - GEN->point_current[d]) / GEN->direction[d];
@@ -874,7 +951,7 @@ _unur_hitrou_sample_cvec( struct unur_gen *gen, double *vec )
     while (1) {
 
       lambda = lmin + (lmax-lmin) * _unur_call_urng(gen->urng);
-      if (GEN->adaptive==1) {
+      if (GEN->adaptive_points==1) {
         if (lambda>0) lmax=lambda;
         if (lambda<0) lmin=lambda;
       }
@@ -884,7 +961,7 @@ _unur_hitrou_sample_cvec( struct unur_gen *gen, double *vec )
         GEN->point_random[d] = GEN->point_current[d] + lambda * GEN->direction[d];
 
       /* check if random point is inside domain */
-      if (_unur_hitrou_inside_shape(gen)) {
+      if (_unur_hitrou_inside_shape(gen, GEN->point_random)) {
         /* update current point */
         for (d=0; d<=dim; d++)
           GEN->point_current[d] = GEN->point_random[d] ;
@@ -938,8 +1015,7 @@ _unur_hitrou_free( struct unur_gen *gen )
 
 
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
-    if (gen->debug) _unur_hitrou_debug_shape(gen);
+    if (gen->debug) {} /* write additional info into log file */;
 #endif
 
   /* we cannot use this generator object any more */
@@ -961,6 +1037,51 @@ _unur_hitrou_free( struct unur_gen *gen )
 /**  Auxilliary routines                                                    **/
 /*****************************************************************************/
 
+
+void 
+_unur_hitrou_x_to_uv( UNUR_GEN *gen, double *x, double *uv ) {
+    /* transform the point X[] into the UV[]-coordinate system */
+    int d;
+    double V;
+    
+    V = pow(PDF(x), 1./(GEN->r * GEN->dim + 1.));
+    
+    uv[GEN->dim] = V;
+    for (d=0; d<GEN->dim; d++) {
+      if (GEN->r==1)
+        uv[d] = (x[d] - GEN->center[d]) * V;
+      else
+        uv[d] = (x[d] - GEN->center[d]) * pow(V,GEN->r) ;
+    } 
+}
+/*---------------------------------------------------------------------------*/
+
+void 
+_unur_hitrou_uv_to_x( UNUR_GEN *gen, double *uv, double *x ) {
+    /* transform the point UV[] into the X[]-coordinate system */
+    int d;
+    double U,V;
+    
+    V = uv[GEN->dim];
+    
+    if (V==0) {
+      for (d=0; d<GEN->dim; d++) 
+        x[d]=0;
+    }
+    
+    else {
+      for (d=0; d<GEN->dim; d++) {
+        U = uv[d];
+        if (GEN->r==1)
+          x[d] = U/V + GEN->center[d];
+        else
+          x[d] = U/pow(V,GEN->r) + GEN->center[d];
+      }
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
 void
 _unur_hitrou_random_direction( struct unur_gen *gen,
                                int dim, double *direction)
@@ -981,163 +1102,23 @@ _unur_hitrou_random_direction( struct unur_gen *gen,
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_hitrou_inside_shape( UNUR_GEN *gen )
-     /* check if GEN->random_point is inside shape */
+_unur_hitrou_inside_shape( UNUR_GEN *gen, double *uv )
+     /* check if uv[] is inside RoU shape */
 {
-  double U, V;
-  double W=0;
-  int d;
+  double V;
   int inside=0;
-  double sum=0, r2=0;
 
-  if (GEN->shape_flag==0) {
-    /* normal RoU shape*/
-    /* calculate the point in the X[]-coordinate system */
-    V = GEN->point_random[GEN->dim];
-    for (d=0; d<GEN->dim; d++) {
-      U = GEN->point_random[d];
-      if (GEN->r==1)
-        GEN->x[d] = U/V + GEN->center[d];
-      else
-        GEN->x[d] = U/pow(V,GEN->r) + GEN->center[d];
-    }
+  _unur_hitrou_uv_to_x( gen, uv, GEN->x );
 
-    /* point inside domain ? */
-    GEN->pdfcount++;
-    if (V <= pow(PDF(GEN->x),1./(GEN->r * GEN->dim + 1.)))
-      inside=1;
-    else
-      inside=0;
-  }
+  /* point inside domain ? */
+  V = uv[GEN->dim];
+  if (V <= pow(PDF(GEN->x),1./(GEN->r * GEN->dim + 1.)))
+    inside=1;
+  else
+    inside=0;
 
+  GEN->pdfcount++;
   
-  if (GEN->shape_flag==1) {
-    /* testshape : rectangle */
-    inside=1;
-
-    GEN->pdfcount++;
-    /* checking V coordinate */
-    V=GEN->point_random[GEN->dim];
-    if (V>GEN->vmax*GEN->test_rectangle[GEN->dim]) inside=0;
-
-    /* checking U coordinates */
-    for (d=0; d<GEN->dim; d++) {
-      U = GEN->point_random[d];
-      if (U>GEN->umax[d]*GEN->test_rectangle[d]) inside=0;
-      if (U<GEN->umin[d]*GEN->test_rectangle[d]) inside=0;
-    }
-
-  }
-
-  
-  if (GEN->shape_flag==2) {
-    /* testshape : single simplex */
-    inside=1;
-    sum=0;
-
-    GEN->pdfcount++;
-    /* V coordinate */
-    V=GEN->point_random[GEN->dim]/GEN->vmax;
-    if (V<0) inside=0;
-    sum = V;
-
-    /* checking U coordinates */
-    for (d=0; d<GEN->dim; d++) {
-      U = GEN->point_random[d]/GEN->umax[d];
-      if (U<0) inside=0;
-      sum += U;
-    }
-
-    if (sum>1) inside=0;
-  }
-
-
-  if (GEN->shape_flag==3) {
-    /* testshape : two copies of simplex above eachother along the v-direction */
-    inside=1;
-    sum=0;
-
-    GEN->pdfcount++;
-    
-    /* V coordinate */
-    V=GEN->point_random[GEN->dim]/(GEN->vmax/2.);
-    if (V<0) inside=0;
-       
-    sum = (V>1) ? V-1: V;
-
-    /* checking U coordinates */
-    for (d=0; d<GEN->dim; d++) {
-      U = GEN->point_random[d]/GEN->umax[d];
-      if (U<0) inside=0;
-      sum += U;
-    }
-
-    if (sum>1) inside=0;
-
-    if (inside==1) {    
-      /* see if we have made a jump between the two simplices */
-      W=GEN->point_current[GEN->dim]/(GEN->vmax/2.);
-      if ((V<0.5 && W>=0.5) || (W<0.5 && V>=0.5)) GEN->simplex_jumps++;
-    }
-    
-  }
-
-
-  if (GEN->shape_flag==4) {
-    /* testshape : two copies of simplex above eachother along the u[0]-direction */
-    inside=1;
-    sum=0;
-
-    GEN->pdfcount++;
-    
-    /* V coordinate */
-    V=GEN->point_random[GEN->dim]/GEN->vmax;
-    if (V<0) inside=0;
-       
-    sum = V;
-
-    /* checking U coordinates */
-    for (d=0; d<GEN->dim; d++) {
-      if (d==0) {
-        U = GEN->point_random[d]/(GEN->umax[d]/2.);
-        sum += (U>1) ? U-1: U;    
-      }
-      else {
-        U = GEN->point_random[d]/GEN->umax[d];
-        sum += U;
-      }
-      if (U<0) inside=0;
-    }
-
-    if (sum>1) inside=0;
-
-    if (inside==1) {    
-      /* see if we have made a jump between the two simplices */
-      U=GEN->point_random[0]/(GEN->umax[0]/2.);
-      W=GEN->point_current[0]/(GEN->umax[0]/2.);
-      if ((U<0.5 && W>=0.5) || (W<0.5 && U>=0.5)) GEN->simplex_jumps++;
-    }
-  }
-  
-
-  if (GEN->shape_flag==5) {
-    /* testshape : ellipsoid */
-    inside=1;
-
-    GEN->pdfcount++;
-    /* checking V coordinate */
-    V=GEN->point_random[GEN->dim];
-
-    r2=pow((V-GEN->vmax/2.)/(GEN->vmax/2), 2);
-    /* checking U coordinates */
-    for (d=0; d<GEN->dim; d++) {
-      U = GEN->point_random[d];
-      r2 += pow((U-GEN->umax[d]/2)*2./(GEN->umax[d]/2), 2);
-    }
-    if (r2>=1) inside=0;    
-  }
-  
-
   return inside;
 }
 
@@ -1163,33 +1144,6 @@ _unur_hitrou_reset_pdfcount( UNUR_GEN *gen)
   GEN->pdfcount = 0;
 }
 
-/*---------------------------------------------------------------------------*/
-
-void _unur_hitrou_set_shape( UNUR_GEN *gen, int shape_flag)
-     /* shape_flag : 0=normal, 1=rectangle, 2=single simplex, 3=stacked simplex */
-{
-  GEN->shape_flag = shape_flag;
-}
-
-
-/*---------------------------------------------------------------------------*/
-
-void _unur_hitrou_set_testrectangle( UNUR_GEN *gen, double *relative_size)
-     /* set the relative size of the test rectangle (relative to bound rect) */
-     /* the array relative_size[] has dimension (dim+1) and contain the      */
-     /* relative sizes (numbers between 0 and 1) of the test-rectangle       */
-{
-  int d;
-
-  for (d=0; d<=GEN->dim; d++) {
-    if (relative_size[d]>1 && relative_size[d]<=0) {
-      relative_size[d]=1.;
-      _unur_warning(gen->genid,UNUR_ERR_PAR_SET,"testrect not in (0,1] : set to 1.");
-
-    }
-    GEN->test_rectangle[d] = relative_size[d];
-  }
-}
 
 /*---------------------------------------------------------------------------*/
 
@@ -1216,18 +1170,6 @@ void _unur_hitrou_get_point( UNUR_GEN *gen, double *uv)
 }
 
 /*---------------------------------------------------------------------------*/
-
-long _unur_hitrou_get_simplex_jumps( UNUR_GEN *gen)
-     /* Return the number of simplex jumps for double-simplex shape  */
-{
-  return GEN->simplex_jumps;
-}
-
-void _unur_hitrou_reset_simplex_jumps( UNUR_GEN *gen)
-     /* Reset the number of simplex jumps to 0 */
-{
-  GEN->simplex_jumps=0;
-}
 
 
 /*****************************************************************************/
@@ -1285,14 +1227,22 @@ _unur_hitrou_debug_init( const struct unur_gen *gen )
   /* print center */
   _unur_matrix_print_vector( GEN->dim, GEN->center, "center =", log, gen->genid, "\t   ");
 
-  /* print adaptive flag */
-  fprintf(log,"%s: adaptive:", gen->genid);  
-  if (GEN->adaptive==0)
+  /* print adaptive flag for points */
+  fprintf(log,"%s: adaptive_points:", gen->genid);  
+  if (GEN->adaptive_points==0)
     fprintf(log,"\tno (direction line segment is kept constant)");  
   else
     fprintf(log,"\tyes (direction line segment is adapted by each step)");
   fprintf(log,"\n");
 
+  /* print adaptive flag for strip */
+  fprintf(log,"%s: adaptive_strip:", gen->genid);  
+  if (GEN->adaptive_strip==0)
+    fprintf(log,"\tno (position is kept constant at vmax)");  
+  else
+    fprintf(log,"\tyes (position is adapted by each step)");
+  fprintf(log,"\n");
+  
   /* print bounding rectangle */
   fprintf(log,"%s: Rectangle:",gen->genid);
   if (!((gen->set & HITROU_SET_U) && (gen->set & HITROU_SET_V)))
@@ -1304,7 +1254,7 @@ _unur_hitrou_debug_init( const struct unur_gen *gen )
   vol = GEN->vmax;
   fprintf(log,"%s:\tvmax = %g\n",gen->genid, GEN->vmax);
 
-  if (GEN->u_planes==1) {
+  if (GEN->bounding_rectangle==1) {
     for (d=0; d<dim; d++) {
       vol *= (GEN->umax[d]-GEN->umin[d]);
       fprintf(log,"%s:\tumin[%d],umax[%d] = (%g,%g)\n",gen->genid,
@@ -1320,41 +1270,6 @@ _unur_hitrou_debug_init( const struct unur_gen *gen )
   fprintf(log,"%s:\n",gen->genid);
 
 } /* end of _unur_hitrou_debug_init() */
-
-/*---------------------------------------------------------------------------*/
-
-void
-_unur_hitrou_debug_shape( const struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* write info about shape (RoU or testrectangle) into logfile           */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen       ... pointer to generator object                          */
-     /*----------------------------------------------------------------------*/
-{
-  FILE *log;
-
-  /* check arguments */
-  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_HITROU_GEN,RETURN_VOID);
-
-  log = unur_get_stream();
-
-  if (GEN->shape_flag==0)
-    fprintf(log,"%s: Sampling shape : normal RoU shape\n",gen->genid);
-  if (GEN->shape_flag==1) {
-    fprintf(log,"%s: Sampling shape : testshape (rectangle)\n",gen->genid);
-    _unur_matrix_print_vector( GEN->dim+1, GEN->test_rectangle, "relative size =",
-                               log, gen->genid, "\t   ");
-  }
-  if (GEN->shape_flag==2)
-    fprintf(log,"%s: Sampling shape : single simplex\n",gen->genid);
-  if (GEN->shape_flag==3)
-    fprintf(log,"%s: Sampling shape : two stacked simplex (along v-direction)\n",gen->genid); 
-  if (GEN->shape_flag==4)
-    fprintf(log,"%s: Sampling shape : two stacked simplex (along u[0]-direction)\n",gen->genid);
-  if (GEN->shape_flag==5)
-    fprintf(log,"%s: Sampling shape : ellipsoid\n",gen->genid);
-} /* end of _unur_hitrou_debug_shape() */
 
 
 /*---------------------------------------------------------------------------*/

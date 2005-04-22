@@ -44,10 +44,11 @@ struct unur_hitrou_par {
   int    dim;               /* dimension of distribution                     */
   double r;                 /* r-parameter of the hitrou method              */
   long skip;                /* skip-parameter of the hitrou method           */
-  int u_planes;             /* if we calculate and use the bounding u-planes */
+  int bounding_rectangle;   /* if we calculate and use the bounding rect     */ 
   double *umin, *umax;      /* boundary rectangle u-coordinates              */
   double vmax;              /* boundary rectangle v-coordinate               */
-  int adaptive;            /* adaptive reusability of outside points (0/1)  */
+  int adaptive_points;      /* adaptive reusability of outside points (0/1)  */
+  int adaptive_strip;       /* adaptive reusability of strip position : vmax */
 };
 
 /*---------------------------------------------------------------------------*/
@@ -57,9 +58,9 @@ struct unur_hitrou_gen {
   int    dim;               /* dimension of distribution                     */
   double r;                 /* r-parameter of the hitrou method              */
   long skip;                /* skip-parameter of the hitrou method           */
-  int u_planes;             /* if we calculate and use the bounding u-planes */
+  int bounding_rectangle;   /* if we calculate and use the bounding rect     */ 
   double *umin, *umax;      /* boundary rectangle u-coordinates              */
-  double vmax;              /* boundary rectangle v-coordinate               */
+  double vmax;              /* boundary rectangle/strip v-coordinate         */
   const double *center;     /* center of distribution                        */
   double *direction;        /* random direction vector                       */
   double *point_current;    /* current point inside the shape                */
@@ -67,10 +68,10 @@ struct unur_hitrou_gen {
   double *x;                /* working point in the (xy)-coordinate system   */
   long pdfcount;            /* counting the number of PDF calls              */
   int coordinate;           /* current coordinate used for stepping          */
-  int shape_flag;           /* 0=RoU shape, 1=test rect, 2=simplex, 3=2simpl */
   double *test_rectangle;   /* (dim+1) array : relative size of test rect    */
   long simplex_jumps;       /* counter for jumps for double-simplex shape    */
-  int adaptive;            /* adaptive reusability of outside points (0/1)  */
+  int adaptive_points;      /* adaptive reusability of outside points (0/1)  */
+  int adaptive_strip;       /* adaptive reusability of strip position : vmax */
 };
 
 /*---------------------------------------------------------------------------*/

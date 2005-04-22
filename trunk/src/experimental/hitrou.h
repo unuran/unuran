@@ -179,10 +179,10 @@ int unur_hitrou_set_skip( UNUR_PAR *parameters, long skip );
    Default: @code{0}.
 */
 
-int unur_hitrou_set_u_planes( UNUR_PAR *parameters, int u_planes );
+int unur_hitrou_use_bounding_rectangle( UNUR_PAR *parameters, int flag );
 /*
-   Sets the @var{u_planes} flag i.e. if we should calculate
-   and use all the u-planes of the bounding rectangle.
+   Sets the @var{bounding_rectangle} flag i.e. if we should calculate
+   and use the bounding rectangle.
    In case, that this flag is set to 0, we will only calculate
    and use the planes perpendicular to the v-coordinate - hence
    in that case, our bounding shape is not a finite rectangle
@@ -191,7 +191,23 @@ int unur_hitrou_set_u_planes( UNUR_PAR *parameters, int u_planes );
    Default: @code{0}.
 */
 
-int unur_hitrou_set_adaptive( UNUR_PAR *parameters, int adaptive_flag );
+int unur_hitrou_set_adaptive_strip( UNUR_PAR *parameters, int adaptive_flag );
+/*
+   In the case, that we do not calculate and use the bounding rectangle
+   but an infinite strip, we may determine the strip position
+   from the knowledge of the mode - the @var{adaptive_flag}
+   should then be set to @code{0} and we have a fixed strip at the position
+   v=vmax.
+   
+   In the case, that the mode is not known or whenever its calculation is
+   not intended we may adaptively calculate the strip positions vmax
+   by setting @var{adaptive_flag}=1.
+
+   Default: @code{0}.
+*/
+
+
+int unur_hitrou_set_adaptive_points( UNUR_PAR *parameters, int adaptive_flag );
 /*
    When calculating a random point along the given direction,
    this adaptive flag controls how to proceed, when the random

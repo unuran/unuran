@@ -36,7 +36,7 @@ struct MROU_RECTANGLE {
   UNUR_DISTR *distr;        /* distribution object                           */
   int    dim;               /* dimension of distribution                     */
   double r;	            /* r-parameter of the mrou method 	             */
-  int u_planes;             /* flag to calculate u-planes                    */
+  int bounding_rectangle;   /* flag to calculate bounding rectangle / strip  */
   double *umin, *umax;      /* boundary rectangle u-coordinates              */
   double vmax;              /* boundary rectangle v-coordinate               */
   const double *center;     /* center of distribution                        */

@@ -146,7 +146,7 @@ _unur_mrou_rectangle_new( void )
   rr->umin   = NULL;
   rr->umax   = NULL;
   rr->r      = 1;
-  rr->u_planes = 1;
+  rr->bounding_rectangle = 1;
   rr->center = NULL;
   rr->genid  = "";
   
@@ -221,7 +221,7 @@ _unur_mrou_rectangle_compute( struct MROU_RECTANGLE *rr )
     }
   }
 
-  if (rr->u_planes==1) {
+  if (rr->bounding_rectangle==1) {
   /* calculation of umin and umax */
   for (d=0; d<dim; d++) {
     

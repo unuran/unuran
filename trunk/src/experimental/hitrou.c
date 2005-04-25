@@ -570,7 +570,7 @@ _unur_hitrou_init( struct unur_par *par )
     NORMAL->debug = gen->debug;
   }
 
-  if (PAR->bounding_rectangle==0 && PAR->adaptive_strip==1) {
+  if (GEN->bounding_rectangle==0 && GEN->adaptive_strip==1) {
     /* we are using an adaptive strip */
     
     /* do we have an vmax set ? */
@@ -859,6 +859,7 @@ _unur_hitrou_sample_cvec( struct unur_gen *gen, double *vec )
   int d, dim; /* index used in dimension loops (0 <= d < dim) */
   double lambda, lmin, lmax; /* lambda parameters of line */
   long skip;
+  int inside;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);
@@ -875,17 +876,25 @@ _unur_hitrou_sample_cvec( struct unur_gen *gen, double *vec )
       /* generate random direction vector in (U,V) space */
       _unur_hitrou_random_direction(gen, dim+1, GEN->direction);
     
-#if 0      
-      /* TODO ... */
-      _unur_hitrou_uv_to_x( gen, GEN->direction, GEN->x );
+      if (GEN->adaptive_strip==1) {
+        /* adaptive step for the upper strip position vmax */
+        inside=1; 
+        while (inside==1) {
+          /* calculate lambda parameters for the intersections with v=vmax */
+          lambda = (GEN->vmax - GEN->point_current[dim]) / GEN->direction[dim];
+          if (lambda>0) lmax = lambda;
+          if (lambda<0) lmin = lambda;
       
-      V = pow(PDF(x), 1./(GEN->r * GEN->dim + 1.));
-      while (V < GEN->vmax) {
-        GEN->vmax *= HITROU_ADAPTIVE_MULTIPLIER;
+          /* calculate the "candidate" point along the given random direction */
+          for (d=0; d<=dim; d++)
+            GEN->point_random[d] = GEN->point_current[d] + lambda * GEN->direction[d];
+      
+          inside = _unur_hitrou_inside_shape(gen, GEN->point_random);
+
+          /* increase vmax if necessary */
+          if (inside==1) GEN->vmax *= HITROU_ADAPTIVE_MULTIPLIER;    
+        }
       }
-#endif
-        
-      
       
       /* calculate lambda parameters for the intersections with v=vmax and v=0 */
       lambda = (GEN->vmax - GEN->point_current[dim]) / GEN->direction[dim];

@@ -83,6 +83,7 @@
 #define HITROU_SET_V       0x002u     /* set v values of bounding rectangle   */
 #define HITROU_SET_SKIP    0x004u     /* set skip-parameter                   */
 #define HITROU_SET_R       0x008u     /* set r-parameter                      */
+#define HITROU_SET_RADIUS  0x010u     /* set ball radius                      */
 
 /*---------------------------------------------------------------------------*/
 
@@ -165,6 +166,7 @@ static void _unur_hitrou_uv_to_x( UNUR_GEN *gen, double *uv, double *x );
 /* Variants                                                                  */
 #define HITROU_VARIANT_COORDINATE       0x0001u /* coordinate sampler        */
 #define HITROU_VARIANT_RANDOM_DIRECTION 0x0002u /* random direction sampler  */
+#define HITROU_VARIANT_BALL             0x0003u /* ball sampler              */
 
 #define HITROU_INITIAL_POINTS 20 /* random directions used for initial point */
 
@@ -221,16 +223,17 @@ unur_hitrou_new( const struct unur_distr *distr )
   PAR->vmax      = 0.;   /* v-boundary of bounding rectangle (unknown)  */
   PAR->umin  = NULL;     /* u-boundary of bounding rectangle (unknown)  */
   PAR->umax  = NULL;     /* u-boundary of bounding rectangle (unknown)  */
-  PAR->bounding_rectangle = 0; /* do not calculate the bounding rect */
+  PAR->bounding_rectangle = 0; /* should we calculate the bounding rect */
   PAR->adaptive_points = 1; /* reusing outside points as new line-segment ends */
   PAR->adaptive_strip = 0;  /* usage of adaptive algorithm for the strip position */
+  PAR->ball_radius = 1.; /* initial ball radius for ball sampler             */
   par->method   = UNUR_METH_HITROU;   /* method and default variant          */
   par->variant  = HITROU_VARIANT_RANDOM_DIRECTION; /* default variant        */
   par->set      = 0u;                 /* inidicate default parameters        */
   par->urng     = unur_get_default_urng(); /* use default urng               */
   par->urng_aux = NULL;                    /* no auxilliary URNG required    */
   par->debug    = _unur_default_debugflag; /* set default debugging flags    */
-
+  
   /* routine for starting generator */
   par->init = _unur_hitrou_init;
 
@@ -352,7 +355,44 @@ unur_hitrou_set_r( struct unur_par *par, double r )
   return UNUR_SUCCESS;
 
 } /* end of unur_hitrou_set_r() */
+
 /*---------------------------------------------------------------------------*/
+
+int
+unur_hitrou_set_ball_radius( struct unur_par *par, double ball_radius )
+     /*----------------------------------------------------------------------*/
+     /* Sets radius of ball used for the ball-sampler.                       */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   ball_radius                                                        */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, HITROU );
+
+  /* check new parameter for generator */
+  if (ball_radius <= 0.) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"ball_radius <= 0");
+    return UNUR_ERR_PAR_SET;
+  }
+
+  /* store values */
+  PAR->ball_radius = ball_radius;
+
+  /* changelog */
+  par->set |= HITROU_SET_RADIUS;
+
+  return UNUR_SUCCESS;
+
+} /* end of unur_hitrou_set_ball_radius() */
+
+/*---------------------------------------------------------------------------*/
+
 
 int
 unur_hitrou_set_skip( struct unur_par *par, long skip )
@@ -506,6 +546,26 @@ unur_hitrou_set_variant_random_direction( UNUR_PAR *par ) {
   /* ok */
   return UNUR_SUCCESS;
 } /* end of unur_hitrou_set_variant_random_direction() */
+
+
+/*****************************************************************************/
+
+int 
+unur_hitrou_set_variant_ball( UNUR_PAR *par ) {
+     /*----------------------------------------------------------------------*/
+     /* Ball Sampler :                                                       */
+     /* Sampling along random directions uniformly distributed inside ball   */
+     /*----------------------------------------------------------------------*/
+  
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, HITROU );
+  
+  par->variant  = HITROU_VARIANT_BALL;
+  
+  /* ok */
+  return UNUR_SUCCESS;
+} /* end of unur_hitrou_set_variant_ball() */
 
 
 /*****************************************************************************/
@@ -663,7 +723,7 @@ _unur_hitrou_rectangle( struct unur_gen *gen )
   rr->bounding_rectangle = GEN->bounding_rectangle;
   rr->genid  = gen->genid;
   
-  /* setting dummy initialization values (stupid compiler !) */
+  /* setting initialization values */
   for (d=0; d<GEN->dim; d++) {
     rr->umin[d]=0;
     rr->umax[d]=0;
@@ -749,9 +809,6 @@ _unur_hitrou_create( struct unur_par *par )
   /* allocate memory for working point (in the (x,y)-coordinate system */
   GEN->x  = _unur_xmalloc( (PAR->dim) * sizeof(double));
 
-  /* allocate memory for test rectangle */
-  GEN->test_rectangle = _unur_xmalloc( (PAR->dim+1) * sizeof(double));
-
   /* copy parameters into generator object */
   GEN->dim   = PAR->dim;              /* dimension */
   GEN->r     = PAR->r;                /* r-parameter of the hitrou method */
@@ -760,6 +817,7 @@ _unur_hitrou_create( struct unur_par *par )
   GEN->bounding_rectangle = PAR->bounding_rectangle; /* using bounding rect flag */
   GEN->adaptive_points = PAR->adaptive_points;  /* reusing outside points for line-segment */
   GEN->adaptive_strip = PAR->adaptive_strip;    /* using adaptive strip flag */
+  GEN->ball_radius = PAR->ball_radius; /* ball radius of ball sampler */
   
   if (PAR->umin != NULL) memcpy(GEN->umin, PAR->umin, GEN->dim * sizeof(double));
   if (PAR->umax != NULL) memcpy(GEN->umax, PAR->umax, GEN->dim * sizeof(double));
@@ -769,12 +827,10 @@ _unur_hitrou_create( struct unur_par *par )
 
   /* initialize parameters */
   GEN->pdfcount = 0;
-  GEN->simplex_jumps = 0;
   GEN->coordinate = 0;  
   for (d=0; d<GEN->dim+1; d++) {
     GEN->point_current[d]=0.;
     GEN->point_random[d]=0.;
-    GEN->test_rectangle[d]=1.;
   }
 
   /* return pointer to (almost empty) generator object */
@@ -817,7 +873,6 @@ _unur_hitrou_clone( const struct unur_gen *gen )
   CLONE->point_current = _unur_xmalloc( (GEN->dim+1) * sizeof(double));
   CLONE->point_random  = _unur_xmalloc( (GEN->dim+1) * sizeof(double));
   CLONE->direction = _unur_xmalloc( (GEN->dim+1) * sizeof(double));
-  CLONE->test_rectangle  = _unur_xmalloc( (GEN->dim+1) * sizeof(double));
 
   /* copy parameters into clone object */
   CLONE->skip = GEN->skip;
@@ -826,13 +881,13 @@ _unur_hitrou_clone( const struct unur_gen *gen )
   CLONE->bounding_rectangle = GEN->bounding_rectangle;
   CLONE->adaptive_points = GEN->adaptive_points;
   CLONE->adaptive_strip = GEN->adaptive_strip;
-
+  CLONE->ball_radius = GEN->ball_radius;
+  
   memcpy(CLONE->umin, GEN->umin, GEN->dim * sizeof(double));
   memcpy(CLONE->umax, GEN->umax, GEN->dim * sizeof(double));
   memcpy(CLONE->point_current, GEN->point_current, (GEN->dim+1) * sizeof(double));
   memcpy(CLONE->point_random , GEN->point_random , (GEN->dim+1) * sizeof(double));
   memcpy(CLONE->direction, GEN->direction, (GEN->dim+1) * sizeof(double));
-  memcpy(CLONE->test_rectangle, GEN->test_rectangle, (GEN->dim+1) * sizeof(double));
   memcpy(CLONE->x, GEN->x, GEN->dim * sizeof(double));
 
   /* copy data */
@@ -860,6 +915,7 @@ _unur_hitrou_sample_cvec( struct unur_gen *gen, double *vec )
   double lambda, lmin, lmax; /* lambda parameters of line */
   long skip;
   int inside;
+  double u;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);
@@ -954,29 +1010,46 @@ _unur_hitrou_sample_cvec( struct unur_gen *gen, double *vec )
         }
     
     }
-    
-    
+        
     /* until we find an inside point */
     while (1) {
 
-      lambda = lmin + (lmax-lmin) * _unur_call_urng(gen->urng);
+      u = _unur_call_urng(gen->urng);
+      lambda = lmin + (lmax-lmin) * u;
       if (GEN->adaptive_points==1) {
         if (lambda>0) lmax=lambda;
         if (lambda<0) lmin=lambda;
       }
       
+      if (gen->variant == HITROU_VARIANT_BALL) {
+        _unur_hitrou_random_direction(gen, dim+1, GEN->direction);
+        lambda = GEN->ball_radius * pow(u, 1./(dim+1));
+        /*printf("radius=%f  lambda=%f\n", GEN->ball_radius, lambda);*/
+      }
+      
       /* calculate the "candidate" point along the given random direction */
       for (d=0; d<=dim; d++)
         GEN->point_random[d] = GEN->point_current[d] + lambda * GEN->direction[d];
-
+	
       /* check if random point is inside domain */
       if (_unur_hitrou_inside_shape(gen, GEN->point_random)) {
         /* update current point */
         for (d=0; d<=dim; d++)
           GEN->point_current[d] = GEN->point_random[d] ;
-
-        break; /* jump out of the while() loop */
+        
+	break; /* jump out of the while() loop */
       }
+
+#if 0      
+      else {
+        /* we are outside shape */
+        if (gen->variant == HITROU_VARIANT_BALL) {
+          /* no change of current point : returning the same point */
+	  break;
+        }
+      }
+#endif
+    
     }
 
     /* prepare next coordinate direction */
@@ -997,6 +1070,11 @@ _unur_hitrou_sample_cvec( struct unur_gen *gen, double *vec )
       vec[d] = U/pow(V,GEN->r) + GEN->center[d];
   }
 
+#if 0  
+  _unur_matrix_print_vector ( dim+1, GEN->point_current, "uv :", stdout, "", "---" );
+  _unur_matrix_print_vector ( dim, vec, "x :", stdout, "", "---" );
+#endif
+  
   return;
 } /* end of _unur_hitrou_sample() */
 
@@ -1036,7 +1114,6 @@ _unur_hitrou_free( struct unur_gen *gen )
   if (GEN->direction) free(GEN->direction);
   if (GEN->point_current) free(GEN->point_current);
   if (GEN->point_random)  free(GEN->point_random);
-  if (GEN->test_rectangle)  free(GEN->test_rectangle);
   if (GEN->x)  free(GEN->x);
   _unur_generic_free(gen);
 
@@ -1095,7 +1172,7 @@ void
 _unur_hitrou_random_direction( struct unur_gen *gen,
                                int dim, double *direction)
      /*----------------------------------------------------------------------*/
-     /* generte a random direction vector (not necessarily unit vector)      */
+     /* generte a random direction vector  (unit vector)                     */
      /*----------------------------------------------------------------------*/
 {
   int d;
@@ -1106,6 +1183,7 @@ _unur_hitrou_random_direction( struct unur_gen *gen,
     } while (direction[d]==0.); /* extremely seldom case */
   }
 
+  _unur_vector_normalize(dim, direction);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1121,7 +1199,7 @@ _unur_hitrou_inside_shape( UNUR_GEN *gen, double *uv )
 
   /* point inside domain ? */
   V = uv[GEN->dim];
-  if (V <= pow(PDF(GEN->x),1./(GEN->r * GEN->dim + 1.)))
+  if (V < pow(PDF(GEN->x),1./(GEN->r * GEN->dim + 1.)))
     inside=1;
   else
     inside=0;

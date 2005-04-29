@@ -49,6 +49,7 @@ struct unur_hitrou_par {
   double vmax;              /* boundary rectangle v-coordinate               */
   int adaptive_points;      /* adaptive reusability of outside points (0/1)  */
   int adaptive_strip;       /* adaptive reusability of strip position : vmax */
+  double ball_radius;       /* used for ball sampler                         */
 };
 
 /*---------------------------------------------------------------------------*/
@@ -68,10 +69,9 @@ struct unur_hitrou_gen {
   double *x;                /* working point in the (xy)-coordinate system   */
   long pdfcount;            /* counting the number of PDF calls              */
   int coordinate;           /* current coordinate used for stepping          */
-  double *test_rectangle;   /* (dim+1) array : relative size of test rect    */
-  long simplex_jumps;       /* counter for jumps for double-simplex shape    */
   int adaptive_points;      /* adaptive reusability of outside points (0/1)  */
   int adaptive_strip;       /* adaptive reusability of strip position : vmax */
+  double ball_radius;       /* used for ball sampler                         */
 };
 
 /*---------------------------------------------------------------------------*/

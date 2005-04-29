@@ -239,9 +239,18 @@ int unur_hitrou_set_variant_random_direction( UNUR_PAR *par );
 
 /*...........................................................................*/
 
+int unur_hitrou_set_variant_ball( UNUR_PAR *par );
+/* 
+   Ball Sampler :
+   Sampling along random directions uniformly distributed inside (adaptive) ball.
+*/
 
+int unur_hitrou_set_ball_radius( struct unur_par *par, double ball_radius );
+/* Sets radius of ball used for the ball-sampler. */
 
 /* =END */
+
+
 /*---------------------------------------------------------------------------*/
 
 long _unur_hitrou_get_pdfcount( UNUR_GEN *gen);
@@ -250,21 +259,9 @@ long _unur_hitrou_get_pdfcount( UNUR_GEN *gen);
 void _unur_hitrou_reset_pdfcount( UNUR_GEN *gen);
 /* Reset the number of PDF calls to 0 */
 
-void _unur_hitrou_set_shape( UNUR_GEN *gen, int shape_flag);
-/* shape_flag : 0=normal, 1=rectangle, 2=single simplex, 3=stacked simplex */
-
-void _unur_hitrou_set_testrectangle( UNUR_GEN *gen, double *relative_size);
-/* set the relative size of the test rectangle (relative to bounding rect) */
-
 void _unur_hitrou_set_point( UNUR_GEN *gen, double *uv);
 /* set the current point (dimension=dim+1) inside the testrectangle */
 
 void _unur_hitrou_get_point( UNUR_GEN *gen, double *uv);
 /* get the current point (dimension=dim+1) inside the testrectangle */
-
-long _unur_hitrou_get_simplex_jumps( UNUR_GEN *gen);
-/* Return the number of simplex jumps for double-simplex shape  */
-
-void _unur_hitrou_reset_simplex_jumps( UNUR_GEN *gen);
-/* Reset the number of simplex jumps to 0 */
 

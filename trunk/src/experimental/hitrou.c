@@ -910,7 +910,6 @@ _unur_hitrou_sample_cvec( struct unur_gen *gen, double *vec )
      /*   vec ... random vector (result)                                     */
      /*----------------------------------------------------------------------*/
 {
-  double U,V;
   int d, dim; /* index used in dimension loops (0 <= d < dim) */
   double lambda, lmin, lmax; /* lambda parameters of line */
   long skip;
@@ -1024,7 +1023,6 @@ _unur_hitrou_sample_cvec( struct unur_gen *gen, double *vec )
       if (gen->variant == HITROU_VARIANT_BALL) {
         _unur_hitrou_random_direction(gen, dim+1, GEN->direction);
         lambda = GEN->ball_radius * pow(u, 1./(dim+1));
-        /*printf("radius=%f  lambda=%f\n", GEN->ball_radius, lambda);*/
       }
       
       /* calculate the "candidate" point along the given random direction */
@@ -1040,36 +1038,27 @@ _unur_hitrou_sample_cvec( struct unur_gen *gen, double *vec )
 	break; /* jump out of the while() loop */
       }
 
-#if 0      
       else {
         /* we are outside shape */
         if (gen->variant == HITROU_VARIANT_BALL) {
-          /* no change of current point : returning the same point */
+          /* no change of current point : returning the current point */
 	  break;
         }
       }
-#endif
     
     }
 
-    /* prepare next coordinate direction */
-    GEN->coordinate = GEN->coordinate + 1; 
-    if (GEN->coordinate > dim) GEN->coordinate = 0;
-
+    if (gen->variant == HITROU_VARIANT_COORDINATE) {
+      /* prepare next coordinate direction */
+      GEN->coordinate = GEN->coordinate + 1; 
+      if (GEN->coordinate > dim) GEN->coordinate = 0;
+    }
+    
   }
 
   /* calculate the sample point in the X[]-coordinate system            */
-  /* we could also use : memcpy(vec, GEN->x, GEN->dim*sizeof(double));    */
-  /* instead ... but this is more safe, should the program-logic change */
-  V = GEN->point_current[dim];
-  for (d=0; d<dim; d++) {
-    U = GEN->point_current[d];
-    if (GEN->r==1)
-      vec[d] = U/V + GEN->center[d];
-    else
-      vec[d] = U/pow(V,GEN->r) + GEN->center[d];
-  }
-
+  _unur_hitrou_uv_to_x( gen, GEN->point_current, vec );
+  
 #if 0  
   _unur_matrix_print_vector ( dim+1, GEN->point_current, "uv :", stdout, "", "---" );
   _unur_matrix_print_vector ( dim, vec, "x :", stdout, "", "---" );

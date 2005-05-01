@@ -77,7 +77,7 @@ static double _unur_dpdf_condi( double x, const struct unur_distr *condi );
 
 /*****************************************************************************/
 /**                                                                         **/
-/** univariate continuous order statistics                                  **/
+/** univariate continuous conditional distribution of multivaraiate         **/
 /**                                                                         **/
 /*****************************************************************************/
 
@@ -127,7 +127,7 @@ unur_distr_condi_new( const struct unur_distr *distr, const double *pos, const d
   condi = unur_distr_cont_new();
   if (!condi) return NULL;
 
-  /* set id to distribution of order statistics */
+  /* set id to distribution of conditional distribution */
   condi->id = UNUR_DISTR_CONDI;
 
   /* name of distribution */
@@ -306,7 +306,7 @@ unur_distr_condi_get_distribution( const struct unur_distr *condi )
 
 /*****************************************************************************/
 /**                                                                         **/
-/** PDF, its derivative and CDF of order statistics                         **/
+/** PDF, its derivative and CDF of conditional distribution                 **/
 /**                                                                         **/
 /*****************************************************************************/
 
@@ -409,7 +409,7 @@ _unur_distr_condi_debug( const struct unur_distr *condi, const char *genid )
 
   log = unur_get_stream();
 
-  /* print data about order statistics */
+  /* print data about conditional distribution */
   fprintf(log,"%s: distribution:\n",genid);
   fprintf(log,"%s:\ttype = full conditional distribution of continuous multivariate distribution\n",genid);
   fprintf(log,"%s:\tname = %s\n",genid,condi->name);

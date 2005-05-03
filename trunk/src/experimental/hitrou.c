@@ -177,6 +177,8 @@ static void _unur_hitrou_uv_to_x( UNUR_GEN *gen, double *uv, double *x );
 #define HITROU_BALL_RADIUS_MIN 1e-5
 #define HITROU_BALL_RADIUS_MAX 1e5
 
+#define HITROU_BALL_RADIUS_FACTOR 1.1
+
 /*****************************************************************************/
 /**  Public: User Interface (API)                                           **/
 /*****************************************************************************/
@@ -1067,8 +1069,8 @@ _unur_hitrou_sample_cvec( struct unur_gen *gen, double *vec )
         
 	if (gen->variant == HITROU_VARIANT_BALL && 
 	    GEN->adaptive_ball==1 && 
-	    GEN->ball_radius*2. < HITROU_BALL_RADIUS_MAX) 
-	      GEN->ball_radius *= 2.; 
+	    GEN->ball_radius*HITROU_BALL_RADIUS_FACTOR < HITROU_BALL_RADIUS_MAX) 
+	      GEN->ball_radius *= HITROU_BALL_RADIUS_FACTOR; 
 	       
 	break; /* jump out of the while() loop */
       }
@@ -1077,8 +1079,8 @@ _unur_hitrou_sample_cvec( struct unur_gen *gen, double *vec )
         /* we are outside shape */
         if (gen->variant == HITROU_VARIANT_BALL) {
           /* no change of current point : returning the current point */
-  	  if (GEN->adaptive_ball==1 && GEN->ball_radius/2. > HITROU_BALL_RADIUS_MIN) 
-	    GEN->ball_radius /= 2.;  
+  	  if (GEN->adaptive_ball==1 && GEN->ball_radius/HITROU_BALL_RADIUS_FACTOR > HITROU_BALL_RADIUS_MIN) 
+	    GEN->ball_radius /= HITROU_BALL_RADIUS_FACTOR;  
 	  break;
         }
       }
@@ -1096,9 +1098,10 @@ _unur_hitrou_sample_cvec( struct unur_gen *gen, double *vec )
   /* calculate the sample point in the X[]-coordinate system            */
   _unur_hitrou_uv_to_x( gen, GEN->point_current, vec );
   
-#if 0  
+#if 0
   _unur_matrix_print_vector ( dim+1, GEN->point_current, "uv :", stdout, "", "---" );
   _unur_matrix_print_vector ( dim, vec, "x :", stdout, "", "---" );
+  printf("GEN->ball_radius = %f\n", GEN->ball_radius);
 #endif
   
   return;

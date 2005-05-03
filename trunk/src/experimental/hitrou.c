@@ -173,6 +173,10 @@ static void _unur_hitrou_uv_to_x( UNUR_GEN *gen, double *uv, double *x );
 /* increase strip positions (vmax) by this factor */
 #define HITROU_ADAPTIVE_MULTIPLIER 1.1 
 
+/* do we need these limits ? */
+#define HITROU_BALL_RADIUS_MIN 1e-5
+#define HITROU_BALL_RADIUS_MAX 1e5
+
 /*****************************************************************************/
 /**  Public: User Interface (API)                                           **/
 /*****************************************************************************/
@@ -226,7 +230,8 @@ unur_hitrou_new( const struct unur_distr *distr )
   PAR->bounding_rectangle = 0; /* should we calculate the bounding rect */
   PAR->adaptive_points = 1; /* reusing outside points as new line-segment ends */
   PAR->adaptive_strip = 0;  /* usage of adaptive algorithm for the strip position */
-  PAR->ball_radius = 1.; /* initial ball radius for ball sampler             */
+  PAR->adaptive_ball = 0;   /* usage of adaptive algorithm for the ball radius */
+  PAR->ball_radius = 1.; /* initial ball radius for ball sampler (if not set)  */
   par->method   = UNUR_METH_HITROU;   /* method and default variant          */
   par->variant  = HITROU_VARIANT_RANDOM_DIRECTION; /* default variant        */
   par->set      = 0u;                 /* inidicate default parameters        */
@@ -507,6 +512,29 @@ unur_hitrou_set_adaptive_strip( struct unur_par *par, int adaptive_flag )
   return UNUR_SUCCESS;
 
 } /* end of unur_hitrou_set_adaptive_strip() */
+
+/*****************************************************************************/
+
+int 
+unur_hitrou_set_adaptive_ball( struct unur_par *par, int adaptive_flag )
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, HITROU );
+
+  /* check new parameter for generator */
+  if (adaptive_flag!=0 && adaptive_flag!=1) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"adaptive_flag must be 0 or 1");
+    return UNUR_ERR_PAR_SET;
+  }
+
+  /* store data */
+  PAR->adaptive_ball = adaptive_flag;
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+
+} /* end of unur_hitrou_set_adaptive_ball() */
 
 /*****************************************************************************/
 
@@ -817,6 +845,7 @@ _unur_hitrou_create( struct unur_par *par )
   GEN->bounding_rectangle = PAR->bounding_rectangle; /* using bounding rect flag */
   GEN->adaptive_points = PAR->adaptive_points;  /* reusing outside points for line-segment */
   GEN->adaptive_strip = PAR->adaptive_strip;    /* using adaptive strip flag */
+  GEN->adaptive_ball = PAR->adaptive_ball;    /* using adaptive ball flag */
   GEN->ball_radius = PAR->ball_radius; /* ball radius of ball sampler */
   
   if (PAR->umin != NULL) memcpy(GEN->umin, PAR->umin, GEN->dim * sizeof(double));
@@ -881,6 +910,7 @@ _unur_hitrou_clone( const struct unur_gen *gen )
   CLONE->bounding_rectangle = GEN->bounding_rectangle;
   CLONE->adaptive_points = GEN->adaptive_points;
   CLONE->adaptive_strip = GEN->adaptive_strip;
+  CLONE->adaptive_ball = GEN->adaptive_ball;
   CLONE->ball_radius = GEN->ball_radius;
   
   memcpy(CLONE->umin, GEN->umin, GEN->dim * sizeof(double));
@@ -1035,6 +1065,11 @@ _unur_hitrou_sample_cvec( struct unur_gen *gen, double *vec )
         for (d=0; d<=dim; d++)
           GEN->point_current[d] = GEN->point_random[d] ;
         
+	if (gen->variant == HITROU_VARIANT_BALL && 
+	    GEN->adaptive_ball==1 && 
+	    GEN->ball_radius*2. < HITROU_BALL_RADIUS_MAX) 
+	      GEN->ball_radius *= 2.; 
+	       
 	break; /* jump out of the while() loop */
       }
 
@@ -1042,6 +1077,8 @@ _unur_hitrou_sample_cvec( struct unur_gen *gen, double *vec )
         /* we are outside shape */
         if (gen->variant == HITROU_VARIANT_BALL) {
           /* no change of current point : returning the current point */
+  	  if (GEN->adaptive_ball==1 && GEN->ball_radius/2. > HITROU_BALL_RADIUS_MIN) 
+	    GEN->ball_radius /= 2.;  
 	  break;
         }
       }
@@ -1282,6 +1319,8 @@ _unur_hitrou_debug_init( const struct unur_gen *gen )
     fprintf(log,"%s: variant = coordinate sampler \n",gen->genid);
   if (gen->variant == HITROU_VARIANT_RANDOM_DIRECTION) 
     fprintf(log,"%s: variant = random direction sampler \n",gen->genid);
+  if (gen->variant == HITROU_VARIANT_BALL) 
+    fprintf(log,"%s: variant = ball sampler \n",gen->genid);  
   fprintf(log,"%s:\n",gen->genid);
 
   _unur_distr_cvec_debug( gen->distr, gen->genid );

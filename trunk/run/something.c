@@ -39,6 +39,7 @@
 #define METHOD_HITROU_BOX 5
 #define METHOD_HITROU_STRIP_ADAPTIVE 6
 #define METHOD_HITROU_BALL 7
+#define METHOD_HITROU_BALL_ADAPTIVE 8
 
 #define MAXDIM 100
 
@@ -86,29 +87,44 @@ void math2(struct unur_gen *gen) {
 
   int i,j;
   double x[100];
-  FILE *fn;
+  double uv[100];
+  FILE *fx, *fuv;
   
-  fn = fopen("vertex.txt","w");
+  fx = fopen("x.txt","w");
+  fuv = fopen("uv.txt","w");
   
-    fprintf(fn,"vertex={");
+    fprintf(fx,"x={");
+    fprintf(fuv,"uv={");
     for (i=1; i<=SAMPLESIZE; i++) {
       unur_sample_vec(gen, x);  
+      _unur_hitrou_get_point( gen, uv);
       
-      fprintf(fn,"{");
+      /* current point in x-y coordinates */
+      fprintf(fx,"{");
       for (j=0; j<DIM; j++) {
-        fprintf(fn,"%4.2f", x[j]);
-	if (j<DIM-1) fprintf(fn,",");
+        fprintf(fx,"%4.3f", x[j]);
+	if (j<DIM-1) fprintf(fx,",");
       }
-      fprintf(fn,"}");
+      fprintf(fx,"}");
       
-      //printf("{%4.2f,%4.2f}", x[0], x[1]);
-      if (i<SAMPLESIZE ) fprintf(fn,",");
+      /* current point in u-v coordinates */
+      fprintf(fuv,"{");
+      for (j=0; j<=DIM; j++) {
+        fprintf(fuv,"%4.3f", uv[j]);
+	if (j<DIM) fprintf(fuv,",");
+      }
+      fprintf(fuv,"}");
+      
+      
+      if (i<SAMPLESIZE ) fprintf(fx,",");
+      if (i<SAMPLESIZE ) fprintf(fuv,",");
     }
-    fprintf(fn,"};\n");
+    fprintf(fx,"};\n");
+    fprintf(fuv,"};\n");
 
-    fclose(fn);
+    fclose(fx);
+    fclose(fuv);
 }
-
 
 
 
@@ -196,7 +212,7 @@ int main(int argc, char *argv[])
       printf(" -f nu           : degrees of freedom for student (%d) \n", NU );
       printf(" -m method       : 0=H&R+RD+STRIP, 1=VMT, 2=GIBBS 3=GIBBS+RD \n" );
       printf("                 : 4=H&R+COORD+BOX, 5=H&R+RD+BOX 6=H&R+RD+ADAPTIVE STRIP\n" );
-      printf("                 : 7=H&R+BALL (%d)\n", METHOD);
+      printf("                 : 7=H&R+BALL 8=H&R+ADAPTIVE BALL (%d)\n", METHOD);
       printf(" -b ball_radius  : ball radius for ball sampler (%f)\n", BALL_RADIUS);
       printf(" -s skip         : skip parameter for HITROU (%ld) \n", SKIP );
       printf(" -c covar_matrix : 0=constant, 1=neighbours, 2=power (%d)\n", COVAR);
@@ -333,7 +349,6 @@ int main(int argc, char *argv[])
     par = unur_hitrou_new(distr);
     unur_hitrou_set_variant_random_direction(par);
     unur_hitrou_set_adaptive_strip(par, 1);    
-    //unur_hitrou_set_v(par, 0.1);
     unur_hitrou_set_skip(par,SKIP);
   }  
 
@@ -347,7 +362,19 @@ int main(int argc, char *argv[])
     unur_hitrou_set_skip(par,SKIP);
   }  
   
-       
+  if (METHOD==METHOD_HITROU_BALL_ADAPTIVE) {
+    printf("METHOD=HITROU (ADAPTIVE BALL)\n");
+    printf("INITIAL_RADIUS=%f\n", BALL_RADIUS);
+    par = unur_hitrou_new(distr);
+    unur_hitrou_set_variant_ball(par);
+    unur_hitrou_set_ball_radius(par, BALL_RADIUS);
+    unur_hitrou_set_adaptive_ball(par, 1);    
+    unur_hitrou_use_bounding_rectangle(par, 1); /* TEST : to compute vmax/2 for initial point */
+    unur_hitrou_set_skip(par,SKIP);
+  }  
+
+  
+         
   printf("SKIP=%ld\n", SKIP);
 
 #if 0

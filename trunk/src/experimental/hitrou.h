@@ -246,7 +246,22 @@ int unur_hitrou_set_variant_ball( UNUR_PAR *par );
 */
 
 int unur_hitrou_set_ball_radius( struct unur_par *par, double ball_radius );
-/* Sets radius of ball used for the ball-sampler. */
+/* 
+   Sets radius of ball used for the ball-sampler. 
+
+   Default: @code{1.0}
+*/
+
+
+int unur_hitrou_set_adaptive_ball( UNUR_PAR *parameters, int adaptive_flag );
+/*
+   Increasing/Decreasing ball radius whenever candidate point is inside/outside 
+   the RoU shape.
+   
+   Default: @code{0}.
+*/
+
+
 
 /* =END */
 

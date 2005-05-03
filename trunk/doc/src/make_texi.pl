@@ -1446,9 +1446,6 @@ sub parse_tex {
     $$info =~ s/^[\s\n]+//g;
     $$info =~ s/[\s\n]+$//g;
 
-    # texify TeX string
-    $$tex = texify_string($$tex);
-
 } # end of parse_tex()
 
 #############################################################

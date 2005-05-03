@@ -1188,7 +1188,7 @@ _unur_hitrou_inside_shape( UNUR_GEN *gen, double *uv )
 
   /* point inside domain ? */
   V = uv[GEN->dim];
-  if (V < pow(PDF(GEN->x),1./(GEN->r * GEN->dim + 1.)))
+  if (V>0 && V < pow(PDF(GEN->x),1./(GEN->r * GEN->dim + 1.)))
     inside=1;
   else
     inside=0;

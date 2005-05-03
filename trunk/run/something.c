@@ -38,6 +38,7 @@
 #define METHOD_HITROU_BOX_COORDINATE 4
 #define METHOD_HITROU_BOX 5
 #define METHOD_HITROU_STRIP_ADAPTIVE 6
+#define METHOD_HITROU_BALL 7
 
 #define MAXDIM 100
 
@@ -51,8 +52,10 @@ int DISTRIBUTION = 0;
 int NU = 1;
 int COVAR = 2;
 double RHO = 0.0;
+double SIGMA = 1.0;
 int METHOD = 0; 
 long SKIP = 0;
+double BALL_RADIUS = 0.1;
 
 /*---------------------------------------------------------------------------*/
 
@@ -132,6 +135,7 @@ int main(int argc, char *argv[])
   
   int i, j, d, m;
   long loop;
+  double s, si, sj;
     
   double a_mean[MAXDIM*5];
   double a_stddev[MAXDIM*5];
@@ -149,7 +153,7 @@ int main(int argc, char *argv[])
   char c;
 
   /* read options */
-  while ((c = getopt(argc, argv, "d:s:n:r:t:m:c:e:f:h")) != -1) {
+  while ((c = getopt(argc, argv, "d:s:n:r:w:t:m:c:e:f:b:h")) != -1) {
     switch (c) {
     case 't':     /* type of distribution  */
       DISTRIBUTION=atol(optarg);
@@ -178,6 +182,12 @@ int main(int argc, char *argv[])
     case 'r':     /* covariance rho */
       RHO=atof(optarg);
       break;
+    case 'w':     /* covariance rho */
+      SIGMA=atof(optarg);
+      break;
+    case 'b':     /* ball radius */
+      BALL_RADIUS=atof(optarg);
+      break;
     
     case 'h':     /* help */
       printf("options\n" );
@@ -185,10 +195,13 @@ int main(int argc, char *argv[])
       printf(" -t type         : 0=normal, 1=student (%d) \n", DISTRIBUTION );
       printf(" -f nu           : degrees of freedom for student (%d) \n", NU );
       printf(" -m method       : 0=H&R+RD+STRIP, 1=VMT, 2=GIBBS 3=GIBBS+RD \n" );
-      printf("                 : 4=H&R+COORD+BOX, 5=H&R+RD+BOX 6=H&R+RD+ADAPTIVE STRIP(%d)\n", METHOD);
+      printf("                 : 4=H&R+COORD+BOX, 5=H&R+RD+BOX 6=H&R+RD+ADAPTIVE STRIP\n" );
+      printf("                 : 7=H&R+BALL (%d)\n", METHOD);
+      printf(" -b ball_radius  : ball radius for ball sampler (%f)\n", BALL_RADIUS);
       printf(" -s skip         : skip parameter for HITROU (%ld) \n", SKIP );
       printf(" -c covar_matrix : 0=constant, 1=neighbours, 2=power (%d)\n", COVAR);
       printf(" -r rho          : covariance parameter (%f)\n", RHO);
+      printf(" -w sigma        : variance parameter (%f)\n", SIGMA);
       printf(" -n samplesize   : number of samples (%ld) \n", SAMPLESIZE );
       printf(" -e experiments  : number of repetitions (%ld) \n", EXPERIMENTS );
       
@@ -223,7 +236,15 @@ int main(int argc, char *argv[])
     covar[ic(j,i)] = covar[ic(i,j)];
   }}
  
-#if 0  
+  for (i=0; i<DIM; i++) {
+  for (j=0; j<DIM; j++) {      
+    si=(i<DIM/2.) ? 1: sqrt(SIGMA);
+    sj=(j<DIM/2.) ? 1: sqrt(SIGMA);
+    covar[ic(i,j)] *= si * sj;
+  }}
+  
+  
+#if 0 
   _unur_matrix_print_matrix ( DIM, covar, "Covariance Matrix",
 			      stdout, "", "---" );
 #endif
@@ -262,6 +283,7 @@ int main(int argc, char *argv[])
   if (COVAR==COVAR_NEIGHBOURS) printf("COVAR=NEIGHBOURS\n");
   if (COVAR==COVAR_POWER)      printf("COVAR=POWER\n");
   printf("RHO=%f\n", RHO);
+  printf("SIGMA=%f\n", SIGMA);
   printf("SAMPLESIZE=%ld\n", SAMPLESIZE);
   printf("EXPERIMENTS=%ld\n", EXPERIMENTS);
   
@@ -314,12 +336,24 @@ int main(int argc, char *argv[])
     //unur_hitrou_set_v(par, 0.1);
     unur_hitrou_set_skip(par,SKIP);
   }  
-     
+
+  if (METHOD==METHOD_HITROU_BALL) {
+    printf("METHOD=HITROU (BALL)\n");
+    printf("RADIUS=%f\n", BALL_RADIUS);
+    par = unur_hitrou_new(distr);
+    unur_hitrou_set_variant_ball(par);
+    unur_hitrou_set_ball_radius(par, BALL_RADIUS);
+    unur_hitrou_use_bounding_rectangle(par, 1); /* TEST : to compute vmax/2 for initial point */
+    unur_hitrou_set_skip(par,SKIP);
+  }  
+  
+       
   printf("SKIP=%ld\n", SKIP);
 
 #if 0
   gen = unur_init(par);
-  // math2(gen);
+  math2(gen);
+  exit(0);
 #else    
   gen = unur_test_timing(par, 3, &time_setup, &time_sample, TRUE, stdout);
 #endif
@@ -330,10 +364,11 @@ int main(int argc, char *argv[])
     unur_test_moments(gen, moments, 4, SAMPLESIZE, VERBOSE, stdout);
  
     for(d=0;d<DIM;d++){
+      s=(d<DIM/2.) ? 1: sqrt(SIGMA);
+      
       for (m=1; m<=4; m++) {
-        update_meanvar(mv[im(d,m)],moments[im(d,m)]);
-
-        if (EXPERIMENTS>1) update_quantile(quant[im(d,m)],moments[im(d,m)]);
+        update_meanvar(mv[im(d,m)],moments[im(d,m)]/pow(s,m));
+        if (EXPERIMENTS>1) update_quantile(quant[im(d,m)],moments[im(d,m)]/pow(s,m));
       }
     }    
     

@@ -237,42 +237,10 @@ int unur_hitrou_set_variant_random_direction( UNUR_PAR *par );
    This is the default.
 */
 
-/*...........................................................................*/
-
-int unur_hitrou_set_variant_ball( UNUR_PAR *par );
-/* 
-   Ball Sampler :
-   Sampling along random directions uniformly distributed inside (adaptive) ball.
-*/
-
-int unur_hitrou_set_ball_radius( struct unur_par *par, double ball_radius );
-/* 
-   Sets radius of ball used for the ball-sampler. 
-
-   Default: @code{1.0}
-*/
-
-
-int unur_hitrou_set_adaptive_ball( UNUR_PAR *parameters, int adaptive_flag );
-/*
-   Increasing/Decreasing ball radius whenever candidate point is inside/outside 
-   the RoU shape.
-   
-   Default: @code{0}.
-*/
-
-
 
 /* =END */
 
-
 /*---------------------------------------------------------------------------*/
-
-long _unur_hitrou_get_pdfcount( UNUR_GEN *gen);
-/* Return the number of PDF calls */
-
-void _unur_hitrou_reset_pdfcount( UNUR_GEN *gen);
-/* Reset the number of PDF calls to 0 */
 
 void _unur_hitrou_set_point( UNUR_GEN *gen, double *uv);
 /* set the current point (dimension=dim+1) inside the testrectangle */

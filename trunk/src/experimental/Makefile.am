@@ -6,9 +6,10 @@ INCLUDES = -I$(top_srcdir)/src -I$(top_srcdir)/src/methods
 lib_LTLIBRARIES = libunurexperimental.la
 
 libunurexperimental_la_SOURCES = \
- gibbs.c  gibbs.h  gibbs_struct.h \
- hitrou.c hitrou.h hitrou_struct.h \
- varou.c  varou.h  varou_struct.h
+ ball.c    ball.h    ball_struct.h \
+ gibbs.c   gibbs.h   gibbs_struct.h \
+ hitrou.c  hitrou.h  hitrou_struct.h \
+ varou.c   varou.h   varou_struct.h
 
 noinst_HEADERS = 
 

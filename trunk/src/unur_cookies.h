@@ -112,6 +112,8 @@
 #define CK_NORTA_GEN     0x00200061u
 #define CK_GIBBS_PAR     0x00200070u
 #define CK_GIBBS_GEN     0x00200071u
+#define CK_BALL_PAR      0x00200080u
+#define CK_BALL_GEN      0x00200081u
 
 /* generators for random matrices */
 #define CK_MCORR_PAR     0x00400010u

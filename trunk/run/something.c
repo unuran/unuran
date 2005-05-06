@@ -22,6 +22,7 @@
 #include <src/utils/matrix_source.h>
 #include <experimental/hitrou.h>
 #include <experimental/gibbs.h>
+#include <experimental/ball.h>
 #include "meanvarcor.c"
 
 #define DISTRIBUTION_NORMAL 0 
@@ -38,8 +39,8 @@
 #define METHOD_HITROU_BOX_COORDINATE 4
 #define METHOD_HITROU_BOX 5
 #define METHOD_HITROU_STRIP_ADAPTIVE 6
-#define METHOD_HITROU_BALL 7
-#define METHOD_HITROU_BALL_ADAPTIVE 8
+#define METHOD_BALL_ROU 7
+#define METHOD_BALL_ROU_ADAPTIVE 8
 
 #define MAXDIM 100
 
@@ -212,7 +213,7 @@ int main(int argc, char *argv[])
       printf(" -f nu           : degrees of freedom for student (%d) \n", NU );
       printf(" -m method       : 0=H&R+RD+STRIP, 1=VMT, 2=GIBBS 3=GIBBS+RD \n" );
       printf("                 : 4=H&R+COORD+BOX, 5=H&R+RD+BOX 6=H&R+RD+ADAPTIVE STRIP\n" );
-      printf("                 : 7=H&R+BALL 8=H&R+ADAPTIVE BALL (%d)\n", METHOD);
+      printf("                 : 7=BALL+RoU 8=BALL+RoU+ADAPTIVE RADIUS (%d)\n", METHOD);
       printf(" -b ball_radius  : ball radius for ball sampler (%f)\n", BALL_RADIUS);
       printf(" -s skip         : skip parameter for HITROU (%ld) \n", SKIP );
       printf(" -c covar_matrix : 0=constant, 1=neighbours, 2=power (%d)\n", COVAR);
@@ -352,25 +353,23 @@ int main(int argc, char *argv[])
     unur_hitrou_set_skip(par,SKIP);
   }  
 
-  if (METHOD==METHOD_HITROU_BALL) {
-    printf("METHOD=HITROU (BALL)\n");
+  if (METHOD==METHOD_BALL_ROU) {
+    printf("METHOD=BALL (ROU)\n");
     printf("RADIUS=%f\n", BALL_RADIUS);
-    par = unur_hitrou_new(distr);
-    unur_hitrou_set_variant_ball(par);
-    unur_hitrou_set_ball_radius(par, BALL_RADIUS);
-    unur_hitrou_use_bounding_rectangle(par, 1); /* TEST : to compute vmax/2 for initial point */
-    unur_hitrou_set_skip(par,SKIP);
+    par = unur_ball_new(distr);
+    unur_ball_set_variant_rou(par);
+    unur_ball_set_ball_radius(par, BALL_RADIUS);
+    unur_ball_set_skip(par,SKIP);
   }  
   
-  if (METHOD==METHOD_HITROU_BALL_ADAPTIVE) {
-    printf("METHOD=HITROU (ADAPTIVE BALL)\n");
+  if (METHOD==METHOD_BALL_ROU_ADAPTIVE) {
+    printf("METHOD=BALL (ROU + ADAPTIVE RADIUS)\n");
     printf("INITIAL_RADIUS=%f\n", BALL_RADIUS);
-    par = unur_hitrou_new(distr);
-    unur_hitrou_set_variant_ball(par);
-    unur_hitrou_set_ball_radius(par, BALL_RADIUS);
-    unur_hitrou_set_adaptive_ball(par, 1);    
-    unur_hitrou_use_bounding_rectangle(par, 1); /* TEST : to compute vmax/2 for initial point */
-    unur_hitrou_set_skip(par,SKIP);
+    par = unur_ball_new(distr);
+    unur_ball_set_variant_rou(par);
+    unur_ball_set_ball_radius(par, BALL_RADIUS);
+    unur_ball_set_adaptive_ball(par, 1);    
+    unur_ball_set_skip(par,SKIP);
   }  
 
   

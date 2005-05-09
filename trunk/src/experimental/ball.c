@@ -125,9 +125,10 @@ static void _unur_ball_random_direction( struct unur_gen *gen,
 /* generte a random direction vector                                         */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_ball_inside_shape( UNUR_GEN *gen, double *uv );
+static int _unur_ball_inside_shape( UNUR_GEN *gen, double *pt );
 /*---------------------------------------------------------------------------*/
-/* check if point uv[] is inside shape                                       */
+/* check if pt[] is inside RoU shape for the ROU variant                     */
+/* check if pt[] is below  PDF shape for the PDF variant                     */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_ball_x_to_uv( UNUR_GEN *gen, double *x, double *uv );
@@ -157,11 +158,11 @@ static void _unur_ball_uv_to_x( UNUR_GEN *gen, double *uv, double *x );
 
 #define BALL_INITIAL_POINTS 20 /* random directions used for initial point */
 
-/* do we really need such limits ? */
-#define BALL_BALL_RADIUS_MIN 1e-5
-#define BALL_BALL_RADIUS_MAX 1e5
+/* limits for ball radius to be used in adaptive algorithm */
+#define BALL_RADIUS_MIN 1e-5
+#define BALL_RADIUS_MAX 1e5
 
-#define BALL_BALL_RADIUS_FACTOR 1.01
+#define BALL_ADAPTIVE_FACTOR 1.01 /* default value */
 
 /*****************************************************************************/
 /**  Public: User Interface (API)                                           **/
@@ -210,8 +211,9 @@ unur_ball_new( const struct unur_distr *distr )
   /* set default values */
   PAR->r   = 1.;         /* r-parameter of the generalized method       */
   PAR->skip      = 0;    /* number of skipped points in chain           */
-  PAR->adaptive_ball = 0;   /* usage of adaptive algorithm for the ball radius */
   PAR->ball_radius = 1.; /* initial ball radius for ball sampler (if not set)  */
+  PAR->adaptive_ball = 0;   /* usage of adaptive algorithm for the ball radius */
+  PAR->adaptive_factor = BALL_ADAPTIVE_FACTOR; /* used in adaptive algorithm */
   par->method   = UNUR_METH_BALL;   /* method and default variant          */
   par->variant  = BALL_VARIANT_ROU; /* default variant        */
   par->set      = 0u;                 /* inidicate default parameters        */
@@ -229,7 +231,7 @@ unur_ball_new( const struct unur_distr *distr )
 /*****************************************************************************/
 
 int
-unur_ball_set_r( struct unur_par *par, double r )
+unur_ball_set_r( UNUR_PAR *par, double r )
      /*----------------------------------------------------------------------*/
      /* Set the r-parameter for the generalized ratio-of-uniforms method.    */
      /*                                                                      */
@@ -265,7 +267,7 @@ unur_ball_set_r( struct unur_par *par, double r )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_ball_set_ball_radius( struct unur_par *par, double ball_radius )
+unur_ball_set_ball_radius( UNUR_PAR *par, double ball_radius )
      /*----------------------------------------------------------------------*/
      /* Sets radius of ball used for the ball-sampler.                       */
      /*                                                                      */
@@ -301,7 +303,7 @@ unur_ball_set_ball_radius( struct unur_par *par, double ball_radius )
 
 
 int
-unur_ball_set_skip( struct unur_par *par, long skip )
+unur_ball_set_skip( UNUR_PAR *par, long skip )
      /*----------------------------------------------------------------------*/
      /* Set the skip-parameter for the generalized ratio-of-uniforms method. */
      /*                                                                      */
@@ -338,7 +340,7 @@ unur_ball_set_skip( struct unur_par *par, long skip )
 /*****************************************************************************/
 
 int 
-unur_ball_set_adaptive_ball( struct unur_par *par, int adaptive_flag )
+unur_ball_set_adaptive_ball( UNUR_PAR *par, int adaptive_flag )
 {
   /* check arguments */
   _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
@@ -357,6 +359,28 @@ unur_ball_set_adaptive_ball( struct unur_par *par, int adaptive_flag )
   return UNUR_SUCCESS;
 
 } /* end of unur_ball_set_adaptive_ball() */
+
+/*****************************************************************************/
+
+int 
+unur_ball_set_adaptive_factor( UNUR_PAR *par, double adaptive_factor ) {
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, BALL );
+
+  /* check new parameter for generator */
+  if (adaptive_factor<=0 ) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"adaptive_factor must be > 0");
+    return UNUR_ERR_PAR_SET;
+  }
+
+  /* store data */
+  PAR->adaptive_factor = adaptive_factor;
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+  
+}
 
 /*****************************************************************************/
 
@@ -456,8 +480,8 @@ _unur_ball_init( struct unur_par *par )
     NORMAL->debug = gen->debug;
   }
 
-
-    /* we look for an interior point along different random directions */
+  if (gen->variant == BALL_VARIANT_ROU ) { 
+    /* we look for a staring point along different random directions */
     for (pdf_max=0, i=1; i<=BALL_INITIAL_POINTS; i++) {
     
       /* choose a random direction */
@@ -479,7 +503,7 @@ _unur_ball_init( struct unur_par *par )
       }
       
     } /* next random direction */    
-        
+  }        
   
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
@@ -552,6 +576,7 @@ _unur_ball_create( struct unur_par *par )
   GEN->skip  = PAR->skip;             /* number of skipped poins in chain */
   GEN->adaptive_ball = PAR->adaptive_ball;    /* using adaptive ball flag */
   GEN->ball_radius = PAR->ball_radius; /* ball radius of ball sampler */
+  GEN->adaptive_factor = PAR->adaptive_factor; /* factor for ball radius */
   
   /* get center of the distribution */
   GEN->center = unur_distr_cvec_get_center(gen->distr);
@@ -602,8 +627,9 @@ _unur_ball_clone( const struct unur_gen *gen )
   /* copy parameters into clone object */
   CLONE->skip = GEN->skip;
   CLONE->r = GEN->r;
-  CLONE->adaptive_ball = GEN->adaptive_ball;
   CLONE->ball_radius = GEN->ball_radius;
+  CLONE->adaptive_ball = GEN->adaptive_ball;
+  CLONE->adaptive_factor = GEN->adaptive_factor;
   
   memcpy(CLONE->point_current, GEN->point_current, (GEN->dim+1) * sizeof(double));
   memcpy(CLONE->point_random , GEN->point_random , (GEN->dim+1) * sizeof(double));
@@ -651,50 +677,51 @@ _unur_ball_sample_cvec( struct unur_gen *gen, double *vec )
 
       u = _unur_call_urng(gen->urng);
       
-      if (gen->variant == BALL_VARIANT_ROU) {
-        _unur_ball_random_direction(gen, dim+1, GEN->direction);
-        lambda = GEN->ball_radius * pow(u, 1./(dim+1));
-      }
+      _unur_ball_random_direction(gen, dim+1, GEN->direction);
+      lambda = GEN->ball_radius * pow(u, 1./(dim+1));
       
       /* calculate the "candidate" point along the given random direction */
       for (d=0; d<=dim; d++)
         GEN->point_random[d] = GEN->point_current[d] + lambda * GEN->direction[d];
-	
+            
       /* check if random point is inside domain */
       if (_unur_ball_inside_shape(gen, GEN->point_random)) {
         /* update current point */
         for (d=0; d<=dim; d++)
           GEN->point_current[d] = GEN->point_random[d] ;
         
-	if (gen->variant == BALL_VARIANT_ROU && 
-	    GEN->adaptive_ball==1 && 
-	    GEN->ball_radius*BALL_BALL_RADIUS_FACTOR < BALL_BALL_RADIUS_MAX) 
-	      GEN->ball_radius *= BALL_BALL_RADIUS_FACTOR; 
+        if (GEN->adaptive_ball==1 && 
+	    GEN->ball_radius * GEN->adaptive_factor < BALL_RADIUS_MAX) 
+    	      GEN->ball_radius *= GEN->adaptive_factor;  
 	       
 	break; /* jump out of the while() loop */
       }
-
       else {
         /* we are outside shape */
-        if (gen->variant == BALL_VARIANT_ROU) {
-          /* no change of current point : returning the current point */
-  	  if (GEN->adaptive_ball==1 && GEN->ball_radius/BALL_BALL_RADIUS_FACTOR > BALL_BALL_RADIUS_MIN) 
-	    GEN->ball_radius /= BALL_BALL_RADIUS_FACTOR;  
-	  break;
-        }
-      }
-    
-    }
+        /* no change of current point : returning the current point */
+  	if (GEN->adaptive_ball==1 && GEN->ball_radius / GEN->adaptive_factor > BALL_RADIUS_MIN) 
+	  GEN->ball_radius /= GEN->adaptive_factor;  
+        break;
+      }  
 
+    } /* while() loop */
     
+  } /* next skip */
+
+  
+  if (gen->variant == BALL_VARIANT_ROU) {
+    /* calculate the sample point in the X[]-coordinate system */
+    _unur_ball_uv_to_x( gen, GEN->point_current, vec );
   }
 
-  /* calculate the sample point in the X[]-coordinate system            */
-  _unur_ball_uv_to_x( gen, GEN->point_current, vec );
+  if (gen->variant == BALL_VARIANT_PDF) {
+    /* calculate the sample point in the X[]-coordinate system */
+    for (d=0; d<dim; d++) 
+      vec[d] = GEN->point_current[d];
+  }
   
+      
 #if 0
-  _unur_matrix_print_vector ( dim+1, GEN->point_current, "uv :", stdout, "", "---" );
-  _unur_matrix_print_vector ( dim, vec, "x :", stdout, "", "---" );
   printf("GEN->ball_radius = %f\n", GEN->ball_radius);
 #endif
   
@@ -739,6 +766,7 @@ _unur_ball_free( struct unur_gen *gen )
   _unur_generic_free(gen);
 
 } /* end of _unur_ball_free() */
+
 
 /*****************************************************************************/
 /**  Auxilliary routines                                                    **/
@@ -810,21 +838,40 @@ _unur_ball_random_direction( struct unur_gen *gen,
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_ball_inside_shape( UNUR_GEN *gen, double *uv )
-     /* check if uv[] is inside RoU shape */
+_unur_ball_inside_shape( UNUR_GEN *gen, double *pt )
+     /* check if pt[] is inside RoU shape for the ROU variant */
+     /* check if pt[] is below  PDF shape for the PDF variant */
 {
-  double V;
-  int inside=0;
+  double V=0;
+  double Y=0;
+  int d, inside=0;
 
-  _unur_ball_uv_to_x( gen, uv, GEN->x );
+  if (gen->variant == BALL_VARIANT_ROU) {
+    _unur_ball_uv_to_x( gen, pt, GEN->x );
+    
+    V = pt[GEN->dim];
+    
+    /* point inside RoU domain ? */
+    if (V>0 && V < pow(PDF(GEN->x),1./(GEN->r * GEN->dim + 1.)))
+      inside=1;
+    else
+      inside=0;
+  }
 
-  /* point inside domain ? */
-  V = uv[GEN->dim];
-  if (V>0 && V < pow(PDF(GEN->x),1./(GEN->r * GEN->dim + 1.)))
-    inside=1;
-  else
-    inside=0;
-
+  if (gen->variant == BALL_VARIANT_PDF) {
+    
+    for (d=0; d<GEN->dim; d++) 
+      GEN->x[d] = pt[d];
+ 
+    Y = pt[GEN->dim];
+    
+    /* point beloe PDF ? */
+    if (Y>0 && Y < PDF(GEN->x))
+      inside=1;
+    else
+      inside=0;
+  }    
+  
   return inside;
 }
 
@@ -837,25 +884,25 @@ _unur_ball_inside_shape( UNUR_GEN *gen, double *uv )
 
 /*---------------------------------------------------------------------------*/
 
-void _unur_ball_set_point( UNUR_GEN *gen, double *uv)
-     /* set the current point (dimension=dim+1) inside the testrectangle */
+void _unur_ball_set_point_current( UNUR_GEN *gen, double *pt)
+     /* set the current point (dimension=dim+1) */
 {
   int d;
 
   for (d=0; d<=GEN->dim; d++) {
-    GEN->point_current[d]=uv[d];
+    GEN->point_current[d]=pt[d];
   }
 }
 
 /*---------------------------------------------------------------------------*/
 
-void _unur_ball_get_point( UNUR_GEN *gen, double *uv)
-     /* get the current point (dimension=dim+1) inside the testrectangle */
+void _unur_ball_get_point_current( UNUR_GEN *gen, double *pt)
+     /* get the current point (dimension=dim+1) */
 {
   int d;
 
   for (d=0; d<=GEN->dim; d++) {
-    uv[d]=GEN->point_current[d];
+    pt[d]=GEN->point_current[d];
   }
 }
 
@@ -893,25 +940,36 @@ _unur_ball_debug_init( const struct unur_gen *gen )
   fprintf(log,"%s: method  = ball sampler\n",gen->genid);
   if (gen->variant == BALL_VARIANT_PDF) 
     fprintf(log,"%s: variant = pdf sampler \n",gen->genid);
-  if (gen->variant == BALL_VARIANT_ROU) 
+  if (gen->variant == BALL_VARIANT_ROU) {
     fprintf(log,"%s: variant = RoU sampler \n",gen->genid);
+    fprintf(log,"%s: r-parameter = %g",gen->genid, GEN->r);
+    _unur_print_if_default(gen,BALL_SET_R); fprintf(log,"\n");
+  }  
   fprintf(log,"%s:\n",gen->genid);
 
-  _unur_distr_cvec_debug( gen->distr, gen->genid );
 
-  fprintf(log,"%s: sampling routine = _unur_ball_sample",gen->genid);
-
-  fprintf(log,"()\n%s:\n",gen->genid);
-
-  /* parameters */
-  fprintf(log,"%s: r-parameter = %g",gen->genid, GEN->r);
-  _unur_print_if_default(gen,BALL_SET_R);
+  /* adaptive factor & radius */
+  if (GEN->adaptive_ball) {
+    fprintf(log,"%s: Adaptive factor : %g\n",gen->genid, GEN->adaptive_factor);
+    fprintf(log,"%s: (initial) ball radius = %g",gen->genid, GEN->ball_radius);
+  }
+  else {
+    fprintf(log,"%s: (constant) ball radius = %g",gen->genid, GEN->ball_radius);
+  }
+  _unur_print_if_default(gen,BALL_SET_RADIUS);
   fprintf(log,"\n%s:\n",gen->genid);
-
+  
   /* skip */
   fprintf(log,"%s: skip = %ld",gen->genid, GEN->skip);
   _unur_print_if_default(gen,BALL_SET_SKIP);
   fprintf(log,"\n%s:\n",gen->genid);
+  
+  
+  _unur_distr_cvec_debug( gen->distr, gen->genid );
+
+  fprintf(log,"%s: sampling routine = _unur_ball_sample",gen->genid);
+  fprintf(log,"()\n%s:\n",gen->genid);
+
   
   /* print center */
   _unur_matrix_print_vector( GEN->dim, GEN->center, "center =", log, gen->genid, "\t   ");

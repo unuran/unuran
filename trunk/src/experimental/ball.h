@@ -54,9 +54,18 @@
       It is possible to sample directly from the area below the pdf
       or from the area inside the Ratio of Uniforms shape as chosen
       by the appropriate set_variant calls.
-      
-      The variant to sample directly below the pdf is currently
-      not implemented.
+
+      In both variants the ball is moving around in a (dim+1)-dimensional
+      space (u[],v) for the RoU-variant and (x[],y) for the PDF variant)
+            
+      The (initial) radius of the ball can be set using the 
+      unur_ball_set_ball_radius call.
+      The radius of the ball is only changed when sampling using the
+      adaptive method has been chosen. In this case, the ball-radius
+      is increased/decreased by a constant factor whenever the candidate 
+      point (i.e. current point + random direction vector) fall inside/outside
+      the shape : RoU-shape for the RoU-variant, Volume below PDF
+      for the PDF variant.
       
       In case of the ratio-of-uniform variant an additional parameter 
       @i{r} that can be used for adjusting the algorithm to the 
@@ -69,16 +78,13 @@
 
    =HOWTOUSE
       For using the BALL method UNURAN needs the PDF of the
-      distribution. Additionally, the parameter @i{r} can be set via
-      a unur_vnrou_set_r() call.
-
-      By means of unur_vnrou_set_verify() and unur_vnrou_chg_verify()
-      one can run the sampling algorithm in a checking mode, i.e., in
-      every cycle of the rejection loop it is checked whether the used
-      rectangle indeed enclosed the acceptance region of the
-      distribution. When in doubt (e.g., when it is not clear whether
-      the numerical routine has worked correctly) this can be used to
-      run a small Monte Carlo study.
+      distribution. 
+      By a call to unur_ball_set_variant_rou or unur_ball_set_variant_pdf 
+      the choice can be made if sampling should be done inside the 
+      ratio-of-uniforms shape or below the pdf.
+      
+      Additionally, for the ratio-of-uniforms variant,
+      the parameter @i{r} can be set via a unur_vnrou_set_r() call.
 
    =END
 */
@@ -100,6 +106,7 @@ int unur_ball_set_variant_pdf( UNUR_PAR *par );
 /* 
    Sampler variant :
    Sampling from the area below pdf. (not yet implemented)
+
 */
 
 
@@ -111,7 +118,7 @@ int unur_ball_set_variant_rou( UNUR_PAR *par );
    This is the default.
 */
 
-int unur_ball_set_r( UNUR_PAR *parameters, double r );
+int unur_ball_set_r( UNUR_PAR *par, double r );
 /*
    Sets the parameter @var{r} of the generalized multivariate
    ratio-of-uniforms method.
@@ -121,7 +128,7 @@ int unur_ball_set_r( UNUR_PAR *parameters, double r );
    Default: @code{1}.
 */
 
-int unur_ball_set_ball_radius( struct unur_par *par, double ball_radius );
+int unur_ball_set_ball_radius( UNUR_PAR *par, double ball_radius );
 /* 
    Sets (initial) radius of ball used for the ball-sampler. 
 
@@ -129,7 +136,7 @@ int unur_ball_set_ball_radius( struct unur_par *par, double ball_radius );
 */
 
 
-int unur_ball_set_adaptive_ball( UNUR_PAR *parameters, int adaptive_flag );
+int unur_ball_set_adaptive_ball( UNUR_PAR *par, int adaptive_flag );
 /*
    Increasing/Decreasing ball radius whenever candidate point is inside/outside 
    the RoU shape.
@@ -137,7 +144,17 @@ int unur_ball_set_adaptive_ball( UNUR_PAR *parameters, int adaptive_flag );
    Default: @code{0}.
 */
 
-int unur_ball_set_skip( UNUR_PAR *parameters, long skip );
+int unur_ball_set_adaptive_factor( UNUR_PAR *par, double adaptive_factor );
+/*
+   Increasing/Decreasing ball radius by the factor given whenever 
+   candidate point (i.e. current point + random direction vector) 
+   is inside/outside the RoU shape.
+   
+   Default: @code{1.01}.
+*/
+
+
+int unur_ball_set_skip( UNUR_PAR *par, long skip );
 /*
    Sets the parameter @var{skip} i.e. the number steps 
    between two points that will be used as random numbers.
@@ -154,9 +171,9 @@ int unur_ball_set_skip( UNUR_PAR *parameters, long skip );
 /*---------------------------------------------------------------------------*/
 
 
-void _unur_ball_set_point( UNUR_GEN *gen, double *uv);
-/* set the current point (dimension=dim+1) inside the RoU-shape */
+void _unur_ball_set_point_current( UNUR_GEN *gen, double *pt);
+/* set the current point (dimension=dim+1) */
 
-void _unur_ball_get_point( UNUR_GEN *gen, double *uv);
-/* get the current point (dimension=dim+1) inside the RoU-shape */
+void _unur_ball_get_point_current( UNUR_GEN *gen, double *pt);
+/* get the current point (dimension=dim+1) */
 

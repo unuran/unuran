@@ -44,7 +44,8 @@ struct unur_ball_par {
   int    dim;               /* dimension of distribution                     */
   long skip;                /* skip-parameter of the ball method             */
   double ball_radius;       /* (initial) ball radius                         */
-  int adaptive_ball;        /* adaptive size of ball sampler radius          */
+  int adaptive_ball;        /* adaptive flag for ball sampler radius         */
+  double adaptive_factor;   /* factor of adaptive radius increase/decrease   */
   double r;                 /* r-parameter for the RoU variant               */
 };
 
@@ -60,7 +61,8 @@ struct unur_ball_gen {
   double *point_random;     /* random point, can be inside shape or not      */
   double *x;                /* working point in the (xy)-coordinate system   */
   double ball_radius;       /* (initial) ball radius                         */
-  int adaptive_ball;        /* adaptive size of ball sampler radius          */
+  int adaptive_ball;        /* adaptive flag for ball sampler radius         */
+  double adaptive_factor;   /* factor of adaptive radius increase/decrease   */
   double r;                 /* r-parameter for the RoU variant               */
 };
 

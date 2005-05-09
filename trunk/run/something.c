@@ -41,6 +41,8 @@
 #define METHOD_HITROU_STRIP_ADAPTIVE 6
 #define METHOD_BALL_ROU 7
 #define METHOD_BALL_ROU_ADAPTIVE 8
+#define METHOD_BALL_PDF 9
+#define METHOD_BALL_PDF_ADAPTIVE 10
 
 #define MAXDIM 100
 
@@ -213,7 +215,8 @@ int main(int argc, char *argv[])
       printf(" -f nu           : degrees of freedom for student (%d) \n", NU );
       printf(" -m method       : 0=H&R+RD+STRIP, 1=VMT, 2=GIBBS 3=GIBBS+RD \n" );
       printf("                 : 4=H&R+COORD+BOX, 5=H&R+RD+BOX 6=H&R+RD+ADAPTIVE STRIP\n" );
-      printf("                 : 7=BALL+RoU 8=BALL+RoU+ADAPTIVE RADIUS (%d)\n", METHOD);
+      printf("                 : 7=BALL+RoU  8=BALL+RoU+ADAPTIVE RADIUS (%d)\n", METHOD);
+      printf("                 : 9=BALL+PDF 10=BALL+PDF+ADAPTIVE RADIUS (%d)\n", METHOD);
       printf(" -b ball_radius  : ball radius for ball sampler (%f)\n", BALL_RADIUS);
       printf(" -s skip         : skip parameter for HITROU (%ld) \n", SKIP );
       printf(" -c covar_matrix : 0=constant, 1=neighbours, 2=power (%d)\n", COVAR);
@@ -229,7 +232,7 @@ int main(int argc, char *argv[])
     }
   }
   
-  unur_set_default_debug(UNUR_DEBUG_OFF);
+  //unur_set_default_debug(UNUR_DEBUG_OFF);
    
   for(d=0;d<DIM;d++){
     for (m=1; m<=4; m++) {
@@ -372,7 +375,24 @@ int main(int argc, char *argv[])
     unur_ball_set_skip(par,SKIP);
   }  
 
+  if (METHOD==METHOD_BALL_PDF) {
+    printf("METHOD=BALL (PDF)\n");
+    printf("RADIUS=%f\n", BALL_RADIUS);
+    par = unur_ball_new(distr);
+    unur_ball_set_variant_pdf(par);
+    unur_ball_set_ball_radius(par, BALL_RADIUS);
+    unur_ball_set_skip(par,SKIP);
+  }  
   
+  if (METHOD==METHOD_BALL_PDF_ADAPTIVE) {
+    printf("METHOD=BALL (PDF + ADAPTIVE RADIUS)\n");
+    printf("INITIAL_RADIUS=%f\n", BALL_RADIUS);
+    par = unur_ball_new(distr);
+    unur_ball_set_variant_pdf(par);
+    unur_ball_set_ball_radius(par, BALL_RADIUS);
+    unur_ball_set_adaptive_ball(par, 1);    
+    unur_ball_set_skip(par,SKIP);
+  }  
          
   printf("SKIP=%ld\n", SKIP);
 

@@ -114,6 +114,8 @@
 #define CK_GIBBS_GEN     0x00200071u
 #define CK_BALL_PAR      0x00200080u
 #define CK_BALL_GEN      0x00200081u
+#define CK_WALK_PAR      0x00200090u
+#define CK_WALK_GEN      0x00200091u
 
 /* generators for random matrices */
 #define CK_MCORR_PAR     0x00400010u

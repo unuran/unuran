@@ -242,9 +242,9 @@ int unur_hitrou_set_variant_random_direction( UNUR_PAR *par );
 
 /*---------------------------------------------------------------------------*/
 
-void _unur_hitrou_set_point( UNUR_GEN *gen, double *uv);
-/* set the current point (dimension=dim+1) inside the testrectangle */
+void _unur_hitrou_set_point_current( UNUR_GEN *gen, double *uv);
+/* set the current point (dimension=dim+1) */
 
-void _unur_hitrou_get_point( UNUR_GEN *gen, double *uv);
-/* get the current point (dimension=dim+1) inside the testrectangle */
+void _unur_hitrou_get_point_current( UNUR_GEN *gen, double *uv);
+/* get the current point (dimension=dim+1) */
 

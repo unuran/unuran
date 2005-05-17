@@ -168,13 +168,13 @@ UNUR_PAR *_unur_str2par( const UNUR_DISTR *distribution, const char *string, str
    @table @emph
    @item string @code{"@dots{}"}
       i.e. any sequence of characters enclosed by double quotes 
-      @code{"@dots{}"} or single quotes @code{'@dots{}'}, 
+      @code{"@dots{}"}, 
    @item list @code{(@dots{},@dots{})}
       i.e. list of @emph{numbers}, separated by commata @code{,},
       enclosed in parenthesis @code{(...)}, and
    @item number
       a sequence of characters that is not enclosed by quotes
-      @code{"@dots{}"}, @code{'@dots{}'} or parenthesis @code{(...)}. 
+      @code{"@dots{}"} or parenthesis @code{(...)}. 
       It is interpreted as float or integer depending on the type of 
       the corresponding parameter.
    @end table

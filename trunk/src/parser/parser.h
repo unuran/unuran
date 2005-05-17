@@ -168,15 +168,15 @@ UNUR_PAR *_unur_str2par( const UNUR_DISTR *distribution, const char *string, str
    @table @emph
    @item string @code{"@dots{}"}
       i.e. any sequence of characters enclosed by double quotes 
-      @code{"@dots{}"}, 
+      @code{"@dots{}"} or single quotes @code{'@dots{}'}, 
    @item list @code{(@dots{},@dots{})}
       i.e. list of @emph{numbers}, separated by commata @code{,},
       enclosed in parenthesis @code{(...)}, and
    @item number
       a sequence of characters that is not enclosed by quotes
-      @code{"@dots{}"} or parenthesis @code{(...)}. It is interpreted
-      as float or integer depending on the type of the corresponding
-      parameter.
+      @code{"@dots{}"}, @code{'@dots{}'} or parenthesis @code{(...)}. 
+      It is interpreted as float or integer depending on the type of 
+      the corresponding parameter.
    @end table
    The @code{<value>} string (including the character @code{=}) can be
    omitted when no argument is required.
@@ -298,9 +298,12 @@ UNUR_PAR *_unur_str2par( const UNUR_DISTR *distribution, const char *string, str
    @smallexample
       distr = cont; pdf = "exp(-sqrt(2+(x-1)^2) + (x-1))"
    @end smallexample
-   (Notice: If this string is used in an unur_str2distr() or
+   Notice: If this string is used in an unur_str2distr() or
    unur_str2gen() call the double quotes @code{"} must be protected by
-   @code{\"}.) 
+   @code{\"}. Alternatively, single quotes may be used instead 
+   @smallexample
+      distr = cont; pdf = 'exp(-sqrt(2+(x-1)^2) + (x-1))'
+   @end smallexample
 
    For the details of function strings see
    @ref{StringFunct,,Function String}.

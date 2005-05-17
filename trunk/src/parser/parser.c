@@ -52,6 +52,7 @@ _unur_parser_prepare_string( const char *str )
      /* Prepare string for processing:                                       */
      /*   Make a working copy of the string.                                 */
      /*   Remove all white spaces and convert to lower case letters.         */
+     /*   Single quotes (') are substituted with double quotes (")           */
      /*                                                                      */
      /* parameters:                                                          */
      /*   str      ... pointer to string                                     */
@@ -77,6 +78,8 @@ _unur_parser_prepare_string( const char *str )
   for (tmp = ptr; *tmp != '\0'; tmp++)
     if ( !isspace(*tmp) ) {
       *ptr = tolower(*tmp);
+      /* substitute ' with " */
+      if (*ptr == '\'') *ptr = '"';
       ptr++;
     }
 

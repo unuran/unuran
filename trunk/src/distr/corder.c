@@ -157,7 +157,7 @@ unur_distr_corder_new( const struct unur_distr *distr, int n, int k )
   /* copy data */
   OS.area = DISTR.area;               /* area below PDF (same as for distr)  */
   OS.trunc[0] = OS.domain[0] = DISTR.domain[0];  /* left boundary of domain  */
-  OS.trunc[0] = OS.domain[1] = DISTR.domain[1];  /* right boundary of domain */
+  OS.trunc[1] = OS.domain[1] = DISTR.domain[1];  /* right boundary of domain */
   
   /* pointer to PDF, its derivative, and CDF */
   if (DISTR.cdf) {

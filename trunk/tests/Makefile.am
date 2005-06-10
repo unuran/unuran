@@ -9,7 +9,8 @@ INCLUDES = \
 # Experimental code
 if INCLUDE_EXPERIMENTAL
 EXPERIMENTAL_LDADD = $(top_builddir)/src/experimental/libunurexperimental.la
-EXPERIMENTAL_PROGS = t_hitrou t_varou
+# EXPERIMENTAL_PROGS = t_hitrou t_varou
+EXPERIMENTAL_PROGS = t_hitrou
 EXPERIMENTAL_XFAIL = t_hitrou
 else
 EXPERIMENTAL_LDADD = 

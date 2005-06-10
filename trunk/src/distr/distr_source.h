@@ -64,6 +64,9 @@
 #define UNUR_DISTR_SET_STDMARGINAL    0x00100000 /* standardized marginal distribution (for multivar. distr.) */
 #define UNUR_DISTR_SET_MARGINAL       0x00200000 /* marginal distribution (for multivar. distr.) */
 
+#define UNUR_DISTR_SET_GENERIC        0x00080000 /* generic parameter (can be used for any purpose) */
+
+
 /* derived parameters */
 #define UNUR_DISTR_SET_MASK_DERIVED   0x0000ffff
 
@@ -121,6 +124,9 @@ void _unur_distr_cont_debug( const UNUR_DISTR *distribution, const char *genid )
 /* write info about distribution into logfile                                */
 
 void _unur_distr_corder_debug( const UNUR_DISTR *order_statistics, const char *genid );
+/* write info about distribution into logfile                                */
+
+void _unur_distr_cxtrans_debug( const UNUR_DISTR *cxtrans, const char *genid );
 /* write info about distribution into logfile                                */
 
 void _unur_distr_cemp_debug( const UNUR_DISTR *distribution, const char *genid, int printvector );

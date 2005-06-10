@@ -6,15 +6,16 @@ INCLUDES = -I$(top_srcdir)/src
 noinst_LTLIBRARIES = libdistr.la
 
 libdistr_la_SOURCES = \
- distr.c  distr.h  distr_struct.h distr_source.h \
- cont.c   cont.h \
- corder.c corder.h \
- cemp.c   cemp.h \
- cvec.c   cvec.h \
- condi.c  condi.h \
- cvemp.c  cvemp.h\
- discr.c  discr.h \
- matr.c	  matr.h
+ distr.c   distr.h  distr_struct.h distr_source.h \
+ cont.c    cont.h \
+ corder.c  corder.h \
+ cxtrans.c cxtrans.h \
+ cemp.c    cemp.h \
+ cvec.c    cvec.h \
+ condi.c   condi.h \
+ cvemp.c   cvemp.h\
+ discr.c   discr.h \
+ matr.c	   matr.h
 
 # clean backup files
 CLEANFILES = *~

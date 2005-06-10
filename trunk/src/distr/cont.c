@@ -1992,6 +1992,9 @@ _unur_distr_cont_debug( const struct unur_distr *distr, const char *genid )
     case UNUR_DISTR_CORDER:
       _unur_distr_corder_debug(distr,genid);
       return;
+    case UNUR_DISTR_CXTRANS:
+      _unur_distr_cxtrans_debug(distr,genid);
+      return;
     case UNUR_DISTR_CONDI:
       _unur_distr_condi_debug(distr,genid);
       return;

@@ -1393,7 +1393,7 @@ sub parse_tex {
 	if ($entry =~ s/^([0-9]+)//) {
 	    # number
 	    push @token, {type=>"number", value=>"$1"}; next; }
-	if ($entry =~ s/^(\[|\]|\(|\)|\'|\,|\;|\.|\=|\/|\+|\-|\<|\>)//) {
+	if ($entry =~ s/^(\[|\]|\(|\)|\'|\,|\;|\.|\=|\/|\+|\-|\<|\>|\|)//) {
 	    # other printable symbols
 	    push @token, {type=>"symbol", value=>"$1"}; next; }
 
@@ -1536,7 +1536,7 @@ sub next_tex_token {
 	    $$info .= $value;
 	    return;
 	}
-	if ($value =~ /^\\(inf|sup|min|max|log)\s*$/) {
+	if ($value =~ /^\\(inf|sup|min|max|log|exp)\s*$/) {
 	    # macros that are printed as is in non-TeX formats
 	    $$tex .= $value;
 	    $$html .= " $1";

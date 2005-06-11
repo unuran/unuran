@@ -41,11 +41,11 @@ check_PROGRAMS = \
  t_distr_cvec \
  t_distr_condi \
  t_distr_cvemp \
+ t_distr_cxtrans \
  t_distr_discr \
  t_distr_matr \
  t_auto \
  t_arou \
- t_corder \
  t_cstd \
  t_dari \
  t_dau \
@@ -109,11 +109,11 @@ EXTRA_DIST = \
  t_distr_cvec.conf \
  t_distr_condi.conf \
  t_distr_cvemp.conf \
+ t_distr_cxtrans.conf \
  t_distr_discr.conf \
  t_distr_matr.conf \
  t_auto.conf \
  t_arou.conf \
- t_corder.conf \
  t_cstd.conf \
  t_dari.conf \
  t_dau.conf \

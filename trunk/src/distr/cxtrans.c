@@ -283,11 +283,11 @@ unur_distr_cxtrans_set_alpha( struct unur_distr *cxt, double alpha )
   /* check arguments */
   _unur_check_NULL( distr_name, cxt, UNUR_ERR_NULL );
   _unur_check_distr_object( cxt, CONT, UNUR_ERR_DISTR_INVALID );
-  CHECK_NULL( cxt->base, UNUR_ERR_NULL );
 
   /* check distribution */
   if (cxt->id != UNUR_DISTR_CXTRANS) {
     _unur_error(distr_name,UNUR_ERR_DISTR_INVALID,""); return UNUR_ERR_DISTR_INVALID; }
+  CHECK_NULL( cxt->base, UNUR_ERR_NULL );
 
   /* check parameter alpha */
   if (alpha < 0.) {
@@ -415,6 +415,10 @@ unur_distr_cxtrans_set_domain( struct unur_distr *cxt, double left, double right
   /* check arguments */
   _unur_check_NULL( NULL, cxt, UNUR_ERR_NULL );
   _unur_check_distr_object( cxt, CONT, UNUR_ERR_DISTR_INVALID );
+
+  /* check distribution */
+  if (cxt->id != UNUR_DISTR_CXTRANS) {
+    _unur_error(distr_name,UNUR_ERR_DISTR_INVALID,""); return UNUR_ERR_DISTR_INVALID; }
 
   if (_unur_isinf(CXT.ALPHA)==1) {
     /* exponential transformation */
@@ -798,8 +802,10 @@ _unur_distr_cxtrans_debug( const struct unur_distr *cxt, const char *genid )
   fprintf(log,"%s:\tvalues used at pole of underlying distribution\n",genid);
   fprintf(log,"%s:\t\tPDF  = %g\t(logPDF  = %g)",genid, CXT.PDFPOLE, CXT.logPDFPOLE);
   _unur_print_if_default(cxt,UNUR_DISTR_SET_GENERIC);
+  fprintf(log,"\n");
   fprintf(log,"%s:\t\tdPDF = %g\t(dlogPDF = %g)",genid, CXT.dPDFPOLE, CXT.dlogPDFPOLE);
   _unur_print_if_default(cxt,UNUR_DISTR_SET_GENERIC);
+  fprintf(log,"\n");
 
   if (cxt->set & UNUR_DISTR_SET_MODE)
     fprintf(log,"%s:\tmode = %g\n",genid,CXT.mode);

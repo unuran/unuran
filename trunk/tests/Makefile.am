@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-SUBDIRS = .
+SUBDIRS = testdistributions .
 
 INCLUDES = \
  -I$(top_srcdir)/src \
@@ -22,7 +22,11 @@ endif
 noinst_LTLIBRARIES = libtestroutines.la
 libtestroutines_la_SOURCES = testroutines.c
 
-LDADD = libtestroutines.la $(EXPERIMENTAL_LDADD) $(top_builddir)/src/libunuran.la
+LDADD = \
+ libtestroutines.la \
+ $(EXPERIMENTAL_LDADD) \
+ $(top_builddir)/tests/testdistributions/libtestdistributions.la \
+ $(top_builddir)/src/libunuran.la
 
 # Special files for tests with Mathematica(TM)
 if HAVE_MATHEMATICA

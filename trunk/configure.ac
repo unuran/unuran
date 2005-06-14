@@ -144,6 +144,7 @@ AC_CONFIG_FILES([\
 	doc/src/Makefile \
 	doc/figures/Makefile \
         tests/Makefile \
+        tests/testdistributions/Makefile \
 	examples/Makefile \
 	experiments/Makefile ])
 

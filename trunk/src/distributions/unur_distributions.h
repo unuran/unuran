@@ -379,8 +379,6 @@ UNUR_DISTR *unur_distr_slash(const double *params, int n_params);
    =EON
 */
 UNUR_DISTR *unur_distr_student(const double *params, int n_params);
-/** CDF not implemented !!!!!! */
-/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /*  Triangular distribution  [3; ch.26, p.297]                               */
@@ -441,103 +439,62 @@ UNUR_DISTR *unur_distr_weibull(const double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
 /* Multinormal distribution  [5; ch.45, p.105]                               */
-UNUR_DISTR *unur_distr_multinormal(int dim, const double *mean, const double *covar);
 /* 
    =DISTR    multinormal  Multinormal distribution
    =UP       Stddist_CVEC
    =REF      [KBJe00: Ch.45, p.105]
-
-   =DESCRIPTION
-   @code{UNUR_DISTR *unur_distr_multinormal(int dim, const double *mean, const double *covar)}
-   creates a distribution object for the multinormal distribution with
-   @var{dim} components. @var{mean} is an array of size @var{dim}.
-   A NULL pointer for @var{mean} is interpreted as the zero
-   vector (0,@dots{},0).
-   @var{covar} is an array of size @var{dim}x@var{dim} and holds the
-   covariance matrix, where the rows of the matrix are stored
-   consecutively in this array. The NULL pointer can be used
-   instead the identity matrix.
-   If @var{covar} is not a valid covariance matrix (i.e., not positive
-   definite) then no distribution object is created and NULL is returned.
-
-   For standard form of the distribution use the null vector for @var{mean} and 
-   the identity matrix for @var{covar}.
+   =PDF      f(x) = exp( -1/2 * (x-mu)^t . Sigma^{-1} . (x-mu) )
+   =CONST    1 / ( (2 pi)^{dim/2} * sqrt{det(Sigma)} )  
+   =DOMAIN   -infinity^{dim} < x < infinity^{dim} 
+   =FPARAM    [0]   : mu     :    : (0,@dots{},0)  : location  :
+              [1]   : Sigma : Symm, Pos. def. : I : shape     :
+   =STDGEN   VMT  Cholesky decomposition
    =EON
 */
+UNUR_DISTR *unur_distr_multinormal(int dim, const double *mean, const double *covar);
 
 /*---------------------------------------------------------------------------*/
 /* Multicauchy distribution  [5; ch.45, p.219]                               */
-UNUR_DISTR *unur_distr_multicauchy(int dim, const double *mean, const double *covar);
 /* 
    =DISTR    multicauchy  Multicauchy distribution
    =UP       Stddist_CVEC
-   =REF      [KBJe00: Ch.45, p.219]
-
-   =DESCRIPTION
-   @code{UNUR_DISTR *unur_distr_multicauchy(int dim, const double *mean, const double *covar)}
-   creates a distribution object for the multivariate Cauchy distribution with
-   @var{dim} components. @var{mean} is an array of size @var{dim}.
-   A NULL pointer for @var{mean} is interpreted as the zero
-   vector (0,@dots{},0).
-   @var{covar} is an array of size @var{dim}x@var{dim} and holds the
-   covariance matrix, where the rows of the matrix are stored
-   consecutively in this array. The NULL pointer can be used
-   instead the identity matrix.
-   If @var{covar} is not a valid covariance matrix (i.e., not positive
-   definite) then no distribution object is created and NULL is returned.
-
-   For standard form of the distribution use the null vector for @var{mean} and 
-   the identity matrix for @var{covar}.
+   =PDF      f(x) = 1 / ( 1 + (x-mu)^t . Sigma^{-1} . (x-mu) )^{(dim+1)/2} 
+   =CONST    Gamma((dim+1)/2) / ( pi^{(dim+1)/2} * sqrt{det(Sigma)} )
+   =DOMAIN   -infinity^{dim} < x < infinity^{dim} 
+   =FPARAM    [0]   : mu     :    : (0,@dots{},0)  : location  :
+              [1]   : Sigma : Symm, Pos. def. : I : shape     :
    =EON
 */
+UNUR_DISTR *unur_distr_multicauchy(int dim, const double *mean, const double *covar);
 
 
 /*---------------------------------------------------------------------------*/
 /* Multistudent distribution                                                 */
-UNUR_DISTR *unur_distr_multistudent(int dim, const double nu, const double *mean, const double *covar);
 /* 
    =DISTR    multistudent  Multistudent distribution
    =UP       Stddist_CVEC
-
-   =DESCRIPTION
-   @code{UNUR_DISTR *unur_distr_multistudent(int dim, const double nu, const double *mean, const double *covar)}
-   creates a distribution object for the multivariate Student t-distribution with
-   @var{dim} components and @var{nu} degrees of freedom. 
-   @var{mean} is an array of size @var{dim}.
-   A NULL pointer for @var{mean} is interpreted as the zero
-   vector (0,@dots{},0).
-   @var{covar} is an array of size @var{dim}x@var{dim} and holds the
-   covariance matrix, where the rows of the matrix are stored
-   consecutively in this array. The NULL pointer can be used
-   instead the identity matrix.
-   If @var{covar} is not a valid covariance matrix (i.e., not positive
-   definite) then no distribution object is created and NULL is returned.
-
-   For standard form of the distribution use the null vector for @var{mean} and 
-   the identity matrix for @var{covar}.
+   =PDF      f(x) = 1 / ( 1 + (x-mu)^t . Sigma^{-1} . (x-mu) / m)^{(dim+m)/2} )
+   =CONST    Gamma((dim+m)/2) / ( Gamma(m/2) (m*pi)^{dim/2} * sqrt{det(Sigma)} ) 
+   =DOMAIN   -infinity^{dim} < x < infinity^{dim} 
+   =FPARAM    [0]   : m      : m>0 : 1 : location  :
+              [1]   : mu     :    : (0,@dots{},0)  : location  :
+              [2]   : Sigma : Symm, Pos. def. : I : shape     :
    =EON
 */
+UNUR_DISTR *unur_distr_multistudent(int dim, const double nu, const double *mean, const double *covar);
 
 
 /*---------------------------------------------------------------------------*/
 /* Copula                                                                    */
-UNUR_DISTR *unur_distr_copula(int dim, const double *rankcorr);
 /* 
    =DISTR    copula  Copula (distribution with uniform marginals)
    =UP       Stddist_CVEC
 
    =DESCRIPTION
-   @code{UNUR_DISTR *unur_distr_copula(int dim, const double *rankcorr)}
-   creates a distribution object for a copula with @var{dim} components. 
-   @var{rankcorr} is an array of size @var{dim}x@var{dim} and holds the
-   rank correlation matrix (Spearman's correlation), where the rows of
-   the matrix are stored consecutively in this array. The NULL pointer
-   can be used instead the identity matrix.
 
-   If @var{covar} is not a valid rank correlation matrix (i.e., not positive
-   definite) then no distribution object is created and NULL is returned.
    =EON
 */
+UNUR_DISTR *unur_distr_copula(int dim, const double *rankcorr);
 
 /*---------------------------------------------------------------------------*/
 

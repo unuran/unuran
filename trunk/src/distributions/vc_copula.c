@@ -105,6 +105,17 @@ static const char distr_name[] = "copula";
 
 struct unur_distr *
 unur_distr_copula( int dim, const double *rankcorr )
+/*
+   @code{UNUR_DISTR *unur_distr_copula(int dim, const double *rankcorr)}
+   creates a distribution object for a copula with @var{dim} components. 
+   @var{rankcorr} is an array of size @var{dim}x@var{dim} and holds the
+   rank correlation matrix (Spearman's correlation), where the rows of
+   the matrix are stored consecutively in this array. The NULL pointer
+   can be used instead the identity matrix.
+
+   If @var{covar} is not a valid rank correlation matrix (i.e., not positive
+   definite) then no distribution object is created and NULL is returned.
+*/   
 {
   struct unur_distr *distr;
   struct unur_distr *marginal;

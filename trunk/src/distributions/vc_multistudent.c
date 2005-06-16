@@ -231,6 +231,23 @@ _unur_set_params_multistudent( UNUR_DISTR *distr, const double *params, int n_pa
 
 struct unur_distr *
 unur_distr_multistudent( int dim, const double df, const double *mean, const double *covar )
+/*
+   @code{UNUR_DISTR *unur_distr_multistudent(int dim, const double nu, const double *mean, const double *covar)}
+   creates a distribution object for the multivariate Student t-distribution with
+   @var{dim} components and @var{nu} degrees of freedom. 
+   @var{mean} is an array of size @var{dim}.
+   A NULL pointer for @var{mean} is interpreted as the zero
+   vector (0,@dots{},0).
+   @var{covar} is an array of size @var{dim}x@var{dim} and holds the
+   covariance matrix, where the rows of the matrix are stored
+   consecutively in this array. The NULL pointer can be used
+   instead the identity matrix.
+   If @var{covar} is not a valid covariance matrix (i.e., not positive
+   definite) then no distribution object is created and NULL is returned.
+
+   For standard form of the distribution use the null vector for @var{mean} and 
+   the identity matrix for @var{covar}.
+*/   
 {
   struct unur_distr *distr;
   struct unur_distr *stdmarginal;

@@ -121,7 +121,7 @@ UNUR_DISTR *unur_distr_cxtrans_new( const UNUR_DISTR *distribution, double alpha
    variate. The parameter @var{alpha} is used to select the
    transformation:
    
-   @multitable @columnfractions .25 .75
+   @multitable @columnfractions .25 .75 
    @headitem @var{alpha} @tab Transformation
    @item @code{UNUR_INFINITY}
    @tab  @unurmath{\phi(X)=\exp(X)}
@@ -130,7 +130,7 @@ UNUR_DISTR *unur_distr_cxtrans_new( const UNUR_DISTR *distribution, double alpha
    @item positive
    @tab  @unurmath{\phi(X) = sign(X) |X|^\alpha}
    @end multitable
-
+   
    Negative values for @var{alpha} are not allowed.
 
    @var{distribution} must be a pointer to a univariate

@@ -448,7 +448,6 @@ UNUR_DISTR *unur_distr_weibull(const double *params, int n_params);
    =DOMAIN   -infinity^{dim} < x < infinity^{dim} 
    =FPARAM    [0]   : mu     :    : (0,@dots{},0)  : location  :
               [1]   : Sigma : Symm, Pos. def. : I : shape     :
-   =STDGEN   VMT  Cholesky decomposition
    =EON
 */
 UNUR_DISTR *unur_distr_multinormal(int dim, const double *mean, const double *covar);
@@ -491,7 +490,15 @@ UNUR_DISTR *unur_distr_multistudent(int dim, const double nu, const double *mean
    =UP       Stddist_CVEC
 
    =DESCRIPTION
+   @code{UNUR_DISTR *unur_distr_copula(int dim, const double *rankcorr)}
+   creates a distribution object for a copula with @var{dim} components. 
+   @var{rankcorr} is an array of size @var{dim}x@var{dim} and holds the
+   rank correlation matrix (Spearman's correlation), where the rows of
+   the matrix are stored consecutively in this array. The NULL pointer
+   can be used instead the identity matrix.
 
+   If @var{covar} is not a valid rank correlation matrix (i.e., not positive
+   definite) then no distribution object is created and NULL is returned.
    =EON
 */
 UNUR_DISTR *unur_distr_copula(int dim, const double *rankcorr);

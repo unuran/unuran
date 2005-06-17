@@ -73,7 +73,7 @@ my %TAGs =
      "=PMF"         => { "scan" => \&scan_PDF },
      "=CONST"       => { "scan" => \&scan_PDF },
      "=CDF"         => { "scan" => \&scan_PDF },
-     "=DOMAIN"      => { "scan" => \&scan_DOMAIN },
+     "=DOMAIN"      => { "scan" => \&scan_PDF },
      "=FPARAM"      => { "scan" => \&scan_FPARAM },
      "=STDGEN"      => { "scan" => \&scan_STDGEN },
 

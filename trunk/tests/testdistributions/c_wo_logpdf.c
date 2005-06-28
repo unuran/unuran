@@ -92,7 +92,7 @@ unur_distr_exponential_wo_logpdf( const double *params, int n_params )
   register struct unur_distr *distr;
 
   /* get distribution object for beta distribution */
-  distr = unur_distr_cauchy( params, n_params );
+  distr = unur_distr_exponential( params, n_params );
 
   /* name of distribution */
   distr->name = "exponential_wo_logpdf";
@@ -114,7 +114,7 @@ unur_distr_gamma_wo_logpdf( const double *params, int n_params )
   register struct unur_distr *distr;
 
   /* get distribution object for beta distribution */
-  distr = unur_distr_cauchy( params, n_params );
+  distr = unur_distr_gamma( params, n_params );
 
   /* name of distribution */
   distr->name = "gamma_wo_logpdf";
@@ -136,7 +136,7 @@ unur_distr_normal_wo_logpdf( const double *params, int n_params )
   register struct unur_distr *distr;
 
   /* get distribution object for beta distribution */
-  distr = unur_distr_cauchy( params, n_params );
+  distr = unur_distr_normal( params, n_params );
 
   /* name of distribution */
   distr->name = "normal_wo_logpdf";
@@ -158,7 +158,7 @@ unur_distr_powerexponential_wo_logpdf( const double *params, int n_params )
   register struct unur_distr *distr;
 
   /* get distribution object for beta distribution */
-  distr = unur_distr_cauchy( params, n_params );
+  distr = unur_distr_powerexponential( params, n_params );
 
   /* name of distribution */
   distr->name = "powerexponential_wo_logpdf";

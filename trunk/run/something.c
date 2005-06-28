@@ -25,6 +25,7 @@
 #include <experimental/ball.h>
 #include <experimental/walk.h>
 #include "meanvarcor.c"
+/*#include <src/utils/fft.c>*/
 
 #define DISTRIBUTION_NORMAL 0 
 #define DISTRIBUTION_STUDENT 1
@@ -170,9 +171,26 @@ int main(int argc, char *argv[])
   
   MEANVAR *mv[MAXDIM*5];
   QUANTILE *quant[MAXDIM*5];  
-
+  
   char c;
 
+/* discrete fft tests ... 
+
+  int n=100;
+  int ifac[n];
+  float wsave[2*n+15];
+  float r[n];
+  _fdrffti( n,  wsave, ifac);
+  
+  for (i=2;i<=ifac[1]+1; i++) printf("ifac[% d]=%d\n", i, ifac[i]); 
+  for (i=0; i<100; i++) r[i]=i % 17;
+  for (i=0; i<100; i++) printf("r[% d]=%f\n", i, r[i]);
+  
+  _fdrfftf(n, r, wsave, ifac);
+  for (i=0; i<100; i++) printf("r[% d]=%f\n", i, r[i]);
+
+*/  
+    
   /* read options */
   while ((c = getopt(argc, argv, "d:s:n:r:w:t:m:c:e:f:b:h")) != -1) {
     switch (c) {

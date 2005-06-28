@@ -85,7 +85,9 @@ static const char distr_name[] = "exponential";
 
 /* function prototypes                                                       */
 static double _unur_pdf_exponential( double x, const UNUR_DISTR *distr );
+static double _unur_logpdf_exponential( double x, const UNUR_DISTR *distr );
 static double _unur_dpdf_exponential( double x, const UNUR_DISTR *distr );
+static double _unur_dlogpdf_exponential( double x, const UNUR_DISTR *distr );
 static double _unur_cdf_exponential( double x, const UNUR_DISTR *distr );
 
 static int _unur_upd_mode_exponential( UNUR_DISTR *distr );
@@ -104,15 +106,25 @@ _unur_pdf_exponential( double x, const UNUR_DISTR *distr )
     x = (x - theta) / sigma;
 
   /* standard form */
-  if (x<0.) 
-    return 0.;
-
-  /* else */
-  return exp(-x - LOGNORMCONSTANT);
-  
-  /*    return ( (x<0.) ? 0. : exp(-x - LOGNORMCONSTANT) ); */
+  return ( (x<0.) ? 0. : exp(-x - LOGNORMCONSTANT) );
 
 } /* end of _unur_pdf_exponential() */
+
+/*---------------------------------------------------------------------------*/
+  
+double
+_unur_logpdf_exponential( double x, const UNUR_DISTR *distr )
+{
+  register double *params = DISTR.params;
+
+  if (DISTR.n_params > 0)
+    /* standardize */
+    x = (x - theta) / sigma;
+
+  /* standard form */
+  return ( (x<0.) ? -INFINITY : (-x - LOGNORMCONSTANT) );
+
+} /* end of _unur_logpdf_exponential() */
 
 /*---------------------------------------------------------------------------*/
   
@@ -122,14 +134,29 @@ _unur_dpdf_exponential( double x, const UNUR_DISTR *distr )
   register double *params = DISTR.params;
 
   if (DISTR.n_params > 0)
-    /* non-standard form */
-    return ( (x<theta) ? 0. : -exp( -(x-theta)/sigma ) / (sigma*sigma));
+    /* standardize */
+    x = (x - theta) / sigma;
 
-  else
-    /* standard form */
-    return ( (x<0.) ? 0. : -exp(-x) );
+  /* standard form */
+  return ( (x<0.) ? 0. : -exp(-x - 2.*LOGNORMCONSTANT) );
 
 } /* end of _unur_dpdf_exponential() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_dlogpdf_exponential( double x, const UNUR_DISTR *distr )
+{
+  register double *params = DISTR.params;
+
+  if (DISTR.n_params > 0)
+    /* standardize */
+    x = (x - theta) / sigma;
+
+  /* standard form */
+  return ( (x<0.) ? 0. : -1./sigma );
+
+} /* end of _unur_dlogpdf_exponential() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -255,9 +282,11 @@ unur_distr_exponential( const double *params, int n_params )
   DISTR.init = _unur_stdgen_exponential_init;
 
   /* functions */
-  DISTR.pdf  = _unur_pdf_exponential;  /* pointer to PDF                  */
-  DISTR.dpdf = _unur_dpdf_exponential; /* pointer to derivative of PDF    */
-  DISTR.cdf  = _unur_cdf_exponential;  /* pointer to CDF                  */
+  DISTR.pdf     = _unur_pdf_exponential;     /* pointer to PDF                  */
+  DISTR.logpdf  = _unur_logpdf_exponential;  /* pointer to logPDF               */
+  DISTR.dpdf    = _unur_dpdf_exponential;    /* pointer to derivative of PDF    */
+  DISTR.dlogpdf = _unur_dlogpdf_exponential; /* pointer to derivative of logPDF */
+  DISTR.cdf     = _unur_cdf_exponential;     /* pointer to CDF                  */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

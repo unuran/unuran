@@ -2012,6 +2012,15 @@ _unur_distr_cont_debug( const struct unur_distr *distr, const char *genid )
   for( i=0; i<DISTR.n_params; i++ )
       fprintf(log,"%s:\t\tparam[%d] = %g\n",genid,i,DISTR.params[i]);
 
+  fprintf(log,"%s:\tfunctions: ",genid);
+  if (DISTR.cdf) fprintf(log,"CDF ");
+  if (DISTR.pdf) fprintf(log,"PDF ");
+  if (DISTR.logpdf) fprintf(log,"logPDF ");
+  if (DISTR.dpdf) fprintf(log,"dPDF ");
+  if (DISTR.dlogpdf) fprintf(log,"dlogPDF ");
+  if (DISTR.hr) fprintf(log,"HR ");
+  fprintf(log,"\n");
+
   if (distr->set & UNUR_DISTR_SET_MODE)
     fprintf(log,"%s:\tmode = %g\n",genid,DISTR.mode);
   else

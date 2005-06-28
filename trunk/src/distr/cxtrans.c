@@ -214,7 +214,7 @@ int _unur_distr_cxtrans_compute_domain( struct unur_distr *cxt )
   }
 
   /* logarithmic transformation */
-  if (alpha == 0.) {
+  else if (alpha == 0.) {
     if (left < 0. ) {
       _unur_error(distr_name,UNUR_ERR_DISTR_SET,"invalid domain");
       return UNUR_ERR_DISTR_SET;
@@ -224,10 +224,18 @@ int _unur_distr_cxtrans_compute_domain( struct unur_distr *cxt )
   }
 
   /* power transformation */
-  if (alpha > 0.) {
+  else if (alpha > 0.) {
     CXT.BD_LEFT  = (left>=0.)  ? pow(left,alpha)  : -pow(-left,alpha);
     CXT.BD_RIGHT = (right>=0.) ? pow(right,alpha) : -pow(-right,alpha);
   }
+
+  /* else: error */
+  else {
+    _unur_error(distr_name,UNUR_ERR_SHOULD_NOT_HAPPEN,""); 
+    return UNUR_ERR_SHOULD_NOT_HAPPEN;
+  }
+
+  /* set boundary for truncated distributions */
 
   CXT.trunc[0] = CXT.domain[0];     /* left boundary of domain  */
   CXT.trunc[1] = CXT.domain[1];     /* right boundary of domain */
@@ -529,8 +537,14 @@ _unur_pdf_cxtrans( double x, const struct unur_distr *cxt )
   /* logarithmic transformation */
   if (alpha == 0.) {
     /* PDF(exp(x)) * exp(x) */
-    double fx = PDF(exp(x));
-    return (_unur_isfinite(fx) ? fx * exp(x) : CXT.PDFPOLE);
+    double ex = exp(x);
+    if (! _unur_isfinite(ex)) {
+      return 0.;
+    }
+    else {
+      double fx = PDF(ex);
+      return (_unur_isfinite(fx) ? fx * ex : CXT.PDFPOLE);
+    }
   }
 
   /* identical transformation */
@@ -541,12 +555,19 @@ _unur_pdf_cxtrans( double x, const struct unur_distr *cxt )
 
   /* power transformation */
   if (alpha > 0.) {
-    double fx = PDF(Phi(x));
-    if (_unur_isfinite(fx) && (x!=0. || alpha < 1.)) {
-      return fx * dPhi(x);
+    double phix = Phi(x);
+    if (! _unur_isfinite(phix)) {
+      return 0.;
     }
-    else
-      return CXT.PDFPOLE;
+    else {
+      double fx = PDF(phix);
+      if (_unur_isfinite(fx) && (x!=0. || alpha < 1.)) {
+	double fcx =  fx * dPhi(x);
+	return (_unur_isfinite(fcx) ? fcx : 0.);
+      }
+      else 
+	return CXT.PDFPOLE;
+    }
   }
 
   /* else: error */
@@ -590,8 +611,14 @@ _unur_logpdf_cxtrans( double x, const struct unur_distr *cxt )
   /* logarithmic transformation */
   if (alpha == 0.) {
     /* logPDF(exp(x)) + x */
-    double logfx = logPDF(exp(x));
-    return (_unur_isfinite(logfx) ? logfx + x : CXT.logPDFPOLE);
+    double ex = exp(x);
+    if (! _unur_isfinite(ex)) {
+      return -INFINITY;
+    }
+    else {
+      double logfx = logPDF(ex);
+      return (_unur_isfinite(logfx) ? logfx + x : CXT.logPDFPOLE);
+    }
   }
 
   /* identical transformation */
@@ -602,12 +629,19 @@ _unur_logpdf_cxtrans( double x, const struct unur_distr *cxt )
 
   /* power transformation */
   if (alpha > 0.) {
-    double logfx = logPDF(Phi(x));
-    if (_unur_isfinite(logfx) && (x!=0. || alpha < 1.)) {
-      return (logfx + dlogPhi(x));
+    double phix = Phi(x);
+    if (! _unur_isfinite(phix)) {
+      return -INFINITY;
     }
-    else
-      return CXT.logPDFPOLE;
+    else {
+      double logfx = logPDF(phix);
+      if (_unur_isfinite(logfx) && (x!=0. || alpha < 1.)) {
+	double logfcx =  logfx + dlogPhi(x);
+	return (_unur_isfinite(logfcx) ? logfcx : -INFINITY);
+      }
+      else 
+	return CXT.logPDFPOLE;
+    }
   }
 
   /* else: error */
@@ -788,7 +822,7 @@ _unur_distr_cxtrans_debug( const struct unur_distr *cxt, const char *genid )
 
   /* print data about distribution */
   fprintf(log,"%s: distribution:\n",genid);
-  fprintf(log,"%s:\ttype = continuous univariate distribution of transformed random variables\n",genid);
+  fprintf(log,"%s:\ttype = continuous univariate distribution of transformed random variable\n",genid);
   fprintf(log,"%s:\tname = %s\n",genid,cxt->name);
   fprintf(log,"%s:\talpha = %g\t",genid,CXT.ALPHA);
   if (_unur_isinf(CXT.ALPHA)==1)

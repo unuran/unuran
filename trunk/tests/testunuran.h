@@ -19,6 +19,7 @@
 
 #include <unuran.h>
 #include <unuran_tests.h>
+#include "testdistributions/testdistributions.h"
 
 #include <config.h>
 #ifdef WITH_DMALLOC

@@ -112,7 +112,9 @@ static const char distr_name[] = "beta";
 
 /* function prototypes                                                       */
 static double _unur_pdf_beta( double x, const UNUR_DISTR *distr );
+static double _unur_logpdf_beta( double x, const UNUR_DISTR *distr );
 static double _unur_dpdf_beta( double x, const UNUR_DISTR *distr );
+static double _unur_dlogpdf_beta( double x, const UNUR_DISTR *distr );
 #ifdef HAVE_CDF
 static double _unur_cdf_beta( double x, const UNUR_DISTR *distr );
 #endif
@@ -140,23 +142,8 @@ _unur_pdf_beta(double x, const UNUR_DISTR *distr)
   if (x > 0. && x < 1.)
     return exp((p-1.)*log(x) + (q-1.)*log(1.-x) - LOGNORMCONSTANT);
 
-  if (x==0.&& p==1.)
+  if ((x==0. && p==1.) || (x==1. && q==1.))
     return exp(-LOGNORMCONSTANT);
-
-  if (x==1. && q==1.)
-    return exp(-LOGNORMCONSTANT);
-    
-/*    if (x==0.) { */
-/*      if (p==1.) return exp(-LOGNORMCONSTANT); */
-/*      if (p<1.)  return UNUR_INFINITY; */
-/*      return 0.; */
-/*    } */
-
-/*    if (x==1.) { */
-/*      if (q==1.) return exp(-LOGNORMCONSTANT); */
-/*      if (q<1.)  return UNUR_INFINITY; */
-/*      return 0.; */
-/*    } */
     
   /* out of support */
   return 0.;
@@ -166,42 +153,106 @@ _unur_pdf_beta(double x, const UNUR_DISTR *distr)
 /*---------------------------------------------------------------------------*/
 
 double
+_unur_logpdf_beta(double x, const UNUR_DISTR *distr)
+{ 
+  register double *params = DISTR.params;
+
+  if (DISTR.n_params > 2)
+    /* standardize */
+    x = (x-a) / (b-a);
+
+  /* standard form */
+
+  if (x > 0. && x < 1.)
+    return ((p-1.)*log(x) + (q-1.)*log(1.-x) - LOGNORMCONSTANT);
+
+  if ((x==0. && p==1.) || (x==1. && q==1.))
+    return (-LOGNORMCONSTANT);
+
+  /* out of support */
+  return -INFINITY;
+
+} /* end of _unur_logpdf_beta() */
+
+/*---------------------------------------------------------------------------*/
+
+double
 _unur_dpdf_beta(double x, const UNUR_DISTR *distr)
 { 
-  register double factor = 1.;
   register double *params = DISTR.params;
 
   if (DISTR.n_params > 2) {
     /* standardize */
-    factor = 1./(b-a);
     x = (x-a) / (b-a);
   }
 
   /* standard form */
 
   if (x > 0. && x < 1.)
-    return (exp((p-2.)*log(x) + (q-2.)*log(1.-x) - LOGNORMCONSTANT) * ( (p-1.)*(1.-x) - (q-1.)*x ) * factor );
+    return (exp((p-2.)*log(x) + (q-2.)*log(1.-x) - LOGNORMCONSTANT) * ( (p-1.)*(1.-x) - (q-1.)*x ) / (b-a) );
 
-#if 0
-  if (x==0.) {
-    return (-(q-1.) * exp(-LOGNORMCONSTANT));
-    if (p>3.)  return 0.;
-    /* this is not correct but ... */
-    return UNUR_INFINITY;  /** TODO **/
-  }
+  if (x==0. && p<2.)
+    return -INFINITY;
 
-  if (x==1.) {
-    return ((p-1.) * exp(-LOGNORMCONSTANT));
-    if (q>3.)  return 0.;
-    /* this is not correct but ... */
-    return UNUR_INFINITY;  /** TODO **/
-  }
-#endif
+  if (x==0. && p==2.)
+    return exp(- LOGNORMCONSTANT)/(b-a);
+
+  /*   if (x==0. && p>2.) */
+  /*     return 0.; */
+
+  if (x==1. && q<2.)
+    return INFINITY;
+
+  if (x==1. && p==2.)
+    return -exp(- LOGNORMCONSTANT)/(b-a);
+
+  /*   if (x==1. && q>2.) */
+  /*     return 0.; */
 
   /* out of support */
   return 0.;
 
 } /* end of _unur_dpdf_beta() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_dlogpdf_beta(double x, const UNUR_DISTR *distr)
+{ 
+  register double *params = DISTR.params;
+
+  if (DISTR.n_params > 2) {
+    /* standardize */
+    x = (x-a) / (b-a);
+  }
+
+  /* standard form */
+
+  if (x > 0. && x < 1.)
+    return (((p-1.)/x - (q-1.)/(1.-x)) / (b-a));
+
+  if (x==0. && p<1.)
+    return -INFINITY;
+
+  if (x==0. && p==1.)
+    return (-(q-1.)/((1.-x)*(b-a)));
+
+  if (x==0. && p>1.)
+    return INFINITY;
+
+  if (x==1. && q<1.)
+    return INFINITY;
+
+  if (x==1. && q==1.)
+    return ((p-1.)/(b-a));
+
+  if (x==1. && q>1.)
+    return -INFINITY;
+
+  /* out of support */
+  return 0.;
+
+} /* end of _unur_dlogpdf_beta() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -384,10 +435,14 @@ unur_distr_beta( const double *params, int n_params )
   DISTR.init = _unur_stdgen_beta_init;
 
   /* functions */
-  DISTR.pdf  = _unur_pdf_beta;    /* pointer to PDF                  */
-  DISTR.dpdf = _unur_dpdf_beta;   /* pointer to derivative of PDF    */
+  /* functions */
+  DISTR.pdf     = _unur_pdf_beta;     /* pointer to PDF                  */
+  DISTR.logpdf  = _unur_logpdf_beta;  /* pointer to logPDF               */
+  DISTR.dpdf    = _unur_dpdf_beta;    /* pointer to derivative of PDF    */
+  DISTR.dlogpdf = _unur_dlogpdf_beta; /* pointer to derivative of logPDF */
+  DISTR.cdf     = _unur_cdf_beta;     /* pointer to CDF                  */
 #ifdef HAVE_CDF
-  DISTR.cdf  = _unur_cdf_beta;    /* pointer to CDF                  */
+  DISTR.cdf     = _unur_cdf_beta;     /* pointer to CDF                  */
 #endif
 
   /* indicate which parameters are set */

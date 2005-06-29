@@ -11,6 +11,7 @@ libspecfunct_la_SOURCES = \
  gamma.c \
  igam.c \
  incbet.c \
+ log1p.c \
  ndtr.c \
  ndtri.c \
  polevl.c

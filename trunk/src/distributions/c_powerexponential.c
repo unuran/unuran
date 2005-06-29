@@ -94,7 +94,9 @@ static const char distr_name[] = "powerexponential";
 /*---------------------------------------------------------------------------*/
 /* function prototypes                                                       */
 static double _unur_pdf_powerexponential( double x, const UNUR_DISTR *distr );
+static double _unur_logpdf_powerexponential( double x, const UNUR_DISTR *distr );
 static double _unur_dpdf_powerexponential( double x, const UNUR_DISTR *distr );
+static double _unur_dlogpdf_powerexponential( double x, const UNUR_DISTR *distr );
 #ifdef HAVE_CDF
 static double _unur_cdf_powerexponential( double x, const UNUR_DISTR *distr );
 #endif
@@ -117,12 +119,21 @@ _unur_pdf_powerexponential( double x, const UNUR_DISTR *distr )
 /*---------------------------------------------------------------------------*/
 
 double
+_unur_logpdf_powerexponential( double x, const UNUR_DISTR *distr )
+{ 
+  register double *params = DISTR.params;
+  return ( - pow( fabs(x), tau ) - LOGNORMCONSTANT);
+} /* end of _unur_logpdf_powerexponential() */
+
+/*---------------------------------------------------------------------------*/
+
+double
 _unur_dpdf_powerexponential( double x, const UNUR_DISTR *distr )
 {
   register double *params = DISTR.params;
   register double tmp;
 
-  if (x == 0.)    /* derivative is not defined, but ...        */
+  if (x == 0.)    /* derivative may not be defined, but ...    */
     return 0.;    /* a tangent parallel to x-axis is possible. */
 
   tmp = exp( -pow(fabs(x),tau) - LOGNORMCONSTANT + (tau-1.)*log(fabs(x)) ) * tau;
@@ -130,6 +141,20 @@ _unur_dpdf_powerexponential( double x, const UNUR_DISTR *distr )
   /* sign ! */
   return ( (x<0.) ? tmp : -tmp );
 } /* end of _unur_dpdf_powerexponential() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_dlogpdf_powerexponential( double x, const UNUR_DISTR *distr )
+{
+  register double *params = DISTR.params;
+
+  if (x == 0.)    /* derivative may not be defined, but ...    */
+    return 0.;    /* a tangent parallel to x-axis is possible. */
+
+  /* sign ! */
+  return (x<0. ? 1. : -1.) * (tau-1.)* pow(fabs(x), tau-1.);
+} /* end of _unur_dlogpdf_powerexponential() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -250,10 +275,13 @@ unur_distr_powerexponential( const double *params, int n_params )
   DISTR.init = _unur_stdgen_powerexponential_init;
    
   /* functions */
-  DISTR.pdf  = _unur_pdf_powerexponential;  /* pointer to PDF               */
-  DISTR.dpdf = _unur_dpdf_powerexponential; /* pointer to derivative of PDF */
+  DISTR.pdf     = _unur_pdf_powerexponential;     /* pointer to PDF                  */
+  DISTR.logpdf  = _unur_logpdf_powerexponential;  /* pointer to logPDF               */
+  DISTR.dpdf    = _unur_dpdf_powerexponential;    /* pointer to derivative of PDF    */
+  DISTR.dlogpdf = _unur_dlogpdf_powerexponential; /* pointer to derivative of logPDF */
+  DISTR.cdf     = _unur_cdf_powerexponential;     /* pointer to CDF                  */
 #ifdef HAVE_CDF
-  DISTR.cdf  = _unur_cdf_powerexponential;  /* pointer to CDF               */
+  DISTR.cdf     = _unur_cdf_powerexponential;     /* pointer to CDF                  */
 #endif
 
   /* indicate which parameters are set */

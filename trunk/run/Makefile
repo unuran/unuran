@@ -21,6 +21,9 @@ q: q.c ../src/unuran.h ../src/libunuran.la ../src/experimental/libunurexperiment
 something: something.c ../src/unuran.h ../src/libunuran.la ../src/experimental/libunurexperimental.la
 	../libtool gcc -I. -I.. -I../src -I../src/tests -Wall -DHAVE_CONFIG_H -g -O2 -m32 -o something something.c ../src/experimental/libunurexperimental.la ../src/libunuran.la -lm 
 
+lotto: lotto.c ../src/unuran.h ../src/libunuran.la ../src/experimental/libunurexperimental.la
+	../libtool gcc -I. -I.. -I../src -I../src/tests -Wall -DHAVE_CONFIG_H -g -O2 -m32 -o lotto lotto.c ../src/experimental/libunurexperimental.la ../src/libunuran.la -lm 
+
 steps: steps.c ../src/unuran.h ../src/libunuran.la ../src/experimental/libunurexperimental.la
 	../libtool gcc -I. -I.. -I../src -I../src/tests -Wall -DHAVE_CONFIG_H -g -O2 -m32 -o steps steps.c ../src/experimental/libunurexperimental.la ../src/libunuran.la -lm 
 

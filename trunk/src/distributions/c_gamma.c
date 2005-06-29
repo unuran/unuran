@@ -108,7 +108,9 @@ static const char distr_name[] = "gamma";
 /*---------------------------------------------------------------------------*/
 /* function prototypes                                                       */
 static double _unur_pdf_gamma( double x, const UNUR_DISTR *distr );
+static double _unur_logpdf_gamma( double x, const UNUR_DISTR *distr );
 static double _unur_dpdf_gamma( double x, const UNUR_DISTR *distr );
+static double _unur_dlogpdf_gamma( double x, const UNUR_DISTR *distr );
 #ifdef HAVE_CDF
 static double _unur_cdf_gamma( double x, const UNUR_DISTR *distr );
 #endif
@@ -136,39 +138,97 @@ _unur_pdf_gamma( double x, const UNUR_DISTR *distr )
   if (alpha == 1. && x >= 0.)
     return exp( -x - LOGNORMCONSTANT);
 
-  if (x <= 0.)
-    return 0.;
+  if (x > 0.)
+    return exp( (alpha-1.)*log(x) - x - LOGNORMCONSTANT);
 
-  return exp( (alpha-1.)*log(x) - x - LOGNORMCONSTANT);
-  /*    return ( pow(x,alpha-1.) * exp(-x) ); */
+  if (x == 0.)
+    return (alpha>1. ? 0. : INFINITY);
+
+  /* out of domain */
+  return 0.;
 
 } /* end of _unur_pdf_gamma() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_dpdf_gamma( double x, const UNUR_DISTR *distr )
-{
-  register double factor = 1.;
+_unur_logpdf_gamma( double x, const UNUR_DISTR *distr )
+{ 
   register double *params = DISTR.params;
 
-  if (DISTR.n_params > 1) {
+  if (DISTR.n_params > 1)
     /* standardize */
-    factor = 1./beta;
     x = (x-gamma) / beta;
-  }
 
   /* standard form */
 
   if (alpha == 1. && x >= 0.)
-    return( -exp(-x - LOGNORMCONSTANT) * factor );
+    return ( -x - LOGNORMCONSTANT);
 
-  if (x <= 0.)
-    return 0.;
+  if (x > 0.)
+    return ( (alpha-1.)*log(x) - x - LOGNORMCONSTANT);
 
-  return ( exp( log(x) * (alpha-2.) - x - LOGNORMCONSTANT) *  ((alpha-1.) -x) * factor ); 
+  if (x == 0.)
+    return (alpha>1. ? -INFINITY : INFINITY);
+
+  /* out of domain */
+  return -INFINITY;
+
+} /* end of _unur_logpdf_gamma() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_dpdf_gamma( double x, const UNUR_DISTR *distr )
+{
+  register double *params = DISTR.params;
+
+  if (DISTR.n_params > 1)
+    /* standardize */
+    x = (x-gamma) / beta;
+
+  /* standard form */
+  
+  if (alpha == 1. && x>=0)
+    return( -exp(-x - LOGNORMCONSTANT) / beta );
+  
+  if (x > 0.)
+    return ( exp( log(x) * (alpha-2.) - x - LOGNORMCONSTANT) *  ((alpha-1.) -x) / beta ); 
+
+  if (x==0. && alpha < 2.)
+    return (alpha>1. ? -INFINITY : INFINITY);
+
+  /* out of domain */
+  return 0.;
 
 } /* end of _unur_dpdf_gamma() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_dlogpdf_gamma( double x, const UNUR_DISTR *distr )
+{
+  register double *params = DISTR.params;
+
+  if (DISTR.n_params > 1)
+    /* standardize */
+    x = (x-gamma) / beta;
+
+  /* standard form */
+
+  if (alpha == 1. && x >= 0.)
+    return -1.;
+
+  if (x > 0.)
+    return ( (alpha-1.)/x - 1 );
+
+  if (x == 0.)
+    return (alpha>1. ? INFINITY : -INFINITY);
+
+  /* out of domain */
+  return 0.;
+
+} /* end of _unur_dlogpdf_gamma() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -342,10 +402,12 @@ unur_distr_gamma( const double *params, int n_params )
   DISTR.init = _unur_stdgen_gamma_init;
 
   /* functions */
-  DISTR.pdf  = _unur_pdf_gamma;    /* pointer to PDF               */
-  DISTR.dpdf = _unur_dpdf_gamma;   /* pointer to derivative of PDF */
+  DISTR.pdf     = _unur_pdf_gamma;     /* pointer to PDF                  */
+  DISTR.logpdf  = _unur_logpdf_gamma;  /* pointer to logPDF               */
+  DISTR.dpdf    = _unur_dpdf_gamma;    /* pointer to derivative of PDF    */
+  DISTR.dlogpdf = _unur_dlogpdf_gamma; /* pointer to derivative of logPDF */
 #ifdef HAVE_CDF
-  DISTR.cdf  = _unur_cdf_gamma;    /* pointer to CDF               */
+  DISTR.cdf     = _unur_cdf_gamma;     /* pointer to CDF                  */
 #endif
 
   /* indicate which parameters are set */

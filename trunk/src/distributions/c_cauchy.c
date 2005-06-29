@@ -73,7 +73,9 @@ static const char distr_name[] = "cauchy";
 
 /* function prototypes                                                       */
 static double _unur_pdf_cauchy( double x, const UNUR_DISTR *distr );
+static double _unur_logpdf_cauchy( double x, const UNUR_DISTR *distr );
 static double _unur_dpdf_cauchy( double x, const UNUR_DISTR *distr );
+static double _unur_dlogpdf_cauchy( double x, const UNUR_DISTR *distr );
 static double _unur_cdf_cauchy( double x, const UNUR_DISTR *distr );
 
 static int _unur_upd_mode_cauchy( UNUR_DISTR *distr );
@@ -100,6 +102,23 @@ _unur_pdf_cauchy(double x, const UNUR_DISTR *distr)
 /*---------------------------------------------------------------------------*/
 
 double
+_unur_logpdf_cauchy(double x, const UNUR_DISTR *distr)
+{ 
+  register double *params = DISTR.params;
+
+  if (DISTR.n_params > 0)
+    /* standardize */
+    x = (x - theta) / lambda; 
+
+  /* standard form */
+
+  return log(NORMCONSTANT) - log1p(x*x);
+
+} /* end of _unur_logpdf_cauchy() */
+
+/*---------------------------------------------------------------------------*/
+
+double
 _unur_dpdf_cauchy(double x, const UNUR_DISTR *distr)
 {
   register double *params = DISTR.params;
@@ -110,9 +129,26 @@ _unur_dpdf_cauchy(double x, const UNUR_DISTR *distr)
 
   /* standard form */
 
-  return ( -2.*x/(lambda*(1+x*x)*(1+x*x)*NORMCONSTANT) );
+  return ( -2.*x/(lambda*(1.+x*x)*(1.+x*x)*NORMCONSTANT) );
 
 } /* end of _unur_dpdf_cauchy() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_dlogpdf_cauchy(double x, const UNUR_DISTR *distr)
+{
+  register double *params = DISTR.params;
+
+  if (DISTR.n_params > 0)
+    /* standardize */
+    x = (x - theta) / lambda; 
+
+  /* standard form */
+
+  return -2.*x/(lambda*(1.+x*x));
+
+} /* end of _unur_dlogpdf_cauchy() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -242,9 +278,11 @@ unur_distr_cauchy( const double *params, int n_params )
   DISTR.init = _unur_stdgen_cauchy_init;
 
   /* functions */
-  DISTR.pdf  = _unur_pdf_cauchy;   /* pointer to PDF                  */
-  DISTR.dpdf = _unur_dpdf_cauchy;  /* pointer to derivative of PDF    */
-  DISTR.cdf  = _unur_cdf_cauchy;   /* pointer to CDF                  */
+  DISTR.pdf     = _unur_pdf_cauchy;     /* pointer to PDF                  */
+  DISTR.logpdf  = _unur_logpdf_cauchy;  /* pointer to logPDF               */
+  DISTR.dpdf    = _unur_dpdf_cauchy;    /* pointer to derivative of PDF    */
+  DISTR.dlogpdf = _unur_dlogpdf_cauchy; /* pointer to derivative of logPDF */
+  DISTR.cdf     = _unur_cdf_cauchy;     /* pointer to CDF                  */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

@@ -99,7 +99,9 @@ static const char distr_name[] = "normal";
 /*---------------------------------------------------------------------------*/
 /* function prototypes                                                       */
 static double _unur_pdf_normal( double x, const UNUR_DISTR *distr );
+static double _unur_logpdf_normal( double x, const UNUR_DISTR *distr );
 static double _unur_dpdf_normal( double x, const UNUR_DISTR *distr );
+static double _unur_dlogpdf_normal( double x, const UNUR_DISTR *distr );
 #ifdef HAVE_CDF
 static double _unur_cdf_normal( double x, const UNUR_DISTR *distr );
 #endif
@@ -128,22 +130,55 @@ _unur_pdf_normal( double x, const UNUR_DISTR *distr )
 /*---------------------------------------------------------------------------*/
 
 double
+_unur_logpdf_normal( double x, const UNUR_DISTR *distr )
+{ 
+  register double *params = DISTR.params;
+
+  if (DISTR.n_params > 0)
+    /* standardize */
+    x = (x - mu) / sigma;
+
+  /* standard form */
+
+  return (-x*x/2. + LOGNORMCONSTANT); 
+
+} /* end of _unur_logpdf_normal() */
+
+/*---------------------------------------------------------------------------*/
+
+double
 _unur_dpdf_normal( double x, const UNUR_DISTR *distr )
 {
   register double *params = DISTR.params;
-  register double factor = 1.;
 
   if (DISTR.n_params > 0) {
     /* standardize */
-    factor = 1./sigma;
     x = (x - mu) / sigma;
   }
 
   /* standard form */
 
-  return ( -x * exp(-x*x/2. + LOGNORMCONSTANT) * factor );
+  return ( -x * exp(-x*x/2. + LOGNORMCONSTANT) / sigma );
 
 } /* end of _unur_dpdf_normal() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_dlogpdf_normal( double x, const UNUR_DISTR *distr )
+{
+  register double *params = DISTR.params;
+
+  if (DISTR.n_params > 0) {
+    /* standardize */
+    x = (x - mu) / sigma;
+  }
+
+  /* standard form */
+
+  return ( -2*x / sigma );
+
+} /* end of _unur_dlogpdf_normal() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -281,10 +316,12 @@ unur_distr_normal( const double *params, int n_params )
   DISTR.init = _unur_stdgen_normal_init;
 
   /* functions */
-  DISTR.pdf  = _unur_pdf_normal;   /* pointer to PDF               */
-  DISTR.dpdf = _unur_dpdf_normal;  /* pointer to derivative of PDF */
+  DISTR.pdf     = _unur_pdf_normal;     /* pointer to PDF                  */
+  DISTR.logpdf  = _unur_logpdf_normal;  /* pointer to logPDF               */
+  DISTR.dpdf    = _unur_dpdf_normal;    /* pointer to derivative of PDF    */
+  DISTR.dlogpdf = _unur_dlogpdf_normal; /* pointer to derivative of logPDF */
 #ifdef HAVE_CDF
-  DISTR.cdf  = _unur_cdf_normal;   /* pointer to CDF               */
+  DISTR.cdf     = _unur_cdf_normal;     /* pointer to CDF                  */
 #endif
 
   /* indicate which parameters are set */

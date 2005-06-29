@@ -539,10 +539,12 @@ _unur_pdf_cxtrans( double x, const struct unur_distr *cxt )
     /* PDF(exp(x)) * exp(x) */
     double ex = exp(x);
     if (! _unur_isfinite(ex)) {
+      /* the PDF must be zero at +-infinity */
       return 0.;
     }
     else {
       double fx = PDF(ex);
+      /* if PDF(ex) is not finite, we assume that it is a pole */
       return (_unur_isfinite(fx) ? fx * ex : CXT.PDFPOLE);
     }
   }
@@ -557,15 +559,21 @@ _unur_pdf_cxtrans( double x, const struct unur_distr *cxt )
   if (alpha > 0.) {
     double phix = Phi(x);
     if (! _unur_isfinite(phix)) {
+      /* the PDF must be zero at +-infinity */
       return 0.;
     }
     else {
       double fx = PDF(phix);
       if (_unur_isfinite(fx) && (x!=0. || alpha < 1.)) {
 	double fcx =  fx * dPhi(x);
+	/* if f(phix) is finite but fx*dPhi(x) is not,                 */
+	/* we assume that the PDF of the transformed variable is zero. */
+	/* (This case is very unlikely to happen, but we should be     */
+	/* prepared for round-off error of the FPA.)                   */
 	return (_unur_isfinite(fcx) ? fcx : 0.);
       }
       else 
+	/* if PDF(phix) is not finite, we assume that it is a pole */
 	return CXT.PDFPOLE;
     }
   }
@@ -613,10 +621,12 @@ _unur_logpdf_cxtrans( double x, const struct unur_distr *cxt )
     /* logPDF(exp(x)) + x */
     double ex = exp(x);
     if (! _unur_isfinite(ex)) {
+      /* logPDF must be -infinity (the PDF must be zero) at +-infinity */
       return -INFINITY;
     }
     else {
       double logfx = logPDF(ex);
+      /* if logPDF(logx) is not finite, we assume that it is a pole */
       return (_unur_isfinite(logfx) ? logfx + x : CXT.logPDFPOLE);
     }
   }
@@ -631,15 +641,21 @@ _unur_logpdf_cxtrans( double x, const struct unur_distr *cxt )
   if (alpha > 0.) {
     double phix = Phi(x);
     if (! _unur_isfinite(phix)) {
+      /* logPDF must be -infinity (the PDF must be zero) at +-infinity */
       return -INFINITY;
     }
     else {
       double logfx = logPDF(phix);
       if (_unur_isfinite(logfx) && (x!=0. || alpha < 1.)) {
 	double logfcx =  logfx + dlogPhi(x);
+	/* if logf(phix) is finite but logfx+dlogPhi(x) is not,        */
+	/* we assume that the PDF of the transformed variable is zero. */
+	/* (This case is very unlikely to happen, but we should be     */
+	/* prepared for round-off error of the FPA.)                   */
 	return (_unur_isfinite(logfcx) ? logfcx : -INFINITY);
       }
       else 
+	/* if PDF(phix) is not finite, we assume that it is a pole */
 	return CXT.logPDFPOLE;
     }
   }
@@ -688,10 +704,22 @@ _unur_dpdf_cxtrans( double x, const struct unur_distr *cxt )
   /* logarithmic transformation */
   if (alpha == 0.) {
     /* dPDF(exp(x)) * exp(x) + PDF(exp(x)) * exp(2*x) */
-    double expx = exp(x);
-    double fx = PDF(expx);
-    double dfx = dPDF(expx);
-    return (_unur_isfinite(fx) ? (dfx * expx + fx * exp(2*x)) : CXT.dPDFPOLE);
+    double ex = exp(x);
+    if (! _unur_isfinite(ex)) {
+      /* dPDF must be zero at +-infinity */
+      return 0.;
+    }
+    else {
+      double fx = PDF(ex);
+      double dfx = dPDF(ex);
+      double dfcx = dfx * ex + fx * exp(2*x);
+      /* if PDF(ex) is not finite, we assume that it is a pole */
+      if (! _unur_isfinite(fx) ) return CXT.dPDFPOLE;
+      /* if derivate of PDF(ex) is not finite (or NaN) we return +/- INFINITY */
+      if (! _unur_isfinite(dfcx) ) return (dfx>0 ? INFINITY : -INFINITY);
+      /* otherwise return computed value */
+      return dfcx;
+    }
   }
 
   /* identical transformation */
@@ -704,14 +732,26 @@ _unur_dpdf_cxtrans( double x, const struct unur_distr *cxt )
   if (alpha > 0.) {
     /* power transformation */
     double phix = Phi(x);
-    double fx = PDF(phix);
-    double dphix = dPhi(x);
-    double ddphix = ddPhi(x);
-    if (_unur_isfinite(fx) && (x!=0. || alpha <= 0.5)) {
-      return ( dPDF(phix) * dphix * dphix + fx * ddphix );
+    if (! _unur_isfinite(phix)) {
+      /* dPDF must be zero at +-infinity */
+      return 0.;
     }
-    else
-      return CXT.dPDFPOLE;
+    else {
+      double fx = PDF(phix);
+      double dphix = dPhi(x);
+      double ddphix = ddPhi(x);
+      if (_unur_isfinite(fx) && (x!=0. || alpha <= 0.5)) {
+	double dfcx = dPDF(phix) * dphix * dphix + fx * ddphix;
+	/* if f(phix) is finite but dfcx is not, we assume that dPDF */
+	/* of the transformed variable is zero.                      */
+	/* (This case is very unlikely to happen, but we should be   */
+	/* prepared for round-off error of the FPA.)                 */
+	return (_unur_isfinite(dfcx) ? dfcx : 0.);
+      }
+      else
+	/* if PDF(phix) is not finite, we assume that it is a pole */
+	return CXT.dPDFPOLE;
+    }
   }
 
   /* else: error */
@@ -753,6 +793,7 @@ _unur_dlogpdf_cxtrans( double x, const struct unur_distr *cxt )
       double logx = log(x);
       double logfx = logPDF(logx);
       double dlogfx = dlogPDF(logx);
+      /* if logPDF(logx) is not finite, we assume that it is a pole */
       return (_unur_isfinite(logfx) ? ((dlogfx-1)/x) : CXT.dlogPDFPOLE);
     }
   }
@@ -760,10 +801,16 @@ _unur_dlogpdf_cxtrans( double x, const struct unur_distr *cxt )
   /* logarithmic transformation */
   if (alpha == 0.) {
     /* dlogPDF(exp(x))*exp(x) + 1 */
-    double expx = exp(x);
-    double logfx = logPDF(exp(x));
-    double dlogfx = dlogPDF(exp(x));
-    return (_unur_isfinite(logfx) ? dlogfx*expx + 1 : CXT.dlogPDFPOLE);
+    double ex = exp(x);
+    if (! _unur_isfinite(ex)) {
+      /* dlogPDF must be -/+ infinity at +/-infinity */
+      return (x>1. ? -INFINITY : INFINITY);
+    }
+    else {
+      double logfx = logPDF(ex);
+      double dlogfx = dlogPDF(ex);
+      return (_unur_isfinite(logfx) ? dlogfx*ex + 1 : CXT.dlogPDFPOLE);
+    }
   }
 
   /* identical transformation */
@@ -775,12 +822,27 @@ _unur_dlogpdf_cxtrans( double x, const struct unur_distr *cxt )
   if (alpha > 0.) {
     /* power transformation */
     double phix = Phi(x);
-    double logfx = logPDF(phix);
-    if (_unur_isfinite(logfx) && (x!=0. || alpha <= 1.)) {
-      return ( ((x>=0.)?1.:-1.) * (dlogPDF(phix) * dPhi(x) + (1./alpha-1.)/x) );
+    if (! _unur_isfinite(phix)) {
+      /* dlogPDF must be -/+ infinity at +/-infinity */
+      return ((x>1. || (x>-1. && x < 0.)) ? -INFINITY : INFINITY);
     }
-    else
-      return CXT.dlogPDFPOLE;
+    else {
+      double logfx = logPDF(phix);
+      if (_unur_isfinite(logfx) && (x!=0. || alpha <= 1.)) {
+	double dlogfcx = ((x>=0.)?1.:-1.) * (dlogPDF(phix) * dPhi(x) + (1./alpha-1.)/x);
+	if (! _unur_isfinite(dlogfcx)) {
+	  /* if logf(phix) is finite but dlogfcx is not, we assume that dPDF */
+	  /* of the transformed variable is zero.                            */
+	  /* (This case is very unlikely to happen, but we should be         */
+	  /* prepared for round-off error of the FPA.)                       */
+	  return ((x>1. || (x>-1. && x < 0.)) ? -INFINITY : INFINITY);
+	}
+	return dlogfcx;
+      }
+      else
+	/* if PDF(phix) is not finite, we assume that it is a pole */
+	return CXT.dlogPDFPOLE;
+    }
   }
 
   /* else: error */

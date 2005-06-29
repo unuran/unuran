@@ -22,7 +22,7 @@ something: something.c ../src/unuran.h ../src/libunuran.la ../src/experimental/l
 	../libtool gcc -I. -I.. -I../src -I../src/tests -Wall -DHAVE_CONFIG_H -g -O2 -m32 -o something something.c ../src/experimental/libunurexperimental.la ../src/libunuran.la -lm 
 
 lotto: lotto.c ../src/unuran.h ../src/libunuran.la ../src/experimental/libunurexperimental.la
-	../libtool gcc -I. -I.. -I../src -I../src/tests -Wall -DHAVE_CONFIG_H -g -O2 -m32 -o lotto lotto.c ../src/experimental/libunurexperimental.la ../src/libunuran.la -lm 
+	../libtool gcc -I. -I.. -I../src -I../src/tests -Wall -DHAVE_CONFIG_H -g -O2 -m32 -o lotto lotto.c ../src/experimental/libunurexperimental.la ../src/libunuran.la -lm -lprng 
 
 steps: steps.c ../src/unuran.h ../src/libunuran.la ../src/experimental/libunurexperimental.la
 	../libtool gcc -I. -I.. -I../src -I../src/tests -Wall -DHAVE_CONFIG_H -g -O2 -m32 -o steps steps.c ../src/experimental/libunurexperimental.la ../src/libunuran.la -lm 
@@ -43,5 +43,5 @@ try: try.c try_source.h
 	gcc -lm -ansi -pedantic -DHAVE_IEEE try.c -o try 
 
 clean:
-	rm -f *~ *.o run rungen mcrun test hit something f try unuran.log
+	rm -f *~ *.o run rungen mcrun test hit something f lotto try unuran.log
 	rm -rf .libs

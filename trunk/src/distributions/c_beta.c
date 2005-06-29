@@ -191,20 +191,27 @@ _unur_dpdf_beta(double x, const UNUR_DISTR *distr)
   if (x > 0. && x < 1.)
     return (exp((p-2.)*log(x) + (q-2.)*log(1.-x) - LOGNORMCONSTANT) * ( (p-1.)*(1.-x) - (q-1.)*x ) / (b-a) );
 
-  if (x==0. && p<2.)
-    return -INFINITY;
+  /** TODO: this creates a strange round-off error in method AROU ?? */
+  /*   if (x==0. && p==1.) */
+  /*     return (1.-q)*exp(-LOGNORMCONSTANT)/(b-a); */
 
   if (x==0. && p==2.)
-    return exp(- LOGNORMCONSTANT)/(b-a);
+    return exp(-LOGNORMCONSTANT)/(b-a);
+
+  if (x==0. && p<2.)
+    return (p>1. ? -INFINITY : INFINITY);
 
   /*   if (x==0. && p>2.) */
   /*     return 0.; */
 
-  if (x==1. && q<2.)
-    return INFINITY;
+  if (x==1. && q==1.)
+    return (p-1.)*exp(-LOGNORMCONSTANT)/(b-a);
 
-  if (x==1. && p==2.)
-    return -exp(- LOGNORMCONSTANT)/(b-a);
+  if (x==1. && q==2.)
+    return -exp(-LOGNORMCONSTANT)/(b-a);
+
+  if (x==1. && q<2.)
+    return (q>1. ? INFINITY : -INFINITY);
 
   /*   if (x==1. && q>2.) */
   /*     return 0.; */

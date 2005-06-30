@@ -46,44 +46,79 @@
 
    =OPTIONAL PDF, dPDF
 
+   =REF [HLa03] [HLD04: Sect.7.2, Alg.7.1]
+
    =SPEED Set-up: (very) slow, Sampling: (very) fast
 
    =DESCRIPTION
       HINV is a variant of numerical inversion, where the inverse CDF
-      is approximated using Hermite interpolation. These splines have
-      to be computed in a setup step. However, it only works for
-      distributions with bounded domain; for distributions with
-      unbounded domain the tails are chopped off such that the
-      probability for the tail regions is small compared to the given
-      u-resulution. For finding these cut points the algorithm starts 
-      with the region @code{[-1.e20,1.e20]}. For the exceptional case
-      where this might be too small (or one knows this region and
-      wants to avoid this search heuristics) it can be changed using
-      the unur_hinv_set_boundary() call.
-      
+      is approximated using Hermite interpolation, i.e., the interval 
+      [0,1] is split into several intervals and in each interval the
+      inverse CDF is approximated by polynomials constructed by means
+      of values of the CDF and PDF at interval boundaries. This makes
+      it possible to improve the accuracy by splitting a particular
+      interval without recomputations in unaffected intervals. Three
+      types of splines are implemented: linear, cubic, and quintic
+      interpolation. For linear interpolation only the CDF is
+      required. Cubic interpolation also requires PDF and quintic
+      interpolation PDF and its derivative. 
+
+      These splines have to be computed in a setup step. However, it
+      only works for distributions with bounded domain; for
+      distributions with unbounded domain the tails are chopped off
+      such that the probability for the tail regions is small compared
+      to the given u-resolution. 
+
+      The method is not exact, as it only produces random variates of
+      the approximated distribution. Nevertheless, the maximal
+      numerical error in "u-direction" (i.e. |U-CDF(X)|, for 
+      X = "approximate inverse CDF"(U) |U-CDF(X)|) can be set to the
+      required resolution (within machine precision).  
+      Notice that very small values of the u-resolution are possible
+      but may increase the cost for the setup step.
+
+      As the possible maximal error is only estimated in the setup it
+      may be necessary to set some special design points for computing
+      the Hermite interpolation to guarantee that the maximal u-error
+      can not be bigger than desired. Such points are points where the
+      density is not differentiable or has a local extremum. Notice
+      that there is no necessity to do so. However, if you do not
+      provide these points to the algorithm there might be a small
+      chance that the approximation error is larger than the given
+      u-resolution, or that the required number of intervals is larger
+      than necessary.
+
+   =HOWTOUSE
+      HINV works for continuous univariate distribution objects with
+      given CDF and (optional) PDF. It uses Hermite interpolation of
+      order 1, 3 [default] or 5. The order can be set by means of
+      unur_hinv_set_order().
+
+      For distributions with unbounded domains the tails are chopped
+      off such that the probability for the tail regions is small
+      compared to the given u-resulution. For finding these cut points
+      the algorithm starts with the region @code{[-1.e20,1.e20]}. For
+      the exceptional case where this might be too small (or one knows
+      this region and wants to avoid this search heuristics) it can be
+      directly set via a unur_hinv_set_boundary() call.
+
       It is possible to use this method for generating from truncated
       distributions. It even can be changed for an existing generator
       object by an unur_hinv_chg_truncated() call.
 
       This method is not exact, as it only produces random variates of 
       the approximated distribution. Nevertheless, the numerical error
-      in "u-direction" (i.e. for X = "approximate inverse CDF"(U) 
-      |U-CDF(X)|) can be controlled by means of the 
-      unur_hinv_set_u_resolution(). Notice that very small values of the
-      u-resolution are possible but may increase the cost for the setup step.
-      
-      As the possible maximal error is only estimated in the setup
-      it may be necessary to set some special design points for
+      in "u-direction" (i.e. |U-CDF(X)|, for 
+      X = "approximate inverse CDF"(U) |U-CDF(X)|) can be controlled
+      by means of unur_hinv_set_u_resolution().
+
+      The possible maximal error is only estimated in the setup. Thus
+      it might be necessary to set some special design points for
       computing the Hermite interpolation to guarantee that the
-      maximal u-error can not be bigger than desired. Such points are
-      points where the density is not differentiable or has a local
-      extremum. Notice that there is no necessity to do
-      so. However, if you do not provide these points to the algorithm
-      there might be a small chance that the approximation
-      error is larger than the given u-resolution, or that the
-      required number of intervals is larger than necessary.
-      Setting such design points can be done using the
-      unur_hinv_set_cpoints() call.
+      maximal u-error can not be bigger than desired. Such points
+      (e.g. extremal points of the PDF, points with infinite
+      derivative) can be set using using the
+      unur_hinv_set_cpoints() call. 
       If the mode for a unimodal distribution is set in the distribution
       object this mode is automatically used as design-point if the
       unur_hinv_set_cpoints() call is not used.
@@ -91,7 +126,7 @@
       As already mentioned the maximal error of this approximation is 
       only estimated. If this error is crucial for an application we
       recommend to compute this error using unur_hinv_estimate_error()
-      especially when a non-standard distribution is used.
+      which runs a small Monte Carlo simulation.
       
    =END
 */

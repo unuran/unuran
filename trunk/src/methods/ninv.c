@@ -1570,24 +1570,23 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
       break;
 
 
-    do {    /* newton-step  (damped if nececcary) */
-      if (_unur_isfinite(dfx)) {
+    if (_unur_isfinite(dfx)) {
+      do {    /* newton-step  (damped if nececcary) */
 	damp /= 2.;
 	xtmp = x - damp * fx/dfx;
 	/* make sure that new point is inside (truncated) domain */
 	xtmp = min( xtmp, DISTR.trunc[1] );
 	xtmp = max( xtmp, DISTR.trunc[0] );
 	fxtmp = CDF(xtmp) - U;
-      }
-      else {
-	/* we cannot use Newton's rule if the derivative is not finite. */
-	/* this happens when we hit a pole of the PDF.                  */
-	/* use a bisection step instead.                                */
-	xtmp = 0.5*(x + xold);
-	fxtmp = CDF(xtmp) - U;
-	break;
-      }
-    } while (fabs(fxtmp) > fxabs * (1.+GEN->rel_x_resolution));   /* no improvement */
+      } while (fabs(fxtmp) > fxabs * (1.+GEN->rel_x_resolution));   /* no improvement */
+    }
+    else {
+      /* we cannot use Newton's rule if the derivative is not finite. */
+      /* this happens when we hit a pole of the PDF.                  */
+      /* use a bisection step instead.                                */
+      xtmp = 0.5*(x + xold);
+      fxtmp = CDF(xtmp) - U;
+    }
     
     /* updation variables according to newton-step      */
     damp  = 2.;       /* set back factor for damping    */

@@ -95,6 +95,8 @@
       reasonable cases. Nevertheless, it is possible to adjust the maximal
       number of iterations with the commands
       unur_ninv_set_max_iter() and unur_ninv_chg_max_iter().
+      In particular this might be necessary when the PDF has a pole
+      (where it is not bounded from below).
 
       It is also possible to set/change the accuracy of the method
       (which also heavily influencies the generation time).

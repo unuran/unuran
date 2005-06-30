@@ -139,6 +139,7 @@ _unur_pdf_gamma( double x, const UNUR_DISTR *distr )
     return exp( -x - LOGNORMCONSTANT);
 
   if (x > 0.)
+    /* pow(x,alpha-1.) * exp(-x) */
     return exp( (alpha-1.)*log(x) - x - LOGNORMCONSTANT);
 
   if (x == 0.)

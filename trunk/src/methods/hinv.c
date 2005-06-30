@@ -40,25 +40,15 @@
  *   59 Temple Place, Suite 330, Boston, MA 02111-1307, USA                  *
  *                                                                           *
  *****************************************************************************
- *****************************************************************************
  *                                                                           *
  *   REFERENCES:                                                             *
+ *   [1] W. Hörmann and J. Leydold:                                          *
+ *       Continuous Random Variate Generation by Fast Numerical Inversion,   *
+ *       ACM Trans. Model. Comput. Simul. 13(4), pp. 347-362 (2003)          *
  *                                                                           *
- *****************************************************************************
- *                                                                           *
- *  Numerical inversion is a method for generating random variables          *
- *  using the CDF (and in case of newton's method the PDF).                  *
- *                                                                           *
- *  THEOREM:                                                                 *
- *     Let X be a random variable with CDF F(x).                             *
- *     Then the F(X) are  uniformly distributed.                             *
- *                                                                           *
- *  COROLLARY:                                                               *
- *     Starting with uniformly distributed random variables U,               *
- *     the F^(-1)(U) have F(x) as CDF.                                       *
- *                                                                           *
- *                                                                           *
- *  ..............                                                           *
+ *   [2] W. Hörmann, J. Leydold, and G. Derflinger:                          *
+ *       Automatic Nonuniform Random Variate Generation,                     *
+ *       Springer-Verlag, Berlin Heidelberg (2004)                           *
  *                                                                           *
  *****************************************************************************/
 

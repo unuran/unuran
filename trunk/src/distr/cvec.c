@@ -959,9 +959,14 @@ unur_distr_cvec_get_covar_inv ( struct unur_distr *distr )
      /*   pointer to inverse of covariance matrix                            */
      /*----------------------------------------------------------------------*/
 {
+#define idx(a,b)  ((a)*dim+(b))
+  
   double det; /* determinant of covariance matrix */
   int dim;
-
+  int i,j;
+  double a,b,c,denominator, r;
+  int flag_analytic=0;
+  
   /* check arguments */
   _unur_check_NULL( NULL, distr, NULL );
   _unur_check_distr_object( distr, CVEC, NULL );
@@ -978,18 +983,157 @@ unur_distr_cvec_get_covar_inv ( struct unur_distr *distr )
   if (DISTR.covar_inv == NULL)
     DISTR.covar_inv = _unur_xmalloc( dim * dim * sizeof(double) );   
 
-  /* calculate inverse covariance matrix */
-  if ( !(distr->set & UNUR_DISTR_SET_COVAR_INV) )
-    if (_unur_matrix_invert_matrix(dim, DISTR.covar, COVARIANCE_DETMIN, DISTR.covar_inv, &det) != UNUR_SUCCESS) {
-      _unur_error(distr->name ,UNUR_ERR_DISTR_DOMAIN,"cannot compute inverse of covariance");
-      return NULL;
+  if ( !(distr->set & UNUR_DISTR_SET_COVAR_INV) ) {   
+    
+    flag_analytic=1; /* initial value */
+    
+    /* 
+      checking if the covariance matrix is of the following form
+    
+        1 r r ... r 
+        r 1 r ... r 
+        r r 1 ... r 
+              ... 
+        r r r ... 1 
+       
+      in this case the inverse matrix is given as 
+      
+        a b b ... b
+        b a b ... b
+        b b a ... b
+              ... 
+        b b b ... a
+
+      with 
+        
+        a = (1+(d-2)*r) / (1+(d-2)*r-(d-2)*r^2)
+        b = - r / (1+(d-2)*r-(d-2)*r^2)
+    
+    */
+  
+    /* check if all diagonal elements equal 1. */
+    for (i=0; i<dim; i++) {
+      if (!_unur_FP_same(1., DISTR.covar[idx(i,i)])) flag_analytic=0;
+    }  
+  
+    r=0;
+    if (dim>2) 
+      r=DISTR.covar[idx(0,1)];
+    
+    /* check if all off-diagonal elements equal r */
+    for (i=0; i<dim; i++) {
+      for (j=i+1; j<dim; j++) {
+        if (!_unur_FP_same(r, DISTR.covar[idx(i,j)])) flag_analytic=0;
+    }} 
+
+    if (flag_analytic==1) {
+      
+      /* using an analytic expression for the inverse matrix */
+      denominator=1+(dim-2)*r-(dim-1)*r*r;
+    
+      if (fabs(denominator)<UNUR_EPSILON) {
+        _unur_error(distr->name ,UNUR_ERR_DISTR_DOMAIN,"cannot compute inverse of covariance");
+        return NULL;    
+      }
+    
+      a=(1.+(dim-2)*r)/denominator;
+      b=-r/denominator;
+    
+      /* setting inverse matrix */
+      for (i=0; i<dim; i++) {
+      for (j=0; j<dim; j++) {
+        DISTR.covar_inv[idx(i,j)] = (i==j) ? a: b;
+      }} 
+    
+      /* det = pow(1-r, dim-1) * (1+(dim-1)*r; */
     }
 
-  /* changelog */
-  distr->set |= UNUR_DISTR_SET_COVAR_INV;
+    if (flag_analytic==0) {
+    /* 
+      checking if the covariance matrix is of the following form
+    
+        1       r       r^2     ... r^(d-1) 
+        r       1       r       ... r^(d-2) 
+        r^2     r       1       ... r^(d-3) 
+                                ... 
+        r^(d-1) r^(d-2) r^(d-3) ... 1 
+       
+      in this case the inverse matrix is given as 
+      
+        a b 0 0 ... 0 0
+        b c b 0 ... 0 0
+        0 b c b ... 0 0
+                ... 
+        0 0 0 0 ... c b
+        0 0 0 0 ... b a
 
+      with 
+        
+        a = 1 / (1-r^2)
+        b = - r / (1-r^2)
+        c = (1+r^2) / (1-r^2)
+    
+    */    
+    
+      flag_analytic=1; /* initial value */
+
+      /* check if we have a matrix of the form above */
+  
+      if (dim>2 && DISTR.covar[idx(0,1)]>UNUR_EPSILON ) {
+        
+	r=DISTR.covar[idx(0,1)];
+
+        for (i=0; i<dim; i++) {
+        for (j=0; j<dim; j++) {
+          if (!_unur_FP_same(pow(r,abs(i-j)), DISTR.covar[idx(i,j)])) flag_analytic=0;
+        }}  
+    
+        if (flag_analytic==1) {
+      
+          /* using an analytic expression for the inverse matrix */
+          denominator=1-r*r;
+    
+          if (fabs(denominator)<UNUR_EPSILON) {
+            _unur_error(distr->name ,UNUR_ERR_DISTR_DOMAIN,"cannot compute inverse of covariance");
+            return NULL;    
+          }
+    
+          a=1./denominator;
+          b=-r/denominator;
+          c=(1+r*r)/denominator;
+	  
+          /* setting inverse matrix */
+          for (i=0; i<dim; i++) {
+          for (j=0; j<dim; j++) {
+	    DISTR.covar_inv[idx(i,j)] = 0.;
+            if (i==j &&  (i==0 || i==(dim-1))) DISTR.covar_inv[idx(i,j)] = a ;
+            if (i==j && !(i==0 || i==(dim-1))) DISTR.covar_inv[idx(i,j)] = c ;
+            if (abs(i-j)==1) DISTR.covar_inv[idx(i,j)] = b ;
+          }} 
+    
+          /* det = pow(1-r*r, dim-1); */
+        }
+	
+      }
+    }
+      
+    
+    if (flag_analytic==0) {
+      /* calculate inverse covariance matrix */
+      if (_unur_matrix_invert_matrix(dim, DISTR.covar, COVARIANCE_DETMIN, DISTR.covar_inv, &det) != UNUR_SUCCESS) {
+        _unur_error(distr->name ,UNUR_ERR_DISTR_DOMAIN,"cannot compute inverse of covariance");
+        return NULL;
+      }
+    }  
+
+    /* changelog */
+    distr->set |= UNUR_DISTR_SET_COVAR_INV;
+
+  }
+  
   return DISTR.covar_inv;
 
+#undef idx  
 } /* end of unur_distr_cvec_get_covar_inv() */
 
 /*---------------------------------------------------------------------------*/
@@ -2065,6 +2209,12 @@ _unur_distr_cvec_debug( const struct unur_distr *distr, const char *genid )
   mat = ((distr->set & UNUR_DISTR_SET_COVAR) && DISTR.covar) ? DISTR.covar : NULL;
   _unur_matrix_print_matrix( distr->dim, mat, "\tcovariance matrix =", log, genid, "\t   ");
 
+  /* inverse covariance matrix */
+/*  
+  mat = ((distr->set & UNUR_DISTR_SET_COVAR_INV) && DISTR.covar_inv) ? DISTR.covar_inv : NULL;
+  _unur_matrix_print_matrix( distr->dim, mat, "\tinverse covariance matrix =", log, genid, "\t   ");
+*/
+  
   /* cholesky factor of covariance matrix */
   mat = ((distr->set & UNUR_DISTR_SET_CHOLESKY) && DISTR.cholesky) ? DISTR.cholesky : NULL;
   _unur_matrix_print_matrix( distr->dim, mat, "\tcholesky factor of covariance matrix =", log, genid, "\t   ");

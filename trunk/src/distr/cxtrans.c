@@ -240,6 +240,12 @@ int _unur_distr_cxtrans_compute_domain( struct unur_distr *cxt )
   CXT.trunc[0] = CXT.domain[0];     /* left boundary of domain  */
   CXT.trunc[1] = CXT.domain[1];     /* right boundary of domain */
 
+  /* check for NaNs */
+  if (_unur_isnan(CXT.BD_LEFT) || _unur_isnan(CXT.BD_RIGHT)) {
+      _unur_error(distr_name,UNUR_ERR_DISTR_SET,"NaN in now domain boundaries");
+      return UNUR_ERR_DISTR_SET;
+  }
+
   /* o.k. */
   return UNUR_SUCCESS;
 } /* end of _unur_distr_cxtrans_compute_domain() */

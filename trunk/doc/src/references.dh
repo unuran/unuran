@@ -117,6 +117,12 @@ ACM TOMACS 6(3), 169-184.
 In: J.A. Joines, R. Barton, P. Fishwick, K. Kang (eds.),
 Proceedings of the 2000 Winter Simulation Conference, pp. 675-682.
 
+@anchor{bib:HLa03}
+@item [HLa03]
+@sc{W. H@"ormann and J. Leydold} (2003).
+@i{Continuous Random Variate Generation by Fast Numerical Inversion},
+ACM TOMACS 13(4), 347-362.
+
 @anchor{bib:LJa00}
 @item [LJa00]
 @sc{J. Leydold} (2000).

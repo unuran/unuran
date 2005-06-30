@@ -54,7 +54,28 @@
       Newton's method and the regula falsi (combined with interval
       bisectioning). The regula falsi requires only the CDF while
       Newton's method also requires the PDF.
-      
+      To speed up the marginal generation time a table with suitable
+      starting points can be computed in the setup. 
+      The performance of the algorithm can adjusted by desired
+      accuracy of the method.
+      It is possible to use this method for generating from truncated
+      distributions. The truncated domain can be changed for an
+      existing generator object.
+
+   =HOWTOUSE
+      The method works generates random variates by numerical
+      inversion and requires a continuous univariate distribution
+      objects with given CDF. Two methods are available:
+      @itemize @minus
+      @item Regula falsi  [default]
+      @item Newton's method
+      @end itemize
+      Newton's method additionally requires the PDF of the
+      distribution and cannot be used otherwise (NINV automatically
+      switches to regula falsi then.
+      Default algorithm is regula falsi. It is slightly slower but
+      numerically much more stable than Newton's algorithm.
+
       It is possible to use this method for generating from truncated
       distributions. It even can be changed for an existing generator
       object by an unur_ninv_chg_truncated() call.
@@ -67,31 +88,29 @@
       domain of the given distribution. (It is not possible to enlarge
       this domain.) If it is necessary to recalculate the table during
       sampling, the command unur_ninv_chg_table() can be used.
-      
       As a rule of thumb using such a table is appropriate when the number of
       generated points exceeds the table size by a factor of 100.
   
-      The standard number of iterations of NINV should be enough for all
-      reasonable cases. Nevertheless it is possible to adjust the maximal
-      number of iterations with the command 
-      @command{unur_ninv_[set|chg]_max_iter}.
+      The default number of iterations of NINV should be enough for all
+      reasonable cases. Nevertheless, it is possible to adjust the maximal
+      number of iterations with the commands
+      unur_ninv_set_max_iter() and unur_ninv_chg_max_iter().
 
-      To speed up this method (at the expense of the accuracy)
-      it is possible to change the maximum error allowed in x with 
-      @command{unur_ninv_[set|chg]_x_resolution}.
+      It is also possible to set/change the accuracy of the method
+      (which also heavily influencies the generation time).
+      For this it is possible to change the maximum error allowed in
+      @i{x} with unur_ninv_set_x_resolution() and
+      unur_ninv_chg_x_resolution(), respectively.
       
       NINV tries to use proper starting values for both the regala falsi
       and Newton's method. Of course the user might have more knowledge
       about the properties of the underlying distribution and is able
-      to share his wisdom with NINV using the command
-      @command{unur_ninv_[set|chg]_start}.
+      to share his wisdom with NINV using the respective commands
+      unur_ninv_set_start() and unur_ninv_chg_start()
       
       It is also possible to change the parameters of the given distribution
       by a unur_ninv_chg_pdfparams() call. If a table exists, it will be
       recomputed immediately.
-
-      Default algorithm is regula falsi. It is slightly slower but
-      numerically much more stable than Newton's algorithm.
 
       It might happen that NINV aborts unur_sample_cont() without
       computing the correct value (because the maximal number
@@ -127,22 +146,30 @@ int unur_ninv_set_usenewton( UNUR_PAR *parameters );
 /* 
    Switch to Newton's method.
    Notice that it is numerically less stable than regula falsi.
-   It it is not possible to invert the CDF for a particular random
-   number U when calling unur_sample_cont(), @code{unur_error} is set
-   to @code{UNUR_ERR_} and @code{UNUR_INFINITY} is returned.
+   It it is not possible to invert the CDF for a particular uniform random
+   number @i{U} when calling unur_sample_cont(), @code{unur_error} is set
+   to @code{UNUR_ERR_GEN_SAMPLING}.
    Thus it is recommended to check @code{unur_error} before
    using the result of the sampling routine.
 */
 
+
 int unur_ninv_set_max_iter( UNUR_PAR *parameters, int max_iter );
+/* */
+
+int unur_ninv_chg_max_iter(UNUR_GEN *generator, int max_iter);
 /* 
-   Set number of maximal iterations.  Default is @code{40}.
+   Set and change number of maximal iterations.  Default is @code{40}.
 */
 
+
 int unur_ninv_set_x_resolution( UNUR_PAR *parameters, double x_resolution);
-/* 
-   Set maximal relative error.
-   Default is @code{10^-8}.
+/* */
+
+int unur_ninv_chg_x_resolution(UNUR_GEN *generator, double x_resolution);
+/*
+   Set and change the maximal relative error in x.
+   Default is @code{1.e-8}.
 */
 
 int unur_ninv_set_start( UNUR_PAR *parameters, double left, double right);
@@ -167,6 +194,13 @@ int unur_ninv_set_start( UNUR_PAR *parameters, double left, double right);
    starting points!
 */
     
+int unur_ninv_chg_start(UNUR_GEN *gen, double left, double right);
+/* 
+   Change the starting points for numerical inversion. 
+   If left==right, then UNURAN uses the default starting points 
+   (see unur_ninv_set_start()).
+*/
+
 int unur_ninv_set_table(UNUR_PAR *parameters, int no_of_points);
 /* 
    Generates a table with @var{no_of_points} points containing
@@ -183,27 +217,11 @@ int unur_ninv_set_table(UNUR_PAR *parameters, int no_of_points);
    No table is used by default.
  */
 
-int unur_ninv_chg_max_iter(UNUR_GEN *generator, int max_iter);
-/* 
-   Change the maximum number of iterations.
-*/
-
-int unur_ninv_chg_x_resolution(UNUR_GEN *generator, double x_resolution);
-/*
-  Change the maximal relative error in x.
-*/
-
-int unur_ninv_chg_start(UNUR_GEN *gen, double left, double right);
-/* 
-   Change the starting points for numerical inversion. 
-   If left==right, then UNURAN uses the default starting points 
-   (see unur_ninv_set_start()).
-*/
-
 int unur_ninv_chg_table(UNUR_GEN *gen, int no_of_points);
 /*
    Recomputes a table as described in unur_ninv_set_table().
 */
+
 
 int unur_ninv_chg_truncated(UNUR_GEN *gen, double left, double right);
 /*

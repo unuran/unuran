@@ -628,8 +628,11 @@ _unur_norta_make_correlationmatrix( int dim, double *M)
     M[idx(i,i)] = sqrt(M[idx(i,i)]);
 
   for (i=0; i<dim; i++)
-    for (j=0; j<dim; j++)
-      if(i!=j) M[idx(i,j)] /= M[idx(i,i)] * M[idx(j,j)];
+    for (j=i; j<dim; j++)
+      if(i!=j) {
+	M[idx(i,j)] /= M[idx(i,i)] * M[idx(j,j)];
+	M[idx(j,i)] = M[idx(i,j)];
+      }
 
   /* the diagonal elements are set to 1. */
   for (i=0; i<dim; i++) 

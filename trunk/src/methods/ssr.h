@@ -46,37 +46,49 @@
 
    =SPEED Set-up: fast, Sampling: slow
 
-   =REF  [LJa01]
+   =REF  [LJa01] [HLD04: Sect.6.3.3, Alg.6.6]
 
    =DESCRIPTION
       SSR is an acceptance/rejection method that uses universal
-      inequalities for constructing (universal) hats and squeezes.
-      It works for all T-concave distributions with T(x) = -1/sqrt(x).
-      
+      inequalities for constructing (universal) hats and squeezes
+      (@pxref{Rejection}).
+      It works for all @i{T}-concave distributions with 
+      @unurmath{T(x) = -1/\sqrt{x}.}
+
       It requires the PDF, the (exact) location of the mode and the
-      area below the given PDF. The rejection constant is 4 for all
-      T-concave distributions with unbounded domain and is less than 4
-      when the domain is bounded.  Optionally the CDF at the mode
+      area below the given PDF. The rejection constant is 4 for all 
+      @i{T}-concave distributions with unbounded domain and is less
+      than 4 when the domain is bounded. Optionally the CDF at the
+      mode can be given to increase the performance of the algorithm.
+      Then the rejection constant is at most 2 and a universal squeeze
+      can (but need not be) used. However, using squeezes is not
+      recommended unless the evaluation of the PDF is expensive.
+
+      The exact location of the mode and/or the area below the PDF can
+      be replace by appropriate bounds. Then the algorithm still works
+      but has larger rejection constants.
+
+   =HOWTOUSE
+      SSR works for any continuous univariate distribution object with
+      given @i{T}-concave PDF (with @unurmath{T(x) = -1/\sqrt{x},)}
+      mode and area below PDF. Optional the CDF at the mode
       can be given to increase the performance of the algorithm by
-      means of the unur_ssr_set_cdfatmode() call.  Then the rejection
-      constant is reduced by one half and even a universal squeeze can
-      (but need not be) used. However using squeezes is not
-      recommended unless the evaluation of the PDF is rather expensive.
-      (The mirror principle is not implemented.)
-      
-      If the exact location of the mode is not known, then use the
-      approximate location and provide the (exact) value of the PDF at
-      the mode by means of the unur_ssr_set_pdfatmode() call.  But then
-      unur_ssr_set_cdfatmode() must not be used.  Notice if no mode is given
-      at all, a (slow) numerical mode finder will be used.
-      
+      means of the unur_ssr_set_cdfatmode() call. Additionally
+      squeezes can be used and switched on via
+      unur_ssr_set_usesqueeze().
+
       If the (exact) area below the PDF is not known, then an upper
       bound can be used instead (which of course increases the rejection
       constant).  But then the squeeze flag must not be set and
       unur_ssr_set_cdfatmode() must not be used.
 
+      If the exact location of the mode is not known, then use the
+      approximate location and provide the (exact) value of the PDF at
+      the mode by means of the unur_ssr_set_pdfatmode() call. But then
+      unur_ssr_set_cdfatmode() must not be used. Notice, that a (slow)
+      numerical mode finder will be used if no mode is given at all.
       It is even possible to give an upper bound for the PDF only.
-      However then the (upper bound for the) area below the PDF has to be
+      However, then the (upper bound for the) area below the PDF has to be
       multiplied by the ratio between the upper bound and the lower bound of
       the PDF at the mode.  Again setting the squeeze flag and using
       unur_ssr_set_cdfatmode() is not allowed.
@@ -84,22 +96,24 @@
       It is possible to change the parameters and the domain of the chosen 
       distribution without building a new generator object using the
       unur_ssr_chg_pdfparams() and unur_ssr_chg_domain() call, respectively.
-      But then unur_ssr_chg_pdfarea(), unur_ssr_chg_mode() and 
+      Then unur_ssr_chg_pdfarea(), unur_ssr_chg_mode() and 
       unur_ssr_chg_cdfatmode() have to be used to reset the corresponding figures 
       whenever they have changed.
-      If the PDF at the mode has been provided by a 
-      unur_ssr_set_pdfatmode() call, additionally unur_ssr_chg_pdfatmode() must 
-      be used (otherwise this call is not necessary since then this figure is
-      computed directly from the PDF).
+      If the PDF at the mode has been provided by a
+      unur_ssr_set_pdfatmode() call, additionally
+      unur_ssr_chg_pdfatmode() must be used (otherwise this call is
+      not necessary since then this figure is computed directly from the PDF).
+
+      @emph{Important:}
       If any of mode, PDF or CDF at the mode, or the area below the mode
       has been changed, then unur_ssr_reinit() must be executed.
       (Otherwise the generator produces garbage).
 
       There exists a test mode that verifies whether the conditions for
       the method are satisfied or not while sampling. It can be
-      switched on by calling unur_ssr_set_verify() and
+      switched on/off by calling unur_ssr_set_verify() and
       unur_ssr_chg_verify(), respectively.
-      Notice however that sampling is (a little bit) slower then.
+      Notice, however, that sampling is (a little bit) slower then.
 
    =END
 */

@@ -41,13 +41,12 @@
 UNUR_DISTR *unur_distr_multinormal_constant_rho(int dim, const double *mean, double rho);
 /*---------------------------------------------------------------------------*/
 
-struct unur_distr *
-unur_distr_multinormal_ar1(int dim, const double *mean, double rho)
-     /*---------------------------------------------------------------------------*/
-     /*  Multinormal distribution (corr-matrix from AR1 process)                  */
-     /*---------------------------------------------------------------------------*/
-     /* 
-       The covariance matrix is of the following form
+/*---------------------------------------------------------------------------*/
+
+void 
+_unur_vc_special_correlations_set_ar1(struct unur_distr *distr, int dim, double rho) 
+/* 
+       Setting the covariance matrix to be
     
         1       r       r^2     ... r^(d-1) 
         r       1       r       ... r^(d-2) 
@@ -73,13 +72,9 @@ unur_distr_multinormal_ar1(int dim, const double *mean, double rho)
       and the determinant of the covariance matrix is
       
         det = (1-r^2)^(d-1) 
-	
-      (this determinant occurs in the normalization constant)	
-    */    
+*/    
 {
 #define idx(a,b) ((a)*dim+(b))
-  
-  register struct unur_distr *distr;
   
   double *covar = NULL;
   double *covar_inv = NULL;
@@ -87,23 +82,13 @@ unur_distr_multinormal_ar1(int dim, const double *mean, double rho)
   int i,j;
   double a,b,c,denominator;
   
-  /* checking parameters */
-  if (dim<1) {
-  
-  }
-  
+  /* checking parameters */ 
   denominator=1-rho*rho;    
-  if (fabs(denominator)<DBL_EPSILON || rho<0 || rho>=1) {
-    return NULL;    
+  if (fabs(denominator)<DBL_EPSILON || rho<0 || rho>=1 || dim<1) {
+    distr = NULL;    
+    return;
   }
       
-
-  /* get distribution object for multinormal distribution */
-  distr = unur_distr_multinormal( dim, mean, NULL );
-
-  /* name of distribution */
-  unur_distr_set_name(distr, "multinormal_ar1");
-  
   /* setting the covariance matrix */
   covar = malloc( dim * dim * sizeof(double) );
   for (i=0; i<dim; i++) {
@@ -130,13 +115,239 @@ unur_distr_multinormal_ar1(int dim, const double *mean, double rho)
   unur_distr_cvec_set_covar_inv( distr, covar_inv );
      
   free(covar); free(covar_inv);
+    
+  return;    
+
+#undef idx
+} /* end of _unur_vc_special_correlations_set_ar1() */
+
+/*---------------------------------------------------------------------------*/
+
+void 
+_unur_vc_special_correlations_set_constant_rho(struct unur_distr *distr, int dim, double rho) 
+/* 
+       Setting the covariance matrix to be
+    
+        1 r r ... r 
+        r 1 r ... r 
+        r r 1 ... r 
+              ... 
+        r r r ... 1 
+       
+      in this case the inverse matrix is given as 
+      
+        a b b ... b
+        b a b ... b
+        b b a ... b
+              ... 
+        b b b ... a
+
+      with 
+        
+        a = (1+(d-2)*r) / (1+(d-2)*r-(d-2)*r^2)
+        b = - r / (1+(d-2)*r-(d-2)*r^2)
+      
+      and the determinant of the covariance matrix is
+      
+        det = (1-r)^(d-1) * (1+(d-1)*r) 
+*/    
+{
+#define idx(a,b) ((a)*dim+(b))
+  
+  double *covar = NULL;
+  double *covar_inv = NULL;
+  
+  int i,j;
+  double a,b,denominator;
+  
+  /* checking parameters */ 
+  denominator=1+(dim-2)*rho-(dim-1)*rho*rho;
+  if (fabs(denominator)<DBL_EPSILON || rho<0 || rho>=1 || dim<1) {
+    distr = NULL;    
+    return;
+  }
+      
+  /* setting the covariance matrix */
+  covar = malloc( dim * dim * sizeof(double) );
+  for (i=0; i<dim; i++) {
+  for (j=0; j<dim; j++) {
+    covar_inv[idx(i,j)] = (i==j) ? 1.: rho;
+  }}       
+  unur_distr_cvec_set_covar( distr, covar );
+
+    
+  /* setting the inverse covariance matrix */
+  covar_inv = malloc( dim * dim * sizeof(double) );
+      
+  a=(1.+(dim-2)*rho)/denominator;
+  b=-rho/denominator;
+    
+  for (i=0; i<dim; i++) {
+  for (j=0; j<dim; j++) {
+    covar_inv[idx(i,j)] = (i==j) ? a: b;
+  }} 
+  unur_distr_cvec_set_covar_inv( distr, covar_inv );
+     
+  free(covar); free(covar_inv);
+    
+  return;    
+
+#undef idx
+} /* end of _unur_vc_special_correlations_set_constant_rho() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_distr *
+unur_distr_multinormal_ar1(int dim, const double *mean, double rho)
+     /*---------------------------------------------------------------------------*/
+     /*  Multinormal distribution (corr-matrix from AR1 process)                  */
+     /*---------------------------------------------------------------------------*/
+{
+  register struct unur_distr *distr;
+  
+  /* get distribution object for multinormal distribution */
+  distr = unur_distr_multinormal( dim, mean, NULL );
+
+  /* set the name of distribution */
+  unur_distr_set_name(distr, "multinormal_ar1");
+  
+  /* set the correlation matrix and it's inverse */
+  _unur_vc_special_correlations_set_ar1(distr, dim, rho);
   
   /* return pointer to object */
   return distr;
 
-#undef idx
 } /* end of unur_distr_multinormal_ar1() */
 
 /*---------------------------------------------------------------------------*/
+
+struct unur_distr *
+unur_distr_multicauchy_ar1(int dim, const double *mean, double rho)
+     /*---------------------------------------------------------------------------*/
+     /*  Multinormal distribution (corr-matrix from AR1 process)                  */
+     /*---------------------------------------------------------------------------*/
+{
+  register struct unur_distr *distr;
+  
+  /* get distribution object for multicauchy distribution */
+  distr = unur_distr_multicauchy( dim, mean, NULL );
+
+  /* set the name of distribution */
+  unur_distr_set_name(distr, "multicauchy_ar1");
+  
+  /* set the correlation matrix and it's inverse */
+  _unur_vc_special_correlations_set_ar1(distr, dim, rho);
+  
+  /* return pointer to object */
+  return distr;
+
+} /* end of unur_distr_multicauchy_ar1() */
+
+/*---------------------------------------------------------------------------*/
+
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_distr *
+unur_distr_multistudent_ar1(int dim, double df, const double *mean, double rho)
+     /*---------------------------------------------------------------------------*/
+     /*  Multistudent distribution (corr-matrix from AR1 process)                 */
+     /*---------------------------------------------------------------------------*/
+{
+  register struct unur_distr *distr;
+  
+  /* get distribution object for multistudent distribution */
+  distr = unur_distr_multistudent( dim, df, mean, NULL );
+
+  /* set the name of distribution */
+  unur_distr_set_name(distr, "multistudent_ar1");
+  
+  /* set the correlation matrix and it's inverse */
+  _unur_vc_special_correlations_set_ar1(distr, dim, rho);
+  
+  /* return pointer to object */
+  return distr;
+
+} /* end of unur_distr_multistudent_ar1() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_distr *
+unur_distr_multinormal_constant_rho(int dim, const double *mean, double rho)
+     /*---------------------------------------------------------------------------*/
+     /*  Multinormal distribution (equal off diagonal elements of corr-matrix)    */
+     /*---------------------------------------------------------------------------*/
+{
+  register struct unur_distr *distr;
+  
+  /* get distribution object for multinormal distribution */
+  distr = unur_distr_multinormal( dim, mean, NULL );
+
+  /* set the name of distribution */
+  unur_distr_set_name(distr, "multinormal_constant_rho");
+  
+  /* set the correlation matrix and it's inverse */
+  _unur_vc_special_correlations_set_constant_rho(distr, dim, rho);
+  
+  /* return pointer to object */
+  return distr;
+
+} /* end of unur_distr_multinormal_constant_rho() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_distr *
+unur_distr_multicauchy_constant_rho(int dim, const double *mean, double rho)
+     /*---------------------------------------------------------------------------*/
+     /*  Multinormal distribution (equal off diagonal elements of corr-matrix)    */
+     /*---------------------------------------------------------------------------*/
+{
+  register struct unur_distr *distr;
+  
+  /* get distribution object for multicauchy distribution */
+  distr = unur_distr_multicauchy( dim, mean, NULL );
+
+  /* set the name of distribution */
+  unur_distr_set_name(distr, "multicauchy_constant_rho");
+  
+  /* set the correlation matrix and it's inverse */
+  _unur_vc_special_correlations_set_constant_rho(distr, dim, rho);
+  
+  /* return pointer to object */
+  return distr;
+
+} /* end of unur_distr_multicauchy_constant_rho() */
+
+/*---------------------------------------------------------------------------*/
+
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_distr *
+unur_distr_multistudent_constant_rho(int dim, double df, const double *mean, double rho)
+     /*---------------------------------------------------------------------------*/
+     /*  Multistudent distribution (equal off diagonal elements of corr-matrix)   */
+     /*---------------------------------------------------------------------------*/
+{
+  register struct unur_distr *distr;
+  
+  /* get distribution object for multistudent distribution */
+  distr = unur_distr_multistudent( dim, df, mean, NULL );
+
+  /* set the name of distribution */
+  unur_distr_set_name(distr, "multistudent_constant_rho");
+  
+  /* set the correlation matrix and it's inverse */
+  _unur_vc_special_correlations_set_constant_rho(distr, dim, rho);
+  
+  /* return pointer to object */
+  return distr;
+
+} /* end of unur_distr_multistudent_constant_rho() */
+
+/*---------------------------------------------------------------------------*/
+
+
+
 #undef DISTR
 /*---------------------------------------------------------------------------*/

@@ -62,10 +62,21 @@ UNUR_DISTR *unur_distr_powerexponential_wo_logpdf(const double *params, int n_pa
 /*  Multinormal distribution (corr-matrix from AR1 process)                  */
 UNUR_DISTR *unur_distr_multinormal_ar1(int dim, const double *mean, double rho);
 
-#if 0
+/*  Multicauchy distribution (corr-matrix from AR1 process)                  */
+UNUR_DISTR *unur_distr_multicauchy_ar1(int dim, const double *mean, double rho);
+
+/*  Multistudent distribution (corr-matrix from AR1 process)                  */
+UNUR_DISTR *unur_distr_multistudent_ar1(int dim, double df, const double *mean, double rho);
+
 /*  Multinormal distribution (corr-matrix with equal off-diagonal elements)  */
 UNUR_DISTR *unur_distr_multinormal_constant_rho(int dim, const double *mean, double rho);
-#endif
+
+/*  Multicauchy distribution (corr-matrix with equal off-diagonal elements)  */
+UNUR_DISTR *unur_distr_multicauchy_constant_rho(int dim, const double *mean, double rho);
+
+/*  Multistudent distribution (corr-matrix with equal off-diagonal elements)  */
+UNUR_DISTR *unur_distr_multistudent_constant_rho(int dim, double df, const double *mean, double rho);
+
 /*---------------------------------------------------------------------------*/
 #endif  /* UNURAN_TESTDISTRIBUTIONS_H_SEEN */
 /*---------------------------------------------------------------------------*/

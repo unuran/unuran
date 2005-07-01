@@ -59,6 +59,13 @@ UNUR_DISTR *unur_distr_normal_wo_logpdf( const double *params, int n_params );
 /*  Power-exponential (Subbotin) distribution  [3; ch.24, p.195]             */
 UNUR_DISTR *unur_distr_powerexponential_wo_logpdf(const double *params, int n_params);
 
+/*  Multinormal distribution (corr-matrix from AR1 process)                  */
+UNUR_DISTR *unur_distr_multinormal_ar1(int dim, const double *mean, double rho);
+
+#if 0
+/*  Multinormal distribution (corr-matrix with equal off-diagonal elements)  */
+UNUR_DISTR *unur_distr_multinormal_constant_rho(int dim, const double *mean, double rho);
+#endif
 /*---------------------------------------------------------------------------*/
 #endif  /* UNURAN_TESTDISTRIBUTIONS_H_SEEN */
 /*---------------------------------------------------------------------------*/

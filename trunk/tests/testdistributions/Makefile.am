@@ -6,7 +6,8 @@ INCLUDES = -I$(top_srcdir)/src
 noinst_LTLIBRARIES = libtestdistributions.la
 
 libtestdistributions_la_SOURCES = \
- c_wo_logpdf.c 
+ c_wo_logpdf.c \
+ vc_special_correlations.c
 
 noinst_HEADERS = testdistributions.h 
 

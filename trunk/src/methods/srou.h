@@ -46,7 +46,7 @@
 
    =SPEED Set-up: fast, Sampling: slow
 
-   =REF  [LJa01] [LJa02] [HLD04: Sect.6.3.1, Sect.6.4.1, Alg.6.4, Alg.6.7]
+   =REF  [LJa01] [LJa02] [HLD04: Sect.6.3.1, Sect.6.3.2, Sect.6.4.1, Alg.6.4, Alg.6.5, Alg.6.7]
 
    =DESCRIPTION
       SROU is based on the ratio-of-uniforms method
@@ -82,11 +82,11 @@
       but has larger rejection constants.
 
    =HOWTOUSE
-      SSR works for any continuous univariate distribution object with
+      SROU works for any continuous univariate distribution object with
       given @unurmath{T_c}-concave PDF with @unurmath{c<1,})
       mode and area below PDF. Optional the CDF at the mode
       can be given to increase the performance of the algorithm by
-      means of the unur_ssr_set_cdfatmode() call. Additionally
+      means of the unur_srou_set_cdfatmode() call. Additionally
       squeezes can be used and switched on via
       unur_srou_set_usesqueeze() (only if @code{r=1}).
       A way to increase the performance of the algorithm when the

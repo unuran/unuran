@@ -230,7 +230,7 @@ int unur_ssr_upd_mode( UNUR_GEN *generator );
    Recompute the mode of the distribution. 
    See unur_distr_cont_upd_mode() for more details.
 
-   unur_srou_reinit() must be executed before sampling from the 
+   unur_ssr_reinit() must be executed before sampling from the 
    generator again.
 */
 
@@ -263,7 +263,7 @@ int unur_ssr_upd_pdfarea( UNUR_GEN *generator );
    (@pxref{Stddist,,Standard distributions}).
    Otherwise @code{unur_errno} is set to @code{UNUR_ERR_DISTR_DATA}. 
 
-   unur_srou_reinit() must be executed before sampling from the 
+   unur_ssr_reinit() must be executed before sampling from the 
    generator again.
 */
 

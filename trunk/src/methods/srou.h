@@ -46,60 +46,87 @@
 
    =SPEED Set-up: fast, Sampling: slow
 
-   =REF  [LJa01] [LJa02]
+   =REF  [LJa01] [LJa02] [HLD04: Sect.6.3.1, Sect.6.4.1, Alg.6.4, Alg.6.7]
 
    =DESCRIPTION
-      SROU is based on the ratio-of-uniforms method but uses universal 
-      inequalities for constructing a (universal) bounding rectangle.
-      It works for all T-concave distributions (including log-concave
-      and T-concave distributions with T(x) = -1/sqrt(x)).
-      
-      It requires the PDF, the (exact) location of the mode and the
-      area below the given PDF. Moreover an (optional) parameter
-      @code{r} can be given, to adjust the generator to the given
-      distribution. This parameter is strongly related parameter
-      @code{c} for transformed density rejection via the formula
-      @i{c = -r/(r+1)}. @code{r} should be set as small as
-      possible but the given density must be T_c-concave for the
-      corresponding @i{c}.
-      The default setting for @code{r} is 1.
+      SROU is based on the ratio-of-uniforms method
+      (@pxref{Ratio-of-Uniforms}) that uses universal inequalities for
+      constructing a (universal) bounding rectangle. 
+      It works for all @i{T}-concave distributions, including
+      log-concave and @i{T}-concave distributions with 
+      @unurmath{T(x) = -1/\sqrt{x}.}
 
-      The parameter @code{r} can be any value larger than or equal to
-      1. The rejection constant depends on the chosen parameter
-      @code{r} but not on the particular distribution. It is 4 for
-      @code{r} equal to 1 and higher for higher values of @code{r}.
-      It is important to note that different algorithms for different
-      values of @code{r}: If @code{r} equal to 1 this is much faster
-      than the algorithm for @code{r} greater than 1.
+      Moreover an (optional) parameter @code{r} can be given, to
+      adjust the generator to the given distribution. This parameter
+      is strongly related to the parameter @code{c} for transformed
+      density rejection (@pxref{TDR}) via the formula
+      @i{c = -r/(r+1)}. The rejection constant increases with higher
+      values for @code{r}. On the other hand, the given density must
+      be @unurmath{T_c}-concave for the corresponding @i{c}.
+      The default setting for @code{r} is 1 which results in a very
+      simple code. (For other settings, sampling uniformly from the
+      acceptance region is more complicated.)
 
       Optionally the CDF at the mode can be given to increase the
-      performance of the algorithm by means of the
-      unur_srou_set_cdfatmode() call. Then the rejection constant is
+      performance of the algorithm. Then the rejection constant is
       reduced by 1/2 and (if @code{r=1}) even a universal squeeze can
       (but need not be) used. 
       A way to increase the performance of the algorithm when the
       CDF at the mode is not provided is the usage of the mirror
       principle (only if @code{r=1}). However using squeezes and using
-      the mirror principle is not recommended in general (see below).
-      
-      If the exact location of the mode is not known, then use the
-      approximate location and provide the (exact) value of the
-      PDF at the mode by means of the unur_srou_set_pdfatmode()
-      call. But then unur_srou_set_cdfatmode() must not be used.
-      Notice if no mode is given at all, a (slow) numerical mode
-      finder will be used. 
-      
+      the mirror principle is only recommended when the PDF is
+      expensive to compute.
+
+      The exact location of the mode and/or the area below the PDF can
+      be replace by appropriate bounds. Then the algorithm still works
+      but has larger rejection constants.
+
+   =HOWTOUSE
+      SSR works for any continuous univariate distribution object with
+      given @unurmath{T_c}-concave PDF with @unurmath{c<1,})
+      mode and area below PDF. Optional the CDF at the mode
+      can be given to increase the performance of the algorithm by
+      means of the unur_ssr_set_cdfatmode() call. Additionally
+      squeezes can be used and switched on via
+      unur_srou_set_usesqueeze() (only if @code{r=1}).
+      A way to increase the performance of the algorithm when the
+      CDF at the mode is not provided is the usage of the mirror
+      principle which can be swithced on by means of a
+      unur_srou_set_usemirror() call (only if @code{r=1}) .
+      However using squeezes and using
+      the mirror principle is only recommended when the PDF is
+      expensive to compute.
+
+      The parameter @code{r} can be given, to adjust the generator to
+      the given distribution. This parameter is strongly related
+      parameter @code{c} for transformed density rejection via the
+      formula @i{c = -r/(r+1)}. 
+      The parameter @code{r} can be any value larger than or equal to
+      1. Values less then 1 are automatically set to 1.
+      The rejection constant depends on the chosen parameter
+      @code{r} but not on the particular distribution. It is 4 for
+      @code{r} equal to 1 and higher for higher values of @code{r}.
+      It is important to note that different algorithms for different
+      values of @code{r}: If @code{r} equal to 1 this is much faster
+      than the algorithm for @code{r} greater than 1.
+      The default setting for @code{r} is 1.
+
       If the (exact) area below the PDF is not known, then an upper
-      bound can be used instead (which of course increases the
-      rejection constant). But then the squeeze flag must not be set
-      and unur_srou_set_cdfatmode() must not be used.
+      bound can be used instead (which of course increases the rejection
+      constant).  But then the squeeze flag must not be set and
+      unur_srou_set_cdfatmode() must not be used.
+
+      If the exact location of the mode is not known, then use the
+      approximate location and provide the (exact) value of the PDF at
+      the mode by means of the unur_srou_set_pdfatmode() call. But then
+      unur_srou_set_cdfatmode() must not be used. Notice, that a (slow)
+      numerical mode finder will be used if no mode is given at all.
+      It is even possible to give an upper bound for the PDF only.
+      However, then the (upper bound for the) area below the PDF has to be
+      multiplied by the ratio between the upper bound and the lower bound of
+      the PDF at the mode.  Again setting the squeeze flag and using
+      unur_srou_set_cdfatmode() is not allowed.
       
-      It is even possible to give an upper bound for the area below
-      the PDF only.
-      However then the (upper bound for the) area below the PDF has
-      to be multiplied by the ratio between the upper bound and the
-      lower bound of the PDF at the mode. Again setting the squeeze
-      flag and using unur_srou_set_cdfatmode() is not allowed.
       
       It is possible to change the parameters and the domain of the
       chosen distribution without building a new generator object
@@ -111,16 +138,18 @@
       unur_srou_set_pdfatmode() call, additionally
       unur_srou_chg_pdfatmode() must be used (otherwise this call is
       not necessary since then this figure is computed directly from
-      the PDF). If any of mode, PDF or CDF at the mode, or
-      the area below the mode has been changed, then
-      unur_srou_reinit() must be executed. 
+      the PDF). 
+
+      @emph{Important:}
+      If any of mode, PDF or CDF at the mode, or the area below the
+      mode has been changed, then unur_srou_reinit() must be executed.
       (Otherwise the generator produces garbage).
       
       There exists a test mode that verifies whether the conditions
       for the method are satisfied or not while sampling. It can be
-      switched on by calling unur_srou_set_verify() and unur_srou_chg_verify(),
-      respectively. Notice however that sampling is (a little bit)
-      slower then.
+      switched on by calling unur_srou_set_verify() and
+      unur_srou_chg_verify(), respectively. Notice however that
+      sampling is (a little bit) slower then.
 
    =END
 */

@@ -34,10 +34,9 @@
 /*---------------------------------------------------------------------------*/
 
 #include <unuran.h>
-#include <unur_source.h>
+#include <float.h>
 #include "testdistributions.h"
 
-#define DISTR distr->data.cvec
 #define LOGNORMCONSTANT (distr->data.cvec.norm_constant)
 
 /*  Multinormal distribution (corr-matrix with equal off-diagonal elements)  */
@@ -84,8 +83,8 @@ unur_distr_multinormal_ar1(int dim, const double *mean, double rho)
   
   register struct unur_distr *distr;
   
-  double *covar;
-  double *covar_inv;
+  double *covar = NULL;
+  double *covar_inv = NULL;
   
   int i,j;
   double a,b,c,denominator;
@@ -96,13 +95,8 @@ unur_distr_multinormal_ar1(int dim, const double *mean, double rho)
   
   }
   
-  if (rho<0 || rho>=1) {
-
-  }
-
   denominator=1-rho*rho;    
-  if (fabs(denominator)<UNUR_EPSILON) {
-    _unur_error(distr->name ,UNUR_ERR_DISTR_DOMAIN,"cannot compute inverse of covariance");
+  if (fabs(denominator)<DBL_EPSILON || rho<0 || rho>=1) {
     return NULL;    
   }
       
@@ -110,12 +104,13 @@ unur_distr_multinormal_ar1(int dim, const double *mean, double rho)
   /* get distribution object for multinormal distribution */
   distr = unur_distr_multinormal( dim, mean, NULL );
 
+#if 0  
   /* name of distribution */
   distr->name = "multinormal_ar1";
-
+#endif
   
   /* setting the covariance matrix */
-  covar = _unur_xmalloc( dim * dim * sizeof(double) );
+  covar = malloc( dim * dim * sizeof(double) );
   for (i=0; i<dim; i++) {
   for (j=0; j<dim; j++) {
     covar_inv[idx(i,j)] = (i==j) ? 1.: pow(rho, abs(i-j));
@@ -124,7 +119,7 @@ unur_distr_multinormal_ar1(int dim, const double *mean, double rho)
 
     
   /* setting the inverse covariance matrix */
-  covar_inv = _unur_xmalloc( dim * dim * sizeof(double) );
+  covar_inv = malloc( dim * dim * sizeof(double) );
     
   a=1./denominator;
   b=-rho/denominator;
@@ -133,17 +128,18 @@ unur_distr_multinormal_ar1(int dim, const double *mean, double rho)
   for (i=0; i<dim; i++) {
   for (j=0; j<dim; j++) {
     covar_inv[idx(i,j)] = 0.;
-    if (i==j &&  (i==0 || i==(dim-1))) DISTR.covar_inv[idx(i,j)] = a ;
-    if (i==j && !(i==0 || i==(dim-1))) DISTR.covar_inv[idx(i,j)] = c ;
-    if (abs(i-j)==1) DISTR.covar_inv[idx(i,j)] = b ;
+    if (i==j &&  (i==0 || i==(dim-1))) covar_inv[idx(i,j)] = a ;
+    if (i==j && !(i==0 || i==(dim-1))) covar_inv[idx(i,j)] = c ;
+    if (abs(i-j)==1) covar_inv[idx(i,j)] = b ;
   }}   
   unur_distr_cvec_set_covar_inv( distr, covar_inv );
   
-
+#if 0
   /* update log of normalization constant */
   det_covar = pow(1-rho*rho, dim-1);
   LOGNORMCONSTANT = - ( dim * log(2 * M_PI) + log(det_covar) ) / 2.;  
-  
+#endif
+    
   free(covar); free(covar_inv);
   
   /* return pointer to object */

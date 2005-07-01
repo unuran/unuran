@@ -1148,12 +1148,12 @@ unur_distr_cvec_get_covar_inv ( struct unur_distr *distr )
     
     */    
     
-      flag_analytic=1; /* initial value */
 
       /* check if we have a matrix of the form above */
   
       if (dim>2 && DISTR.covar[idx(0,1)]>UNUR_EPSILON ) {
         
+        flag_analytic=1; /* initial value */
 	r=DISTR.covar[idx(0,1)];
 
         for (i=0; i<dim; i++) {

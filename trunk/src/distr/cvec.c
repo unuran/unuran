@@ -888,6 +888,79 @@ unur_distr_cvec_set_covar( struct unur_distr *distr, const double *covar )
 
 /*---------------------------------------------------------------------------*/
 
+int
+unur_distr_cvec_set_covar_inv( struct unur_distr *distr, const double *covar_inv )
+     /*----------------------------------------------------------------------*/
+     /* set inverse of covariance matrix of distribution.                    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr     ... pointer to distribution object                       */
+     /*   covar_inv ... inverse of covariance matrix of distribution         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+#define idx(a,b) ((a)*dim+(b))
+
+  int i,j;
+  int dim;
+
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CVEC, UNUR_ERR_DISTR_INVALID );
+
+  dim = distr->dim;
+
+  /* mark as unknown */
+  distr->set &= ~(UNUR_DISTR_SET_COVAR_INV);
+
+  /* we have to allocate memory first */
+  if (DISTR.covar_inv == NULL)
+    DISTR.covar_inv = _unur_xmalloc( dim * dim * sizeof(double) );
+
+  /* if covar_inv == NULL --> use identity matrix */
+  if (covar_inv==NULL)
+    for (i=0; i<dim; i++)
+      for (j=0; j<dim; j++)
+         DISTR.covar_inv[idx(i,j)] = (i==j) ? 1. : 0.;
+  
+  /* inverse of covariance matrix given --> copy data */
+  else {
+    
+    /* check inverse of covariance matrix: diagonal entries > 0 */
+    for (i=0; i<dim*dim; i+= dim+1)
+      if (covar_inv[i] <= 0.) {
+	_unur_error(distr->name ,UNUR_ERR_DISTR_DOMAIN,"diagonals <= 0");
+	return UNUR_ERR_DISTR_DOMAIN;
+      }
+
+    /* check for symmetry */
+    for (i=0; i<dim; i++)
+      for (j=i+1; j<dim; j++)
+	if (!_unur_FP_same(covar_inv[i*dim+j],covar_inv[j*dim+i])) {
+	  _unur_error(distr->name ,UNUR_ERR_DISTR_DOMAIN,
+	              "inverse of covariance matrix not symmetric");
+	  return UNUR_ERR_DISTR_DOMAIN;
+	}
+
+    /* copy data */
+    memcpy( DISTR.covar_inv, covar_inv, dim * dim * sizeof(double) );
+
+  }
+
+  /* changelog */
+  distr->set |= UNUR_DISTR_SET_COVAR_INV;
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+
+#undef idx
+} /* end of unur_distr_cvec_set_covar_inv() */
+
+/*---------------------------------------------------------------------------*/
+
 const double *
 unur_distr_cvec_get_covar( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/

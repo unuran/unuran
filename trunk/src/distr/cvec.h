@@ -270,11 +270,18 @@ int unur_distr_cvec_set_covar( UNUR_DISTR *distribution, const double *covar );
    consecutively in this array.
 
    @var{covar} must be a variance-covariance matrix of the
-   @var{distribution}, i.e. it must be symmetric and positive definite and
+   @var{distribution}, i.e. it must be symmetric and positive definit and
    its diagonal entries (i.e. the variance of the components of the
    random vector) must be strictly positive.
    The Cholesky factor is computed (and stored) to verify the positive
    definiteness condition.
+   Notice that the inverse of the given covariance matrix is
+   automatically computed when it is requested by some routine.
+   Notice that the computation of this inverse matrix is unstable in
+   case of high correlations and/or high dimensions. Thus it might
+   fail and methods that require this inverse cannot be used.
+   As an alternative the inverse of the covariance matrix can be
+   directly set by a unur_distr_cvec_set_covar_inv() call. 
 
    A NULL pointer for @var{covar} is interpreted as the
    identity matrix.
@@ -289,13 +296,38 @@ int unur_distr_cvec_set_covar( UNUR_DISTR *distribution, const double *covar );
    unknown. A previously set covariance matrix is then no longer
    available.
 
-   @emph{Remark:} It might happen that a covariance matrix can be set
-   but the inverse if the given matrix cannot be computed.
-
    @emph{Remark:} UNU.RAN does not check whether the an eventually
    set covariance matrix and a rank-correlation matrix do not
    contradict each other.
 */
+
+int unur_distr_cvec_set_covar_inv( UNUR_DISTR *distribution, const double *covar_inv );
+/*
+   Set inverse of the covariance matrix for multivariate @var{distribution}.
+   @var{covar_inv} must be a pointer to an array of size
+   @code{dim} x @code{dim}, where @code{dim} is the dimension returned
+   by unur_distr_get_dim(). The rows of the matrix have to be stored
+   consecutively in this array.
+
+   @var{covar_inv} must be symmetric and positive definit. Only the
+   symmetry of the matrix is checked. 
+
+   A NULL pointer for @var{covar_inv} is interpreted as the identity matrix.
+
+   @emph{Important:} In case of an error (because @var{covar_inv} is
+   not symetric) an error code is returned.
+   Moreover, the inverse of the covariance matrix is not set and is
+   marked as unknown. A previously set inverse matrix is then no longer
+   available.
+
+   @emph{Remark:} UNU.RAN does not check whether the given matrix is
+   positive definit.
+
+   @emph{Remark:} UNU.RAN does not check whether the matrix
+   @var{covar_inv} is the inverse of the eventually set covariance
+   matrix.
+*/
+
 
 const double *unur_distr_cvec_get_covar( const UNUR_DISTR *distribution );
 /* */

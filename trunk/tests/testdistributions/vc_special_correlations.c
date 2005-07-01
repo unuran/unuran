@@ -37,8 +37,6 @@
 #include <float.h>
 #include "testdistributions.h"
 
-#define LOGNORMCONSTANT (distr->data.cvec.norm_constant)
-
 /*  Multinormal distribution (corr-matrix with equal off-diagonal elements)  */
 UNUR_DISTR *unur_distr_multinormal_constant_rho(int dim, const double *mean, double rho);
 /*---------------------------------------------------------------------------*/
@@ -88,7 +86,6 @@ unur_distr_multinormal_ar1(int dim, const double *mean, double rho)
   
   int i,j;
   double a,b,c,denominator;
-  double det_covar;
   
   /* checking parameters */
   if (dim<1) {
@@ -104,10 +101,8 @@ unur_distr_multinormal_ar1(int dim, const double *mean, double rho)
   /* get distribution object for multinormal distribution */
   distr = unur_distr_multinormal( dim, mean, NULL );
 
-#if 0  
   /* name of distribution */
-  distr->name = "multinormal_ar1";
-#endif
+  unur_distr_set_name(distr, "multinormal_ar1");
   
   /* setting the covariance matrix */
   covar = malloc( dim * dim * sizeof(double) );
@@ -133,13 +128,7 @@ unur_distr_multinormal_ar1(int dim, const double *mean, double rho)
     if (abs(i-j)==1) covar_inv[idx(i,j)] = b ;
   }}   
   unur_distr_cvec_set_covar_inv( distr, covar_inv );
-  
-#if 0
-  /* update log of normalization constant */
-  det_covar = pow(1-rho*rho, dim-1);
-  LOGNORMCONSTANT = - ( dim * log(2 * M_PI) + log(det_covar) ) / 2.;  
-#endif
-    
+     
   free(covar); free(covar_inv);
   
   /* return pointer to object */

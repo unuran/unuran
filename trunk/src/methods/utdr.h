@@ -46,12 +46,13 @@
 
    =SPEED Set-up: moderate, Sampling: Moderate
 
-   =REF  [HWa95]
+   =REF  [HWa95] [HLD04: Sect.4.5.4, Alg.4.4]
 
    =DESCRIPTION
-      UTDR is based on the transformed density rejection and uses three almost
-      optimal points for constructing hat and squeezes.
-      It works for all T-concave distributions with T(x) = -1/sqrt(x).
+      UTDR is based on the transformed density rejection and uses
+      three almost optimal points for constructing hat and squeezes.
+      It works for all @i{T}-concave distributions with 
+      @unurmath{T(x) = -1/\sqrt(x).}
       
       It requires the PDF and the (exact) location of the mode.
       Notice that if no mode is given at all, a (slow) numerical mode
@@ -60,8 +61,13 @@
       (If no area is given for the distribution the algorithm assumes that it
       is approximately 1.)
       The rejection constant is bounded from above by 4
-      for all T-concave distributions.
+      for all @i{T}-concave distributions.
       
+   =HOWTOUSE
+      UTDR works for any continuous univariate distribution object with
+      given @i{T}-concave PDF (with @unurmath{T(x) = -1/\sqrt{x},)}
+      mode and approximate area below PDF. 
+
       It is possible to change the parameters and the domain of the chosen 
       distribution without building a new generator object by using the
       unur_utdr_chg_pdfparams() and unur_utdr_chg_domain() call, respectively.

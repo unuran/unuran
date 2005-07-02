@@ -43,19 +43,6 @@ Bis Sommer:
 
 -----------------------------------------------------------------------------
 
-Lieber Wolfgang,
-
-mir ist noch eingefallen, dass wir eventuell (langfristig) auch
-vorsehen sollten, dass man statt der PDF den logarithmus der PDF, also
-log(PDF(x)) als alternativzugang verwenden koennte. vorteil:
-numerisch viel stabiler. ausserdem berechnen wir einige standard PDFs
-intern sowieso als y=log(PDF(x)) und geben den wert dann mittels 
-return exp(y) aus.
-
-lg Josef
-
-
------------------------------------------------------------------------------
 Lieber Josef!
 
 Ich habe heute UNURAN-0.4.4 installiert. Dabei ist mir aufgefallen, dass 

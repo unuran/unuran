@@ -180,6 +180,14 @@ int unur_vnrou_set_r( UNUR_PAR *parameters, double r );
    Default: @code{1}.
 */
 
+double unur_vnrou_get_volumehat( const UNUR_GEN *generator );
+/* 
+   Get the volume of below the hat.
+   For normalized densities, i.e. when the volume below PDF is 1, 
+   this value equals the rejection constant for the vnrou method.
+*/
+
+
 int unur_vnrou_set_verify( UNUR_PAR *parameters, int verify );
 /* 
    Turn verifying of algorithm while sampling on/off.

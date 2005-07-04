@@ -330,6 +330,28 @@ unur_vnrou_set_r( struct unur_par *par, double r )
 
 /*---------------------------------------------------------------------------*/
 
+double 
+unur_vnrou_get_volumehat( const UNUR_GEN *gen )
+     /*----------------------------------------------------------------------*/
+     /*   Get the volume of below the hat.                                   */
+     /*   For normalized densities, i.e. when the volume below PDF is 1,     */
+     /*   this value equals the rejection constant for the vnrou method.     */
+     /*----------------------------------------------------------------------*/
+{
+  double vol;
+  int d;
+  
+  vol = GEN->vmax;  
+  for (d=0; d<GEN->dim; d++) {
+    vol *= (GEN->umax[d]-GEN->umin[d]);
+  }
+  vol *= (GEN->r*GEN->dim+1);
+  
+  return vol;
+} /* end of unur_vnrou_get_volumehat() */
+
+/*---------------------------------------------------------------------------*/
+
 int
 unur_vnrou_set_verify( struct unur_par *par, int verify )
      /*----------------------------------------------------------------------*/

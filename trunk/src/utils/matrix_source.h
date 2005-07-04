@@ -59,6 +59,9 @@ int _unur_matrix_invert_matrix (int dim, const double *A, double detmin, double 
 double _unur_matrix_determinant ( int dim, const double *A );
 /* Calculates the determinant of the matrix A                                */
 
+int _unur_matrix_multiplication(int dim, const double *A, const double *B, double *AB);
+/* Calculates the matrix multiplication of two matrices A and B              */
+
 double _unur_matrix_qf (int dim, double *x, double *A );
 /* Compute quadratic form x'Ax.                                              */
 

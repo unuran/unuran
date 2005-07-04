@@ -219,7 +219,7 @@ _unur_matrix_LU_decomp (int dim, double *A, int *p, int *signum)
      /*   error code      otherwise                                          */
      /*----------------------------------------------------------------------*/
 {
-#define idx(a,b) ((a)*dim+b)
+#define idx(a,b) ((a)*dim+(b))
   int i, j, k;
 
   /* check arguments */
@@ -289,7 +289,7 @@ _unur_matrix_backsubstitution_dtrsv(int dim, double *LU, double *X)
      /*   error code      otherwise                                          */
      /*----------------------------------------------------------------------*/
 {
-#define idx(a,b) ((a)*dim+b)
+#define idx(a,b) ((a)*dim+(b))
 
   int ix,jx,i,j;
 
@@ -340,7 +340,7 @@ _unur_matrix_forwardsubstitution_dtrsv(int dim, double *LU, double *X)
      /*   error code      otherwise                                          */
      /*----------------------------------------------------------------------*/
 { 
-#define idx(a,b) ((a)*dim+b)
+#define idx(a,b) ((a)*dim+(b))
 
   int ix,jx,i,j;
 
@@ -389,7 +389,7 @@ _unur_matrix_LU_invert (int dim, double *LU, int *p, double *inverse)
      /*   error code      otherwise                                          */
      /*----------------------------------------------------------------------*/
 { 
-#define idx(a,b) ((a)*dim+b)
+#define idx(a,b) ((a)*dim+(b))
 
   double *vector;
   int i,j;
@@ -455,7 +455,7 @@ _unur_matrix_invert_matrix(int dim, const double *A, double detmin, double *Ainv
      /*   other error code, otherwise                                        */
      /*----------------------------------------------------------------------*/
 { 
-#define idx(a,b) ((a)*dim+b)
+#define idx(a,b) ((a)*dim+(b))
 
   int *p, s, i, j;
   double *LU;             /* array for storing LU decomposition of matrix A */
@@ -519,6 +519,54 @@ _unur_matrix_invert_matrix(int dim, const double *A, double detmin, double *Ainv
 
 /*---------------------------------------------------------------------------*/
 
+int 
+_unur_matrix_multiplication(int dim, const double *A, const double *B, double *AB)
+     /*----------------------------------------------------------------------*/
+     /* Calculates the matrix multiplication of two matrices A and B         */
+     /*									     */
+     /* input:                                                               */
+     /*   dim    ... dimension of the square matrix A                        */
+     /*   A      ... dim x dim -matrix                                       */
+     /*   B      ... dim x dim -matrix                                       */
+     /*                                                                      */
+     /* output:                                                              */
+     /*   AB     ... A*B                                                     */
+     /*									     */
+     /* return:								     */
+     /*   UNUR_SUCCESS on success                                            */
+     /*   other error code, otherwise                                        */
+     /*----------------------------------------------------------------------*/
+{ 
+#define idx(a,b) ((a)*dim+(b))
+
+  int i, j, k;
+  
+  /* check arguments */
+  CHECK_NULL(A,UNUR_ERR_NULL);
+  CHECK_NULL(B,UNUR_ERR_NULL);
+  CHECK_NULL(AB,UNUR_ERR_NULL);
+  
+  if (dim<1) {
+    _unur_error("matrix",UNUR_ERR_GENERIC,"dimension < 1");
+    return UNUR_ERR_GENERIC;
+  }
+  
+  /* compute product */
+  for(i=0;i<dim;i++) 
+  for(j=0;j<dim;j++) {
+    AB[idx(i,j)]=0.;
+    for(k=0;k<dim;k++) {
+      AB[idx(i,j)] += A[idx(i,k)]*B[idx(k,j)];
+    }
+  }
+  
+  return UNUR_SUCCESS;
+  
+#undef idx
+} /* end of _unur_matrix_multiplication() */
+
+/*---------------------------------------------------------------------------*/
+
 double
 _unur_matrix_determinant ( int dim, const double *A )
      /*----------------------------------------------------------------------*/
@@ -535,7 +583,7 @@ _unur_matrix_determinant ( int dim, const double *A )
      /*   return INFINITY                                                    */
      /*----------------------------------------------------------------------*/
 {
-#define idx(a,b) ((a)*dim+b)
+#define idx(a,b) ((a)*dim+(b))
   
   int *p, s, i;
   double *LU;     /* array for storing LU decomposition of matrix A */
@@ -588,7 +636,7 @@ _unur_matrix_qf (int dim, double *x, double *A)
      /*   return INFINITY                                                    */
      /*----------------------------------------------------------------------*/
 {
-#define idx(a,b) ((a)*dim+b)
+#define idx(a,b) ((a)*dim+(b))
   
   int i,j;
   double sum,outersum;
@@ -633,7 +681,7 @@ _unur_matrix_cholesky_decomposition (int dim, const double *S, double *L )
      /*   other error code, otherwise                                        */
      /*----------------------------------------------------------------------*/
 { 
-#define idx(a,b) ((a)*dim+b)
+#define idx(a,b) ((a)*dim+(b))
   
   int i,j,k;
   double sum1,sum2;

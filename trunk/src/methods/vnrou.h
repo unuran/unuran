@@ -127,6 +127,16 @@
       the numerical routine has worked correctly) this can be used to
       run a small Monte Carlo study.
 
+      @strong{Important:}
+      The rejection constant (i.e. the expected number of iterations
+      for generationg one random vector) can be extremely high, in
+      particular when the dimension is 4 or higher. 
+      Then the algorithm will perform almost infinite loops.
+      Thus it is recommended to read the volume below the hat function
+      by means of the unur_vnrou_get_volumehat() call. The returned
+      number divided by the volume below the PDF (which is 1 in case
+      of a normalized PDF) gives the rejection constant.
+
    =END
 */
 
@@ -180,14 +190,6 @@ int unur_vnrou_set_r( UNUR_PAR *parameters, double r );
    Default: @code{1}.
 */
 
-double unur_vnrou_get_volumehat( const UNUR_GEN *generator );
-/* 
-   Get the volume of below the hat.
-   For normalized densities, i.e. when the volume below PDF is 1, 
-   this value equals the rejection constant for the vnrou method.
-*/
-
-
 int unur_vnrou_set_verify( UNUR_PAR *parameters, int verify );
 /* 
    Turn verifying of algorithm while sampling on/off.
@@ -205,6 +207,16 @@ int unur_vnrou_chg_verify( UNUR_GEN *generator, int verify );
 /* 
    Change the verifying of algorithm while sampling on/off.
 */
+
+double unur_vnrou_get_volumehat( const UNUR_GEN *generator );
+/* 
+   Get the volume of below the hat.
+   For normalized densities, i.e. when the volume below PDF is 1, 
+   this value equals the rejection constant for the vnrou method.
+
+   In case of an error UNUR_INFINITY is returned.
+*/
+
 
 /* =END */
 /*---------------------------------------------------------------------------*/

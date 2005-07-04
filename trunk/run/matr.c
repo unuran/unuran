@@ -21,6 +21,7 @@ int main(int argc, char *argv[])
   UNUR_PAR   *par;
   UNUR_GEN   *gen;
 
+  int i,j;
   int dim = 2 ;
   double rho = 0.99;
   
@@ -36,24 +37,34 @@ int main(int argc, char *argv[])
 
   x = _unur_vector_new(dim);
   mean = _unur_vector_new(dim);
-  //covar = _unur_vector_new(dim*dim);
-  //covar_inv = _unur_vector_new(dim*dim);
+  covar = _unur_vector_new(dim*dim);
+  covar_inv = _unur_vector_new(dim*dim);
   product = _unur_vector_new(dim*dim);
   eigenvectors = _unur_vector_new(dim*dim);
 
  //distr = unur_distr_multinormal_ar1( dim, mean, rho );
- distr = unur_distr_multinormal_constant_rho( dim, mean, rho );
+ //distr = unur_distr_multinormal_constant_rho( dim, mean, rho );
  
- covar=unur_distr_cvec_get_covar(distr);
- covar_inv=unur_distr_cvec_get_covar_inv(distr);
+  
+  for (i=0; i<dim; i++)
+  for (j=0; j<dim; j++)
+    covar[idx(i,j)]=1.;
+  
+ 
+ 
+ //covar=unur_distr_cvec_get_covar(distr);
+ //covar_inv=unur_distr_cvec_get_covar_inv(distr);
 
+ 
  _unur_matrix_print_matrix(dim, covar, "COVAR", stdout , "","");
+/*
  _unur_matrix_print_matrix(dim, covar_inv, "COVAR INV _unur_distr_cvec_get_covar_inv()", stdout , "",""); 
  _unur_matrix_multiplication(dim, covar, covar_inv, product);
  _unur_matrix_print_matrix(dim, product, "PRODUCT", stdout , "",""); 
-
+*/
+ 
  memset(covar_inv, 0,dim*dim*sizeof(double));
- _unur_matrix_invert_matrix(dim, covar, 0, covar_inv, &det);
+ _unur_matrix_invert_matrix(dim, covar, covar_inv, &det);
  _unur_matrix_print_matrix(dim, covar_inv, "COVAR INV _unur_matrix_invert_matrix()", stdout , "",""); 
  _unur_matrix_multiplication(dim, covar, covar_inv, product);
  _unur_matrix_print_matrix(dim, product, "PRODUCT", stdout , "",""); 

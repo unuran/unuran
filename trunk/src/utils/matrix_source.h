@@ -48,12 +48,8 @@ int _unur_matrix_cholesky_decomposition (int dim, const double *S, double *L );
 /* The Cholesky factor L of a variance-covariance matrix S is computed:      */
 /*   S = LL'                                                                 */
 
-int _unur_matrix_invert_matrix (int dim, const double *A, double detmin, double *Ainv, double *det );
+int _unur_matrix_invert_matrix (int dim, const double *A, double *Ainv, double *det );
 /* Calculates the inverse matrix (by means of LU decomposition).             */
-/* If |det(A)| <= detmin a message is printed. 				     */
-/* The matrix is not inverted if it is ill-conditioned. We use the           */
-/*    |det(A)| / (dim * ||A||) < detmin                                      */
-/* where ||A|| denotes the L_1 norm of A.                                    */
 /* As a side effect det(A) is computed.                                      */
 
 double _unur_matrix_determinant ( int dim, const double *A );

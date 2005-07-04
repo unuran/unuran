@@ -426,19 +426,14 @@ _unur_matrix_LU_invert (int dim, double *LU, int *p, double *inverse)
 /*---------------------------------------------------------------------------*/
 
 int 
-_unur_matrix_invert_matrix(int dim, const double *A, double detmin, double *Ainv, double *det)
+_unur_matrix_invert_matrix(int dim, const double *A, double *Ainv, double *det)
      /*----------------------------------------------------------------------*/
      /* Calculates the inverse matrix (by means of LU decomposition).        */
-     /* If |det(A)| <= detmin a message is printed. 			     */
-     /* The matrix is not inverted if it is ill-conditioned. We use the      */
-     /*    |det(A)| / (dim * ||A||) < detmin                                 */
-     /* where ||A|| denotes the L_1 norm of A.                               */
      /* As a side effect det(A) is comuted.                                  */
      /*									     */
      /* input:                                                               */
      /*   dim    ... dimension of the square matrix A                        */
      /*   A      ... dim x dim -matrix                                       */
-     /*   detmin ... threshold value for |det(A)| for illconditioned matrix  */
      /*   Ainv   ... pointer to array where inverse matrix should be stored  */
      /*   det    ... pointer where det(A) should be stored                   */
      /*                                                                      */
@@ -448,19 +443,13 @@ _unur_matrix_invert_matrix(int dim, const double *A, double detmin, double *Ainv
      /*									     */
      /* return:								     */
      /*   UNUR_SUCCESS on success                                            */
-     /*   UNUR_FAILURE when matrix is ill-conditioned, i.e. when	     */
-     /*                |det(A)|/dim >= UNUR_EPSILON  or                      */
-     /*                |det(A)| / (dim * ||A||) < detmin                     */
-     /*                (array Ainv remains unchanged in this case)           */
      /*   other error code, otherwise                                        */
      /*----------------------------------------------------------------------*/
 { 
 #define idx(a,b) ((a)*dim+(b))
 
-  int *p, s, i, j;
+  int *p, s, i;
   double *LU;             /* array for storing LU decomposition of matrix A */
-  double norm;            /* L_1 norm of matrix A */
-  double halfnorm;        /* auxilliary variable for computing norm */
   
   /* check arguments */
   CHECK_NULL(A,UNUR_ERR_NULL);
@@ -483,28 +472,7 @@ _unur_matrix_invert_matrix(int dim, const double *A, double detmin, double *Ainv
   *det = s;
   for(i=0;i<dim;i++)
     *det *= LU[idx(i,i)];
-  
-  /* check for small determinant */
-  if (fabs(*det) <= detmin) {
-    _unur_warning("matrix",UNUR_ERR_GENERIC,"det(A) < detmin");
-  }
-  
-  /* calculate matrix norm */
-  norm=0.;
-  for(i=0;i<dim;i++) {
-    halfnorm=0.;
-    for(j=0;j<dim;j++)
-      halfnorm += fabs(A[idx(i,j)]);
-    if (halfnorm > norm) norm=halfnorm;
-  }
-  
-  /* check for ill-conditioned matrix */
-  if ( fabs(*det) / (dim * norm) < detmin ) { 
-    _unur_error("matrix",UNUR_ERR_GENERIC,"matrix ill-conditioned, cannot invert");
-    free(LU); free(p);
-    return UNUR_FAILURE; 
-  } 
-  
+      
   /* compute inverse by means of LU factors */
   _unur_matrix_LU_invert(dim, LU, p, Ainv);   
   

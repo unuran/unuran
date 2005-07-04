@@ -60,11 +60,6 @@ static void _unur_distr_cvec_marginals_free ( struct unur_distr **marginals, int
 
 #define DISTR distr->data.cvec
 
-/* Inverse of covariance matrix cannot be computed it is ill-conditioned.    */
-/* We use the threshold |det(A)| / (dim * ||A||) < COVARIANCE_DETMIN.        */
-/* (see _unur_matrix_invert() in ./src/utils/matrix.c)                       */
-#define COVARIANCE_DETMIN  (1.e-40) 
-
 /*---------------------------------------------------------------------------*/
 
 static void _unur_distr_cvec_free( struct unur_distr *distr );
@@ -1054,7 +1049,7 @@ unur_distr_cvec_get_covar_inv ( struct unur_distr *distr )
 
   if ( !(distr->set & UNUR_DISTR_SET_COVAR_INV) ) {       
       /* calculate inverse covariance matrix */
-      if (_unur_matrix_invert_matrix(dim, DISTR.covar, COVARIANCE_DETMIN, DISTR.covar_inv, &det) != UNUR_SUCCESS) {
+      if (_unur_matrix_invert_matrix(dim, DISTR.covar, DISTR.covar_inv, &det) != UNUR_SUCCESS) {
         _unur_error(distr->name ,UNUR_ERR_DISTR_DOMAIN,"cannot compute inverse of covariance");
         return NULL;
       }

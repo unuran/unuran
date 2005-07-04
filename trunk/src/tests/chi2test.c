@@ -652,7 +652,7 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
   memset(bm , 0, dim * n_intervals  * sizeof(int));
 
   /* calculation of inverse Cholesky factor */
-  if (_unur_matrix_invert_matrix (dim, L, 0 , Linv, &Linv_det) != UNUR_SUCCESS) {
+  if (_unur_matrix_invert_matrix (dim, L, Linv, &Linv_det) != UNUR_SUCCESS) {
     _unur_error(test_name,UNUR_ERR_DISTR_DATA,"cannot compute inverse of Cholesky factor");
     pval_min = -2.; goto free_memory;
   }

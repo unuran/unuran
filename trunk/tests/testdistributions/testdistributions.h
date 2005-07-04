@@ -59,23 +59,30 @@ UNUR_DISTR *unur_distr_normal_wo_logpdf( const double *params, int n_params );
 /*  Power-exponential (Subbotin) distribution  [3; ch.24, p.195]             */
 UNUR_DISTR *unur_distr_powerexponential_wo_logpdf(const double *params, int n_params);
 
-/*  Multinormal distribution (corr-matrix from AR1 process)                  */
+/*---------------------------------------------------------------------------*/
+/* Multivariate distributions with correlation matrix of AR(1) process       */
+
+/*  Multinormal distribution - AR(1)                                         */
 UNUR_DISTR *unur_distr_multinormal_ar1(int dim, const double *mean, double rho);
 
-/*  Multicauchy distribution (corr-matrix from AR1 process)                  */
+/*  Multicauchy distribution - AR(1)                                         */
 UNUR_DISTR *unur_distr_multicauchy_ar1(int dim, const double *mean, double rho);
 
-/*  Multistudent distribution (corr-matrix from AR1 process)                  */
+/*  Multistudent distribution - AR(1)                                        */
 UNUR_DISTR *unur_distr_multistudent_ar1(int dim, double df, const double *mean, double rho);
 
-/*  Multinormal distribution (corr-matrix with equal off-diagonal elements)  */
-UNUR_DISTR *unur_distr_multinormal_constant_rho(int dim, const double *mean, double rho);
+/*---------------------------------------------------------------------------*/
+/* Multivariate distributions with equal off-diagonal entries in             */
+/* correlation matrix                                                        */
 
-/*  Multicauchy distribution (corr-matrix with equal off-diagonal elements)  */
-UNUR_DISTR *unur_distr_multicauchy_constant_rho(int dim, const double *mean, double rho);
+/*  Multinormal distribution - constant rho                                  */
+UNUR_DISTR *unur_distr_multinormal_constantrho(int dim, const double *mean, double rho);
 
-/*  Multistudent distribution (corr-matrix with equal off-diagonal elements)  */
-UNUR_DISTR *unur_distr_multistudent_constant_rho(int dim, double df, const double *mean, double rho);
+/*  Multicauchy distribution - constant rho                                  */
+UNUR_DISTR *unur_distr_multicauchy_constantrho(int dim, const double *mean, double rho);
+
+/*  Multistudent distribution - constant rho                                 */
+UNUR_DISTR *unur_distr_multistudent_constantrho(int dim, double df, const double *mean, double rho);
 
 /*---------------------------------------------------------------------------*/
 #endif  /* UNURAN_TESTDISTRIBUTIONS_H_SEEN */

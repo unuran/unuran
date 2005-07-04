@@ -7,7 +7,7 @@ noinst_LTLIBRARIES = libtestdistributions.la
 
 libtestdistributions_la_SOURCES = \
  c_wo_logpdf.c \
- vc_special_correlations.c
+ vc_special_correlations_ar1.c
 
 noinst_HEADERS = testdistributions.h 
 

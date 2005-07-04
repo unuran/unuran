@@ -330,28 +330,6 @@ unur_vnrou_set_r( struct unur_par *par, double r )
 
 /*---------------------------------------------------------------------------*/
 
-double 
-unur_vnrou_get_volumehat( const UNUR_GEN *gen )
-     /*----------------------------------------------------------------------*/
-     /*   Get the volume of below the hat.                                   */
-     /*   For normalized densities, i.e. when the volume below PDF is 1,     */
-     /*   this value equals the rejection constant for the vnrou method.     */
-     /*----------------------------------------------------------------------*/
-{
-  double vol;
-  int d;
-  
-  vol = GEN->vmax;  
-  for (d=0; d<GEN->dim; d++) {
-    vol *= (GEN->umax[d]-GEN->umin[d]);
-  }
-  vol *= (GEN->r*GEN->dim+1);
-  
-  return vol;
-} /* end of unur_vnrou_get_volumehat() */
-
-/*---------------------------------------------------------------------------*/
-
 int
 unur_vnrou_set_verify( struct unur_par *par, int verify )
      /*----------------------------------------------------------------------*/
@@ -419,6 +397,39 @@ unur_vnrou_chg_verify( struct unur_gen *gen, int verify )
   return UNUR_SUCCESS;
 
 } /* end of unur_vnrou_chg_verify() */
+
+/*---------------------------------------------------------------------------*/
+
+double 
+unur_vnrou_get_volumehat( const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /*   Get the volume of below the hat.                                   */
+     /*   For normalized densities, i.e. when the volume below PDF is 1,     */
+     /*   this value equals the rejection constant for the vnrou method.     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen    ... pointer to generator object                             */
+     /*                                                                      */
+     /*----------------------------------------------------------------------*/
+{
+  double vol;
+  int d;
+
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, gen, INFINITY );
+  _unur_check_gen_object( gen, VNROU, INFINITY );
+
+  /* compute volume of bounding rectangle */
+  vol = GEN->vmax;  
+  for (d=0; d<GEN->dim; d++) {
+    vol *= (GEN->umax[d]-GEN->umin[d]);
+  }
+  /* compute volume of corresponding hat function */
+  vol *= (GEN->r*GEN->dim+1);
+
+  /* return result */
+  return vol;
+} /* end of unur_vnrou_get_volumehat() */
 
 
 /*****************************************************************************/

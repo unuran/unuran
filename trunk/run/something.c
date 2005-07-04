@@ -253,7 +253,7 @@ int main(int argc, char *argv[])
     }
   }
   
-  unur_set_default_debug(UNUR_DEBUG_OFF);
+  //unur_set_default_debug(UNUR_DEBUG_OFF);
    
   for(d=0;d<DIM;d++){
     for (m=1; m<=4; m++) {

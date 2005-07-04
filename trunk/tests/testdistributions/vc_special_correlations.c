@@ -37,8 +37,6 @@
 #include <float.h>
 #include "testdistributions.h"
 
-/*  Multinormal distribution (corr-matrix with equal off-diagonal elements)  */
-UNUR_DISTR *unur_distr_multinormal_constant_rho(int dim, const double *mean, double rho);
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
@@ -85,38 +83,37 @@ _unur_vc_special_correlations_set_ar1(struct unur_distr *distr, int dim, double 
   /* checking parameters */ 
   denominator=1-rho*rho;    
   if (fabs(denominator)<DBL_EPSILON || rho<0 || rho>=1 || dim<1) {
-    distr = NULL;    
+    distr = NULL;
     return;
   }
-      
+
   /* setting the covariance matrix */
   covar = malloc( dim * dim * sizeof(double) );
   for (i=0; i<dim; i++) {
   for (j=0; j<dim; j++) {
-    covar_inv[idx(i,j)] = (i==j) ? 1.: pow(rho, abs(i-j));
-  }}       
+    covar[idx(i,j)] = (i==j) ? 1.: pow(rho, abs(i-j));
+  }}
   unur_distr_cvec_set_covar( distr, covar );
 
-    
   /* setting the inverse covariance matrix */
   covar_inv = malloc( dim * dim * sizeof(double) );
-    
+
   a=1./denominator;
   b=-rho/denominator;
   c=(1+rho*rho)/denominator;
-  
+
   for (i=0; i<dim; i++) {
   for (j=0; j<dim; j++) {
     covar_inv[idx(i,j)] = 0.;
     if (i==j &&  (i==0 || i==(dim-1))) covar_inv[idx(i,j)] = a ;
     if (i==j && !(i==0 || i==(dim-1))) covar_inv[idx(i,j)] = c ;
     if (abs(i-j)==1) covar_inv[idx(i,j)] = b ;
-  }}   
+  }}
   unur_distr_cvec_set_covar_inv( distr, covar_inv );
-     
+
   free(covar); free(covar_inv);
-    
-  return;    
+
+  return;
 
 #undef idx
 } /* end of _unur_vc_special_correlations_set_ar1() */
@@ -159,19 +156,19 @@ _unur_vc_special_correlations_set_constant_rho(struct unur_distr *distr, int dim
   
   int i,j;
   double a,b,denominator;
-  
+
   /* checking parameters */ 
   denominator=1+(dim-2)*rho-(dim-1)*rho*rho;
   if (fabs(denominator)<DBL_EPSILON || rho<0 || rho>=1 || dim<1) {
     distr = NULL;    
     return;
   }
-      
+
   /* setting the covariance matrix */
   covar = malloc( dim * dim * sizeof(double) );
   for (i=0; i<dim; i++) {
   for (j=0; j<dim; j++) {
-    covar_inv[idx(i,j)] = (i==j) ? 1.: rho;
+    covar[idx(i,j)] = (i==j) ? 1.: rho;
   }}       
   unur_distr_cvec_set_covar( distr, covar );
 

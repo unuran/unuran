@@ -146,10 +146,6 @@
 
    =END
 
-  include the C-code of the files example_TABL1, example_TABL2 and example_TABL3 here.
-  TODO: Soll man example_TABL3 von stringinterface auf das andere GUI umstellen? 
-  TODO: Soll man die Reihenfolge der function references aendern??
-
 */
 
 /*---------------------------------------------------------------------------*/

@@ -402,7 +402,7 @@ unur_srou_set_pdfatmode( UNUR_PAR *par, double fmode )
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"PDF(mode)");
     return UNUR_ERR_PAR_SET;
   }
-  if (_unur_FP_is_infinity(fmode)) {
+  if (!_unur_isfinite(fmode)) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"PDF(mode) overflow");
     return UNUR_ERR_PAR_SET;
   }
@@ -694,7 +694,7 @@ unur_srou_chg_pdfatmode( struct unur_gen *gen, double fmode )
     _unur_warning(gen->genid,UNUR_ERR_PAR_SET,"PDF(mode)");
     return UNUR_ERR_PAR_SET;
   }
-  if (_unur_FP_is_infinity(fmode)) {
+  if (!_unur_isfinite(fmode)) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"PDF(mode) overflow");
     return UNUR_ERR_PAR_SET;
   }
@@ -942,7 +942,7 @@ _unur_srou_rectangle( struct unur_gen *gen )
       _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF(mode) <= 0.");
       return UNUR_ERR_GEN_DATA;
     }
-    if (_unur_FP_is_infinity(fm)) {
+    if (!_unur_isfinite(fm)) {
       _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"PDF(mode) overflow");
       return UNUR_ERR_PAR_SET;
     }
@@ -1008,7 +1008,7 @@ _unur_gsrou_envelope( struct unur_gen *gen )
       _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF(mode) <= 0.");
       return UNUR_ERR_GEN_DATA;
     }
-    if (_unur_FP_is_infinity(fm)) {
+    if (!_unur_isfinite(fm)) {
       _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"PDF(mode) overflow");
       return UNUR_ERR_PAR_SET;
     }

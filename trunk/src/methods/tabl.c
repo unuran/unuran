@@ -48,12 +48,16 @@
  *       continuous and discrete distributions,                              *
  *       Computing 54(2), pp. 127-146                                        *
  *                                                                           *
+ *   [3] Hoermann, W., Leydold J., and Derflinger, G. (2004):                *
+ *       Automatic non-uniform random variate generation, Springer, Berlin.  *
+ *       Section 2.4, Algorithm 2.9 (RoU), p.35                              *
+ *                                                                           *
  *   SEE ALSO:                                                               *
- *   [3] Gilks, W. R. and Wild,  P. (1992):                                  *
+ *   [4] Gilks, W. R. and Wild,  P. (1992):                                  *
  *       Adaptive rejection sampling for Gibbs sampling,                     *
  *       Applied Statistics 41, pp. 337-348                                  *
  *                                                                           *
- *   [4] Zaman, A. (1996), Generation of Random Numbers from an Arbitrary    *
+ *   [5] Zaman, A. (1996), Generation of Random Numbers from an Arbitrary    *
  *       Unimodal Density by Cutting Corners, unpublished manuskript         *
  *       available at http://chenab.lums.edu.pk/~arifz/                      *
  *                                                                           *

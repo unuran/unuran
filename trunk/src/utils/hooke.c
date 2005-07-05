@@ -211,7 +211,8 @@ int _unur_hooke(struct unur_funct_vgeneric faux,
            double  *delta, *xbefore, *newx;
 	   double  newf, fbefore, steplength, tmp;
 	   int	   i, keep;
-	   int	   iters, iadj;
+	   int	   iters, isubiters, iadj;
+	   int     subitermax;
 
 	   delta   = (double *) malloc( dim*sizeof(double));
 	   xbefore = (double *) malloc( dim*sizeof(double));
@@ -224,6 +225,8 @@ int _unur_hooke(struct unur_funct_vgeneric faux,
 			   delta[i] = rho;
 	   }
 
+	   subitermax=3; /* value ok ? */
+	   
 	   iadj = 0;
 	   steplength = rho;
 	   iters = 0;
@@ -241,7 +244,8 @@ int _unur_hooke(struct unur_funct_vgeneric faux,
 		   newf = best_nearby(faux, delta, newx, fbefore, dim);
 		   /* if we made some improvements, pursue that direction */
 		   keep = 1;
-		   while ((newf < fbefore) && (keep == 1)) {
+		   isubiters=0;
+		   while ((newf < fbefore) && (keep == 1) && isubiters++ < subitermax) {
 			   iadj = 0;
 			   for (i = 0; i < dim; i++) {
 				   /* firstly, arrange the sign of delta[] */

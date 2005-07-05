@@ -505,7 +505,8 @@ _unur_vnrou_rectangle( struct unur_gen *gen )
 
   int d; /* index used in dimension loops (0 <= d < dim) */
   struct MROU_RECTANGLE *rr;
-
+  int rectangle_compute;
+  
   /* check arguments */
   CHECK_NULL( gen, UNUR_ERR_NULL );
   COOKIE_CHECK( gen,CK_VNROU_GEN, UNUR_ERR_COOKIE );
@@ -527,9 +528,8 @@ _unur_vnrou_rectangle( struct unur_gen *gen )
   rr->genid  = gen->genid;
   
   /* calculate bounding rectangle */
-  _unur_mrou_rectangle_compute(rr);
-
-
+  rectangle_compute = _unur_mrou_rectangle_compute(rr);
+  
   if (!(gen->set & VNROU_SET_V)) {
      /* user has not provided any upper bound for v */
      GEN->vmax = rr->vmax;
@@ -544,6 +544,8 @@ _unur_vnrou_rectangle( struct unur_gen *gen )
   }
 
   free(rr);
+  
+  if (rectangle_compute != UNUR_SUCCESS) return UNUR_ERR_INF;
   
   /* o.k. */
   return UNUR_SUCCESS;

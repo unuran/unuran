@@ -175,7 +175,7 @@ _unur_mrou_rectangle_compute( struct MROU_RECTANGLE *rr )
   int hooke_iters_umin;  /* actual number of min/max iterations = return value of hooke()*/
   int hooke_iters_umax;  /* actual number of min/max iterations = return value of hooke()*/
   double scaled_epsilon; /* to be used in the hooke algorithm */
-
+  int flag_finite; /* sanity flag FALSE when some of the rectangle (u,v)-values are not finite */
 
   /* dimension of the distribution */
   dim = rr->dim;
@@ -205,7 +205,7 @@ _unur_mrou_rectangle_compute( struct MROU_RECTANGLE *rr )
 				    MROU_HOOKE_RHO, MROU_HOOKE_EPSILON, MROU_HOOKE_MAXITER);
   
     rr->vmax = -faux.f(xend, faux.params);
-  
+    
     if (hooke_iters_vmax >= MROU_HOOKE_MAXITER) {
       scaled_epsilon = MROU_HOOKE_EPSILON * rr->vmax;
       if (scaled_epsilon>MROU_HOOKE_EPSILON) scaled_epsilon=MROU_HOOKE_EPSILON;
@@ -236,7 +236,7 @@ _unur_mrou_rectangle_compute( struct MROU_RECTANGLE *rr )
     
     faux.f = (UNUR_FUNCT_VGENERIC*) _unur_mrou_rectangle_aux_umin;
     faux.params = rr;
-      
+    
     hooke_iters_umin = _unur_hooke( faux, dim, xstart, xend,
 				    MROU_HOOKE_RHO, MROU_HOOKE_EPSILON, MROU_HOOKE_MAXITER);
     rr->umin[d] = faux.f(xend, faux.params);
@@ -306,6 +306,12 @@ _unur_mrou_rectangle_compute( struct MROU_RECTANGLE *rr )
   rr->vmax = rr->vmax * ( 1+ MROU_RECT_SCALING);
    
   free(xstart); free(xend); free(xumin); free(xumax);
+  
+  flag_finite=_unur_isfinite(rr->vmax);
+  for (d=0; d<dim; d++) {
+    flag_finite = flag_finite && _unur_isfinite(rr->umin[d]) && _unur_isfinite(rr->umax[d]);
+  }
+  if (!flag_finite) return UNUR_ERR_INF;
   
   /* o.k. */
   return UNUR_SUCCESS;

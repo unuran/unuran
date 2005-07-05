@@ -2275,7 +2275,7 @@ _unur_distr_cont_find_mode( struct unur_distr *distr )
   /** TODO: FLT_MIN must be much larger than DBL_MIN **/
 
   mode = fmaxbr( DISTR.pdf, distr, x[0], x[2], x[1], FLT_MIN );
-  if (!(_unur_FP_is_infinity( mode )) ){
+  if (_unur_isfinite(mode)){
     /* mode successfully computed */
     DISTR.mode = mode;
     /* changelog */

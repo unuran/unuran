@@ -126,7 +126,7 @@ unur_tdr_new( const struct unur_distr* distr )
 int
 unur_tdr_set_cpoints( struct unur_par *par, int n_stp, const double *stp )
      /*----------------------------------------------------------------------*/
-     /* set construction points for envelope                                 */
+     /* set construction points for hat function                             */
      /* and/or its number for initialization                                 */
      /*                                                                      */
      /* parameters:                                                          */

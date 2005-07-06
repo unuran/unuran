@@ -179,6 +179,11 @@ The following TAGs are valid:
 	texi file. (Notice that `==DOC' is not a TAG as described
 	above).
 
+=OBSOLETE	Functions that are obsolete and not documented any
+	more, but are still in the code for compatibility should be 
+	put after this tag. Notice that the regular expression for
+        finding this tag is {/\*\s*=OBSOLETE.*$}. Everything after
+	this tag is removed (and is not even part of the string API).
 
 
 (*) Common Transformation Rules
@@ -221,7 +226,7 @@ makeinfo.
 	must be separated by a colon ":". You are not allowed to use a
 	curly bracket "{" or "}". A comma "," is automatically
 	replaced by a semicolon. 
-	(This restrictions are due to texinfo).
+	(These restrictions are due to texinfo).
 
 @unurimage	same as @image. But it will be easier to add vertical 
 	spaces later.

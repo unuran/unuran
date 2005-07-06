@@ -372,6 +372,9 @@ sub make_list_of_distr_sets {
 	next unless $SUPPORTED_DISTR_TYPES{$distr_type};
 	print STDERR "  \U$distr_type: " if $VERBOSE;
 
+	# remove obsolete functions
+	$content =~ s {/\*\s*=OBSOLETE.*$} []gsx;
+
 	# Remove all comments and empty lines ...
 	$content =~ s {/\*.*?\*/} []gsx;
 	$content =~ s /\n\s*\n/\n/gsx;
@@ -733,6 +736,9 @@ sub make_list_of_par_sets {
 	# ID for method
 	print STDERR "  $1: " if $VERBOSE;
 	my $method = "\L$1";
+
+	# remove obsolete functions
+	$content =~ s {/\*\s*=OBSOLETE.*$} []gsx;
 
 	# Remove all comments and empty lines ...
 	$content =~ s {/\*.*?\*/} []gsx;

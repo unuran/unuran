@@ -39,6 +39,13 @@
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
+/* Special continuous univariate distributions                               */
+
+/*  Zigzag distributions                                                     */
+/*  (boundary of domain as parameters)                                       */
+UNUR_DISTR *unur_distr_zigzag(const double *params, int n_params);
+
+/*---------------------------------------------------------------------------*/
 /* Continuous univariate distributions without logPDF                        */
 
 /*  Beta distribution  [3; ch.25, p.210]                                     */

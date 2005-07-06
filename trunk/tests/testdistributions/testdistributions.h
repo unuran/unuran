@@ -41,9 +41,10 @@
 /*---------------------------------------------------------------------------*/
 /* Special continuous univariate distributions                               */
 
-/*  Zigzag distributions                                                     */
+/*  sawtooth distributions with discontinuous PDF                            */
+/*  pdf(x) = |x| - floor(|x|)                                                */
 /*  (boundary of domain as parameters)                                       */
-UNUR_DISTR *unur_distr_zigzag(const double *params, int n_params);
+UNUR_DISTR *unur_distr_sawtooth_discpdf(const double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
 /* Continuous univariate distributions without logPDF                        */

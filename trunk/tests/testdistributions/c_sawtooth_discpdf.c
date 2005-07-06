@@ -4,12 +4,11 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *  Zigzag distribution                                                      *
+ *  Sawtooth distribution with discontinuous PDF                             *
  *                                                                           *
- *  pdf:               / 1             if x is integer != 0                  *
+ *  pdf:               / 1                 if x is integer != 0              *
  *             f(x) = <                                                      *
- *                     \ |x| - [|x|]   otherwise                             *
- *             where [x] is smallest integer <= x                            *
+ *                     \ |x| - floor(|x|)  otherwise                         *
  *  domain:    closed interval                                               *
  *  constant:  depends on interval                                           *
  *                                                                           *
@@ -46,7 +45,7 @@
 #include "testdistributions.h"
 
 /*---------------------------------------------------------------------------*/
-static const char distr_name[] = "zigzag";
+static const char distr_name[] = "sawtooth_discpdf";
 
 /* parameters */
 #define DISTR distr->data.cont
@@ -54,17 +53,17 @@ static const char distr_name[] = "zigzag";
 #define bd_right (params[1])
 
 /* function prototypes                                                       */
-static double _unur_pdf_zigzag( double x, const UNUR_DISTR *distr );
-static double _unur_dpdf_zigzag( double x, const UNUR_DISTR *distr );
-static double _unur_cdf_zigzag( double x, const UNUR_DISTR *distr );
+static double _unur_pdf_sawtooth_discpdf( double x, const UNUR_DISTR *distr );
+static double _unur_dpdf_sawtooth_discpdf( double x, const UNUR_DISTR *distr );
+static double _unur_cdf_sawtooth_discpdf( double x, const UNUR_DISTR *distr );
 
-static int _unur_set_params_zigzag( UNUR_DISTR *distr, const double *params, int n_params );
-static int _unur_upd_area_zigzag( UNUR_DISTR *distr );
+static int _unur_set_params_sawtooth_discpdf( UNUR_DISTR *distr, const double *params, int n_params );
+static int _unur_upd_area_sawtooth_discpdf( UNUR_DISTR *distr );
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_pdf_zigzag( double x, const UNUR_DISTR *distr )
+_unur_pdf_sawtooth_discpdf( double x, const UNUR_DISTR *distr )
 {
   double pdf;
 
@@ -75,15 +74,15 @@ _unur_pdf_zigzag( double x, const UNUR_DISTR *distr )
   x = fabs(x);
   pdf = x - floor(x);
   return (pdf==0.) ? 1. : pdf;
-} /* end of _unur_pdf_zigzag() */
+} /* end of _unur_pdf_sawtooth_discpdf() */
 
 /*---------------------------------------------------------------------------*/
   
 double
-_unur_dpdf_zigzag( double x, const UNUR_DISTR *distr )
+_unur_dpdf_sawtooth_discpdf( double x, const UNUR_DISTR *distr )
 {
   return (x<0.) ? -1. : 1.;
-} /* end of _unur_dpdf_zigzag() */
+} /* end of _unur_dpdf_sawtooth_discpdf() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -111,15 +110,15 @@ static double integral_x_y( double x, double y )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_cdf_zigzag( double x, const UNUR_DISTR *distr )
+_unur_cdf_sawtooth_discpdf( double x, const UNUR_DISTR *distr )
 {
   return (integral_x_y(DISTR.domain[0],x) / integral_x_y(DISTR.domain[0],DISTR.domain[1]));
-} /* end of _unur_cdf_zigzag() */
+} /* end of _unur_cdf_sawtooth_discpdf() */
 
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_upd_area_zigzag( UNUR_DISTR *distr )
+_unur_upd_area_sawtooth_discpdf( UNUR_DISTR *distr )
 {
   double area = integral_x_y(DISTR.domain[0],DISTR.domain[1]);
   if (!_unur_isfinite(area)) {
@@ -129,12 +128,12 @@ _unur_upd_area_zigzag( UNUR_DISTR *distr )
  
   DISTR.area = area;
   return UNUR_SUCCESS;
-} /* end of _unur_upd_area_zigzag() */
+} /* end of _unur_upd_area_sawtooth_discpdf() */
 
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_set_params_zigzag( UNUR_DISTR *distr, const double *params, int n_params )
+_unur_set_params_sawtooth_discpdf( UNUR_DISTR *distr, const double *params, int n_params )
 {
   /* check number of parameters for distribution */
   if (n_params != 2) {
@@ -154,18 +153,18 @@ _unur_set_params_zigzag( UNUR_DISTR *distr, const double *params, int n_params )
   DISTR.domain[1] = bd_right;
 
   /* update area below PDF */
-  if (_unur_upd_area_zigzag(distr) != UNUR_SUCCESS) {
+  if (_unur_upd_area_sawtooth_discpdf(distr) != UNUR_SUCCESS) {
     _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"invalid domain");
     return UNUR_ERR_DISTR_DOMAIN;
   }
 
   return UNUR_SUCCESS;
-} /* end of _unur_set_params_zigzag() */
+} /* end of _unur_set_params_sawtooth_discpdf() */
 
 /*---------------------------------------------------------------------------*/
 
 struct unur_distr *
-unur_distr_zigzag( const double *params, int n_params )
+unur_distr_sawtooth_discpdf( const double *params, int n_params )
      /* boundary of domain as parameters */
 {
   register struct unur_distr *distr;
@@ -188,9 +187,9 @@ unur_distr_zigzag( const double *params, int n_params )
   /* DISTR.init = NULL; */
 
   /* functions */
-  DISTR.pdf     = _unur_pdf_zigzag;     /* pointer to PDF                  */
-  DISTR.dpdf    = _unur_dpdf_zigzag;    /* pointer to derivative of PDF    */
-  DISTR.cdf     = _unur_cdf_zigzag;     /* pointer to CDF                  */
+  DISTR.pdf     = _unur_pdf_sawtooth_discpdf;     /* pointer to PDF                  */
+  DISTR.dpdf    = _unur_dpdf_sawtooth_discpdf;    /* pointer to derivative of PDF    */
+  DISTR.cdf     = _unur_cdf_sawtooth_discpdf;     /* pointer to CDF                  */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |
@@ -198,7 +197,7 @@ unur_distr_zigzag( const double *params, int n_params )
 		 UNUR_DISTR_SET_PDFAREA );
                 
   /* set parameters for distribution */
-  if (_unur_set_params_zigzag(distr,params,n_params)!=UNUR_SUCCESS) {
+  if (_unur_set_params_sawtooth_discpdf(distr,params,n_params)!=UNUR_SUCCESS) {
     free(distr); return NULL;
   }
 
@@ -206,15 +205,15 @@ unur_distr_zigzag( const double *params, int n_params )
   /* NORMCONSTANT = 1.; */
 
   /* function for setting parameters and updating domain */
-  DISTR.set_params = _unur_set_params_zigzag;
+  DISTR.set_params = _unur_set_params_sawtooth_discpdf;
 
   /* function for updating derived parameters */
-  DISTR.upd_area  = _unur_upd_area_zigzag; /* funct for computing area */
+  DISTR.upd_area  = _unur_upd_area_sawtooth_discpdf; /* funct for computing area */
 
   /* return pointer to object */
   return distr;
 
-} /* end of unur_distr_zigzag() */
+} /* end of unur_distr_sawtooth_discpdf() */
 
 /*---------------------------------------------------------------------------*/
 #undef DISTR

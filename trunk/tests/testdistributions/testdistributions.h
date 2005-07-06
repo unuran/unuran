@@ -42,9 +42,14 @@
 /* Special continuous univariate distributions                               */
 
 /*  sawtooth distributions with discontinuous PDF                            */
-/*  pdf(x) = |x| - floor(|x|)                                                */
+/*  pdf(x) = |x| - floor(|x|)  (and 1 at integers != 0)                      */
 /*  (boundary of domain as parameters)                                       */
 UNUR_DISTR *unur_distr_sawtooth_discpdf(const double *params, int n_params);
+
+/*  sawtooth distributions with continuous PDF                               */
+/*  pdf(x) = y for y < 0.5 and 1-y otherwise (where y = |x| - floor(|x|))    */ 
+/*  (boundary of domain as parameters)                                       */
+UNUR_DISTR *unur_distr_sawtooth_contpdf(const double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
 /* Continuous univariate distributions without logPDF                        */

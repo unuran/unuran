@@ -148,6 +148,11 @@
 #include <unur_source.h>
 #include "hooke_source.h"
 
+/* The following maximum number of 'sub-iterations' has been       */
+/* introduced in order to avoid potential infinite loops in the    */
+/* main hooke algorithm. */
+#define HOOKE_SUBITERMAX 10
+
 /*-----------------------------------------------------------------*/
 
 /* prototypes */
@@ -211,8 +216,7 @@ int _unur_hooke(struct unur_funct_vgeneric faux,
            double  *delta, *xbefore, *newx;
 	   double  newf, fbefore, steplength, tmp;
 	   int	   i, keep;
-	   int	   iters, isubiters, iadj;
-	   int     subitermax;
+	   int	   iters, isubiters;
 
 	   delta   = (double *) malloc( dim*sizeof(double));
 	   xbefore = (double *) malloc( dim*sizeof(double));
@@ -225,9 +229,6 @@ int _unur_hooke(struct unur_funct_vgeneric faux,
 			   delta[i] = rho;
 	   }
 
-	   subitermax=3; /* value ok ? */
-	   
-	   iadj = 0;
 	   steplength = rho;
 	   iters = 0;
 	   fbefore = faux.f(newx, faux.params);
@@ -235,7 +236,6 @@ int _unur_hooke(struct unur_funct_vgeneric faux,
 
 	   while ((iters < itermax) && (steplength > epsilon)) {
 		   iters++;
-		   iadj++;
 
 		   /* find best new point, one coord at a time */
 		   for (i = 0; i < dim; i++) {
@@ -245,8 +245,7 @@ int _unur_hooke(struct unur_funct_vgeneric faux,
 		   /* if we made some improvements, pursue that direction */
 		   keep = 1;
 		   isubiters=0;
-		   while ((newf < fbefore) && (keep == 1) && isubiters++ < subitermax) {
-			   iadj = 0;
+		   while ((newf < fbefore) && (keep == 1) ) {
 			   for (i = 0; i < dim; i++) {
 				   /* firstly, arrange the sign of delta[] */
 				   if (newx[i] <= xbefore[i])
@@ -269,15 +268,16 @@ int _unur_hooke(struct unur_funct_vgeneric faux,
 			   /* might cause newf < fbefore */
 			   keep = 0;
 			   for (i = 0; i < dim; i++) {
-				   keep = 1;
-				   if (fabs(newx[i] - xbefore[i]) >
-				       (0.5 * fabs(delta[i])))
-					   break;
-				   else
-					   keep = 0;
+			     if (fabs(newx[i] - xbefore[i]) >  (0.5 * fabs(delta[i]))) {
+			       keep = 1; 
+			       break;
+			     }
 			   }
+			   
+			   /* stopping condition to avoid infinite while-loop */
+			   if ( isubiters++ >= HOOKE_SUBITERMAX) break;
 		   }
-		   if ((steplength >= epsilon) && (newf >= fbefore)) {
+		   if ((steplength >= epsilon) /*&& (newf >= fbefore)*/) {
 			   steplength = steplength * rho;
 			   for (i = 0; i < dim; i++) {
 				   delta[i] *= rho;
@@ -286,7 +286,6 @@ int _unur_hooke(struct unur_funct_vgeneric faux,
 	   }
 	   for (i = 0; i < dim; i++)
 		   endpt[i] = xbefore[i];
-
 
  	   free(delta); free(xbefore); free(newx);		   
 	   

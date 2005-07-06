@@ -1,5 +1,10 @@
 Version 0.6.0: ???? 200?
 
+	- method TABL: construction points can be set by new function 
+          unur_tdr_set_cpoints(). It also replaces function 
+	  unur_tabl_set_nstp() which should not be used any more
+	  (but is still available for compatibility).
+
 	- addind new distribution type for full conditional distributions
 
 	- adding multivariate Cauchy and Student distributions.

@@ -111,15 +111,16 @@
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
 
-#define TABL_SET_GUIDEFACTOR      0x001u
-#define TABL_SET_SLOPES           0x004u
-#define TABL_SET_AREAFRACTION     0x008u
-#define TABL_SET_MAX_IVS          0x010u
-#define TABL_SET_MAX_SQHRATIO     0x020u
-#define TABL_SET_N_STP            0x040u
-#define TABL_SET_BOUNDARY         0x080u
-#define TABL_SET_USE_DARS         0x100u
-#define TABL_SET_DARS_FACTOR      0x200u
+#define TABL_SET_GUIDEFACTOR      0x0001u
+#define TABL_SET_SLOPES           0x0004u
+#define TABL_SET_AREAFRACTION     0x0008u
+#define TABL_SET_MAX_IVS          0x0010u
+#define TABL_SET_MAX_SQHRATIO     0x0020u
+#define TABL_SET_N_STP            0x0040u
+#define TABL_SET_STP              0x0080u
+#define TABL_SET_BOUNDARY         0x0100u
+#define TABL_SET_USE_DARS         0x0200u
+#define TABL_SET_DARS_FACTOR      0x0400u
 
 /*---------------------------------------------------------------------------*/
 
@@ -291,7 +292,8 @@ unur_tabl_new( const struct unur_distr *distr )
   PAR->slopes        = NULL;      /* pointer to slopes of PDF                 */
   PAR->n_slopes      = 0;         /* number of slopes                         */
 
-  PAR->n_starting_cpoints = 30;   /* number of starting points                */
+  PAR->starting_cpoints    = NULL;   /* pointer to array of starting points   */
+  PAR->n_starting_cpoints  = 30;     /* number of starting points             */
   PAR->area_fract    = 0.1;       /* parameter for equal area rule (default from [1] ) */
 
   PAR->max_ivs       = 1000;      /* maximum number of intervals              */
@@ -645,8 +647,62 @@ unur_tabl_set_areafraction( struct unur_par *par, double fraction )
 /*---------------------------------------------------------------------------*/
 
 int
+unur_tabl_set_cpoints( struct unur_par *par, int n_stp, const double *stp )
+     /*----------------------------------------------------------------------*/
+     /* set construction points for hat function                             */
+     /* and/or its number for initialization                                 */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par    ... pointer to parameter for building generator object      */
+     /*   n_stp  ... number of starting points                               */
+     /*   stp    ... pointer to array of starting points                     */
+     /*              (NULL for changing only the number of default points)   */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  int i;
+
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, TABL );
+
+  /* check starting construction points */
+  /* we always use the boundary points as additional starting points,
+     so we do not count these here! */
+  if (n_stp < 0 ) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"number of starting points < 0");
+    return UNUR_ERR_PAR_SET;
+  }
+
+  if (stp) 
+    /* starting points must be strictly monontonically increasing */
+    for( i=1; i<n_stp; i++ )
+      if (stp[i] <= stp[i-1]) {
+	_unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"starting points not strictly monotonically increasing");
+	return UNUR_ERR_PAR_SET;
+      }
+
+  /* store date */
+  PAR->starting_cpoints = stp;
+  PAR->n_starting_cpoints = n_stp;
+
+  /* changelog */
+  par->set |= TABL_SET_N_STP | ((stp) ? TABL_SET_STP : 0);
+
+  return UNUR_SUCCESS;
+
+} /* end of unur_tabl_set_cpoints() */
+
+/*---------------------------------------------------------------------------*/
+
+int
 unur_tabl_set_nstp( struct unur_par *par, int n_stp )
      /*----------------------------------------------------------------------*/
+     /* OBSOLETE !!                                                          */
+     /*                                                                      */
      /* set number of construction points for hat at initialization          */
      /*                                                                      */
      /* parameters:                                                          */

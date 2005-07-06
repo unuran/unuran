@@ -54,12 +54,11 @@
 
    =DESCRIPTION
       TABL (called Ahrens method in @unurbibref{HLD04})
-      is an acceptance/rejection
-      method (see [ARVRej]) that uses a decomposition of the domain of
-      the distribution into many short subintervals. Inside of these
-      subintervals constant hat and squeeze functions are
-      utilized. Thus it is easy to use the idea of immediate
-      acceptance (see [ARVRej]) for points below the squeeze. This
+      is an acceptance/rejection method (@pxref{Rejection}) that uses
+      a decomposition of the domain of the distribution into many
+      short subintervals. Inside of these subintervals constant hat
+      and squeeze functions are utilized. Thus it is easy to use the
+      idea of immediate acceptance for points below the squeeze. This
       reduces the expected number of uniform random numbers per
       generated random variate to less than two. Using a large number
       of subintervals only little more than one random number is
@@ -76,7 +75,7 @@
       equivalently all local maxima and minima of the density.  
       The main problem for this method in the setup is the choice of the
       subintervals. A simple and close to optimal approach is the 
-      "equal area rule" [Book,Cha5.1]. There the subintervals are
+      "equal area rule" @unurbibref{HLD04: Cha5.1}. There the subintervals are
       selected such that the area below the hat is the same for
       each subinterval which can be realized with a simple recursion.
       If more subintervals are necessary it is possible to split
@@ -89,10 +88,10 @@
 
       A convenient measure to control the quality of the fit of hat
       and squeeze is the ratio (area below squeeze)/(area below hat)
-      called "sqhratio" which must be smaller or equal to one.
+      called @code{sqhratio} which must be smaller or equal to one.
       The expected number of iterations in the rejection algorithm
       is known to be smaller than 1/sqhratio and the expected number
-      of evaluations of the density is bounded by 1/sqhratio - 1.
+      of evaluations of the density is bounded by @code{1/sqhratio - 1}.
       So values of the sqhratio close to one (e.g. @code{0.95} or
       @code{0.99}) lead to many subintervals. Thus a better fitting
       hat is constructed and the sampling algorithm becomes fast; on
@@ -110,7 +109,7 @@
       For using the TABL method UNURAN needs a bounded interval to
       which the generated variates can be restricted and information
       about all local extrema of the distribution. For unimodal
-      densities is is sufficient to provide the mode of the
+      densities it is sufficient to provide the mode of the
       distribution. For the case of a built-in unimodal distribution
       with bounded domain all these information is present in the
       distribution object and thus no extra input is necessary (see
@@ -128,18 +127,24 @@
       regions of monotonicity (called slopes) explicitly using the
       unur_tabl_set_slopes() command (see example_TABL3 below).
 
-      To controll the fit of the hat and the size of the tables and thus the
-      speed of the setup and the sampling it is most convenient to use the
-      unur_tabl_set_max_sqhratio() call. The default is 0.9 which is a sensible
-      value for most distributions and applications. If very large samples of
-      a distribution are required or the evaluation of a density is very slow
-      it may be useful to increase the sqhratio to eg. 0.95 or even 0.99. With
-      the unur_tabl_get_sqhratio() call we can check which sqhratio was really
-      reached. If that value is below the desired value it is necessary to
-      increase the maximal number of subintervals, which defaults to 1000,
-      using the unur_tabl_set_max_intervals() call. 
+      To controll the fit of the hat and the size of the tables and
+      thus the speed of the setup and the sampling it is most
+      convenient to use the unur_tabl_set_max_sqhratio() call. The
+      default is @code{0.9} which is a sensible value for most
+      distributions and applications. If very large samples of a
+      distribution are required or the evaluation of a density is very
+      slow it may be useful to increase the sqhratio to
+      eg. @code{0.95} or even @code{0.99}. With the
+      unur_tabl_get_sqhratio() call we can check which sqhratio was
+      really reached. If that value is below the desired value it is
+      necessary to increase the maximal number of subintervals, which
+      defaults to @code{1000}, using the unur_tabl_set_max_intervals() call. 
       The unur_tabl_get_n_intervals() call can be used to find out the 
       number of subintervals the setup calculated.
+
+      It is also possible to set the number of intervals and their
+      respective boundaries by means of the unur_tabl_set_cpoints()
+      call.
 
       The usage of the commands mentioned here are demonstrated in
       example_TABL1, example_TABL2 and example_TABL3 below.
@@ -159,6 +164,15 @@ UNUR_PAR *unur_tabl_new( const UNUR_DISTR* distribution );
 */
 
 /*...........................................................................*/
+
+int unur_tabl_set_cpoints( UNUR_PAR *parameters, int n_stp, const double *stp );
+/* 
+   Set construction points for the hat function. If @var{stp} is NULL
+   than a heuristic rule of thumb is used to get @var{n_stp}
+   construction points. This is the default behavior. 
+
+   The default number of construction points is @code{30}.
+*/
 
 int unur_tabl_set_usedars( UNUR_PAR *parameters, int usedars );
 /*
@@ -217,10 +231,10 @@ int unur_tabl_set_max_sqhratio( UNUR_PAR *parameters, double max_ratio );
    When the ratio exceeds the given number no further construction
    points are inserted via DARS in the setup.
 
-   For the case of ARS (set_usedars() must be set to FALSE):
-   Use 0 if no construction points should be added after the setup.
-   Use 1 if added new construction points should not be stopped until
-   the maximum number of construction points is reached.
+   For the case of ARS (unur_tabl_set_usedars() must be set to FALSE):
+   Use @code{0} if no construction points should be added after the setup. 
+   Use @code{1} if added new construction points should not be stopped
+   until the maximum number of construction points is reached.
    If @var{max_ratio} is close to one, many construction points are used.
 
    Default is @code{0.9}.
@@ -268,21 +282,10 @@ int unur_tabl_set_areafraction( UNUR_PAR *parameters, double fraction );
    distribution times @var{fraction} (which must be greater than
    zero).
 
-   @emph{Important:} It the area below the PDF is not set, then 1 is
-   assumed. 
+   @emph{Important:} If the area below the PDF is not set in the
+   distribution object, then 1 is assumed. 
 
    Default is @code{0.1}.
-*/
-
-int unur_tabl_set_nstp( UNUR_PAR *parameters, int n_stp );
-/* 
-   Set number of construction points for the hat function. @var{n_stp}
-   must be greater than zero. After the setup there are about
-   @var{n_stp} construction points. However it might be larger when a
-   small fraction is given by the unur_tabl_set_areafraction() call.
-   It also might be smaller for some variants.
-
-   Default is @code{30}.
 */
 
 int unur_tabl_set_slopes( UNUR_PAR *parameters, const double *slopes, int n_slopes );
@@ -303,7 +306,7 @@ int unur_tabl_set_slopes( UNUR_PAR *parameters, const double *slopes, int n_slop
    length of the array @var{slopes}).
 
    @emph{Notice} that setting slopes resets the given domain for the
-   distribution. However in case of a standard distribution the area
+   distribution. However, in case of a standard distribution the area
    below the PDF is not updated.
 */
 
@@ -346,4 +349,22 @@ int unur_tabl_chg_verify( UNUR_GEN *generator, int verify );
 /* =END */
 /*---------------------------------------------------------------------------*/
 
+/*---------------------------------------------------------------------------*/
+/* obsolete functions                                                        */
 
+/* =OBSOLETE */
+
+int unur_tabl_set_nstp( UNUR_PAR *parameters, int n_stp );
+/* 
+   Set number of construction points for the hat function. @var{n_stp}
+   must be greater than zero. After the setup there are about
+   @var{n_stp} construction points. However it might be larger when a
+   small fraction is given by the unur_tabl_set_areafraction() call.
+   It also might be smaller for some variants.
+
+   Default is @code{30}.
+
+   This function is obsolete and should not be used any more.
+*/
+
+/* =END */

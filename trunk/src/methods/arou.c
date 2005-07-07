@@ -912,7 +912,7 @@ _unur_arou_init( struct unur_par *par )
   /* get starting points */
   if (_unur_arou_get_starting_cpoints(par,gen)!=UNUR_SUCCESS ) {
 #ifdef UNUR_ENABLE_LOGGING
-    _unur_arou_debug_init(par,gen);
+    if (gen->debug) _unur_arou_debug_init(par,gen);
 #endif
     _unur_par_free(par); _unur_arou_free(gen);
     return NULL;
@@ -922,7 +922,7 @@ _unur_arou_init( struct unur_par *par )
   if ( _unur_arou_get_starting_segments(par,gen)!=UNUR_SUCCESS ) {
     _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF not T-concave");
 #ifdef UNUR_ENABLE_LOGGING
-    _unur_arou_debug_init(par,gen);
+    if (gen->debug) _unur_arou_debug_init(par,gen);
 #endif
     _unur_par_free(par); _unur_arou_free(gen);
     return NULL;

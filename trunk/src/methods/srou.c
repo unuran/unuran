@@ -902,8 +902,8 @@ _unur_srou_init( struct unur_par *par )
   }
 
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
-    if (gen->debug) _unur_srou_debug_init(gen, FALSE);
+  /* write info into log file */
+  if (gen->debug) _unur_srou_debug_init(gen, FALSE);
 #endif
 
   /* free parameters */

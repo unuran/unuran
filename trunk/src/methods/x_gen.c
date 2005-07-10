@@ -312,6 +312,9 @@ _unur_generic_create( struct unur_par *par, size_t s )
   gen->gen_aux = NULL;              /* no auxilliary generator objects       */
   gen->gen_aux_list = NULL;         /* no auxilliary generator objects       */
 
+  /* status of generator object */
+  gen->status = UNUR_FAILURE;       /* not successfully created yet          */
+
   /* return pointer to (almost empty) generator object */
   return gen;
 

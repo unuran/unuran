@@ -161,6 +161,7 @@ struct unur_gen {
   unsigned method;            /* indicates method and generator to be used   */
   unsigned variant;           /* indicates variant of method                 */
   unsigned set;               /* stores which parameters have been changed   */
+  unsigned status;            /* status of generator object                  */
   
   char *genid;                /* identifier for generator                    */
 

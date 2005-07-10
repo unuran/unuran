@@ -73,6 +73,10 @@ _unur_tabl_init( struct unur_par *par )
   gen = _unur_tabl_create(par);
   if (!gen) { _unur_par_free(par); return NULL; }
 
+#ifdef UNUR_ENABLE_LOGGING
+  if (gen->debug) _unur_tabl_debug_init_start(par,gen);
+#endif
+
   /* get slopes for starting generator */
   if (_unur_tabl_get_starting_intervals(par,gen)!=UNUR_SUCCESS) {
     _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"Cannot make hat function.");
@@ -80,20 +84,19 @@ _unur_tabl_init( struct unur_par *par )
     return NULL;
   }
 
+#ifdef UNUR_ENABLE_LOGGING
+  /* print intervals after starting intervals have been created */ 
+  if (gen->debug & TABL_DEBUG_A_IV) _unur_tabl_debug_intervals(gen,FALSE);
+#endif
+
   if (par->variant & TABL_VARFLAG_USEDARS) {
     /* run derandomized adaptive rejection sampling (DARS) */
  
 #ifdef UNUR_ENABLE_LOGGING
-    if (gen->debug & TABL_DEBUG_DARS) {
-      /* make initial guide table (only necessary for writing debug info) */
-      _unur_tabl_make_guide_table(gen);
-      /* write info into log file */
-      _unur_tabl_debug_init(par,gen);
-      _unur_tabl_debug_dars_start(par,gen);
-    }
+    if (gen->debug & TABL_DEBUG_DARS) _unur_tabl_debug_dars_start(par,gen);
 #endif
 
-    for (i=0; i<3; i++) {
+    for (i=0; i<TABL_N_RETRY_DARS; i++) {
       /* we make several tries */
       
       /* run DARS */
@@ -102,43 +105,28 @@ _unur_tabl_init( struct unur_par *par )
 	return NULL;
       }
 
-      /* make initial guide table */
-      _unur_tabl_make_guide_table(gen);
-  
       /* check if DARS was completed */
-      if (GEN->n_ivs < GEN->max_ivs) {
-	/* ran ARS instead */
-	for (k=0; k<5; k++)
-	  _unur_sample_cont(gen);
-      }
-      else
+      if (GEN->n_ivs >= GEN->max_ivs)
 	break;
-    }
 
-#ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
-      if (gen->debug) {
-        if (gen->debug & TABL_DEBUG_DARS)
-	  _unur_tabl_debug_dars(par,gen);
-	else
-	  _unur_tabl_debug_init(par,gen);
-	_unur_tabl_debug_init_finished(par,gen);
-      }
-#endif
+      /* else ran ARS instead */
+      for (k=0; k<TABL_N_RUN_ARS; k++)
+	_unur_sample_cont(gen);
+    }
   }
 
-  else { /* do not run DARS */
-    /* make initial guide table */
-    _unur_tabl_make_guide_table(gen);
+  /* make initial guide table */
+  _unur_tabl_make_guide_table(gen);
+
+  /* creation of generator object successfull */
+  gen->status = UNUR_SUCCESS;
 
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
-    if (gen->debug) {
-      _unur_tabl_debug_init(par,gen);
-      _unur_tabl_debug_init_finished(par,gen);
-    }
+  /* write info into log file */
+  if ((gen->debug & TABL_DEBUG_DARS) && (par->variant & TABL_VARFLAG_USEDARS))
+    _unur_tabl_debug_dars(par,gen);
+  if (gen->debug) _unur_tabl_debug_init_finished(par,gen);
 #endif
-  }
 
   /* free parameters */
   _unur_par_free(par);
@@ -424,7 +412,7 @@ _unur_tabl_get_starting_intervals_from_slopes( struct unur_par *par, struct unur
     iv->fmin = PDF(iv->xmin);
 
     /* check for overflow */
-    if (_unur_FP_is_infinity(iv->fmax) || _unur_FP_is_infinity(iv->fmin)) {
+    if (! (_unur_isfinite(iv->fmax) && _unur_isfinite(iv->fmin)) ) {
       /* overflow */
       _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF(x) overflow");
       iv->next = NULL;  /* terminate list (freeing list) */
@@ -438,21 +426,22 @@ _unur_tabl_get_starting_intervals_from_slopes( struct unur_par *par, struct unur
       return UNUR_ERR_GEN_CONDITION;
     }
 
-    /* area of slope and sign of slope (increasing/decreasing) */
-    iv->slope = (iv->xmax > iv->xmin) ? 1 : -1;
-    iv->Ahat = iv->slope * (iv->xmax - iv->xmin) * iv->fmax;
+    /* area of slope */
+    iv->Ahat = fabs(iv->xmax - iv->xmin) * iv->fmax;
     /** TODO: possible overflow/underflow ?? **/
-    iv->Asqueeze = iv->slope * (iv->xmax - iv->xmin) * iv->fmin;
+    iv->Asqueeze = fabs(iv->xmax - iv->xmin) * iv->fmin;
     /** TODO: possible overflow/underflow ?? **/
     /* avoid strange (possible) floating point execption on non IEEE754 architecture */
     iv->Acum = 0.;
 
     /* estimate domain */
-    if (iv->slope > 0) {
+    if (iv->xmax > iv->xmin) {
+      /* increasing slope */
       GEN->bleft = min(GEN->bleft,iv->xmin);
       GEN->bright = max(GEN->bright,iv->xmax);
     }
     else {
+      /* decreasing slope */
       GEN->bleft = min(GEN->bleft,iv->xmax);
       GEN->bright = max(GEN->bright,iv->xmin);
     }
@@ -554,20 +543,18 @@ _unur_tabl_get_starting_intervals_from_mode( struct unur_par *par, struct unur_g
     iv->fmin = PDF(iv->xmin);
 
     /* check for overflow */
-    if (_unur_FP_is_infinity(iv->fmax) || _unur_FP_is_infinity(iv->fmin)) {
+    if (! (_unur_isfinite(iv->fmax) && _unur_isfinite(iv->fmin)) ) {
       /* overflow */
       _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF(x) overflow");
       return UNUR_ERR_GEN_DATA;
     }
 
-    /* area of slope and sign of slope (increasing/decreasing) */
-    iv->slope = (iv->xmax > iv->xmin) ? 1 : -1;
-    iv->Ahat = iv->slope * (iv->xmax - iv->xmin) * iv->fmax;
+    /* area of slope */
+    iv->Ahat = fabs(iv->xmax - iv->xmin) * iv->fmax;
     /** TODO: possible overflow/underflow ?? **/
-    iv->Asqueeze = iv->slope * (iv->xmax - iv->xmin) * iv->fmin;
+    iv->Asqueeze = fabs(iv->xmax - iv->xmin) * iv->fmin;
     /* avoid strange (possible) floating point execption on non IEEE754 architecture */
     iv->Acum = 0.;
-
     /* split interval following [1], split A */
     if (par->variant & TABL_VARFLAG_STP_A) {
       iv = _unur_tabl_split_a_starting_intervals( par, gen, iv );
@@ -603,7 +590,8 @@ _unur_tabl_split_a_starting_intervals( struct unur_par *par,
 {
   struct unur_tabl_interval *iv, *iv_last;
   double bar_area, x, fx;
-  
+  double slope;
+
   /* check arguments */
   CHECK_NULL(par,NULL);       COOKIE_CHECK(par,CK_TABL_PAR,NULL);
   CHECK_NULL(gen,NULL);       COOKIE_CHECK(gen,CK_TABL_GEN,NULL);
@@ -613,23 +601,20 @@ _unur_tabl_split_a_starting_intervals( struct unur_par *par,
     /* maximal number of intervals reached */
     return NULL;
 
-  if (iv_slope->slope != 1 && iv_slope->slope != -1 ) {
-    /* this should not happen:
-       invalid slope.          */
-    _unur_warning( gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    return iv_slope;
-  }
-
   iv = iv_slope;        /* pointer to actual interval */
   iv_last = iv_slope;   /* pointer to last interval in list */
   /* (maximal) area of bar (= hat in one interval) */
   bar_area = DISTR.area * PAR->area_fract;
 
   while (_unur_FP_greater(iv->Ahat, bar_area)) {
+
+    /* increasing or decreasing slope */
+    slope = (iv->xmax > iv->xmin) ? 1. : -1.;
+
     /* compute splitting point:
        slope == +1 --> move from right to left
        slope == -1 --> move from left to right */
-    x = iv->xmax - iv->slope * bar_area / iv->fmax;
+    x = iv->xmax - slope * bar_area / iv->fmax;
 
     /* compute PDF */
     fx = PDF(x);
@@ -644,11 +629,11 @@ _unur_tabl_split_a_starting_intervals( struct unur_par *par,
     /* now split interval at x */
     switch (_unur_tabl_split_interval( gen, iv, x, fx, TABL_VARFLAG_SPLIT_POINT )) {
     case UNUR_SUCCESS:  /* splitting succesful */
-      if (iv->slope > 0) {
+      if (slope > 0.) {
 	if (iv_last == iv_slope)
 	  iv_last = iv->next;
       }
-      else { /* iv->slope < 0 */
+      else { /* slope < 0 */
 	iv = iv->next; break;
       }
       break;
@@ -667,7 +652,7 @@ _unur_tabl_split_a_starting_intervals( struct unur_par *par,
   }
 
   /* pointer to last interval */
-  return ((iv->slope < 0) ? iv : iv_last);
+  return ((iv->xmax > iv->xmin) ? iv_last : iv);
 
 } /* end of _unur_tabl_split_a_starting_intervals() */
 
@@ -858,7 +843,7 @@ _unur_tabl_split_interval( struct unur_gen *gen,
 
     /* compute new area in interval */
     /** TODO: possible overflow/underflow ?? **/
-    iv_old->Ahat = iv_old->slope * (iv_old->xmax - iv_old->xmin) * iv_old->fmax;
+    iv_old->Ahat = fabs(iv_old->xmax - iv_old->xmin) * iv_old->fmax;
     /* iv_old->Asqueeze remains 0 */
 
     /* update total area */
@@ -875,25 +860,13 @@ _unur_tabl_split_interval( struct unur_gen *gen,
   COOKIE_SET(iv_new,CK_TABL_IV);
 
   /* iv_new has the same slope as iv_old */
-  iv_new->slope = iv_old->slope;
 
   /* we have to distinguish between two cases:
      PDF is increasing (slope = +1) or
      PDF is decreasing (slope = -1). */
 
-  switch (iv_old->slope) {
-  case -1:
-    /* (x) The iv_new inherits the minimum of iv_old.
-           iv_old keeps the maximum.
-       (x) The splitting point is the maximum of iv_new and
-           the minimum of iv_old.
-    */
-    iv_new->xmin  = iv_old->xmin;  
-    iv_new->fmin = iv_old->fmin;
-    iv_old->xmin  = iv_new->xmax = x; 
-    iv_old->fmin = iv_new->fmax = fx; 
-    break;
-  case +1: /* the other way round */
+  if (iv_old->xmax > iv_old->xmin) {
+    /* increasing slope */
     /* (x) The iv_new inherits the maximum of iv_old.
            iv_old keeps the minimum.
        (x) The splitting point is the minimum of iv_new and
@@ -903,20 +876,26 @@ _unur_tabl_split_interval( struct unur_gen *gen,
     iv_new->fmax = iv_old->fmax;
     iv_old->xmax  = iv_new->xmin = x; 
     iv_old->fmax = iv_new->fmin = fx; 
-    break;
-  default: 
-    /* this should not happen:
-       Invalid slope. Cannot split interval. */
-    _unur_warning(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    return UNUR_ERR_SHOULD_NOT_HAPPEN;
+  }
+  else {
+    /* decreasing slope */
+    /* (x) The iv_new inherits the minimum of iv_old.
+           iv_old keeps the maximum.
+       (x) The splitting point is the maximum of iv_new and
+           the minimum of iv_old.
+    */
+    iv_new->xmin  = iv_old->xmin;  
+    iv_new->fmin = iv_old->fmin;
+    iv_old->xmin  = iv_new->xmax = x; 
+    iv_old->fmin = iv_new->fmax = fx; 
   }
 
   /* compute the areas in both intervals */
   /** TODO: possible overflow/underflow ?? **/
-  iv_new->Ahat     = iv_new->slope * (iv_new->xmax - iv_new->xmin) * iv_new->fmax;
-  iv_new->Asqueeze = iv_new->slope * (iv_new->xmax - iv_new->xmin) * iv_new->fmin;
-  iv_old->Ahat     = iv_old->slope * (iv_old->xmax - iv_old->xmin) * iv_old->fmax;
-  iv_old->Asqueeze = iv_old->slope * (iv_old->xmax - iv_old->xmin) * iv_old->fmin;
+  iv_new->Ahat     = fabs(iv_new->xmax - iv_new->xmin) * iv_new->fmax;
+  iv_new->Asqueeze = fabs(iv_new->xmax - iv_new->xmin) * iv_new->fmin;
+  iv_old->Ahat     = fabs(iv_old->xmax - iv_old->xmin) * iv_old->fmax;
+  iv_old->Asqueeze = fabs(iv_old->xmax - iv_old->xmin) * iv_old->fmin;
 
   /* update total areas */
   GEN->Atotal += iv_old->Ahat + iv_new->Ahat - A_hat_old;

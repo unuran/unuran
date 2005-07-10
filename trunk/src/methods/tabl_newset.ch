@@ -418,8 +418,8 @@ unur_tabl_set_areafraction( struct unur_par *par, double fraction )
   _unur_check_par_object( par, TABL );
 
   /* check new parameter for generator */
-  if (fraction < 0.) {
-    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"area factor < 0");
+  if (fraction <= 0.) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"area factor <= 0");
     return UNUR_ERR_PAR_SET;
   }
 
@@ -461,8 +461,8 @@ unur_tabl_set_cpoints( struct unur_par *par, int n_stp, const double *stp )
   /* check starting construction points */
   /* we always use the boundary points as additional starting points,
      so we do not count these here! */
-  if (n_stp < 0 ) {
-    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"number of starting points < 0");
+  if (n_stp <= 0 ) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"number of starting points <= 0");
     return UNUR_ERR_PAR_SET;
   }
 
@@ -479,7 +479,7 @@ unur_tabl_set_cpoints( struct unur_par *par, int n_stp, const double *stp )
   PAR->n_starting_cpoints = n_stp;
 
   /* changelog */
-  par->set |= TABL_SET_N_STP | ((stp) ? TABL_SET_STP : 0);
+  par->set |= TABL_SET_N_STP | ((stp) ? TABL_SET_STP : 0u);
 
   return UNUR_SUCCESS;
 
@@ -548,7 +548,7 @@ unur_tabl_set_slopes( struct unur_par *par, const double *slopes, int n_slopes )
      /*----------------------------------------------------------------------*/
 {
   int i;
-  double al, bl;
+  double lmin,lmax,rmin,rmax;
 
   /* check arguments */
   _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
@@ -561,16 +561,17 @@ unur_tabl_set_slopes( struct unur_par *par, const double *slopes, int n_slopes )
   }
 
   /* check slopes */
-  al = slopes[0];
-  bl = slopes[1];
-  for( i=1; i<n_slopes; i++ ) {
-    /* we do not check here if f(a) >= f(b), since we make no calculations heres */
-    if( al > slopes[2*i] || bl > slopes[2*i+1] ) {
+  lmin = -INFINITY;
+  lmax = -INFINITY;
+  for( i=0; i<n_slopes; i++ ) {
+    rmin = min(slopes[2*i],slopes[2*i+1]);
+    rmax = max(slopes[2*i],slopes[2*i+1]);
+    if (!(lmax<=rmin || _unur_FP_same(lmax,rmin))) {
       _unur_error(GENTYPE,UNUR_ERR_PAR_SET,"slopes (overlapping or not in ascending order)");
       return UNUR_ERR_PAR_SET;
     }
-    al = slopes[2*i];
-    bl = slopes[2*i+1];
+    lmin = rmin;
+    lmax = rmax;
   }
 
   /* INFINITY is not allowed */

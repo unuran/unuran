@@ -79,6 +79,21 @@
 /* Constants                                                                 */
 
 #define TABL_DEFAULT_COMPUTATION_LIMIT  1.e20
+/*
+   The domain has to be finite for method TABL.
+   Thus the domain has to be truncated where the regions (tails) that are
+   chopped off must not of "computational relevance".
+   By default the points for chopping of the tails are +/- this figure.
+*/
+
+#define TABL_N_RETRY_DARS  5
+#define TABL_N_RUN_ARS     10
+/* 
+   Sometimes DARS fails then we need random splitting points for the intervals,
+   i.e. we have to run ARS a few times an continue (retry) with DARS.
+   These figures give the number of retries and the number of sampling using
+   ARS, respectively.
+*/
 
 /*---------------------------------------------------------------------------*/
 /* Variants                                                                  */
@@ -200,7 +215,7 @@ static int _unur_tabl_make_guide_table( struct unur_gen *gen );
 /* i.e., into the log file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_tabl_debug_init( const struct unur_par *par, const struct unur_gen *gen );
+static void _unur_tabl_debug_init_start( const struct unur_par *par, const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed I.               */
 /*---------------------------------------------------------------------------*/
@@ -246,7 +261,6 @@ static void _unur_tabl_debug_intervals( const struct unur_gen *gen, int print_ar
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */     
 
 #define PDF(x)    _unur_cont_PDF((x),(gen->distr))    /* call to PDF         */
-
 
 /*---------------------------------------------------------------------------*/
 /* since there is only file scope or program code, we abuse the              */

@@ -67,8 +67,6 @@ struct unur_tabl_interval {
   double  fmax;         /* maximal value of pdf in interval                  */
   double  xmin;         /* minimum of pdf in interval                        */
   double  fmin;         /* minimal value of pdf in interval                  */
-  int     slope;        /* decreasing (-1) or increasing (+1)    (= sign(f´(x))
-			   <a,b> = [a,b]      <a,b> = [b,a]                  */
 
   double  Ahat;         /* area of total bar (below hat)                     */
   double  Asqueeze;     /* area of bar below squeeze                         */

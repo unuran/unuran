@@ -75,7 +75,7 @@ _unur_tabl_sample( struct unur_gen *gen )
 
     /* reuse of uniform random number
        (generation of squeeze should be inversion) */
-    u = (iv->slope<0) ? (iv->Acum - u) : (iv->Ahat + u - iv->Acum);
+    u = (iv->xmax <= iv->xmin) ? (iv->Acum - u) : (iv->Ahat + u - iv->Acum);
 
     if( u < iv->Asqueeze ) {
       /* below squeeze */
@@ -156,7 +156,7 @@ _unur_tabl_sample_check( struct unur_gen *gen )
 
     /* reuse of uniform random number
        (generation of squeeze should be inversion) */
-    u = (iv->slope<0) ? (iv->Acum - u) : (iv->Ahat + u - iv->Acum);
+    u = (iv->xmax <= iv->xmin) ? (iv->Acum - u) : (iv->Ahat + u - iv->Acum);
 
     if( u <= iv->Asqueeze ) {
       /* below squeeze */

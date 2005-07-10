@@ -51,7 +51,7 @@
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_tabl_debug_init( const struct unur_par *par, const struct unur_gen *gen )
+_unur_tabl_debug_init_start( const struct unur_par *par, const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* write info about generator after setup into logfile                  */
      /*                                                                      */
@@ -113,7 +113,7 @@ _unur_tabl_debug_init( const struct unur_par *par, const struct unur_gen *gen )
     fprintf(log,"\"arcmean\" point");
     break;
   case TABL_VARFLAG_SPLIT_POINT:
-  default: 
+  default:
     fprintf(log,"sample point");
     break;
   }
@@ -153,10 +153,7 @@ _unur_tabl_debug_init( const struct unur_par *par, const struct unur_gen *gen )
   fprintf(log,"\n");
   empty_line();
 
-  if (gen->debug & TABL_DEBUG_A_IV)
-    _unur_tabl_debug_intervals(gen,FALSE);
-
-} /* end of _unur_tabl_debug_init() */
+} /* end of _unur_tabl_debug_init_start() */
 
 /*****************************************************************************/
 
@@ -266,9 +263,14 @@ _unur_tabl_debug_free( const struct unur_gen *gen )
   log = unur_get_stream();
 
   empty_line();
-  fprintf(log,"%s: GENERATOR destroyed **********************\n",gen->genid);
-  empty_line();
-  _unur_tabl_debug_intervals(gen,TRUE);
+  if (gen->status == UNUR_SUCCESS) {
+    fprintf(log,"%s: GENERATOR destroyed **********************\n",gen->genid);
+    empty_line();
+    _unur_tabl_debug_intervals(gen,TRUE);
+  }
+  else {
+    fprintf(log,"%s: initialization of GENERATOR failed **********************\n",gen->genid);
+  }
   empty_line();
 
   fflush(log);
@@ -302,17 +304,8 @@ _unur_tabl_debug_intervals( const struct unur_gen *gen, int print_areas )
     fprintf(log,"%s:\n",gen->genid);
     for (iv = GEN->iv, i=0; iv!=NULL; iv=iv->next, i++) {
       COOKIE_CHECK(iv,CK_TABL_IV,RETURN_VOID);
-      fprintf(log,"%s:[%3d]: (",gen->genid,i);
-      switch (iv->slope) {
-      case 1:  fprintf(log,"+"); break;
-      case 0:  fprintf(log,"0"); break;
-      case -1: fprintf(log,"-"); break;
-      default:
-	/* this should not happen:
-	   invalid value for iv->slope. */
-	fprintf(log,"?"); break;
-      }
-      fprintf(log,")   < %#-12.6g, %#-12.6g>   |  %#-12.6g    %#-12.6g  \n",
+      fprintf(log,"%s:[%3d]: (%s)   < %#-12.6g, %#-12.6g>   |  %#-12.6g    %#-12.6g  \n",
+	      gen->genid, i, (iv->xmin <= iv->xmax)?"+":"-",
 	      iv->xmax, iv->xmin, iv->fmax, iv->fmin);
     }
     empty_line();

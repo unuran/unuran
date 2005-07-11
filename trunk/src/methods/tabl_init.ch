@@ -90,22 +90,19 @@ _unur_tabl_init( struct unur_par *par )
   /* now we must have slopes */
   if (PAR->n_slopes <= 0 ) {
     _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"number of slopes <= 0, cannot compute");
-    _unur_par_free(par); _unur_tabl_free(gen);
-    return NULL;
+    _unur_par_free(par); _unur_tabl_free(gen); return NULL;
   }
 
   /* get starting intervals from slopes */
   if (_unur_tabl_get_starting_intervals(par,gen)!=UNUR_SUCCESS) {
     _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"Cannot make hat function");
-    _unur_par_free(par); _unur_tabl_free(gen);
-    return NULL;
+    _unur_par_free(par); _unur_tabl_free(gen); return NULL;
   }
 
   /* split starting intervals / slopes */
   if (_unur_tabl_compute_intervals(par,gen) != UNUR_SUCCESS) {
     _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"Cannot split intervals");
-    _unur_par_free(par); _unur_tabl_free(gen);
-    return NULL;
+    _unur_par_free(par); _unur_tabl_free(gen); return NULL;
   }
 
   /* make initial guide table */

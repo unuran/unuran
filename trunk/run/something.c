@@ -19,6 +19,7 @@
 #include <unur_source.h>
 #include <unuran_tests.h>
 
+#include <distr/distr_source.h>
 #include <src/utils/matrix_source.h>
 #include <experimental/hitrou.h>
 #include <experimental/gibbs.h>
@@ -50,6 +51,8 @@
 #define MAXDIM 100
 
 #define VERBOSE  0     /* output switch for test and moments  */
+
+#define PDF(x)    _unur_cvec_PDF((x),(gen->distr))    /* call to PDF         */
 
 /* default values */
 int DIM = 2;
@@ -253,7 +256,7 @@ int main(int argc, char *argv[])
     }
   }
   
-  //unur_set_default_debug(UNUR_DEBUG_OFF);
+  // unur_set_default_debug(UNUR_DEBUG_OFF);
    
   for(d=0;d<DIM;d++){
     for (m=1; m<=4; m++) {
@@ -262,7 +265,7 @@ int main(int argc, char *argv[])
     }
   }    
   
-  x = _unur_vector_new(DIM);
+  x = _unur_vector_new(DIM+1); /* we need the extra '+1' for the pdf ball sampler */
   mean = _unur_vector_new(DIM);
   covar = _unur_vector_new(DIM*DIM);
 
@@ -433,9 +436,66 @@ int main(int argc, char *argv[])
   gen = unur_test_timing(par, 3, &time_setup, &time_sample, TRUE, stdout);
 #endif
     
+  double *uv;
+  double *eigenvalues;
+  double *eigenvectors;
+  
+  eigenvalues = _unur_vector_new(DIM);
+  eigenvectors = _unur_vector_new(DIM*DIM);
+  _unur_matrix_eigensystem(DIM, covar, eigenvalues, eigenvectors);
+  uv = _unur_vector_new(DIM +1);
+  
+  /* setting x to be (normalized) eigenvector corresponding to largest eigenvalue */
+  for (d=0; d<DIM; d++) {
+    x[d]=eigenvectors[DIM*(DIM-1)-1+d];
+  }  
+  double fx;  /* pdf value at the point x */
+  fx=PDF(x);  
+  x[DIM] = fx * 0.9; /* used by the pdf ball sampler */
+  
+  /* transforming x[] into uv[] coordinates (at RoU boundary */
+  /* valid for the case, that the RoU r-parameter is 1 */
+  double V;
+  V = pow(PDF(x), 1./(DIM + 1.));
+  uv[DIM] = V;
+  for (d=0; d<DIM; d++) {
+        uv[d] = x[d] * V;
+  } 
+  
+  /* scaling uv[]-coordinates */
+  for (d=0; d<=DIM; d++) {
+    uv[d] *= 0.9;
+  }
+    
   /* main loop */    
   for (loop=1; loop<=EXPERIMENTS; loop++) {
+      
+    if (METHOD==METHOD_HITROU 
+    || METHOD==METHOD_HITROU_BOX 
+    || METHOD==METHOD_HITROU_BOX_COORDINATE
+    || METHOD==METHOD_HITROU_STRIP_ADAPTIVE) {
+      _unur_hitrou_set_point_current( gen, uv );
+    }
     
+    if (METHOD==METHOD_BALL_ROU
+    || METHOD==METHOD_BALL_ROU_ADAPTIVE) { 
+      _unur_ball_set_point_current( gen, uv );
+    }
+    
+    if (METHOD==METHOD_BALL_PDF
+    || METHOD==METHOD_BALL_PDF_ADAPTIVE) { 
+      _unur_ball_set_point_current( gen, x );
+    }
+    
+    if (METHOD==METHOD_GIBBS
+    || METHOD==METHOD_GIBBS_RANDOM) {
+      _unur_gibbs_set_point_current( gen, x);    
+    }
+    
+    if (METHOD==METHOD_WALK) {    
+      _unur_walk_set_point_current( gen, x);    
+    }
+      
     unur_test_moments(gen, moments, 4, SAMPLESIZE, VERBOSE, stdout);
  
     for(d=0;d<DIM;d++){
@@ -503,6 +563,8 @@ int main(int argc, char *argv[])
   free(x); free(mean); free(covar);
   free(moments); free(moments_expected); 
     
+  free(uv); free(eigenvalues); free(eigenvectors);
+  
   return 0;
 
 #undef ic

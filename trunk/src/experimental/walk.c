@@ -612,25 +612,25 @@ _unur_walk_random_direction( struct unur_gen *gen,
 
 /*---------------------------------------------------------------------------*/
 
-void _unur_walk_set_point_current( UNUR_GEN *gen, double *pt)
+void _unur_walk_set_point_current( UNUR_GEN *gen, double *x)
      /* set the current point (dimension=dim) */
 {
   int d;
 
   for (d=0; d<GEN->dim; d++) {
-    GEN->point_current[d]=pt[d];
+    GEN->point_current[d]=x[d];
   }
 }
 
 /*---------------------------------------------------------------------------*/
 
-void _unur_walk_get_point_current( UNUR_GEN *gen, double *pt)
+void _unur_walk_get_point_current( UNUR_GEN *gen, double *x)
      /* get the current point (dimension=dim) */
 {
   int d;
 
   for (d=0; d<GEN->dim; d++) {
-    pt[d]=GEN->point_current[d];
+    x[d]=GEN->point_current[d];
   }
 }
 

@@ -93,3 +93,11 @@ int unur_walk_set_skip( UNUR_PAR *par, long skip );
 
 /* =END */
 
+/*---------------------------------------------------------------------------*/
+
+void _unur_walk_set_point_current( UNUR_GEN *gen, double *x);
+/* set the current point (dimension=dim) */
+
+
+void _unur_walk_get_point_current( UNUR_GEN *gen, double *x);
+/* get the current point (dimension=dim) */

@@ -582,7 +582,29 @@ _unur_gibbs_free( struct unur_gen *gen )
 /*****************************************************************************/
 
 
+/*---------------------------------------------------------------------------*/
 
+void _unur_gibbs_set_point_current( UNUR_GEN *gen, double *x)
+     /* set the current point (dimension=dim) */
+{
+  int d;
+
+  for (d=0; d<GEN->dim; d++) {
+    GEN->point_current[d]=x[d];
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+
+void _unur_gibbs_get_point_current( UNUR_GEN *gen, double *x)
+     /* get the current point (dimension=dim) */
+{
+  int d;
+
+  for (d=0; d<GEN->dim; d++) {
+    x[d]=GEN->point_current[d];
+  }
+}
 
 /*****************************************************************************/
 /**  Additional routines used for testing                                   **/

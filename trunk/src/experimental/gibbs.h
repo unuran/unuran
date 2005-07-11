@@ -99,4 +99,14 @@ int unur_gibbs_set_variant_random_direction( UNUR_PAR *par );
    Sampling along the random directions.
 */
 
+/* =END */
+
 /*...........................................................................*/
+
+void _unur_gibbs_set_point_current( UNUR_GEN *gen, double *x);
+/* set the current point (dimension=dim) */
+
+/*---------------------------------------------------------------------------*/
+
+void _unur_gibbs_get_point_current( UNUR_GEN *gen, double *x);
+/* get the current point (dimension=dim) */

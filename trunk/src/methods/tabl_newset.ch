@@ -575,7 +575,7 @@ unur_tabl_set_slopes( struct unur_par *par, const double *slopes, int n_slopes )
   }
 
   /* INFINITY is not allowed */
-  if (_unur_FP_is_minus_infinity(slopes[0]) || _unur_FP_is_infinity(slopes[2*n_slopes-1])) {
+  if (! (_unur_isfinite(slopes[0]) && _unur_isfinite(slopes[2*n_slopes-1])) ) {
     _unur_error(GENTYPE,UNUR_ERR_PAR_SET,"slopes must be bounded");
     return UNUR_ERR_PAR_SET;
   }

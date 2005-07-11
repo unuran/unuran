@@ -58,7 +58,6 @@ _unur_tabl_init( struct unur_par *par )
      /*----------------------------------------------------------------------*/
 { 
   struct unur_gen *gen;
-  int i,k;
 
   /* check arguments */
   CHECK_NULL(par,NULL);
@@ -74,45 +73,39 @@ _unur_tabl_init( struct unur_par *par )
   if (!gen) { _unur_par_free(par); return NULL; }
 
 #ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
   if (gen->debug) _unur_tabl_debug_init_start(par,gen);
 #endif
 
-  /* get slopes for starting generator */
-  if (_unur_tabl_get_starting_intervals(par,gen)!=UNUR_SUCCESS) {
-    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"Cannot make hat function.");
+  /* we need slopes */
+  if (PAR->n_slopes <= 0 ) {
+    /* no slopes are given  --> compute from mode */
+    if (par->distr->set & UNUR_DISTR_SET_MODE) {
+      double slopes[4];
+      PAR->n_slopes = _unur_tabl_get_slopes_from_mode(gen,slopes);
+      PAR->slopes = slopes; 
+    }
+  }
+
+  /* now we must have slopes */
+  if (PAR->n_slopes <= 0 ) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"number of slopes <= 0, cannot compute");
     _unur_par_free(par); _unur_tabl_free(gen);
     return NULL;
   }
 
-#ifdef UNUR_ENABLE_LOGGING
-  /* print intervals after starting intervals have been created */ 
-  if (gen->debug & TABL_DEBUG_A_IV) _unur_tabl_debug_intervals(gen,FALSE);
-#endif
+  /* get starting intervals from slopes */
+  if (_unur_tabl_get_starting_intervals(par,gen)!=UNUR_SUCCESS) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"Cannot make hat function");
+    _unur_par_free(par); _unur_tabl_free(gen);
+    return NULL;
+  }
 
-  if (par->variant & TABL_VARFLAG_USEDARS) {
-    /* run derandomized adaptive rejection sampling (DARS) */
- 
-#ifdef UNUR_ENABLE_LOGGING
-    if (gen->debug & TABL_DEBUG_DARS) _unur_tabl_debug_dars_start(par,gen);
-#endif
-
-    for (i=0; i<TABL_N_RETRY_DARS; i++) {
-      /* we make several tries */
-      
-      /* run DARS */
-      if (_unur_tabl_run_dars(par,gen)!=UNUR_SUCCESS) {
-	_unur_par_free(par); _unur_tabl_free(gen);
-	return NULL;
-      }
-
-      /* check if DARS was completed */
-      if (GEN->n_ivs >= GEN->max_ivs)
-	break;
-
-      /* else ran ARS instead */
-      for (k=0; k<TABL_N_RUN_ARS; k++)
-	_unur_sample_cont(gen);
-    }
+  /* split starting intervals / slopes */
+  if (_unur_tabl_compute_intervals(par,gen) != UNUR_SUCCESS) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"Cannot split intervals");
+    _unur_par_free(par); _unur_tabl_free(gen);
+    return NULL;
   }
 
   /* make initial guide table */
@@ -122,9 +115,6 @@ _unur_tabl_init( struct unur_par *par )
   gen->status = UNUR_SUCCESS;
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
-  if ((gen->debug & TABL_DEBUG_DARS) && (par->variant & TABL_VARFLAG_USEDARS))
-    _unur_tabl_debug_dars(par,gen);
   if (gen->debug) _unur_tabl_debug_init_finished(par,gen);
 #endif
 
@@ -318,50 +308,6 @@ _unur_tabl_free( struct unur_gen *gen )
 int
 _unur_tabl_get_starting_intervals( struct unur_par *par, struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* compute starting intervals                                           */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   par          ... pointer to parameter list                         */
-     /*   gen          ... pointer to generator object                       */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   UNUR_SUCCESS ... on success                                        */
-     /*   error code   ... on error                                          */
-     /*                                                                      */
-     /* comment:                                                             */
-     /*   a slope <a,b> is an interval [a,b] or [b,a] such that              */
-     /*   PDF(a) >= PDF(b)                                                   */
-     /*----------------------------------------------------------------------*/
-{
-
-  /* check arguments */
-  CHECK_NULL(par,UNUR_ERR_NULL);  COOKIE_CHECK(par,CK_TABL_PAR,UNUR_ERR_COOKIE);
-  CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_TABL_GEN,UNUR_ERR_COOKIE);
-
-  /* we have two cases: 
-     (1) we are given slopes --> check these, compute domain if necessary
-     (2) we are given domain and mode --> compute slopes */
-
-  if (PAR->n_slopes > 0 )
-    /* slopes are given */
-    return _unur_tabl_get_starting_intervals_from_slopes(par,gen);
-
-  if (par->distr->set & UNUR_DISTR_SET_MODE)
-    /* no slopes given. need domain and mode */
-    /* compute slopes */
-    return _unur_tabl_get_starting_intervals_from_mode(par,gen);
-
-  /* else */
-  _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"number of slopes <= 0, domain or mode not given.");
-  return UNUR_ERR_GEN_DATA;
-
-} /* end of _unur_tabl_get_starting_intervals() */
-
-/*---------------------------------------------------------------------------*/
-
-int
-_unur_tabl_get_starting_intervals_from_slopes( struct unur_par *par, struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
      /* compute starting intervals, slopes are given by user.                */
      /* estimate domain when not given.                                      */
      /*                                                                      */
@@ -398,10 +344,10 @@ _unur_tabl_get_starting_intervals_from_slopes( struct unur_par *par, struct unur
   /* compute initial intervals */
   for ( i=0; i < 2*PAR->n_slopes; i+=2 ) {
     /* get a new interval and link into list */
-    if (i==0)
-      iv = GEN->iv = _unur_xmalloc(sizeof(struct unur_tabl_interval));    /* the first interval */
-    else
-      iv = iv->next = _unur_xmalloc(sizeof(struct unur_tabl_interval));  /* all the other intervals */
+    if (i==0)  /* the first interval */
+      iv = GEN->iv = _unur_xmalloc(sizeof(struct unur_tabl_interval));   
+    else       /* all the other intervals */
+      iv = iv->next = _unur_xmalloc(sizeof(struct unur_tabl_interval));
     ++(GEN->n_ivs);
     COOKIE_SET(iv,CK_TABL_IV);
 
@@ -420,7 +366,7 @@ _unur_tabl_get_starting_intervals_from_slopes( struct unur_par *par, struct unur
     }
 
     /* check slopes */
-    if (iv->fmax < iv->fmin) {
+    if (_unur_FP_less(iv->fmax,iv->fmin)) {
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"slopes non-decreasing");
       iv->next = NULL;  /* terminate list (freeing list) */
       return UNUR_ERR_GEN_CONDITION;
@@ -445,12 +391,6 @@ _unur_tabl_get_starting_intervals_from_slopes( struct unur_par *par, struct unur
       GEN->bleft = min(GEN->bleft,iv->xmax);
       GEN->bright = max(GEN->bright,iv->xmin);
     }
-
-    /* split interval following [1], split A */
-    if (par->variant & TABL_VARFLAG_STP_A) {
-      iv = _unur_tabl_split_a_starting_intervals( par, gen, iv );
-      if (iv == NULL) return UNUR_ERR_GEN_DATA;
-    }
   }
 
   /* terminate list */
@@ -467,14 +407,62 @@ _unur_tabl_get_starting_intervals_from_slopes( struct unur_par *par, struct unur
   /* o.k. */
   return UNUR_SUCCESS;
 
-} /* end of _unur_tabl_get_starting_intervals_from_slopes() */
+} /* end of _unur_tabl_get_starting_intervals() */
 
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_tabl_get_starting_intervals_from_mode( struct unur_par *par, struct unur_gen *gen )
+_unur_tabl_get_slopes_from_mode( struct unur_gen *gen, double *slopes )
      /*----------------------------------------------------------------------*/
-     /* compute starting intervals                                           */
+     /* compute slopes from mode and computational domain                    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen    ... pointer to generator object                             */
+     /*   slopes ... pointer to array of length 4 to store slopes            */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   number of slopes                                                   */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0                                                           */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_TABL_GEN,0);
+
+  if (DISTR.mode <= GEN->bleft) {
+    /* only one ascending interval <a,b> = [a,b] */
+    slopes[0] = GEN->bleft;
+    slopes[1] = GEN->bright;
+    return 1;
+  }
+
+  if (DISTR.mode >= GEN->bright) {
+    /* only one descending interval <a,b> = [b,a] */
+    slopes[0] = GEN->bright;
+    slopes[1] = GEN->bleft;
+    return 1;
+  }
+
+  else {
+    /* two slopes */
+    /* one ascending interval */
+    slopes[0] = DISTR.mode;
+    slopes[1] = GEN->bleft;
+    /* one descending */
+    slopes[2] = DISTR.mode;
+    slopes[3] = GEN->bright;
+    return 2;
+  }
+
+} /* end of _unur_tabl_get_slopes_from_mode() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_tabl_compute_intervals( struct unur_par *par, struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* compute all intervals (by splitting starting intervals/slopes)       */
      /*                                                                      */
      /* parameters:                                                          */
      /*   par          ... pointer to parameter list                         */
@@ -485,95 +473,64 @@ _unur_tabl_get_starting_intervals_from_mode( struct unur_par *par, struct unur_g
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
-  /** TODO: check for slopes out of support !! **/
-
   struct unur_tabl_interval *iv;
+  int i,k;
 
   /* check arguments */
   CHECK_NULL(par,UNUR_ERR_NULL);  COOKIE_CHECK(par,CK_TABL_PAR,UNUR_ERR_COOKIE);
   CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_TABL_GEN,UNUR_ERR_COOKIE);
 
-  /* init linked list of intervals */
-  GEN->n_ivs = 0;
-
-  /* compute initial intervals */
-  while (1) {
-    /* the first interval */
-    iv = GEN->iv = _unur_xmalloc(sizeof(struct unur_tabl_interval));
-    ++(GEN->n_ivs);
-    COOKIE_SET(iv,CK_TABL_IV);
-
-    if (DISTR.mode <= GEN->bleft) {
-      /* only one ascending interval <a,b> = [a,b] */
-      iv->xmax = GEN->bleft;
-      iv->xmin = GEN->bright;
-      break;
-    }
-
-    if (DISTR.mode >= GEN->bright) {
-      /* only one descending interval <a,b> = [b,a] */
-      iv->xmax = GEN->bright;
-      iv->xmin = GEN->bleft;
-      break;
-    }
-
-    /* one descending and one ascending interval */
-    iv->xmax = DISTR.mode;
-    iv->xmin = GEN->bleft;
-
-    /* the second interval */
-    iv = iv->next = _unur_xmalloc(sizeof(struct unur_tabl_interval));  /* all the other intervals */
-    ++(GEN->n_ivs);
-    COOKIE_SET(iv,CK_TABL_IV);
-
-    iv->xmax = DISTR.mode;
-    iv->xmin = GEN->bright;
-    break;
-  }
-
-  /* terminate list */
-  iv->next = NULL;
-
-  /* compute parameters */
-  for (iv = GEN->iv; iv != NULL; iv = iv->next ) {
-    COOKIE_CHECK(iv,CK_TABL_IV,UNUR_ERR_COOKIE);
-
-    /* max and min of PDF in interval */
-    iv->fmax = PDF(iv->xmax);
-    iv->fmin = PDF(iv->xmin);
-
-    /* check for overflow */
-    if (! (_unur_isfinite(iv->fmax) && _unur_isfinite(iv->fmin)) ) {
-      /* overflow */
-      _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF(x) overflow");
-      return UNUR_ERR_GEN_DATA;
-    }
-
-    /* area of slope */
-    iv->Ahat = fabs(iv->xmax - iv->xmin) * iv->fmax;
-    /** TODO: possible overflow/underflow ?? **/
-    iv->Asqueeze = fabs(iv->xmax - iv->xmin) * iv->fmin;
-    /* avoid strange (possible) floating point execption on non IEEE754 architecture */
-    iv->Acum = 0.;
-    /* split interval following [1], split A */
-    if (par->variant & TABL_VARFLAG_STP_A) {
-      iv = _unur_tabl_split_a_starting_intervals( par, gen, iv );
+  /* split interval following [1], split A (equal area rule) */
+  if (par->variant & TABL_VARFLAG_STP_A) {
+    for (iv = GEN->iv; iv != NULL; iv = iv->next ) {
+      COOKIE_CHECK(iv,CK_TABL_IV,UNUR_ERR_COOKIE);
+      iv = _unur_tabl_run_equalarearule( par, gen, iv );
       if (iv == NULL) return UNUR_ERR_GEN_DATA;
     }
+  }
 
+#ifdef UNUR_ENABLE_LOGGING
+  /* print intervals after starting intervals have been created */ 
+  if (gen->debug & TABL_DEBUG_A_IV) _unur_tabl_debug_intervals(gen,FALSE);
+#endif
+
+  if (par->variant & TABL_VARFLAG_USEDARS) {
+    /* run derandomized adaptive rejection sampling (DARS) */
+ 
+#ifdef UNUR_ENABLE_LOGGING
+    if (gen->debug & TABL_DEBUG_DARS) _unur_tabl_debug_dars_start(par,gen);
+#endif
+
+    for (i=0; i<TABL_N_RETRY_DARS; i++) {
+      /* we make several tries */
+      
+      /* run DARS */
+      if (_unur_tabl_run_dars(par,gen)!=UNUR_SUCCESS)
+	return UNUR_ERR_GEN_DATA;
+
+      /* check if DARS was completed */
+      if (GEN->n_ivs >= GEN->max_ivs)
+	break;
+
+      /* else ran ARS instead */
+      for (k=0; k<TABL_N_RUN_ARS; k++)
+	_unur_sample_cont(gen);
+    }
+
+#ifdef UNUR_ENABLE_LOGGING
+    if (gen->debug & TABL_DEBUG_DARS) _unur_tabl_debug_dars(par,gen);
+#endif
   }
 
   /* o.k. */
   return UNUR_SUCCESS;
-
-} /* end of _unur_tabl_get_starting_intervals_from_mode() */
+} /* end of _unur_tabl_compute_intervals() */
 
 /*---------------------------------------------------------------------------*/
 
 struct unur_tabl_interval *
-_unur_tabl_split_a_starting_intervals( struct unur_par *par, 
-				       struct unur_gen *gen, 
-				       struct unur_tabl_interval *iv_slope )
+_unur_tabl_run_equalarearule( struct unur_par *par, struct unur_gen *gen, 
+			      struct unur_tabl_interval *iv_slope )
      /*----------------------------------------------------------------------*/
      /* split starting intervals according to [1]                            */
      /* SPLIT A (equal areas rule)                                           */
@@ -654,7 +611,7 @@ _unur_tabl_split_a_starting_intervals( struct unur_par *par,
   /* pointer to last interval */
   return ((iv->xmax > iv->xmin) ? iv_last : iv);
 
-} /* end of _unur_tabl_split_a_starting_intervals() */
+} /* end of _unur_tabl_run_equalarearule() */
 
 /*---------------------------------------------------------------------------*/
 

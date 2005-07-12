@@ -98,18 +98,19 @@
 /*---------------------------------------------------------------------------*/
 /* Variants                                                                  */
 
-#define TABL_VARFLAG_VERIFY       0x001u   /* flag for verifying mode           */
+#define TABL_VARFLAG_VERIFY       0x0001u  /* flag for verifying mode           */
 
 /* indicate how to split interval */
-#define TABL_VARMASK_SPLIT        0x0f0u  /* split at        computation     convergence of hat */
-#define TABL_VARFLAG_SPLIT_POINT  0x010u  /* sampled point    none            slowest          */
-#define TABL_VARFLAG_SPLIT_MEAN   0x020u  /* mean point       slower          better           */
-#define TABL_VARFLAG_SPLIT_ARC    0x040u  /* "arcmean"        very slow       very good for almost unbounded domain */
+#define TABL_VARMASK_SPLIT        0x00f0u  /* split at        computation     convergence of hat */
+#define TABL_VARFLAG_SPLIT_POINT  0x0010u  /* sampled point    none            slowest          */
+#define TABL_VARFLAG_SPLIT_MEAN   0x0020u  /* mean point       slower          better           */
+#define TABL_VARFLAG_SPLIT_ARC    0x0040u  /* "arcmean"        very slow       very good for almost unbounded domain */
 
 /* indicate if starting intervals have to be split */
-#define TABL_VARFLAG_STP_A        0x100u  /* use equal area rule (SPLIT A in [1])   */
+#define TABL_VARFLAG_STP_A        0x0100u  /* use equal area rule (SPLIT A in [1])   */
 
-#define TABL_VARFLAG_USEDARS      0x200u  /* use main subdivisions (SPLIT B in [1]) 
+#define TABL_VARFLAG_PEDANTIC     0x0200u  /* whether pedantic checking is used */
+#define TABL_VARFLAG_USEDARS      0x0400u  /* use main subdivisions (SPLIT B in [1]) 
                                              (= derandomized ARS)                   */
 
 /*---------------------------------------------------------------------------*/
@@ -203,6 +204,13 @@ _unur_tabl_split_interval( struct unur_gen *gen, struct unur_tabl_interval *iv,
 			   double x, double fx, unsigned split_mode );
 /*---------------------------------------------------------------------------*/
 /* split interval (replace old one by two new ones in same place)            */
+/*---------------------------------------------------------------------------*/
+
+static int
+_unur_tabl_improve_hat( struct unur_gen *gen, struct unur_tabl_interval *iv, 
+			double x, double fx, unsigned split_mode );
+/*---------------------------------------------------------------------------*/
+/* improve hat function and by splitting interval                            */
 /*---------------------------------------------------------------------------*/
 
 static int _unur_tabl_make_guide_table( struct unur_gen *gen );

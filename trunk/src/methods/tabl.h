@@ -346,6 +346,21 @@ int unur_tabl_chg_verify( UNUR_GEN *generator, int verify );
    Default is FALSE.
 */
 
+int unur_tabl_set_pedantic( UNUR_PAR *parameters, int pedantic );
+/* 
+   Sometimes it might happen that unur_init() has been executed
+   successfully. But when additional construction points are added by
+   adaptive rejection sampling, the algorithm detects that the
+   PDF is not monotone in the given slopes.
+
+   With @var{pedantic} being TRUE, the sampling routine is exchanged
+   by a routine that simply returns @code{UNUR_INFINITY} indicating an
+   error. 
+
+   Default is FALSE.
+*/
+
+
 /* =END */
 /*---------------------------------------------------------------------------*/
 

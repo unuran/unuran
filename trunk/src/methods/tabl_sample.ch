@@ -89,28 +89,9 @@ _unur_tabl_sample( struct unur_gen *gen )
 
       /* being above squeeze is bad. split interval. */
       if (GEN->n_ivs < GEN->max_ivs) {
-	if (GEN->max_ratio * GEN->Atotal > GEN->Asqueeze) {
-	  switch (_unur_tabl_split_interval( gen, iv, x, fx,(gen->variant & TABL_VARMASK_SPLIT)) ) {
-	  case UNUR_SUCCESS:
-	  case UNUR_ERR_SILENT:
-	    /** TODO: it is not necessary to update the guide table every time. 
-		But then (1) some additional bookkeeping is required and
-		(2) the guide table method requires a acc./rej. step. **/
-	    if (_unur_tabl_make_guide_table(gen) != UNUR_SUCCESS) {
-	      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"cannot create guide table");
-	      /* There is no chance to run out of this error! */
-	      /* however, this should never happen.           */
-	    }
-	    break;
-	  default:
-	    /* condition for PDF is violated! */
-	    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
-	  }
-	}
-	else {
-	  /* no more construction points (avoid to many second if statement above */
-	  GEN->max_ivs = GEN->n_ivs;
-	}
+	if ( (_unur_tabl_improve_hat( gen, iv, x, fx,(gen->variant & TABL_VARMASK_SPLIT)) != UNUR_SUCCESS)
+	     && (gen->variant & TABL_VARFLAG_PEDANTIC) )
+	  return UNUR_INFINITY;
       }
 
       /* now accept or reject */
@@ -188,28 +169,9 @@ _unur_tabl_sample_check( struct unur_gen *gen )
 
       /* being above squeeze is bad. split interval. */
       if (GEN->n_ivs < GEN->max_ivs) {
-	if (GEN->max_ratio * GEN->Atotal > GEN->Asqueeze) {
-	  switch (_unur_tabl_split_interval( gen, iv, x, fx,(gen->variant & TABL_VARMASK_SPLIT)) ) {
-	  case UNUR_SUCCESS:
-	  case UNUR_ERR_SILENT:
-	    /** TODO: it is not necessary to update the guide table every time. 
-		But then (1) some additional bookkeeping is required and
-		(2) the guide table method requires a acc./rej. step. **/
-	    if (_unur_tabl_make_guide_table(gen) != UNUR_SUCCESS) {
-	      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"cannot create guide table");
-	      /* There is no chance to run out of this error! */
-	      /* however, this should never happen.           */
-	    }
-	    break;
-	  default:
-	    /* condition for PDF is violated! */
-	    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
-	  }
-	}
-	else {
-	  /* no more construction points (avoid to many second if statement above */
-	  GEN->max_ivs = GEN->n_ivs;
-	}
+	if ( (_unur_tabl_improve_hat( gen, iv, x, fx,(gen->variant & TABL_VARMASK_SPLIT)) != UNUR_SUCCESS)
+	     && (gen->variant & TABL_VARFLAG_PEDANTIC) )
+	  return UNUR_INFINITY;
       }
 
       /* now accept or reject */
@@ -223,4 +185,60 @@ _unur_tabl_sample_check( struct unur_gen *gen )
 
 /*****************************************************************************/
 
+int
+_unur_tabl_improve_hat( struct unur_gen *gen, struct unur_tabl_interval *iv,
+			double x, double fx, unsigned split_mode )
+     /*----------------------------------------------------------------------*/
+     /* improve hat function and by splitting interval                       */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen        ... pointer to generator object                         */
+     /*   iv         ... pointer to interval that has to be split            */
+     /*   x          ... splitting point                                     */
+     /*   fx         ... value of PDF at splitting point                     */
+     /*   split_mode ... how to split interval                               */
+     /*                  TABL_VARFLAG_SPLIT_POINT: split at given point x    */
+     /*                  TABL_VARFLAG_SPLIT_MEAN:  at mean point of interval */
+     /*                  TABL_VARFLAG_SPLIT_ARC:   at arc mean point         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS    ... improving hat successful                       */
+     /*   others          ... error: PDF not monotone in interval            */
+     /*----------------------------------------------------------------------*/
+{
+  int result;
+
+  /* is there any reason to improve hat ? */
+  if (! (GEN->max_ratio * GEN->Atotal > GEN->Asqueeze) ) {
+    /* no more construction points (avoid calling this function any more) */
+    GEN->max_ivs = GEN->n_ivs;
+    return UNUR_SUCCESS;
+  }
+
+  /* add construction point */
+  result = _unur_tabl_split_interval( gen, iv, x, fx,(gen->variant & TABL_VARMASK_SPLIT));
+  if (! (result == UNUR_SUCCESS || result == UNUR_ERR_SILENT) ) {
+    /* condition for PDF is violated! */
+    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
+    /* replace sampling routine by dummy routine that just returns INFINITY */
+    SAMPLE = _unur_sample_cont_error;
+    return UNUR_ERR_GEN_CONDITION;
+  }
+
+  /* update guide table */
+  /** TODO: it is not necessary to update the guide table every time. 
+      But then (1) some additional bookkeeping is required and
+      (2) the guide table method requires a acc./rej. step. **/
+  if ( _unur_tabl_make_guide_table(gen) != UNUR_SUCCESS) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"cannot create guide table");
+    /* replace sampling routine by dummy routine that just returns INFINITY */
+    SAMPLE = _unur_sample_cont_error;
+    return UNUR_ERR_GEN_CONDITION;
+  }
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+} /* end of _unur_tabl_improve_hat() */
+
+/*****************************************************************************/
 

@@ -743,3 +743,35 @@ unur_tabl_chg_verify( struct unur_gen *gen, int verify )
 } /* end of unur_tabl_chg_verify() */
 
 /*---------------------------------------------------------------------------*/
+
+int
+unur_tabl_set_pedantic( struct unur_par *par, int pedantic )
+     /*----------------------------------------------------------------------*/
+     /* turn pedantic mode on/off                                            */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par      ... pointer to parameter for building generator object    */
+     /*   pedantic ... 0 = no pedantic mode, !0 = use pedantic mode          */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   pedantic is the default                                            */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, TABL );
+
+  /* we use a bit in variant */
+  par->variant = (pedantic) ? (par->variant | TABL_VARFLAG_PEDANTIC) : (par->variant & (~TABL_VARFLAG_PEDANTIC));
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+
+} /* end of unur_tabl_set_pedantic() */
+
+/*---------------------------------------------------------------------------*/
+

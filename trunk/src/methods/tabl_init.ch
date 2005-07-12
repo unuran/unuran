@@ -106,7 +106,10 @@ _unur_tabl_init( struct unur_par *par )
   }
 
   /* make initial guide table */
-  _unur_tabl_make_guide_table(gen);
+  if (_unur_tabl_make_guide_table(gen) != UNUR_SUCCESS) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"cannot create guide table");
+    _unur_par_free(par); _unur_tabl_free(gen); return NULL;
+  }
 
   /* creation of generator object successfull */
   gen->status = UNUR_SUCCESS;
@@ -244,7 +247,11 @@ _unur_tabl_clone( const struct unur_gen *gen )
 
   /* make new guide table */
   CLONE->guide = NULL;
-  _unur_tabl_make_guide_table(clone);
+  if (_unur_tabl_make_guide_table(clone) != UNUR_SUCCESS) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"cannot create guide table");
+    /* There is no chance to run out of this error! */
+    /* however, this should never happen.           */
+  }
 
   /* finished clone */
   return clone;
@@ -774,7 +781,7 @@ _unur_tabl_split_interval( struct unur_gen *gen,
   }
 
   /* check for overflow */
-  if (_unur_FP_is_infinity(fx)) {
+  if (!_unur_isfinite(fx)) {
     /* overflow */
     _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF(x) overflow");
     return UNUR_ERR_GEN_DATA;
@@ -803,6 +810,13 @@ _unur_tabl_split_interval( struct unur_gen *gen,
     /* update total area */
     GEN->Atotal += iv_old->Ahat - A_hat_old;
     /* GEN->Asqueeze remains unchanged */
+
+    /* check result */
+    if (!_unur_isfinite(GEN->Atotal)) {
+      /* we have decreased the hat, thus ... */
+      _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+      return UNUR_ERR_INF;
+    }
 
     /* interval chopped but not split */
     return UNUR_ERR_SILENT;
@@ -845,7 +859,6 @@ _unur_tabl_split_interval( struct unur_gen *gen,
   }
 
   /* compute the areas in both intervals */
-  /** TODO: possible overflow/underflow ?? **/
   iv_new->Ahat     = fabs(iv_new->xmax - iv_new->xmin) * iv_new->fmax;
   iv_new->Asqueeze = fabs(iv_new->xmax - iv_new->xmin) * iv_new->fmin;
   iv_old->Ahat     = fabs(iv_old->xmax - iv_old->xmin) * iv_old->fmax;
@@ -859,6 +872,12 @@ _unur_tabl_split_interval( struct unur_gen *gen,
      iv_old is stored on the left hand side of iv_new. */
   iv_new->next = iv_old->next;
   iv_old->next = iv_new;
+
+  /* check result */
+  if (! (_unur_isfinite(GEN->Atotal) && _unur_isfinite(GEN->Asqueeze)) ) {
+    _unur_error(gen->genid,UNUR_ERR_INF,"hat unbounded");
+    return UNUR_ERR_INF;
+  }
 
   /* splitting successful */
   return UNUR_SUCCESS;
@@ -935,6 +954,17 @@ _unur_tabl_make_guide_table( struct unur_gen *gen )
   for( ; j<GEN->guide_size ;j++ )
     GEN->guide[j] = iv;
 
+  /* check table */
+  if (! (_unur_isfinite(GEN->Atotal) && _unur_isfinite(GEN->Asqueeze)) ) {
+    /* in this case the guide table is corrupted and completely worthless. */
+    /* this error is unlikely to happen. for this rare case the check is   */
+    /* done at the end to have the table at least filled with numbers      */
+    /* and thus avoid infinite loops in the sampling routines.             */
+    _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"sum of areas not finite");
+    return UNUR_ERR_GEN_DATA;
+  }
+
+  /* o.k. */
   return UNUR_SUCCESS;
 } /* end of _unur_tabl_make_guide_table() */
 

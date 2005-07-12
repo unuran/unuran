@@ -93,10 +93,14 @@ _unur_tabl_sample( struct unur_gen *gen )
 	  switch (_unur_tabl_split_interval( gen, iv, x, fx,(gen->variant & TABL_VARMASK_SPLIT)) ) {
 	  case UNUR_SUCCESS:
 	  case UNUR_ERR_SILENT:
-	    _unur_tabl_make_guide_table(gen);
 	    /** TODO: it is not necessary to update the guide table every time. 
 		But then (1) some additional bookkeeping is required and
 		(2) the guide table method requires a acc./rej. step. **/
+	    if (_unur_tabl_make_guide_table(gen) != UNUR_SUCCESS) {
+	      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"cannot create guide table");
+	      /* There is no chance to run out of this error! */
+	      /* however, this should never happen.           */
+	    }
 	    break;
 	  default:
 	    /* condition for PDF is violated! */
@@ -188,10 +192,14 @@ _unur_tabl_sample_check( struct unur_gen *gen )
 	  switch (_unur_tabl_split_interval( gen, iv, x, fx,(gen->variant & TABL_VARMASK_SPLIT)) ) {
 	  case UNUR_SUCCESS:
 	  case UNUR_ERR_SILENT:
-	    _unur_tabl_make_guide_table(gen);
 	    /** TODO: it is not necessary to update the guide table every time. 
 		But then (1) some additional bookkeeping is required and
 		(2) the guide table method requires a acc./rej. step. **/
+	    if (_unur_tabl_make_guide_table(gen) != UNUR_SUCCESS) {
+	      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"cannot create guide table");
+	      /* There is no chance to run out of this error! */
+	      /* however, this should never happen.           */
+	    }
 	    break;
 	  default:
 	    /* condition for PDF is violated! */

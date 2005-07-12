@@ -328,9 +328,9 @@ _unur_tabl_get_starting_intervals( struct unur_par *par, struct unur_gen *gen )
      /*   PDF(a) >= PDF(b)                                                   */
      /*----------------------------------------------------------------------*/
 {
-  /** TODO: check for slopes out of support !! **/
-
   struct unur_tabl_interval *iv;
+  double xmax, xmin;
+  double sl, sr;
   int i;
 
   /* check arguments */
@@ -347,8 +347,28 @@ _unur_tabl_get_starting_intervals( struct unur_par *par, struct unur_gen *gen )
 
   /* compute initial intervals */
   for ( i=0; i < 2*PAR->n_slopes; i+=2 ) {
+
+    /* max and min of PDF in interval */
+    xmax = PAR->slopes[i];      
+    xmin = PAR->slopes[i+1];    
+
+    /* check whether boundaries of slopes are inside computational region */
+    if (xmax > xmin) { /* increasing slope */
+      sl = xmin; sr = xmax; }
+    else {  /* decreasing slope */
+      sl = xmax; sr = xmin; }
+
+    if (_unur_FP_greater(DISTR.BD_LEFT,sr)) continue;   /* slope not in domain */
+    if (_unur_FP_less(DISTR.BD_RIGHT,sl)) continue;     /* slope not in domain */
+    if (_unur_FP_greater(DISTR.BD_LEFT,sl)) {
+      /* chop slope (parts of slope not in domain) */
+      if (xmax > xmin) xmin = DISTR.BD_LEFT; else xmax = DISTR.BD_LEFT; }
+    if (_unur_FP_less(DISTR.BD_RIGHT,sr)) {
+      /* chop slope (parts of slope not in domain) */
+      if (xmax < xmin) xmin = DISTR.BD_RIGHT; else xmax = DISTR.BD_RIGHT; }
+
     /* get a new interval and link into list */
-    if (i==0)  /* the first interval */
+    if (GEN->iv==NULL)  /* the first interval */
       iv = GEN->iv = _unur_xmalloc(sizeof(struct unur_tabl_interval));   
     else       /* all the other intervals */
       iv = iv->next = _unur_xmalloc(sizeof(struct unur_tabl_interval));
@@ -356,9 +376,9 @@ _unur_tabl_get_starting_intervals( struct unur_par *par, struct unur_gen *gen )
     COOKIE_SET(iv,CK_TABL_IV);
 
     /* max and min of PDF in interval */
-    iv->xmax = PAR->slopes[i];      
+    iv->xmax = xmax;
     iv->fmax = PDF(iv->xmax);
-    iv->xmin = PAR->slopes[i+1];    
+    iv->xmin = xmin;
     iv->fmin = PDF(iv->xmin);
 
     /* check for overflow */
@@ -377,24 +397,27 @@ _unur_tabl_get_starting_intervals( struct unur_par *par, struct unur_gen *gen )
     }
 
     /* area of slope */
-    iv->Ahat = fabs(iv->xmax - iv->xmin) * iv->fmax;
-    /** TODO: possible overflow/underflow ?? **/
-    iv->Asqueeze = fabs(iv->xmax - iv->xmin) * iv->fmin;
-    /** TODO: possible overflow/underflow ?? **/
-    /* avoid strange (possible) floating point execption on non IEEE754 architecture */
+    iv->Ahat = fabs(xmax - xmin) * iv->fmax;
+    iv->Asqueeze = fabs(xmax - xmin) * iv->fmin;
     iv->Acum = 0.;
 
     /* estimate domain */
-    if (iv->xmax > iv->xmin) {
+    if (xmax > xmin) {
       /* increasing slope */
-      GEN->bleft = min(GEN->bleft,iv->xmin);
-      GEN->bright = max(GEN->bright,iv->xmax);
+      GEN->bleft = min(GEN->bleft,xmin);
+      GEN->bright = max(GEN->bright,xmax);
     }
     else {
       /* decreasing slope */
-      GEN->bleft = min(GEN->bleft,iv->xmax);
-      GEN->bright = max(GEN->bright,iv->xmin);
+      GEN->bleft = min(GEN->bleft,xmax);
+      GEN->bright = max(GEN->bright,xmin);
     }
+  }
+
+  /* check whether we have added slopes */
+  if (GEN->iv==NULL) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"invalid slopes");
+    return UNUR_ERR_GEN_DATA;
   }
 
   /* terminate list */
@@ -581,7 +604,7 @@ _unur_tabl_run_equalarearule( struct unur_par *par, struct unur_gen *gen,
     fx = PDF(x);
 
     /* check for overflow */
-    if (_unur_FP_is_infinity(fx)) {
+    if (!_unur_isfinite(fx)) {
       /* overflow */
       _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF(x) overflow");
       return NULL;

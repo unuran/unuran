@@ -896,6 +896,12 @@ _unur_tabl_split_interval( struct unur_gen *gen,
     return UNUR_ERR_GEN_DATA;
   }
 
+  /* check for monotonicity */
+  if (_unur_FP_greater(fx,iv_old->fmax) || _unur_FP_less(fx,iv_old->fmin)) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF not monotone in slope");
+    return UNUR_ERR_GEN_DATA;
+  }
+
   /* store areas of old interval */
   A_hat_old = iv_old->Ahat;
   A_squ_old = iv_old->Asqueeze;
@@ -912,7 +918,6 @@ _unur_tabl_split_interval( struct unur_gen *gen,
     iv_old->xmin = x;
 
     /* compute new area in interval */
-    /** TODO: possible overflow/underflow ?? **/
     iv_old->Ahat = fabs(iv_old->xmax - iv_old->xmin) * iv_old->fmax;
     /* iv_old->Asqueeze remains 0 */
 
@@ -936,7 +941,7 @@ _unur_tabl_split_interval( struct unur_gen *gen,
   ++(GEN->n_ivs);
   COOKIE_SET(iv_new,CK_TABL_IV);
 
-  /* iv_new has the same slope as iv_old */
+  /* iv_new SHOULD have the same slope as iv_old */
 
   /* we have to distinguish between two cases:
      PDF is increasing (slope = +1) or

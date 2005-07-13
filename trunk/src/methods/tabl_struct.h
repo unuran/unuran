@@ -50,8 +50,9 @@ struct unur_tabl_par {
   int     max_ivs;      /* maximum number of intervals                       */
   double  max_ratio;    /* limit for ratio r_n = A(squeeze) / A(hat)         */
 
-  const double *starting_cpoints; /* pointer to array of starting points     */
-  int     n_starting_cpoints;   /* number of construction points at start    */
+  const double *cpoints; /* pointer to array of points for constr. slopes    */
+  int     n_cpoints;    /* number of points for constructing slopes          */
+  int     n_stp;        /* number of points for hat for start                */
   double  area_fract;   /* parameter for equal area rule                     */
   double  darsfactor;   /* factor for (derandomized) ARS                     */
 

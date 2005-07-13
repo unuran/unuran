@@ -170,19 +170,19 @@ static struct unur_gen *_unur_tabl_clone( const struct unur_gen *gen );
 /* copy (clone) generator object.                                            */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_tabl_get_starting_intervals( struct unur_par *par, struct unur_gen *gen );
+static int _unur_tabl_get_intervals_from_slopes( struct unur_par *par, struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* compute starting intervals from slopes                                    */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_tabl_get_intervals_from_cpoints( struct unur_par *par, struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* compute starting intervals from given cpoints                             */
 /*---------------------------------------------------------------------------*/
 
 static int _unur_tabl_compute_intervals( struct unur_par *par, struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* compute all intervals (by splitting starting intervals/slopes)            */
-/*---------------------------------------------------------------------------*/
-
-static int _unur_tabl_get_slopes_from_mode( struct unur_gen *gen, double *slopes );
-/*---------------------------------------------------------------------------*/
-/* compute slopes from mode and domain                                       */
 /*---------------------------------------------------------------------------*/
 
 static struct unur_tabl_interval *

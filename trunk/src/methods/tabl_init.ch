@@ -77,27 +77,48 @@ _unur_tabl_init( struct unur_par *par )
   if (gen->debug) _unur_tabl_debug_init_start(par,gen);
 #endif
 
-  /* we need slopes */
-  if (PAR->n_slopes <= 0 ) {
-    /* no slopes are given  --> compute from mode */
-    if (par->distr->set & UNUR_DISTR_SET_MODE) {
-      double slopes[4];
-      PAR->n_slopes = _unur_tabl_get_slopes_from_mode(gen,slopes);
-      PAR->slopes = slopes; 
+  /* make starting intervals */
+  do {
+
+    /* (1) use slopes if given, otherwise
+       (2) use  construction points if given, otherwise
+       (3) use mode if available, otherwise
+       (s) stop (no generator object can be created)
+    */
+
+    /* (1) use slopes if given */
+    if (PAR->n_slopes > 0) {
+      if (_unur_tabl_get_intervals_from_slopes(par,gen)!=UNUR_SUCCESS) {
+	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"Cannot make hat function");
+	_unur_par_free(par); _unur_tabl_free(gen); return NULL;
+      }
+      break;
     }
-  }
 
-  /* now we must have slopes */
-  if (PAR->n_slopes <= 0 ) {
-    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"number of slopes <= 0, cannot compute");
-    _unur_par_free(par); _unur_tabl_free(gen); return NULL;
-  }
+    /* (2) use  construction points if given */
 
-  /* get starting intervals from slopes */
-  if (_unur_tabl_get_starting_intervals(par,gen)!=UNUR_SUCCESS) {
-    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"Cannot make hat function");
+    if (PAR->cpoints == NULL) {
+      if (! ( (par->distr->set & UNUR_DISTR_SET_MODE) &&
+	      unur_tabl_set_cpoints(par,1,&(DISTR.mode)) == UNUR_SUCCESS) ) {
+	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"Cannot compute slopes");
+	_unur_par_free(par); _unur_tabl_free(gen); return NULL;
+      }
+    }
+
+    /* now there should be construnctions points */
+    if (PAR->cpoints != NULL) {
+      if (_unur_tabl_get_intervals_from_cpoints(par,gen)!=UNUR_SUCCESS) {
+	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"Cannot make hat function");
+	_unur_par_free(par); _unur_tabl_free(gen); return NULL;
+      }
+      break;
+    }
+
+    /* one of the above cases should have happened */
+    _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
     _unur_par_free(par); _unur_tabl_free(gen); return NULL;
-  }
+
+  } while(0);
 
   /* split starting intervals / slopes */
   if (_unur_tabl_compute_intervals(par,gen) != UNUR_SUCCESS) {
@@ -310,7 +331,7 @@ _unur_tabl_free( struct unur_gen *gen )
 /*****************************************************************************/
 
 int
-_unur_tabl_get_starting_intervals( struct unur_par *par, struct unur_gen *gen )
+_unur_tabl_get_intervals_from_slopes( struct unur_par *par, struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* compute starting intervals, slopes are given by user.                */
      /* estimate domain when not given.                                      */
@@ -423,6 +444,119 @@ _unur_tabl_get_starting_intervals( struct unur_par *par, struct unur_gen *gen )
   /* terminate list */
   iv->next = NULL;
 
+  /* reset area below distribution */
+  gen->distr->set &= ~UNUR_DISTR_SET_PDFAREA;
+  unur_distr_cont_upd_pdfarea( gen->distr );
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+
+} /* end of _unur_tabl_get_intervals_from_slopes() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_tabl_get_intervals_from_cpoints( struct unur_par *par, struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* compute starting intervals, cpoints are given by user.               */
+     /* (it is assumed that the PDF is continuous)                           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par          ... pointer to parameter list                         */
+     /*   gen          ... pointer to generator object                       */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_tabl_interval *iv;
+  double sl, sr; /* boundary of slopes */
+  double fl, fr; /* PDF at boundary points */
+  double cp;     /* construction point */
+  int i;
+
+  /* check arguments */
+  CHECK_NULL(par,UNUR_ERR_NULL);  COOKIE_CHECK(par,CK_TABL_PAR,UNUR_ERR_COOKIE);
+  CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_TABL_GEN,UNUR_ERR_COOKIE);
+
+  /* init counter of intervals */
+  GEN->n_ivs = 0;
+  iv = NULL;
+
+  /* the left boudary of computational domain */
+  sr = GEN->bleft;
+  fr = PDF(sr);
+
+  for (i=0; i<=PAR->n_cpoints; i++) {
+
+    if (i < PAR->n_cpoints) {
+      /* the next point in list */
+      cp = PAR->cpoints[i];
+      /* check whether we are inside domain */
+      if (! _unur_FP_less(GEN->bleft,cp))
+	continue;   /* skip to next point */
+      if (! _unur_FP_greater(GEN->bright,cp)) {
+	/* there are no other cpoints since these should be sorted */
+	i = (PAR->n_cpoints)-1;  /* skip to end of list */
+	continue; 
+      }
+    }
+    
+    else { /* we have looped over all points in list */
+      /* add right boundary of computational domain */
+      cp = GEN->bright;
+    }
+    
+    /* make compute points (assume continuity) */
+    sl = sr; fl = fr;
+    sr = cp; fr = PDF(sr);
+
+    /* get a new interval and link into list */
+    if (GEN->iv==NULL)  /* the first interval */
+      iv = GEN->iv = _unur_xmalloc(sizeof(struct unur_tabl_interval));
+    else       /* all the other intervals */
+      iv = iv->next = _unur_xmalloc(sizeof(struct unur_tabl_interval));
+    ++(GEN->n_ivs);
+    COOKIE_SET(iv,CK_TABL_IV);
+
+    /* check for overflow */
+    if (! (_unur_isfinite(fr) && _unur_isfinite(fl)) ) {
+      /* overflow */
+      _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF(x) overflow");
+      iv->next = NULL;  /* terminate list (freeing list) */
+      return UNUR_ERR_GEN_DATA;
+    }
+    /* remark: for simplicity of code, GEN->iv should not be NULL. 
+       Thus we have allocated 'iv' before this check. */ 
+
+    /* max and min of PDF in interval */
+    if (fr > fl) {
+      /* increasing slope */
+      iv->xmax = sr; iv->fmax = fr;
+      iv->xmin = sl; iv->fmin = fl;
+    }
+    else {
+      /* decreasing slope */
+      iv->xmax = sl; iv->fmax = fl;
+      iv->xmin = sr; iv->fmin = fr;
+    }
+
+    /* area of slope */
+    iv->Ahat = fabs(sr - sl) * iv->fmax;
+    iv->Asqueeze = fabs(sr - sl) * iv->fmin;
+    iv->Acum = 0.;
+  }
+
+  /* check whether we have added slopes */
+  if (GEN->iv==NULL) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"invalid slopes");
+    return UNUR_ERR_GEN_DATA;
+  }
+
+  /* terminate list */
+  iv->next = NULL;
+
   /* reset domain of distribution */
   DISTR.trunc[0] = DISTR.BD_LEFT = GEN->bleft;
   DISTR.trunc[1] = DISTR.BD_RIGHT = GEN->bright;
@@ -434,55 +568,7 @@ _unur_tabl_get_starting_intervals( struct unur_par *par, struct unur_gen *gen )
   /* o.k. */
   return UNUR_SUCCESS;
 
-} /* end of _unur_tabl_get_starting_intervals() */
-
-/*---------------------------------------------------------------------------*/
-
-int
-_unur_tabl_get_slopes_from_mode( struct unur_gen *gen, double *slopes )
-     /*----------------------------------------------------------------------*/
-     /* compute slopes from mode and computational domain                    */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen    ... pointer to generator object                             */
-     /*   slopes ... pointer to array of length 4 to store slopes            */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   number of slopes                                                   */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return 0                                                           */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  CHECK_NULL(gen,0);  COOKIE_CHECK(gen,CK_TABL_GEN,0);
-
-  if (DISTR.mode <= GEN->bleft) {
-    /* only one ascending interval <a,b> = [a,b] */
-    slopes[0] = GEN->bleft;
-    slopes[1] = GEN->bright;
-    return 1;
-  }
-
-  if (DISTR.mode >= GEN->bright) {
-    /* only one descending interval <a,b> = [b,a] */
-    slopes[0] = GEN->bright;
-    slopes[1] = GEN->bleft;
-    return 1;
-  }
-
-  else {
-    /* two slopes */
-    /* one ascending interval */
-    slopes[0] = DISTR.mode;
-    slopes[1] = GEN->bleft;
-    /* one descending */
-    slopes[2] = DISTR.mode;
-    slopes[3] = GEN->bright;
-    return 2;
-  }
-
-} /* end of _unur_tabl_get_slopes_from_mode() */
+} /* end of _unur_tabl_get_intervals_from_cpoints() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -978,12 +1064,15 @@ _unur_tabl_make_guide_table( struct unur_gen *gen )
     GEN->guide[j] = iv;
 
   /* check table */
-  if (! (_unur_isfinite(GEN->Atotal) && _unur_isfinite(GEN->Asqueeze)) ) {
+  if (! (_unur_isfinite(GEN->Atotal) && _unur_isfinite(GEN->Asqueeze)
+	 && GEN->Atotal > 0.
+	 && (!_unur_FP_less(GEN->Atotal,DISTR.area) || !(gen->distr->set & UNUR_DISTR_SET_PDFAREA)) ) 
+      ) {
     /* in this case the guide table is corrupted and completely worthless. */
     /* this error is unlikely to happen. for this rare case the check is   */
     /* done at the end to have the table at least filled with numbers      */
     /* and thus avoid infinite loops in the sampling routines.             */
-    _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"sum of areas not finite");
+    _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"sum of areas not valid");
     return UNUR_ERR_GEN_DATA;
   }
 

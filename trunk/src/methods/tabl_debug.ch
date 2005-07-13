@@ -133,6 +133,14 @@ _unur_tabl_debug_init_start( const struct unur_par *par, const struct unur_gen *
   else
     fprintf(log,"%s: no slopes given. compute from domain and mode.\n",gen->genid);
 
+  if (PAR->cpoints != NULL) {
+    fprintf(log,"%s: cpoints for slopes (%d):\n",gen->genid,PAR->n_cpoints);
+    fprintf(log,"%s:\t %g",gen->genid,(PAR->cpoints)[0]);
+    for (i=1; i<PAR->n_cpoints; i++)
+      fprintf(log,", %g",(PAR->cpoints)[i]);
+    fprintf(log,"\n");
+  }
+
   if (par->variant & TABL_VARFLAG_STP_A)
     fprintf(log,"%s: split slopes by equal area rule (SPLIT A).\n",gen->genid);
 
@@ -148,7 +156,7 @@ _unur_tabl_debug_init_start( const struct unur_par *par, const struct unur_gen *
   }
   fprintf(log,"\n%s:\n",gen->genid);
 
-  fprintf(log,"%s: number of starting intervals (approx.) = %d",gen->genid,PAR->n_starting_cpoints);
+  fprintf(log,"%s: number of starting intervals (approx.) = %d",gen->genid,PAR->n_stp);
   _unur_print_if_default(par,TABL_SET_N_STP);
   fprintf(log,"\n");
   empty_line();

@@ -165,13 +165,24 @@ UNUR_PAR *unur_tabl_new( const UNUR_DISTR* distribution );
 
 /*...........................................................................*/
 
-int unur_tabl_set_cpoints( UNUR_PAR *parameters, int n_stp, const double *stp );
+int unur_tabl_set_cpoints( UNUR_PAR *parameters, int n_cpoints, const double *cpoints );
 /* 
    Set construction points for the hat function. If @var{stp} is NULL
    than a heuristic rule of thumb is used to get @var{n_stp}
    construction points. This is the default behavior. 
 
    The default number of construction points is @code{30}.
+*/
+
+int unur_tabl_set_nstp( UNUR_PAR *parameters, int n_stp );
+/* 
+   Set number of construction points for the hat function. @var{n_stp}
+   must be greater than zero. After the setup there are about
+   @var{n_stp} construction points. However it might be larger when a
+   small fraction is given by the unur_tabl_set_areafraction() call.
+   It also might be smaller for some variants.
+
+   Default is @code{30}.
 */
 
 int unur_tabl_set_usedars( UNUR_PAR *parameters, int usedars );
@@ -364,22 +375,3 @@ int unur_tabl_set_pedantic( UNUR_PAR *parameters, int pedantic );
 /* =END */
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/* obsolete functions                                                        */
-
-/* =OBSOLETE */
-
-int unur_tabl_set_nstp( UNUR_PAR *parameters, int n_stp );
-/* 
-   Set number of construction points for the hat function. @var{n_stp}
-   must be greater than zero. After the setup there are about
-   @var{n_stp} construction points. However it might be larger when a
-   small fraction is given by the unur_tabl_set_areafraction() call.
-   It also might be smaller for some variants.
-
-   Default is @code{30}.
-
-   This function is obsolete and should not be used any more.
-*/
-
-/* =END */

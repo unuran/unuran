@@ -403,19 +403,23 @@ _unur_tabl_get_intervals_from_slopes( struct unur_par *par, struct unur_gen *gen
     iv->fmin = PDF(iv->xmin);
 
     /* check for overflow */
-    if (! (_unur_isfinite(iv->fmax) && _unur_isfinite(iv->fmin)) ) {
+    if (! (_unur_isfinite(iv->fmax) && _unur_isfinite(iv->fmin)
+	   && iv->fmax >= 0. && iv->fmin >= 0.) ) {
       /* overflow */
       _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF(x) overflow");
       iv->next = NULL;  /* terminate list (freeing list) */
       return UNUR_ERR_GEN_DATA;
     }
 
-    /* check slopes */
+    /* check slopes (but only give a warning) */
     if (_unur_FP_less(iv->fmax,iv->fmin)) {
-      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"slopes non-decreasing");
-      iv->next = NULL;  /* terminate list (freeing list) */
-      return UNUR_ERR_GEN_CONDITION;
+      _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"PDF discontinuous or slope not monotone");
     }
+
+    /* we assume that the PDF is discontinuous at the boundary
+       of the slope. Thus we cannot use squezzes in the interval
+       on the "lower" end of the slope. */
+    iv->fmin = 0.;
 
     /* area of slope */
     iv->Ahat = fabs(xmax - xmin) * iv->fmax;
@@ -521,7 +525,8 @@ _unur_tabl_get_intervals_from_cpoints( struct unur_par *par, struct unur_gen *ge
     COOKIE_SET(iv,CK_TABL_IV);
 
     /* check for overflow */
-    if (! (_unur_isfinite(fr) && _unur_isfinite(fl)) ) {
+    if (! (_unur_isfinite(fr) && _unur_isfinite(fl)
+	   && fr >= 0. && fl >= 0.) ) {
       /* overflow */
       _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF(x) overflow");
       iv->next = NULL;  /* terminate list (freeing list) */
@@ -690,7 +695,7 @@ _unur_tabl_run_equalarearule( struct unur_par *par, struct unur_gen *gen,
     fx = PDF(x);
 
     /* check for overflow */
-    if (!_unur_isfinite(fx)) {
+    if (! (_unur_isfinite(fx) && fx >= 0.)) {
       /* overflow */
       _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF(x) overflow");
       return NULL;
@@ -860,7 +865,7 @@ _unur_tabl_split_interval( struct unur_gen *gen,
 {
   struct unur_tabl_interval *iv_new;
   double A_hat_old, A_squ_old;
-  
+
   /* check arguments */
   CHECK_NULL(gen,UNUR_ERR_NULL);     COOKIE_CHECK(gen,CK_TABL_GEN,UNUR_ERR_COOKIE);
   CHECK_NULL(iv_old,UNUR_ERR_NULL);  COOKIE_CHECK(iv_old,CK_TABL_IV,UNUR_ERR_COOKIE);
@@ -890,7 +895,7 @@ _unur_tabl_split_interval( struct unur_gen *gen,
   }
 
   /* check for overflow */
-  if (!_unur_isfinite(fx)) {
+  if (! (_unur_isfinite(fx) && fx >= 0.)) {
     /* overflow */
     _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF(x) overflow");
     return UNUR_ERR_GEN_DATA;

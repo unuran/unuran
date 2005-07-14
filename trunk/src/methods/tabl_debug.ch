@@ -72,15 +72,28 @@ _unur_tabl_debug_init_start( const struct unur_par *par, const struct unur_gen *
   empty_line();
   fprintf(log,"%s: type    = continuous univariate random variates\n",gen->genid);
   fprintf(log,"%s: method  = rejection from piecewise constant hat\n",gen->genid);
+  fprintf(log,"%s: variant = ",gen->genid);
+  switch (par->variant & TABL_VARMASK_VARIANT) {
+  case TABL_VARIANT_RH:
+    fprintf(log,"acceptance/rejection ... RH\n"); break;
+  case TABL_VARIANT_IA:
+    fprintf(log,"immediate acceptance ... IA\n"); break;
+  }
   empty_line();
 
   _unur_distr_cont_debug( gen->distr, gen->genid );
 
-  fprintf(log,"%s: sampling routine = _unur_tabl_sample",gen->genid);
+  fprintf(log,"%s: sampling routine = _unur_tabl_",gen->genid);
+  switch (par->variant & TABL_VARMASK_VARIANT) {
+  case TABL_VARIANT_RH:
+    fprintf(log,"rh"); break;
+  case TABL_VARIANT_IA:
+    fprintf(log,"ia"); break;
+  }
   if (par->variant & TABL_VARFLAG_VERIFY)
-    fprintf(log,"_check()\n");
+    fprintf(log,"_sample_check()\n");
   else
-    fprintf(log,"()\n");
+    fprintf(log,"_sample()\n");
   empty_line();
 
   fprintf(log,"%s: computation interval = (%g, %g)\n",gen->genid,GEN->bleft,GEN->bright);

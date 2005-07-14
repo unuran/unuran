@@ -182,8 +182,21 @@ _unur_tabl_create( struct unur_par *par )
   /* set generator identifier */
   gen->genid = _unur_set_genid(GENTYPE);
 
-  /* routines for sampling and destroying generator */
-  SAMPLE = (par->variant & TABL_VARFLAG_VERIFY) ? _unur_tabl_sample_check : _unur_tabl_sample;
+  /* sampling routines */
+  switch (par->variant & TABL_VARMASK_VARIANT) {
+  case TABL_VARIANT_RH:    /* "classical" acceptance/rejection method */
+    SAMPLE = (par->variant & TABL_VARFLAG_VERIFY) ? _unur_tabl_rh_sample_check : _unur_tabl_rh_sample;
+    break;
+  case TABL_VARIANT_IA:    /* immediate acceptance */
+    SAMPLE = (par->variant & TABL_VARFLAG_VERIFY) ? _unur_tabl_ia_sample_check : _unur_tabl_ia_sample;
+    break;
+  default:
+    _unur_error(GENTYPE,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+    _unur_distr_free(gen->distr); free(gen);
+    return NULL;
+  }
+  
+  /* routines for cloning and destroying generator */
   gen->destroy = _unur_tabl_free;
   gen->clone = _unur_tabl_clone;
 

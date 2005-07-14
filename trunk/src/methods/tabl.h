@@ -165,6 +165,20 @@ UNUR_PAR *unur_tabl_new( const UNUR_DISTR* distribution );
 
 /*...........................................................................*/
 
+int unur_tabl_set_variant_rh( UNUR_PAR *parameters );
+/* 
+   Use "classical" acceptance/rejection from hat distribution. 
+*/
+
+int unur_tabl_set_variant_ia( UNUR_PAR *parameters );
+/* 
+   Use immediate acceptance. This technique requires less uniform
+   random numbers.
+
+   This is the default.
+*/
+
+
 int unur_tabl_set_cpoints( UNUR_PAR *parameters, int n_cpoints, const double *cpoints );
 /* 
    Set construction points for the hat function. If @var{stp} is NULL

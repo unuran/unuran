@@ -98,7 +98,10 @@
 /*---------------------------------------------------------------------------*/
 /* Variants                                                                  */
 
-#define TABL_VARFLAG_VERIFY       0x0001u  /* flag for verifying mode           */
+/* how to sample from genertor object */
+#define TABL_VARMASK_VARIANT      0x000fu   /* indicates which variant       */
+#define TABL_VARIANT_RH           0x0001u   /* "classical" accept./rejection */
+#define TABL_VARIANT_IA           0x0002u   /* use immediate acceptance      */
 
 /* indicate how to split interval */
 #define TABL_VARMASK_SPLIT        0x00f0u  /* split at        computation     convergence of hat */
@@ -112,6 +115,7 @@
 #define TABL_VARFLAG_PEDANTIC     0x0200u  /* whether pedantic checking is used */
 #define TABL_VARFLAG_USEDARS      0x0400u  /* use main subdivisions (SPLIT B in [1]) 
                                              (= derandomized ARS)                   */
+#define TABL_VARFLAG_VERIFY       0x0800u  /* flag for verifying mode        */
 
 /*---------------------------------------------------------------------------*/
 /* Debugging flags                                                           */
@@ -154,8 +158,10 @@ static struct unur_gen *_unur_tabl_create( struct unur_par *par );
 /* create new (almost empty) generator object.                               */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_tabl_sample( struct unur_gen *gen );
-static double _unur_tabl_sample_check( struct unur_gen *gen );
+static double _unur_tabl_rh_sample( struct unur_gen *gen );
+static double _unur_tabl_rh_sample_check( struct unur_gen *gen );
+static double _unur_tabl_ia_sample( struct unur_gen *gen );
+static double _unur_tabl_ia_sample_check( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/

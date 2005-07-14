@@ -39,9 +39,10 @@
  *****************************************************************************/
 
 double
-_unur_tabl_sample( struct unur_gen *gen )
+_unur_tabl_rh_sample( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* sample from generator                                                */
+     /* (use "classical" acceptance/rejection)                               */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
@@ -54,7 +55,7 @@ _unur_tabl_sample( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 { 
   struct unur_tabl_interval *iv;
-  double u,x,fx;
+  double U,X,fx,V;
 
   /* check arguments */
   CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_TABL_GEN,INFINITY);
@@ -62,53 +63,196 @@ _unur_tabl_sample( struct unur_gen *gen )
   while(1) {
 
     /* sample from U(0,1) */
-    u = _unur_call_urng(gen->urng);
+    U = _unur_call_urng(gen->urng);
 
     /* look up in guide table and search for interval */
-    iv =  GEN->guide[(int) (u * GEN->guide_size)];
-    u *= GEN->Atotal;
-
-    while (iv->Acum < u)
+    iv =  GEN->guide[(int) (U * GEN->guide_size)];
+    U *= GEN->Atotal;
+    while (iv->Acum < U)
       iv = iv->next;
 
     COOKIE_CHECK(iv,CK_TABL_IV,INFINITY);
 
     /* reuse of uniform random number
        (generation of squeeze should be inversion) */
-    u = (iv->xmax <= iv->xmin) ? (iv->Acum - u) : (iv->Ahat + u - iv->Acum);
+    U = (iv->xmax <= iv->xmin) ? (iv->Acum - U) : (iv->Ahat + U - iv->Acum);
 
-    if( u < iv->Asqueeze ) {
+    /* sample from hat distribution in interval */
+    X = iv->xmax + U * (iv->xmin - iv->xmax)/iv->Ahat;
+
+    /* accept or reject */
+    V = _unur_call_urng(gen->urng) * iv->fmax;  /* a random point between 0 and hat at x */
+
+    /* below squeeze ? */
+    if (V <= iv->fmin)
+      return X;
+
+    /* value of PDF at x */
+    fx = PDF(X);
+
+    /* being above squeeze is bad. split interval. */
+    if (GEN->n_ivs < GEN->max_ivs) {
+      if ( (_unur_tabl_improve_hat( gen, iv, X, fx,(gen->variant & TABL_VARMASK_SPLIT)) != UNUR_SUCCESS)
+	   && (gen->variant & TABL_VARFLAG_PEDANTIC) )
+	return UNUR_INFINITY;
+    }
+
+    /* below hat */
+    if (V <= fx)
+      return X;
+
+  }
+
+} /* end of _unur_tabl_rh_sample() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_tabl_rh_sample_check( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* sample from generator and verify that method can be used             */
+     /* (use "classical" acceptance/rejection)                               */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   double (sample from random variate)                                */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return INFINITY                                                    */
+     /*----------------------------------------------------------------------*/
+{ 
+  struct unur_tabl_interval *iv;
+  double U,X,fx,V;
+
+  /* check arguments */
+  CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_TABL_GEN,INFINITY);
+
+  while(1) {
+
+    /* sample from U(0,1) */
+    U = _unur_call_urng(gen->urng);
+
+    /* look up in guide table and search for interval */
+    iv =  GEN->guide[(int) (U * GEN->guide_size)];
+    U *= GEN->Atotal;
+    while (iv->Acum < U)
+      iv = iv->next;
+
+    COOKIE_CHECK(iv,CK_TABL_IV,INFINITY);
+
+    /* reuse of uniform random number
+       (generation of squeeze should be inversion) */
+    U = (iv->xmax <= iv->xmin) ? (iv->Acum - U) : (iv->Ahat + U - iv->Acum);
+
+    /* sample from hat distribution in interval */
+    X = iv->xmax + U * (iv->xmin - iv->xmax)/iv->Ahat;
+
+    /* accept or reject */
+    V = _unur_call_urng(gen->urng) * iv->fmax;  /* a random point between 0 and hat at x */
+
+    /* value of PDF at x */
+    fx = PDF(X);
+
+    /* test whether PDF is monotone */
+    if (_unur_FP_greater(fx,iv->fmax))
+      _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF > hat. PDF not monotone in interval");
+    if (_unur_FP_less(fx,iv->fmin))
+      _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF < squeeze. PDF not monotone in interval");
+
+    /* below squeeze ? */
+    if (V <= iv->fmin)
+      return X;
+
+    /* being above squeeze is bad. split interval. */
+    if (GEN->n_ivs < GEN->max_ivs) {
+      if ( (_unur_tabl_improve_hat( gen, iv, X, fx,(gen->variant & TABL_VARMASK_SPLIT)) != UNUR_SUCCESS)
+	   && (gen->variant & TABL_VARFLAG_PEDANTIC) )
+	return UNUR_INFINITY;
+    }
+
+    /* below hat */
+    if (V <= fx)
+      return X;
+  }
+
+} /* end of _unur_tabl_rh_sample_check() */
+
+/*****************************************************************************/
+
+double
+_unur_tabl_ia_sample( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* sample from generator                                                */
+     /* (use immediate acceptance)                                           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   double (sample from random variate)                                */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return INFINITY                                                    */
+     /*----------------------------------------------------------------------*/
+{ 
+  struct unur_tabl_interval *iv;
+  double U,X,fx;
+
+  /* check arguments */
+  CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_TABL_GEN,INFINITY);
+
+  while(1) {
+
+    /* sample from U(0,1) */
+    U = _unur_call_urng(gen->urng);
+
+    /* look up in guide table and search for interval */
+    iv =  GEN->guide[(int) (U * GEN->guide_size)];
+    U *= GEN->Atotal;
+    while (iv->Acum < U)
+      iv = iv->next;
+
+    COOKIE_CHECK(iv,CK_TABL_IV,INFINITY);
+
+    /* reuse of uniform random number
+       (generation from squeeze should be inversion) */
+    U = (iv->xmax <= iv->xmin) ? (iv->Acum - U) : (iv->Ahat + U - iv->Acum);
+
+    if( U < iv->Asqueeze ) {
       /* below squeeze */
-      return( iv->xmax + (iv->Asqueeze-u) * (iv->xmin - iv->xmax)/iv->Asqueeze ); 
+      return( iv->xmax + (iv->Asqueeze-U) * (iv->xmin - iv->xmax)/iv->Asqueeze );
     }
 
     else {
       /* between spueeze and hat --> have to valuate PDF */
-      x = iv->xmax + (u-iv->Asqueeze) * (iv->xmin - iv->xmax)/(iv->Ahat - iv->Asqueeze);
-      fx = PDF(x);
+      X = iv->xmax + (U-iv->Asqueeze) * (iv->xmin - iv->xmax)/(iv->Ahat - iv->Asqueeze);
+      fx = PDF(X);
 
       /* being above squeeze is bad. split interval. */
       if (GEN->n_ivs < GEN->max_ivs) {
-	if ( (_unur_tabl_improve_hat( gen, iv, x, fx,(gen->variant & TABL_VARMASK_SPLIT)) != UNUR_SUCCESS)
+	if ( (_unur_tabl_improve_hat( gen, iv, X, fx,(gen->variant & TABL_VARMASK_SPLIT)) != UNUR_SUCCESS)
 	     && (gen->variant & TABL_VARFLAG_PEDANTIC) )
 	  return UNUR_INFINITY;
       }
 
       /* now accept or reject */
-      u = _unur_call_urng(gen->urng);
-      if (fx >= u * (iv->fmax - iv->fmin) + iv->fmin)
-	return x;
+      U = _unur_call_urng(gen->urng);
+      if (fx >= U * (iv->fmax - iv->fmin) + iv->fmin)
+	return X;
     }
   }
 
-} /* end of _unur_tabl_sample() */
+} /* end of _unur_tabl_ia_sample() */
 
-/*****************************************************************************/
+/*---------------------------------------------------------------------------*/
 
 double
-_unur_tabl_sample_check( struct unur_gen *gen )
+_unur_tabl_ia_sample_check( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* sample from generator and verify that method can be used             */
+     /* (use immediate acceptance)                                           */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
@@ -121,7 +265,7 @@ _unur_tabl_sample_check( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 { 
   struct unur_tabl_interval *iv;
-  double u,x,fx;
+  double U,X,fx;
 
   /* check arguments */
   CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_TABL_GEN,INFINITY);
@@ -129,37 +273,37 @@ _unur_tabl_sample_check( struct unur_gen *gen )
   while(1) {
 
     /* sample from U(0,1) */
-    u = _unur_call_urng(gen->urng);
+    U = _unur_call_urng(gen->urng);
 
     /* look up in guide table and search for interval */
-    iv =  GEN->guide[(int) (u * GEN->guide_size)];
-    u *= GEN->Atotal;
-    while (iv->Acum < u)
+    iv =  GEN->guide[(int) (U * GEN->guide_size)];
+    U *= GEN->Atotal;
+    while (iv->Acum < U)
       iv = iv->next;
 
     COOKIE_CHECK(iv,CK_TABL_IV,INFINITY);
 
     /* reuse of uniform random number
        (generation of squeeze should be inversion) */
-    u = (iv->xmax <= iv->xmin) ? (iv->Acum - u) : (iv->Ahat + u - iv->Acum);
+    U = (iv->xmax <= iv->xmin) ? (iv->Acum - U) : (iv->Ahat + U - iv->Acum);
 
-    if( u <= iv->Asqueeze ) {
+    if( U <= iv->Asqueeze ) {
       /* below squeeze */
-      x = iv->xmax + (iv->Asqueeze-u) * (iv->xmin - iv->xmax)/iv->Asqueeze;
+      X = iv->xmax + (iv->Asqueeze-U) * (iv->xmin - iv->xmax)/iv->Asqueeze;
       /* test whether PDF is monotone */
-      fx = PDF(x);
+      fx = PDF(X);
       if (_unur_FP_greater(fx,iv->fmax))
 	_unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF > hat. PDF not monotone in interval");
       if (_unur_FP_less(fx,iv->fmin))
 	_unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF < squeeze. PDF not monotone in interval");
       /* at last return number */
-      return x;
+      return X;
     }
 
     else {
       /* between spueeze and hat --> have to valuate PDF */
-      x = iv->xmax + (u-iv->Asqueeze) * (iv->xmin - iv->xmax)/(iv->Ahat - iv->Asqueeze);
-      fx = PDF(x);
+      X = iv->xmax + (U-iv->Asqueeze) * (iv->xmin - iv->xmax)/(iv->Ahat - iv->Asqueeze);
+      fx = PDF(X);
 
       /* test whether PDF is monotone */
       if (_unur_FP_greater(fx,iv->fmax))
@@ -169,19 +313,18 @@ _unur_tabl_sample_check( struct unur_gen *gen )
 
       /* being above squeeze is bad. split interval. */
       if (GEN->n_ivs < GEN->max_ivs) {
-	if ( (_unur_tabl_improve_hat( gen, iv, x, fx,(gen->variant & TABL_VARMASK_SPLIT)) != UNUR_SUCCESS)
+	if ( (_unur_tabl_improve_hat( gen, iv, X, fx,(gen->variant & TABL_VARMASK_SPLIT)) != UNUR_SUCCESS)
 	     && (gen->variant & TABL_VARFLAG_PEDANTIC) )
 	  return UNUR_INFINITY;
       }
 
       /* now accept or reject */
-      u = _unur_call_urng(gen->urng);
-      if (fx >= u * (iv->fmax - iv->fmin) + iv->fmin)
-	return x;
+      U = _unur_call_urng(gen->urng);
+      if (fx >= U * (iv->fmax - iv->fmin) + iv->fmin)
+	return X;
     }
   }
-
-} /* end of _unur_tabl_sample_check() */
+} /* end of _unur_tabl_ia_sample_check() */
 
 /*****************************************************************************/
 

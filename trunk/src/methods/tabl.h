@@ -199,6 +199,32 @@ int unur_tabl_set_nstp( UNUR_PAR *parameters, int n_stp );
    Default is @code{30}.
 */
 
+int unur_tabl_set_useear( UNUR_PAR *parameters, int useear );
+/*
+   If @var{useear} is set to TRUE, the ``equal area rule'' is used,
+   the given slopes are partitioned in such a way that the area below
+   the hat function in each subinterval (``stripe'') has the same
+   area (except the last the last interval which can be smaller).
+   The area can be set by means of the unur_tabl_set_areafraction()
+   call. 
+
+   Default is TRUE.
+*/
+
+int unur_tabl_set_areafraction( UNUR_PAR *parameters, double fraction );
+/* 
+   Set parameter for the equal area rule. During the setup a piecewise
+   constant hat is constructed, such that the area below each of these
+   pieces (strips) is the same and equal to the (given) area below the
+   PDF times @var{fraction} (which must be greater than
+   zero).
+
+   @emph{Important:} If the area below the PDF is not set in the
+   distribution object, then 1 is assumed. 
+
+   Default is @code{0.1}.
+*/
+
 int unur_tabl_set_usedars( UNUR_PAR *parameters, int usedars );
 /*
    If @var{usedars} is set to TRUE, ``derandomized adaptive rejection
@@ -297,20 +323,6 @@ int unur_tabl_get_n_intervals( const UNUR_GEN *generator );
 /* 
    Get the current number of intervals.
    (In case of an error 0 is returned.)
-*/
-
-int unur_tabl_set_areafraction( UNUR_PAR *parameters, double fraction );
-/* 
-   Set parameter for equal area rule. During the setup a piecewise
-   constant hat is constructed, such that the area below each of these
-   pieces (strips) is the same and equal to the (given) area below the
-   distribution times @var{fraction} (which must be greater than
-   zero).
-
-   @emph{Important:} If the area below the PDF is not set in the
-   distribution object, then 1 is assumed. 
-
-   Default is @code{0.1}.
 */
 
 int unur_tabl_set_slopes( UNUR_PAR *parameters, const double *slopes, int n_slopes );

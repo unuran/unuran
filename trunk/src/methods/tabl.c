@@ -110,11 +110,12 @@
 #define TABL_VARFLAG_SPLIT_ARC    0x0040u  /* "arcmean"        very slow       very good for almost unbounded domain */
 
 /* indicate if starting intervals have to be split */
+#define TABL_VARFLAG_USEEAR       0x0100u  /* use equal area rule (see [1])   */
 #define TABL_VARFLAG_STP_A        0x0100u  /* use equal area rule (SPLIT A in [1])   */
 
-#define TABL_VARFLAG_PEDANTIC     0x0200u  /* whether pedantic checking is used */
-#define TABL_VARFLAG_USEDARS      0x0400u  /* use main subdivisions (SPLIT B in [1]) 
+#define TABL_VARFLAG_USEDARS      0x0200u  /* use main subdivisions (SPLIT B in [1]) 
                                              (= derandomized ARS)                   */
+#define TABL_VARFLAG_PEDANTIC     0x0400u  /* whether pedantic checking is used */
 #define TABL_VARFLAG_VERIFY       0x0800u  /* flag for verifying mode        */
 
 /*---------------------------------------------------------------------------*/
@@ -127,6 +128,7 @@
 #define TABL_DEBUG_IV    0x00000100u /* show intervals                       */
 #define TABL_DEBUG_A_IV  0x00000200u /* show intervals after split A, before split B */
 #define TABL_DEBUG_DARS  0x00020000u
+#define TABL_DEBUG_EAR   0x00040000u
 
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
@@ -139,8 +141,9 @@
 #define TABL_SET_N_STP            0x0040u
 #define TABL_SET_STP              0x0080u
 #define TABL_SET_BOUNDARY         0x0100u
-#define TABL_SET_USE_DARS         0x0200u
-#define TABL_SET_DARS_FACTOR      0x0400u
+#define TABL_SET_USE_EAR          0x0200u
+#define TABL_SET_USE_DARS         0x0400u
+#define TABL_SET_DARS_FACTOR      0x0800u
 
 /*---------------------------------------------------------------------------*/
 

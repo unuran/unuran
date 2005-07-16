@@ -177,6 +177,43 @@ unur_tabl_set_variant_ia( struct unur_par *par )
 /*---------------------------------------------------------------------------*/
 
 int
+unur_tabl_set_useear( struct unur_par *par, int useear )
+     /*----------------------------------------------------------------------*/
+     /* set flag for using EAS (equal area rule).                            */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par       ... pointer to parameter for building generator object   */
+     /*   useear    ... 0 = do not use,  1 = use EAS                         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   using using EAS is the default                                     */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, TABL );
+
+  /* we use a bit in variant */
+  if (useear)
+    par->variant |= TABL_VARFLAG_USEEAR;
+  else
+    par->variant &= ~TABL_VARFLAG_USEEAR;
+
+  /* changelog */
+  par->set |= TABL_SET_USE_EAR;
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+
+} /* end of unur_tabl_set_useeas() */
+
+/*---------------------------------------------------------------------------*/
+
+int
 unur_tabl_set_usedars( struct unur_par *par, int usedars )
      /*----------------------------------------------------------------------*/
      /* set flag for using DARS (derandomized adaptive rejection sampling).  */

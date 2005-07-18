@@ -871,7 +871,6 @@ unur_tdr_chg_truncated( struct unur_gen *gen, double left, double right )
     }
   }
 
-
   /* set bounds for truncated domain and for U (CDF) */
   DISTR.trunc[0] = left;
   DISTR.trunc[1] = right;
@@ -910,8 +909,6 @@ _unur_tdr_eval_cdfhat( struct unur_gen *gen, double x )
      /*   then it is treated like variant PS (proportional squeeze)!         */
      /*   This is necessary since variant IA is not a pure rejection         */
      /*   algorithm, but a composition method.                               */
-     /*   Thus it does not possible to use this call to estimate the range   */
-     /*   of U-values for a truncated domain.                                */
      /*----------------------------------------------------------------------*/
 {
   struct unur_tdr_interval *iv;

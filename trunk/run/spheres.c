@@ -99,7 +99,8 @@ int main(int argc, char *argv[])
     
   char c;
 
-  UNIFORM = unur_str2gen("uniform(0,1) & urng=mt19937(1173)");
+//  UNIFORM = unur_str2gen("uniform(0,1) & urng=mt19937(1173)");
+  UNIFORM = unur_str2gen("uniform(0,1) & urng=mt19937(13731)");
   
   /* we need an generator for standard normal distributons */
   struct unur_distr *normaldistr = unur_distr_normal(NULL,0);
@@ -107,6 +108,7 @@ int main(int argc, char *argv[])
   unur_arou_set_usedars( normalpar, TRUE );
   NORMAL = unur_init( normalpar );
   _unur_distr_free( normaldistr );
+  NORMAL->urng = UNIFORM->urng;
    
   /* read options */
   while ((c = getopt(argc, argv, "d:n:m:e:h")) != -1) {
@@ -143,8 +145,8 @@ int main(int argc, char *argv[])
   x = _unur_vector_new(DIM); /* current point at origin */
   direction  = _unur_vector_new(DIM); /* sampling direction from current point  */
   
-  if (METHOD==METHOD_COORDINATE)        printf("METHOD=COORDINATE\n");
-  if (METHOD==METHOD_RANDOM_DIRECTION)  printf("METHOD=RANDOM DIRECTION\n");
+  //if (METHOD==METHOD_COORDINATE)        printf("METHOD=COORDINATE\n");
+  //if (METHOD==METHOD_RANDOM_DIRECTION)  printf("METHOD=RANDOM DIRECTION\n");
   
   R = exp(-log(2)/DIM); /* radius of interior sphere (volume = 1/2 of unit sphere volume)*/
   //printf("R=%e\n", R); 

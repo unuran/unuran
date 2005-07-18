@@ -25,7 +25,7 @@ matr: matr.c ../src/unuran.h ../src/libunuran.la ../src/experimental/libunurexpe
 	../libtool gcc -I. -I.. -I../src -I../src/tests -Wall -DHAVE_CONFIG_H -g -O2 -m32 -o matr matr.c ../src/experimental/libunurexperimental.la ../tests/testdistributions/libtestdistributions.la ../src/libunuran.la -lm 
 
 spheres: spheres.c ../src/unuran.h ../src/libunuran.la ../src/experimental/libunurexperimental.la ../tests/testdistributions/libtestdistributions.la
-	../libtool gcc -I. -I.. -I../src -I../src/tests -Wall -DHAVE_CONFIG_H -g -O2 -m32 -o spheres spheres.c ../src/experimental/libunurexperimental.la ../tests/testdistributions/libtestdistributions.la ../src/libunuran.la -lm 
+	../libtool gcc -I. -I.. -I../src -I../src/tests -Wall -DHAVE_CONFIG_H -g -O2 -m32 -o spheres spheres.c ../src/experimental/libunurexperimental.la ../tests/testdistributions/libtestdistributions.la ../src/libunuran.la -lm -lprng 
 
 lotto: lotto.c ../src/unuran.h ../src/libunuran.la ../src/experimental/libunurexperimental.la
 	../libtool gcc -I. -I.. -I../src -I../src/tests -Wall -DHAVE_CONFIG_H -g -O2 -m32 -o lotto lotto.c ../src/experimental/libunurexperimental.la ../src/libunuran.la -lm -lprng 

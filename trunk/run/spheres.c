@@ -92,6 +92,7 @@ int main(int argc, char *argv[])
   double U; /* U(0,1) */
   double R; /* radius of inner sphere */
   long inside;
+  double diff, var;
   
   int i;
   long loop, sample;
@@ -146,9 +147,10 @@ int main(int argc, char *argv[])
   if (METHOD==METHOD_RANDOM_DIRECTION)  printf("METHOD=RANDOM DIRECTION\n");
   
   R = exp(-log(2)/DIM); /* radius of interior sphere (volume = 1/2 of unit sphere volume)*/
-  printf("R=%e\n", R); 
+  //printf("R=%e\n", R); 
   
   /* main loop */    
+  var=0.; 
   for (loop=1; loop<=EXPERIMENTS; loop++) {
 
     /* setting initial point at the origin */
@@ -181,12 +183,14 @@ int main(int argc, char *argv[])
         inside++;
       }
     }
-    printf("exp=%ld : (obs-expect)=%ld\n", loop, inside - SAMPLESIZE/2);
+    diff = (inside -SAMPLESIZE/2.);
+    var += diff*diff; 
   } /* next experiment */
-
+  var /= EXPERIMENTS;
+  
   /* output of results */   
+  printf("dim=%d 'var'=%e\n", DIM, var); 
   printf("------------------------------------------------------------------\n");
-  printf("\n"); /* TODO ... */
       
   if (UNIFORM) unur_free(UNIFORM);
   

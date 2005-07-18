@@ -104,7 +104,7 @@ unur_tabl_new( const struct unur_distr *distr )
   par->method   = UNUR_METH_TABL;              /* indicate method            */
   par->variant  = (TABL_VARFLAG_SPLIT_MEAN |   /* variant: split at arc_mean */
 		   TABL_VARIANT_IA         |   /* use immediate acceptance   */
-		   TABL_VARFLAG_STP_A      |   /* run SPLIT A on slopes      */
+		   TABL_VARFLAG_USEEAR     |   /* run EAR (SPLIT A) on slopes  */
 		   TABL_VARFLAG_USEDARS    );  /* run DARS (SPLIT B) on slopes */
 
   par->set      = 0u;                      /* inidicate default parameters   */    

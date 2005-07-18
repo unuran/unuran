@@ -611,19 +611,23 @@ _unur_tabl_compute_intervals( struct unur_par *par, struct unur_gen *gen )
   CHECK_NULL(par,UNUR_ERR_NULL);  COOKIE_CHECK(par,CK_TABL_PAR,UNUR_ERR_COOKIE);
   CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_TABL_GEN,UNUR_ERR_COOKIE);
 
+#ifdef UNUR_ENABLE_LOGGING
+  /* print starting intervals */ 
+  if (gen->debug & TABL_DEBUG_IV_START) _unur_tabl_debug_intervals(gen,"starting intervals:",FALSE);
+#endif
+
   /* split interval following [1], split A (equal area rule) */
-  if (par->variant & TABL_VARFLAG_STP_A) {
+  if (par->variant & TABL_VARFLAG_USEEAR) {
     for (iv = GEN->iv; iv != NULL; iv = iv->next ) {
       COOKIE_CHECK(iv,CK_TABL_IV,UNUR_ERR_COOKIE);
       iv = _unur_tabl_run_equalarearule( par, gen, iv );
       if (iv == NULL) return UNUR_ERR_GEN_DATA;
     }
-  }
-
 #ifdef UNUR_ENABLE_LOGGING
-  /* print intervals after starting intervals have been created */ 
-  if (gen->debug & TABL_DEBUG_A_IV) _unur_tabl_debug_intervals(gen,FALSE);
+    /* print intervals after equal area rule has been applied intervals have been created */ 
+    if (gen->debug & TABL_DEBUG_A_IV) _unur_tabl_debug_intervals(gen,"equal area rule applied:",FALSE);
 #endif
+  }
 
   if (par->variant & TABL_VARFLAG_USEDARS) {
     /* run derandomized adaptive rejection sampling (DARS) */
@@ -647,10 +651,6 @@ _unur_tabl_compute_intervals( struct unur_par *par, struct unur_gen *gen )
       for (k=0; k<TABL_N_RUN_ARS; k++)
 	_unur_sample_cont(gen);
     }
-
-#ifdef UNUR_ENABLE_LOGGING
-    if (gen->debug & TABL_DEBUG_DARS) _unur_tabl_debug_dars(par,gen);
-#endif
   }
 
   /* o.k. */

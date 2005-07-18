@@ -94,28 +94,35 @@ _unur_tabl_debug_init_start( const struct unur_par *par, const struct unur_gen *
     fprintf(log,"_sample_check()\n");
   else
     fprintf(log,"_sample()\n");
-  empty_line();
 
   fprintf(log,"%s: computation interval = (%g, %g)\n",gen->genid,GEN->bleft,GEN->bright);
-  empty_line();
 
-  fprintf(log,"%s: area fraction for equal area rule = %g ",gen->genid,PAR->area_fract);
-  _unur_print_if_default(par,TABL_SET_AREAFRACTION);
-  fprintf(log,"\n");
-  empty_line();
-
-  fprintf(log,"%s: maximum number of intervals        = %d",gen->genid,PAR->max_ivs);
+  fprintf(log,"%s: maximum number of intervals = %d",gen->genid,PAR->max_ivs);
   _unur_print_if_default(par,TABL_SET_MAX_IVS);
-  fprintf(log,"\n%s: bound for ratio  Atotal / Asqueeze = %g%%",gen->genid,PAR->max_ratio*100.);
+  fprintf(log,"\n");
+
+  if (par->variant & TABL_VARFLAG_USEEAR) {
+    fprintf(log,"%s: use equal area rule\n",gen->genid);
+    fprintf(log,"%s:\tarea fraction for equal area rule = %g ",gen->genid,PAR->area_fract);
+    _unur_print_if_default(par,TABL_SET_AREAFRACTION);
+    fprintf(log,"\n");
+  }
+
+  if (par->variant & TABL_VARFLAG_USEDARS) {
+    fprintf(log,"%s: Derandomized ARS enabled ",gen->genid);
+    _unur_print_if_default(par,TABL_SET_USE_DARS);
+    fprintf(log,"\n%s:\tDARS factor = %g",gen->genid,GEN->darsfactor);
+    _unur_print_if_default(par,TABL_SET_DARS_FACTOR);
+  }
+  else {
+    fprintf(log,"%s: Derandomized ARS disabled ",gen->genid);
+    _unur_print_if_default(par,TABL_SET_USE_DARS);
+  }
+  fprintf(log,"\n");
+
+  fprintf(log,"%s: bound for ratio  Atotal / Asqueeze = %g%%",gen->genid,PAR->max_ratio*100.);
   _unur_print_if_default(par,TABL_SET_MAX_SQHRATIO);
   fprintf(log,"\n");
-  empty_line();
-
-  fprintf(log,"%s: sampling from list of intervals: indexed search (guide table method)\n",gen->genid);
-  fprintf(log,"%s:    relative guide table size = %g%%",gen->genid,100.*PAR->guide_factor);
-  _unur_print_if_default(par,TABL_SET_GUIDEFACTOR);
-  fprintf(log,"\n");
-  empty_line();
 
   fprintf(log,"%s: split intervals at ",gen->genid);
   switch( gen->variant & TABL_VARMASK_SPLIT ) {
@@ -131,6 +138,12 @@ _unur_tabl_debug_init_start( const struct unur_par *par, const struct unur_gen *
     break;
   }
   fprintf(log," when using adaptive sampling.\n");
+  empty_line();
+
+  fprintf(log,"%s: sampling from list of intervals: indexed search (guide table method)\n",gen->genid);
+  fprintf(log,"%s:    relative guide table size = %g%%",gen->genid,100.*PAR->guide_factor);
+  _unur_print_if_default(par,TABL_SET_GUIDEFACTOR);
+  fprintf(log,"\n");
   empty_line();
 
   if (par->set & TABL_SET_SLOPES) {
@@ -153,21 +166,6 @@ _unur_tabl_debug_init_start( const struct unur_par *par, const struct unur_gen *
       fprintf(log,", %g",(PAR->cpoints)[i]);
     fprintf(log,"\n");
   }
-
-  if (par->variant & TABL_VARFLAG_STP_A)
-    fprintf(log,"%s: split slopes by equal area rule (SPLIT A).\n",gen->genid);
-
-  if (par->variant & TABL_VARFLAG_USEDARS) {
-    fprintf(log,"%s: Derandomized ARS enabled ",gen->genid);
-    _unur_print_if_default(par,TABL_SET_USE_DARS);
-    fprintf(log,"\n%s:\tDARS factor = %g",gen->genid,GEN->darsfactor);
-    _unur_print_if_default(par,TABL_SET_DARS_FACTOR);
-  }
-  else {
-    fprintf(log,"%s: Derandomized ARS disabled ",gen->genid);
-    _unur_print_if_default(par,TABL_SET_USE_DARS);
-  }
-  fprintf(log,"\n%s:\n",gen->genid);
 
   fprintf(log,"%s: number of starting intervals (approx.) = %d",gen->genid,PAR->n_stp);
   _unur_print_if_default(par,TABL_SET_N_STP);
@@ -196,10 +194,9 @@ _unur_tabl_debug_init_finished( const struct unur_par *par, const struct unur_ge
 
   log = unur_get_stream();
 
-  _unur_tabl_debug_intervals(gen,TRUE);
+  _unur_tabl_debug_intervals(gen,"INIT completed",TRUE);
 
-  empty_line();
-  fprintf(log,"%s:  INIT completed **********************\n",gen->genid);
+  fprintf(log,"%s: INIT completed **********************\n",gen->genid);
   empty_line();
 
 } /* end of _unur_tabl_debug_init_finished() */
@@ -233,38 +230,6 @@ _unur_tabl_debug_dars_start( const struct unur_par *par, const struct unur_gen *
   fflush(log);
 } /* end of _unur_tabl_debug_dars_start() */
 
-/*---------------------------------------------------------------------------*/
-
-void
-_unur_tabl_debug_dars( const struct unur_par *par, const struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* print infor after generator has run DARS into logfile                */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   par ... pointer to parameter for building generator object         */
-     /*   gen ... pointer to generator object                                */
-     /*----------------------------------------------------------------------*/
-{
-  FILE *log;
-
-  /* check arguments */
-  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_TABL_GEN,RETURN_VOID);
-  CHECK_NULL(par,RETURN_VOID);  COOKIE_CHECK(par,CK_TABL_PAR,RETURN_VOID);
-
-  log = unur_get_stream();
-
-  fprintf(log,"%s:\n",gen->genid);
-  fprintf(log,"%s: DARS finished **********************\n",gen->genid);
-  fprintf(log,"%s:\n",gen->genid);
-  if (gen->debug & TABL_DEBUG_A_IV)
-    _unur_tabl_debug_intervals(gen,FALSE);
-  fprintf(log,"%s:\n",gen->genid);
-  fprintf(log,"%s: DARS completed **********************\n",gen->genid);
-  fprintf(log,"%s:\n",gen->genid);
-
-  fflush(log);
-} /* end of _unur_tabl_debug_dars() */
-
 /*****************************************************************************/
 
 void
@@ -287,7 +252,7 @@ _unur_tabl_debug_free( const struct unur_gen *gen )
   if (gen->status == UNUR_SUCCESS) {
     fprintf(log,"%s: GENERATOR destroyed **********************\n",gen->genid);
     empty_line();
-    _unur_tabl_debug_intervals(gen,TRUE);
+    _unur_tabl_debug_intervals(gen,NULL,TRUE);
   }
   else {
     fprintf(log,"%s: initialization of GENERATOR failed **********************\n",gen->genid);
@@ -301,12 +266,14 @@ _unur_tabl_debug_free( const struct unur_gen *gen )
 /*****************************************************************************/
 
 void
-_unur_tabl_debug_intervals( const struct unur_gen *gen, int print_areas )
+_unur_tabl_debug_intervals( const struct unur_gen *gen, const char *header, int print_areas )
      /*----------------------------------------------------------------------*/
      /* write list of intervals into logfile                                 */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
+     /*   gen         ... pointer to generator object                        */
+     /*   header      ... header for table                                   */
+     /*   print_areas ... whether table of areas should be printed           */
      /*----------------------------------------------------------------------*/
 {
   FILE *log;
@@ -318,6 +285,9 @@ _unur_tabl_debug_intervals( const struct unur_gen *gen, int print_areas )
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_TABL_GEN,RETURN_VOID);
 
   log = unur_get_stream();
+
+  if (header)
+    fprintf(log,"%s: %s\n",gen->genid,header);
 
   fprintf(log,"%s: intervals = %d\n",gen->genid,GEN->n_ivs);
   if (gen->debug & TABL_DEBUG_IV) {
@@ -332,13 +302,7 @@ _unur_tabl_debug_intervals( const struct unur_gen *gen, int print_areas )
     empty_line();
   }
 
-  if (!print_areas) {
-    /* this just happens, when we call _unur_tabl_debug_intervals(), after
-       we have finished split A. */
-    fprintf(log,"%s: Split A finished.\n",gen->genid);
-    empty_line();
-    return;
-  }
+  if (!print_areas) return;
 
   if (GEN->Atotal <= 0.) {
     fprintf(log,"%s: Construction of hat function not successful\n",gen->genid);

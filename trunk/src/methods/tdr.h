@@ -250,8 +250,8 @@ int unur_tdr_chg_truncated(UNUR_GEN *gen, double left, double right);
 
    @emph{Important:}
    The ratio between the area below the hat and the area below the
-   squeeze changes when the sampling region is restricted. Especially
-   it becomes (very) small when sampling from the (far) tail of the
+   squeeze changes when the sampling region is restricted. In particular
+   it becomes (very) large when sampling from the (far) tail of the
    distribution. Then it is better to create a generator object for the
    tail of distribution only.
 
@@ -269,7 +269,7 @@ int unur_tdr_chg_truncated(UNUR_GEN *gen, double left, double right);
 
    @emph{Important:} If the CDF of the hat is (almost) the same 
    for @var{left} and @var{right} and (almost) equal to @code{0} or
-   @code{1}, then the truncated domain is not chanced and the call
+   @code{1}, then the truncated domain is not changed and the call
    returns an error code.
 */
 

@@ -625,7 +625,7 @@ _unur_tabl_compute_intervals( struct unur_par *par, struct unur_gen *gen )
     }
 #ifdef UNUR_ENABLE_LOGGING
     /* print intervals after equal area rule has been applied intervals have been created */ 
-    if (gen->debug & TABL_DEBUG_A_IV) _unur_tabl_debug_intervals(gen,"equal area rule applied:",FALSE);
+    if (gen->debug & TABL_DEBUG_IV_START) _unur_tabl_debug_intervals(gen,"equal area rule applied:",FALSE);
 #endif
   }
 

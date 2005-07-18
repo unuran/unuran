@@ -123,11 +123,10 @@
 /*    bits 13-24 ... adaptive steps                                          */
 /*    bits 25-32 ... trace sampling                                          */
 
-#define TABL_DEBUG_IV    0x00000100u /* show intervals                       */
-#define TABL_DEBUG_IV_START    0x00000200u /* show intervals                       */
-#define TABL_DEBUG_A_IV   0x00000400u /* show intervals after split A, before split B */
-#define TABL_DEBUG_DARS  0x00020000u
-#define TABL_DEBUG_EAR   0x00040000u
+#define TABL_DEBUG_IV        0x00000100u /* show intervals                   */
+#define TABL_DEBUG_IV_START  0x00000200u /* show starting intervals          */
+#define TABL_DEBUG_EAR       0x00000400u /* show intervals after EAR         */
+#define TABL_DEBUG_DARS      0x00000800u /* indicate DARS in log file        */
 
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */

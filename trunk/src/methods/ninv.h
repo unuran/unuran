@@ -264,6 +264,19 @@ int unur_ninv_chg_pdfparams(UNUR_GEN *generator, double *params, int n_params);
    @code{UNUR_ERR_DISTR_NPARAMS}.
 */ 
 
+double unur_ninv_eval_approxinvcdf( UNUR_GEN *generator, double u );
+/*
+   Get approximate value of inverse CDF at @var{u} approximately.
+   If @var{u} is out of the domain [0,1] then @code{unur_errno} is set
+   to @code{UNUR_ERR_DOMAIN} and the respective bound of
+   the domain of the distribution are returned (which is
+   @code{-UNUR_INFINITY} or @code{UNUR_INFINITY} in the case of
+   unbounded domains).
+
+   @emph{Notice}: This function always evaluates the inverse CDF of
+   the given distribution. A call to unur_ninv_chg_truncated() call
+   has no effect.
+*/
 
 /* =END */
 /*---------------------------------------------------------------------------*/

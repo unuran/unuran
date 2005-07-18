@@ -1407,7 +1407,6 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
 
 } /* end of _unur_ninv_sample_regula()  */
 
-
 /*****************************************************************************/
 
 double 
@@ -1624,6 +1623,60 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
 } /* end of _unur_ninv_sample_newton() */
 
 /*---------------------------------------------------------------------------*/
+
+double
+unur_ninv_eval_approxinvcdf( struct unur_gen *gen, double u )
+     /*----------------------------------------------------------------------*/
+     /* get approximate value of inverse CDF at u approximately              */
+     /* (user call)                                                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*   u   ... argument for inverse CDF (0<=u<=1)                         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   double (approximate inverse CDF)                                   */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return INFINITY                                                    */
+     /*----------------------------------------------------------------------*/
+{ 
+  double x;
+
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, gen, INFINITY );
+  if ( gen->method != UNUR_METH_NINV ) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_INVALID,"");
+    return INFINITY; 
+  }
+  COOKIE_CHECK(gen,CK_NINV_GEN,INFINITY);
+
+  if ( u<0. || u>1.) {
+    _unur_warning(gen->genid,UNUR_ERR_DOMAIN,"argument u not in [0,1]");
+  }
+
+  /* validate argument */
+  if (u<=0.) return DISTR.domain[0];
+  if (u>=1.) return DISTR.domain[1];
+
+  /* compute inverse CDF */
+  switch (gen->variant) {
+  case NINV_VARFLAG_NEWTON:
+    x = _unur_ninv_newton(gen,u);
+    break;
+  case NINV_VARFLAG_REGULA:
+  default:
+    x = _unur_ninv_regula(gen,u);
+    break;
+  }
+
+  /* validate range */
+  if (x<DISTR.domain[0]) x = DISTR.domain[0];
+  if (x>DISTR.domain[1]) x = DISTR.domain[1];
+
+  return x;
+
+} /* end of unur_hinv_eval_approxinvcdf() */
 
 /*****************************************************************************/
 

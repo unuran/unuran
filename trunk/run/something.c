@@ -25,6 +25,7 @@
 #include <experimental/gibbs.h>
 #include <experimental/ball.h>
 #include <experimental/walk.h>
+#include <methods/x_gen_source.h>
 #include "meanvarcor.c"
 /*#include <src/utils/fft.c>*/
 
@@ -146,6 +147,8 @@ int main(int argc, char *argv[])
   UNUR_PAR *par=NULL;
   UNUR_GEN *gen=NULL;
 
+  UNUR_PAR *par_clone=NULL;  
+  
   double *x;
   double *mean;
   double *covar;
@@ -428,6 +431,8 @@ int main(int argc, char *argv[])
   
   printf("SKIP=%ld\n", SKIP);
 
+  par_clone = _unur_par_clone(par);
+  
 #if 0
   gen = unur_init(par);
   math2(gen);
@@ -470,6 +475,11 @@ int main(int argc, char *argv[])
   /* main loop */    
   for (loop=1; loop<=EXPERIMENTS; loop++) {
       
+    
+    par = _unur_par_clone(par_clone);
+    gen = unur_init(par);
+    
+    
     if (METHOD==METHOD_HITROU 
     || METHOD==METHOD_HITROU_BOX 
     || METHOD==METHOD_HITROU_BOX_COORDINATE
@@ -507,7 +517,9 @@ int main(int argc, char *argv[])
       }
     }    
     
-  }
+    unur_free(gen);
+  
+  } /* next experiment */
 
   /* output of results */   
   printf("------------------------------------------------------------------\n");
@@ -557,8 +569,10 @@ int main(int argc, char *argv[])
     }
   }
     
+  if (par_clone) unur_par_free(par_clone);
+  
   unur_distr_free(distr);
-  unur_free(gen);
+  //unur_free(gen);
   
   free(x); free(mean); free(covar);
   free(moments); free(moments_expected); 

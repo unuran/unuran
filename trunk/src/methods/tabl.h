@@ -167,7 +167,7 @@ UNUR_PAR *unur_tabl_new( const UNUR_DISTR* distribution );
 
 int unur_tabl_set_variant_rh( UNUR_PAR *parameters );
 /* 
-   Use "classical" acceptance/rejection from hat distribution. 
+   Use ``classical'' acceptance/rejection from hat distribution. 
 */
 
 int unur_tabl_set_variant_ia( UNUR_PAR *parameters );
@@ -368,6 +368,42 @@ int unur_tabl_set_boundary( UNUR_PAR *parameters, double left, double right );
    Default is @code{-1.e20,1.e20}.
 */
 
+int unur_tabl_chg_truncated(UNUR_GEN *gen, double left, double right);
+/*
+   Change the borders of the domain of the (truncated) distribution. 
+
+   Notice that the given truncated domain must be a subset of the
+   domain of the given distribution. The generator always uses the
+   intersection of the domain of the distribution and the truncated
+   domain given by this call. The hat function will not be changed.
+
+   @emph{Important:}
+   The ratio between the area below the hat and the area below the
+   squeeze changes when the sampling region is restricted. In particalur
+   it becomes (very) large when sampling from the (far) tail of the
+   distribution. Then it is better to create a generator object for the
+   tail of distribution only.
+
+   @emph{Important:}
+   This call does not work for variant @code{IA} (immediate
+   acceptance). In this case UNURAN switches @emph{automatically} to 
+   variant @code{RH} (use ``classical'' acceptance/rejection from hat
+   distribution) and does revert to the variant originally set by the
+   user.
+
+   @emph{Important:}
+   It is not a good idea to use adaptave rejection sampling while 
+   sampling from a domain that is a strict subset of the domain that
+   has been used to construct the hat.
+   For that reason adaptive adding of construction points is
+   @emph{automatically disabled} by this call.
+
+   @emph{Important:} If the CDF of the hat is (almost) the same 
+   for @var{left} and @var{right} and (almost) equal to @code{0} or
+   @code{1}, then the truncated domain is not changed and the call
+   returns an error code.
+*/
+
 int unur_tabl_set_verify( UNUR_PAR *parameters, int verify );
 /* */
 
@@ -396,6 +432,7 @@ int unur_tabl_set_pedantic( UNUR_PAR *parameters, int pedantic );
 
    Default is FALSE.
 */
+
 
 
 /* =END */

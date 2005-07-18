@@ -879,3 +879,151 @@ unur_tabl_set_pedantic( struct unur_par *par, int pedantic )
 
 /*---------------------------------------------------------------------------*/
 
+int 
+unur_tabl_chg_truncated( struct unur_gen *gen, double left, double right )
+     /*----------------------------------------------------------------------*/
+     /* change the left and right borders of the domain of the distribution  */
+     /* the new domain should not exceed the original domain given by        */
+     /* unur_distr_cont_set_domain(). Otherwise it is truncated.             */
+     /*                                                                      */
+     /* This call does not work for variant IA (immediate acceptance).       */
+     /* In this case it switches to variant RH!!                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen      ... pointer to generator object                           */
+     /*   left  ... left boundary point                                      */
+     /*   right ... right boundary point                                     */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  double Umin, Umax;
+
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, TABL, UNUR_ERR_GEN_INVALID );
+
+  /* we have to disable adaptive rejection sampling */
+  if (GEN->max_ivs > GEN->n_ivs) {
+    _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"adaptive rejection sampling disabled for truncated distribution");
+    GEN->max_ivs = GEN->n_ivs;
+  }
+
+  /* we cannot use immadate acceptance (IA), switch to variant PS instead */
+  if ((gen->variant & TABL_VARMASK_VARIANT) == TABL_VARIANT_IA) {
+    _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"cannot use IA for truncated distribution, switch to RH");
+    /* change variante flag */
+    gen->variant = (gen->variant & ~TABL_VARMASK_VARIANT) | TABL_VARIANT_RH;
+    /* change sampling routine */
+    SAMPLE = (gen->variant & TABL_VARFLAG_VERIFY) ? _unur_tabl_rh_sample_check : _unur_tabl_rh_sample;
+  }
+
+  /* check new parameter for generator */
+  /* (the truncated domain must be a subset of the domain) */
+  if (left < DISTR.domain[0]) {
+    _unur_warning(NULL,UNUR_ERR_DISTR_SET,"truncated domain not subset of domain");
+    left = DISTR.domain[0];
+  }
+  if (right > DISTR.domain[1]) {
+    _unur_warning(NULL,UNUR_ERR_DISTR_SET,"truncated domain not subset of domain");
+    right = DISTR.domain[1];
+  }
+
+  if (left >= right) {
+    _unur_warning(NULL,UNUR_ERR_DISTR_SET,"domain, left >= right");
+    return UNUR_ERR_DISTR_SET;
+  }
+
+  /* compute CDF at x (with respect to given domain of distribution) */
+  Umin = _unur_tabl_eval_cdfhat(gen,left);
+  Umax = _unur_tabl_eval_cdfhat(gen,right);
+
+  /* check result */
+  if (Umin > Umax) {
+    /* this is a serios error that should not happen */
+    _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+    return UNUR_ERR_SHOULD_NOT_HAPPEN;
+  }
+
+  if (_unur_FP_equal(Umin,Umax)) {
+    /* CDF values very close */
+    _unur_warning(gen->genid,UNUR_ERR_DISTR_SET,"CDF values very close");
+    if (Umin == 0. || _unur_FP_same(Umax,1.)) {
+      /* this is very bad */
+      _unur_warning(gen->genid,UNUR_ERR_DISTR_SET,"CDF values at boundary points too close");
+      return UNUR_ERR_DISTR_SET;
+    }
+  }
+
+  /* set bounds for truncated domain and for U (CDF) */
+  DISTR.trunc[0] = left;
+  DISTR.trunc[1] = right;
+  GEN->Umin = Umin;
+  GEN->Umax = Umax;
+
+  /* changelog */
+  gen->distr->set |= UNUR_DISTR_SET_TRUNCATED;
+
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+#endif
+  
+  /* o.k. */
+  return UNUR_SUCCESS;
+  
+} /* end of unur_tabl_chg_truncated() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_tabl_eval_cdfhat( struct unur_gen *gen, double x )
+     /*----------------------------------------------------------------------*/
+     /* evaluate CDF of hat at x (i.e. \int_{-\infty}^x hat(t) dt)           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*   x   ... point at which hat(x) has to be computed                   */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   CDF of hat(x) or                                                   */
+     /*   INFINITY in case of error                                          */
+     /*                                                                      */
+     /* Important:                                                           */
+     /*   If gen is a generator object for variant IA (immediate acceptance) */
+     /*   then it is treated like variant RH ("classical" rejection)!        */
+     /*   This is necessary since variant IA is not a pure rejection         */
+     /*   algorithm, but a composition method.                               */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_tabl_interval *iv;
+  double Aint = 0.;
+  double cdf;
+
+  /* check arguments */
+  CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_TABL_GEN,INFINITY);
+
+  /* the easy case: left and right boundary of domain */
+  if (x <= DISTR.domain[0]) return 0.;
+  if (x >= DISTR.domain[1]) return 1.;
+
+  /* find interval (sequential search) */
+  for (iv = GEN->iv; iv->next!=NULL; iv=iv->next) {
+    COOKIE_CHECK(iv,CK_TABL_IV,INFINITY); 
+    if (x<iv->xmin || x<iv->xmax) break;
+    Aint = iv->Acum; /* area of bars to the l.h.s. of x */
+    if (iv->next == NULL) /* right boundary of domain */
+      return 1.;
+  }
+
+  /* add area in interval that contains x */
+  Aint += iv->fmax * ((iv->xmin > iv->xmax) ? (x - iv->xmax) : (x - iv->xmin));
+
+  /* normalize to one (and mind round-off errors) */
+  cdf = Aint / GEN->Atotal;
+  return ((cdf > 1.) ? 1. : cdf);
+
+} /* end of _unur_tabl_eval_cdfhat() */
+
+/*****************************************************************************/

@@ -225,6 +225,11 @@ static int _unur_tabl_make_guide_table( struct unur_gen *gen );
 /* make a guide table for indexed search.                                    */
 /*---------------------------------------------------------------------------*/
 
+static double _unur_tabl_eval_cdfhat( struct unur_gen *gen, double x );
+/*---------------------------------------------------------------------------*/
+/* evaluate CDF of hat at x.                                                 */
+/*---------------------------------------------------------------------------*/
+
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 /* the following functions print debugging information on output stream,     */

@@ -132,6 +132,10 @@ _unur_tabl_init( struct unur_par *par )
     _unur_par_free(par); _unur_tabl_free(gen); return NULL;
   }
 
+  /* set boundaries for U */
+  GEN->Umin = 0.;
+  GEN->Umax = 1.;
+
   /* creation of generator object successfull */
   gen->status = UNUR_SUCCESS;
 

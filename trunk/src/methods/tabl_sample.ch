@@ -62,8 +62,8 @@ _unur_tabl_rh_sample( struct unur_gen *gen )
 
   while(1) {
 
-    /* sample from U(0,1) */
-    U = _unur_call_urng(gen->urng);
+    /* sample from U( Umin, Umax ) */
+    U = GEN->Umin + _unur_call_urng(gen->urng) * (GEN->Umax - GEN->Umin);
 
     /* look up in guide table and search for interval */
     iv =  GEN->guide[(int) (U * GEN->guide_size)];
@@ -74,8 +74,9 @@ _unur_tabl_rh_sample( struct unur_gen *gen )
     COOKIE_CHECK(iv,CK_TABL_IV,INFINITY);
 
     /* reuse of uniform random number
-       (generation of squeeze should be inversion) */
-    U = (iv->xmax <= iv->xmin) ? (iv->Acum - U) : (iv->Ahat + U - iv->Acum);
+       (generation of hat should be by inversion) */
+    U = (iv->xmax >= iv->xmin) ? (iv->Acum - U) : (U - iv->Acum + iv->Ahat);
+    /* U in (0,Ahat) or (-Ahat,0) */
 
     /* sample from hat distribution in interval */
     X = iv->xmax + U * (iv->xmin - iv->xmax)/iv->Ahat;
@@ -131,8 +132,8 @@ _unur_tabl_rh_sample_check( struct unur_gen *gen )
 
   while(1) {
 
-    /* sample from U(0,1) */
-    U = _unur_call_urng(gen->urng);
+    /* sample from U( Umin, Umax ) */
+    U = GEN->Umin + _unur_call_urng(gen->urng) * (GEN->Umax - GEN->Umin);
 
     /* look up in guide table and search for interval */
     iv =  GEN->guide[(int) (U * GEN->guide_size)];
@@ -144,7 +145,8 @@ _unur_tabl_rh_sample_check( struct unur_gen *gen )
 
     /* reuse of uniform random number
        (generation of squeeze should be inversion) */
-    U = (iv->xmax <= iv->xmin) ? (iv->Acum - U) : (iv->Ahat + U - iv->Acum);
+    U = (iv->xmax >= iv->xmin) ? (iv->Acum - U) : (U - iv->Acum + iv->Ahat);
+    /* U in (0,Ahat) or (-Ahat,0) */
 
     /* sample from hat distribution in interval */
     X = iv->xmax + U * (iv->xmin - iv->xmax)/iv->Ahat;

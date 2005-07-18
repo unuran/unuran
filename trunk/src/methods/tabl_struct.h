@@ -94,6 +94,9 @@ struct unur_tabl_gen {
   int     guide_size;           /* size of guide table                       */
   double  guide_factor;         /* relative size of guide table              */
 
+  double  Umin, Umax;           /* bounds for iid random variable in respect to
+				   the given (truncated) domain of the distr.*/
+
   struct unur_tabl_interval *iv;     /* pointer to linked list of intervals  */
   int     n_ivs;                /* number of intervals                       */
   int     max_ivs;              /* maximum number of intervals               */

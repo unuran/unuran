@@ -57,7 +57,7 @@ struct unur_urng_generic {
 /* initial values. For some generators the size of the 'state' is larger     */
 /* than the size if the 'seed'. In such a case some function is used to      */
 /* expand the 'seed' to the appropriate size (often this is done with a      */
-/* LCG (linear congruental generator) with starting state 'seed'; e.g this   */
+/* LCG (linear congruental generator) with starting state 'seed'; e.g. this  */
 /* happens for the Mersenne twister).                                        */
 /* Often the seed is not stored in the structure for the generator object    */
 /* (which is stored in 'state').                                             */

@@ -50,7 +50,7 @@ unur_urng_gslptr_new( gsl_rng *gsl )
      /* get new URNG object of type GSL.                                     */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   urng ... pointer to generator structure                            */
+     /*   gsl ... pointer to generator structure                             */
      /*----------------------------------------------------------------------*/
 {
   UNUR_URNG *urng = unur_urng_new( (double(*)(void*)) gsl_rng_uniform_pos, gsl );

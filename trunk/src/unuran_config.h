@@ -169,7 +169,7 @@
 /*...........................................................................*/
 /*                                                                           */
 /* The following compiler switches are for backward compatibility.           */
-/* Their usage, however, is DEPRECATED!                                      */
+/* Their usage, however, is DEPRECIATED!                                     */
 /*                                                                           */
 /* These sources are still available under the new extended                  */
 /* UNUR_URNG_GENERIC interface.                                              */
@@ -248,7 +248,7 @@
 
 /*...........................................................................*/
 /* Default generators for different sources of uniform random numbers.       */
-/* (These defaults are only used for if the source is chosen via             */
+/* (These defaults are only used if the source is chosen via                 */
 /*  UNUR_URNG_TYPE / UNUR_URNG_DEFAULT_TYPE.)                                */ 
 
 /* type: FVOID */
@@ -269,11 +269,28 @@
 #define UNUR_URNG_AUX_DEFAULT_GSL         (gsl_rng_cmrg)
 
 /*---------------------------------------------------------------------------*/
+/* Enable interfaces to different sources.                                   */
+/* Uncomment the following lines when the source of uniform random numbers   */
+/* should be used. However, the corresponding libraries have to be linked    */
+/* into each executable.                                                     */
 
-/* ... */
+
+/* Use Otmar Lendl's `prng' library                                          */
+/*    http://statistik.wu-wien.ac.at/prng/                                   */
 /* #define UNURAN_HAS_PRNG 1 */
+
+/* Use from Pierre L'Ecuyer's `RngStreams' library for multiple independent  */
+/* streams of pseudo-random numbers.                                         */
+/*    http://www.iro.umontreal.ca/~lecuyer/myftp/streams00/c/                */
 /* #define UNURAN_HAS_RNGSTREAMS 1 */
+
+/* Use uniform RNG objects from the GNU Scientific Library (GSL)             */
+/*    http://www.gnu.org/software/gsl/                                       */
 /* #define UNURAN_HAS_GSL 1 */
+
+/* Use quasi-random sequences from the GNU Scientific Library (GSL)          */
+/*    http://www.gnu.org/software/gsl/                                       */
+/* #define UNURAN_HAS_GSLQMC 1 */
 
 /*---------------------------------------------------------------------------*/
 #endif  /* UNURAN_CONFIG_H_SEEN */

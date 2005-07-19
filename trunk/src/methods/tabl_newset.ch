@@ -109,7 +109,7 @@ unur_tabl_new( const struct unur_distr *distr )
 
   par->set      = 0u;                      /* inidicate default parameters   */    
   par->urng     = unur_get_default_urng(); /* use default urng               */
-  par->urng_aux = NULL;                    /* no auxilliary URNG required    */
+  par->urng_aux = par->urng;               /* no special auxilliary URNG     */
 
   par->debug    = _unur_default_debugflag; /* set default debugging flags    */
 

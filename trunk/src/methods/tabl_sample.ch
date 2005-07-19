@@ -54,16 +54,20 @@ _unur_tabl_rh_sample( struct unur_gen *gen )
      /*   return INFINITY                                                    */
      /*----------------------------------------------------------------------*/
 { 
+  UNUR_URNG *urng;             /* pointer to uniform random number generator */
   struct unur_tabl_interval *iv;
   double U,X,fx,V;
 
   /* check arguments */
   CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_TABL_GEN,INFINITY);
 
+  /* main URNG */
+  urng = gen->urng;
+
   while(1) {
 
     /* sample from U( Umin, Umax ) */
-    U = GEN->Umin + _unur_call_urng(gen->urng) * (GEN->Umax - GEN->Umin);
+    U = GEN->Umin + _unur_call_urng(urng) * (GEN->Umax - GEN->Umin);
 
     /* look up in guide table and search for interval */
     iv =  GEN->guide[(int) (U * GEN->guide_size)];
@@ -82,7 +86,7 @@ _unur_tabl_rh_sample( struct unur_gen *gen )
     X = iv->xmax + U * (iv->xmin - iv->xmax)/iv->Ahat;
 
     /* accept or reject */
-    V = _unur_call_urng(gen->urng) * iv->fmax;  /* a random point between 0 and hat at x */
+    V = _unur_call_urng(urng) * iv->fmax;  /* a random point between 0 and hat at x */
 
     /* below squeeze ? */
     if (V <= iv->fmin)
@@ -101,6 +105,12 @@ _unur_tabl_rh_sample( struct unur_gen *gen )
     /* below hat */
     if (V <= fx)
       return X;
+
+    /* else reject and try again */
+
+    /* use the auxilliary generator the next time
+       (it can be the same as the main generator) */
+    urng = gen->urng_aux;
 
   }
 
@@ -124,16 +134,20 @@ _unur_tabl_rh_sample_check( struct unur_gen *gen )
      /*   return INFINITY                                                    */
      /*----------------------------------------------------------------------*/
 { 
+  UNUR_URNG *urng;             /* pointer to uniform random number generator */
   struct unur_tabl_interval *iv;
   double U,X,fx,V;
 
   /* check arguments */
   CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_TABL_GEN,INFINITY);
 
+  /* main URNG */
+  urng = gen->urng;
+
   while(1) {
 
     /* sample from U( Umin, Umax ) */
-    U = GEN->Umin + _unur_call_urng(gen->urng) * (GEN->Umax - GEN->Umin);
+    U = GEN->Umin + _unur_call_urng(urng) * (GEN->Umax - GEN->Umin);
 
     /* look up in guide table and search for interval */
     iv =  GEN->guide[(int) (U * GEN->guide_size)];
@@ -152,7 +166,7 @@ _unur_tabl_rh_sample_check( struct unur_gen *gen )
     X = iv->xmax + U * (iv->xmin - iv->xmax)/iv->Ahat;
 
     /* accept or reject */
-    V = _unur_call_urng(gen->urng) * iv->fmax;  /* a random point between 0 and hat at x */
+    V = _unur_call_urng(urng) * iv->fmax;  /* a random point between 0 and hat at x */
 
     /* value of PDF at x */
     fx = PDF(X);
@@ -177,6 +191,13 @@ _unur_tabl_rh_sample_check( struct unur_gen *gen )
     /* below hat */
     if (V <= fx)
       return X;
+
+    /* else reject and try again */
+
+    /* use the auxilliary generator the next time
+       (it can be the same as the main generator) */
+    urng = gen->urng_aux;
+
   }
 
 } /* end of _unur_tabl_rh_sample_check() */

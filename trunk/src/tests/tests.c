@@ -185,6 +185,10 @@ _unur_print_method( struct unur_par *par )
     COOKIE_CHECK(par,CK_AROU_PAR,UNUR_ERR_COOKIE);
     printf("METHOD:\t\tautomatic ratio-of-uniforms method (NINV)\n");
     break;
+  case UNUR_METH_HINV:
+    COOKIE_CHECK(par,CK_HINV_PAR,UNUR_ERR_COOKIE);
+    printf("METHOD:\t\tnumerical inversion of CDF by Hermite Interpolation (HINV)\n");
+    break;
   case UNUR_METH_NINV:
     COOKIE_CHECK(par,CK_NINV_PAR,UNUR_ERR_COOKIE);
     printf("METHOD:\t\tnumerical inversion of CDF (NINV)\n");

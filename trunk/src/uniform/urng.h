@@ -335,10 +335,10 @@ unsigned int unur_urng_sample_array (UNUR_URNG *urng, double *X, unsigned int di
    @emph{Important:} 
    If @var{urng} is based on a point set generator (this is the case
    for generators of low discrepance point sets as used in quasi-Monte
-   Carlo methods) have ``natural dimension'' of some dimension
-   @i{s}. In this case either only the first @i{s} entries of @var{X}
-   are filled (if @i{s} < @var{dim}), or the first @var{dim}
-   coordinates of the generated point are filled.
+   Carlo methods) it has a ``natural dimension'' @i{s}. 
+   In this case either only the first @i{s} entries of @var{X} are
+   filled (if @i{s} < @var{dim}), or the first @var{dim} coordinates
+   of the generated point are filled. 
 
    The called returns the actual number of entries filled. In case of
    an error @code{0} is returned.
@@ -617,9 +617,9 @@ UNUR_URNG *unur_urng_rngstreamptr_new( RngStream rngstream );
 UNUR_URNG *unur_urng_gsl_new( const gsl_rng_type *urngtype );
 /*
    Make object for URNGs from the @file{GSL} (GNU Scientific Library).
-   @var{urng} is the type of the chosen generator as described in the
-   GSL manual. This library is available from
-   @uref{http://www.gnu.org/software/gsl/}.
+   @var{urngtype} is the type of the chosen generator as described in the
+   GSL manual (see Section Random Number Generation). This library is
+   available from @uref{http://www.gnu.org/software/gsl/}.
 */
 
 UNUR_URNG *unur_urng_gslptr_new( gsl_rng *urng );
@@ -635,6 +635,16 @@ UNUR_URNG *unur_urng_gslptr_new( gsl_rng *urng );
    call, then resetting only works after a
    @code{unur_urng_seed(urng,myseed)} call. 
 */
+
+UNUR_URNG *unur_urng_gslqrng_new( const gsl_qrng_type *qrngtype, unsigned int dim );
+/*
+   Make object for quasi-random point generators for dimension
+   @var{dim} from the @file{GSL} (GNU Scientific Library). 
+   @var{qrngtype} is the type of the chosen generator as described in
+   the GSL manual (see section Quasi-Random Sequences). 
+   This library is available from @uref{http://www.gnu.org/software/gsl/}.
+*/
+
 
 #endif
 

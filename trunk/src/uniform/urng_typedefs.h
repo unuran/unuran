@@ -51,6 +51,7 @@ typedef struct unur_urng_generic UNUR_URNG;
 
 #ifdef UNURAN_HAS_GSL
 #  include <gsl/gsl_rng.h>
+#  include <gsl/gsl_qrng.h>
 #endif
 
 /*---------------------------------------------------------------------------*/

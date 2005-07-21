@@ -8,8 +8,11 @@ noinst_LTLIBRARIES = libuniform.la
 libuniform_la_SOURCES = \
  urng_struct.h urng_source.h urng_typedefs.h \
  urng_default.c urng_set.c urng_API.c \
- urng_fvoid.c urng_gsl.c urng_prng.c urng_rngstreams.c \
- mrg31k3p.c fish.c mstd.c
+ mrg31k3p.c fish.c mstd.c \
+ urng_fvoid.c \
+ urng_gsl.c urng_gslqmc.c \
+ urng_prng.c \
+ urng_rngstreams.c
 
 noinst_HEADERS = \
  urng.h \

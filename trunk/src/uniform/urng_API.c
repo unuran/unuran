@@ -53,7 +53,6 @@ unur_urng_sample (UNUR_URNG *urng)
      /*                                                                      */
      /* parameters:                                                          */
      /*   urng   ... pointer to URNG object                                  */
-     /*   delete ... function for destroying generator object                */
      /*                                                                      */
      /* return:                                                              */
      /*   uniform random number                                              */
@@ -69,6 +68,43 @@ unur_urng_sample (UNUR_URNG *urng)
 
   return _unur_call_urng(urng);
 } /* end of unur_urng_sample() */ 
+
+/*---------------------------------------------------------------------------*/
+
+unsigned int
+unur_urng_sample_array (UNUR_URNG *urng, double *X, unsigned dim)
+     /*----------------------------------------------------------------------*/
+     /* Sample from URNG object and fill array X.                            */
+     /* if URNG has a "natural" dimension s then only the first min(s,dim)   */
+     /* entries are filled.                                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   urng   ... pointer to URNG object                                  */
+     /*   X      ... pointer to array of (at least) length dim               */
+     /*   dim    ... (maximal) number of entries in X to be set              */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   number of uniform random numbers filled into array                 */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0                                                           */
+     /*----------------------------------------------------------------------*/
+{
+  /* check argument */
+  if (urng == NULL) 
+    /* use default generator */
+    urng = unur_get_default_urng();
+
+  if (urng->samplearray) {
+    return (urng->samplearray(urng->state,X,dim));
+  }
+  else {
+    int i;
+    for (i=0; i<dim; i++) 
+      X[i] = _unur_call_urng(urng);
+    return dim;
+  }
+} /* end of unur_urng_sample_array() */ 
 
 /*---------------------------------------------------------------------------*/
 
@@ -160,6 +196,7 @@ unur_urng_new( double (*sampleunif)(void *state), void *state )
   urng->state      = state;
 
   /* initialize optional functions (set to not available) */
+  urng->samplearray = NULL;
   urng->seed     = ULONG_MAX;
   urng->setseed  = NULL;
   urng->delete   = NULL;
@@ -174,6 +211,32 @@ unur_urng_new( double (*sampleunif)(void *state), void *state )
   /* return object */
   return urng;
 } /* end of unur_urng_new() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_urng_set_samplearray( UNUR_URNG *urng, 
+			   unsigned int (*samplearray)(void *state, double *X, unsigned int dim) )
+     /*----------------------------------------------------------------------*/
+     /* Set function to sample random point                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   urng        ... pointer to URNG object                             */
+     /*   samplearray ... function for sampling random point                 */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( "URNG", urng, UNUR_ERR_NULL );
+  COOKIE_CHECK(urng,CK_URNG,UNUR_ERR_COOKIE);
+
+  urng->samplearray = samplearray;
+  return UNUR_SUCCESS;
+
+} /* end of unur_urng_set_samplearray() */
 
 /*---------------------------------------------------------------------------*/
 

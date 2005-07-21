@@ -39,6 +39,8 @@
 struct unur_urng_generic {
   double (*sampleunif)(void *state);  /* function for generating uniform RNG */
   void *state;                        /* state of the generator              */
+  unsigned int (*samplearray)(void *state, double *X, unsigned int dim);
+                                      /* function for generating array of points */
   unsigned long seed;                 /* initial seed of the generator       */
   void (*setseed)(void *state, unsigned long seed);  /* set initial seed of the generator */
   void (*reset)(void *state);         /* reset object                        */

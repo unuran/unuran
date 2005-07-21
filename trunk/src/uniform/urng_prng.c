@@ -44,6 +44,15 @@
 /*---------------------------------------------------------------------------*/
 #ifdef UNURAN_HAS_PRNG
 /*---------------------------------------------------------------------------*/
+#ifndef HAVE_LIBPRNG
+# error
+# error +-----------------------------------------------------+
+# error ! You have defined UNURAN_HAS_PRNG in unuran_config.h +
+# error ! but Otmar Lendl`s PRNG library is not installed.    +
+# error +-----------------------------------------------------+
+# error
+#endif
+/*---------------------------------------------------------------------------*/
 
 UNUR_URNG *
 unur_urng_prngptr_new( struct prng *prng )

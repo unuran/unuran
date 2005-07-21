@@ -43,6 +43,15 @@
 /*---------------------------------------------------------------------------*/
 #ifdef UNURAN_HAS_GSL
 /*---------------------------------------------------------------------------*/
+#ifndef HAVE_LIBGSL
+# error
+# error +-------------------------------------------------------------+
+# error ! You have defined UNURAN_HAS_GSL in unuran_config.h          +
+# error ! but the GNU Scientific library (GSL) is not installed.      +
+# error +-------------------------------------------------------------+
+# error
+#endif
+/*---------------------------------------------------------------------------*/
 
 UNUR_URNG *
 unur_urng_gslptr_new( gsl_rng *gsl )

@@ -44,6 +44,15 @@
 /*---------------------------------------------------------------------------*/
 #ifdef UNURAN_HAS_RNGSTREAMS
 /*---------------------------------------------------------------------------*/
+#ifndef HAVE_LIBRNGSTREAMS
+# error
+# error +------------------------------------------------------------+
+# error ! You have defined UNURAN_HAS_RNGSTREAMS in unuran_config.h  +
+# error ! but Pierre L`Ecuyer`s RNGSTREAMS library is not installed. +
+# error +------------------------------------------------------------+
+# error
+#endif
+/*---------------------------------------------------------------------------*/
 
 UNUR_URNG *
 unur_urng_rngstreamptr_new( RngStream rngstream )

@@ -27,9 +27,6 @@
 #define METHOD_RANDOM_DIRECTION 2
 #define METHOD_REJECTION 3
 
-#define MAXDIM 100
-
-#define VERBOSE  0     /* output switch for test and moments  */
 #define MATHEMATICA 0
 
 #define PDF(x)    _unur_cvec_PDF((x),(gen->distr))    /* call to PDF         */
@@ -40,6 +37,8 @@ long SAMPLESIZE = 100;
 long EXPERIMENTS = 1;
 int METHOD = 1; 
 int COORDINATE = 0; /* current coordinate for coordinate sampler */
+double TRANSLATION = 0.; 
+double VOLUME_RATIO = 1./10; 
 
 FILE *fmath; /* mathematica output */
 
@@ -133,13 +132,15 @@ void math2_tail()
 int main(int argc, char *argv[])
 {
   double *x; /* current point */
+  double *xt; /* translated point */
   double *direction; /* current direction */
   double lambda, lambda1, lambda2; /* direction parameters */
   double U; /* U(0,1) */
   double R; /* radius of inner sphere */
   long inside;
-  double diff, mse, r, sum_r, diff_r, mse_r;
+  double diff, mse, r, rt, sum_r, diff_r, mse_r;
   double expected_inside, expected_r;
+  double bias, bias_r;
   
   int i;
   long loop, sample;
@@ -158,7 +159,7 @@ int main(int argc, char *argv[])
   NORMAL->urng = UNIFORM->urng;
    
   /* read options */
-  while ((c = getopt(argc, argv, "d:n:m:e:h")) != -1) {
+  while ((c = getopt(argc, argv, "d:n:m:v:t:e:h")) != -1) {
     switch (c) {
     case 'm':     /* sampling method  */
       METHOD=atol(optarg);
@@ -172,13 +173,21 @@ int main(int argc, char *argv[])
     case 'e':     /* number of experiments */
       EXPERIMENTS=(long) atof(optarg);
       break;
+    case 'v':     /* volume ratio */
+      VOLUME_RATIO = atof(optarg);
+      break;
+    case 't':     /* translation */
+      TRANSLATION = atof(optarg);
+      break;
     
     case 'h':     /* help */
       printf("options\n" );
-      printf(" -d dim          : dimension (%d) \n", DIM );
-      printf(" -m method       : 1=COORD, 2=Random Direction 3=Rejection (%d)\n", METHOD );
-      printf(" -n samplesize   : number of samples (%ld) \n", SAMPLESIZE );
-      printf(" -e experiments  : number of repetitions (%ld) \n", EXPERIMENTS );
+      printf(" -d dim           : dimension (%d) \n", DIM );
+      printf(" -m method        : 1=COORD, 2=Random Direction 3=Rejection (%d)\n", METHOD );
+      printf(" -n samplesize    : number of samples (%ld) \n", SAMPLESIZE );
+      printf(" -e experiments   : number of repetitions (%ld) \n", EXPERIMENTS );
+      printf(" -v volume_ratio  : volume ratio (inner/outer) (%f) \n", VOLUME_RATIO );
+      printf(" -t radius_factor : translation factor of inner sphere (0=no trans, 1=trans to edge) (%f) \n", TRANSLATION );
       
       return 0;
       break;
@@ -190,23 +199,28 @@ int main(int argc, char *argv[])
   // unur_set_default_debug(UNUR_DEBUG_OFF);
    
   x = _unur_vector_new(DIM); /* current point at origin */
+  xt = _unur_vector_new(DIM); /* translated point */
   direction  = _unur_vector_new(DIM); /* sampling direction from current point  */
   
   //if (METHOD==METHOD_COORDINATE)        printf("METHOD=COORDINATE\n");
   //if (METHOD==METHOD_RANDOM_DIRECTION)  printf("METHOD=RANDOM DIRECTION\n");
   
-  R = exp(-log(2)/DIM); /* radius of interior sphere (volume = 1/2 of unit sphere volume)*/
-  //printf("R=%e\n", R); 
+  R = exp(log(VOLUME_RATIO)/DIM); /* radius of interior sphere */
   
-  expected_inside = SAMPLESIZE / 2.;
+  expected_inside = SAMPLESIZE * VOLUME_RATIO;
   expected_r = DIM/(DIM+1.);
+
+  //printf("R=%e\n", R); 
+  //printf("expected_inside=%e expected_r=%e\n", expected_inside, expected_r); 
   
+    
 #if MATHEMATICA 
   math2_init();
 #endif
    
-  /* main loop */    
   mse=0.; mse_r=0.;
+  bias=0.; bias_r=0;
+  /* main loop */    
   for (loop=1; loop<=EXPERIMENTS; loop++) {
 
     /* setting initial point at the origin */
@@ -247,35 +261,47 @@ int main(int argc, char *argv[])
       }
 #endif
 
-
-#if MATHEMATICA 
-      math2_point(x);
-#endif
+      /* obtain translated point */
+      memcpy(xt, x, DIM*sizeof(double));
+      xt[0]=x[0]+TRANSLATION*(1-R);
+      
       
       r = _unur_vector_norm(DIM, x);        
       sum_r += r;
-      if (r<R) {
+      
+      /* check if current point is inside the interior translated sphere */
+      rt = _unur_vector_norm(DIM, xt);        
+      if (rt<R) {
         inside++;
+#if MATHEMATICA 
+      math2_point(x);
+#endif
       }
     } /* next sample */
     
     
     diff = (inside - expected_inside);
     mse += diff*diff; 
-  
+    bias += fabs(diff);
+    
     diff_r = (sum_r / SAMPLESIZE - expected_r) ;
     mse_r += diff_r*diff_r;
+    bias_r += fabs(diff_r);
   
   } /* next experiment */
   mse /= EXPERIMENTS;
   mse_r /= EXPERIMENTS;
     
+  bias /= EXPERIMENTS;
+  bias_r /= EXPERIMENTS;
+  
 #if MATHEMATICA 
   math2_tail();
 #endif
   
   /* output of results */   
-  printf("dim=%2d rmse/e=%e rmse_r/e=%e\n", DIM, sqrt(mse)/expected_inside, sqrt(mse_r)/expected_r); 
+  printf("dim=%2d rmse/e=%e rmse_r/e=%e bias/e=%e bias_r/e=%e\n", 
+  DIM, sqrt(mse)/expected_inside, sqrt(mse_r)/expected_r, bias/expected_inside, bias_r/expected_r); 
       
   if (UNIFORM) unur_free(UNIFORM);
   

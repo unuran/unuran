@@ -224,6 +224,12 @@ _unur_urng_gslqrngptr_new( gsl_qrng *qrngptr, unsigned int dim )
   struct unur_urng_gslqrng *qrng;
   UNUR_URNG *urng;
 
+  /* check argument */
+  if (qrngptr == NULL) {
+    _unur_error("URNG",UNUR_ERR_NULL,"Cannot create GSL-QRNG object");
+    return NULL;
+  }
+
   /* make structure to store QRNG object */
   qrng = _unur_xmalloc( sizeof(struct unur_urng_gslqrng) );
   qrng->X = _unur_xmalloc( dim * sizeof(double) );
@@ -252,6 +258,12 @@ unur_urng_gslqrng_new( const gsl_qrng_type *qrngtype, unsigned int dim )
      /*   qrngstr ... string that describes generator                        */
      /*----------------------------------------------------------------------*/
 {
+  /* check argument */
+  if (dim == 0u) {
+    _unur_error("URNG",UNUR_ERR_GENERIC,"Cannot create GSL-QRNG object for dimension 0");
+    return NULL;
+  }
+
   return _unur_urng_gslqrngptr_new( gsl_qrng_alloc(qrngtype, dim), dim );
 } /* end of unur_urng_gslqrng_new() */
 

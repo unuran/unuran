@@ -238,7 +238,7 @@
 /* IMPORTANT!                                                                */
 /*   The corresponding library must be installed and linked when a           */
 /*   particular default is chosen (with the exception of type                */
-/*   UNUR_URNG_FVOID which included in UNURAN).                              */
+/*   UNUR_URNG_FVOID which is included in UNURAN).                           */
 /*   If you have none of these libraries use UNUR_URNG_FVOID.                */
 
 #define UNUR_URNG_DEFAULT_TYPE UNUR_URNG_FVOID
@@ -287,10 +287,6 @@
 /* Use uniform RNG objects from the GNU Scientific Library (GSL)             */
 /*    http://www.gnu.org/software/gsl/                                       */
 /* #define UNURAN_HAS_GSL 1 */
-
-/* Use quasi-random sequences from the GNU Scientific Library (GSL)          */
-/*    http://www.gnu.org/software/gsl/                                       */
-/* #define UNURAN_HAS_GSLQMC 1 */
 
 /*---------------------------------------------------------------------------*/
 #endif  /* UNURAN_CONFIG_H_SEEN */

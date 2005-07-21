@@ -247,7 +247,7 @@ UNUR_DISTR *unur_distr_laplace(const double *params, int n_params);
    =DISTR    logistic  Logistic distribution
    =UP       Stddist_CONT
    =REF      [JKBc95: Ch.23, p.115]
-   =PDF      exp(-\frac{x-alpha}{beta} * (1 + exp(-\frac{x-alpha}{beta}))^{-2}
+   =PDF      exp(-\frac{x-alpha}{beta}) * (1 + exp(-\frac{x-alpha}{beta}))^{-2}
    =CONST    \frac{1}{beta}
    =DOMAIN   -infinity < x <infinity
    =FPARAM    [0]  : alpha :     : 0 : location :

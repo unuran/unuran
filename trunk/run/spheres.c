@@ -25,11 +25,12 @@
 
 #define METHOD_COORDINATE 1
 #define METHOD_RANDOM_DIRECTION 2
+#define METHOD_REJECTION 3
 
 #define MAXDIM 100
 
 #define VERBOSE  0     /* output switch for test and moments  */
-
+#define MATHEMATICA 0
 
 #define PDF(x)    _unur_cvec_PDF((x),(gen->distr))    /* call to PDF         */
 
@@ -39,6 +40,9 @@ long SAMPLESIZE = 100;
 long EXPERIMENTS = 1;
 int METHOD = 1; 
 int COORDINATE = 0; /* current coordinate for coordinate sampler */
+
+FILE *fmath; /* mathematica output */
+
 
 UNUR_GEN *UNIFORM=NULL;
 #define NORMAL    UNIFORM->gen_aux        /* pointer to normal variate generator */
@@ -82,6 +86,48 @@ void get_lambdas(double *x, double *direction, double *lambda1, double *lambda2)
 
 }
 
+
+/*---------------------------------------------------------------------------*/
+
+
+void math2_init() 
+{
+  fmath = fopen("spheres.txt","w");  
+  fprintf(fmath,"x={");
+}  
+ 
+void math2_point(double *x) 
+{ 
+  int j;
+    
+  /* current point */
+  fprintf(fmath,"{");
+  for (j=0; j<DIM; j++) {
+    fprintf(fmath,"%4.3f", x[j]);
+    if (j<DIM-1) fprintf(fmath,",");
+  }
+  fprintf(fmath,"}");
+      
+  fprintf(fmath,",");
+}
+
+void math2_tail() 
+{    
+  int j;
+  /* origin ... */
+  fprintf(fmath,"{");
+  for (j=0; j<DIM; j++) {
+    fprintf(fmath,"%4.3f", 0.);
+    if (j<DIM-1) fprintf(fmath,",");
+  }  
+  fprintf(fmath,"}");
+    
+  fprintf(fmath,"};\n");
+  fclose(fmath);
+}
+
+
+
 /*---------------------------------------------------------------------------*/
 
 int main(int argc, char *argv[])
@@ -92,7 +138,8 @@ int main(int argc, char *argv[])
   double U; /* U(0,1) */
   double R; /* radius of inner sphere */
   long inside;
-  double diff, var;
+  double diff, mse, r, sum_r, diff_r, mse_r;
+  double expected_inside, expected_r;
   
   int i;
   long loop, sample;
@@ -129,7 +176,7 @@ int main(int argc, char *argv[])
     case 'h':     /* help */
       printf("options\n" );
       printf(" -d dim          : dimension (%d) \n", DIM );
-      printf(" -m method       : 1=COORD, 2=Random Direction (%d)\n", METHOD );
+      printf(" -m method       : 1=COORD, 2=Random Direction 3=Rejection (%d)\n", METHOD );
       printf(" -n samplesize   : number of samples (%ld) \n", SAMPLESIZE );
       printf(" -e experiments  : number of repetitions (%ld) \n", EXPERIMENTS );
       
@@ -151,13 +198,21 @@ int main(int argc, char *argv[])
   R = exp(-log(2)/DIM); /* radius of interior sphere (volume = 1/2 of unit sphere volume)*/
   //printf("R=%e\n", R); 
   
+  expected_inside = SAMPLESIZE / 2.;
+  expected_r = DIM/(DIM+1.);
+  
+#if MATHEMATICA 
+  math2_init();
+#endif
+   
   /* main loop */    
-  var=0.; 
+  mse=0.; mse_r=0.;
   for (loop=1; loop<=EXPERIMENTS; loop++) {
 
     /* setting initial point at the origin */
     for (i=0; i<DIM; i++) x[i] = 0.;
     inside=0; 
+    sum_r=0.;
     
     for (sample=1; sample<=SAMPLESIZE; sample++) {
     
@@ -180,19 +235,47 @@ int main(int argc, char *argv[])
           
       /* set new point */
       for (i=0; i<DIM; i++) x[i]=x[i]+lambda*direction[i];
-  
-      if (_unur_vector_norm(DIM, x)<R) {
+
+#if 1      
+      if (METHOD==METHOD_REJECTION) {
+        do {
+	  for (i=0; i<DIM; i++) {
+	    U = unur_sample_cont(UNIFORM);  
+	    x[i] = 2*U-1.;
+	  }
+	} while (_unur_vector_norm(DIM, x)>=1);
+      }
+#endif
+
+
+#if MATHEMATICA 
+      math2_point(x);
+#endif
+      
+      r = _unur_vector_norm(DIM, x);        
+      sum_r += r;
+      if (r<R) {
         inside++;
       }
-    }
-    diff = (inside -SAMPLESIZE/2.);
-    var += diff*diff; 
+    } /* next sample */
+    
+    
+    diff = (inside - expected_inside);
+    mse += diff*diff; 
+  
+    diff_r = (sum_r / SAMPLESIZE - expected_r) ;
+    mse_r += diff_r*diff_r;
+  
   } /* next experiment */
-  var /= EXPERIMENTS;
+  mse /= EXPERIMENTS;
+  mse_r /= EXPERIMENTS;
+    
+#if MATHEMATICA 
+  math2_tail();
+#endif
   
   /* output of results */   
-  printf("dim=%d 'var'=%e\n", DIM, var); 
-  printf("------------------------------------------------------------------\n");
+  printf("dim=%2d rmse/e=%e rmse_r/e=%e\n", DIM, sqrt(mse)/expected_inside, sqrt(mse_r)/expected_r); 
       
   if (UNIFORM) unur_free(UNIFORM);
   

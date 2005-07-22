@@ -41,6 +41,7 @@ struct unur_urng_generic {
   void *state;                        /* state of the generator              */
   unsigned int (*samplearray)(void *state, double *X, unsigned int dim);
                                       /* function for generating array of points */
+  void (*sync)(void *state);          /* jump into defined state ("sync")    */
   unsigned long seed;                 /* initial seed of the generator       */
   void (*setseed)(void *state, unsigned long seed);  /* set initial seed of the generator */
   void (*reset)(void *state);         /* reset object                        */

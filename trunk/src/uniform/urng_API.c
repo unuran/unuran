@@ -197,6 +197,7 @@ unur_urng_new( double (*sampleunif)(void *state), void *state )
 
   /* initialize optional functions (set to not available) */
   urng->samplearray = NULL;
+  urng->sync     = NULL;
   urng->seed     = ULONG_MAX;
   urng->setseed  = NULL;
   urng->delete   = NULL;
@@ -215,7 +216,7 @@ unur_urng_new( double (*sampleunif)(void *state), void *state )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_urng_set_samplearray( UNUR_URNG *urng, 
+unur_urng_set_sample_array( UNUR_URNG *urng, 
 			   unsigned int (*samplearray)(void *state, double *X, unsigned int dim) )
      /*----------------------------------------------------------------------*/
      /* Set function to sample random point                                  */
@@ -236,7 +237,31 @@ unur_urng_set_samplearray( UNUR_URNG *urng,
   urng->samplearray = samplearray;
   return UNUR_SUCCESS;
 
-} /* end of unur_urng_set_samplearray() */
+} /* end of unur_urng_set_sample_array() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_urng_set_sync( UNUR_URNG *urng, void (*sync)(void *state) )
+     /*----------------------------------------------------------------------*/
+     /* Set function for jumping into defined state ("sync")                 */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   urng   ... pointer to URNG object                                  */
+     /*   sync   ... function for syncing generator object                   */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( "URNG", urng, UNUR_ERR_NULL );
+  COOKIE_CHECK(urng,CK_URNG,UNUR_ERR_COOKIE);
+
+  urng->sync = sync;
+  return UNUR_SUCCESS;
+} /* end of unur_urng_set_reset() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -389,6 +414,42 @@ unur_urng_set_delete( UNUR_URNG *urng, void (*delete)(void *state) )
 /**  Handle a URNG object                                                   **/
 /**                                                                         **/
 /*****************************************************************************/
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_urng_sync (UNUR_URNG *urng)
+     /*----------------------------------------------------------------------*/
+     /* Jump into defined state ("sync")                                     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   urng   ... pointer to URNG object                                  */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check argument */
+  if (urng == NULL) 
+    /* use default generator */
+    urng = unur_get_default_urng();
+
+  COOKIE_CHECK(urng,CK_URNG,UNUR_ERR_COOKIE);
+
+  /* check whether we can reset the URNG object */
+  if (urng->sync == NULL) {
+    _unur_error("URNG",UNUR_ERR_URNG_MISS,"sync");
+    return UNUR_ERR_URNG_MISS;
+  }
+
+  /* jump to next substream */
+  urng->sync (urng->state);
+
+  return UNUR_SUCCESS;
+} /* end of unur_urng_sync() */ 
+
+/*---------------------------------------------------------------------------*/
 
 int
 unur_urng_seed (UNUR_URNG *urng, unsigned long seed)
@@ -562,6 +623,27 @@ unur_urng_free (UNUR_URNG *urng)
 /**  Handle URNG object in a generator object                               **/
 /**                                                                         **/
 /*****************************************************************************/
+
+int
+unur_gen_sync (UNUR_GEN *gen)
+     /*----------------------------------------------------------------------*/
+     /* Jump into defined state ("sync") of uniform generator in             */
+     /* generator object.                                                    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... generator object                                          */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check argument */
+  _unur_check_NULL( "URNG", gen, UNUR_ERR_NULL );
+  return unur_urng_sync(gen->urng);
+} /* end of unur_gen_sync() */ 
+
+/*---------------------------------------------------------------------------*/
 
 int
 unur_gen_seed (UNUR_GEN *gen, unsigned long seed)

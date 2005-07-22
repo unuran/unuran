@@ -12,6 +12,7 @@ libuniform_la_SOURCES = \
  urng_fvoid.c \
  urng_gsl.c urng_gslqmc.c \
  urng_prng.c \
+ urng_randomshift.c \
  urng_rngstreams.c
 
 noinst_HEADERS = \

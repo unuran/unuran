@@ -76,7 +76,7 @@ unur_urng_gsl_new( const gsl_rng_type *urngtype )
      /* get new URNG object of type PRNG.                                    */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   prngstr ... string that describes generator                        */
+     /*   urngtype ... type of generator                                     */
      /*----------------------------------------------------------------------*/
 {
   UNUR_URNG *urng = unur_urng_gslptr_new(gsl_rng_alloc(urngtype));

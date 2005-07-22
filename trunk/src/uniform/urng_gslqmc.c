@@ -6,7 +6,7 @@
  *                                                                           *
  *   FILE: urng_gslqmc.c                                                     *
  *                                                                           *
- *   routines to get new URNG object (of type GSLQMC) to use                 *
+ *   routines to get new URNG object (of type GSL-PRNG) to use               *
  *   quasi-random sequences from the GSL (GNU Scientific Library),           *
  *   see http://www.gnu.org/software/gsl/.                                   *
  *                                                                           *
@@ -78,7 +78,7 @@ static double _unur_urng_gslqrng_sample( struct unur_urng_gslqrng *qrng );
 /* Skip to first coordinate of next point after last coordinate.             */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_urng_gslqrng_samplearray( struct unur_urng_gslqrng *qrng, double *X, unsigned dim );
+static int _unur_urng_gslqrng_sample_array( struct unur_urng_gslqrng *qrng, double *X, unsigned dim );
 /*---------------------------------------------------------------------------*/
 /* Sample random point and store in X. use only the first dim coordinates    */
 /* if dim is less than the dimension of the generated points.                */
@@ -133,7 +133,7 @@ _unur_urng_gslqrng_sample( struct unur_urng_gslqrng *qrng )
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_urng_gslqrng_samplearray( struct unur_urng_gslqrng *qrng, double *X, unsigned dim )
+_unur_urng_gslqrng_sample_array( struct unur_urng_gslqrng *qrng, double *X, unsigned dim )
      /*----------------------------------------------------------------------*/
      /* Sample random point and store in X. use only the first dim coordin.  */
      /* if dim is less than the dimension of the generated points.           */
@@ -161,7 +161,7 @@ _unur_urng_gslqrng_samplearray( struct unur_urng_gslqrng *qrng, double *X, unsig
     gsl_qrng_get( qrng->qrng, X );
     return qrng->dim;
   }
-} /* end of _unur_urng_gslqrng_samplearray() */
+} /* end of _unur_urng_gslqrng_sample_array() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -186,7 +186,7 @@ _unur_urng_gslqrng_free( struct unur_urng_gslqrng *qrng )
 void
 _unur_urng_gslqrng_reset( struct unur_urng_gslqrng *qrng )
      /*----------------------------------------------------------------------*/
-     /* Reset URNG object.                                                    */
+     /* Reset URNG object.                                                   */
      /*                                                                      */
      /* parameters:                                                          */
      /*   qrng   ... pointer to URNG object                                  */
@@ -218,7 +218,8 @@ _unur_urng_gslqrngptr_new( gsl_qrng *qrngptr, unsigned int dim )
      /* get new URNG object of type GSL-QRNG                                 */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   gslqmc ... pointer to generator structure                          */
+     /*   qrngptr ... pointer to generator structure                         */
+     /*   dim     ... dimension of point sets                                */
      /*----------------------------------------------------------------------*/
 {
   struct unur_urng_gslqrng *qrng;
@@ -238,11 +239,11 @@ _unur_urng_gslqrngptr_new( gsl_qrng *qrngptr, unsigned int dim )
   qrng->n = 0u;
 
   /* make UNURAN_URNG object */
-  urng = unur_urng_new( (double(*)(void*)) _unur_urng_gslqrng_sample, qrng );
-  unur_urng_set_samplearray(urng, (unsigned int(*)(void*,double*,unsigned int)) _unur_urng_gslqrng_samplearray);
-  unur_urng_set_delete(urng, (void(*)(void*)) _unur_urng_gslqrng_free);
+  urng = unur_urng_new ( (double(*)(void*)) _unur_urng_gslqrng_sample, qrng );
+  unur_urng_set_sample_array (urng, (unsigned int(*)(void*,double*,unsigned int)) _unur_urng_gslqrng_sample_array);
+  unur_urng_set_delete (urng, (void(*)(void*)) _unur_urng_gslqrng_free);
   unur_urng_set_reset (urng, (void(*)(void*)) _unur_urng_gslqrng_reset);
-  unur_urng_set_nextsub  (urng, (void(*)(void*)) _unur_urng_gslqrng_nextpoint);
+  unur_urng_set_sync (urng, (void(*)(void*)) _unur_urng_gslqrng_nextpoint);
 
   return urng;
 } /* end of _unur_urng_gslqrngptr_new() */
@@ -255,7 +256,8 @@ unur_urng_gslqrng_new( const gsl_qrng_type *qrngtype, unsigned int dim )
      /* get new URNG object of type GSL-QRNG                                 */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   qrngstr ... string that describes generator                        */
+     /*   qrngtype ... type of generator                                      */
+     /*   dim     ... dimension of point sets                                */
      /*----------------------------------------------------------------------*/
 {
   /* check argument */

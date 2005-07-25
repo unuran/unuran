@@ -52,7 +52,8 @@
  *                                                                           *
  *   The value of the "urng" key is passed to the PRNG interface.            *
  *   However it only works when using the PRNG library is enabled in         *
- *   unuran_config.h.                                                        *
+ *   unuran_config.h (i.e. UNURAN_HAS_PRNG must be defined) and libprng      *
+ *   is linked to the executable.                                            *
  *                                                                           *
  *   In each block consecuting <key>=<value> pairs, separated by semicolons  *
  *   ';', are used to set parameters. The name of the parameter is given as  *
@@ -2103,7 +2104,7 @@ _unur_str2urng( char *str_urng )
      /*----------------------------------------------------------------------*/
 {
 /*---------------------------------------------------------------------------*/
-#ifdef UNURAN_HAS_PRNG
+#if UNUR_URNG_TYPE == UNUR_URNG_GENERIC && defined(UNURAN_HAS_PRNG)
 /*---------------------------------------------------------------------------*/
 
   UNUR_URNG *urng = NULL;

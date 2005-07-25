@@ -62,6 +62,12 @@ unur_urng_gslptr_new( gsl_rng *gsl )
      /*   gsl ... pointer to generator structure                             */
      /*----------------------------------------------------------------------*/
 {
+  /* check argument */
+  if (gsl == NULL) {
+    _unur_error("URNG",UNUR_ERR_NULL,"Cannot create GSL object");
+    return NULL;
+  }
+
   UNUR_URNG *urng = unur_urng_new( (double(*)(void*)) gsl_rng_uniform_pos, gsl );
   unur_urng_set_delete(urng, (void(*)(void*)) gsl_rng_free);
   unur_urng_set_seed(urng, (void(*)(void*,unsigned long)) gsl_rng_set);

@@ -63,6 +63,7 @@ unur_urng_prngptr_new( struct prng *prng )
      /*   prng ... pointer to generator structure                            */
      /*----------------------------------------------------------------------*/
 {
+  if (prng == NULL) return NULL;
   UNUR_URNG *urng = unur_urng_new( (double(*)(void*)) prng->get_next, prng );
   unur_urng_set_reset(urng, (void(*)(void*)) prng->reset);
   unur_urng_set_delete(urng, (void(*)(void*)) prng->destroy);
@@ -80,7 +81,12 @@ unur_urng_prng_new( const char *prngstr )
      /*   prngstr ... string that describes generator                        */
      /*----------------------------------------------------------------------*/
 {
-  return unur_urng_prngptr_new(prng_new(prngstr));
+  struct prng *prng = prng_new(prngstr);
+  if (prng==NULL) {
+    _unur_error("URNG",UNUR_ERR_NULL,"Cannot create PRNG object for given string");
+    return NULL;
+  }
+  return unur_urng_prngptr_new (prng);
 } /* end of unur_urng_prng_new() */
 
 /*---------------------------------------------------------------------------*/

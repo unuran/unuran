@@ -60,9 +60,15 @@ unur_urng_rngstreamptr_new( RngStream rngstream )
      /* get new URNG object of type RNGSTREAMS.                              */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   urngstr ... pointer to generator structure                         */
+     /*   rngstream ... pointer to generator structure                       */
      /*----------------------------------------------------------------------*/
 {
+  /* check argument */
+  if (rngstream == NULL) {
+    _unur_error("URNG",UNUR_ERR_NULL,"Cannot create RNGSTREAM object");
+    return NULL;
+  }
+
   UNUR_URNG *urng = unur_urng_new( (double(*)(void*)) RngStream_RandU01, rngstream );
   unur_urng_set_reset    (urng, (void(*)(void*)) RngStream_ResetStartStream);
   unur_urng_set_delete   (urng, (void(*)(void*)) RngStream_DeleteStream);

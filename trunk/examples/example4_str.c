@@ -13,8 +13,13 @@
 /* http://statistik.wu-wien.ac.at/prng/) for generating          */
 /* uniform random numbers.                                       */
 /* To compile this example you must have set                     */
-/* #define  UNUR_URNG_TYPE  UNUR_URNG_PRNG                       */
+/*                                                               */
+/*   #define  UNUR_URNG_TYPE  UNUR_URNG_GENERIC                  */
+/*   #define  UNURAN_HAS_PRNG 1                                  */
+/*                                                               */
 /* in `src/unuran_config.h'.                                     */
+/* (Of course the executable has to be linked against the        */
+/* prng library.)                                                */
 
 /* It also works with necessary modifications with other uniform */
 /* random number generators.                                     */
@@ -23,7 +28,7 @@
 
 int main()
 {
-#if UNUR_URNG_TYPE == UNUR_URNG_PRNG
+#if UNUR_URNG_TYPE == UNUR_URNG_GENERIC && defined(UNURAN_HAS_PRNG)
 
   int    i;          /* loop variable                            */
   double x;          /* will hold the random number              */
@@ -60,7 +65,7 @@ int main()
   /* Now we want to switch to a different uniform random number  */
   /* generator.                                                  */
   /* Now we use an ICG (Inversive Congruental Generator).        */
-  urng2 = prng_new("icg(2147483647,1,1,0)");
+  urng2 = unur_urng_prng_new("icg(2147483647,1,1,0)");
   if (urng2 == NULL) exit (EXIT_FAILURE);
 
   /* Change uniform random number generator.                     */
@@ -79,8 +84,8 @@ int main()
   unur_free(gen);
 
   /* We also should destroy the uniform random number generators.*/
-  prng_free(urng1);
-  prng_free(urng2);
+  unur_urng_free(urng1);
+  unur_urng_free(urng2);
 
   exit (EXIT_SUCCESS);
 

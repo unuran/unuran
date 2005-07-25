@@ -18,8 +18,13 @@
 /* http://statistik.wu-wien.ac.at/prng/) for generating          */
 /* uniform random numbers.                                       */
 /* To compile this example you must have set                     */
-/* #define  UNUR_URNG_TYPE  UNUR_URNG_PRNG                       */
+/*                                                               */
+/*   #define  UNUR_URNG_TYPE  UNUR_URNG_GENERIC                  */
+/*   #define  UNURAN_HAS_PRNG 1                                  */
+/*                                                               */
 /* in `src/unuran_config.h'.                                     */
+/* (Of course the executable has to be linked against the        */
+/* prng library.)                                                */
 
 /* It also works with necessary modifications with other uniform */
 /* random number generators.                                     */
@@ -28,7 +33,7 @@
 
 int main()
 {
-#if UNUR_URNG_TYPE == UNUR_URNG_PRNG
+#if UNUR_URNG_TYPE == UNUR_URNG_GENERIC && defined(UNURAN_HAS_PRNG)
 
   int    i;          /* loop variable                            */
   double xn, xg;     /* will hold the random number              */
@@ -73,8 +78,8 @@ int main()
 
   /* But first we have to destroy the uniform random number      */
   /* generators.                                                 */
-  prng_free(unur_get_urng(gen_normal));
-  prng_free(unur_get_urng(gen_gamma));
+  unur_urng_free(unur_get_urng(gen_normal));
+  unur_urng_free(unur_get_urng(gen_gamma));
 
   unur_free(gen_normal);
   unur_free(gen_gamma);

@@ -27,7 +27,7 @@
 #define METHOD_RANDOM_DIRECTION 2
 #define METHOD_REJECTION 3
 
-#define MATHEMATICA 0
+#define MATHEMATICA 1
 
 #define PDF(x)    _unur_cvec_PDF((x),(gen->distr))    /* call to PDF         */
 
@@ -39,9 +39,16 @@ int METHOD = 1;
 int COORDINATE = 0; /* current coordinate for coordinate sampler */
 double TRANSLATION = 0.; 
 double VOLUME_RATIO = 1./10; 
+double STRETCH = 1.;
 
 FILE *fmath; /* mathematica output */
 
+double *stretch_direction;
+
+#define STRETCH_DIRECTION_X 0
+#define STRETCH_DIRECTION_U 1
+
+long STRETCH_DIRECTION;
 
 UNUR_GEN *UNIFORM=NULL;
 #define NORMAL    UNIFORM->gen_aux        /* pointer to normal variate generator */
@@ -65,16 +72,20 @@ get_random_direction( double *direction)
 
 /*---------------------------------------------------------------------------*/
 
-void get_lambdas(double *x, double *direction, double *lambda1, double *lambda2) {
+void get_lambdas(double *x, double *sampling_direction, double *lambda1, double *lambda2) {
   double A, B, C, D;
   int i;
-  
+  double S; 
+    
   /* solving quadratic equation for lambda1 and lambda2 */
   A=0; B=0; C=0;
+  
+  S = (1./STRETCH - 1.) * _unur_vector_scalar_product(DIM, x, stretch_direction);
+  
   for (i=0; i<DIM; i++) {
-    A += direction[i]*direction[i];
-    B += 2.*direction[i]*x[i];
-    C += x[i]*x[i];
+    A += sampling_direction[i]*sampling_direction[i];
+    B += 2.*sampling_direction[i]*(x[i]+S*stretch_direction[i]);
+    C += (x[i]+S*stretch_direction[i])*(x[i]+S*stretch_direction[i]);
   }
   C -= 1.;
   
@@ -122,6 +133,7 @@ void math2_tail()
   fprintf(fmath,"}");
     
   fprintf(fmath,"};\n");
+  fprintf(fmath,"ListPlot[x, AspectRatio -> Automatic]\n");
   fclose(fmath);
 }
 
@@ -133,7 +145,9 @@ int main(int argc, char *argv[])
 {
   double *x; /* current point */
   double *xt; /* translated point */
-  double *direction; /* current direction */
+  double *xs; /* stretched point */
+  double *sampling_direction; /* current direction */
+  double dot; 
   double lambda, lambda1, lambda2; /* direction parameters */
   double U; /* U(0,1) */
   double R; /* radius of inner sphere */
@@ -159,7 +173,7 @@ int main(int argc, char *argv[])
  // NORMAL->urng = UNIFORM->urng;
    
   /* read options */
-  while ((c = getopt(argc, argv, "d:n:m:v:t:e:h")) != -1) {
+  while ((c = getopt(argc, argv, "d:n:m:s:v:t:e:hxu")) != -1) {
     switch (c) {
     case 'm':     /* sampling method  */
       METHOD=atol(optarg);
@@ -179,6 +193,15 @@ int main(int argc, char *argv[])
     case 't':     /* translation */
       TRANSLATION = atof(optarg);
       break;
+    case 's':     /* stretch factor */
+      STRETCH = atof(optarg);
+      break;
+    case 'x':     /* stretch direction X */
+      STRETCH_DIRECTION = STRETCH_DIRECTION_X;
+      break;
+    case 'u':     /* stretch direction unit vector along (1,1,...,1) */
+      STRETCH_DIRECTION = STRETCH_DIRECTION_U;
+      break;
     
     case 'h':     /* help */
       printf("options\n" );
@@ -188,6 +211,9 @@ int main(int argc, char *argv[])
       printf(" -e experiments   : number of repetitions (%ld) \n", EXPERIMENTS );
       printf(" -v volume_ratio  : volume ratio (inner/outer) (%f) \n", VOLUME_RATIO );
       printf(" -t radius_factor : translation factor of inner sphere (0=no trans, 1=trans to edge) (%f) \n", TRANSLATION );
+      printf(" -s stretching    : stretching factor (1=no stretch) (%f) \n", STRETCH );
+      printf(" -x               : stretching along x-coortinate\n");
+      printf(" -u               : stretching along unit vector (1,1...,1) \n");
       
       return 0;
       break;
@@ -200,7 +226,19 @@ int main(int argc, char *argv[])
    
   x = _unur_vector_new(DIM); /* current point at origin */
   xt = _unur_vector_new(DIM); /* translated point */
-  direction  = _unur_vector_new(DIM); /* sampling direction from current point  */
+  xs = _unur_vector_new(DIM); /* streched point */
+  sampling_direction  = _unur_vector_new(DIM); /* sampling direction from current point  */
+  stretch_direction  = _unur_vector_new(DIM); /* stretch direction of spheere  */
+  
+  if (STRETCH_DIRECTION == STRETCH_DIRECTION_X)
+    stretch_direction[0] = 1.;
+
+  if (STRETCH_DIRECTION == STRETCH_DIRECTION_U) {
+    for (i=0; i<DIM; i++) 
+      stretch_direction[i]=1.;
+  }
+  
+  _unur_vector_normalize(DIM, stretch_direction);
   
   //if (METHOD==METHOD_COORDINATE)        printf("METHOD=COORDINATE\n");
   //if (METHOD==METHOD_RANDOM_DIRECTION)  printf("METHOD=RANDOM DIRECTION\n");
@@ -231,24 +269,24 @@ int main(int argc, char *argv[])
     for (sample=1; sample<=SAMPLESIZE; sample++) {
     
       if (METHOD==METHOD_COORDINATE) {    
-        for (i=0; i<DIM; i++) direction[i] = 0.;
-	direction[COORDINATE]=1;
+        for (i=0; i<DIM; i++) sampling_direction[i] = 0.;
+	sampling_direction[COORDINATE]=1;
     
         /* cyclical coordinate directions */
         if (++COORDINATE >= DIM) COORDINATE=0; 
       }
       
       if (METHOD==METHOD_RANDOM_DIRECTION) {
-        get_random_direction(direction);
+        get_random_direction(sampling_direction);
       }
 
-      get_lambdas(x, direction, &lambda1, &lambda2);
+      get_lambdas(x, sampling_direction, &lambda1, &lambda2);
       
       U = unur_sample_cont(UNIFORM);
       lambda = lambda1 + U * (lambda2 - lambda1);
           
       /* set new point */
-      for (i=0; i<DIM; i++) x[i]=x[i]+lambda*direction[i];
+      for (i=0; i<DIM; i++) x[i]=x[i]+lambda*sampling_direction[i];
 
 #if 1      
       if (METHOD==METHOD_REJECTION) {
@@ -263,14 +301,19 @@ int main(int argc, char *argv[])
 
       /* obtain translated point */
       memcpy(xt, x, DIM*sizeof(double));
-      xt[0]=x[0]+TRANSLATION*(1-R);
+      xt[0]=x[0]+TRANSLATION*(1-R);  
       
+      /* obtain reverse-stretched point */
+      dot=_unur_vector_scalar_product(DIM, xt, stretch_direction);
+      for (i=0; i<DIM; i++)
+        xs[i]=xt[i]+(1./STRETCH-1.)*dot*stretch_direction[i];  
       
       r = _unur_vector_norm(DIM, x);        
       sum_r += r;
       
-      /* check if current point is inside the interior translated sphere */
-      rt = _unur_vector_norm(DIM, xt);        
+      /* check if current point is inside the interior translated (and streched) sphere */
+      //rt = _unur_vector_norm(DIM, xt);        
+      rt = _unur_vector_norm(DIM, xs);        
       if (rt<R) {
         inside++;
 #if MATHEMATICA 
@@ -309,7 +352,9 @@ int main(int argc, char *argv[])
   unur_urng_free(NORMAL->urng);
   if (UNIFORM) unur_free(UNIFORM);
   
-  free(x); free(xt); free(direction);
+  free(x); free(xt); free(xs);
+  free(sampling_direction);
+  free(stretch_direction);
       
   return 0;
 

@@ -149,14 +149,14 @@ int main(int argc, char *argv[])
 
 //  UNIFORM = unur_str2gen("uniform(0,1) & urng=mt19937(1173)");
   UNIFORM = unur_str2gen("uniform(0,1) & urng=mt19937(13731)");
-  
+   
   /* we need an generator for standard normal distributons */
   struct unur_distr *normaldistr = unur_distr_normal(NULL,0);
   struct unur_par   *normalpar = unur_arou_new( normaldistr );
   unur_arou_set_usedars( normalpar, TRUE );
   NORMAL = unur_init( normalpar );
   _unur_distr_free( normaldistr );
-  //NORMAL->urng = UNIFORM->urng;
+ // NORMAL->urng = UNIFORM->urng;
    
   /* read options */
   while ((c = getopt(argc, argv, "d:n:m:v:t:e:h")) != -1) {
@@ -305,10 +305,11 @@ int main(int argc, char *argv[])
   printf("dim=%2d rmse/e=%e rmse_r/e=%e bias/e=%e bias_r/e=%e\n", 
   DIM, sqrt(mse)/expected_inside, sqrt(mse_r)/expected_r, bias/expected_inside, bias_r/expected_r); 
       
+  unur_urng_free(UNIFORM->urng);
+  unur_urng_free(NORMAL->urng);
   if (UNIFORM) unur_free(UNIFORM);
-  if (NORMAL) unur_free(NORMAL); /* not necessary ... just testing */
   
-  free(x); free(direction);
+  free(x); free(xt); free(direction);
       
   return 0;
 

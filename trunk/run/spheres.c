@@ -156,7 +156,7 @@ int main(int argc, char *argv[])
   unur_arou_set_usedars( normalpar, TRUE );
   NORMAL = unur_init( normalpar );
   _unur_distr_free( normaldistr );
-  NORMAL->urng = UNIFORM->urng;
+  //NORMAL->urng = UNIFORM->urng;
    
   /* read options */
   while ((c = getopt(argc, argv, "d:n:m:v:t:e:h")) != -1) {
@@ -282,11 +282,11 @@ int main(int argc, char *argv[])
     
     diff = (inside - expected_inside);
     mse += diff*diff; 
-    bias += fabs(diff);
+    bias += diff;
     
     diff_r = (sum_r / SAMPLESIZE - expected_r) ;
     mse_r += diff_r*diff_r;
-    bias_r += fabs(diff_r);
+    bias_r += diff_r;
   
   } /* next experiment */
   mse /= EXPERIMENTS;
@@ -300,10 +300,13 @@ int main(int argc, char *argv[])
 #endif
   
   /* output of results */   
+//  printf("dim=%2d mse=%e mse_r=%e bias=%e bias_r=%e exp_inside=%e exp_r=%e\n", 
+//  DIM, mse, mse_r, bias, bias_r, expected_inside, expected_r); 
   printf("dim=%2d rmse/e=%e rmse_r/e=%e bias/e=%e bias_r/e=%e\n", 
   DIM, sqrt(mse)/expected_inside, sqrt(mse_r)/expected_r, bias/expected_inside, bias_r/expected_r); 
       
   if (UNIFORM) unur_free(UNIFORM);
+  if (NORMAL) unur_free(NORMAL); /* not necessary ... just testing */
   
   free(x); free(direction);
       

@@ -66,6 +66,12 @@
 
 #include <uniform/unur_uniform.h>
 #include <uniform/urng.h>
+#include <uniform/urng_fvoid.h>
+#include <uniform/urng_gsl.h>
+#include <uniform/urng_gslqmc.h>
+#include <uniform/urng_prng.h>
+#include <uniform/urng_rngstreams.h>
+#include <uniform/urng_randomshift.h>
 
 /*****************************************************************************/
 /**  Function prototypes for manipulating distribution objects              **/

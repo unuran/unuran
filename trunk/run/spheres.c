@@ -27,7 +27,7 @@
 #define METHOD_RANDOM_DIRECTION 2
 #define METHOD_REJECTION 3
 
-#define MATHEMATICA 1
+#define MATHEMATICA 0
 
 #define PDF(x)    _unur_cvec_PDF((x),(gen->distr))    /* call to PDF         */
 
@@ -72,20 +72,48 @@ get_random_direction( double *direction)
 
 /*---------------------------------------------------------------------------*/
 
+void transform_point(double stretch, double *x, double *xx) {
+  double S; 
+  int i;
+  
+  S = (stretch - 1.) * _unur_vector_scalar_product(DIM, x, stretch_direction);  
+  for (i=0; i<DIM; i++) {
+    xx[i]=x[i]+S*stretch_direction[i];
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+
+void debug_point(double *x) {
+  int i;
+  
+  for (i=0; i<DIM; i++) {
+    printf(" % e", x[i]);
+  }
+  printf("\n");
+}
+
+/*---------------------------------------------------------------------------*/
+
 void get_lambdas(double *x, double *sampling_direction, double *lambda1, double *lambda2) {
+  double a, b;
   double A, B, C, D;
   int i;
-  double S; 
     
   /* solving quadratic equation for lambda1 and lambda2 */
   A=0; B=0; C=0;
-  
-  S = (1./STRETCH - 1.) * _unur_vector_scalar_product(DIM, x, stretch_direction);
-  
+
   for (i=0; i<DIM; i++) {
-    A += sampling_direction[i]*sampling_direction[i];
-    B += 2.*sampling_direction[i]*(x[i]+S*stretch_direction[i]);
-    C += (x[i]+S*stretch_direction[i])*(x[i]+S*stretch_direction[i]);
+    a = sampling_direction[i] 
+      + (1./STRETCH - 1.) * _unur_vector_scalar_product(DIM, sampling_direction, stretch_direction)
+      * stretch_direction[i] ;
+    b = x[i] 
+      + (1./STRETCH - 1.) * _unur_vector_scalar_product(DIM, x, stretch_direction)
+      * stretch_direction[i] ;
+    
+    A += a*a;
+    B += 2.*a*b;
+    C += b*b;
   }
   C -= 1.;
   
@@ -147,7 +175,6 @@ int main(int argc, char *argv[])
   double *xt; /* translated point */
   double *xs; /* stretched point */
   double *sampling_direction; /* current direction */
-  double dot; 
   double lambda, lambda1, lambda2; /* direction parameters */
   double U; /* U(0,1) */
   double R; /* radius of inner sphere */
@@ -171,6 +198,8 @@ int main(int argc, char *argv[])
   NORMAL = unur_init( normalpar );
   _unur_distr_free( normaldistr );
  // NORMAL->urng = UNIFORM->urng;
+   
+  STRETCH_DIRECTION = STRETCH_DIRECTION_X;
    
   /* read options */
   while ((c = getopt(argc, argv, "d:n:m:s:v:t:e:hxu")) != -1) {
@@ -303,22 +332,25 @@ int main(int argc, char *argv[])
       memcpy(xt, x, DIM*sizeof(double));
       xt[0]=x[0]+TRANSLATION*(1-R);  
       
-      /* obtain reverse-stretched point */
-      dot=_unur_vector_scalar_product(DIM, xt, stretch_direction);
-      for (i=0; i<DIM; i++)
-        xs[i]=xt[i]+(1./STRETCH-1.)*dot*stretch_direction[i];  
-      
       r = _unur_vector_norm(DIM, x);        
       sum_r += r;
       
-      /* check if current point is inside the interior translated (and streched) sphere */
-      //rt = _unur_vector_norm(DIM, xt);        
+      /* check if transformed current point is inside inner sphere */
+      /* obtain reverse-stretched point */
+      transform_point(1./STRETCH, xt, xs);
+//      debug_point(xt);
+//      debug_point(xs);
+//      printf("----------------------------------\n");
+      
       rt = _unur_vector_norm(DIM, xs);        
       if (rt<R) {
         inside++;
+      }
+      else {
 #if MATHEMATICA 
-      math2_point(x);
+      math2_point(xt);
 #endif
+      
       }
     } /* next sample */
     
@@ -343,10 +375,10 @@ int main(int argc, char *argv[])
 #endif
   
   /* output of results */   
-//  printf("dim=%2d mse=%e mse_r=%e bias=%e bias_r=%e exp_inside=%e exp_r=%e\n", 
-//  DIM, mse, mse_r, bias, bias_r, expected_inside, expected_r); 
-  printf("dim=%2d rmse/e=%e rmse_r/e=%e bias/e=%e bias_r/e=%e\n", 
-  DIM, sqrt(mse)/expected_inside, sqrt(mse_r)/expected_r, bias/expected_inside, bias_r/expected_r); 
+//  printf("dim=%2d rmse/e=%e rmse_r/e=%e bias/e=%e bias_r/e=%e\n", 
+//  DIM, sqrt(mse)/expected_inside, sqrt(mse_r)/expected_r, bias/expected_inside, bias_r/expected_r); 
+  printf("%2d % e % e\n", 
+  DIM, sqrt(mse)/expected_inside, bias/expected_inside); 
       
   unur_urng_free(UNIFORM->urng);
   unur_urng_free(NORMAL->urng);

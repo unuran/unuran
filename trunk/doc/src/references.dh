@@ -251,6 +251,13 @@ Pd.D. Thesis, 156 pp., Technical University Graz, Austria.
 @subheading Other references
 
 @table @t
+
+@anchor{bib:CP76}
+@item [CPa76]
+@sc{R. Cranley and T.N.L. Patterson} (1976).
+@i{Randomization of number theoretic methods for multiple integration},
+SIAM J. Num. Anal., Vol. 13, pp. 904-914.
+
 @anchor{bib:HJa61}
 @item [HJa61]
 @sc{R. Hooke and T.A. Jeeves} (1961).

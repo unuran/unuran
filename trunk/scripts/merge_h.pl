@@ -177,6 +177,13 @@ sub scan_file {
 	my $include_file = pop @tmp; 
 	print STDERR "$include_file  " if $DEBUG;
 
+	# we do not include header files out of the subtree ...
+	unless (defined( $header_files{$include_file} ) ) {
+	    print STDERR "file not found in subtree ... #include\n" if $DEBUG;
+	    print "\n$line\n\n";
+	    next;
+	}
+	    
 	# we include header files only once ...
 	if (defined( $header_included{$include_file} ) ) {
 	    print STDERR "already included ... skip\n" if $DEBUG;
@@ -185,13 +192,6 @@ sub scan_file {
 
 	$header_included{$include_file} .= 1;
 	
-	# we do not include header files out of the subtree ...
-	unless (defined( $header_files{$include_file} ) ) {
-	    print STDERR "file not found in subtree ... #include\n" if $DEBUG;
-	    print "\n$line\n\n";
-	    next;
-	}
-	    
 	# have found header file ...
 	print STDERR "to be inserted\n" if $DEBUG;
 	print "/*-----*/\n";

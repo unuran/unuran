@@ -11,7 +11,7 @@ libuniform_la_SOURCES = \
  mrg31k3p.c fish.c mstd.c \
  urng_fvoid.c urng_fvoid.h \
  urng_gsl.c urng_gsl.h \
- urng_gslqmc.c urng_gslqmc.h \
+ urng_gslqrng.c urng_gslqrng.h \
  urng_prng.c urng_prng.h \
  urng_randomshift.c urng_randomshift.h \
  urng_rngstreams.c urng_rngstreams.h

@@ -4,9 +4,15 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: unur_typedefs.h                                                   *
+ *   FILE: urng_gsl.h                                                        *
  *                                                                           *
- *   type UNUR_URNG for uniform random number generators                     *
+ *   PURPOSE:                                                                *
+ *     Function prototypes for using URNG of type GSL:                       *
+ *     uniform random number from GSL (GNU Scientific Library),              *
+ *     see http://www.gnu.org/software/gsl/.                                 *
+ *                                                                           *
+ *   USAGE:                                                                  *
+ *         only included in unuran.h                                         *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -33,48 +39,77 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef URNG_TYPEDEFS_H_SEEN
-#define URNG_TYPEDEFS_H_SEEN
+#ifndef URNG_GSL_H_SEEN
+#define URNG_GSL_H_SEEN
 /*---------------------------------------------------------------------------*/
-#if UNUR_URNG_TYPE == UNUR_URNG_GENERIC
+#if defined(UNURAN_HAS_GSL) && UNUR_URNG_TYPE == UNUR_URNG_GENERIC
 /*---------------------------------------------------------------------------*/
-
-typedef struct unur_urng_generic UNUR_URNG;
-
-/*---------------------------------------------------------------------------*/
-#elif UNUR_URNG_TYPE == UNUR_URNG_FVOID
-/*---------------------------------------------------------------------------*/
-
-typedef double (UNUR_URNG)(void);
-
-/*---------------------------------------------------------------------------*/
-#elif UNUR_URNG_TYPE == UNUR_URNG_PRNG
-/*---------------------------------------------------------------------------*/
-
-#include <prng.h>
-typedef struct prng UNUR_URNG;
-
-/*---------------------------------------------------------------------------*/
-#elif UNUR_URNG_TYPE == UNUR_URNG_RNGSTREAMS
-/*---------------------------------------------------------------------------*/
-
-#include <RngStreams.h>
-typedef struct RngStream_InfoState UNUR_URNG;
-
-/*---------------------------------------------------------------------------*/
-#elif UNUR_URNG_TYPE == UNUR_URNG_GSL
-/*---------------------------------------------------------------------------*/
-
 #include <gsl/gsl_rng.h>
-typedef gsl_rng UNUR_URNG;
-
-/*---------------------------------------------------------------------------*/
-#else
-/*---------------------------------------------------------------------------*/
-#error UNUR_URNG_TYPE not valid !!
-/*---------------------------------------------------------------------------*/
-#endif  /* UNUR_URNG_TYPE */
-/*---------------------------------------------------------------------------*/
-#endif  /* #ifndef URNG_TYPEDEFS_H_SEEN */
 /*---------------------------------------------------------------------------*/
 
+/* 
+   =NODE  URNG-GSL  Interface to GSL uniform random number generators
+
+   =UP URNG [20]
+
+   =DESCRIPTION
+      Interface to the uniform random number generators from the
+      GNU Scientific Library (GSL). Documentation and source code 
+      of this library is available from
+      @uref{http://www.gnu.org/software/gsl/}.
+
+   =HOWTOUSE
+      This library has to be installed before compiling UNURAN and
+      UNURAN_HAS_GSL has to be defined in @file{src/unuran_config.h}.
+      Do not forget to link your executables against @file{libgsl}.
+      
+      The following routines are supported for URNG objects of
+      type GSL:
+
+      @itemize @minus
+      @item unur_urng_sample()
+      @item unur_urng_sample_array()
+      @item unur_urng_seed() 
+      @item unur_urng_reset() 
+      @item unur_urng_free()
+      @end itemize
+
+   =END
+
+*/
+
+/*---------------------------------------------------------------------------*/
+
+/* =ROUTINES */
+
+/*---------------------------------------------------------------------------*/
+
+UNUR_URNG *unur_urng_gsl_new( const gsl_rng_type *urngtype );
+/*
+   Make object for URNGs from the @file{GSL} (GNU Scientific Library).
+   @var{urngtype} is the type of the chosen generator as described in the
+   GSL manual (see Section Random Number Generation). This library is
+   available from @uref{http://www.gnu.org/software/gsl/}.
+*/
+
+UNUR_URNG *unur_urng_gslptr_new( gsl_rng *urng );
+/*
+   Similar to unur_urng_gsl_new() but it uses a pointer to a
+   generator object as returned by @code{gsl_rng_alloc(rng_type)};
+   see @file{GSL} manual for details.
+
+   @emph{Notice}: There is a subtle but important difference between
+   these two calls. When a generator object is created by a 
+   unur_urng_gsl_new() call, then resetting of the generator works.
+   When a generator object is created by a unur_urng_gslptr_new()
+   call, then resetting only works after a
+   @code{unur_urng_seed(urng,myseed)} call. 
+*/
+
+/* =END */
+
+/*---------------------------------------------------------------------------*/
+#endif  /* defined(UNURAN_HAS_GSL) && UNUR_URNG_TYPE == UNUR_URNG_GENERIC    */
+/*---------------------------------------------------------------------------*/
+#endif  /* URNG_GSL_H_SEEN */
+/*---------------------------------------------------------------------------*/

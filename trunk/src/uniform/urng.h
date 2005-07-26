@@ -41,8 +41,8 @@
 #ifndef URNG_H_SEEN
 #define URNG_H_SEEN
 /*---------------------------------------------------------------------------*/
-
 #include <unuran_config.h>
+/*---------------------------------------------------------------------------*/
 
 /* 
    =NODE  URNG  Using uniform random number generators
@@ -560,121 +560,6 @@ int unur_urng_set_delete( UNUR_URNG *urng, void (*delete)(void *state) );
 
 */
 
-UNUR_URNG *unur_urng_fvoid_new( double (*random)(void), int (*reset)(void) );
-/*
-   Make a URNG object for a genertor that consists of a single
-   function call with a global state variable.
-
-   @emph{Notice:} If independent versions of the same URNG should be
-   used, copies of the subroutine with different names has to be
-   implement in the program code.
-
-   If there is no reset function use NULL for the second argument.
-   
-   UNURAN contains some build-in URNGs of this type in directory
-   @file{src/uniform/}.
-*/
-
-#ifdef UNURAN_HAS_PRNG
-
-UNUR_URNG *unur_urng_prng_new( const char *prngstr );
-/*
-   Make object for URNGs from Otmar Lendl's @file{prng} package. 
-   @var{prngstr} is a string that contains the necessary information
-   to create a uniform random number generator. For the format of this
-   string see the @file{prng} user manual.
-
-   The @file{prng} library provides a very flexible way to sample form
-   arbitrary URNGs by means of an object oriented programing
-   paradigma. Similarly to the UNURAN library independent generator
-   objects can be build and used. The library has been developed
-   and implemented by Otmar Lendl as member of the pLab group at the
-   university of Salzburg (Austria, EU). 
-
-   It is available via anonymous ftp from
-   @uref{http://statistik.wu-wien.ac.at/prng/}
-   or from the pLab site at
-   @uref{http://random.mat.sbg.ac.at/}.
-*/
-
-UNUR_URNG *unur_urng_prngptr_new( struct prng *urng );
-/*
-   Similar to unur_urng_prng_new() but it uses a pointer to a
-   generator object as returned by @code{prng_new(prngstr)};
-   see @file{prng} manual for details.
-*/
-
-#endif
-
-
-#ifdef UNURAN_HAS_RNGSTREAMS
-
-UNUR_URNG *unur_urng_rngstream_new( const char *urngstr );
-/*
-   Make object for URNGs from Pierre L'Ecuyer's @file{RngStream}
-   library. This library provides multiple independent streams of
-   pseudo-random numbers and is available from
-   @uref{http://www.iro.umontreal.ca/~lecuyer/myftp/streams00/c/}.
-   @var{urngstr} is an arbitrary string to label a stream. It need not
-   be unique.
-*/
-
-UNUR_URNG *unur_urng_rngstreamptr_new( RngStream rngstream );
-/*
-   Similar to unur_urng_rngstream_new() but it uses a pointer to a 
-   generator object as returned by @code{RngStream_CreateStream()}.
-*/
-
-#endif
-
-
-#ifdef UNURAN_HAS_GSL
-
-UNUR_URNG *unur_urng_gsl_new( const gsl_rng_type *urngtype );
-/*
-   Make object for URNGs from the @file{GSL} (GNU Scientific Library).
-   @var{urngtype} is the type of the chosen generator as described in the
-   GSL manual (see Section Random Number Generation). This library is
-   available from @uref{http://www.gnu.org/software/gsl/}.
-*/
-
-UNUR_URNG *unur_urng_gslptr_new( gsl_rng *urng );
-/*
-   Similar to unur_urng_gsl_new() but it uses a pointer to a
-   generator object as returned by @code{gsl_rng_alloc(rng_type)};
-   see @file{GSL} manual for details.
-
-   @emph{Notice}: There is a subtle but important difference between
-   these two calls. When a generator object is created by a 
-   unur_urng_gsl_new() call, then resetting of the generator works.
-   When a generator object is created by a unur_urng_gslptr_new()
-   call, then resetting only works after a
-   @code{unur_urng_seed(urng,myseed)} call. 
-*/
-
-UNUR_URNG *unur_urng_gslqrng_new( const gsl_qrng_type *qrngtype, unsigned int dim );
-/*
-   Make object for quasi-random point generators for dimension
-   @var{dim} from the @file{GSL} (GNU Scientific Library). 
-   @var{qrngtype} is the type of the chosen generator as described in
-   the GSL manual (see section Quasi-Random Sequences). 
-   This library is available from @uref{http://www.gnu.org/software/gsl/}.
-*/
-
-#endif
-
-UNUR_URNG *unur_urng_randomshift_new( UNUR_URNG *qrng, UNUR_URNG *srng, unsigned int dim );
-/* 
-   Make object for URNG with randomly shifted point sets.
-   @var{qrng} is a generated that generates point sets of dimension @var{dim}.
-   @var{srng} is a generated that generates random numbers or vectors.
-*/
-
-int unur_urng_randomshift_nextshift( UNUR_URNG *urng );
-/* 
-   Get the next (randomly chosen) vector for shifting the points set, and the 
-   underlying point generator @var{qrng} is reset.
-*/
 
 /*---------------------------------------------------------------------------*/
 #endif   /* #if UNUR_URNG_TYPE == UNUR_URNG_GENERIC */

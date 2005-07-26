@@ -34,14 +34,11 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-
 #include <unur_source.h>
 #include "urng.h"
-
+#include "urng_gsl.h"
 /*---------------------------------------------------------------------------*/
-#if UNUR_URNG_TYPE == UNUR_URNG_GENERIC
-/*---------------------------------------------------------------------------*/
-#ifdef UNURAN_HAS_GSL
+#if defined(UNURAN_HAS_GSL) && UNUR_URNG_TYPE == UNUR_URNG_GENERIC
 /*---------------------------------------------------------------------------*/
 #ifndef HAVE_LIBGSL
 # error
@@ -62,13 +59,15 @@ unur_urng_gslptr_new( gsl_rng *gsl )
      /*   gsl ... pointer to generator structure                             */
      /*----------------------------------------------------------------------*/
 {
+  UNUR_URNG *urng;
+
   /* check argument */
   if (gsl == NULL) {
     _unur_error("URNG",UNUR_ERR_NULL,"Cannot create GSL object");
     return NULL;
   }
 
-  UNUR_URNG *urng = unur_urng_new( (double(*)(void*)) gsl_rng_uniform_pos, gsl );
+  urng = unur_urng_new( (double(*)(void*)) gsl_rng_uniform_pos, gsl );
   unur_urng_set_delete(urng, (void(*)(void*)) gsl_rng_free);
   unur_urng_set_seed(urng, (void(*)(void*,unsigned long)) gsl_rng_set);
   return urng;
@@ -79,7 +78,7 @@ unur_urng_gslptr_new( gsl_rng *gsl )
 UNUR_URNG *
 unur_urng_gsl_new( const gsl_rng_type *urngtype )
      /*----------------------------------------------------------------------*/
-     /* get new URNG object of type PRNG.                                    */
+     /* get new URNG object of type GSL.                                     */
      /*                                                                      */
      /* parameters:                                                          */
      /*   urngtype ... type of generator                                     */
@@ -91,7 +90,5 @@ unur_urng_gsl_new( const gsl_rng_type *urngtype )
 } /* end of unur_urng_gsl_new() */
 
 /*---------------------------------------------------------------------------*/
-#endif   /* #ifdef UNURAN_HAS_GSL */
-/*---------------------------------------------------------------------------*/
-#endif   /* #if UNUR_URNG_TYPE == UNUR_URNG_GENERIC */
+#endif   /* defined(UNURAN_HAS_GSL) && UNUR_URNG_TYPE == UNUR_URNG_GENERIC   */
 /*---------------------------------------------------------------------------*/

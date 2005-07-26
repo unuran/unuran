@@ -9,11 +9,12 @@ libuniform_la_SOURCES = \
  urng_struct.h urng_source.h urng_typedefs.h \
  urng_default.c urng_set.c urng_API.c \
  mrg31k3p.c fish.c mstd.c \
- urng_fvoid.c \
- urng_gsl.c urng_gslqmc.c \
- urng_prng.c \
- urng_randomshift.c \
- urng_rngstreams.c
+ urng_fvoid.c urng_fvoid.h \
+ urng_gsl.c urng_gsl.h \
+ urng_gslqmc.c urng_gslqmc.h \
+ urng_prng.c urng_prng.h \
+ urng_randomshift.c urng_randomshift.h \
+ urng_rngstreams.c urng_rngstreams.h
 
 noinst_HEADERS = \
  urng.h \

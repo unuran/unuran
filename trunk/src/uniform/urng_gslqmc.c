@@ -6,7 +6,7 @@
  *                                                                           *
  *   FILE: urng_gslqmc.c                                                     *
  *                                                                           *
- *   routines to get new URNG object (of type GSL-PRNG) to use               *
+ *   routines to get new URNG object (of type GSL-QRNG) to use               *
  *   quasi-random sequences from the GSL (GNU Scientific Library),           *
  *   see http://www.gnu.org/software/gsl/.                                   *
  *                                                                           *
@@ -35,14 +35,11 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-
 #include <unur_source.h>
 #include "urng.h"
-
+#include "urng_gslqmc.h"
 /*---------------------------------------------------------------------------*/
-#if UNUR_URNG_TYPE == UNUR_URNG_GENERIC
-/*---------------------------------------------------------------------------*/
-#ifdef UNURAN_HAS_GSL
+#if defined(UNURAN_HAS_GSL) && UNUR_URNG_TYPE == UNUR_URNG_GENERIC
 /*---------------------------------------------------------------------------*/
 #ifndef HAVE_LIBGSL
 # error
@@ -270,7 +267,5 @@ unur_urng_gslqrng_new( const gsl_qrng_type *qrngtype, unsigned int dim )
 } /* end of unur_urng_gslqrng_new() */
 
 /*---------------------------------------------------------------------------*/
-#endif   /* #ifdef UNURAN_HAS_GSL */
-/*---------------------------------------------------------------------------*/
-#endif   /* #if UNUR_URNG_TYPE == UNUR_URNG_GENERIC */
+#endif   /* defined(UNURAN_HAS_GSL) && UNUR_URNG_TYPE == UNUR_URNG_GENERIC   */
 /*---------------------------------------------------------------------------*/

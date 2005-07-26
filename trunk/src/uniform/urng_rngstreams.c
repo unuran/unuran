@@ -4,11 +4,10 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: urng_prng.c                                                       *
+ *   FILE: urng_rngstreams.c                                                 *
  *                                                                           *
- *   routines to get new URNG object with sampling routine of type PRNG.     *
- *   (Lendl's prng package, see http://statistik.wu-wien.ac.at/prng/ or      *
- *   http://random.mat.sbg.ac.at/.                                           *
+ *   routines to get new URNG object with sampling routine of type           *
+ *   RNGSTREAMSPRNG (Pierre L'Ecuyer's RNGSTREAMS package).                  *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -35,14 +34,11 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-
 #include <unur_source.h>
 #include "urng.h"
-
+#include "urng_rngstreams.h"
 /*---------------------------------------------------------------------------*/
-#if UNUR_URNG_TYPE == UNUR_URNG_GENERIC
-/*---------------------------------------------------------------------------*/
-#ifdef UNURAN_HAS_RNGSTREAMS
+#if defined(UNURAN_HAS_RNGSTREAMS) && UNUR_URNG_TYPE == UNUR_URNG_GENERIC
 /*---------------------------------------------------------------------------*/
 #ifndef HAVE_LIBRNGSTREAMS
 # error
@@ -63,13 +59,15 @@ unur_urng_rngstreamptr_new( RngStream rngstream )
      /*   rngstream ... pointer to generator structure                       */
      /*----------------------------------------------------------------------*/
 {
+  UNUR_URNG *urng;
+
   /* check argument */
   if (rngstream == NULL) {
     _unur_error("URNG",UNUR_ERR_NULL,"Cannot create RNGSTREAM object");
     return NULL;
   }
 
-  UNUR_URNG *urng = unur_urng_new( (double(*)(void*)) RngStream_RandU01, rngstream );
+  urng = unur_urng_new( (double(*)(void*)) RngStream_RandU01, rngstream );
   unur_urng_set_reset    (urng, (void(*)(void*)) RngStream_ResetStartStream);
   unur_urng_set_delete   (urng, (void(*)(void*)) RngStream_DeleteStream);
   unur_urng_set_anti     (urng, (void(*)(void*,int)) RngStream_SetAntithetic);
@@ -97,7 +95,5 @@ unur_urng_rngstream_new( const char *urngstr )
 } /* end of unur_urng_prng_new() */
 
 /*---------------------------------------------------------------------------*/
-#endif   /* #ifdef UNURAN_HAS_RNGSTREAMS */
-/*---------------------------------------------------------------------------*/
-#endif   /* #if UNUR_URNG_TYPE == UNUR_URNG_GENERIC */
+#endif /* defined(UNURAN_HAS_RNGSTREAMS) && UNUR_URNG_TYPE == UNUR_URNG_GENERIC */
 /*---------------------------------------------------------------------------*/

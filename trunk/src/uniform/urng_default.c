@@ -38,6 +38,7 @@
 #include <unur_source.h>
 #include "unur_uniform.h"
 #include "urng.h"
+#include "urng_fvoid.h"
 
 /*---------------------------------------------------------------------------*/
 /* pointer to default uniform random number generator */

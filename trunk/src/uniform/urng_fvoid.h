@@ -4,11 +4,14 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: urng_prng.c                                                       *
+ *   FILE: urng_fvoid.h                                                      *
  *                                                                           *
- *   routines to get new URNG object with sampling routine of type PRNG.     *
- *   (Lendl's prng package, see http://statistik.wu-wien.ac.at/prng/ or      *
- *   http://random.mat.sbg.ac.at/.                                           *
+ *   PURPOSE:                                                                *
+ *     Function prototypes for using uniform of type FVOID                   *
+ *     (i.e. routine without an argment:   double uniform(void)              *
+ *                                                                           *
+ *   USAGE:                                                                  *
+ *         only included in unuran.h                                         *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -35,63 +38,73 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#include <unur_source.h>
-#include "urng.h"
-#include "urng_prng.h"
+#ifndef URNG_FVOID_H_SEEN
+#define URNG_FVOID_H_SEEN
 /*---------------------------------------------------------------------------*/
-#if defined(UNURAN_HAS_PRNG) && UNUR_URNG_TYPE == UNUR_URNG_GENERIC
-/*---------------------------------------------------------------------------*/
-#ifndef HAVE_LIBPRNG
-# error
-# error +-----------------------------------------------------+
-# error ! You have defined UNURAN_HAS_PRNG in unuran_config.h +
-# error ! but Otmar Lendl`s PRNG library is not installed.    +
-# error +-----------------------------------------------------+
-# error
-#endif
+#if UNUR_URNG_TYPE == UNUR_URNG_GENERIC
 /*---------------------------------------------------------------------------*/
 
-UNUR_URNG *
-unur_urng_prngptr_new( struct prng *prng )
-     /*----------------------------------------------------------------------*/
-     /* get new URNG object of type PRNG.                                    */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   prng ... pointer to generator structure                            */
-     /*----------------------------------------------------------------------*/
-{
-  UNUR_URNG *urng;
+/* 
+   =NODE  URNG-FVOID  Simple interface for uniform random number generators
 
-  if (prng==NULL) {
-    _unur_error("URNG",UNUR_ERR_NULL,"Cannot create PRNG object");
-    return NULL;
-  }
+   =UP URNG [10]
 
-  urng = unur_urng_new( (double(*)(void*)) prng->get_next, prng );
-  unur_urng_set_reset(urng, (void(*)(void*)) prng->reset);
-  unur_urng_set_delete(urng, (void(*)(void*)) prng->destroy);
-  return urng;
-} /* end of unur_urng_prngptr_new() */
+   =DESCRIPTION
+      Simple interface for URNGs of type @code{FVOID}, i.e.,
+      routines without an argment:  @code{double uniform(void)}.
 
-/*---------------------------------------------------------------------------*/
+      If independent versions of the same URNG should be used, a copy of
+      the subroutine has to be implement in the program code (with
+      different names, of course).
+      UNURAN contains some build-in URNGs of this type in directory
+      @file{src/uniform/}.
+      
+   =HOWTOUSE
+      Create an URNG object using unur_urng_fvoid_new(). 
+      By this call a pointer to the sampling routine and (optional) a
+      pointer to a reset routine are copied into the URNG object.
+      Other functions, like seeding the URNG, switching to antithetic
+      random number, or jumping to next substream, can be added to the
+      URNG object by the respective calls, e.g. by
+      unur_urng_set_seed().
 
-UNUR_URNG *
-unur_urng_prng_new( const char *prngstr )
-     /*----------------------------------------------------------------------*/
-     /* get new URNG object of type PRNG.                                    */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   prngstr ... string that describes generator                        */
-     /*----------------------------------------------------------------------*/
-{
-  struct prng *prng = prng_new(prngstr);
-  if (prng==NULL) {
-    _unur_error("URNG",UNUR_ERR_NULL,"Cannot create PRNG object for given string");
-    return NULL;
-  }
-  return unur_urng_prngptr_new (prng);
-} /* end of unur_urng_prng_new() */
+      The following routines are supported for URNG objects of
+      type FVOID:
+
+      @itemize @minus
+      @item unur_urng_sample()
+      @item unur_urng_sample_array()
+      @item unur_urng_seed()   [optional]
+      @item unur_urng_reset()   [optional]
+      @item unur_urng_free()
+      @end itemize
+
+   =END
+*/
 
 /*---------------------------------------------------------------------------*/
-#endif   /* defined(UNURAN_HAS_PRNG) && UNUR_URNG_TYPE == UNUR_URNG_GENERIC  */
+
+/* =ROUTINES */
+
+UNUR_URNG *unur_urng_fvoid_new( double (*random)(void), int (*reset)(void) );
+/*
+   Make a URNG object for a genertor that consists of a single
+   function call with a global state variable.
+
+   @emph{Notice:} If independent versions of the same URNG should be
+   used, copies of the subroutine with different names has to be
+   implement in the program code.
+
+   If there is no reset function use NULL for the second argument.
+   
+   UNURAN contains some build-in URNGs of this type in directory
+   @file{src/uniform/}.
+*/
+
+/* =END */
+
+/*---------------------------------------------------------------------------*/
+#endif  /* #if UNUR_URNG_TYPE == UNUR_URNG_GENERIC */
+/*---------------------------------------------------------------------------*/
+#endif  /* URNG_FVOID_H_SEEN */
 /*---------------------------------------------------------------------------*/

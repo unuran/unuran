@@ -26,6 +26,7 @@
 #define METHOD_COORDINATE 1
 #define METHOD_RANDOM_DIRECTION 2
 #define METHOD_REJECTION 3
+#define METHOD_FISH 4
 
 #define MATHEMATICA 0
 
@@ -40,10 +41,12 @@ int COORDINATE = 0; /* current coordinate for coordinate sampler */
 double TRANSLATION = 0.; 
 double VOLUME_RATIO = 1./10; 
 double STRETCH = 1.;
+long NFISH = 1;
 
 FILE *fmath; /* mathematica output */
 
 double *stretch_direction;
+double *aux_direction;
 
 #define STRETCH_DIRECTION_X 0
 #define STRETCH_DIRECTION_U 1
@@ -69,6 +72,36 @@ get_random_direction( double *direction)
 
   _unur_vector_normalize(DIM, direction);
 }
+
+/*---------------------------------------------------------------------------*/
+
+void
+get_fish_direction(long f, double *direction, double **xfish)
+     /*----------------------------------------------------------------------*/
+     /* generte a direction vector for the f'th fish (unit vector)           */
+     /*----------------------------------------------------------------------*/
+{
+  int d;
+  int i;
+  
+  for (d=0; d<DIM; d++) {
+    aux_direction[d]=0;
+    for (i=0; i<NFISH; i++) {
+      aux_direction[d] += (xfish[i][d]-xfish[f][d]);
+    }
+  }  
+  
+  _unur_vector_normalize(DIM, aux_direction);
+  
+  get_random_direction(direction);
+  for (d=0; d<DIM; d++) {
+    direction[d]=direction[d]+.1*aux_direction[d];
+  }
+
+  _unur_vector_normalize(DIM, direction);
+    
+}
+
 
 /*---------------------------------------------------------------------------*/
 
@@ -165,30 +198,68 @@ void math2_tail()
   fclose(fmath);
 }
 
+/*---------------------------------------------------------------------------*/
 
+int is_inside(double *x, double R, double translation) {
+      /* check if (transformed) current point is inside translated inner sphere */
+      /* obtain reverse-stretched point */
+  
+  double *xs; /* stretched point */
+  double *xt; /* translated point */
+  double rt;
+  int i;
+  
+  int inside_flag=0;
+  
+  xs = _unur_vector_new(DIM); /* streched point */
+  xt = _unur_vector_new(DIM); /* translated point */
+      
+  transform_point(1./STRETCH, x, xs);
+
+  /* obtain translated point */
+  memcpy(xt, xs, DIM*sizeof(double));
+      
+  if (STRETCH_DIRECTION == STRETCH_DIRECTION_X)
+     /* translating along the x-direction too */
+     xt[0]=xt[0]+TRANSLATION*(1-R);  
+  else {
+     /* translating along the (1,1,...,1) direction */
+     for (i=0; i<DIM; i++) {
+        xt[i]=xt[i]+TRANSLATION*(1-R)/sqrt(DIM*1.);     
+     }
+  } 
+                  
+  rt = _unur_vector_norm(DIM, xt);        
+  if (rt<R) {
+    inside_flag=1;
+  }
+  
+  free(xt); free(xs);
+  
+  return inside_flag;
+}
 
 /*---------------------------------------------------------------------------*/
 
 int main(int argc, char *argv[])
 {
   double *x; /* current point */
-  double *xt; /* translated point */
-  double *xs; /* stretched point */
+  double **xfish=NULL; /* current fish points */
+  
   double *sampling_direction; /* current direction */
   double lambda, lambda1, lambda2; /* direction parameters */
   double U; /* U(0,1) */
   double R; /* radius of inner sphere */
   long inside;
-  double diff, mse, r, rt, sum_r, diff_r, mse_r;
+  double diff, mse, bias;
+  //double sum_r, diff_r, mse_r, bias_r;
   double expected_inside, expected_r;
-  double bias, bias_r;
   
-  int i;
+  int i, f;
   long loop, sample;
     
   char c;
 
-//  UNIFORM = unur_str2gen("uniform(0,1) & urng=mt19937(1173)");
   UNIFORM = unur_str2gen("uniform(0,1) & urng=mt19937(13731)");
    
   /* we need an generator for standard normal distributons */
@@ -202,7 +273,7 @@ int main(int argc, char *argv[])
   STRETCH_DIRECTION = STRETCH_DIRECTION_X;
    
   /* read options */
-  while ((c = getopt(argc, argv, "d:n:m:s:v:t:e:hxu")) != -1) {
+  while ((c = getopt(argc, argv, "d:n:m:s:v:t:f:e:hxu")) != -1) {
     switch (c) {
     case 'm':     /* sampling method  */
       METHOD=atol(optarg);
@@ -225,6 +296,9 @@ int main(int argc, char *argv[])
     case 's':     /* stretch factor */
       STRETCH = atof(optarg);
       break;
+    case 'f':     /* number of fishes  */
+      NFISH=atol(optarg);
+      break;
     case 'x':     /* stretch direction X */
       STRETCH_DIRECTION = STRETCH_DIRECTION_X;
       break;
@@ -235,9 +309,10 @@ int main(int argc, char *argv[])
     case 'h':     /* help */
       printf("options\n" );
       printf(" -d dim           : dimension (%d) \n", DIM );
-      printf(" -m method        : 1=COORD, 2=Random Direction 3=Rejection (%d)\n", METHOD );
+      printf(" -m method        : 1=COORD, 2=Random Direction 3=Rejection 4=FISH (%d)\n", METHOD );
       printf(" -n samplesize    : number of samples (%ld) \n", SAMPLESIZE );
       printf(" -e experiments   : number of repetitions (%ld) \n", EXPERIMENTS );
+      printf(" -f fishes        : number of fishes (%ld) \n", NFISH );
       printf(" -v volume_ratio  : volume ratio (inner/outer) (%f) \n", VOLUME_RATIO );
       printf(" -t radius_factor : translation factor of inner sphere (0=no trans, 1=trans to edge) (%f) \n", TRANSLATION );
       printf(" -s stretching    : stretching factor (1=no stretch) (%f) \n", STRETCH );
@@ -254,10 +329,15 @@ int main(int argc, char *argv[])
   // unur_set_default_debug(UNUR_DEBUG_OFF);
    
   x = _unur_vector_new(DIM); /* current point at origin */
-  xt = _unur_vector_new(DIM); /* translated point */
-  xs = _unur_vector_new(DIM); /* streched point */
+  
+  xfish = malloc(NFISH*sizeof(long));
+  for (f=0; f<NFISH; f++) {
+    xfish[f] = _unur_vector_new(DIM); /* fish point */
+  }
+  
   sampling_direction  = _unur_vector_new(DIM); /* sampling direction from current point  */
   stretch_direction  = _unur_vector_new(DIM); /* stretch direction of spheere  */
+  aux_direction  = _unur_vector_new(DIM); /* auxiliary direction */
   
   if (STRETCH_DIRECTION == STRETCH_DIRECTION_X)
     stretch_direction[0] = 1.;
@@ -285,39 +365,62 @@ int main(int argc, char *argv[])
   math2_init();
 #endif
    
-  mse=0.; mse_r=0.;
-  bias=0.; bias_r=0;
+  mse=0.; bias=0.;
+//  mse_r=0.; bias_r=0;
   /* main loop */    
   for (loop=1; loop<=EXPERIMENTS; loop++) {
 
     /* setting initial point at the origin */
     for (i=0; i<DIM; i++) x[i] = 0.;
+    
+    /* setting initial fish points at the origin */
+    for (f=0; f<NFISH; f++) {
+      for (i=0; i<DIM; i++) {
+        xfish[f][i] = 0.;
+      }
+    }  
+    
     inside=0; 
-    sum_r=0.;
+//    sum_r=0.;
     
-    for (sample=1; sample<=SAMPLESIZE; sample++) {
-    
+    for (sample=1; sample<=SAMPLESIZE; /* sample is increased during the loop */) {
+      
+      /*---------------------------------------------------------------------------*/
+
       if (METHOD==METHOD_COORDINATE) {    
         for (i=0; i<DIM; i++) sampling_direction[i] = 0.;
 	sampling_direction[COORDINATE]=1;
     
         /* cyclical coordinate directions */
         if (++COORDINATE >= DIM) COORDINATE=0; 
+      
+        get_lambdas(x, sampling_direction, &lambda1, &lambda2);
+      
+        U = unur_sample_cont(UNIFORM);
+        lambda = lambda1 + U * (lambda2 - lambda1);
+          
+        /* set new point */
+        for (i=0; i<DIM; i++) x[i]=x[i]+lambda*sampling_direction[i];
+      
       }
+      
+      /*---------------------------------------------------------------------------*/
       
       if (METHOD==METHOD_RANDOM_DIRECTION) {
         get_random_direction(sampling_direction);
+
+        get_lambdas(x, sampling_direction, &lambda1, &lambda2);
+      
+        U = unur_sample_cont(UNIFORM);
+        lambda = lambda1 + U * (lambda2 - lambda1);
+          
+        /* set new point */
+        for (i=0; i<DIM; i++) x[i]=x[i]+lambda*sampling_direction[i];
+	      
       }
 
-      get_lambdas(x, sampling_direction, &lambda1, &lambda2);
+      /*---------------------------------------------------------------------------*/
       
-      U = unur_sample_cont(UNIFORM);
-      lambda = lambda1 + U * (lambda2 - lambda1);
-          
-      /* set new point */
-      for (i=0; i<DIM; i++) x[i]=x[i]+lambda*sampling_direction[i];
-
-#if 1      
       if (METHOD==METHOD_REJECTION) {
         do {
 	  for (i=0; i<DIM; i++) {
@@ -326,49 +429,72 @@ int main(int argc, char *argv[])
 	  }
 	} while (_unur_vector_norm(DIM, x)>=1);
       }
-#endif
 
-      /* obtain translated point */
-      memcpy(xt, x, DIM*sizeof(double));
-      xt[0]=x[0]+TRANSLATION*(1-R);  
+//      sum_r += _unur_vector_norm(DIM, x);        ;
       
-      r = _unur_vector_norm(DIM, x);        
-      sum_r += r;
+      /*---------------------------------------------------------------------------*/
       
-      /* check if transformed current point is inside inner sphere */
-      /* obtain reverse-stretched point */
-      transform_point(1./STRETCH, xt, xs);
-//      debug_point(xt);
-//      debug_point(xs);
-//      printf("----------------------------------\n");
-      
-      rt = _unur_vector_norm(DIM, xs);        
-      if (rt<R) {
+      if (METHOD==METHOD_COORDINATE || METHOD==METHOD_RANDOM_DIRECTION || METHOD==METHOD_REJECTION) {
+      if (is_inside(x, R, TRANSLATION)==1) 
         inside++;
-      }
-      else {
+      else { 
 #if MATHEMATICA 
-      math2_point(xt);
+  math2_point(x);
 #endif
-      
       }
+      sample++;
+      }
+      
+      /*---------------------------------------------------------------------------*/
+      
+      if (METHOD==METHOD_FISH) {
+        for (f=0; f<NFISH; f++) {
+          if (sample<=NFISH || NFISH==1) 	
+            get_random_direction(sampling_direction);
+          else 
+	    get_fish_direction(f, sampling_direction, xfish);
+
+          get_lambdas(xfish[f], sampling_direction, &lambda1, &lambda2);
+      
+          U = unur_sample_cont(UNIFORM);
+          lambda = lambda1 + U * (lambda2 - lambda1);
+          
+          /* set new point */
+          for (i=0; i<DIM; i++) xfish[f][i]=xfish[f][i]+lambda*sampling_direction[i];
+	      
+          if (is_inside(xfish[f], R, TRANSLATION)==1) 
+            inside++;
+#if MATHEMATICA 
+  math2_point(xfish[f]);
+#endif	    
+	  sample++;
+
+	  if (sample > SAMPLESIZE) break;	    
+	}
+	
+      }
+      
+      /*---------------------------------------------------------------------------*/
+      
+       
     } /* next sample */
     
+//    printf("sample=%ld inside=%ld\n", sample, inside);
     
     diff = (inside - expected_inside);
     mse += diff*diff; 
     bias += diff;
     
-    diff_r = (sum_r / SAMPLESIZE - expected_r) ;
-    mse_r += diff_r*diff_r;
-    bias_r += diff_r;
+//    diff_r = (sum_r / SAMPLESIZE - expected_r) ;
+//    mse_r += diff_r*diff_r;
+//    bias_r += diff_r;
   
   } /* next experiment */
   mse /= EXPERIMENTS;
-  mse_r /= EXPERIMENTS;
+//  mse_r /= EXPERIMENTS;
     
   bias /= EXPERIMENTS;
-  bias_r /= EXPERIMENTS;
+//  bias_r /= EXPERIMENTS;
   
 #if MATHEMATICA 
   math2_tail();
@@ -384,12 +510,14 @@ int main(int argc, char *argv[])
   unur_urng_free(NORMAL->urng);
   if (UNIFORM) unur_free(UNIFORM);
   
-  free(x); free(xt); free(xs);
+  free(x); 
+  for (i=0; i<NFISH; i++) free(xfish[i]);
+  free(xfish);
   free(sampling_direction);
+  free(aux_direction);
   free(stretch_direction);
       
   return 0;
-
 
 }
 

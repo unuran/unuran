@@ -42,6 +42,7 @@ double TRANSLATION = 0.;
 double VOLUME_RATIO = 1./10; 
 double STRETCH = 1.;
 long NFISH = 1;
+double AUX_MIXING = 0.;
 
 FILE *fmath; /* mathematica output */
 
@@ -95,7 +96,7 @@ get_fish_direction(long f, double *direction, double **xfish)
   
   get_random_direction(direction);
   for (d=0; d<DIM; d++) {
-    direction[d]=direction[d]+.1*aux_direction[d];
+    direction[d]=direction[d]+AUX_MIXING*aux_direction[d];
   }
 
   _unur_vector_normalize(DIM, direction);
@@ -273,7 +274,7 @@ int main(int argc, char *argv[])
   STRETCH_DIRECTION = STRETCH_DIRECTION_X;
    
   /* read options */
-  while ((c = getopt(argc, argv, "d:n:m:s:v:t:f:e:hxu")) != -1) {
+  while ((c = getopt(argc, argv, "d:a:n:m:s:v:t:f:e:hxu")) != -1) {
     switch (c) {
     case 'm':     /* sampling method  */
       METHOD=atol(optarg);
@@ -299,6 +300,9 @@ int main(int argc, char *argv[])
     case 'f':     /* number of fishes  */
       NFISH=atol(optarg);
       break;
+    case 'a':     /* aux mixing */
+      AUX_MIXING = atof(optarg);
+      break;
     case 'x':     /* stretch direction X */
       STRETCH_DIRECTION = STRETCH_DIRECTION_X;
       break;
@@ -313,6 +317,7 @@ int main(int argc, char *argv[])
       printf(" -n samplesize    : number of samples (%ld) \n", SAMPLESIZE );
       printf(" -e experiments   : number of repetitions (%ld) \n", EXPERIMENTS );
       printf(" -f fishes        : number of fishes (%ld) \n", NFISH );
+      printf(" -a aux_mixing    : direction mixing (0:random directions) (%f) \n", AUX_MIXING );
       printf(" -v volume_ratio  : volume ratio (inner/outer) (%f) \n", VOLUME_RATIO );
       printf(" -t radius_factor : translation factor of inner sphere (0=no trans, 1=trans to edge) (%f) \n", TRANSLATION );
       printf(" -s stretching    : stretching factor (1=no stretch) (%f) \n", STRETCH );

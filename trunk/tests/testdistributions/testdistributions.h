@@ -73,6 +73,12 @@ UNUR_DISTR *unur_distr_normal_wo_logpdf( const double *params, int n_params );
 UNUR_DISTR *unur_distr_powerexponential_wo_logpdf(const double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
+/* Specially shaped multivariate distributions                               */
+
+/* Multi-Cauchy distribution where RoU region with r=1 is a ball             */
+UNUR_DISTR *unur_distr_multicauchy_RoU_ball( int dim );
+
+/*---------------------------------------------------------------------------*/
 /* Multivariate distributions with correlation matrix of AR(1) process       */
 
 /*  Multinormal distribution - AR(1)                                         */

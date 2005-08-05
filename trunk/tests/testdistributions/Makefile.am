@@ -9,6 +9,7 @@ libtestdistributions_la_SOURCES = \
  c_wo_logpdf.c \
  c_sawtooth_discpdf.c \
  c_sawtooth_contpdf.c \
+ vc_cauchy_RoU_ball.c \
  vc_special_correlations_ar1.c \
  vc_special_correlations_constantrho.c
 

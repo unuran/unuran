@@ -305,7 +305,6 @@ sub scan_validate {
     my @distributions;
     my $chi2;
     my $chi2type;
-    my $timing;
     my $verifyhat;
 
     # scan subsection 
@@ -338,9 +337,6 @@ sub scan_validate {
 	      last VALIDATESUBS; }
 	  if ($title eq "verify hat") {
 	      $verifyhat = $body;
-	      last VALIDATESUBS; }
-	  if ($title eq "timing") {
-	      $timing = $body;
 	      last VALIDATESUBS; }
 	  else {
 	      die "Unknown subsection $title for [$section]";
@@ -461,113 +457,6 @@ sub scan_validate {
 		print "\t} while (0);\n\n";
 	    }	    
 	}
-    }
-
-    ## timing ##
-
-    my $timing_log_samplessize_default = 5;
-
-    if ($timing) {
-
-	# analyse timing tests
-	my @timingtests = split /\n/, $timing; 
-
-	print "\tprintf(\"\\n(timing) \"); fflush(stdout);\n";
-	print "\n/* timing tests: ".($#generators+1)*$n_distributions." */\n\n";
-	print "\tunur_set_default_debug(0u);\n";
-
-	print "{\n\tdouble time_setup, time_sample;\n";
-	print "\tdouble timing_result_setup[$n_generators];\n";
-	print "\tdouble timing_result_marginal[$n_generators];\n";
-	print "\tint i;\n\n";
-
-	print "\tfprintf( TESTLOG,\"\\nTimings (setup / marginal generation times in micro seconds):\\n\");\n";
-	print "\tfor (i=0; i<$n_generators; i++)\n";
-	print "\t\tfprintf( TESTLOG, \"  [    %1d    ]  \", i);\n";
-	print "\tfprintf( TESTLOG,\"\\n\");\n";
-	
-	foreach my $test (@timingtests) {
-	    die "invalide test line" unless ($test =~ /<(\d+)>/);
-	    my $n_distr = $1;
-
-	    print "/* distribution [$n_distr] */\n\n";
-	    print "\tfor (i=0; i<$n_generators; i++) timing_result_setup[i] = -1.;\n";
-	    print "\tfor (i=0; i<$n_generators; i++) timing_result_marginal[i] = -1.;\n";
-
-	    $test =~ s/^\s+//;
-	    $test =~ s/\s+$//;
-	    my @gentest = split /\s+/, $test;
-	    shift @gentest;
-	    die "invalid number of test indicators" unless ($#gentest == $#generators);
-	    my $n_gen = 0;
-	    foreach (@generators) {
-		# get entry for generator
-		my $genline = $_;
-		
-		# remove [..] from par[..]
-		# (it is just to number generators for convience)
-		$genline =~ s/par\[(\d+)\]/par/g;
-		
-		# insert distribution object
-		$genline =~ s/\@distr\@/distr\[$n_distr\]/g;
-		
-		# read what we have to test
-		my $todo = shift @gentest;
-
-		# nothing to do
-		if ( $todo eq '.' ) {
-		    ++$n_gen;
-		    next;
-		}
-
-		# get sample size
-		my $log_samplesize;
-		if ($todo eq '+') {
-		    $log_samplesize = $timing_log_samplessize_default;
-		}
-		elsif ($todo =~ /^[1-9]$/) {
-		    $log_samplesize = $todo;
-		}
-		else {
-		    die "wrong indicator for timing\n";
-		}
-
-		# split into lines again
-		my @lines = split /\n/, $genline;
-		
-		# print lines 
-		print "\tunur_errno = 0;\n";
-		
-		my $have_gen_lines = 0;
-		foreach my $l (@lines) {
-		    if ($l =~ /gen/ and !$have_gen_lines) {
-			$have_gen_lines = 1;
-			print "\tgen = unur_test_timing(par,$log_samplesize,&time_setup,&time_sample,0,TESTLOG);\n"; 
-			print "\tif (gen) {\n";
-		    }
-		    
-		    print "$l\n";
-		}
-		
-		if ($have_gen_lines) {
-		    print "\t;}\n";
-		}
-		else {
-		    print "\tgen = unur_test_timing(par,$log_samplesize,&time_setup,&time_sample,0,TESTLOG);\n"; 
-		}
-		print "\tif (gen) timing_result_setup[$n_gen] = time_setup;\n";
-		print "\tif (gen) timing_result_marginal[$n_gen] = time_sample;\n";
-		print "\tunur_free(gen);\n\n";
-
-		# increment counter for generator
-		++$n_gen;
-	    }
-	    # print result of timings 
-	    print "\tprint_timing_results( TESTLOG, 0, distr\[$n_distr\], timing_result_setup, timing_result_marginal, $n_generators );\n\n";
-	}
-	
-	print "}\n";
-
     }
 
     ## run in verify mode  ##

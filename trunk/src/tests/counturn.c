@@ -44,7 +44,7 @@
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
-static char test_name[] = "Counting";
+static char test_name[] = "CountURN";
 
 /*---------------------------------------------------------------------------*/
 /* common variables                                                          */
@@ -183,7 +183,7 @@ unur_test_count_urn( struct unur_gen *gen, int samplesize, int verbosity, FILE *
     break;
 
   default: /* unknown ! */
-    _unur_error("Tests",UNUR_ERR_GENERIC,"method unknown!");
+    _unur_error(test_name,UNUR_ERR_GENERIC,"method unknown!");
     return -1;
   }
 

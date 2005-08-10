@@ -8,6 +8,7 @@ noinst_LTLIBRARIES = libtests.la
 libtests_la_SOURCES = \
  chi2test.c \
  correlation.c\
+ countpdf.c \
  counturn.c \
  moments.c \
  printsample.c \

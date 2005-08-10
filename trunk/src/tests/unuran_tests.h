@@ -163,6 +163,37 @@ int unur_test_count_urn( UNUR_GEN *generator, int samplesize, int verbosity, FIL
 
    If @var{verbosity} is TRUE the result is written to the output
    stream @var{out}.
+
+   @emph{Notice:} This test uses global variables to store
+   counters. Thus it is not thread save.
+*/
+
+int unur_test_count_pdf( UNUR_GEN *generator, int samplesize, int verbosity, FILE *out );
+/* 
+   Count evaluations of PDF and similar functions. It returns the
+   total number of evaluations of all such functions required for a
+   sample of non-uniform random variates of size @var{samplesize}. 
+   If @var{verbosity} is TRUE then a more detailed report is printed
+   to the output stream @var{out}.
+   In case of an error @code{-1} is returned.
+   This test is run on a copy of the given generator object.
+
+   @emph{Notice:} The printed numbers of evaluation should be interpreted
+   with care. For example, methods either use the PDF or the logPDF;
+   if only the logPDF is given, but a method needs the PDF then both
+   the logPDF and the PDF (a wrapper around the logPDF) are called and
+   thus one call to the PDF is counted twice.
+
+   @emph{Notice:} This test uses global variables to store function
+   pointers and counters. Thus it is not thread save.
+*/
+
+int unur_test_par_count_pdf( UNUR_PAR *parameters, int samplesize, int verbosity, FILE *out );
+/* 
+   Same as unur_test_count_pdf() except that it is run on a parameter
+   object. Thus it also prints the number of function evaluations for
+   the setup. The temporary created generator object is destroyed
+   before the results are returned.
 */
 
 double unur_test_chi2( UNUR_GEN *generator, int intervals, int samplesize, int classmin,

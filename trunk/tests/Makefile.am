@@ -86,10 +86,6 @@ check_PROGRAMS = \
 ##   t_dstd
 ##   t_hinv
 
-## Disabled:
-##   t_timing_dsrou
-##   t_timing_ninv
-
 TESTS = $(check_PROGRAMS)
 
 # This is necessary until we fix the bug in method AROU
@@ -143,9 +139,7 @@ EXTRA_DIST = \
  t_utdr.conf \
  t_vempk.conf \
  t_vmt.conf \
- t_vnrou.conf \
- t_timing_dsrou.conf \
- t_timing_ninv.conf
+ t_vnrou.conf
 
 
 # Compare results of CDF, PDF, and dPDF of standard distributions

@@ -64,6 +64,7 @@ typedef double UNUR_FUNCT_DISCR(int x, const struct unur_distr *distr);
 
 typedef double UNUR_FUNCT_CVEC(const double *x, struct unur_distr *distr);
 typedef int UNUR_VFUNCT_CVEC(double *result, const double *x, struct unur_distr *distr);
+typedef double UNUR_FUNCTD_CVEC(const double *x, int coord, struct unur_distr *distr);
 
 /*---------------------------------------------------------------------------*/
 /* structures for auxiliary tools                                            */

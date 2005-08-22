@@ -7,6 +7,7 @@ noinst_LTLIBRARIES = libtestdistributions.la
 
 libtestdistributions_la_SOURCES = \
  c_wo_logpdf.c \
+ c_w_pdf_from_logpdf.c \
  c_sawtooth_discpdf.c \
  c_sawtooth_contpdf.c \
  vc_cauchy_RoU_ball.c \

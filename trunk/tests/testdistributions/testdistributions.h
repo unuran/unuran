@@ -73,6 +73,39 @@ UNUR_DISTR *unur_distr_normal_wo_logpdf( const double *params, int n_params );
 UNUR_DISTR *unur_distr_powerexponential_wo_logpdf(const double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
+/* Continuous univariate distributions where PDF is computed from logPDF     */
+
+/*  Beta distribution  [3; ch.25, p.210]                                     */
+UNUR_DISTR *unur_distr_beta_w_pdf_from_logpdf(const double *params, int n_params);
+
+/* Cauchy distribution  [2; ch.16, p.299]                                    */
+UNUR_DISTR *unur_distr_cauchy_w_pdf_from_logpdf(const double *params, int n_params);
+
+/*  Exponential distribution  [2; ch.19, p.494]                              */
+UNUR_DISTR *unur_distr_exponential_w_pdf_from_logpdf(const double *params, int n_params);
+
+/* Gamma distribution  [2; ch.17, p.337]                                     */
+UNUR_DISTR *unur_distr_gamma_w_pdf_from_logpdf(const double *params, int n_params);
+
+/* Normal distribution  [2; ch.13, p.80]                                     */
+UNUR_DISTR *unur_distr_normal_w_pdf_from_logpdf(const double *params, int n_params );
+
+/*  Power-exponential (Subbotin) distribution  [3; ch.24, p.195]             */
+UNUR_DISTR *unur_distr_powerexponential_w_pdf_from_logpdf(const double *params, int n_params);
+
+/*---------------------------------------------------------------------------*/
+/* Continuous multivariate distributions without logPDF                      */
+
+/* Multinormal distribution  [5; ch.45, p.105]                               */
+UNUR_DISTR *unur_distr_multinormal_wo_logpdf(int dim, const double *mean, const double *covar);
+
+/*---------------------------------------------------------------------------*/
+/* Continuous multivariate distributions where PDF is computed from logPDF   */
+
+/* Multinormal distribution  [5; ch.45, p.105]                               */
+UNUR_DISTR *unur_distr_multinormal_w_pdf_from_logpdf(int dim, const double *mean, const double *covar);
+
+/*---------------------------------------------------------------------------*/
 /* Specially shaped multivariate distributions                               */
 
 /* Multi-Cauchy distribution where RoU region with r=1 is a ball             */

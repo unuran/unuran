@@ -218,10 +218,10 @@ _unur_dlogpdf_gamma( double x, const UNUR_DISTR *distr )
   /* standard form */
 
   if (alpha == 1. && x >= 0.)
-    return -1.;
+    return -1./beta;
 
   if (x > 0.)
-    return ( (alpha-1.)/x - 1 );
+    return ((alpha-1.)/x - 1)/beta;
 
   if (x == 0.)
     return (alpha>1. ? INFINITY : -INFINITY);

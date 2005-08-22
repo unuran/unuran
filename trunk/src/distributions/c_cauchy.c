@@ -112,7 +112,7 @@ _unur_logpdf_cauchy(double x, const UNUR_DISTR *distr)
 
   /* standard form */
 
-  return log(NORMCONSTANT) - log1p(x*x);
+  return (-log1p(x*x)-log(NORMCONSTANT)); 
 
 } /* end of _unur_logpdf_cauchy() */
 

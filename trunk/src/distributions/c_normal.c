@@ -169,14 +169,13 @@ _unur_dlogpdf_normal( double x, const UNUR_DISTR *distr )
 {
   register double *params = DISTR.params;
 
-  if (DISTR.n_params > 0) {
-    /* standardize */
-    x = (x - mu) / sigma;
-  }
-
-  /* standard form */
-
-  return ( -2*x / sigma );
+  if (DISTR.n_params > 0)
+    /* non-standard form */
+    return (mu - x)/(sigma*sigma);
+  
+  else
+    /* standard form */
+    return (-x);
 
 } /* end of _unur_dlogpdf_normal() */
 

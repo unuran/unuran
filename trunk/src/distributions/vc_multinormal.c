@@ -91,9 +91,11 @@ static const char distr_name[] = "multinormal";
 /*---------------------------------------------------------------------------*/
 /* function prototypes                                                       */
 
-    static double _unur_pdf_multinormal( const double *x, UNUR_DISTR *distr );
-    static double _unur_logpdf_multinormal( const double *x, UNUR_DISTR *distr );
-    static int _unur_dlogpdf_multinormal( double *result, const double *x, UNUR_DISTR *distr );
+static double _unur_pdf_multinormal( const double *x, UNUR_DISTR *distr );
+static double _unur_logpdf_multinormal( const double *x, UNUR_DISTR *distr );
+static int _unur_dlogpdf_multinormal( double *result, const double *x, UNUR_DISTR *distr );
+static double _unur_pdlogpdf_multinormal( const double *x, int coord, UNUR_DISTR *distr );
+
 /** TODO:
     static int _unur_upd_mode_multinormal( UNUR_DISTR *distr );
     static int _unur_upd_area_multinormal( UNUR_DISTR *distr );
@@ -185,6 +187,40 @@ _unur_dlogpdf_multinormal( double *result, const double *x, UNUR_DISTR *distr )
 } /* end of _unur_dlogpdf_multinormal() */
 
 /*---------------------------------------------------------------------------*/
+
+double
+_unur_pdlogpdf_multinormal( const double *x, int coord, UNUR_DISTR *distr )
+{
+#define idx(a,b) ((a)*dim+(b))
+
+  int j;
+  int dim = distr->dim;
+  double *mean = DISTR.mean;
+  const double *covar_inv;
+  double result;
+    
+  /* check arguments */
+  if (coord < 0 || coord >= dim) {
+    _unur_warning(distr->name,UNUR_ERR_DISTR_DOMAIN,"invalid coordinate");
+    return INFINITY;
+  }
+
+  /* get inverse of covariance matrix */
+  covar_inv = unur_distr_cvec_get_covar_inv(distr);
+  if (covar_inv==NULL) 
+    /* inverse of covariance matrix not available */
+    return INFINITY;
+
+  result = 0.;
+  for (j=0; j<dim; j++) 
+    result += -0.5 * (x[j]-mean[coord]) * (covar_inv[idx(coord,j)]+covar_inv[idx(j,coord)]);
+  
+  return result;
+
+#undef idx
+} /* end of _unur_pdlogpdf_multinormal() */
+
+/*---------------------------------------------------------------------------*/
 #if 0
 /*---------------------------------------------------------------------------*/
 
@@ -267,10 +303,12 @@ unur_distr_multinormal( int dim, const double *mean, const double *covar )
   }
 
   /* functions */
-  DISTR.pdf     = _unur_pdf_multinormal;       /* pointer to PDF */
-  DISTR.logpdf  = _unur_logpdf_multinormal;    /* pointer to logPDF */
-  DISTR.dpdf    = _unur_distr_cvec_eval_dpdf_from_dlogpdf;  /* pointer to derivative of PDF */
-  DISTR.dlogpdf = _unur_dlogpdf_multinormal;    /* pointer to derivative of logPDF */
+  DISTR.pdf      = _unur_pdf_multinormal;       /* pointer to PDF */
+  DISTR.logpdf   = _unur_logpdf_multinormal;    /* pointer to logPDF */
+  DISTR.dpdf     = _unur_distr_cvec_eval_dpdf_from_dlogpdf;  /* pointer to gradient of PDF */
+  DISTR.dlogpdf  = _unur_dlogpdf_multinormal;    /* pointer to gradient of logPDF */
+  DISTR.pdpdf    = _unur_distr_cvec_eval_pdpdf_from_pdlogpdf;  /* pointer to part. deriv. of PDF */
+  DISTR.pdlogpdf = _unur_pdlogpdf_multinormal;  /* pointer to partial derivative of logPDF */
 
   /* set standardized marginal distributions */
   stdmarginal = unur_distr_normal(NULL,0);

@@ -89,9 +89,10 @@ static const char distr_name[] = "multicauchy";
 /*---------------------------------------------------------------------------*/
 /* function prototypes                                                       */
 
-    static double _unur_pdf_multicauchy( const double *x, UNUR_DISTR *distr );
-    static double _unur_logpdf_multicauchy( const double *x, UNUR_DISTR *distr );
-    static int _unur_dlogpdf_multicauchy( double *result, const double *x, UNUR_DISTR *distr );
+static double _unur_pdf_multicauchy( const double *x, UNUR_DISTR *distr );
+static double _unur_logpdf_multicauchy( const double *x, UNUR_DISTR *distr );
+static int _unur_dlogpdf_multicauchy( double *result, const double *x, UNUR_DISTR *distr );
+static double _unur_pdlogpdf_multicauchy( const double *x, int coord, UNUR_DISTR *distr );
 
 /*---------------------------------------------------------------------------*/
 
@@ -196,6 +197,55 @@ _unur_dlogpdf_multicauchy( double *result, const double *x, UNUR_DISTR *distr )
 
 /*---------------------------------------------------------------------------*/
 
+double
+_unur_pdlogpdf_multicauchy( const double *x, int coord, UNUR_DISTR *distr )
+{
+#define idx(a,b) ((a)*dim+(b))
+
+  int i,j;
+  double xx, cx;
+  const double *covar_inv;
+  double result;
+
+  int dim = distr->dim;
+  double *mean = DISTR.mean;
+
+  /* check arguments */
+  if (coord < 0 || coord >= dim) {
+    _unur_warning(distr->name,UNUR_ERR_DISTR_DOMAIN,"invalid coordinate");
+    return INFINITY;
+  }
+
+  /* get inverse of covariance matrix */
+  covar_inv = unur_distr_cvec_get_covar_inv(distr);
+  if (covar_inv==NULL) 
+    /* inverse of covariance matrix not available */
+    return INFINITY;
+
+  /* calculating (x-mean)' Sigma^-1 (x-mean) */  
+  xx=0.; 
+  for (i=0; i<dim; i++) {
+    cx=0.; 
+    /* multiplication of inverse covariance matrix and (x-mean) */
+    for (j=0; j<dim; j++) {
+      cx += covar_inv[idx(i,j)] * (x[j]-mean[j]);
+    }
+    xx += (x[i]-mean[i])*cx;
+  }
+  
+  /* calculation of the dlogpdf components */
+  result = 0.;
+  for (j=0; j<dim; j++) 
+    result -= (x[j]-mean[j]) * (covar_inv[idx(coord,j)]+covar_inv[idx(j,coord)]);
+  result *= .5*(dim+1)/(1+xx);
+  
+  return result;
+
+#undef idx
+} /* end of _unur_pdlogpdf_multicauchy() */
+
+/*---------------------------------------------------------------------------*/
+
 /*****************************************************************************/
 /**                                                                         **/
 /**  Make distribution object                                               **/
@@ -253,10 +303,12 @@ unur_distr_multicauchy( int dim, const double *mean, const double *covar )
   }
 
   /* functions */
-  DISTR.pdf     = _unur_pdf_multicauchy;       /* pointer to PDF */
-  DISTR.logpdf  = _unur_logpdf_multicauchy;    /* pointer to logPDF */
-  DISTR.dpdf    = _unur_distr_cvec_eval_dpdf_from_dlogpdf;  /* pointer to derivative of PDF */
-  DISTR.dlogpdf = _unur_dlogpdf_multicauchy;    /* pointer to derivative of logPDF */
+  DISTR.pdf      = _unur_pdf_multicauchy;       /* pointer to PDF */
+  DISTR.logpdf   = _unur_logpdf_multicauchy;    /* pointer to logPDF */
+  DISTR.dpdf     = _unur_distr_cvec_eval_dpdf_from_dlogpdf;  /* pointer to gradient of PDF */
+  DISTR.dlogpdf  = _unur_dlogpdf_multicauchy;    /* pointer to gradient of logPDF */
+  DISTR.pdpdf    = _unur_distr_cvec_eval_pdpdf_from_pdlogpdf;  /* pointer to part. deriv. of PDF */
+  DISTR.pdlogpdf = _unur_pdlogpdf_multicauchy;  /* pointer to partial derivative of logPDF */
 
   /* set standardized marginal distributions */
   stdmarginal = unur_distr_cauchy(NULL,0);

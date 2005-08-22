@@ -90,16 +90,22 @@
 #define _unur_discr_PMF(x,distr)    ((*((distr)->data.discr.pmf))((x),(distr)))
 #define _unur_discr_CDF(x,distr)    ((*((distr)->data.discr.cdf))((x),(distr)))
 
-#define _unur_cvec_PDF(x,distr)       ((*((distr)->data.cvec.pdf)) ((x),(distr)))
-#define _unur_cvec_dPDF(r,x,distr)    ((*((distr)->data.cvec.dpdf)) ((r),(x),(distr)))
-#define _unur_cvec_logPDF(x,distr)    ((*((distr)->data.cvec.logpdf)) ((x),(distr)))
-#define _unur_cvec_dlogPDF(r,x,distr) ((*((distr)->data.cvec.dlogpdf)) ((r),(x),(distr)))
+#define _unur_cvec_PDF(x,distr)        ((*((distr)->data.cvec.pdf)) ((x),(distr)))
+#define _unur_cvec_dPDF(r,x,distr)     ((*((distr)->data.cvec.dpdf)) ((r),(x),(distr)))
+#define _unur_cvec_pdPDF(x,c,distr)    ((*((distr)->data.cvec.pdpdf)) ((x),(c),(distr)))
+#define _unur_cvec_logPDF(x,distr)     ((*((distr)->data.cvec.logpdf)) ((x),(distr)))
+#define _unur_cvec_dlogPDF(r,x,distr)  ((*((distr)->data.cvec.dlogpdf)) ((r),(x),(distr)))
+#define _unur_cvec_pdlogPDF(x,c,distr) ((*((distr)->data.cvec.pdlogpdf)) ((x),(c),(distr)))
 
 /*---------------------------------------------------------------------------*/
 /* wrapper functions for PDF when only logPDF is given                       */
 
+double _unur_distr_cont_eval_pdf_from_logpdf( double x, const struct unur_distr *distr );
+double _unur_distr_cont_eval_dpdf_from_dlogpdf( double x, const struct unur_distr *distr );
+
 double _unur_distr_cvec_eval_pdf_from_logpdf( const double *x, struct unur_distr *distr );
 int _unur_distr_cvec_eval_dpdf_from_dlogpdf( double *result, const double *x, struct unur_distr *distr );
+double _unur_distr_cvec_eval_pdpdf_from_pdlogpdf( const double *x, int coord, struct unur_distr *distr );
 
 /*---------------------------------------------------------------------------*/
 /* make clone of distribution objects                                        */

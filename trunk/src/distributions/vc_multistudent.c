@@ -85,9 +85,10 @@ static const char distr_name[] = "multistudent";
 /*---------------------------------------------------------------------------*/
 /* function prototypes                                                       */
 
-    static double _unur_pdf_multistudent( const double *x, UNUR_DISTR *distr );
-    static double _unur_logpdf_multistudent( const double *x, UNUR_DISTR *distr );
-    static int _unur_dlogpdf_multistudent( double *result, const double *x, UNUR_DISTR *distr );
+static double _unur_pdf_multistudent( const double *x, UNUR_DISTR *distr );
+static double _unur_logpdf_multistudent( const double *x, UNUR_DISTR *distr );
+static int _unur_dlogpdf_multistudent( double *result, const double *x, UNUR_DISTR *distr );
+static double _unur_pdlogpdf_multistudent( const double *x, int coord, UNUR_DISTR *distr );
 
 /*---------------------------------------------------------------------------*/
 
@@ -192,6 +193,53 @@ _unur_dlogpdf_multistudent( double *result, const double *x, UNUR_DISTR *distr )
 
 /*---------------------------------------------------------------------------*/
 
+double
+_unur_pdlogpdf_multistudent( const double *x, int coord, UNUR_DISTR *distr )
+{
+#define idx(a,b) ((a)*dim+(b))
+
+  int i,j;
+  double xx, cx;
+  const double *covar_inv;
+  double result;
+
+  int dim = distr->dim;
+  double *mean = DISTR.mean;
+
+  /* check arguments */
+  if (coord < 0 || coord >= dim) {
+    _unur_warning(distr->name,UNUR_ERR_DISTR_DOMAIN,"invalid coordinate");
+    return INFINITY;
+  }
+
+  /* get inverse of covariance matrix */
+  covar_inv = unur_distr_cvec_get_covar_inv(distr);
+  if (covar_inv==NULL) 
+    /* inverse of covariance matrix not available */
+    return INFINITY;
+
+  /* calculating (x-mean)' Sigma^-1 (x-mean) */  
+  xx=0.; 
+  for (i=0; i<dim; i++) {
+    cx=0.; 
+    /* multiplication of inverse covariance matrix and (x-mean) */
+    for (j=0; j<dim; j++) {
+      cx += covar_inv[idx(i,j)] * (x[j]-mean[j]);
+    }
+    xx += (x[i]-mean[i])*cx;
+  }    
+    
+  /* calculation of pdlogpdf of given component */
+  result = 0.;
+  for (j=0; j<dim; j++) 
+    result -= (x[j]-mean[j]) * (covar_inv[idx(coord,j)]+covar_inv[idx(j,coord)]);
+  result *= .5*(dim+DISTR.nu)/(DISTR.nu+xx);
+  
+  return result;
+
+#undef idx
+} /* end of _unur_pdlogpdf_multistudent() */
+
 /*---------------------------------------------------------------------------*/
 
 int
@@ -230,7 +278,7 @@ _unur_set_params_multistudent( UNUR_DISTR *distr, const double *params, int n_pa
 /*---------------------------------------------------------------------------*/
 
 struct unur_distr *
-unur_distr_multistudent( int dim, const double df, const double *mean, const double *covar )
+unur_distr_multistudent( int dim, double df, const double *mean, const double *covar )
 /*
    @code{UNUR_DISTR *unur_distr_multistudent(int dim, const double nu, const double *mean, const double *covar)}
    creates a distribution object for the multivariate Student t-distribution with
@@ -252,7 +300,6 @@ unur_distr_multistudent( int dim, const double df, const double *mean, const dou
   struct unur_distr *distr;
   struct unur_distr *stdmarginal;
   double det_covar; /* determinant of covariance matrix */
-  double par;
   
   /* get new (empty) distribution object */
   distr = unur_distr_cvec_new(dim);
@@ -282,18 +329,18 @@ unur_distr_multistudent( int dim, const double df, const double *mean, const dou
   /* functions */
   DISTR.pdf     = _unur_pdf_multistudent;       /* pointer to PDF */
   DISTR.logpdf  = _unur_logpdf_multistudent;    /* pointer to logPDF */
-  DISTR.dpdf    = _unur_distr_cvec_eval_dpdf_from_dlogpdf;  /* pointer to derivative of PDF */
-  DISTR.dlogpdf = _unur_dlogpdf_multistudent;    /* pointer to derivative of logPDF */
+  DISTR.dpdf    = _unur_distr_cvec_eval_dpdf_from_dlogpdf;  /* pointer to gradient of PDF */
+  DISTR.dlogpdf = _unur_dlogpdf_multistudent;    /* pointer to gradient of logPDF */
+  DISTR.pdpdf    = _unur_distr_cvec_eval_pdpdf_from_pdlogpdf;  /* pointer to part. deriv. of PDF */
+  DISTR.pdlogpdf = _unur_pdlogpdf_multistudent;  /* pointer to partial derivative of logPDF */
 
-  par = df; /* degrees of freedom */
-  
   /* set standardized marginal distributions */
-  stdmarginal = unur_distr_student(&par,1);
+  stdmarginal = unur_distr_student(&df,1);
   unur_distr_cvec_set_stdmarginals(distr,stdmarginal);
   unur_distr_free(stdmarginal);
 
   /* set parameters for distribution */
-  if (_unur_set_params_multistudent(distr, &par, 1)!=UNUR_SUCCESS) {
+  if (_unur_set_params_multistudent(distr, &df, 1)!=UNUR_SUCCESS) {
     free(distr);
     return NULL;
   }

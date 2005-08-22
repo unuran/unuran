@@ -173,6 +173,23 @@ int unur_distr_cvec_set_dpdf( UNUR_DISTR *distribution, UNUR_VFUNCT_CVEC *dpdf )
    A new distribution object has to be used instead.
 */
 
+int unur_distr_cvec_set_pdpdf( UNUR_DISTR *distribution, UNUR_FUNCTD_CVEC *pdpdf );
+/* 
+   Set pointer to partial derivatives of the PDF. The type of this function must be
+   @code{double funct(const double *x, int coord, const UNUR_DISTR *distr)},
+   where @var{x} must be a pointer to a double array of appropriate
+   size (i.e. of the same size as given to the unur_distr_cvec_new()
+   call). @var{coord} is the coordinate for which the partial dervative should be
+   computed.
+
+   Notice that @var{coord} must be an integer from @{0,@dots{},dim-1@}. 
+   
+   It is not possible to change the partial derivative of the PDF. Once the pdPDF
+   is set it cannot be overwritten. This also holds when the partial derivative 
+   of the logPDF is given.
+   A new distribution object has to be used instead.
+*/
+
 UNUR_FUNCT_CVEC *unur_distr_cvec_get_pdf( const UNUR_DISTR *distribution );
 /* 
    Get the pointer to the PDF of the @var{distribution}. The
@@ -191,10 +208,19 @@ UNUR_VFUNCT_CVEC *unur_distr_cvec_get_dpdf( const UNUR_DISTR *distribution );
    @var{distribution}, the NULL pointer is returned.
 */
 
+UNUR_FUNCTD_CVEC *unur_distr_cvec_get_pdpdf( const UNUR_DISTR *distribution );
+/* 
+   Get the pointer to the partial derivative of the PDF of the @var{distribution}.
+   The pointer is of type 
+   @code{double funct(const double *x, int coord, const UNUR_DISTR *distr)}.
+   If the corresponding function is not available for the
+   @var{distribution}, the NULL pointer is returned.
+*/
+
 double unur_distr_cvec_eval_pdf( const double *x, UNUR_DISTR *distribution );
 /* 
    Evaluate the PDF of the @var{distribution} at @var{x}.
-   @var{x} must be a pointers to a double arrays of appropriate size
+   @var{x} must be a pointer to a double array of appropriate size
    (i.e. of the same size as given to the unur_distr_cvec_new() call)
    that contains the vector for which the function has to be evaluated.
 
@@ -219,10 +245,29 @@ int unur_distr_cvec_eval_dpdf( double *result, const double *x, UNUR_DISTR *dist
    is set to @code{UNUR_ERR_DISTR_DATA} (@var{result} is left unmodified).
 */
 
+double unur_distr_cvec_eval_pdpdf( const double *x, int coord, UNUR_DISTR *distribution );
+/* 
+   Evaluate the partial derivative of the PDF of the @var{distribution} 
+   at @var{x} for the coordinate @var{coord}.
+   @var{x} must be a pointer to a double array of appropriate size
+   (i.e. of the same size as given to the unur_distr_cvec_new() call)
+   that contains the vector for which the function has to be evaluated.
+
+   Notice that @var{coord} must be an integer from @{0,@dots{},dim-1@}. 
+
+   Notice that @var{distribution} must not be the NULL pointer.
+   If the corresponding function is not available for the
+   @var{distribution}, @code{UNUR_INFINITY} is returned and
+   @code{unur_errno} is set to @code{UNUR_ERR_DISTR_DATA}.
+*/
+
 int unur_distr_cvec_set_logpdf( UNUR_DISTR *distribution, UNUR_FUNCT_CVEC *logpdf );
 /* */
 
 int unur_distr_cvec_set_dlogpdf( UNUR_DISTR *distribution, UNUR_VFUNCT_CVEC *dlogpdf );
+/* */
+
+int unur_distr_cvec_set_pdlogpdf( UNUR_DISTR *distribution, UNUR_FUNCTD_CVEC *pdlogpdf );
 /* */
 
 UNUR_FUNCT_CVEC *unur_distr_cvec_get_logpdf( const UNUR_DISTR *distribution );
@@ -231,10 +276,16 @@ UNUR_FUNCT_CVEC *unur_distr_cvec_get_logpdf( const UNUR_DISTR *distribution );
 UNUR_VFUNCT_CVEC *unur_distr_cvec_get_dlogpdf( const UNUR_DISTR *distribution );
 /* */
 
+UNUR_FUNCTD_CVEC *unur_distr_cvec_get_pdlogpdf( const UNUR_DISTR *distribution );
+/* */
+
 double unur_distr_cvec_eval_logpdf( const double *x, UNUR_DISTR *distribution );
 /* */
 
 int unur_distr_cvec_eval_dlogpdf( double *result, const double *x, UNUR_DISTR *distribution );
+/* */
+
+double unur_distr_cvec_eval_pdlogpdf( const double *x, int coord, UNUR_DISTR *distribution );
 /* 
    Analogous calls for the logarithm of the density function.
 */

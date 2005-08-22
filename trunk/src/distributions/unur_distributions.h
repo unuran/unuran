@@ -480,7 +480,7 @@ UNUR_DISTR *unur_distr_multicauchy(int dim, const double *mean, const double *co
               [2]   : Sigma : Symm, Pos. def. : I : shape     :
    =EON
 */
-UNUR_DISTR *unur_distr_multistudent(int dim, const double nu, const double *mean, const double *covar);
+UNUR_DISTR *unur_distr_multistudent(int dim, double nu, const double *mean, const double *covar);
 
 
 /*---------------------------------------------------------------------------*/

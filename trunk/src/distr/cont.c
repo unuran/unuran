@@ -67,12 +67,6 @@ static double _unur_distr_cont_eval_dlogpdf_tree( double x, const struct unur_di
 /* evaluate function tree for (derivative of) (log) PDF.                     */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_distr_cont_eval_pdf_from_logpdf( double x, const struct unur_distr *distr );
-static double _unur_distr_cont_eval_dpdf_from_dlogpdf( double x, const struct unur_distr *distr );
-/*---------------------------------------------------------------------------*/
-/* wrapper functions for PDF when only logPDF is given                       */
-/*---------------------------------------------------------------------------*/
-
 static double _unur_distr_cont_eval_cdf_tree( double x, const struct unur_distr *distr );
 /*---------------------------------------------------------------------------*/
 /* evaluate function tree for CDF.                                           */
@@ -1475,6 +1469,7 @@ unur_distr_cont_set_pdfparams_vec( struct unur_distr *distr, int par, const doub
   }
   else {
     if (DISTR.param_vecs[par]) free(DISTR.param_vecs[par]);
+    DISTR.param_vecs[par] = NULL;
     DISTR.n_param_vec[par] = 0;
   }
 

@@ -219,7 +219,7 @@ unur_distr_condi_set_condition( struct unur_distr *condi, const double *pos, con
   }
 
   if (unur_distr_cont_set_pdfparams_vec( condi, iDIRECTION, dir, dim ) != UNUR_SUCCESS ) {
-    return UNUR_ERR_DISTR_INVALID; 
+    return UNUR_ERR_DISTR_INVALID;
   }
 
   /* changelog */
@@ -420,11 +420,11 @@ _unur_distr_condi_debug( const struct unur_distr *condi, const char *genid )
   fprintf(log,"%s:\tcondition (at time of creation):\n",genid);
   if (DIRECTION==NULL) {
     fprintf(log,"%s:\tvariable = %d\n",genid,(int)(K));
-    _unur_matrix_print_vector( condi->base->dim, POSITION, "\tvalues =", log, genid, "\t   ");
+    _unur_matrix_print_vector( condi->base->dim, POSITION, "\tpoint =", log, genid, "\t   ");
   }
   else {
     _unur_matrix_print_vector( condi->base->dim, DIRECTION, "\tdirection =", log, genid, "\t   ");
-    _unur_matrix_print_vector( condi->base->dim, POSITION, "\tvalues =", log, genid, "\t   ");
+    _unur_matrix_print_vector( condi->base->dim, POSITION, "\tpoint =", log, genid, "\t   ");
   }
   fprintf(log,"%s:\n",genid);
 

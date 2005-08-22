@@ -932,7 +932,7 @@ int run_validate_chi2( FILE *LOG, int line, UNUR_GEN *gen, const UNUR_DISTR *dis
      /*   UNUR_ERR_SILENT ... test failed only once                             */
      /*   UNUR_FAILURE    ... serious failure                                   */
 {
-#define BUFSIZE 32
+#define BUFSIZE 128
   const char *distr_name;
   static char last_distr_name[BUFSIZE] = "";
   unsigned int type;
@@ -1039,7 +1039,7 @@ int run_validate_chi2( FILE *LOG, int line, UNUR_GEN *gen, const UNUR_DISTR *dis
 
 int run_validate_verifyhat( FILE *LOG, int line, UNUR_GEN *gen, const UNUR_DISTR *distr, char todo )
 {
-#define BUFSIZE 32
+#define BUFSIZE 128
   const char *distr_name;
   static char last_distr_name[BUFSIZE] = "";
   unsigned int type;

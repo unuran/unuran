@@ -87,8 +87,10 @@ struct unur_distr_cvec {
 
   UNUR_FUNCT_CVEC *pdf;         /* pointer to PDF                            */
   UNUR_VFUNCT_CVEC *dpdf;       /* pointer to gradient of PDF                */
+  UNUR_FUNCTD_CVEC *pdpdf;      /* pointer to partial derivative of PDF      */
   UNUR_FUNCT_CVEC *logpdf;      /* pointer to logPDF                         */
   UNUR_VFUNCT_CVEC *dlogpdf;    /* pointer to gradient of logPDF             */
+  UNUR_FUNCTD_CVEC *pdlogpdf;   /* pointer to partial derivative of logPDF   */
 
   double *mean;                 /* mean vector of distribution               */
   double *covar;                /* covariance matrix of distribution         */

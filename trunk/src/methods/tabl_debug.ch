@@ -73,7 +73,7 @@ _unur_tabl_debug_init_start( const struct unur_par *par, const struct unur_gen *
   fprintf(log,"%s: type    = continuous univariate random variates\n",gen->genid);
   fprintf(log,"%s: method  = rejection from piecewise constant hat\n",gen->genid);
   fprintf(log,"%s: variant = ",gen->genid);
-  switch (par->variant & TABL_VARMASK_VARIANT) {
+  switch (gen->variant & TABL_VARMASK_VARIANT) {
   case TABL_VARIANT_RH:
     fprintf(log,"acceptance/rejection ... RH\n"); break;
   case TABL_VARIANT_IA:
@@ -84,44 +84,44 @@ _unur_tabl_debug_init_start( const struct unur_par *par, const struct unur_gen *
   _unur_distr_cont_debug( gen->distr, gen->genid );
 
   fprintf(log,"%s: sampling routine = _unur_tabl_",gen->genid);
-  switch (par->variant & TABL_VARMASK_VARIANT) {
+  switch (gen->variant & TABL_VARMASK_VARIANT) {
   case TABL_VARIANT_RH:
     fprintf(log,"rh"); break;
   case TABL_VARIANT_IA:
     fprintf(log,"ia"); break;
   }
-  if (par->variant & TABL_VARFLAG_VERIFY)
+  if (gen->variant & TABL_VARFLAG_VERIFY)
     fprintf(log,"_sample_check()\n");
   else
     fprintf(log,"_sample()\n");
 
   fprintf(log,"%s: computation interval = (%g, %g)\n",gen->genid,GEN->bleft,GEN->bright);
 
-  fprintf(log,"%s: maximum number of intervals = %d",gen->genid,PAR->max_ivs);
-  _unur_print_if_default(par,TABL_SET_MAX_IVS);
+  fprintf(log,"%s: maximum number of intervals = %d",gen->genid,GEN->max_ivs);
+  _unur_print_if_default(gen,TABL_SET_MAX_IVS);
   fprintf(log,"\n");
 
-  if (par->variant & TABL_VARFLAG_USEEAR) {
+  if (gen->variant & TABL_VARFLAG_USEEAR) {
     fprintf(log,"%s: use equal area rule\n",gen->genid);
     fprintf(log,"%s:\tarea fraction for equal area rule = %g ",gen->genid,PAR->area_fract);
     _unur_print_if_default(par,TABL_SET_AREAFRACTION);
     fprintf(log,"\n");
   }
 
-  if (par->variant & TABL_VARFLAG_USEDARS) {
+  if (gen->variant & TABL_VARFLAG_USEDARS) {
     fprintf(log,"%s: Derandomized ARS enabled ",gen->genid);
-    _unur_print_if_default(par,TABL_SET_USE_DARS);
+    _unur_print_if_default(gen,TABL_SET_USE_DARS);
     fprintf(log,"\n%s:\tDARS factor = %g",gen->genid,GEN->darsfactor);
-    _unur_print_if_default(par,TABL_SET_DARS_FACTOR);
+    _unur_print_if_default(gen,TABL_SET_DARS_FACTOR);
   }
   else {
     fprintf(log,"%s: Derandomized ARS disabled ",gen->genid);
-    _unur_print_if_default(par,TABL_SET_USE_DARS);
+    _unur_print_if_default(gen,TABL_SET_USE_DARS);
   }
   fprintf(log,"\n");
 
-  fprintf(log,"%s: bound for ratio  Atotal / Asqueeze = %g%%",gen->genid,PAR->max_ratio*100.);
-  _unur_print_if_default(par,TABL_SET_MAX_SQHRATIO);
+  fprintf(log,"%s: bound for ratio  Atotal / Asqueeze = %g%%",gen->genid,GEN->max_ratio*100.);
+  _unur_print_if_default(gen,TABL_SET_MAX_SQHRATIO);
   fprintf(log,"\n");
 
   fprintf(log,"%s: split intervals at ",gen->genid);
@@ -141,8 +141,8 @@ _unur_tabl_debug_init_start( const struct unur_par *par, const struct unur_gen *
   empty_line();
 
   fprintf(log,"%s: sampling from list of intervals: indexed search (guide table method)\n",gen->genid);
-  fprintf(log,"%s:    relative guide table size = %g%%",gen->genid,100.*PAR->guide_factor);
-  _unur_print_if_default(par,TABL_SET_GUIDEFACTOR);
+  fprintf(log,"%s:    relative guide table size = %g%%",gen->genid,100.*GEN->guide_factor);
+  _unur_print_if_default(gen,TABL_SET_GUIDEFACTOR);
   fprintf(log,"\n");
   empty_line();
 
@@ -177,19 +177,17 @@ _unur_tabl_debug_init_start( const struct unur_par *par, const struct unur_gen *
 /*****************************************************************************/
 
 void
-_unur_tabl_debug_init_finished( const struct unur_par *par, const struct unur_gen *gen )
+_unur_tabl_debug_init_finished( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* write info about generator after setup into logfile                  */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   par ... pointer to parameter for building generator object         */
      /*   gen ... pointer to generator object                                */
      /*----------------------------------------------------------------------*/
 {
   FILE *log;
 
   /* check arguments */
-  CHECK_NULL(par,RETURN_VOID);  COOKIE_CHECK(par,CK_TABL_PAR,RETURN_VOID);
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_TABL_GEN,RETURN_VOID);
 
   log = unur_get_stream();

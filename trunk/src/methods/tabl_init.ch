@@ -120,6 +120,14 @@ _unur_tabl_init( struct unur_par *par )
 
   } while(0);
 
+#ifdef UNUR_ENABLE_LOGGING
+  /* print starting intervals */ 
+  if (gen->debug & TABL_DEBUG_IV_START) _unur_tabl_debug_intervals(gen,"starting intervals:",FALSE);
+#endif
+
+  /* update number of slopes */
+  PAR->n_slopes = GEN->n_ivs;
+
   /* split starting intervals / slopes */
   if (_unur_tabl_compute_intervals(par,gen) != UNUR_SUCCESS) {
     _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"Cannot split intervals");
@@ -140,7 +148,7 @@ _unur_tabl_init( struct unur_par *par )
   gen->status = UNUR_SUCCESS;
 
 #ifdef UNUR_ENABLE_LOGGING
-  if (gen->debug) _unur_tabl_debug_init_finished(par,gen);
+  if (gen->debug) _unur_tabl_debug_init_finished(gen);
 #endif
 
   /* free parameters */
@@ -187,18 +195,7 @@ _unur_tabl_create( struct unur_par *par )
   gen->genid = _unur_set_genid(GENTYPE);
 
   /* sampling routines */
-  switch (par->variant & TABL_VARMASK_VARIANT) {
-  case TABL_VARIANT_RH:    /* "classical" acceptance/rejection method */
-    SAMPLE = (par->variant & TABL_VARFLAG_VERIFY) ? _unur_tabl_rh_sample_check : _unur_tabl_rh_sample;
-    break;
-  case TABL_VARIANT_IA:    /* immediate acceptance */
-    SAMPLE = (par->variant & TABL_VARFLAG_VERIFY) ? _unur_tabl_ia_sample_check : _unur_tabl_ia_sample;
-    break;
-  default:
-    _unur_error(GENTYPE,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    _unur_distr_free(gen->distr); free(gen);
-    return NULL;
-  }
+  unur_tabl_chg_verify(gen,(gen->variant & TABL_VARFLAG_VERIFY));
   
   /* routines for cloning and destroying generator */
   gen->destroy = _unur_tabl_free;
@@ -335,7 +332,7 @@ _unur_tabl_free( struct unur_gen *gen )
     }
   }
 
-  /* free table */
+  /* free tables */
   if (GEN->guide)  free(GEN->guide);
 
   /* free other memory */
@@ -614,11 +611,6 @@ _unur_tabl_compute_intervals( struct unur_par *par, struct unur_gen *gen )
   /* check arguments */
   CHECK_NULL(par,UNUR_ERR_NULL);  COOKIE_CHECK(par,CK_TABL_PAR,UNUR_ERR_COOKIE);
   CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_TABL_GEN,UNUR_ERR_COOKIE);
-
-#ifdef UNUR_ENABLE_LOGGING
-  /* print starting intervals */ 
-  if (gen->debug & TABL_DEBUG_IV_START) _unur_tabl_debug_intervals(gen,"starting intervals:",FALSE);
-#endif
 
   /* split interval following [1], split A (equal area rule) */
   if (par->variant & TABL_VARFLAG_USEEAR) {

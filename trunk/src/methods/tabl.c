@@ -103,6 +103,9 @@
 #define TABL_VARIANT_RH           0x0001u   /* "classical" accept./rejection */
 #define TABL_VARIANT_IA           0x0002u   /* use immediate acceptance      */
 
+#define TABL_VARIANT_FAST         0x0004u   /* use single array for data 
+					       (not implemented)             */
+
 /* indicate how to split interval */
 #define TABL_VARMASK_SPLIT        0x00f0u  /* split at        computation     convergence of hat */
 #define TABL_VARFLAG_SPLIT_POINT  0x0010u  /* sampled point    none            slowest          */
@@ -238,12 +241,12 @@ static double _unur_tabl_eval_cdfhat( struct unur_gen *gen, double x );
 
 static void _unur_tabl_debug_init_start( const struct unur_par *par, const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* print after generator has been initialized has completed I.               */
+/* print after generator has been created.                                   */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_tabl_debug_init_finished( const struct unur_par *par, const struct unur_gen *gen );
+static void _unur_tabl_debug_init_finished( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* print after generator has been initialized has completed II.              */
+/* print after generator has been initialized has completed.                 */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_tabl_debug_dars_start( const struct unur_par *par, const struct unur_gen *gen );
@@ -289,5 +292,7 @@ static void _unur_tabl_debug_intervals( const struct unur_gen *gen, const char *
 #include "tabl_init.ch"
 #include "tabl_sample.ch"
 #include "tabl_debug.ch"
+
+/* #include "tabl_fast.ch" ... not implemented (only experimental code)      */
 
 /*---------------------------------------------------------------------------*/

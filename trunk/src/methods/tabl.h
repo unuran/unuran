@@ -146,8 +146,12 @@
       respective boundaries by means of the unur_tabl_set_cpoints()
       call.
 
-      The usage of the commands mentioned here are demonstrated in
-      example_TABL1, example_TABL2 and example_TABL3 below.
+      It is also possible to use method TABL for correlation induction
+      (variance reduction) by setting of an auxiliary uniform random
+      number generator via the unur_set_urng_aux() call. (Notice that
+      this must be done after a possible unur_set_urng() call.)
+      However, this only works when immediate acceptance is switched
+      of by a unur_tabl_set_variant_ia() call.
 
    =END
 
@@ -165,17 +169,18 @@ UNUR_PAR *unur_tabl_new( const UNUR_DISTR* distribution );
 
 /*...........................................................................*/
 
-int unur_tabl_set_variant_rh( UNUR_PAR *parameters );
+int unur_tabl_set_variant_ia( UNUR_PAR *parameters, int use_ia );
 /* 
-   Use ``classical'' acceptance/rejection from hat distribution. 
-*/
+   Use immediate acceptance when @var{use_ia} is set to TRUE.
+   This technique requires less uniform. If it is set to FALSE, 
+   ``classical'' acceptance/rejection from hat distribution
+   is used.
 
-int unur_tabl_set_variant_ia( UNUR_PAR *parameters );
-/* 
-   Use immediate acceptance. This technique requires less uniform
-   random numbers.
+   @emph{Notice:} Auxiliary uniform random number generators for
+   correlation induction (variance reduction) can only be used when 
+   ``classical'' acceptance/rejection is used.
 
-   This is the default variant.
+   Default: TRUE.
 */
 
 int unur_tabl_set_cpoints( UNUR_PAR *parameters, int n_cpoints, const double *cpoints );

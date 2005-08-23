@@ -123,12 +123,13 @@ unur_tabl_new( const struct unur_distr *distr )
 /*****************************************************************************/
 
 int
-unur_tabl_set_variant_rh( struct unur_par *par )
+unur_tabl_set_variant_ia( struct unur_par *par, int use_ia )
      /*----------------------------------------------------------------------*/
-     /* Use "classical" acceptance/rejection from hat distribution.          */
+     /* Switch to immediate acceptance                                       */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   par       ... pointer to parameter for building generator object   */
+     /*   par    ... pointer to parameter for building generator object      */
+     /*   use_ia ... whether immediate acceptance is used                    */
      /*                                                                      */
      /* return:                                                              */
      /*   UNUR_SUCCESS ... on success                                        */
@@ -140,34 +141,7 @@ unur_tabl_set_variant_rh( struct unur_par *par )
   _unur_check_par_object( par, TABL );
 
   /* we use a bit in variant */
-  par->variant = (par->variant & ~TABL_VARMASK_VARIANT) | TABL_VARIANT_RH;
-
-  /* o.k. */
-  return UNUR_SUCCESS;
-
-} /* end of unur_tabl_set_variant_rh() */
-
-/*---------------------------------------------------------------------------*/
-
-int
-unur_tabl_set_variant_ia( struct unur_par *par )
-     /*----------------------------------------------------------------------*/
-     /* Use immediate acceptance                                             */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   par       ... pointer to parameter for building generator object   */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   UNUR_SUCCESS ... on success                                        */
-     /*   error code   ... on error                                          */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
-  _unur_check_par_object( par, TABL );
-
-  /* we use a bit in variant */
-  par->variant = (par->variant & ~TABL_VARMASK_VARIANT) | TABL_VARIANT_IA;
+  par->variant = (use_ia) ? (par->variant | TABL_VARIANT_IA) : (par->variant & (~TABL_VARIANT_IA));
 
   /* o.k. */
   return UNUR_SUCCESS;
@@ -829,17 +803,12 @@ unur_tabl_chg_verify( struct unur_gen *gen, int verify )
   gen->variant = (verify) ? (gen->variant | TABL_VARFLAG_VERIFY) : (gen->variant & (~TABL_VARFLAG_VERIFY));
 
   /* sampling routines */
-  switch (gen->variant & TABL_VARMASK_VARIANT) {
-  case TABL_VARIANT_RH:    /* "classical" acceptance/rejection method */
-    SAMPLE = (verify) ? _unur_tabl_rh_sample_check : _unur_tabl_rh_sample;
-    break;
-  case TABL_VARIANT_IA:    /* immediate acceptance */
+  if (gen->variant & TABL_VARIANT_IA)
+    /* immediate acceptance */
     SAMPLE = (verify) ? _unur_tabl_ia_sample_check : _unur_tabl_ia_sample;
-    break;
-  default:
-    _unur_warning(GENTYPE,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    return UNUR_ERR_SHOULD_NOT_HAPPEN;
-  }
+  else
+    /* "classical" acceptance/rejection method */
+    SAMPLE = (verify) ? _unur_tabl_rh_sample_check : _unur_tabl_rh_sample;
 
   /* o.k. */
   return UNUR_SUCCESS;
@@ -912,10 +881,10 @@ unur_tabl_chg_truncated( struct unur_gen *gen, double left, double right )
   }
 
   /* we cannot use immadate acceptance (IA), switch to variant PS instead */
-  if ((gen->variant & TABL_VARMASK_VARIANT) == TABL_VARIANT_IA) {
+  if (gen->variant & TABL_VARIANT_IA) {
     _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"cannot use IA for truncated distribution, switch to RH");
     /* change variante flag */
-    gen->variant = (gen->variant & ~TABL_VARMASK_VARIANT) | TABL_VARIANT_RH;
+    gen->variant &= ~TABL_VARIANT_IA;
     /* change sampling routine */
     SAMPLE = (gen->variant & TABL_VARFLAG_VERIFY) ? _unur_tabl_rh_sample_check : _unur_tabl_rh_sample;
   }

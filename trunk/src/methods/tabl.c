@@ -100,10 +100,9 @@
 
 /* how to sample from genertor object */
 #define TABL_VARMASK_VARIANT      0x000fu   /* indicates which variant       */
-#define TABL_VARIANT_RH           0x0001u   /* "classical" accept./rejection */
-#define TABL_VARIANT_IA           0x0002u   /* use immediate acceptance      */
+#define TABL_VARIANT_IA           0x0001u   /* use immediate acceptance      */
 
-#define TABL_VARIANT_FAST         0x0004u   /* use single array for data 
+#define TABL_VARIANT_FAST         0x0002u   /* use single array for data 
 					       (not implemented)             */
 
 /* indicate how to split interval */

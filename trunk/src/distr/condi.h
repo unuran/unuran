@@ -51,6 +51,14 @@
       and either a variable that is variated or a vector that
       indicates the direction on which the random vector can variate.
 
+      There is a subtle difference between using direction
+      vector and using the @var{k}-th variable.
+      When a direction vector is given the PDF of the conditional
+      distribution is defined by
+      @unurmath{f(t) = PDF(pos + t\cdot dir).}
+      When a variable is selected the full conditional distribution
+      with all other variables fixed is used.
+
       This is a special case of a continuous univariate distribution
       and thus they have most of these parameters (with the exception
       that functions cannot be changed). Additionally,
@@ -99,6 +107,21 @@ UNUR_DISTR *unur_distr_condi_new( const UNUR_DISTR *distribution, const double *
    @var{k} must be in the range @code{0, @dots{}, dim-1}.
    If the @var{k}-th variable is used, @var{dir} must be set to NULL. 
 
+   @emph{Notice:} There is a subtle difference between using direction
+   vector @var{dir} and using the @var{k}-th variable.
+   When @var{dir} is given, the current position @var{pos} is mapped into
+   0 of the conditional distribution and the derivative is taken from
+   the function PDF(@var{pos}+t*@var{dir}) w.r.t. @i{t}.
+   On the other hand, when the coordinate @var{k} is used (i.e., when
+   @var{dir} is set to NULL), the full conditional distribution of the
+   distribution is considered (as used for the Gibbs sampler).
+   In particular, the current point is just projected into the
+   one-dimensional subspace without mapping it into the point 0.
+
+   @emph{Notice:} If a coordinate @var{k} is used, then the @var{k}-th
+   partial derivative is used if it as available. Otherwise the
+   gradient is computed and the @var{k}-th component is returned.
+
    The resulting generator object is of the same type as of a
    unur_distr_cont_new() call.
 */
@@ -114,6 +137,17 @@ int unur_distr_condi_set_condition( struct unur_distr *distribution, const doubl
    @var{dir} must be a pointer to an array if size @code{dim} or NULL.
    @var{k} must be in the range @code{0, @dots{}, dim-1}.
    If the @var{k}-th variable is used, @var{dir} must be set to NULL. 
+
+   @emph{Notice:} There is a subtle difference between using direction
+   vector @var{dir} and using the @var{k}-th variable.
+   When @var{dir} is given, the current position @var{pos} is mapped into
+   0 of the conditional distribution and the derivative is taken from
+   the function PDF(@var{pos}+t*@var{dir}) w.r.t. @i{t}.
+   On the other hand, when the coordinate @var{k} is used (i.e., when
+   @var{dir} is set to NULL), the full conditional distribution of the
+   distribution is considered (as used for the Gibbs sampler).
+   In particular, the current point is just projected into the
+   one-dimensional subspace without mapping it into the point 0.
 */
 
 int unur_distr_condi_get_condition( struct unur_distr *distribution, const double **pos, const double **dir, int *k );

@@ -360,11 +360,19 @@ _unur_dpdf_condi( double x, const struct unur_distr *condi )
     /* set point for multivariate PDF */
     memcpy(XARG, POSITION, dim * sizeof(double) );
     XARG[k] = x;  
-    /* compute gradiant */
-    _unur_cvec_dPDF(GRADF, XARG, condi->base);
-    /* return k-th component */
-    df = GRADF[k];
+    if (condi->base->data.cvec.pdpdf) {
+      /* we have a pointer to the partial derivative */
+      df = _unur_cvec_pdPDF(XARG, k, condi->base);
+    }
+    else {
+      /* we do not have partial derivatives --> have to take coordinate from gradient */
+      /* compute gradient */
+      _unur_cvec_dPDF(GRADF, XARG, condi->base);
+      /* return k-th component */
+      df = GRADF[k];
+    }
   }
+
   else {   /* use direction vector */
     memcpy(XARG, POSITION, dim * sizeof(double) );
     for (i=0; i<dim; i++)

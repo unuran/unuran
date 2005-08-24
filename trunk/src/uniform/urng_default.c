@@ -39,6 +39,11 @@
 #include "unur_uniform.h"
 #include "urng.h"
 #include "urng_fvoid.h"
+#include "urng_gsl.h"
+#include "urng_gslqrng.h"
+#include "urng_prng.h"
+#include "urng_randomshift.h"
+#include "urng_rngstreams.h"
 
 /*---------------------------------------------------------------------------*/
 /* pointer to default uniform random number generator */

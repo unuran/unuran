@@ -53,8 +53,10 @@ static char test_name[] = "CountPDF";
 /* counter for evaluations of PDF and similar functions */
 static int counter_pdf = 0;
 static int counter_dpdf = 0;
+static int counter_pdpdf = 0;
 static int counter_logpdf = 0;
 static int counter_dlogpdf = 0;
+static int counter_pdlogpdf = 0;
 static int counter_cdf = 0;
 static int counter_hr = 0;
 static int counter_pmf = 0;
@@ -72,8 +74,10 @@ static double (*discr_cdf_to_use)(int x, const struct unur_distr *distr);
 
 static double (*cvec_pdf_to_use)(const double *x, struct unur_distr *distr);
 static int (*cvec_dpdf_to_use)(double *result, const double *x, struct unur_distr *distr);
+static double (*cvec_pdpdf_to_use)(const double *x, int coord, struct unur_distr *distr);
 static double (*cvec_logpdf_to_use)(const double *x, struct unur_distr *distr);
 static int (*cvec_dlogpdf_to_use)(double *result, const double *x, struct unur_distr *distr);
+static double (*cvec_pdlogpdf_to_use)(const double *x, int coord, struct unur_distr *distr);
 
 /*---------------------------------------------------------------------------*/
 /* wrapper for functions                                                     */
@@ -113,11 +117,17 @@ static double cvec_pdf_with_counter( const double *x, struct unur_distr *distr )
 static int cvec_dpdf_with_counter( double *result, const double *x, struct unur_distr *distr ) {
   ++counter_dpdf; return cvec_dpdf_to_use(result,x,distr); }
 
+static double cvec_pdpdf_with_counter( const double *x, int coord, struct unur_distr *distr ) {
+  ++counter_pdpdf; return cvec_pdpdf_to_use(x,coord,distr); }
+
 static double cvec_logpdf_with_counter( const double *x, struct unur_distr *distr ) {
   ++counter_logpdf; return cvec_logpdf_to_use(x,distr); }
 
 static int cvec_dlogpdf_with_counter( double *result, const double *x, struct unur_distr *distr ) {
   ++counter_dlogpdf; return cvec_dlogpdf_to_use(result,x,distr); }
+
+static double cvec_pdlogpdf_with_counter( const double *x, int coord, struct unur_distr *distr ) {
+  ++counter_pdlogpdf; return cvec_pdlogpdf_to_use(x,coord,distr); }
 
 /*****************************************************************************/
 
@@ -180,10 +190,14 @@ unur_test_count_pdf( struct unur_gen *gen, int samplesize, int verbosity, FILE *
     distr->data.cvec.pdf = cvec_pdf_with_counter;
     cvec_dpdf_to_use = distr->data.cvec.dpdf;
     distr->data.cvec.dpdf = cvec_dpdf_with_counter;
+    cvec_pdpdf_to_use = distr->data.cvec.pdpdf;
+    distr->data.cvec.pdpdf = cvec_pdpdf_with_counter;
     cvec_logpdf_to_use = distr->data.cvec.logpdf;
     distr->data.cvec.logpdf = cvec_logpdf_with_counter;
     cvec_dlogpdf_to_use = distr->data.cvec.dlogpdf;
     distr->data.cvec.dlogpdf = cvec_dlogpdf_with_counter;
+    cvec_pdlogpdf_to_use = distr->data.cvec.pdlogpdf;
+    distr->data.cvec.pdlogpdf = cvec_pdlogpdf_with_counter;
     break;
   default:
     if (verbosity)
@@ -195,8 +209,10 @@ unur_test_count_pdf( struct unur_gen *gen, int samplesize, int verbosity, FILE *
   /* reset counter */
   counter_pdf = 0;
   counter_dpdf = 0;
+  counter_pdpdf = 0;
   counter_logpdf = 0;
   counter_dlogpdf = 0;
+  counter_pdlogpdf = 0;
   counter_cdf = 0;
   counter_hr = 0;
   counter_pmf = 0;
@@ -229,32 +245,34 @@ unur_test_count_pdf( struct unur_gen *gen, int samplesize, int verbosity, FILE *
   }
 
   /* total number of function calls */
-  count = ( counter_pdf + counter_dpdf 
-	    + counter_logpdf + counter_dlogpdf 
+  count = ( counter_pdf + counter_dpdf + counter_pdpdf 
+	    + counter_logpdf + counter_dlogpdf + counter_pdlogpdf 
 	    + counter_cdf + counter_hr + counter_pmf);
 
   /* print result */
   if (verbosity) {
-    fprintf(out,"\nCOUNT: Running Generator:\n");
-    fprintf(out,"\tfunction calls  (per generated number)\n");
-    fprintf(out,"\ttotal:  %7d  (%g)\n",count,((double)count)/((double) samplesize));
+    fprintf(out,  "\nCOUNT: Running Generator:\n");
+    fprintf(out,  "\tfunction calls  (per generated number)\n");
+    fprintf(out,  "\ttotal:   %7d  (%g)\n",count,((double)count)/((double) samplesize));
     switch (distr->type) {
     case UNUR_DISTR_CONT:
-      fprintf(out,"\tPDF:    %7d  (%g)\n",counter_pdf,((double)counter_pdf)/((double) samplesize));
-      fprintf(out,"\tdPDF:   %7d  (%g)\n",counter_dpdf,((double)counter_dpdf)/((double) samplesize));
-      fprintf(out,"\tlogPDF: %7d  (%g)\n",counter_logpdf,((double)counter_logpdf)/((double) samplesize));
-      fprintf(out,"\tdlogPDF:%7d  (%g)\n",counter_dlogpdf,((double)counter_dlogpdf)/((double) samplesize));
-      fprintf(out,"\tCDF:    %7d  (%g)\n",counter_cdf,((double)counter_cdf)/((double) samplesize));
-      fprintf(out,"\tHR:     %7d  (%g)\n",counter_hr,((double)counter_hr)/((double) samplesize));
+      fprintf(out,"\tPDF:     %7d  (%g)\n",counter_pdf,((double)counter_pdf)/((double) samplesize));
+      fprintf(out,"\tdPDF:    %7d  (%g)\n",counter_dpdf,((double)counter_dpdf)/((double) samplesize));
+      fprintf(out,"\tlogPDF:  %7d  (%g)\n",counter_logpdf,((double)counter_logpdf)/((double) samplesize));
+      fprintf(out,"\tdlogPDF: %7d  (%g)\n",counter_dlogpdf,((double)counter_dlogpdf)/((double) samplesize));
+      fprintf(out,"\tCDF:     %7d  (%g)\n",counter_cdf,((double)counter_cdf)/((double) samplesize));
+      fprintf(out,"\tHR:      %7d  (%g)\n",counter_hr,((double)counter_hr)/((double) samplesize));
       break;
     case UNUR_DISTR_CVEC:
-      fprintf(out,"\tPDF:    %7d  (%g)\n",counter_pdf,((double)counter_pdf)/((double) samplesize));
-      fprintf(out,"\tdPDF:   %7d  (%g)\n",counter_dpdf,((double)counter_dpdf)/((double) samplesize));
-      fprintf(out,"\tlogPDF: %7d  (%g)\n",counter_logpdf,((double)counter_logpdf)/((double) samplesize));
-      fprintf(out,"\tdlogPDF:%7d  (%g)\n",counter_dlogpdf,((double)counter_dlogpdf)/((double) samplesize));
+      fprintf(out,"\tPDF:     %7d  (%g)\n",counter_pdf,((double)counter_pdf)/((double) samplesize));
+      fprintf(out,"\tdPDF:    %7d  (%g)\n",counter_dpdf,((double)counter_dpdf)/((double) samplesize));
+      fprintf(out,"\tpdPDF:   %7d  (%g)\n",counter_pdpdf,((double)counter_pdpdf)/((double) samplesize));
+      fprintf(out,"\tlogPDF:  %7d  (%g)\n",counter_logpdf,((double)counter_logpdf)/((double) samplesize));
+      fprintf(out,"\tdlogPDF: %7d  (%g)\n",counter_dlogpdf,((double)counter_dlogpdf)/((double) samplesize));
+      fprintf(out,"\tpdlogPDF:%7d  (%g)\n",counter_dlogpdf,((double)counter_dlogpdf)/((double) samplesize));
     case UNUR_DISTR_DISCR:
-      fprintf(out,"\tPMF:    %7d  (%g)\n",counter_pmf,((double)counter_pmf)/((double) samplesize));
-      fprintf(out,"\tCDF:    %7d  (%g)\n",counter_cdf,((double)counter_cdf)/((double) samplesize));
+      fprintf(out,"\tPMF:     %7d  (%g)\n",counter_pmf,((double)counter_pmf)/((double) samplesize));
+      fprintf(out,"\tCDF:     %7d  (%g)\n",counter_cdf,((double)counter_cdf)/((double) samplesize));
       break;
     }
   }
@@ -332,10 +350,14 @@ unur_test_par_count_pdf( struct unur_par *par, int samplesize, int verbosity, FI
     distr->data.cvec.pdf = cvec_pdf_with_counter;
     cvec_dpdf_to_use = distr->data.cvec.dpdf;
     distr->data.cvec.dpdf = cvec_dpdf_with_counter;
+    cvec_pdpdf_to_use = distr->data.cvec.pdpdf;
+    distr->data.cvec.pdpdf = cvec_pdpdf_with_counter;
     cvec_logpdf_to_use = distr->data.cvec.logpdf;
     distr->data.cvec.logpdf = cvec_logpdf_with_counter;
     cvec_dlogpdf_to_use = distr->data.cvec.dlogpdf;
     distr->data.cvec.dlogpdf = cvec_dlogpdf_with_counter;
+    cvec_pdlogpdf_to_use = distr->data.cvec.pdlogpdf;
+    distr->data.cvec.pdlogpdf = cvec_pdlogpdf_with_counter;
     break;
   default:
     if (verbosity)
@@ -348,8 +370,10 @@ unur_test_par_count_pdf( struct unur_par *par, int samplesize, int verbosity, FI
   /* reset counter */
   counter_pdf = 0;
   counter_dpdf = 0;
+  counter_pdpdf = 0;
   counter_logpdf = 0;
   counter_dlogpdf = 0;
+  counter_pdlogpdf = 0;
   counter_cdf = 0;
   counter_hr = 0;
   counter_pmf = 0;
@@ -358,33 +382,36 @@ unur_test_par_count_pdf( struct unur_par *par, int samplesize, int verbosity, FI
   gen = _unur_init(parclone);
 
   /* total number of function calls */
-  count = ( counter_pdf + counter_dpdf
-	    + counter_logpdf + counter_dlogpdf
+  count = ( counter_pdf + counter_dpdf + counter_pdpdf
+	    + counter_logpdf + counter_dlogpdf + counter_pdlogpdf
 	    + counter_cdf + counter_hr + counter_pmf);
   count_total = count;
 
   /* print result */
   if (verbosity) {
-    fprintf(out,"\nCOUNT: Initializing Generator:\n");
-    fprintf(out,"\tfunction calls\n");
-    fprintf(out,"\ttotal:  %7d\n",count);
+    fprintf(out,  "\nCOUNT: Initializing Generator:\n");
+    fprintf(out,  "\tfunction calls\n");
+    fprintf(out,  "\ttotal:   %7d\n",count);
     switch (distr->type) {
     case UNUR_DISTR_CONT:
-      fprintf(out,"\tPDF:    %7d\n",counter_pdf);
-      fprintf(out,"\tdPDF:   %7d\n",counter_dpdf);
-      fprintf(out,"\tlogPDF: %7d\n",counter_logpdf);
-      fprintf(out,"\tdlogPDF:%7d\n",counter_dlogpdf);
-      fprintf(out,"\tCDF:    %7d\n",counter_cdf);
-      fprintf(out,"\tHR:     %7d\n",counter_hr);
+      fprintf(out,"\tPDF:     %7d\n",counter_pdf);
+      fprintf(out,"\tdPDF:    %7d\n",counter_dpdf);
+      fprintf(out,"\tlogPDF:  %7d\n",counter_logpdf);
+      fprintf(out,"\tdlogPDF: %7d\n",counter_dlogpdf);
+      fprintf(out,"\tCDF:     %7d\n",counter_cdf);
+      fprintf(out,"\tHR:      %7d\n",counter_hr);
       break;
     case UNUR_DISTR_CVEC:
-      fprintf(out,"\tPDF:    %7d\n",counter_pdf);
-      fprintf(out,"\tdPDF:   %7d\n",counter_dpdf);
-      fprintf(out,"\tlogPDF: %7d\n",counter_logpdf);
-      fprintf(out,"\tdlogPDF:%7d\n",counter_dlogpdf);
+      fprintf(out,"\tPDF:     %7d\n",counter_pdf);
+      fprintf(out,"\tdPDF:    %7d\n",counter_dpdf);
+      fprintf(out,"\tpdPDF:   %7d\n",counter_pdpdf);
+      fprintf(out,"\tlogPDF:  %7d\n",counter_logpdf);
+      fprintf(out,"\tdlogPDF: %7d\n",counter_dlogpdf);
+      fprintf(out,"\tpdlogPDF:%7d\n",counter_pdlogpdf);
+      break;
     case UNUR_DISTR_DISCR:
-      fprintf(out,"\tPMF:    %7d\n",counter_pmf);
-      fprintf(out,"\tCDF:    %7d\n",counter_cdf);
+      fprintf(out,"\tPMF:     %7d\n",counter_pmf);
+      fprintf(out,"\tCDF:     %7d\n",counter_cdf);
       break;
     }
   }
@@ -392,8 +419,10 @@ unur_test_par_count_pdf( struct unur_par *par, int samplesize, int verbosity, FI
   /* reset counter */
   counter_pdf = 0;
   counter_dpdf = 0;
+  counter_pdpdf = 0;
   counter_logpdf = 0;
   counter_dlogpdf = 0;
+  counter_pdlogpdf = 0;
   counter_cdf = 0;
   counter_hr = 0;
   counter_pmf = 0;
@@ -424,33 +453,36 @@ unur_test_par_count_pdf( struct unur_par *par, int samplesize, int verbosity, FI
   }
 
   /* total number of function calls */
-  count = ( counter_pdf + counter_dpdf
-	    + counter_logpdf + counter_dlogpdf
+  count = ( counter_pdf + counter_dpdf + counter_pdpdf
+	    + counter_logpdf + counter_dlogpdf + counter_pdlogpdf
 	    + counter_cdf + counter_hr + counter_pmf);
   count_total += count;
 
   /* print result */
   if (verbosity) {
-    fprintf(out,"\nCOUNT: Running Generator:\n");
-    fprintf(out,"\tfunction calls  (per generated number)\n");
-    fprintf(out,"\ttotal:  %7d  (%g)\n",count,((double)count)/((double) samplesize));
+    fprintf(out,  "\nCOUNT: Running Generator:\n");
+    fprintf(out,  "\tfunction calls  (per generated number)\n");
+    fprintf(out,  "\ttotal:   %7d  (%g)\n",count,((double)count)/((double) samplesize));
     switch (distr->type) {
     case UNUR_DISTR_CONT:
-      fprintf(out,"\tPDF:    %7d  (%g)\n",counter_pdf,((double)counter_pdf)/((double) samplesize));
-      fprintf(out,"\tdPDF:   %7d  (%g)\n",counter_dpdf,((double)counter_dpdf)/((double) samplesize));
-      fprintf(out,"\tlogPDF: %7d  (%g)\n",counter_logpdf,((double)counter_logpdf)/((double) samplesize));
-      fprintf(out,"\tdlogPDF:%7d  (%g)\n",counter_dlogpdf,((double)counter_dlogpdf)/((double) samplesize));
-      fprintf(out,"\tCDF:    %7d  (%g)\n",counter_cdf,((double)counter_cdf)/((double) samplesize));
-      fprintf(out,"\tHR:     %7d  (%g)\n",counter_hr,((double)counter_hr)/((double) samplesize));
+      fprintf(out,"\tPDF:     %7d  (%g)\n",counter_pdf,((double)counter_pdf)/((double) samplesize));
+      fprintf(out,"\tdPDF:    %7d  (%g)\n",counter_dpdf,((double)counter_dpdf)/((double) samplesize));
+      fprintf(out,"\tlogPDF:  %7d  (%g)\n",counter_logpdf,((double)counter_logpdf)/((double) samplesize));
+      fprintf(out,"\tdlogPDF: %7d  (%g)\n",counter_dlogpdf,((double)counter_dlogpdf)/((double) samplesize));
+      fprintf(out,"\tCDF:     %7d  (%g)\n",counter_cdf,((double)counter_cdf)/((double) samplesize));
+      fprintf(out,"\tHR:      %7d  (%g)\n",counter_hr,((double)counter_hr)/((double) samplesize));
       break;
     case UNUR_DISTR_CVEC:
-      fprintf(out,"\tPDF:    %7d  (%g)\n",counter_pdf,((double)counter_pdf)/((double) samplesize));
-      fprintf(out,"\tdPDF:   %7d  (%g)\n",counter_dpdf,((double)counter_dpdf)/((double) samplesize));
-      fprintf(out,"\tlogPDF: %7d  (%g)\n",counter_logpdf,((double)counter_logpdf)/((double) samplesize));
-      fprintf(out,"\tdlogPDF:%7d  (%g)\n",counter_dlogpdf,((double)counter_dlogpdf)/((double) samplesize));
+      fprintf(out,"\tPDF:     %7d  (%g)\n",counter_pdf,((double)counter_pdf)/((double) samplesize));
+      fprintf(out,"\tdPDF:    %7d  (%g)\n",counter_dpdf,((double)counter_dpdf)/((double) samplesize));
+      fprintf(out,"\tpdPDF:   %7d  (%g)\n",counter_pdpdf,((double)counter_pdpdf)/((double) samplesize));
+      fprintf(out,"\tlogPDF:  %7d  (%g)\n",counter_logpdf,((double)counter_logpdf)/((double) samplesize));
+      fprintf(out,"\tdlogPDF: %7d  (%g)\n",counter_dlogpdf,((double)counter_dlogpdf)/((double) samplesize));
+      fprintf(out,"\tpdlogPDF:%7d  (%g)\n",counter_pdlogpdf,((double)counter_pdlogpdf)/((double) samplesize));
+      break;
     case UNUR_DISTR_DISCR:
-      fprintf(out,"\tPMF:    %7d  (%g)\n",counter_pmf,((double)counter_pmf)/((double) samplesize));
-      fprintf(out,"\tCDF:    %7d  (%g)\n",counter_cdf,((double)counter_cdf)/((double) samplesize));
+      fprintf(out,"\tPMF:     %7d  (%g)\n",counter_pmf,((double)counter_pmf)/((double) samplesize));
+      fprintf(out,"\tCDF:     %7d  (%g)\n",counter_cdf,((double)counter_cdf)/((double) samplesize));
       break;
     }
   }

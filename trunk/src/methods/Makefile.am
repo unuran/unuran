@@ -29,8 +29,12 @@ libmethods_la_SOURCES = \
  nrou.c   nrou.h   nrou_struct.h \
  srou.c   srou.h   srou_struct.h \
  ssr.c    ssr.h    ssr_struct.h \
- tabl.c   tabl.h   tabl_struct.h tabl_newset.ch tabl_init.ch tabl_sample.ch tabl_debug.ch \
- tdr.c    tdr.h    tdr_struct.h tdr_source.h tdr_newset.ch tdr_init.ch tdr_sample.ch tdr_debug.ch \
+ tabl.c   tabl.h   tabl_struct.h tabl_newset.ch \
+          tabl_init.ch tabl_sample.ch tabl_debug.ch \
+ tdr.c    tdr.h    tdr_struct.h tdr_source.h tdr_newset.ch \
+          tdr_init.ch tdr_gw_init.ch tdr_ps_init.ch \
+          tdr_sample.ch tdr_gw_sample.ch tdr_ps_sample.ch tdr_ia_sample.ch \
+          tdr_debug.ch tdr_gw_debug.ch tdr_ps_debug.ch \
  unif.c   unif.h   unif_struct.h \
  utdr.c   utdr.h   utdr_struct.h \
  vempk.c  vempk.h  vempk_struct.h \

@@ -880,7 +880,7 @@ _unur_hitrou_sample_cvec( struct unur_gen *gen, double *vec )
   double lambda, lmin, lmax; /* lambda parameters of line */
   long skip;
   int inside;
-  double u, u_direction;
+  double u;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);
@@ -979,12 +979,6 @@ _unur_hitrou_sample_cvec( struct unur_gen *gen, double *vec )
     }
 
     
-    if (GEN->unidirectional_flag==1) {      
-        /* making a chice about which way to go in the loop below : 
-	   coparallel or antiparallel to the random direction */
-        u_direction = _unur_call_urng(gen->urng);
-    }
-            
     /* until we find an inside point */
     while (1) {
 
@@ -993,23 +987,23 @@ _unur_hitrou_sample_cvec( struct unur_gen *gen, double *vec )
       if (GEN->unidirectional_flag==0) {      
         /* bidirectional sampling */
         lambda = lmin + (lmax-lmin) * u;
-        if (GEN->adaptive_points==1) {
+        
+	if (GEN->adaptive_points==1) {
           if (lambda>0) lmax=lambda;
           if (lambda<0) lmin=lambda;
         }
       }
       else {
         /* unidirectional sampling */
-        if (u_direction < 0.5)
-	  lambda = lmin * u; 
+	if (fabs(lmin) <= fabs(lmax))
+	  lambda = lmax * u; 
 	else  
-	  lambda = lmax * u;
+	  lambda = lmin * u;
       
-          if (GEN->adaptive_points==1) {
-            if (lambda>0) lmax=lambda;
-            if (lambda<0) lmin=lambda;
-          }
-      
+        if (GEN->adaptive_points==1) {
+          if (lambda>0) lmax=lambda;
+          if (lambda<0) lmin=lambda;
+        }      
       }
             
       /* calculate the "candidate" point along the given random direction */
@@ -1025,7 +1019,6 @@ _unur_hitrou_sample_cvec( struct unur_gen *gen, double *vec )
 	break; /* jump out of the while() loop */
       }
 
-    
     }
 
     if (gen->variant == HITROU_VARIANT_COORDINATE) {

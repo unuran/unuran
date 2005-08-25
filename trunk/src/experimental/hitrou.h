@@ -240,8 +240,10 @@ int unur_hitrou_set_variant_random_direction( UNUR_PAR *par );
 
 int unur_hitrou_set_unidirectional( UNUR_PAR *parameters, int unidirectional_flag );
 /*
-   In case, that the unidirectional flag is set to 1, we choose to sample 
-   along a random direction (or the reverse direction) with probability 1/2.
+   In case, that the unidirectional flag is set to 1, we choose the
+   next candidate point in the (uv)-coordinate system from that line segment 
+   along the chosen coparallel or antiparallel direction, which has
+   maximal length.
 
    Default: @code{0}, i.e. we sample bidirectionally along the random
    direction and it's reverse direction.

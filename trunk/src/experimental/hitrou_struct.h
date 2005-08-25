@@ -49,6 +49,7 @@ struct unur_hitrou_par {
   double vmax;              /* boundary rectangle v-coordinate               */
   int adaptive_points;      /* adaptive reusability of outside points (0/1)  */
   int adaptive_strip;       /* adaptive reusability of strip position : vmax */
+  int unidirectional_flag;  /* should we sample uni- or bi-directionally     */
 };
 
 /*---------------------------------------------------------------------------*/
@@ -69,6 +70,7 @@ struct unur_hitrou_gen {
   int coordinate;           /* current coordinate used for stepping          */
   int adaptive_points;      /* adaptive reusability of outside points (0/1)  */
   int adaptive_strip;       /* adaptive reusability of strip position : vmax */
+  int unidirectional_flag;  /* should we sample uni- or bi-directionally     */
 };
 
 /*---------------------------------------------------------------------------*/

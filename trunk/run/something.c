@@ -26,11 +26,13 @@
 #include <experimental/ball.h>
 #include <experimental/walk.h>
 #include <methods/x_gen_source.h>
+#include <tests/testdistributions/testdistributions.h>
 #include "meanvarcor.c"
 /*#include <src/utils/fft.c>*/
 
 #define DISTRIBUTION_NORMAL 0 
 #define DISTRIBUTION_STUDENT 1
+#define DISTRIBUTION_CAUCHY_BALL 2
 
 #define COVAR_CONSTANT 0
 #define COVAR_NEIGHBOURS 1
@@ -48,6 +50,7 @@
 #define METHOD_BALL_PDF 9
 #define METHOD_BALL_PDF_ADAPTIVE 10
 #define METHOD_WALK 11
+#define METHOD_HITROU_UNIDIRECTIONAL 12
 
 #define MAXDIM 100
 
@@ -237,13 +240,13 @@ int main(int argc, char *argv[])
     case 'h':     /* help */
       printf("options\n" );
       printf(" -d dim          : dimension (%d) \n", DIM );
-      printf(" -t type         : 0=normal, 1=student (%d) \n", DISTRIBUTION );
+      printf(" -t type         : 0=normal, 1=student 2=cauchy_ball (%d) \n", DISTRIBUTION );
       printf(" -f nu           : degrees of freedom for student (%d) \n", NU );
       printf(" -m method       : 0=H&R+RD+STRIP, 1=VMT, 2=GIBBS 3=GIBBS+RD \n" );
       printf("                 : 4=H&R+COORD+BOX, 5=H&R+RD+BOX 6=H&R+RD+ADAPTIVE STRIP\n" );
       printf("                 : 7=BALL+RoU  8=BALL+RoU+ADAPTIVE RADIUS \n");
       printf("                 : 9=BALL+PDF 10=BALL+PDF+ADAPTIVE RADIUS \n");
-      printf("                 : 11=WALK (%d)\n", METHOD );
+      printf("                 : 11=WALK  12=H&R+RD+STRIP+UNI (%d)\n", METHOD );
       printf(" -b ball_radius  : ball radius for ball sampler (%f)\n", BALL_RADIUS);
       printf(" -s skip         : skip parameter for HITROU (%ld) \n", SKIP );
       printf(" -c covar_matrix : 0=constant, 1=neighbours, 2=power (%d)\n", COVAR);
@@ -325,6 +328,18 @@ int main(int argc, char *argv[])
     printf("NU=%d\n", NU);
   }
 
+  if (DISTRIBUTION==DISTRIBUTION_CAUCHY_BALL) {
+    printf("DISTRIBUTION='CAUCHY_BALL'");
+    distr = unur_distr_multicauchy_RoU_ball(DIM);
+    for (d=0; d<DIM; d++) {
+      moments_expected[im(d,1)] = INFINITY;
+      moments_expected[im(d,2)] = INFINITY;
+      moments_expected[im(d,3)] = INFINITY;
+      moments_expected[im(d,4)] = INFINITY;    
+    }
+  }
+  
+  
   printf("DIM=%d\n", DIM);
   if (COVAR==COVAR_CONSTANT)   printf("COVAR=CONSTANT\n");
   if (COVAR==COVAR_NEIGHBOURS) printf("COVAR=NEIGHBOURS\n");
@@ -383,6 +398,17 @@ int main(int argc, char *argv[])
     unur_hitrou_set_skip(par,SKIP);
   }  
 
+  if (METHOD==METHOD_HITROU_UNIDIRECTIONAL) {
+    printf("METHOD=HITROU (UNIDIRECTIONAL)\n");
+    par = unur_hitrou_new(distr);
+    unur_hitrou_set_variant_random_direction(par);
+    unur_hitrou_set_adaptive_strip(par, 0);    
+    unur_hitrou_use_bounding_rectangle(par,0);
+    unur_hitrou_set_unidirectional(par, 1);    
+    unur_hitrou_set_skip(par,SKIP);
+  }  
+  
+  
   if (METHOD==METHOD_BALL_ROU) {
     printf("METHOD=BALL (ROU)\n");
     printf("RADIUS=%f\n", BALL_RADIUS);
@@ -431,7 +457,7 @@ int main(int argc, char *argv[])
   
   printf("SKIP=%ld\n", SKIP);
 
-  par_clone = _unur_par_clone(par);
+//  par_clone = _unur_par_clone(par);
   
 #if 0
   gen = unur_init(par);
@@ -457,7 +483,6 @@ int main(int argc, char *argv[])
   double fx;  /* pdf value at the point x */
   fx=PDF(x);  
   x[DIM] = fx * 0.9; /* used by the pdf ball sampler */
-  
   /* transforming x[] into uv[] coordinates (at RoU boundary */
   /* valid for the case, that the RoU r-parameter is 1 */
   double V;
@@ -472,17 +497,16 @@ int main(int argc, char *argv[])
     uv[d] *= 0.9;
   }
     
+//    par = _unur_par_clone(par_clone);
+//    gen = unur_init(par);
+
   /* main loop */    
   for (loop=1; loop<=EXPERIMENTS; loop++) {
       
-    
-    par = _unur_par_clone(par_clone);
-    gen = unur_init(par);
-    
-    
     if (METHOD==METHOD_HITROU 
     || METHOD==METHOD_HITROU_BOX 
     || METHOD==METHOD_HITROU_BOX_COORDINATE
+    || METHOD==METHOD_HITROU_UNIDIRECTIONAL
     || METHOD==METHOD_HITROU_STRIP_ADAPTIVE) {
       _unur_hitrou_set_point_current( gen, uv );
     }
@@ -505,9 +529,10 @@ int main(int argc, char *argv[])
     if (METHOD==METHOD_WALK) {    
       _unur_walk_set_point_current( gen, x);    
     }
-      
+#if 1      
     unur_test_moments(gen, moments, 4, SAMPLESIZE, VERBOSE, stdout);
- 
+#endif 
+    
     for(d=0;d<DIM;d++){
       s=(d<DIM/2.) ? 1: sqrt(SIGMA);
       
@@ -517,10 +542,11 @@ int main(int argc, char *argv[])
       }
     }    
     
-    unur_free(gen);
   
   } /* next experiment */
 
+#if 1  
+  //  unur_free(gen);
   /* output of results */   
   printf("------------------------------------------------------------------\n");
   printf("                #1          #2          #3          #4\n");
@@ -561,7 +587,10 @@ int main(int argc, char *argv[])
     printarray(info, a_q3);
   }
   printarray("max      :", a_max);
-  
+#endif
+    
+  unur_test_count_pdf(gen, SAMPLESIZE, 2, stdout);
+    
   for(d=0;d<DIM;d++){
     for (m=1; m<=4; m++) {
       free_meanvar(mv[im(d,m)]);
@@ -572,7 +601,7 @@ int main(int argc, char *argv[])
   if (par_clone) unur_par_free(par_clone);
   
   unur_distr_free(distr);
-  //unur_free(gen);
+  unur_free(gen);
   
   free(x); free(mean); free(covar);
   free(moments); free(moments_expected); 

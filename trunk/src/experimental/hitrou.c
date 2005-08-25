@@ -224,6 +224,7 @@ unur_hitrou_new( const struct unur_distr *distr )
   PAR->bounding_rectangle = 0; /* should we calculate the bounding rect */
   PAR->adaptive_points = 1; /* reusing outside points as new line-segment ends */
   PAR->adaptive_strip = 0;  /* usage of adaptive algorithm for the strip position */
+  PAR->unidirectional_flag = 0;       /* using bidirectional sampling        */ 
   par->method   = UNUR_METH_HITROU;   /* method and default variant          */
   par->variant  = HITROU_VARIANT_RANDOM_DIRECTION; /* default variant        */
   par->set      = 0u;                 /* inidicate default parameters        */
@@ -471,6 +472,29 @@ unur_hitrou_set_adaptive_strip( struct unur_par *par, int adaptive_flag )
 
 /*****************************************************************************/
 
+int 
+unur_hitrou_set_unidirectional( UNUR_PAR *par, int flag ) {
+
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, HITROU );
+            
+  /* check new parameter for generator */
+  if (flag!=0 && flag!=1) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"direction flag must be 0 or 1");
+    return UNUR_ERR_PAR_SET;
+  }
+
+  /* store data */
+  PAR->unidirectional_flag = flag;
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+
+}
+
+
+/*****************************************************************************/
 
 int 
 unur_hitrou_set_variant_coordinate( UNUR_PAR *par ) {
@@ -760,6 +784,7 @@ _unur_hitrou_create( struct unur_par *par )
   GEN->bounding_rectangle = PAR->bounding_rectangle; /* using bounding rect flag */
   GEN->adaptive_points = PAR->adaptive_points;  /* reusing outside points for line-segment */
   GEN->adaptive_strip = PAR->adaptive_strip;    /* using adaptive strip flag */
+  GEN->unidirectional_flag = PAR->unidirectional_flag; /* uni-, bi-directional sampling */
   
   if (PAR->umin != NULL) memcpy(GEN->umin, PAR->umin, GEN->dim * sizeof(double));
   if (PAR->umax != NULL) memcpy(GEN->umax, PAR->umax, GEN->dim * sizeof(double));
@@ -815,13 +840,14 @@ _unur_hitrou_clone( const struct unur_gen *gen )
   CLONE->point_random  = _unur_xmalloc( (GEN->dim+1) * sizeof(double));
   CLONE->direction = _unur_xmalloc( (GEN->dim+1) * sizeof(double));
 
-  /* copy parameters into clone object */
+  /* copy parameters into clone object ... not necessary, but safe */
   CLONE->skip = GEN->skip;
   CLONE->r = GEN->r;
   CLONE->vmax = GEN->vmax;
   CLONE->bounding_rectangle = GEN->bounding_rectangle;
   CLONE->adaptive_points = GEN->adaptive_points;
   CLONE->adaptive_strip = GEN->adaptive_strip;
+  CLONE->unidirectional_flag = GEN->unidirectional_flag;
   
   memcpy(CLONE->umin, GEN->umin, GEN->dim * sizeof(double));
   memcpy(CLONE->umax, GEN->umax, GEN->dim * sizeof(double));
@@ -854,7 +880,7 @@ _unur_hitrou_sample_cvec( struct unur_gen *gen, double *vec )
   double lambda, lmin, lmax; /* lambda parameters of line */
   long skip;
   int inside;
-  double u;
+  double u, u_direction;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);
@@ -875,7 +901,8 @@ _unur_hitrou_sample_cvec( struct unur_gen *gen, double *vec )
         /* adaptive step for the upper strip position vmax */
         inside=1; 
         while (inside==1) {
-          /* calculate lambda parameters for the intersections with v=vmax */
+          
+	  /* calculate lambda parameters for the intersections with v=vmax */
           lambda = (GEN->vmax - GEN->point_current[dim]) / GEN->direction[dim];
           if (lambda>0) lmax = lambda;
           if (lambda<0) lmin = lambda;
@@ -886,11 +913,12 @@ _unur_hitrou_sample_cvec( struct unur_gen *gen, double *vec )
       
           inside = _unur_hitrou_inside_shape(gen, GEN->point_random);
 
-          /* increase vmax if necessary */
+          /* increase vmax if necessary  */
+	  /* we do not decrease vmax ... */
           if (inside==1) GEN->vmax *= HITROU_ADAPTIVE_MULTIPLIER;    
         }
       }
-      
+            
       /* calculate lambda parameters for the intersections with v=vmax and v=0 */
       lambda = (GEN->vmax - GEN->point_current[dim]) / GEN->direction[dim];
       if (lambda>0) lmax = lambda;
@@ -949,17 +977,41 @@ _unur_hitrou_sample_cvec( struct unur_gen *gen, double *vec )
         }
     
     }
-        
+
+    
+    if (GEN->unidirectional_flag==1) {      
+        /* making a chice about which way to go in the loop below : 
+	   coparallel or antiparallel to the random direction */
+        u_direction = _unur_call_urng(gen->urng);
+    }
+            
     /* until we find an inside point */
     while (1) {
 
       u = _unur_call_urng(gen->urng);
-      lambda = lmin + (lmax-lmin) * u;
-      if (GEN->adaptive_points==1) {
-        if (lambda>0) lmax=lambda;
-        if (lambda<0) lmin=lambda;
-      }
       
+      if (GEN->unidirectional_flag==0) {      
+        /* bidirectional sampling */
+        lambda = lmin + (lmax-lmin) * u;
+        if (GEN->adaptive_points==1) {
+          if (lambda>0) lmax=lambda;
+          if (lambda<0) lmin=lambda;
+        }
+      }
+      else {
+        /* unidirectional sampling */
+        if (u_direction < 0.5)
+	  lambda = lmin * u; 
+	else  
+	  lambda = lmax * u;
+      
+          if (GEN->adaptive_points==1) {
+            if (lambda>0) lmax=lambda;
+            if (lambda<0) lmin=lambda;
+          }
+      
+      }
+            
       /* calculate the "candidate" point along the given random direction */
       for (d=0; d<=dim; d++)
         GEN->point_random[d] = GEN->point_current[d] + lambda * GEN->direction[d];

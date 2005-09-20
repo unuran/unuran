@@ -453,6 +453,14 @@ static int _unur_tdr_ps_interval_split( struct unur_gen *gen,
 /* split am interval point x. return 0 if not successful.                    */                                           
 /*---------------------------------------------------------------------------*/
 
+static int _unur_tdr_gw_improve_hat( struct unur_gen *gen, struct unur_tdr_interval *iv, 
+				     double x, double fx);
+static int _unur_tdr_ps_improve_hat( struct unur_gen *gen, struct unur_tdr_interval *iv, 
+				     double x, double fx);
+/*---------------------------------------------------------------------------*/
+/* improve hat function by splitting interval                                */
+/*---------------------------------------------------------------------------*/
+
 static int _unur_tdr_make_guide_table( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* make a guide table for indexed search.                                    */

@@ -204,29 +204,11 @@ _unur_tdr_ia_sample( struct unur_gen *gen )
     if (V <= fx)
       return X;
 
-
-    /* evaluation of PDF is expensive. improve the situation! */
+    /* being above squeeze is bad. improve the situation! */
     if (GEN->n_ivs < GEN->max_ivs) {
-      if (GEN->max_ratio * GEN->Atotal > GEN->Asqueeze) {
-	int result = _unur_tdr_ps_interval_split(gen, iv, X, fx);
-	if (result!=UNUR_SUCCESS && result!=UNUR_ERR_SILENT) {
-	  /* condition for PDF is violated! */
-	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
-	  if (gen->variant & TDR_VARFLAG_PEDANTIC) {
-	    /* replace sampling routine by dummy routine that just returns INFINITY */
-	    SAMPLE = _unur_sample_cont_error;
-	    return INFINITY;
-	  }
-	}
-	else {
-	  /* splitting successful --> update guide table */ 
-	  _unur_tdr_make_guide_table(gen);
-	}
-      }
-      else {
-	/* no more construction points (avoid to many second if statement above */
-	GEN->max_ivs = GEN->n_ivs;
-      }
+      if ( (_unur_tdr_ps_improve_hat( gen, iv, X, fx) != UNUR_SUCCESS)
+	   && (gen->variant & TDR_VARFLAG_PEDANTIC) )
+	return UNUR_INFINITY;
     }
 
     /* else reject and try again */
@@ -393,28 +375,11 @@ _unur_tdr_ia_sample_check( struct unur_gen *gen )
     if (V <= fx)
       return X;
 
-    /* evaluation of PDF is expensive. improve the situation! */
+    /* being above squeeze is bad. improve the situation! */
     if (GEN->n_ivs < GEN->max_ivs) {
-      if (GEN->max_ratio * GEN->Atotal > GEN->Asqueeze) {
-	int result = _unur_tdr_ps_interval_split(gen, iv, X, fx);
-	if (result!=UNUR_SUCCESS && result!=UNUR_ERR_SILENT) {
-	  /* condition for PDF is violated! */
-	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
-	  if (gen->variant & TDR_VARFLAG_PEDANTIC) {
-	    /* replace sampling routine by dummy routine that just returns INFINITY */
-	    SAMPLE = _unur_sample_cont_error;
-	    return INFINITY;
-	  }
-	}
-	else {
-	  /* splitting successful --> update guide table */ 
-	  _unur_tdr_make_guide_table(gen);
-	}
-      }
-      else {
-	/* no more construction points (avoid to many second if statement above */
-	GEN->max_ivs = GEN->n_ivs;
-      }
+      if ( (_unur_tdr_ps_improve_hat( gen, iv, X, fx) != UNUR_SUCCESS)
+	   && (gen->variant & TDR_VARFLAG_PEDANTIC) )
+	return UNUR_INFINITY;
     }
 
     /* else reject and try again */

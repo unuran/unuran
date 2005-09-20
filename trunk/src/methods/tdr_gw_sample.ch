@@ -218,26 +218,9 @@ _unur_tdr_gw_sample( struct unur_gen *gen )
 
     /* being above squeeze is bad. improve the situation! */
     if (GEN->n_ivs < GEN->max_ivs) {
-      if (GEN->max_ratio * GEN->Atotal > GEN->Asqueeze) {
-	int result = _unur_tdr_gw_interval_split(gen, iv, X, fx);
-	if (result!=UNUR_SUCCESS && result!=UNUR_ERR_SILENT) {
-	  /* condition for PDF is violated! */
-	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
-	  if (gen->variant & TDR_VARFLAG_PEDANTIC) {
-	    /* replace sampling routine by dummy routine that just returns INFINITY */
-	    SAMPLE = _unur_sample_cont_error;
-	    return INFINITY;
-	  }
-	}
-	else {
-	  /* splitting successful --> update guide table */ 
-	  _unur_tdr_make_guide_table(gen);
-	}
-      }
-      else {
-	/* no more construction points (avoid to many second if statement above) */
-	GEN->max_ivs = GEN->n_ivs;
-      }
+      if ( (_unur_tdr_gw_improve_hat( gen, iv, X, fx) != UNUR_SUCCESS)
+	   && (gen->variant & TDR_VARFLAG_PEDANTIC) )
+	return UNUR_INFINITY;
     }
 
     if (V <= fx)
@@ -325,26 +308,9 @@ _unur_tdr_gw_sample_check( struct unur_gen *gen )
 
     /* being above squeeze is bad. improve the situation! */
     if (GEN->n_ivs < GEN->max_ivs) {
-      if (GEN->max_ratio * GEN->Atotal > GEN->Asqueeze) {
-	int result = _unur_tdr_gw_interval_split(gen, iv, X, fx);
-	if (result!=UNUR_SUCCESS && result!=UNUR_ERR_SILENT) {
-	  /* condition for PDF is violated! */
-	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
-	  if (gen->variant & TDR_VARFLAG_PEDANTIC) {
-	    /* replace sampling routine by dummy routine that just returns INFINITY */
-	    SAMPLE = _unur_sample_cont_error;
-	    return INFINITY;
-	  }
-	}
-	else {
-	  /* splitting successful --> update guide table */ 
-	  _unur_tdr_make_guide_table(gen);
-	}
-      }
-      else {
-	/* no more construction points (avoid to many second if statement above */
-	GEN->max_ivs = GEN->n_ivs;
-      }
+      if ( (_unur_tdr_gw_improve_hat( gen, iv, X, fx) != UNUR_SUCCESS)
+	   && (gen->variant & TDR_VARFLAG_PEDANTIC) )
+	return UNUR_INFINITY;
     }
 
     if (V <= fx)
@@ -517,3 +483,53 @@ _unur_tdr_gw_eval_invcdfhat( const struct unur_gen *gen, double U,
 } /* end of _unur_tdr_gw_eval_invcdfhat() */
 
 /*---------------------------------------------------------------------------*/
+
+int
+_unur_tdr_gw_improve_hat( struct unur_gen *gen, struct unur_tdr_interval *iv,
+			  double x, double fx )
+     /*----------------------------------------------------------------------*/
+     /* improve hat function by splitting interval                           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen        ... pointer to generator object                         */
+     /*   iv         ... pointer to interval that has to be split            */
+     /*   x          ... splitting point                                     */
+     /*   fx         ... value of PDF at splitting point                     */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS    ... improving hat successful                       */
+     /*   others          ... error: PDF not monotone in interval            */
+     /*----------------------------------------------------------------------*/
+{
+  int result;
+
+  /* is there any reason to improve hat ? */
+  if (! (GEN->max_ratio * GEN->Atotal > GEN->Asqueeze) ) {
+    /* no more construction points (avoid calling this function any more) */
+    GEN->max_ivs = GEN->n_ivs;
+    return UNUR_SUCCESS;
+  }
+
+  /* add construction point */
+  result = _unur_tdr_gw_interval_split(gen, iv, x, fx);
+  if (result!=UNUR_SUCCESS && result!=UNUR_ERR_SILENT) {
+    /* condition for PDF is violated! */
+    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
+    if (gen->variant & TDR_VARFLAG_PEDANTIC) {
+      /* replace sampling routine by dummy routine that just returns INFINITY */
+      SAMPLE = _unur_sample_cont_error;
+      return UNUR_ERR_GEN_CONDITION;
+    }
+  }
+
+  /* splitting successful --> update guide table */
+  /** TODO: it is not necessary to update the guide table every time. 
+      But then (1) some additional bookkeeping is required and
+      (2) the guide table method requires a acc./rej. step. **/
+  _unur_tdr_make_guide_table(gen);
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+} /* end of _unur_tdr_gw_improve_hat() */
+
+/*****************************************************************************/

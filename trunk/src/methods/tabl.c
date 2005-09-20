@@ -219,7 +219,7 @@ static int
 _unur_tabl_improve_hat( struct unur_gen *gen, struct unur_tabl_interval *iv, 
 			double x, double fx, unsigned split_mode );
 /*---------------------------------------------------------------------------*/
-/* improve hat function and by splitting interval                            */
+/* improve hat function by splitting interval                                */
 /*---------------------------------------------------------------------------*/
 
 static int _unur_tabl_make_guide_table( struct unur_gen *gen );

@@ -533,7 +533,7 @@ _unur_tdr_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
       _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"mode -> ignore");
       continue;
     }
-    if (was_mode && fx > fx_last * (1+DBL_EPSILON)) {
+    if (was_mode && fx > fx_last * (1.+DBL_EPSILON)) {
       _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"mode");
       return UNUR_ERR_GEN_DATA;
     }
@@ -716,7 +716,8 @@ _unur_tdr_interval_new( struct unur_gen *gen, double x, double fx, int is_mode )
 
   /* avoid uninitialized variables */
   iv->Acum = iv->Ahat = iv->Ahatr = iv->Asqueeze = 0.;
-  
+  iv->ip = iv->fip = iv->sq = 0.;
+
   /* make left construction point in interval */
   iv->x = x;              /* point x */
   iv->fx = fx;            /* value of PDF at x */

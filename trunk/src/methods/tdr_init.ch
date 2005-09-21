@@ -926,8 +926,15 @@ _unur_tdr_interval_area( struct unur_gen *gen, struct unur_tdr_interval *iv, dou
 	area = iv->fx / slope;
       else {
 	double t = slope * (x - iv->x);
-	if (fabs(t) > 1.e-6)
-	  area = iv->fx * (x - iv->x) * ( exp(t) - 1. ) / t;
+	if (fabs(t) > 1.e-6) {
+	  if (t > MAXLOG / 10.) {
+	    double xdiff = (x>iv->x) ? x - iv->x : iv->x - x;
+	    area = exp( log(iv->fx) + log(xdiff) + t - log(t) );
+	  }
+	  else {
+	    area = iv->fx * (x - iv->x) * ( exp(t) - 1. ) / t;
+	  }
+	}
 	else if (fabs(t) > 1.e-8)
 	  /* use Taylor series */
 	  area = iv->fx * (x - iv->x) * (1. + t/2. + t*t/6.);
@@ -943,6 +950,7 @@ _unur_tdr_interval_area( struct unur_gen *gen, struct unur_tdr_interval *iv, dou
     break;
 
   case TDR_VAR_T_SQRT:
+
     /* T(x) = -1./sqrt(x) */
     if (slope != 0.) {
       if (_unur_FP_is_infinity(x) || _unur_FP_is_minus_infinity(x))

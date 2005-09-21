@@ -60,6 +60,11 @@ int main()
   printf("/* square root of DBL_EPSILON */\n");  
   printf("#define UNUR_SQRT_DBL_EPSILON   %.30g\n\n", sqrt(DBL_EPSILON));
 
+  /* Log of machine epsilon.                                                   */
+  /* Negative of least number x such that exp(x)-1. == exp(x)                  */
+
+  printf("/* log of DBL_EPSILON */\n");  
+  printf("#define UNUR_LOG_DBL_EPSILON   %.30g\n\n", log(DBL_EPSILON));
 
   /* Constants used by CEPHES functions */
 

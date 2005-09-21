@@ -240,7 +240,7 @@ static double _unur_tabl_eval_cdfhat( struct unur_gen *gen, double x );
 
 static void _unur_tabl_debug_init_start( const struct unur_par *par, const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* print after generator has been created.                                   */
+/* print after (almost empty generator) object has been created.             */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_tabl_debug_init_finished( const struct unur_gen *gen );

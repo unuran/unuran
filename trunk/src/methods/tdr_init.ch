@@ -75,6 +75,11 @@ _unur_tdr_init( struct unur_par *par )
   gen = _unur_tdr_create(par);
   if (!gen) { _unur_par_free(par); return NULL; }
 
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  if (gen->debug) _unur_tdr_debug_init_start(par,gen);
+#endif
+
   /* get starting points */
   if (_unur_tdr_starting_cpoints(par,gen)!=UNUR_SUCCESS) {
     _unur_par_free(par); _unur_tdr_free(gen);
@@ -105,7 +110,6 @@ _unur_tdr_init( struct unur_par *par )
       /* make initial guide table (only necessary for writing debug info) */
       _unur_tdr_make_guide_table(gen);
       /* write info into log file */
-      _unur_tdr_debug_init(par,gen);
       _unur_tdr_debug_dars_start(par,gen);
     }
 #endif
@@ -134,23 +138,13 @@ _unur_tdr_init( struct unur_par *par )
 
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
-    if (gen->debug) {
-      if (gen->debug & TDR_DEBUG_DARS)
-	_unur_tdr_debug_dars(par,gen);
-      else 
-	_unur_tdr_debug_init(par,gen);
-    }
+    if (gen->debug) _unur_tdr_debug_dars_finished(gen);
 #endif
   }
   
   else { /* do not run DARS */
     /* make initial guide table */
     _unur_tdr_make_guide_table(gen);
-
-#ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
-    if (gen->debug) _unur_tdr_debug_init(par,gen);
-#endif
   }
 
   /* free parameters */
@@ -162,6 +156,14 @@ _unur_tdr_init( struct unur_par *par )
     _unur_tdr_free(gen);
     return NULL;
   }
+
+#ifdef UNUR_ENABLE_LOGGING
+    /* write info into log file */
+    if (gen->debug) _unur_tdr_debug_init_finished(gen);
+#endif
+
+  /* creation of generator object successfull */
+  gen->status = UNUR_SUCCESS;
 
   /* o.k. */
   return gen;

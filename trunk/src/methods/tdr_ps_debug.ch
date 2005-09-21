@@ -39,12 +39,13 @@
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_tdr_ps_debug_intervals( const struct unur_gen *gen )
+_unur_tdr_ps_debug_intervals( const struct unur_gen *gen, int print_areas )
      /*----------------------------------------------------------------------*/
      /* write list of intervals into logfile (proportional squeezes)         */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
+     /*   gen         ... pointer to generator object                        */
+     /*   print_areas ... whether table of areas should be printed           */
      /*----------------------------------------------------------------------*/
 {
   FILE *log;
@@ -75,17 +76,10 @@ _unur_tdr_ps_debug_intervals( const struct unur_gen *gen )
   else
     fprintf(log,"%s: No intervals !\n",gen->genid);
 
-  if (GEN->Atotal <= 0.) {
-    fprintf(log,"%s: Construction of hat function not successful\n",gen->genid);
-    fprintf(log,"%s: Areas may be meaningless !!!!!!!!!!!!!!!!!!\n",gen->genid);
-    fprintf(log,"%s:\n",gen->genid);
-    Atotal = -1.;   /* to avoid floating point exceptions */
-  }
-  else {
-    Atotal = GEN->Atotal;
-  }
+  if (!print_areas || GEN->Atotal <= 0.) return;
 
   /* print and sum areas below squeeze and hat */
+  Atotal = GEN->Atotal;
   if (gen->debug & TDR_DEBUG_IV) {
     fprintf(log,"%s:Areas in intervals:\n",gen->genid);
     fprintf(log,"%s: Nr.\tbelow squeeze\t\t  below hat (left and right)\t\t  cumulated\n",gen->genid);

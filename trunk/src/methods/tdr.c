@@ -472,7 +472,12 @@ static int _unur_tdr_make_guide_table( struct unur_gen *gen );
 /* i.e., into the log file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_tdr_debug_init( const struct unur_par *par, const struct unur_gen *gen );
+static void _unur_tdr_debug_init_start( const struct unur_par *par, const struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* print after (almost empty generator) object has been created.             */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_tdr_debug_init_finished( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed.                 */
 /*---------------------------------------------------------------------------*/
@@ -482,7 +487,7 @@ static void _unur_tdr_debug_dars_start( const struct unur_par *par, const struct
 /* print header before runniung derandomized adaptive rejection sampling.    */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_tdr_debug_dars( const struct unur_par *par, const struct unur_gen *gen );
+static void _unur_tdr_debug_dars_finished( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print after generator has run derandomized adaptive rejection sampling.   */
 /*---------------------------------------------------------------------------*/
@@ -492,9 +497,9 @@ static void _unur_tdr_debug_free( const struct unur_gen *gen );
 /* print before generater is destroyed.                                      */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_tdr_debug_intervals( const struct unur_gen *gen );
-static void _unur_tdr_gw_debug_intervals( const struct unur_gen *gen );
-static void _unur_tdr_ps_debug_intervals( const struct unur_gen *gen );
+static void _unur_tdr_debug_intervals( const struct unur_gen *gen, const char *header, int print_areas );
+static void _unur_tdr_gw_debug_intervals( const struct unur_gen *gen, int print_areas );
+static void _unur_tdr_ps_debug_intervals( const struct unur_gen *gen, int print_areas );
 /*---------------------------------------------------------------------------*/
 /* print data for intervals                                                  */
 /*---------------------------------------------------------------------------*/

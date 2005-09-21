@@ -49,9 +49,9 @@
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_tdr_debug_init( const struct unur_par *par, const struct unur_gen *gen )
+_unur_tdr_debug_init_start( const struct unur_par *par, const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* write info about generator after setup into logfile                  */
+     /* print after (almost empty generator) object has been created.        */
      /*                                                                      */
      /* parameters:                                                          */
      /*   par ... pointer to parameter for building generator object         */
@@ -153,16 +153,38 @@ _unur_tdr_debug_init( const struct unur_par *par, const struct unur_gen *gen )
     fprintf(log," use \"equdistribution\" rule [default]");
   fprintf(log,"\n%s:\n",gen->genid);
   
-  _unur_tdr_debug_intervals(gen);
+  fflush(log);
+
+} /* end of _unur_tdr_debug_init_start() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_tdr_debug_init_finished( const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* write info about generator after setup into logfile                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{
+  FILE *log;
+
+  /* check arguments */
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_TDR_GEN,RETURN_VOID);
+
+  log = unur_get_stream();
+
+  _unur_tdr_debug_intervals(gen,"INIT completed",TRUE);
 
   fprintf(log,"%s: INIT completed **********************\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
   fflush(log);
 
-} /* end of _unur_tdr_debug_init() */
+} /* end of _unur_tdr_debug_init_finished() */
 
-/*****************************************************************************/
+/*---------------------------------------------------------------------------*/
 
 void 
 _unur_tdr_debug_dars_start( const struct unur_par *par, const struct unur_gen *gen )
@@ -182,6 +204,8 @@ _unur_tdr_debug_dars_start( const struct unur_par *par, const struct unur_gen *g
 
   log = unur_get_stream();
 
+  if (gen->debug & TDR_DEBUG_IV) 
+    _unur_tdr_debug_intervals(gen,"Starting Intervals:",TRUE);
   fprintf(log,"%s: DARS started **********************\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
   fprintf(log,"%s: DARS factor = %g",gen->genid,PAR->darsfactor);
@@ -196,12 +220,11 @@ _unur_tdr_debug_dars_start( const struct unur_par *par, const struct unur_gen *g
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_tdr_debug_dars( const struct unur_par *par, const struct unur_gen *gen )
+_unur_tdr_debug_dars_finished( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* print infor after generator has run DARS into logfile                */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   par ... pointer to parameter for building generator object         */
      /*   gen ... pointer to generator object                                */
      /*----------------------------------------------------------------------*/
 {
@@ -209,22 +232,17 @@ _unur_tdr_debug_dars( const struct unur_par *par, const struct unur_gen *gen )
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_TDR_GEN,RETURN_VOID);
-  CHECK_NULL(par,RETURN_VOID);  COOKIE_CHECK(par,CK_TDR_PAR,RETURN_VOID);
 
   log = unur_get_stream();
 
   fprintf(log,"%s:\n",gen->genid);
   fprintf(log,"%s: DARS finished **********************\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
-  _unur_tdr_debug_intervals(gen);
-  fprintf(log,"%s:\n",gen->genid);
-  fprintf(log,"%s: DARS completed **********************\n",gen->genid);
-  fprintf(log,"%s:\n",gen->genid);
 
   fflush(log);
-} /* end of _unur_tdr_debug_dars() */
+} /* end of _unur_tdr_debug_dars_finished() */
 
-/*****************************************************************************/
+/*---------------------------------------------------------------------------*/
 
 void
 _unur_tdr_debug_free( const struct unur_gen *gen )
@@ -243,33 +261,50 @@ _unur_tdr_debug_free( const struct unur_gen *gen )
   log = unur_get_stream();
 
   fprintf(log,"%s:\n",gen->genid);
-  fprintf(log,"%s: GENERATOR destroyed **********************\n",gen->genid);
-  fprintf(log,"%s:\n",gen->genid);
-  _unur_tdr_debug_intervals(gen);
+  if (gen->status == UNUR_SUCCESS) {
+    fprintf(log,"%s: GENERATOR destroyed **********************\n",gen->genid);
+    fprintf(log,"%s:\n",gen->genid);
+    _unur_tdr_debug_intervals(gen,NULL,TRUE);
+  }
+  else {
+    fprintf(log,"%s: initialization of GENERATOR failed **********************\n",gen->genid);
+    _unur_tdr_debug_intervals(gen,"Intervals after failure:",FALSE);
+  }
   fprintf(log,"%s:\n",gen->genid);
 
   fflush(log);
 
 } /* end of _unur_tdr_debug_free() */
 
-/*****************************************************************************/
+/*---------------------------------------------------------------------------*/
 
 void
-_unur_tdr_debug_intervals( const struct unur_gen *gen )
+_unur_tdr_debug_intervals( const struct unur_gen *gen, const char *header, int print_areas )
      /*----------------------------------------------------------------------*/
      /* write list of intervals into logfile (orig. variant by Gilks & Wild) */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
+     /*   gen         ... pointer to generator object                        */
+     /*   header      ... header for table                                   */
+     /*   print_areas ... whether table of areas should be printed           */
      /*----------------------------------------------------------------------*/
 {
+  FILE *log;
+
+  /* check arguments */
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_TDR_GEN,RETURN_VOID);
+
+  log = unur_get_stream();
+
+  if (header) fprintf(log,"%s:%s\n",gen->genid,header);
+
   switch (gen->variant & TDR_VARMASK_VARIANT) {
   case TDR_VARIANT_GW:    /* original variant (Gilks&Wild) */
-    _unur_tdr_gw_debug_intervals(gen);
+    _unur_tdr_gw_debug_intervals(gen,print_areas);
     return;
   case TDR_VARIANT_PS:    /* proportional squeeze */
   case TDR_VARIANT_IA:    /* immediate acceptance */
-    _unur_tdr_ps_debug_intervals(gen);
+    _unur_tdr_ps_debug_intervals(gen,print_areas);
     return;
   default:
     _unur_error(GENTYPE,UNUR_ERR_SHOULD_NOT_HAPPEN,"");

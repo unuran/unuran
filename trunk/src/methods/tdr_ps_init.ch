@@ -402,6 +402,10 @@ _unur_tdr_ps_dars( struct unur_par *par, struct unur_gen *gen )
 	    Asqueeze_gw = (iv->Tfx > iv->prev->Tfx)
 	      ? _unur_tdr_interval_area( gen, iv, squeeze_gw, iv->prev->x)
 	      : _unur_tdr_interval_area( gen, iv->prev, squeeze_gw, iv->x);
+
+	    /* check for fatal numerical errors */
+	    if (!_unur_isfinite(Asqueeze_gw))  Asqueeze_gw = 0.;
+
 	  }
 	  else { /* there is no squeeze */
 	    xAsqueeze_gw = 0.;
@@ -409,11 +413,8 @@ _unur_tdr_ps_dars( struct unur_par *par, struct unur_gen *gen )
 	  }
 
 	  /* check results */
-	  if ( _unur_FP_is_infinity(xAhatl) || _unur_FP_is_minus_infinity(xAhatl) ||
-	       _unur_FP_is_infinity(xAhatr) || _unur_FP_is_minus_infinity(xAhatr) ||
-	       _unur_FP_is_infinity(xAsqueeze_gw) || _unur_FP_is_minus_infinity(xAsqueeze_gw) ||
-	       _unur_FP_is_infinity(Asqueeze_gw)  || _unur_FP_is_minus_infinity(Asqueeze_gw) ||
-	       _unur_FP_equal(Ahat_gw,Asqueeze_gw) )
+	  if (! (_unur_isfinite(xAhatl) && _unur_isfinite(xAhatr) && _unur_isfinite(xAsqueeze_gw))
+	      || _unur_FP_equal(Ahat_gw,Asqueeze_gw) )
 	    continue;  /* try next rule */
 
 	  /* compute expected value */
@@ -539,7 +540,7 @@ _unur_tdr_ps_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval 
   iv->Ahatr = _unur_tdr_interval_area( gen, iv, iv->dTfx, iv->next->ip);
 
   /* areas below head unbounded ? */
-  if (Ahatl >= INFINITY || iv->Ahatr >= INFINITY)
+  if (! (_unur_isfinite(Ahatl) && _unur_isfinite(iv->Ahatr)) )
     return UNUR_ERR_INF;
 
   /* total area */

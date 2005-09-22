@@ -946,12 +946,20 @@ _unur_tdr_eval_cdfhat( struct unur_gen *gen, double x )
     if (x < iv->ip) {
       /* left h.s. of intersection point */
       Aint = _unur_tdr_interval_area( gen, iv, iv->dTfx, x);
+      if (!_unur_isfinite(Aint)) { 
+	/* this should not happen */
+	Aint = 0.;
+      }
       /* Notice: iv->prev->Acum == iv->Acum - iv->Ahat; */
       cdf = (iv->prev) ? iv->prev->Acum + Aint : Aint;
     }
     else {
       /* right h.s. of intersection point */
       Aint = _unur_tdr_interval_area( gen, iv->next, iv->next->dTfx, x);
+      if (!_unur_isfinite(Aint)) { 
+	/* this should not happen */
+	Aint = 0.;
+      }
       cdf = iv->Acum - Aint;
       if (cdf < 0.) return 0.;
     }
@@ -979,6 +987,10 @@ _unur_tdr_eval_cdfhat( struct unur_gen *gen, double x )
 
     /* area below hat between construction point and x */
     Aint = _unur_tdr_interval_area( gen, iv, iv->dTfx, x);
+    if (!_unur_isfinite(Aint)) { 
+      /* this should not happen */
+      Aint = 0.;
+    }
 
     /* compute CDF of hat */
     cdf = ((x>iv->x) ? Aint : -Aint) + iv->Acum - iv->Ahatr;

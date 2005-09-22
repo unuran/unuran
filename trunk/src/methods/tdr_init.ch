@@ -919,8 +919,8 @@ _unur_tdr_interval_area( struct unur_gen *gen, struct unur_tdr_interval *iv, dou
 
   switch( gen->variant & TDR_VARMASK_T ) {
 
-  case TDR_VAR_T_LOG:
-    /* T(x) = log(x) */
+  case TDR_VAR_T_LOG:   /* T(x) = log(x) */
+
     if (slope != 0.) {                         
       if (_unur_FP_is_infinity(x) || _unur_FP_is_minus_infinity(x))
 	area = iv->fx / slope;
@@ -945,13 +945,13 @@ _unur_tdr_interval_area( struct unur_gen *gen, struct unur_tdr_interval *iv, dou
     else { /* hat/squeeze almost constant */
       if (_unur_FP_is_infinity(x) || _unur_FP_is_minus_infinity(x))
 	return INFINITY;
-      area = iv->fx * (x - iv->x);
+      else
+	area = iv->fx * (x - iv->x);
     }
     break;
 
-  case TDR_VAR_T_SQRT:
+  case TDR_VAR_T_SQRT:   /* T(x) = -1./sqrt(x) */
 
-    /* T(x) = -1./sqrt(x) */
     if (slope != 0.) {
       if (_unur_FP_is_infinity(x) || _unur_FP_is_minus_infinity(x))
 	area = 1. / ( iv->Tfx * slope );
@@ -969,12 +969,12 @@ _unur_tdr_interval_area( struct unur_gen *gen, struct unur_tdr_interval *iv, dou
     else { /* hat/squeeze almost constant */
       if (_unur_FP_is_infinity(x) || _unur_FP_is_minus_infinity(x))
 	return INFINITY;
-      area = iv->fx * (x - iv->x);
+      else
+	area = iv->fx * (x - iv->x);
     }
     break;
 
-  case TDR_VAR_T_POW:
-    /* T(x) = -x^c */
+  case TDR_VAR_T_POW:   /* T(x) = -x^c */
     /** TODO **/
     break;
   }

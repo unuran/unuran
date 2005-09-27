@@ -98,6 +98,12 @@
 #define _unur_cvec_pdlogPDF(x,c,distr) ((*((distr)->data.cvec.pdlogpdf)) ((x),(c),(distr)))
 
 /*---------------------------------------------------------------------------*/
+/* check for existance of function pointers                                  */
+
+#define _unur_cont_have_logPDF(distr)  (((distr)->data.cont.logpdf==NULL)?FALSE:TRUE)
+#define _unur_cont_have_dlogPDF(distr) (((distr)->data.cont.dlogpdf==NULL)?FALSE:TRUE)
+
+/*---------------------------------------------------------------------------*/
 /* wrapper functions for PDF when only logPDF is given                       */
 
 double _unur_distr_cont_eval_pdf_from_logpdf( double x, const struct unur_distr *distr );

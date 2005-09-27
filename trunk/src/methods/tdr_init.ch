@@ -730,24 +730,46 @@ _unur_tdr_interval_new( struct unur_gen *gen, double x, double fx, int is_mode )
   
   switch( gen->variant & TDR_VARMASK_T ) {
   case TDR_VAR_T_LOG:
+    /* transformed density */
     iv->Tfx = log(fx);
-    dfx = dPDF(x);
-    /* we can set dPDF(x) = 0. for the mode */
-    if (is_mode || dfx==0.)
-      iv->dTfx = 0.;
-    else
-      iv->dTfx = (1./fx * dfx);   /* possible overflow ? */
+    /* derivative of transformed density */
+    if (is_mode) { 
+      /* we can set dPDF(x) = 0. for the mode */
+      iv->dTfx = 0.; break; 
+    }
+    if (_unur_cont_have_dlogPDF(gen->distr)) {
+      iv->dTfx = dlogPDF(x); break; 
+    }
+    else {
+      dfx = dPDF(x);
+      if (dfx==0.)
+	iv->dTfx = 0.;
+      else
+	iv->dTfx = (1./fx * dfx);   /* possible overflow ? */
+    }
     break;
+
   case TDR_VAR_T_SQRT:
+    /* transformed density */
     iv->Tfx = -1./sqrt(fx);
-    dfx = dPDF(x);
-    /* we can set dPDF(x) = 0. for the mode */
-    if (is_mode || dfx==0.)
-      iv->dTfx = 0.;
-    else
-      iv->dTfx = (dfx<0.) ? -exp( -M_LN2 - 1.5*log(fx) + log(-dfx))
-	: exp( -M_LN2 - 1.5*log(fx) + log(dfx));
+    /* derivative of transformed density */
+    if (is_mode) { 
+      /* we can set dPDF(x) = 0. for the mode */
+      iv->dTfx = 0.; break; }
+    if (_unur_cont_have_dlogPDF(gen->distr)) {
+      iv->dTfx = -0.5 * iv->Tfx * dlogPDF(x);
+      break;
+    }
+    else {
+      dfx = dPDF(x);
+      if (dfx==0.)
+	iv->dTfx = 0.;
+      else
+	iv->dTfx = (dfx<0.) ? -exp( -M_LN2 - 1.5*log(fx) + log(-dfx))
+	  : exp( -M_LN2 - 1.5*log(fx) + log(dfx));
+    }
     break;
+
   case TDR_VAR_T_POW:
     /** TODO **/
     /*      iv->Tfx = -pow(fx,GEN->c_T); */
@@ -756,7 +778,7 @@ _unur_tdr_interval_new( struct unur_gen *gen, double x, double fx, int is_mode )
   }
 
   /* the program requires dTfx > -INFINITY */
-  if (iv->dTfx <= -INFINITY)
+  if ( !(iv->dTfx > -INFINITY))
     iv->dTfx = INFINITY;
 
   return iv;

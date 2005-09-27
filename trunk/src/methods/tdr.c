@@ -599,8 +599,10 @@ static void _unur_tdr_ps_debug_split_stop( const struct unur_gen *gen,
 
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */     
 
-#define PDF(x)    _unur_cont_PDF((x),(gen->distr))   /* call to PDF          */
-#define dPDF(x)   _unur_cont_dPDF((x),(gen->distr))  /* call to derivative of PDF */
+#define PDF(x)     _unur_cont_PDF((x),(gen->distr))      /* call to PDF      */
+#define dPDF(x)    _unur_cont_dPDF((x),(gen->distr))     /* call to derivative of PDF */
+#define logPDF(x)  _unur_cont_logPDF((x),(gen->distr))   /* call to logPDF   */
+#define dlogPDF(x) _unur_cont_dlogPDF((x),(gen->distr))  /* call to derivative of log PDF */
 
 /*---------------------------------------------------------------------------*/
 /* since there is only file scope or program code, we abuse the              */

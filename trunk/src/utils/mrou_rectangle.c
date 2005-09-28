@@ -62,7 +62,7 @@
 
 #define MROU_HOOKE_RHO     (0.5)
 #define MROU_HOOKE_EPSILON (1.e-7)
-#define MROU_HOOKE_MAXITER (10000)
+#define MROU_HOOKE_MAXITER (1000)
 
 /* Scaling factor for the computed minimum bounding rectangle.               */
 /* The computed rectangle  (0, vmax)x(umin[d], umax[d]) is scaled by this    */
@@ -186,7 +186,7 @@ _unur_mrou_rectangle_compute( struct MROU_RECTANGLE *rr )
   xumin  = _unur_xmalloc(dim * sizeof(double));
   xumax  = _unur_xmalloc(dim * sizeof(double));
 
-  if (rr->distr->data.cvec.mode != NULL) {
+  if (rr->distr->data.cvec.mode != NULL) { 
     /* position of mode is known ... vmax = f(mode)^(1/r*dim+1)) */
     faux.f = (UNUR_FUNCT_VGENERIC*) _unur_mrou_rectangle_aux_vmax;
     faux.params = rr;
@@ -205,7 +205,7 @@ _unur_mrou_rectangle_compute( struct MROU_RECTANGLE *rr )
 				    MROU_HOOKE_RHO, MROU_HOOKE_EPSILON, MROU_HOOKE_MAXITER);
   
     rr->vmax = -faux.f(xend, faux.params);
-    
+        
     if (hooke_iters_vmax >= MROU_HOOKE_MAXITER) {
       scaled_epsilon = MROU_HOOKE_EPSILON * rr->vmax;
       if (scaled_epsilon>MROU_HOOKE_EPSILON) scaled_epsilon=MROU_HOOKE_EPSILON;
@@ -220,7 +220,7 @@ _unur_mrou_rectangle_compute( struct MROU_RECTANGLE *rr )
       }
     }
   }
-
+  
   if (rr->bounding_rectangle==1) {
   /* calculation of umin and umax */
   for (d=0; d<dim; d++) {
@@ -256,10 +256,10 @@ _unur_mrou_rectangle_compute( struct MROU_RECTANGLE *rr )
     
     /* storing actual endpoint in case we need a recalculation */
     memcpy(xumax, xend, dim * sizeof(double));
-    
+
     /*-----------------------------------------------------------------------------*/
     /* checking if we need to recalculate umin */
-    if (hooke_iters_umin >= MROU_HOOKE_MAXITER) {
+    if (hooke_iters_umin >= MROU_HOOKE_MAXITER) {      
       scaled_epsilon = MROU_HOOKE_EPSILON * (rr->umax[d]-rr->umin[d]);
       if (scaled_epsilon>MROU_HOOKE_EPSILON) scaled_epsilon=MROU_HOOKE_EPSILON;
       

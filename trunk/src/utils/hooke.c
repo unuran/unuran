@@ -275,9 +275,9 @@ int _unur_hooke(struct unur_funct_vgeneric faux,
 			   }
 			   
 			   /* stopping condition to avoid infinite while-loop */
-			   if ( isubiters++ >= HOOKE_SUBITERMAX) break;
+			   if ( isubiters++ >= HOOKE_SUBITERMAX) break;  
 		   }
-		   if ((steplength >= epsilon) /*&& (newf >= fbefore)*/) {
+		   if ((steplength >= epsilon) && (newf >= fbefore)) {
 			   steplength = steplength * rho;
 			   for (i = 0; i < dim; i++) {
 				   delta[i] *= rho;

@@ -35,6 +35,7 @@ libmethods_la_SOURCES = \
           tdr_init.ch tdr_gw_init.ch tdr_ps_init.ch \
           tdr_sample.ch tdr_gw_sample.ch tdr_ps_sample.ch tdr_ia_sample.ch \
           tdr_debug.ch tdr_gw_debug.ch tdr_ps_debug.ch \
+ tdrgw.c  tdrgw.h  tdrgw_struct.h \
  unif.c   unif.h   unif_struct.h \
  utdr.c   utdr.h   utdr_struct.h \
  vempk.c  vempk.h  vempk_struct.h \

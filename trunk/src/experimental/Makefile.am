@@ -9,7 +9,6 @@ libunurexperimental_la_SOURCES = \
  ball.c    ball.h    ball_struct.h \
  gibbs.c   gibbs.h   gibbs_struct.h \
  hitrou.c  hitrou.h  hitrou_struct.h \
- tdrgw.c  tdrgw.h  tdrgw_struct.h \
  varou.c   varou.h   varou_struct.h \
  walk.c    walk.h    walk_struct.h 
 

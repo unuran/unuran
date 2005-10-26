@@ -74,6 +74,13 @@
 #include <unur_struct.h>
 
 /*---------------------------------------------------------------------------*/
+/* Replacement functions                                                     */
+
+#if !HAVE_DECL_LOG1P
+#  include <specfunct/unur_specfunct_source.h> 
+#endif
+
+/*---------------------------------------------------------------------------*/
 /* Utilities used by almost all sources                                      */
 
 /* uniform random number generators */

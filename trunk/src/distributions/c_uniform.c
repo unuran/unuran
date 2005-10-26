@@ -73,6 +73,8 @@ static const char distr_name[] = "uniform";
 /* function prototypes                                                       */
 static double _unur_pdf_uniform( double x, const UNUR_DISTR *distr );
 static double _unur_dpdf_uniform( double x, const UNUR_DISTR *distr );
+static double _unur_logpdf_uniform( double x, const UNUR_DISTR *distr );
+static double _unur_dlogpdf_uniform( double x, const UNUR_DISTR *distr );
 static double _unur_cdf_uniform( double x, const UNUR_DISTR *distr );
 
 static int _unur_upd_mode_uniform( UNUR_DISTR *distr );
@@ -97,7 +99,29 @@ _unur_pdf_uniform( double x, const UNUR_DISTR *distr )
 /*---------------------------------------------------------------------------*/
 
 double
+_unur_logpdf_uniform( double x, const UNUR_DISTR *distr )
+{ 
+  register double *params = DISTR.params;
+
+  if (x < a || x > b)
+    return -INFINITY;
+  /* else */
+  return -log(b-a);
+
+} /* end of _unur_pdf_uniform() */
+
+/*---------------------------------------------------------------------------*/
+
+double
 _unur_dpdf_uniform( double x, const UNUR_DISTR *distr )
+{ 
+  return 0.;
+} /* end of _unur_dpdf_uniform() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_dlogpdf_uniform( double x, const UNUR_DISTR *distr )
 { 
   return 0.;
 } /* end of _unur_dpdf_uniform() */
@@ -221,9 +245,11 @@ unur_distr_uniform( const double *params, int n_params )
   DISTR.init = _unur_stdgen_uniform_init;
 
   /* functions */
-  DISTR.pdf  = _unur_pdf_uniform;  /* pointer to PDF               */
-  DISTR.dpdf = _unur_dpdf_uniform; /* pointer to derivative of PDF */
-  DISTR.cdf  = _unur_cdf_uniform;  /* pointer to CDF               */
+  DISTR.pdf     = _unur_pdf_uniform;     /* pointer to PDF               */
+  DISTR.logpdf  = _unur_logpdf_uniform;  /* pointer to logPDF            */
+  DISTR.dpdf    = _unur_dpdf_uniform;    /* pointer to derivative of PDF */
+  DISTR.dlogpdf = _unur_dlogpdf_uniform; /* pointer to deriv. of logPDF  */
+  DISTR.cdf     = _unur_cdf_uniform;     /* pointer to CDF               */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

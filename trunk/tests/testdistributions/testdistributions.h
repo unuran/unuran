@@ -66,11 +66,17 @@ UNUR_DISTR *unur_distr_exponential_wo_logpdf(const double *params, int n_params)
 /* Gamma distribution  [2; ch.17, p.337]                                     */
 UNUR_DISTR *unur_distr_gamma_wo_logpdf(const double *params, int n_params);
 
+/*  Laplace distribution  [3; ch.24, p.164]                                  */
+UNUR_DISTR *unur_distr_laplace_wo_logpdf(const double *params, int n_params);
+
 /* Normal distribution  [2; ch.13, p.80]                                     */
 UNUR_DISTR *unur_distr_normal_wo_logpdf( const double *params, int n_params );
 
 /*  Power-exponential (Subbotin) distribution  [3; ch.24, p.195]             */
 UNUR_DISTR *unur_distr_powerexponential_wo_logpdf(const double *params, int n_params);
+
+/* Uniform distribution  [3; ch.26, p.276]                                   */
+UNUR_DISTR *unur_distr_uniform_wo_logpdf(const double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
 /* Continuous univariate distributions where PDF is computed from logPDF     */

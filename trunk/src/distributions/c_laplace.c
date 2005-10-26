@@ -87,6 +87,8 @@ static const char distr_name[] = "laplace";
 static double _unur_pdf_laplace( double x, const UNUR_DISTR *distr );
 static double _unur_dpdf_laplace( double x, const UNUR_DISTR *distr );
 static double _unur_cdf_laplace( double x, const UNUR_DISTR *distr );
+static double _unur_logpdf_laplace( double x, const UNUR_DISTR *distr );
+static double _unur_dlogpdf_laplace( double x, const UNUR_DISTR *distr );
 
 static int _unur_upd_mode_laplace( UNUR_DISTR *distr );
 static int _unur_upd_area_laplace( UNUR_DISTR *distr );
@@ -109,6 +111,20 @@ _unur_pdf_laplace( double x, const UNUR_DISTR *distr )
 /*---------------------------------------------------------------------------*/
 
 double
+_unur_logpdf_laplace( double x, const UNUR_DISTR *distr )
+{ 
+  register double *params = DISTR.params;
+
+  if (x<theta) 
+    return ( (x-theta)/phi - log(2.*phi) ); 
+  /* else */
+  return (  (theta-x)/phi - log(2.*phi) ); 
+
+} /* end of _unur_pdf_laplace() */
+
+/*---------------------------------------------------------------------------*/
+
+double
 _unur_dpdf_laplace( double x, const UNUR_DISTR *distr )
 { 
   register double *params = DISTR.params;
@@ -120,6 +136,15 @@ _unur_dpdf_laplace( double x, const UNUR_DISTR *distr )
     return 0.;   /* a tangent parallel to x-axis is possible.               */
 
   return ( ((x>theta) ? -exp(-z)/phi : exp(-z)/phi) / (2.*phi) );
+} /* end of unur_dpdf_laplace() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_dlogpdf_laplace( double x, const UNUR_DISTR *distr )
+{ 
+  register double *params = DISTR.params;
+  return ( (x<theta) ? 1./phi : -1./phi );
 } /* end of unur_dpdf_laplace() */
 
 /*---------------------------------------------------------------------------*/
@@ -236,9 +261,11 @@ unur_distr_laplace( const double *params, int n_params )
   DISTR.init = _unur_stdgen_laplace_init;
 
   /* functions */
-  DISTR.pdf  = _unur_pdf_laplace;  /* pointer to PDF               */
-  DISTR.dpdf = _unur_dpdf_laplace; /* pointer to derivative of PDF */
-  DISTR.cdf  = _unur_cdf_laplace;  /* pointer to CDF               */
+  DISTR.pdf     = _unur_pdf_laplace;     /* pointer to PDF               */
+  DISTR.logpdf  = _unur_logpdf_laplace;  /* pointer to logPDF            */
+  DISTR.dpdf    = _unur_dpdf_laplace;    /* pointer to derivative of PDF */
+  DISTR.dlogpdf = _unur_dlogpdf_laplace; /* pointer to deriv. of logPDF  */
+  DISTR.cdf     = _unur_cdf_laplace;     /* pointer to CDF               */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

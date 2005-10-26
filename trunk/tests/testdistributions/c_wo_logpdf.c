@@ -131,6 +131,28 @@ unur_distr_gamma_wo_logpdf( const double *params, int n_params )
 /*---------------------------------------------------------------------------*/
 
 struct unur_distr *
+unur_distr_laplace_wo_logpdf( const double *params, int n_params )
+{
+  register struct unur_distr *distr;
+
+  /* get distribution object for laplace distribution */
+  distr = unur_distr_laplace( params, n_params );
+
+  /* name of distribution */
+  distr->name = "laplace_wo_logpdf";
+
+  /* disable logPDF */
+  DISTR.logpdf  = NULL;
+  DISTR.dlogpdf = NULL;
+
+  /* return pointer to object */
+  return distr;
+
+} /* end of unur_distr_laplace_wo_logpdf() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_distr *
 unur_distr_normal_wo_logpdf( const double *params, int n_params )
 {
   register struct unur_distr *distr;
@@ -171,6 +193,28 @@ unur_distr_powerexponential_wo_logpdf( const double *params, int n_params )
   return distr;
 
 } /* end of unur_distr_powerexponential_wo_logpdf() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_distr *
+unur_distr_uniform_wo_logpdf( const double *params, int n_params )
+{
+  register struct unur_distr *distr;
+
+  /* get distribution object for uniform distribution */
+  distr = unur_distr_uniform( params, n_params );
+
+  /* name of distribution */
+  distr->name = "uniform_wo_logpdf";
+
+  /* disable logPDF */
+  DISTR.logpdf  = NULL;
+  DISTR.dlogpdf = NULL;
+
+  /* return pointer to object */
+  return distr;
+
+} /* end of unur_distr_uniform_wo_logpdf() */
 
 /*---------------------------------------------------------------------------*/
 #undef DISTR

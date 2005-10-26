@@ -183,37 +183,14 @@ static void _unur_tdrgw_debug_init_finished( const struct unur_gen *gen );
 /* print after generator has been initialized has completed.                 */
 /*---------------------------------------------------------------------------*/
 
-/* static void _unur_tdrgw_debug_dars_start( const struct unur_par *par, const struct unur_gen *gen ); */
-/*---------------------------------------------------------------------------*/
-/* print header before runniung derandomized adaptive rejection sampling.    */
-/*---------------------------------------------------------------------------*/
-
-/* static void _unur_tdrgw_debug_dars_finished( const struct unur_gen *gen ); */
-/*---------------------------------------------------------------------------*/
-/* print after generator has run derandomized adaptive rejection sampling.   */
-/*---------------------------------------------------------------------------*/
-
 static void _unur_tdrgw_debug_free( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print before generater is destroyed.                                      */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_tdrgw_debug_intervals( const struct unur_gen *gen, const char *header, int print_areas );
-/* static void _unur_tdrgw_gw_debug_intervals( const struct unur_gen *gen, int print_areas ); */
-/* static void _unur_tdrgw_ps_debug_intervals( const struct unur_gen *gen, int print_areas ); */
 /*---------------------------------------------------------------------------*/
 /* print data for intervals                                                  */
-/*---------------------------------------------------------------------------*/
-
-/* static void _unur_tdrgw_gw_debug_sample( const struct unur_gen *gen, */
-/* 				       const struct unur_tdrgw_interval *iv, */
-/* 				       const struct unur_tdrgw_interval *pt,  */
-/* 				       double x, double fx, double hx, double sqx ); */
-/* static void _unur_tdrgw_ps_debug_sample( const struct unur_gen *gen,  */
-/* 				       const struct unur_tdrgw_interval *iv, */
-/* 				       double x, double fx, double hx, double sqx ); */
-/*---------------------------------------------------------------------------*/
-/* print data while sampling from generators.                                */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_tdrgw_debug_split_start( const struct unur_gen *gen,
@@ -222,14 +199,6 @@ static void _unur_tdrgw_debug_split_start( const struct unur_gen *gen,
 static void _unur_tdrgw_debug_split_stop( const struct unur_gen *gen,
 					   const struct unur_tdrgw_interval *iv_left,
 					   const struct unur_tdrgw_interval *iv_right );
-/* static void _unur_tdrgw_ps_debug_split_start( const struct unur_gen *gen,  */
-/* 					    const struct unur_tdrgw_interval *iv_left, */
-/* 					    const struct unur_tdrgw_interval *iv_right, */
-/* 					    double x, double fx ); */
-/* static void _unur_tdrgw_ps_debug_split_stop( const struct unur_gen *gen,  */
-/* 					   const struct unur_tdrgw_interval *iv_left, */
-/* 					   const struct unur_tdrgw_interval *iv_middle, */
-/* 					   const struct unur_tdrgw_interval *iv_right ); */
 /*---------------------------------------------------------------------------*/
 /* print before and after an interval has been split (not / successfully).   */
 /*---------------------------------------------------------------------------*/
@@ -944,10 +913,10 @@ _unur_tdrgw_sample( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 { 
   struct unur_tdrgw_interval *iv, *pt;
-  double U, V;                 /* uniform random number                      */
-  double X;                    /* generated point                            */
-  double logfx, fx, sqx, hx;          /* values of density, squeeze, and hat at X   */
-  double x0, fx0;
+  double U, logV;                   /* (log of) uniform random number        */
+  double X;                         /* generated point                       */
+  double logfx, logsqx, loghx;      /* log of density, squeeze, and hat at X */
+  double x0, logfx0, dlogfx0, fx0;  /* construction point and logPDF at x0   */
 
   /* check arguments */
   CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_TDRGW_GEN,INFINITY);
@@ -967,10 +936,10 @@ _unur_tdrgw_sample( struct unur_gen *gen )
     /* reuse of uniform random number */
     U -= iv->Acum;    /* result: U in (-A_hat, 0) */
 
-    /* left or right side of hat */
+    /* l.h.s. or r.h.s. of hat */
     if (-U < iv->Ahatr) { /* right */
       pt = iv->next;
-      /* u unchanged */
+      /* U unchanged */
     }
     else {                /* left */
       pt = iv;
@@ -979,16 +948,18 @@ _unur_tdrgw_sample( struct unur_gen *gen )
 
     /* PDF at x0 */
     x0 = pt->x;
-    fx0 = exp(pt->logfx);
+    logfx0 = pt->logfx;
+    dlogfx0 = pt->dlogfx;
+    fx0 = exp(logfx0);
 
     /* random variate */
-    if (pt->dlogfx == 0.)
+    if (dlogfx0 == 0.)
       X = x0 + U / fx0;
     else {
-      double t = pt->dlogfx * U / fx0;
+      double t = dlogfx0 * U / fx0;
       if (fabs(t) > 1.e-6)
 	X = x0 + log(t + 1.) * U / (fx0 * t);
-      /* x = x0 + log(t + 1.) / pt->dlogfx; is cheaper but numerical unstable */
+      /* x = x0 + log(t + 1.) / dlogfx0; is cheaper but numerical unstable */
       else if (fabs(t) > 1.e-8)
 	/* use Taylor series */
 	X = x0 + U / fx0 * (1 - t/2. + t*t/3.);
@@ -996,22 +967,25 @@ _unur_tdrgw_sample( struct unur_gen *gen )
 	X = x0 + U / fx0 * (1 - t/2.);
     }
     
-    /* accept or reject */
-    hx = fx0 * exp(pt->dlogfx*(X - x0));    /* value of hat at x */
-    V = _unur_call_urng(gen->urng) * hx;  /* a random point between 0 and hat at x */
+    /* log of hat at x */
+    loghx = logfx0 + dlogfx0*(X - x0);
+
+    /* log of a random point between 0 and hat at x */
+    logV = log(_unur_call_urng(gen->urng)) + loghx;
     
     /* below mininum of density in interval ? */
-    if (V <= exp(iv->logfx) && V <= exp(iv->next->logfx))
+    if (logV <= iv->logfx && logV <= iv->next->logfx)
       return X;
     
+    /* log of spueeze at x */
+    logsqx = (iv->Asqueeze > 0.) ? iv->logfx + iv->sq*(X - iv->x) : -INFINITY;
+ 
     /* below squeeze ? */
-    sqx = (iv->Asqueeze > 0.) ? exp(iv->logfx) * exp(iv->sq*(X - iv->x)) : 0.;     /* value of squeeze at x */
-    if (V <= sqx)
+    if (logV <= logsqx)
       return X;
     
-    /* value of PDF at x */
+    /* log of PDF at x */
     logfx = logPDF(X);
-    fx = exp(logfx);
 
     /* being above squeeze is bad. improve the situation! */
     if (GEN->n_ivs < GEN->max_ivs) {
@@ -1020,8 +994,8 @@ _unur_tdrgw_sample( struct unur_gen *gen )
 	return UNUR_INFINITY;
     }
 
-    if (V <= fx)
-      /* between PDF and squeeze */
+    /* below PDF ? */
+    if (logV <= logfx)
       return X;
 
     /* else reject and try again */
@@ -1048,11 +1022,12 @@ _unur_tdrgw_sample_check( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 { 
   struct unur_tdrgw_interval *iv, *pt;
-  double U, V;                 /* uniform random number                      */
-  double X;                    /* generated point                            */
-  double logfx, fx, sqx, hx;          /* value of density, squeeze, and hat at X    */
-  double x0, fx0;              /* construction point and PDF at x0           */
-  int error = 0;               /* indicates error                            */
+  double U, logV;                   /* (log of) uniform random number        */
+  double X;                         /* generated point                       */
+  double logfx, logsqx, loghx;      /* log of density, squeeze, and hat at X */
+  double x0, logfx0, dlogfx0, fx0;  /* construction point and logPDF at x0   */
+
+  int error = 0;                    /* indicates error                       */
 
   /* check arguments */
   CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_TDRGW_GEN,INFINITY);
@@ -1074,10 +1049,10 @@ _unur_tdrgw_sample_check( struct unur_gen *gen )
     /* reuse of uniform random number */
     U -= iv->Acum;    /* result: U in (-A_hat, 0) */
 
-    /* left or right side of hat */
+    /* l.h.s. or r.h.s. of hat */
     if (-U < iv->Ahatr) { /* right */
       pt = iv->next;
-      /* u unchanged */
+      /* U unchanged */
     }
     else {                /* left */
       pt = iv;
@@ -1086,16 +1061,18 @@ _unur_tdrgw_sample_check( struct unur_gen *gen )
 
     /* PDF at x0 */
     x0 = pt->x;
-    fx0 = exp(pt->logfx);
+    logfx0 = pt->logfx;
+    dlogfx0 = pt->dlogfx;
+    fx0 = exp(logfx0);
 
     /* random variate */
-    if (pt->dlogfx == 0.)
+    if (dlogfx0 == 0.)
       X = x0 + U / fx0;
     else {
-      double t = pt->dlogfx * U / fx0;
+      double t = dlogfx0 * U / fx0;
       if (fabs(t) > 1.e-6)
 	X = x0 + log(t + 1.) * U / (fx0 * t);
-      /* x = x0 + log(t + 1.) / pt->dlogfx; is cheaper but numerical unstable */
+      /* x = x0 + log(t + 1.) / dlogfx0; is cheaper but numerical unstable */
       else if (fabs(t) > 1.e-8)
 	/* use Taylor series */
 	X = x0 + U / fx0 * (1 - t/2. + t*t/3.);
@@ -1103,39 +1080,38 @@ _unur_tdrgw_sample_check( struct unur_gen *gen )
 	X = x0 + U / fx0 * (1 - t/2.);
     }
     
-    /* value of hat at x */
-    hx = fx0 * exp(pt->dlogfx*(X - x0));    /* value of hat at x */
+    /* log of hat at x */
+    loghx = logfx0 + dlogfx0*(X - x0);
 
-    /* value of PDF at x */
+    /* log of spueeze at x */
+    logsqx = (iv->Asqueeze > 0.) ? iv->logfx + iv->sq*(X - iv->x) : -INFINITY;
+ 
+    /* log of PDF at x */
     logfx = logPDF(X);
-    fx = exp(logfx);
-
-    /* value of spueeze at x */
-    sqx = (iv->Asqueeze > 0.) ? exp(iv->logfx) * exp(iv->sq*(X - iv->x)) : 0.;
 
     /* check result */
     if (X < DISTR.BD_LEFT || X > DISTR.BD_RIGHT) {
       _unur_warning(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"generated point out of domain");
       error = 1;
     }
-    if (_unur_FP_greater(fx,hx)) {
+    if (_unur_FP_greater(logfx,loghx)) {
       _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF > hat. Not log-concave!");
       error = 1;
     }
-    if (_unur_FP_less(fx,sqx)) {
+    if (_unur_FP_less(logfx,logsqx)) {
       _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF < squeeze. Not log-concave!");
       error = 1;
     }
 
-    /* accept or reject */
-    V = _unur_call_urng(gen->urng) * hx;  /* a random point between 0 and hat at X */
+    /* log of a random point between 0 and hat at x */
+    logV = log(_unur_call_urng(gen->urng)) + loghx;
 
     /* below mininum of density in interval ? */
-    if (V <= exp(iv->logfx) && V <= exp(iv->next->logfx))
+    if (logV <= iv->logfx && logV <= iv->next->logfx)
       return X;
-
+    
     /* below squeeze ? */
-    if (V <= sqx)
+    if (logV <= logsqx)
       return X;
 
     /* being above squeeze is bad. improve the situation! */
@@ -1145,8 +1121,8 @@ _unur_tdrgw_sample_check( struct unur_gen *gen )
 	return UNUR_INFINITY;
     }
 
-    if (V <= fx)
-      /* between PDF and squeeze */
+    /* below PDF ? */
+    if (logV <= logfx)
       return X;
 
     /* reject and try again */

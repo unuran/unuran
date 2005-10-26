@@ -48,7 +48,7 @@
 
    =SPEED Set-up: (very) slow, Sampling: fast
 
-   =REF  [AJa93] [AJa95] [HLD04: Cha5.1]  
+   =REF  [AJa93] [AJa95] [HLD04: Cha.5.1]  
 
    =ABSTRACT Large tables necessary for heavy tailed distributions 
 
@@ -75,7 +75,7 @@
       equivalently all local maxima and minima of the density.  
       The main problem for this method in the setup is the choice of the
       subintervals. A simple and close to optimal approach is the 
-      "equal area rule" @unurbibref{HLD04: Cha5.1}. There the subintervals are
+      "equal area rule" @unurbibref{HLD04: Cha.5.1}. There the subintervals are
       selected such that the area below the hat is the same for
       each subinterval which can be realized with a simple recursion.
       If more subintervals are necessary it is possible to split

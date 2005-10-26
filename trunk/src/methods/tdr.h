@@ -48,7 +48,7 @@
 
    =SPEED Set-up: slow, Sampling: fast
 
-   =REF  [GWa92]  [HWa95]
+   =REF  [GWa92] [HWa95] [HLD04: Cha.4]
 
    =DESCRIPTION
       TDR is an acceptance/rejection method that uses the concavity of a

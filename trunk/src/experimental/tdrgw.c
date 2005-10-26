@@ -70,8 +70,8 @@
 /*    bits 13-24 ... adaptive steps                                          */
 /*    bits 25-32 ... trace sampling                                          */
 
-/* #define TDRGW_DEBUG_IV           0x00000010u */
-/* #define TDRGW_DEBUG_SPLIT        0x00010000u */
+#define TDRGW_DEBUG_IV           0x00000010u
+#define TDRGW_DEBUG_SPLIT        0x00010000u
 /* #define TDRGW_DEBUG_SAMPLE       0x01000000u */
 
 /*---------------------------------------------------------------------------*/
@@ -173,12 +173,12 @@ static int _unur_tdrgw_make_guide_table( struct unur_gen *gen );
 /* i.e., into the log file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 
-/* static void _unur_tdrgw_debug_init_start( const struct unur_par *par, const struct unur_gen *gen ); */
+static void _unur_tdrgw_debug_init_start( const struct unur_par *par, const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print after (almost empty generator) object has been created.             */
 /*---------------------------------------------------------------------------*/
 
-/* static void _unur_tdrgw_debug_init_finished( const struct unur_gen *gen ); */
+static void _unur_tdrgw_debug_init_finished( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed.                 */
 /*---------------------------------------------------------------------------*/
@@ -193,12 +193,12 @@ static int _unur_tdrgw_make_guide_table( struct unur_gen *gen );
 /* print after generator has run derandomized adaptive rejection sampling.   */
 /*---------------------------------------------------------------------------*/
 
-/* static void _unur_tdrgw_debug_free( const struct unur_gen *gen ); */
+static void _unur_tdrgw_debug_free( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print before generater is destroyed.                                      */
 /*---------------------------------------------------------------------------*/
 
-/* static void _unur_tdrgw_debug_intervals( const struct unur_gen *gen, const char *header, int print_areas ); */
+static void _unur_tdrgw_debug_intervals( const struct unur_gen *gen, const char *header, int print_areas );
 /* static void _unur_tdrgw_gw_debug_intervals( const struct unur_gen *gen, int print_areas ); */
 /* static void _unur_tdrgw_ps_debug_intervals( const struct unur_gen *gen, int print_areas ); */
 /*---------------------------------------------------------------------------*/
@@ -216,12 +216,12 @@ static int _unur_tdrgw_make_guide_table( struct unur_gen *gen );
 /* print data while sampling from generators.                                */
 /*---------------------------------------------------------------------------*/
 
-/* static void _unur_tdrgw_gw_debug_split_start( const struct unur_gen *gen,  */
-/* 					    const struct unur_tdrgw_interval *iv, */
-/* 					    double x, double fx ); */
-/* static void _unur_tdrgw_gw_debug_split_stop( const struct unur_gen *gen,  */
-/* 					   const struct unur_tdrgw_interval *iv_left, */
-/* 					   const struct unur_tdrgw_interval *iv_right ); */
+static void _unur_tdrgw_debug_split_start( const struct unur_gen *gen,
+					    const struct unur_tdrgw_interval *iv,
+					    double x, double logfx );
+static void _unur_tdrgw_debug_split_stop( const struct unur_gen *gen,
+					   const struct unur_tdrgw_interval *iv_left,
+					   const struct unur_tdrgw_interval *iv_right );
 /* static void _unur_tdrgw_ps_debug_split_start( const struct unur_gen *gen,  */
 /* 					    const struct unur_tdrgw_interval *iv_left, */
 /* 					    const struct unur_tdrgw_interval *iv_right, */
@@ -686,8 +686,7 @@ _unur_tdrgw_init( struct unur_par *par )
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-  /** TODO **/
-  /*   if (gen->debug) _unur_tdrgw_debug_init_start(par,gen); */
+  if (gen->debug) _unur_tdrgw_debug_init_start(par,gen);
 #endif
 
   /* get starting points */
@@ -722,8 +721,7 @@ _unur_tdrgw_init( struct unur_par *par )
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-  /** TODO **/
-/*   if (gen->debug) _unur_tdrgw_debug_init_finished(gen); */
+  if (gen->debug) _unur_tdrgw_debug_init_finished(gen);
 #endif
   
   /* creation of generator object successfull */
@@ -881,8 +879,7 @@ _unur_tdrgw_free( struct unur_gen *gen )
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-  /** TODO **/
-  /*   if (gen->debug) _unur_tdrgw_debug_free(gen); */
+  if (gen->debug) _unur_tdrgw_debug_free(gen);
 #endif
 
   /* free linked list of intervals */
@@ -1129,13 +1126,6 @@ _unur_tdrgw_sample_check( struct unur_gen *gen )
       _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF < squeeze. Not log-concave!");
       error = 1;
     }
-
-#ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file (in case error) */
-    /** TODO **/
-/*     if (error && (gen->debug & TDRGW_DEBUG_SAMPLE))  */
-/*       _unur_tdrgw_debug_sample( gen, iv, pt, X, fx, hx, sqx );  */
-#endif
 
     /* accept or reject */
     V = _unur_call_urng(gen->urng) * hx;  /* a random point between 0 and hat at X */
@@ -1652,9 +1642,8 @@ _unur_tdrgw_interval_split( struct unur_gen *gen, struct unur_tdrgw_interval *iv
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-  /** TODO **/
-/*   if (gen->debug & TDRGW_DEBUG_SPLIT)  */
-/*     _unur_tdrgw_debug_split_start( gen,iv_oldl,x,fx ); */
+  if (gen->debug & TDRGW_DEBUG_SPLIT)
+    _unur_tdrgw_debug_split_start( gen,iv_oldl,x,logfx );
 #endif
 
   /* the splitting point must be inside the interval */
@@ -1748,9 +1737,8 @@ _unur_tdrgw_interval_split( struct unur_gen *gen, struct unur_tdrgw_interval *iv
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-  /** TODO **/
-/*   if (gen->debug & TDRGW_DEBUG_SPLIT) */
-/*     _unur_tdrgw_debug_split_stop( gen,iv_oldl,iv_newr ); */
+  if (gen->debug & TDRGW_DEBUG_SPLIT)
+    _unur_tdrgw_debug_split_stop( gen,iv_oldl,iv_newr );
 #endif
 
   /* o.k. */
@@ -2010,4 +1998,336 @@ _unur_tdrgw_make_guide_table( struct unur_gen *gen )
   return UNUR_SUCCESS;
 } /* end of _unur_tdrgw_make_guide_table() */
 
+/*---------------------------------------------------------------------------*/
+
+
+/*****************************************************************************/
+/**  Debugging utilities                                                    **/
+/*****************************************************************************/
+
+/*---------------------------------------------------------------------------*/
+#ifdef UNUR_ENABLE_LOGGING
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_tdrgw_debug_init_start( const struct unur_par *par, const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* print after (almost empty generator) object has been created.        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter for building generator object         */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{
+  FILE *log;
+  int i;
+
+  /* check arguments */
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_TDRGW_GEN,RETURN_VOID);
+  CHECK_NULL(par,RETURN_VOID);  COOKIE_CHECK(par,CK_TDRGW_PAR,RETURN_VOID);
+
+  log = unur_get_stream();
+
+  fprintf(log,"%s:\n",gen->genid);
+  fprintf(log,"%s: type    = continuous univariate random variates\n",gen->genid);
+  fprintf(log,"%s: method  = Gilks & Wild variant of transformed density rejection\n",gen->genid);
+  fprintf(log,"%s: transformation T_c(x) = log(x)\n",gen->genid);
+  fprintf(log,"%s:\n",gen->genid);
+
+  _unur_distr_cont_debug( gen->distr, gen->genid );
+
+  fprintf(log,"%s: sampling routine = _unur_tdrgw_sample",gen->genid);
+  if (par->variant & TDRGW_VARFLAG_VERIFY)
+    fprintf(log,"_check()\n");
+  else
+    fprintf(log,"()\n");
+  fprintf(log,"%s:\n",gen->genid);
+
+  fprintf(log,"%s: maximum number of intervals        = %d",gen->genid,GEN->max_ivs);
+  _unur_print_if_default(par,TDRGW_SET_MAX_IVS);
+  fprintf(log,"\n%s: bound for ratio  Asqueeze / Atotal = %g%%",gen->genid,PAR->max_ratio*100.);
+  _unur_print_if_default(par,TDRGW_SET_MAX_SQHRATIO);
+  fprintf(log,"\n%s: Derandomized ARS disabled ",gen->genid);
+  fprintf(log,"\n%s:\n",gen->genid);
+
+  fprintf(log,"%s: sampling from list of intervals: indexed search (guide table method)\n",gen->genid);
+  fprintf(log,"%s:    relative guide table size = %g%%",gen->genid,100.*PAR->guide_factor);
+  _unur_print_if_default(par,TDRGW_SET_GUIDEFACTOR);
+  fprintf(log,"\n%s:\n",gen->genid);
+
+  fprintf(log,"%s: number of starting points = %d",gen->genid,PAR->n_starting_cpoints);
+  _unur_print_if_default(par,TDRGW_SET_N_CPOINTS);
+  fprintf(log,"\n%s: starting points:",gen->genid);
+  if (par->set & TDRGW_SET_CPOINTS)
+    for (i=0; i<PAR->n_starting_cpoints; i++) {
+      if (i%5==0) fprintf(log,"\n%s:\t",gen->genid);
+      fprintf(log,"   %#g,",PAR->starting_cpoints[i]);
+    }
+  else
+    fprintf(log," use \"equdistribution\" rule [default]");
+  fprintf(log,"\n%s:\n",gen->genid);
+  
+  fflush(log);
+
+} /* end of _unur_tdrgw_debug_init_start() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_tdrgw_debug_init_finished( const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* write info about generator after setup into logfile                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{
+  FILE *log;
+
+  /* check arguments */
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_TDRGW_GEN,RETURN_VOID);
+
+  log = unur_get_stream();
+
+  _unur_tdrgw_debug_intervals(gen,"INIT completed",TRUE);
+
+  fprintf(log,"%s: INIT completed **********************\n",gen->genid);
+  fprintf(log,"%s:\n",gen->genid);
+
+  fflush(log);
+
+} /* end of _unur_tdrgw_debug_init_finished() */
+
+/*---------------------------------------------------------------------------*/
+
+void 
+_unur_tdrgw_debug_intervals( const struct unur_gen *gen, const char *header, int print_areas )
+     /*----------------------------------------------------------------------*/
+     /* write list of intervals into logfile (orig. variant by Gilks & Wild) */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen         ... pointer to generator object                        */
+     /*   header      ... header for table                                   */
+     /*   print_areas ... whether table of areas should be printed           */
+     /*----------------------------------------------------------------------*/
+{
+  FILE *log;
+  struct unur_tdrgw_interval *iv;
+  double sAsqueeze, sAhatl, sAhatr, Atotal;
+  int i;
+
+  /* check arguments */
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_TDRGW_GEN,RETURN_VOID);
+
+  log = unur_get_stream();
+
+  if (header) fprintf(log,"%s:%s\n",gen->genid,header);
+
+  fprintf(log,"%s:Intervals: %d\n",gen->genid,GEN->n_ivs);
+  if (GEN->iv) {
+    if (gen->debug & TDRGW_DEBUG_IV) {
+      fprintf(log,"%s: Nr.            tp            ip       logf(tp)     dlogf(tp)       squeeze\n",gen->genid);
+      for (iv = GEN->iv, i=0; iv->next!=NULL; iv=iv->next, i++) {
+	COOKIE_CHECK(iv,CK_TDRGW_IV,RETURN_VOID); 
+	fprintf(log,"%s:[%3d]: %#12.6g  %#12.6g  %#12.6g  %#12.6g  %#12.6g\n", gen->genid, i,
+		iv->x, iv->ip, iv->logfx, iv->dlogfx, iv->sq);
+      }
+      COOKIE_CHECK(iv,CK_TDRGW_IV,RETURN_VOID); 
+      fprintf(log,"%s:[...]: %#12.6g                %#12.6g  %#12.6g\n", gen->genid,
+	      iv->x, iv->logfx, iv->dlogfx);
+    }
+    fprintf(log,"%s:\n",gen->genid);
+  }
+  else
+    fprintf(log,"%s: No intervals !\n",gen->genid);
+
+  if (!print_areas || GEN->Atotal <= 0.) return;
+
+  /* print and sum areas below squeeze and hat */
+  Atotal = GEN->Atotal;
+  if (gen->debug & TDRGW_DEBUG_IV) {
+    fprintf(log,"%s:Areas in intervals:\n",gen->genid);
+    fprintf(log,"%s: Nr.\t below squeeze\t\t   below hat (left and right)\t\t   cumulated\n",gen->genid);
+    sAsqueeze = sAhatl = sAhatr = 0.;
+    if (GEN->iv) {
+      for (iv = GEN->iv, i=0; iv->next!=NULL; iv=iv->next, i++) {
+	COOKIE_CHECK(iv,CK_TDRGW_IV,RETURN_VOID); 
+	sAsqueeze += iv->Asqueeze;
+	sAhatl += iv->Ahat - iv->Ahatr;
+	sAhatr += iv->Ahatr;
+	fprintf(log,"%s:[%3d]: %-12.6g(%6.3f%%)  |  %-12.6g+ %-12.6g(%6.3f%%)  |  %-12.6g(%6.3f%%)\n",
+		gen->genid,i,
+		iv->Asqueeze, iv->Asqueeze * 100. / Atotal,
+		iv->Ahat-iv->Ahatr, iv->Ahatr, iv->Ahat * 100. / Atotal, 
+		iv->Acum, iv->Acum * 100. / Atotal);
+      }
+      fprintf(log,"%s:       ----------  ---------  |  ------------------------  ---------  +\n",gen->genid);
+      fprintf(log,"%s: Sum : %-12.6g(%6.3f%%)            %-12.6g      (%6.3f%%)\n",gen->genid,
+	      sAsqueeze, sAsqueeze * 100. / Atotal,
+	      sAhatl+sAhatr, (sAhatl+sAhatr) * 100. / Atotal);
+      fprintf(log,"%s:\n",gen->genid);
+    }
+  }
+
+  /* summary of areas */
+  fprintf(log,"%s: A(squeeze)     = %-12.6g  (%6.3f%%)\n",gen->genid,
+	  GEN->Asqueeze, GEN->Asqueeze * 100./Atotal);
+  fprintf(log,"%s: A(hat\\squeeze) = %-12.6g  (%6.3f%%)\n",gen->genid,
+	  Atotal - GEN->Asqueeze, (Atotal - GEN->Asqueeze) * 100./Atotal);
+  fprintf(log,"%s: A(total)       = %-12.6g\n",gen->genid, Atotal);
+
+  fprintf(log,"%s:\n",gen->genid);
+
+} /* end of _unur_tdrgw_debug_intervals() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_tdrgw_debug_free( const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* write info about generator before destroying into logfile            */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{
+  FILE *log;
+
+  /* check arguments */
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_TDRGW_GEN,RETURN_VOID);
+
+  log = unur_get_stream();
+
+  fprintf(log,"%s:\n",gen->genid);
+  if (gen->status == UNUR_SUCCESS) {
+    fprintf(log,"%s: GENERATOR destroyed **********************\n",gen->genid);
+    fprintf(log,"%s:\n",gen->genid);
+    _unur_tdrgw_debug_intervals(gen,NULL,TRUE);
+  }
+  else {
+    fprintf(log,"%s: initialization of GENERATOR failed **********************\n",gen->genid);
+    _unur_tdrgw_debug_intervals(gen,"Intervals after failure:",FALSE);
+  }
+  fprintf(log,"%s:\n",gen->genid);
+
+  fflush(log);
+
+} /* end of _unur_tdrgw_debug_free() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_tdrgw_debug_split_start( const struct unur_gen *gen, 
+				const struct unur_tdrgw_interval *iv,
+				double x, double logfx )
+     /*----------------------------------------------------------------------*/
+     /* write info about splitting interval                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen   ... pointer to generator object                              */
+     /*   iv    ... pointer to interval                                      */
+     /*   x     ... split at this point                                      */
+     /*   logfx ... value of logPDF at x                                     */
+     /*----------------------------------------------------------------------*/
+{
+  FILE *log;
+
+  /* check arguments */
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_TDRGW_GEN,RETURN_VOID);
+  CHECK_NULL(iv,RETURN_VOID);   COOKIE_CHECK(iv,CK_TDRGW_IV,RETURN_VOID);
+
+  log = unur_get_stream();
+
+  fprintf(log,"%s: split interval at x = %g \t\tlogf(x) = %g\n",gen->genid,x,logfx);
+  fprintf(log,"%s: old interval:\n",gen->genid);
+  fprintf(log,"%s:   left  construction point = %-12.6g\tlogf(x) = %-12.6g\n",gen->genid,iv->x,iv->logfx);
+  fprintf(log,"%s:   right construction point = %-12.6g\tlogf(x) = %-12.6g\n",gen->genid,iv->next->x,iv->next->logfx);
+  fprintf(log,"%s:   A(squeeze)     = %-12.6g\t\t(%6.3f%%)\n",gen->genid,
+	  iv->Asqueeze,iv->Asqueeze*100./GEN->Atotal);
+  fprintf(log,"%s:   A(hat\\squeeze) = %-12.6g\t\t(%6.3f%%)\n",gen->genid,
+	  (iv->Ahat - iv->Asqueeze),(iv->Ahat - iv->Asqueeze)*100./GEN->Atotal);
+  fprintf(log,"%s:   A(hat)         = %-12.6g +  %-12.6g(%6.3f%%)\n",gen->genid,
+	  iv->Ahat - iv->Ahatr, iv->Ahatr, iv->Ahat*100./GEN->Atotal);
+
+  fflush(log);
+
+} /* end of _unur_tdrgw_debug_split_start() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_tdrgw_debug_split_stop( const struct unur_gen *gen, 
+			       const struct unur_tdrgw_interval *iv_left, 
+			       const struct unur_tdrgw_interval *iv_right )
+     /*----------------------------------------------------------------------*/
+     /* write info about new splitted intervals                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen      ... pointer to generator object                           */
+     /*   iv_left  ... pointer to new left hand interval                     */
+     /*   iv_right ... pointer to new right hand interval                    */
+     /*----------------------------------------------------------------------*/
+{
+  FILE *log;
+
+  /* check arguments */
+  CHECK_NULL(gen,RETURN_VOID);       COOKIE_CHECK(gen,CK_TDRGW_GEN,RETURN_VOID);
+  CHECK_NULL(iv_left,RETURN_VOID);   COOKIE_CHECK(iv_left,CK_TDRGW_IV,RETURN_VOID);
+
+  if (iv_right == NULL) iv_right = iv_left;
+
+  log = unur_get_stream();
+
+  fprintf(log,"%s: inserted point:\n",gen->genid);
+  fprintf(log,"%s: x = %g, logf(x) = %g, dlogf(x) = %g, squeeze = %g:\n",
+	  gen->genid, iv_right->x, iv_right->logfx, iv_right->dlogfx, iv_right->sq);
+  fprintf(log,"%s: new intervals:\n",gen->genid);
+  fprintf(log,"%s:   left   construction point = %g\n",gen->genid, iv_left->x);
+  if (iv_left != iv_right)
+    fprintf(log,"%s:   middle construction point = %g\n",gen->genid, iv_right->x);
+  fprintf(log,"%s:   right  construction point = %g\n",gen->genid, iv_right->next->x);
+
+  fprintf(log,"%s: left interval:\n",gen->genid);
+  fprintf(log,"%s:   A(squeeze)     = %-12.6g\t\t(%6.3f%%)\n",gen->genid,
+	  iv_left->Asqueeze,
+	  iv_left->Asqueeze*100./GEN->Atotal);
+  fprintf(log,"%s:   A(hat\\squeeze) = %-12.6g\t\t(%6.3f%%)\n",gen->genid,
+	  (iv_left->Ahat - iv_left->Asqueeze),
+	  (iv_left->Ahat - iv_left->Asqueeze) * 100./GEN->Atotal);
+  fprintf(log,"%s:   A(hat)         = %-12.6g +  %-12.6g(%6.3f%%)\n",gen->genid,
+	  iv_left->Ahat - iv_left->Ahatr,
+	  iv_left->Ahatr,
+	  iv_left->Ahat * 100./GEN->Atotal);
+
+  if (iv_left == iv_right)
+    fprintf(log,"%s: interval chopped.\n",gen->genid);
+  else {
+    fprintf(log,"%s: right interval:\n",gen->genid);
+    fprintf(log,"%s:   A(squeeze)     = %-12.6g\t\t(%6.3f%%)\n",gen->genid,
+	    iv_right->Asqueeze,
+	    iv_right->Asqueeze*100./GEN->Atotal);
+    fprintf(log,"%s:   A(hat\\squeeze) = %-12.6g\t\t(%6.3f%%)\n",gen->genid,
+	    (iv_right->Ahat - iv_right->Asqueeze),
+	    (iv_right->Ahat - iv_right->Asqueeze) * 100./GEN->Atotal);
+    fprintf(log,"%s:   A(hat)         = %-12.6g +  %-12.6g(%6.3f%%)\n",gen->genid,
+	    iv_right->Ahat - iv_right->Ahatr,
+	    iv_right->Ahatr,
+	    iv_right->Ahat * 100./GEN->Atotal);
+  }
+
+  fprintf(log,"%s: total areas:\n",gen->genid);
+  fprintf(log,"%s:   A(squeeze)     = %-12.6g\t\t(%6.3f%%)\n",gen->genid,
+	  GEN->Asqueeze, GEN->Asqueeze * 100./GEN->Atotal);
+  fprintf(log,"%s:   A(hat\\squeeze) = %-12.6g\t\t(%6.3f%%)\n",gen->genid,
+	  GEN->Atotal - GEN->Asqueeze, (GEN->Atotal - GEN->Asqueeze) * 100./GEN->Atotal);
+  fprintf(log,"%s:   A(total)       = %-12.6g\n",gen->genid, GEN->Atotal);
+
+  fprintf(log,"%s:\n",gen->genid);
+
+  fflush(log);
+
+} /* end of _unur_tdrgw_debug_split_stop() */
+
+/*---------------------------------------------------------------------------*/
+#endif    /* end UNUR_ENABLE_LOGGING */
 /*---------------------------------------------------------------------------*/

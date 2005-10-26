@@ -146,6 +146,8 @@ static int _unur_tdrgw_tangent_intersection_point( struct unur_gen *gen,
 
 static double _unur_tdrgw_interval_area( struct unur_gen *gen, struct unur_tdrgw_interval *iv,
 					 double slope, double x );
+static double _unur_tdrgw_interval_logarea( struct unur_gen *gen, struct unur_tdrgw_interval *iv,
+					    double slope, double x );
 /*---------------------------------------------------------------------------*/
 /* compute area below piece of hat or squeeze in interval.                   */
 /*---------------------------------------------------------------------------*/
@@ -1846,8 +1848,51 @@ _unur_tdrgw_interval_area( struct unur_gen *gen, struct unur_tdrgw_interval *iv,
      /*                                                                           */
      /*---------------------------------------------------------------------------*/
 {
-  double area = 0.;
-  double x0, fx0;
+  /* check arguments */
+  CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_TDRGW_GEN,INFINITY);
+  CHECK_NULL(iv,INFINITY);   COOKIE_CHECK(iv,CK_TDRGW_IV,INFINITY); 
+
+  /** TODO **/
+  /* length of interval > 0 ? */
+  if (_unur_FP_same(x, iv->x))
+    return 0.;
+
+  return exp(_unur_tdrgw_interval_logarea(gen, iv, slope, x ));
+
+} /* end of _unur_tdrgw_interval_area() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_tdrgw_interval_logarea( struct unur_gen *gen, struct unur_tdrgw_interval *iv, double slope, double x )
+     /*---------------------------------------------------------------------------*/
+     /* compute log of area below piece of hat or squeeze in                      */
+     /* interval [iv->x,x] or [x,iv->x]                                           */
+     /*                                                                           */
+     /* parameters:                                                               */
+     /*   gen   ... pointer to generator object                                   */
+     /*   iv    ... pointer to interval that stores construction point of tangent */
+     /*   slope ... slope of tangent or secant of transformed PDF                 */
+     /*   x     ... boundary of integration domain                                */
+     /*                                                                           */
+     /* return:                                                                   */
+     /*   log of area                                                             */
+     /*                                                                           */
+     /* error:                                                                    */
+     /*   return INFINITY                                                         */
+     /*                                                                           */
+     /* comment:                                                                  */
+     /*   x0    ... construction point of tangent (= iv->x)                       */
+     /*                                                                           */
+     /*   area = | \int_{x0}^x \exp(Tf(x0) + slope*(t-x0)) dt |                   */
+     /*        = f(x0) * |x - x0|                              if slope = 0       */
+     /*        = | f(x0)/slope * (\exp(slope*(x-x0))-1) |      if slope != 0      */
+     /*                                                                           */
+     /*---------------------------------------------------------------------------*/
+{
+  double x0, logfx0;
+  double logxdiff;
+  double t, logt;
 
   /* check arguments */
   CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_TDRGW_GEN,INFINITY);
@@ -1856,11 +1901,11 @@ _unur_tdrgw_interval_area( struct unur_gen *gen, struct unur_tdrgw_interval *iv,
   /* if the construction point is at infinity, we cannot compute an area.
      (in this case we should have x == iv->x == INFINITY). */
   if (!_unur_isfinite(iv->x)) 
-    return 0.;
+    return INFINITY;
 
   /* length of interval > 0 ? */
   if (_unur_FP_same(x, iv->x))
-    return 0.;
+    return -INFINITY;
 
   /* unbounded? */
   if ( !_unur_isfinite(slope)    ||
@@ -1868,41 +1913,37 @@ _unur_tdrgw_interval_area( struct unur_gen *gen, struct unur_tdrgw_interval *iv,
        (_unur_FP_is_infinity(x)       && slope>=0.)  )   /* we have set (Tf)'(x) = INFINITY, if f(x)=0 */
     return INFINITY;
 
-  /* value of PDF at iv->x */
+  /* construction point x0 of tangent and log of PDF at x0 */
   x0 = iv->x;
-  fx0 = exp(iv->logfx);
+  logfx0 = iv->logfx;
 
-  if (slope != 0.) {
-    if (_unur_FP_is_infinity(x) || _unur_FP_is_minus_infinity(x))
-      area = fx0 / slope;
-    else {
-      double t = slope * (x - x0);
-      if (fabs(t) > 1.e-6) {
-	if (t > MAXLOG / 10.) {
-	  double xdiff = (x>x0) ? x - x0 : x0 - x;
-	  area = exp( iv->logfx + log(xdiff) + t - log(t) );
-	}
-	else {
-	  area = fx0 * (x - x0) * ( exp(t) - 1. ) / t;
-	}
-      }
-      else if (fabs(t) > 1.e-8)
-	/* use Taylor series */
-	area = fx0 * (x - x0) * (1. + t/2. + t*t/6.);
-      else
-	area = fx0 * (x - x0) * (1. + t/2.);
-    }
-  }
-  else { /* hat/squeeze almost constant */
-    if (_unur_FP_is_infinity(x) || _unur_FP_is_minus_infinity(x))
-      return INFINITY;
+  /* log of |x - x=| */
+  logxdiff = log(fabs(x - x0));
+
+  /* case: hat/squeeze constant --> area = f(x0) * |x - x0| */
+  if (slope == 0.)
+    return (_unur_isfinite(x) ? logfx0 + logxdiff : INFINITY);
+
+  /* case: domain unbounded --> area = f(x0) / |slope| */
+  if (!_unur_isfinite(x))
+    return (logfx0 - log(fabs(slope)));
+
+  /* case bounded domain --> area = | f(x0)/slope * (\exp(slope*(x-x0))-1) | */
+  /* have to deal with numerical problems when x \approx x0                  */
+  t = slope * (x - x0);
+  logt = log(fabs(slope)) + logxdiff;
+
+  if (fabs(t) > 1.e-6) {
+    if (t > MAXLOG / 10.)
+      return ( logfx0 + logxdiff + t - logt );
     else
-      area = fx0 * (x - x0);
+      return ( logfx0 + logxdiff + log( fabs(exp(t) - 1.) ) - log(fabs(t)) );
   }
 
-  return ( (area<0.) ? -area : area );
+  else  /* use Taylor series */
+    return (logfx0 + logxdiff + log1p(t/2. + t*t/6.));
 
-} /* end of _unur_tdrgw_interval_area() */
+} /* end of _unur_tdrgw_interval_logarea() */
 
 /*---------------------------------------------------------------------------*/
 

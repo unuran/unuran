@@ -97,11 +97,6 @@ _unur_tdr_init( struct unur_par *par )
     GEN->max_ivs = GEN->n_ivs;
   }
   
-  /* set boundaries for U */
-  GEN->Umin = 0.;
-  GEN->Umax = 1.;
-
-
   if (par->variant & TDR_VARFLAG_USEDARS) {
     /* run derandomized adaptive rejection sampling (DARS) */
 
@@ -270,6 +265,10 @@ _unur_tdr_create( struct unur_par *par )
     PAR->center = max(PAR->center,DISTR.BD_LEFT);
     PAR->center = min(PAR->center,DISTR.BD_RIGHT);
   }
+
+  /* set (default) boundaries for U */
+  GEN->Umin = 0.;
+  GEN->Umax = 1.;
 
   /* set default for DARS */
   if (!(par->set & TDR_SET_USE_DARS) && !PAR->starting_cpoints)

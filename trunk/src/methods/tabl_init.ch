@@ -140,10 +140,6 @@ _unur_tabl_init( struct unur_par *par )
     _unur_par_free(par); _unur_tabl_free(gen); return NULL;
   }
 
-  /* set boundaries for U */
-  GEN->Umin = 0.;
-  GEN->Umax = 1.;
-
   /* creation of generator object successfull */
   gen->status = UNUR_SUCCESS;
 
@@ -218,7 +214,12 @@ _unur_tabl_create( struct unur_par *par )
   GEN->bleft       = PAR->bleft;         /* left boundary of domain            */
   GEN->bright      = PAR->bright;        /* right boundary of domain           */
 
-  GEN->guide_factor = PAR->guide_factor; /* relative size of guide tables      */
+  /* set (default) boundaries for U */
+  GEN->Umin = 0.;
+  GEN->Umax = 1.;
+
+  /* relative size of guide tables */
+  GEN->guide_factor = PAR->guide_factor; 
 
   /* bounds for adding construction points  */
   GEN->max_ivs   = PAR->max_ivs;         /* maximum number of intervals        */
@@ -643,7 +644,12 @@ _unur_tabl_compute_intervals( struct unur_par *par, struct unur_gen *gen )
       if (GEN->n_ivs >= GEN->max_ivs)
 	break;
 
-      /* else ran ARS instead */
+      /* else run ARS instead */
+
+      /* first we have to make an initial gudie table */
+      if (_unur_tabl_make_guide_table(gen) != UNUR_SUCCESS)
+	return UNUR_ERR_GEN_CONDITION;
+
       for (k=0; k<TABL_N_RUN_ARS; k++)
 	_unur_sample_cont(gen);
     }

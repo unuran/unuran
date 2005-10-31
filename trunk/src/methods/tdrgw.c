@@ -1852,11 +1852,6 @@ _unur_tdrgw_interval_area( struct unur_gen *gen, struct unur_tdrgw_interval *iv,
   CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_TDRGW_GEN,INFINITY);
   CHECK_NULL(iv,INFINITY);   COOKIE_CHECK(iv,CK_TDRGW_IV,INFINITY); 
 
-  /** TODO **/
-  /* length of interval > 0 ? */
-  if (_unur_FP_same(x, iv->x))
-    return 0.;
-
   return exp(_unur_tdrgw_interval_logarea(gen, iv, slope, x ));
 
 } /* end of _unur_tdrgw_interval_area() */
@@ -1898,14 +1893,14 @@ _unur_tdrgw_interval_logarea( struct unur_gen *gen, struct unur_tdrgw_interval *
   CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_TDRGW_GEN,INFINITY);
   CHECK_NULL(iv,INFINITY);   COOKIE_CHECK(iv,CK_TDRGW_IV,INFINITY); 
 
+  /* length of interval > 0 ? */
+  if (_unur_FP_same(x, iv->x))
+    return -INFINITY;
+
   /* if the construction point is at infinity, we cannot compute an area.
      (in this case we should have x == iv->x == INFINITY). */
   if (!_unur_isfinite(iv->x)) 
     return INFINITY;
-
-  /* length of interval > 0 ? */
-  if (_unur_FP_same(x, iv->x))
-    return -INFINITY;
 
   /* unbounded? */
   if ( !_unur_isfinite(slope)    ||

@@ -93,12 +93,6 @@ double unur_tdrgw_get_hatarea( const UNUR_GEN *generator );
    (In case of an error @code{UNUR_INFINITY} is returned.)
 */
 
-double unur_tdrgw_get_squeezearea( const UNUR_GEN *generator );
-/* 
-   Get the area below the squeeze for the generator.
-   (In case of an error @code{UNUR_INFINITY} is returned.)
-*/
-
 int unur_tdrgw_set_max_intervals( UNUR_PAR *parameters, int max_ivs );
 /* 
    Set maximum number of intervals.

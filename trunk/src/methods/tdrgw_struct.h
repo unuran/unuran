@@ -62,7 +62,6 @@ struct unur_tdrgw_interval {
   double  Acum;                 /* cumulated area of intervals               */
   double  Ahat;                 /* area below hat                            */
   double  Ahatr;                /* area below hat on right side              */
-  double  Asqueeze;             /* area squeeze                              */
 
   struct unur_tdrgw_interval *next; /* pointer to next interval in list        */
 
@@ -77,7 +76,6 @@ struct unur_tdrgw_interval {
 struct unur_tdrgw_gen { 
 
   double  Atotal;               /* area below hat                            */
-  double  Asqueeze;             /* area below squeeze                        */
 
   struct unur_tdrgw_interval *iv; /* pointer to linked list of intervals       */
   int     n_ivs;                /* number of intervals                       */

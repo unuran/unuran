@@ -313,29 +313,6 @@ unur_tdrgw_get_hatarea( const struct unur_gen *gen )
 
 /*---------------------------------------------------------------------------*/
 
-double
-unur_tdrgw_get_squeezearea( const struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* get area below squeeze                                               */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen  ... pointer to generator object                               */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   area     ... on success                                            */
-     /*   INFINITY ... on error                                              */
-     /*----------------------------------------------------------------------*/
-{
-  /* check input */
-  _unur_check_NULL( GENTYPE, gen, INFINITY );
-  _unur_check_gen_object( gen, TDRGW, INFINITY );
-
-  return GEN->Asqueeze;
-
-} /* end of unur_tdrgw_get_squeezearea() */
-
-/*---------------------------------------------------------------------------*/
-
 int
 unur_tdrgw_set_max_intervals( struct unur_par *par, int max_ivs )
      /*----------------------------------------------------------------------*/
@@ -683,7 +660,6 @@ _unur_tdrgw_create( struct unur_par *par )
   GEN->iv          = NULL;
   GEN->n_ivs       = 0;
   GEN->Atotal      = 0.;
-  GEN->Asqueeze    = 0.;
 
   /* copy some parameters into generator object */
   GEN->guide_factor = PAR->guide_factor; /* relative size of guide tables      */
@@ -911,7 +887,7 @@ _unur_tdrgw_sample( struct unur_gen *gen )
     logV = log(_unur_call_urng(gen->urng)) + loghx;
     
     /* log of spueeze at x */
-    logsqx = (iv->Asqueeze > 0.) ? iv->logfx + iv->sq*(X - iv->x) : -INFINITY;
+    logsqx = iv->logfx + iv->sq*(X - iv->x);
  
     /* below squeeze ? */
     if (logV <= logsqx)
@@ -1017,7 +993,7 @@ _unur_tdrgw_sample_check( struct unur_gen *gen )
     loghx = logfx0 + dlogfx0*(X - x0);
 
     /* log of spueeze at x */
-    logsqx = (iv->Asqueeze > 0.) ? iv->logfx + iv->sq*(X - iv->x) : -INFINITY;
+    logsqx = iv->logfx + iv->sq*(X - iv->x);
  
     /* log of PDF at x */
     logfx = logPDF(X);
@@ -1231,7 +1207,7 @@ _unur_tdrgw_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
 
   /* we have left the loop with the right boundary of the support of PDF
      make shure that we will never use iv for sampling. */
-  iv->Asqueeze = iv->Ahat = iv->Ahatr = iv->sq = 0.;
+  iv->Ahat = iv->Ahatr = iv->sq = 0.; 
   iv->Acum = INFINITY;
   iv->ip = iv->x;
   iv->next = NULL;         /* terminate list */
@@ -1292,7 +1268,7 @@ _unur_tdrgw_starting_intervals( struct unur_par *par, struct unur_gen *gen )
       if (iv->next==NULL) {
 	/* last (virtuel) interval in list.
 	   make sure that we will never use this segment */
-	iv->Asqueeze = iv->Ahat = iv->Ahatr = iv->sq = 0.;
+	iv->Ahat = iv->Ahatr = iv->sq = 0.;
 	iv->Acum = INFINITY;
       }
       continue;
@@ -1395,7 +1371,7 @@ _unur_tdrgw_interval_new( struct unur_gen *gen, double x, double logfx )
   COOKIE_SET(iv,CK_TDRGW_IV);
 
   /* avoid uninitialized variables */
-  iv->Acum = iv->Ahat = iv->Ahatr = iv->Asqueeze = 0.;
+  iv->Acum = iv->Ahat = iv->Ahatr = 0.;
   iv->ip = iv->sq = 0.;
 
   /* make left construction point in interval */
@@ -1468,22 +1444,10 @@ _unur_tdrgw_interval_parameter( struct unur_gen *gen, struct unur_tdrgw_interval
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"Squeeze too steep/flat. PDF not T-concave!");
       return UNUR_ERR_GEN_CONDITION;
     }
-
-    /* volume below squeeze */
-    /* always integrate from point with greater value of transformed density
-       to the other point */
-    iv->Asqueeze = (iv->logfx > iv->next->logfx)
-      ? _unur_tdrgw_interval_area( gen, iv, iv->sq, iv->next->x)
-      : _unur_tdrgw_interval_area( gen, iv->next, iv->sq, iv->x);
-    
-    /* check for fatal numerical errors */
-    if (!_unur_isfinite(iv->Asqueeze))
-      iv->Asqueeze = 0.;
   }
 
   else {  /* no squeeze */
-    iv->sq = 0.;
-    iv->Asqueeze = 0.;
+    iv->sq = -INFINITY;
   }
 
   /* volume below hat */
@@ -1496,13 +1460,6 @@ _unur_tdrgw_interval_parameter( struct unur_gen *gen, struct unur_tdrgw_interval
 
   /* total area */
   iv->Ahat = iv->Ahatr + Ahatl;
-
-  /* check area */
-  /* we cannot be more accurate than in the `check squeeze' section */
-  if ( iv->Asqueeze > iv->Ahat && !_unur_FP_approx(iv->Asqueeze, iv->Ahat) ) {
-    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"A(squeeze) > A(hat). PDF not T-concave!");
-    return UNUR_ERR_GEN_CONDITION;
-  }
 
   /* o.k. */
   return UNUR_SUCCESS;
@@ -1630,8 +1587,6 @@ _unur_tdrgw_interval_split( struct unur_gen *gen, struct unur_tdrgw_interval *iv
   /* update total area below hat and squeeze */
   GEN->Atotal   = ( GEN->Atotal - iv_bak.Ahat
 		   + iv_oldl->Ahat + ((iv_newr) ? iv_newr->Ahat : 0.) );
-  GEN->Asqueeze = ( GEN->Asqueeze - iv_bak.Asqueeze
-		   + iv_oldl->Asqueeze + ((iv_newr) ? iv_newr->Asqueeze : 0. ) );
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
@@ -1876,7 +1831,7 @@ _unur_tdrgw_make_guide_table( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   struct unur_tdrgw_interval *iv;
-  double Acum, Asqueezecum, Astep;
+  double Acum, Astep;
   int j;
 
   /* check arguments */
@@ -1891,17 +1846,14 @@ _unur_tdrgw_make_guide_table( struct unur_gen *gen )
 
   /* first we need cumulated areas in intervals */
   Acum = 0.;            /* area below hat */
-  Asqueezecum = 0.;     /* area below squeeze */
   for (iv = GEN->iv; iv != NULL; iv = iv->next ) {
     COOKIE_CHECK(iv,CK_TDRGW_IV,UNUR_ERR_COOKIE);
     Acum += iv->Ahat;
-    Asqueezecum += iv->Asqueeze;
     iv->Acum = Acum;
   }
 
   /* total area below hat */
   GEN->Atotal = Acum;
-  GEN->Asqueeze = Asqueezecum;
 
   /* actual size of guide table */
   GEN->guide_size = (int)(GEN->n_ivs * GEN->guide_factor);
@@ -2042,7 +1994,7 @@ _unur_tdrgw_debug_intervals( const struct unur_gen *gen, const char *header, int
 {
   FILE *log;
   struct unur_tdrgw_interval *iv;
-  double sAsqueeze, sAhatl, sAhatr, Atotal;
+  double sAhatl, sAhatr, Atotal;
   int i;
 
   /* check arguments */
@@ -2076,35 +2028,27 @@ _unur_tdrgw_debug_intervals( const struct unur_gen *gen, const char *header, int
   Atotal = GEN->Atotal;
   if (gen->debug & TDRGW_DEBUG_IV) {
     fprintf(log,"%s:Areas in intervals:\n",gen->genid);
-    fprintf(log,"%s: Nr.\t below squeeze\t\t   below hat (left and right)\t\t   cumulated\n",gen->genid);
-    sAsqueeze = sAhatl = sAhatr = 0.;
+    fprintf(log,"%s: Nr.\tbelow hat (left and right)\t\t   cumulated\n",gen->genid);
+    sAhatl = sAhatr = 0.;
     if (GEN->iv) {
       for (iv = GEN->iv, i=0; iv->next!=NULL; iv=iv->next, i++) {
 	COOKIE_CHECK(iv,CK_TDRGW_IV,RETURN_VOID); 
-	sAsqueeze += iv->Asqueeze;
 	sAhatl += iv->Ahat - iv->Ahatr;
 	sAhatr += iv->Ahatr;
-	fprintf(log,"%s:[%3d]: %-12.6g(%6.3f%%)  |  %-12.6g+ %-12.6g(%6.3f%%)  |  %-12.6g(%6.3f%%)\n",
+	fprintf(log,"%s:[%3d]: %-12.6g+ %-12.6g(%6.3f%%)  |  %-12.6g(%6.3f%%)\n",
 		gen->genid,i,
-		iv->Asqueeze, iv->Asqueeze * 100. / Atotal,
 		iv->Ahat-iv->Ahatr, iv->Ahatr, iv->Ahat * 100. / Atotal, 
 		iv->Acum, iv->Acum * 100. / Atotal);
       }
-      fprintf(log,"%s:       ----------  ---------  |  ------------------------  ---------  +\n",gen->genid);
-      fprintf(log,"%s: Sum : %-12.6g(%6.3f%%)            %-12.6g      (%6.3f%%)\n",gen->genid,
-	      sAsqueeze, sAsqueeze * 100. / Atotal,
+      fprintf(log,"%s:       ------------------------  ---------  +\n",gen->genid);
+      fprintf(log,"%s: Sum :        %-12.6g      (%6.3f%%)\n",gen->genid,
 	      sAhatl+sAhatr, (sAhatl+sAhatr) * 100. / Atotal);
       fprintf(log,"%s:\n",gen->genid);
     }
   }
 
   /* summary of areas */
-  fprintf(log,"%s: A(squeeze)     = %-12.6g  (%6.3f%%)\n",gen->genid,
-	  GEN->Asqueeze, GEN->Asqueeze * 100./Atotal);
-  fprintf(log,"%s: A(hat\\squeeze) = %-12.6g  (%6.3f%%)\n",gen->genid,
-	  Atotal - GEN->Asqueeze, (Atotal - GEN->Asqueeze) * 100./Atotal);
-  fprintf(log,"%s: A(total)       = %-12.6g\n",gen->genid, Atotal);
-
+  fprintf(log,"%s: A(total) = %-12.6g\n",gen->genid, Atotal);
   fprintf(log,"%s:\n",gen->genid);
 
 } /* end of _unur_tdrgw_debug_intervals() */
@@ -2171,10 +2115,6 @@ _unur_tdrgw_debug_split_start( const struct unur_gen *gen,
   fprintf(log,"%s: old interval:\n",gen->genid);
   fprintf(log,"%s:   left  construction point = %-12.6g\tlogf(x) = %-12.6g\n",gen->genid,iv->x,iv->logfx);
   fprintf(log,"%s:   right construction point = %-12.6g\tlogf(x) = %-12.6g\n",gen->genid,iv->next->x,iv->next->logfx);
-  fprintf(log,"%s:   A(squeeze)     = %-12.6g\t\t(%6.3f%%)\n",gen->genid,
-	  iv->Asqueeze,iv->Asqueeze*100./GEN->Atotal);
-  fprintf(log,"%s:   A(hat\\squeeze) = %-12.6g\t\t(%6.3f%%)\n",gen->genid,
-	  (iv->Ahat - iv->Asqueeze),(iv->Ahat - iv->Asqueeze)*100./GEN->Atotal);
   fprintf(log,"%s:   A(hat)         = %-12.6g +  %-12.6g(%6.3f%%)\n",gen->genid,
 	  iv->Ahat - iv->Ahatr, iv->Ahatr, iv->Ahat*100./GEN->Atotal);
 
@@ -2217,12 +2157,6 @@ _unur_tdrgw_debug_split_stop( const struct unur_gen *gen,
   fprintf(log,"%s:   right  construction point = %g\n",gen->genid, iv_right->next->x);
 
   fprintf(log,"%s: left interval:\n",gen->genid);
-  fprintf(log,"%s:   A(squeeze)     = %-12.6g\t\t(%6.3f%%)\n",gen->genid,
-	  iv_left->Asqueeze,
-	  iv_left->Asqueeze*100./GEN->Atotal);
-  fprintf(log,"%s:   A(hat\\squeeze) = %-12.6g\t\t(%6.3f%%)\n",gen->genid,
-	  (iv_left->Ahat - iv_left->Asqueeze),
-	  (iv_left->Ahat - iv_left->Asqueeze) * 100./GEN->Atotal);
   fprintf(log,"%s:   A(hat)         = %-12.6g +  %-12.6g(%6.3f%%)\n",gen->genid,
 	  iv_left->Ahat - iv_left->Ahatr,
 	  iv_left->Ahatr,
@@ -2232,12 +2166,6 @@ _unur_tdrgw_debug_split_stop( const struct unur_gen *gen,
     fprintf(log,"%s: interval chopped.\n",gen->genid);
   else {
     fprintf(log,"%s: right interval:\n",gen->genid);
-    fprintf(log,"%s:   A(squeeze)     = %-12.6g\t\t(%6.3f%%)\n",gen->genid,
-	    iv_right->Asqueeze,
-	    iv_right->Asqueeze*100./GEN->Atotal);
-    fprintf(log,"%s:   A(hat\\squeeze) = %-12.6g\t\t(%6.3f%%)\n",gen->genid,
-	    (iv_right->Ahat - iv_right->Asqueeze),
-	    (iv_right->Ahat - iv_right->Asqueeze) * 100./GEN->Atotal);
     fprintf(log,"%s:   A(hat)         = %-12.6g +  %-12.6g(%6.3f%%)\n",gen->genid,
 	    iv_right->Ahat - iv_right->Ahatr,
 	    iv_right->Ahatr,
@@ -2245,12 +2173,7 @@ _unur_tdrgw_debug_split_stop( const struct unur_gen *gen,
   }
 
   fprintf(log,"%s: total areas:\n",gen->genid);
-  fprintf(log,"%s:   A(squeeze)     = %-12.6g\t\t(%6.3f%%)\n",gen->genid,
-	  GEN->Asqueeze, GEN->Asqueeze * 100./GEN->Atotal);
-  fprintf(log,"%s:   A(hat\\squeeze) = %-12.6g\t\t(%6.3f%%)\n",gen->genid,
-	  GEN->Atotal - GEN->Asqueeze, (GEN->Atotal - GEN->Asqueeze) * 100./GEN->Atotal);
   fprintf(log,"%s:   A(total)       = %-12.6g\n",gen->genid, GEN->Atotal);
-
   fprintf(log,"%s:\n",gen->genid);
 
   fflush(log);

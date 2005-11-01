@@ -975,10 +975,6 @@ _unur_tdrgw_sample( struct unur_gen *gen )
     /* log of a random point between 0 and hat at x */
     logV = log(_unur_call_urng(gen->urng)) + loghx;
     
-    /* below mininum of density in interval ? */
-    if (logV <= iv->logfx && logV <= iv->next->logfx)
-      return X;
-    
     /* log of spueeze at x */
     logsqx = (iv->Asqueeze > 0.) ? iv->logfx + iv->sq*(X - iv->x) : -INFINITY;
  
@@ -989,16 +985,16 @@ _unur_tdrgw_sample( struct unur_gen *gen )
     /* log of PDF at x */
     logfx = logPDF(X);
 
-    /* being above squeeze is bad. improve the situation! */
+    /* below PDF ? */
+    if (logV <= logfx)
+      return X;
+
+    /* being above PDF is bad. improve the situation! */
     if (GEN->n_ivs < GEN->max_ivs) {
       if ( (_unur_tdrgw_improve_hat( gen, iv, X, logfx) != UNUR_SUCCESS)
 	   && (gen->variant & TDRGW_VARFLAG_PEDANTIC) )
 	return UNUR_INFINITY;
     }
-
-    /* below PDF ? */
-    if (logV <= logfx)
-      return X;
 
     /* else reject and try again */
 
@@ -1108,24 +1104,20 @@ _unur_tdrgw_sample_check( struct unur_gen *gen )
     /* log of a random point between 0 and hat at x */
     logV = log(_unur_call_urng(gen->urng)) + loghx;
 
-    /* below mininum of density in interval ? */
-    if (logV <= iv->logfx && logV <= iv->next->logfx)
-      return X;
-    
     /* below squeeze ? */
     if (logV <= logsqx)
       return X;
 
-    /* being above squeeze is bad. improve the situation! */
+    /* below PDF ? */
+    if (logV <= logfx)
+      return X;
+
+    /* being above PDF is bad. improve the situation! */
     if (GEN->n_ivs < GEN->max_ivs) {
       if ( (_unur_tdrgw_improve_hat( gen, iv, X, logfx) != UNUR_SUCCESS)
 	   && (gen->variant & TDRGW_VARFLAG_PEDANTIC) )
 	return UNUR_INFINITY;
     }
-
-    /* below PDF ? */
-    if (logV <= logfx)
-      return X;
 
     /* reject and try again */
 

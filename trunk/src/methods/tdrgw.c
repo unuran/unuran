@@ -80,7 +80,6 @@
 #define TDRGW_SET_CPOINTS        0x004u
 #define TDRGW_SET_N_CPOINTS      0x008u
 #define TDRGW_SET_GUIDEFACTOR    0x010u
-#define TDRGW_SET_MAX_SQHRATIO   0x040u
 #define TDRGW_SET_MAX_IVS        0x080u
 
 /*---------------------------------------------------------------------------*/
@@ -272,10 +271,6 @@ unur_tdrgw_new( const struct unur_distr* distr )
   PAR->starting_cpoints    = NULL;   /* pointer to array of starting points  */
   PAR->n_starting_cpoints  = 2;      /* number of starting points            */
   PAR->max_ivs             = 100;    /* maximum number of intervals          */
-  PAR->max_ratio           = 0.99;   /* bound for ratio  Atotal / Asqueeze   */
-  PAR->bound_for_adding    = 0.5;    /* do not add a new construction point in an interval,
-				       where ambigous region is too small, i.e. if
-				       area / ((A_hat - A_squeeze)/number of segments) < bound_for_adding */
  
   par->method   = UNUR_METH_TDRGW;   /* method                               */
   par->variant  = 0u;                /* default variant                      */
@@ -294,65 +289,6 @@ unur_tdrgw_new( const struct unur_distr* distr )
 } /* end of unur_tdrgw_new() */
 
 /*****************************************************************************/
-
-int
-unur_tdrgw_set_max_sqhratio( struct unur_par *par, double max_ratio )
-     /*----------------------------------------------------------------------*/
-     /* set bound for ratio A(squeeze) / A(hat)                              */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   par       ... pointer to parameter for building generator object   */
-     /*   max_ratio ... upper bound for ratio to add a new construction point*/
-     /*                                                                      */
-     /* return:                                                              */
-     /*   UNUR_SUCCESS ... on success                                        */
-     /*   error code   ... on error                                          */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
-  _unur_check_par_object( par, TDRGW );
-
-  /* check new parameter for generator */
-  if (max_ratio < 0. || max_ratio > 1.+DBL_EPSILON ) {
-    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"ratio A(squeeze)/A(hat) not in [0,1]");
-    return UNUR_ERR_PAR_SET;
-  }
-
-  /* store date */
-  PAR->max_ratio = max_ratio;
-
-  /* changelog */
-  par->set |= TDRGW_SET_MAX_SQHRATIO;
-
-  return UNUR_SUCCESS;
-
-} /* end of unur_tdrgw_set_max_sqhratio() */
-
-/*---------------------------------------------------------------------------*/
-
-double
-unur_tdrgw_get_sqhratio( const struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* get ratio A(squeeze) / A(hat)                                        */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen  ... pointer to generator object                               */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   ratio    ... on success                                            */
-     /*   INFINITY ... on error                                              */
-     /*----------------------------------------------------------------------*/
-{
-  /* check input */
-  _unur_check_NULL( GENTYPE, gen, INFINITY );
-  _unur_check_gen_object( gen, TDRGW, INFINITY );
-
-  return (GEN->Asqueeze / GEN->Atotal);
-
-} /* end of unur_tdrgw_get_sqhratio() */
-
-/*---------------------------------------------------------------------------*/
 
 double
 unur_tdrgw_get_hatarea( const struct unur_gen *gen )
@@ -754,7 +690,6 @@ _unur_tdrgw_create( struct unur_par *par )
 
   /* bounds for adding construction points  */
   GEN->max_ivs = max(2*PAR->n_starting_cpoints,PAR->max_ivs);  /* maximum number of intervals */
-  GEN->max_ratio = PAR->max_ratio;    /* bound for ratio  Atotal / Asqueeze    */
 
   /* copy variant */
   gen->variant = par->variant;
@@ -1145,13 +1080,6 @@ _unur_tdrgw_improve_hat( struct unur_gen *gen, struct unur_tdrgw_interval *iv,
      /*----------------------------------------------------------------------*/
 {
   int result;
-
-  /* is there any reason to improve hat ? */
-  if (! (GEN->max_ratio * GEN->Atotal > GEN->Asqueeze) ) {
-    /* no more construction points (avoid calling this function any more) */
-    GEN->max_ivs = GEN->n_ivs;
-    return UNUR_SUCCESS;
-  }
 
   /* add construction point */
   result = _unur_tdrgw_interval_split(gen, iv, x, logfx);
@@ -2049,9 +1977,6 @@ _unur_tdrgw_debug_init_start( const struct unur_par *par, const struct unur_gen 
 
   fprintf(log,"%s: maximum number of intervals        = %d",gen->genid,GEN->max_ivs);
   _unur_print_if_default(par,TDRGW_SET_MAX_IVS);
-  fprintf(log,"\n%s: bound for ratio  Asqueeze / Atotal = %g%%",gen->genid,PAR->max_ratio*100.);
-  _unur_print_if_default(par,TDRGW_SET_MAX_SQHRATIO);
-  fprintf(log,"\n%s: Derandomized ARS disabled ",gen->genid);
   fprintf(log,"\n%s:\n",gen->genid);
 
   fprintf(log,"%s: sampling from list of intervals: indexed search (guide table method)\n",gen->genid);

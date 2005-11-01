@@ -46,8 +46,6 @@ struct unur_tdrgw_par {
   const double *starting_cpoints; /* pointer to array of starting points     */
   int     n_starting_cpoints;   /* number of construction points at start    */
   int     max_ivs;              /* maximum number of intervals               */
-  double  max_ratio;            /* bound for ratio r_n = Atotal / Asqueeze   */
-  double  bound_for_adding;     /* lower bound for relative area             */
 };
 
 /*---------------------------------------------------------------------------*/
@@ -84,7 +82,6 @@ struct unur_tdrgw_gen {
   struct unur_tdrgw_interval *iv; /* pointer to linked list of intervals       */
   int     n_ivs;                /* number of intervals                       */
   int     max_ivs;              /* maximum number of intervals               */
-  double  max_ratio;            /* bound for ratio r_n = Atotal / Asqueeze   */
 
   struct unur_tdrgw_interval **guide; /* pointer to guide table                */
   int     guide_size;           /* size of guide table                       */

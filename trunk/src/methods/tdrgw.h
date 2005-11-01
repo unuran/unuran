@@ -87,27 +87,6 @@ UNUR_PAR *unur_tdrgw_new( const UNUR_DISTR* distribution );
 
 /*...........................................................................*/
 
-int unur_tdrgw_set_max_sqhratio( UNUR_PAR *parameters, double max_ratio );
-/* 
-   Set upper bound for the
-   ratio (area below squeeze) / (area below hat).
-   It must be a number between 0 and 1.
-   When the ratio exceeds the given number no further construction
-   points are inserted via adaptive rejection sampling.
-   Use 0 if no construction points should be added after the setup.
-   Use 1 if added new construction points should not be stopped until
-   the maximum number of construction points is reached.
-
-   Default is @code{0.99}.
-*/
-
-double unur_tdrgw_get_sqhratio( const UNUR_GEN *generator );
-/* 
-   Get the current ratio (area below squeeze) / (area below hat)
-   for the generator.
-   (In case of an error @code{UNUR_INFINITY} is returned.)
-*/
-
 double unur_tdrgw_get_hatarea( const UNUR_GEN *generator );
 /* 
    Get the area below the hat for the generator.

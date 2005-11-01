@@ -850,7 +850,7 @@ _unur_tdrgw_sample( struct unur_gen *gen )
     U -= iv->Acum;    /* result: U in (-A_hat, 0) */
 
     /* l.h.s. or r.h.s. of hat */
-    if (-U < iv->Ahatr) { /* right */
+    if (-U < (iv->Ahat * iv->Ahatr_fract)) { /* right */
       pt = iv->next;
       /* U unchanged */
     }
@@ -959,7 +959,7 @@ _unur_tdrgw_sample_check( struct unur_gen *gen )
     U -= iv->Acum;    /* result: U in (-A_hat, 0) */
 
     /* l.h.s. or r.h.s. of hat */
-    if (-U < iv->Ahatr) { /* right */
+    if (-U < (iv->Ahat * iv->Ahatr_fract)) { /* right */
       pt = iv->next;
       /* U unchanged */
     }
@@ -1207,7 +1207,7 @@ _unur_tdrgw_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
 
   /* we have left the loop with the right boundary of the support of PDF
      make shure that we will never use iv for sampling. */
-  iv->Ahat = iv->Ahatr = iv->sq = 0.; 
+  iv->Ahat = iv->Ahatr_fract = iv->sq = 0.; 
   iv->Acum = INFINITY;
   iv->ip = iv->x;
   iv->next = NULL;         /* terminate list */
@@ -1268,7 +1268,7 @@ _unur_tdrgw_starting_intervals( struct unur_par *par, struct unur_gen *gen )
       if (iv->next==NULL) {
 	/* last (virtuel) interval in list.
 	   make sure that we will never use this segment */
-	iv->Ahat = iv->Ahatr = iv->sq = 0.;
+	iv->Ahat = iv->Ahatr_fract = iv->sq = 0.;
 	iv->Acum = INFINITY;
       }
       continue;
@@ -1371,7 +1371,7 @@ _unur_tdrgw_interval_new( struct unur_gen *gen, double x, double logfx )
   COOKIE_SET(iv,CK_TDRGW_IV);
 
   /* avoid uninitialized variables */
-  iv->Acum = iv->Ahat = iv->Ahatr = 0.;
+  iv->Acum = iv->Ahat = iv->Ahatr_fract = 0.;
   iv->ip = iv->sq = 0.;
 
   /* make left construction point in interval */
@@ -1408,7 +1408,8 @@ _unur_tdrgw_interval_parameter( struct unur_gen *gen, struct unur_tdrgw_interval
      /*   others          ... error (PDF not T-concave)                      */
      /*----------------------------------------------------------------------*/
 {
-  double Ahatl;    /* area below hat at left side of intersection point */
+  double Ahatl, Ahatr;    /* areas below hat at l.h.s. and r.h.s. of 
+			     intersection point, resp.                       */
 
   /* check arguments */
   CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_TDRGW_GEN,UNUR_ERR_COOKIE);
@@ -1452,14 +1453,15 @@ _unur_tdrgw_interval_parameter( struct unur_gen *gen, struct unur_tdrgw_interval
 
   /* volume below hat */
   Ahatl = _unur_tdrgw_interval_area( gen, iv, iv->dlogfx, iv->ip);
-  iv->Ahatr = _unur_tdrgw_interval_area( gen, iv->next, iv->next->dlogfx, iv->ip);
+  Ahatr = _unur_tdrgw_interval_area( gen, iv->next, iv->next->dlogfx, iv->ip);
 
   /* areas below head unbounded ? */
-  if (! (_unur_isfinite(Ahatl) && _unur_isfinite(iv->Ahatr)) )
+  if (! (_unur_isfinite(Ahatl) && _unur_isfinite(Ahatr)) )
     return UNUR_ERR_INF;
 
   /* total area */
-  iv->Ahat = iv->Ahatr + Ahatl;
+  iv->Ahat = Ahatr + Ahatl;
+  iv->Ahatr_fract = (Ahatr > 0.) ? Ahatr / iv->Ahat : 0.;
 
   /* o.k. */
   return UNUR_SUCCESS;
@@ -1994,6 +1996,7 @@ _unur_tdrgw_debug_intervals( const struct unur_gen *gen, const char *header, int
 {
   FILE *log;
   struct unur_tdrgw_interval *iv;
+  double Ahatl, Ahatr;
   double sAhatl, sAhatr, Atotal;
   int i;
 
@@ -2033,11 +2036,11 @@ _unur_tdrgw_debug_intervals( const struct unur_gen *gen, const char *header, int
     if (GEN->iv) {
       for (iv = GEN->iv, i=0; iv->next!=NULL; iv=iv->next, i++) {
 	COOKIE_CHECK(iv,CK_TDRGW_IV,RETURN_VOID); 
-	sAhatl += iv->Ahat - iv->Ahatr;
-	sAhatr += iv->Ahatr;
+	sAhatr += Ahatr = iv->Ahat * iv->Ahatr_fract;
+	sAhatl += Ahatl = iv->Ahat - Ahatr;
 	fprintf(log,"%s:[%3d]: %-12.6g+ %-12.6g(%6.3f%%)  |  %-12.6g(%6.3f%%)\n",
 		gen->genid,i,
-		iv->Ahat-iv->Ahatr, iv->Ahatr, iv->Ahat * 100. / Atotal, 
+		Ahatl, Ahatr, iv->Ahat * 100. / Atotal,
 		iv->Acum, iv->Acum * 100. / Atotal);
       }
       fprintf(log,"%s:       ------------------------  ---------  +\n",gen->genid);
@@ -2116,7 +2119,7 @@ _unur_tdrgw_debug_split_start( const struct unur_gen *gen,
   fprintf(log,"%s:   left  construction point = %-12.6g\tlogf(x) = %-12.6g\n",gen->genid,iv->x,iv->logfx);
   fprintf(log,"%s:   right construction point = %-12.6g\tlogf(x) = %-12.6g\n",gen->genid,iv->next->x,iv->next->logfx);
   fprintf(log,"%s:   A(hat)         = %-12.6g +  %-12.6g(%6.3f%%)\n",gen->genid,
-	  iv->Ahat - iv->Ahatr, iv->Ahatr, iv->Ahat*100./GEN->Atotal);
+	  iv->Ahat * (1.-iv->Ahatr_fract), iv->Ahat * iv->Ahatr_fract, iv->Ahat*100./GEN->Atotal);
 
   fflush(log);
 
@@ -2158,8 +2161,8 @@ _unur_tdrgw_debug_split_stop( const struct unur_gen *gen,
 
   fprintf(log,"%s: left interval:\n",gen->genid);
   fprintf(log,"%s:   A(hat)         = %-12.6g +  %-12.6g(%6.3f%%)\n",gen->genid,
-	  iv_left->Ahat - iv_left->Ahatr,
-	  iv_left->Ahatr,
+	  iv_left->Ahat * (1.-iv_left->Ahatr_fract),
+	  iv_left->Ahat * iv_left->Ahatr_fract,
 	  iv_left->Ahat * 100./GEN->Atotal);
 
   if (iv_left == iv_right)
@@ -2167,8 +2170,8 @@ _unur_tdrgw_debug_split_stop( const struct unur_gen *gen,
   else {
     fprintf(log,"%s: right interval:\n",gen->genid);
     fprintf(log,"%s:   A(hat)         = %-12.6g +  %-12.6g(%6.3f%%)\n",gen->genid,
-	    iv_right->Ahat - iv_right->Ahatr,
-	    iv_right->Ahatr,
+	    iv_right->Ahat * (1.-iv_right->Ahatr_fract),
+	    iv_right->Ahat * iv_right->Ahatr_fract,
 	    iv_right->Ahat * 100./GEN->Atotal);
   }
 

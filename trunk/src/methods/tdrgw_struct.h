@@ -53,20 +53,21 @@ struct unur_tdrgw_par {
 
 struct unur_tdrgw_interval {
 
-  double  x;                    /* (left) construction point (cp)            */
-  double  logfx;                /* value of logPDF at cp                     */
-  double  dlogfx;               /* derivative of logPDF at cp                */
-  double  sq;                   /* slope of transformed squeeze in interval  */
-  double  ip;                   /* intersection point between two tangents   */
+  double  x;              /* (left hand side) construction point (cp)        */
+  double  logfx;          /* value of logPDF at cp                           */
+  double  dlogfx;         /* derivative of logPDF at cp                      */
+  double  sq;             /* slope of transformed squeeze in interval        */
+  double  ip;             /* intersection point between two tangents         */
                                  
-  double  Acum;                 /* cumulated area of intervals               */
-  double  Ahat;                 /* area below hat                            */
-  double  Ahatr;                /* area below hat on right side              */
+  double  Acum;           /* cumulated area of intervals                     */
+  double  Ahat;           /* area below hat                                  */
+  double  Ahatr_fract;    /* fraction of area below hat on r.h.s.            */
 
-  struct unur_tdrgw_interval *next; /* pointer to next interval in list        */
+
+  struct unur_tdrgw_interval *next; /* pointer to next interval in list      */
 
 #ifdef UNUR_COOKIES
-  unsigned cookie;              /* magic cookie                              */
+  unsigned cookie;        /* magic cookie                                    */
 #endif
 };
 
@@ -77,11 +78,11 @@ struct unur_tdrgw_gen {
 
   double  Atotal;               /* area below hat                            */
 
-  struct unur_tdrgw_interval *iv; /* pointer to linked list of intervals       */
+  struct unur_tdrgw_interval *iv; /* pointer to linked list of intervals     */
   int     n_ivs;                /* number of intervals                       */
   int     max_ivs;              /* maximum number of intervals               */
 
-  struct unur_tdrgw_interval **guide; /* pointer to guide table                */
+  struct unur_tdrgw_interval **guide; /* pointer to guide table              */
   int     guide_size;           /* size of guide table                       */
   double  guide_factor;         /* relative size of guide table              */
 };

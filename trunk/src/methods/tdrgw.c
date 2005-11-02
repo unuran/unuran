@@ -88,7 +88,6 @@
 
 #define TDRGW_SET_CPOINTS        0x004u
 #define TDRGW_SET_N_CPOINTS      0x008u
-#define TDRGW_SET_GUIDEFACTOR    0x010u
 #define TDRGW_SET_MAX_IVS        0x080u
 
 /*---------------------------------------------------------------------------*/
@@ -170,9 +169,9 @@ static int _unur_tdrgw_improve_hat( struct unur_gen *gen, struct unur_tdrgw_inte
 /* improve hat function by splitting interval                                */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_tdrgw_make_guide_table( struct unur_gen *gen );
+static int _unur_tdrgw_make_area_table( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* make a guide table for indexed search.                                    */
+/* make table of areas and compute largest area for rescaling.               */
 /*---------------------------------------------------------------------------*/
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -280,8 +279,6 @@ unur_tdrgw_new( const struct unur_distr* distr )
   par->distr              = distr;  /* pointer to distribution object        */
 
   /* set default values */
-  PAR->guide_factor        = 2.;     /* size of guide table / number of intervals */
-
   PAR->starting_cpoints    = NULL;   /* pointer to array of starting points  */
   PAR->n_starting_cpoints  = 2;      /* number of starting points            */
   PAR->max_ivs             = 100;    /* maximum number of intervals          */
@@ -412,42 +409,6 @@ unur_tdrgw_set_cpoints( struct unur_par *par, int n_cpoints, const double *cpoin
   return UNUR_SUCCESS;
 
 } /* end of unur_tdrgw_set_cpoints() */
-
-/*---------------------------------------------------------------------------*/
-
-int
-unur_tdrgw_set_guidefactor( struct unur_par *par, double factor )
-     /*----------------------------------------------------------------------*/
-     /* set factor for relative size of guide table                          */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   par    ... pointer to parameter for building generator object      */
-     /*   factor ... relative size of table                                  */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   UNUR_SUCCESS ... on success                                        */
-     /*   error code   ... on error                                          */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
-  _unur_check_par_object( par, TDRGW );
-
-  /* check new parameter for generator */
-  if (factor < 0.) {
-    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"guide table size < 0");
-    return UNUR_ERR_PAR_SET;
-  }
-
-  /* store date */
-  PAR->guide_factor = factor;
-
-  /* changelog */
-  par->set |= TDRGW_SET_GUIDEFACTOR;
-
-  return UNUR_SUCCESS;
-
-} /* end of unur_tdrgw_set_guidefactor() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -604,8 +565,8 @@ _unur_tdrgw_init( struct unur_par *par )
     GEN->max_ivs = GEN->n_ivs;
   }
 
-  /* make initial guide table */
-  _unur_tdrgw_make_guide_table(gen);
+  /* make initial table of areas */
+  _unur_tdrgw_make_area_table(gen);
 
   /* free parameters */
   _unur_par_free(par);
@@ -669,15 +630,10 @@ _unur_tdrgw_create( struct unur_par *par )
   SAMPLE = (par->variant & TDRGW_VARFLAG_VERIFY) ? _unur_tdrgw_sample_check : _unur_tdrgw_sample;
   
   /* set all pointers to NULL */
-  GEN->guide       = NULL;
-  GEN->guide_size  = 0;
   GEN->iv          = NULL;
   GEN->n_ivs       = 0;
   GEN->Atotal      = 0.;
   GEN->logAmax     = 0.;
-
-  /* copy some parameters into generator object */
-  GEN->guide_factor = PAR->guide_factor; /* relative size of guide tables      */
 
   /* bounds for adding construction points  */
   GEN->max_ivs = max(2*PAR->n_starting_cpoints,PAR->max_ivs);  /* maximum number of intervals */
@@ -739,11 +695,6 @@ _unur_tdrgw_clone( const struct unur_gen *gen )
   /* terminate linked list */
   if (clone_iv) clone_iv->next = NULL;
 
-
-  /* make new guide table */
-  CLONE->guide = NULL;
-  _unur_tdrgw_make_guide_table(clone);
-
   /* finished clone */
   return clone;
 
@@ -787,9 +738,6 @@ _unur_tdrgw_free( struct unur_gen *gen )
       free(iv);
     }
   }
-
-  /* free table */
-  if (GEN->guide)  free(GEN->guide);
 
   /* free other memory not stored in list */
   _unur_generic_free(gen);
@@ -846,6 +794,8 @@ _unur_tdrgw_sample( struct unur_gen *gen )
   double logfx, logsqx, loghx;      /* log of density, squeeze, and hat at X */
   double x0, logfx0, dlogfx0, fx0;  /* construction point and logPDF at x0   */
 
+/*   double Acum; */
+
   /* check arguments */
   CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_TDRGW_GEN,INFINITY);
 
@@ -854,8 +804,11 @@ _unur_tdrgw_sample( struct unur_gen *gen )
     /* sample from U(0,1) */
     U = _unur_call_urng(gen->urng);
 
-    /* look up in guide table and search for segment */
-    iv =  GEN->guide[(int) (U * GEN->guide_size)];
+    /* evaluate inverse of hat CDF */
+
+    /* find interval by sequential search */
+    /* Remark: there is no need for a guide table as we only generate one point! */
+    iv =  GEN->iv;
     U *= GEN->Atotal;
     while (iv->Acum < U) {
       iv = iv->next;
@@ -968,8 +921,9 @@ _unur_tdrgw_sample_check( struct unur_gen *gen )
 
     /* evaluate inverse of hat CDF */
 
-    /* look up in guide table and search for segment */
-    iv =  GEN->guide[(int) (U * GEN->guide_size)];
+    /* find interval by sequential search */
+    /* Remark: there is no need for a guide table as we only generate one point! */
+    iv =  GEN->iv;
     U *= GEN->Atotal;
     while (iv->Acum < U) {
       iv = iv->next;
@@ -1094,11 +1048,8 @@ _unur_tdrgw_improve_hat( struct unur_gen *gen, struct unur_tdrgw_interval *iv,
     }
   }
 
-  /* splitting successful --> update guide table */
-  /** TODO: it is not necessary to update the guide table every time. 
-      But then (1) some additional bookkeeping is required and
-      (2) the guide table method requires a acc./rej. step. **/
-  _unur_tdrgw_make_guide_table(gen);
+  /* splitting successful --> update table of areas */
+  _unur_tdrgw_make_area_table(gen);
 
   /* o.k. */
   return UNUR_SUCCESS;
@@ -1824,9 +1775,9 @@ _unur_tdrgw_interval_logarea( struct unur_gen *gen, struct unur_tdrgw_interval *
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_tdrgw_make_guide_table( struct unur_gen *gen )
+_unur_tdrgw_make_area_table( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* make a guide table for indexed search                                */
+     /* make table of areas and compute largest area for rescaling           */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
@@ -1837,18 +1788,10 @@ _unur_tdrgw_make_guide_table( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   struct unur_tdrgw_interval *iv;
-  double Acum, Astep;
-  int j;
+  double Acum;
 
   /* check arguments */
   CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_TDRGW_GEN,UNUR_ERR_COOKIE);
-
-  /* allocate blocks for guide table (if necessary).
-     (we allocate blocks for maximal guide table.) */
-  if (!GEN->guide) {
-    int max_guide_size = (GEN->guide_factor > 0.) ? (GEN->max_ivs * GEN->guide_factor) : 1;
-    GEN->guide = _unur_xmalloc( max_guide_size * sizeof(struct unur_tdrgw_interval*) );
-  }
 
   /* first we need the maximum area in intervals as scaling factor */
   GEN->logAmax = -INFINITY;
@@ -1869,35 +1812,10 @@ _unur_tdrgw_make_guide_table( struct unur_gen *gen )
   /* total area below hat */
   GEN->Atotal = Acum;
 
-  /* actual size of guide table */
-  GEN->guide_size = (int)(GEN->n_ivs * GEN->guide_factor);
-  /* we do not vary the relative size of the guide table,
-     since it has very little influence on speed */
-
-  /* make table (use variant 2; see dis.c) */
-  Astep = GEN->Atotal / GEN->guide_size;
-  Acum=0.;
-  for( j=0, iv=GEN->iv; j < GEN->guide_size; j++ ) {
-    COOKIE_CHECK(iv,CK_TDRGW_IV,UNUR_ERR_COOKIE);
-    while( iv->Acum < Acum )
-      iv = iv->next;
-    if( iv->next == NULL ) {   /* this is the last virtual intervall --> do not use */
-	_unur_warning(gen->genid,UNUR_ERR_ROUNDOFF,"guide table");
-	break;
-      }
-    GEN->guide[j] = iv;
-    Acum += Astep;
-  }
-
-  /* if there has been an round off error, we have to complete the guide table */
-  for( ; j<GEN->guide_size ;j++ )
-    GEN->guide[j] = iv;
-
   return UNUR_SUCCESS;
-} /* end of _unur_tdrgw_make_guide_table() */
+} /* end of _unur_tdrgw_make_area_table() */
 
 /*---------------------------------------------------------------------------*/
-
 
 /*****************************************************************************/
 /**  Debugging utilities                                                    **/
@@ -1943,11 +1861,6 @@ _unur_tdrgw_debug_init_start( const struct unur_par *par, const struct unur_gen 
 
   fprintf(log,"%s: maximum number of intervals        = %d",gen->genid,GEN->max_ivs);
   _unur_print_if_default(par,TDRGW_SET_MAX_IVS);
-  fprintf(log,"\n%s:\n",gen->genid);
-
-  fprintf(log,"%s: sampling from list of intervals: indexed search (guide table method)\n",gen->genid);
-  fprintf(log,"%s:    relative guide table size = %g%%",gen->genid,100.*PAR->guide_factor);
-  _unur_print_if_default(par,TDRGW_SET_GUIDEFACTOR);
   fprintf(log,"\n%s:\n",gen->genid);
 
   fprintf(log,"%s: number of starting points = %d",gen->genid,PAR->n_starting_cpoints);

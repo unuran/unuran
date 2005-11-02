@@ -113,16 +113,6 @@ int unur_tdrgw_set_cpoints( UNUR_PAR *parameters, int n_cpoints, const double *c
    The default number of construction points is 2.
 */
 
-int unur_tdrgw_set_guidefactor( UNUR_PAR *parameters, double factor );
-/* 
-   Set factor for relative size of the guide table for indexed search
-   (see also method DGT @ref{DGT}). It must be greater than or equal
-   to @code{0}. 
-   When set to @code{0}, then sequential search is used.
-
-   Default is 2.
-*/
-
 int unur_tdrgw_set_verify( UNUR_PAR *parameters, int verify );
 /* */
 

@@ -60,9 +60,8 @@ struct unur_tdrgw_interval {
   double  ip;             /* intersection point between two tangents         */
                                  
   double  Acum;           /* cumulated area of intervals                     */
-  double  Ahat;           /* area below hat                                  */
+  double  logAhat;        /* log of area below hat                           */
   double  Ahatr_fract;    /* fraction of area below hat on r.h.s.            */
-
 
   struct unur_tdrgw_interval *next; /* pointer to next interval in list      */
 
@@ -77,6 +76,8 @@ struct unur_tdrgw_interval {
 struct unur_tdrgw_gen { 
 
   double  Atotal;               /* area below hat                            */
+
+  double logAmax;               /* log of maximum area in intervals          */
 
   struct unur_tdrgw_interval *iv; /* pointer to linked list of intervals     */
   int     n_ivs;                /* number of intervals                       */

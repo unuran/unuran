@@ -143,12 +143,10 @@ static int _unur_tdrgw_tangent_intersection_point( struct unur_gen *gen,
 /* compute cutting point of interval into left and right part.               */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_tdrgw_interval_area( struct unur_gen *gen, struct unur_tdrgw_interval *iv,
-					 double slope, double x );
 static double _unur_tdrgw_interval_logarea( struct unur_gen *gen, struct unur_tdrgw_interval *iv,
 					    double slope, double x );
 /*---------------------------------------------------------------------------*/
-/* compute area below piece of hat or squeeze in interval.                   */
+/* compute log of area below piece of hat or squeeze in interval.            */
 /*---------------------------------------------------------------------------*/
 
 static int _unur_tdrgw_interval_split( struct unur_gen *gen,
@@ -222,6 +220,13 @@ static void _unur_tdrgw_debug_split_stop( const struct unur_gen *gen,
 #define logPDF(x)  _unur_cont_logPDF((x),(gen->distr))   /* call to logPDF   */
 #define dlogPDF(x) _unur_cont_dlogPDF((x),(gen->distr))  /* call to derivative of log PDF */
 
+/* areas in intervaled relative to maximal area */
+#define scaled_area(iv)     (exp((iv)->logAhat - GEN->logAmax))
+#define scaled_logarea(iv)  ((iv)->logAhat - GEN->logAmax)
+
+/* log of function rescaled relative to maximal area */
+#define rescaled_logf(logf) ((logf) - GEN->logAmax)
+
 /*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/
@@ -291,9 +296,9 @@ unur_tdrgw_new( const struct unur_distr* distr )
 /*****************************************************************************/
 
 double
-unur_tdrgw_get_hatarea( const struct unur_gen *gen )
+unur_tdrgw_get_loghatarea( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* get area below hat                                                   */
+     /* get log of area below hat                                            */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen  ... pointer to generator object                               */
@@ -307,9 +312,9 @@ unur_tdrgw_get_hatarea( const struct unur_gen *gen )
   _unur_check_NULL( GENTYPE, gen, INFINITY );
   _unur_check_gen_object( gen, TDRGW, INFINITY );
 
-  return GEN->Atotal;
+  return log(GEN->Atotal) + GEN->logAmax;
 
-} /* end of unur_tdrgw_get_hatarea() */
+} /* end of unur_tdrgw_get_loghatarea() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -660,6 +665,7 @@ _unur_tdrgw_create( struct unur_par *par )
   GEN->iv          = NULL;
   GEN->n_ivs       = 0;
   GEN->Atotal      = 0.;
+  GEN->logAmax     = 0.;
 
   /* copy some parameters into generator object */
   GEN->guide_factor = PAR->guide_factor; /* relative size of guide tables      */
@@ -850,20 +856,20 @@ _unur_tdrgw_sample( struct unur_gen *gen )
     U -= iv->Acum;    /* result: U in (-A_hat, 0) */
 
     /* l.h.s. or r.h.s. of hat */
-    if (-U < (iv->Ahat * iv->Ahatr_fract)) { /* right */
+    if (-U < (scaled_area(iv) * iv->Ahatr_fract)) { /* right */
       pt = iv->next;
       /* U unchanged */
     }
     else {                /* left */
       pt = iv;
-      U += iv->Ahat;
+      U += scaled_area(iv);
     }
 
     /* PDF at x0 */
     x0 = pt->x;
     logfx0 = pt->logfx;
     dlogfx0 = pt->dlogfx;
-    fx0 = exp(logfx0);
+    fx0 = exp(rescaled_logf(logfx0));
 
     /* random variate */
     if (dlogfx0 == 0.)
@@ -881,13 +887,13 @@ _unur_tdrgw_sample( struct unur_gen *gen )
     }
     
     /* log of hat at x */
-    loghx = logfx0 + dlogfx0*(X - x0);
+    loghx = rescaled_logf(logfx0) + dlogfx0*(X - x0);
 
     /* log of a random point between 0 and hat at x */
     logV = log(_unur_call_urng(gen->urng)) + loghx;
     
     /* log of spueeze at x */
-    logsqx = iv->logfx + iv->sq*(X - iv->x);
+    logsqx = rescaled_logf(iv->logfx) + iv->sq*(X - iv->x);
  
     /* below squeeze ? */
     if (logV <= logsqx)
@@ -897,7 +903,7 @@ _unur_tdrgw_sample( struct unur_gen *gen )
     logfx = logPDF(X);
 
     /* below PDF ? */
-    if (logV <= logfx)
+    if (logV <= rescaled_logf(logfx))
       return X;
 
     /* being above PDF is bad. improve the situation! */
@@ -959,20 +965,20 @@ _unur_tdrgw_sample_check( struct unur_gen *gen )
     U -= iv->Acum;    /* result: U in (-A_hat, 0) */
 
     /* l.h.s. or r.h.s. of hat */
-    if (-U < (iv->Ahat * iv->Ahatr_fract)) { /* right */
+    if (-U < (scaled_area(iv) * iv->Ahatr_fract)) { /* right */
       pt = iv->next;
       /* U unchanged */
     }
     else {                /* left */
       pt = iv;
-      U += iv->Ahat;
+      U += scaled_area(iv);
     }
 
     /* PDF at x0 */
     x0 = pt->x;
     logfx0 = pt->logfx;
     dlogfx0 = pt->dlogfx;
-    fx0 = exp(logfx0);
+    fx0 = exp(rescaled_logf(logfx0));
 
     /* random variate */
     if (dlogfx0 == 0.)
@@ -990,10 +996,10 @@ _unur_tdrgw_sample_check( struct unur_gen *gen )
     }
     
     /* log of hat at x */
-    loghx = logfx0 + dlogfx0*(X - x0);
+    loghx = rescaled_logf(logfx0) + dlogfx0*(X - x0);
 
     /* log of spueeze at x */
-    logsqx = iv->logfx + iv->sq*(X - iv->x);
+    logsqx = rescaled_logf(iv->logfx) + iv->sq*(X - iv->x);
  
     /* log of PDF at x */
     logfx = logPDF(X);
@@ -1003,11 +1009,11 @@ _unur_tdrgw_sample_check( struct unur_gen *gen )
       _unur_warning(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"generated point out of domain");
       error = 1;
     }
-    if (_unur_FP_greater(logfx,loghx)) {
+    if (_unur_FP_greater(rescaled_logf(logfx), loghx)) {
       _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF > hat. Not log-concave!");
       error = 1;
     }
-    if (_unur_FP_less(logfx,logsqx)) {
+    if (_unur_FP_less(rescaled_logf(logfx), logsqx)) {
       _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF < squeeze. Not log-concave!");
       error = 1;
     }
@@ -1020,7 +1026,7 @@ _unur_tdrgw_sample_check( struct unur_gen *gen )
       return X;
 
     /* below PDF ? */
-    if (logV <= logfx)
+    if (logV <= rescaled_logf(logfx))
       return X;
 
     /* being above PDF is bad. improve the situation! */
@@ -1207,7 +1213,8 @@ _unur_tdrgw_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
 
   /* we have left the loop with the right boundary of the support of PDF
      make shure that we will never use iv for sampling. */
-  iv->Ahat = iv->Ahatr_fract = iv->sq = 0.; 
+  iv->logAhat = -INFINITY;
+  iv->Ahatr_fract = iv->sq = 0.;
   iv->Acum = INFINITY;
   iv->ip = iv->x;
   iv->next = NULL;         /* terminate list */
@@ -1268,7 +1275,8 @@ _unur_tdrgw_starting_intervals( struct unur_par *par, struct unur_gen *gen )
       if (iv->next==NULL) {
 	/* last (virtuel) interval in list.
 	   make sure that we will never use this segment */
-	iv->Ahat = iv->Ahatr_fract = iv->sq = 0.;
+	iv->logAhat = -INFINITY;
+	iv->Ahatr_fract = iv->sq = 0.;
 	iv->Acum = INFINITY;
       }
       continue;
@@ -1371,7 +1379,8 @@ _unur_tdrgw_interval_new( struct unur_gen *gen, double x, double logfx )
   COOKIE_SET(iv,CK_TDRGW_IV);
 
   /* avoid uninitialized variables */
-  iv->Acum = iv->Ahat = iv->Ahatr_fract = 0.;
+  iv->logAhat = -INFINITY;
+  iv->Acum = iv->Ahatr_fract = 0.;
   iv->ip = iv->sq = 0.;
 
   /* make left construction point in interval */
@@ -1408,8 +1417,8 @@ _unur_tdrgw_interval_parameter( struct unur_gen *gen, struct unur_tdrgw_interval
      /*   others          ... error (PDF not T-concave)                      */
      /*----------------------------------------------------------------------*/
 {
-  double Ahatl, Ahatr;    /* areas below hat at l.h.s. and r.h.s. of 
-			     intersection point, resp.                       */
+  double logAhatl, logAhatr;  /* log of areas below hat at l.h.s. and r.h.s. 
+				 of intersection point, resp.                */
 
   /* check arguments */
   CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_TDRGW_GEN,UNUR_ERR_COOKIE);
@@ -1452,16 +1461,19 @@ _unur_tdrgw_interval_parameter( struct unur_gen *gen, struct unur_tdrgw_interval
   }
 
   /* volume below hat */
-  Ahatl = _unur_tdrgw_interval_area( gen, iv, iv->dlogfx, iv->ip);
-  Ahatr = _unur_tdrgw_interval_area( gen, iv->next, iv->next->dlogfx, iv->ip);
+  logAhatl = _unur_tdrgw_interval_logarea( gen, iv, iv->dlogfx, iv->ip);
+  logAhatr = _unur_tdrgw_interval_logarea( gen, iv->next, iv->next->dlogfx, iv->ip);
 
   /* areas below head unbounded ? */
-  if (! (_unur_isfinite(Ahatl) && _unur_isfinite(Ahatr)) )
+  /** TODO **/
+  if (! (_unur_isfinite(exp(logAhatl)) && _unur_isfinite(exp(logAhatr))) )
     return UNUR_ERR_INF;
 
   /* total area */
-  iv->Ahat = Ahatr + Ahatl;
-  iv->Ahatr_fract = (Ahatr > 0.) ? Ahatr / iv->Ahat : 0.;
+  iv->logAhat = (logAhatl > logAhatr) 
+    ? logAhatl+log(1+exp(logAhatr-logAhatl)) 
+    : logAhatr+log(1+exp(logAhatl-logAhatr)) ;       /* = log( Ahatr + Ahatl )     */
+  iv->Ahatr_fract = 1./(1.+exp(logAhatl-logAhatr));  /*  = Ahatr / (Ahatr + Ahatl) */
 
   /* o.k. */
   return UNUR_SUCCESS;
@@ -1586,14 +1598,13 @@ _unur_tdrgw_interval_split( struct unur_gen *gen, struct unur_tdrgw_interval *iv
 
   /* successful */
 
-  /* update total area below hat and squeeze */
-  GEN->Atotal   = ( GEN->Atotal - iv_bak.Ahat
-		   + iv_oldl->Ahat + ((iv_newr) ? iv_newr->Ahat : 0.) );
-
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
-  if (gen->debug & TDRGW_DEBUG_SPLIT)
+  if (gen->debug & TDRGW_DEBUG_SPLIT) {
+    /* update total area below hat and squeeze */
+    GEN->Atotal = ( GEN->Atotal - scaled_area(&iv_bak) + scaled_area(iv_oldl) + ((iv_newr) ? scaled_area(iv_newr) : 0.) );
+    /* write info into log file */
     _unur_tdrgw_debug_split_stop( gen,iv_oldl,iv_newr );
+  }
 #endif
 
   /* o.k. */
@@ -1695,43 +1706,6 @@ _unur_tdrgw_tangent_intersection_point( struct unur_gen *gen, struct unur_tdrgw_
   return UNUR_SUCCESS;
 
 } /* end of _unur_tdrgw_tangent_intersection_point() */
-
-/*---------------------------------------------------------------------------*/
-
-double
-_unur_tdrgw_interval_area( struct unur_gen *gen, struct unur_tdrgw_interval *iv, double slope, double x )
-     /*---------------------------------------------------------------------------*/
-     /* compute area below piece of hat or squeeze in                             */
-     /* interval [iv->x,x] or [x,iv->x]                                           */
-     /*                                                                           */
-     /* parameters:                                                               */
-     /*   gen   ... pointer to generator object                                   */
-     /*   iv    ... pointer to interval that stores construction point of tangent */
-     /*   slope ... slope of tangent or secant of transformed PDF                 */
-     /*   x     ... boundary of integration domain                                */
-     /*                                                                           */
-     /* return:                                                                   */
-     /*   area                                                                    */
-     /*                                                                           */
-     /* error:                                                                    */
-     /*   return INFINITY                                                         */
-     /*                                                                           */
-     /* comment:                                                                  */
-     /*   x0    ... construction point of tangent (= iv->x)                       */
-     /*                                                                           */
-     /*   area = | \int_{x0}^x \exp(Tf(x0) + slope*(t-x0)) dt |                   */
-     /*        = f(x0) * |x - x0|                              if slope = 0       */
-     /*        = | f(x0)/slope * (\exp(slope*(x-x0))-1) |      if slope != 0      */
-     /*                                                                           */
-     /*---------------------------------------------------------------------------*/
-{
-  /* check arguments */
-  CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_TDRGW_GEN,INFINITY);
-  CHECK_NULL(iv,INFINITY);   COOKIE_CHECK(iv,CK_TDRGW_IV,INFINITY); 
-
-  return exp(_unur_tdrgw_interval_logarea(gen, iv, slope, x ));
-
-} /* end of _unur_tdrgw_interval_area() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -1846,11 +1820,19 @@ _unur_tdrgw_make_guide_table( struct unur_gen *gen )
     GEN->guide = _unur_xmalloc( max_guide_size * sizeof(struct unur_tdrgw_interval*) );
   }
 
-  /* first we need cumulated areas in intervals */
+  /* first we need the maximum area in intervals as scaling factor */
+  GEN->logAmax = -INFINITY;
+  for (iv = GEN->iv; iv != NULL; iv = iv->next ) {
+    COOKIE_CHECK(iv,CK_TDRGW_IV,UNUR_ERR_COOKIE);
+    if (GEN->logAmax < iv->logAhat)
+      GEN->logAmax = iv->logAhat;
+  }
+
+  /* cumulated areas in intervals */
   Acum = 0.;            /* area below hat */
   for (iv = GEN->iv; iv != NULL; iv = iv->next ) {
     COOKIE_CHECK(iv,CK_TDRGW_IV,UNUR_ERR_COOKIE);
-    Acum += iv->Ahat;
+    Acum += scaled_area(iv);
     iv->Acum = Acum;
   }
 
@@ -1996,8 +1978,8 @@ _unur_tdrgw_debug_intervals( const struct unur_gen *gen, const char *header, int
 {
   FILE *log;
   struct unur_tdrgw_interval *iv;
-  double Ahatl, Ahatr;
-  double sAhatl, sAhatr, Atotal;
+  double Ahat, Ahatl, Ahatr;
+  double sAhatl, sAhatr, Atotal, logAmax;
   int i;
 
   /* check arguments */
@@ -2029,18 +2011,20 @@ _unur_tdrgw_debug_intervals( const struct unur_gen *gen, const char *header, int
 
   /* print and sum areas below squeeze and hat */
   Atotal = GEN->Atotal;
+  logAmax = GEN->logAmax;
   if (gen->debug & TDRGW_DEBUG_IV) {
-    fprintf(log,"%s:Areas in intervals:\n",gen->genid);
+    fprintf(log,"%s:Areas in intervals relative to maximum:\t[ log(A_max) = %g ]\n",gen->genid, logAmax);
     fprintf(log,"%s: Nr.\tbelow hat (left and right)\t\t   cumulated\n",gen->genid);
     sAhatl = sAhatr = 0.;
     if (GEN->iv) {
       for (iv = GEN->iv, i=0; iv->next!=NULL; iv=iv->next, i++) {
 	COOKIE_CHECK(iv,CK_TDRGW_IV,RETURN_VOID); 
-	sAhatr += Ahatr = iv->Ahat * iv->Ahatr_fract;
-	sAhatl += Ahatl = iv->Ahat - Ahatr;
+	Ahat = scaled_area(iv);
+	sAhatr += Ahatr = Ahat * iv->Ahatr_fract;
+	sAhatl += Ahatl = Ahat - Ahatr;
 	fprintf(log,"%s:[%3d]: %-12.6g+ %-12.6g(%6.3f%%)  |  %-12.6g(%6.3f%%)\n",
 		gen->genid,i,
-		Ahatl, Ahatr, iv->Ahat * 100. / Atotal,
+		Ahatl, Ahatr, Ahat * 100. / Atotal,
 		iv->Acum, iv->Acum * 100. / Atotal);
       }
       fprintf(log,"%s:       ------------------------  ---------  +\n",gen->genid);
@@ -2051,7 +2035,7 @@ _unur_tdrgw_debug_intervals( const struct unur_gen *gen, const char *header, int
   }
 
   /* summary of areas */
-  fprintf(log,"%s: A(total) = %-12.6g\n",gen->genid, Atotal);
+  fprintf(log,"%s: A(total) = %-12.6g\n",gen->genid, GEN->Atotal);
   fprintf(log,"%s:\n",gen->genid);
 
 } /* end of _unur_tdrgw_debug_intervals() */
@@ -2107,6 +2091,7 @@ _unur_tdrgw_debug_split_start( const struct unur_gen *gen,
      /*----------------------------------------------------------------------*/
 {
   FILE *log;
+  double Ahat;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_TDRGW_GEN,RETURN_VOID);
@@ -2114,12 +2099,14 @@ _unur_tdrgw_debug_split_start( const struct unur_gen *gen,
 
   log = unur_get_stream();
 
+  Ahat = scaled_area(iv);
+
   fprintf(log,"%s: split interval at x = %g \t\tlogf(x) = %g\n",gen->genid,x,logfx);
   fprintf(log,"%s: old interval:\n",gen->genid);
   fprintf(log,"%s:   left  construction point = %-12.6g\tlogf(x) = %-12.6g\n",gen->genid,iv->x,iv->logfx);
   fprintf(log,"%s:   right construction point = %-12.6g\tlogf(x) = %-12.6g\n",gen->genid,iv->next->x,iv->next->logfx);
-  fprintf(log,"%s:   A(hat)         = %-12.6g +  %-12.6g(%6.3f%%)\n",gen->genid,
-	  iv->Ahat * (1.-iv->Ahatr_fract), iv->Ahat * iv->Ahatr_fract, iv->Ahat*100./GEN->Atotal);
+  fprintf(log,"%s:   A(hat)         = %-12.6g +  %-12.6g(%6.3f%%)\t[ relative to A_max ]\n",gen->genid,
+	  Ahat * (1.-iv->Ahatr_fract), Ahat * iv->Ahatr_fract, Ahat*100./GEN->Atotal);
 
   fflush(log);
 
@@ -2141,6 +2128,7 @@ _unur_tdrgw_debug_split_stop( const struct unur_gen *gen,
      /*----------------------------------------------------------------------*/
 {
   FILE *log;
+  double Ahat;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);       COOKIE_CHECK(gen,CK_TDRGW_GEN,RETURN_VOID);
@@ -2160,19 +2148,19 @@ _unur_tdrgw_debug_split_stop( const struct unur_gen *gen,
   fprintf(log,"%s:   right  construction point = %g\n",gen->genid, iv_right->next->x);
 
   fprintf(log,"%s: left interval:\n",gen->genid);
-  fprintf(log,"%s:   A(hat)         = %-12.6g +  %-12.6g(%6.3f%%)\n",gen->genid,
-	  iv_left->Ahat * (1.-iv_left->Ahatr_fract),
-	  iv_left->Ahat * iv_left->Ahatr_fract,
-	  iv_left->Ahat * 100./GEN->Atotal);
+  Ahat = scaled_area(iv_left);
+  fprintf(log,"%s:   A(hat)         = %-12.6g +  %-12.6g(%6.3f%%)\t[ relative to A_max ]\n",gen->genid,
+	  Ahat * (1.-iv_left->Ahatr_fract), Ahat * iv_left->Ahatr_fract,
+	  Ahat * 100./GEN->Atotal);
 
   if (iv_left == iv_right)
     fprintf(log,"%s: interval chopped.\n",gen->genid);
   else {
     fprintf(log,"%s: right interval:\n",gen->genid);
-    fprintf(log,"%s:   A(hat)         = %-12.6g +  %-12.6g(%6.3f%%)\n",gen->genid,
-	    iv_right->Ahat * (1.-iv_right->Ahatr_fract),
-	    iv_right->Ahat * iv_right->Ahatr_fract,
-	    iv_right->Ahat * 100./GEN->Atotal);
+    Ahat = scaled_area(iv_right);
+    fprintf(log,"%s:   A(hat)         = %-12.6g +  %-12.6g(%6.3f%%)\t[ relative to A_max ]\n",gen->genid,
+	    Ahat * (1.-iv_right->Ahatr_fract), Ahat * iv_right->Ahatr_fract,
+	    Ahat * 100./GEN->Atotal);
   }
 
   fprintf(log,"%s: total areas:\n",gen->genid);

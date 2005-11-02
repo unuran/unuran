@@ -87,9 +87,9 @@ UNUR_PAR *unur_tdrgw_new( const UNUR_DISTR* distribution );
 
 /*...........................................................................*/
 
-double unur_tdrgw_get_hatarea( const UNUR_GEN *generator );
+double unur_tdrgw_get_loghatarea( const UNUR_GEN *generator );
 /* 
-   Get the area below the hat for the generator.
+   Get the logarithm of area below the hat for the generator.
    (In case of an error @code{UNUR_INFINITY} is returned.)
 */
 

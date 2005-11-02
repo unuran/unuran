@@ -57,14 +57,17 @@ struct unur_tdrgw_interval {
   double  logfx;          /* value of logPDF at cp                           */
   double  dlogfx;         /* derivative of logPDF at cp                      */
   double  sq;             /* slope of transformed squeeze in interval        */
-  double  ip;             /* intersection point between two tangents         */
-                                 
+
   double  Acum;           /* cumulated area of intervals                     */
   double  logAhat;        /* log of area below hat                           */
   double  Ahatr_fract;    /* fraction of area below hat on r.h.s.            */
 
   struct unur_tdrgw_interval *next; /* pointer to next interval in list      */
 
+
+#ifdef DEBUG_STORE_IP 
+  double  ip;             /* intersection point between two tangents         */
+#endif
 #ifdef UNUR_COOKIES
   unsigned cookie;        /* magic cookie                                    */
 #endif

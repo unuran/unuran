@@ -44,6 +44,15 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
+/* Store intersection point in structure when defined.                       */
+
+#ifdef DEBUG_STORE_IP 
+#  undef DEBUG_STORE_IP
+#endif
+
+/* #define DEBUG_STORE_IP 1 */
+
+/*---------------------------------------------------------------------------*/
 
 #include <unur_source.h>
 #include <distr/distr.h>
@@ -908,6 +917,11 @@ _unur_tdrgw_sample( struct unur_gen *gen )
 
     /* being above PDF is bad. improve the situation! */
     if (GEN->n_ivs < GEN->max_ivs) {
+      /* first check for valid values of X and logf(X) */
+      if (! (_unur_isfinite(X) && _unur_isfinite(logfx)) ) {
+	X = _unur_arcmean(iv->x,iv->next->x);  /* use mean point in interval */
+	logfx = logPDF(X);
+      }
       if ( (_unur_tdrgw_improve_hat( gen, iv, X, logfx) != UNUR_SUCCESS)
 	   && (gen->variant & TDRGW_VARFLAG_PEDANTIC) )
 	return UNUR_INFINITY;
@@ -1031,6 +1045,11 @@ _unur_tdrgw_sample_check( struct unur_gen *gen )
 
     /* being above PDF is bad. improve the situation! */
     if (GEN->n_ivs < GEN->max_ivs) {
+      /* first check for valid values of X and logf(X) */
+      if (! (_unur_isfinite(X) && _unur_isfinite(logfx)) ) {
+	X = _unur_arcmean(iv->x,iv->next->x);  /* use mean point in interval */
+	logfx = logPDF(X);
+      }
       if ( (_unur_tdrgw_improve_hat( gen, iv, X, logfx) != UNUR_SUCCESS)
 	   && (gen->variant & TDRGW_VARFLAG_PEDANTIC) )
 	return UNUR_INFINITY;
@@ -1216,7 +1235,9 @@ _unur_tdrgw_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
   iv->logAhat = -INFINITY;
   iv->Ahatr_fract = iv->sq = 0.;
   iv->Acum = INFINITY;
+#ifdef DEBUG_STORE_IP 
   iv->ip = iv->x;
+#endif
   iv->next = NULL;         /* terminate list */
   --(GEN->n_ivs);          /* we do not count the terminating interval */
 
@@ -1381,7 +1402,10 @@ _unur_tdrgw_interval_new( struct unur_gen *gen, double x, double logfx )
   /* avoid uninitialized variables */
   iv->logAhat = -INFINITY;
   iv->Acum = iv->Ahatr_fract = 0.;
-  iv->ip = iv->sq = 0.;
+  iv->sq = 0.;
+#ifdef DEBUG_STORE_IP 
+  iv->ip = 0.;
+#endif
 
   /* make left construction point in interval */
   iv->x = x;              /* point x */
@@ -1420,6 +1444,8 @@ _unur_tdrgw_interval_parameter( struct unur_gen *gen, struct unur_tdrgw_interval
   double logAhatl, logAhatr;  /* log of areas below hat at l.h.s. and r.h.s. 
 				 of intersection point, resp.                */
 
+  double ip = 0.;             /* intersection point of tangents              */
+
   /* check arguments */
   CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_TDRGW_GEN,UNUR_ERR_COOKIE);
   CHECK_NULL(iv,UNUR_ERR_NULL);   COOKIE_CHECK(iv,CK_TDRGW_IV,UNUR_ERR_COOKIE); 
@@ -1431,8 +1457,12 @@ _unur_tdrgw_interval_parameter( struct unur_gen *gen, struct unur_tdrgw_interval
      used to partition interval into left hand part (construction point of tangent
      on the left hand boundary) and right hand part (construction point of tangent
      on the left hand boundary). */
-  if ( _unur_tdrgw_tangent_intersection_point(gen,iv,&(iv->ip))!=UNUR_SUCCESS )
+  if ( _unur_tdrgw_tangent_intersection_point(gen,iv,&ip)!=UNUR_SUCCESS )
     return UNUR_ERR_GEN_CONDITION;
+
+#ifdef DEBUG_STORE_IP 
+  iv->ip = ip;
+#endif
 
   /* squeeze and area below squeeze */
   if (_unur_isfinite(iv->logfx) && _unur_isfinite(iv->next->dlogfx) ) {
@@ -1461,8 +1491,8 @@ _unur_tdrgw_interval_parameter( struct unur_gen *gen, struct unur_tdrgw_interval
   }
 
   /* volume below hat */
-  logAhatl = _unur_tdrgw_interval_logarea( gen, iv, iv->dlogfx, iv->ip);
-  logAhatr = _unur_tdrgw_interval_logarea( gen, iv->next, iv->next->dlogfx, iv->ip);
+  logAhatl = _unur_tdrgw_interval_logarea( gen, iv, iv->dlogfx, ip);
+  logAhatr = _unur_tdrgw_interval_logarea( gen, iv->next, iv->next->dlogfx, ip);
 
   /* areas below head unbounded ? */
   /** TODO **/
@@ -1992,12 +2022,21 @@ _unur_tdrgw_debug_intervals( const struct unur_gen *gen, const char *header, int
   fprintf(log,"%s:Intervals: %d\n",gen->genid,GEN->n_ivs);
   if (GEN->iv) {
     if (gen->debug & TDRGW_DEBUG_IV) {
+#ifdef DEBUG_STORE_IP 
       fprintf(log,"%s: Nr.            tp            ip       logf(tp)     dlogf(tp)       squeeze\n",gen->genid);
       for (iv = GEN->iv, i=0; iv->next!=NULL; iv=iv->next, i++) {
 	COOKIE_CHECK(iv,CK_TDRGW_IV,RETURN_VOID); 
 	fprintf(log,"%s:[%3d]: %#12.6g  %#12.6g  %#12.6g  %#12.6g  %#12.6g\n", gen->genid, i,
 		iv->x, iv->ip, iv->logfx, iv->dlogfx, iv->sq);
       }
+#else
+      fprintf(log,"%s: Nr.            tp       logf(tp)     dlogf(tp)       squeeze\n",gen->genid);
+      for (iv = GEN->iv, i=0; iv->next!=NULL; iv=iv->next, i++) {
+	COOKIE_CHECK(iv,CK_TDRGW_IV,RETURN_VOID); 
+	fprintf(log,"%s:[%3d]: %#12.6g  %#12.6g  %#12.6g  %#12.6g\n", gen->genid, i,
+		iv->x, iv->logfx, iv->dlogfx, iv->sq);
+      }
+#endif
       COOKIE_CHECK(iv,CK_TDRGW_IV,RETURN_VOID); 
       fprintf(log,"%s:[...]: %#12.6g                %#12.6g  %#12.6g\n", gen->genid,
 	      iv->x, iv->logfx, iv->dlogfx);

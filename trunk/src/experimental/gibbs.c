@@ -76,9 +76,6 @@
 
 /*---------------------------------------------------------------------------*/
 
-#define GIBBS_STORE_TDR_POINTS 1 /* 0 or 1 ... experimental */
-
-
 static struct unur_gen *_unur_gibbs_init( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 /* Initialize new generator.                                                 */
@@ -518,7 +515,6 @@ _unur_gibbs_sample_cvec( struct unur_gen *gen, double *vec )
 	if ( gen->variant == GIBBS_VARIANT_COORDINATE ) {
 	  GEN->point_current[GEN->coordinate] = x;
 
-printf(".");
 	  /* calculating new tdr starting points for this coordinate */
 	  for (i=0; i<NTDRPOINTS; i++) {
    	    GEN->tdr_points[NTDRPOINTS*GEN->coordinate+i] = unur_tdrgw_eval_invcdfhat(gen_conditional, (i+1.)/(NTDRPOINTS+1));  

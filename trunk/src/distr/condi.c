@@ -73,6 +73,9 @@ static const char distr_name[] = "conditional";
 static double _unur_pdf_condi( double x, const struct unur_distr *condi );
 static double _unur_dpdf_condi( double x, const struct unur_distr *condi );
 
+static double _unur_logpdf_condi( double x, const struct unur_distr *condi );
+static double _unur_dlogpdf_condi( double x, const struct unur_distr *condi );
+
 /*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/
@@ -164,6 +167,13 @@ unur_distr_condi_new( const struct unur_distr *distr, const double *pos, const d
     CONDI.pdf = _unur_pdf_condi;      /* pointer to PDF    */
     if (DISTR.dpdf)
       CONDI.dpdf = _unur_dpdf_condi;  /* derivative of PDF */
+  }
+
+  /* pointer to logPDF, its derivative */
+  if (DISTR.logpdf) {
+    CONDI.logpdf = _unur_logpdf_condi;      /* pointer to logPDF    */
+    if (DISTR.dlogpdf)
+      CONDI.dlogpdf = _unur_dlogpdf_condi;  /* derivative of logPDF */
   }
 
   /* return pointer to object */
@@ -343,6 +353,36 @@ _unur_pdf_condi( double x, const struct unur_distr *condi )
 /*---------------------------------------------------------------------------*/
 
 double
+_unur_logpdf_condi( double x, const struct unur_distr *condi )
+     /* 
+	logPDF(x) = logmvpdf(p(x))
+
+	mvpdf(.) ... logPDF of underlying multivariate distribution
+	p(x)     ... vector with x in k-th position and pos in all others
+     */
+{ 
+  int dim = condi->base->dim;   /* dimension of underlying distribution */
+  int k = (int) K;              /* position in vector */
+  int i;
+
+  /* set point for multivariate logPDF */
+  if (DIRECTION==NULL) {  /* use k-th variable */
+    memcpy(XARG, POSITION, dim * sizeof(double) );
+    XARG[k] = x;  
+  }
+  else {   /* use direction vector */
+    memcpy(XARG, POSITION, dim * sizeof(double) );
+    for (i=0; i<dim; i++)
+      XARG[i] += x*DIRECTION[i];
+  }
+
+  return _unur_cvec_logPDF(XARG,condi->base);
+
+} /* end of _unur_logpdf_condi() */
+
+/*---------------------------------------------------------------------------*/
+
+double
 _unur_dpdf_condi( double x, const struct unur_distr *condi )
      /* 
 	(dPDF/dxk)(x) = (grad mvpdf(p(x)))[k]
@@ -385,6 +425,52 @@ _unur_dpdf_condi( double x, const struct unur_distr *condi )
   return df;
 
 } /* end of _unur_dpdf_condi() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_dlogpdf_condi( double x, const struct unur_distr *condi )
+     /* 
+	(dlogPDF/dxk)(x) = (grad logmvpdf(p(x)))[k]
+
+	logmvpdf(.) ... PDF of underlying multivariate distribution
+	p(x)        ... vector with x in k-th position and pos in all others
+     */
+{
+  int dim = condi->base->dim;    /* dimension of underlying distribution */
+  int k = (int) K;               /* position in vector */
+  int i;
+  double df;
+
+  if (DIRECTION==NULL) {  /* use k-th variable */
+    /* set point for multivariate logPDF */
+    memcpy(XARG, POSITION, dim * sizeof(double) );
+    XARG[k] = x;  
+    if (condi->base->data.cvec.pdlogpdf) {
+      /* we have a pointer to the partial derivative */
+      df = _unur_cvec_pdlogPDF(XARG, k, condi->base);
+    }
+    else {
+      /* we do not have partial derivatives --> have to take coordinate from gradient */
+      /* compute gradient */
+      _unur_cvec_dlogPDF(GRADF, XARG, condi->base);
+      /* return k-th component */
+      df = GRADF[k];
+    }
+  }
+
+  else {   /* use direction vector */
+    memcpy(XARG, POSITION, dim * sizeof(double) );
+    for (i=0; i<dim; i++)
+      XARG[i] += x*DIRECTION[i];
+    _unur_cvec_dlogPDF(GRADF, XARG, condi->base);
+    for (df=0.,i=0; i<dim; i++)
+      df += GRADF[i]*DIRECTION[i];
+  }  
+
+  return df;
+
+} /* end of _unur_dlogpdf_condi() */
 
 /*---------------------------------------------------------------------------*/
 

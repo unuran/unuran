@@ -1446,8 +1446,7 @@ _unur_tdrgw_interval_parameter( struct unur_gen *gen, struct unur_tdrgw_interval
   logAhatr = _unur_tdrgw_interval_logarea( gen, iv->next, iv->next->dlogfx, ip);
 
   /* areas below head unbounded ? */
-  /** TODO **/
-  if (! (_unur_isfinite(exp(logAhatl)) && _unur_isfinite(exp(logAhatr))) )
+  if (! (logAhatl < INFINITY && logAhatr < INFINITY) )
     return UNUR_ERR_INF;
 
   /* total area */

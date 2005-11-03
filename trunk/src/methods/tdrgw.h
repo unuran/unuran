@@ -152,5 +152,16 @@ int unur_tdrgw_set_pedantic( UNUR_PAR *parameters, int pedantic );
    Default is FALSE.
 */
 
+double unur_tdrgw_eval_invcdfhat( const UNUR_GEN *generator, double u );
+/* 
+   Evaluate the inverse of the CDF of the hat distribution at @var{u}.
+
+   If @var{u} is out of the domain [0,1] then @code{unur_errno} is set
+   to @code{UNUR_ERR_DOMAIN} and the respective bound of
+   the domain of the distribution are returned (which is
+   @code{-UNUR_INFINITY} or @code{UNUR_INFINITY} in the case of
+   unbounded domains).
+*/
+
 /* =END */
 /*---------------------------------------------------------------------------*/

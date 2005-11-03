@@ -794,8 +794,6 @@ _unur_tdrgw_sample( struct unur_gen *gen )
   double logfx, logsqx, loghx;      /* log of density, squeeze, and hat at X */
   double x0, logfx0, dlogfx0, fx0;  /* construction point and logPDF at x0   */
 
-/*   double Acum; */
-
   /* check arguments */
   CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_TDRGW_GEN,INFINITY);
 
@@ -1014,6 +1012,88 @@ _unur_tdrgw_sample_check( struct unur_gen *gen )
   }
 
 } /* end of _unur_tdrgw_sample_check() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+unur_tdrgw_eval_invcdfhat( const struct unur_gen *gen, double U )
+     /*----------------------------------------------------------------------*/
+     /* evaluate the inverse of the hat CDF at u                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*   U   ... argument for inverse CDF (0<=U<=1, no validation!)         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   inverse of hat CDF.                                                */
+     /*----------------------------------------------------------------------*/
+{ 
+  struct unur_tdrgw_interval *iv, *pt;
+  double X;                         /* generated point                       */
+  double x0, logfx0, dlogfx0, fx0;  /* construction point and logPDF at x0   */
+
+
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, gen, INFINITY );
+  if ( gen->method != UNUR_METH_TDRGW ) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_INVALID,"");
+    return INFINITY; 
+  }
+  COOKIE_CHECK(gen,CK_TDRGW_GEN,INFINITY);
+
+  if ( U<0. || U>1.) {
+    _unur_warning(gen->genid,UNUR_ERR_DOMAIN,"argument u not in [0,1]");
+  }
+
+  /* validate argument */
+  if (U<=0.) return DISTR.domain[0];
+  if (U>=1.) return DISTR.domain[1];
+
+  /* find interval by sequential search */
+  /* Remark: there is no need for a guide table as we only generate one point! */
+  iv =  GEN->iv;
+  U *= GEN->Atotal;
+  while (iv->Acum < U) {
+    iv = iv->next;
+  }
+  
+  /* rescale U: U in (-A_hat, 0) */
+  U -= iv->Acum;
+  
+  /* l.h.s. or r.h.s. of hat */
+  if (-U < (scaled_area(iv) * iv->Ahatr_fract)) { /* right */
+    pt = iv->next;
+    /* U unchanged */
+  }
+  else {                /* left */
+    pt = iv;
+    U += scaled_area(iv);
+  }
+  
+  /* PDF at x0 */
+  x0 = pt->x;
+  logfx0 = pt->logfx;
+  dlogfx0 = pt->dlogfx;
+  fx0 = exp(rescaled_logf(logfx0));
+  
+  /* X = H^{-1}(U) in interval*/
+  if (dlogfx0 == 0.)
+    X = x0 + U / fx0;
+  else {
+    double t = dlogfx0 * U / fx0;
+    if (fabs(t) > 1.e-6)
+      X = x0 + log(t + 1.) * U / (fx0 * t);
+    /* x = x0 + log(t + 1.) / dlogfx0; is cheaper but numerical unstable */
+    else if (fabs(t) > 1.e-8)
+      /* use Taylor series */
+      X = x0 + U / fx0 * (1 - t/2. + t*t/3.);
+    else
+      X = x0 + U / fx0 * (1 - t/2.);
+  }
+  
+  return X;
+  
+} /* end of unur_tdrgw_eval_invcdfhat() */
 
 /*---------------------------------------------------------------------------*/
 

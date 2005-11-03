@@ -262,8 +262,9 @@ int main(int argc, char *argv[])
     }
   }
   
-  // unur_set_default_debug(UNUR_DEBUG_OFF);
-   
+  unur_set_default_debug(UNUR_DEBUG_OFF);
+//  unur_set_default_debug(UNUR_DEBUG_ALL);
+     
   for(d=0;d<DIM;d++){
     for (m=1; m<=4; m++) {
        mv[im(d,m)]=init_meanvar();
@@ -457,8 +458,8 @@ int main(int argc, char *argv[])
   
   printf("SKIP=%ld\n", SKIP);
 
-//  par_clone = _unur_par_clone(par);
-  
+  par_clone = _unur_par_clone(par);
+ 
 #if 0
   gen = unur_init(par);
   math2(gen);
@@ -497,8 +498,10 @@ int main(int argc, char *argv[])
     uv[d] *= 0.9;
   }
     
-//    par = _unur_par_clone(par_clone);
-//    gen = unur_init(par);
+  if (gen)   unur_free(gen);
+    
+  par = _unur_par_clone(par_clone);
+  gen = unur_init(par);
 
   /* main loop */    
   for (loop=1; loop<=EXPERIMENTS; loop++) {
@@ -529,9 +532,8 @@ int main(int argc, char *argv[])
     if (METHOD==METHOD_WALK) {    
       _unur_walk_set_point_current( gen, x);    
     }
-#if 1      
+    
     unur_test_moments(gen, moments, 4, SAMPLESIZE, VERBOSE, stdout);
-#endif 
     
     for(d=0;d<DIM;d++){
       s=(d<DIM/2.) ? 1: sqrt(SIGMA);
@@ -545,8 +547,6 @@ int main(int argc, char *argv[])
   
   } /* next experiment */
 
-#if 1  
-  //  unur_free(gen);
   /* output of results */   
   printf("------------------------------------------------------------------\n");
   printf("                #1          #2          #3          #4\n");
@@ -587,7 +587,6 @@ int main(int argc, char *argv[])
     printarray(info, a_q3);
   }
   printarray("max      :", a_max);
-#endif
     
   unur_test_count_pdf(gen, SAMPLESIZE, 2, stdout);
     
@@ -600,8 +599,8 @@ int main(int argc, char *argv[])
     
   if (par_clone) unur_par_free(par_clone);
   
-  unur_distr_free(distr);
-  unur_free(gen);
+  if (distr) unur_distr_free(distr);
+  if (gen)   unur_free(gen);
   
   free(x); free(mean); free(covar);
   free(moments); free(moments_expected); 

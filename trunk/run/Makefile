@@ -19,8 +19,12 @@ q: q.c ../src/unuran.h ../src/libunuran.la ../src/experimental/libunurexperiment
 	../libtool gcc -I. -I.. -I../src -I../src/tests -Wall -DHAVE_CONFIG_H -g -O2 -m32 -o q q.c ../src/experimental/libunurexperimental.la ../src/libunuran.la -lm 
 
 something: something.c ../src/unuran.h ../src/libunuran.la ../src/experimental/libunurexperimental.la
-	../libtool gcc -I. -I.. -I../src -I../src/tests -Wall -DHAVE_CONFIG_H -g -O2 -m32 -o something something.c ../src/experimental/libunurexperimental.la ../src/libunuran.la -lm 
+	../libtool gcc -I. -I.. -I../src -I../src/tests -Wall -DHAVE_CONFIG_H -g -O2 -m32 -o something something.c ../src/experimental/libunurexperimental.la ../tests/testdistributions/libtestdistributions.la ../src/libunuran.la -lm 
 
+example: example_.c ../src/unuran.h ../src/libunuran.la ../src/experimental/libunurexperimental.la
+	../libtool gcc -I. -I.. -I../src -I../src/tests -Wall -DHAVE_CONFIG_H -g -O2 -m32 -o example example_.c ../src/experimental/libunurexperimental.la ../tests/testdistributions/libtestdistributions.la ../src/libunuran.la -lm 
+
+	
 matr: matr.c ../src/unuran.h ../src/libunuran.la ../src/experimental/libunurexperimental.la ../tests/testdistributions/libtestdistributions.la
 	../libtool gcc -I. -I.. -I../src -I../src/tests -Wall -DHAVE_CONFIG_H -g -O2 -m32 -o matr matr.c ../src/experimental/libunurexperimental.la ../tests/testdistributions/libtestdistributions.la ../src/libunuran.la -lm 
 

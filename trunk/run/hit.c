@@ -163,7 +163,7 @@ void hit_sample_uv(double *uv) {
 
   x = _unur_vector_new(p.dim)  ; /* sample point */
   unur_sample_vec(p.gen, x);
-  _unur_hitrou_get_point(p.gen, uv);
+  _unur_hitrou_get_point_current(p.gen, uv);
 
   free(x);
 }
@@ -177,7 +177,7 @@ void hit_sample_uv_array(long *nsamples, double *uv) {
   x = _unur_vector_new(p.dim)  ; /* sample point */
   for (i=0; i<nsamples[0]; i++) {
     unur_sample_vec(p.gen, x);
-    _unur_hitrou_get_point(p.gen, &uv[i*(p.dim+1)]);
+    _unur_hitrou_get_point_current(p.gen, &uv[i*(p.dim+1)]);
   }
 
   free(x);
@@ -331,8 +331,8 @@ void hit_run() {
   
   }
    
-  unur_hitrou_set_u_planes(par, p.u_planes);
-  unur_hitrou_set_adaptive(par, p.adaptive);
+  unur_hitrou_use_bounding_rectangle(par, p.u_planes);
+  unur_hitrou_set_adaptive_points(par, p.adaptive);
   
   if (p.gen) unur_free(p.gen);
 
@@ -355,7 +355,7 @@ void hit_run() {
   /* resetting histogram for the 2. level test */
   memset(hist_p, 0, (p.dim+1)*p.nhist_p*sizeof(int));
 
-  _unur_hitrou_get_point(p.gen, uv);
+  _unur_hitrou_get_point_current(p.gen, uv);
   
   for (loop=1; loop<=p.nloops; loop++) {
 
@@ -367,15 +367,15 @@ void hit_run() {
          
     if (p.shape==1) {
       _unur_hitrou_set_testrectangle(p.gen, relative_size);
-      _unur_hitrou_set_point(p.gen, uv0);
+      _unur_hitrou_set_point_current(p.gen, uv0);
     }
 
     if (p.shape>1) {
-      _unur_hitrou_set_point(p.gen, uv2);
+      _unur_hitrou_set_point_current(p.gen, uv2);
     }
     
     if (p.shape==5) {
-      _unur_hitrou_set_point(p.gen, uv0);
+      _unur_hitrou_set_point_current(p.gen, uv0);
     }
     
    
@@ -388,8 +388,8 @@ void hit_run() {
     /* sampling ... */
     for (i=1; i<=p.nsamples; i++) {
 
-      if (p.melt==1) _unur_hitrou_set_point(p.gen, uv1);
-      if (p.melt==2) _unur_hitrou_set_point(p.gen, uv2);
+      if (p.melt==1) _unur_hitrou_set_point_current(p.gen, uv1);
+      if (p.melt==2) _unur_hitrou_set_point_current(p.gen, uv2);
 
       unur_sample_vec(p.gen, x);
       
@@ -533,7 +533,7 @@ void hit_run() {
   hit_separator();
 
   unur_urng_reset(NULL);
-  _unur_hitrou_set_point(p.gen, uv);
+  _unur_hitrou_set_point_current(p.gen, uv);
   faux.f = f_norm;
 #if 1 
   for (loop=1; loop<=p.nloops; loop++) {
@@ -542,7 +542,7 @@ void hit_run() {
   }      
 
   unur_urng_reset(NULL);
-  _unur_hitrou_set_point(p.gen, uv);
+  _unur_hitrou_set_point_current(p.gen, uv);
   
   exact_integral=sqrt(2./M_PI);
   for (d=1; d<p.dim; d++) exact_integral=d/exact_integral;

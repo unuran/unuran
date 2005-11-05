@@ -10,9 +10,6 @@
  *         declares structures for method TABL                               *
  *         (Ahren's TABLe method: piecewise constant hat)                    *
  *                                                                           *
- *   USAGE:                                                                  *
- *         only included in source_struct.h                                  *
- *                                                                           *
  *****************************************************************************
      $Id$
  *****************************************************************************

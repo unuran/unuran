@@ -11,9 +11,6 @@
  *         (passes UNIForm random numbers through UNURAN framework;          *
  *         for testing only)                                                 *
  *                                                                           *
- *   USAGE:                                                                  *
- *         only included in source_struct.h                                  *
- *                                                                           *
  *****************************************************************************
      $Id$
  *****************************************************************************

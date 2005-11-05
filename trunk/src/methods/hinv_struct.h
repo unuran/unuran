@@ -10,9 +10,6 @@
  *         declares structures for method HINV                               *
  *         (Hermite interpolation based INVersion of CDF)                    *
  *                                                                           *
- *   USAGE:                                                                  *
- *         only included in source_struct.h                                  *
- *                                                                           *
  *****************************************************************************
      $Id$
  *****************************************************************************

@@ -10,7 +10,7 @@
  *         declares structures for distributions                             *
  *                                                                           *
  *   USAGE:                                                                  *
- *         only included in source_struct.h                                  *
+ *         only included in unur_struct.h                                    *
  *                                                                           *
  *****************************************************************************
      $Id$

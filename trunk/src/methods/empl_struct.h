@@ -10,9 +10,6 @@
  *         declares structures for method EMPL                               *
  *         (EMPirical distribution with Linear interpolation)                *
  *                                                                           *
- *   USAGE:                                                                  *
- *         only included in unur_struct.h                                    *
- *                                                                           *
  *****************************************************************************
      $Id$
  *****************************************************************************

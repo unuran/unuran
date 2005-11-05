@@ -10,9 +10,6 @@
  *         declares structures for method HRD                                *
  *         (Hazard Rate Decreasing)                                          *
  *                                                                           *
- *   USAGE:                                                                  *
- *         only included in unur_struct.h                                    *
- *                                                                           *
  *****************************************************************************
      $Id$
  *****************************************************************************

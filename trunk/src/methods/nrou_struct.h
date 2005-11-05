@@ -10,9 +10,6 @@
  *         declares structures for method NROU                               *
  *         (Naive Ratio-Of-Uniforms method)                                  *
  *                                                                           *
- *   USAGE:                                                                  *
- *         only included in source_struct.h                                  *
- *                                                                           *
  *****************************************************************************
      $Id$
  *****************************************************************************

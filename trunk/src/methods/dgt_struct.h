@@ -10,9 +10,6 @@
  *         declares structures for method DGT                                *
  *         (Discrete Guide Table (indexed search))                           *
  *                                                                           *
- *   USAGE:                                                                  *
- *         only included in source_struct.h                                  *
- *                                                                           *
  *****************************************************************************
      $Id$
  *****************************************************************************

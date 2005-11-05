@@ -10,9 +10,6 @@
  *         declares structures for method DSROU                              *
  *         (Discrete Simple universal generator, Ratio-Of-Uniforms method)   *
  *                                                                           *
- *   USAGE:                                                                  *
- *         only included in source_struct.h                                  *
- *                                                                           *
  *****************************************************************************
      $Id$
  *****************************************************************************

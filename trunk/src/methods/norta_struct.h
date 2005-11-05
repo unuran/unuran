@@ -10,9 +10,6 @@
  *         declares structures for method NORTA                              *
  *         (NORmal To Anything)                                              *
  *                                                                           *
- *   USAGE:                                                                  *
- *         only included in source_struct.h                                  *
- *                                                                           *
  *****************************************************************************
      $Id$
  *****************************************************************************

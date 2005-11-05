@@ -10,9 +10,6 @@
  *         declares structures for method VAROU                              *
  *         (Vector Adaptive Ratio Of Uniforms)                               *
  *                                                                           *
- *   USAGE:                                                                  *
- *         only included in source_struct.h                                  *
- *                                                                           *
  *****************************************************************************
  
  *****************************************************************************

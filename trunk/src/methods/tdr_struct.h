@@ -10,9 +10,6 @@
  *         declares structures for method TDR                                *
  *         (Transformed Density Rejection)                                   *
  *                                                                           *
- *   USAGE:                                                                  *
- *         only included in source_struct.h                                  *
- *                                                                           *
  *****************************************************************************
      $Id$
  *****************************************************************************

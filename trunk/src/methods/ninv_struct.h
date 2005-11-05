@@ -10,9 +10,6 @@
  *         declares structures for method NINV                               *
  *         (Numerical INVersion of cumulative distribution function)         *
  *                                                                           *
- *   USAGE:                                                                  *
- *         only included in source_struct.h                                  *
- *                                                                           *
  *****************************************************************************
      $Id$
  *****************************************************************************

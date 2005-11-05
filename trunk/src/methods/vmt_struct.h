@@ -10,9 +10,6 @@
  *         declares structures for method VMT                                *
  *         (Vector Matrix Transformation)                                    *
  *                                                                           *
- *   USAGE:                                                                  *
- *         only included in source_struct.h                                  *
- *                                                                           *
  *****************************************************************************
      $Id$
  *****************************************************************************

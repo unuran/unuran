@@ -10,9 +10,6 @@
  *         declares structures for method HRI                                *
  *         (Hazard Rate Increasing)                                          *
  *                                                                           *
- *   USAGE:                                                                  *
- *         only included in unur_struct.h                                    *
- *                                                                           *
  *****************************************************************************
      $Id$
  *****************************************************************************

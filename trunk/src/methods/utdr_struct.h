@@ -10,9 +10,6 @@
  *         declares structures for method UTDR                               *
  *         (Universal Transformed Density Rejection; 3-point method)         *
  *                                                                           *
- *   USAGE:                                                                  *
- *         only included in source_struct.h                                  *
- *                                                                           *
  *****************************************************************************
      $Id$
  *****************************************************************************

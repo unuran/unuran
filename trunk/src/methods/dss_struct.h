@@ -10,9 +10,6 @@
  *         declares structures for method DSS                                *
  *         (Discrete Sequential Search)                                      *
  *                                                                           *
- *   USAGE:                                                                  *
- *         only included in source_struct.h                                  *
- *                                                                           *
  *****************************************************************************
      $Id$
  *****************************************************************************

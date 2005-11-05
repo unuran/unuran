@@ -10,9 +10,6 @@
  *         declares structures for method HITROU                             *
  *         (Multivariate HIT and run Ratio Of Uniforms)                      *
  *                                                                           *
- *   USAGE:                                                                  *
- *         only included in source_struct.h                                  *
- *                                                                           *
  *****************************************************************************
 
 *****************************************************************************

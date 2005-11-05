@@ -10,9 +10,6 @@
  *         declares structures for method WALK                               *
  *         (Metropolis random walk sampler)                                  *
  *                                                                           *
- *   USAGE:                                                                  *
- *         only included in source_struct.h                                  *
- *                                                                           *
  *****************************************************************************
 
 *****************************************************************************

@@ -10,9 +10,6 @@
  *         declares structures for method AROU                               *
  *         (Adaptive Ratio-Of-Uniforms)                                      *
  *                                                                           *
- *   USAGE:                                                                  *
- *         only included in source_struct.h                                  *
- *                                                                           *
  *****************************************************************************
      $Id$
  *****************************************************************************

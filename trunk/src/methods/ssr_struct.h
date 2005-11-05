@@ -10,9 +10,6 @@
  *         declares structures for method SSR                                *
  *         (Simple Setup, Rejection with universal bounds)                   *
  *                                                                           *
- *   USAGE:                                                                  *
- *         only included in source_struct.h                                  *
- *                                                                           *
  *****************************************************************************
      $Id$
  *****************************************************************************

@@ -10,9 +10,6 @@
  *         declares structures for method AUTO                               *
  *         (selects a method for a given distribution object AUTOmatically)  *
  *                                                                           *
- *   USAGE:                                                                  *
- *         only included in source_struct.h                                  *
- *                                                                           *
  *****************************************************************************
      $Id$
  *****************************************************************************

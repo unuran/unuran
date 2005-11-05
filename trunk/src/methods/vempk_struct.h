@@ -10,9 +10,6 @@
  *         declares structures for method VEMPK                              *
  *         ((Vector) EMPirical distribution with Kernel smoothing)           *
  *                                                                           *
- *   USAGE:                                                                  *
- *         only included in source_struct.h                                  *
- *                                                                           *
  *****************************************************************************
      $Id$
  *****************************************************************************

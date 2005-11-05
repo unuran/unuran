@@ -11,9 +11,6 @@
  *         (wrapper for special generators for                               *
  *         Continuous STanDard distributions)                                *
  *                                                                           *
- *   USAGE:                                                                  *
- *         only included in source_struct.h                                  *
- *                                                                           *
  *****************************************************************************
      $Id$
  *****************************************************************************

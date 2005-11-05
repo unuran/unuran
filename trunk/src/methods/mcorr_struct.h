@@ -10,9 +10,6 @@
  *         declares structures for method MCORR                              *
  *         (Matrix -- CORRelation matrix)                                    *
  *                                                                           *
- *   USAGE:                                                                  *
- *         only included in source_struct.h                                  *
- *                                                                           *
  *****************************************************************************
      $Id$
  *****************************************************************************

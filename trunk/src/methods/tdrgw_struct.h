@@ -10,9 +10,6 @@
  *         declares structures for method TDRGW                                *
  *         (Transformed Density Rejection - Gilks & Wild variant)            *
  *                                                                           *
- *   USAGE:                                                                  *
- *         only included in source_struct.h                                  *
- *                                                                           *
  *****************************************************************************
      $Id$
  *****************************************************************************

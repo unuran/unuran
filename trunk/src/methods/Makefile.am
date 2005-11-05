@@ -6,7 +6,7 @@ INCLUDES = -I$(top_srcdir)/src
 noinst_LTLIBRARIES = libmethods.la
 
 libmethods_la_SOURCES = \
- x_gen.c    x_gen.h   x_gen_source.h \
+ x_gen.c  x_gen.h  x_gen_struct.h x_gen_source.h \
 \
  auto.c   auto.h   auto_struct.h \
  arou.c   arou.h   arou_struct.h \

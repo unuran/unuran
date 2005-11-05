@@ -48,26 +48,16 @@
 #include <unuran_config.h>
 
 /*****************************************************************************/
-/**  Functions                                                              **/
+/**  UNU.RAN objects                                                        **/
 /*****************************************************************************/
 
-/*---------------------------------------------------------------------------*/
-/* the objects                                                               */
 struct unur_distr;    /* distribution object      */
 struct unur_par;      /* parameters for generator */
 struct unur_gen;      /* generator object         */
 
-/*---------------------------------------------------------------------------*/
-/* sampling routines                                                         */
-
-/* for univariate continuous distribution */
-typedef double _UNUR_SAMPLING_ROUTINE_CONT(struct unur_gen *gen);
-
-/* for univariate discrete distribution */
-typedef int _UNUR_SAMPLING_ROUTINE_DISCR(struct unur_gen *gen);
-
-/* for multivariate continuous distribution */
-typedef void _UNUR_SAMPLING_ROUTINE_VEC(struct unur_gen *gen, double *vec);
+/*****************************************************************************/
+/**  Generic functions                                                      **/
+/*****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
 /* Generic functions                                                          */
@@ -113,71 +103,10 @@ struct unur_funct_vgeneric {
 #include <distr/distr_struct.h>
 
 /*****************************************************************************/
-/**  structures for generators                                              **/
+/**  Parameter and generators objects                                       **/
 /*****************************************************************************/
 
-/*---------------------------------------------------------------------------*/
-/* parameter objects                                                         */
-
-struct unur_par {
-  void *datap;                /* pointer to data for method                  */
-  size_t s_datap;             /* size of data structure                      */
-
-  struct unur_gen* (*init)(struct unur_par *par);
-
-  unsigned method;            /* indicates method and generator to be used   */
-  unsigned variant;           /* indicates variant of method                 */
-  unsigned set;               /* stores which parameters have been changed   */
-
-  UNUR_URNG *urng;            /* pointer to uniform random number generator  */
-  UNUR_URNG *urng_aux;        /* pointer to second (auxiliary) uniform RNG   */
-
-  const struct unur_distr *distr;   /* pointer to distribution object        */
-
-  unsigned debug;             /* debugging flags                             */
-#ifdef UNUR_COOKIES
-  unsigned cookie;            /* magic cookie                                */
-#endif
-};
-
-/*---------------------------------------------------------------------------*/
-/* generator objects                                                         */
-
-struct unur_gen { 
-  void *datap;                /* pointer to data for method                  */
-  
-  union {
-    _UNUR_SAMPLING_ROUTINE_CONT  *cont;
-    _UNUR_SAMPLING_ROUTINE_DISCR *discr;
-    _UNUR_SAMPLING_ROUTINE_VEC   *cvec;
-    _UNUR_SAMPLING_ROUTINE_VEC   *matr;
-  } sample;                   /* pointer to sampling routine                 */
-  
-  UNUR_URNG *urng;            /* pointer to uniform random number generator  */
-  UNUR_URNG *urng_aux;        /* pointer to second (auxiliary) uniform RNG   */
-
-  struct unur_distr *distr;   /* distribution object                         */
-
-  unsigned method;            /* indicates method and generator to be used   */
-  unsigned variant;           /* indicates variant of method                 */
-  unsigned set;               /* stores which parameters have been changed   */
-  unsigned status;            /* status of generator object                  */
-  
-  char *genid;                /* identifier for generator                    */
-
-  struct unur_gen *gen_aux;   /* pointer to auxiliary generator object       */
-  struct unur_gen **gen_aux_list; /* list of pointers to auxiliary generator objects */
-
-  size_t s_datap;             /* size of data structure                      */
-  unsigned debug;             /* debugging flags                             */
-
-  void (*destroy)(struct unur_gen *gen); /* pointer to destructor            */ 
-  struct unur_gen* (*clone)(const struct unur_gen *gen ); /* clone generator */
-
-#ifdef UNUR_COOKIES
-  unsigned cookie;            /* magic cookie                                */
-#endif
-};
+#include <methods/x_gen_struct.h>
 
 /*---------------------------------------------------------------------------*/
 #endif  /* UNUR_STRUCT_H_SEEN */

@@ -693,7 +693,7 @@ _unur_dari_create( struct unur_par *par )
     _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode: try finding it (numerically)"); 
     if (unur_distr_discr_upd_mode( gen->distr )!=UNUR_SUCCESS) {
       _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode"); 
-      _unur_distr_free(gen->distr); free(gen);
+      _unur_generic_free(gen);
       return NULL; 
     }
   }

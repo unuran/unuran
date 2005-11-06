@@ -456,7 +456,7 @@ _unur_dgt_create( struct unur_par *par )
     if (unur_distr_discr_make_pv( gen->distr ) <= 0) {
       /* not successful */
       _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"PV"); 
-      _unur_distr_free(gen->distr); free(gen);
+      _unur_generic_free(gen);
       return NULL;
     }
   }

@@ -207,7 +207,7 @@ _unur_tdr_create( struct unur_par *par )
   /** TODO: remove this **/
   if ((par->variant & TDR_VARMASK_T) == TDR_VAR_T_POW) {
     _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"c != 0. and c != -0.5 not implemented!");
-    _unur_distr_free(gen->distr); free(gen);
+    _unur_generic_free(gen);
     return NULL;
   }
 
@@ -228,7 +228,7 @@ _unur_tdr_create( struct unur_par *par )
     break;
   default:
     _unur_error(GENTYPE,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    _unur_distr_free(gen->distr); free(gen);
+    _unur_generic_free(gen);
     return NULL;
   }
   

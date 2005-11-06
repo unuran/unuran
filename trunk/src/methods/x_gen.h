@@ -130,6 +130,53 @@ const UNUR_DISTR *unur_get_distr( const UNUR_GEN *generator );
    (How should the poor generator object know what you have done?)
 */
 
+/*---------------------------------------------------------------------------*/
+
+int unur_set_use_distr_privatecopy( UNUR_PAR *parameters, int use_privatecopy );
+/* 
+   Set flag whether the generator object should make a private copy of
+   the given distribution object or just stores the pointer to this
+   distribution object. Values for @var{use_privatecopy}:
+   @table @code
+   @item TRUE
+   make a private copy (default)
+   @item FALSE
+   do not make a private copy and store pointer to given (external)
+   distribution object.
+   @end table
+
+   By default, generator objects keep their own private copy of the
+   given distribution object. Thus the generator object can be handled
+   independently from other UNURAN objects (with uniform random number
+   generators as the only exception). When the generator object is
+   initialized the given distribution object is cloned and stored.
+
+   However, in some rare situations it can be useful when only the
+   pointer to the given distribution object is stored without making a
+   private copy. A possible example is when only one random variate has
+   to be drawn from the distribution.
+   This behavior can be achieved when @var{use_localcopy} is set to
+   FALSE.
+
+   @strong{Warning!}
+   Using a pointer to the external distribution object instead of a
+   private copy must be done with @strong{extreme care}!
+   When the distrubtion object is changed or freed then the generator
+   object does not work any more, might case a segmentation fault, or
+   (even worse) produces garbage. 
+   On the other hand, when the generator object is initialized or used
+   to draw a random sampling the distribution object may be changed.
+
+   @emph{Notice:}
+   The prototypes of all @code{unur_<method>_new} calls use a 
+   @code{const} qualifier for the distribution argument.
+   However, if @var{use_privatecopy} is set to FALSE this qualifier is
+   discarded and the distribution might be changed.
+
+   Default: @var{use_privatecopy} is TRUE.
+
+*/
+
 /* =END */
 
 /*---------------------------------------------------------------------------*/

@@ -66,6 +66,23 @@ struct unur_par {
   UNUR_URNG *urng_aux;        /* pointer to second (auxiliary) uniform RNG   */
 
   const struct unur_distr *distr;   /* pointer to distribution object        */
+  int distr_is_privatecopy;   /* whether the distribution object has to be
+				 copied into the generator object (TRUE) or
+				 just the pointer to the given (external)
+				 distribution object (FALSE).
+
+				 Notice: The UNU.RAN design assumes that the
+				 generator object keeps its own private copy.
+				 However, in some cases it can be useful 
+				 to avoid making this copy, e.g. when only
+				 a single random variate is required.
+
+				 HOWEVER, this must be used with extreme CARE!
+
+				 When the distrubtion object is changed or
+				 freed then the generator object does not work 
+				 any more or (even worse) produces garbage.
+			      */
 
   unsigned debug;             /* debugging flags                             */
 #ifdef UNUR_COOKIES
@@ -91,6 +108,24 @@ struct unur_gen {
   UNUR_URNG *urng_aux;        /* pointer to second (auxiliary) uniform RNG   */
 
   struct unur_distr *distr;   /* distribution object                         */
+  int distr_is_privatecopy;   /* whether the distribution object was 
+				 copied into the generator object (TRUE) or
+				 just the pointer to the given (external)
+				 distribution object (FALSE).
+
+				 Notice: The UNU.RAN design assumes that the
+				 generator object keeps its own private copy.
+				 However, in some cases it can be useful 
+				 to avoid making this copy, e.g. when only
+				 a single random variate is required.
+
+				 HOWEVER, this must be used with extreme CARE!
+
+				 When the distrubtion object is changed or
+				 freed then the generator object does not work 
+				 any more or (even worse) produces garbage.
+			      */
+
 
   unsigned method;            /* indicates method and generator to be used   */
   unsigned variant;           /* indicates variant of method                 */

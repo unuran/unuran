@@ -161,7 +161,13 @@ unur_test_count_pdf( struct unur_gen *gen, int samplesize, int verbosity, FILE *
   genclone = _unur_gen_clone(gen);
 
   /* get pointer to distribution object */
-  distr = genclone->distr;
+  if (genclone->distr_is_privatecopy) 
+    distr = genclone->distr;
+  else {
+    /* we need a private copy of the distribution object in genclone */
+    distr = genclone->distr = _unur_distr_clone( gen->distr );
+    genclone->distr_is_privatecopy = TRUE; 
+  }
 
   /* exchange pointer to PDF etc. with counting wrapper */
   switch (distr->type) {
@@ -316,6 +322,7 @@ unur_test_par_count_pdf( struct unur_par *par, int samplesize, int verbosity, FI
 
   /* make a copy (clone) of the parameter object */
   parclone = _unur_par_clone(par);
+  parclone->distr_is_privatecopy = TRUE; 
 
   /* make a copy (clone) of the distribution object */
   distr = _unur_distr_clone(par->distr);

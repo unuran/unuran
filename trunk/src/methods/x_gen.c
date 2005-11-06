@@ -176,6 +176,40 @@ unur_get_distr( const struct unur_gen *gen )
 
 /*---------------------------------------------------------------------------*/
 
+int 
+unur_set_use_distr_privatecopy( struct unur_par *par, int use_privatecopy )
+     /*----------------------------------------------------------------------*/
+     /* Set flag whether the generator object should make a private copy or  */
+     /* just stores the pointer to the distribution object                   */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par             ... pointer to parameter object                    */
+     /*   use_privatecopy ... TRUE = use private copy                        */
+     /*                       FALSE = store pointer to given distr. object   */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to distribution object                                     */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*                                                                      */
+     /* WARNING!                                                             */
+     /* Using a pointer to the external distribution object instead of a     */
+     /* private copy must be applied with EXTREME CARE!                      */
+     /* When the distrubtion object is changed or freed then the generator   */
+     /* object does not work any more, might case a segmentation fault, or   */
+     /* (even worse) produces garbage.                                       */
+     /* On the other hand, when the generator object is initialized or used  */
+     /* to draw a random sampling the distribution object may be changed.    */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL("",par,UNUR_ERR_NULL);
+
+  par->distr_is_privatecopy = use_privatecopy;
+  return UNUR_SUCCESS;
+} /* end of unur_set_use_distr_privatecopy() */
+
 /*****************************************************************************/
 /**                                                                         **/
 /**  Copy (clone) generator object                                          **/
@@ -227,6 +261,10 @@ _unur_par_new( size_t s)
   struct unur_par *par = _unur_xmalloc( sizeof(struct unur_par) );
   par->datap = _unur_xmalloc(s);
   par->s_datap = s;
+
+  /* set defaults for distribution object */
+  par->distr_is_privatecopy = TRUE;   /* use private copy of distribution object */
+
   return par;
 } /* end of _unur_par_new() */
 
@@ -299,7 +337,11 @@ _unur_generic_create( struct unur_par *par, size_t s )
   gen->s_datap = s;
 
   /* copy distribution object into generator object */
-  gen->distr = (par->distr) ? _unur_distr_clone(par->distr) : NULL;
+  gen->distr_is_privatecopy = par->distr_is_privatecopy;
+  if (gen->distr_is_privatecopy) 
+    gen->distr = (par->distr) ? _unur_distr_clone(par->distr) : NULL;
+  else
+    gen->distr = (struct unur_distr *) par->distr;
 
   /* copy some parameters into generator object */
   gen->method = par->method;        /* indicates method and variant          */
@@ -350,7 +392,11 @@ _unur_generic_clone( const struct unur_gen *gen, const char *type )
   clone->genid = _unur_set_genid(type);
 
   /* copy distribution object into generator object */
-  if (gen->distr) clone->distr = _unur_distr_clone(gen->distr);
+  clone->distr_is_privatecopy = gen->distr_is_privatecopy;
+  if (clone->distr_is_privatecopy) 
+    clone->distr = (gen->distr) ? _unur_distr_clone(gen->distr) : NULL;
+  else
+    clone->distr = gen->distr;
 
   /* auxiliary generators */
   if (gen->gen_aux)
@@ -379,7 +425,7 @@ _unur_generic_free( struct unur_gen *gen )
   if (gen->gen_aux_list && gen->distr)
     _unur_gen_list_free( gen->gen_aux_list, gen->distr->dim );
 
-  if (gen->distr)
+  if (gen->distr_is_privatecopy && gen->distr)
     _unur_distr_free( gen->distr );
 
   _unur_free_genid(gen);

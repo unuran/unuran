@@ -265,7 +265,7 @@ unur_norta_new( const struct unur_distr *distr )
   COOKIE_SET(par,CK_NORTA_PAR);
 
   /* copy input */
-  par->distr    = distr;      /* pointer to distribution object              */
+  par->distr    = distr;            /* pointer to distribution object        */
 
   /* set default values */
   par->method   = UNUR_METH_NORTA ;   /* method                              */
@@ -787,7 +787,7 @@ _unur_norta_free( struct unur_gen *gen )
   if (GEN->copula) free (GEN->copula);
 
   /* free normal distribution object */
-  if (GEN->normaldistr) free (GEN->normaldistr);
+  if (GEN->normaldistr) _unur_distr_free (GEN->normaldistr);
 
   /* free urng wrapper */
   if (GEN->marginal_urng) unur_urng_free(GEN->marginal_urng);

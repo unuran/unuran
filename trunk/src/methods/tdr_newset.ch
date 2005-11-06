@@ -81,19 +81,19 @@ unur_tdr_new( const struct unur_distr* distr )
   par->distr              = distr;  /* pointer to distribution object        */
 
   /* set default values */
-  PAR->guide_factor        = 2.;     /* size of guide table / number of intervals */
+  PAR->guide_factor        = 2.;    /* size of guide table / number of intervals */
 
-  PAR->c_T                 = -0.5;   /* parameter for transformation (-1. <= c < 0.) */
+  PAR->c_T                 = -0.5;  /* parameter for transformation (-1. <= c < 0.) */
 
-  PAR->starting_cpoints    = NULL;   /* pointer to array of starting points   */
-  PAR->n_starting_cpoints  = 30;     /* number of starting points             */
-  PAR->max_ivs             = 100;    /* maximum number of intervals           */
-  PAR->max_ratio           = 0.99;   /* bound for ratio  Atotal / Asqueeze    */
-  PAR->bound_for_adding    = 0.5;    /* do not add a new construction point in an interval,
+  PAR->starting_cpoints    = NULL;  /* pointer to array of starting points   */
+  PAR->n_starting_cpoints  = 30;    /* number of starting points             */
+  PAR->max_ivs             = 100;   /* maximum number of intervals           */
+  PAR->max_ratio           = 0.99;  /* bound for ratio  Atotal / Asqueeze    */
+  PAR->bound_for_adding    = 0.5;   /* do not add a new construction point in an interval,
 				       where ambigous region is too small, i.e. if 
 				       area / ((A_hat - A_squeeze)/number of segments) < bound_for_adding */
-  PAR->darsfactor          = 0.99;   /* factor for derandomized ARS           */ 
-  PAR->darsrule            = 1;      /* rule for finding splitting points in DARS */
+  PAR->darsfactor          = 0.99;  /* factor for derandomized ARS           */ 
+  PAR->darsrule            = 1;     /* rule for finding splitting points in DARS */
  
   par->method   = UNUR_METH_TDR;                 /* method                   */
   par->variant  = ( TDR_VARFLAG_USECENTER |      /* default variant          */

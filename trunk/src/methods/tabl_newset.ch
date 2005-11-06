@@ -75,21 +75,21 @@ unur_tabl_new( const struct unur_distr *distr )
   COOKIE_SET(par,CK_TABL_PAR);
 
   /* copy input */
-  par->distr        = distr;     /* pointer to distribution object           */
+  par->distr        = distr;      /* pointer to distribution object          */
 
   /* set default values */
-  PAR->slopes        = NULL;      /* pointer to slopes of PDF                 */
-  PAR->n_slopes      = 0;         /* number of slopes                         */
+  PAR->slopes        = NULL;      /* pointer to slopes of PDF                */
+  PAR->n_slopes      = 0;         /* number of slopes                        */
 
-  PAR->n_stp         = 30;        /* number of starting points             */
+  PAR->n_stp         = 30;        /* number of starting points               */
 
-  PAR->cpoints       = NULL;      /* pointer to array of starting points      */
-  PAR->n_cpoints     = 0;         /* number of starting points                */
+  PAR->cpoints       = NULL;      /* pointer to array of starting points     */
+  PAR->n_cpoints     = 0;         /* number of starting points               */
 
   PAR->area_fract    = 0.1;       /* parameter for equal area rule (default from [1] ) */
 
-  PAR->max_ivs       = 1000;      /* maximum number of intervals              */
-  PAR->max_ratio     = 0.90;      /* bound for ratio  Atotal / Asqueeze       */
+  PAR->max_ivs       = 1000;      /* maximum number of intervals             */
+  PAR->max_ratio     = 0.90;      /* bound for ratio  Atotal / Asqueeze      */
 
   PAR->guide_factor  = 1.; /* guide table has same size as array of intervals */
 

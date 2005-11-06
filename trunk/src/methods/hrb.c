@@ -189,10 +189,10 @@ unur_hrb_new( const struct unur_distr *distr )
   COOKIE_SET(par,CK_HRB_PAR);
 
   /* copy input */
-  par->distr   = distr;         /* pointer to distribution object            */
+  par->distr   = distr;           /* pointer to distribution object          */
 
   /* set default values */
-  PAR->upper_bound = INFINITY;   /* upper bound for hazard rate (not set yet) */
+  PAR->upper_bound = INFINITY;    /* upper bound for hazard rate (not set yet) */
 
   par->method   = UNUR_METH_HRB;  /* method                                  */
   par->variant  = 0u;             /* default variant                         */

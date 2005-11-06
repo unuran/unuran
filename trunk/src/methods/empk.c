@@ -329,7 +329,7 @@ unur_empk_new( const struct unur_distr *distr )
   COOKIE_SET(par,CK_EMPK_PAR);
 
   /* copy input */
-  par->distr    = distr;         /* pointer to distribution object           */
+  par->distr    = distr;          /* pointer to distribution object          */
 
   /* set default values */
   PAR->kernvar   = 1.;            /* variance of used kernel, only used if varcor == 1 */

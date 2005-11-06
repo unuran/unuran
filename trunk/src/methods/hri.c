@@ -193,7 +193,7 @@ unur_hri_new( const struct unur_distr *distr )
   par->distr   = distr;         /* pointer to distribution object            */
 
   /* set default values */
-  PAR->p0        = 1.;                      /* design point                   */
+  PAR->p0        = 1.;                     /* design point                   */
 
   par->method   = UNUR_METH_HRI;           /* method                         */
   par->variant  = 0u;                      /* default variant                */

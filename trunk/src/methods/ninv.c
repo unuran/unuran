@@ -271,11 +271,11 @@ unur_ninv_new( const struct unur_distr *distr )
   COOKIE_SET(par,CK_NINV_PAR);
 
   /* copy input */
-  par->distr   = distr;           /* pointer to distribution object          */
+  par->distr   = distr;            /* pointer to distribution object         */
 
   /* set default values */
-  PAR->max_iter  = 40;             /* maximal number of iterations            */
-  PAR->rel_x_resolution = 1.0e-8;  /* maximal relative error allowed in x     */
+  PAR->max_iter  = 40;             /* maximal number of iterations           */
+  PAR->rel_x_resolution = 1.0e-8;  /* maximal relative error allowed in x    */
 
   /* starting points for numerical inversion */
   PAR->s[0]      = 0.0;     /* regula falsi: left boundary of starting interval

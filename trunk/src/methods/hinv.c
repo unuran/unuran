@@ -279,17 +279,17 @@ unur_hinv_new( const struct unur_distr *distr )
   COOKIE_SET(par,CK_HINV_PAR);
 
   /* copy input */
-  par->distr   = distr;         /* pointer to distribution object            */
+  par->distr   = distr;           /* pointer to distribution object          */
 
   /* set default values */
-  PAR->order = (DISTR_IN.pdf) ? 3 : 1; /* order of polynomial                 */
-  PAR->u_resolution = 1.0e-8;    /* maximal error allowed in u-direction      */
-  PAR->guide_factor = 1.;        /* size of guide table / number of intervals */
-  PAR->bleft = -1.e20;           /* left border of the computational domain   */
-  PAR->bright = 1.e20;           /* right border of the computational domain  */
-  PAR->max_ivs = 1.e6;           /* maximal number of intervals               */
-  PAR->stp = NULL;               /* starting nodes                            */
-  PAR->n_stp = 0;                /* number of starting nodes                  */
+  PAR->order = (DISTR_IN.pdf) ? 3 : 1;  /* order of polynomial               */
+  PAR->u_resolution = 1.0e-8;     /* maximal error allowed in u-direction    */
+  PAR->guide_factor = 1.;         /* size of guide table / number of intervals */
+  PAR->bleft = -1.e20;            /* left border of the computational domain   */
+  PAR->bright = 1.e20;            /* right border of the computational domain  */
+  PAR->max_ivs = 1.e6;            /* maximal number of intervals             */
+  PAR->stp = NULL;                /* starting nodes                          */
+  PAR->n_stp = 0;                 /* number of starting nodes                */
 
   par->method   = UNUR_METH_HINV; /* method                                  */
   par->variant  = 0u;             /* default variant                         */

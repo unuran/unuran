@@ -192,7 +192,7 @@ unur_empl_new( const struct unur_distr *distr )
   COOKIE_SET(par,CK_EMPL_PAR);
 
   /* copy input */
-  par->distr    = distr;         /* pointer to distribution object           */
+  par->distr    = distr;          /* pointer to distribution object          */
 
   /* set default values */
 

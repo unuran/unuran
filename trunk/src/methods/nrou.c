@@ -229,14 +229,14 @@ unur_nrou_new( const struct unur_distr *distr )
   COOKIE_SET(par,CK_NROU_PAR);
 
   /* copy input */
-  par->distr    = distr;      /* pointer to distribution object              */
+  par->distr    = distr;          /* pointer to distribution object          */
 
   /* set default values */
-  PAR->umin      = 0.;          /* u-boundary of bounding rectangle (unknown) */
-  PAR->umax      = 0.;          /* u-boundary of bounding rectangle (unknown) */
-  PAR->vmax      = 0.;          /* v-boundary of bounding rectangle (unknown) */
-  PAR->center    = 0.;          /* center of distribution (default: 0)        */
-  PAR->r         = 1.;          /* r-parameter of the generalized method      */
+  PAR->umin      = 0.;         /* u-boundary of bounding rectangle (unknown) */
+  PAR->umax      = 0.;         /* u-boundary of bounding rectangle (unknown) */
+  PAR->vmax      = 0.;         /* v-boundary of bounding rectangle (unknown) */
+  PAR->center    = 0.;         /* center of distribution (default: 0)        */
+  PAR->r         = 1.;         /* r-parameter of the generalized method      */
   
   par->method   = UNUR_METH_NROU;     /* method and default variant          */
   par->variant  = 0u;                 /* default variant                     */

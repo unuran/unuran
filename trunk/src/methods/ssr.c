@@ -212,16 +212,16 @@ unur_ssr_new( const struct unur_distr *distr )
   COOKIE_SET(par,CK_SSR_PAR);
 
   /* copy input */
-  par->distr    = distr;              /* pointer to distribution object      */
+  par->distr    = distr;            /* pointer to distribution object        */
 
   /* set default values */
-  PAR->Fmode     = -1.;                /* CDF at mode (unknown yet)           */
-  PAR->fm        = -1.;                /* PDF at mode (unknown)               */
-  PAR->um        = -1.;                /* square of PDF at mode (unknown)     */
+  PAR->Fmode     = -1.;             /* CDF at mode (unknown yet)             */
+  PAR->fm        = -1.;             /* PDF at mode (unknown)                 */
+  PAR->um        = -1.;             /* square of PDF at mode (unknown)       */
 
-  par->method   = UNUR_METH_SSR;      /* method and default variant          */
-  par->variant  = 0u;                 /* default variant                     */
-  par->set      = 0u;                 /* inidicate default parameters        */    
+  par->method   = UNUR_METH_SSR;    /* method and default variant            */
+  par->variant  = 0u;               /* default variant                       */
+  par->set      = 0u;               /* inidicate default parameters          */    
   par->urng     = unur_get_default_urng(); /* use default urng               */
   par->urng_aux = NULL;                    /* no auxilliary URNG required    */
 

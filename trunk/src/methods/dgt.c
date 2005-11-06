@@ -232,7 +232,7 @@ unur_dgt_new( const struct unur_distr *distr )
   par->distr       = distr;          /* pointer to distribution object       */
 
   /* set default values */
-  PAR->guide_factor = 1.;             /* use same size for guide table        */
+  PAR->guide_factor = 1.;            /* use same size for guide table        */
 
   par->method      = UNUR_METH_DGT;  /* method                               */
   par->variant     = 0u;             /* default variant                      */

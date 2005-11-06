@@ -274,16 +274,16 @@ unur_srou_new( const struct unur_distr *distr )
   COOKIE_SET(par,CK_SROU_PAR);
 
   /* copy input */
-  par->distr    = distr;      /* pointer to distribution object              */
+  par->distr    = distr;           /* pointer to distribution object         */
 
   /* set default values */
-  PAR->r         = 1.;                 /* parameter for power transformation  */
-  PAR->Fmode     = -1.;                /* CDF at mode (unknown yet   )        */
-  PAR->um        = -1.;                /* (square) root of PDF at mode (unknown)*/
+  PAR->r         = 1.;             /* parameter for power transformation     */
+  PAR->Fmode     = -1.;            /* CDF at mode (unknown yet   )           */
+  PAR->um        = -1.;            /* (square) root of PDF at mode (unknown) */
 
-  par->method   = UNUR_METH_SROU;     /* method and default variant          */
-  par->variant  = 0u;                 /* default variant                     */
-  par->set      = 0u;                 /* inidicate default parameters        */    
+  par->method   = UNUR_METH_SROU;  /* method and default variant             */
+  par->variant  = 0u;              /* default variant                        */
+  par->set      = 0u;              /* inidicate default parameters           */    
   par->urng     = unur_get_default_urng(); /* use default urng               */
   par->urng_aux = NULL;                    /* no auxilliary URNG required    */
 

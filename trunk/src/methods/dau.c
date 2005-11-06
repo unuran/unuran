@@ -248,7 +248,7 @@ unur_dau_new( const struct unur_distr *distr )
   par->distr     = distr;            /* pointer to distribution object       */
 
   /* set default values */
-  PAR->urn_factor = 1.;               /* use same size for table              */
+  PAR->urn_factor = 1.;              /* use same size for table              */
 
   par->method    = UNUR_METH_DAU;    /* method                               */
   par->variant   = 0u;               /* default variant (no other variants)  */

@@ -45,17 +45,25 @@
 
    =OPTIONAL mode
 
-   =SPEED Set-up: fast, Sampling: slow
+   =SPEED Set-up: fast, Sampling: moderate
 
    =DESCRIPTION
-      TODO ...   
-   
+      The Gibbs sampler is an implementation of a coordinate sampler,
+      wherein, the sampling coordinate directions are changed cyclically.
+      For each direction, the full conditional through the actual
+      sampling point is being used in connection with the Gilks&Wild
+      variant of the Transformed Density Rejection method.
+      
+   =REF  [HLD04: Cha.14] [GWa92]      
+      
    =HOWTOUSE
       For using the GIBBS method UNURAN needs the PDF of the
-      distribution. Additionally, the parameter @i{r} can be set via
-      a unur_gibbs_set_r() call.
-
-
+      distribution. 
+      The Gibbs sampler should only be used for weak correlation structure 
+      of the PDF. Strong correlations between the independent variates
+      often lead to very weak ergodicity properties when using this 
+      method.
+      
    =END
 */
 
@@ -97,6 +105,7 @@ int unur_gibbs_set_variant_random_direction( UNUR_PAR *par );
 /* 
    Random Direction Sampler :
    Sampling along the random directions.
+   Not implemented at the moment.
 */
 
 /* =END */

@@ -131,7 +131,7 @@ static void _unur_gibbs_random_unit_vector( struct unur_gen *gen,
 #define PDF(x)    _unur_cvec_PDF((x),(gen->distr))    /* call to PDF         */
 
 #define NORMAL    gen->gen_aux        /* pointer to normal variate generator */
-#define NTDRPOINTS 10 /* # construction points per dimension to store and use for TDR */
+#define NTDRPOINTS 2 /* # construction points per dimension to store and use for TDR */
 
 /*---------------------------------------------------------------------------*/
 /* Variants                                                                  */
@@ -332,13 +332,16 @@ _unur_gibbs_init( struct unur_par *par )
   /* all coordinates are already set to 0 by _unur_gibbs_create() */
   /* any coordinate differing from 0 can be set here ... */
 
+
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
     if (gen->debug) _unur_gibbs_debug_init(gen);
 #endif
 
   /* free parameters */
-  _unur_par_free(par);
+  
+  /* we do not free the par object here */
+  /* _unur_par_free(par); */
 
   return gen;
 
@@ -405,6 +408,16 @@ _unur_gibbs_create( struct unur_par *par )
     }
   }
 
+  /* conditional objects are being setup here */  
+  
+  /* re-using the original par object for the conditionals can be troublesome */
+  /* so therefore we initialize the conditional parameter object the following call */
+  GEN->par_conditional = NULL; 
+  GEN->distr_conditional=NULL;
+  GEN->gen_conditional = NULL;
+  
+  GEN->par = par;
+    
   /* return pointer to (almost empty) generator object */
   return gen;
 
@@ -448,6 +461,13 @@ _unur_gibbs_clone( const struct unur_gen *gen )
   memcpy(CLONE->direction, GEN->direction, (GEN->dim) * sizeof(double));
   memcpy(CLONE->tdr_points, GEN->tdr_points, NTDRPOINTS * (GEN->dim) * sizeof(double));
   
+  /* copy conditional pointers */
+  CLONE->distr_conditional = GEN->distr_conditional; 
+  CLONE->par_conditional = GEN->par_conditional; 
+  CLONE->gen_conditional = GEN->gen_conditional;   
+  
+  CLONE->par = GEN->par; 
+  
   return clone;
 
 #undef CLONE
@@ -469,10 +489,7 @@ _unur_gibbs_sample_cvec( struct unur_gen *gen, double *vec )
   long skip;
   double x;
   
-  /* possibly move this to the gibbs generator structure */
-  UNUR_PAR *par_conditional = NULL;
-  UNUR_DISTR *distr_conditional = NULL;
-  UNUR_GEN *gen_conditional = NULL;
+  /* distr_conditional is in the gibbs generator structure */
     
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);
@@ -483,41 +500,62 @@ _unur_gibbs_sample_cvec( struct unur_gen *gen, double *vec )
  
   for (skip=0; skip<=GEN->skip; skip++) {
 
+      if ( ! GEN->distr_conditional) {
+        for (d=0; d<dim; d++) GEN->direction[d]=d*0.1; /* just to have some value */ 
+        GEN->distr_conditional=unur_distr_condi_new(gen->distr, GEN->point_current, GEN->direction, GEN->coordinate); 
+      }
+      
       if (gen->variant == GIBBS_VARIANT_COORDINATE) {
         for (d=0; d<dim; d++) GEN->direction[d]=0.; 
 	GEN->direction[GEN->coordinate] = 1.;
+        unur_distr_condi_set_condition( GEN->distr_conditional, GEN->point_current, GEN->direction, GEN->coordinate );
       }
-  
-      if (gen->variant == GIBBS_VARIANT_RANDOM_DIRECTION) {
+      if (gen->variant == GIBBS_VARIANT_RANDOM_DIRECTION) {      
          _unur_gibbs_random_unit_vector(gen, dim, GEN->direction);
+#if 0      
+        /* random directions are not implemented at the moment */
+         unur_distr_condi_set_condition( GEN->distr_conditional, GEN->point_current, GEN->direction, NULL );
+#endif        
+	for (d=0; d<dim; d++) GEN->direction[d]=0.; 
+	GEN->direction[GEN->coordinate] = 1.;
+        unur_distr_condi_set_condition( GEN->distr_conditional, GEN->point_current, GEN->direction, GEN->coordinate );
+      }
+            
+      if ( ! GEN->par_conditional) {
+        GEN->par_conditional = unur_tdrgw_new(GEN->distr_conditional);
+	GEN->par_conditional->distr_is_privatecopy = FALSE;
+      }	
+
+#if 0      
+      /* check if we have start points ... */
+      /* do not use ... produces segfault in this form ... */
+      if ( _unur_isfinite(GEN->tdr_points[NTDRPOINTS*GEN->coordinate]) 
+        && _unur_isfinite(GEN->tdr_points[NTDRPOINTS*GEN->coordinate+1]) )
+        unur_tdrgw_set_cpoints(GEN->par_conditional, NTDRPOINTS, &GEN->tdr_points[NTDRPOINTS*GEN->coordinate]);
+        /* unur_tdrgw_set_max_intervals(GEN->par_conditional, 2*NTDRPOINTS); */
+#endif
+	      
+      if ( ! GEN->par_conditional) {
+        GEN->par_conditional = unur_tdrgw_new(GEN->distr_conditional);
       }
       
-      /* conditional distribution along a given direction through current point */
-      distr_conditional = unur_distr_condi_new(gen->distr, GEN->point_current, GEN->direction, GEN->coordinate);      
-      par_conditional = unur_tdrgw_new(distr_conditional);
-
-	  /* check if we have start points */
-	    if ( _unur_isfinite(GEN->tdr_points[NTDRPOINTS*GEN->coordinate]) 
-	    && _unur_isfinite(GEN->tdr_points[NTDRPOINTS*GEN->coordinate+1]) )
-	    unur_tdrgw_set_cpoints(par_conditional, NTDRPOINTS, &GEN->tdr_points[NTDRPOINTS*GEN->coordinate]);
-	    /* unur_tdrgw_set_max_intervals(par_conditional, 2*NTDRPOINTS); */
+      if ( ! GEN->gen_conditional)
+        GEN->gen_conditional = unur_init(GEN->par_conditional);
       
-      gen_conditional = unur_init(par_conditional);
-      
-      if (gen_conditional==NULL) {
+      if (GEN->gen_conditional==NULL) {
          _unur_error(gen->genid,UNUR_ERR_GEN_INVALID,
           "Cannot create aux conditional generator");
       }
       else {
         /* sample from full conditional */
-        x = unur_sample_cont(gen_conditional);
+        x = unur_sample_cont(GEN->gen_conditional);
 	
 	if ( gen->variant == GIBBS_VARIANT_COORDINATE ) {
 	  GEN->point_current[GEN->coordinate] = x;
 
 	  /* calculating new tdr starting points for this coordinate */
 	  for (i=0; i<NTDRPOINTS; i++) {
-   	    GEN->tdr_points[NTDRPOINTS*GEN->coordinate+i] = unur_tdrgw_eval_invcdfhat(gen_conditional, (i+1.)/(NTDRPOINTS+1));  
+   	    GEN->tdr_points[NTDRPOINTS*GEN->coordinate+i] = unur_tdrgw_eval_invcdfhat(GEN->gen_conditional, (i+1.)/(NTDRPOINTS+1));  
 	  }
 	  	
 	}  
@@ -526,9 +564,6 @@ _unur_gibbs_sample_cvec( struct unur_gen *gen, double *vec )
 	}
       }
     
-      /* free allocated memory */
-      if (distr_conditional) unur_distr_free(distr_conditional);
-      if (gen_conditional)   unur_free(gen_conditional);
 
       /* prepare next coordinate direction */
       GEN->coordinate = GEN->coordinate + 1; 
@@ -572,7 +607,28 @@ _unur_gibbs_free( struct unur_gen *gen )
   if (GEN->direction) free(GEN->direction);
   if (GEN->tdr_points) free(GEN->tdr_points);
   
+  if (GEN->distr_conditional) {
+    unur_distr_free(GEN->distr_conditional); 
+    /* just in case this is a clone */
+    GEN->distr_conditional = NULL;
+  };
+  
+  if (GEN->par_conditional) {
+    _unur_par_free(GEN->par_conditional);
+    GEN->par_conditional=NULL;     
+  }  
+  if (GEN->par)  {
+    _unur_par_free(GEN->par);     
+    GEN->par=NULL;
+  }
+    
+  if (GEN->gen_conditional) {
+    _unur_generic_free(GEN->gen_conditional);
+    GEN->gen_conditional=NULL;
+  }
+  
   _unur_generic_free(gen);
+  gen=NULL;
 
 } /* end of _unur_gibbs_free() */
 

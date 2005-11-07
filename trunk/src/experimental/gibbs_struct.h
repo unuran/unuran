@@ -52,6 +52,10 @@ struct unur_gibbs_gen {
   double *tdr_points;       /* starting points for the tdr method in each dim*/
   int    coordinate;        /* current coordinate used for stepping          */
   long   pdfcount;          /* counting the number of PDF calls              */
+  struct unur_par   *par;   /* pointer to parameter object for gibbs sampler */
+  struct unur_par   *par_conditional;   /* pointer to conditional par.   object */
+  struct unur_distr *distr_conditional; /* pointer to conditional distr. object */
+  struct unur_gen   *gen_conditional;   /* pointer to conditional gen.   object */
 };
 
 /*---------------------------------------------------------------------------*/

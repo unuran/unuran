@@ -96,7 +96,7 @@ double unur_tdrgw_get_loghatarea( const UNUR_GEN *generator );
 int unur_tdrgw_set_max_intervals( UNUR_PAR *parameters, int max_ivs );
 /* 
    Set maximum number of intervals.
-   No construction points are added after the setup when th[GWa92]e number of
+   No construction points are added after the setup when the number of
    intervals suceeds @var{max_ivs}. 
    It is increased automatically to twice the number of construction
    points if this is larger.

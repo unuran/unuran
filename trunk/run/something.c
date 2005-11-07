@@ -104,14 +104,15 @@ void math2(struct unur_gen *gen) {
   FILE *fx, *fuv;
   
   fx = fopen("x.txt","w");
-  fuv = fopen("uv.txt","w");
+//  fuv = fopen("uv.txt","w");
   
     fprintf(fx,"x={");
-    fprintf(fuv,"uv={");
+//    fprintf(fuv,"uv={");
     for (i=1; i<=SAMPLESIZE; i++) {
       unur_sample_vec(gen, x);  
+#if 0            
       _unur_hitrou_get_point_current( gen, uv);
-      
+#endif      
       /* current point in x-y coordinates */
       fprintf(fx,"{");
       for (j=0; j<DIM; j++) {
@@ -120,6 +121,7 @@ void math2(struct unur_gen *gen) {
       }
       fprintf(fx,"}");
       
+#if 0
       /* current point in u-v coordinates */
       fprintf(fuv,"{");
       for (j=0; j<=DIM; j++) {
@@ -127,16 +129,17 @@ void math2(struct unur_gen *gen) {
 	if (j<DIM) fprintf(fuv,",");
       }
       fprintf(fuv,"}");
+#endif      
       
       
       if (i<SAMPLESIZE ) fprintf(fx,",");
-      if (i<SAMPLESIZE ) fprintf(fuv,",");
+//      if (i<SAMPLESIZE ) fprintf(fuv,",");
     }
     fprintf(fx,"};\n");
-    fprintf(fuv,"};\n");
+//    fprintf(fuv,"};\n");
 
     fclose(fx);
-    fclose(fuv);
+//    fclose(fuv);
 }
 
 
@@ -237,7 +240,7 @@ int main(int argc, char *argv[])
       BALL_RADIUS=atof(optarg);
       break;
     
-    case 'h':     /* help */
+    case 'h':     /*[GWa92] help */
       printf("options\n" );
       printf(" -d dim          : dimension (%d) \n", DIM );
       printf(" -t type         : 0=normal, 1=student 2=cauchy_ball (%d) \n", DISTRIBUTION );
@@ -464,7 +467,7 @@ int main(int argc, char *argv[])
   gen = unur_init(par);
   math2(gen);
   exit(0);
-#else    
+#else  
   gen = unur_test_timing(par, 3, &time_setup, &time_sample, TRUE, stdout);
 #endif
     
@@ -497,8 +500,6 @@ int main(int argc, char *argv[])
   for (d=0; d<=DIM; d++) {
     uv[d] *= 0.9;
   }
-    
-  if (gen)   unur_free(gen);
     
   par = _unur_par_clone(par_clone);
   gen = unur_init(par);
@@ -592,20 +593,26 @@ int main(int argc, char *argv[])
     
   for(d=0;d<DIM;d++){
     for (m=1; m<=4; m++) {
-      free_meanvar(mv[im(d,m)]);
-      if (EXPERIMENTS>1) free_quantile(quant[im(d,m)]);
+      if (mv[im(d,m)]) free_meanvar(mv[im(d,m)]);
+      if (EXPERIMENTS>1) 
+        if (quant[im(d,m)]) free_quantile(quant[im(d,m)]);
     }
   }
     
-  if (par_clone) unur_par_free(par_clone);
+//  if (par_clone) unur_par_free(par_clone);
   
-  if (distr) unur_distr_free(distr);
-  if (gen)   unur_free(gen);
+//  if (distr) unur_distr_free(distr);
+//  if (gen)   unur_free(gen);
   
-  free(x); free(mean); free(covar);
-  free(moments); free(moments_expected); 
+  if (x) free(x); 
+  if (mean) free(mean); 
+  if (covar) free(covar);
+  if (moments) free(moments); 
+  if (moments_expected) free(moments_expected); 
     
-  free(uv); free(eigenvalues); free(eigenvectors);
+  if (uv) free(uv); 
+  if (eigenvalues) free(eigenvalues); 
+  if (eigenvectors) free(eigenvectors);
   
   return 0;
 

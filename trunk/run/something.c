@@ -101,13 +101,16 @@ void math2(struct unur_gen *gen) {
   int i,j;
   double x[100];
   double uv[100];
-  FILE *fx, *fuv;
-  
+  FILE *fx;
+  FILE *fuv;
+ 
+  uv[0]=0; /* init ... not necessary */ 
+
   fx = fopen("x.txt","w");
-//  fuv = fopen("uv.txt","w");
+  fuv = fopen("uv.txt","w");
   
     fprintf(fx,"x={");
-//    fprintf(fuv,"uv={");
+    fprintf(fuv,"uv={");
     for (i=1; i<=SAMPLESIZE; i++) {
       unur_sample_vec(gen, x);  
 #if 0            
@@ -133,13 +136,13 @@ void math2(struct unur_gen *gen) {
       
       
       if (i<SAMPLESIZE ) fprintf(fx,",");
-//      if (i<SAMPLESIZE ) fprintf(fuv,",");
+      if (i<SAMPLESIZE ) fprintf(fuv,",");
     }
     fprintf(fx,"};\n");
-//    fprintf(fuv,"};\n");
+    fprintf(fuv,"};\n");
 
     fclose(fx);
-//    fclose(fuv);
+    fclose(fuv);
 }
 
 
@@ -599,9 +602,9 @@ int main(int argc, char *argv[])
     }
   }
     
-//  if (par_clone) unur_par_free(par_clone);
+  if (par_clone) unur_par_free(par_clone);
   
-//  if (distr) unur_distr_free(distr);
+  if (distr) unur_distr_free(distr);
 //  if (gen)   unur_free(gen);
   
   if (x) free(x); 

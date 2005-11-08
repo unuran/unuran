@@ -463,7 +463,7 @@ _unur_gibbs_clone( const struct unur_gen *gen )
   CLONE->par_conditional = GEN->par_conditional; 
   CLONE->gen_conditional = GEN->gen_conditional;   
   
-  CLONE->par = GEN->par; 
+  CLONE->par = NULL; 
   
   return clone;
 
@@ -605,13 +605,16 @@ _unur_gibbs_free( struct unur_gen *gen )
   if (GEN->tdr_points) free(GEN->tdr_points);
   
   if (GEN->distr_conditional) {
+    /* the following should not be executed on a clone */
     /* unur_distr_free(GEN->distr_conditional); */
+    
     /* just in case this is a clone */
     GEN->distr_conditional = NULL;
   }
   
   if (GEN->par_conditional) {
-    /* _unur_par_free(GEN->par_conditional);*/
+    /* the following should not be executed on a clone */
+    /* _unur_par_free(GEN->par_conditional); */
     GEN->par_conditional=NULL;     
   } 
    
@@ -622,6 +625,7 @@ _unur_gibbs_free( struct unur_gen *gen )
   }
     
   if (GEN->gen_conditional) {
+    /* the following should not be executed on a clone */
     /* _unur_generic_free(GEN->gen_conditional); */
     GEN->gen_conditional=NULL;
   }

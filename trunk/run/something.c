@@ -591,8 +591,11 @@ int main(int argc, char *argv[])
     printarray(info, a_q3);
   }
   printarray("max      :", a_max);
-    
-  unur_test_count_pdf(gen, SAMPLESIZE, 2, stdout);
+
+  if ( METHOD == METHOD_GIBBS )    
+    unur_test_par_count_pdf(par, SAMPLESIZE, 2, stdout);
+  else
+    unur_test_count_pdf(gen, SAMPLESIZE, 2, stdout);
     
   for(d=0;d<DIM;d++){
     for (m=1; m<=4; m++) {

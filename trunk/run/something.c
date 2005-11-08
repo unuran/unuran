@@ -605,7 +605,7 @@ int main(int argc, char *argv[])
   if (par_clone) unur_par_free(par_clone);
   
   if (distr) unur_distr_free(distr);
-//  if (gen)   unur_free(gen);
+  if (gen)   unur_free(gen);
   
   if (x) free(x); 
   if (mean) free(mean); 

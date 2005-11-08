@@ -454,9 +454,6 @@ _unur_gibbs_clone( const struct unur_gen *gen )
   CLONE->direction = _unur_xmalloc( (GEN->dim) * sizeof(double));
   CLONE->tdr_points = _unur_xmalloc( NTDRPOINTS * (GEN->dim) * sizeof(double));
 
-  /* copy parameters into clone object */
-  CLONE->skip = GEN->skip;
-
   memcpy(CLONE->point_current, GEN->point_current, (GEN->dim) * sizeof(double));
   memcpy(CLONE->direction, GEN->direction, (GEN->dim) * sizeof(double));
   memcpy(CLONE->tdr_points, GEN->tdr_points, NTDRPOINTS * (GEN->dim) * sizeof(double));
@@ -608,27 +605,28 @@ _unur_gibbs_free( struct unur_gen *gen )
   if (GEN->tdr_points) free(GEN->tdr_points);
   
   if (GEN->distr_conditional) {
-    unur_distr_free(GEN->distr_conditional); 
+    /* unur_distr_free(GEN->distr_conditional); */
     /* just in case this is a clone */
     GEN->distr_conditional = NULL;
-  };
+  }
   
   if (GEN->par_conditional) {
-    _unur_par_free(GEN->par_conditional);
+    /* _unur_par_free(GEN->par_conditional);*/
     GEN->par_conditional=NULL;     
-  }  
+  } 
+   
   if (GEN->par)  {
-    _unur_par_free(GEN->par);     
-    GEN->par=NULL;
+    /* we have not freed the par object in _unur_gibbs_init() !!! */    
+    /* _unur_par_free(GEN->par); */
+    GEN->par=NULL; 
   }
     
   if (GEN->gen_conditional) {
-    _unur_generic_free(GEN->gen_conditional);
+    /* _unur_generic_free(GEN->gen_conditional); */
     GEN->gen_conditional=NULL;
   }
   
   _unur_generic_free(gen);
-  gen=NULL;
 
 } /* end of _unur_gibbs_free() */
 

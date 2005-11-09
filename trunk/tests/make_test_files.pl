@@ -409,8 +409,8 @@ sub scan_validate {
 		# (it is just to number generators for convience)
 		$genline =~ s/par\[(\d+)\]/par/g;
 		
-		# insert distribution object
-		$genline =~ s/\@distr\@/distr\[$n_distr\]/g;
+		# insert local copy of distribution object
+		$genline =~ s/\@distr\@/distr_localcopy/g;
 		
 		# read what we have to test
 		my $todo = shift @gentest;
@@ -426,6 +426,7 @@ sub scan_validate {
 		
 		# print lines 
 		print "\tdo {\n";
+		print "\tUNUR_DISTR *distr_localcopy = unur_distr_clone(distr[$n_distr]);\n";
 		print "\tunur_errno = 0;\n";
 		
 		my $have_gen_lines = 0;
@@ -454,6 +455,7 @@ sub scan_validate {
 		print "\tn_tests_failed += (rcode==UNUR_SUCCESS)?0:1;\n";
 		print "\tn_tests_failed += (rcode==UNUR_FAILURE)?10:0;\n";
 		print "\tunur_free(gen);\n";
+		print "\tunur_distr_free(distr_localcopy);\n";
 		print "\t} while (0);\n\n";
 	    }	    
 	}
@@ -490,8 +492,8 @@ sub scan_validate {
 		# (it is just to number generators for convience)
 		$genline =~ s/par\[(\d+)\]/par/g;
 		
-		# insert distribution object
-		$genline =~ s/\@distr\@/distr\[$n_distr\]/g;
+		# insert local copy of distribution object
+		$genline =~ s/\@distr\@/distr_localcopy/g;
 		
 		# read what we have to test
 		my $todo = shift @gentest;
@@ -510,6 +512,7 @@ sub scan_validate {
 		
 		# print lines 
 		print "\tdo {\n";
+		print "\tUNUR_DISTR *distr_localcopy = unur_distr_clone(distr[$n_distr]);\n";
 		print "\tunur_errno = 0;\n";
 		
 		my $have_gen_lines = 0;
@@ -541,6 +544,7 @@ sub scan_validate {
 		# and override the sloppy definition of FAIL (2 are allowed for chi^2)
 		print "\tn_tests_failed += (run_validate_verifyhat(TESTLOG,0,gen,distr[$n_distr],'$todo')==UNUR_SUCCESS)?0:2;\n";
 		print "\tunur_free(gen);\n\n";
+		print "\tunur_distr_free(distr_localcopy);\n";
 		print "\t} while (0);\n\n";
 	    }	    
 	}

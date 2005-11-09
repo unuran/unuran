@@ -291,5 +291,28 @@ unur_distr_is_cemp( const struct unur_distr *distr )
 
 /*---------------------------------------------------------------------------*/
 
+struct unur_distr *
+unur_distr_clone( const struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* copy (clone) distribution object                                     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to clone of distribution object                            */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( "Clone", distr, NULL );
+  _unur_check_NULL( "Clone", distr->clone, NULL );
+
+  return (distr->clone(distr));
+} /* end of unur_distr_clone() */
+
+/*---------------------------------------------------------------------------*/
 
 

@@ -288,5 +288,9 @@ int unur_distr_is_matr( const UNUR_DISTR *distribution );
 
 /*---------------------------------------------------------------------------*/
 
+UNUR_DISTR *unur_distr_clone( const UNUR_DISTR *distr );
+
+/*---------------------------------------------------------------------------*/
+
 
 

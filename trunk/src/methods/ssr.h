@@ -134,7 +134,7 @@ int unur_ssr_reinit( UNUR_GEN *generator );
 /* 
    Update an existing generator object after the distribution has been
    modified. It must be executed whenever the parameters or the domain
-   of the distributions has been changed (see below).
+   of the distribution has been changed (see below).
    It is faster than destroying the existing object and build
    a new one from scratch.
    If reinitialization has been successful @code{UNUR_SUCCESS} is returned,

@@ -88,16 +88,18 @@
 /*    bits 13-24 ... adaptive steps                                          */
 /*    bits 25-32 ... trace sampling                                          */
 
-#define TDRGW_DEBUG_IV           0x00000010u
-#define TDRGW_DEBUG_SPLIT        0x00010000u
-/* #define TDRGW_DEBUG_SAMPLE       0x01000000u */
+#define TDRGW_DEBUG_IV        0x00000010u
+#define TDRGW_DEBUG_SPLIT     0x00010000u
+#define TDRGW_DEBUG_REINIT    0x00000020u  /* print parameters after reinit  */
 
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
 
-#define TDRGW_SET_CPOINTS        0x004u
-#define TDRGW_SET_N_CPOINTS      0x008u
-#define TDRGW_SET_MAX_IVS        0x080u
+#define TDRGW_SET_CPOINTS        0x001u
+#define TDRGW_SET_N_CPOINTS      0x002u
+#define TDRGW_SET_PERCENTILES    0x004u
+#define TDRGW_SET_N_PERCENTILES  0x008u
+#define TDRGW_SET_MAX_IVS        0x010u
 
 /*---------------------------------------------------------------------------*/
 
@@ -131,14 +133,14 @@ static struct unur_gen *_unur_tdrgw_clone( const struct unur_gen *gen );
 /* copy (clone) generator object.                                            */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_tdrgw_starting_cpoints( struct unur_par *par, struct unur_gen *gen );
+static int _unur_tdrgw_starting_cpoints( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* create list of construction points for starting segments.                 */
 /* if user has not provided such points compute these by means of the        */
 /* "equi-angle rule".                                                        */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_tdrgw_starting_intervals( struct unur_par *par, struct unur_gen *gen );
+static int _unur_tdrgw_starting_intervals( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* compute intervals from given starting construction points.                */
 /*---------------------------------------------------------------------------*/
@@ -189,14 +191,24 @@ static int _unur_tdrgw_make_area_table( struct unur_gen *gen );
 /* i.e., into the log file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_tdrgw_debug_init_start( const struct unur_par *par, const struct unur_gen *gen );
+static void _unur_tdrgw_debug_init_start( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print after (almost empty generator) object has been created.             */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_tdrgw_debug_init_finished( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* print after generator has been initialized has completed.                 */
+/* print after generator has been initialized.                               */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_tdrgw_debug_reinit_start( const struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* print before reinitialization of generator starts.                        */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_tdrgw_debug_reinit_finished( const struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* print after generator has been reinitialized.                             */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_tdrgw_debug_free( const struct unur_gen *gen );
@@ -290,6 +302,8 @@ unur_tdrgw_new( const struct unur_distr* distr )
   /* set default values */
   PAR->starting_cpoints    = NULL;   /* pointer to array of starting points  */
   PAR->n_starting_cpoints  = 2;      /* number of starting points            */
+  PAR->percentiles         = NULL;   /* pointer to array of percentiles      */
+  PAR->n_percentiles       = 2;      /* number of percentiles                */
   PAR->max_ivs             = 100;    /* maximum number of intervals          */
  
   par->method   = UNUR_METH_TDRGW;   /* method                               */
@@ -309,29 +323,6 @@ unur_tdrgw_new( const struct unur_distr* distr )
 } /* end of unur_tdrgw_new() */
 
 /*****************************************************************************/
-
-double
-unur_tdrgw_get_loghatarea( const struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* get log of area below hat                                            */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen  ... pointer to generator object                               */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   area     ... on success                                            */
-     /*   INFINITY ... on error                                              */
-     /*----------------------------------------------------------------------*/
-{
-  /* check input */
-  _unur_check_NULL( GENTYPE, gen, INFINITY );
-  _unur_check_gen_object( gen, TDRGW, INFINITY );
-
-  return log(GEN->Atotal) + GEN->logAmax;
-
-} /* end of unur_tdrgw_get_loghatarea() */
-
-/*---------------------------------------------------------------------------*/
 
 int
 unur_tdrgw_set_max_intervals( struct unur_par *par, int max_ivs )
@@ -393,11 +384,10 @@ unur_tdrgw_set_cpoints( struct unur_par *par, int n_cpoints, const double *cpoin
   _unur_check_par_object( par, TDRGW );
 
   /* check starting construction points */
-  /* we always use the boundary points as additional starting points,
-     so we do not count these here! */
-  if (n_cpoints < 0 ) {
-    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"number of starting points < 0");
-    return UNUR_ERR_PAR_SET;
+  if (n_cpoints < 2 ) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"number of starting points < 2. using defaults");
+    n_cpoints = 2;
+    cpoints = NULL;
   }
 
   if (cpoints)
@@ -418,6 +408,144 @@ unur_tdrgw_set_cpoints( struct unur_par *par, int n_cpoints, const double *cpoin
   return UNUR_SUCCESS;
 
 } /* end of unur_tdrgw_set_cpoints() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_tdrgw_set_usepercentiles( struct unur_par *par, int n_percentiles, const double *percentiles )
+     /*----------------------------------------------------------------------*/
+     /* set percentiles for construction points for hat function             */
+     /* and/or its number for re-initialization                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par           ... pointer to parameter for building generator      */
+     /*   n_percentiles ... number of percentiles                            */
+     /*   percentiles   ... pointer to array of percentiles                  */
+     /*                     (NULL for using a rule of thumb)                 */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  int i;
+
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, TDRGW );
+
+  /* check given percentiles */
+  if (n_percentiles < 2 ) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"number of percentiles < 2. using defaults");
+    n_percentiles = 2;
+    percentiles = NULL;
+  }
+
+  if (n_percentiles > 100 ) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"number of percentiles > 100. using 100");
+    n_percentiles = 100;
+  }
+    
+  if (percentiles) {
+    /* percentiles must be strictly monontonically increasing */
+    for( i=1; i<n_percentiles; i++ ) {
+      if (percentiles[i] <= percentiles[i-1]) {
+	_unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"percentiles not strictly monotonically increasing");
+	return UNUR_ERR_PAR_SET;
+      }
+      if (percentiles[i] < 0.01 || percentiles[i] > 0.99) {
+	_unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"percentiles out of range");
+	return UNUR_ERR_PAR_SET;
+      }
+    }
+  }
+
+  /* store date */
+  PAR->percentiles = percentiles;
+  PAR->n_percentiles = n_percentiles;
+
+  /* changelog */
+  par->set |= TDRGW_SET_N_PERCENTILES | ((percentiles) ? TDRGW_SET_PERCENTILES : 0);
+
+  return UNUR_SUCCESS;
+
+} /* end of unur_tdrgw_set_usepercentiles() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_tdrgw_chg_usepercentiles( struct unur_gen *gen, int n_percentiles, const double *percentiles )
+     /*----------------------------------------------------------------------*/
+     /* change percentiles for construction points for hat function          */
+     /* and/or its number for re-initialization                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen           ... pointer to generator object                      */
+     /*   n_percentiles ... number of percentiles                            */
+     /*   percentiles   ... pointer to array of percentiles                  */
+     /*                     (NULL for using a rule of thumb)                 */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  int i;
+
+  /* check input */
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, TDRGW, UNUR_ERR_GEN_INVALID );
+
+  /* check given percentiles */
+  if (n_percentiles < 2 ) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"number of percentiles < 2. using defaults");
+    n_percentiles = 2;
+    percentiles = NULL;
+  }
+
+  if (n_percentiles > 100 ) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"number of percentiles > 100. using 100");
+    n_percentiles = 100;
+  }
+    
+  if (percentiles) {
+    /* percentiles must be strictly monontonically increasing */
+    for( i=1; i<n_percentiles; i++ ) {
+      if (percentiles[i] <= percentiles[i-1]) {
+	_unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"percentiles not strictly monotonically increasing");
+	return UNUR_ERR_PAR_SET;
+      }
+      if (percentiles[i] < 0.01 || percentiles[i] > 0.99) {
+	_unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"percentiles out of range");
+	return UNUR_ERR_PAR_SET;
+      }
+    }
+  }
+
+  /* store date */
+  GEN->n_percentiles = n_percentiles;
+  GEN->percentiles = _unur_xrealloc( GEN->percentiles, n_percentiles * sizeof(double) );
+  if (percentiles) {
+    memcpy( GEN->percentiles, percentiles, n_percentiles * sizeof(double) );
+  }
+  else {
+    if (n_percentiles == 2) {
+      GEN->percentiles[0] = 0.25;
+      GEN->percentiles[1] = 0.75;
+    }
+    else {
+      for (i=0; i<n_percentiles; i++ )
+	GEN->percentiles[i] = (i + 1.) / (n_percentiles + 1.);
+    }
+  }
+
+  /* changelog */
+  gen->set |= TDRGW_SET_N_PERCENTILES | ((percentiles) ? TDRGW_SET_PERCENTILES : 0);
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+
+} /* end of unur_tdrgw_chg_usepercentiles() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -517,6 +645,29 @@ unur_tdrgw_set_pedantic( struct unur_par *par, int pedantic )
 
 /*---------------------------------------------------------------------------*/
 
+double
+unur_tdrgw_get_loghatarea( const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* get log of area below hat                                            */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   area     ... on success                                            */
+     /*   INFINITY ... on error                                              */
+     /*----------------------------------------------------------------------*/
+{
+  /* check input */
+  _unur_check_NULL( GENTYPE, gen, INFINITY );
+  _unur_check_gen_object( gen, TDRGW, INFINITY );
+
+  return log(GEN->Atotal) + GEN->logAmax;
+
+} /* end of unur_tdrgw_get_loghatarea() */
+
+/*---------------------------------------------------------------------------*/
+
 /*****************************************************************************/
 /**  Private                                                                **/
 /*****************************************************************************/
@@ -554,17 +705,17 @@ _unur_tdrgw_init( struct unur_par *par )
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-  if (gen->debug) _unur_tdrgw_debug_init_start(par,gen);
+  if (gen->debug) _unur_tdrgw_debug_init_start(gen);
 #endif
 
   /* get starting points */
-  if (_unur_tdrgw_starting_cpoints(par,gen)!=UNUR_SUCCESS) {
+  if (_unur_tdrgw_starting_cpoints(gen)!=UNUR_SUCCESS) {
     _unur_par_free(par); _unur_tdrgw_free(gen);
     return NULL;
   }
 
   /* compute intervals for given starting points */
-  if (_unur_tdrgw_starting_intervals(par,gen)!=UNUR_SUCCESS) {
+  if (_unur_tdrgw_starting_intervals(gen)!=UNUR_SUCCESS) {
     _unur_par_free(par); _unur_tdrgw_free(gen);
     return NULL;
   }
@@ -641,8 +792,23 @@ _unur_tdrgw_create( struct unur_par *par )
   /* set all pointers to NULL */
   GEN->iv          = NULL;
   GEN->n_ivs       = 0;
+  GEN->percentiles = NULL;
   GEN->Atotal      = 0.;
   GEN->logAmax     = 0.;
+
+  /* copy starting points */
+  GEN->n_starting_cpoints = PAR->n_starting_cpoints;
+  if (PAR->starting_cpoints) {
+    GEN->starting_cpoints = _unur_xmalloc( PAR->n_starting_cpoints * sizeof(double) );
+    memcpy( GEN->starting_cpoints, PAR->starting_cpoints, PAR->n_starting_cpoints * sizeof(double) );
+  }
+  else {
+    GEN->starting_cpoints = NULL;
+  }
+
+  /* copy percentiles */
+  if (gen->set & TDRGW_SET_N_PERCENTILES)
+    unur_tdrgw_chg_usepercentiles( gen, PAR->n_percentiles, PAR->percentiles );
 
   /* bounds for adding construction points  */
   GEN->max_ivs = max(2*PAR->n_starting_cpoints,PAR->max_ivs);  /* maximum number of intervals */
@@ -654,6 +820,106 @@ _unur_tdrgw_create( struct unur_par *par )
   return gen;
 
 } /* end of _unur_tdrgw_create() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_tdrgw_reinit( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* re-initialize (existing) generator.                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_tdrgw_interval *iv,*next;
+  int i;
+  int errors;
+
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, TDRGW, UNUR_ERR_GEN_INVALID );
+
+  /* when the generator object contains a private copy of the      */
+  /* distribution object, then there is (currently) no possibility */
+  /* to change the parameters of the distribution.                 */
+  /* However, then reinit does not make sense.                     */
+  if (gen->distr_is_privatecopy) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"Reinit of generator object with private copy of distribution object has no effect");
+    return UNUR_ERR_GEN_DATA;
+  }
+
+  /* which construction points should be used ? */
+  if (gen->set & TDRGW_SET_N_PERCENTILES) {
+    if (GEN->n_starting_cpoints != GEN->n_percentiles) {
+      GEN->n_starting_cpoints = GEN->n_percentiles;
+      GEN->starting_cpoints = _unur_xrealloc( GEN->starting_cpoints, GEN->n_percentiles * sizeof(double));
+    }
+    for (i=0; i<GEN->n_percentiles; i++)
+      GEN->starting_cpoints[i] = unur_tdrgw_eval_invcdfhat( gen, GEN->percentiles[i] );
+  }
+
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  if (gen->debug & TDRGW_DEBUG_REINIT)
+    if (gen->debug) _unur_tdrgw_debug_reinit_start(gen);
+#endif
+
+  /* reset error counter */
+  errors = 0;
+
+  do {
+    /* free linked list of intervals */
+    for (iv = GEN->iv; iv != NULL; iv = next) {
+      next = iv->next;
+      free(iv);
+    }
+    GEN->iv = NULL;
+    GEN->n_ivs = 0;
+    GEN->Atotal = 0.;
+    GEN->logAmax = 0.;
+
+    if (errors > 0) {
+      /* we have done our best */
+      _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"bad construction points for reinit");
+      return UNUR_FAILURE;
+    }
+
+    /* get starting points */
+    if (_unur_tdrgw_starting_cpoints(gen)!=UNUR_SUCCESS) {
+      ++errors; continue;
+    }
+
+    /* compute intervals for given starting points */
+    if (_unur_tdrgw_starting_intervals(gen)!=UNUR_SUCCESS) {
+      ++errors; continue;
+    }
+
+    /* update maximal number of intervals */
+    if (GEN->n_ivs > GEN->max_ivs)  GEN->max_ivs = GEN->n_ivs;
+    
+    /* make table of areas */
+    _unur_tdrgw_make_area_table(gen);
+    
+    /* is there any hat at all ? */
+    if (GEN->Atotal <= 0.) {
+      ++errors; continue;
+    }
+
+  } while (errors);
+
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  if (gen->debug & TDRGW_DEBUG_REINIT)
+    if (gen->debug) _unur_tdrgw_debug_reinit_finished(gen);
+#endif
+
+  return UNUR_SUCCESS;
+} /* end of unur_tdrgw_reinit() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -704,6 +970,18 @@ _unur_tdrgw_clone( const struct unur_gen *gen )
   /* terminate linked list */
   if (clone_iv) clone_iv->next = NULL;
 
+  /* copy starting points */
+  if (GEN->starting_cpoints) {
+    CLONE->starting_cpoints = _unur_xmalloc( GEN->n_starting_cpoints * sizeof(double) );
+    memcpy( CLONE->starting_cpoints, GEN->starting_cpoints, GEN->n_starting_cpoints * sizeof(double) );
+  }
+
+  /* copy percentiles */
+  if (GEN->percentiles) {
+    CLONE->percentiles = _unur_xmalloc( GEN->n_percentiles * sizeof(double) );
+    memcpy( CLONE->percentiles, GEN->percentiles, GEN->n_percentiles * sizeof(double) );
+  }
+
   /* finished clone */
   return clone;
 
@@ -747,6 +1025,14 @@ _unur_tdrgw_free( struct unur_gen *gen )
       free(iv);
     }
   }
+
+  /* free list of starting points */
+  if (GEN->starting_cpoints) 
+    free (GEN->starting_cpoints);
+
+  /* free list of percentiles */
+  if (GEN->percentiles) 
+    free (GEN->percentiles);
 
   /* free other memory not stored in list */
   _unur_generic_free(gen);
@@ -805,6 +1091,11 @@ _unur_tdrgw_sample( struct unur_gen *gen )
 
   /* check arguments */
   CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_TDRGW_GEN,INFINITY);
+
+  if (GEN->iv == NULL) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"empty generator object");
+    return INFINITY;
+  } 
 
   while (1) {
 
@@ -920,6 +1211,11 @@ _unur_tdrgw_sample_check( struct unur_gen *gen )
 
   /* check arguments */
   CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_TDRGW_GEN,INFINITY);
+
+  if (GEN->iv == NULL) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"empty generator object");
+    return INFINITY;
+  } 
 
   while (1) {
 
@@ -1147,14 +1443,13 @@ _unur_tdrgw_improve_hat( struct unur_gen *gen, struct unur_tdrgw_interval *iv,
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_tdrgw_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
+_unur_tdrgw_starting_cpoints( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* list of construction points for starting intervals.                  */
      /* if not provided as arguments compute these                           */
      /* by means of the "equiangular rule" from AROU.                        */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   par ... pointer to parameter for building generator object         */
      /*   gen ... pointer to generator object                                */
      /*                                                                      */
      /* return:                                                              */
@@ -1169,20 +1464,19 @@ _unur_tdrgw_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
   int i;
   
   /* check arguments */
-  CHECK_NULL(par,UNUR_ERR_NULL);  COOKIE_CHECK(par,CK_TDRGW_PAR,UNUR_ERR_COOKIE);
   CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_TDRGW_GEN,UNUR_ERR_COOKIE);
   
   /* reset counter of intervals */
   GEN->n_ivs = 0;
 
   /* prepare for computing construction points */
-  if (!PAR->starting_cpoints) {
+  if (!GEN->starting_cpoints) {
     /* angles of boundary of domain */
     left_angle =  _unur_FP_is_minus_infinity(DISTR.BD_LEFT) ? -M_PI/2. : atan(DISTR.BD_LEFT);
     right_angle = _unur_FP_is_infinity(DISTR.BD_RIGHT)      ? M_PI/2.  : atan(DISTR.BD_RIGHT);
     /* we use equal distances between the angles of the cpoints   */
     /* and the boundary points                                    */
-    diff_angle = (right_angle-left_angle) / (PAR->n_starting_cpoints + 1);
+    diff_angle = (right_angle-left_angle) / (GEN->n_starting_cpoints + 1);
     angle = left_angle;
   }
   else
@@ -1197,13 +1491,13 @@ _unur_tdrgw_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
   if (iv == NULL) return UNUR_ERR_GEN_DATA;  /* logPDF(x) overflow */
 
   /* now all the other points */
-  for( i=0; i<=PAR->n_starting_cpoints; i++ ) {
+  for( i=0; i<=GEN->n_starting_cpoints; i++ ) {
 
     /* construction point */
-    if (i < PAR->n_starting_cpoints) {
-      if (PAR->starting_cpoints) {
+    if (i < GEN->n_starting_cpoints) {
+      if (GEN->starting_cpoints) {
 	/* construction points provided by user */
-	x = PAR->starting_cpoints[i];
+	x = GEN->starting_cpoints[i];
 	/* check starting point */
 	if (x < DISTR.BD_LEFT || x > DISTR.BD_RIGHT) {
 	  _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"starting point out of domain");
@@ -1239,7 +1533,7 @@ _unur_tdrgw_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
       /* we do not need two such point */
       if (is_increasing) {
 	/* PDF is still increasing, i.e., constant 0 til now */
-	if (i<PAR->n_starting_cpoints) {
+	if (i<GEN->n_starting_cpoints) {
 	  /* and it is not the right boundary.
 	     otherwise the PDF is constant 0 on all construction points.
 	     then we need both boundary points. */
@@ -1289,12 +1583,11 @@ _unur_tdrgw_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_tdrgw_starting_intervals( struct unur_par *par, struct unur_gen *gen )
+_unur_tdrgw_starting_intervals( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* compute intervals for starting points                                */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   par          ... pointer to parameter list                         */
      /*   gen          ... pointer to generator object                       */
      /*                                                                      */
      /* return:                                                              */
@@ -1306,7 +1599,6 @@ _unur_tdrgw_starting_intervals( struct unur_par *par, struct unur_gen *gen )
   double x, logfx;              /* construction point, value of logPDF at x  */
   
   /* check arguments */
-  CHECK_NULL(par,UNUR_ERR_NULL);  COOKIE_CHECK(par,CK_TDRGW_PAR,UNUR_ERR_COOKIE);
   CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_TDRGW_GEN,UNUR_ERR_COOKIE);
   CHECK_NULL(GEN->iv,UNUR_ERR_NULL);  COOKIE_CHECK(GEN->iv,CK_TDRGW_IV,UNUR_ERR_COOKIE);
   
@@ -1921,12 +2213,11 @@ _unur_tdrgw_make_area_table( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_tdrgw_debug_init_start( const struct unur_par *par, const struct unur_gen *gen )
+_unur_tdrgw_debug_init_start( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* print after (almost empty generator) object has been created.        */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   par ... pointer to parameter for building generator object         */
      /*   gen ... pointer to generator object                                */
      /*----------------------------------------------------------------------*/
 {
@@ -1935,7 +2226,6 @@ _unur_tdrgw_debug_init_start( const struct unur_par *par, const struct unur_gen 
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_TDRGW_GEN,RETURN_VOID);
-  CHECK_NULL(par,RETURN_VOID);  COOKIE_CHECK(par,CK_TDRGW_PAR,RETURN_VOID);
 
   log = unur_get_stream();
 
@@ -1948,23 +2238,23 @@ _unur_tdrgw_debug_init_start( const struct unur_par *par, const struct unur_gen 
   _unur_distr_cont_debug( gen->distr, gen->genid );
 
   fprintf(log,"%s: sampling routine = _unur_tdrgw_sample",gen->genid);
-  if (par->variant & TDRGW_VARFLAG_VERIFY)
+  if (gen->variant & TDRGW_VARFLAG_VERIFY)
     fprintf(log,"_check()\n");
   else
     fprintf(log,"()\n");
   fprintf(log,"%s:\n",gen->genid);
 
   fprintf(log,"%s: maximum number of intervals        = %d",gen->genid,GEN->max_ivs);
-  _unur_print_if_default(par,TDRGW_SET_MAX_IVS);
+  _unur_print_if_default(gen,TDRGW_SET_MAX_IVS);
   fprintf(log,"\n%s:\n",gen->genid);
 
-  fprintf(log,"%s: number of starting points = %d",gen->genid,PAR->n_starting_cpoints);
-  _unur_print_if_default(par,TDRGW_SET_N_CPOINTS);
+  fprintf(log,"%s: number of starting points = %d",gen->genid,GEN->n_starting_cpoints);
+  _unur_print_if_default(gen,TDRGW_SET_N_CPOINTS);
   fprintf(log,"\n%s: starting points:",gen->genid);
-  if (par->set & TDRGW_SET_CPOINTS)
-    for (i=0; i<PAR->n_starting_cpoints; i++) {
+  if (gen->set & TDRGW_SET_CPOINTS)
+    for (i=0; i<GEN->n_starting_cpoints; i++) {
       if (i%5==0) fprintf(log,"\n%s:\t",gen->genid);
-      fprintf(log,"   %#g,",PAR->starting_cpoints[i]);
+      fprintf(log,"   %#g,",GEN->starting_cpoints[i]);
     }
   else
     fprintf(log," use \"equdistribution\" rule [default]");
@@ -2000,6 +2290,77 @@ _unur_tdrgw_debug_init_finished( const struct unur_gen *gen )
   fflush(log);
 
 } /* end of _unur_tdrgw_debug_init_finished() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_tdrgw_debug_reinit_start( const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* write info about generator before reinitialization into logfile      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{
+  int i;
+  FILE *log;
+
+  /* check arguments */
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_TDRGW_GEN,RETURN_VOID);
+
+  log = unur_get_stream();
+
+  fprintf(log,"%s: *** Re-Initialize generator object ***\n",gen->genid);
+  fprintf(log,"%s:\n",gen->genid);
+
+  if (gen->set & TDRGW_SET_N_PERCENTILES) {
+    fprintf(log,"%s: use percentiles of old hat as starting points for new hat:",gen->genid);
+    for (i=0; i<GEN->n_percentiles; i++) {
+      if (i%5==0) fprintf(log,"\n%s:\t",gen->genid);
+      fprintf(log,"   %#g,",GEN->percentiles[i]);
+    }
+    fprintf(log,"\n%s: starting points:",gen->genid);
+    for (i=0; i<GEN->n_starting_cpoints; i++) {
+      if (i%5==0) fprintf(log,"\n%s:\t",gen->genid);
+      fprintf(log,"   %#g,",GEN->starting_cpoints[i]);
+    }
+    fprintf(log,"\n");
+  }
+  else {
+    fprintf(log,"%s: use starting points given at init\n",gen->genid);
+  }
+  
+  fprintf(log,"%s:\n",gen->genid);
+
+  fflush(log);
+
+} /* end of _unur_tdrgw_debug_reinit_start() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_tdrgw_debug_reinit_finished( const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* write info about generator after reinitialization into logfile       */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{
+  FILE *log;
+
+  /* check arguments */
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_TDRGW_GEN,RETURN_VOID);
+
+  log = unur_get_stream();
+
+  _unur_tdrgw_debug_intervals(gen,"*** Generator reinitialized ***",TRUE);
+
+  fprintf(log,"%s:\n",gen->genid);
+
+  fflush(log);
+
+} /* end of _unur_tdrgw_debug_reinit_finished() */
 
 /*---------------------------------------------------------------------------*/
 

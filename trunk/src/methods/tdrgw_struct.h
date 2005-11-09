@@ -40,8 +40,10 @@
 struct unur_tdrgw_par { 
 
   const double *starting_cpoints; /* pointer to array of starting points     */
-  int     n_starting_cpoints;   /* number of construction points at start    */
-  int     max_ivs;              /* maximum number of intervals               */
+  int n_starting_cpoints;         /* number of construction points at start  */
+  const double *percentiles; /* percentiles of hat for c. points of new hat  */
+  int n_percentiles;         /* number of percentiles                        */
+  int max_ivs;               /* maximum number of intervals                  */
 };
 
 /*---------------------------------------------------------------------------*/
@@ -74,11 +76,17 @@ struct unur_tdrgw_interval {
 struct unur_tdrgw_gen { 
 
   double  Atotal;               /* area below hat                            */
-  double  logAmax;               /* log of maximum area in intervals          */
+  double  logAmax;              /* log of maximum area in intervals          */
 
   struct unur_tdrgw_interval *iv; /* pointer to linked list of intervals     */
   int     n_ivs;                /* number of intervals                       */
   int     max_ivs;              /* maximum number of intervals               */
+
+  double *starting_cpoints;     /* pointer to array of starting points       */
+  int     n_starting_cpoints;   /* number of construction points at start    */
+
+  double *percentiles;       /* percentiles of hat for c. points of new hat  */
+  int n_percentiles;         /* number of percentiles                        */
 };
 
 /*---------------------------------------------------------------------------*/

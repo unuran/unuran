@@ -236,7 +236,7 @@ unur_gen_clone( const struct unur_gen *gen )
   _unur_check_NULL( "Clone", gen->clone, NULL );
 
   return (gen->clone(gen));
-} /* end of unur_get_clone() */
+} /* end of unur_gen_clone() */
 
 /*---------------------------------------------------------------------------*/
 

@@ -190,12 +190,27 @@ int
 _unur_set_params_multiexponential( UNUR_DISTR *distr, const double *sigma, const double *theta )
 {
   int i;
+  double *default_sigma=NULL;
+  double *default_theta=NULL;
 
-  CHECK_NULL(sigma,UNUR_ERR_NULL);
-  CHECK_NULL(theta,UNUR_ERR_NULL);
+printf(".\n");
+  if(sigma==NULL) {
+    /* initializing vector with default values */
+    default_sigma = _unur_xmalloc( distr->dim * sizeof(double));
+    for (i=0; i<distr->dim; i++) default_sigma[i]=1.;
+    unur_distr_cvec_set_pdfparams_vec( distr, INDEX_SIGMA, default_sigma, distr->dim );
+  }
+  
+printf(".\n");
+  if(theta==NULL) {
+    /* initializing vector with default values */
+    default_theta = _unur_xmalloc(distr->dim * sizeof(double) );
+    for (i=0; i<distr->dim; i++) default_theta[i]=0.;
+    unur_distr_cvec_set_pdfparams_vec( distr, INDEX_THETA, default_theta, distr->dim );
+  }
 
+printf(".\n");
   /* check parameter sigma */
- 
   for (i=0; i<distr->dim; i++) {
     if ( sigma[i] <= UNUR_EPSILON ) {
       _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"sigma is too low");
@@ -203,13 +218,16 @@ _unur_set_params_multiexponential( UNUR_DISTR *distr, const double *sigma, const
     }
   }
   
+printf(".\n");
   /* store number of parameters */
   DISTR.n_params = 0.; /* we have only vector parameter here ... see below */
 
   /* copy the parameters into their parameter vectors */
-  unur_distr_cvec_set_pdfparams_vec( distr, INDEX_SIGMA, sigma, distr->dim );
-  unur_distr_cvec_set_pdfparams_vec( distr, INDEX_THETA, theta, distr->dim );
+printf(".\n");
+  if (sigma) unur_distr_cvec_set_pdfparams_vec( distr, INDEX_SIGMA, sigma, distr->dim );
+  if (theta) unur_distr_cvec_set_pdfparams_vec( distr, INDEX_THETA, theta, distr->dim );
       
+printf(".\n");
   return UNUR_SUCCESS;
 } /* end of _unur_set_params_multiexponential() */
 

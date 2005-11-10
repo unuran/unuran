@@ -483,6 +483,23 @@ UNUR_DISTR *unur_distr_multicauchy(int dim, const double *mean, const double *co
 UNUR_DISTR *unur_distr_multistudent(int dim, double nu, const double *mean, const double *covar);
 
 
+
+/*---------------------------------------------------------------------------*/
+/* Multiexponential distribution                                             */
+/* 
+   =DISTR    multiexponential  Multiexponential distribution
+   =UP       Stddist_CVEC
+   =PDF      f(x) = Prod_{i=0}^{i=dim-1} exp(-(dim-i) (x_{i}-x_{i-1} - (theta_i-theta_{i-1}) ) / sigma_i); 
+             with x_{-1}=0 and theta_{i-1}=0         
+   =CONST    Prod_{i=0}^{i=dim-1} 1/sigma_i 
+   =DOMAIN   0^{dim} <= x < infinity^{dim} 
+   =FPARAM    [0]   : sigma  :    : (1,@dots{},1)  : shape  :
+              [1]   : theta  :    : (0,@dots{},0)  : location  :
+   =EON
+*/
+UNUR_DISTR *unur_distr_multiexponential(int dim, const double *sigma, const double *theta);
+
+
 /*---------------------------------------------------------------------------*/
 /* Copula                                                                    */
 /* 

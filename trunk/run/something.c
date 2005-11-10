@@ -22,7 +22,8 @@
 #include <distr/distr_source.h>
 #include <src/utils/matrix_source.h>
 #include <experimental/hitrou.h>
-#include <experimental/gibbs.h>
+/*#include <experimental/gibbs.h>*/
+#include <mcgibbs.h>
 #include <experimental/ball.h>
 #include <experimental/walk.h>
 #include <methods/x_gen_source.h>
@@ -33,6 +34,7 @@
 #define DISTRIBUTION_NORMAL 0 
 #define DISTRIBUTION_STUDENT 1
 #define DISTRIBUTION_CAUCHY_BALL 2
+#define DISTRIBUTION_EXPONENTIAL 3
 
 #define COVAR_CONSTANT 0
 #define COVAR_NEIGHBOURS 1
@@ -246,7 +248,7 @@ int main(int argc, char *argv[])
     case 'h':     /*[GWa92] help */
       printf("options\n" );
       printf(" -d dim          : dimension (%d) \n", DIM );
-      printf(" -t type         : 0=normal, 1=student 2=cauchy_ball (%d) \n", DISTRIBUTION );
+      printf(" -t type         : 0=normal, 1=student 2=cauchy_ball 3=exponential (%d) \n", DISTRIBUTION );
       printf(" -f nu           : degrees of freedom for student (%d) \n", NU );
       printf(" -m method       : 0=H&R+RD+STRIP, 1=VMT, 2=GIBBS 3=GIBBS+RD \n" );
       printf("                 : 4=H&R+COORD+BOX, 5=H&R+RD+BOX 6=H&R+RD+ADAPTIVE STRIP\n" );
@@ -254,7 +256,7 @@ int main(int argc, char *argv[])
       printf("                 : 9=BALL+PDF 10=BALL+PDF+ADAPTIVE RADIUS \n");
       printf("                 : 11=WALK  12=H&R+RD+STRIP+UNI (%d)\n", METHOD );
       printf(" -b ball_radius  : ball radius for ball sampler (%f)\n", BALL_RADIUS);
-      printf(" -s skip         : skip parameter for HITROU (%ld) \n", SKIP );
+      printf(" -s skip         : skip parameter ... skip=thinning-1 (%ld) \n", SKIP );
       printf(" -c covar_matrix : 0=constant, 1=neighbours, 2=power (%d)\n", COVAR);
       printf(" -r rho          : covariance parameter (%f)\n", RHO);
       printf(" -w sigma        : variance parameter (%f)\n", SIGMA);
@@ -268,8 +270,8 @@ int main(int argc, char *argv[])
     }
   }
   
-//  unur_set_default_debug(UNUR_DEBUG_OFF);
-  unur_set_default_debug(UNUR_DEBUG_ALL);
+  unur_set_default_debug(UNUR_DEBUG_OFF);
+//  unur_set_default_debug(UNUR_DEBUG_ALL);
      
   for(d=0;d<DIM;d++){
     for (m=1; m<=4; m++) {
@@ -346,7 +348,19 @@ int main(int argc, char *argv[])
     }
   }
   
-  
+  if (DISTRIBUTION==DISTRIBUTION_EXPONENTIAL) {
+    printf("DISTRIBUTION='MULTIEXPONENTIAL'");
+    /* TODO : enable sigma and theta parameter vectors */
+    distr = unur_distr_multiexponential(DIM, NULL, NULL);
+    for (d=0; d<DIM; d++) {
+      moments_expected[im(d,1)] = 1.;
+      moments_expected[im(d,2)] = 1.;
+      moments_expected[im(d,3)] = 2.;
+      moments_expected[im(d,4)] = 6.;    
+    }
+  }
+
+    
   printf("DIM=%d\n", DIM);
   if (COVAR==COVAR_CONSTANT)   printf("COVAR=CONSTANT\n");
   if (COVAR==COVAR_NEIGHBOURS) printf("COVAR=NEIGHBOURS\n");
@@ -360,7 +374,7 @@ int main(int argc, char *argv[])
     printf("METHOD=HITROU (STRIP)\n");
     par = unur_hitrou_new(distr);
     unur_hitrou_set_variant_random_direction(par);
-    unur_hitrou_set_skip(par,SKIP);
+    unur_hitrou_set_thinning(par,SKIP+1);
   }
     
   if (METHOD==METHOD_VMT) {
@@ -370,15 +384,15 @@ int main(int argc, char *argv[])
   
   if (METHOD==METHOD_GIBBS) {
     printf("METHOD=GIBBS \n");  
-    par = unur_gibbs_new(distr);
-    unur_gibbs_set_skip(par,SKIP);
+    par = unur_mcgibbs_new(distr);
+    unur_mcgibbs_set_thinning(par,SKIP+1);
   }
   
   if (METHOD==METHOD_GIBBS_RANDOM) {
     printf("METHOD=GIBBS (RANDOM DIRECTIONS)\n");  
-    par = unur_gibbs_new(distr);
-    unur_gibbs_set_skip(par,SKIP);
-    unur_gibbs_set_variant_random_direction(par);
+    par = unur_mcgibbs_new(distr);
+    unur_mcgibbs_set_thinning(par,SKIP+1);
+    unur_mcgibbs_set_variant_random_direction(par);
   }
 
   if (METHOD==METHOD_HITROU_BOX) {
@@ -386,7 +400,7 @@ int main(int argc, char *argv[])
     par = unur_hitrou_new(distr);
     unur_hitrou_use_bounding_rectangle(par,1);
     unur_hitrou_set_variant_random_direction(par);
-    unur_hitrou_set_skip(par,SKIP);
+    unur_hitrou_set_thinning(par,SKIP+1);
   }
   
   if (METHOD==METHOD_HITROU_BOX_COORDINATE) {
@@ -394,7 +408,7 @@ int main(int argc, char *argv[])
     par = unur_hitrou_new(distr);
     unur_hitrou_use_bounding_rectangle(par,1);
     unur_hitrou_set_variant_coordinate(par);
-    unur_hitrou_set_skip(par,SKIP);
+    unur_hitrou_set_thinning(par,SKIP+1);
   }
    
   if (METHOD==METHOD_HITROU_STRIP_ADAPTIVE) {
@@ -402,7 +416,7 @@ int main(int argc, char *argv[])
     par = unur_hitrou_new(distr);
     unur_hitrou_set_variant_random_direction(par);
     unur_hitrou_set_adaptive_strip(par, 1);    
-    unur_hitrou_set_skip(par,SKIP);
+    unur_hitrou_set_thinning(par,SKIP+1);
   }  
 
   if (METHOD==METHOD_HITROU_UNIDIRECTIONAL) {
@@ -412,7 +426,7 @@ int main(int argc, char *argv[])
     unur_hitrou_set_adaptive_strip(par, 0);    
     unur_hitrou_use_bounding_rectangle(par,0);
     unur_hitrou_set_unidirectional(par, 1);    
-    unur_hitrou_set_skip(par,SKIP);
+    unur_hitrou_set_thinning(par,SKIP+1);
   }  
   
   
@@ -422,7 +436,7 @@ int main(int argc, char *argv[])
     par = unur_ball_new(distr);
     unur_ball_set_variant_rou(par);
     unur_ball_set_ball_radius(par, BALL_RADIUS);
-    unur_ball_set_skip(par,SKIP);
+    unur_ball_set_thinning(par,SKIP+1);
   }  
   
   if (METHOD==METHOD_BALL_ROU_ADAPTIVE) {
@@ -432,7 +446,7 @@ int main(int argc, char *argv[])
     unur_ball_set_variant_rou(par);
     unur_ball_set_ball_radius(par, BALL_RADIUS);
     unur_ball_set_adaptive_ball(par, 1);    
-    unur_ball_set_skip(par,SKIP);
+    unur_ball_set_thinning(par,SKIP+1);
   }  
 
   if (METHOD==METHOD_BALL_PDF) {
@@ -441,7 +455,7 @@ int main(int argc, char *argv[])
     par = unur_ball_new(distr);
     unur_ball_set_variant_pdf(par);
     unur_ball_set_ball_radius(par, BALL_RADIUS);
-    unur_ball_set_skip(par,SKIP);
+    unur_ball_set_thinning(par,SKIP+1);
   }  
   
   if (METHOD==METHOD_BALL_PDF_ADAPTIVE) {
@@ -451,7 +465,7 @@ int main(int argc, char *argv[])
     unur_ball_set_variant_pdf(par);
     unur_ball_set_ball_radius(par, BALL_RADIUS);
     unur_ball_set_adaptive_ball(par, 1);    
-    unur_ball_set_skip(par,SKIP);
+    unur_ball_set_thinning(par,SKIP+1);
   }  
 
   if (METHOD==METHOD_WALK) {
@@ -459,7 +473,7 @@ int main(int argc, char *argv[])
     printf("INITIAL_RADIUS=%f\n", BALL_RADIUS);
     par = unur_walk_new(distr);
     unur_walk_set_ball_radius(par, BALL_RADIUS);
-    unur_walk_set_skip(par,SKIP);
+    unur_walk_set_thinning(par,SKIP+1);
   }  
   
   printf("SKIP=%ld\n", SKIP);
@@ -530,7 +544,8 @@ int main(int argc, char *argv[])
     
     if (METHOD==METHOD_GIBBS
     || METHOD==METHOD_GIBBS_RANDOM) {
-      _unur_gibbs_set_point_current( gen, x);    
+      unur_mcgibbs_set_startingpoint( par ,x);
+      /*_unur_mcgibbs_set_point_current( gen, x);  */
     }
     
     if (METHOD==METHOD_WALK) {    

@@ -2235,6 +2235,13 @@ _unur_tdrgw_debug_init_start( const struct unur_gen *gen )
   fprintf(log,"%s: transformation T_c(x) = log(x)\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
+  if (gen->distr_is_privatecopy)
+    fprintf(log,"%s: use private copy of distribution object\n",gen->genid);
+  else
+    fprintf(log,"%s: use pointer to external distribution object (dangerous!)\n",gen->genid);
+
+  fprintf(log,"%s:\n",gen->genid);
+
   _unur_distr_cont_debug( gen->distr, gen->genid );
 
   fprintf(log,"%s: sampling routine = _unur_tdrgw_sample",gen->genid);

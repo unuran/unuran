@@ -77,6 +77,7 @@ my %IGNORED_COMMANDS =
 my %IGNORED_DISTRIBUTIONS =
     ( 'multinormal'  => 1,   
       'multicauchy'  => 1,
+      'multiexponential' => 1,
       'multistudent' => 1,
       'copula'       => 1,
       'correlation'  => 1

@@ -4,7 +4,7 @@
 all: run rungen test something
 
 run: run.c ../src/unuran.h ../src/libunuran.la
-	../libtool gcc -I. -I.. -I../src -I../src/tests -Wall -g -O3 -o run run.c ../src/experimental/libunurexperimental.la ../src/libunuran.la -lm 
+	../libtool gcc -I. -I.. -I../src -I../src/tests -I../src/experimental -Wall -g -O3 -o run run.c ../src/experimental/libunurexperimental.la ../src/libunuran.la -lm 
 
 mcrun: mcrun.c ../src/unuran.h ../src/libunuran.la
 	../libtool gcc -I. -I.. -I../src -I../src/tests -Wall -g -O3 -o mcrun mcrun.c ../src/libunuran.la -lm -lprng
@@ -24,7 +24,6 @@ something: something.c ../src/unuran.h ../src/libunuran.la ../src/experimental/l
 example: example_.c ../src/unuran.h ../src/libunuran.la ../src/experimental/libunurexperimental.la
 	../libtool gcc -I. -I.. -I../src -I../src/tests -Wall -DHAVE_CONFIG_H -g -O2 -m32 -o example example_.c ../src/experimental/libunurexperimental.la ../tests/testdistributions/libtestdistributions.la ../src/libunuran.la -lm 
 
-	
 matr: matr.c ../src/unuran.h ../src/libunuran.la ../src/experimental/libunurexperimental.la ../tests/testdistributions/libtestdistributions.la
 	../libtool gcc -I. -I.. -I../src -I../src/tests -Wall -DHAVE_CONFIG_H -g -O2 -m32 -o matr matr.c ../src/experimental/libunurexperimental.la ../tests/testdistributions/libtestdistributions.la ../src/libunuran.la -lm 
 
@@ -39,7 +38,7 @@ steps: steps.c ../src/unuran.h ../src/libunuran.la ../src/experimental/libunurex
 
 other: other.c ../src/unuran.h ../src/libunuran.la ../src/experimental/libunurexperimental.la
 	../libtool gcc -I. -I.. -I../src -I../src/tests -Wall -DHAVE_CONFIG_H -g -O2 -m32 -o other other.c ../src/experimental/libunurexperimental.la ../src/libunuran.la -lm 
-		
+
 hit-shared: hit.c ../src/unuran.h ../src/libunuran.la
 	../libtool gcc -I. -I.. -I../src -I../src/tests -Wall -g -O2 -shared hit.c -o hit.so ../src/.libs/libunuran.so -lm 
 

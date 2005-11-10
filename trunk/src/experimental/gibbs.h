@@ -79,15 +79,17 @@ UNUR_PAR *unur_gibbs_new( const UNUR_DISTR *distribution );
 
 /*...........................................................................*/
 
-int unur_gibbs_set_skip( UNUR_PAR *parameters, long skip );
+int unur_gibbs_set_thinning( UNUR_PAR *parameters, long thinning );
 /*
-   Sets the parameter @var{skip} i.e. the number of sampling
-   steps between two points that will be used as returned 
-   random numbers
+   Sets the parameter @var{thinning}.
+   A thinning parameter of n means, that the interval size between two 
+   sampled points (returned random vectors) is n, whereas the internally 
+   sampled points are being a unit interval apart.
 
-   @emph{Notice}: This parameter must satisfy @var{skip}>=0.
+   @emph{Notice}: This parameter must satisfy @var{thinning}>=1.
 
-   Default: @code{0}.
+   Default: @code{1}.
+
 */
 
 /*...........................................................................*/

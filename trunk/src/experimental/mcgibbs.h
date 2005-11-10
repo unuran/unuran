@@ -101,11 +101,12 @@ int unur_mcgibbs_set_startingpoint( UNUR_PAR *parameters, const double *x0);
 
 int unur_mcgibbs_set_thinning( UNUR_PAR *parameters, int thinning );
 /*
-   Sets the parameter @var{thinning} i.e. the number of sampling
-   steps between two points that will be used as returned 
-   random numbers
+   Sets the parameter @var{thinning}.
+   A thinning parameter of n means, that the interval size between two 
+   sampled points (returned random vectors) is n, whereas the internally 
+   sampled points are being a unit interval apart.
 
-   @emph{Notice}: This parameter must satisfy @var{thinning}>=0.
+   @emph{Notice}: This parameter must satisfy @var{thinning}>=1.
 
    Default: @code{1}.
 */

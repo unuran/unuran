@@ -38,7 +38,7 @@
 
 struct unur_gibbs_par {
   int    dim;               /* dimension of distribution                     */
-  long   skip;              /* skip-parameter of the hitrou method           */
+  long   thinning;          /* thinning-parameter of the method              */
 };
 
 /*---------------------------------------------------------------------------*/
@@ -46,7 +46,7 @@ struct unur_gibbs_par {
 
 struct unur_gibbs_gen {
   int    dim;               /* dimension of distribution                     */
-  long   skip;              /* skip-parameter of the hitrou method           */
+  long   thinning;          /* thinning-parameter of the method              */
   double *point_current;    /* current point                                 */
   double *direction;        /* random direction                              */
   double *tdr_points;       /* starting points for the tdr method in each dim*/

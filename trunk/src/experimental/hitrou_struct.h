@@ -40,7 +40,7 @@
 struct unur_hitrou_par {
   int    dim;               /* dimension of distribution                     */
   double r;                 /* r-parameter of the hitrou method              */
-  long skip;                /* skip-parameter of the hitrou method           */
+  long thinning;            /* thinning-parameter of the method              */
   int bounding_rectangle;   /* if we calculate and use the bounding rect     */ 
   double *umin, *umax;      /* boundary rectangle u-coordinates              */
   double vmax;              /* boundary rectangle v-coordinate               */
@@ -55,7 +55,7 @@ struct unur_hitrou_par {
 struct unur_hitrou_gen {
   int    dim;               /* dimension of distribution                     */
   double r;                 /* r-parameter of the hitrou method              */
-  long skip;                /* skip-parameter of the hitrou method           */
+  long thinning;            /* thinning-parameter of the method              */
   int bounding_rectangle;   /* if we calculate and use the bounding rect     */ 
   double *umin, *umax;      /* boundary rectangle u-coordinates              */
   double vmax;              /* boundary rectangle/strip v-coordinate         */

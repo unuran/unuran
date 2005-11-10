@@ -80,14 +80,16 @@ int unur_walk_set_ball_radius( UNUR_PAR *par, double ball_radius );
 */
 
 
-int unur_walk_set_skip( UNUR_PAR *par, long skip );
+int unur_walk_set_thinning( UNUR_PAR *par, long thinning );
 /*
-   Sets the parameter @var{skip} i.e. the number steps 
-   between two points that will be used as random numbers.
-   
-   @emph{Notice}: This parameter must satisfy @var{skip}>=0.
+   Sets the parameter @var{thinning}.
+   A thinning parameter of n means, that the interval size between two 
+   sampled points (returned random vectors) is n, whereas the internally 
+   sampled points are being a unit interval apart.
 
-   Default: @code{0}.
+   @emph{Notice}: This parameter must satisfy @var{thinning}>=1.
+
+   Default: @code{1}.
 */
 
 

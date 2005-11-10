@@ -7,7 +7,7 @@
  *   FILE:      walk.c                                                       *
  *                                                                           *
  *   TYPE:      continuous multivariate random variate                       *
- *   METHOD:    random walk sampler                                                 *
+ *   METHOD:    random walk sampler                                          *
  *                                                                           *
  *   DESCRIPTION:                                                            *
  *      Given PDF and (optionally) a bounding rectangle for the acceptance   *
@@ -69,8 +69,8 @@
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
 
-#define WALK_SET_SKIP    0x004u     /* set skip-parameter                   */
-#define WALK_SET_RADIUS  0x010u     /* set ball radius                      */
+#define WALK_SET_THINNING  0x004u     /* set thinning-parameter              */
+#define WALK_SET_RADIUS    0x010u     /* set ball radius                     */
 
 /*---------------------------------------------------------------------------*/
 
@@ -181,7 +181,7 @@ unur_walk_new( const struct unur_distr *distr )
   PAR->dim = distr->dim;
 
   /* set default values */
-  PAR->skip      = 0;    /* number of skipped points in chain           */
+  PAR->thinning    = 1;  /* thinning parameter of chain */
   PAR->ball_radius = 1.; /* ball radius (if not set)  */
   par->method   = UNUR_METH_WALK;   /* method and default variant          */
   par->variant  = 0;                  /* default variant        */
@@ -236,12 +236,12 @@ unur_walk_set_ball_radius( UNUR_PAR *par, double ball_radius )
 /*****************************************************************************/
 
 int
-unur_walk_set_skip( UNUR_PAR *par, long skip )
+unur_walk_set_thinning( UNUR_PAR *par, long thinning )
      /*----------------------------------------------------------------------*/
-     /* Set the skip-parameter                                               */
+     /* Set the thinning-parameter                                           */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   skip  ... skip-parameter                                           */
+     /*   thinning     ... thinning parameter                                */
      /*                                                                      */
      /* return:                                                              */
      /*   UNUR_SUCCESS ... on success                                        */
@@ -253,21 +253,21 @@ unur_walk_set_skip( UNUR_PAR *par, long skip )
   _unur_check_par_object( par, WALK );
 
   /* check new parameter for generator */
-  if (skip < 0) {
-    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"skip<0");
+  if (thinning < 0) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"thinning<1");
     return UNUR_ERR_PAR_SET;
   }
 
   /* store data */
-  PAR->skip = skip;
+  PAR->thinning = thinning;
 
   /* changelog */
-  par->set |= WALK_SET_SKIP;
+  par->set |= WALK_SET_THINNING;
 
   /* o.k. */
   return UNUR_SUCCESS;
 
-} /* end of unur_walk_set_skip() */
+} /* end of unur_walk_set_thinning() */
 
 /*****************************************************************************/
 
@@ -395,8 +395,8 @@ _unur_walk_create( struct unur_par *par )
   GEN->x  = _unur_xmalloc( (PAR->dim) * sizeof(double));
 
   /* copy parameters into generator object */
-  GEN->dim   = PAR->dim;              /* dimension */
-  GEN->skip  = PAR->skip;             /* number of skipped poins in chain */
+  GEN->dim   = PAR->dim;               /* dimension */
+  GEN->thinning  = PAR->thinning;      /* thinning parameter of chain */
   GEN->ball_radius = PAR->ball_radius; /* ball radius */
   
   /* get center of the distribution */
@@ -434,7 +434,6 @@ _unur_walk_clone( const struct unur_gen *gen )
 
   struct unur_gen *clone;
 
-
   /* check arguments */
   CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_WALK_GEN,NULL);
 
@@ -443,16 +442,13 @@ _unur_walk_clone( const struct unur_gen *gen )
 
   CLONE->point_current = _unur_xmalloc( (GEN->dim) * sizeof(double));
   CLONE->point_random  = _unur_xmalloc( (GEN->dim) * sizeof(double));
-  CLONE->direction = _unur_xmalloc( (GEN->dim) * sizeof(double));
+  CLONE->direction     = _unur_xmalloc( (GEN->dim) * sizeof(double));
+  CLONE->x             = _unur_xmalloc( (GEN->dim) * sizeof(double));
 
-  /* copy parameters into clone object */
-  CLONE->skip = GEN->skip;
-  CLONE->ball_radius = GEN->ball_radius;
-  
   memcpy(CLONE->point_current, GEN->point_current, (GEN->dim) * sizeof(double));
   memcpy(CLONE->point_random , GEN->point_random , (GEN->dim) * sizeof(double));
-  memcpy(CLONE->direction, GEN->direction, (GEN->dim) * sizeof(double));
-  memcpy(CLONE->x, GEN->x, GEN->dim * sizeof(double));
+  memcpy(CLONE->direction,     GEN->direction,     (GEN->dim) * sizeof(double));
+  memcpy(CLONE->x,             GEN->x,             (GEN->dim) * sizeof(double));
 
   /* copy data */
   CLONE->center = unur_distr_cvec_get_center(clone->distr);
@@ -476,7 +472,7 @@ _unur_walk_sample_cvec( struct unur_gen *gen, double *vec )
 {
   int d, dim; /* index used in dimension loops (0 <= d < dim) */
   double lambda; 
-  long skip;
+  long thinning;
   double u;
 
   /* check arguments */
@@ -485,7 +481,7 @@ _unur_walk_sample_cvec( struct unur_gen *gen, double *vec )
 
   dim = GEN->dim;
 
-  for (skip=0; skip<=GEN->skip; skip++) {
+  for (thinning=1; thinning<=GEN->thinning; thinning++) {
  
     /* initialization */
     lambda=0;
@@ -519,7 +515,7 @@ _unur_walk_sample_cvec( struct unur_gen *gen, double *vec )
 
     } /* while() loop */
     
-  } /* next skip */
+  } /* next thinning */
 
   
     /* returning the current sample point */
@@ -672,11 +668,10 @@ _unur_walk_debug_init( const struct unur_gen *gen )
   _unur_print_if_default(gen,WALK_SET_RADIUS);
   fprintf(log,"\n%s:\n",gen->genid);
   
-  /* skip */
-  fprintf(log,"%s: skip = %ld",gen->genid, GEN->skip);
-  _unur_print_if_default(gen,WALK_SET_SKIP);
+  /* thinning */
+  fprintf(log,"%s: thinning = %ld",gen->genid, GEN->thinning);
+  _unur_print_if_default(gen,WALK_SET_THINNING);
   fprintf(log,"\n%s:\n",gen->genid);
-  
   
   _unur_distr_cvec_debug( gen->distr, gen->genid );
 

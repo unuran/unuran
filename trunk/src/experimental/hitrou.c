@@ -79,10 +79,10 @@
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
 
-#define HITROU_SET_U       0x001u     /* set u values of bounding rectangle   */
-#define HITROU_SET_V       0x002u     /* set v values of bounding rectangle   */
-#define HITROU_SET_SKIP    0x004u     /* set skip-parameter                   */
-#define HITROU_SET_R       0x008u     /* set r-parameter                      */
+#define HITROU_SET_U        0x001u     /* set u values of bounding rectangle   */
+#define HITROU_SET_V        0x002u     /* set v values of bounding rectangle   */
+#define HITROU_SET_THINNING 0x004u     /* set thinning parameter               */
+#define HITROU_SET_R        0x008u     /* set r-parameter                      */
 
 /*---------------------------------------------------------------------------*/
 
@@ -217,7 +217,7 @@ unur_hitrou_new( const struct unur_distr *distr )
 
   /* set default values */
   PAR->r   = 1.;         /* r-parameter of the generalized method       */
-  PAR->skip      = 0;    /* number of skipped points in chain           */
+  PAR->thinning  = 1;    /* thinning parameter of chain                 */
   PAR->vmax      = 0.;   /* v-boundary of bounding rectangle (unknown)  */
   PAR->umin  = NULL;     /* u-boundary of bounding rectangle (unknown)  */
   PAR->umax  = NULL;     /* u-boundary of bounding rectangle (unknown)  */
@@ -357,12 +357,12 @@ unur_hitrou_set_r( struct unur_par *par, double r )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_hitrou_set_skip( struct unur_par *par, long skip )
+unur_hitrou_set_thinning( struct unur_par *par, long thinning )
      /*----------------------------------------------------------------------*/
-     /* Set the skip-parameter for the generalized ratio-of-uniforms method. */
+     /* Set the thinning parameter for the method.                           */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   skip  ... skip-parameter                                           */
+     /*   thinning     ... thinning parameter                                */
      /*                                                                      */
      /* return:                                                              */
      /*   UNUR_SUCCESS ... on success                                        */
@@ -374,21 +374,21 @@ unur_hitrou_set_skip( struct unur_par *par, long skip )
   _unur_check_par_object( par, HITROU );
 
   /* check new parameter for generator */
-  if (skip < 0) {
-    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"skip<0");
+  if (thinning < 1) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"thinning<1");
     return UNUR_ERR_PAR_SET;
   }
 
   /* store data */
-  PAR->skip = skip;
+  PAR->thinning = thinning;
 
   /* changelog */
-  par->set |= HITROU_SET_SKIP;
+  par->set |= HITROU_SET_THINNING;
 
   /* o.k. */
   return UNUR_SUCCESS;
 
-} /* end of unur_hitrou_set_skip() */
+} /* end of unur_hitrou_set_thinning() */
 
 
 /*****************************************************************************/
@@ -774,13 +774,13 @@ _unur_hitrou_create( struct unur_par *par )
   GEN->point_random  = _unur_xmalloc( (PAR->dim+1) * sizeof(double));
 
   /* allocate memory for working point (in the (x,y)-coordinate system */
-  GEN->x  = _unur_xmalloc( (PAR->dim) * sizeof(double));
+  GEN->x  = _unur_xmalloc( (PAR->dim+1) * sizeof(double)); /* x[dim] not used, reserved */
 
   /* copy parameters into generator object */
   GEN->dim   = PAR->dim;              /* dimension */
   GEN->r     = PAR->r;                /* r-parameter of the hitrou method */
   GEN->vmax  = PAR->vmax;             /* upper v-boundary of bounding rectangle */
-  GEN->skip  = PAR->skip;             /* number of skipped poins in chain */
+  GEN->thinning  = PAR->thinning;     /* thinning parameter of chain            */
   GEN->bounding_rectangle = PAR->bounding_rectangle; /* using bounding rect flag */
   GEN->adaptive_points = PAR->adaptive_points;  /* reusing outside points for line-segment */
   GEN->adaptive_strip = PAR->adaptive_strip;    /* using adaptive strip flag */
@@ -835,26 +835,17 @@ _unur_hitrou_clone( const struct unur_gen *gen )
   /* allocate memory for arrays */
   CLONE->umin = _unur_xmalloc( GEN->dim * sizeof(double));
   CLONE->umax = _unur_xmalloc( GEN->dim * sizeof(double));
-
   CLONE->point_current = _unur_xmalloc( (GEN->dim+1) * sizeof(double));
   CLONE->point_random  = _unur_xmalloc( (GEN->dim+1) * sizeof(double));
   CLONE->direction = _unur_xmalloc( (GEN->dim+1) * sizeof(double));
+  CLONE->x = _unur_xmalloc( (GEN->dim+1) * sizeof(double));
 
-  /* copy parameters into clone object ... not necessary, but safe */
-  CLONE->skip = GEN->skip;
-  CLONE->r = GEN->r;
-  CLONE->vmax = GEN->vmax;
-  CLONE->bounding_rectangle = GEN->bounding_rectangle;
-  CLONE->adaptive_points = GEN->adaptive_points;
-  CLONE->adaptive_strip = GEN->adaptive_strip;
-  CLONE->unidirectional_flag = GEN->unidirectional_flag;
-  
   memcpy(CLONE->umin, GEN->umin, GEN->dim * sizeof(double));
   memcpy(CLONE->umax, GEN->umax, GEN->dim * sizeof(double));
   memcpy(CLONE->point_current, GEN->point_current, (GEN->dim+1) * sizeof(double));
   memcpy(CLONE->point_random , GEN->point_random , (GEN->dim+1) * sizeof(double));
   memcpy(CLONE->direction, GEN->direction, (GEN->dim+1) * sizeof(double));
-  memcpy(CLONE->x, GEN->x, GEN->dim * sizeof(double));
+  memcpy(CLONE->x, GEN->x, (GEN->dim+1) * sizeof(double)); /* x[dim] not used, reserved */
 
   /* copy data */
   CLONE->center = unur_distr_cvec_get_center(clone->distr);
@@ -878,7 +869,7 @@ _unur_hitrou_sample_cvec( struct unur_gen *gen, double *vec )
 {
   int d, dim; /* index used in dimension loops (0 <= d < dim) */
   double lambda, lmin, lmax; /* lambda parameters of line */
-  long skip;
+  long thinning;
   int inside;
   double u;
 
@@ -888,7 +879,7 @@ _unur_hitrou_sample_cvec( struct unur_gen *gen, double *vec )
 
   dim = GEN->dim;
 
-  for (skip=0; skip<=GEN->skip; skip++) {
+  for (thinning=1; thinning<=GEN->thinning; thinning++) {
  
     /* initialization */
     lmin=0; lmax=0;
@@ -1250,9 +1241,9 @@ _unur_hitrou_debug_init( const struct unur_gen *gen )
   _unur_print_if_default(gen,HITROU_SET_R);
   fprintf(log,"\n%s:\n",gen->genid);
 
-  /* skip */
-  fprintf(log,"%s: skip = %ld",gen->genid, GEN->skip);
-  _unur_print_if_default(gen,HITROU_SET_SKIP);
+  /* thinning */
+  fprintf(log,"%s: thinning = %ld",gen->genid, GEN->thinning);
+  _unur_print_if_default(gen,HITROU_SET_THINNING);
   fprintf(log,"\n%s:\n",gen->genid);
   
   /* print center */

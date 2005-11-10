@@ -168,15 +168,16 @@ int unur_hitrou_set_r( UNUR_PAR *parameters, double r );
    Default: @code{1}.
 */
 
-int unur_hitrou_set_skip( UNUR_PAR *parameters, long skip );
+int unur_hitrou_set_thinning( UNUR_PAR *parameters, long thinning );
 /*
-   Sets the parameter @var{skip} i.e. the number of hit and
-   run steps between two points in the (U,V)-space that will
-   be used as random numbers @unurmath{X=X_0+U/V^r}
+   Sets the parameter @var{thinning}.
+   A thinning parameter of n means, that the interval size between two 
+   sampled points (returned random vectors) is n, whereas the internally 
+   sampled points are being a unit interval apart.
 
-   @emph{Notice}: This parameter must satisfy @var{skip}>=0.
+   @emph{Notice}: This parameter must satisfy @var{thinning}>=1.
 
-   Default: @code{0}.
+   Default: @code{1}.
 */
 
 int unur_hitrou_use_bounding_rectangle( UNUR_PAR *parameters, int flag );

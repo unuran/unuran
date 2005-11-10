@@ -75,9 +75,9 @@
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
 
-#define BALL_SET_SKIP    0x004u     /* set skip-parameter                   */
-#define BALL_SET_R       0x008u     /* set r-parameter                      */
-#define BALL_SET_RADIUS  0x010u     /* set ball radius                      */
+#define BALL_SET_THINNING  0x004u     /* set thinning-parameter              */
+#define BALL_SET_R         0x008u     /* set r-parameter                     */
+#define BALL_SET_RADIUS    0x010u     /* set ball radius                     */
 
 /*---------------------------------------------------------------------------*/
 
@@ -210,7 +210,7 @@ unur_ball_new( const struct unur_distr *distr )
 
   /* set default values */
   PAR->r   = 1.;         /* r-parameter of the generalized method       */
-  PAR->skip      = 0;    /* number of skipped points in chain           */
+  PAR->thinning    = 1;  /* thinning parameter of the chain             */
   PAR->ball_radius = 1.; /* initial ball radius for ball sampler (if not set)  */
   PAR->adaptive_ball = 0;   /* usage of adaptive algorithm for the ball radius */
   PAR->adaptive_factor = BALL_ADAPTIVE_FACTOR; /* used in adaptive algorithm */
@@ -303,12 +303,12 @@ unur_ball_set_ball_radius( UNUR_PAR *par, double ball_radius )
 
 
 int
-unur_ball_set_skip( UNUR_PAR *par, long skip )
+unur_ball_set_thinning( UNUR_PAR *par, long thinning )
      /*----------------------------------------------------------------------*/
-     /* Set the skip-parameter for the generalized ratio-of-uniforms method. */
+     /* Set the thinning-parameter for the method                            */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   skip  ... skip-parameter                                           */
+     /*   thinning     ... thinning parameter                                */
      /*                                                                      */
      /* return:                                                              */
      /*   UNUR_SUCCESS ... on success                                        */
@@ -320,21 +320,21 @@ unur_ball_set_skip( UNUR_PAR *par, long skip )
   _unur_check_par_object( par, BALL );
 
   /* check new parameter for generator */
-  if (skip < 0) {
-    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"skip<0");
+  if (thinning < 1) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"thinning<1");
     return UNUR_ERR_PAR_SET;
   }
 
   /* store data */
-  PAR->skip = skip;
+  PAR->thinning = thinning;
 
   /* changelog */
-  par->set |= BALL_SET_SKIP;
+  par->set |= BALL_SET_THINNING;
 
   /* o.k. */
   return UNUR_SUCCESS;
 
-} /* end of unur_ball_set_skip() */
+} /* end of unur_ball_set_thinning() */
 
 
 /*****************************************************************************/
@@ -568,12 +568,12 @@ _unur_ball_create( struct unur_par *par )
   GEN->point_random  = _unur_xmalloc( (PAR->dim+1) * sizeof(double));
 
   /* allocate memory for working point (in the (x,y)-coordinate system */
-  GEN->x  = _unur_xmalloc( (PAR->dim) * sizeof(double));
+  GEN->x  = _unur_xmalloc( (PAR->dim+1) * sizeof(double)); /* x[dim] not used, reserved */
 
   /* copy parameters into generator object */
   GEN->dim   = PAR->dim;              /* dimension */
   GEN->r     = PAR->r;                /* r-parameter of the ball method */
-  GEN->skip  = PAR->skip;             /* number of skipped poins in chain */
+  GEN->thinning  = PAR->thinning;     /* thinning oparameter of chain   */
   GEN->adaptive_ball = PAR->adaptive_ball;    /* using adaptive ball flag */
   GEN->ball_radius = PAR->ball_radius; /* ball radius of ball sampler */
   GEN->adaptive_factor = PAR->adaptive_factor; /* factor for ball radius */
@@ -587,7 +587,7 @@ _unur_ball_create( struct unur_par *par )
     GEN->point_random[d]=0.;
   }
 
-  /* return pointer to (almost empty) generator object */
+  /* return pointer to (almost empty) generator object *//* x[dim] not used, reserved */
   return gen;
 
 } /* end of _unur_ball_create() */
@@ -622,19 +622,13 @@ _unur_ball_clone( const struct unur_gen *gen )
 
   CLONE->point_current = _unur_xmalloc( (GEN->dim+1) * sizeof(double));
   CLONE->point_random  = _unur_xmalloc( (GEN->dim+1) * sizeof(double));
-  CLONE->direction = _unur_xmalloc( (GEN->dim+1) * sizeof(double));
+  CLONE->direction     = _unur_xmalloc( (GEN->dim+1) * sizeof(double));
+  CLONE->x             = _unur_xmalloc( (GEN->dim+1) * sizeof(double));
 
-  /* copy parameters into clone object */
-  CLONE->skip = GEN->skip;
-  CLONE->r = GEN->r;
-  CLONE->ball_radius = GEN->ball_radius;
-  CLONE->adaptive_ball = GEN->adaptive_ball;
-  CLONE->adaptive_factor = GEN->adaptive_factor;
-  
   memcpy(CLONE->point_current, GEN->point_current, (GEN->dim+1) * sizeof(double));
   memcpy(CLONE->point_random , GEN->point_random , (GEN->dim+1) * sizeof(double));
-  memcpy(CLONE->direction, GEN->direction, (GEN->dim+1) * sizeof(double));
-  memcpy(CLONE->x, GEN->x, GEN->dim * sizeof(double));
+  memcpy(CLONE->direction,     GEN->direction,     (GEN->dim+1) * sizeof(double));
+  memcpy(CLONE->x,             GEN->x,             (GEN->dim+1) * sizeof(double));
 
   /* copy data */
   CLONE->center = unur_distr_cvec_get_center(clone->distr);
@@ -655,10 +649,10 @@ _unur_ball_sample_cvec( struct unur_gen *gen, double *vec )
      /*   gen ... pointer to generator object                                */
      /*   vec ... random vector (result)                                     */
      /*----------------------------------------------------------------------*/
-{
+{/* x[dim] not used, reserved */
   int d, dim; /* index used in dimension loops (0 <= d < dim) */
   double lambda; 
-  long skip;
+  long thinning;
   double u;
 
   /* check arguments */
@@ -667,7 +661,7 @@ _unur_ball_sample_cvec( struct unur_gen *gen, double *vec )
 
   dim = GEN->dim;
 
-  for (skip=0; skip<=GEN->skip; skip++) {
+  for (thinning=1; thinning<=GEN->thinning; thinning++) {
  
     /* initialization */
     lambda=0;
@@ -706,7 +700,7 @@ _unur_ball_sample_cvec( struct unur_gen *gen, double *vec )
 
     } /* while() loop */
     
-  } /* next skip */
+  } /* next thinning */
 
   
   if (gen->variant == BALL_VARIANT_ROU) {
@@ -739,7 +733,7 @@ _unur_ball_free( struct unur_gen *gen )
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
      /*----------------------------------------------------------------------*/
-{
+{/* x[dim] not used, reserved */
   /* check arguments */
   if( !gen ) /* nothing to do */
     return;
@@ -959,9 +953,9 @@ _unur_ball_debug_init( const struct unur_gen *gen )
   _unur_print_if_default(gen,BALL_SET_RADIUS);
   fprintf(log,"\n%s:\n",gen->genid);
   
-  /* skip */
-  fprintf(log,"%s: skip = %ld",gen->genid, GEN->skip);
-  _unur_print_if_default(gen,BALL_SET_SKIP);
+  /* thinning */
+  fprintf(log,"%s: thinning = %ld",gen->genid, GEN->thinning);
+  _unur_print_if_default(gen,BALL_SET_THINNING);
   fprintf(log,"\n%s:\n",gen->genid);
   
   

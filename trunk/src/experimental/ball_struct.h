@@ -39,9 +39,9 @@
 
 struct unur_ball_par {
   int    dim;               /* dimension of distribution                     */
-  long skip;                /* skip-parameter of the ball method             */
+  long   thinning;          /* thinning-parameter of the method              */
   double ball_radius;       /* (initial) ball radius                         */
-  int adaptive_ball;        /* adaptive flag for ball sampler radius         */
+  int    adaptive_ball;     /* adaptive flag for ball sampler radius         */
   double adaptive_factor;   /* factor of adaptive radius increase/decrease   */
   double r;                 /* r-parameter for the RoU variant               */
 };
@@ -51,7 +51,7 @@ struct unur_ball_par {
 
 struct unur_ball_gen {
   int    dim;               /* dimension of distribution                     */
-  long   skip;              /* skip-parameter of the ball method             */
+  long   thinning;          /* skip-parameter of the method                  */
   const double *center;     /* center of distribution                        */
   double *direction;        /* random direction vector                       */
   double *point_current;    /* current point inside the shape                */

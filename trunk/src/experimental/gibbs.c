@@ -68,7 +68,7 @@
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
 
-#define GIBBS_SET_SKIP    0x004u     /* set skip-parameter                   */
+#define GIBBS_SET_THINNING    0x004u     /* set thinning parameter           */
 
 /*---------------------------------------------------------------------------*/
 
@@ -184,7 +184,7 @@ unur_gibbs_new( const struct unur_distr *distr )
   PAR->dim = distr->dim;
 
   /* set default values */
-  PAR->skip      = 0;         /* number of skipped points in chain           */
+  PAR->thinning = 1;                  /* thinning parameter of chain         */
   par->method   = UNUR_METH_GIBBS;    /* method and default variant          */
   par->variant  = GIBBS_VARIANT_COORDINATE;  /* default variant              */
   par->set      = 0u;                 /* inidicate default parameters        */
@@ -202,12 +202,12 @@ unur_gibbs_new( const struct unur_distr *distr )
 /*****************************************************************************/
 
 int
-unur_gibbs_set_skip( struct unur_par *par, long skip )
+unur_gibbs_set_thinning( struct unur_par *par, long thinning )
      /*----------------------------------------------------------------------*/
-     /* Set the skip-parameter for the Gibbs sampler.                        */
+     /* Set the thinning parameter for the method.                           */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   skip  ... skip-parameter                                           */
+     /*   thinning     ... thinning parameter                                */
      /*                                                                      */
      /* return:                                                              */
      /*   UNUR_SUCCESS ... on success                                        */
@@ -219,21 +219,21 @@ unur_gibbs_set_skip( struct unur_par *par, long skip )
   _unur_check_par_object( par, GIBBS );
 
   /* check new parameter for generator */
-  if (skip < 0) {
-    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"skip<0");
+  if (thinning < 1) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"thinning<1");
     return UNUR_ERR_PAR_SET;
   }
 
   /* store data */
-  PAR->skip = skip;
+  PAR->thinning = thinning;
 
   /* changelog */
-  par->set |= GIBBS_SET_SKIP;
+  par->set |= GIBBS_SET_THINNING;
 
   /* o.k. */
   return UNUR_SUCCESS;
 
-} /* end of unur_gibbs_set_skip() */
+} /* end of unur_gibbs_set_thinning() */
 
 /*****************************************************************************/
 
@@ -395,8 +395,8 @@ _unur_gibbs_create( struct unur_par *par )
   GEN->tdr_points = _unur_xmalloc( NTDRPOINTS * (PAR->dim) * sizeof(double));
 
   /* copy parameters into generator object */
-  GEN->dim   = PAR->dim;              /* dimension */
-  GEN->skip  = PAR->skip;             /* number of skipped poins in chain */
+  GEN->dim       = PAR->dim;         /* dimension */
+  GEN->thinning  = PAR->thinning;    /* thinning parameter of chain */
   
   /* initialize parameters */
   GEN->pdfcount = 0;
@@ -483,7 +483,7 @@ _unur_gibbs_sample_cvec( struct unur_gen *gen, double *vec )
      /*----------------------------------------------------------------------*/
 {
   int i, d, dim; 
-  long skip;
+  long thinning;
   double x;
   
   /* distr_conditional is in the gibbs generator structure */
@@ -495,7 +495,7 @@ _unur_gibbs_sample_cvec( struct unur_gen *gen, double *vec )
   dim = GEN->dim;
   i=0; /* index for tdr points ... if used */
  
-  for (skip=0; skip<=GEN->skip; skip++) {
+  for (thinning=0; thinning<=GEN->thinning; thinning++) {
 
       if ( ! GEN->distr_conditional) {
         for (d=0; d<dim; d++) GEN->direction[d]=d*0.1; /* just to have some value */ 
@@ -733,9 +733,9 @@ _unur_gibbs_debug_init( const struct unur_gen *gen )
 
   /* parameters */
 
-  /* skip */
-  fprintf(log,"%s: skip = %ld",gen->genid, GEN->skip);
-  _unur_print_if_default(gen,GIBBS_SET_SKIP);
+  /* thinning */
+  fprintf(log,"%s: thinning = %ld",gen->genid, GEN->thinning);
+  _unur_print_if_default(gen,GIBBS_SET_THINNING);
   fprintf(log,"\n%s:\n",gen->genid);
   
   fprintf(log,"%s:\n",gen->genid);

@@ -39,7 +39,7 @@
 
 struct unur_walk_par {
   int    dim;               /* dimension of distribution                     */
-  long skip;                /* skip-parameter of the ball method             */
+  long   thinning;          /* thinning-parameter of the method              */
   double ball_radius;       /* ball radius                                   */
 };
 
@@ -48,7 +48,7 @@ struct unur_walk_par {
 
 struct unur_walk_gen {
   int    dim;               /* dimension of distribution                     */
-  long   skip;              /* skip-parameter of the ball method             */
+  long   thinning;          /* thinning-parameter of the ball method         */
   const double *center;     /* center of distribution                        */
   double *direction;        /* random direction vector                       */
   double *point_current;    /* current point inside the shape                */

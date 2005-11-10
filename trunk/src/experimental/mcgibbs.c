@@ -87,6 +87,8 @@
 /*    bits 13-24 ... adaptive steps                                          */
 /*    bits 25-32 ... trace sampling                                          */
 
+#define MCGIBBS_DEBUG_CONDI   0x01000000u
+
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
 
@@ -387,6 +389,7 @@ _unur_mcgibbs_init( struct unur_par *par )
 
     par_condi = unur_tdrgw_new(GEN->distr_condi);
     unur_set_use_distr_privatecopy( par_condi, FALSE );
+    unur_set_debug( par_condi, (gen->debug&MCGIBBS_DEBUG_CONDI)?gen->debug:1u);
 
     GEN->gen_condi[0] = gen_condi = unur_init(par_condi);
     /** TODO: error handling!!!! **/

@@ -101,6 +101,7 @@ enum {
   UNUR_DISTR_MCAUCHY,             /*    X                             .      */
   UNUR_DISTR_MNORMAL,             /*    X                             .      */
   UNUR_DISTR_MSTUDENT,            /*    X                             .      */
+  UNUR_DISTR_MEXPONENTIAL,        /*    X                             .      */
   UNUR_DISTR_COPULA,              /*    .                             .      */
 
   /**                                                                        */

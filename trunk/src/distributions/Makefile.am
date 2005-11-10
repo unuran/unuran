@@ -39,6 +39,7 @@ libdistributions_la_SOURCES = \
  m_correlation.c \
  vc_copula.c \
  vc_multicauchy.c \
+ vc_multiexponential.c \
  vc_multistudent.c \
  vc_multinormal.c
 

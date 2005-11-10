@@ -554,7 +554,7 @@ int unur_distr_cvec_get_pdfparams( const UNUR_DISTR *distribution, const double 
 
 
 
-int unur_distr_cvec_set_pdfparams_vec( UNUR_DISTR *distribution, int par, const double *param_vec, int n_param_vec );
+int unur_distr_cvec_set_pdfparams_vec( UNUR_DISTR *distribution, int par, const double *param_vec, int n_params );
 /* 
    This function provides an interface for additional vector parameters for a
    multivariate @var{distribution} besides mean vector and covariance

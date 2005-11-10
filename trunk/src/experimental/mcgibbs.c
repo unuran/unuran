@@ -149,7 +149,8 @@ static void _unur_mcgibbs_debug_init( const struct unur_gen *gen );
 
 #define SAMPLE    gen->sample.cvec      /* pointer to sampling routine       */     
 
-#define PDF(x)    _unur_cvec_PDF((x),(gen->distr))    /* call to PDF         */
+/* generators for conditional distributions */
+#define GEN_CONDI     gen->gen_aux_list     
 
 /*---------------------------------------------------------------------------*/
 
@@ -391,11 +392,11 @@ _unur_mcgibbs_init( struct unur_par *par )
     unur_set_use_distr_privatecopy( par_condi, FALSE );
     unur_set_debug( par_condi, (gen->debug&MCGIBBS_DEBUG_CONDI)?gen->debug:1u);
 
-    GEN->gen_condi[0] = gen_condi = unur_init(par_condi);
+    GEN_CONDI[0] = gen_condi = unur_init(par_condi);
     /** TODO: error handling!!!! **/
 
     for (i=1; i<GEN->dim; i++) {
-      GEN->gen_condi[i] = unur_gen_clone(gen_condi);
+      GEN_CONDI[i] = unur_gen_clone(gen_condi);
     }
 
     break;
@@ -473,8 +474,8 @@ _unur_mcgibbs_create( struct unur_par *par )
 
   /* generator(s) for conditional distributions */
   GEN->distr_condi = NULL;
-  GEN->gen_condi = _unur_xmalloc( GEN->dim * sizeof(struct unur_gen *) );
-  for (i=0; i<GEN->dim; i++) GEN->gen_condi[i] = NULL;
+  GEN_CONDI = _unur_xmalloc( GEN->dim * sizeof(struct unur_gen *) );
+  for (i=0; i<GEN->dim; i++) GEN_CONDI[i] = NULL;
 
   /* allocate memory for random direction */
   GEN->direction = _unur_xmalloc( GEN->dim * sizeof(double));
@@ -505,7 +506,8 @@ _unur_mcgibbs_clone( const struct unur_gen *gen )
      /*   return NULL                                                        */
      /*----------------------------------------------------------------------*/
 {
-#define CLONE  ((struct unur_mcgibbs_gen*)clone->datap)
+#define CLONE         ((struct unur_mcgibbs_gen*)clone->datap)
+#define CLONE_CONDI   clone->gen_aux_list     
 
   int i;
   struct unur_gen *clone;
@@ -522,14 +524,14 @@ _unur_mcgibbs_clone( const struct unur_gen *gen )
   
   /* copy generators for conditional distributions */
   if (GEN->distr_condi) CLONE->distr_condi = _unur_distr_clone( GEN->distr_condi );
-  if (GEN->gen_condi) {
-    CLONE->gen_condi = _unur_xmalloc( GEN->dim * sizeof(struct unur_gen *) );
-    for (i=0; i<GEN->dim; i++) 
-      CLONE->gen_condi[i] = ( (GEN->gen_condi[i]) 
-			      ? _unur_gen_clone(GEN->gen_condi[i]) : NULL );
-  }
 
-  /** TODO: have to update pointer to distr object in CLONE->gen_condi !!! **/
+  /* GEN_CONDI is cloned by _unur_generic_clone */
+  /* however, these use a pointer to GEN->distr which must be updated, too */
+  if (CLONE_CONDI) {
+    for (i=0; i<GEN->dim; i++)
+      if (CLONE_CONDI[i])
+	CLONE_CONDI[i]->distr = CLONE->distr_condi;
+  }
 
   /* allocate memory for random direction */
   CLONE->direction = _unur_xmalloc( GEN->dim * sizeof(double));
@@ -537,6 +539,7 @@ _unur_mcgibbs_clone( const struct unur_gen *gen )
   return clone;
 
 #undef CLONE
+#undef CLONE_CONDI
 } /* end of _unur_mcgibbs_clone() */
 
 /*****************************************************************************/
@@ -565,11 +568,11 @@ _unur_mcgibbs_coord_sample_cvec( struct unur_gen *gen, double *vec )
     
     /* update conditional distribution */
     unur_distr_condi_set_condition( GEN->distr_condi, GEN->state, NULL, GEN->coord);
-    unur_tdrgw_reinit(GEN->gen_condi[GEN->coord]);
+    unur_tdrgw_reinit(GEN_CONDI[GEN->coord]);
     /** TODO: error handline **/
     
     /* sample from distribution */
-    X = unur_sample_cont(GEN->gen_condi[GEN->coord]);
+    X = unur_sample_cont(GEN_CONDI[GEN->coord]);
     
     /* update state */
     GEN->state[GEN->coord] = X;
@@ -593,8 +596,6 @@ _unur_mcgibbs_free( struct unur_gen *gen )
      /*   gen ... pointer to generator object                                */
      /*----------------------------------------------------------------------*/
 {
-  int i;
-
   /* check arguments */
   if( !gen ) /* nothing to do */
     return;
@@ -612,13 +613,10 @@ _unur_mcgibbs_free( struct unur_gen *gen )
   if (GEN->state) free (GEN->state);
   if (GEN->direction) free (GEN->direction);
 
-  /* free generators for conditional distributions */
-  if (GEN->gen_condi) {
-    for (i=0; i<GEN->dim; i++) 
-      if (GEN->gen_condi[i]) _unur_free (GEN->gen_condi[i]);
-    free (GEN->gen_condi);
-  }
+  /* free conditional distribution object */
   if (GEN->distr_condi) _unur_distr_free (GEN->distr_condi);
+
+  /* GEN_CONDI is freed by _unur_generic_free */
 
   _unur_generic_free(gen);
 

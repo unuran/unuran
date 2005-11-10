@@ -38,38 +38,23 @@
 /* Information for constructing the generator                                */
 
 struct unur_mcgibbs_par { 
-  int thinning;              /* thinning factor for generated chain          */
-  const double *x0;          /* starting point of chain                      */
+  int thinning;             /* thinning factor for generated chain           */
+  const double *x0;         /* starting point of chain                       */
 };
 
 /*---------------------------------------------------------------------------*/
 /* The generator object                                                      */
 
 struct unur_mcgibbs_gen {
-  int dim;                   /* dimension of distribution                    */
-  int thinning;              /* thinning factor for generated chain          */
+  int dim;                  /* dimension of distribution                     */
+  int thinning;             /* thinning factor for generated chain           */
 
-  double *state;             /* current point                                */
+  double *state;            /* state of chain / current point                */
 
   struct unur_distr *distr_condi; /* conditional distribution                */
-  struct unur_gen **gen_condi; /* generators for conditional distributions   */
 
   int    coord;             /* current coordinate used for GIBBS chain       */
   double *direction;        /* working array for random direction            */
-
-/*   double *direction;        /\* random direction                              *\/ */
-/*   double *tdr_points;       /\* starting points for the tdr method in each dim*\/ */
-/*   int    coordinate;        /\* current coordinate used for stepping          *\/ */
-/*   long   pdfcount;          /\* counting the number of PDF calls              *\/ */
-/*   struct unur_par   *par;   /\* pointer to parameter object for gibbs sampler *\/ */
-/*   struct unur_par   *par_conditional;   /\* pointer to conditional par.   object *\/ */
-/*   struct unur_distr *distr_conditional; /\* pointer to conditional distr. object *\/ */
-/*   struct unur_gen   *gen_conditional;   /\* pointer to conditional gen.   object *\/ */
-
-
-/* replaced */
-/*   double *point_current;    --> state */
-
 };
 
 /*---------------------------------------------------------------------------*/

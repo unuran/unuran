@@ -193,12 +193,14 @@ _unur_pdlogpdf_multinormal( const double *x, int coord, UNUR_DISTR *distr )
 {
 #define idx(a,b) ((a)*dim+(b))
 
-  int j;
-  int dim = distr->dim;
-  double *mean = DISTR.mean;
+  int j, dim;
+  double *mean;
   const double *covar_inv;
   double result;
     
+  dim = distr->dim;
+  mean = DISTR.mean;
+
   /* check arguments */
   if (coord < 0 || coord >= dim) {
     _unur_warning(distr->name,UNUR_ERR_DISTR_DOMAIN,"invalid coordinate");
@@ -212,8 +214,8 @@ _unur_pdlogpdf_multinormal( const double *x, int coord, UNUR_DISTR *distr )
     return INFINITY;
 
   result = 0.;
-  for (j=0; j<dim; j++) 
-    result += -0.5 * (x[j]-mean[coord]) * (covar_inv[idx(coord,j)]+covar_inv[idx(j,coord)]);
+  for (j=0; j<dim; j++)
+    result += -0.5 * (x[j]-mean[j]) * (covar_inv[idx(coord,j)]+covar_inv[idx(j,coord)]);
   
   return result;
 

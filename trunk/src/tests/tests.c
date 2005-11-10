@@ -45,7 +45,7 @@
 
 #define TEST_COUNTER_SAMPLESIZE 100000  /* sample size for counting number of URNs */
 
-#define TEST_SAMPLE_ROWS    3     /* number of rows and columns for sample   */
+#define TEST_SAMPLE_ROWS    10     /* number of rows and columns for sample   */
 #define TEST_SAMPLE_COLS    10
 
 
@@ -228,6 +228,11 @@ _unur_print_method( struct unur_par *par )
   case UNUR_METH_NORTA:
     COOKIE_CHECK(par,CK_NORTA_PAR,UNUR_ERR_COOKIE);
     printf("METHOD:\t\tnormal to anything (NORTA)\n");
+    break;
+
+  case UNUR_METH_GIBBS:
+    COOKIE_CHECK(par,CK_GIBBS_PAR,UNUR_ERR_COOKIE);
+    printf("METHOD:\t\tMarkov Chain - GIBBS sampler (MCGIBBS)\n");
     break;
 
   case UNUR_METH_VMT:

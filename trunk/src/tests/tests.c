@@ -77,6 +77,7 @@ unur_run_tests( struct unur_par *par, unsigned tests)
      /*----------------------------------------------------------------------*/
 {
   struct unur_gen *gen = NULL;
+  struct unur_par *par_clone = NULL;
   double time_setup, time_sample;
 
   /* check arguments */
@@ -86,6 +87,9 @@ unur_run_tests( struct unur_par *par, unsigned tests)
   if (_unur_print_method(par)!=UNUR_SUCCESS)
     return;  /* unknown method */
 
+  /* make a clone of the parameter object which will be needed for counting PDF calls */
+  par_clone = _unur_par_clone(par);
+
   /* init generator object */
   if (tests & UNUR_TEST_TIME)
     /* evaluate setup time and generation time */
@@ -94,11 +98,15 @@ unur_run_tests( struct unur_par *par, unsigned tests)
     gen = _unur_init(par);
 
   /* init successful ? */
-  if (!gen) return;
+  if (!gen) { _unur_par_free(par_clone); return; }
 
   /* count number of uniform random numbers */
   if (tests & UNUR_TEST_N_URNG )
     unur_test_count_urn(gen,TEST_COUNTER_SAMPLESIZE, TRUE, stdout);
+
+  /* count PDF calls */
+  if (tests & UNUR_TEST_N_PDF )
+    unur_test_par_count_pdf(par_clone,TEST_COUNTER_SAMPLESIZE, TRUE, stdout);
 
   /* print a sample */
   if (tests & UNUR_TEST_SAMPLE )
@@ -110,6 +118,11 @@ unur_run_tests( struct unur_par *par, unsigned tests)
 
   /* free generator */
   _unur_free(gen);
+
+  /* free parameter object */
+  _unur_par_free(par_clone); 
+
+  return;
 
 } /* end of unur_run_tests() */
 

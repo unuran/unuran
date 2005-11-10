@@ -56,9 +56,10 @@
 /* possible tests                                                            */
 #define UNUR_TEST_ALL      (~0u)     /* make all possible tests */
 #define UNUR_TEST_TIME     0x001u    /* estimate time */
-#define UNUR_TEST_N_URNG   0x002u    /* count number of urng (needs compiler switch) */
-#define UNUR_TEST_CHI2     0x004u    /* run chi^2 test for goodness of fit */
-#define UNUR_TEST_SAMPLE   0x008u    /* print a sample file */
+#define UNUR_TEST_N_URNG   0x002u    /* count number of calls to urng */
+#define UNUR_TEST_N_PDF    0x004u    /* count PDF calls */
+#define UNUR_TEST_CHI2     0x008u    /* run chi^2 test for goodness of fit */
+#define UNUR_TEST_SAMPLE   0x010u    /* print a sample file */
 
 /*---------------------------------------------------------------------------*/
 /* =ROUTINES */
@@ -77,6 +78,8 @@ void unur_run_tests( UNUR_PAR *parameters, unsigned tests);
    estimate generation times.
    @item UNUR_TEST_N_URNG
    count number of uniform random numbers
+   @item UNUR_TEST_N_PDF
+   count number of PDF calls
    @item UNUR_TEST_CHI2
    run chi^2 test for goodness of fit
    @item UNUR_TEST_SAMPLE

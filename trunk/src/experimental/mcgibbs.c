@@ -57,6 +57,7 @@
 /* #include <distributions/unur_distributions.h> */
 #include <uniform/urng.h>
 #include <utils/matrix_source.h>
+#include <parser/parser.h>
 #include "unur_methods_source.h"
 #include "x_gen.h"
 #include "x_gen_source.h"
@@ -76,9 +77,9 @@
 /*---------------------------------------------------------------------------*/
 /* Variants                                                                  */
 
-#define MCGIBBS_VARMASK_VARIANT          0x000fu /* indicates variant        */
-#define MCGIBBS_VARIANT_COORDINATE       0x0001u /* coordinate sampler       */
-#define MCGIBBS_VARIANT_RANDOM_DIRECTION 0x0002u /* random direction sampler */
+#define MCGIBBS_VARMASK_VARIANT     0x000fu  /* indicates variant            */
+#define MCGIBBS_VARIANT_COORD       0x0001u  /* coordinate sampler           */
+#define MCGIBBS_VARIANT_RANDOMDIR   0x0002u  /* random direction sampler     */
 
 /*---------------------------------------------------------------------------*/
 /* Debugging flags                                                           */
@@ -112,6 +113,7 @@ static struct unur_gen *_unur_mcgibbs_create( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 
 static void _unur_mcgibbs_coord_sample_cvec( struct unur_gen *gen, double *vec );
+static void _unur_mcgibbs_randomdir_sample_cvec( struct unur_gen *gen, double *vec );
 /*---------------------------------------------------------------------------*/
 /* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/
@@ -124,6 +126,11 @@ static void _unur_mcgibbs_free( struct unur_gen *gen);
 static struct unur_gen *_unur_mcgibbs_clone( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* copy (clone) generator object.                                            */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_mcgibbs_random_unitvector( struct unur_gen *gen, double *direction );
+/*---------------------------------------------------------------------------*/
+/* generate a random direction vector                                        */
 /*---------------------------------------------------------------------------*/
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -151,6 +158,9 @@ static void _unur_mcgibbs_debug_init( const struct unur_gen *gen );
 
 /* generators for conditional distributions */
 #define GEN_CONDI     gen->gen_aux_list     
+
+/* an auxiliary generator for standard normal variates */
+#define GEN_NORMAL    gen->gen_aux
 
 /*---------------------------------------------------------------------------*/
 
@@ -201,7 +211,7 @@ unur_mcgibbs_new( const struct unur_distr *distr )
 
   /* set default values */
   par->method   = UNUR_METH_MCGIBBS ;     /* method                          */
-  par->variant  = MCGIBBS_VARIANT_COORDINATE;  /* default variant            */
+  par->variant  = MCGIBBS_VARIANT_COORD;  /* default variant                 */
   par->set      = 0u;                 /* inidicate default parameters        */
   par->urng     = unur_get_default_urng(); /* use default urng               */
   par->urng_aux = NULL;                    /* no auxilliary URNG required    */
@@ -221,7 +231,7 @@ unur_mcgibbs_new( const struct unur_distr *distr )
 /*****************************************************************************/
 
 int
-unur_gibbs_set_variant_coordinate( struct unur_par *par )
+unur_mcgibbs_set_variant_coordinate( struct unur_par *par )
      /*----------------------------------------------------------------------*/
      /* Coordinate Sampler :                                                 */
      /* Sampling along the coordinate directions (cyclic).                   */
@@ -239,7 +249,7 @@ unur_gibbs_set_variant_coordinate( struct unur_par *par )
   _unur_check_par_object( par, MCGIBBS );
 
   /* we use a bit in variant */
-  par->variant = (par->variant & ~MCGIBBS_VARMASK_VARIANT) | MCGIBBS_VARIANT_COORDINATE;
+  par->variant = (par->variant & ~MCGIBBS_VARMASK_VARIANT) | MCGIBBS_VARIANT_COORD;
   
   /* ok */
   return UNUR_SUCCESS;
@@ -248,7 +258,7 @@ unur_gibbs_set_variant_coordinate( struct unur_par *par )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_gibbs_set_variant_random_direction( struct unur_par *par )
+unur_mcgibbs_set_variant_random_direction( struct unur_par *par )
      /*----------------------------------------------------------------------*/
      /* Random Direction Sampler :                                           */
      /* Sampling along the random directions.                                */
@@ -266,7 +276,7 @@ unur_gibbs_set_variant_random_direction( struct unur_par *par )
   _unur_check_par_object( par, MCGIBBS );
             
   /* we use a bit in variant */
-  par->variant = (par->variant & ~MCGIBBS_VARMASK_VARIANT) | MCGIBBS_VARIANT_RANDOM_DIRECTION;
+  par->variant = (par->variant & ~MCGIBBS_VARMASK_VARIANT) | MCGIBBS_VARIANT_RANDOMDIR;
   
   /* ok */
   return UNUR_SUCCESS;
@@ -385,23 +395,44 @@ _unur_mcgibbs_init( struct unur_par *par )
 
   /* make generators for marginal distributions */
   switch (gen->variant & MCGIBBS_VARMASK_VARIANT) {
-  case MCGIBBS_VARIANT_COORDINATE:
+  case MCGIBBS_VARIANT_COORD:
+    /* conditional distribution object */
     GEN->distr_condi = unur_distr_condi_new( gen->distr, GEN->state, NULL, 0);
 
+    /* generator object for sampling from conditional distributions */
     par_condi = unur_tdrgw_new(GEN->distr_condi);
     unur_set_use_distr_privatecopy( par_condi, FALSE );
     unur_set_debug( par_condi, (gen->debug&MCGIBBS_DEBUG_CONDI)?gen->debug:1u);
-
-    GEN_CONDI[0] = gen_condi = unur_init(par_condi);
+    gen_condi = unur_init(par_condi);
     /** TODO: error handling!!!! **/
 
-    for (i=1; i<GEN->dim; i++) {
+    /* we need a clone for each dimension (except the first one) */
+    GEN_CONDI[0] = gen_condi;
+    for (i=1; i<GEN->dim; i++)
       GEN_CONDI[i] = unur_gen_clone(gen_condi);
-    }
 
     break;
 
-  case MCGIBBS_VARIANT_RANDOM_DIRECTION:
+  case MCGIBBS_VARIANT_RANDOMDIR:
+    /* we need an auxiliary generator for normal random variates */
+    GEN_NORMAL = unur_str2gen("normal()");
+
+    /* conditional distribution object */
+    _unur_mcgibbs_random_unitvector( gen, GEN->direction );
+    GEN->distr_condi = unur_distr_condi_new( gen->distr, GEN->state, GEN->direction, 0);
+
+    /* generator object for sampling from conditional distributions */
+    par_condi = unur_tdrgw_new(GEN->distr_condi);
+    unur_set_use_distr_privatecopy( par_condi, FALSE );
+    unur_set_debug( par_condi, (gen->debug&MCGIBBS_DEBUG_CONDI)?gen->debug:1u);
+    gen_condi = unur_init(par_condi);
+    /** TODO: error handling!!!! **/
+
+    /* store generator in structure. we only need one such generator */
+    *GEN_CONDI = gen_condi;
+    
+    break;
+
   default:
     _unur_error(GENTYPE,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
     _unur_par_free(par); _unur_mcgibbs_free(gen);
@@ -452,7 +483,16 @@ _unur_mcgibbs_create( struct unur_par *par )
   gen->genid = _unur_set_genid(GENTYPE);
 
   /* routines for sampling and destroying generator */
-  SAMPLE = _unur_mcgibbs_coord_sample_cvec;
+  switch (gen->variant & MCGIBBS_VARMASK_VARIANT) {
+  case MCGIBBS_VARIANT_COORD:
+    SAMPLE = _unur_mcgibbs_coord_sample_cvec; break;
+  case MCGIBBS_VARIANT_RANDOMDIR:
+    SAMPLE = _unur_mcgibbs_randomdir_sample_cvec; break;
+  default:
+    SAMPLE = NULL;
+    /* the error message is produced in _unur_mcgibbs_init() */
+  }
+
   gen->destroy = _unur_mcgibbs_free;
   gen->clone = _unur_mcgibbs_clone;
 
@@ -585,6 +625,77 @@ _unur_mcgibbs_coord_sample_cvec( struct unur_gen *gen, double *vec )
 
 } /* end of _unur_mcgibbs_coord_sample_cvec() */
 
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_mcgibbs_randomdir_sample_cvec( struct unur_gen *gen, double *vec )
+     /*----------------------------------------------------------------------*/
+     /* sample from generator                                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*   vec ... random vector (result)                                     */
+     /*----------------------------------------------------------------------*/
+{
+  int i;
+  double X;
+  int thinning;
+
+  /* check arguments */
+  CHECK_NULL(gen,RETURN_VOID);
+  COOKIE_CHECK(gen,CK_MCGIBBS_GEN,RETURN_VOID);
+
+  for (thinning = GEN->thinning; thinning > 0; --thinning) {
+
+    /* new random direction */
+    _unur_mcgibbs_random_unitvector( gen, GEN->direction );
+    
+    /* update conditional distribution */
+    unur_distr_condi_set_condition( GEN->distr_condi, GEN->state, GEN->direction, 0);
+    unur_tdrgw_reinit(*GEN_CONDI);
+    /** TODO: error handline **/
+    
+    /* sample from distribution */
+    X = unur_sample_cont(*GEN_CONDI);
+    
+    /* update state */
+    for (i=0; i<GEN->dim; i++)
+      GEN->state[i] += X * GEN->direction[i];	  
+  }
+  
+  /* copy current state into given vector */
+  memcpy(vec, GEN->state, GEN->dim * sizeof(double)); 
+
+  return;
+
+} /* end of _unur_mcgibbs_randomdir_sample_cvec() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_mcgibbs_random_unitvector( struct unur_gen *gen, double *direction )
+     /*----------------------------------------------------------------------*/
+     /* generate a random direction vector                                   */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen       ... pointer to generator object                          */
+     /*   direction ... random vector (result)                               */
+     /*----------------------------------------------------------------------*/
+{
+  int i;
+
+  do {
+    for (i=0; i<GEN->dim; i++) 
+      direction[i] = unur_sample_cont(GEN_NORMAL);
+    /* normalize direction vector */
+    _unur_vector_normalize(GEN->dim, direction);
+
+    /* there is an extremely small change that direction is the null before
+       normalizing. In this case non of its coordinates are finite. */
+  } while (!_unur_isfinite(direction[0]));
+
+} /* end of _unur_mcgibbs_random_unitvector() */
+
 /*****************************************************************************/
 
 void
@@ -651,9 +762,9 @@ _unur_mcgibbs_debug_init( const struct unur_gen *gen )
   fprintf(log,"%s: method  = MCGIBBS (Markov Chain - GIBBS sampler)\n",gen->genid);
   fprintf(log,"%s: variant = ",gen->genid);
   switch (gen->variant & MCGIBBS_VARMASK_VARIANT) {
-  case MCGIBBS_VARIANT_COORDINATE:
+  case MCGIBBS_VARIANT_COORD:
     fprintf(log,"coordinate sampling (original Gibbs sampler)  [default]\n"); break;
-  case MCGIBBS_VARIANT_RANDOM_DIRECTION:
+  case MCGIBBS_VARIANT_RANDOMDIR:
     fprintf(log,"random directions\n"); break;
   }
   fprintf(log,"%s:\n",gen->genid);
@@ -661,10 +772,10 @@ _unur_mcgibbs_debug_init( const struct unur_gen *gen )
   _unur_distr_cvec_debug( gen->distr, gen->genid );
 
   switch (gen->variant & MCGIBBS_VARMASK_VARIANT) {
-  case MCGIBBS_VARIANT_COORDINATE:
+  case MCGIBBS_VARIANT_COORD:
     fprintf(log,"%s: sampling routine = _unur_mcgibbs_coord_sample()\n",gen->genid);
     break;
-  case MCGIBBS_VARIANT_RANDOM_DIRECTION:
+  case MCGIBBS_VARIANT_RANDOMDIR:
     fprintf(log,"%s: sampling routine = _unur_mcgibbs_randomdir_sample()\n",gen->genid);
     break;
   }

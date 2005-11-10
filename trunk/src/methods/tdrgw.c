@@ -53,15 +53,6 @@
 /* #define DEBUG_STORE_IP 1 */
 
 /*---------------------------------------------------------------------------*/
-/* Additional debugging info of construction points.                         */
-
-#ifdef DEBUG_SQUEEZE 
-#  undef DEBUG_SQUEEZE
-#endif
-
-/* #define DEBUG_SQUEEZE 1 */
-
-/*---------------------------------------------------------------------------*/
 
 #include <unur_source.h>
 #include <distr/distr.h>
@@ -1814,12 +1805,6 @@ _unur_tdrgw_interval_parameter( struct unur_gen *gen, struct unur_tdrgw_interval
 	   (iv->sq < iv->next->dlogfx && !_unur_FP_approx(iv->sq,iv->next->dlogfx)) )
 	 && iv->next->dlogfx < INFINITY ) {   
 
-#ifdef DEBUG_SQUEEZE
-    _unur_stream_printf("DEBUG",__FILE__,__LINE__,"%s:   slope of transformed sq. = %-12.6g",gen->genid,iv->sq);
-    _unur_stream_printf("DEBUG",__FILE__,__LINE__,"%s:   gradient at x            = %-12.6g",gen->genid,iv->dlogfx);
-    _unur_stream_printf("DEBUG",__FILE__,__LINE__,"%s:   gradient at next x       = %-12.6g",gen->genid,iv->next->dlogfx);
-#endif
-       
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"Squeeze too steep/flat. PDF not T-concave!");
       return UNUR_ERR_GEN_CONDITION;
     }

@@ -156,9 +156,12 @@ int main(int argc, char *argv[])
 
   UNUR_DISTR *distr=NULL;
   UNUR_PAR *par=NULL;
+  UNUR_GEN *gen_timing=NULL;
   UNUR_GEN *gen=NULL;
 
   UNUR_PAR *par_clone=NULL;  
+  UNUR_PAR *par_timing=NULL;  
+  UNUR_PAR *par_aux=NULL;  
   
   double *x;
   double *mean;
@@ -338,7 +341,7 @@ int main(int argc, char *argv[])
   }
 
   if (DISTRIBUTION==DISTRIBUTION_CAUCHY_BALL) {
-    printf("DISTRIBUTION='CAUCHY_BALL'");
+    printf("DISTRIBUTION='CAUCHY_BALL'\n");
     distr = unur_distr_multicauchy_RoU_ball(DIM);
     for (d=0; d<DIM; d++) {
       moments_expected[im(d,1)] = INFINITY;
@@ -479,14 +482,16 @@ int main(int argc, char *argv[])
   printf("SKIP=%ld\n", SKIP);
 
   par_clone = _unur_par_clone(par);
+  par_timing = _unur_par_clone(par);
+  par_aux = _unur_par_clone(par);
  
-#if 0
   gen = unur_init(par);
+
+#if 0
   math2(gen);
   exit(0);
-#else  
-  gen = unur_test_timing(par, 3, &time_setup, &time_sample, TRUE, stdout);
 #endif
+  gen_timing = unur_test_timing(par_timing, 3, &time_setup, &time_sample, TRUE, stdout);
     
   double *uv;
   double *eigenvalues;
@@ -607,11 +612,16 @@ int main(int argc, char *argv[])
   }
   printarray("max      :", a_max);
 
-  if ( METHOD == METHOD_GIBBS )    
-    unur_test_par_count_pdf(par, SAMPLESIZE, 2, stdout);
-  else
+  
+  unur_run_tests(par_aux,~0u);
+  
+  if ( METHOD == METHOD_GIBBS ) {   
+  //  unur_test_par_count_pdf(par_aux, SAMPLESIZE, 2, stdout);
+  }
+  else {
     unur_test_count_pdf(gen, SAMPLESIZE, 2, stdout);
-    
+  }  
+  
   for(d=0;d<DIM;d++){
     for (m=1; m<=4; m++) {
       if (mv[im(d,m)]) free_meanvar(mv[im(d,m)]);
@@ -620,10 +630,13 @@ int main(int argc, char *argv[])
     }
   }
     
-  if (par_clone) unur_par_free(par_clone);
+//  if (par_clone) unur_par_free(par_clone);
+//  if (par_timing) unur_par_free(par_timing);
+//  if (par_aux) unur_par_free(par_timing);
   
   if (distr) unur_distr_free(distr);
   if (gen)   _unur_generic_free(gen);
+  if (gen_timing)   _unur_generic_free(gen_timing);
   
   if (x) free(x); 
   if (mean) free(mean); 

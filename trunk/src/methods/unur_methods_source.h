@@ -117,7 +117,7 @@
 
 #define _unur_check_par_object( par,type ) \
   if ( (par)->method != UNUR_METH_##type ) { \
-    _unur_warning(#type,UNUR_ERR_PAR_INVALID,""); \
+    _unur_error(#type,UNUR_ERR_PAR_INVALID,""); \
     return (UNUR_ERR_PAR_INVALID); } \
   COOKIE_CHECK((par),CK_##type##_PAR,UNUR_ERR_COOKIE)
 
@@ -126,7 +126,7 @@
 
 #define _unur_check_gen_object( gen,type,rval ) \
   if ( (gen)->method != UNUR_METH_##type ) { \
-    _unur_warning((gen)->genid,UNUR_ERR_GEN_INVALID,""); \
+    _unur_error((gen)->genid,UNUR_ERR_GEN_INVALID,""); \
     return rval; } \
   COOKIE_CHECK((gen),CK_##type##_GEN,UNUR_ERR_COOKIE)
 

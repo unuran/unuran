@@ -1,17 +1,36 @@
-Version 0.6.0: ???? 200?
+Version 0.7.0: ???? 200?
+
+	* Methods:
+
+	- new method TDRGW (robust variant of TDR - variant of Gilks & Wild)
+
+	- new method NORTA (NORmal To Anything)
+
+	- new method HITROU  
 
 	- method TABL: construction points can be set by new function 
           unur_tdr_set_cpoints(). It also replaces function 
 	  unur_tabl_set_nstp() which should not be used any more
 	  (but is still available for compatibility).
 
+        - method MCORR: extended to cover generation of random
+	  correlation matrices with given eigenvalues.
+
+	* Distributions:
+
 	- addind new distribution type for full conditional distributions
+
+	- continuous distribution objects (CONT) have a slot for the center
+	  of the distribution. It is now set for the distribution
+	  directly. This mechanism replaces the _set_ calls for 
+	  all methods that make use of the center.
+
+        - interface for setting and getting parameter-arrays for 
+          multivariate distributions (CVEC) has been renamed.
 
 	- adding multivariate Cauchy and Student distributions.
 
-	- new method NORTA (NORmal To Anything)
-
-	- new method HITROU  
+	* Uniform random number generator:
 
 	- new flexible interface to uniform random number generators.
 	  No compiler switches necessary. Thus it is now possible to
@@ -19,19 +38,12 @@ Version 0.6.0: ???? 200?
 	  recompiling UNURAN.
 
 	- The generic interface to uniform random number generators
-          has been enhanced. However it cannot be accessed directly any more.
+          has been enhanced. However, it cannot be accessed directly any more.
           Use the corresponding calls instead (see also the message above). 
 
-	- continuous distribution objects have a slot for the center
-	  of the distribution. It is now set for the distribution
-	  directly. This mechanism replaces the _set_ calls for 
-	  all methods that make use of the center.
+Version 0.6.0: June 2005
 
-        - interface for setting and getting parameter-arrays for 
-          multivariate distributions has been renamed.
-
-        - method MCORR is extended to cover generation of random
-	  correlation matrices with given eigenvalues.
+	- precompiles version for Windows 
 
 Version 0.5.0: August 2004
 

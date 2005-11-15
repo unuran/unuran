@@ -192,42 +192,39 @@ _unur_set_params_multiexponential( UNUR_DISTR *distr, const double *sigma, const
   int i;
   double *default_sigma=NULL;
   double *default_theta=NULL;
-
-printf(".\n");
+  
+  /* copy the sigma parameters into their parameter vectors */
   if(sigma==NULL) {
     /* initializing vector with default values */
     default_sigma = _unur_xmalloc( distr->dim * sizeof(double));
     for (i=0; i<distr->dim; i++) default_sigma[i]=1.;
     unur_distr_cvec_set_pdfparams_vec( distr, INDEX_SIGMA, default_sigma, distr->dim );
   }
-  
-printf(".\n");
+  else {
+    /* check parameter sigma */
+    for (i=0; i<distr->dim; i++) {
+      if ( sigma[i] <= UNUR_EPSILON ) {
+        _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"sigma is too low");
+        return UNUR_ERR_DISTR_DOMAIN;
+      }
+    }
+    unur_distr_cvec_set_pdfparams_vec( distr, INDEX_SIGMA, sigma, distr->dim );
+  }
+    
+  /* copy the theta parameters into their parameter vectors */
   if(theta==NULL) {
     /* initializing vector with default values */
     default_theta = _unur_xmalloc(distr->dim * sizeof(double) );
     for (i=0; i<distr->dim; i++) default_theta[i]=0.;
     unur_distr_cvec_set_pdfparams_vec( distr, INDEX_THETA, default_theta, distr->dim );
   }
-
-printf(".\n");
-  /* check parameter sigma */
-  for (i=0; i<distr->dim; i++) {
-    if ( sigma[i] <= UNUR_EPSILON ) {
-      _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"sigma is too low");
-      return UNUR_ERR_DISTR_DOMAIN;
-    }
+  else {
+    unur_distr_cvec_set_pdfparams_vec( distr, INDEX_THETA, theta, distr->dim ); 
   }
-  
-printf(".\n");
-  /* store number of parameters */
-  DISTR.n_params = 0.; /* we have only vector parameter here ... see below */
 
-  /* copy the parameters into their parameter vectors */
-printf(".\n");
-  if (sigma) unur_distr_cvec_set_pdfparams_vec( distr, INDEX_SIGMA, sigma, distr->dim );
-  if (theta) unur_distr_cvec_set_pdfparams_vec( distr, INDEX_THETA, theta, distr->dim );
-      
-printf(".\n");
+  /* store number of parameters */
+  DISTR.n_params = 0.; /* we have only vector parameter here ... */
+
   return UNUR_SUCCESS;
 } /* end of _unur_set_params_multiexponential() */
 
@@ -254,7 +251,7 @@ unur_distr_multiexponential( int dim, const double *sigma, const double *theta )
 {
   struct unur_distr *distr;
   struct unur_distr *stdmarginal;
-
+  
   int i;
   double sumsigma; /* used in the calculation of LOGNORMCONSTANT */
     
@@ -299,15 +296,17 @@ unur_distr_multiexponential( int dim, const double *sigma, const double *theta )
 
   /* log of normalization constant */
   /*  constant:  Prod_{i=0}^{i=dim-1} 1/sigma_i */
+  
   sumsigma = 0.;
   for (i=0; i<distr->dim; i++) {
-    sumsigma += sigma[i];
+    sumsigma += DISTR.param_vecs[INDEX_SIGMA][i];
   }
-  LOGNORMCONSTANT = - 1. / sumsigma;
+  LOGNORMCONSTANT = - 1. / sumsigma;   
   
   /* mode */
-  DISTR.mode = _unur_vector_new( distr->dim ); /* defining and setting each element to be = 0*/
-
+  DISTR.mode = _unur_xmalloc(distr->dim * sizeof(double) );
+  for (i=0; i<distr->dim; i++)  DISTR.mode[i]=0.;
+  
   /* volume below p.d.f. */
   DISTR.volume = 1.; 
 

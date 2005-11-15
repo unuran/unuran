@@ -324,7 +324,8 @@ int main(int argc, char *argv[])
   
   if (DISTRIBUTION==DISTRIBUTION_STUDENT) {
     printf("DISTRIBUTION='MULTISTUDENT'");
-    if (NU==1) printf(" (MULTICAUCHY)"); printf("\n");
+    if (NU==1) printf(" (MULTICAUCHY)"); 
+    printf("\n");
     distr = unur_distr_multistudent(DIM,NU,mean,covar);
     for (d=0; d<DIM; d++) {
       moments_expected[im(d,1)] = INFINITY;
@@ -352,9 +353,10 @@ int main(int argc, char *argv[])
   }
   
   if (DISTRIBUTION==DISTRIBUTION_EXPONENTIAL) {
-    printf("DISTRIBUTION='MULTIEXPONENTIAL'");
+    printf("DISTRIBUTION='MULTIEXPONENTIAL'\n");
     /* TODO : enable sigma and theta parameter vectors */
     distr = unur_distr_multiexponential(DIM, NULL, NULL);
+   
     for (d=0; d<DIM; d++) {
       moments_expected[im(d,1)] = 1.;
       moments_expected[im(d,2)] = 1.;

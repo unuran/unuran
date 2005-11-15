@@ -71,7 +71,7 @@ check_PROGRAMS = \
  t_srou \
  t_ssr \
  t_tabl \
- t_tdr \
+ t_tdr t_tdr_gw t_tdr_ps t_tdr_ia \
  t_tdrgw \
  t_unif \
  t_utdr \
@@ -137,7 +137,7 @@ EXTRA_DIST = \
  t_srou.conf \
  t_ssr.conf \
  t_tabl.conf \
- t_tdr.conf \
+ t_tdr.conf t_tdr_gw.conf t_tdr_ps.conf t_tdr_ia.conf \
  t_tdrgw.conf \
  t_unif.conf \
  t_utdr.conf \

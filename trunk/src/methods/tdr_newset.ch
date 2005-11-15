@@ -176,6 +176,144 @@ unur_tdr_set_cpoints( struct unur_par *par, int n_stp, const double *stp )
 /*---------------------------------------------------------------------------*/
 
 int
+unur_tdr_set_usepercentiles( struct unur_par *par, int n_percentiles, const double *percentiles )
+     /*----------------------------------------------------------------------*/
+     /* set percentiles for construction points for hat function             */
+     /* and/or its number for re-initialization                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par           ... pointer to parameter for building generator      */
+     /*   n_percentiles ... number of percentiles                            */
+     /*   percentiles   ... pointer to array of percentiles                  */
+     /*                     (NULL for using a rule of thumb)                 */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  int i;
+
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, TDR );
+
+  /* check given percentiles */
+  if (n_percentiles < 2 ) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"number of percentiles < 2. using defaults");
+    n_percentiles = 2;
+    percentiles = NULL;
+  }
+
+  if (n_percentiles > 100 ) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"number of percentiles > 100. using 100");
+    n_percentiles = 100;
+  }
+    
+  if (percentiles) {
+    /* percentiles must be strictly monontonically increasing */
+    for( i=1; i<n_percentiles; i++ ) {
+      if (percentiles[i] <= percentiles[i-1]) {
+	_unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"percentiles not strictly monotonically increasing");
+	return UNUR_ERR_PAR_SET;
+      }
+      if (percentiles[i] < 0.01 || percentiles[i] > 0.99) {
+	_unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"percentiles out of range");
+	return UNUR_ERR_PAR_SET;
+      }
+    }
+  }
+
+  /* store date */
+  PAR->percentiles = percentiles;
+  PAR->n_percentiles = n_percentiles;
+
+  /* changelog */
+  par->set |= TDR_SET_N_PERCENTILES | ((percentiles) ? TDR_SET_PERCENTILES : 0);
+
+  return UNUR_SUCCESS;
+
+} /* end of unur_tdr_set_usepercentiles() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_tdr_chg_usepercentiles( struct unur_gen *gen, int n_percentiles, const double *percentiles )
+     /*----------------------------------------------------------------------*/
+     /* change percentiles for construction points for hat function          */
+     /* and/or its number for re-initialization                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen           ... pointer to generator object                      */
+     /*   n_percentiles ... number of percentiles                            */
+     /*   percentiles   ... pointer to array of percentiles                  */
+     /*                     (NULL for using a rule of thumb)                 */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  int i;
+
+  /* check input */
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, TDR, UNUR_ERR_GEN_INVALID );
+
+  /* check given percentiles */
+  if (n_percentiles < 2 ) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"number of percentiles < 2. using defaults");
+    n_percentiles = 2;
+    percentiles = NULL;
+  }
+
+  if (n_percentiles > 100 ) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"number of percentiles > 100. using 100");
+    n_percentiles = 100;
+  }
+    
+  if (percentiles) {
+    /* percentiles must be strictly monontonically increasing */
+    for( i=1; i<n_percentiles; i++ ) {
+      if (percentiles[i] <= percentiles[i-1]) {
+	_unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"percentiles not strictly monotonically increasing");
+	return UNUR_ERR_PAR_SET;
+      }
+      if (percentiles[i] < 0.01 || percentiles[i] > 0.99) {
+	_unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"percentiles out of range");
+	return UNUR_ERR_PAR_SET;
+      }
+    }
+  }
+
+  /* store date */
+  GEN->n_percentiles = n_percentiles;
+  GEN->percentiles = _unur_xrealloc( GEN->percentiles, n_percentiles * sizeof(double) );
+  if (percentiles) {
+    memcpy( GEN->percentiles, percentiles, n_percentiles * sizeof(double) );
+  }
+  else {
+    if (n_percentiles == 2) {
+      GEN->percentiles[0] = 0.25;
+      GEN->percentiles[1] = 0.75;
+    }
+    else {
+      for (i=0; i<n_percentiles; i++ )
+	GEN->percentiles[i] = (i + 1.) / (n_percentiles + 1.);
+    }
+  }
+
+  /* changelog */
+  gen->set |= TDR_SET_N_PERCENTILES | ((percentiles) ? TDR_SET_PERCENTILES : 0);
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+
+} /* end of unur_tdr_chg_usepercentiles() */
+
+/*---------------------------------------------------------------------------*/
+
+int
 unur_tdr_set_guidefactor( struct unur_par *par, double factor )
      /*----------------------------------------------------------------------*/
      /* set factor for relative size of guide table                          */

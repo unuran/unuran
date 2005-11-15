@@ -75,6 +75,11 @@ unur_tdr_eval_invcdfhat( const struct unur_gen *gen, double u,
   }
   COOKIE_CHECK(gen,CK_TDR_GEN,INFINITY);
 
+  if (GEN->iv == NULL) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"empty generator object");
+    return INFINITY;
+  } 
+
   if ( u<0. || u>1.) {
     _unur_warning(gen->genid,UNUR_ERR_DOMAIN,"argument u not in [0,1]");
   }

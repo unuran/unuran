@@ -147,6 +147,29 @@ UNUR_PAR *unur_tdr_new( const UNUR_DISTR* distribution );
 
 /*...........................................................................*/
 
+int unur_tdr_reinit( UNUR_GEN *generator );
+/* 
+   Update an existing generator object after the distribution has been
+   modified. It must be executed whenever the parameters of the
+   distribution has been changed. 
+   It is faster than destroying the existing object and build
+   a new one from scratch.
+   If reinitialization has been successful @code{UNUR_SUCCESS} is
+   returned. In case of a failure an error code is returned. Then
+   @var{generator} cannot be used before another successful reinit
+   (with proper parameters for the underlying distribution).
+
+   Notice that currently reinit only makes sense when the
+   @var{generator} object does not use a private copy of the given
+   distribution object. This behavior can be switched on by means of a
+   unur_set_use_distr_privatecopy() call.
+   The it is possible to manipulate the (external) distribution and
+   (immediately after doing this) reinitialize the generator object.
+   Obviously using this procedure must be done with extreme care.
+*/
+
+/*...........................................................................*/
+
 int unur_tdr_set_c( UNUR_PAR *parameters, double c );
 /* 
    Set parameter @var{c} for transformation T. 
@@ -239,6 +262,37 @@ int unur_tdr_set_darsfactor( UNUR_PAR *parameters, double factor );
    Default is @code{0.99}. There is no need to change this parameter.
 */
 
+int unur_tdr_set_cpoints( UNUR_PAR *parameters, int n_stp, const double *stp );
+/* 
+   Set construction points for the hat function. If @var{stp} is NULL
+   than a heuristic rule of thumb is used to get @var{n_stp}
+   construction points. This is the default behavior. 
+
+   The default number of construction points is 30.
+*/
+
+int unur_tdr_set_usepercentiles( UNUR_PAR *parameters, int n_percentiles, const double *percentiles );
+/* */ 
+
+int unur_tdr_chg_usepercentiles( UNUR_GEN *generator, int n_percentiles, const double *percentiles );
+/* 
+   By default, when the @var{generator} object is reinitialized, it
+   used the same construction points as for the initialization
+   procedure.
+   Often the underlying distribution object has been changed only
+   moderately. For example, the full conditional distribution of a
+   multivariate distribution. 
+   In this case it might be more appropriate to use
+   percentilesm of the hat function for the last (unchanged)
+   distribution. @var{percentiles} must then be a pointer to an
+   ordered array of numbers between @code{0.01} and @code{0.99}.
+   If @var{percentiles} is NULL, then a heuristic rule of thumb is
+   used to get @var{n_percentiles} values for these percentiles.
+   Notice that @var{n_percentiles} must be at least @code{2},
+   otherwise defaults are used.
+   (Then the first and third quartiles are used by default.) 
+*/
+
 int unur_tdr_chg_truncated(UNUR_GEN *gen, double left, double right);
 /*
    Change the borders of the domain of the (truncated) distribution. 
@@ -316,15 +370,6 @@ int unur_tdr_set_max_intervals( UNUR_PAR *parameters, int max_ivs );
    points if this is larger.
 
    Default is @code{100}.
-*/
-
-int unur_tdr_set_cpoints( UNUR_PAR *parameters, int n_stp, const double *stp );
-/* 
-   Set construction points for the hat function. If @var{stp} is NULL
-   than a heuristic rule of thumb is used to get @var{n_stp}
-   construction points. This is the default behavior. 
-
-   The default number of construction points is 30.
 */
 
 int unur_tdr_set_center( UNUR_PAR *parameters, double center );

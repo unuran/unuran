@@ -39,12 +39,11 @@
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_tdr_gw_starting_intervals( struct unur_par *par, struct unur_gen *gen )
+_unur_tdr_gw_starting_intervals( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* compute intervals for starting points                                */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   par          ... pointer to parameter list                         */
      /*   gen          ... pointer to generator object                       */
      /*                                                                      */
      /* return:                                                              */
@@ -56,7 +55,6 @@ _unur_tdr_gw_starting_intervals( struct unur_par *par, struct unur_gen *gen )
   double x,fx;              /* construction point, value of PDF at x */
   
   /* check arguments */
-  CHECK_NULL(par,UNUR_ERR_NULL);  COOKIE_CHECK(par,CK_TDR_PAR,UNUR_ERR_COOKIE);
   CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_TDR_GEN,UNUR_ERR_COOKIE);
   CHECK_NULL(GEN->iv,UNUR_ERR_NULL);  COOKIE_CHECK(GEN->iv,CK_TDR_IV,UNUR_ERR_COOKIE); 
   
@@ -159,12 +157,11 @@ _unur_tdr_gw_starting_intervals( struct unur_par *par, struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_tdr_gw_dars( struct unur_par *par, struct unur_gen *gen )
+_unur_tdr_gw_dars( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* run derandomized adaptive rejection sampling  (Gilks&Wild)           */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   par          ... pointer to parameter list                         */
      /*   gen          ... pointer to generator object                       */
      /*                                                                      */
      /* return:                                                              */
@@ -182,7 +179,6 @@ _unur_tdr_gw_dars( struct unur_par *par, struct unur_gen *gen )
   int splitted;                /* result of splitting routine */
 
   /* check arguments */
-  CHECK_NULL(par,UNUR_ERR_NULL);  COOKIE_CHECK(par,CK_TDR_PAR,UNUR_ERR_COOKIE);
   CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_TDR_GEN,UNUR_ERR_COOKIE);
   
   /* now split intervals */
@@ -192,7 +188,7 @@ _unur_tdr_gw_dars( struct unur_par *par, struct unur_gen *gen )
     /* compute threshhold value. every interval with area between
        hat and squeeze greater than this value will be splitted.  */
     if (GEN->n_ivs > 1)
-      Alimit = PAR->darsfactor * ( (GEN->Atotal - GEN->Asqueeze) / GEN->n_ivs );
+      Alimit = GEN->darsfactor * ( (GEN->Atotal - GEN->Asqueeze) / GEN->n_ivs );
     else
       /* we split every interval if there are only one interval */
       Alimit = 0.; 
@@ -221,7 +217,7 @@ _unur_tdr_gw_dars( struct unur_par *par, struct unur_gen *gen )
       x1 = iv->next->x;
 
       /* get splitting point */
-      for (rule = PAR->darsrule; rule <= 3; rule++) {
+      for (rule = GEN->darsrule; rule <= 3; rule++) {
 	switch (rule) {
 	case 1:   /* rule 1: expected value */
 	  

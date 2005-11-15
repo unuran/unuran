@@ -45,6 +45,10 @@ struct unur_tdr_par {
 
   const double *starting_cpoints; /* pointer to array of starting points     */
   int     n_starting_cpoints;   /* number of construction points at start    */
+
+  const double *percentiles;    /* percentiles of hat for c. points of new hat  */
+  int n_percentiles;            /* number of percentiles                     */
+
   int     max_ivs;              /* maximum number of intervals               */
   double  max_ratio;            /* bound for ratio r_n = Atotal / Asqueeze   */
   double  bound_for_adding;     /* lower bound for relative area             */
@@ -102,6 +106,17 @@ struct unur_tdr_gen {
   struct unur_tdr_interval **guide; /* pointer to guide table                */
   int     guide_size;           /* size of guide table                       */
   double  guide_factor;         /* relative size of guide table              */
+
+  double  center;               /* approximate location of mode              */
+
+  double *starting_cpoints;     /* pointer to array of starting points       */
+  int     n_starting_cpoints;   /* number of construction points at start    */
+
+  double *percentiles;       /* percentiles of hat for c. points of new hat  */
+  int n_percentiles;         /* number of percentiles                        */
+
+  double  darsfactor;           /* factor for derandomized ARS               */
+  int     darsrule;             /* rule for finding splitting points in DARS */
 };
 
 /*---------------------------------------------------------------------------*/

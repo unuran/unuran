@@ -60,7 +60,6 @@ _unur_tdr_init( struct unur_par *par )
      /*----------------------------------------------------------------------*/
 { 
   struct unur_gen *gen;
-  int i,k;
 
   /* check arguments */
   CHECK_NULL(par,NULL);
@@ -75,29 +74,73 @@ _unur_tdr_init( struct unur_par *par )
   gen = _unur_tdr_create(par);
   if (!gen) { _unur_par_free(par); return NULL; }
 
+  /* free parameters */
+  _unur_par_free(par);
+
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-  if (gen->debug) _unur_tdr_debug_init_start(par,gen);
+  if (gen->debug) _unur_tdr_debug_init_start(gen);
 #endif
 
-  /* get starting points */
-  if (_unur_tdr_starting_cpoints(par,gen)!=UNUR_SUCCESS) {
-    _unur_par_free(par); _unur_tdr_free(gen);
+  /* set-up the generator */
+  if (_unur_tdr_make_gen( gen ) != UNUR_SUCCESS) {
+    _unur_tdr_free(gen); return NULL;
+  }
+
+  /* is there any hat at all ? */
+  if (GEN->Atotal <= 0.) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"bad construction points.");
+    _unur_tdr_free(gen);
     return NULL;
   }
+
+#ifdef UNUR_ENABLE_LOGGING
+    /* write info into log file */
+    if (gen->debug) _unur_tdr_debug_init_finished(gen);
+#endif
+
+  /* creation of generator object successfull */
+  gen->status = UNUR_SUCCESS;
+
+  /* o.k. */
+  return gen;
+
+} /* end of _unur_tdr_init() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_tdr_make_gen( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* make generator object                                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer (almost) empty generator object                    */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*                                                                      */
+     /* remark:                                                              */
+     /*   on success: gen points to the ready-to-use generator object        */
+     /*   on error:   gen should not be used at all                          */
+     /*----------------------------------------------------------------------*/
+{ 
+  int i,k;
+
+  /* check arguments */
+  CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_TDR_GEN,UNUR_ERR_COOKIE);
+
+  /* get starting points */
+  if (_unur_tdr_starting_cpoints(gen)!=UNUR_SUCCESS) return UNUR_FAILURE;
 
   /* compute intervals for given starting points */
-  if (_unur_tdr_starting_intervals(par,gen)!=UNUR_SUCCESS) {
-    _unur_par_free(par); _unur_tdr_free(gen);
-    return NULL;
-  }
+  if (_unur_tdr_starting_intervals(gen)!=UNUR_SUCCESS) return UNUR_FAILURE;
 
   /* update maximal number of intervals */
-  if (GEN->n_ivs > GEN->max_ivs) {
-    GEN->max_ivs = GEN->n_ivs;
-  }
+  if (GEN->n_ivs > GEN->max_ivs) GEN->max_ivs = GEN->n_ivs;
   
-  if (par->variant & TDR_VARFLAG_USEDARS) {
+  if (gen->variant & TDR_VARFLAG_USEDARS) {
     /* run derandomized adaptive rejection sampling (DARS) */
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -105,7 +148,7 @@ _unur_tdr_init( struct unur_par *par )
       /* make initial guide table (only necessary for writing debug info) */
       _unur_tdr_make_guide_table(gen);
       /* write info into log file */
-      _unur_tdr_debug_dars_start(par,gen);
+      _unur_tdr_debug_dars_start(gen);
     }
 #endif
 
@@ -113,10 +156,7 @@ _unur_tdr_init( struct unur_par *par )
       /* we make several tries */
 
       /* run DARS */
-      if (_unur_tdr_run_dars(par,gen)!=UNUR_SUCCESS) {
-	_unur_par_free(par); _unur_tdr_free(gen);
-	return NULL;
-      }
+      if (_unur_tdr_run_dars(gen)!=UNUR_SUCCESS) return UNUR_FAILURE;
     
       /* make initial guide table */
       _unur_tdr_make_guide_table(gen);
@@ -142,28 +182,10 @@ _unur_tdr_init( struct unur_par *par )
     _unur_tdr_make_guide_table(gen);
   }
 
-  /* free parameters */
-  _unur_par_free(par);
-
-  /* is there any hat at all ? */
-  if (GEN->Atotal <= 0.) {
-    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"bad construction points.");
-    _unur_tdr_free(gen);
-    return NULL;
-  }
-
-#ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
-    if (gen->debug) _unur_tdr_debug_init_finished(gen);
-#endif
-
-  /* creation of generator object successfull */
-  gen->status = UNUR_SUCCESS;
-
   /* o.k. */
-  return gen;
+  return UNUR_SUCCESS;
 
-} /* end of _unur_tdr_init() */
+} /* end _unur_tdr_make_gen() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -243,6 +265,8 @@ _unur_tdr_create( struct unur_par *par )
   /* copy some parameters into generator object */
   GEN->guide_factor = PAR->guide_factor; /* relative size of guide tables      */
   GEN->c_T = PAR->c_T;                /* parameter for transformation          */
+  GEN->darsfactor = PAR->darsfactor;  /* factor for derandomized ARS           */
+  GEN->darsrule = PAR->darsrule;      /* rule for finding splitting points in DARS */
 
   /* bounds for adding construction points  */
   GEN->max_ivs = max(2*PAR->n_starting_cpoints,PAR->max_ivs);  /* maximum number of intervals */
@@ -265,6 +289,22 @@ _unur_tdr_create( struct unur_par *par )
     PAR->center = max(PAR->center,DISTR.BD_LEFT);
     PAR->center = min(PAR->center,DISTR.BD_RIGHT);
   }
+  GEN->center = PAR->center;
+
+  /* copy starting points */
+  GEN->n_starting_cpoints = PAR->n_starting_cpoints;
+  if (PAR->starting_cpoints) {
+    GEN->starting_cpoints = _unur_xmalloc( PAR->n_starting_cpoints * sizeof(double) );
+    memcpy( GEN->starting_cpoints, PAR->starting_cpoints, PAR->n_starting_cpoints * sizeof(double) );
+  }
+  else {
+    GEN->starting_cpoints = NULL;
+  }
+
+  /* copy percentiles */
+  GEN->percentiles = NULL;
+  if (gen->set & TDR_SET_N_PERCENTILES)
+    unur_tdr_chg_usepercentiles( gen, PAR->n_percentiles, PAR->percentiles );
 
   /* set (default) boundaries for U */
   GEN->Umin = 0.;
@@ -283,6 +323,111 @@ _unur_tdr_create( struct unur_par *par )
   return gen;
 
 } /* end of _unur_tdr_create() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_tdr_reinit( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* re-initialize (existing) generator.                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_tdr_interval *iv,*next;
+  int i;
+  int errors;
+
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, TDR, UNUR_ERR_GEN_INVALID );
+
+  /* when the generator object contains a private copy of the      */
+  /* distribution object, then there is (currently) no possibility */
+  /* to change the parameters of the distribution.                 */
+  /* However, then reinit does not make sense.                     */
+  if (gen->distr_is_privatecopy) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"Reinit of generator object with private copy of distribution object has no effect");
+    return UNUR_ERR_GEN_DATA;
+  }
+
+  /* which construction points should be used ? */
+  if (gen->set & TDR_SET_N_PERCENTILES) {
+    if (GEN->n_starting_cpoints != GEN->n_percentiles) {
+      GEN->n_starting_cpoints = GEN->n_percentiles;
+      GEN->starting_cpoints = _unur_xrealloc( GEN->starting_cpoints, GEN->n_percentiles * sizeof(double));
+    }
+    for (i=0; i<GEN->n_percentiles; i++)
+      GEN->starting_cpoints[i] = unur_tdr_eval_invcdfhat( gen, GEN->percentiles[i], NULL, NULL, NULL );
+  }
+
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  if (gen->debug & TDR_DEBUG_REINIT)
+    if (gen->debug) _unur_tdr_debug_reinit_start(gen);
+#endif
+
+  /* reset error counter */
+  errors = 0;
+
+  do {
+    /* free linked list of intervals */
+    for (iv = GEN->iv; iv != NULL; iv = next) {
+      next = iv->next;
+      free(iv);
+    }
+    GEN->iv = NULL;
+    GEN->n_ivs = 0;
+    GEN->Atotal = 0.;
+    GEN->Asqueeze = 0.;
+
+    if (errors > 0) {
+      /* we have done our best */
+      _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"bad construction points for reinit");
+      return UNUR_FAILURE;
+    }
+
+    /* set-up the generator */
+    if (_unur_tdr_make_gen( gen ) != UNUR_SUCCESS) {
+      ++errors; continue;
+    }
+
+/*     /\* get starting points *\/ */
+/*     if (_unur_tdr_starting_cpoints(gen)!=UNUR_SUCCESS) { */
+/*       ++errors; continue; */
+/*     } */
+
+/*     /\* compute intervals for given starting points *\/ */
+/*     if (_unur_tdr_starting_intervals(gen)!=UNUR_SUCCESS) { */
+/*       ++errors; continue; */
+/*     } */
+
+/*     /\* update maximal number of intervals *\/ */
+/*     if (GEN->n_ivs > GEN->max_ivs)  GEN->max_ivs = GEN->n_ivs; */
+    
+/*     /\* make table of areas *\/ */
+/*     _unur_tdr_make_guide_table(gen); */
+    
+    /* is there any hat at all ? */
+    if (GEN->Atotal <= 0.) {
+      ++errors; continue;
+    }
+
+  } while (errors);
+
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  if (gen->debug & TDR_DEBUG_REINIT)
+    if (gen->debug) _unur_tdr_debug_reinit_finished(gen);
+#endif
+
+  return UNUR_SUCCESS;
+} /* end of unur_tdr_reinit() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -336,6 +481,18 @@ _unur_tdr_clone( const struct unur_gen *gen )
   /* terminate linked list */
   if (clone_iv) clone_iv->next = NULL;
 
+  /* copy starting points */
+  if (GEN->starting_cpoints) {
+    CLONE->starting_cpoints = _unur_xmalloc( GEN->n_starting_cpoints * sizeof(double) );
+    memcpy( CLONE->starting_cpoints, GEN->starting_cpoints, GEN->n_starting_cpoints * sizeof(double) );
+  }
+
+  /* copy percentiles */
+  if (GEN->percentiles) {
+    CLONE->percentiles = _unur_xmalloc( GEN->n_percentiles * sizeof(double) );
+    memcpy( CLONE->percentiles, GEN->percentiles, GEN->n_percentiles * sizeof(double) );
+  }
+
   /* make new guide table */
   CLONE->guide = NULL;
   _unur_tdr_make_guide_table(clone);
@@ -384,6 +541,14 @@ _unur_tdr_free( struct unur_gen *gen )
     }
   }
 
+  /* free list of starting points */
+  if (GEN->starting_cpoints) 
+    free (GEN->starting_cpoints);
+
+  /* free list of percentiles */
+  if (GEN->percentiles) 
+    free (GEN->percentiles);
+
   /* free table */
   if (GEN->guide)  free(GEN->guide);
 
@@ -397,14 +562,13 @@ _unur_tdr_free( struct unur_gen *gen )
 /*****************************************************************************/
 
 int
-_unur_tdr_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
+_unur_tdr_starting_cpoints( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* list of construction points for starting intervals.                  */
      /* if not provided as arguments compute these                           */
      /* by means of the "equiangular rule" from AROU.                        */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   par ... pointer to parameter for building generator object         */
      /*   gen ... pointer to generator object                                */
      /*                                                                      */
      /* return:                                                              */
@@ -420,31 +584,30 @@ _unur_tdr_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
   double extra_cpoint;
   
   /* check arguments */
-  CHECK_NULL(par,UNUR_ERR_NULL);  COOKIE_CHECK(par,CK_TDR_PAR,UNUR_ERR_COOKIE);
   CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_TDR_GEN,UNUR_ERR_COOKIE);
   
   /* use mode as construction point ? */
-  use_mode = (par->variant & TDR_VARFLAG_USEMODE) ? TRUE : FALSE;
+  use_mode = (gen->variant & TDR_VARFLAG_USEMODE) ? TRUE : FALSE;
 
   /* use center as construction point ? */
-  use_center = (!use_mode && (par->variant & TDR_VARFLAG_USECENTER)) ? TRUE : FALSE;
+  use_center = (!use_mode && (gen->variant & TDR_VARFLAG_USECENTER)) ? TRUE : FALSE;
 
   /* add extra construction point        */
   /* (use either mode or center or none) */
-  extra_cpoint = use_mode ? DISTR.mode : (use_center ? PAR->center : 0. );
+  extra_cpoint = use_mode ? DISTR.mode : (use_center ? GEN->center : 0. );
 
   /* reset counter of intervals */
   GEN->n_ivs = 0;
 
   /* prepare for computing construction points */
-  if (!PAR->starting_cpoints) {
+  if (!GEN->starting_cpoints) {
     /* move center into  x = 0 */
     /* angles of boundary of domain */
-    left_angle =  _unur_FP_is_minus_infinity(DISTR.BD_LEFT) ? -M_PI/2. : atan(DISTR.BD_LEFT  - PAR->center);
-    right_angle = _unur_FP_is_infinity(DISTR.BD_RIGHT)      ? M_PI/2.  : atan(DISTR.BD_RIGHT - PAR->center);
+    left_angle =  _unur_FP_is_minus_infinity(DISTR.BD_LEFT) ? -M_PI/2. : atan(DISTR.BD_LEFT  - GEN->center);
+    right_angle = _unur_FP_is_infinity(DISTR.BD_RIGHT)      ? M_PI/2.  : atan(DISTR.BD_RIGHT - GEN->center);
     /* we use equal distances between the angles of the cpoints   */
     /* and the boundary points                                    */
-    diff_angle = (right_angle-left_angle) / (PAR->n_starting_cpoints + 1);
+    diff_angle = (right_angle-left_angle) / (GEN->n_starting_cpoints + 1);
     angle = left_angle;
   }
   else
@@ -458,7 +621,7 @@ _unur_tdr_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
     use_mode = FALSE;  /* do not use the mode again */
     is_increasing = FALSE;
   }
-  else if (use_center && PAR->center <= x) {
+  else if (use_center && GEN->center <= x) {
     is_mode = FALSE;
     use_center = FALSE;     /* do not use the center again */
     is_increasing = TRUE;   /* the center may be left of (unknown) mode */
@@ -476,14 +639,14 @@ _unur_tdr_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
   iv->prev = NULL;
 
   /* now all the other points */
-  for( i=0; i<=PAR->n_starting_cpoints; i++ ) {
+  for( i=0; i<=GEN->n_starting_cpoints; i++ ) {
     was_mode = is_mode;
 
     /* construction point */
-    if (i < PAR->n_starting_cpoints) {
-      if (PAR->starting_cpoints) {   
+    if (i < GEN->n_starting_cpoints) {
+      if (GEN->starting_cpoints) {   
 	/* construction points provided by user */
-	x = PAR->starting_cpoints[i];
+	x = GEN->starting_cpoints[i];
 	/* check starting point */
 	if (x < DISTR.BD_LEFT || x > DISTR.BD_RIGHT) {
 	  _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"starting point out of domain");
@@ -493,7 +656,7 @@ _unur_tdr_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
       else {
 	/* compute construction points by means of "equiangular rule" */
 	angle += diff_angle;
-	x = tan( angle ) + PAR->center;
+	x = tan( angle ) + GEN->center;
       }
     }
     else {
@@ -509,7 +672,7 @@ _unur_tdr_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
       if (x>extra_cpoint) {
 	x = extra_cpoint;     /* use the mode now ... */
 	--i;              /* and push the orignal starting point back on stack */
-	if (!PAR->starting_cpoints)
+	if (!GEN->starting_cpoints)
 	  angle -= diff_angle; /* we have to compute the starting point in this case */
       }
       /* else: x == extra_cpoint --> nothing to do */
@@ -541,7 +704,7 @@ _unur_tdr_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
       /* we do not need two such point */
       if (is_increasing) {
 	/* PDF is still increasing, i.e., constant 0 til now */
-	if (i<PAR->n_starting_cpoints) {
+	if (i<GEN->n_starting_cpoints) {
 	  /* and it is not the right boundary.
 	     otherwise the PDF is constant 0 on all construction points.
 	     then we need both boundary points. */
@@ -590,7 +753,7 @@ _unur_tdr_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
 /*****************************************************************************/
 
 int
-_unur_tdr_starting_intervals( struct unur_par *par, struct unur_gen *gen )
+_unur_tdr_starting_intervals( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* compute intervals for starting points                                */
      /*                                                                      */
@@ -605,25 +768,24 @@ _unur_tdr_starting_intervals( struct unur_par *par, struct unur_gen *gen )
 {
   switch (gen->variant & TDR_VARMASK_VARIANT) {
   case TDR_VARIANT_GW:    /* original variant (Gilks&Wild) */
-    return _unur_tdr_gw_starting_intervals(par,gen);
+    return _unur_tdr_gw_starting_intervals(gen);
   case TDR_VARIANT_PS:    /* proportional squeeze */
   case TDR_VARIANT_IA:    /* immediate acceptance */
-    return _unur_tdr_ps_starting_intervals(par,gen);
+    return _unur_tdr_ps_starting_intervals(gen);
   default:
     _unur_error(GENTYPE,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
     return UNUR_ERR_SHOULD_NOT_HAPPEN;
   }
-} /* end of _unur_tdr_interval_parameter() */
+} /* end of _unur_tdr_starting_intervals() */
 
 /*****************************************************************************/
 
 int
-_unur_tdr_run_dars( struct unur_par *par, struct unur_gen *gen )
+_unur_tdr_run_dars( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* run derandomized adaptive rejection sampling.                         */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   par          ... pointer to parameter list                         */
      /*   gen          ... pointer to generator object                       */
      /*                                                                      */
      /* return:                                                              */
@@ -635,11 +797,10 @@ _unur_tdr_run_dars( struct unur_par *par, struct unur_gen *gen )
   double Atot, Asqueezetot;    /* total area below hat and squeeze, resp. */
 
   /* check arguments */
-  CHECK_NULL(par,UNUR_ERR_NULL);  COOKIE_CHECK(par,CK_TDR_PAR,UNUR_ERR_COOKIE);
   CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_TDR_GEN,UNUR_ERR_COOKIE);
   
   /* there is no need to run DARS when the DARS factor is INFINITY */
-  if (_unur_FP_is_infinity(PAR->darsfactor))
+  if (_unur_FP_is_infinity(GEN->darsfactor))
     return UNUR_SUCCESS;
 
   /* first we need the total areas below hat and squeeze.
@@ -659,10 +820,10 @@ _unur_tdr_run_dars( struct unur_par *par, struct unur_gen *gen )
   /* now run DARS for different variants */
   switch (gen->variant & TDR_VARMASK_VARIANT) {
   case TDR_VARIANT_GW:    /* original variant (Gilks&Wild) */
-    return _unur_tdr_gw_dars(par,gen);
+    return _unur_tdr_gw_dars(gen);
   case TDR_VARIANT_PS:    /* proportional squeeze */
   case TDR_VARIANT_IA:    /* immediate acceptance */
-    return _unur_tdr_ps_dars(par,gen);
+    return _unur_tdr_ps_dars(gen);
   default:
     _unur_error(GENTYPE,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
     return UNUR_ERR_SHOULD_NOT_HAPPEN;

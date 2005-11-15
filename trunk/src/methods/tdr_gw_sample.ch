@@ -108,6 +108,11 @@ _unur_tdr_gw_sample( struct unur_gen *gen )
   /* check arguments */
   CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_TDR_GEN,INFINITY);
 
+  if (GEN->iv == NULL) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"empty generator object");
+    return INFINITY;
+  } 
+
   /* main URNG */
   urng = gen->urng;
 
@@ -263,6 +268,11 @@ _unur_tdr_gw_sample_check( struct unur_gen *gen )
 
   /* check arguments */
   CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_TDR_GEN,INFINITY);
+
+  if (GEN->iv == NULL) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"empty generator object");
+    return INFINITY;
+  } 
 
   /* main URNG */
   urng = gen->urng;

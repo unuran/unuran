@@ -694,6 +694,9 @@ _unur_tdrgw_init( struct unur_par *par )
   gen = _unur_tdrgw_create(par);
   if (!gen) { _unur_par_free(par); return NULL; }
 
+  /* free parameters */
+  _unur_par_free(par);
+
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
   if (gen->debug) _unur_tdrgw_debug_init_start(gen);
@@ -701,14 +704,12 @@ _unur_tdrgw_init( struct unur_par *par )
 
   /* get starting points */
   if (_unur_tdrgw_starting_cpoints(gen)!=UNUR_SUCCESS) {
-    _unur_par_free(par); _unur_tdrgw_free(gen);
-    return NULL;
+    _unur_tdrgw_free(gen); return NULL;
   }
 
   /* compute intervals for given starting points */
   if (_unur_tdrgw_starting_intervals(gen)!=UNUR_SUCCESS) {
-    _unur_par_free(par); _unur_tdrgw_free(gen);
-    return NULL;
+    _unur_tdrgw_free(gen); return NULL;
   }
 
   /* update maximal number of intervals */
@@ -718,9 +719,6 @@ _unur_tdrgw_init( struct unur_par *par )
 
   /* make initial table of areas */
   _unur_tdrgw_make_area_table(gen);
-
-  /* free parameters */
-  _unur_par_free(par);
 
   /* is there any hat at all ? */
   if (GEN->Atotal <= 0.) {
@@ -1340,6 +1338,11 @@ unur_tdrgw_eval_invcdfhat( const struct unur_gen *gen, double U )
   if ( U<0. || U>1.) {
     _unur_warning(gen->genid,UNUR_ERR_DOMAIN,"argument u not in [0,1]");
   }
+
+  if (GEN->iv == NULL) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"empty generator object");
+    return INFINITY;
+  } 
 
   /* validate argument */
   if (U<=0.) return DISTR.domain[0];

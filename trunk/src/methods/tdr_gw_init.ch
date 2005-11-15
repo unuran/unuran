@@ -180,7 +180,7 @@ _unur_tdr_gw_dars( struct unur_gen *gen )
 
   /* check arguments */
   CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_TDR_GEN,UNUR_ERR_COOKIE);
-  
+
   /* now split intervals */
   while ( (GEN->max_ratio * GEN->Atotal > GEN->Asqueeze) &&
 	  (GEN->n_ivs < GEN->max_ivs) ) {
@@ -271,9 +271,10 @@ _unur_tdr_gw_dars( struct unur_gen *gen )
 	/* now split interval at given point */
 	splitted = _unur_tdr_gw_interval_split(gen, iv, xsp, fxsp);
 
-	if (splitted==UNUR_SUCCESS) {
+	if (splitted==UNUR_SUCCESS || splitted==UNUR_ERR_INF) {
 	  /* splitting successful */
-	  ++n_splitted;
+	  if (splitted==UNUR_SUCCESS) ++n_splitted;
+	  /* otherwise the area below the hat was not bounded */
 
 	  /* now depending on the location of xps in the interval iv,
 	     iv points to the left of the two new intervals,
@@ -295,10 +296,10 @@ _unur_tdr_gw_dars( struct unur_gen *gen )
 	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
 	  return UNUR_ERR_GEN_CONDITION;
 	}
-	/* else: could not split construction points: too close (?) */
+	/* else: could not split construction points */
       }
     }
-
+  
     if (n_splitted == 0) {
       /* we are not successful in splitting any inteval.
 	 abort to avoid endless loop */
@@ -499,7 +500,7 @@ _unur_tdr_gw_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_
     
     /* compute parameters for chopped interval */
     success = _unur_tdr_gw_interval_parameter(gen, iv_oldl);
-    
+
     /* we did not add a new interval */
     iv_newr = NULL;
   }
@@ -553,8 +554,7 @@ _unur_tdr_gw_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_
       free( iv_newr );
     }
 
-  return ( (success!=UNUR_ERR_SILENT && success!=UNUR_ERR_INF) 
-	   ? UNUR_ERR_GEN_CONDITION : UNUR_SUCCESS );
+  return success;
   }
 
   /* successful */

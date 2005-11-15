@@ -445,9 +445,10 @@ _unur_tdr_ps_dars( struct unur_gen *gen )
 
 	splitted = _unur_tdr_ps_interval_split(gen, ((xsp<iv->ip)?iv->prev:iv), xsp, fxsp);
 
-	if (splitted==UNUR_SUCCESS) {
+	if (splitted==UNUR_SUCCESS || splitted==UNUR_ERR_INF) {
 	  /* splitting successful */
-	  ++n_splitted;
+	  if (splitted==UNUR_SUCCESS) ++n_splitted;
+	  /* otherwise the area below the hat was not bounded */
 
 	  /* now depending on the location of xps in the interval iv,
 	     iv points to the left of the two new intervals,
@@ -754,8 +755,7 @@ _unur_tdr_ps_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv,
       free( iv_new );
     }
 
-  return ( (success!=UNUR_ERR_SILENT && success!=UNUR_ERR_INF) 
-	   ? UNUR_ERR_GEN_CONDITION : UNUR_SUCCESS );
+  return success;
   }
 
   /* successful */

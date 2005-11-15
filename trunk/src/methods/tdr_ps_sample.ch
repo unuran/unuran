@@ -450,7 +450,7 @@ _unur_tdr_ps_improve_hat( struct unur_gen *gen, struct unur_tdr_interval *iv,
 
   /* add construction point */
   result = _unur_tdr_ps_interval_split(gen, iv, x, fx);
-  if (result!=UNUR_SUCCESS && result!=UNUR_ERR_SILENT) {
+  if (result!=UNUR_SUCCESS && result!=UNUR_ERR_SILENT && result!=UNUR_ERR_INF) {
     /* condition for PDF is violated! */
     _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
     if (gen->variant & TDR_VARFLAG_PEDANTIC) {

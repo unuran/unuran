@@ -133,19 +133,22 @@ _unur_logpdf_multiexponential( const double *x, UNUR_DISTR *distr )
   if (sigma == NULL || theta == NULL) {
     /* standard form */
     for (i=0; i<dim; i++) { 
-      dx = (i==0) ? x[i]: x[i]-x[i-1]; 
+      dx = (i==0) ? ((x[i]<0)? INFINITY: x[i]) : ((x[i]<x[i-1])? INFINITY: x[i]-x[i-1]);  
       sum -= (dim-i) * dx;  
     }
   }
   else {
     for (i=0; i<dim; i++) {
-      dx = (i==0) ? x[i]-theta[i] : x[i]-x[i-1] + theta[i-1]-theta[i] ; 
+    
+      dx = (i==0) ? ((x[i]-theta[i]<0)? INFINITY: x[i]-theta[i]) : ((x[i]-theta[i]<x[i-1]-theta[i-1])? INFINITY: x[i]-x[i-1]-theta[i]+theta[i-1]); 
+      
       /* sigma[i] is expected to be > UNUR_EPSILON here */
       dx /= sigma[i];
       sum -= (dim-i) * dx;  
+/*printf(">> dx=%f sum=%f\n", dx, sum); */   
     }
   }
-    
+          
   return ( sum + LOGNORMCONSTANT);
 
 } /* end of _unur_logpdf_multiexponential() */

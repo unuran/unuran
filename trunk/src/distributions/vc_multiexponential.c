@@ -110,7 +110,12 @@ static int _unur_dlogpdf_multiexponential( double *result, const double *x, UNUR
 double
 _unur_pdf_multiexponential( const double *x, UNUR_DISTR *distr )
 { 
-  return exp( _unur_logpdf_multiexponential( x, distr ) );
+  double fx;
+  fx=_unur_logpdf_multiexponential( x, distr );
+  if (_unur_isfinite(fx))  
+    return exp( _unur_logpdf_multiexponential( x, distr ) );
+  
+  return 0.;
 } /* end of _unur_pdf_multiexponential() */
 
 /*---------------------------------------------------------------------------*/
@@ -134,7 +139,10 @@ _unur_logpdf_multiexponential( const double *x, UNUR_DISTR *distr )
     /* standard form */
     for (i=0; i<dim; i++) { 
       dx = (i==0) ? ((x[i]<0)? INFINITY: x[i]) : ((x[i]<x[i-1])? INFINITY: x[i]-x[i-1]);  
-      sum -= (dim-i) * dx;  
+      if (_unur_isfinite(dx)) 
+        sum -= (dim-i) * dx;  
+      else
+        sum = -INFINITY;
     }
   }
   else {
@@ -144,7 +152,11 @@ _unur_logpdf_multiexponential( const double *x, UNUR_DISTR *distr )
       
       /* sigma[i] is expected to be > UNUR_EPSILON here */
       dx /= sigma[i];
-      sum -= (dim-i) * dx;  
+      if (_unur_isfinite(dx)) 
+        sum -= (dim-i) * dx;  
+      else
+        sum = -INFINITY;      
+      
 /*printf(">> dx=%f sum=%f\n", dx, sum); */   
     }
   }

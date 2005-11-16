@@ -844,12 +844,13 @@ unur_tdrgw_reinit( struct unur_gen *gen )
 
   /* which construction points should be used ? */
   if (gen->set & TDRGW_SET_N_PERCENTILES) {
-    if (GEN->n_starting_cpoints != GEN->n_percentiles) {
+    if (GEN->starting_cpoints==NULL || (GEN->n_starting_cpoints != GEN->n_percentiles)) {
       GEN->n_starting_cpoints = GEN->n_percentiles;
       GEN->starting_cpoints = _unur_xrealloc( GEN->starting_cpoints, GEN->n_percentiles * sizeof(double));
     }
     for (i=0; i<GEN->n_percentiles; i++)
       GEN->starting_cpoints[i] = unur_tdrgw_eval_invcdfhat( gen, GEN->percentiles[i] );
+    
   }
 
 #ifdef UNUR_ENABLE_LOGGING

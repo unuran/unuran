@@ -273,8 +273,8 @@ int main(int argc, char *argv[])
     }
   }
   
-  unur_set_default_debug(UNUR_DEBUG_OFF);
-//  unur_set_default_debug(UNUR_DEBUG_ALL);
+/*  unur_set_default_debug(UNUR_DEBUG_OFF);*/
+  unur_set_default_debug(UNUR_DEBUG_ALL);
      
   for(d=0;d<DIM;d++){
     for (m=1; m<=4; m++) {
@@ -361,7 +361,7 @@ int main(int argc, char *argv[])
       moments_expected[im(d,1)] = 1.;
       moments_expected[im(d,2)] = 1.;
       moments_expected[im(d,3)] = 2.;
-      moments_expected[im(d,4)] = 6.;    
+      moments_expected[im(d,4)] = 9.;    
     }
   }
 

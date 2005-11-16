@@ -508,8 +508,19 @@ int main(int argc, char *argv[])
   for (d=0; d<DIM; d++) {
     x[d]=eigenvectors[DIM*(DIM-1)-1+d];
   }  
+  
+  /* setting x[] at origin */  
+  
+  for (d=0; d<DIM; d++) {
+    x[d]=0.;
+  }  
+  
+  
   double fx;  /* pdf value at the point x */
   fx=PDF(x);  
+
+  /* printf("f(x)=%f\n", fx); */
+    
   x[DIM] = fx * 0.9; /* used by the pdf ball sampler */
   /* transforming x[] into uv[] coordinates (at RoU boundary */
   /* valid for the case, that the RoU r-parameter is 1 */

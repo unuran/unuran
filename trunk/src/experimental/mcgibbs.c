@@ -489,7 +489,10 @@ _unur_mcgibbs_init( struct unur_par *par )
     /* init generator object for sampling from conditional distributions */
     gen_condi = unur_init(par_condi);
 
-    /** TODO: error handling!!!! **/
+    if (gen_condi == NULL) {
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"Cannot create generator for conditional distributions");
+      _unur_free(gen); return NULL;
+    }
 
     /* we need a clone for each dimension (except the first one) */
     GEN_CONDI[0] = gen_condi;
@@ -535,7 +538,10 @@ _unur_mcgibbs_init( struct unur_par *par )
     /* init generator object for sampling from conditional distributions */
     gen_condi = unur_init(par_condi);
 
-    /** TODO: error handling!!!! **/
+    if (gen_condi == NULL) {
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"Cannot create generator for conditional distributions");
+      _unur_free(gen); return NULL;
+    }
 
     /* store generator in structure. we only need one such generator */
     *GEN_CONDI = gen_condi;

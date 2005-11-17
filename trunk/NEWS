@@ -7,6 +7,8 @@ Version 0.7.0: ???? 200?
 	- new method NORTA (NORmal To Anything)
 
 	- new method HITROU  
+	
+	- method TDR: added reinit routine
 
 	- method TABL: construction points can be set by new function 
           unur_tdr_set_cpoints(). It also replaces function 

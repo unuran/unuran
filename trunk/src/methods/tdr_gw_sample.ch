@@ -216,7 +216,7 @@ _unur_tdr_gw_sample( struct unur_gen *gen )
 
     /* value of PDF at x */
     fx = PDF(X);
-
+printf("fx=%f\n", fx);
     /** TODO: for the changing parameter case it would be better
         not to added the new construction point when we accept
         the generated point! **/

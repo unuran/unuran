@@ -148,7 +148,7 @@ _unur_tdr_debug_init_start( const struct unur_gen *gen )
       fprintf(log,"   %#g,",GEN->starting_cpoints[i]);
     }
   else
-    fprintf(log," use \"equdistribution\" rule [default]");
+    fprintf(log," use \"equidistribution\" rule [default]");
   fprintf(log,"\n%s:\n",gen->genid);
   
   fflush(log);

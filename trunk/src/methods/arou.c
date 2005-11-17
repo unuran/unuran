@@ -2499,7 +2499,7 @@ _unur_arou_debug_init( const struct unur_par *par, const struct unur_gen *gen )
       fprintf(log,"   %#g,",PAR->starting_cpoints[i]);
     }
   else
-    fprintf(log," use \"equdistribution\" rule [default]");
+    fprintf(log," use \"equidistribution\" rule [default]");
   fprintf(log,"\n%s:\n",gen->genid);
   
   _unur_arou_debug_segments(gen);

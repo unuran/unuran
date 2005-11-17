@@ -186,13 +186,12 @@ _unur_dlogpdf_multiexponential( double *result, const double *x, UNUR_DISTR *dis
     for (j=0; j<dim; j++) {
       dx = 0; 
       if (i==j)   dx=1;
-      if (i==j-1) dx=-1; 
+      if (i==j-1) dx=-1*0; /* dx=0, i.e. taking derrivative wrt. x[i] only */ 
       /* sigma[j] is expected to be > UNUR_EPSILON here */
       if (sigma) dx /= sigma[j];
       result[i] -= (dim-j) * dx;
     }
     
-    result[i] += LOGNORMCONSTANT;
   }
   
   return UNUR_SUCCESS; 

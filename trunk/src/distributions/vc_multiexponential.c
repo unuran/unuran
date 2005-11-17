@@ -30,7 +30,7 @@
  *                                                                           *
  *  pdf:       f(x) = Prod_{i=0}^{i=dim-1}                                   *
  *             exp(-(dim-i) (x_{i}-x_{i-1} - (theta_i-theta_{i-1}) ) / sigma_i) *
- *             with x_{-1}=0 and thet_{i-1}=0                                *                  
+ *             with x_{-1}=0 and theta_{i-1}=0                               *                  
  *  domain:    [0, inf)^(dim)                                                *
  *  constant:  Prod_{i=0}^{i=dim-1} 1/sigma_i                                *
  *                                                                           *
@@ -170,29 +170,34 @@ _unur_logpdf_multiexponential( const double *x, UNUR_DISTR *distr )
 int
 _unur_dlogpdf_multiexponential( double *result, const double *x, UNUR_DISTR *distr )
 {
-  int i, j, dim;
-  double *sigma, *theta;
-  double dx;
+  int i, dim;
+
+  double dx, fx1, fx2;
+  double *xx;
     
   dim = distr->dim;
-  
-  sigma = DISTR.param_vecs[INDEX_SIGMA];
-  theta = DISTR.param_vecs[INDEX_THETA];
     
+  /* working array */
+  xx=malloc(dim*sizeof(double)); 
+     
   /* calculation of the dlogpdf components */
+  dx=UNUR_EPSILON; /* should work for the exponential distribution */  
+ 
   for (i=0; i<dim; i++) {
-    result[i] = 0.;
+    memcpy(xx,x,dim*sizeof(double));
+    xx[i]=x[i]+dx;
+       
+    fx1=_unur_logpdf_multiexponential( x, distr );
+    fx2=_unur_logpdf_multiexponential(xx, distr );
     
-    for (j=0; j<dim; j++) {
-      dx = 0; 
-      if (i==j)   dx=1;
-      if (i==j-1) dx=-1*0; /* dx=0, i.e. taking derrivative wrt. x[i] only */ 
-      /* sigma[j] is expected to be > UNUR_EPSILON here */
-      if (sigma) dx /= sigma[j];
-      result[i] -= (dim-j) * dx;
-    }
-    
+    result[i] = (fx2-fx1)/dx;
+
+/* TODO ... debugging :-) */
+printf("%f\n",result[i]);    
+  
   }
+  
+  if (xx) free(xx);
   
   return UNUR_SUCCESS; 
 

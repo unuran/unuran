@@ -67,6 +67,9 @@
 
       TODO.
 
+      @strong{Warning:} If the ... debugging flag is set to verbose (other than @code{1u}) 
+      every Gibbs step might produces a long entry in the log file ...
+
    =END
 */
 
@@ -92,6 +95,27 @@ int unur_mcgibbs_set_variant_random_direction( UNUR_PAR *parameters );
    Sampling along the random directions.
    Not implemented at the moment.
 */
+
+int unur_mcgibbs_set_c( UNUR_PAR *parameters, double c );
+/* 
+   TODO.
+
+   Set parameter @var{c} for transformation T. 
+   Currently only values between 0 and -0.5 are allowed.
+   If @code{c} is between 0 and -0.5 it is set to -0.5.
+
+   For @code{c=0} much more robust against badly normalized PDFs
+   than $code{c=-0.5}.
+
+   @code{c=0}: method TDRGW
+   @code{c=-0.5}: method TDR
+
+   other values not implemented yet.
+
+
+   Default is @code{0}.
+*/
+
 
 int unur_mcgibbs_set_startingpoint( UNUR_PAR *parameters, const double *x0);
 /* 

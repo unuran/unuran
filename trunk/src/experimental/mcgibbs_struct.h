@@ -39,6 +39,7 @@
 
 struct unur_mcgibbs_par { 
   int thinning;             /* thinning factor for generated chain           */
+  double  c_T;              /* parameter c for transformation T_c            */
   const double *x0;         /* starting point of chain                       */
 };
 
@@ -48,6 +49,7 @@ struct unur_mcgibbs_par {
 struct unur_mcgibbs_gen {
   int dim;                  /* dimension of distribution                     */
   int thinning;             /* thinning factor for generated chain           */
+  double  c_T;              /* parameter c for transformation T_c            */
 
   double *state;            /* state of chain / current point                */
 

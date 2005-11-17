@@ -54,15 +54,14 @@
 #include <distr/distr_source.h>
 #include <distr/condi.h>
 #include <distr/cvec.h>
-/* #include <distributions/unur_distributions.h> */
 #include <uniform/urng.h>
 #include <utils/matrix_source.h>
 #include <parser/parser.h>
 #include "unur_methods_source.h"
 #include "x_gen.h"
 #include "x_gen_source.h"
+#include "tdr.h"
 #include "tdrgw.h"
-/* #include "auto.h" */
 
 #include "mcgibbs.h"
 #include "mcgibbs_struct.h"
@@ -81,6 +80,11 @@
 #define MCGIBBS_VARIANT_COORD       0x0001u  /* coordinate sampler           */
 #define MCGIBBS_VARIANT_RANDOMDIR   0x0002u  /* random direction sampler     */
 
+#define MCGIBBS_VARMASK_T           0x00f0u  /* indicates transformation     */
+#define MCGIBBS_VAR_T_SQRT          0x0010u  /* T(x) = -1/sqrt(x)            */
+#define MCGIBBS_VAR_T_LOG           0x0020u  /* T(x) = log(x)                */
+#define MCGIBBS_VAR_T_POW           0x0030u  /* T(x) = -x^c                  */
+
 /*---------------------------------------------------------------------------*/
 /* Debugging flags                                                           */
 /*    bit  01    ... pameters and structure of generator (do not use here)   */
@@ -94,7 +98,8 @@
 /* Flags for logging set calls                                               */
 
 #define MCGIBBS_SET_THINNING   0x001u  /* set thinning factor                */
-#define MCGIBBS_SET_X0         0x002u  /* set starting point                 */
+#define MCGIBBS_SET_C          0x002u  /* set parameter for transformation T */
+#define MCGIBBS_SET_X0         0x004u  /* set starting point                 */
 
 /*---------------------------------------------------------------------------*/
 
@@ -210,6 +215,8 @@ unur_mcgibbs_new( const struct unur_distr *distr )
   par->distr    = distr;      /* pointer to distribution object              */
 
   /* set default values */
+  PAR->c_T      = 0.;        /* parameter for transformation (-1. <= c < 0.) */
+
   par->method   = UNUR_METH_MCGIBBS ;     /* method                          */
   par->variant  = MCGIBBS_VARIANT_COORD;  /* default variant                 */
   par->set      = 0u;                 /* inidicate default parameters        */
@@ -281,6 +288,57 @@ unur_mcgibbs_set_variant_random_direction( struct unur_par *par )
   /* ok */
   return UNUR_SUCCESS;
 } /* end of unur_mcgibbs_set_variant_coordinate() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_mcgibbs_set_c( struct unur_par *par, double c )
+     /*----------------------------------------------------------------------*/
+     /* set parameter c for transformation T_c used for sampling from        */
+     /* conditional distributions                                            */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par  ... pointer to parameter for building generator object        */
+     /*   c    ... parameter c                                               */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, MCGIBBS );
+
+  /* check new parameter for generator */
+  if (c > 0.) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"c > 0");
+    return UNUR_ERR_PAR_SET;
+  }
+  /** TODO: ... **/
+  /*    if (c <= -1.) { */
+  /*      _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"c <= -1 only if domain is bounded. Use `TABL' method then."); */
+  /*      return 0; */
+  /*    } */
+  /** TODO: ... **/
+  if (c < -0.5) {
+    _unur_error(GENTYPE,UNUR_ERR_PAR_SET,"c < -0.5 not implemented yet");
+    return UNUR_ERR_PAR_SET;
+  }
+  if (c != 0 && c > -0.5) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"-0.5 < c < 0 not recommended. using c = -0.5 instead.");
+    c = -0.5;
+  }
+    
+  /* store date */
+  PAR->c_T = c;
+
+  /* changelog */
+  par->set |= MCGIBBS_SET_C;
+
+  return UNUR_SUCCESS;
+
+} /* end of unur_mcgibbs_set_c() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -388,6 +446,9 @@ _unur_mcgibbs_init( struct unur_par *par )
   gen = _unur_mcgibbs_create(par);
   if (!gen) { _unur_par_free(par); return NULL; }
 
+  /* free parameters */
+  _unur_par_free(par);
+
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
   if (gen->debug) _unur_mcgibbs_debug_init(gen);
@@ -399,11 +460,35 @@ _unur_mcgibbs_init( struct unur_par *par )
     /* conditional distribution object */
     GEN->distr_condi = unur_distr_condi_new( gen->distr, GEN->state, NULL, 0);
 
-    /* generator object for sampling from conditional distributions */
-    par_condi = unur_tdrgw_new(GEN->distr_condi);
+    /* make parameter object */
+    switch( gen->variant & MCGIBBS_VARMASK_T ) {
+    case MCGIBBS_VAR_T_LOG:
+      /* use more robust method TDRGW for T = log */
+      par_condi = unur_tdrgw_new(GEN->distr_condi);
+      unur_tdrgw_set_usepercentiles(par_condi,2,NULL);
+      break;
+    case MCGIBBS_VAR_T_SQRT:
+      /* we only have method TDR for T = -1/sqrt */
+      par_condi = unur_tdr_new(GEN->distr_condi);
+      unur_tdr_set_usepercentiles(par_condi,2,NULL);
+      unur_tdr_set_c(par_condi,-0.5);
+      unur_tdr_set_usedars(par_condi,FALSE);
+      break;
+    case MCGIBBS_VAR_T_POW:
+    default:
+      _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+    _unur_free(gen); return NULL;
+    }
+
+    /* we do not need a private copy since otherwise we cannot update the generator object */
     unur_set_use_distr_privatecopy( par_condi, FALSE );
+    /* debugging messages from the conditional generator should be rare */
+    /* otherwise the size if the log file explodes                      */
     unur_set_debug( par_condi, (gen->debug&MCGIBBS_DEBUG_CONDI)?gen->debug:1u);
+
+    /* init generator object for sampling from conditional distributions */
     gen_condi = unur_init(par_condi);
+
     /** TODO: error handling!!!! **/
 
     /* we need a clone for each dimension (except the first one) */
@@ -421,11 +506,35 @@ _unur_mcgibbs_init( struct unur_par *par )
     _unur_mcgibbs_random_unitvector( gen, GEN->direction );
     GEN->distr_condi = unur_distr_condi_new( gen->distr, GEN->state, GEN->direction, 0);
 
-    /* generator object for sampling from conditional distributions */
-    par_condi = unur_tdrgw_new(GEN->distr_condi);
+    /* make parameter object */
+    switch( gen->variant & MCGIBBS_VARMASK_T ) {
+    case MCGIBBS_VAR_T_LOG:
+      /* use more robust method TDRGW for T = log */
+      par_condi = unur_tdrgw_new(GEN->distr_condi);
+      unur_tdrgw_set_usepercentiles(par_condi,2,NULL);
+      break;
+    case MCGIBBS_VAR_T_SQRT:
+      /* we only have method TDR for T = -1/sqrt */
+      par_condi = unur_tdr_new(GEN->distr_condi);
+      unur_tdr_set_usepercentiles(par_condi,2,NULL);
+      unur_tdr_set_c(par_condi,-0.5);
+      unur_tdr_set_usedars(par_condi,FALSE);
+      break;
+    case MCGIBBS_VAR_T_POW:
+    default:
+      _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+    _unur_free(gen); return NULL;
+    }
+
+    /* we do not need a private copy since otherwise we cannot update the generator object */
     unur_set_use_distr_privatecopy( par_condi, FALSE );
+    /* debugging messages from the conditional generator should be rare */
+    /* otherwise the size if the log file explodes                      */
     unur_set_debug( par_condi, (gen->debug&MCGIBBS_DEBUG_CONDI)?gen->debug:1u);
+
+    /* init generator object for sampling from conditional distributions */
     gen_condi = unur_init(par_condi);
+
     /** TODO: error handling!!!! **/
 
     /* store generator in structure. we only need one such generator */
@@ -435,12 +544,9 @@ _unur_mcgibbs_init( struct unur_par *par )
 
   default:
     _unur_error(GENTYPE,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    _unur_par_free(par); _unur_mcgibbs_free(gen);
+    _unur_mcgibbs_free(gen);
     return NULL;
   }
-
-  /* free parameters */
-  _unur_par_free(par);
 
   /* o.k. */
   return gen;
@@ -482,6 +588,14 @@ _unur_mcgibbs_create( struct unur_par *par )
   /* set generator identifier */
   gen->genid = _unur_set_genid(GENTYPE);
 
+  /* which transformation for conditional distributions */
+  if (PAR->c_T == 0.)
+    par->variant = (par->variant & (~MCGIBBS_VARMASK_T)) | MCGIBBS_VAR_T_LOG;
+  else if (_unur_FP_same(PAR->c_T, -0.5))
+    par->variant = (par->variant & (~MCGIBBS_VARMASK_T)) | MCGIBBS_VAR_T_SQRT;
+  else
+    par->variant = (par->variant & (~MCGIBBS_VARMASK_T)) | MCGIBBS_VAR_T_POW;
+
   /* routines for sampling and destroying generator */
   switch (gen->variant & MCGIBBS_VARMASK_VARIANT) {
   case MCGIBBS_VARIANT_COORD:
@@ -500,7 +614,8 @@ _unur_mcgibbs_create( struct unur_par *par )
   gen->variant = par->variant;        
   
   /* copy parameters into generator object */
-  GEN->thinning = PAR->thinning;                /* thinning factor           */
+  GEN->thinning = PAR->thinning;           /* thinning factor                */
+  GEN->c_T = PAR->c_T;                     /* parameter for transformation   */
   
   /* allocate memory for state */
   GEN->state = _unur_xmalloc( GEN->dim * sizeof(double));
@@ -608,7 +723,20 @@ _unur_mcgibbs_coord_sample_cvec( struct unur_gen *gen, double *vec )
     
     /* update conditional distribution */
     unur_distr_condi_set_condition( GEN->distr_condi, GEN->state, NULL, GEN->coord);
-    unur_tdrgw_reinit(GEN_CONDI[GEN->coord]);
+
+    /* reinit generator object */
+    switch( gen->variant & MCGIBBS_VARMASK_T ) {
+    case MCGIBBS_VAR_T_LOG:
+      unur_tdrgw_reinit(GEN_CONDI[GEN->coord]);
+      break;
+    case MCGIBBS_VAR_T_SQRT:
+      unur_tdr_reinit(GEN_CONDI[GEN->coord]);
+      break;
+    case MCGIBBS_VAR_T_POW:
+    default:
+      _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+      return;
+    }
     /** TODO: error handline **/
     
     /* sample from distribution */
@@ -652,7 +780,20 @@ _unur_mcgibbs_randomdir_sample_cvec( struct unur_gen *gen, double *vec )
     
     /* update conditional distribution */
     unur_distr_condi_set_condition( GEN->distr_condi, GEN->state, GEN->direction, 0);
-    unur_tdrgw_reinit(*GEN_CONDI);
+
+    /* reinit generator object */
+    switch( gen->variant & MCGIBBS_VARMASK_T ) {
+    case MCGIBBS_VAR_T_LOG:
+      unur_tdrgw_reinit(*GEN_CONDI);
+      break;
+    case MCGIBBS_VAR_T_SQRT:
+      unur_tdr_reinit(*GEN_CONDI);
+      break;
+    case MCGIBBS_VAR_T_POW:
+    default:
+      _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+      return;
+    }
     /** TODO: error handline **/
     
     /* sample from distribution */
@@ -768,6 +909,18 @@ _unur_mcgibbs_debug_init( const struct unur_gen *gen )
     fprintf(log,"random directions\n"); break;
   }
   fprintf(log,"%s:\n",gen->genid);
+
+  fprintf(log,"%s: transformation T_c(x) for TDR method = ",gen->genid);
+  switch( gen->variant & MCGIBBS_VARMASK_T ) {
+  case MCGIBBS_VAR_T_LOG:
+    fprintf(log,"log(x)  ... c = 0");                   break;
+  case MCGIBBS_VAR_T_SQRT:
+    fprintf(log,"-1/sqrt(x)  ... c = -1/2");            break;
+  case MCGIBBS_VAR_T_POW:
+    fprintf(log,"-x^(%g)  ... c = %g",GEN->c_T,GEN->c_T); break;
+  }
+  _unur_print_if_default(gen,MCGIBBS_SET_C);
+  fprintf(log,"\n%s:\n",gen->genid);
 
   _unur_distr_cvec_debug( gen->distr, gen->genid );
 

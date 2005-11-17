@@ -453,7 +453,7 @@ sub scan_validate {
 		}
 		print "\trcode = run_validate_chi2(TESTLOG,0,gen,distr[$n_distr],$chi2type,'$todo');\n";
 		print "\tn_tests_failed += (rcode==UNUR_SUCCESS)?0:1;\n";
-		print "\tn_tests_failed += (rcode==UNUR_FAILURE)?10:0;\n";
+		print "\tn_tests_failed += (rcode==UNUR_FAILURE)?1000:0;\n";
 		print "\tunur_free(gen);\n";
 		print "\tunur_distr_free(distr_localcopy);\n";
 		print "\t} while (0);\n\n";
@@ -541,8 +541,8 @@ sub scan_validate {
 		}
 		print "\tif (gen) unur_$method\_chg_verify(gen,1);\n";
 		# such an error is fatal. so we must make sure that we get a FAIL
-		# and override the sloppy definition of FAIL (2 are allowed for chi^2)
-		print "\tn_tests_failed += (run_validate_verifyhat(TESTLOG,0,gen,distr[$n_distr],'$todo')==UNUR_SUCCESS)?0:2;\n";
+		# and override the sloppy definition of FAIL (CHI2_FAILURES_TOLERATED are allowed for chi^2)
+		print "\tn_tests_failed += (run_validate_verifyhat(TESTLOG,0,gen,distr[$n_distr],'$todo')==UNUR_SUCCESS)?0:1000;\n";
 		print "\tunur_free(gen);\n\n";
 		print "\tunur_distr_free(distr_localcopy);\n";
 		print "\t} while (0);\n\n";
@@ -565,8 +565,9 @@ sub scan_validate {
     print "#endif\n\n";
 
     print "\n\t/* test finished */\n";
-    print "\ttest_ok &= (n_tests_failed>2) ? 0 : 1;   /* we accept 2 failure */\n";
-    print "\t(n_tests_failed>2) ? printf(\" ==> failed] \") : printf(\" ==> ok] \");\n";
+    print "\ttest_ok &= (n_tests_failed>CHI2_FAILURES_TOLERATED) ? 0 : 1;\n";
+    print "\t/* we accept CHI2_FAILURES_TOLERATED failures */\n";
+    print "\t(n_tests_failed>CHI2_FAILURES_TOLERATED) ? printf(\" ==> failed] \") : printf(\" ==> ok] \");\n";
 
     print "\n\t/* prevent compiler from making useless annoying warnings */\n";
     print "\tdistr[0] = NULL;\n";
@@ -945,6 +946,12 @@ int unur_$method\_set_verify( UNUR_PAR *par, int );
 /*---------------------------------------------------------------------------*/
 
 $C_header_aux
+
+/*---------------------------------------------------------------------------*/
+
+#ifndef CHI2_FAILURES_TOLERATED
+#  define CHI2_FAILURES_TOLERATED DEFAULT_CHI2_FAILURES_TOLERATED
+#endif
 
 EOM
 

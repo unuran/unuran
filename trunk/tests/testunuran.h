@@ -35,7 +35,8 @@
 /* global variables                                                          */
 
 /* tresholds */
-#define PVAL_LIMIT 1e-3             /* treshold for p-value for stat. test   */
+#define PVAL_LIMIT (1.e-3)                  /* treshold for p-value for stat. test */
+#define DEFAULT_CHI2_FAILURES_TOLERATED (2) /* tolerated number of failed tests    */
 
 /*---------------------------------------------------------------------------*/
 /* True and false                                                            */

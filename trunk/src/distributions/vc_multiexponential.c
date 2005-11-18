@@ -181,7 +181,7 @@ _unur_dlogpdf_multiexponential( double *result, const double *x, UNUR_DISTR *dis
   xx=malloc(dim*sizeof(double)); 
      
   /* calculation of the dlogpdf components */
-  dx=UNUR_EPSILON; /* should work for the exponential distribution */  
+  dx=1e7*UNUR_EPSILON; /* should work for the exponential distribution */  
  
   for (i=0; i<dim; i++) {
     memcpy(xx,x,dim*sizeof(double));
@@ -191,9 +191,6 @@ _unur_dlogpdf_multiexponential( double *result, const double *x, UNUR_DISTR *dis
     fx2=_unur_logpdf_multiexponential(xx, distr );
     
     result[i] = (fx2-fx1)/dx;
-
-/* TODO ... debugging :-) */
-printf("%f\n",result[i]);    
   
   }
   

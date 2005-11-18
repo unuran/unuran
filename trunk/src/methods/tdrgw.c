@@ -2028,6 +2028,11 @@ _unur_tdrgw_tangent_intersection_point( struct unur_gen *gen, struct unur_tdrgw_
       return UNUR_SUCCESS;
     }
     else {
+      if (_unur_FP_approx(iv->dlogfx, iv->next->dlogfx)) {
+        /* use mean point */
+        *ipt = 0.5 * (iv->x + iv->next->x);
+        return UNUR_SUCCESS;
+      }
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"dTfx0 < dTfx1 (x0<x1). PDF not log-concave!");
       return UNUR_ERR_GEN_CONDITION;
     }

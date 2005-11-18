@@ -65,13 +65,14 @@ int DIM = 2;
 long SAMPLESIZE = 10000;
 long EXPERIMENTS = 100;
 int DISTRIBUTION = 0;
-int NU = 1;
+double NU = 1.;
 int COVAR = 2;
 double RHO = 0.0;
 double SIGMA = 1.0;
 int METHOD = 0; 
 long SKIP = 0;
 double BALL_RADIUS = 0.1;
+int MATHEMATICA = 0;
 
 /*---------------------------------------------------------------------------*/
 
@@ -212,7 +213,7 @@ int main(int argc, char *argv[])
 */  
     
   /* read options */
-  while ((c = getopt(argc, argv, "d:s:n:r:w:t:m:c:e:f:b:h")) != -1) {
+  while ((c = getopt(argc, argv, "d:s:n:r:w:t:m:c:e:f:b:ho")) != -1) {
     switch (c) {
     case 't':     /* type of distribution  */
       DISTRIBUTION=atol(optarg);
@@ -224,7 +225,7 @@ int main(int argc, char *argv[])
       DIM=atoi(optarg);
       break;
     case 'f':     /* degrees of freedom for student distribution */
-      NU=atoi(optarg);
+      NU=atof(optarg);
       break;
     case 'n':     /* number of samples */
       SAMPLESIZE=(long) atof(optarg);
@@ -247,12 +248,17 @@ int main(int argc, char *argv[])
     case 'b':     /* ball radius */
       BALL_RADIUS=atof(optarg);
       break;
-    
+    case 'o':     /* mathematica output */
+      MATHEMATICA=1;
+      break;
+
+      
+          
     case 'h':     /*[GWa92] help */
       printf("options\n" );
       printf(" -d dim          : dimension (%d) \n", DIM );
       printf(" -t type         : 0=normal, 1=student 2=cauchy_ball 3=exponential (%d) \n", DISTRIBUTION );
-      printf(" -f nu           : degrees of freedom for student (%d) \n", NU );
+      printf(" -f nu           : degrees of freedom for student (%f) \n", NU );
       printf(" -m method       : 0=H&R+RD+STRIP, 1=VMT, 2=GIBBS 3=GIBBS+RD \n" );
       printf("                 : 4=H&R+COORD+BOX, 5=H&R+RD+BOX 6=H&R+RD+ADAPTIVE STRIP\n" );
       printf("                 : 7=BALL+RoU  8=BALL+RoU+ADAPTIVE RADIUS \n");
@@ -265,6 +271,7 @@ int main(int argc, char *argv[])
       printf(" -w sigma        : variance parameter (%f)\n", SIGMA);
       printf(" -n samplesize   : number of samples (%ld) \n", SAMPLESIZE );
       printf(" -e experiments  : number of repetitions (%ld) \n", EXPERIMENTS );
+      printf(" -o math_output  : 1=write mathematica file (%d) \n", MATHEMATICA );
       
       return 0;
       break;
@@ -273,8 +280,8 @@ int main(int argc, char *argv[])
     }
   }
   
-/*  unur_set_default_debug(UNUR_DEBUG_OFF);*/
-  unur_set_default_debug(UNUR_DEBUG_ALL);
+  unur_set_default_debug(UNUR_DEBUG_OFF);
+/*  unur_set_default_debug(UNUR_DEBUG_ALL);*/
      
   for(d=0;d<DIM;d++){
     for (m=1; m<=4; m++) {
@@ -306,7 +313,7 @@ int main(int argc, char *argv[])
   }}
   
   
-#if 0 
+#if 0
   _unur_matrix_print_matrix ( DIM, covar, "Covariance Matrix",
 			      stdout, "", "---" );
 #endif
@@ -338,7 +345,7 @@ int main(int argc, char *argv[])
       if (NU>=4) moments_expected[im(d,3)]=0;
       if (NU>=5) moments_expected[im(d,4)]=3. * NU*NU / ((NU-2.)*(NU-4.));
     }
-    printf("NU=%d\n", NU);
+    printf("NU=%f\n", NU);
   }
 
   if (DISTRIBUTION==DISTRIBUTION_CAUCHY_BALL) {
@@ -389,15 +396,29 @@ int main(int argc, char *argv[])
   
   if (METHOD==METHOD_GIBBS) {
     printf("METHOD=GIBBS \n");  
+    
     par = unur_mcgibbs_new(distr);
+    unur_mcgibbs_set_c(par, 0);
     unur_mcgibbs_set_thinning(par,SKIP+1);
+/*    
+    par = unur_gibbs_new(distr);
+    unur_gibbs_set_thinning(par,SKIP+1);
+*/    
   }
   
   if (METHOD==METHOD_GIBBS_RANDOM) {
     printf("METHOD=GIBBS (RANDOM DIRECTIONS)\n");  
+    
     par = unur_mcgibbs_new(distr);
+    unur_mcgibbs_set_c(par, 0);
     unur_mcgibbs_set_thinning(par,SKIP+1);
     unur_mcgibbs_set_variant_random_direction(par);
+ 
+/*   
+    par = unur_gibbs_new(distr);
+    unur_gibbs_set_thinning(par,SKIP+1);
+    unur_gibbs_set_variant_random_direction(par);
+*/  
   }
 
   if (METHOD==METHOD_HITROU_BOX) {
@@ -489,10 +510,11 @@ int main(int argc, char *argv[])
  
   gen = unur_init(par);
 
-#if 0
-  math2(gen);
-  exit(0);
-#endif
+  if (MATHEMATICA==1) {
+    math2(gen);
+    exit(0);
+  }
+
   gen_timing = unur_test_timing(par_timing, 3, &time_setup, &time_sample, TRUE, stdout);
     
   double *uv;
@@ -509,7 +531,7 @@ int main(int argc, char *argv[])
     x[d]=eigenvectors[DIM*(DIM-1)-1+d];
   }  
   
-  /* setting x[] at origin */  
+  /* setting x[] at initial point */  
   
   for (d=0; d<DIM; d++) {
     x[d]=0.;
@@ -519,7 +541,7 @@ int main(int argc, char *argv[])
   double fx;  /* pdf value at the point x */
   fx=PDF(x);  
 
-  /* printf("f(x)=%f\n", fx); */
+  printf("f(x)=%g\n", fx); 
     
   x[DIM] = fx * 0.9; /* used by the pdf ball sampler */
   /* transforming x[] into uv[] coordinates (at RoU boundary */
@@ -563,7 +585,7 @@ int main(int argc, char *argv[])
     if (METHOD==METHOD_GIBBS
     || METHOD==METHOD_GIBBS_RANDOM) {
       unur_mcgibbs_set_startingpoint( par ,x);
-      /*_unur_mcgibbs_set_point_current( gen, x);  */
+      /*_unur_gibbs_set_point_current( gen ,x);*/
     }
     
     if (METHOD==METHOD_WALK) {    

@@ -30,7 +30,7 @@
  *                                                                           *
  *  pdf:       f(x) = Prod_{i=0}^{i=dim-1}                                   *
  *             exp(-(dim-i) (x_{i}-x_{i-1} - (theta_i-theta_{i-1}) ) / sigma_i) *
- *             with x_{-1}=0 and theta_{i-1}=0                               *                  
+ *             with x_{-1}=0 and theta_{-1}=0                                *                  
  *  domain:    [0, inf)^(dim)                                                *
  *  constant:  Prod_{i=0}^{i=dim-1} 1/sigma_i                                *
  *                                                                           *
@@ -110,10 +110,10 @@ static int _unur_dlogpdf_multiexponential( double *result, const double *x, UNUR
 double
 _unur_pdf_multiexponential( const double *x, UNUR_DISTR *distr )
 { 
-  double fx;
-  fx=_unur_logpdf_multiexponential( x, distr );
-  if (_unur_isfinite(fx))  
-    return exp( _unur_logpdf_multiexponential( x, distr ) );
+  double flog;
+  flog=_unur_logpdf_multiexponential( x, distr );
+  if (_unur_isfinite(flog)) /* && flog <= log(DBL_MAX) */  
+    return exp( flog );
   
   return 0.;
 } /* end of _unur_pdf_multiexponential() */
@@ -129,35 +129,29 @@ _unur_logpdf_multiexponential( const double *x, UNUR_DISTR *distr )
   double *sigma, *theta;
   
   dim = distr->dim ;
-  sum=0;
+  
+  dx=0.;
+  sum=0.;
   
   sigma = DISTR.param_vecs[INDEX_SIGMA];
   theta = DISTR.param_vecs[INDEX_THETA];
   
   /* TODO : reconsider logic concerning NULL pointers ? */
-  if (sigma == NULL || theta == NULL) {
+  if ( sigma || theta ) {
     /* standard form */
     for (i=0; i<dim; i++) { 
       dx = (i==0) ? ((x[i]<0)? INFINITY: x[i]) : ((x[i]<x[i-1])? INFINITY: x[i]-x[i-1]);  
-      if (_unur_isfinite(dx)) 
-        sum -= (dim-i) * dx;  
-      else
-        sum = -INFINITY;
+      sum -= (dim-i) * dx;  
     }
   }
   else {
     for (i=0; i<dim; i++) {
     
-      dx = (i==0) ? ((x[i]-theta[i]<0)? INFINITY: x[i]-theta[i]) : ((x[i]-theta[i]<x[i-1]-theta[i-1])? INFINITY: x[i]-x[i-1]-theta[i]+theta[i-1]); 
+      dx = (i==0) ? ((x[i]-theta[i]<0)? INFINITY: x[i]-theta[i]) : (( (x[i]-theta[i]) < (x[i-1]-theta[i-1]) )? INFINITY: x[i]-x[i-1]-theta[i]+theta[i-1]); 
       
       /* sigma[i] is expected to be > UNUR_EPSILON here */
       dx /= sigma[i];
-      if (_unur_isfinite(dx)) 
-        sum -= (dim-i) * dx;  
-      else
-        sum = -INFINITY;      
-      
-/*printf(">> dx=%f sum=%f\n", dx, sum); */   
+      sum -= (dim-i) * dx;  
     }
   }
           
@@ -215,6 +209,7 @@ _unur_set_params_multiexponential( UNUR_DISTR *distr, const double *sigma, const
     default_sigma = _unur_xmalloc( distr->dim * sizeof(double));
     for (i=0; i<distr->dim; i++) default_sigma[i]=1.;
     unur_distr_cvec_set_pdfparams_vec( distr, INDEX_SIGMA, default_sigma, distr->dim );
+    if (default_sigma) free(default_sigma);
   }
   else {
     /* check parameter sigma */
@@ -233,6 +228,7 @@ _unur_set_params_multiexponential( UNUR_DISTR *distr, const double *sigma, const
     default_theta = _unur_xmalloc(distr->dim * sizeof(double) );
     for (i=0; i<distr->dim; i++) default_theta[i]=0.;
     unur_distr_cvec_set_pdfparams_vec( distr, INDEX_THETA, default_theta, distr->dim );
+    if (default_theta) free(default_theta);  
   }
   else {
     unur_distr_cvec_set_pdfparams_vec( distr, INDEX_THETA, theta, distr->dim ); 
@@ -266,11 +262,12 @@ unur_distr_multiexponential( int dim, const double *sigma, const double *theta )
 */   
 {
   struct unur_distr *distr;
-  struct unur_distr *stdmarginal;
+  struct unur_distr **stdmarginal;
   
   int i;
   double sumsigma; /* used in the calculation of LOGNORMCONSTANT */
-    
+  double alpha;  
+  
   /* get new (empty) distribution object */
   distr = unur_distr_cvec_new(dim);
 
@@ -297,11 +294,21 @@ unur_distr_multiexponential( int dim, const double *sigma, const double *theta )
   DISTR.pdpdf    = _unur_distr_cvec_eval_pdpdf_from_pdlogpdf;  /* pointer to part. deriv. of PDF */
   /*DISTR.pdlogpdf = _unur_pdlogpdf_multiexponential;*/  /* pointer to partial derivative of logPDF */
 
-  /* set standardized marginal distributions */  
-  stdmarginal = unur_distr_exponential(NULL, 0); 
-  unur_distr_cvec_set_stdmarginals(distr, stdmarginal);
-  unur_distr_free(stdmarginal);
-
+  /* set standardized marginal distributions */ 
+  stdmarginal = malloc(distr->dim * sizeof(long)); /* array pointers */
+  for (i=0; i<distr->dim; i++) {  
+    alpha = i+1.; /* shape parameter */
+    stdmarginal[i] = unur_distr_gamma(&alpha, 1);
+  }
+    
+  unur_distr_cvec_set_marginal_array(distr, stdmarginal);
+  
+  /* free memory allocated to the stdmarginal-array */
+  for (i=0; i<distr->dim; i++) {
+    if (stdmarginal[i]) unur_distr_free(stdmarginal[i]);
+  } 
+  if (stdmarginal) free(stdmarginal);
+  
   /* set parameters for distribution */
   if (_unur_set_params_multiexponential(distr, sigma, theta)!=UNUR_SUCCESS) {
     free(distr);

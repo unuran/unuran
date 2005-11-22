@@ -465,7 +465,7 @@ _unur_mcgibbs_init( struct unur_par *par )
     case MCGIBBS_VAR_T_LOG:
       /* use more robust method TDRGW for T = log */
       par_condi = unur_tdrgw_new(GEN->distr_condi);
-      unur_tdrgw_set_usepercentiles(par_condi,2,NULL);
+      unur_tdrgw_set_reinit_percentiles(par_condi,2,NULL);
       break;
     case MCGIBBS_VAR_T_SQRT:
       /* we only have method TDR for T = -1/sqrt */
@@ -514,7 +514,7 @@ _unur_mcgibbs_init( struct unur_par *par )
     case MCGIBBS_VAR_T_LOG:
       /* use more robust method TDRGW for T = log */
       par_condi = unur_tdrgw_new(GEN->distr_condi);
-      unur_tdrgw_set_usepercentiles(par_condi,2,NULL);
+      unur_tdrgw_set_reinit_percentiles(par_condi,2,NULL);
       break;
     case MCGIBBS_VAR_T_SQRT:
       /* we only have method TDR for T = -1/sqrt */

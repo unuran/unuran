@@ -152,7 +152,7 @@ int unur_tdrgw_set_max_intervals( UNUR_PAR *parameters, int max_ivs );
    It is increased automatically to twice the number of construction
    points if this is larger.
 
-   Default is @code{100}.
+   Default is @code{200}.
 */
 
 int unur_tdrgw_set_cpoints( UNUR_PAR *parameters, int n_cpoints, const double *cpoints );
@@ -165,10 +165,10 @@ int unur_tdrgw_set_cpoints( UNUR_PAR *parameters, int n_cpoints, const double *c
    The default number of construction points is 2.
 */
 
-int unur_tdrgw_set_usepercentiles( UNUR_PAR *parameters, int n_percentiles, const double *percentiles );
+int unur_tdrgw_set_reinit_percentiles( UNUR_PAR *parameters, int n_percentiles, const double *percentiles );
 /* */ 
 
-int unur_tdrgw_chg_usepercentiles( UNUR_GEN *generator, int n_percentiles, const double *percentiles );
+int unur_tdrgw_chg_reinit_percentiles( UNUR_GEN *generator, int n_percentiles, const double *percentiles );
 /* 
    By default, when the @var{generator} object is reinitialized, it
    used the same construction points as for the initialization
@@ -186,6 +186,18 @@ int unur_tdrgw_chg_usepercentiles( UNUR_GEN *generator, int n_percentiles, const
    otherwise defaults are used.
    (Then the first and third quartiles are used by default.) 
 */
+
+int unur_tdrgw_set_reinit_ncpoints( UNUR_PAR *parameters, int ncpoints );
+/* */ 
+
+int unur_tdrgw_chg_reinit_ncpoints( UNUR_GEN *generator, int ncpoints );
+/* 
+   When reinit fails with the given construction points or the percentiles 
+   of the old hat function, another trial is undertaken with @var{ncpoints}
+   construction points. @var{ncpoints} must be at least @code{10}.
+
+   Default: @code{30}
+ */
 
 int unur_tdrgw_set_verify( UNUR_PAR *parameters, int verify );
 /* */

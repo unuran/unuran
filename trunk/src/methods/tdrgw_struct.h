@@ -43,6 +43,8 @@ struct unur_tdrgw_par {
   int n_starting_cpoints;         /* number of construction points at start  */
   const double *percentiles; /* percentiles of hat for c. points of new hat  */
   int n_percentiles;         /* number of percentiles                        */
+  int retry_ncpoints;        /* number of cpoints for second trial of reinit */
+
   int max_ivs;               /* maximum number of intervals                  */
 };
 
@@ -87,6 +89,7 @@ struct unur_tdrgw_gen {
 
   double *percentiles;       /* percentiles of hat for c. points of new hat  */
   int n_percentiles;         /* number of percentiles                        */
+  int retry_ncpoints;        /* number of cpoints for second trial of reinit */
 };
 
 /*---------------------------------------------------------------------------*/

@@ -90,7 +90,8 @@
 #define TDRGW_SET_N_CPOINTS      0x002u
 #define TDRGW_SET_PERCENTILES    0x004u
 #define TDRGW_SET_N_PERCENTILES  0x008u
-#define TDRGW_SET_MAX_IVS        0x010u
+#define TDRGW_SET_RETRY_NCPOINTS 0x010u
+#define TDRGW_SET_MAX_IVS        0x020u
 
 /*---------------------------------------------------------------------------*/
 
@@ -197,6 +198,11 @@ static void _unur_tdrgw_debug_reinit_start( const struct unur_gen *gen );
 /* print before reinitialization of generator starts.                        */
 /*---------------------------------------------------------------------------*/
 
+static void _unur_tdrgw_debug_reinit_retry( const struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* print before second trial of reinitialization of generator starts.        */
+/*---------------------------------------------------------------------------*/
+
 static void _unur_tdrgw_debug_reinit_finished( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print after generator has been reinitialized.                             */
@@ -295,7 +301,8 @@ unur_tdrgw_new( const struct unur_distr* distr )
   PAR->n_starting_cpoints  = 2;      /* number of starting points            */
   PAR->percentiles         = NULL;   /* pointer to array of percentiles      */
   PAR->n_percentiles       = 2;      /* number of percentiles                */
-  PAR->max_ivs             = 100;    /* maximum number of intervals          */
+  PAR->retry_ncpoints      = 30;     /* number of cpoints for second trial of reinit */
+  PAR->max_ivs             = 200;    /* maximum number of intervals          */
  
   par->method   = UNUR_METH_TDRGW;   /* method                               */
   par->variant  = 0u;                /* default variant                      */
@@ -403,7 +410,7 @@ unur_tdrgw_set_cpoints( struct unur_par *par, int n_cpoints, const double *cpoin
 /*---------------------------------------------------------------------------*/
 
 int
-unur_tdrgw_set_usepercentiles( struct unur_par *par, int n_percentiles, const double *percentiles )
+unur_tdrgw_set_reinit_percentiles( struct unur_par *par, int n_percentiles, const double *percentiles )
      /*----------------------------------------------------------------------*/
      /* set percentiles for construction points for hat function             */
      /* and/or its number for re-initialization                              */
@@ -460,12 +467,12 @@ unur_tdrgw_set_usepercentiles( struct unur_par *par, int n_percentiles, const do
 
   return UNUR_SUCCESS;
 
-} /* end of unur_tdrgw_set_usepercentiles() */
+} /* end of unur_tdrgw_set_reinit_percentiles() */
 
 /*---------------------------------------------------------------------------*/
 
 int
-unur_tdrgw_chg_usepercentiles( struct unur_gen *gen, int n_percentiles, const double *percentiles )
+unur_tdrgw_chg_reinit_percentiles( struct unur_gen *gen, int n_percentiles, const double *percentiles )
      /*----------------------------------------------------------------------*/
      /* change percentiles for construction points for hat function          */
      /* and/or its number for re-initialization                              */
@@ -536,7 +543,79 @@ unur_tdrgw_chg_usepercentiles( struct unur_gen *gen, int n_percentiles, const do
   /* o.k. */
   return UNUR_SUCCESS;
 
-} /* end of unur_tdrgw_chg_usepercentiles() */
+} /* end of unur_tdrgw_chg_reinit_percentiles() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_tdrgw_set_reinit_ncpoints( struct unur_par *par, int ncpoints )
+     /*----------------------------------------------------------------------*/
+     /* set number of construction points for second trial of reinit         */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par      ... pointer to parameter for building generator           */
+     /*   ncpoints ... number of construction points                         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, TDRGW );
+
+  /* check number */
+  if (ncpoints < 10 ) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"number of construction points < 10");
+    return UNUR_ERR_PAR_SET;
+  }
+
+  /* store date */
+  PAR->retry_ncpoints = ncpoints;
+
+  /* changelog */
+  par->set |= TDRGW_SET_RETRY_NCPOINTS; 
+
+  return UNUR_SUCCESS;
+
+} /* end of unur_tdrgw_set_reinit_ncpoints() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_tdrgw_chg_reinit_ncpoints( struct unur_gen *gen, int ncpoints )
+     /*----------------------------------------------------------------------*/
+     /* change number of construction points for second trial of reinit      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen           ... pointer to generator object                      */
+     /*   ncpoints ... number of construction points                         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, TDRGW, UNUR_ERR_GEN_INVALID );
+
+  /* check number */
+  if (ncpoints < 10 ) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"number of construction points < 10");
+    return UNUR_ERR_PAR_SET;
+  }
+
+  /* store date */
+  GEN->retry_ncpoints = ncpoints;
+
+  /* changelog */
+  gen->set |= TDRGW_SET_RETRY_NCPOINTS; 
+
+  return UNUR_SUCCESS;
+
+} /* end of unur_tdrgw_chg_reinit_ncpoints() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -797,7 +876,10 @@ _unur_tdrgw_create( struct unur_par *par )
 
   /* copy percentiles */
   if (gen->set & TDRGW_SET_N_PERCENTILES)
-    unur_tdrgw_chg_usepercentiles( gen, PAR->n_percentiles, PAR->percentiles );
+    unur_tdrgw_chg_reinit_percentiles( gen, PAR->n_percentiles, PAR->percentiles );
+
+  /* copy all other parameters */
+  GEN->retry_ncpoints = PAR->retry_ncpoints;   /* number of cpoints for second trial of reinit */
 
   /* bounds for adding construction points  */
   GEN->max_ivs = max(2*PAR->n_starting_cpoints,PAR->max_ivs);  /* maximum number of intervals */
@@ -826,8 +908,10 @@ unur_tdrgw_reinit( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   struct unur_tdrgw_interval *iv,*next;
+  double *bak_cpoints;
+  int bak_n_cpoints;
   int i;
-  int errors;
+  int n_trials;
 
   /* check arguments */
   _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
@@ -856,13 +940,14 @@ unur_tdrgw_reinit( struct unur_gen *gen )
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
   if (gen->debug & TDRGW_DEBUG_REINIT)
-    if (gen->debug) _unur_tdrgw_debug_reinit_start(gen);
+    _unur_tdrgw_debug_reinit_start(gen);
 #endif
 
-  /* reset error counter */
-  errors = 0;
+  /* make backup of cpoints */
+  bak_n_cpoints = GEN->n_starting_cpoints;
+  bak_cpoints = GEN->starting_cpoints;
 
-  do {
+  for (n_trials = 1; ; ++n_trials) {
     /* free linked list of intervals */
     for (iv = GEN->iv; iv != NULL; iv = next) {
       next = iv->next;
@@ -873,20 +958,34 @@ unur_tdrgw_reinit( struct unur_gen *gen )
     GEN->Atotal = 0.;
     GEN->logAmax = 0.;
 
-    if (errors > 0) {
+    if (n_trials > 2) {
       /* we have done our best */
       _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"bad construction points for reinit");
+      GEN->n_starting_cpoints = bak_n_cpoints;
+      GEN->starting_cpoints = bak_cpoints;
       return UNUR_FAILURE;
+    }
+
+    if (n_trials > 1) {
+      /* second trial */
+      GEN->n_starting_cpoints = GEN->retry_ncpoints;
+      GEN->starting_cpoints = NULL;
+#ifdef UNUR_ENABLE_LOGGING
+      /* write info into log file */
+      if (gen->debug & TDRGW_DEBUG_REINIT)
+	_unur_tdrgw_debug_reinit_retry(gen);
+#endif
+
     }
 
     /* get starting points */
     if (_unur_tdrgw_starting_cpoints(gen)!=UNUR_SUCCESS) {
-      ++errors; continue;
+      continue;
     }
 
     /* compute intervals for given starting points */
     if (_unur_tdrgw_starting_intervals(gen)!=UNUR_SUCCESS) {
-      ++errors; continue;
+      continue;
     }
 
     /* update maximal number of intervals */
@@ -897,15 +996,24 @@ unur_tdrgw_reinit( struct unur_gen *gen )
     
     /* is there any hat at all ? */
     if (GEN->Atotal <= 0.) {
-      ++errors; continue;
+      continue;
     }
 
-  } while (errors);
+    /* reinit successful */
+    break;
+
+  }
+
+  /* clean up */
+  if (n_trials > 1) {
+    GEN->n_starting_cpoints = bak_n_cpoints;
+    GEN->starting_cpoints = bak_cpoints;
+  }
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
   if (gen->debug & TDRGW_DEBUG_REINIT)
-    if (gen->debug) _unur_tdrgw_debug_reinit_finished(gen);
+    _unur_tdrgw_debug_reinit_finished(gen);
 #endif
 
   return UNUR_SUCCESS;
@@ -2340,6 +2448,33 @@ _unur_tdrgw_debug_reinit_start( const struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 void
+_unur_tdrgw_debug_reinit_retry( const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* write info about generator before second trial of reinitialization   */
+     /* into logfile                                                         */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{
+  FILE *log;
+
+  /* check arguments */
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_TDRGW_GEN,RETURN_VOID);
+
+  log = unur_get_stream();
+
+  fprintf(log,"%s: *** Re-Initialize failed  -->  second trial ***\n",gen->genid);
+  fprintf(log,"%s: use equal-area-rule with %d points\n",gen->genid,GEN->retry_ncpoints);
+  fprintf(log,"%s:\n",gen->genid);
+
+  fflush(log);
+
+} /* end of _unur_tdrgw_debug_reinit_retry() */
+
+/*---------------------------------------------------------------------------*/
+
+void
 _unur_tdrgw_debug_reinit_finished( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* write info about generator after reinitialization into logfile       */
@@ -2355,7 +2490,7 @@ _unur_tdrgw_debug_reinit_finished( const struct unur_gen *gen )
 
   log = unur_get_stream();
 
-  _unur_tdrgw_debug_intervals(gen,"*** Generator reinitialized ***",TRUE);
+  _unur_tdrgw_debug_intervals(gen," *** Generator reinitialized ***",TRUE);
 
   fprintf(log,"%s:\n",gen->genid);
 

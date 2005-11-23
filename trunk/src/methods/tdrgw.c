@@ -934,7 +934,6 @@ unur_tdrgw_reinit( struct unur_gen *gen )
     }
     for (i=0; i<GEN->n_percentiles; i++)
       GEN->starting_cpoints[i] = unur_tdrgw_eval_invcdfhat( gen, GEN->percentiles[i] );
-    
   }
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -975,29 +974,26 @@ unur_tdrgw_reinit( struct unur_gen *gen )
       if (gen->debug & TDRGW_DEBUG_REINIT)
 	_unur_tdrgw_debug_reinit_retry(gen);
 #endif
-
     }
 
     /* get starting points */
-    if (_unur_tdrgw_starting_cpoints(gen)!=UNUR_SUCCESS) {
+    if (_unur_tdrgw_starting_cpoints(gen)!=UNUR_SUCCESS)
       continue;
-    }
 
     /* compute intervals for given starting points */
-    if (_unur_tdrgw_starting_intervals(gen)!=UNUR_SUCCESS) {
+    if (_unur_tdrgw_starting_intervals(gen)!=UNUR_SUCCESS)
       continue;
-    }
 
     /* update maximal number of intervals */
-    if (GEN->n_ivs > GEN->max_ivs)  GEN->max_ivs = GEN->n_ivs;
+    if (GEN->n_ivs > GEN->max_ivs)
+      GEN->max_ivs = GEN->n_ivs;
     
     /* make table of areas */
     _unur_tdrgw_make_area_table(gen);
     
     /* is there any hat at all ? */
-    if (GEN->Atotal <= 0.) {
+    if (GEN->Atotal <= 0.)
       continue;
-    }
 
     /* reinit successful */
     break;

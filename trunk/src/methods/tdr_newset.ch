@@ -176,7 +176,7 @@ unur_tdr_set_cpoints( struct unur_par *par, int n_stp, const double *stp )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_tdr_set_usepercentiles( struct unur_par *par, int n_percentiles, const double *percentiles )
+unur_tdr_set_reinit_percentiles( struct unur_par *par, int n_percentiles, const double *percentiles )
      /*----------------------------------------------------------------------*/
      /* set percentiles for construction points for hat function             */
      /* and/or its number for re-initialization                              */
@@ -233,12 +233,12 @@ unur_tdr_set_usepercentiles( struct unur_par *par, int n_percentiles, const doub
 
   return UNUR_SUCCESS;
 
-} /* end of unur_tdr_set_usepercentiles() */
+} /* end of unur_tdr_set_reinit_percentiles() */
 
 /*---------------------------------------------------------------------------*/
 
 int
-unur_tdr_chg_usepercentiles( struct unur_gen *gen, int n_percentiles, const double *percentiles )
+unur_tdr_chg_reinit_percentiles( struct unur_gen *gen, int n_percentiles, const double *percentiles )
      /*----------------------------------------------------------------------*/
      /* change percentiles for construction points for hat function          */
      /* and/or its number for re-initialization                              */
@@ -309,7 +309,7 @@ unur_tdr_chg_usepercentiles( struct unur_gen *gen, int n_percentiles, const doub
   /* o.k. */
   return UNUR_SUCCESS;
 
-} /* end of unur_tdr_chg_usepercentiles() */
+} /* end of unur_tdr_chg_reinit_percentiles() */
 
 /*---------------------------------------------------------------------------*/
 

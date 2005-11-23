@@ -271,10 +271,10 @@ int unur_tdr_set_cpoints( UNUR_PAR *parameters, int n_stp, const double *stp );
    The default number of construction points is 30.
 */
 
-int unur_tdr_set_usepercentiles( UNUR_PAR *parameters, int n_percentiles, const double *percentiles );
+int unur_tdr_set_reinit_percentiles( UNUR_PAR *parameters, int n_percentiles, const double *percentiles );
 /* */ 
 
-int unur_tdr_chg_usepercentiles( UNUR_GEN *generator, int n_percentiles, const double *percentiles );
+int unur_tdr_chg_reinit_percentiles( UNUR_GEN *generator, int n_percentiles, const double *percentiles );
 /* 
    By default, when the @var{generator} object is reinitialized, it
    used the same construction points as for the initialization

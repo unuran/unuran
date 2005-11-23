@@ -470,7 +470,7 @@ _unur_mcgibbs_init( struct unur_par *par )
     case MCGIBBS_VAR_T_SQRT:
       /* we only have method TDR for T = -1/sqrt */
       par_condi = unur_tdr_new(GEN->distr_condi);
-      unur_tdr_set_usepercentiles(par_condi,2,NULL);
+      unur_tdr_set_reinit_percentiles(par_condi,2,NULL);
       unur_tdr_set_c(par_condi,-0.5);
       unur_tdr_set_usedars(par_condi,FALSE);
       break;
@@ -519,7 +519,7 @@ _unur_mcgibbs_init( struct unur_par *par )
     case MCGIBBS_VAR_T_SQRT:
       /* we only have method TDR for T = -1/sqrt */
       par_condi = unur_tdr_new(GEN->distr_condi);
-      unur_tdr_set_usepercentiles(par_condi,2,NULL);
+      unur_tdr_set_reinit_percentiles(par_condi,2,NULL);
       unur_tdr_set_c(par_condi,-0.5);
       unur_tdr_set_usedars(par_condi,FALSE);
       break;

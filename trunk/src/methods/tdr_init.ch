@@ -304,7 +304,7 @@ _unur_tdr_create( struct unur_par *par )
   /* copy percentiles */
   GEN->percentiles = NULL;
   if (gen->set & TDR_SET_N_PERCENTILES)
-    unur_tdr_chg_usepercentiles( gen, PAR->n_percentiles, PAR->percentiles );
+    unur_tdr_chg_reinit_percentiles( gen, PAR->n_percentiles, PAR->percentiles );
 
   /* set (default) boundaries for U */
   GEN->Umin = 0.;

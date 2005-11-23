@@ -293,6 +293,18 @@ int unur_tdr_chg_reinit_percentiles( UNUR_GEN *generator, int n_percentiles, con
    (Then the first and third quartiles are used by default.) 
 */
 
+int unur_tdr_set_reinit_ncpoints( UNUR_PAR *parameters, int ncpoints );
+/* */ 
+
+int unur_tdr_chg_reinit_ncpoints( UNUR_GEN *generator, int ncpoints );
+/* 
+   When reinit fails with the given construction points or the percentiles 
+   of the old hat function, another trial is undertaken with @var{ncpoints}
+   construction points. @var{ncpoints} must be at least @code{10}.
+
+   Default: @code{50}
+ */
+
 int unur_tdr_chg_truncated(UNUR_GEN *gen, double left, double right);
 /*
    Change the borders of the domain of the (truncated) distribution. 

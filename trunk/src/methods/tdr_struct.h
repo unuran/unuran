@@ -48,6 +48,7 @@ struct unur_tdr_par {
 
   const double *percentiles;    /* percentiles of hat for c. points of new hat  */
   int n_percentiles;            /* number of percentiles                     */
+  int retry_ncpoints;           /* number of cpoints for second trial of reinit */
 
   int     max_ivs;              /* maximum number of intervals               */
   double  max_ratio;            /* bound for ratio r_n = Atotal / Asqueeze   */
@@ -112,8 +113,9 @@ struct unur_tdr_gen {
   double *starting_cpoints;     /* pointer to array of starting points       */
   int     n_starting_cpoints;   /* number of construction points at start    */
 
-  double *percentiles;       /* percentiles of hat for c. points of new hat  */
-  int n_percentiles;         /* number of percentiles                        */
+  double *percentiles;          /* percentiles of hat for c. points of new hat  */
+  int n_percentiles;            /* number of percentiles                        */
+  int retry_ncpoints;           /* number of cpoints for second trial of reinit */
 
   double  darsfactor;           /* factor for derandomized ARS               */
   int     darsrule;             /* rule for finding splitting points in DARS */

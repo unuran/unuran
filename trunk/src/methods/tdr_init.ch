@@ -306,6 +306,9 @@ _unur_tdr_create( struct unur_par *par )
   if (gen->set & TDR_SET_N_PERCENTILES)
     unur_tdr_chg_reinit_percentiles( gen, PAR->n_percentiles, PAR->percentiles );
 
+  /* copy all other parameters */
+  GEN->retry_ncpoints = PAR->retry_ncpoints;   /* number of cpoints for second trial of reinit */
+
   /* set (default) boundaries for U */
   GEN->Umin = 0.;
   GEN->Umax = 1.;
@@ -340,8 +343,10 @@ unur_tdr_reinit( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   struct unur_tdr_interval *iv,*next;
+  double *bak_cpoints;
+  int bak_n_cpoints;
   int i;
-  int errors;
+  int n_trials;
 
   /* check arguments */
   _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
@@ -372,10 +377,11 @@ unur_tdr_reinit( struct unur_gen *gen )
     if (gen->debug) _unur_tdr_debug_reinit_start(gen);
 #endif
 
-  /* reset error counter */
-  errors = 0;
+  /* make backup of cpoints */
+  bak_n_cpoints = GEN->n_starting_cpoints;
+  bak_cpoints = GEN->starting_cpoints;
 
-  do {
+  for (n_trials = 1; ; ++n_trials) {
     /* free linked list of intervals */
     for (iv = GEN->iv; iv != NULL; iv = next) {
       next = iv->next;
@@ -386,39 +392,43 @@ unur_tdr_reinit( struct unur_gen *gen )
     GEN->Atotal = 0.;
     GEN->Asqueeze = 0.;
 
-    if (errors > 0) {
+    if (n_trials > 2) {
       /* we have done our best */
       _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"bad construction points for reinit");
+      GEN->n_starting_cpoints = bak_n_cpoints;
+      GEN->starting_cpoints = bak_cpoints;
       return UNUR_FAILURE;
     }
 
+    if (n_trials > 1) {
+      /* second trial */
+      GEN->n_starting_cpoints = GEN->retry_ncpoints;
+      GEN->starting_cpoints = NULL;
+#ifdef UNUR_ENABLE_LOGGING
+      /* write info into log file */
+      if (gen->debug & TDR_DEBUG_REINIT)
+	_unur_tdr_debug_reinit_retry(gen);
+#endif
+    }
+
     /* set-up the generator */
-    if (_unur_tdr_make_gen( gen ) != UNUR_SUCCESS) {
-      ++errors; continue;
-    }
+    if (_unur_tdr_make_gen( gen ) != UNUR_SUCCESS)
+      continue;
 
-/*     /\* get starting points *\/ */
-/*     if (_unur_tdr_starting_cpoints(gen)!=UNUR_SUCCESS) { */
-/*       ++errors; continue; */
-/*     } */
-
-/*     /\* compute intervals for given starting points *\/ */
-/*     if (_unur_tdr_starting_intervals(gen)!=UNUR_SUCCESS) { */
-/*       ++errors; continue; */
-/*     } */
-
-/*     /\* update maximal number of intervals *\/ */
-/*     if (GEN->n_ivs > GEN->max_ivs)  GEN->max_ivs = GEN->n_ivs; */
-    
-/*     /\* make table of areas *\/ */
-/*     _unur_tdr_make_guide_table(gen); */
-    
     /* is there any hat at all ? */
-    if (GEN->Atotal <= 0.) {
-      ++errors; continue;
-    }
+    if (GEN->Atotal <= 0.)
+      continue;
 
-  } while (errors);
+    /* reinit successful */
+    break;
+
+  }
+
+  /* clean up */
+  if (n_trials > 1) {
+    GEN->n_starting_cpoints = bak_n_cpoints;
+    GEN->starting_cpoints = bak_cpoints;
+  }
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */

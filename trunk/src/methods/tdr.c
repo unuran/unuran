@@ -378,17 +378,18 @@
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
 
-#define TDR_SET_CENTER         0x002u
-#define TDR_SET_STP            0x001u
-#define TDR_SET_N_STP          0x002u
-#define TDR_SET_PERCENTILES    0x004u
-#define TDR_SET_N_PERCENTILES  0x008u
-#define TDR_SET_GUIDEFACTOR    0x010u
-#define TDR_SET_C              0x020u
-#define TDR_SET_MAX_SQHRATIO   0x040u
-#define TDR_SET_MAX_IVS        0x080u
-#define TDR_SET_USE_DARS       0x100u
-#define TDR_SET_DARS_FACTOR    0x200u
+#define TDR_SET_CENTER         0x0002u
+#define TDR_SET_STP            0x0001u
+#define TDR_SET_N_STP          0x0002u
+#define TDR_SET_PERCENTILES    0x0004u
+#define TDR_SET_N_PERCENTILES  0x0008u
+#define TDR_SET_RETRY_NCPOINTS 0x0010u
+#define TDR_SET_GUIDEFACTOR    0x0020u
+#define TDR_SET_C              0x0040u
+#define TDR_SET_MAX_SQHRATIO   0x0080u
+#define TDR_SET_MAX_IVS        0x0100u
+#define TDR_SET_USE_DARS       0x0200u
+#define TDR_SET_DARS_FACTOR    0x0400u
 
 /*---------------------------------------------------------------------------*/
 
@@ -554,6 +555,11 @@ static void _unur_tdr_debug_dars_finished( const struct unur_gen *gen );
 static void _unur_tdr_debug_reinit_start( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print before reinitialization of generator starts.                        */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_tdr_debug_reinit_retry( const struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* print before second trial of reinitialization of generator starts.        */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_tdr_debug_reinit_finished( const struct unur_gen *gen );

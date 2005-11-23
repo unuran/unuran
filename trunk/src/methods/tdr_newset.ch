@@ -87,6 +87,9 @@ unur_tdr_new( const struct unur_distr* distr )
 
   PAR->starting_cpoints    = NULL;  /* pointer to array of starting points   */
   PAR->n_starting_cpoints  = 30;    /* number of starting points             */
+  PAR->percentiles         = NULL;  /* pointer to array of percentiles       */
+  PAR->n_percentiles       = 2;     /* number of percentiles                 */
+  PAR->retry_ncpoints      = 50;    /* number of cpoints for second trial of reinit */
   PAR->max_ivs             = 100;   /* maximum number of intervals           */
   PAR->max_ratio           = 0.99;  /* bound for ratio  Atotal / Asqueeze    */
   PAR->bound_for_adding    = 0.5;   /* do not add a new construction point in an interval,
@@ -310,6 +313,78 @@ unur_tdr_chg_reinit_percentiles( struct unur_gen *gen, int n_percentiles, const 
   return UNUR_SUCCESS;
 
 } /* end of unur_tdr_chg_reinit_percentiles() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_tdr_set_reinit_ncpoints( struct unur_par *par, int ncpoints )
+     /*----------------------------------------------------------------------*/
+     /* set number of construction points for second trial of reinit         */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par      ... pointer to parameter for building generator           */
+     /*   ncpoints ... number of construction points                         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, TDR );
+
+  /* check number */
+  if (ncpoints < 10 ) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"number of construction points < 10");
+    return UNUR_ERR_PAR_SET;
+  }
+
+  /* store date */
+  PAR->retry_ncpoints = ncpoints;
+
+  /* changelog */
+  par->set |= TDR_SET_RETRY_NCPOINTS; 
+
+  return UNUR_SUCCESS;
+
+} /* end of unur_tdr_set_reinit_ncpoints() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_tdr_chg_reinit_ncpoints( struct unur_gen *gen, int ncpoints )
+     /*----------------------------------------------------------------------*/
+     /* change number of construction points for second trial of reinit      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen           ... pointer to generator object                      */
+     /*   ncpoints ... number of construction points                         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, TDR, UNUR_ERR_GEN_INVALID );
+
+  /* check number */
+  if (ncpoints < 10 ) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"number of construction points < 10");
+    return UNUR_ERR_PAR_SET;
+  }
+
+  /* store date */
+  GEN->retry_ncpoints = ncpoints;
+
+  /* changelog */
+  gen->set |= TDR_SET_RETRY_NCPOINTS; 
+
+  return UNUR_SUCCESS;
+
+} /* end of unur_tdr_chg_reinit_ncpoints() */
 
 /*---------------------------------------------------------------------------*/
 

@@ -286,6 +286,33 @@ _unur_tdr_debug_reinit_start( const struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 void
+_unur_tdr_debug_reinit_retry( const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* write info about generator before second trial of reinitialization   */
+     /* into logfile                                                         */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{
+  FILE *log;
+
+  /* check arguments */
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_TDR_GEN,RETURN_VOID);
+
+  log = unur_get_stream();
+
+  fprintf(log,"%s: *** Re-Initialize failed  -->  second trial ***\n",gen->genid);
+  fprintf(log,"%s: use equal-area-rule with %d points\n",gen->genid,GEN->retry_ncpoints);
+  fprintf(log,"%s:\n",gen->genid);
+
+  fflush(log);
+
+} /* end of _unur_tdr_debug_reinit_retry() */
+
+/*---------------------------------------------------------------------------*/
+
+void
 _unur_tdr_debug_reinit_finished( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* write info about generator after reinitialization into logfile       */

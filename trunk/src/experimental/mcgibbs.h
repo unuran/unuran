@@ -42,33 +42,80 @@
 
    =UP  Methods_for_CVEC
 
-   =REQUIRED log-concave PDF, dPDF
+   =REQUIRED T-concave logPDF, derivative of logPDF
 
    =SPEED Set-up: fast, Sampling: moderate
 
    =REF  [HLD04: Sect.14.1.2]
 
    =DESCRIPTION
-      The Gibbs sampler is an implementation of a coordinate sampler,
-      wherein, the sampling coordinate directions are changed cyclically.
-      For each direction, the full conditional through the actual
-      sampling point is being used in connection with the Gilks&Wild
-      variant of the Transformed Density Rejection method.
+      Methods MCGIBBS implements a Gibbs sampler for multivariate
+      distributions with given joint density and its gradient.
+      When running such a Markov chain all coordinates are updated
+      cyclically using full conditional distributions. Each step
+      is returned (i.e., a random point is returned whenever a single
+      coordinate has been updated). 
+      It is also possible to return only points after all coordinates
+      have been updated by "thinning" the chain.
+      Moreover, to reduce autocorrelation this thinning factor can be
+      any integer. Notice, however, that the sampling time for a chain
+      of given length is also increased by the same factor.
 
-      TODO.
+      MCGIBBS also provides a variant of the Gibbs sampler where in
+      each step a point from the full conditional distribution along
+      some random direction is sampled. This direction is chosen
+      uniformly from the sphere in each step.
+      This method is also known as hit-and-run algpithm for
+      non-uniform distributions.
+
+      Our experiences shows that the original Gibbs sampler with
+      sampling along coordinate axes is superior to random direction
+      sampling as long as the correlations between the components of
+      the random vector are not too high.
+
+      For both variants TDR ((@pxref{TDR}, @pxref{TDRGW}) is used to
+      sample from the full conditional distributions. In opposition to
+      the univariate case, it is important that the factor @code{c} is
+      as large as possible. I.e., for a log-concave density @code{c}
+      must be set to @code{0.}, since otherwise numerical underflow
+      might stop the algorithm.
+
+      @emph{Important:} MCGIBBS does not generate independent random
+      points.
 
    =HOWTOUSE
-      For using the GIBBS method UNURAN needs the PDF of the
+      For using the MCGIBBS method UNURAN needs the logarithm of the
+      PDF of the multivariate joint distribution and its gradient or
+      partial derivatives. 
+
+      It provides two variants which can be selected using the
+      recpective calls
+      unur_mcgibbs_set_variant_coordinate() for the original Gibbs
+      sampler (this is the default variant) and 
+      by unur_mcgibbs_set_variant_random_direction() which uses random
+      directions (also known as multivariate hit-and-run algorithm).
+
+      It is important that the @code{c} parameter for the TDR method
+      is as large as possible. For logconcave distribution it must be
+      set to @code{0.} since otherwise numerical underflow can cause
+      the algorithm to stop.
+      
+      In case of a fatal error in the generator for conditional
+      distributions the methods generated points contain
+      UNUR_INFINITY.
+
+      @strong{Warning:} The algorithm requires that all full
+      conditionals for the given distribution object are
+      @i{T}-concave. However, this property is not checked. 
+      If this property is not satisfied, then generation from the
+      conditional distributions becomes (very) slow and might fail or
+      (even worse) produces random vectors from an incorrect
       distribution. 
-      The Gibbs sampler should only be used for weak correlation structure 
-      of the PDF. Strong correlations between the independent variates
-      often lead to very weak ergodicity properties when using this 
-      method.
 
-      TODO.
-
-      @strong{Warning:} If the ... debugging flag is set to verbose (other than @code{1u}) 
-      every Gibbs step might produces a long entry in the log file ...
+      @strong{Warning:} Be carefull with debugging flags. If it
+      contains flag @code{0x01000000u} it produces a lot of output for
+      each step in the algorithm.
+      (This flag is switched of in the default debugging flags).
 
    =END
 */
@@ -84,51 +131,51 @@ UNUR_PAR *unur_mcgibbs_new( const UNUR_DISTR *distribution );
 
 int unur_mcgibbs_set_variant_coordinate( UNUR_PAR *parameters );
 /* 
-   Coordinate Sampler :
+   Coordinate Sampler:
    Sampling along the coordinate directions (cyclic).
+
    This is the default.
 */
 
 int unur_mcgibbs_set_variant_random_direction( UNUR_PAR *parameters );
 /* 
-   Random Direction Sampler :
+   Random Direction Sampler:
    Sampling along the random directions.
-   Not implemented at the moment.
 */
 
 int unur_mcgibbs_set_c( UNUR_PAR *parameters, double c );
 /* 
-   TODO.
+   Set parameter @var{c} for transformation @unurmath{T} of the
+   transformed density rejection method.
+   Currently only values between @code{0} and @code{-0.5} are
+   allowed. If @code{c} is between @code{0} and @code{-0.5} it is set
+   to @code{-0.5}. 
 
-   Set parameter @var{c} for transformation T. 
-   Currently only values between 0 and -0.5 are allowed.
-   If @code{c} is between 0 and -0.5 it is set to -0.5.
+   For @var{c} @code{=0} (for logconcave densities) method TDRGW
+   (@pxref{TDRGW}) is used which is very robust against badly
+   normalized PDFs. For other values method TDR (@pxref{TDR}) is used.
 
-   For @code{c=0} much more robust against badly normalized PDFs
-   than $code{c=-0.5}.
-
-   @code{c=0}: method TDRGW
-   @code{c=-0.5}: method TDR
-
-   other values not implemented yet.
-
-
+   The value for @var{c} should be as large as possible to avoid 
+   fatal numerical underflows. Thus for log-concave distributions
+   @var{c} must be set to @code{0.}
+ 
    Default is @code{0}.
 */
 
 
 int unur_mcgibbs_set_startingpoint( UNUR_PAR *parameters, const double *x0);
 /* 
-   Starting point.
-   TODO.
+   Sets the starting point of the Gibbs sampler. @var{x0} must be 
+   a "typical" point of the given distribution.
+
+   Default is 0.
 */
 
 int unur_mcgibbs_set_thinning( UNUR_PAR *parameters, int thinning );
 /*
-   Sets the parameter @var{thinning}.
-   A thinning parameter of n means, that the interval size between two 
-   sampled points (returned random vectors) is n, whereas the internally 
-   sampled points are being a unit interval apart.
+   Sets the @var{thinning} parameter. When @var{thinning} is set to
+   @i{k} then every @i{k}-th point from the iteration is returned by
+   the sampling algorithm.
 
    @emph{Notice}: This parameter must satisfy @var{thinning}>=1.
 

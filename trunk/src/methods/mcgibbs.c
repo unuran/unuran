@@ -66,13 +66,6 @@
 #include "mcgibbs.h"
 #include "mcgibbs_struct.h"
 
-
-/** TODO: **/
-#define CK_MCGIBBS_PAR  CK_GIBBS_PAR 
-#define CK_MCGIBBS_GEN  CK_GIBBS_GEN 
-
-#define UNUR_METH_MCGIBBS  UNUR_METH_GIBBS 
-
 /*---------------------------------------------------------------------------*/
 /* Variants                                                                  */
 

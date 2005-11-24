@@ -243,8 +243,8 @@ _unur_print_method( struct unur_par *par )
     printf("METHOD:\t\tnormal to anything (NORTA)\n");
     break;
 
-  case UNUR_METH_GIBBS:
-    COOKIE_CHECK(par,CK_GIBBS_PAR,UNUR_ERR_COOKIE);
+  case UNUR_METH_MCGIBBS:
+    COOKIE_CHECK(par,CK_MCGIBBS_PAR,UNUR_ERR_COOKIE);
     printf("METHOD:\t\tMarkov Chain - GIBBS sampler (MCGIBBS)\n");
     break;
 

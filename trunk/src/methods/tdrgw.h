@@ -95,8 +95,8 @@
       Either the same construction points as for the initial generator 
       (given by a unur_tdrgw_set_cpoints() call) are used (this is the
       default), or percentiles of the old hat function can be used.
-      This can be set or changed using unur_tdrgw_set_usepercentiles()
-      and unur_tdrgw_chg_usepercentiles().
+      This can be set or changed using unur_tdrgw_set_reinit_percentiles()
+      and unur_tdrgw_chg_reinit_percentiles().
       This feature is usefull when the underlying distribution object
       is only moderately changed. (An example is Gibbs sampling with
       small correlations.)

@@ -109,14 +109,15 @@
 #define CK_VNROU_GEN     0x00200031u
 #define CK_VAROU_PAR     0x00200040u
 #define CK_VAROU_GEN     0x00200041u
-#define CK_HITROU_PAR    0x00200050u
-#define CK_HITROU_GEN    0x00200051u
-#define CK_NORTA_PAR     0x00200060u
-#define CK_NORTA_GEN     0x00200061u
-#define CK_GIBBS_PAR     0x00200070u
-#define CK_GIBBS_GEN     0x00200071u
-#define CK_BALL_PAR      0x00200080u
-#define CK_BALL_GEN      0x00200081u
+#define CK_NORTA_PAR     0x00200050u
+#define CK_NORTA_GEN     0x00200051u
+/* Markov chain samplers */
+#define CK_BALL_PAR      0x00200060u
+#define CK_BALL_GEN      0x00200061u
+#define CK_MCGIBBS_PAR   0x00200070u
+#define CK_MCGIBBS_GEN   0x00200071u
+#define CK_HITROU_PAR    0x00200080u
+#define CK_HITROU_GEN    0x00200081u
 #define CK_WALK_PAR      0x00200090u
 #define CK_WALK_GEN      0x00200091u
 

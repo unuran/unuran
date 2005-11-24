@@ -40,7 +40,9 @@ libmethods_la_SOURCES = \
  utdr.c   utdr.h   utdr_struct.h \
  vempk.c  vempk.h  vempk_struct.h \
  vmt.c    vmt.h    vmt_struct.h \
- vnrou.c  vnrou.h  vnrou_struct.h
+ vnrou.c  vnrou.h  vnrou_struct.h \
+\
+ mcgibbs.c  mcgibbs.h   mcgibbs_struct.h
 
 noinst_HEADERS = \
  unur_methods_source.h

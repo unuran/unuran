@@ -38,7 +38,7 @@
  *****************************************************************************/
 
 /* 
-   =TEST-METHOD  MCGIBBS   Markov Chain - GIBBS sampler
+   =METHOD  MCGIBBS   Markov Chain - GIBBS sampler
 
    =UP  Methods_for_CVEC
 

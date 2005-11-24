@@ -10,7 +10,7 @@ INCLUDES = \
 if INCLUDE_EXPERIMENTAL
 EXPERIMENTAL_LDADD = $(top_builddir)/src/experimental/libunurexperimental.la
 # EXPERIMENTAL_PROGS = t_hitrou t_varou
-EXPERIMENTAL_PROGS = t_hitrou t_mcgibbs
+EXPERIMENTAL_PROGS = t_hitrou
 EXPERIMENTAL_XFAIL = t_hitrou
 else
 EXPERIMENTAL_LDADD = 
@@ -78,6 +78,7 @@ check_PROGRAMS = \
  t_vempk \
  t_vmt \
  t_vnrou \
+ t_mcgibbs \
  t_stringparser \
  test_special_matrix \
  $(EXPERIMENTAL_PROGS) \
@@ -143,7 +144,8 @@ EXTRA_DIST = \
  t_utdr.conf \
  t_vempk.conf \
  t_vmt.conf \
- t_vnrou.conf
+ t_vnrou.conf \
+ t_mcgibbs
 
 
 # Compare results of CDF, PDF, and dPDF of standard distributions

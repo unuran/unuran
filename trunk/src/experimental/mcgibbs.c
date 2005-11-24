@@ -743,10 +743,10 @@ _unur_mcgibbs_coord_sample_cvec( struct unur_gen *gen, double *vec )
       _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
       return;
     }
-    /** TODO: error handline **/
     
     /* sample from distribution */
     X = unur_sample_cont(GEN_CONDI[GEN->coord]);
+    /* remark: if reinit failed we get X=INFINITY here */
     
     /* update state */
     GEN->state[GEN->coord] = X;
@@ -800,10 +800,10 @@ _unur_mcgibbs_randomdir_sample_cvec( struct unur_gen *gen, double *vec )
       _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
       return;
     }
-    /** TODO: error handline **/
     
     /* sample from distribution */
     X = unur_sample_cont(*GEN_CONDI);
+    /* remark: if reinit failed we get X=INFINITY here */
     
     /* update state */
     for (i=0; i<GEN->dim; i++)

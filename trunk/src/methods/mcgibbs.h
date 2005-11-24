@@ -42,7 +42,7 @@
 
    =UP  Methods_for_CVEC
 
-   =REQUIRED T-concave logPDF, derivative of logPDF
+   =REQUIRED T-concave logPDF, derivatives of logPDF
 
    =SPEED Set-up: fast, Sampling: moderate
 
@@ -65,7 +65,7 @@
       each step a point from the full conditional distribution along
       some random direction is sampled. This direction is chosen
       uniformly from the sphere in each step.
-      This method is also known as hit-and-run algpithm for
+      This method is also known as Hit-and-Run algorithm for
       non-uniform distributions.
 
       Our experiences shows that the original Gibbs sampler with
@@ -88,20 +88,39 @@
       PDF of the multivariate joint distribution and its gradient or
       partial derivatives. 
 
-      It provides two variants which can be selected using the
-      recpective calls
-      unur_mcgibbs_set_variant_coordinate() for the original Gibbs
-      sampler (this is the default variant) and 
-      by unur_mcgibbs_set_variant_random_direction() which uses random
-      directions (also known as multivariate hit-and-run algorithm).
+      It provides two variants:
+      @table @emph 
+      @item coordinate sampling (Gibbs sampling) [default]
+      The coordinates are updated cyclically.
+      It requires the partial derivatives of the (logarithm of the)
+      PDF of the target distribution, 
+      see unur_distr_cvec_set_pdlogpdf(). 
+      Otherwise, the gradient of the logPDF 
+      (see unur_distr_cvec_set_dlogpdf()) 
+      is used, which is more expensive. 
+
+      This variant can be selected using
+      unur_mcgibbs_set_variant_coordinate().
+
+      @item random direction sampling (nonuniform Hit-and-Run algorithm)
+      In each step is a direction is sampled uniformly from the sphere
+      and the next point in the chain is sampled from the full
+      conditional distribution along this direction.
+
+      It requires the gradient of the logPDF and thus each step is
+      more expensive than each step for coordinate sampling.
+
+      This variant can be selected using
+      unur_mcgibbs_set_variant_random_direction().
+      @end table
 
       It is important that the @code{c} parameter for the TDR method
       is as large as possible. For logconcave distribution it must be
-      set to @code{0.} since otherwise numerical underflow can cause
+      set to @code{0.}, since otherwise numerical underflow can cause
       the algorithm to stop.
       
       In case of a fatal error in the generator for conditional
-      distributions the methods generated points contain
+      distributions the methods generates points that contain
       UNUR_INFINITY.
 
       @strong{Warning:} The algorithm requires that all full

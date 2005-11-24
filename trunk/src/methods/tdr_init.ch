@@ -361,27 +361,34 @@ unur_tdr_reinit( struct unur_gen *gen )
     return UNUR_ERR_GEN_DATA;
   }
 
+  /* first trial */
+  n_trials = 1;
+
   /* which construction points should be used ? */
   if (gen->set & TDR_SET_N_PERCENTILES) {
     if (GEN->starting_cpoints==NULL || (GEN->n_starting_cpoints != GEN->n_percentiles)) {
       GEN->n_starting_cpoints = GEN->n_percentiles;
       GEN->starting_cpoints = _unur_xrealloc( GEN->starting_cpoints, GEN->n_percentiles * sizeof(double));
     }
-    for (i=0; i<GEN->n_percentiles; i++)
+    for (i=0; i<GEN->n_percentiles; i++) {
       GEN->starting_cpoints[i] = unur_tdr_eval_invcdfhat( gen, GEN->percentiles[i], NULL, NULL, NULL );
+      if (!_unur_isfinite(GEN->starting_cpoints[i])) 
+	/* we cannot use these starting points --> skip to second trial immediately */
+	n_trials = 2;
+    }
   }
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
   if (gen->debug & TDR_DEBUG_REINIT)
-    if (gen->debug) _unur_tdr_debug_reinit_start(gen);
+    _unur_tdr_debug_reinit_start(gen);
 #endif
 
   /* make backup of cpoints */
   bak_n_cpoints = GEN->n_starting_cpoints;
   bak_cpoints = GEN->starting_cpoints;
 
-  for (n_trials = 1; ; ++n_trials) {
+  for (;; ++n_trials) {
     /* free linked list of intervals */
     for (iv = GEN->iv; iv != NULL; iv = next) {
       next = iv->next;

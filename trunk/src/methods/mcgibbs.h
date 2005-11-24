@@ -90,7 +90,7 @@
 
       It provides two variants:
       @table @emph 
-      @item coordinate sampling (Gibbs sampling) [default]
+      @item coordinate direction sampling (Gibbs sampling) [default]
       The coordinates are updated cyclically.
       It requires the partial derivatives of the (logarithm of the)
       PDF of the target distribution, 
@@ -108,7 +108,7 @@
       conditional distribution along this direction.
 
       It requires the gradient of the logPDF and thus each step is
-      more expensive than each step for coordinate sampling.
+      more expensive than each step for coordinate direction sampling.
 
       This variant can be selected using
       unur_mcgibbs_set_variant_random_direction().
@@ -150,7 +150,7 @@ UNUR_PAR *unur_mcgibbs_new( const UNUR_DISTR *distribution );
 
 int unur_mcgibbs_set_variant_coordinate( UNUR_PAR *parameters );
 /* 
-   Coordinate Sampler:
+   Coordinate Direction Sampling:
    Sampling along the coordinate directions (cyclic).
 
    This is the default.
@@ -158,7 +158,7 @@ int unur_mcgibbs_set_variant_coordinate( UNUR_PAR *parameters );
 
 int unur_mcgibbs_set_variant_random_direction( UNUR_PAR *parameters );
 /* 
-   Random Direction Sampler:
+   Random Direction Sampling:
    Sampling along the random directions.
 */
 

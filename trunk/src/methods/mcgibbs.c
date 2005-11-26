@@ -720,6 +720,15 @@ _unur_mcgibbs_coord_sample_cvec( struct unur_gen *gen, double *vec )
     /* update coordinate direction */
     GEN->coord = (GEN->coord + 1) % GEN->dim;
     
+    /* check state of chain */
+    if (!_unur_isfinite(GEN->state[GEN->coord]))
+      /* there has been a fatal error during the last sampling from
+	 the conditional distribution. This probably has been caused
+	 by improper target distribution for which the method
+	 does not work (i.e., it is not T-concave). 
+      */
+      continue;
+
     /* update conditional distribution */
     unur_distr_condi_set_condition( GEN->distr_condi, GEN->state, NULL, GEN->coord);
 
@@ -774,6 +783,15 @@ _unur_mcgibbs_randomdir_sample_cvec( struct unur_gen *gen, double *vec )
 
   for (thinning = GEN->thinning; thinning > 0; --thinning) {
 
+    /* check state of chain */
+    if (!_unur_isfinite(GEN->state[0]))
+      /* there has been a fatal error during the last sampling from
+	 the conditional distribution. This probably has been caused
+	 by improper target distribution for which the method
+	 does not work (i.e., it is not T-concave). 
+      */
+      break;
+
     /* new random direction */
     _unur_mcgibbs_random_unitvector( gen, GEN->direction );
     
@@ -793,16 +811,16 @@ _unur_mcgibbs_randomdir_sample_cvec( struct unur_gen *gen, double *vec )
       _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
       return;
     }
-    
+
     /* sample from distribution */
     X = unur_sample_cont(*GEN_CONDI);
-    /* remark: if reinit failed we get X=INFINITY here */
-    
+    /* if reinit failed we get X=INFINITY here */
+
     /* update state */
     for (i=0; i<GEN->dim; i++)
       GEN->state[i] += X * GEN->direction[i];	  
   }
-  
+
   /* copy current state into given vector */
   memcpy(vec, GEN->state, GEN->dim * sizeof(double)); 
 

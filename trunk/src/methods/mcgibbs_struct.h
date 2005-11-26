@@ -39,6 +39,7 @@
 
 struct unur_mcgibbs_par { 
   int thinning;             /* thinning factor for generated chain           */
+  int burnin;               /* length of burn-in for chain                   */
   double  c_T;              /* parameter c for transformation T_c            */
   const double *x0;         /* starting point of chain                       */
 };
@@ -57,6 +58,8 @@ struct unur_mcgibbs_gen {
 
   int    coord;             /* current coordinate used for GIBBS chain       */
   double *direction;        /* working array for random direction            */
+
+  int burnin;               /* length of burn-in for chain                   */
 };
 
 /*---------------------------------------------------------------------------*/

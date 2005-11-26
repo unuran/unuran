@@ -90,9 +90,10 @@
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
 
-#define MCGIBBS_SET_THINNING   0x001u  /* set thinning factor                */
-#define MCGIBBS_SET_C          0x002u  /* set parameter for transformation T */
-#define MCGIBBS_SET_X0         0x004u  /* set starting point                 */
+#define MCGIBBS_SET_C          0x001u  /* set parameter for transformation T */
+#define MCGIBBS_SET_X0         0x002u  /* set starting point                 */
+#define MCGIBBS_SET_THINNING   0x004u  /* set thinning factor                */
+#define MCGIBBS_SET_BURNIN     0x008u  /* set length of burn-in              */
 
 /*---------------------------------------------------------------------------*/
 
@@ -140,6 +141,11 @@ static void _unur_mcgibbs_random_unitvector( struct unur_gen *gen, double *direc
 static void _unur_mcgibbs_debug_init( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed.                 */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_mcgibbs_debug_burnin_failed( const struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* print after burnin has failed.                                            */
 /*---------------------------------------------------------------------------*/
 #endif
 
@@ -217,6 +223,7 @@ unur_mcgibbs_new( const struct unur_distr *distr )
   par->urng_aux = NULL;                    /* no auxilliary URNG required    */
 
   PAR->thinning = 1;                /* thinning factor                       */
+  PAR->burnin   = 0;                /* length of burn-in for chain           */
   PAR->x0       = NULL;             /* starting point of chain, default is 0 */
 
   par->debug    = _unur_default_debugflag; /* set default debugging flags    */
@@ -338,7 +345,7 @@ unur_mcgibbs_set_c( struct unur_par *par, double c )
 int 
 unur_mcgibbs_set_startingpoint( struct unur_par *par, const double *x0)
      /*----------------------------------------------------------------------*/
-     /* set thinning factor for chain                                        */
+     /* set starting point for chain                                         */
      /*                                                                      */
      /* parameters:                                                          */
      /*   par      ... pointer to parameter for building generator object    */
@@ -399,6 +406,43 @@ unur_mcgibbs_set_thinning( struct unur_par *par, int thinning )
   return UNUR_SUCCESS;
 
 } /* end of unur_mcgibbs_set_thinning() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_mcgibbs_set_burnin( struct unur_par *par, int burnin )
+     /*----------------------------------------------------------------------*/
+     /* set length of burn-in for chain                                      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par    ... pointer to parameter for building generator object      */
+     /*   burnin ... length of burn-in                                       */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, MCGIBBS );
+
+  /* check new parameter for generator */
+  if (burnin < 0) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"burnin < 0");
+    return UNUR_ERR_PAR_SET;
+  }
+
+  /* store data */
+  PAR->burnin = burnin;
+
+  /* changelog */
+  par->set |= MCGIBBS_SET_BURNIN;
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+
+} /* end of unur_mcgibbs_set_burnin() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -547,6 +591,33 @@ _unur_mcgibbs_init( struct unur_par *par )
     return NULL;
   }
 
+  /* run burn-in */
+  if (GEN->burnin > 0 ) {
+    int thinning, burnin;
+    double *X;
+
+    /* allocate memory for random vector */
+    X = _unur_xmalloc( GEN->dim * sizeof(double) );
+
+    /* store thinning factor; we use 1 for burn-in */
+    thinning = GEN->thinning;
+    GEN->thinning = 1;
+
+    for (burnin = GEN->burnin; burnin>0; --burnin) {
+      _unur_sample_vec(gen,X);
+      /* If there was a fatal error X contains INFINITY */
+      if (!_unur_isfinite(X[0])) {
+	_unur_mcgibbs_debug_burnin_failed(gen);
+	_unur_free(gen); free (X); return NULL;
+      }
+    }
+
+    /* restore thinning factor */
+    GEN->thinning = thinning;
+    /* free memory for random vector */
+    free (X);
+  }
+
   /* o.k. */
   return gen;
 
@@ -614,6 +685,7 @@ _unur_mcgibbs_create( struct unur_par *par )
   
   /* copy parameters into generator object */
   GEN->thinning = PAR->thinning;           /* thinning factor                */
+  GEN->burnin = PAR->burnin;               /* length of burnin               */
   GEN->c_T = PAR->c_T;                     /* parameter for transformation   */
   
   /* allocate memory for state */
@@ -950,12 +1022,41 @@ _unur_mcgibbs_debug_init( const struct unur_gen *gen )
     break;
   }
 
+  fprintf(log,"%s: thinning = %d",gen->genid,GEN->thinning);
+  _unur_print_if_default(gen,MCGIBBS_SET_THINNING);
+  fprintf(log,"\n%s: burn-in = %d",gen->genid,GEN->burnin);
+  _unur_print_if_default(gen,MCGIBBS_SET_BURNIN);
+  fprintf(log,"\n%s:\n",gen->genid);
   _unur_matrix_print_vector( GEN->dim, GEN->state, "starting point = ", log, gen->genid, "\t   ");
 
   fprintf(log,"%s:\n",gen->genid);
   fprintf(log,"%s: INIT completed **********************\n",gen->genid);
 
 } /* end of _unur_mcgibbs_debug_init() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_mcgibbs_debug_burnin_failed( const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* write info after burnin has failed                                   */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{
+  FILE *log;
+
+  /* check arguments */
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_MCGIBBS_GEN,RETURN_VOID);
+
+  log = unur_get_stream();
+
+  fprintf(log,"%s:\n",gen->genid);
+  fprintf(log,"%s: Burn-in failed --> INIT failed **********************\n",gen->genid);
+  fprintf(log,"%s:\n",gen->genid);
+
+} /* end of _unur_mcgibbs_debug_burnin_failed() */
 
 /*---------------------------------------------------------------------------*/
 #endif   /* end UNUR_ENABLE_LOGGING */

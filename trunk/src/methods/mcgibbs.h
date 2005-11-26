@@ -186,6 +186,10 @@ int unur_mcgibbs_set_startingpoint( UNUR_PAR *parameters, const double *x0);
 /* 
    Sets the starting point of the Gibbs sampler. @var{x0} must be 
    a "typical" point of the given distribution.
+   If such a "typical" point is not known and a starting point is
+   merely guessed, the first part of the Gibbs chain should be
+   discarded (@emph{burn-in}), e.g.\ by mean of the
+   unur_mcgibbs_set_burnin() call.
 
    Default is 0.
 */
@@ -199,6 +203,28 @@ int unur_mcgibbs_set_thinning( UNUR_PAR *parameters, int thinning );
    @emph{Notice}: This parameter must satisfy @var{thinning}>=1.
 
    Default: @code{1}.
+*/
+
+int unur_mcgibbs_set_burnin( UNUR_PAR *parameters, int burnin );
+/*
+   If a "typical" point for the target distribution is not known but
+   merely guessed, the first part of the Gibbs chain should be
+   discarded (@emph{burn-in}). This can be done during the
+   initialization of the generator object. 
+   The length of the burn-in can is then @var{burnin}.
+
+   When method MCGIBBS is not applicable for the target distribution
+   then the initialization already might fail during the burn-in.
+   Thus this reduces the risk of running a generator that returns 
+   UNUR_INFINITY cased by some fatal error during sampling.
+   
+   The thinning factor set by a unur_mcgibbs_set_thinning() call has
+   no effect on the length of the burn-in, i.e., for the burn-in
+   always a thinning factor @code{1} is used.
+
+   @emph{Notice}: This parameter must satisfy @var{thinning}>=0.
+
+   Default: @code{0}.
 */
 
 /*...........................................................................*/

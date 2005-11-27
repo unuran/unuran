@@ -60,6 +60,7 @@ struct unur_mcgibbs_gen {
   double *direction;        /* working array for random direction            */
 
   int burnin;               /* length of burn-in for chain                   */
+  double *x0;               /* starting point of chain                       */
 };
 
 /*---------------------------------------------------------------------------*/

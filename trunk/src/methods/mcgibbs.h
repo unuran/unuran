@@ -49,17 +49,17 @@
    =REF  [HLD04: Sect.14.1.2]
 
    =DESCRIPTION
-      Methods MCGIBBS implements a Gibbs sampler for multivariate
-      distributions with given joint density and its gradient.
+      Method MCGIBBS implements a Gibbs sampler for a multivariate
+      distribution with given joint density and its gradient.
       When running such a Markov chain all coordinates are updated
-      cyclically using full conditional distributions. Each step
-      is returned (i.e., a random point is returned whenever a single
-      coordinate has been updated). 
+      cyclically using full conditional distributions. After each step
+      the state of the chain is returned (i.e., a random point is
+      returned whenever a single coordinate has been updated). 
       It is also possible to return only points after all coordinates
       have been updated by "thinning" the chain.
       Moreover, to reduce autocorrelation this thinning factor can be
       any integer. Notice, however, that the sampling time for a chain
-      of given length is also increased by the same factor.
+      of given length is increased by the same factor, too.
 
       MCGIBBS also provides a variant of the Gibbs sampler where in
       each step a point from the full conditional distribution along
@@ -73,7 +73,8 @@
       sampling as long as the correlations between the components of
       the random vector are not too high.
 
-      For both variants TDR ((@pxref{TDR}, @pxref{TDRGW}) is used to
+      For both variants transformed density rejection (see methods
+      @pxref{TDR} and @pxref{TDRGW}) is used to
       sample from the full conditional distributions. In opposition to
       the univariate case, it is important that the factor @code{c} is
       as large as possible. I.e., for a log-concave density @code{c}
@@ -81,7 +82,10 @@
       might stop the algorithm.
 
       @emph{Important:} MCGIBBS does not generate independent random
-      points.
+      points. The starting point of the Gibbs chain must be in a
+      "typical" region of the target distribution. If such a point is
+      not known or would be too expensive, then the first part of the
+      chain should be discarded (burn-in of the chain). 
 
    =HOWTOUSE
       For using the MCGIBBS method UNURAN needs the logarithm of the
@@ -116,8 +120,15 @@
 
       It is important that the @code{c} parameter for the TDR method
       is as large as possible. For logconcave distribution it must be
-      set to @code{0.}, since otherwise numerical underflow can cause
+      set to @code{0}, since otherwise numerical underflow can cause
       the algorithm to stop.
+
+      The starting point of the Gibbs chain must be "typical" for the
+      target distribution. If such a point is not known or would be
+      too expensive, then the first part of the chain should be
+      discarded (burn-in of the chain). When using the 
+      unur_mcgibbs_set_burnin() call this is done during the setup
+      of the Gibbs sampler object.
       
       In case of a fatal error in the generator for conditional
       distributions the methods generates points that contain
@@ -129,7 +140,11 @@
       If this property is not satisfied, then generation from the
       conditional distributions becomes (very) slow and might fail or
       (even worse) produces random vectors from an incorrect
-      distribution. 
+      distribution.
+      When using unur_mcgibbs_set_burnin() then the setup already
+      might fail. Thus when in doubt whether MCGIBBS can be used for
+      the targent distribution it is a good idea to use a burn-in for
+      checking.  
 
       @strong{Warning:} Be carefull with debugging flags. If it
       contains flag @code{0x01000000u} it produces a lot of output for
@@ -182,7 +197,7 @@ int unur_mcgibbs_set_c( UNUR_PAR *parameters, double c );
 */
 
 
-int unur_mcgibbs_set_startingpoint( UNUR_PAR *parameters, const double *x0);
+int unur_mcgibbs_set_startingpoint( UNUR_PAR *parameters, const double *x0 );
 /* 
    Sets the starting point of the Gibbs sampler. @var{x0} must be 
    a "typical" point of the given distribution.
@@ -191,7 +206,8 @@ int unur_mcgibbs_set_startingpoint( UNUR_PAR *parameters, const double *x0);
    discarded (@emph{burn-in}), e.g.\ by mean of the
    unur_mcgibbs_set_burnin() call.
 
-   Default is 0.
+   Default is the result of unur_distr_cvec_get_center() for the 
+   given distribution object.
 */
 
 int unur_mcgibbs_set_thinning( UNUR_PAR *parameters, int thinning );
@@ -228,6 +244,24 @@ int unur_mcgibbs_set_burnin( UNUR_PAR *parameters, int burnin );
 */
 
 /*...........................................................................*/
+
+const double *unur_mcgibbs_get_state( UNUR_GEN *generator );
+/* */
+
+int unur_mcgibbs_chg_state( UNUR_GEN *generator, const double *state );
+/* 
+   Get and change the current state of the Gibbs chain.
+*/ 
+
+int unur_mcgibbs_reset_state( UNUR_GEN *generator );
+/* 
+   Reset state of chain to starting point.
+
+   @emph{Notice:} Currently this function does not reset
+   the generators for conditional distributions. Thus it is not 
+   possible to get the same Gibbs chain even when the underlying
+   uniform random number generator is reset.
+*/ 
 
 /* =END */
 /*---------------------------------------------------------------------------*/

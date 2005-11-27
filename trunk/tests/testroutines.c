@@ -243,7 +243,6 @@ int compare_double_sequence_par_start( FILE *LOG, int line, UNUR_PAR *par, int s
 {
   int i;
   UNUR_GEN *gen;
-  UNUR_URNG *urng = unur_get_default_urng();
 
   /* allocate memory for storing sequence */
   if (double_sequence_A == NULL) {
@@ -252,7 +251,7 @@ int compare_double_sequence_par_start( FILE *LOG, int line, UNUR_PAR *par, int s
   }
 
   /* generate sequence */
-  reset_sequence_par(urng,par);
+  reset_sequence_par(unur_get_default_urng(),par);
   gen = unur_init( par ); abort_if_NULL(LOG,line,gen);
   
   for (i=0; i<sample_size; i++)
@@ -297,10 +296,9 @@ int compare_double_sequence_par( FILE *LOG, int line, UNUR_PAR *par, int sample_
   int ok = TRUE;
   double x = 0.;
   int failed = 0;
-  UNUR_URNG *urng = unur_get_default_urng();
 
   /* init generator */
-  reset_sequence_par_warning(urng,par);
+  reset_sequence_par_warning(unur_get_default_urng(),par);
   gen = unur_init( par ); abort_if_NULL(LOG, line,gen);
   
   /* compare sequence */
@@ -335,7 +333,6 @@ int compare_double_sequence_par( FILE *LOG, int line, UNUR_PAR *par, int sample_
 int compare_double_sequence_gen_start( FILE *LOG, int line, UNUR_GEN *gen, int sample_size )
 {
   int i;
-  UNUR_URNG *urng = unur_get_default_urng();
 
   /* check generator object */
   if (gen==NULL) {
@@ -352,7 +349,7 @@ int compare_double_sequence_gen_start( FILE *LOG, int line, UNUR_GEN *gen, int s
   }
 
   /* reset uniform RNG */
-  reset_sequence(urng);
+  reset_sequence(unur_get_urng(gen));
   
   /* generate sequence */
   for (i=0; i<sample_size; i++)
@@ -371,7 +368,6 @@ int compare_double_sequence_gen( FILE *LOG, int line, UNUR_GEN *gen, int sample_
   int ok = TRUE;
   double x = 0.;
   int failed = 0;
-  UNUR_URNG *urng = unur_get_default_urng();
 
   /* check generator object and stored sequence */
   if (gen==NULL || double_sequence_A==NULL) {
@@ -380,7 +376,7 @@ int compare_double_sequence_gen( FILE *LOG, int line, UNUR_GEN *gen, int sample_
   }
 
   /* reset uniform RNG */
-  reset_sequence_warning(urng);
+  reset_sequence_warning(unur_get_urng(gen));
   
   /* compare sequence */
   for (i=0; i<sample_size; i++) {
@@ -416,7 +412,6 @@ int compare_int_sequence_par_start( FILE *LOG, int line, UNUR_PAR *par, int samp
 {
   int i;
   UNUR_GEN *gen;
-  UNUR_URNG *urng = unur_get_default_urng();
 
   /* allocate memory for storing sequence */
   if (int_sequence_A == NULL) {
@@ -425,7 +420,7 @@ int compare_int_sequence_par_start( FILE *LOG, int line, UNUR_PAR *par, int samp
   }
   
   /* generate sequence */
-  reset_sequence_par(urng,par);
+  reset_sequence_par(unur_get_default_urng(),par);
   gen = unur_init( par ); abort_if_NULL(LOG, line,gen);
 
   for (i=0; i<sample_size; i++)
@@ -446,10 +441,9 @@ int compare_int_sequence_par( FILE *LOG, int line, UNUR_PAR *par, int sample_siz
   int i;
   int ok = TRUE;
   int failed = 0;
-  UNUR_URNG *urng = unur_get_default_urng();
 
   /* init generator */
-  reset_sequence_par_warning(urng,par);
+  reset_sequence_par_warning(unur_get_default_urng(),par);
   gen = unur_init( par ); abort_if_NULL(LOG, line,gen);
   
   /* compare sequence */
@@ -481,7 +475,6 @@ int compare_int_sequence_par( FILE *LOG, int line, UNUR_PAR *par, int sample_siz
 int compare_int_sequence_gen_start( FILE *LOG, int line, UNUR_GEN *gen, int sample_size )
 {
   int i;
-  UNUR_URNG *urng = unur_get_default_urng();
 
   /* check generator object */
   if (gen==NULL) {
@@ -498,8 +491,7 @@ int compare_int_sequence_gen_start( FILE *LOG, int line, UNUR_GEN *gen, int samp
   }
   
   /* generate sequence */
-  reset_sequence(urng);
-
+  reset_sequence(unur_get_urng(gen));
   for (i=0; i<sample_size; i++)
     int_sequence_A[i] = unur_sample_discr(gen);
 
@@ -515,7 +507,6 @@ int compare_int_sequence_gen( FILE *LOG, int line, UNUR_GEN *gen, int sample_siz
   int i;
   int ok = TRUE;
   int failed = 0;
-  UNUR_URNG *urng = unur_get_default_urng();
 
   /* check generator object and stored sequence */
   if (gen==NULL || int_sequence_A==NULL) {
@@ -523,8 +514,8 @@ int compare_int_sequence_gen( FILE *LOG, int line, UNUR_GEN *gen, int sample_siz
     return UNUR_FAILURE;
   }
 
-  /* init generator */
-  reset_sequence_warning(urng);
+  /* reset uniform RNG */
+  reset_sequence_warning(unur_get_urng(gen));
   
   /* compare sequence */
   for (i=0; i<sample_size; i++)
@@ -556,7 +547,6 @@ static double *cvec_sequence_A = NULL;
 int compare_cvec_sequence_gen_start( FILE *LOG, int line, UNUR_GEN *gen, int sample_size )
 {
   int i;
-  UNUR_URNG *urng = unur_get_default_urng();
   int dim;
 
   /* free sequence */
@@ -581,8 +571,8 @@ int compare_cvec_sequence_gen_start( FILE *LOG, int line, UNUR_GEN *gen, int sam
   }
 
   /* reset uniform RNG */
-  reset_sequence(urng);
-  
+  reset_sequence(unur_get_urng(gen));
+
   /* generate sequence */
   for (i=0; i<sample_size; i++)
     unur_sample_vec( gen, cvec_sequence_A+(i*dim) );
@@ -600,7 +590,6 @@ int compare_cvec_sequence_gen( FILE *LOG, int line, UNUR_GEN *gen, int sample_si
   int ok = TRUE;
   double *x;
   int failed = 0;
-  UNUR_URNG *urng = unur_get_default_urng();
   int dim;
 
   /* check generator object and stored sequence */
@@ -617,7 +606,7 @@ int compare_cvec_sequence_gen( FILE *LOG, int line, UNUR_GEN *gen, int sample_si
   abort_if_NULL(LOG,line, x);
 
   /* reset uniform RNG */
-  reset_sequence_warning(urng);
+  reset_sequence_warning(unur_get_urng(gen));
   
   /* compare sequence */
   for (i=0; i<sample_size; i++) {
@@ -665,7 +654,6 @@ static double *matr_sequence_A = NULL;
 int compare_matr_sequence_gen_start( FILE *LOG, int line, UNUR_GEN *gen, int sample_size )
 {
   int i;
-  UNUR_URNG *urng = unur_get_default_urng();
   int dim;
 
   /* free sequence */
@@ -690,7 +678,7 @@ int compare_matr_sequence_gen_start( FILE *LOG, int line, UNUR_GEN *gen, int sam
   }
 
   /* reset uniform RNG */
-  reset_sequence(urng);
+  reset_sequence(unur_get_urng(gen));
   
   /* generate sequence */
   for (i=0; i<sample_size; i++)
@@ -709,7 +697,6 @@ int compare_matr_sequence_gen( FILE *LOG, int line, UNUR_GEN *gen, int sample_si
   int ok = TRUE;
   double *x;
   int failed = 0;
-  UNUR_URNG *urng = unur_get_default_urng();
   int dim;
 
   /* check generator object and stored sequence */
@@ -726,7 +713,7 @@ int compare_matr_sequence_gen( FILE *LOG, int line, UNUR_GEN *gen, int sample_si
   abort_if_NULL(LOG,line, x);
 
   /* reset uniform RNG */
-  reset_sequence_warning(urng);
+  reset_sequence_warning(unur_get_urng(gen));
   
   /* compare sequence */
   for (i=0; i<sample_size; i++) {

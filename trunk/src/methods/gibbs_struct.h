@@ -4,10 +4,10 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: mcgibbs_struct.h                                                  *
+ *   FILE: gibbs_struct.h                                                    *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         declares structures for method MCGIBBS                            *
+ *         declares structures for method GIBBS                              *
  *         (Markov Chain - GIBBS sampler)                                    *
  *                                                                           *
  *****************************************************************************
@@ -37,7 +37,7 @@
 /*---------------------------------------------------------------------------*/
 /* Information for constructing the generator                                */
 
-struct unur_mcgibbs_par { 
+struct unur_gibbs_par { 
   int thinning;             /* thinning factor for generated chain           */
   int burnin;               /* length of burn-in for chain                   */
   double  c_T;              /* parameter c for transformation T_c            */
@@ -47,7 +47,7 @@ struct unur_mcgibbs_par {
 /*---------------------------------------------------------------------------*/
 /* The generator object                                                      */
 
-struct unur_mcgibbs_gen {
+struct unur_gibbs_gen {
   int dim;                  /* dimension of distribution                     */
   int thinning;             /* thinning factor for generated chain           */
   double  c_T;              /* parameter c for transformation T_c            */

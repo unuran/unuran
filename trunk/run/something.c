@@ -22,8 +22,6 @@
 #include <distr/distr_source.h>
 #include <src/utils/matrix_source.h>
 #include <experimental/hitrou.h>
-/*#include <experimental/gibbs.h>*/
-#include <mcgibbs.h>
 #include <experimental/ball.h>
 #include <experimental/walk.h>
 #include <methods/x_gen_source.h>
@@ -397,9 +395,9 @@ int main(int argc, char *argv[])
   if (METHOD==METHOD_GIBBS) {
     printf("METHOD=GIBBS \n");  
     
-    par = unur_mcgibbs_new(distr);
-    unur_mcgibbs_set_c(par, 0);
-    unur_mcgibbs_set_thinning(par,SKIP+1);
+    par = unur_gibbs_new(distr);
+    unur_gibbs_set_c(par, 0);
+    unur_gibbs_set_thinning(par,SKIP+1);
 /*    
     par = unur_gibbs_new(distr);
     unur_gibbs_set_thinning(par,SKIP+1);
@@ -409,10 +407,10 @@ int main(int argc, char *argv[])
   if (METHOD==METHOD_GIBBS_RANDOM) {
     printf("METHOD=GIBBS (RANDOM DIRECTIONS)\n");  
     
-    par = unur_mcgibbs_new(distr);
-    unur_mcgibbs_set_c(par, 0);
-    unur_mcgibbs_set_thinning(par,SKIP+1);
-    unur_mcgibbs_set_variant_random_direction(par);
+    par = unur_gibbs_new(distr);
+    unur_gibbs_set_c(par, 0);
+    unur_gibbs_set_thinning(par,SKIP+1);
+    unur_gibbs_set_variant_random_direction(par);
  
 /*   
     par = unur_gibbs_new(distr);
@@ -584,8 +582,7 @@ int main(int argc, char *argv[])
     
     if (METHOD==METHOD_GIBBS
     || METHOD==METHOD_GIBBS_RANDOM) {
-      unur_mcgibbs_set_startingpoint( par ,x);
-      /*_unur_gibbs_set_point_current( gen ,x);*/
+      unur_gibbs_set_startingpoint( par ,x);
     }
     
     if (METHOD==METHOD_WALK) {    

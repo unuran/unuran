@@ -238,14 +238,19 @@ _unur_print_method( struct unur_par *par )
     break;
 
     /* continuous, multivariate (random vector) */
+  case UNUR_METH_GIBBS:
+    COOKIE_CHECK(par,CK_GIBBS_PAR,UNUR_ERR_COOKIE);
+    printf("METHOD:\t\tMarkov Chain - GIBBS sampler (GIBBS)\n");
+    break;
+
+  case UNUR_METH_HITROU:
+    COOKIE_CHECK(par,CK_HITROU_PAR,UNUR_ERR_COOKIE);
+    printf("METHOD:\t\thit&run ratio-of-uniforms (HITROU)\n");
+    break;
+    
   case UNUR_METH_NORTA:
     COOKIE_CHECK(par,CK_NORTA_PAR,UNUR_ERR_COOKIE);
     printf("METHOD:\t\tnormal to anything (NORTA)\n");
-    break;
-
-  case UNUR_METH_MCGIBBS:
-    COOKIE_CHECK(par,CK_MCGIBBS_PAR,UNUR_ERR_COOKIE);
-    printf("METHOD:\t\tMarkov Chain - GIBBS sampler (MCGIBBS)\n");
     break;
 
   case UNUR_METH_VMT:
@@ -258,11 +263,6 @@ _unur_print_method( struct unur_par *par )
     printf("METHOD:\t\tvector naive ratio-of-uniforms (VNROU)\n");
     break;
 
-  case UNUR_METH_HITROU:
-    COOKIE_CHECK(par,CK_HITROU_PAR,UNUR_ERR_COOKIE);
-    printf("METHOD:\t\thit&run ratio-of-uniforms (HITROU)\n");
-    break;
-    
     /* misc */
   case UNUR_METH_UNIF:
     COOKIE_CHECK(par,CK_UNIF_PAR,UNUR_ERR_COOKIE);

@@ -69,14 +69,14 @@
 /*---------------------------------------------------------------------------*/
 /* Variants                                                                  */
 
-#define MCGIBBS_VARMASK_VARIANT     0x000fu  /* indicates variant            */
-#define MCGIBBS_VARIANT_COORD       0x0001u  /* coordinate sampler           */
-#define MCGIBBS_VARIANT_RANDOMDIR   0x0002u  /* random direction sampler     */
+#define GIBBS_VARMASK_VARIANT     0x000fu    /* indicates variant            */
+#define GIBBS_VARIANT_COORD       0x0001u    /* coordinate sampler           */
+#define GIBBS_VARIANT_RANDOMDIR   0x0002u    /* random direction sampler     */
 
-#define MCGIBBS_VARMASK_T           0x00f0u  /* indicates transformation     */
-#define MCGIBBS_VAR_T_SQRT          0x0010u  /* T(x) = -1/sqrt(x)            */
-#define MCGIBBS_VAR_T_LOG           0x0020u  /* T(x) = log(x)                */
-#define MCGIBBS_VAR_T_POW           0x0030u  /* T(x) = -x^c                  */
+#define GIBBS_VARMASK_T           0x00f0u    /* indicates transformation     */
+#define GIBBS_VAR_T_SQRT          0x0010u    /* T(x) = -1/sqrt(x)            */
+#define GIBBS_VAR_T_LOG           0x0020u    /* T(x) = log(x)                */
+#define GIBBS_VAR_T_POW           0x0030u    /* T(x) = -x^c                  */
 
 /*---------------------------------------------------------------------------*/
 /* Debugging flags                                                           */
@@ -85,49 +85,49 @@
 /*    bits 13-24 ... adaptive steps                                          */
 /*    bits 25-32 ... trace sampling                                          */
 
-#define MCGIBBS_DEBUG_CONDI   0x01000000u
+#define GIBBS_DEBUG_CONDI   0x01000000u
 
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
 
-#define MCGIBBS_SET_C          0x001u  /* set parameter for transformation T */
-#define MCGIBBS_SET_X0         0x002u  /* set starting point                 */
-#define MCGIBBS_SET_THINNING   0x004u  /* set thinning factor                */
-#define MCGIBBS_SET_BURNIN     0x008u  /* set length of burn-in              */
+#define GIBBS_SET_C          0x001u    /* set parameter for transformation T */
+#define GIBBS_SET_X0         0x002u    /* set starting point                 */
+#define GIBBS_SET_THINNING   0x004u    /* set thinning factor                */
+#define GIBBS_SET_BURNIN     0x008u    /* set length of burn-in              */
 
 /*---------------------------------------------------------------------------*/
 
-#define GENTYPE "MCGIBBS"      /* type of generator                          */
+#define GENTYPE "GIBBS"        /* type of generator                          */
 
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *_unur_mcgibbs_init( struct unur_par *par );
+static struct unur_gen *_unur_gibbs_init( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 /* Initialize new generator.                                                 */
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *_unur_mcgibbs_create( struct unur_par *par );
+static struct unur_gen *_unur_gibbs_create( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 /* create new (almost empty) generator object.                               */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_mcgibbs_coord_sample_cvec( struct unur_gen *gen, double *vec );
-static void _unur_mcgibbs_randomdir_sample_cvec( struct unur_gen *gen, double *vec );
+static void _unur_gibbs_coord_sample_cvec( struct unur_gen *gen, double *vec );
+static void _unur_gibbs_randomdir_sample_cvec( struct unur_gen *gen, double *vec );
 /*---------------------------------------------------------------------------*/
 /* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_mcgibbs_free( struct unur_gen *gen);
+static void _unur_gibbs_free( struct unur_gen *gen);
 /*---------------------------------------------------------------------------*/
 /* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *_unur_mcgibbs_clone( const struct unur_gen *gen );
+static struct unur_gen *_unur_gibbs_clone( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* copy (clone) generator object.                                            */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_mcgibbs_random_unitvector( struct unur_gen *gen, double *direction );
+static void _unur_gibbs_random_unitvector( struct unur_gen *gen, double *direction );
 /*---------------------------------------------------------------------------*/
 /* generate a random direction vector                                        */
 /*---------------------------------------------------------------------------*/
@@ -138,22 +138,22 @@ static void _unur_mcgibbs_random_unitvector( struct unur_gen *gen, double *direc
 /* i.e., into the log file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_mcgibbs_debug_init_start( const struct unur_gen *gen );
+static void _unur_gibbs_debug_init_start( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print before init of generator starts.                                    */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_mcgibbs_debug_init_condi( const struct unur_gen *gen );
+static void _unur_gibbs_debug_init_condi( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print list of conditional generators.                                     */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_mcgibbs_debug_burnin_failed( const struct unur_gen *gen );
+static void _unur_gibbs_debug_burnin_failed( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print after burnin has failed.                                            */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_mcgibbs_debug_init_finished( const struct unur_gen *gen, int success );
+static void _unur_gibbs_debug_init_finished( const struct unur_gen *gen, int success );
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed.                 */
 /*---------------------------------------------------------------------------*/
@@ -164,8 +164,8 @@ static void _unur_mcgibbs_debug_init_finished( const struct unur_gen *gen, int s
 
 #define DISTR_IN  distr->data.cvec      /* data for distribution object      */
 
-#define PAR       ((struct unur_mcgibbs_par*)par->datap) /* data for parameter object */
-#define GEN       ((struct unur_mcgibbs_gen*)gen->datap) /* data for generator object */
+#define PAR       ((struct unur_gibbs_par*)par->datap) /* data for parameter object */
+#define GEN       ((struct unur_gibbs_gen*)gen->datap) /* data for generator object */
 #define DISTR     gen->distr->data.cvec /* data for distribution in generator object */
 
 #define SAMPLE    gen->sample.cvec      /* pointer to sampling routine       */     
@@ -183,7 +183,7 @@ static void _unur_mcgibbs_debug_init_finished( const struct unur_gen *gen, int s
 /*****************************************************************************/
 
 struct unur_par *
-unur_mcgibbs_new( const struct unur_distr *distr )
+unur_gibbs_new( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get default parameters                                               */
      /*                                                                      */
@@ -217,8 +217,8 @@ unur_mcgibbs_new( const struct unur_distr *distr )
   }
 
   /* allocate structure */
-  par = _unur_par_new( sizeof(struct unur_mcgibbs_par) );
-  COOKIE_SET(par,CK_MCGIBBS_PAR);
+  par = _unur_par_new( sizeof(struct unur_gibbs_par) );
+  COOKIE_SET(par,CK_GIBBS_PAR);
 
   /* copy input */
   par->distr    = distr;      /* pointer to distribution object              */
@@ -226,9 +226,9 @@ unur_mcgibbs_new( const struct unur_distr *distr )
   /* set default values */
   PAR->c_T      = 0.;        /* parameter for transformation (-1. <= c < 0.) */
 
-  par->method   = UNUR_METH_MCGIBBS ;     /* method                          */
-  par->variant  = MCGIBBS_VARIANT_COORD;  /* default variant                 */
-  par->set      = 0u;                 /* inidicate default parameters        */
+  par->method   = UNUR_METH_GIBBS ;       /* method                          */
+  par->variant  = GIBBS_VARIANT_COORD;    /* default variant                 */
+  par->set      = 0u;                     /* inidicate default parameters    */
   par->urng     = unur_get_default_urng(); /* use default urng               */
   par->urng_aux = NULL;                    /* no auxilliary URNG required    */
 
@@ -239,16 +239,16 @@ unur_mcgibbs_new( const struct unur_distr *distr )
   par->debug    = _unur_default_debugflag; /* set default debugging flags    */
 
   /* routine for starting generator */
-  par->init = _unur_mcgibbs_init;
+  par->init = _unur_gibbs_init;
 
   return par;
 
-} /* end of unur_mcgibbs_new() */
+} /* end of unur_gibbs_new() */
 
 /*****************************************************************************/
 
 int
-unur_mcgibbs_set_variant_coordinate( struct unur_par *par )
+unur_gibbs_set_variant_coordinate( struct unur_par *par )
      /*----------------------------------------------------------------------*/
      /* Coordinate Sampler :                                                 */
      /* Sampling along the coordinate directions (cyclic).                   */
@@ -263,19 +263,19 @@ unur_mcgibbs_set_variant_coordinate( struct unur_par *par )
 {
   /* check arguments */
   _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
-  _unur_check_par_object( par, MCGIBBS );
+  _unur_check_par_object( par, GIBBS );
 
   /* we use a bit in variant */
-  par->variant = (par->variant & ~MCGIBBS_VARMASK_VARIANT) | MCGIBBS_VARIANT_COORD;
+  par->variant = (par->variant & ~GIBBS_VARMASK_VARIANT) | GIBBS_VARIANT_COORD;
   
   /* ok */
   return UNUR_SUCCESS;
-} /* end of unur_mcgibbs_set_variant_coordinate() */
+} /* end of unur_gibbs_set_variant_coordinate() */
 
 /*---------------------------------------------------------------------------*/
 
 int
-unur_mcgibbs_set_variant_random_direction( struct unur_par *par )
+unur_gibbs_set_variant_random_direction( struct unur_par *par )
      /*----------------------------------------------------------------------*/
      /* Random Direction Sampler :                                           */
      /* Sampling along the random directions.                                */
@@ -290,19 +290,19 @@ unur_mcgibbs_set_variant_random_direction( struct unur_par *par )
 {
   /* check arguments */
   _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
-  _unur_check_par_object( par, MCGIBBS );
+  _unur_check_par_object( par, GIBBS );
             
   /* we use a bit in variant */
-  par->variant = (par->variant & ~MCGIBBS_VARMASK_VARIANT) | MCGIBBS_VARIANT_RANDOMDIR;
+  par->variant = (par->variant & ~GIBBS_VARMASK_VARIANT) | GIBBS_VARIANT_RANDOMDIR;
   
   /* ok */
   return UNUR_SUCCESS;
-} /* end of unur_mcgibbs_set_variant_coordinate() */
+} /* end of unur_gibbs_set_variant_coordinate() */
 
 /*---------------------------------------------------------------------------*/
 
 int
-unur_mcgibbs_set_c( struct unur_par *par, double c )
+unur_gibbs_set_c( struct unur_par *par, double c )
      /*----------------------------------------------------------------------*/
      /* set parameter c for transformation T_c used for sampling from        */
      /* conditional distributions                                            */
@@ -318,7 +318,7 @@ unur_mcgibbs_set_c( struct unur_par *par, double c )
 {
   /* check arguments */
   _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
-  _unur_check_par_object( par, MCGIBBS );
+  _unur_check_par_object( par, GIBBS );
 
   /* check new parameter for generator */
   if (c > 0.) {
@@ -344,16 +344,16 @@ unur_mcgibbs_set_c( struct unur_par *par, double c )
   PAR->c_T = c;
 
   /* changelog */
-  par->set |= MCGIBBS_SET_C;
+  par->set |= GIBBS_SET_C;
 
   return UNUR_SUCCESS;
 
-} /* end of unur_mcgibbs_set_c() */
+} /* end of unur_gibbs_set_c() */
 
 /*---------------------------------------------------------------------------*/
 
 int 
-unur_mcgibbs_set_startingpoint( struct unur_par *par, const double *x0)
+unur_gibbs_set_startingpoint( struct unur_par *par, const double *x0)
      /*----------------------------------------------------------------------*/
      /* set starting point for chain                                         */
      /*                                                                      */
@@ -368,22 +368,22 @@ unur_mcgibbs_set_startingpoint( struct unur_par *par, const double *x0)
 {
   /* check arguments */
   _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
-  _unur_check_par_object( par, MCGIBBS );
+  _unur_check_par_object( par, GIBBS );
 
   /* store data */
   PAR->x0 = x0;
 
   /* changelog */
-  par->set |= MCGIBBS_SET_X0;
+  par->set |= GIBBS_SET_X0;
 
   /* ok */
   return UNUR_SUCCESS;
-} /* end of unur_mcgibbs_set_startingpoint() */
+} /* end of unur_gibbs_set_startingpoint() */
 
 /*---------------------------------------------------------------------------*/
 
 int
-unur_mcgibbs_set_thinning( struct unur_par *par, int thinning )
+unur_gibbs_set_thinning( struct unur_par *par, int thinning )
      /*----------------------------------------------------------------------*/
      /* set thinning factor for chain                                        */
      /*                                                                      */
@@ -398,7 +398,7 @@ unur_mcgibbs_set_thinning( struct unur_par *par, int thinning )
 {
   /* check arguments */
   _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
-  _unur_check_par_object( par, MCGIBBS );
+  _unur_check_par_object( par, GIBBS );
 
   /* check new parameter for generator */
   if (thinning < 1) {
@@ -410,17 +410,17 @@ unur_mcgibbs_set_thinning( struct unur_par *par, int thinning )
   PAR->thinning = thinning;
 
   /* changelog */
-  par->set |= MCGIBBS_SET_THINNING;
+  par->set |= GIBBS_SET_THINNING;
 
   /* o.k. */
   return UNUR_SUCCESS;
 
-} /* end of unur_mcgibbs_set_thinning() */
+} /* end of unur_gibbs_set_thinning() */
 
 /*---------------------------------------------------------------------------*/
 
 int
-unur_mcgibbs_set_burnin( struct unur_par *par, int burnin )
+unur_gibbs_set_burnin( struct unur_par *par, int burnin )
      /*----------------------------------------------------------------------*/
      /* set length of burn-in for chain                                      */
      /*                                                                      */
@@ -435,7 +435,7 @@ unur_mcgibbs_set_burnin( struct unur_par *par, int burnin )
 {
   /* check arguments */
   _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
-  _unur_check_par_object( par, MCGIBBS );
+  _unur_check_par_object( par, GIBBS );
 
   /* check new parameter for generator */
   if (burnin < 0) {
@@ -447,17 +447,17 @@ unur_mcgibbs_set_burnin( struct unur_par *par, int burnin )
   PAR->burnin = burnin;
 
   /* changelog */
-  par->set |= MCGIBBS_SET_BURNIN;
+  par->set |= GIBBS_SET_BURNIN;
 
   /* o.k. */
   return UNUR_SUCCESS;
 
-} /* end of unur_mcgibbs_set_burnin() */
+} /* end of unur_gibbs_set_burnin() */
 
 /*---------------------------------------------------------------------------*/
 
 const double *
-unur_mcgibbs_get_state( struct unur_gen *gen )
+unur_gibbs_get_state( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* get current state of the Gibbs chain                                 */
      /*                                                                      */
@@ -471,18 +471,18 @@ unur_mcgibbs_get_state( struct unur_gen *gen )
 {
   /* check arguments */
   _unur_check_NULL( GENTYPE, gen, NULL );
-  if (gen->method != UNUR_METH_MCGIBBS) {
+  if (gen->method != UNUR_METH_GIBBS) {
     _unur_error(gen->genid, UNUR_ERR_GEN_INVALID,"");
     return NULL;
   }
 
   return GEN->state;
-} /* end of unur_mcgibbs_get_state() */
+} /* end of unur_gibbs_get_state() */
 
 /*---------------------------------------------------------------------------*/
 
 int 
-unur_mcgibbs_chg_state( struct unur_gen *gen, const double *state )
+unur_gibbs_chg_state( struct unur_gen *gen, const double *state )
      /*----------------------------------------------------------------------*/
      /* chg current state of the Gibbs chain                                 */
      /*                                                                      */
@@ -497,19 +497,19 @@ unur_mcgibbs_chg_state( struct unur_gen *gen, const double *state )
 {
   /* check arguments */
   _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
-  _unur_check_gen_object( gen, MCGIBBS, UNUR_ERR_GEN_INVALID );
+  _unur_check_gen_object( gen, GIBBS, UNUR_ERR_GEN_INVALID );
   _unur_check_NULL( gen->genid, state, UNUR_ERR_NULL );
 
   /* copy state */
   memcpy( GEN->state, state, GEN->dim * sizeof(double));
 
   return UNUR_SUCCESS;
-} /* end of unur_mcgibbs_chg_state() */
+} /* end of unur_gibbs_chg_state() */
 
 /*---------------------------------------------------------------------------*/
 
 int 
-unur_mcgibbs_reset_state( struct unur_gen *gen )
+unur_gibbs_reset_state( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* reset current state of the Gibbs chain to starting point             */
      /*                                                                      */
@@ -523,16 +523,16 @@ unur_mcgibbs_reset_state( struct unur_gen *gen )
 {
   /* check arguments */
   _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
-  _unur_check_gen_object( gen, MCGIBBS, UNUR_ERR_GEN_INVALID );
+  _unur_check_gen_object( gen, GIBBS, UNUR_ERR_GEN_INVALID );
 
   /* copy state */
   memcpy( GEN->state, GEN->x0, GEN->dim * sizeof(double));
 
-  if (gen->variant & MCGIBBS_VARMASK_VARIANT)
+  if (gen->variant & GIBBS_VARMASK_VARIANT)
     GEN->coord = (GEN->dim)-1;
 
   return UNUR_SUCCESS;
-} /* end of unur_mcgibbs_reset_state() */
+} /* end of unur_gibbs_reset_state() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -541,7 +541,7 @@ unur_mcgibbs_reset_state( struct unur_gen *gen )
 /*****************************************************************************/
 
 struct unur_gen *
-_unur_mcgibbs_init( struct unur_par *par )
+_unur_gibbs_init( struct unur_par *par )
      /*----------------------------------------------------------------------*/
      /* initialize new generator                                             */
      /*                                                                      */
@@ -564,13 +564,13 @@ _unur_mcgibbs_init( struct unur_par *par )
   _unur_check_NULL( GENTYPE,par,NULL );
 
   /* check input */
-  if ( par->method != UNUR_METH_MCGIBBS ) {
+  if ( par->method != UNUR_METH_GIBBS ) {
     _unur_error(GENTYPE,UNUR_ERR_PAR_INVALID,"");
     return NULL; }
-  COOKIE_CHECK(par,CK_MCGIBBS_PAR,NULL);
+  COOKIE_CHECK(par,CK_GIBBS_PAR,NULL);
 
   /* create a new empty generator object */
-  gen = _unur_mcgibbs_create(par);
+  gen = _unur_gibbs_create(par);
   if (!gen) { _unur_par_free(par); return NULL; }
 
   /* free parameters */
@@ -578,30 +578,30 @@ _unur_mcgibbs_init( struct unur_par *par )
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-  if (gen->debug) _unur_mcgibbs_debug_init_start(gen);
+  if (gen->debug) _unur_gibbs_debug_init_start(gen);
 #endif
 
   /* make generators for conditional distributions */
-  switch (gen->variant & MCGIBBS_VARMASK_VARIANT) {
-  case MCGIBBS_VARIANT_COORD:
+  switch (gen->variant & GIBBS_VARMASK_VARIANT) {
+  case GIBBS_VARIANT_COORD:
     /* conditional distribution object */
     GEN->distr_condi = unur_distr_condi_new( gen->distr, GEN->state, NULL, 0);
 
     /* make parameter object */
-    switch( gen->variant & MCGIBBS_VARMASK_T ) {
-    case MCGIBBS_VAR_T_LOG:
+    switch( gen->variant & GIBBS_VARMASK_T ) {
+    case GIBBS_VAR_T_LOG:
       /* use more robust method TDRGW for T = log */
       par_condi = unur_tdrgw_new(GEN->distr_condi);
       unur_tdrgw_set_reinit_percentiles(par_condi,2,NULL);
       break;
-    case MCGIBBS_VAR_T_SQRT:
+    case GIBBS_VAR_T_SQRT:
       /* we only have method TDR for T = -1/sqrt */
       par_condi = unur_tdr_new(GEN->distr_condi);
       unur_tdr_set_reinit_percentiles(par_condi,2,NULL);
       unur_tdr_set_c(par_condi,-0.5);
       unur_tdr_set_usedars(par_condi,FALSE);
       break;
-    case MCGIBBS_VAR_T_POW:
+    case GIBBS_VAR_T_POW:
     default:
       _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
     _unur_free(gen); return NULL;
@@ -611,7 +611,7 @@ _unur_mcgibbs_init( struct unur_par *par )
     unur_set_use_distr_privatecopy( par_condi, FALSE );
     /* debugging messages from the conditional generator should be rare */
     /* otherwise the size if the log file explodes                      */
-    unur_set_debug( par_condi, (gen->debug&MCGIBBS_DEBUG_CONDI)?gen->debug:1u);
+    unur_set_debug( par_condi, (gen->debug&GIBBS_DEBUG_CONDI)?gen->debug:1u);
 
     /* we use the same URNG for all auxiliary generators */
     unur_set_urng( par_condi, gen->urng );
@@ -622,7 +622,7 @@ _unur_mcgibbs_init( struct unur_par *par )
     if (gen_condi == NULL) {
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"Cannot create generator for conditional distributions");
 #ifdef UNUR_ENABLE_LOGGING
-      if (gen->debug) _unur_mcgibbs_debug_init_finished(gen,FALSE);
+      if (gen->debug) _unur_gibbs_debug_init_finished(gen,FALSE);
 #endif
       _unur_free(gen); return NULL;
     }
@@ -634,29 +634,29 @@ _unur_mcgibbs_init( struct unur_par *par )
 
     break;
 
-  case MCGIBBS_VARIANT_RANDOMDIR:
+  case GIBBS_VARIANT_RANDOMDIR:
     /* we need an auxiliary generator for normal random variates */
     GEN_NORMAL = unur_str2gen("normal()");
 
     /* conditional distribution object */
-    _unur_mcgibbs_random_unitvector( gen, GEN->direction );
+    _unur_gibbs_random_unitvector( gen, GEN->direction );
     GEN->distr_condi = unur_distr_condi_new( gen->distr, GEN->state, GEN->direction, 0);
 
     /* make parameter object */
-    switch( gen->variant & MCGIBBS_VARMASK_T ) {
-    case MCGIBBS_VAR_T_LOG:
+    switch( gen->variant & GIBBS_VARMASK_T ) {
+    case GIBBS_VAR_T_LOG:
       /* use more robust method TDRGW for T = log */
       par_condi = unur_tdrgw_new(GEN->distr_condi);
       unur_tdrgw_set_reinit_percentiles(par_condi,2,NULL);
       break;
-    case MCGIBBS_VAR_T_SQRT:
+    case GIBBS_VAR_T_SQRT:
       /* we only have method TDR for T = -1/sqrt */
       par_condi = unur_tdr_new(GEN->distr_condi);
       unur_tdr_set_reinit_percentiles(par_condi,2,NULL);
       unur_tdr_set_c(par_condi,-0.5);
       unur_tdr_set_usedars(par_condi,FALSE);
       break;
-    case MCGIBBS_VAR_T_POW:
+    case GIBBS_VAR_T_POW:
     default:
       _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
     _unur_free(gen); return NULL;
@@ -666,7 +666,7 @@ _unur_mcgibbs_init( struct unur_par *par )
     unur_set_use_distr_privatecopy( par_condi, FALSE );
     /* debugging messages from the conditional generator should be rare */
     /* otherwise the size if the log file explodes                      */
-    unur_set_debug( par_condi, (gen->debug&MCGIBBS_DEBUG_CONDI)?gen->debug:1u);
+    unur_set_debug( par_condi, (gen->debug&GIBBS_DEBUG_CONDI)?gen->debug:1u);
 
     /* we use the same URNG for all auxiliary generators */
     unur_set_urng( par_condi, gen->urng );
@@ -678,7 +678,7 @@ _unur_mcgibbs_init( struct unur_par *par )
     if (gen_condi == NULL) {
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"Cannot create generator for conditional distributions");
 #ifdef UNUR_ENABLE_LOGGING
-      if (gen->debug) _unur_mcgibbs_debug_init_finished(gen,FALSE);
+      if (gen->debug) _unur_gibbs_debug_init_finished(gen,FALSE);
 #endif
       _unur_free(gen); return NULL;
     }
@@ -690,12 +690,12 @@ _unur_mcgibbs_init( struct unur_par *par )
 
   default:
     _unur_error(GENTYPE,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    _unur_mcgibbs_free(gen);
+    _unur_gibbs_free(gen);
     return NULL;
   }
 
 #ifdef UNUR_ENABLE_LOGGING
-  if (gen->debug) _unur_mcgibbs_debug_init_condi(gen);
+  if (gen->debug) _unur_gibbs_debug_init_condi(gen);
 #endif
 
   /* run burn-in */
@@ -715,8 +715,8 @@ _unur_mcgibbs_init( struct unur_par *par )
       /* If there was a fatal error X contains INFINITY */
       if (!_unur_isfinite(X[0])) {
 #ifdef UNUR_ENABLE_LOGGING
-	_unur_mcgibbs_debug_burnin_failed(gen);
-	if (gen->debug) _unur_mcgibbs_debug_init_finished(gen,FALSE);
+	_unur_gibbs_debug_burnin_failed(gen);
+	if (gen->debug) _unur_gibbs_debug_init_finished(gen,FALSE);
 #endif
 	_unur_free(gen); free (X); return NULL;
       }
@@ -730,18 +730,18 @@ _unur_mcgibbs_init( struct unur_par *par )
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-  if (gen->debug) _unur_mcgibbs_debug_init_finished(gen,TRUE);
+  if (gen->debug) _unur_gibbs_debug_init_finished(gen,TRUE);
 #endif
 
   /* o.k. */
   return gen;
 
-} /* end of _unur_mcgibbs_init() */
+} /* end of _unur_gibbs_init() */
 
 /*---------------------------------------------------------------------------*/
 
 static struct unur_gen *
-_unur_mcgibbs_create( struct unur_par *par )
+_unur_gibbs_create( struct unur_par *par )
      /*----------------------------------------------------------------------*/
      /* allocate memory for generator                                        */
      /*                                                                      */
@@ -759,13 +759,13 @@ _unur_mcgibbs_create( struct unur_par *par )
   int i;
 
   /* check arguments */
-  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_MCGIBBS_PAR,NULL);
+  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_GIBBS_PAR,NULL);
 
   /* create new generic generator object */
-  gen = _unur_generic_create( par, sizeof(struct unur_mcgibbs_gen) );
+  gen = _unur_generic_create( par, sizeof(struct unur_gibbs_gen) );
 
   /* magic cookies */
-  COOKIE_SET(gen,CK_MCGIBBS_GEN);
+  COOKIE_SET(gen,CK_GIBBS_GEN);
 
   /* dimension of distribution */
   GEN->dim = gen->distr->dim;
@@ -775,25 +775,25 @@ _unur_mcgibbs_create( struct unur_par *par )
 
   /* which transformation for conditional distributions */
   if (PAR->c_T == 0.)
-    par->variant = (par->variant & (~MCGIBBS_VARMASK_T)) | MCGIBBS_VAR_T_LOG;
+    par->variant = (par->variant & (~GIBBS_VARMASK_T)) | GIBBS_VAR_T_LOG;
   else if (_unur_FP_same(PAR->c_T, -0.5))
-    par->variant = (par->variant & (~MCGIBBS_VARMASK_T)) | MCGIBBS_VAR_T_SQRT;
+    par->variant = (par->variant & (~GIBBS_VARMASK_T)) | GIBBS_VAR_T_SQRT;
   else
-    par->variant = (par->variant & (~MCGIBBS_VARMASK_T)) | MCGIBBS_VAR_T_POW;
+    par->variant = (par->variant & (~GIBBS_VARMASK_T)) | GIBBS_VAR_T_POW;
 
   /* routines for sampling and destroying generator */
-  switch (gen->variant & MCGIBBS_VARMASK_VARIANT) {
-  case MCGIBBS_VARIANT_COORD:
-    SAMPLE = _unur_mcgibbs_coord_sample_cvec; break;
-  case MCGIBBS_VARIANT_RANDOMDIR:
-    SAMPLE = _unur_mcgibbs_randomdir_sample_cvec; break;
+  switch (gen->variant & GIBBS_VARMASK_VARIANT) {
+  case GIBBS_VARIANT_COORD:
+    SAMPLE = _unur_gibbs_coord_sample_cvec; break;
+  case GIBBS_VARIANT_RANDOMDIR:
+    SAMPLE = _unur_gibbs_randomdir_sample_cvec; break;
   default:
     SAMPLE = NULL;
-    /* the error message is produced in _unur_mcgibbs_init() */
+    /* the error message is produced in _unur_gibbs_init() */
   }
 
-  gen->destroy = _unur_mcgibbs_free;
-  gen->clone = _unur_mcgibbs_clone;
+  gen->destroy = _unur_gibbs_free;
+  gen->clone = _unur_gibbs_clone;
 
   /* variant of sampling method */
   gen->variant = par->variant;        
@@ -826,12 +826,12 @@ _unur_mcgibbs_create( struct unur_par *par )
   /* return pointer to (almost empty) generator object */
   return gen;
   
-} /* end of _unur_mcgibbs_create() */
+} /* end of _unur_gibbs_create() */
 
 /*---------------------------------------------------------------------------*/
 
 struct unur_gen *
-_unur_mcgibbs_clone( const struct unur_gen *gen )
+_unur_gibbs_clone( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* copy (clone) generator object                                        */
      /*                                                                      */
@@ -845,14 +845,14 @@ _unur_mcgibbs_clone( const struct unur_gen *gen )
      /*   return NULL                                                        */
      /*----------------------------------------------------------------------*/
 {
-#define CLONE         ((struct unur_mcgibbs_gen*)clone->datap)
+#define CLONE         ((struct unur_gibbs_gen*)clone->datap)
 #define CLONE_CONDI   clone->gen_aux_list     
 
   int i;
   struct unur_gen *clone;
 
   /* check arguments */
-  CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_MCGIBBS_GEN,NULL);
+  CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_GIBBS_GEN,NULL);
 
   /* create generic clone */
   clone = _unur_generic_clone( gen, GENTYPE );
@@ -881,12 +881,12 @@ _unur_mcgibbs_clone( const struct unur_gen *gen )
 
 #undef CLONE
 #undef CLONE_CONDI
-} /* end of _unur_mcgibbs_clone() */
+} /* end of _unur_gibbs_clone() */
 
 /*****************************************************************************/
 
 void
-_unur_mcgibbs_coord_sample_cvec( struct unur_gen *gen, double *vec )
+_unur_gibbs_coord_sample_cvec( struct unur_gen *gen, double *vec )
      /*----------------------------------------------------------------------*/
      /* sample from generator                                                */
      /*                                                                      */
@@ -900,7 +900,7 @@ _unur_mcgibbs_coord_sample_cvec( struct unur_gen *gen, double *vec )
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);
-  COOKIE_CHECK(gen,CK_MCGIBBS_GEN,RETURN_VOID);
+  COOKIE_CHECK(gen,CK_GIBBS_GEN,RETURN_VOID);
 
   for (thinning = GEN->thinning; thinning > 0; --thinning) {
 
@@ -920,14 +920,14 @@ _unur_mcgibbs_coord_sample_cvec( struct unur_gen *gen, double *vec )
     unur_distr_condi_set_condition( GEN->distr_condi, GEN->state, NULL, GEN->coord);
 
     /* reinit generator object */
-    switch( gen->variant & MCGIBBS_VARMASK_T ) {
-    case MCGIBBS_VAR_T_LOG:
+    switch( gen->variant & GIBBS_VARMASK_T ) {
+    case GIBBS_VAR_T_LOG:
       unur_tdrgw_reinit(GEN_CONDI[GEN->coord]);
       break;
-    case MCGIBBS_VAR_T_SQRT:
+    case GIBBS_VAR_T_SQRT:
       unur_tdr_reinit(GEN_CONDI[GEN->coord]);
       break;
-    case MCGIBBS_VAR_T_POW:
+    case GIBBS_VAR_T_POW:
     default:
       _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
       return;
@@ -946,12 +946,12 @@ _unur_mcgibbs_coord_sample_cvec( struct unur_gen *gen, double *vec )
 
   return;
 
-} /* end of _unur_mcgibbs_coord_sample_cvec() */
+} /* end of _unur_gibbs_coord_sample_cvec() */
 
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_mcgibbs_randomdir_sample_cvec( struct unur_gen *gen, double *vec )
+_unur_gibbs_randomdir_sample_cvec( struct unur_gen *gen, double *vec )
      /*----------------------------------------------------------------------*/
      /* sample from generator                                                */
      /*                                                                      */
@@ -966,7 +966,7 @@ _unur_mcgibbs_randomdir_sample_cvec( struct unur_gen *gen, double *vec )
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);
-  COOKIE_CHECK(gen,CK_MCGIBBS_GEN,RETURN_VOID);
+  COOKIE_CHECK(gen,CK_GIBBS_GEN,RETURN_VOID);
 
   for (thinning = GEN->thinning; thinning > 0; --thinning) {
 
@@ -980,20 +980,20 @@ _unur_mcgibbs_randomdir_sample_cvec( struct unur_gen *gen, double *vec )
       break;
 
     /* new random direction */
-    _unur_mcgibbs_random_unitvector( gen, GEN->direction );
+    _unur_gibbs_random_unitvector( gen, GEN->direction );
     
     /* update conditional distribution */
     unur_distr_condi_set_condition( GEN->distr_condi, GEN->state, GEN->direction, 0);
 
     /* reinit generator object */
-    switch( gen->variant & MCGIBBS_VARMASK_T ) {
-    case MCGIBBS_VAR_T_LOG:
+    switch( gen->variant & GIBBS_VARMASK_T ) {
+    case GIBBS_VAR_T_LOG:
       unur_tdrgw_reinit(*GEN_CONDI);
       break;
-    case MCGIBBS_VAR_T_SQRT:
+    case GIBBS_VAR_T_SQRT:
       unur_tdr_reinit(*GEN_CONDI);
       break;
-    case MCGIBBS_VAR_T_POW:
+    case GIBBS_VAR_T_POW:
     default:
       _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
       return;
@@ -1013,12 +1013,12 @@ _unur_mcgibbs_randomdir_sample_cvec( struct unur_gen *gen, double *vec )
 
   return;
 
-} /* end of _unur_mcgibbs_randomdir_sample_cvec() */
+} /* end of _unur_gibbs_randomdir_sample_cvec() */
 
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_mcgibbs_random_unitvector( struct unur_gen *gen, double *direction )
+_unur_gibbs_random_unitvector( struct unur_gen *gen, double *direction )
      /*----------------------------------------------------------------------*/
      /* generate a random direction vector                                   */
      /*                                                                      */
@@ -1039,12 +1039,12 @@ _unur_mcgibbs_random_unitvector( struct unur_gen *gen, double *direction )
        normalizing. In this case non of its coordinates are finite. */
   } while (!_unur_isfinite(direction[0]));
 
-} /* end of _unur_mcgibbs_random_unitvector() */
+} /* end of _unur_gibbs_random_unitvector() */
 
 /*****************************************************************************/
 
 void
-_unur_mcgibbs_free( struct unur_gen *gen )
+_unur_gibbs_free( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* deallocate generator object                                          */
      /*                                                                      */
@@ -1057,10 +1057,10 @@ _unur_mcgibbs_free( struct unur_gen *gen )
     return;
 
   /* check input */
-  if ( gen->method != UNUR_METH_MCGIBBS ) {
+  if ( gen->method != UNUR_METH_GIBBS ) {
     _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
     return; }
-  COOKIE_CHECK(gen,CK_MCGIBBS_GEN,RETURN_VOID);
+  COOKIE_CHECK(gen,CK_GIBBS_GEN,RETURN_VOID);
 
   /* we cannot use this generator object any more */
   SAMPLE = NULL;   /* make sure to show up a programming error */
@@ -1077,7 +1077,7 @@ _unur_mcgibbs_free( struct unur_gen *gen )
 
   _unur_generic_free(gen);
 
-} /* end of _unur_mcgibbs_free() */
+} /* end of _unur_gibbs_free() */
 
 /*****************************************************************************/
 /**  Debugging utilities                                                    **/
@@ -1088,7 +1088,7 @@ _unur_mcgibbs_free( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_mcgibbs_debug_init_start( const struct unur_gen *gen )
+_unur_gibbs_debug_init_start( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* write info about generator into logfile                              */
      /*                                                                      */
@@ -1099,60 +1099,60 @@ _unur_mcgibbs_debug_init_start( const struct unur_gen *gen )
   FILE *log;
 
   /* check arguments */
-  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_MCGIBBS_GEN,RETURN_VOID);
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_GIBBS_GEN,RETURN_VOID);
 
   log = unur_get_stream();
 
   fprintf(log,"%s:\n",gen->genid);
   fprintf(log,"%s: type    = continuous multivariate random variates\n",gen->genid);
-  fprintf(log,"%s: method  = MCGIBBS (Markov Chain - GIBBS sampler)\n",gen->genid);
+  fprintf(log,"%s: method  = GIBBS (Markov Chain - GIBBS sampler)\n",gen->genid);
   fprintf(log,"%s: variant = ",gen->genid);
-  switch (gen->variant & MCGIBBS_VARMASK_VARIANT) {
-  case MCGIBBS_VARIANT_COORD:
+  switch (gen->variant & GIBBS_VARMASK_VARIANT) {
+  case GIBBS_VARIANT_COORD:
     fprintf(log,"coordinate sampling (original Gibbs sampler)  [default]\n"); break;
-  case MCGIBBS_VARIANT_RANDOMDIR:
+  case GIBBS_VARIANT_RANDOMDIR:
     fprintf(log,"random directions\n"); break;
   }
   fprintf(log,"%s:\n",gen->genid);
 
   fprintf(log,"%s: transformation T_c(x) for TDR method = ",gen->genid);
-  switch( gen->variant & MCGIBBS_VARMASK_T ) {
-  case MCGIBBS_VAR_T_LOG:
+  switch( gen->variant & GIBBS_VARMASK_T ) {
+  case GIBBS_VAR_T_LOG:
     fprintf(log,"log(x)  ... c = 0");                   break;
-  case MCGIBBS_VAR_T_SQRT:
+  case GIBBS_VAR_T_SQRT:
     fprintf(log,"-1/sqrt(x)  ... c = -1/2");            break;
-  case MCGIBBS_VAR_T_POW:
+  case GIBBS_VAR_T_POW:
     fprintf(log,"-x^(%g)  ... c = %g",GEN->c_T,GEN->c_T); break;
   }
-  _unur_print_if_default(gen,MCGIBBS_SET_C);
+  _unur_print_if_default(gen,GIBBS_SET_C);
   fprintf(log,"\n%s:\n",gen->genid);
 
   _unur_distr_cvec_debug( gen->distr, gen->genid );
 
-  switch (gen->variant & MCGIBBS_VARMASK_VARIANT) {
-  case MCGIBBS_VARIANT_COORD:
-    fprintf(log,"%s: sampling routine = _unur_mcgibbs_coord_sample()\n",gen->genid);
+  switch (gen->variant & GIBBS_VARMASK_VARIANT) {
+  case GIBBS_VARIANT_COORD:
+    fprintf(log,"%s: sampling routine = _unur_gibbs_coord_sample()\n",gen->genid);
     break;
-  case MCGIBBS_VARIANT_RANDOMDIR:
-    fprintf(log,"%s: sampling routine = _unur_mcgibbs_randomdir_sample()\n",gen->genid);
+  case GIBBS_VARIANT_RANDOMDIR:
+    fprintf(log,"%s: sampling routine = _unur_gibbs_randomdir_sample()\n",gen->genid);
     break;
   }
 
   fprintf(log,"%s: thinning = %d",gen->genid,GEN->thinning);
-  _unur_print_if_default(gen,MCGIBBS_SET_THINNING);
+  _unur_print_if_default(gen,GIBBS_SET_THINNING);
   fprintf(log,"\n%s: burn-in = %d",gen->genid,GEN->burnin);
-  _unur_print_if_default(gen,MCGIBBS_SET_BURNIN);
+  _unur_print_if_default(gen,GIBBS_SET_BURNIN);
   fprintf(log,"\n%s:\n",gen->genid);
   _unur_matrix_print_vector( GEN->dim, GEN->x0, "starting point = ", log, gen->genid, "\t   ");
 
   fprintf(log,"%s:\n",gen->genid);
 
-} /* end of _unur_mcgibbs_debug_init_start() */
+} /* end of _unur_gibbs_debug_init_start() */
 
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_mcgibbs_debug_init_finished( const struct unur_gen *gen, int success )
+_unur_gibbs_debug_init_finished( const struct unur_gen *gen, int success )
      /*----------------------------------------------------------------------*/
      /* write info about generator into logfile                              */
      /*                                                                      */
@@ -1164,7 +1164,7 @@ _unur_mcgibbs_debug_init_finished( const struct unur_gen *gen, int success )
   FILE *log;
 
   /* check arguments */
-  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_MCGIBBS_GEN,RETURN_VOID);
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_GIBBS_GEN,RETURN_VOID);
 
   log = unur_get_stream();
 
@@ -1173,12 +1173,12 @@ _unur_mcgibbs_debug_init_finished( const struct unur_gen *gen, int success )
   else
     fprintf(log,"%s: INIT failed **********************\n",gen->genid);
 
-} /* end of _unur_mcgibbs_debug_init_finished() */
+} /* end of _unur_gibbs_debug_init_finished() */
 
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_mcgibbs_debug_burnin_failed( const struct unur_gen *gen )
+_unur_gibbs_debug_burnin_failed( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* write info after burnin has failed                                   */
      /*                                                                      */
@@ -1189,19 +1189,19 @@ _unur_mcgibbs_debug_burnin_failed( const struct unur_gen *gen )
   FILE *log;
 
   /* check arguments */
-  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_MCGIBBS_GEN,RETURN_VOID);
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_GIBBS_GEN,RETURN_VOID);
 
   log = unur_get_stream();
 
   fprintf(log,"%s: Burn-in failed --> INIT failed **********************\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
-} /* end of _unur_mcgibbs_debug_burnin_failed() */
+} /* end of _unur_gibbs_debug_burnin_failed() */
 
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_mcgibbs_debug_init_condi( const struct unur_gen *gen )
+_unur_gibbs_debug_init_condi( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* write list of conditional generators into logfile                    */
      /*                                                                      */
@@ -1213,19 +1213,19 @@ _unur_mcgibbs_debug_init_condi( const struct unur_gen *gen )
   FILE *log;
 
   /* check arguments */
-  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_MCGIBBS_GEN,RETURN_VOID);
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_GIBBS_GEN,RETURN_VOID);
 
   log = unur_get_stream();
 
-  switch (gen->variant & MCGIBBS_VARMASK_VARIANT) {
-  case MCGIBBS_VARIANT_COORD:
+  switch (gen->variant & GIBBS_VARMASK_VARIANT) {
+  case GIBBS_VARIANT_COORD:
     fprintf(log,"%s: generators for full conditional distributions = \n",gen->genid);
     fprintf(log,"%s:\t",gen->genid);
     for (i=0; i<GEN->dim; i++)
       fprintf(log,"[%s] ", GEN_CONDI[i]->genid);
     fprintf(log,"\n%s:\n",gen->genid);
     break;
-  case MCGIBBS_VARIANT_RANDOMDIR:
+  case GIBBS_VARIANT_RANDOMDIR:
     fprintf(log,"%s: generators for full conditional distributions = [%s]\n",gen->genid,
 	    GEN_CONDI[0]->genid);
     fprintf(log,"%s: generator for random directions = [%s]\n",gen->genid,
@@ -1234,7 +1234,7 @@ _unur_mcgibbs_debug_init_condi( const struct unur_gen *gen )
     break;
   }
 
-} /* end of _unur_mcgibbs_debug_init_condi() */
+} /* end of _unur_gibbs_debug_init_condi() */
 
 /*---------------------------------------------------------------------------*/
 #endif   /* end UNUR_ENABLE_LOGGING */

@@ -114,8 +114,8 @@
 /* Markov chain samplers */
 #define CK_BALL_PAR      0x00200060u
 #define CK_BALL_GEN      0x00200061u
-#define CK_MCGIBBS_PAR   0x00200070u
-#define CK_MCGIBBS_GEN   0x00200071u
+#define CK_GIBBS_PAR     0x00200070u
+#define CK_GIBBS_GEN     0x00200071u
 #define CK_HITROU_PAR    0x00200080u
 #define CK_HITROU_GEN    0x00200081u
 #define CK_WALK_PAR      0x00200090u

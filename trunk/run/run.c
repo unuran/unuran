@@ -16,9 +16,6 @@
 #include <unuran.h>
 #include <unuran_tests.h>
 
-#include <mcgibbs.h>
-
-
 #define RUN_TESTS       (~0x0u)
 /* #define RUN_TESTS       UNUR_TEST_SAMPLE */
 
@@ -36,10 +33,10 @@ int main()
 
   normal = unur_distr_multinormal(3,NULL,NULL);
 
-  par = unur_mcgibbs_new(normal);
+  par = unur_gibbs_new(normal);
   unur_set_debug( par, 1u);
-/*   unur_mcgibbs_set_thinning(par,3); */
-/*   unur_mcgibbs_set_variant_random_direction(par); */
+/*   unur_gibbs_set_thinning(par,3); */
+/*   unur_gibbs_set_variant_random_direction(par); */
 
 /*   gen = unur_init(par); */
 

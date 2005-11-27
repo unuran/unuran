@@ -4,7 +4,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: mcgibbs.h                                                         *
+ *   FILE: gibbs.h                                                           *
  *                                                                           *
  *   PURPOSE:                                                                *
  *         function prototypes for method MCGIBBS                            *

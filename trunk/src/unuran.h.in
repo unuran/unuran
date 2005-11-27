@@ -127,7 +127,7 @@
 #include <methods/vnrou.h>
 
 /* methods for Markov chain sampler */
-#include <methods/mcgibbs.h>
+#include <methods/gibbs.h>
 
 /* wrapper for special generators for standard distributions */
 #include <methods/cstd.h>     /* continuous */

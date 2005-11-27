@@ -4,7 +4,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE:      mcgibbs.c                                                    *
+ *   FILE:      gibbs.c                                                      *
  *                                                                           *
  *   TYPE:      continuous multivariate random variate                       *
  *   METHOD:    Gibbs sampler using full conditional distributions.          *
@@ -63,8 +63,8 @@
 #include "tdr.h"
 #include "tdrgw.h"
 
-#include "mcgibbs.h"
-#include "mcgibbs_struct.h"
+#include "gibbs.h"
+#include "gibbs_struct.h"
 
 /*---------------------------------------------------------------------------*/
 /* Variants                                                                  */

@@ -60,6 +60,7 @@ check_PROGRAMS = \
  t_dstd \
  t_empk \
  t_empl \
+ t_gibbs \
  t_hinv \
  t_hrb \
  t_hrd \
@@ -78,7 +79,6 @@ check_PROGRAMS = \
  t_vempk \
  t_vmt \
  t_vnrou \
- t_mcgibbs \
  t_stringparser \
  test_special_matrix \
  $(EXPERIMENTAL_PROGS) \
@@ -127,6 +127,7 @@ EXTRA_DIST = \
  t_dstd.conf \
  t_empk.conf \
  t_empl.conf \
+ t_gibbs \
  t_hinv.conf \
  t_hrb.conf \
  t_hrd.conf \
@@ -144,8 +145,7 @@ EXTRA_DIST = \
  t_utdr.conf \
  t_vempk.conf \
  t_vmt.conf \
- t_vnrou.conf \
- t_mcgibbs
+ t_vnrou.conf
 
 
 # Compare results of CDF, PDF, and dPDF of standard distributions

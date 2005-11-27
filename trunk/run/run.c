@@ -38,8 +38,8 @@ int main()
 
   par = unur_mcgibbs_new(normal);
   unur_set_debug( par, 1u);
-  unur_mcgibbs_set_thinning(par,3);
-  unur_mcgibbs_set_variant_random_direction(par);
+/*   unur_mcgibbs_set_thinning(par,3); */
+/*   unur_mcgibbs_set_variant_random_direction(par); */
 
 /*   gen = unur_init(par); */
 

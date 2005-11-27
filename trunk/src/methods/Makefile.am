@@ -19,6 +19,7 @@ libmethods_la_SOURCES = \
  dstd.c   dstd.h   dstd_struct.h \
  empk.c   empk.h   empk_struct.h \
  empl.c   empl.h   empl_struct.h \
+ gibbs.c  gibbs.h  gibbs_struct.h \
  hinv.c   hinv.h   hinv_struct.h \
  hrb.c    hrb.h    hrb_struct.h \
  hrd.c    hrd.h    hrd_struct.h \
@@ -40,9 +41,7 @@ libmethods_la_SOURCES = \
  utdr.c   utdr.h   utdr_struct.h \
  vempk.c  vempk.h  vempk_struct.h \
  vmt.c    vmt.h    vmt_struct.h \
- vnrou.c  vnrou.h  vnrou_struct.h \
-\
- mcgibbs.c  mcgibbs.h   mcgibbs_struct.h
+ vnrou.c  vnrou.h  vnrou_struct.h 
 
 noinst_HEADERS = \
  unur_methods_source.h

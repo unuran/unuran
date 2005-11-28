@@ -21,6 +21,7 @@
 
 #include <distr/distr_source.h>
 #include <src/utils/matrix_source.h>
+#include <src/methods/gibbs.h>
 #include <experimental/hitrou.h>
 #include <experimental/ball.h>
 #include <experimental/walk.h>
@@ -363,6 +364,7 @@ int main(int argc, char *argv[])
     distr = unur_distr_multiexponential(DIM, NULL, NULL);
    
     for (d=0; d<DIM; d++) {
+      /* TODO: calculate and set correct expected values */
       moments_expected[im(d,1)] = 1.;
       moments_expected[im(d,2)] = 1.;
       moments_expected[im(d,3)] = 2.;
@@ -394,29 +396,17 @@ int main(int argc, char *argv[])
   
   if (METHOD==METHOD_GIBBS) {
     printf("METHOD=GIBBS \n");  
-    
     par = unur_gibbs_new(distr);
     unur_gibbs_set_c(par, 0);
     unur_gibbs_set_thinning(par,SKIP+1);
-/*    
-    par = unur_gibbs_new(distr);
-    unur_gibbs_set_thinning(par,SKIP+1);
-*/    
   }
   
   if (METHOD==METHOD_GIBBS_RANDOM) {
     printf("METHOD=GIBBS (RANDOM DIRECTIONS)\n");  
-    
     par = unur_gibbs_new(distr);
     unur_gibbs_set_c(par, 0);
     unur_gibbs_set_thinning(par,SKIP+1);
     unur_gibbs_set_variant_random_direction(par);
- 
-/*   
-    par = unur_gibbs_new(distr);
-    unur_gibbs_set_thinning(par,SKIP+1);
-    unur_gibbs_set_variant_random_direction(par);
-*/  
   }
 
   if (METHOD==METHOD_HITROU_BOX) {
@@ -532,14 +522,14 @@ int main(int argc, char *argv[])
   /* setting x[] at initial point */  
   
   for (d=0; d<DIM; d++) {
-    x[d]=0.;
+    x[d]=0.1*d;
   }  
   
   
   double fx;  /* pdf value at the point x */
   fx=PDF(x);  
 
-  printf("f(x)=%g\n", fx); 
+//  printf("f(x)=%g\n", fx); 
     
   x[DIM] = fx * 0.9; /* used by the pdf ball sampler */
   /* transforming x[] into uv[] coordinates (at RoU boundary */
@@ -559,6 +549,9 @@ int main(int argc, char *argv[])
   par = _unur_par_clone(par_clone);
   gen = unur_init(par);
 
+  /* not very elegant, but we need this for the setting of the initial point of the gibbs method ... */
+  par = _unur_par_clone(par_clone);
+    
   /* main loop */    
   for (loop=1; loop<=EXPERIMENTS; loop++) {
       
@@ -644,7 +637,8 @@ int main(int argc, char *argv[])
   }
   printarray("max      :", a_max);
 
-  
+
+#if 0    
   unur_run_tests(par_aux,~0u);
   
   if ( METHOD == METHOD_GIBBS ) {   
@@ -653,7 +647,8 @@ int main(int argc, char *argv[])
   else {
     unur_test_count_pdf(gen, SAMPLESIZE, 2, stdout);
   }  
-  
+#endif
+    
   for(d=0;d<DIM;d++){
     for (m=1; m<=4; m++) {
       if (mv[im(d,m)]) free_meanvar(mv[im(d,m)]);

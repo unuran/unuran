@@ -1,0 +1,1428 @@
+/*****************************************************************************
+ *                                                                           *
+ *          UNURAN -- Universal Non-Uniform Random number generator          *
+ *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ *   FILE:      hitro.c                                                      *
+ *                                                                           *
+ *   TYPE:      continuous multivariate random variate                       *
+ *   METHOD:    HITRO sampler using full conditional distributions.          *
+ *                                                                           *
+ *   DESCRIPTION:                                                            *
+ *      Given PDF                                                            *
+ *      Produce a value x consistent with its density                        *
+ *                                                                           *
+ *   REQUIRED:                                                               *
+ *      pointer to the density function and its derivatives                  *
+ *                                                                           *
+ *   OPTIONAL:                                                               *
+ *      mode of the density                                                  *
+ *                                                                           *
+ *****************************************************************************
+     $Id$
+ *****************************************************************************
+ *                                                                           *
+ *   Copyright (c) 2000 Wolfgang Hoermann and Josef Leydold                  *
+ *   Dept. for Statistics, University of Economics, Vienna, Austria          *
+ *                                                                           *
+ *   This program is free software; you can redistribute it and/or modify    *
+ *   it under the terms of the GNU General Public License as published by    *
+ *   the Free Software Foundation; either version 2 of the License, or       *
+ *   (at your option) any later version.                                     *
+ *                                                                           *
+ *   This program is distributed in the hope that it will be useful,         *
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of          *
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
+ *   GNU General Public License for more details.                            *
+ *                                                                           *
+ *   You should have received a copy of the GNU General Public License       *
+ *   along with this program; if not, write to the                           *
+ *   Free Software Foundation, Inc.,                                         *
+ *   59 Temple Place, Suite 330, Boston, MA 02111-1307, USA                  *
+ *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ *   REFERENCES:                                                             *
+ *                                                                           *
+ *****************************************************************************/
+
+/*---------------------------------------------------------------------------*/
+
+#include <unur_source.h>
+#include <distr/distr.h>
+#include <distr/distr_source.h>
+#include <distr/cvec.h>
+#include <uniform/urng.h>
+#include <utils/matrix_source.h>
+#include <utils/mrou_rectangle_struct.h>
+#include <utils/mrou_rectangle_source.h>
+#include <parser/parser.h>
+#include "unur_methods_source.h"
+#include "x_gen.h"
+#include "x_gen_source.h"
+
+#include "hitro.h"
+#include "hitro_struct.h"
+
+/* #include <distributions/unur_distributions.h> */
+/* #include <utils/fmax_source.h> */
+/* #include <utils/hooke_source.h> */
+/* #include <utils/unur_fp_source.h> */
+/* #include <uniform/urng.h> */
+
+/*---------------------------------------------------------------------------*/
+/* Variants                                                                  */
+
+#define HITRO_VARMASK_VARIANT     0x000fu    /* indicates variant            */
+#define HITRO_VARIANT_COORD       0x0001u    /* coordinate sampler           */
+#define HITRO_VARIANT_RANDOMDIR   0x0002u    /* random direction sampler     */
+
+#define HITRO_VARFLAG_ADAPTLINE   0x0010u    /* use adaptive line sampling   */
+#define HITRO_VARFLAG_ADAPTRECT   0x0020u    /* use adaptive bounding rectangle */
+#define HITRO_VARFLAG_BOUNDRECT   0x0040u    /* use entire bounding rectangle */
+
+/*---------------------------------------------------------------------------*/
+/* Debugging flags                                                           */
+/*    bit  01    ... pameters and structure of generator (do not use here)   */
+/*    bits 02-12 ... setup                                                   */
+/*    bits 13-24 ... adaptive steps                                          */
+/*    bits 25-32 ... trace sampling                                          */
+
+/*---------------------------------------------------------------------------*/
+/* Flags for logging set calls                                               */
+
+#define HITRO_SET_R          0x0001u   /* set parameter r                    */
+#define HITRO_SET_X0         0x0002u   /* set starting point                 */
+#define HITRO_SET_THINNING   0x0004u   /* set thinning factor                */
+#define HITRO_SET_BURNIN     0x0008u   /* set length of burn-in              */
+#define HITRO_SET_U          0x0010u   /* set u-boundaries of bounding rectangles */
+#define HITRO_SET_V          0x0020u   /* set upper v-bound of bounding rectangles */
+
+#define HITRO_SET_ADAPTLINE  0x0100u   /* set adaptive line sampling         */
+#define HITRO_SET_ADAPTRECT  0x0200u   /* set adaptive bounding rectangle    */
+#define HITRO_SET_BOUNDRECT  0x0400u   /* set entire bounding rectangle      */
+
+/*---------------------------------------------------------------------------*/
+
+#define GENTYPE "HITRO"        /* type of generator                          */
+
+/*---------------------------------------------------------------------------*/
+
+static struct unur_gen *_unur_hitro_init( struct unur_par *par );
+/*---------------------------------------------------------------------------*/
+/* Initialize new generator.                                                 */
+/*---------------------------------------------------------------------------*/
+
+static struct unur_gen *_unur_hitro_create( struct unur_par *par );
+/*---------------------------------------------------------------------------*/
+/* create new (almost empty) generator object.                               */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_hitro_rectangle( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* compute (minimal) bounding rectangle.                                     */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_hitro_coord_sample_cvec( struct unur_gen *gen, double *vec );
+static void _unur_hitro_randomdir_sample_cvec( struct unur_gen *gen, double *vec );
+/*---------------------------------------------------------------------------*/
+/* sample from generator                                                     */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_hitro_free( struct unur_gen *gen);
+/*---------------------------------------------------------------------------*/
+/* destroy generator object.                                                 */
+/*---------------------------------------------------------------------------*/
+
+static struct unur_gen *_unur_hitro_clone( const struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* copy (clone) generator object.                                            */
+/*---------------------------------------------------------------------------*/
+
+/* static int _unur_hitrou_uv_is_inside_region( const struct unur_gen *gen, const double *uv ); */
+/* /\*---------------------------------------------------------------------------*\/ */
+/* /\* check if point uv[] is inside shape                                       *\/ */
+/* /\*---------------------------------------------------------------------------*\/ */
+
+/* static void _unur_hitro_random_unitvector( struct unur_gen *gen, double *direction ); */
+/* /\*---------------------------------------------------------------------------*\/ */
+/* /\* generate a random direction vector                                        *\/ */
+/* /\*---------------------------------------------------------------------------*\/ */
+
+#ifdef UNUR_ENABLE_LOGGING
+/*---------------------------------------------------------------------------*/
+/* the following functions print debugging information on output stream,     */
+/* i.e., into the log file if not specified otherwise.                       */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_hitro_debug_init_start( const struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* print before init of generator starts.                                    */
+/*---------------------------------------------------------------------------*/
+
+/* static void _unur_hitro_debug_init_condi( const struct unur_gen *gen ); */
+/* /\*---------------------------------------------------------------------------*\/ */
+/* /\* print list of conditional generators.                                     *\/ */
+/* /\*---------------------------------------------------------------------------*\/ */
+
+/* static void _unur_hitro_debug_burnin_failed( const struct unur_gen *gen ); */
+/* /\*---------------------------------------------------------------------------*\/ */
+/* /\* print after burnin has failed.                                            *\/ */
+/* /\*---------------------------------------------------------------------------*\/ */
+
+static void _unur_hitro_debug_init_finished( const struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* print after generator has been initialized has completed.                 */
+/*---------------------------------------------------------------------------*/
+#endif
+
+/*---------------------------------------------------------------------------*/
+/* abbreviations */
+
+#define DISTR_IN  distr->data.cvec      /* data for distribution object      */
+
+#define PAR       ((struct unur_hitro_par*)par->datap) /* data for parameter object */
+#define GEN       ((struct unur_hitro_gen*)gen->datap) /* data for generator object */
+#define DISTR     gen->distr->data.cvec /* data for distribution in generator object */
+
+#define SAMPLE    gen->sample.cvec      /* pointer to sampling routine       */     
+
+/* an auxiliary generator for standard normal variates */
+#define GEN_NORMAL    gen->gen_aux
+
+
+/** TODO **/
+#define CK_HITRO_PAR     CK_HITROU_PAR 
+#define CK_HITRO_GEN     CK_HITROU_GEN
+#define UNUR_METH_HITRO  UNUR_METH_HITROU
+
+/*---------------------------------------------------------------------------*/
+
+/*****************************************************************************/
+/**  Public: User Interface (API)                                           **/
+/*****************************************************************************/
+
+struct unur_par *
+unur_hitro_new( const struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* get default parameters                                               */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   default parameters (pointer to structure)                          */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_par *par;
+
+  /* check arguments */
+  _unur_check_NULL( GENTYPE,distr,NULL );
+
+  /* check distribution */
+  if (distr->type != UNUR_DISTR_CVEC) {
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,""); return NULL; }
+  COOKIE_CHECK(distr,CK_DISTR_CVEC,NULL);
+
+  if (DISTR_IN.pdf == NULL) {
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"PDF");
+    return NULL;
+  }
+
+  /* allocate structure */
+  par = _unur_par_new( sizeof(struct unur_hitro_par) );
+  COOKIE_SET(par,CK_HITRO_PAR);
+
+  /* copy input */
+  par->distr    = distr;      /* pointer to distribution object              */
+
+  /* set default values */
+  par->method   = UNUR_METH_HITRO ;             /* method                    */
+  par->variant  = ( HITRO_VARIANT_COORD |       /* default variant           */
+		    HITRO_VARFLAG_ADAPTLINE );  /*   see also _unur_hitro_init() */
+  par->set      = 0u;                     /* inidicate default parameters    */
+  par->urng     = unur_get_default_urng(); /* use default urng               */
+  par->urng_aux = NULL;                    /* no auxilliary URNG required    */
+
+  PAR->r        = 1.;               /* parameter r                           */
+  PAR->thinning = 1;                /* thinning factor                       */
+  PAR->burnin   = 0;                /* length of burn-in for chain           */
+  PAR->x0       = NULL;             /* starting point of chain, default is 0 */
+
+  PAR->vmax     = 1.;         /* v-boundary of bounding rectangle (unknown)  */
+  PAR->umin     = NULL;       /* u-boundary of bounding rectangle (unknown)  */
+  PAR->umax     = NULL;       /* u-boundary of bounding rectangle (unknown)  */
+
+  par->debug    = _unur_default_debugflag; /* set default debugging flags    */
+
+  /* routine for starting generator */
+  par->init = _unur_hitro_init;
+
+  return par;
+
+} /* end of unur_hitro_new() */
+
+/*****************************************************************************/
+
+int
+unur_hitro_set_variant_coordinate( struct unur_par *par )
+     /*----------------------------------------------------------------------*/
+     /* Coordinate Sampler :                                                 */
+     /* Sampling along the coordinate directions (cyclic).                   */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par      ... pointer to parameter for building generator object    */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, HITRO );
+
+  /* we use a bit in variant */
+  par->variant = (par->variant & ~HITRO_VARMASK_VARIANT) | HITRO_VARIANT_COORD;
+  
+  /* ok */
+  return UNUR_SUCCESS;
+} /* end of unur_hitro_set_variant_coordinate() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_hitro_set_variant_random_direction( struct unur_par *par )
+     /*----------------------------------------------------------------------*/
+     /* Random Direction Sampler :                                           */
+     /* Sampling along the random directions.                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par      ... pointer to parameter for building generator object    */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, HITRO );
+            
+  /* we use a bit in variant */
+  par->variant = (par->variant & ~HITRO_VARMASK_VARIANT) | HITRO_VARIANT_RANDOMDIR;
+  
+  /* ok */
+  return UNUR_SUCCESS;
+} /* end of unur_hitro_set_variant_coordinate() */
+
+/*---------------------------------------------------------------------------*/
+
+int unur_hitro_set_use_adaptiveline( struct unur_par *par, int adaptive )
+     /*----------------------------------------------------------------------*/
+     /* Enable/Disable adaptive line sampling                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par      ... pointer to parameter for building generator object    */
+     /*   adaptive ... whether adaptive line sampling is enabled             */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, HITRO );
+            
+  /* we use a bit in variant */
+  par->variant = (adaptive) 
+    ? (par->variant | HITRO_VARFLAG_ADAPTLINE) 
+    : (par->variant & (~HITRO_VARFLAG_ADAPTLINE));
+
+  /* changelog */
+  par->set |= HITRO_SET_ADAPTLINE;
+
+  /* ok */
+  return UNUR_SUCCESS;
+} /* end of unur_hitro_set_use_adaptiveline() */
+
+/*---------------------------------------------------------------------------*/
+
+int unur_hitro_set_use_adaptiverectangle( struct unur_par *par, int adaptive )
+     /*----------------------------------------------------------------------*/
+     /* Enable/Disable adaptive bounding rectangle                           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par      ... pointer to parameter for building generator object    */
+     /*   adaptive ... whether adaptive rectangle is enabled                 */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, HITRO );
+            
+  /* we use a bit in variant */
+  par->variant = (adaptive) 
+    ? (par->variant | HITRO_VARFLAG_ADAPTRECT) 
+    : (par->variant & (~HITRO_VARFLAG_ADAPTRECT));
+
+  /* changelog */
+  par->set |= HITRO_SET_ADAPTRECT;
+
+  /* ok */
+  return UNUR_SUCCESS;
+} /* end of unur_hitro_set_use_adaptiverectangle() */
+
+/*---------------------------------------------------------------------------*/
+
+int unur_hitro_set_use_boundingrectangle( struct unur_par *par, int rectangle )
+     /*----------------------------------------------------------------------*/
+     /* Whether to use entire bounding rectangle or just upper bound         */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par       ... pointer to parameter for building generator object   */
+     /*   rectangle ... whether using entire bounding rectangle is enabled   */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, HITRO );
+            
+  /* we use a bit in variant */
+  par->variant = (rectangle) 
+    ? (par->variant | HITRO_VARFLAG_BOUNDRECT) 
+    : (par->variant & (~HITRO_VARFLAG_BOUNDRECT));
+
+  /* changelog */
+  par->set |= HITRO_SET_BOUNDRECT;
+
+  /* ok */
+  return UNUR_SUCCESS;
+} /* end of unur_hitro_set_use_adaptiverectangle() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_hitro_set_r( struct unur_par *par, double r )
+     /*----------------------------------------------------------------------*/
+     /* set parameter r for ratio-of-uniforms                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par  ... pointer to parameter for building generator object        */
+     /*   r    ... parameter r                                               */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, HITRO );
+
+  /* check new parameter for generator */
+  if (r <= 0.) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"r <= 0");
+    return UNUR_ERR_PAR_SET;
+  }
+    
+  /* store date */
+  PAR->r = r;
+
+  /* changelog */
+  par->set |= HITRO_SET_R;
+
+  return UNUR_SUCCESS;
+
+} /* end of unur_hitro_set_r() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_hitro_set_u( struct unur_par *par, const double *umin, const double *umax )
+     /*----------------------------------------------------------------------*/
+     /* u-boundaries for bounding rectangle                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par  ... pointer to parameter for building generator object        */
+     /*   umin ... lower left boundary of rectangle                          */
+     /*   umax ... upper right boundary of rectangle                         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  int d;
+
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, HITROU );
+  _unur_check_NULL( GENTYPE, umin, UNUR_ERR_NULL );
+  _unur_check_NULL( GENTYPE, umax, UNUR_ERR_NULL );
+
+  /* check new parameter for generator */
+  for (d = 0; d < par->distr->dim; d++) {
+    if (!_unur_FP_greater(umax[d],umin[d])) {
+      _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"umax <= umin");
+      return UNUR_ERR_PAR_SET;
+    }
+  }
+
+  /* set values */
+  PAR->umin = umin;
+  PAR->umax = umax;
+
+  /* changelog */
+  par->set |= HITRO_SET_U;
+
+  /* ok */
+  return UNUR_SUCCESS;
+} /* end of unur_hitro_set_u() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_hitro_set_v( struct unur_par *par, double vmax )
+     /*----------------------------------------------------------------------*/
+     /* upper v-bound for bounding rectangle                                 */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par  ... pointer to parameter for building generator object        */
+     /*   vmax ... upper bound of rectangle                                  */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, HITROU );
+
+  /* check new parameter for generator */
+  if (vmax <= 0.) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"vmax <= 0");
+    return UNUR_ERR_PAR_SET;
+  }
+
+  /* store values */
+  PAR->vmax = vmax;
+
+  /* changelog */
+  par->set |= HITRO_SET_V;
+
+  /* ok */
+  return UNUR_SUCCESS;
+} /* end of unur_hitro_set_startingpoint() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_hitro_set_startingpoint( struct unur_par *par, const double *x0)
+     /*----------------------------------------------------------------------*/
+     /* set starting point for chain                                         */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par      ... pointer to parameter for building generator object    */
+     /*   x0       ... starting point of chain                               */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, HITRO );
+
+  /* store data */
+  PAR->x0 = x0;
+
+  /* changelog */
+  par->set |= HITRO_SET_X0;
+
+  /* ok */
+  return UNUR_SUCCESS;
+} /* end of unur_hitro_set_startingpoint() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_hitro_set_thinning( struct unur_par *par, int thinning )
+     /*----------------------------------------------------------------------*/
+     /* set thinning factor for chain                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par      ... pointer to parameter for building generator object    */
+     /*   thinning ... thinning factor                                       */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, HITRO );
+
+  /* check new parameter for generator */
+  if (thinning < 1) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"thinning < 1");
+    return UNUR_ERR_PAR_SET;
+  }
+
+  /* store data */
+  PAR->thinning = thinning;
+
+  /* changelog */
+  par->set |= HITRO_SET_THINNING;
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+
+} /* end of unur_hitro_set_thinning() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_hitro_set_burnin( struct unur_par *par, int burnin )
+     /*----------------------------------------------------------------------*/
+     /* set length of burn-in for chain                                      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par    ... pointer to parameter for building generator object      */
+     /*   burnin ... length of burn-in                                       */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, HITRO );
+
+  /* check new parameter for generator */
+  if (burnin < 0) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"burnin < 0");
+    return UNUR_ERR_PAR_SET;
+  }
+
+  /* store data */
+  PAR->burnin = burnin;
+
+  /* changelog */
+  par->set |= HITRO_SET_BURNIN;
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+
+} /* end of unur_hitro_set_burnin() */
+
+/*---------------------------------------------------------------------------*/
+
+const double *
+unur_hitro_get_state( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* get current state of the HITRO chain                                 */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to chain ... on success                                    */
+     /*   NULL             ... on error                                      */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, gen, NULL );
+  if (gen->method != UNUR_METH_HITRO) {
+    _unur_error(gen->genid, UNUR_ERR_GEN_INVALID,"");
+    return NULL;
+  }
+
+  return GEN->state;
+} /* end of unur_hitro_get_state() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_hitro_chg_state( struct unur_gen *gen, const double *state )
+     /*----------------------------------------------------------------------*/
+     /* chg current state of the HITRO chain                                 */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen   ... pointer to generator object                              */
+     /*   state ... new state of chain                                       */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, HITRO, UNUR_ERR_GEN_INVALID );
+  _unur_check_NULL( gen->genid, state, UNUR_ERR_NULL );
+
+  /* copy state */
+  memcpy( GEN->state, state, GEN->dim * sizeof(double));
+
+  /** TODO: check whether the given point is inside region of acceptance **/
+
+  return UNUR_SUCCESS;
+} /* end of unur_hitro_chg_state() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_hitro_reset_state( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* reset current state of the HITRO chain to starting point             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen   ... pointer to generator object                              */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, HITRO, UNUR_ERR_GEN_INVALID );
+
+  /** TODO **/
+
+/*   /\* copy state *\/ */
+/*   memcpy( GEN->state, GEN->x0, GEN->dim * sizeof(double)); */
+
+/*   if (gen->variant & HITRO_VARMASK_VARIANT) */
+/*     GEN->coord = (GEN->dim)-1; */
+
+  return UNUR_SUCCESS;
+} /* end of unur_hitro_reset_state() */
+
+/*---------------------------------------------------------------------------*/
+
+/*****************************************************************************/
+/**  Private                                                                **/
+/*****************************************************************************/
+
+struct unur_gen *
+_unur_hitro_init( struct unur_par *par )
+     /*----------------------------------------------------------------------*/
+     /* initialize new generator                                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to paramters for building generator object         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to generator object                                        */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_gen *gen = NULL;   /** TODO **/
+
+  /* check arguments */
+  _unur_check_NULL( GENTYPE,par,NULL );
+
+  /* check input */
+  if ( par->method != UNUR_METH_HITRO ) {
+    _unur_error(GENTYPE,UNUR_ERR_PAR_INVALID,"");
+    return NULL; }
+  COOKIE_CHECK(par,CK_HITRO_PAR,NULL);
+
+  /* check variant flags */
+  /* ( we assume here that 
+     par->variant & (HITRO_VARFLAG_ADAPTRECT | HITRO_VARFLAG_BOUNDRECT) 
+     are set to 0 in unur_hitro_new() 
+  */
+  if ( par->variant & HITRO_VARIANT_COORD ) {
+    par->variant |= HITRO_VARFLAG_BOUNDRECT;
+    if (!(par->set & HITRO_SET_ADAPTRECT) )
+      par->variant |= HITRO_VARFLAG_ADAPTRECT;
+  }
+
+  /* create a new empty generator object */
+  gen = _unur_hitro_create(par);
+  if (!gen) { _unur_par_free(par); return NULL; }
+
+  /* free parameters */
+  _unur_par_free(par);
+
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  if (gen->debug) _unur_hitro_debug_init_start(gen);
+#endif
+
+  /* routines for sampling and destroying generator */
+  if (gen->variant & HITRO_VARIANT_RANDOMDIR )
+    /* we need an auxiliary generator for normal random variates */
+    GEN_NORMAL = unur_str2gen("normal()");
+
+  /* computing required data about bounding rectangle */
+  if ( !(gen->variant & HITRO_VARFLAG_ADAPTRECT) )
+    if (_unur_hitro_rectangle(gen) != UNUR_SUCCESS ) {
+      _unur_hitro_free(gen); return NULL;
+    }
+  /* else 
+     we use an adaptive bounding rectangle --> nothing to do here */
+
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  if (gen->debug) _unur_hitro_debug_init_finished(gen);
+#endif
+
+  /* run burn-in */
+  if (GEN->burnin > 0 ) {
+    int thinning, burnin;
+    double *X;
+
+    /* allocate memory for random vector */
+    X = _unur_xmalloc( GEN->dim * sizeof(double) );
+
+    /* store thinning factor; we use 1 for burn-in */
+    thinning = GEN->thinning;
+    GEN->thinning = 1;
+
+    for (burnin = GEN->burnin; burnin>0; --burnin)
+      _unur_sample_vec(gen,X);
+
+    /* restore thinning factor */
+    GEN->thinning = thinning;
+    /* free memory for random vector */
+    free (X);
+  }
+
+  /* o.k. */
+  return gen;
+
+} /* end of _unur_hitro_init() */
+
+/*---------------------------------------------------------------------------*/
+
+static struct unur_gen *
+_unur_hitro_create( struct unur_par *par )
+     /*----------------------------------------------------------------------*/
+     /* allocate memory for generator                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter for building generator object         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to (empty) generator object with default settings          */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_gen *gen;
+  int i;
+
+  /* check arguments */
+  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_HITRO_PAR,NULL);
+
+  /* create new generic generator object */
+  gen = _unur_generic_create( par, sizeof(struct unur_hitro_gen) );
+
+  /* magic cookies */
+  COOKIE_SET(gen,CK_HITRO_GEN);
+
+  /* dimension of distribution */
+  GEN->dim = gen->distr->dim;
+
+  /* set generator identifier */
+  gen->genid = _unur_set_genid(GENTYPE);
+
+  /* routines for sampling and destroying generator */
+  switch (gen->variant & HITRO_VARMASK_VARIANT) {
+  case HITRO_VARIANT_COORD:
+    SAMPLE = _unur_hitro_coord_sample_cvec; break;
+  case HITRO_VARIANT_RANDOMDIR:
+    SAMPLE = _unur_hitro_randomdir_sample_cvec; break;
+  default:
+    SAMPLE = NULL;
+    _unur_error(GENTYPE,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+    _unur_generic_free(gen);
+    return NULL;
+  }
+
+  gen->destroy = _unur_hitro_free;
+  gen->clone = _unur_hitro_clone;
+
+  /* variant of sampling method */
+  gen->variant = par->variant;
+
+  /* copy parameters into generator object */
+  GEN->thinning = PAR->thinning; /* thinning factor                          */
+  GEN->burnin = PAR->burnin;     /* length of burnin                         */
+  GEN->r = PAR->r;               /* parameter r for RoU                      */
+
+  /* get center of the distribution */
+  GEN->center = unur_distr_cvec_get_center(gen->distr);
+
+  /* store starting point / get default starting point */
+  GEN->x0 = _unur_xmalloc( GEN->dim * sizeof(double));
+  if (PAR->x0 == NULL)
+    PAR->x0 = unur_distr_cvec_get_center(gen->distr);
+  memcpy( GEN->x0, PAR->x0, GEN->dim * sizeof(double));
+
+  /* bounding rectangle */
+  GEN->vmax = PAR->vmax;  /* bounding rectangle v-coordinate */
+  /* lower left and upper right vertex of bounding rectangle */
+  if (gen->variant & HITRO_VARFLAG_BOUNDRECT) {
+    GEN->umin = _unur_xmalloc( GEN->dim * sizeof(double) );
+    GEN->umax = _unur_xmalloc( GEN->dim * sizeof(double) );
+    if (PAR->umin && PAR->umax) {
+      memcpy (GEN->umin, PAR->umin, GEN->dim * sizeof(double) );
+      memcpy (GEN->umax, PAR->umax, GEN->dim * sizeof(double) );
+    }
+    else {
+      for (i=0; i<GEN->dim; i++) GEN->umin[i] = -1.;
+      for (i=0; i<GEN->dim; i++) GEN->umax[i] = +1.;
+    }
+  }
+  else {
+    /* we do not need these vertices */
+    GEN->umin = NULL;
+    GEN->umax = NULL;
+  }
+
+  /* initialize remaining pointers */
+  GEN->state = _unur_xmalloc( (1 + GEN->dim) * sizeof(double) );
+
+  /* allocate memory for random direction */
+  GEN->direction = _unur_xmalloc( (1 + GEN->dim) * sizeof(double));
+
+  /* defaults */
+  GEN->coord = (GEN->dim)-1;      /* current coordinate of HITRO chain.
+				     we want to start with coordinate 0. */
+
+  /* return pointer to (almost empty) generator object */
+  return gen;
+  
+} /* end of _unur_hitro_create() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_hitro_rectangle( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* compute bounding rectangle                                           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+
+  int d; /* index used in dimension loops (0 <= d < dim) */
+  struct MROU_RECTANGLE *rr;
+
+  /* check arguments */
+  CHECK_NULL( gen, UNUR_ERR_NULL );
+  COOKIE_CHECK( gen,CK_HITRO_GEN, UNUR_ERR_COOKIE );
+
+  /* Boundary rectangle is already set ? */
+  if ((gen->set & HITRO_SET_U) && (gen->set & HITRO_SET_V))
+    return UNUR_SUCCESS;
+
+  /* Allocating and filling mrou_rectangle struct */
+  rr = _unur_mrou_rectangle_new();
+
+  rr->distr  = gen->distr;
+  rr->dim    = GEN->dim;
+  rr->umin   = GEN->umin;
+  rr->umax   = GEN->umax;
+  rr->r      = GEN->r;
+  rr->center = GEN->center;
+  rr->genid  = gen->genid;
+  rr->bounding_rectangle = 
+    ( (gen->variant & HITRO_VARFLAG_BOUNDRECT) && !(gen->set & HITRO_SET_U) )
+    ? 1 : 0;
+  
+  /* setting initialization values */
+/*   for (d=0; d<GEN->dim; d++) { */
+/*     rr->umin[d]=0; */
+/*     rr->umax[d]=0; */
+/*   }  */
+  
+  /* calculate bounding rectangle */
+  if ( _unur_mrou_rectangle_compute(rr) != UNUR_SUCCESS ) {
+    _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"Cannot compute bounding rectangle, try adaptive");
+    gen->variant &= HITRO_VARFLAG_ADAPTRECT;
+    free(rr); return UNUR_ERR_GEN_CONDITION;
+  }
+
+  if (!(gen->set & HITRO_SET_V)) {
+    /* user has not provided any upper bound for v */
+    GEN->vmax = rr->vmax;
+  }
+
+  if (rr->bounding_rectangle) {
+    /* user has not provided required bounds for u */
+    for (d=0; d<GEN->dim; d++) GEN->umin[d] = rr->umin[d];
+    for (d=0; d<GEN->dim; d++) GEN->umax[d] = rr->umax[d];
+  }
+
+  /* free working space */
+  free(rr);
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+
+} /* end of _unur_hitro_rectangle() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_gen *
+_unur_hitro_clone( const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* copy (clone) generator object                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to clone of generator object                               */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+#define CLONE         ((struct unur_hitro_gen*)clone->datap)
+
+/*   int i; */
+  struct unur_gen *clone;
+
+  /* check arguments */
+  CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_HITRO_GEN,NULL);
+
+  /* create generic clone */
+  clone = _unur_generic_clone( gen, GENTYPE );
+
+  /** TODO **/
+
+/*   /\* copy state *\/ */
+/*   CLONE->state = _unur_xmalloc( GEN->dim * sizeof(double)); */
+/*   memcpy( CLONE->state, GEN->state, GEN->dim * sizeof(double)); */
+/*   CLONE->x0 = _unur_xmalloc( GEN->dim * sizeof(double)); */
+/*   memcpy( CLONE->x0, GEN->x0, GEN->dim * sizeof(double)); */
+  
+/*   /\* allocate memory for random direction *\/ */
+/*   CLONE->direction = _unur_xmalloc( GEN->dim * sizeof(double)); */
+
+  return clone;
+
+#undef CLONE
+} /* end of _unur_hitro_clone() */
+
+/*****************************************************************************/
+
+void
+_unur_hitro_coord_sample_cvec( struct unur_gen *gen, double *vec )
+     /*----------------------------------------------------------------------*/
+     /* sample from generator                                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*   vec ... random vector (result)                                     */
+     /*----------------------------------------------------------------------*/
+{
+/*   double X; */
+/*   int thinning; */
+
+  /* check arguments */
+  CHECK_NULL(gen,RETURN_VOID);
+  COOKIE_CHECK(gen,CK_HITRO_GEN,RETURN_VOID);
+
+/*   for (thinning = GEN->thinning; thinning > 0; --thinning) { */
+
+/*     /\* update coordinate direction *\/ */
+/*     GEN->coord = (GEN->coord + 1) % GEN->dim; */
+    
+/*     /\* check state of chain *\/ */
+/*     if (!_unur_isfinite(GEN->state[GEN->coord])) */
+/*       /\* there has been a fatal error during the last sampling from */
+/* 	 the conditional distribution. This probably has been caused */
+/* 	 by improper target distribution for which the method */
+/* 	 does not work (i.e., it is not T-concave).  */
+/*       *\/ */
+/*       continue; */
+
+/*     /\* update conditional distribution *\/ */
+/*     unur_distr_condi_set_condition( GEN->distr_condi, GEN->state, NULL, GEN->coord); */
+
+/*     /\* reinit generator object *\/ */
+/*     switch( gen->variant & HITRO_VARMASK_T ) { */
+/*     case HITRO_VAR_T_LOG: */
+/*       unur_tdrgw_reinit(GEN_CONDI[GEN->coord]); */
+/*       break; */
+/*     case HITRO_VAR_T_SQRT: */
+/*       unur_tdr_reinit(GEN_CONDI[GEN->coord]); */
+/*       break; */
+/*     case HITRO_VAR_T_POW: */
+/*     default: */
+/*       _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,""); */
+/*       return; */
+/*     } */
+    
+/*     /\* sample from distribution *\/ */
+/*     X = unur_sample_cont(GEN_CONDI[GEN->coord]); */
+/*     /\* remark: if reinit failed we get X=INFINITY here *\/ */
+    
+/*     /\* update state *\/ */
+/*     GEN->state[GEN->coord] = X; */
+/*   } */
+  
+/*   /\* copy current state into given vector *\/ */
+/*   memcpy(vec, GEN->state, GEN->dim * sizeof(double));  */
+
+  return;
+
+} /* end of _unur_hitro_coord_sample_cvec() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_hitro_randomdir_sample_cvec( struct unur_gen *gen, double *vec )
+     /*----------------------------------------------------------------------*/
+     /* sample from generator                                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*   vec ... random vector (result)                                     */
+     /*----------------------------------------------------------------------*/
+{
+/*   int i; */
+/*   double X; */
+/*   int thinning; */
+
+  /* check arguments */
+  CHECK_NULL(gen,RETURN_VOID);
+  COOKIE_CHECK(gen,CK_HITRO_GEN,RETURN_VOID);
+
+/*   for (thinning = GEN->thinning; thinning > 0; --thinning) { */
+
+/*     /\* check state of chain *\/ */
+/*     if (!_unur_isfinite(GEN->state[0])) */
+/*       /\* there has been a fatal error during the last sampling from */
+/* 	 the conditional distribution. This probably has been caused */
+/* 	 by improper target distribution for which the method */
+/* 	 does not work (i.e., it is not T-concave).  */
+/*       *\/ */
+/*       break; */
+
+/*     /\* new random direction *\/ */
+/*     _unur_hitro_random_unitvector( gen, GEN->direction ); */
+    
+/*     /\* update conditional distribution *\/ */
+/*     unur_distr_condi_set_condition( GEN->distr_condi, GEN->state, GEN->direction, 0); */
+
+/*     /\* reinit generator object *\/ */
+/*     switch( gen->variant & HITRO_VARMASK_T ) { */
+/*     case HITRO_VAR_T_LOG: */
+/*       unur_tdrgw_reinit(*GEN_CONDI); */
+/*       break; */
+/*     case HITRO_VAR_T_SQRT: */
+/*       unur_tdr_reinit(*GEN_CONDI); */
+/*       break; */
+/*     case HITRO_VAR_T_POW: */
+/*     default: */
+/*       _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,""); */
+/*       return; */
+/*     } */
+
+/*     /\* sample from distribution *\/ */
+/*     X = unur_sample_cont(*GEN_CONDI); */
+/*     /\* if reinit failed we get X=INFINITY here *\/ */
+
+/*     /\* update state *\/ */
+/*     for (i=0; i<GEN->dim; i++) */
+/*       GEN->state[i] += X * GEN->direction[i];	   */
+/*   } */
+
+/*   /\* copy current state into given vector *\/ */
+/*   memcpy(vec, GEN->state, GEN->dim * sizeof(double));  */
+
+  return;
+
+} /* end of _unur_hitro_randomdir_sample_cvec() */
+
+/*---------------------------------------------------------------------------*/
+
+/* int */
+/* _unur_hitro_uv_is_inside_region( const struct unur_gen *gen, const double *uv ) */
+/*      /\*----------------------------------------------------------------------*\/ */
+/*      /\* check whether point is inside RoU acceptance region                  *\/ */
+/*      /\*                                                                      *\/ */
+/*      /\* parameters:                                                          *\/ */
+/*      /\*   gen  ... pointer to generator object                               *\/ */
+/*      /\*   uv   ... point in uv space                                         *\/ */
+/*      /\*----------------------------------------------------------------------*\/ */
+/* { */
+/*   double v; */
+/*   int inside = FALSE0; */
+
+/*   _unur_hitro_uv_to_x( gen, uv, GEN->x ); */
+
+/*   /\* point inside domain ? *\/ */
+/*   V = uv[GEN->dim]; */
+/*   if (V>0 && V < pow(PDF(GEN->x),1./(GEN->r * GEN->dim + 1.))) */
+/*     inside=1; */
+/*   else */
+/*     inside=0; */
+
+/*   return FALSE; */
+/* } */
+
+/*---------------------------------------------------------------------------*/
+
+/* void */
+/* _unur_hitro_random_unitvector( struct unur_gen *gen, double *direction ) */
+/*      /\*----------------------------------------------------------------------*\/ */
+/*      /\* generate a random direction vector                                   *\/ */
+/*      /\*                                                                      *\/ */
+/*      /\* parameters:                                                          *\/ */
+/*      /\*   gen       ... pointer to generator object                          *\/ */
+/*      /\*   direction ... random vector (result)                               *\/ */
+/*      /\*----------------------------------------------------------------------*\/ */
+/* { */
+/*   int i; */
+
+/*   do { */
+/*     for (i=0; i<GEN->dim; i++)  */
+/*       direction[i] = unur_sample_cont(GEN_NORMAL); */
+/*     /\* normalize direction vector *\/ */
+/*     _unur_vector_normalize(GEN->dim, direction); */
+
+/*     /\* there is an extremely small change that direction is the null before */
+/*        normalizing. In this case non of its coordinates are finite. *\/ */
+/*   } while (!_unur_isfinite(direction[0])); */
+
+/* } /\* end of _unur_hitro_random_unitvector() *\/ */
+
+/*****************************************************************************/
+
+void
+_unur_hitro_free( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* deallocate generator object                                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  if( !gen ) /* nothing to do */
+    return;
+
+  /* check input */
+  if ( gen->method != UNUR_METH_HITRO ) {
+    _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
+    return; }
+  COOKIE_CHECK(gen,CK_HITRO_GEN,RETURN_VOID);
+
+  /* we cannot use this generator object any more */
+  SAMPLE = NULL;   /* make sure to show up a programming error */
+
+  /* free vectors */
+  if (GEN->state) free (GEN->state);
+  if (GEN->x0) free (GEN->x0);
+  if (GEN->direction) free (GEN->direction);
+  if (GEN->umin) free (GEN->umin);
+  if (GEN->umax) free (GEN->umax);
+
+  _unur_generic_free(gen);
+
+} /* end of _unur_hitro_free() */
+
+/*****************************************************************************/
+/**  Debugging utilities                                                    **/
+/*****************************************************************************/
+
+/*---------------------------------------------------------------------------*/
+#ifdef UNUR_ENABLE_LOGGING
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_hitro_debug_init_start( const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* write info about generator into logfile                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{
+  FILE *log;
+
+  /* check arguments */
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_HITRO_GEN,RETURN_VOID);
+
+  log = unur_get_stream();
+
+  fprintf(log,"%s:\n",gen->genid);
+  fprintf(log,"%s: type    = continuous multivariate random variates\n",gen->genid);
+  fprintf(log,"%s: method  = HITRO (Markov Chain - HITRO sampler)\n",gen->genid);
+  fprintf(log,"%s: variant = ",gen->genid);
+  switch (gen->variant & HITRO_VARMASK_VARIANT) {
+  case HITRO_VARIANT_COORD:
+    fprintf(log,"coordinate sampling (original HITRO sampler)  [default]\n"); break;
+  case HITRO_VARIANT_RANDOMDIR:
+    fprintf(log,"random directions\n"); break;
+  }
+  fprintf(log,"%s:\n",gen->genid);
+  fprintf(log,"%s: adaptive line sampling: %s",gen->genid,
+	  (gen->variant&HITRO_VARFLAG_ADAPTLINE)?"on":"off");
+  _unur_print_if_default(gen,HITRO_SET_ADAPTLINE);
+  fprintf(log,"\n%s: use entire bounding rectangle: %s",gen->genid,
+	  (gen->variant&HITRO_VARFLAG_BOUNDRECT)?"on":"off");
+  _unur_print_if_default(gen,HITRO_SET_BOUNDRECT);
+  fprintf(log,"\n%s: adaptive bounding rectangle: %s",gen->genid,
+	  (gen->variant&HITRO_VARFLAG_ADAPTRECT)?"on":"off");
+  _unur_print_if_default(gen,HITRO_SET_ADAPTRECT);
+  fprintf(log,"\n%s:\n",gen->genid);
+
+  _unur_distr_cvec_debug( gen->distr, gen->genid );
+
+  switch (gen->variant & HITRO_VARMASK_VARIANT) {
+  case HITRO_VARIANT_COORD:
+    fprintf(log,"%s: sampling routine = _unur_hitro_coord_sample()\n",gen->genid);
+    break;
+  case HITRO_VARIANT_RANDOMDIR:
+    fprintf(log,"%s: sampling routine = _unur_hitro_randomdir_sample()\n",gen->genid);
+    break;
+  }
+
+  fprintf(log,"%s: thinning = %d",gen->genid,GEN->thinning);
+  _unur_print_if_default(gen,HITRO_SET_THINNING);
+  fprintf(log,"\n%s: burn-in = %d",gen->genid,GEN->burnin);
+  _unur_print_if_default(gen,HITRO_SET_BURNIN);
+  fprintf(log,"\n%s:\n",gen->genid);
+  _unur_matrix_print_vector( GEN->dim, GEN->x0, "starting point = ", log, gen->genid, "\t   ");
+
+  fprintf(log,"%s:\n",gen->genid);
+
+} /* end of _unur_hitro_debug_init_start() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_hitro_debug_init_finished( const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* write info about generator into logfile                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen     ... pointer to generator object                            */
+     /*   success ... whether init has failed or not                         */
+     /*----------------------------------------------------------------------*/
+{
+  FILE *log;
+
+  /* check arguments */
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_HITRO_GEN,RETURN_VOID);
+
+  log = unur_get_stream();
+
+  if (gen->variant & HITRO_VARFLAG_BOUNDRECT) {
+    fprintf(log,"%s: bounding rectangle %s:\n",gen->genid,
+	    (gen->variant & HITRO_VARFLAG_ADAPTRECT) ? "[start for adaptive rectangle]" : "" );
+    fprintf(log,"%s: vmax = %g\n",gen->genid, GEN->vmax);
+    _unur_matrix_print_vector( GEN->dim, GEN->umin, "umin =", log, gen->genid, "\t   ");
+    _unur_matrix_print_vector( GEN->dim, GEN->umax, "umax =", log, gen->genid, "\t   ");
+  }
+  else {
+    fprintf(log,"%s: upper bound vmax = %g %s\n",gen->genid, GEN->vmax,
+	    (gen->variant & HITRO_VARFLAG_ADAPTRECT) ? "[start for adaptive bound]" : "" );
+  }
+  
+  fprintf(log,"%s:\n",gen->genid);
+
+  fprintf(log,"%s: INIT completed **********************\n",gen->genid);
+
+} /* end of _unur_hitro_debug_init_finished() */
+
+/*---------------------------------------------------------------------------*/
+
+/* void */
+/* _unur_hitro_debug_burnin_failed( const struct unur_gen *gen ) */
+/*      /\*----------------------------------------------------------------------*\/ */
+/*      /\* write info after burnin has failed                                   *\/ */
+/*      /\*                                                                      *\/ */
+/*      /\* parameters:                                                          *\/ */
+/*      /\*   gen ... pointer to generator object                                *\/ */
+/*      /\*----------------------------------------------------------------------*\/ */
+/* { */
+/*   FILE *log; */
+
+/*   /\* check arguments *\/ */
+/*   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_HITRO_GEN,RETURN_VOID); */
+
+/*   log = unur_get_stream(); */
+
+/*   fprintf(log,"%s: Burn-in failed --> INIT failed **********************\n",gen->genid); */
+/*   fprintf(log,"%s:\n",gen->genid); */
+
+/* } /\* end of _unur_hitro_debug_burnin_failed() *\/ */
+
+/* /\*---------------------------------------------------------------------------*\/ */
+
+/* void */
+/* _unur_hitro_debug_init_condi( const struct unur_gen *gen ) */
+/*      /\*----------------------------------------------------------------------*\/ */
+/*      /\* write list of conditional generators into logfile                    *\/ */
+/*      /\*                                                                      *\/ */
+/*      /\* parameters:                                                          *\/ */
+/*      /\*   gen     ... pointer to generator object                            *\/ */
+/*      /\*----------------------------------------------------------------------*\/ */
+/* { */
+/*   int i; */
+/*   FILE *log; */
+
+/*   /\* check arguments *\/ */
+/*   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_HITRO_GEN,RETURN_VOID); */
+
+/*   log = unur_get_stream(); */
+
+/*   switch (gen->variant & HITRO_VARMASK_VARIANT) { */
+/*   case HITRO_VARIANT_COORD: */
+/*     fprintf(log,"%s: generators for full conditional distributions = \n",gen->genid); */
+/*     fprintf(log,"%s:\t",gen->genid); */
+/*     for (i=0; i<GEN->dim; i++) */
+/*       fprintf(log,"[%s] ", GEN_CONDI[i]->genid); */
+/*     fprintf(log,"\n%s:\n",gen->genid); */
+/*     break; */
+/*   case HITRO_VARIANT_RANDOMDIR: */
+/*     fprintf(log,"%s: generators for full conditional distributions = [%s]\n",gen->genid, */
+/* 	    GEN_CONDI[0]->genid); */
+/*     fprintf(log,"%s: generator for random directions = [%s]\n",gen->genid, */
+/* 	    GEN_NORMAL->genid); */
+/*     fprintf(log,"%s:\n",gen->genid); */
+/*     break; */
+/*   } */
+
+/* } /\* end of _unur_hitro_debug_init_condi() *\/ */
+
+/*---------------------------------------------------------------------------*/
+#endif   /* end UNUR_ENABLE_LOGGING */
+/*---------------------------------------------------------------------------*/

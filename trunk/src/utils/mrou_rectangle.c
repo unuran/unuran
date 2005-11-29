@@ -170,12 +170,12 @@ _unur_mrou_rectangle_compute( struct MROU_RECTANGLE *rr )
 {
   struct unur_funct_vgeneric faux; /* function to be minimized/maximized    */
   double *xstart, *xend, *xumin, *xumax; /* coordinate arrays used in maximum/minimum calculations */
-  int d, dim; /* index used in dimension loops (0 <= d < dim) */
-  int hooke_iters_vmax;  /* actual number of min/max iterations = return value of hooke()*/
-  int hooke_iters_umin;  /* actual number of min/max iterations = return value of hooke()*/
-  int hooke_iters_umax;  /* actual number of min/max iterations = return value of hooke()*/
-  double scaled_epsilon; /* to be used in the hooke algorithm */
-  int flag_finite; /* sanity flag FALSE when some of the rectangle (u,v)-values are not finite */
+  int d, dim;             /* index used in dimension loops (0 <= d < dim) */
+  int hooke_iters_vmax;   /* actual number of min/max iterations = return value of hooke()*/
+  int hooke_iters_umin;   /* actual number of min/max iterations = return value of hooke()*/
+  int hooke_iters_umax;   /* actual number of min/max iterations = return value of hooke()*/
+  double scaled_epsilon;  /* to be used in the hooke algorithm */
+  int flag_finite = TRUE; /* sanity flag FALSE when some of the rectangle (u,v)-values are not finite */
 
   /* dimension of the distribution */
   dim = rr->dim;
@@ -185,6 +185,8 @@ _unur_mrou_rectangle_compute( struct MROU_RECTANGLE *rr )
   xend   = _unur_xmalloc(dim * sizeof(double));
   xumin  = _unur_xmalloc(dim * sizeof(double));
   xumax  = _unur_xmalloc(dim * sizeof(double));
+
+  /* --- compute vmax --- */
 
   if (rr->distr->data.cvec.mode != NULL) { 
     /* position of mode is known ... vmax = f(mode)^(1/r*dim+1)) */
@@ -197,19 +199,19 @@ _unur_mrou_rectangle_compute( struct MROU_RECTANGLE *rr )
     /* calculation of vmax */
     faux.f = (UNUR_FUNCT_VGENERIC*) _unur_mrou_rectangle_aux_vmax;
     faux.params = rr;
-  
+    
     /* starting point */
     memcpy(xstart, rr->center, dim * sizeof(double));
-  
+    
     hooke_iters_vmax = _unur_hooke( faux, dim, xstart, xend,
 				    MROU_HOOKE_RHO, MROU_HOOKE_EPSILON, MROU_HOOKE_MAXITER);
-  
+    
     rr->vmax = -faux.f(xend, faux.params);
-        
+    
     if (hooke_iters_vmax >= MROU_HOOKE_MAXITER) {
       scaled_epsilon = MROU_HOOKE_EPSILON * rr->vmax;
       if (scaled_epsilon>MROU_HOOKE_EPSILON) scaled_epsilon=MROU_HOOKE_EPSILON;
-    
+      
       /* recalculating extremum with scaled_epsilon and new starting point */
       memcpy(xstart, xend, dim * sizeof(double));
       hooke_iters_vmax = _unur_hooke( faux, dim, xstart, xend,
@@ -219,102 +221,104 @@ _unur_mrou_rectangle_compute( struct MROU_RECTANGLE *rr )
         _unur_warning(rr->genid , UNUR_ERR_GENERIC, "Bounding rect uncertain (vmax)");
       }
     }
-  }
-  
-  if (rr->bounding_rectangle==1) {
-  /* calculation of umin and umax */
-  for (d=0; d<dim; d++) {
-    
-    /* setting coordinate dimension to be used by the auxiliary functions */
-    rr->aux_dim  = d;
-    
-    /* starting point at center */
-    memcpy(xstart, rr->center, dim * sizeof(double));
-    
-    /*-----------------------------------------------------------------------------*/
-    /* calculation for umin */
-    
-    faux.f = (UNUR_FUNCT_VGENERIC*) _unur_mrou_rectangle_aux_umin;
-    faux.params = rr;
-    
-    hooke_iters_umin = _unur_hooke( faux, dim, xstart, xend,
-				    MROU_HOOKE_RHO, MROU_HOOKE_EPSILON, MROU_HOOKE_MAXITER);
-    rr->umin[d] = faux.f(xend, faux.params);
-    
-    /* storing actual endpoint in case we need a recalculation */
-    memcpy(xumin, xend, dim * sizeof(double));
-    
-    /*-----------------------------------------------------------------------------*/
-    /* and now, an analogue calculation for umax */
-    
-    faux.f = (UNUR_FUNCT_VGENERIC*) _unur_mrou_rectangle_aux_umax;
-    faux.params = rr;
-    
-    hooke_iters_umax = _unur_hooke( faux, dim, xstart, xend,
-				    MROU_HOOKE_RHO, MROU_HOOKE_EPSILON, MROU_HOOKE_MAXITER);
-    rr->umax[d] = -faux.f(xend, faux.params);
-    
-    /* storing actual endpoint in case we need a recalculation */
-    memcpy(xumax, xend, dim * sizeof(double));
 
-    /*-----------------------------------------------------------------------------*/
-    /* checking if we need to recalculate umin */
-    if (hooke_iters_umin >= MROU_HOOKE_MAXITER) {      
-      scaled_epsilon = MROU_HOOKE_EPSILON * (rr->umax[d]-rr->umin[d]);
-      if (scaled_epsilon>MROU_HOOKE_EPSILON) scaled_epsilon=MROU_HOOKE_EPSILON;
+    /* additional scaling of boundary rectangle */
+    rr->vmax = rr->vmax * ( 1+ MROU_RECT_SCALING);
+  }
+
+  /* check for finite results */
+  flag_finite = _unur_isfinite(rr->vmax);
+
+  /* --- compute umin and umax --- */
+  
+  if (rr->bounding_rectangle) {
+    /* calculation of umin and umax */
+    for (d=0; d<dim; d++) {
       
-      /* recalculating extremum with scaled_epsilon and new starting point */
+      /* setting coordinate dimension to be used by the auxiliary functions */
+      rr->aux_dim  = d;
+      
+      /* starting point at center */
+      memcpy(xstart, rr->center, dim * sizeof(double));
+      
+      /*-----------------------------------------------------------------------------*/
+      /* calculation for umin */
+      
       faux.f = (UNUR_FUNCT_VGENERIC*) _unur_mrou_rectangle_aux_umin;
       faux.params = rr;
       
-      memcpy(xstart, xumin, dim * sizeof(double));
       hooke_iters_umin = _unur_hooke( faux, dim, xstart, xend,
-				      MROU_HOOKE_RHO, scaled_epsilon , MROU_HOOKE_MAXITER);
+				      MROU_HOOKE_RHO, MROU_HOOKE_EPSILON, MROU_HOOKE_MAXITER);
       rr->umin[d] = faux.f(xend, faux.params);
-      if (hooke_iters_umin >= MROU_HOOKE_MAXITER) {
-	_unur_warning(rr->genid , UNUR_ERR_GENERIC, "Bounding rect uncertain (umin)");
-      }
-    }
-    
-    /* checking if we need to recalculate umax */
-    if (hooke_iters_umax >= MROU_HOOKE_MAXITER) {
-      scaled_epsilon = MROU_HOOKE_EPSILON * (rr->umax[d]-rr->umin[d]);
-      if (scaled_epsilon>MROU_HOOKE_EPSILON) scaled_epsilon=MROU_HOOKE_EPSILON;
       
-      /* recalculating extremum with scaled_epsilon and new starting point */
+      /* storing actual endpoint in case we need a recalculation */
+      memcpy(xumin, xend, dim * sizeof(double));
+      
+      /*-----------------------------------------------------------------------------*/
+      /* and now, an analogue calculation for umax */
+      
       faux.f = (UNUR_FUNCT_VGENERIC*) _unur_mrou_rectangle_aux_umax;
       faux.params = rr;
       
-      memcpy(xstart, xumax, dim * sizeof(double));
       hooke_iters_umax = _unur_hooke( faux, dim, xstart, xend,
-				      MROU_HOOKE_RHO, scaled_epsilon , MROU_HOOKE_MAXITER);
-      rr->umin[d] = faux.f(xend, faux.params);
-      if (hooke_iters_umax >= MROU_HOOKE_MAXITER) {
-	_unur_warning(rr->genid , UNUR_ERR_GENERIC, "Bounding rect uncertain (umax)");
+				      MROU_HOOKE_RHO, MROU_HOOKE_EPSILON, MROU_HOOKE_MAXITER);
+      rr->umax[d] = -faux.f(xend, faux.params);
+      
+      /* storing actual endpoint in case we need a recalculation */
+      memcpy(xumax, xend, dim * sizeof(double));
+      
+      /*-----------------------------------------------------------------------------*/
+      /* checking if we need to recalculate umin */
+      if (hooke_iters_umin >= MROU_HOOKE_MAXITER) {      
+	scaled_epsilon = MROU_HOOKE_EPSILON * (rr->umax[d]-rr->umin[d]);
+	if (scaled_epsilon>MROU_HOOKE_EPSILON) scaled_epsilon=MROU_HOOKE_EPSILON;
+	
+	/* recalculating extremum with scaled_epsilon and new starting point */
+	faux.f = (UNUR_FUNCT_VGENERIC*) _unur_mrou_rectangle_aux_umin;
+	faux.params = rr;
+	
+	memcpy(xstart, xumin, dim * sizeof(double));
+	hooke_iters_umin = _unur_hooke( faux, dim, xstart, xend,
+					MROU_HOOKE_RHO, scaled_epsilon , MROU_HOOKE_MAXITER);
+	rr->umin[d] = faux.f(xend, faux.params);
+	if (hooke_iters_umin >= MROU_HOOKE_MAXITER) {
+	  _unur_warning(rr->genid , UNUR_ERR_GENERIC, "Bounding rect uncertain (umin)");
+	}
       }
+      
+      /* checking if we need to recalculate umax */
+      if (hooke_iters_umax >= MROU_HOOKE_MAXITER) {
+	scaled_epsilon = MROU_HOOKE_EPSILON * (rr->umax[d]-rr->umin[d]);
+	if (scaled_epsilon>MROU_HOOKE_EPSILON) scaled_epsilon=MROU_HOOKE_EPSILON;
+	
+	/* recalculating extremum with scaled_epsilon and new starting point */
+	faux.f = (UNUR_FUNCT_VGENERIC*) _unur_mrou_rectangle_aux_umax;
+	faux.params = rr;
+	
+	memcpy(xstart, xumax, dim * sizeof(double));
+	hooke_iters_umax = _unur_hooke( faux, dim, xstart, xend,
+					MROU_HOOKE_RHO, scaled_epsilon , MROU_HOOKE_MAXITER);
+	rr->umin[d] = faux.f(xend, faux.params);
+	if (hooke_iters_umax >= MROU_HOOKE_MAXITER) {
+	  _unur_warning(rr->genid , UNUR_ERR_GENERIC, "Bounding rect uncertain (umax)");
+	}
+      }
+      
+      /*-----------------------------------------------------------------------------*/
+      /* additional scaling of boundary rectangle */
+      rr->umin[d] = rr->umin[d] - (rr->umax[d]-rr->umin[d])*MROU_RECT_SCALING/2.;
+      rr->umax[d] = rr->umax[d] + (rr->umax[d]-rr->umin[d])*MROU_RECT_SCALING/2.;
+      
+      /* check for finite results */
+      flag_finite = flag_finite && _unur_isfinite(rr->umin[d]) && _unur_isfinite(rr->umax[d]);
     }
-    
-    /*-----------------------------------------------------------------------------*/
-    /* additional scaling of boundary rectangle */
-    rr->umin[d] = rr->umin[d] - (rr->umax[d]-rr->umin[d])*MROU_RECT_SCALING/2.;
-    rr->umax[d] = rr->umax[d] + (rr->umax[d]-rr->umin[d])*MROU_RECT_SCALING/2.;
-    
   }
-  }
-
-  /* additional scaling of boundary rectangle */
-  rr->vmax = rr->vmax * ( 1+ MROU_RECT_SCALING);
-   
+  
+  /* free working arrays */
   free(xstart); free(xend); free(xumin); free(xumax);
   
-  flag_finite=_unur_isfinite(rr->vmax);
-  for (d=0; d<dim; d++) {
-    flag_finite = flag_finite && _unur_isfinite(rr->umin[d]) && _unur_isfinite(rr->umax[d]);
-  }
-  if (!flag_finite) return UNUR_ERR_INF;
-  
-  /* o.k. */
-  return UNUR_SUCCESS;
+  /* return status of computation */
+  return (flag_finite ? UNUR_SUCCESS : UNUR_ERR_INF);
 
 } /* end of _unur_mrou_rectangle() */
 

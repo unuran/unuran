@@ -230,6 +230,10 @@ int unur_hitro_set_variant_coordinate( UNUR_PAR *parameters );
    Coordinate Direction Sampling:
    Sampling along the coordinate directions (cyclic).
 
+   @emph{Notice:} For this variant the entire bounding rectangle is
+   always used independent of the
+   unur_hitro_set_use_boundingrectangle() call.
+
    This is the default.
 */
 
@@ -253,13 +257,15 @@ int unur_hitro_set_use_adaptiveline( UNUR_PAR *parameters, int adaptive );
 
 int unur_hitro_set_use_boundingrectangle( UNUR_PAR *parameters, int rectangle );
 /* 
-   When @var{rectangle} is set to TRUE the entire rectangle is used
-   for computing the covering line.
+   When @var{rectangle} is set to TRUE the entire bounding rectangle is used
+   for computing the covering line. Otherwise, only an upper bound for the 
+   acceptance region is used.
 
    @emph{Notice:} When coordinate sampling is used the entire
-   bounding rectangle has is used.
+   bounding rectangle has is always used and this call has no effect.
 
-   Default is FALSE.
+   Default: FALSE for random direction samplig, TRUE for coordinate
+   direction sampling.
 */
 
 int unur_hitro_set_use_adaptiverectangle( UNUR_PAR *parameters, int adaptive );
@@ -286,12 +292,41 @@ int unur_hitro_set_use_adaptiverectangle( UNUR_PAR *parameters, int adaptive );
    the region of acceptance is convex when random directions are used,
    or a unimodal PDF when coordinate direction sampling is used.
 
-   Default is FALSE.
+   Default: FALSE for random direction samplig, TRUE for coordinate
+   direction sampling.
 */
 
 /*...........................................................................*/
 
-int unur_hitro_set_u( UNUR_PAR *parameters, double *umin, double *umax );
+int unur_hitro_set_r( UNUR_PAR *parameters, double r );
+/*
+   Sets the parameter @var{r} of the generalized multivariate
+   ratio-of-uniforms method.
+
+   @emph{Notice}: This parameter must satisfy @var{r}>0.
+
+   Default: @code{1}.
+*/
+
+int unur_hitro_set_v( UNUR_PAR *parameters, double vmax );
+/*
+   Set upper boundary for bounding hyper-rectangle.
+   If not set not set the mode of the distribution is used.
+
+   If adaptive bounding rectangles the value is used for the
+   starting rectangle. If not given (and the mode of the distribution
+   is not known) then @var{vmax}=@code{1} is used.
+
+   If deterministic bounding rectangles these values are the given
+   values are used for the rectangle. If no value is given
+   (and the mode of the distribution is not known), the upper
+   bound of the minimal bounding hyper-rectangle is computed
+   numerically (slow).
+
+   Default: not set.
+*/
+
+int unur_hitro_set_u( UNUR_PAR *parameters, const double *umin, const double *umax );
 /* 
    Sets left and right boundaries of bounding hyper-rectangle.
 
@@ -317,50 +352,25 @@ int unur_hitro_set_u( UNUR_PAR *parameters, double *umin, double *umax );
    Default: not set.
 */
 
-int unur_hitro_set_v( UNUR_PAR *parameters, double vmax );
-/*
-   Set upper boundary for bounding hyper-rectangle.
-   If not set not set the mode of the distribution is used.
-
-   If adaptive bounding rectangles the value is used for the
-   starting rectangle. If not given (and the mode of the distribution
-   is not known) then @var{vmax}=@code{1} is used.
-
-   If deterministic bounding rectangles these values are the given
-   values are used for the rectangle. If no value is given
-   (and the mode of the distribution is not known), the upper
-   bound of the minimal bounding hyper-rectangle is computed
-   numerically (slow).
-
-   Default: not set.
-*/
-
-int unur_hitro_set_r( UNUR_PAR *parameters, double r );
-/*
-   Sets the parameter @var{r} of the generalized multivariate
-   ratio-of-uniforms method.
-
-   @emph{Notice}: This parameter must satisfy @var{r}>0.
-
-   Default: @code{1}.
-*/
-
 /*...........................................................................*/
 
 int unur_hitro_set_startingpoint( UNUR_PAR *parameters, const double *x0 );
 /* 
-   Sets the starting point of the HITRO sampler. @var{x0} must be 
-   a "typical" point of the given distribution.
+   Sets the starting point of the HITRO sampler in the original
+   scale. @var{x0} must be a "typical" point of the given distribution.
    If such a "typical" point is not known and a starting point is
    merely guessed, the first part of the HITRO chain should be
    discarded (@emph{burn-in}), e.g.\ by mean of the
    unur_hitro_set_burnin() call.
 
+   @emph{Important:} The PDF of the distribution must not vanish at
+   the given point @var{x0}.
+
    Default is the result of unur_distr_cvec_get_center() for the 
    given distribution object.
 */
 
-int unur_hitro_set_thinning( UNUR_PAR *parameters, long thinning );
+int unur_hitro_set_thinning( UNUR_PAR *parameters, int thinning );
 /*
    Sets the @var{thinning} parameter. When @var{thinning} is set to
    @i{k} then every @i{k}-th point from the iteration is returned by
@@ -396,6 +406,13 @@ const double *unur_hitro_get_state( UNUR_GEN *generator );
 int unur_hitro_chg_state( UNUR_GEN *generator, const double *state );
 /* 
    Get and change the current state of the HITRO chain.
+
+   @emph{Notice:} The state variable contains the point in the
+   @code{dim+1} dimensional point in the (tansformed) region of
+   acceptance of the Ratio-of-Uniforms method.
+
+   If the state can only be changed if the given @var{state} is inside
+   this region.
 */ 
 
 int unur_hitro_reset_state( UNUR_GEN *generator );

@@ -13,6 +13,9 @@
  *      Only power transformations with parameter r are considered.          *
  *                                                                           *
  *****************************************************************************
+     $Id$
+ *****************************************************************************
+ *                                                                           *
  *   (c) 2000 Wolfgang Hoermann and Josef Leydold                            *
  *   Dept. for Statistics, University of Economics, Vienna, Austria          *
  *                                                                           *
@@ -32,6 +35,9 @@
  *   59 Temple Place, Suite 330, Boston, MA 02111-1307, USA                  *
  *                                                                           *
  *****************************************************************************
+ *                                                                           *
+ *   Notation follows [2].                                                   *
+ *                                                                           *
  *****************************************************************************
  *                                                                           *
  *   REFERENCES:                                                             *
@@ -39,6 +45,14 @@
  *       Efficient generation of random variates via the ratio-of-uniforms   *
  *       method.                                                             *
  *       Statistics and Computing (1991) 1, pp (129-133)                     *
+ *                                                                           *
+ *   [2] Hoermann, W., Leydold J., and Derflinger, G. (2004):                *
+ *       Automatic non-uniform random variate generation, Springer, Berlin.  *
+ *       Section 2.4, Algorithm 2.9 (RoU), p.35                              *
+ *                                                                           *
+ *   [3] Hooke, R. and Jeeves, T.A. (1961):                                  *
+ *       Direct Search Solution of Numerical and Statistical Problems.       *
+ *       Journal of the ACM, Vol. 8, April 1961, pp. 212-229.                *
  *                                                                           *
  *****************************************************************************/
 
@@ -166,6 +180,23 @@ _unur_mrou_rectangle_compute( struct MROU_RECTANGLE *rr )
      /* return:                                                              */
      /*   UNUR_SUCCESS ... on success                                        */
      /*   error code   ... on error                                          */
+     /*                                                                      */
+     /* remark:                                                              */
+     /*   This routine computes two parameters of the bounding rectangle:    */
+     /*      vmax  .... the upper bound of the v-coordinate                  */
+     /*      umin, umax ... left lower and right upper vertex of rectangle   */
+     /*                     in u-hyperplane                                  */
+     /*                                                                      */
+     /*   vmax is computed by means of the mode of the given distribution.   */
+     /*   If this is not available, a method by Hooke and Jeeves [3] is      */
+     /*   used.                                                              */
+     /*                                                                      */
+     /*   umin and umax is computed if flag rr->bounding_rectangle is        */
+     /*   nonzero. Again the algorithm by Hooke and Jeeves [3] is used.      */
+     /*   In this case rr->umin and rr->umax must contain points to          */
+     /*   to double arrays each of size (at least) (rr->dim)+1.              */
+     /*   Otherwise, these two pointers are not needed and can be NULL.      */
+     /*                                                                      */
      /*----------------------------------------------------------------------*/
 {
   struct unur_funct_vgeneric faux; /* function to be minimized/maximized    */
@@ -232,6 +263,14 @@ _unur_mrou_rectangle_compute( struct MROU_RECTANGLE *rr )
   /* --- compute umin and umax --- */
   
   if (rr->bounding_rectangle) {
+
+    /* check pointers to avoid segfault */
+    if (rr->umin == NULL || rr->umax == NULL) {
+      free(xstart); free(xend); free(xumin); free(xumax);
+      _unur_error(rr->genid,UNUR_ERR_NULL,"");
+      return UNUR_ERR_NULL;
+    }
+
     /* calculation of umin and umax */
     for (d=0; d<dim; d++) {
       

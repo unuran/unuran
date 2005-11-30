@@ -59,6 +59,8 @@ struct unur_hitro_gen {
 				of the RoU-method in vu-hyperplane.
 				the coordinates are stored in the following order:
 				state = {v, u_1, u_2, ... u_n}               */
+  double *x;                 /* working point in the original scale          */
+  double *vu;                /* working point in RoU scale                   */
         
   double vmax;               /* bounding rectangle v-coordinate              */
   double *umin, *umax;       /* bounding rectangle u-coordinates             */
@@ -74,12 +76,7 @@ struct unur_hitro_gen {
 /*---------------------------------------------------------------------------*/
 
 /* struct unur_hitrou_gen { */
-/*   double *umin, *umax;      /\* boundary rectangle u-coordinates              *\/ */
-/*   double vmax;              /\* boundary rectangle/strip v-coordinate         *\/ */
-/*   const double *center;     /\* center of distribution                        *\/ */
 /*   double *direction;        /\* random direction vector                       *\/ */
 /*   double *point_current;    /\* current point inside the shape                *\/ */
 /*   double *point_random;     /\* random point, can be inside shape or not      *\/ */
-/*   double *x;                /\* working point in the (xy)-coordinate system   *\/ */
-/*   int coordinate;           /\* current coordinate used for stepping          *\/ */
 /* }; */

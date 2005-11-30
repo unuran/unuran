@@ -375,6 +375,10 @@ int unur_hitro_set_thinning( UNUR_PAR *parameters, int thinning );
    Sets the @var{thinning} parameter. When @var{thinning} is set to
    @i{k} then every @i{k}-th point from the iteration is returned by
    the sampling algorithm.
+   If thinning has to be set such that each coordinate is updated
+   when using coordinate direction sampling, then @var{thinning}
+   should be @code{dim+1} (or any multiple of it) where 
+   @code{dim} is the dimension of the distribution object.
 
    @emph{Notice}: This parameter must satisfy @var{thinning}>=1.
 

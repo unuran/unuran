@@ -528,7 +528,7 @@ unur_gibbs_reset_state( struct unur_gen *gen )
   /* copy state */
   memcpy( GEN->state, GEN->x0, GEN->dim * sizeof(double));
 
-  if (gen->variant & GIBBS_VARMASK_VARIANT)
+  if (gen->variant & GIBBS_VARIANT_COORD)
     GEN->coord = (GEN->dim)-1;
 
   return UNUR_SUCCESS;

@@ -140,6 +140,14 @@ static struct unur_gen *_unur_hitro_clone( const struct unur_gen *gen );
 /* copy (clone) generator object.                                            */
 /*---------------------------------------------------------------------------*/
 
+static void _unur_hitrou_xy_to_vu( const struct unur_gen *gen, const double *x, double y, double *vu );
+static void _unur_hitrou_vu_to_x( const struct unur_gen *gen, const double *vu, double *x );
+/*---------------------------------------------------------------------------*/
+/* transforming between coordinates xy in original scale and                 */
+/* coordinates vu in Ratio-of-Unforms scale.                                 */
+/*---------------------------------------------------------------------------*/
+
+
 /* static int _unur_hitrou_uv_is_inside_region( const struct unur_gen *gen, const double *uv ); */
 /* /\*---------------------------------------------------------------------------*\/ */
 /* /\* check if point uv[] is inside shape                                       *\/ */
@@ -185,8 +193,9 @@ static void _unur_hitro_debug_init_finished( const struct unur_gen *gen );
 #define PAR       ((struct unur_hitro_par*)par->datap) /* data for parameter object */
 #define GEN       ((struct unur_hitro_gen*)gen->datap) /* data for generator object */
 #define DISTR     gen->distr->data.cvec /* data for distribution in generator object */
-
 #define SAMPLE    gen->sample.cvec      /* pointer to sampling routine       */     
+
+#define PDF(x)    _unur_cvec_PDF((x),(gen->distr))    /* call to PDF         */
 
 /* an auxiliary generator for standard normal variates */
 #define GEN_NORMAL    gen->gen_aux
@@ -253,7 +262,7 @@ unur_hitro_new( const struct unur_distr *distr )
   PAR->burnin   = 0;                /* length of burn-in for chain           */
   PAR->x0       = NULL;             /* starting point of chain, default is 0 */
 
-  PAR->vmax     = 1.;         /* v-boundary of bounding rectangle (unknown)  */
+  PAR->vmax     = 1.e-3;      /* v-boundary of bounding rectangle (unknown)  */
   PAR->umin     = NULL;       /* u-boundary of bounding rectangle (unknown)  */
   PAR->umax     = NULL;       /* u-boundary of bounding rectangle (unknown)  */
 
@@ -711,8 +720,8 @@ unur_hitro_reset_state( struct unur_gen *gen )
 /*   /\* copy state *\/ */
 /*   memcpy( GEN->state, GEN->x0, GEN->dim * sizeof(double)); */
 
-/*   if (gen->variant & HITRO_VARMASK_VARIANT) */
-/*     GEN->coord = (GEN->dim)-1; */
+  if (gen->variant & HITRO_VARIANT_COORD)
+    GEN->coord = 0;
 
   return UNUR_SUCCESS;
 } /* end of unur_hitro_reset_state() */
@@ -738,7 +747,8 @@ _unur_hitro_init( struct unur_par *par )
      /*   return NULL                                                        */
      /*----------------------------------------------------------------------*/
 {
-  struct unur_gen *gen = NULL;   /** TODO **/
+  struct unur_gen *gen;
+  double fx0;  /* PDF at starting point x0 */
 
   /* check arguments */
   _unur_check_NULL( GENTYPE,par,NULL );
@@ -772,10 +782,22 @@ _unur_hitro_init( struct unur_par *par )
   if (gen->debug) _unur_hitro_debug_init_start(gen);
 #endif
 
+  /* we need a starting point for our chain */
+  fx0 = PDF(GEN->x0) / 2.;
+  if (fx0 <= 0.) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"x0 not in support of PDF");
+    _unur_hitro_free(gen); return NULL;
+  }
+  /* set state to start from */
+  _unur_hitrou_xy_to_vu(gen, GEN->x0, fx0, GEN->state );
+
   /* routines for sampling and destroying generator */
   if (gen->variant & HITRO_VARIANT_RANDOMDIR )
     /* we need an auxiliary generator for normal random variates */
     GEN_NORMAL = unur_str2gen("normal()");
+    /* set uniform random number generator and debugging flags */
+    GEN_NORMAL->urng = gen->urng;
+    GEN_NORMAL->debug = gen->debug;
 
   /* computing required data about bounding rectangle */
   if ( !(gen->variant & HITRO_VARFLAG_ADAPTRECT) )
@@ -895,8 +917,8 @@ _unur_hitro_create( struct unur_par *par )
       memcpy (GEN->umax, PAR->umax, GEN->dim * sizeof(double) );
     }
     else {
-      for (i=0; i<GEN->dim; i++) GEN->umin[i] = -1.;
-      for (i=0; i<GEN->dim; i++) GEN->umax[i] = +1.;
+      for (i=0; i<GEN->dim; i++) GEN->umin[i] = -1.e-3;
+      for (i=0; i<GEN->dim; i++) GEN->umax[i] = +1.e-3;
     }
   }
   else {
@@ -912,8 +934,7 @@ _unur_hitro_create( struct unur_par *par )
   GEN->direction = _unur_xmalloc( (1 + GEN->dim) * sizeof(double));
 
   /* defaults */
-  GEN->coord = (GEN->dim)-1;      /* current coordinate of HITRO chain.
-				     we want to start with coordinate 0. */
+  GEN->coord = 0;           /* current coordinate of HITRO chain. */
 
   /* return pointer to (almost empty) generator object */
   return gen;
@@ -1171,6 +1192,66 @@ _unur_hitro_randomdir_sample_cvec( struct unur_gen *gen, double *vec )
 
 /*---------------------------------------------------------------------------*/
 
+void 
+_unur_hitrou_xy_to_vu( const struct unur_gen *gen, const double *x, double y, double *vu )
+     /*----------------------------------------------------------------------*/
+     /* transform point with coordinates xy in the original scale into       */
+     /* point in RoU-scale with coordinates vu.                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*   x    ... x coordinates of point                                    */
+     /*   y    ... y coordinate of point                                     */
+     /*   vu   ... coordinates of transformed point                          */
+     /*----------------------------------------------------------------------*/
+{
+  int d;
+  double v;
+  double *u = vu+1;
+   
+  vu[0] = v = pow(y, 1./(GEN->r * GEN->dim + 1.));
+
+  if (GEN->r==1.) 
+    for (d=0; d<GEN->dim; d++)  u[d] = (x[d] - GEN->center[d]) * v;
+  else
+    for (d=0; d<GEN->dim; d++)  u[d] = (x[d] - GEN->center[d]) * pow(v,GEN->r) ;
+
+} /* end of _unur_hitrou_xy_to_vu() */
+
+/*---------------------------------------------------------------------------*/
+
+void 
+_unur_hitrou_vu_to_x( const struct unur_gen *gen, const double *vu, double *x )
+     /*----------------------------------------------------------------------*/
+     /* transform point with coordinates vu in RoU-scale into original       */
+     /* scale with coordinates xy. The y coordinate is not of interest here  */
+     /* and thus omitted.                                                    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*   vu   ... coordinates of transformed point                          */
+     /*   x    ... x coordinates of point                                    */
+     /*----------------------------------------------------------------------*/
+{
+  int d;
+  double v = vu[0];
+  const double *u = vu+1;
+
+  if (v<=0.) {
+    /* we are outside of the domain --> return 0 */
+    for (d=0; d<GEN->dim; d++)  x[d] = 0.;
+    return;
+  }
+    
+  if (GEN->r==1)
+    for (d=0; d<GEN->dim; d++)  x[d] = u[d]/v + GEN->center[d];
+  else
+    for (d=0; d<GEN->dim; d++)  x[d] = u[d]/pow(v,GEN->r) + GEN->center[d];
+
+} /* end of _unur_hitrou_vu_to_x() */
+
+/*---------------------------------------------------------------------------*/
+
 /* int */
 /* _unur_hitro_uv_is_inside_region( const struct unur_gen *gen, const double *uv ) */
 /*      /\*----------------------------------------------------------------------*\/ */
@@ -1355,6 +1436,8 @@ _unur_hitro_debug_init_finished( const struct unur_gen *gen )
     fprintf(log,"%s: upper bound vmax = %g %s\n",gen->genid, GEN->vmax,
 	    (gen->variant & HITRO_VARFLAG_ADAPTRECT) ? "[start for adaptive bound]" : "" );
   }
+
+  _unur_matrix_print_vector( GEN->dim+1, GEN->state, "starting state = ", log, gen->genid, "\t   ");
   
   fprintf(log,"%s:\n",gen->genid);
 

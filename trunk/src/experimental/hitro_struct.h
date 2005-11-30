@@ -54,8 +54,12 @@ struct unur_hitro_gen {
   int thinning;              /* thinning factor for generated chain          */
   double r;                  /* r-parameter of HITRO method                  */
 
-  double *state;             /* state of chain / current point               */
-
+  double *state;             /* state of chain / current point.
+				the state is a point in the acceptance region
+				of the RoU-method in vu-hyperplane.
+				the coordinates are stored in the following order:
+				state = {v, u_1, u_2, ... u_n}               */
+        
   double vmax;               /* bounding rectangle v-coordinate              */
   double *umin, *umax;       /* bounding rectangle u-coordinates             */
   const double *center;      /* center of distribution                       */

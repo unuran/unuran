@@ -448,7 +448,7 @@ unur_hitro_set_r( struct unur_par *par, double r )
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"r <= 0");
     return UNUR_ERR_PAR_SET;
   }
-    
+
   /* store date */
   PAR->r = r;
 
@@ -490,6 +490,10 @@ unur_hitro_set_u( struct unur_par *par, const double *umin, const double *umax )
       _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"umax <= umin");
       return UNUR_ERR_PAR_SET;
     }
+    if (! (_unur_isfinite(umax[d]) && _unur_isfinite(umin[d])) ) {
+      _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"rectangle not bounded");
+      return UNUR_ERR_PAR_SET;
+    }
   }
 
   /* set values */
@@ -501,6 +505,7 @@ unur_hitro_set_u( struct unur_par *par, const double *umin, const double *umax )
 
   /* ok */
   return UNUR_SUCCESS;
+
 } /* end of unur_hitro_set_u() */
 
 /*---------------------------------------------------------------------------*/
@@ -528,6 +533,10 @@ unur_hitro_set_v( struct unur_par *par, double vmax )
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"vmax <= 0");
     return UNUR_ERR_PAR_SET;
   }
+  if (! _unur_isfinite(vmax) ) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"rectangle not bounded");
+    return UNUR_ERR_PAR_SET;
+  }
 
   /* store values */
   PAR->vmax = vmax;
@@ -537,7 +546,8 @@ unur_hitro_set_v( struct unur_par *par, double vmax )
 
   /* ok */
   return UNUR_SUCCESS;
-} /* end of unur_hitro_set_startingpoint() */
+
+} /* end of unur_hitro_set_v() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -689,10 +699,14 @@ unur_hitro_chg_state( struct unur_gen *gen, const double *state )
   _unur_check_gen_object( gen, HITRO, UNUR_ERR_GEN_INVALID );
   _unur_check_NULL( gen->genid, state, UNUR_ERR_NULL );
 
+  /* check input */
+  if ( ! _unur_hitro_vu_is_inside_region(gen,state) ) {
+    _unur_warning(gen->genid,UNUR_ERR_PAR_SET,"invalid state");
+    return UNUR_ERR_PAR_SET;
+  }
+
   /* copy state */
   memcpy( GEN->state, state, GEN->dim * sizeof(double));
-
-  /** TODO: check whether the given point is inside region of acceptance **/
 
   return UNUR_SUCCESS;
 } /* end of unur_hitro_chg_state() */
@@ -716,13 +730,15 @@ unur_hitro_reset_state( struct unur_gen *gen )
   _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
   _unur_check_gen_object( gen, HITRO, UNUR_ERR_GEN_INVALID );
 
-  /** TODO **/
+  /* copy state */
+  memcpy( GEN->state, GEN->x0, GEN->dim * sizeof(double));
 
-/*   /\* copy state *\/ */
-/*   memcpy( GEN->state, GEN->x0, GEN->dim * sizeof(double)); */
+  /* set state to start from */
+  _unur_hitro_xy_to_vu(gen, GEN->x0, GEN->fx0/2., GEN->state );
+  memcpy( GEN->vu, GEN->state, (GEN->dim + 1) * sizeof(double) );
+  GEN->vumax[0] = pow(GEN->fx0, 1./(GEN->r * GEN->dim + 1.)) * (1. + DBL_EPSILON); 
 
-  if (gen->variant & HITRO_VARIANT_COORD)
-    GEN->coord = 0;
+  if (gen->variant & HITRO_VARIANT_COORD) GEN->coord = 0;
 
   return UNUR_SUCCESS;
 } /* end of unur_hitro_reset_state() */
@@ -749,7 +765,6 @@ _unur_hitro_init( struct unur_par *par )
      /*----------------------------------------------------------------------*/
 {
   struct unur_gen *gen;
-  double fx0;  /* PDF at starting point x0 */
 
   /* check arguments */
   _unur_check_NULL( GENTYPE,par,NULL );
@@ -784,20 +799,20 @@ _unur_hitro_init( struct unur_par *par )
 #endif
 
   /* we need a starting point for our chain */
-  fx0 = PDF(GEN->x0);
-  if ( (fx0 / 2.) <= 0.) {
+  GEN->fx0 = PDF(GEN->x0);
+  if ( (GEN->fx0 / 2.) <= 0.) {
     _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"x0 not in support of PDF");
     _unur_hitro_free(gen); return NULL;
   }
   /* set state to start from */
-  _unur_hitro_xy_to_vu(gen, GEN->x0, fx0/2., GEN->state );
+  _unur_hitro_xy_to_vu(gen, GEN->x0, GEN->fx0/2., GEN->state );
   memcpy( GEN->vu, GEN->state, (GEN->dim + 1) * sizeof(double) );
-  GEN->vumax[0] = pow(fx0, 1./(GEN->r * GEN->dim + 1.)) * (1. + DBL_EPSILON); 
+  GEN->vumax[0] = pow(GEN->fx0, 1./(GEN->r * GEN->dim + 1.)) * (1. + DBL_EPSILON); 
 
   /* routines for sampling and destroying generator */
   if (gen->variant & HITRO_VARIANT_RANDOMDIR ) {
     /* we need an auxiliary generator for normal random variates */
-    GEN_NORMAL = unur_str2gen("normal()");
+    GEN_NORMAL = unur_str2gen("normal() & method=arou");
     /* set uniform random number generator and debugging flags */
     GEN_NORMAL->urng = gen->urng;
     GEN_NORMAL->debug = gen->debug;
@@ -1072,7 +1087,7 @@ _unur_hitro_coord_sample_cvec( struct unur_gen *gen, double *vec )
      /*----------------------------------------------------------------------*/
 {
   int thinning;
-  double lmin, lmax;   /* l.h.s. and r.h.s. endpoint of line segment */
+  double lmin, lmax, lmid;   /* l.h.s., r.h.s. endpoint and midpoint of line segment */
   double *vuaux;  /* pointer to auxiliary working array */
   int coord;      /* direction */
   double U;       /* uniform random number */
@@ -1089,78 +1104,47 @@ _unur_hitro_coord_sample_cvec( struct unur_gen *gen, double *vec )
     /* update coordinate direction */
     coord = GEN->coord = (GEN->coord + 1) % (GEN->dim + 1);
 
-    /* two cases: update v-coordinate or one of the u-coordinates */
-    
-    if (coord == 0) {
-      /* Case 1: update v-coordinate */
+    /* l.h.s. and r.h.s. endpoint of line segment */
+    lmin = GEN->vumin[coord];
+    lmax = GEN->vumax[coord];
 
-      /* l.h.s. and r.h.s. endpoint of line segment */
-      lmin = 0.;
-      lmax = GEN->vumax[0];
-
-      if ( gen->variant & HITRO_VARFLAG_ADAPTRECT ) {
-	/* check whether endpoint is outside of region */
-	vuaux[0] = lmax;
-	while (	_unur_hitro_vu_is_inside_region(gen,vuaux) ) {
-	  lmax *= HITRO_ADAPTIVE_MULTIPLIER;
-	  /* update upper bound */
-	  GEN->vumax[0] = vuaux[0] = lmax;
-	}
+    /* --- adaptive bounding rectangle --- */
+    if ( gen->variant & HITRO_VARFLAG_ADAPTRECT ) {
+      lmid = 0.5 * (lmin + lmax);
+      /* check whether endpoint is outside of region */
+      vuaux[coord] = lmax;
+      while ( _unur_hitro_vu_is_inside_region(gen,vuaux) ) {
+	lmax = lmid + (lmax-lmid) * HITRO_ADAPTIVE_MULTIPLIER;
+	GEN->vumax[coord] = vuaux[coord] = lmax;
       }
-
-      /* new v coordinate */
-      do { 
-	vuaux[0] = lmax * _unur_call_urng(gen->urng);
-
-	if ( gen->variant & HITRO_VARFLAG_ADAPTLINE ) {
-	  if (GEN->state[0] < vuaux[0])
-	    lmax = vuaux[0];
-	  else
-	    lmin = vuaux[0];
-	}
-      } while ( ! _unur_hitro_vu_is_inside_region(gen,vuaux) );
-
+      vuaux[coord] = lmin;
+      /* no update of lmin in case of coord == 0 since v-coordinate always > 0 */
+      while ( coord!=0 && _unur_hitro_vu_is_inside_region(gen,vuaux) ) {
+	lmin = lmid + (lmin-lmid) * HITRO_ADAPTIVE_MULTIPLIER;
+	GEN->vumin[coord] = vuaux[coord] = lmin;
+      }
     }
 
-    else {
-      /* Case 2: update one of the u-coordinates */
+    /* --- new coordinate for next point --- */
+    while (1) {
+      U = _unur_call_urng(gen->urng);
+      vuaux[coord] = U * lmin + (1.-U) * lmax;
+      if (_unur_hitro_vu_is_inside_region(gen,vuaux) )
+	break;
 
-      /* l.h.s. and r.h.s. endpoint of line segment */
-      lmin = GEN->vumin[coord];
-      lmax = GEN->vumax[coord];
-
-      if ( gen->variant & HITRO_VARFLAG_ADAPTRECT ) {
-	/* check whether endpoint is outside of region */
-	vuaux[coord] = lmax;
-	while (	_unur_hitro_vu_is_inside_region(gen,vuaux) ) {
-	  lmax = lmin + (lmax-lmin) * HITRO_ADAPTIVE_MULTIPLIER;
-	  GEN->vumax[coord] = vuaux[coord] = lmax;
-	}
-
-	vuaux[coord] = lmin;
-	while (	_unur_hitro_vu_is_inside_region(gen,vuaux) ) {
-	  lmin = lmax - (lmax-lmin) * HITRO_ADAPTIVE_MULTIPLIER;
-	  GEN->vumin[coord] = vuaux[coord] = lmin;
-	}
+      /* --- adaptive line sampling --- */
+      if ( gen->variant & HITRO_VARFLAG_ADAPTLINE ) {
+	if (GEN->state[coord] < vuaux[coord])
+	  lmax = vuaux[coord];
+	else
+	  lmin = vuaux[coord];
       }
-
-      /* new u-coordinate */
-      do {
-	U = _unur_call_urng(gen->urng);
-	vuaux[coord] = U * lmin + (1.-U) * lmax;
-	if ( gen->variant & HITRO_VARFLAG_ADAPTLINE ) {
-	  if (GEN->state[coord] < vuaux[coord])
-	    lmax = vuaux[coord];
-	  else
-	    lmin = vuaux[coord];
-	}
-      } while ( ! _unur_hitro_vu_is_inside_region(gen,vuaux) );
     }
+
+    /* store new state */
+    GEN->state[coord] = vuaux[coord];
   }
-
-  /* store new state */
-  memcpy(GEN->state, vuaux, (GEN->dim + 1) * sizeof(double) );
-
+    
   /* transform current state into point in original scale */
   _unur_hitro_vu_to_x( gen, GEN->state, vec );
   
@@ -1425,9 +1409,9 @@ _unur_hitro_debug_init_start( const struct unur_gen *gen )
   fprintf(log,"%s: variant = ",gen->genid);
   switch (gen->variant & HITRO_VARMASK_VARIANT) {
   case HITRO_VARIANT_COORD:
-    fprintf(log,"coordinate sampling (original HITRO sampler)  [default]\n"); break;
+    fprintf(log,"coordinate sampling [default]\n"); break;
   case HITRO_VARIANT_RANDOMDIR:
-    fprintf(log,"random directions\n"); break;
+    fprintf(log,"random direction sampling\n"); break;
   }
   fprintf(log,"%s:\n",gen->genid);
   fprintf(log,"%s: adaptive line sampling: %s",gen->genid,

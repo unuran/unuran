@@ -73,6 +73,7 @@ struct unur_hitro_gen {
 
   int burnin;                /* length of burn-in for chain                  */
   double *x0;                /* starting point of chain                      */
+  double fx0;                /* PDF at starting point of chain               */
 };
 
 /*---------------------------------------------------------------------------*/

@@ -792,7 +792,7 @@ _unur_hitro_init( struct unur_par *par )
   /* set state to start from */
   _unur_hitro_xy_to_vu(gen, GEN->x0, fx0/2., GEN->state );
   memcpy( GEN->vu, GEN->state, (GEN->dim + 1) * sizeof(double) );
-  GEN->vmax = pow(fx0, 1./(GEN->r * GEN->dim + 1.)) * (1. + DBL_EPSILON); 
+  GEN->vumax[0] = pow(fx0, 1./(GEN->r * GEN->dim + 1.)) * (1. + DBL_EPSILON); 
 
   /* routines for sampling and destroying generator */
   if (gen->variant & HITRO_VARIANT_RANDOMDIR ) {
@@ -914,25 +914,23 @@ _unur_hitro_create( struct unur_par *par )
   memcpy( GEN->x0, PAR->x0, GEN->dim * sizeof(double));
 
   /* bounding rectangle */
-  GEN->vmax = PAR->vmax;  /* bounding rectangle v-coordinate */
-  /* lower left and upper right vertex of bounding rectangle */
+  GEN->vumin = _unur_xmalloc( (GEN->dim+1) * sizeof(double) );
+  GEN->vumax = _unur_xmalloc( (GEN->dim+1) * sizeof(double) );
+  /* bounding rectangle v-coordinate */
+  GEN->vumin[0] = 0.;
+  GEN->vumax[0] = PAR->vmax;  
+  /* lower left and upper right vertex of bounding rectangle in u-hyperplane */
   if (gen->variant & HITRO_VARFLAG_BOUNDRECT) {
-    GEN->umin = _unur_xmalloc( GEN->dim * sizeof(double) );
-    GEN->umax = _unur_xmalloc( GEN->dim * sizeof(double) );
     if (PAR->umin && PAR->umax) {
-      memcpy (GEN->umin, PAR->umin, GEN->dim * sizeof(double) );
-      memcpy (GEN->umax, PAR->umax, GEN->dim * sizeof(double) );
+      memcpy (GEN->vumin+1, PAR->umin, GEN->dim * sizeof(double) );
+      memcpy (GEN->vumax+1, PAR->umax, GEN->dim * sizeof(double) );
     }
     else {
-      for (i=0; i<GEN->dim; i++) GEN->umin[i] = -1.e-3;
-      for (i=0; i<GEN->dim; i++) GEN->umax[i] = +1.e-3;
+      for (i=1; i<GEN->dim+1; i++) GEN->vumin[i] = -1.e-3;
+      for (i=1; i<GEN->dim+1; i++) GEN->vumax[i] = +1.e-3;
     }
   }
-  else {
-    /* we do not need these vertices */
-    GEN->umin = NULL;
-    GEN->umax = NULL;
-  }
+  /* else: we do not need the u-bounds */
 
   /* initialize remaining pointers */
   GEN->state = _unur_xmalloc( (1 + GEN->dim) * sizeof(double) );
@@ -982,8 +980,8 @@ _unur_hitro_rectangle( struct unur_gen *gen )
 
   rr->distr  = gen->distr;
   rr->dim    = GEN->dim;
-  rr->umin   = GEN->umin;
-  rr->umax   = GEN->umax;
+  rr->umin   = GEN->vumin+1;
+  rr->umax   = GEN->vumax+1;
   rr->r      = GEN->r;
   rr->center = GEN->center;
   rr->genid  = gen->genid;
@@ -1000,13 +998,13 @@ _unur_hitro_rectangle( struct unur_gen *gen )
 
   if (!(gen->set & HITRO_SET_V)) {
     /* user has not provided any upper bound for v */
-    GEN->vmax = rr->vmax;
+    GEN->vumax[0] = rr->vmax;
   }
 
   if (rr->bounding_rectangle) {
     /* user has not provided required bounds for u */
-    for (d=0; d<GEN->dim; d++) GEN->umin[d] = rr->umin[d];
-    for (d=0; d<GEN->dim; d++) GEN->umax[d] = rr->umax[d];
+    for (d=0; d<GEN->dim; d++) GEN->vumin[d+1] = rr->umin[d];
+    for (d=0; d<GEN->dim; d++) GEN->vumax[d+1] = rr->umax[d];
   }
 
   /* free working space */
@@ -1098,7 +1096,7 @@ _unur_hitro_coord_sample_cvec( struct unur_gen *gen, double *vec )
 
       /* l.h.s. and r.h.s. endpoint of line segment */
       lmin = 0.;
-      lmax = GEN->vmax;
+      lmax = GEN->vumax[0];
 
       if ( gen->variant & HITRO_VARFLAG_ADAPTRECT ) {
 	/* check whether endpoint is outside of region */
@@ -1106,7 +1104,7 @@ _unur_hitro_coord_sample_cvec( struct unur_gen *gen, double *vec )
 	while (	_unur_hitro_vu_is_inside_region(gen,vuaux) ) {
 	  lmax *= HITRO_ADAPTIVE_MULTIPLIER;
 	  /* update upper bound */
-	  GEN->vmax = vuaux[0] = lmax;
+	  GEN->vumax[0] = vuaux[0] = lmax;
 	}
       }
 
@@ -1128,21 +1126,21 @@ _unur_hitro_coord_sample_cvec( struct unur_gen *gen, double *vec )
       /* Case 2: update one of the u-coordinates */
 
       /* l.h.s. and r.h.s. endpoint of line segment */
-      lmin = GEN->umin[coord-1];
-      lmax = GEN->umax[coord-1];
+      lmin = GEN->vumin[coord];
+      lmax = GEN->vumax[coord];
 
       if ( gen->variant & HITRO_VARFLAG_ADAPTRECT ) {
 	/* check whether endpoint is outside of region */
 	vuaux[coord] = lmax;
 	while (	_unur_hitro_vu_is_inside_region(gen,vuaux) ) {
 	  lmax = lmin + (lmax-lmin) * HITRO_ADAPTIVE_MULTIPLIER;
-	  GEN->umax[coord-1] = vuaux[coord] = lmax;
+	  GEN->vumax[coord] = vuaux[coord] = lmax;
 	}
 
 	vuaux[coord] = lmin;
 	while (	_unur_hitro_vu_is_inside_region(gen,vuaux) ) {
 	  lmin = lmax - (lmax-lmin) * HITRO_ADAPTIVE_MULTIPLIER;
-	  GEN->umin[coord-1] = vuaux[coord] = lmin;
+	  GEN->vumin[coord] = vuaux[coord] = lmin;
 	}
       }
 
@@ -1390,8 +1388,8 @@ _unur_hitro_free( struct unur_gen *gen )
   if (GEN->x) free (GEN->x);
   if (GEN->vu) free (GEN->vu);
   if (GEN->direction) free (GEN->direction);
-  if (GEN->umin) free (GEN->umin);
-  if (GEN->umax) free (GEN->umax);
+  if (GEN->vumin) free (GEN->vumin);
+  if (GEN->vumax) free (GEN->vumax);
 
   _unur_generic_free(gen);
 
@@ -1488,12 +1486,12 @@ _unur_hitro_debug_init_finished( const struct unur_gen *gen )
   if (gen->variant & HITRO_VARFLAG_BOUNDRECT) {
     fprintf(log,"%s: bounding rectangle%s:\n",gen->genid,
 	    (gen->variant & HITRO_VARFLAG_ADAPTRECT) ? " [start for adaptive rectangle]" : "" );
-    fprintf(log,"%s: vmax = %g\n",gen->genid, GEN->vmax);
-    _unur_matrix_print_vector( GEN->dim, GEN->umin, "umin =", log, gen->genid, "\t   ");
-    _unur_matrix_print_vector( GEN->dim, GEN->umax, "umax =", log, gen->genid, "\t   ");
+    fprintf(log,"%s: vmax = %g\n",gen->genid, GEN->vumax[0]);
+    _unur_matrix_print_vector( GEN->dim, GEN->vumin+1, "umin =", log, gen->genid, "\t   ");
+    _unur_matrix_print_vector( GEN->dim, GEN->vumax+1, "umax =", log, gen->genid, "\t   ");
   }
   else {
-    fprintf(log,"%s: upper bound vmax = %g %s\n",gen->genid, GEN->vmax,
+    fprintf(log,"%s: upper bound vmax = %g %s\n",gen->genid, GEN->vumax[0],
 	    (gen->variant & HITRO_VARFLAG_ADAPTRECT) ? "[start for adaptive bound]" : "" );
   }
 
@@ -1538,12 +1536,12 @@ _unur_hitro_debug_free( const struct unur_gen *gen )
   if (gen->variant & HITRO_VARFLAG_BOUNDRECT) {
     fprintf(log,"%s: bounding rectangle%s:\n",gen->genid,
 	    (gen->variant & HITRO_VARFLAG_ADAPTRECT) ? " [adaptive]" : "" );
-    fprintf(log,"%s: vmax = %g\n",gen->genid, GEN->vmax);
-    _unur_matrix_print_vector( GEN->dim, GEN->umin, "umin =", log, gen->genid, "\t   ");
-    _unur_matrix_print_vector( GEN->dim, GEN->umax, "umax =", log, gen->genid, "\t   ");
+    fprintf(log,"%s: vmax = %g\n",gen->genid, GEN->vumax[0]);
+    _unur_matrix_print_vector( GEN->dim, GEN->vumin+1, "umin =", log, gen->genid, "\t   ");
+    _unur_matrix_print_vector( GEN->dim, GEN->vumax+1, "umax =", log, gen->genid, "\t   ");
   }
   else {
-    fprintf(log,"%s: upper bound vmax = %g %s\n",gen->genid, GEN->vmax,
+    fprintf(log,"%s: upper bound vmax = %g %s\n",gen->genid, GEN->vumax[0],
 	    (gen->variant & HITRO_VARFLAG_ADAPTRECT) ? "[adaptive]" : "" );
   }
   

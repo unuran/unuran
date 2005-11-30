@@ -637,6 +637,7 @@ _unur_gibbs_init( struct unur_par *par )
   case GIBBS_VARIANT_RANDOMDIR:
     /* we need an auxiliary generator for normal random variates */
     GEN_NORMAL = unur_str2gen("normal()");
+    GEN_NORMAL->debug = gen->debug;
 
     /* conditional distribution object */
     _unur_gibbs_random_unitvector( gen, GEN->direction );

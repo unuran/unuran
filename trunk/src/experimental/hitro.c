@@ -159,10 +159,10 @@ static int _unur_hitro_vu_is_inside_region( const struct unur_gen *gen, const do
 /* of RoU method.                                                            */
 /*---------------------------------------------------------------------------*/
 
-/* static void _unur_hitro_random_unitvector( struct unur_gen *gen, double *direction ); */
-/* /\*---------------------------------------------------------------------------*\/ */
-/* /\* generate a random direction vector                                        *\/ */
-/* /\*---------------------------------------------------------------------------*\/ */
+static void _unur_hitro_random_unitvector( struct unur_gen *gen, double *direction );
+/*---------------------------------------------------------------------------*/
+/* generate a random direction vector                                        */
+/*---------------------------------------------------------------------------*/
 
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
@@ -1164,58 +1164,95 @@ _unur_hitro_randomdir_sample_cvec( struct unur_gen *gen, double *vec )
      /*   vec ... random vector (result)                                     */
      /*----------------------------------------------------------------------*/
 {
-/*   int i; */
-/*   double X; */
-/*   int thinning; */
+#define new_point(ll)  { int j; for (j=0;j<dim+1;j++) vuaux[j] = GEN->state[j]+(ll)*GEN->direction[j]; }
+
+  int thinning;
+  int i, d, k;
+  double lambda, lb[2];  /* line segments, endpoints */
+  double *vuaux;       /* pointer to auxiliary working array */
+  double U;
+  int update;
+  int dim = GEN->dim;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);
   COOKIE_CHECK(gen,CK_HITRO_GEN,RETURN_VOID);
 
-/*   for (thinning = GEN->thinning; thinning > 0; --thinning) { */
+  /* entire bounding rectangle or just covering plate ? */
+  d = (gen->variant & HITRO_VARFLAG_BOUNDRECT) ? dim+1 : 1;
 
-/*     /\* check state of chain *\/ */
-/*     if (!_unur_isfinite(GEN->state[0])) */
-/*       /\* there has been a fatal error during the last sampling from */
-/* 	 the conditional distribution. This probably has been caused */
-/* 	 by improper target distribution for which the method */
-/* 	 does not work (i.e., it is not T-concave).  */
-/*       *\/ */
-/*       break; */
+  /* pointer to auxiliary working array */
+  vuaux = GEN->vu;
 
-/*     /\* new random direction *\/ */
-/*     _unur_hitro_random_unitvector( gen, GEN->direction ); */
+  for (thinning = GEN->thinning; thinning > 0; --thinning) {
+
+    /* new random direction */
+    _unur_hitro_random_unitvector( gen, GEN->direction );
     
-/*     /\* update conditional distribution *\/ */
-/*     unur_distr_condi_set_condition( GEN->distr_condi, GEN->state, GEN->direction, 0); */
+    /* --- l.h.s. and r.h.s. endpoint of line segment --- */
+    lb[1] = INFINITY;  
+    lb[0] = -INFINITY;
+    for (i=0; i<d; i++) {
+      lambda = (GEN->vumin[i] - GEN->state[i]) / GEN->direction[i];
+      if (lambda>0 && lambda<lb[1]) lb[1] = lambda;
+      if (lambda<0 && lambda>lb[0]) lb[0] = lambda;
+      lambda = (GEN->vumax[i] - GEN->state[i]) / GEN->direction[i];
+      if (lambda>0 && lambda<lb[1]) lb[1] = lambda;
+      if (lambda<0 && lambda>lb[0]) lb[0] = lambda;
+    }
+    if (! (_unur_isfinite(lb[0]) && _unur_isfinite(lb[1])) ) {
+      _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"line segment not bounded, try again");
+      continue;
+    }
 
-/*     /\* reinit generator object *\/ */
-/*     switch( gen->variant & HITRO_VARMASK_T ) { */
-/*     case HITRO_VAR_T_LOG: */
-/*       unur_tdrgw_reinit(*GEN_CONDI); */
-/*       break; */
-/*     case HITRO_VAR_T_SQRT: */
-/*       unur_tdr_reinit(*GEN_CONDI); */
-/*       break; */
-/*     case HITRO_VAR_T_POW: */
-/*     default: */
-/*       _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,""); */
-/*       return; */
-/*     } */
+    /* --- adaptive bounding rectangle --- */
+    if ( gen->variant & HITRO_VARFLAG_ADAPTRECT ) {
+      /* check whether endpoint is outside of region */
+      for (k=0; k<2; k++) {
+	update = FALSE;
+	while (1) {
+	  new_point(lb[k]);
+	  if (! _unur_hitro_vu_is_inside_region(gen,vuaux) )
+	    break;
+	  update = TRUE;
+	  lb[k] *= HITRO_ADAPTIVE_MULTIPLIER;
+	}
+	if (update) {
+	  /* we have to update vumin and vmax */
+	  new_point(lb[k]);
+	  for (i=0; i<d; i++) {
+	    if (vuaux[i] < GEN->vumin[i]) GEN->vumin[i] =  vuaux[i];
+	    if (vuaux[i] > GEN->vumax[i]) GEN->vumax[i] =  vuaux[i];
+	  }			
+	}
+      }
+    }		
 
-/*     /\* sample from distribution *\/ */
-/*     X = unur_sample_cont(*GEN_CONDI); */
-/*     /\* if reinit failed we get X=INFINITY here *\/ */
+    /* --- new coordinate for next point --- */
+    while (1) {
+      U = _unur_call_urng(gen->urng); 
+      lambda = U * lb[0] + (1.-U) * lb[1];
+      new_point(lambda);
+      if (_unur_hitro_vu_is_inside_region(gen,vuaux) )
+	break;
 
-/*     /\* update state *\/ */
-/*     for (i=0; i<GEN->dim; i++) */
-/*       GEN->state[i] += X * GEN->direction[i];	   */
-/*   } */
+      /* --- adaptive line sampling --- */
+      if ( gen->variant & HITRO_VARFLAG_ADAPTLINE ) {
+	if (lambda < 0) lb[0] = lambda;
+	else            lb[1] = lambda;
+      }
+    }
 
-/*   /\* copy current state into given vector *\/ */
-/*   memcpy(vec, GEN->state, GEN->dim * sizeof(double));  */
-
+    /* store new state */
+    memcpy( GEN->state, vuaux, (dim+1)*sizeof(double) );
+  }
+    
+  /* transform current state into point in original scale */
+  _unur_hitro_vu_to_x( gen, GEN->state, vec );
+  
   return;
+
+#undef new_point
 
 } /* end of _unur_hitro_randomdir_sample_cvec() */
 
@@ -1313,29 +1350,29 @@ _unur_hitro_vu_is_inside_region( const struct unur_gen *gen, const double *vu )
 
 /*---------------------------------------------------------------------------*/
 
-/* void */
-/* _unur_hitro_random_unitvector( struct unur_gen *gen, double *direction ) */
-/*      /\*----------------------------------------------------------------------*\/ */
-/*      /\* generate a random direction vector                                   *\/ */
-/*      /\*                                                                      *\/ */
-/*      /\* parameters:                                                          *\/ */
-/*      /\*   gen       ... pointer to generator object                          *\/ */
-/*      /\*   direction ... random vector (result)                               *\/ */
-/*      /\*----------------------------------------------------------------------*\/ */
-/* { */
-/*   int i; */
+void
+_unur_hitro_random_unitvector( struct unur_gen *gen, double *direction )
+     /*----------------------------------------------------------------------*/
+     /* generate a random direction vector                                   */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen       ... pointer to generator object                          */
+     /*   direction ... random vector (result)                               */
+     /*----------------------------------------------------------------------*/
+{
+  int i;
 
-/*   do { */
-/*     for (i=0; i<GEN->dim; i++)  */
-/*       direction[i] = unur_sample_cont(GEN_NORMAL); */
-/*     /\* normalize direction vector *\/ */
-/*     _unur_vector_normalize(GEN->dim, direction); */
+  do {
+    for (i=0; i<GEN->dim+1; i++)
+      direction[i] = unur_sample_cont(GEN_NORMAL);
+    /* normalize direction vector */
+    _unur_vector_normalize(GEN->dim+1, direction);
 
-/*     /\* there is an extremely small change that direction is the null before */
-/*        normalizing. In this case non of its coordinates are finite. *\/ */
-/*   } while (!_unur_isfinite(direction[0])); */
+    /* there is an extremely small change that direction is the null before
+       normalizing. In this case non of its coordinates are finite. */
+  } while (!_unur_isfinite(direction[0]));
 
-/* } /\* end of _unur_hitro_random_unitvector() *\/ */
+} /* end of _unur_hitro_random_unitvector() */
 
 /*****************************************************************************/
 

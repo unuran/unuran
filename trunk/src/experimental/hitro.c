@@ -1221,8 +1221,9 @@ _unur_hitro_randomdir_sample_cvec( struct unur_gen *gen, double *vec )
 	  /* we have to update vumin and vmax */
 	  new_point(lb[k]);
 	  for (i=0; i<d; i++) {
-	    if (vuaux[i] < GEN->vumin[i]) GEN->vumin[i] =  vuaux[i];
-	    if (vuaux[i] > GEN->vumax[i]) GEN->vumax[i] =  vuaux[i];
+	    if (vuaux[i] < GEN->vumin[i] && i!=0) GEN->vumin[i] =  vuaux[i];
+	    if (vuaux[i] > GEN->vumax[i])         GEN->vumax[i] =  vuaux[i];
+	    /* remark: vmin is always 0 */
 	  }			
 	}
       }

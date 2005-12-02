@@ -52,24 +52,19 @@
 #include <unur_source.h>
 #include <distr/distr.h>
 #include <distr/distr_source.h>
+#include <distributions/unur_distributions.h>
 #include <distr/cvec.h>
 #include <uniform/urng.h>
 #include <utils/matrix_source.h>
 #include <utils/mrou_rectangle_struct.h>
 #include <utils/mrou_rectangle_source.h>
-#include <parser/parser.h>
 #include "unur_methods_source.h"
+#include "arou.h"
 #include "x_gen.h"
 #include "x_gen_source.h"
 
 #include "hitro.h"
 #include "hitro_struct.h"
-
-/* #include <distributions/unur_distributions.h> */
-/* #include <utils/fmax_source.h> */
-/* #include <utils/hooke_source.h> */
-/* #include <utils/unur_fp_source.h> */
-/* #include <uniform/urng.h> */
 
 /*---------------------------------------------------------------------------*/
 /* Constants                                                                 */
@@ -157,6 +152,11 @@ static int _unur_hitro_vu_is_inside_region( const struct unur_gen *gen, const do
 /*---------------------------------------------------------------------------*/
 /* check whether point with vu-coordinates is inside acceptance region       */
 /* of RoU method.                                                            */
+/*---------------------------------------------------------------------------*/
+
+static struct unur_gen *_unur_hitro_normalgen( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* generate a random direction vector                                        */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_hitro_random_unitvector( struct unur_gen *gen, double *direction );
@@ -812,10 +812,10 @@ _unur_hitro_init( struct unur_par *par )
   /* routines for sampling and destroying generator */
   if (gen->variant & HITRO_VARIANT_RANDOMDIR ) {
     /* we need an auxiliary generator for normal random variates */
-    GEN_NORMAL = unur_str2gen("normal() & method=arou");
-    /* set uniform random number generator and debugging flags */
-    GEN_NORMAL->urng = gen->urng;
-    GEN_NORMAL->debug = gen->debug;
+    GEN_NORMAL = _unur_hitro_normalgen( gen );
+    if ( GEN_NORMAL == NULL ) {
+      _unur_hitro_free(gen); return NULL;
+    }
   }
 
   /* computing required data about bounding rectangle */
@@ -1058,16 +1058,42 @@ _unur_hitro_clone( const struct unur_gen *gen )
   /* create generic clone */
   clone = _unur_generic_clone( gen, GENTYPE );
 
-  /** TODO **/
+  /* get center of the distribution */
+  CLONE->center = unur_distr_cvec_get_center(clone->distr);
 
-/*   /\* copy state *\/ */
-/*   CLONE->state = _unur_xmalloc( GEN->dim * sizeof(double)); */
-/*   memcpy( CLONE->state, GEN->state, GEN->dim * sizeof(double)); */
-/*   CLONE->x0 = _unur_xmalloc( GEN->dim * sizeof(double)); */
-/*   memcpy( CLONE->x0, GEN->x0, GEN->dim * sizeof(double)); */
-  
-/*   /\* allocate memory for random direction *\/ */
-/*   CLONE->direction = _unur_xmalloc( GEN->dim * sizeof(double)); */
+  /* copy state */
+  if (GEN->state) {
+    CLONE->state = _unur_xmalloc( (1 + GEN->dim) * sizeof(double) );
+    memcpy( CLONE->state, GEN->state, (1 + GEN->dim) * sizeof(double) );
+  }
+  if (GEN->vumin) {
+    CLONE->vumin = _unur_xmalloc( (GEN->dim+1) * sizeof(double) );
+    memcpy( CLONE->vumin, GEN->vumin, (GEN->dim+1) * sizeof(double) );
+  }
+  if (GEN->vumax) {
+    CLONE->vumax = _unur_xmalloc( (GEN->dim+1) * sizeof(double) );
+    memcpy( CLONE->vumax, GEN->vumax, (GEN->dim+1) * sizeof(double) );
+  }
+
+  /* copy starting points */
+  if (GEN->x0) {
+    CLONE->x0 = _unur_xmalloc( GEN->dim * sizeof(double));
+    memcpy( CLONE->x0, GEN->x0, GEN->dim * sizeof(double));
+  }
+
+  /* working array */
+  if (GEN->x) {
+    CLONE->x = _unur_xmalloc( GEN->dim * sizeof(double) );
+    memcpy( CLONE->x, GEN->x, GEN->dim * sizeof(double) );
+  }
+  if (GEN->vu) {
+    CLONE->vu = _unur_xmalloc( (1 + GEN->dim) * sizeof(double) );
+    memcpy( CLONE->vu, GEN->vu, (1 + GEN->dim) * sizeof(double) );
+  }
+  if (GEN->direction) {
+    CLONE->direction = _unur_xmalloc( (1 + GEN->dim) * sizeof(double));
+    memcpy( CLONE->direction, GEN->direction, (1 + GEN->dim) * sizeof(double));
+  }
 
   return clone;
 
@@ -1348,6 +1374,40 @@ _unur_hitro_vu_is_inside_region( const struct unur_gen *gen, const double *vu )
   return ( (v < pow(y,1./(GEN->r * GEN->dim + 1.))) ? TRUE : FALSE );
 
 } /* end of _unur_hitro_vu_is_inside_region() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_gen *
+_unur_hitro_normalgen( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* create a normal random variate generator                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen       ... pointer to HITRO generator object                    */
+     /*                                                                      */
+     /*                                                                      */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_gen   *normalgen;
+  struct unur_distr *normaldistr = unur_distr_normal(NULL,0);
+  struct unur_par   *normalpar = unur_arou_new( normaldistr );
+
+  unur_arou_set_usedars( normalpar, TRUE );
+  normalgen = unur_init( normalpar );
+  _unur_distr_free( normaldistr );
+  if (normalgen == NULL) {
+    _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,
+		"Cannot create aux Gaussian generator");
+    return NULL;
+  }
+
+  /* uniform random number generator and debugging flags */
+  normalgen->urng = gen->urng;
+  normalgen->debug = gen->debug;
+
+  return normalgen;
+
+} /* end of _unur_hitro_normalgen() */
 
 /*---------------------------------------------------------------------------*/
 

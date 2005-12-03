@@ -52,14 +52,15 @@
 #include <unur_source.h>
 #include <distr/distr.h>
 #include <distr/distr_source.h>
+#include <distributions/unur_distributions.h>
 #include <distr/condi.h>
 #include <distr/cvec.h>
 #include <uniform/urng.h>
 #include <utils/matrix_source.h>
-#include <parser/parser.h>
 #include "unur_methods_source.h"
 #include "x_gen.h"
 #include "x_gen_source.h"
+#include "arou.h"
 #include "tdr.h"
 #include "tdrgw.h"
 
@@ -125,6 +126,11 @@ static void _unur_gibbs_free( struct unur_gen *gen);
 static struct unur_gen *_unur_gibbs_clone( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* copy (clone) generator object.                                            */
+/*---------------------------------------------------------------------------*/
+
+static struct unur_gen *_unur_gibbs_normalgen( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* create a normal random variate generator                                  */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_gibbs_random_unitvector( struct unur_gen *gen, double *direction );
@@ -636,8 +642,10 @@ _unur_gibbs_init( struct unur_par *par )
 
   case GIBBS_VARIANT_RANDOMDIR:
     /* we need an auxiliary generator for normal random variates */
-    GEN_NORMAL = unur_str2gen("normal() & method=arou");
-    GEN_NORMAL->debug = gen->debug;
+    GEN_NORMAL = _unur_gibbs_normalgen( gen );
+    if ( GEN_NORMAL == NULL ) {
+      _unur_gibbs_free(gen); return NULL;
+    }
 
     /* conditional distribution object */
     _unur_gibbs_random_unitvector( gen, GEN->direction );
@@ -671,7 +679,6 @@ _unur_gibbs_init( struct unur_par *par )
 
     /* we use the same URNG for all auxiliary generators */
     unur_set_urng( par_condi, gen->urng );
-    unur_chg_urng( GEN_NORMAL, gen->urng );
 
     /* init generator object for sampling from conditional distributions */
     gen_condi = unur_init(par_condi);
@@ -1015,6 +1022,40 @@ _unur_gibbs_randomdir_sample_cvec( struct unur_gen *gen, double *vec )
   return;
 
 } /* end of _unur_gibbs_randomdir_sample_cvec() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_gen *
+_unur_gibbs_normalgen( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* create a normal random variate generator                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen       ... pointer to GIBBS generator object                    */
+     /*                                                                      */
+     /*                                                                      */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_gen   *normalgen;
+  struct unur_distr *normaldistr = unur_distr_normal(NULL,0);
+  struct unur_par   *normalpar = unur_arou_new( normaldistr );
+
+  unur_arou_set_usedars( normalpar, TRUE );
+  normalgen = unur_init( normalpar );
+  _unur_distr_free( normaldistr );
+  if (normalgen == NULL) {
+    _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,
+		"Cannot create aux Gaussian generator");
+    return NULL;
+  }
+
+  /* uniform random number generator and debugging flags */
+  normalgen->urng = gen->urng;
+  normalgen->debug = gen->debug;
+
+  return normalgen;
+
+} /* end of _unur_gibbs_normalgen() */
 
 /*---------------------------------------------------------------------------*/
 

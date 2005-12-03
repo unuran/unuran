@@ -156,7 +156,7 @@ static int _unur_hitro_vu_is_inside_region( const struct unur_gen *gen, const do
 
 static struct unur_gen *_unur_hitro_normalgen( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* generate a random direction vector                                        */
+/* create a normal random variate generator                                  */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_hitro_random_unitvector( struct unur_gen *gen, double *direction );

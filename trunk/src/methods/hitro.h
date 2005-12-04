@@ -38,7 +38,7 @@
  *****************************************************************************/
 
 /*
-   =TEST-METHOD  HITRO   Markov Chain - HIT-and-run sampler with Ratio-Of-uniforms
+   =METHOD  HITRO   Markov Chain - HIT-and-run sampler with Ratio-Of-uniforms
 
    =UP  Methods_for_CVEC
 
@@ -291,8 +291,8 @@ int unur_hitro_set_use_adaptiverectangle( UNUR_PAR *parameters, int adaptive );
    unur_vnrou_set_v() calls can be used to provide a starting
    rectangle. This should be sufficiently small.
    If not given then we assume @unurmath{v_{max} = 1,}
-   @unurmath{u_{min}=(-0.001,-0.001,\dots,-0.001),} and
-   @unurmath{u_{max}=(0.001,0.001,\dots,0.001).}
+   @unurmath{u_{min}=(-0.001,-0.001,\ldots,-0.001),} and
+   @unurmath{u_{max}=(0.001,0.001,\ldots,0.001).}
    Adaptive enlargements of the bounding hyperrectangle can be
    controlled set setting an enlargement factor given 
    by a unur_hitro_set_adaptive_multiplier() call.
@@ -346,8 +346,8 @@ int unur_hitro_set_u( UNUR_PAR *parameters, const double *umin, const double *um
 
    If adaptive bounding rectangles these values are used for the
    starting rectangle. If not given then 
-   @var{umin}=@code{@{-b,-b,@dots,-b@}} and
-   @var{umax}=@code{@{b,b,@dots,b@}} with @code{b=1e-3} is used.
+   @var{umin}=@code{@{-b,-b,@ldots,-b@}} and
+   @var{umax}=@code{@{b,b,@ldots,b@}} with @code{b=1.e-3} is used.
 
    If deterministic bounding rectangles these values are the given
    values are used for the rectangle. If no values are given, the

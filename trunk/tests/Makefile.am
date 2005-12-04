@@ -10,8 +10,8 @@ INCLUDES = \
 if INCLUDE_EXPERIMENTAL
 EXPERIMENTAL_LDADD = $(top_builddir)/src/experimental/libunurexperimental.la
 # EXPERIMENTAL_PROGS = t_hitrou t_varou
-EXPERIMENTAL_PROGS = t_hitrou t_hitro
-EXPERIMENTAL_XFAIL = t_hitrou t_hitro
+EXPERIMENTAL_PROGS = t_hitrou
+EXPERIMENTAL_XFAIL = t_hitrou
 else
 EXPERIMENTAL_LDADD = 
 EXPERIMENTAL_PROGS =
@@ -62,6 +62,7 @@ check_PROGRAMS = \
  t_empl \
  t_gibbs \
  t_hinv \
+ t_hitro \
  t_hrb \
  t_hrd \
  t_hri \
@@ -129,6 +130,7 @@ EXTRA_DIST = \
  t_empl.conf \
  t_gibbs \
  t_hinv.conf \
+ t_hitro.conf \
  t_hrb.conf \
  t_hrd.conf \
  t_hri.conf \

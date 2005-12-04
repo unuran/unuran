@@ -45,9 +45,10 @@ int main()
 /*   unur_gibbs_set_thinning(par,3); */
 /*   unur_gibbs_set_variant_random_direction(par); */
 
-  gen = unur_init(par);
+/*   gen = unur_init(par); */
 
-/*   unur_run_tests(par,~0u); */
+  unur_run_tests(par,~0u);
+/*   unur_run_tests(par,UNUR_TEST_SAMPLE); */
   
 /*   unur_free(gen); */
   unur_distr_free(normal);

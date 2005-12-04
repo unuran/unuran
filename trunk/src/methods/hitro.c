@@ -202,12 +202,6 @@ static void _unur_hitro_debug_free( const struct unur_gen *gen );
 /* an auxiliary generator for standard normal variates */
 #define GEN_NORMAL    gen->gen_aux
 
-
-/** TODO **/
-#define CK_HITRO_PAR     CK_HITROU_PAR 
-#define CK_HITRO_GEN     CK_HITROU_GEN
-#define UNUR_METH_HITRO  UNUR_METH_HITROU
-
 /*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/

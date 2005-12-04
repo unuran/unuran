@@ -70,7 +70,7 @@
 /* Constants                                                                 */
 
 /* increase size of adaptive bounding rectangle by this factor */
-#define HITRO_ADAPTIVE_MULTIPLIER  1.618     /* we use golden ratio */
+#define HITRO_DEFAULT_ADAPTIVE_MULTIPLIER  1.618      /* we use golden ratio */
 
 /*---------------------------------------------------------------------------*/
 /* Variants                                                                  */
@@ -103,6 +103,7 @@
 #define HITRO_SET_ADAPTLINE  0x0100u   /* set adaptive line sampling         */
 #define HITRO_SET_ADAPTRECT  0x0200u   /* set adaptive bounding rectangle    */
 #define HITRO_SET_BOUNDRECT  0x0400u   /* set entire bounding rectangle      */
+#define HITRO_SET_ADAPTMULT  0x0800u   /* set multiplier for adaptive rectangles */
 
 /*---------------------------------------------------------------------------*/
 
@@ -262,6 +263,7 @@ unur_hitro_new( const struct unur_distr *distr )
   PAR->thinning = 1;                /* thinning factor                       */
   PAR->burnin   = 0;                /* length of burn-in for chain           */
   PAR->x0       = NULL;             /* starting point of chain, default is 0 */
+  PAR->adaptive_mult = HITRO_DEFAULT_ADAPTIVE_MULTIPLIER; /* multiplier for adaptive rectangles  */
 
   PAR->vmax     = 1.e-3;      /* v-boundary of bounding rectangle (unknown)  */
   PAR->umin     = NULL;       /* u-boundary of bounding rectangle (unknown)  */
@@ -548,6 +550,43 @@ unur_hitro_set_v( struct unur_par *par, double vmax )
   return UNUR_SUCCESS;
 
 } /* end of unur_hitro_set_v() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_hitro_set_adaptive_multiplier( struct unur_par *par, double factor )
+     /*----------------------------------------------------------------------*/
+     /* set multiplier for adaptive rectangles                               */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par      ... pointer to parameter for building generator object    */
+     /*   factor   ... multiplier                                            */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, HITRO );
+
+  /* check new parameter for generator */
+  if (factor < 1.0001) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"multiplier too small (<= 1.0001)");
+    return UNUR_ERR_PAR_SET;
+  }
+
+  /* store data */
+  PAR->adaptive_mult = factor;
+
+  /* changelog */
+  par->set |= HITRO_SET_ADAPTMULT;
+
+  /* ok */
+  return UNUR_SUCCESS;
+
+} /* end of unur_hitro_set_adaptive_multiplier() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -918,6 +957,7 @@ _unur_hitro_create( struct unur_par *par )
   GEN->thinning = PAR->thinning; /* thinning factor                          */
   GEN->burnin = PAR->burnin;     /* length of burnin                         */
   GEN->r = PAR->r;               /* parameter r for RoU                      */
+  GEN->adaptive_mult = PAR->adaptive_mult; /* multiplier for adaptive rectangles */
 
   /* get center of the distribution */
   GEN->center = unur_distr_cvec_get_center(gen->distr);
@@ -1140,13 +1180,13 @@ _unur_hitro_coord_sample_cvec( struct unur_gen *gen, double *vec )
       /* check whether endpoint is outside of region */
       vuaux[coord] = lmax;
       while ( _unur_hitro_vu_is_inside_region(gen,vuaux) ) {
-	lmax = lmid + (lmax-lmid) * HITRO_ADAPTIVE_MULTIPLIER;
+	lmax = lmid + (lmax-lmid) * GEN->adaptive_mult;
 	GEN->vumax[coord] = vuaux[coord] = lmax;
       }
       vuaux[coord] = lmin;
       /* no update of lmin in case of coord == 0 since v-coordinate always > 0 */
       while ( coord!=0 && _unur_hitro_vu_is_inside_region(gen,vuaux) ) {
-	lmin = lmid + (lmin-lmid) * HITRO_ADAPTIVE_MULTIPLIER;
+	lmin = lmid + (lmin-lmid) * GEN->adaptive_mult;
 	GEN->vumin[coord] = vuaux[coord] = lmin;
       }
     }
@@ -1241,7 +1281,7 @@ _unur_hitro_randomdir_sample_cvec( struct unur_gen *gen, double *vec )
 	  if (! _unur_hitro_vu_is_inside_region(gen,vuaux) )
 	    break;
 	  update = TRUE;
-	  lb[k] *= HITRO_ADAPTIVE_MULTIPLIER;
+	  lb[k] *= GEN->adaptive_mult;
 	}
 	if (update) {
 	  /* we have to update vumin and vmax */
@@ -1521,6 +1561,10 @@ _unur_hitro_debug_init_start( const struct unur_gen *gen )
   fprintf(log,"\n%s: adaptive bounding rectangle: %s",gen->genid,
 	  (gen->variant&HITRO_VARFLAG_ADAPTRECT)?"on":"off");
   _unur_print_if_default(gen,HITRO_SET_ADAPTRECT);
+  if (gen->variant&HITRO_VARFLAG_ADAPTRECT) {
+    fprintf(log,"\n%s:\tmultiplier = %g",gen->genid,GEN->adaptive_mult);
+    _unur_print_if_default(gen,HITRO_SET_ADAPTMULT);
+  }
   fprintf(log,"\n%s:\n",gen->genid);
 
   _unur_distr_cvec_debug( gen->distr, gen->genid );

@@ -41,6 +41,7 @@ struct unur_hitro_par {
   double r;                  /* r-parameter of HITRO method                  */
   int thinning;              /* thinning factor for generated chain          */
   int burnin;                /* length of burn-in for chain                  */
+  double adaptive_mult;      /* multiplier for adaptive rectangle            */
   double vmax;               /* bounding rectangle v-coordinate              */
   const double *umin, *umax; /* bounding rectangle u-coordinates             */
   const double *x0;          /* starting point of chain                      */
@@ -71,15 +72,10 @@ struct unur_hitro_gen {
   double *x;                 /* working point in the original scale          */
   const double *center;      /* center of distribution                       */
 
+  double adaptive_mult;      /* multiplier for adaptive rectangles           */
   int burnin;                /* length of burn-in for chain                  */
   double *x0;                /* starting point of chain                      */
   double fx0;                /* PDF at starting point of chain               */
 };
 
 /*---------------------------------------------------------------------------*/
-
-/* struct unur_hitrou_gen { */
-/*   double *direction;        /\* random direction vector                       *\/ */
-/*   double *point_current;    /\* current point inside the shape                *\/ */
-/*   double *point_random;     /\* random point, can be inside shape or not      *\/ */
-/* }; */

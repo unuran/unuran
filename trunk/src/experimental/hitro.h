@@ -137,8 +137,9 @@
       @table @emph 
       @item coordinate direction sampling. [default]
       The coordinates are updated cyclically.
-
-      This variant can be selected using
+      This can be seen as a Gibbs sampler running on the acceptance
+      region of the Ratio-of-Uniforms method.
+      This variant can be selected using 
       unur_hitro_set_variant_coordinate().
 
       @item random direction sampling. 
@@ -148,6 +149,9 @@
       This variant can be selected using
       unur_hitro_set_variant_random_direction().
       @end table
+
+      Notice that each iteration of coordinate direction sampling is
+      cheaper than an iteration of random direction sampling.
 
       Sampling uniformly from the line segment can be adjusted in
       several ways:
@@ -191,11 +195,18 @@
       Alternatively the bounding rectangle rectangle can be computed
       adaptively. In the latter case unur_vnrou_set_u() and
       unur_vnrou_set_v() can be used to provide a starting rectangle
-      which must be sufficiently small. Notice, however, that this
-      requires that the region of acceptance is convex when random
-      directions are used, or a unimodal PDF when coordinate direction
-      sampling is used.
-      Moreover it requires two additional calls to the PDF in each
+      which must be sufficiently small. 
+      Then both endpoints are the covering line segment are always
+      check whether they are outside the acceptance region of the
+      Ratio-of-Uniforms method. If they are not then then line segment
+      and the ("bounding") rectangle are enlarged using a factor that
+      can be given using the unur_hitro_set_adaptive_multiplier() call
+      (default is the golden ratio).
+      Notice, that this running the method in the adaptive rectangle
+      mode requires that the region of acceptance is convex when random
+      directions are used, or the given PDF is unimodal when
+      coordinate direction sampling is used.
+      Moreover, it requires two additional calls to the PDF in each
       iteration step of the chain.
 
       Using addaptive bounding rectangles can be switched on/off
@@ -280,9 +291,12 @@ int unur_hitro_set_use_adaptiverectangle( UNUR_PAR *parameters, int adaptive );
    unur_vnrou_set_v() calls can be used to provide a starting
    rectangle. This should be sufficiently small.
    If not given then we assume @unurmath{v_{max} = 1,}
-   @unurmath{u_{min}=(-1,-1,\dots,-1),} and
-   @unurmath{u_{max}=(1,1,\dots,1).}
-
+   @unurmath{u_{min}=(-0.001,-0.001,\dots,-0.001),} and
+   @unurmath{u_{max}=(0.001,0.001,\dots,0.001).}
+   Adaptive enlargements of the bounding hyperrectangle can be
+   controlled set setting an enlargement factor given 
+   by a unur_hitro_set_adaptive_multiplier() call.
+   
    Using adaptive computation of the bounding rectangle reduces the
    setup time significantly (when it is not given by the user) at the
    expense of two additional PDF evaluations during each iteration
@@ -351,6 +365,22 @@ int unur_hitro_set_u( UNUR_PAR *parameters, const double *umin, const double *um
 
    Default: not set.
 */
+
+int unur_hitro_set_adaptive_multiplier( UNUR_PAR *parameters, double factor );
+/* 
+   Adaptive enlargements of the bounding hyperrectangle can be
+   controlled set setting the enlargement @var{factor}.
+   This must be greater than 1. Values close to 1 result in small
+   adaptive steps and thus reduce the risk of too large bounding
+   rectangles. On the other hand many adaptive steps might be
+   necessary. 
+
+   @emph{Notice:} For practical reasons this call does not accept
+   values for @var{factor} less than @code{1.0001}. If this value is
+   UNUR_INFINITY this results in infinite loops.
+
+   Default: Golden ratio.
+*/ 
 
 /*...........................................................................*/
 

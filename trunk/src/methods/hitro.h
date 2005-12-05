@@ -346,8 +346,8 @@ int unur_hitro_set_u( UNUR_PAR *parameters, const double *umin, const double *um
 
    If adaptive bounding rectangles these values are used for the
    starting rectangle. If not given then 
-   @var{umin}=@code{@{-b,-b,@ldots,-b@}} and
-   @var{umax}=@code{@{b,b,@ldots,b@}} with @code{b=1.e-3} is used.
+   @var{umin}=@code{@{-b,-b,@dots{},-b@}} and
+   @var{umax}=@code{@{b,b,@dots{},b@}} with @code{b=1.e-3} is used.
 
    If deterministic bounding rectangles these values are the given
    values are used for the rectangle. If no values are given, the
@@ -445,7 +445,7 @@ int unur_hitro_chg_state( UNUR_GEN *generator, const double *state );
    @code{dim+1} dimensional point in the (tansformed) region of
    acceptance of the Ratio-of-Uniforms method. Its coordinate 
    are stored in the following order:
-   @code{state[] = @{v, u1, u2, @ldots, udim@}}.
+   @code{state[] = @{v, u1, u2, @dots{}, udim@}}.
 
    If the state can only be changed if the given @var{state} is inside
    this region.

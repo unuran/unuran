@@ -243,6 +243,7 @@ _unur_print_method( struct unur_par *par )
     printf("METHOD:\t\tMarkov Chain - GIBBS sampler (GIBBS)\n");
     break;
 
+  case UNUR_METH_HITRO:
   case UNUR_METH_HITROU:
     COOKIE_CHECK(par,CK_HITROU_PAR,UNUR_ERR_COOKIE);
     printf("METHOD:\t\thit&run ratio-of-uniforms (HITROU)\n");

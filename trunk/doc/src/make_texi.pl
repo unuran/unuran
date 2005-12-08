@@ -1550,7 +1550,7 @@ sub next_tex_token {
 	    $$info .= " $1 ";
 	    return;
 	}
-	if ($value =~ /^\\(alpha|beta|gamma|delta|mu|pi|phi)(\s*)$/) {
+	if ($value =~ /^\\(alpha|beta|gamma|delta|lambda|mu|nu|pi|phi|sigma|tau|theta|zeta)(\s*)$/) {
 	    # greek letters
 	    $$tex .= $value;
 	    $$html .= " $1$2";

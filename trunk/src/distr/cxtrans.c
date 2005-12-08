@@ -92,7 +92,7 @@ static double _unur_dlogpdf_cxtrans( double x, const struct unur_distr *cxt );
 /*---------------------------------------------------------------------------*/
 
 struct unur_distr *
-unur_distr_cxtrans_new( const struct unur_distr *distr, double alpha )
+unur_distr_cxtrans_new( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* Create an object for the distribution of a transformed RV            */
      /* `distr' must be a pointer to a univariate continuous distribution.   */
@@ -120,18 +120,6 @@ unur_distr_cxtrans_new( const struct unur_distr *distr, double alpha )
     _unur_error(distr_name,UNUR_ERR_DISTR_INVALID,""); return NULL; }
   COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
 
-  /* check parameter alpha */
-  if (alpha < 0.) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_INVALID,"alpha < 0");
-    return NULL;
-  }
-
-  if (alpha == 0. && DISTR.BD_LEFT < 0. ) {
-    /* logarithmic transformation */
-    _unur_error(distr_name,UNUR_ERR_DISTR_INVALID,"invalid domain");
-    return NULL;
-  }
-
   /* get distribution object for generic continuous univariate distribution */
   cxt = unur_distr_cont_new();
   if (!cxt) return NULL;
@@ -147,20 +135,20 @@ unur_distr_cxtrans_new( const struct unur_distr *distr, double alpha )
   cxt->base = _unur_distr_cont_clone( distr );
   if (!cxt->base) { free(cxt); return NULL; }
 
-  /* set parameters for order statistics */
-  CXT.n_params = 5;                 /* three parameters                        */
-  CXT.ALPHA = alpha;                /* parameter for transformation            */
   /* defaults: */
-  CXT.PDFPOLE = 0.;                 /* PDF at pole of underlying distribution  */
-  CXT.logPDFPOLE = -UNUR_INFINITY;  /* logPDF at pole                          */
-  CXT.dPDFPOLE = UNUR_INFINITY;     /* derivative of PDF at pole               */
-  CXT.dlogPDFPOLE = UNUR_INFINITY;  /* derivative of logPDF at pole            */
+  CXT.n_params = 5;                 /* five parameters                       */
+  CXT.ALPHA = 1.;                   /* parameter for transformation (default: identity) */
+  CXT.PDFPOLE = 0.;                 /* PDF at pole of underlying distribution */
+  CXT.logPDFPOLE = -UNUR_INFINITY;  /* logPDF at pole                        */
+  CXT.dPDFPOLE = UNUR_INFINITY;     /* derivative of PDF at pole             */
+  CXT.dlogPDFPOLE = UNUR_INFINITY;  /* derivative of logPDF at pole          */
 
   /* copy data */
-  CXT.area = DISTR.area;            /* area below PDF (same as for distr)  */
-  if (_unur_distr_cxtrans_compute_domain(cxt) != UNUR_SUCCESS) {
-    free(cxt); return NULL; }
-  
+  CXT.area = DISTR.area;            /* area below PDF (same as for distr)    */
+  CXT.BD_LEFT = DISTR.BD_LEFT;      /* boundaries of ...                     */
+  CXT.BD_RIGHT = DISTR.BD_RIGHT;    /* ... domain                            */
+  CXT.mode = DISTR.mode;            /* mode of distribution                  */
+
   /* pointer to PDF, its derivative, and CDF */
   if (DISTR.cdf)     CXT.cdf = _unur_cdf_cxtrans;          /* pointer to CDF       */
   if (DISTR.pdf)     CXT.pdf = _unur_pdf_cxtrans;          /* pointer to PDF       */
@@ -169,86 +157,12 @@ unur_distr_cxtrans_new( const struct unur_distr *distr, double alpha )
   if (DISTR.dlogpdf) CXT.dlogpdf = _unur_dlogpdf_cxtrans;  /* derivative of logPDF */
 
   /* parameters set */
-  cxt->set = distr->set & ~UNUR_DISTR_SET_MODE; /* mode not derived from distr */
+  cxt->set = distr->set;
 
   /* return pointer to object */
   return cxt;
 
 } /* end of unur_distr_cxtrans_new() */
-
-/*---------------------------------------------------------------------------*/
-
-int _unur_distr_cxtrans_compute_domain( struct unur_distr *cxt )
-     /*----------------------------------------------------------------------*/
-     /* compute domain for transformed RV                                    */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   cxt   ... pointer to distribution of transformed RV                */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   UNUR_SUCCESS ... on success                                        */
-     /*   error code   ... on error                                          */
-     /*----------------------------------------------------------------------*/
-{
-  double left, right;
-  double alpha;
-
-  /* check arguments */
-  CHECK_NULL( cxt, UNUR_ERR_NULL );
-  CHECK_NULL( cxt->base, UNUR_ERR_NULL );
-
-  /* check distribution */
-  if (cxt->id != UNUR_DISTR_CXTRANS) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_INVALID,""); return UNUR_ERR_DISTR_INVALID; }
-
-  /* domain of underlying distribution */
-  left  = cxt->base->data.cont.BD_LEFT;
-  right = cxt->base->data.cont.BD_RIGHT;
-
-  alpha = CXT.ALPHA;
-
-  /* exponential transformation */
-  if (_unur_isinf(alpha)==1) {
-    CXT.BD_LEFT  = (_unur_isfinite(left)) ? exp(left) : 0.;
-    CXT.BD_RIGHT = exp(right);
-  }
-
-  /* logarithmic transformation */
-  else if (alpha == 0.) {
-    if (left < 0. ) {
-      _unur_error(distr_name,UNUR_ERR_DISTR_SET,"invalid domain");
-      return UNUR_ERR_DISTR_SET;
-    }
-    CXT.BD_LEFT  = (left<=0.) ? -UNUR_INFINITY : log(left);
-    CXT.BD_RIGHT = log(right);
-  }
-
-  /* power transformation */
-  else if (alpha > 0.) {
-    CXT.BD_LEFT  = (left>=0.)  ? pow(left,alpha)  : -pow(-left,alpha);
-    CXT.BD_RIGHT = (right>=0.) ? pow(right,alpha) : -pow(-right,alpha);
-  }
-
-  /* else: error */
-  else {
-    _unur_error(distr_name,UNUR_ERR_SHOULD_NOT_HAPPEN,""); 
-    return UNUR_ERR_SHOULD_NOT_HAPPEN;
-  }
-
-  /* set boundary for truncated distributions */
-
-  CXT.trunc[0] = CXT.domain[0];     /* left boundary of domain  */
-  CXT.trunc[1] = CXT.domain[1];     /* right boundary of domain */
-
-  /* check for NaNs */
-  if (_unur_isnan(CXT.BD_LEFT) || _unur_isnan(CXT.BD_RIGHT)) {
-      _unur_error(distr_name,UNUR_ERR_DISTR_SET,"NaN in now domain boundaries");
-      return UNUR_ERR_DISTR_SET;
-  }
-
-  /* o.k. */
-  return UNUR_SUCCESS;
-} /* end of _unur_distr_cxtrans_compute_domain() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -287,13 +201,16 @@ unur_distr_cxtrans_set_alpha( struct unur_distr *cxt, double alpha )
      /* parameters:                                                          */
      /*   cxt   ... pointer to distribution of transformed RV                */
      /*   alpha ... parameter of power transformation                        */
-     /*             (UNUR_INFINITY -> exponential transformation)            */
+     /*             0.            -> logarithmic transformation              */
+     /*             UNUR_INFINITY -> exponential transformation              */
      /*                                                                      */
      /* return:                                                              */
      /*   UNUR_SUCCESS ... on success                                        */
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
+  double alpha_bak;
+
   /* check arguments */
   _unur_check_NULL( distr_name, cxt, UNUR_ERR_NULL );
   _unur_check_distr_object( cxt, CONT, UNUR_ERR_DISTR_INVALID );
@@ -315,15 +232,19 @@ unur_distr_cxtrans_set_alpha( struct unur_distr *cxt, double alpha )
     return UNUR_ERR_DISTR_SET;
   }
 
+  /* copy parameters */
+  alpha_bak = CXT.ALPHA;  /* store old value of alpha */
+  CXT.ALPHA = alpha;
+
   /* change domain of transformed RV */
-  if (_unur_distr_cxtrans_compute_domain(cxt) != UNUR_SUCCESS)
+  if (_unur_distr_cxtrans_compute_domain(cxt) != UNUR_SUCCESS) {
+    /* invalid alpha */
+    CXT.ALPHA = alpha_bak;
     return UNUR_ERR_DISTR_SET;
+  }
 
   /* changelog */
   cxt->set &= ~UNUR_DISTR_SET_MODE; /* mode unknown */
-
-  /* copy parameters */
-  CXT.ALPHA = alpha;
 
   /* o.k. */
   return UNUR_SUCCESS;
@@ -334,7 +255,7 @@ unur_distr_cxtrans_set_alpha( struct unur_distr *cxt, double alpha )
 double
 unur_distr_cxtrans_get_alpha( const struct unur_distr *cxt )
      /*----------------------------------------------------------------------*/
-     /* change parameter of transformation                                   */
+     /* get parameter of transformation                                      */
      /*                                                                      */
      /* parameters:                                                          */
      /*   cxt   ... pointer to distribution of transformed RV                */
@@ -355,6 +276,115 @@ unur_distr_cxtrans_get_alpha( const struct unur_distr *cxt )
   /* o.k. */
   return CXT.ALPHA;
 } /* end of unur_distr_cxtrans_get_alpha() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_distr_cxtrans_set_rescale( struct unur_distr *cxt, double mu, double sigma )
+     /*----------------------------------------------------------------------*/
+     /* change shifting and rescaling parameter                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   cxt   ... pointer to distribution of transformed RV                */
+     /*   mu    ... shifting parameter                                       */
+     /*   sigma ... rescaling parameter                                      */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( distr_name, cxt, UNUR_ERR_NULL );
+  _unur_check_distr_object( cxt, CONT, UNUR_ERR_DISTR_INVALID );
+
+  /* check distribution */
+  if (cxt->id != UNUR_DISTR_CXTRANS) {
+    _unur_error(distr_name,UNUR_ERR_DISTR_INVALID,""); return UNUR_ERR_DISTR_INVALID; }
+  CHECK_NULL( cxt->base, UNUR_ERR_NULL );
+
+  /* check parameter sigma */
+  if (sigma <= 0.) {
+    _unur_error(distr_name,UNUR_ERR_DISTR_SET,"sigma < 0");
+    return UNUR_ERR_DISTR_SET;
+  }
+
+
+/*   if (alpha == 0. && cxt->base->data.cont.BD_LEFT < 0. ) { */
+/*     /\* logarithmic transformation *\/ */
+/*     _unur_error(distr_name,UNUR_ERR_DISTR_SET,"invalid domain"); */
+/*     return UNUR_ERR_DISTR_SET; */
+/*   } */
+
+  /* change domain of transformed RV */
+/*   if (_unur_distr_cxtrans_compute_domain(cxt) != UNUR_SUCCESS) */
+/*     return UNUR_ERR_DISTR_SET; */
+
+  /* changelog */
+  cxt->set &= ~UNUR_DISTR_SET_MODE; /* mode unknown */
+
+  /* copy parameters */
+/*   CXT.ALPHA = alpha; */
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+} /* end of unur_distr_cxtrans_set_rescale() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+unur_distr_cxtrans_get_mu( const struct unur_distr *cxt )
+     /*----------------------------------------------------------------------*/
+     /* get shifting parameter                                               */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   cxt   ... pointer to distribution of transformed RV                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   parameter mu    ... on success                                     */
+     /*   -UNUR_INFINITY  ... on error                                       */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( distr_name, cxt, -UNUR_INFINITY );
+  _unur_check_distr_object( cxt, CONT, -UNUR_INFINITY );
+
+  /* check distribution */
+  if (cxt->id != UNUR_DISTR_CXTRANS) {
+    _unur_error(distr_name,UNUR_ERR_DISTR_INVALID,""); return -UNUR_INFINITY; }
+
+  /* o.k. */
+/*   return CXT.ALPHA; */
+  return 0.;
+} /* end of unur_distr_cxtrans_get_mu() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+unur_distr_cxtrans_get_sigma( const struct unur_distr *cxt )
+     /*----------------------------------------------------------------------*/
+     /* get rescaling parameter                                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   cxt   ... pointer to distribution of transformed RV                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   parameter sigma ... on success                                     */
+     /*   -UNUR_INFINITY  ... on error                                       */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( distr_name, cxt, -UNUR_INFINITY );
+  _unur_check_distr_object( cxt, CONT, -UNUR_INFINITY );
+
+  /* check distribution */
+  if (cxt->id != UNUR_DISTR_CXTRANS) {
+    _unur_error(distr_name,UNUR_ERR_DISTR_INVALID,""); return -UNUR_INFINITY; }
+
+  /* o.k. */
+/*   return CXT.ALPHA; */
+  return 0.;
+} /* end of unur_distr_cxtrans_get_sigma() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -445,6 +475,82 @@ unur_distr_cxtrans_set_domain( struct unur_distr *cxt, double left, double right
   return unur_distr_cont_set_domain( cxt, left, right );
 
 } /* end of unur_distr_cxtrans_set_domain() */
+
+/*---------------------------------------------------------------------------*/
+
+int _unur_distr_cxtrans_compute_domain( struct unur_distr *cxt )
+     /*----------------------------------------------------------------------*/
+     /* compute domain for transformed RV                                    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   cxt   ... pointer to distribution of transformed RV                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  double left, right;
+  double left_new, right_new;
+  double alpha;
+
+  /* check arguments */
+  CHECK_NULL( cxt, UNUR_ERR_NULL );
+  CHECK_NULL( cxt->base, UNUR_ERR_NULL );
+
+  /* check distribution */
+  if (cxt->id != UNUR_DISTR_CXTRANS) {
+    _unur_error(distr_name,UNUR_ERR_DISTR_INVALID,""); return UNUR_ERR_DISTR_INVALID; }
+
+  /* domain of underlying distribution */
+  left  = cxt->base->data.cont.BD_LEFT;
+  right = cxt->base->data.cont.BD_RIGHT;
+
+  alpha = CXT.ALPHA;
+
+  /* exponential transformation */
+  if (_unur_isinf(alpha)==1) {
+    left_new  = (_unur_isfinite(left)) ? exp(left) : 0.;
+    right_new = exp(right);
+  }
+
+  /* logarithmic transformation */
+  else if (alpha == 0.) {
+    if (left < 0. ) {
+      _unur_error(distr_name,UNUR_ERR_DISTR_SET,"invalid domain");
+      return UNUR_ERR_DISTR_SET;
+    }
+    left_new  = (left<=0.) ? -UNUR_INFINITY : log(left);
+    right_new = log(right);
+  }
+
+  /* power transformation */
+  else if (alpha > 0.) {
+    left_new  = (left>=0.)  ? pow(left,alpha)  : -pow(-left,alpha);
+    right_new = (right>=0.) ? pow(right,alpha) : -pow(-right,alpha);
+  }
+
+  /* else: error */
+  else {
+    _unur_error(distr_name,UNUR_ERR_SHOULD_NOT_HAPPEN,""); 
+    return UNUR_ERR_SHOULD_NOT_HAPPEN;
+  }
+
+  /* check for NaNs */
+  if (_unur_isnan(left_new) || _unur_isnan(right_new)) {
+      _unur_error(distr_name,UNUR_ERR_DISTR_SET,"NaN in now domain boundaries");
+      return UNUR_ERR_DISTR_SET;
+  }
+
+  /* store new domain */
+  /* also set boundary for truncated distributions */
+
+  CXT.trunc[0] = CXT.domain[0] = left_new;     /* left boundary of domain  */
+  CXT.trunc[1] = CXT.domain[1] = right_new;    /* right boundary of domain */
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+} /* end of _unur_distr_cxtrans_compute_domain() */
 
 /*---------------------------------------------------------------------------*/
 

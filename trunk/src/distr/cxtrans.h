@@ -61,29 +61,41 @@
       @unurmathdisplay{g(z) = f(\phi^{-1}(z))\cdot(\phi^{-1})'(z)}
 
       Currently, only power transformations, logarithmic and 
-      exponential transformation are supported:
+      exponential transformation are supported. Additionally,
+      The random variable can be shifted and rescaled
+      ("standardized"):
 
       @unurmathdisplay{
-      \phi(X) = \log(X) \\
-      \phi(X) = sign(X) |X|^\alpha \\
-      \phi(X) = \exp(X) }
+      \phi(X) = \log(Z) \\
+      \phi(X) = sign(Z) |Z|^\alpha \\
+      \phi(X) = \exp(Z) }
+
+      where 
+
+      @unurmathdisplay{
+      Z = (X-\mu)/\sigma }
 
       @unurmath{\alpha} must be between 0 and @unurmath{\infty} where
       the logarithmic transformation is implemented as special case
-      @unurmath{\alpha=0} and the expontential transformation as
-      @unurmath{\alpha=\infty.}
+      @unurmath{\alpha=0}, the exponential transformation as
+      @unurmath{\alpha=\infty} and the standardization procedure as
+      @unurmath{\alpha=1.}
+      Moreover, @unurmath{\sigma} must be strictly positive.
 
       One of the most important applications of these transformations
-      is to eliminate poles. Thus by default the value of the PDF
-      @i{g} of the transformed density is set to @code{0} and its
-      derivative dPDF to @code{UNUR_INFINITY}. These figures can be
-      changed to more appropriate values.
-      It must be noted here that poles are (only) detected/indicated 
-      as points where the PDF @i{f} returns @code{UNUR_INFINITY}.
+      is to eliminate poles, i.e., where the PDF is not bounded from
+      above. The implementation of a PDF must return
+      @code{UNUR_INFINITY} at such points.
+      By default the value of the PDF @i{g} of the transformed density
+      is set to @code{0} for such points and its derivative dPDF to
+      @code{UNUR_INFINITY}. These figures can be changed to more
+      appropriate values. It must be again noted here that poles are
+      (only) detected/indicated as points where the PDF @i{f} returns
+      @code{UNUR_INFINITY}. 
 
       Notice that for @unurmath{\alpha > 1} these transformations are
-      not defined at 0. It is difficult to check whether there
-      exists a continuous continuation for the density of the
+      not defined at @unurmath{\mu.} It is difficult to check whether
+      there exists a continuous continuation for the density of the
       transformed random variate at 0. Thus the above value for poles
       is used at 0.
 
@@ -115,28 +127,20 @@
 
 /* =ROUTINES */
 
-UNUR_DISTR *unur_distr_cxtrans_new( const UNUR_DISTR *distribution, double alpha );
+UNUR_DISTR *unur_distr_cxtrans_new( const UNUR_DISTR *distribution );
 /* 
    Create an object for the distribution of the transformed random
-   variate. The parameter @var{alpha} is used to select the
-   transformation:
-   
-   @multitable @columnfractions .25 .75 
-   @headitem @var{alpha} @tab Transformation
-   @item @code{UNUR_INFINITY}
-   @tab  @unurmath{\phi(X)=\exp(X)}
-   @item @code{0}
-   @tab  @unurmath{\phi(X)=\log(X)}
-   @item positive
-   @tab  @unurmath{\phi(X) = sign(X) |X|^\alpha}
-   @end multitable
-   
-   Negative values for @var{alpha} are not allowed.
-
-   @var{distribution} must be a pointer to a univariate
+   variate. @var{distribution} must be a pointer to a univariate
    continuous distribution. 
    The resulting generator object is of the same type as of a
    unur_distr_cont_new() call.
+
+   To select a transformation the unur_distr_cxtrans_set_alpha() call
+   must be used. For the parameters for shifting and rescaling of the
+   random variate unur_distr_cxtrans_set_rescale() has to be used.
+
+   Without one of these additional calls the identity transformation
+   is used, i.e. the random variate is not transformed at all.
 */
 
 const UNUR_DISTR *unur_distr_cxtrans_get_distribution( const UNUR_DISTR *distribution );
@@ -152,16 +156,48 @@ const UNUR_DISTR *unur_distr_cxtrans_get_distribution( const UNUR_DISTR *distrib
 
 int unur_distr_cxtrans_set_alpha( UNUR_DISTR *distribution, double alpha );
 /* 
-   Change the parameter @var{alpha} for the power transformation.
-   @var{alpha} are not allowed must be non-negative. 
-   See unur_distr_cxtrans_new() for details on @var{alpha}.
+   Change the parameter @var{alpha} for the power transformation. 
+   One of the following transformations are possible:
+   
+   @multitable @columnfractions .25 .75 
+   @headitem @var{alpha} @tab Transformation
+   @item @code{UNUR_INFINITY}
+   @tab  @unurmath{\phi(X)=\exp(Z)}
+   @item @code{0}
+   @tab  @unurmath{\phi(X)=\log(Z)}
+   @item positive
+   @tab  @unurmath{\phi(X) = sign(Z) |Z|^\alpha}
+   @end multitable
+   
+   where @unurmath{Z = (X-\mu)/\sigma.}
+   Negative values for @var{alpha} are not allowed.
+
+   The shifting and rescaling parameters @unurmath{\mu} and
+   @unurmath{\sigma} can be set by the respective call
+   unur_distr_cxtrans_set_rescale().
+
+   Default: @code{1} (i.e., identity).
 */
 
-double unur_distr_cxtrans_get_alpha( const UNUR_DISTR *distribution );
+int unur_distr_cxtrans_set_rescale( UNUR_DISTR *distribution, double mu, double sigma );
 /* 
-   Get parameter @var{alpha} for the power transformation.
+   Change shifting and rescaling parameter. @var{sigma} must be
+   strictly positive.
 
-   In case of an error -UNUR_INFINITY is returned.
+   Default: @var{mu} = @code{0.} and @var{sigma} = @code{1.} (i.e., identity)
+ */
+
+double unur_distr_cxtrans_get_alpha( const UNUR_DISTR *distribution );
+/* */
+
+double unur_distr_cxtrans_get_mu( const UNUR_DISTR *distribution );
+/* */
+
+double unur_distr_cxtrans_get_sigma( const UNUR_DISTR *distribution );
+/* 
+   Get parameters @unurmath{\alpha,} @unurmath{\mu,} and
+   @unurmath{\sigma} for the power transformation, shifting and
+   rescaling of the random variate.
 */
 
 int unur_distr_cxtrans_set_pdfpole( UNUR_DISTR *distribution, double pdfpole, double dpdfpole );

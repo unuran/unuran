@@ -22,7 +22,7 @@
 #include <distr/distr_source.h>
 #include <src/utils/matrix_source.h>
 #include <src/methods/gibbs.h>
-#include <experimental/hitrou.h>
+#include <src/methods/hitro.h>
 #include <experimental/ball.h>
 #include <experimental/walk.h>
 #include <methods/x_gen_source.h>
@@ -51,7 +51,6 @@
 #define METHOD_BALL_PDF 9
 #define METHOD_BALL_PDF_ADAPTIVE 10
 #define METHOD_WALK 11
-#define METHOD_HITROU_UNIDIRECTIONAL 12
 
 #define MAXDIM 100
 
@@ -116,7 +115,7 @@ void math2(struct unur_gen *gen) {
     for (i=1; i<=SAMPLESIZE; i++) {
       unur_sample_vec(gen, x);  
 #if 0            
-      _unur_hitrou_get_point_current( gen, uv);
+      _unur_hitro_get_point_current( gen, uv);
 #endif      
       /* current point in x-y coordinates */
       fprintf(fx,"{");
@@ -262,7 +261,7 @@ int main(int argc, char *argv[])
       printf("                 : 4=H&R+COORD+BOX, 5=H&R+RD+BOX 6=H&R+RD+ADAPTIVE STRIP\n" );
       printf("                 : 7=BALL+RoU  8=BALL+RoU+ADAPTIVE RADIUS \n");
       printf("                 : 9=BALL+PDF 10=BALL+PDF+ADAPTIVE RADIUS \n");
-      printf("                 : 11=WALK  12=H&R+RD+STRIP+UNI (%d)\n", METHOD );
+      printf("                 : 11=WALK (%d)\n", METHOD );
       printf(" -b ball_radius  : ball radius for ball sampler (%f)\n", BALL_RADIUS);
       printf(" -s skip         : skip parameter ... skip=thinning-1 (%ld) \n", SKIP );
       printf(" -c covar_matrix : 0=constant, 1=neighbours, 2=power (%d)\n", COVAR);
@@ -384,9 +383,9 @@ int main(int argc, char *argv[])
   
   if (METHOD==METHOD_HITROU) {
     printf("METHOD=HITROU (STRIP)\n");
-    par = unur_hitrou_new(distr);
-    unur_hitrou_set_variant_random_direction(par);
-    unur_hitrou_set_thinning(par,SKIP+1);
+    par = unur_hitro_new(distr);
+    unur_hitro_set_variant_random_direction(par);
+    unur_hitro_set_thinning(par,SKIP+1);
   }
     
   if (METHOD==METHOD_VMT) {
@@ -411,39 +410,28 @@ int main(int argc, char *argv[])
 
   if (METHOD==METHOD_HITROU_BOX) {
     printf("METHOD=HITROU (BOX)\n");
-    par = unur_hitrou_new(distr);
-    unur_hitrou_use_bounding_rectangle(par,1);
-    unur_hitrou_set_variant_random_direction(par);
-    unur_hitrou_set_thinning(par,SKIP+1);
+    par = unur_hitro_new(distr);
+    unur_hitro_set_use_boundingrectangle(par,1);
+    unur_hitro_set_variant_random_direction(par);
+    unur_hitro_set_thinning(par,SKIP+1);
   }
   
   if (METHOD==METHOD_HITROU_BOX_COORDINATE) {
     printf("METHOD=HITROU (BOX + COORDINATE SAMPLER)\n");
-    par = unur_hitrou_new(distr);
-    unur_hitrou_use_bounding_rectangle(par,1);
-    unur_hitrou_set_variant_coordinate(par);
-    unur_hitrou_set_thinning(par,SKIP+1);
+    par = unur_hitro_new(distr);
+    unur_hitro_set_use_boundingrectangle(par,1);
+    unur_hitro_set_variant_coordinate(par);
+    unur_hitro_set_thinning(par,SKIP+1);
   }
    
   if (METHOD==METHOD_HITROU_STRIP_ADAPTIVE) {
     printf("METHOD=HITROU (ADAPTIVE STRIP)\n");
-    par = unur_hitrou_new(distr);
-    unur_hitrou_set_variant_random_direction(par);
-    unur_hitrou_set_adaptive_strip(par, 1);    
-    unur_hitrou_set_thinning(par,SKIP+1);
+    par = unur_hitro_new(distr);
+    unur_hitro_set_variant_random_direction(par);
+    unur_hitro_set_use_boundingrectangle(par,0);
+    unur_hitro_set_thinning(par,SKIP+1);
   }  
 
-  if (METHOD==METHOD_HITROU_UNIDIRECTIONAL) {
-    printf("METHOD=HITROU (UNIDIRECTIONAL)\n");
-    par = unur_hitrou_new(distr);
-    unur_hitrou_set_variant_random_direction(par);
-    unur_hitrou_set_adaptive_strip(par, 0);    
-    unur_hitrou_use_bounding_rectangle(par,0);
-    unur_hitrou_set_unidirectional(par, 1);    
-    unur_hitrou_set_thinning(par,SKIP+1);
-  }  
-  
-  
   if (METHOD==METHOD_BALL_ROU) {
     printf("METHOD=BALL (ROU)\n");
     printf("RADIUS=%f\n", BALL_RADIUS);
@@ -542,9 +530,9 @@ int main(int argc, char *argv[])
   } 
   
   /* scaling uv[]-coordinates */
-  for (d=0; d<=DIM; d++) {
-    uv[d] *= 0.9;
-  }
+//  for (d=0; d<=DIM; d++) {
+//    uv[d] *= 0.9;
+//  }
     
   par = _unur_par_clone(par_clone);
   gen = unur_init(par);
@@ -558,9 +546,10 @@ int main(int argc, char *argv[])
     if (METHOD==METHOD_HITROU 
     || METHOD==METHOD_HITROU_BOX 
     || METHOD==METHOD_HITROU_BOX_COORDINATE
-    || METHOD==METHOD_HITROU_UNIDIRECTIONAL
     || METHOD==METHOD_HITROU_STRIP_ADAPTIVE) {
-      _unur_hitrou_set_point_current( gen, uv );
+     // _unur_hitro_set_point_current( gen, uv );
+      unur_hitro_chg_state(gen, uv);      
+     // unur_hitro_reset_state(gen);      
     }
     
     if (METHOD==METHOD_BALL_ROU
@@ -639,7 +628,8 @@ int main(int argc, char *argv[])
 
 
 #if 0    
-  unur_run_tests(par_aux,~0u);
+  unur_run_tests(par,~0u);
+//  unur_run_tests(par_aux,~0u);
   
   if ( METHOD == METHOD_GIBBS ) {   
   //  unur_test_par_count_pdf(par_aux, SAMPLESIZE, 2, stdout);

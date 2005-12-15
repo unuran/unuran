@@ -548,8 +548,8 @@ int main(int argc, char *argv[])
     || METHOD==METHOD_HITROU_BOX_COORDINATE
     || METHOD==METHOD_HITROU_STRIP_ADAPTIVE) {
      // _unur_hitro_set_point_current( gen, uv );
-      unur_hitro_chg_state(gen, uv);      
-     // unur_hitro_reset_state(gen);      
+     // unur_hitro_chg_state(gen, uv);      
+      unur_hitro_reset_state(gen);      
     }
     
     if (METHOD==METHOD_BALL_ROU
@@ -626,8 +626,7 @@ int main(int argc, char *argv[])
   }
   printarray("max      :", a_max);
 
-
-#if 0    
+#if 1    
   unur_run_tests(par,~0u);
 //  unur_run_tests(par_aux,~0u);
   

@@ -7,7 +7,6 @@ lib_LTLIBRARIES = libunurexperimental.la
 
 libunurexperimental_la_SOURCES = \
  ball.c    ball.h    ball_struct.h \
- hitrou.c  hitrou.h  hitrou_struct.h \
  varou.c   varou.h   varou_struct.h \
  walk.c    walk.h    walk_struct.h 
 

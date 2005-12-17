@@ -92,7 +92,6 @@
 #define UNUR_METH_GIBBS    0x08060000u
 #define UNUR_METH_HITRO    0x08070000u
 #define UNUR_METH_BALL     0x08080000u
-#define UNUR_METH_HITROU   0x08090000u
 #define UNUR_METH_WALK     0x080a0000u
 
 /* random matrices */

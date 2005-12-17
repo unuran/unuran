@@ -118,8 +118,6 @@
 #define CK_GIBBS_GEN     0x00200071u
 #define CK_HITRO_PAR     0x002000a0u
 #define CK_HITRO_GEN     0x002000a1u
-#define CK_HITROU_PAR    0x00200080u
-#define CK_HITROU_GEN    0x00200081u
 #define CK_WALK_PAR      0x00200090u
 #define CK_WALK_GEN      0x00200091u
 

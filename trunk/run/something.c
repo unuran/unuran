@@ -21,8 +21,6 @@
 
 #include <distr/distr_source.h>
 #include <src/utils/matrix_source.h>
-#include <src/methods/gibbs.h>
-#include <src/methods/hitro.h>
 #include <experimental/ball.h>
 #include <experimental/walk.h>
 #include <methods/x_gen_source.h>
@@ -39,13 +37,13 @@
 #define COVAR_NEIGHBOURS 1
 #define COVAR_POWER 2
 
-#define METHOD_HITROU 0
+#define METHOD_HITRO 0
 #define METHOD_VMT 1
 #define METHOD_GIBBS 2
 #define METHOD_GIBBS_RANDOM 3
-#define METHOD_HITROU_BOX_COORDINATE 4
-#define METHOD_HITROU_BOX 5
-#define METHOD_HITROU_STRIP_ADAPTIVE 6
+#define METHOD_HITRO_BOX_COORDINATE 4
+#define METHOD_HITRO_BOX 5
+#define METHOD_HITRO_STRIP_ADAPTIVE 6
 #define METHOD_BALL_ROU 7
 #define METHOD_BALL_ROU_ADAPTIVE 8
 #define METHOD_BALL_PDF 9
@@ -381,8 +379,8 @@ int main(int argc, char *argv[])
   printf("SAMPLESIZE=%ld\n", SAMPLESIZE);
   printf("EXPERIMENTS=%ld\n", EXPERIMENTS);
   
-  if (METHOD==METHOD_HITROU) {
-    printf("METHOD=HITROU (STRIP)\n");
+  if (METHOD==METHOD_HITRO) {
+    printf("METHOD=HITRO (STRIP)\n");
     par = unur_hitro_new(distr);
     unur_hitro_set_variant_random_direction(par);
     unur_hitro_set_thinning(par,SKIP+1);
@@ -408,24 +406,24 @@ int main(int argc, char *argv[])
     unur_gibbs_set_variant_random_direction(par);
   }
 
-  if (METHOD==METHOD_HITROU_BOX) {
-    printf("METHOD=HITROU (BOX)\n");
+  if (METHOD==METHOD_HITRO_BOX) {
+    printf("METHOD=HITRO (BOX)\n");
     par = unur_hitro_new(distr);
     unur_hitro_set_use_boundingrectangle(par,1);
     unur_hitro_set_variant_random_direction(par);
     unur_hitro_set_thinning(par,SKIP+1);
   }
   
-  if (METHOD==METHOD_HITROU_BOX_COORDINATE) {
-    printf("METHOD=HITROU (BOX + COORDINATE SAMPLER)\n");
+  if (METHOD==METHOD_HITRO_BOX_COORDINATE) {
+    printf("METHOD=HITRO (BOX + COORDINATE SAMPLER)\n");
     par = unur_hitro_new(distr);
     unur_hitro_set_use_boundingrectangle(par,1);
     unur_hitro_set_variant_coordinate(par);
     unur_hitro_set_thinning(par,SKIP+1);
   }
    
-  if (METHOD==METHOD_HITROU_STRIP_ADAPTIVE) {
-    printf("METHOD=HITROU (ADAPTIVE STRIP)\n");
+  if (METHOD==METHOD_HITRO_STRIP_ADAPTIVE) {
+    printf("METHOD=HITRO (ADAPTIVE STRIP)\n");
     par = unur_hitro_new(distr);
     unur_hitro_set_variant_random_direction(par);
     unur_hitro_set_use_boundingrectangle(par,0);
@@ -543,10 +541,10 @@ int main(int argc, char *argv[])
   /* main loop */    
   for (loop=1; loop<=EXPERIMENTS; loop++) {
       
-    if (METHOD==METHOD_HITROU 
-    || METHOD==METHOD_HITROU_BOX 
-    || METHOD==METHOD_HITROU_BOX_COORDINATE
-    || METHOD==METHOD_HITROU_STRIP_ADAPTIVE) {
+    if (METHOD==METHOD_HITRO 
+    || METHOD==METHOD_HITRO_BOX 
+    || METHOD==METHOD_HITRO_BOX_COORDINATE
+    || METHOD==METHOD_HITRO_STRIP_ADAPTIVE) {
      // _unur_hitro_set_point_current( gen, uv );
      // unur_hitro_chg_state(gen, uv);      
       unur_hitro_reset_state(gen);      

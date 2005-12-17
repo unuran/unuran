@@ -210,6 +210,10 @@ _unur_print_method( struct unur_par *par )
     COOKIE_CHECK(par,CK_SROU_PAR,UNUR_ERR_COOKIE);
     printf("METHOD:\t\tsimple universal ratio-of-uniforms method (SROU)\n");
     break;
+  case UNUR_METH_NROU:
+    COOKIE_CHECK(par,CK_NROU_PAR,UNUR_ERR_COOKIE);
+    printf("METHOD:\t\tnaive universal ratio-of-uniforms method (NROU)\n");
+    break;
   case UNUR_METH_SSR:
     COOKIE_CHECK(par,CK_SSR_PAR,UNUR_ERR_COOKIE);
     printf("METHOD:\t\tsimple transformed density rejection with universal bounds (SSR)\n");

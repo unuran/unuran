@@ -6,6 +6,10 @@
  *                                                                           *
  *  Examples                                                                 *
  *                                                                           *
+ *   This example illustrates how multivariate random data with inherent     *
+ *   correlations may be sampled using different methods from the UNURAN     *
+ *   library.                                                                *
+ *                                                                           *
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
@@ -410,24 +414,39 @@ int main(int argc, char *argv[])
     printf("METHOD=HITRO (BOX)\n");
     par = unur_hitro_new(distr);
     unur_hitro_set_use_boundingrectangle(par,1);
+    unur_hitro_set_use_adaptiverectangle(par,1);
     unur_hitro_set_variant_random_direction(par);
     unur_hitro_set_thinning(par,SKIP+1);
+  
+    unur_hitro_set_use_adaptiveline( par, TRUE);
+    unur_hitro_set_use_boundingrectangle( par , TRUE);
+  
   }
   
   if (METHOD==METHOD_HITRO_BOX_COORDINATE) {
     printf("METHOD=HITRO (BOX + COORDINATE SAMPLER)\n");
     par = unur_hitro_new(distr);
     unur_hitro_set_use_boundingrectangle(par,1);
+    unur_hitro_set_use_adaptiverectangle(par,1);
     unur_hitro_set_variant_coordinate(par);
     unur_hitro_set_thinning(par,SKIP+1);
+
+    /*
+      unur_hitro_set_adaptive_multiplier(par, 10);    
+    */  
+      
   }
    
   if (METHOD==METHOD_HITRO_STRIP_ADAPTIVE) {
     printf("METHOD=HITRO (ADAPTIVE STRIP)\n");
     par = unur_hitro_new(distr);
+    
     unur_hitro_set_variant_random_direction(par);
     unur_hitro_set_use_boundingrectangle(par,0);
+    unur_hitro_set_use_adaptiverectangle(par,0);
     unur_hitro_set_thinning(par,SKIP+1);
+  
+  
   }  
 
   if (METHOD==METHOD_BALL_ROU) {

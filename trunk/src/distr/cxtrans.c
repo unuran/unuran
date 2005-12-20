@@ -61,9 +61,9 @@ static const char distr_name[] = "transformed RV";
 #define BD_RIGHT    domain[1]     /* ... right boundary of domain            */
 
 #define ALPHA       params[0]     /* parameter for transformation            */
-#define PDFPOLE     params[1]     /* PDF at pole of underlying distribution  */
-#define logPDFPOLE  params[2]     /* logPDF at pole                          */
-#define dPDFPOLE    params[3]     /* derivative of PDF at pole               */
+#define MU          params[1]     /* relocation parameter for transformation */
+#define SIGMA       params[2]     /* rescaling parameter for transformation  */
+#define logPDFPOLE  params[3]     /* logPDF at pole                          */
 #define dlogPDFPOLE params[4]     /* derivative of logPDF at pole            */
 
 /*---------------------------------------------------------------------------*/
@@ -80,6 +80,9 @@ static double _unur_pdf_cxtrans( double x, const struct unur_distr *cxt );
 static double _unur_logpdf_cxtrans( double x, const struct unur_distr *cxt );
 static double _unur_dpdf_cxtrans( double x, const struct unur_distr *cxt );
 static double _unur_dlogpdf_cxtrans( double x, const struct unur_distr *cxt );
+
+static double _unur_pdf_at_pole( const struct unur_distr *cxt );
+static double _unur_dpdf_at_pole( const struct unur_distr *cxt );
 
 /*---------------------------------------------------------------------------*/
 
@@ -138,9 +141,10 @@ unur_distr_cxtrans_new( const struct unur_distr *distr )
   /* defaults: */
   CXT.n_params = 5;                 /* five parameters                       */
   CXT.ALPHA = 1.;                   /* parameter for transformation (default: identity) */
-  CXT.PDFPOLE = 0.;                 /* PDF at pole of underlying distribution */
+  CXT.MU = 0.;                      /* relocation parameter for transformation */
+  CXT.SIGMA = 1.;                   /* rescaling parameter for transformation  */
+
   CXT.logPDFPOLE = -UNUR_INFINITY;  /* logPDF at pole                        */
-  CXT.dPDFPOLE = UNUR_INFINITY;     /* derivative of PDF at pole             */
   CXT.dlogPDFPOLE = UNUR_INFINITY;  /* derivative of logPDF at pole          */
 
   /* copy data */
@@ -282,11 +286,11 @@ unur_distr_cxtrans_get_alpha( const struct unur_distr *cxt )
 int
 unur_distr_cxtrans_set_rescale( struct unur_distr *cxt, double mu, double sigma )
      /*----------------------------------------------------------------------*/
-     /* change shifting and rescaling parameter                              */
+     /* change relocation and rescaling parameter                            */
      /*                                                                      */
      /* parameters:                                                          */
      /*   cxt   ... pointer to distribution of transformed RV                */
-     /*   mu    ... shifting parameter                                       */
+     /*   mu    ... relocation parameter                                     */
      /*   sigma ... rescaling parameter                                      */
      /*                                                                      */
      /* return:                                                              */
@@ -294,6 +298,10 @@ unur_distr_cxtrans_set_rescale( struct unur_distr *cxt, double mu, double sigma 
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
+
+  double mu_bak;
+  double sigma_bak;
+
   /* check arguments */
   _unur_check_NULL( distr_name, cxt, UNUR_ERR_NULL );
   _unur_check_distr_object( cxt, CONT, UNUR_ERR_DISTR_INVALID );
@@ -305,26 +313,26 @@ unur_distr_cxtrans_set_rescale( struct unur_distr *cxt, double mu, double sigma 
 
   /* check parameter sigma */
   if (sigma <= 0.) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_SET,"sigma < 0");
+    _unur_error(distr_name,UNUR_ERR_DISTR_SET,"sigma <= 0");
     return UNUR_ERR_DISTR_SET;
   }
 
-
-/*   if (alpha == 0. && cxt->base->data.cont.BD_LEFT < 0. ) { */
-/*     /\* logarithmic transformation *\/ */
-/*     _unur_error(distr_name,UNUR_ERR_DISTR_SET,"invalid domain"); */
-/*     return UNUR_ERR_DISTR_SET; */
-/*   } */
+  /* copy parameters */
+  mu_bak = CXT.MU;
+  CXT.MU = mu;
+  sigma_bak = CXT.SIGMA;
+  CXT.SIGMA = sigma;
 
   /* change domain of transformed RV */
-/*   if (_unur_distr_cxtrans_compute_domain(cxt) != UNUR_SUCCESS) */
-/*     return UNUR_ERR_DISTR_SET; */
+  if (_unur_distr_cxtrans_compute_domain(cxt) != UNUR_SUCCESS) {
+    /* invalid alpha */
+    CXT.MU = mu_bak;
+    CXT.SIGMA = sigma_bak;
+    return UNUR_ERR_DISTR_SET;
+  }
 
   /* changelog */
   cxt->set &= ~UNUR_DISTR_SET_MODE; /* mode unknown */
-
-  /* copy parameters */
-/*   CXT.ALPHA = alpha; */
 
   /* o.k. */
   return UNUR_SUCCESS;
@@ -335,7 +343,7 @@ unur_distr_cxtrans_set_rescale( struct unur_distr *cxt, double mu, double sigma 
 double
 unur_distr_cxtrans_get_mu( const struct unur_distr *cxt )
      /*----------------------------------------------------------------------*/
-     /* get shifting parameter                                               */
+     /* get relocation parameter                                             */
      /*                                                                      */
      /* parameters:                                                          */
      /*   cxt   ... pointer to distribution of transformed RV                */
@@ -354,8 +362,7 @@ unur_distr_cxtrans_get_mu( const struct unur_distr *cxt )
     _unur_error(distr_name,UNUR_ERR_DISTR_INVALID,""); return -UNUR_INFINITY; }
 
   /* o.k. */
-/*   return CXT.ALPHA; */
-  return 0.;
+  return CXT.MU;
 } /* end of unur_distr_cxtrans_get_mu() */
 
 /*---------------------------------------------------------------------------*/
@@ -382,22 +389,21 @@ unur_distr_cxtrans_get_sigma( const struct unur_distr *cxt )
     _unur_error(distr_name,UNUR_ERR_DISTR_INVALID,""); return -UNUR_INFINITY; }
 
   /* o.k. */
-/*   return CXT.ALPHA; */
-  return 0.;
+  return CXT.SIGMA;
 } /* end of unur_distr_cxtrans_get_sigma() */
 
 /*---------------------------------------------------------------------------*/
 
 int
-unur_distr_cxtrans_set_pdfpole( struct unur_distr *cxt, double pdfpole, double dpdfpole )
+unur_distr_cxtrans_set_logpdfpole( struct unur_distr *cxt, double logpdfpole, double dlogpdfpole )
      /*----------------------------------------------------------------------*/
-     /* set value for PDF and its derivative at poles of the underlying      */
-     /* distribution                                                         */
+     /* set value for logarithm of PDF and its derivative at poles of the    */
+     /* underlying distribution                                              */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   cxt      ... pointer to distribution of transformed RV             */
-     /*   pdfpole  ... value of PDF at pole                                  */
-     /*   dpdfpole ... value of derviate of PDF at pole                      */
+     /*   cxt         ... pointer to distribution of transformed RV          */
+     /*   logpdfpole  ... value of logPDF at pole                            */
+     /*   dlogpdfpole ... value of derviate of logPDF at pole                */
      /*                                                                      */
      /* return:                                                              */
      /*   UNUR_SUCCESS ... on success                                        */
@@ -412,29 +418,17 @@ unur_distr_cxtrans_set_pdfpole( struct unur_distr *cxt, double pdfpole, double d
   if (cxt->id != UNUR_DISTR_CXTRANS) {
     _unur_error(distr_name,UNUR_ERR_DISTR_INVALID,""); return UNUR_ERR_DISTR_INVALID; }
 
-  /* check parameter alpha */
-  if (pdfpole < 0.) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_SET,"pdf < 0");
-    return UNUR_ERR_DISTR_SET;
-  }
-
   /* changelog */
   cxt->set |= UNUR_DISTR_SET_GENERIC; 
 
   /* copy parameters */
-  CXT.PDFPOLE = pdfpole;
-  CXT.dPDFPOLE = dpdfpole;
-
-  /* compute parameters for logPDF */
-  CXT.logPDFPOLE = (pdfpole<=0.) ? -UNUR_INFINITY : log(pdfpole);
-  CXT.dlogPDFPOLE = ( (pdfpole<=0.) 
-		      ? ( (dpdfpole<=0.) ? -UNUR_INFINITY : UNUR_INFINITY )
-		      : dpdfpole/pdfpole );
+  CXT.logPDFPOLE = logpdfpole;
+  CXT.dlogPDFPOLE = dlogpdfpole;
 
   /* o.k. */
   return UNUR_SUCCESS;
 
-} /* end of unur_distr_cxtrans_set_pdfpole() */
+} /* end of unur_distr_cxtrans_set_logpdfpole() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -466,7 +460,7 @@ unur_distr_cxtrans_set_domain( struct unur_distr *cxt, double left, double right
 
   if (_unur_isinf(CXT.ALPHA)==1) {
     /* exponential transformation */
-    if (left < 0.) {
+    if (left < CXT.MU) {
       _unur_error(NULL,UNUR_ERR_DISTR_SET,"domain, left < 0");
       return UNUR_ERR_DISTR_SET;
     }
@@ -569,10 +563,14 @@ int _unur_distr_cxtrans_compute_domain( struct unur_distr *cxt )
 #define dlogPDF(x)  ((*(cxt->base->data.cont.dlogpdf))((x), cxt->base))
 
 /* power transformation */
-#define Phi(x)      ((x>=0.) ? pow(x,1./alpha) : -pow(-x,1./alpha))
-#define dPhi(x)     ( pow(fabs(x), 1./alpha-1.) / alpha )          /* alpha != 1. */
-#define dlogPhi(x)  ( (1./alpha-1.)*log(fabs(x)) - log(alpha) )
-#define ddPhi(x)    ( ((x>=0.)?(1.-alpha):(alpha-1.)) * ((alpha!=0.5)?pow(fabs(x),1./alpha-2.):1.) / (alpha*alpha) )
+#define POW(x)      ((x>=0.) ? pow(x,1./alpha) : -pow(-x,1./alpha))
+#define dPOW(x)     ( pow(fabs(x), 1./alpha-1.) / alpha )          /* alpha != 1. */
+#define dlogPOW(x)  ( (1./alpha-1.)*log(fabs(x)) - log(alpha) )
+#define ddPOW(x)    ( ((x>=0.)?(1.-alpha):(alpha-1.)) * ((alpha!=0.5)?pow(fabs(x),1./alpha-2.):1.) / (alpha*alpha) )
+
+/* rescale */
+#define rescale(x)  (CXT.SIGMA * (x) + CXT.MU)
+/* #define drescale(x) (CXT.SIGMA * (x)) */
 
 /*---------------------------------------------------------------------------*/
 
@@ -585,7 +583,7 @@ _unur_cdf_cxtrans( double x, const struct unur_distr *cxt )
 	phi(.) ... transformation
      */
 {
-  double alpha;
+  double alpha, s, mu;
 
   /* check arguments */
   CHECK_NULL( cxt, INFINITY );
@@ -593,20 +591,22 @@ _unur_cdf_cxtrans( double x, const struct unur_distr *cxt )
   CHECK_NULL( cxt->base->data.cont.cdf, INFINITY );
 
   alpha = CXT.ALPHA;
+  s = CXT.SIGMA;
+  mu = CXT.MU;
 
   /* exponential transformation */
   if (_unur_isinf(alpha)==1) {
-    return ((x<=0.) ? 0. : CDF(log(x)));
+    return ((x<=0.) ? 0. : CDF(s*log(x)+mu));
   }
 
   /* logarithmic transformation */
   if (alpha == 0.) {
-    return CDF(exp(x));
+    return CDF(s*exp(x)+mu);
   }
 
   /* power transformation */
   if (alpha > 0.) {
-    return CDF(Phi(x));
+    return CDF(s*POW(x)+mu);
   }
 
   /* else: error */
@@ -626,7 +626,7 @@ _unur_pdf_cxtrans( double x, const struct unur_distr *cxt )
 	phi(.) ... transformation
      */
 {
-  double alpha;
+  double alpha, s, mu;
 
   /* check arguments */
   CHECK_NULL( cxt, INFINITY );
@@ -634,6 +634,8 @@ _unur_pdf_cxtrans( double x, const struct unur_distr *cxt )
   CHECK_NULL( cxt->base->data.cont.pdf, INFINITY );
 
   alpha = CXT.ALPHA;
+  s = CXT.SIGMA;
+  mu = CXT.MU;
 
   /* exponential transformation */
   if (_unur_isinf(alpha)==1) {
@@ -641,15 +643,15 @@ _unur_pdf_cxtrans( double x, const struct unur_distr *cxt )
       return -INFINITY;
     else {
       /* PDF(log(x))/x */
-      double fx = PDF(log(x));
-      return (_unur_isfinite(fx) ? fx/x : CXT.PDFPOLE);
+      double fx = PDF(s*log(x)+mu);
+      return (_unur_isfinite(fx) ? fx * s/x : _unur_pdf_at_pole(cxt));
     }
   }
 
   /* logarithmic transformation */
   if (alpha == 0.) {
     /* PDF(exp(x)) * exp(x) */
-    double ex = exp(x);
+    double ex = s * exp(x) + mu;
     if (! _unur_isfinite(ex)) {
       /* the PDF must be zero at +-infinity */
       return 0.;
@@ -657,19 +659,19 @@ _unur_pdf_cxtrans( double x, const struct unur_distr *cxt )
     else {
       double fx = PDF(ex);
       /* if PDF(ex) is not finite, we assume that it is a pole */
-      return (_unur_isfinite(fx) ? fx * ex : CXT.PDFPOLE);
+      return (_unur_isfinite(fx) ? fx * s*ex :  _unur_pdf_at_pole(cxt));
     }
   }
 
   /* identical transformation */
   if (alpha == 1.) {
-    double fx = PDF(x);
-    return (_unur_isfinite(fx) ? fx : CXT.PDFPOLE);
+    double fx = PDF(s*x+mu);
+    return (_unur_isfinite(fx) ? s*fx :  _unur_pdf_at_pole(cxt));
   }
 
   /* power transformation */
   if (alpha > 0.) {
-    double phix = Phi(x);
+    double phix = s * POW(x) + mu;
     if (! _unur_isfinite(phix)) {
       /* the PDF must be zero at +-infinity */
       return 0.;
@@ -677,8 +679,8 @@ _unur_pdf_cxtrans( double x, const struct unur_distr *cxt )
     else {
       double fx = PDF(phix);
       if (_unur_isfinite(fx) && (x!=0. || alpha < 1.)) {
-	double fcx =  fx * dPhi(x);
-	/* if f(phix) is finite but fx*dPhi(x) is not,                 */
+	double fcx =  fx * s * dPOW(x);
+	/* if f(phix) is finite but fx*dPOW(x) is not,                 */
 	/* we assume that the PDF of the transformed variable is zero. */
 	/* (This case is very unlikely to happen, but we should be     */
 	/* prepared for round-off error of the FPA.)                   */
@@ -686,7 +688,7 @@ _unur_pdf_cxtrans( double x, const struct unur_distr *cxt )
       }
       else 
 	/* if PDF(phix) is not finite, we assume that it is a pole */
-	return CXT.PDFPOLE;
+	return  _unur_pdf_at_pole(cxt);
     }
   }
 
@@ -707,7 +709,7 @@ _unur_logpdf_cxtrans( double x, const struct unur_distr *cxt )
 	phi(.)  ... transformation
      */
 {
-  double alpha;
+  double alpha, s, logs, mu;
 
   /* check arguments */
   CHECK_NULL( cxt, INFINITY );
@@ -715,6 +717,9 @@ _unur_logpdf_cxtrans( double x, const struct unur_distr *cxt )
   CHECK_NULL( cxt->base->data.cont.logpdf, INFINITY );
 
   alpha = CXT.ALPHA;
+  s = CXT.SIGMA;
+  mu = CXT.MU;
+  logs = log(CXT.SIGMA);
 
   /* exponential transformation */
   if (_unur_isinf(alpha)==1) {
@@ -723,15 +728,15 @@ _unur_logpdf_cxtrans( double x, const struct unur_distr *cxt )
     else {
       /* logPDF(log(x))-log(x) */
       double logx = log(x);
-      double logfx = logPDF(logx);
-      return (_unur_isfinite(logfx) ? (logfx-logx) : CXT.logPDFPOLE);
+      double logfx = logPDF(s*logx+mu);
+      return (_unur_isfinite(logfx) ? (logfx - logx + logs) : CXT.logPDFPOLE);
     }
   }
 
   /* logarithmic transformation */
   if (alpha == 0.) {
     /* logPDF(exp(x)) + x */
-    double ex = exp(x);
+    double ex = s * exp(x) + mu;
     if (! _unur_isfinite(ex)) {
       /* logPDF must be -infinity (the PDF must be zero) at +-infinity */
       return -INFINITY;
@@ -739,19 +744,19 @@ _unur_logpdf_cxtrans( double x, const struct unur_distr *cxt )
     else {
       double logfx = logPDF(ex);
       /* if logPDF(logx) is not finite, we assume that it is a pole */
-      return (_unur_isfinite(logfx) ? logfx + x : CXT.logPDFPOLE);
+      return (_unur_isfinite(logfx) ? (logfx + x + logs) : CXT.logPDFPOLE);
     }
   }
 
   /* identical transformation */
   if (alpha == 1.) {
-    double logfx = logPDF(x);
-    return (_unur_isfinite(logfx) ? logfx : CXT.logPDFPOLE);
+    double logfx = logPDF(s*x+mu);
+    return (_unur_isfinite(logfx) ? (logfx + logs) : CXT.logPDFPOLE);
   }
 
   /* power transformation */
   if (alpha > 0.) {
-    double phix = Phi(x);
+    double phix = s * POW(x) + mu;
     if (! _unur_isfinite(phix)) {
       /* logPDF must be -infinity (the PDF must be zero) at +-infinity */
       return -INFINITY;
@@ -759,8 +764,8 @@ _unur_logpdf_cxtrans( double x, const struct unur_distr *cxt )
     else {
       double logfx = logPDF(phix);
       if (_unur_isfinite(logfx) && (x!=0. || alpha < 1.)) {
-	double logfcx =  logfx + dlogPhi(x);
-	/* if logf(phix) is finite but logfx+dlogPhi(x) is not,        */
+	double logfcx =  logfx + logs + dlogPOW(x);
+	/* if logf(phix) is finite but logfx+dlogPOW(x) is not,        */
 	/* we assume that the PDF of the transformed variable is zero. */
 	/* (This case is very unlikely to happen, but we should be     */
 	/* prepared for round-off error of the FPA.)                   */
@@ -790,7 +795,7 @@ _unur_dpdf_cxtrans( double x, const struct unur_distr *cxt )
 	phi(.) ... transformation
      */
 {
-  double alpha;
+  double alpha, s, mu;
 
   /* check arguments */
   CHECK_NULL( cxt, INFINITY );
@@ -799,24 +804,26 @@ _unur_dpdf_cxtrans( double x, const struct unur_distr *cxt )
   CHECK_NULL( cxt->base->data.cont.dpdf, INFINITY );
 
   alpha = CXT.ALPHA;
+  s = CXT.SIGMA;
+  mu = CXT.MU;
 
   /* exponential transformation */
   if (_unur_isinf(alpha)==1) {
     if (x<=0.) 
       return 0.;
     else {
-      /* (dPDF(log(x)) - PDF(log(x))) / (x*x) */
-      double logx = log(x);
+      /* dPDF(log(x))/x^2 - PDF(log(x))/x^2 */
+      double logx = s*log(x)+mu;
       double fx = PDF(logx);
       double dfx = dPDF(logx);
-      return (_unur_isfinite(fx) ? (dfx-fx)/(x*x) : CXT.dPDFPOLE);
+      return (_unur_isfinite(fx) ? s*(s*dfx - fx)/(x*x) : _unur_dpdf_at_pole(cxt));
     }
   }
 
   /* logarithmic transformation */
   if (alpha == 0.) {
-    /* dPDF(exp(x)) * exp(x) + PDF(exp(x)) * exp(2*x) */
-    double ex = exp(x);
+    /* dPDF(exp(x)) * exp(2*x) + PDF(exp(x)) * exp(x) */
+    double ex = s*exp(x)+mu;
     if (! _unur_isfinite(ex)) {
       /* dPDF must be zero at +-infinity */
       return 0.;
@@ -824,9 +831,9 @@ _unur_dpdf_cxtrans( double x, const struct unur_distr *cxt )
     else {
       double fx = PDF(ex);
       double dfx = dPDF(ex);
-      double dfcx = dfx * ex + fx * exp(2*x);
+      double dfcx = s * (dfx * s*ex*ex + fx * ex);
       /* if PDF(ex) is not finite, we assume that it is a pole */
-      if (! _unur_isfinite(fx) ) return CXT.dPDFPOLE;
+      if (! _unur_isfinite(fx) ) return _unur_dpdf_at_pole(cxt);
       /* if derivate of PDF(ex) is not finite (or NaN) we return +/- INFINITY */
       if (! _unur_isfinite(dfcx) ) return (dfx>0 ? INFINITY : -INFINITY);
       /* otherwise return computed value */
@@ -836,24 +843,25 @@ _unur_dpdf_cxtrans( double x, const struct unur_distr *cxt )
 
   /* identical transformation */
   if (alpha == 1.) {
-    double fx = PDF(x);
-    double dfx = dPDF(x);
-    return (_unur_isfinite(fx) ? dfx : CXT.dPDFPOLE);
+    double fx = PDF(s*x+mu);
+    double dfx = dPDF(s*x+mu);
+    return (_unur_isfinite(fx) ? s*dfx : _unur_dpdf_at_pole(cxt));
   }
 
   if (alpha > 0.) {
     /* power transformation */
-    double phix = Phi(x);
+    double phix = s*POW(x)+mu;
     if (! _unur_isfinite(phix)) {
       /* dPDF must be zero at +-infinity */
       return 0.;
     }
     else {
       double fx = PDF(phix);
-      double dphix = dPhi(x);
-      double ddphix = ddPhi(x);
+      double dfx = dPDF(phix);
+      double dphix = dPOW(x);
+      double ddphix = ddPOW(x);
       if (_unur_isfinite(fx) && (x!=0. || alpha <= 0.5)) {
-	double dfcx = dPDF(phix) * dphix * dphix + fx * ddphix;
+	double dfcx = s*(dfx * s*dphix*dphix + fx * s*ddphix);
 	/* if f(phix) is finite but dfcx is not, we assume that dPDF */
 	/* of the transformed variable is zero.                      */
 	/* (This case is very unlikely to happen, but we should be   */
@@ -862,7 +870,7 @@ _unur_dpdf_cxtrans( double x, const struct unur_distr *cxt )
       }
       else
 	/* if PDF(phix) is not finite, we assume that it is a pole */
-	return CXT.dPDFPOLE;
+	return _unur_dpdf_at_pole(cxt);
     }
   }
 
@@ -886,7 +894,7 @@ _unur_dlogpdf_cxtrans( double x, const struct unur_distr *cxt )
 	phi(.)  ... transformation
      */
 {
-  double alpha;
+  double alpha, s, mu;
 
   /* check arguments */
   CHECK_NULL( cxt, INFINITY );
@@ -895,6 +903,8 @@ _unur_dlogpdf_cxtrans( double x, const struct unur_distr *cxt )
   CHECK_NULL( cxt->base->data.cont.dlogpdf, INFINITY );
 
   alpha = CXT.ALPHA;
+  s = CXT.SIGMA;
+  mu = CXT.MU;
 
   /* exponential transformation */
   if (_unur_isinf(alpha)==1) {
@@ -902,18 +912,18 @@ _unur_dlogpdf_cxtrans( double x, const struct unur_distr *cxt )
       return -INFINITY;
     else {
       /* (dlogPDF(log(x)) - 1) / x */
-      double logx = log(x);
+      double logx = s*log(x)+mu;
       double logfx = logPDF(logx);
       double dlogfx = dlogPDF(logx);
       /* if logPDF(logx) is not finite, we assume that it is a pole */
-      return (_unur_isfinite(logfx) ? ((dlogfx-1)/x) : CXT.dlogPDFPOLE);
+      return (_unur_isfinite(logfx) ? ((s*dlogfx-1)/x) : CXT.dlogPDFPOLE);
     }
   }
 
   /* logarithmic transformation */
   if (alpha == 0.) {
     /* dlogPDF(exp(x))*exp(x) + 1 */
-    double ex = exp(x);
+    double ex = s*exp(x)+mu;
     if (! _unur_isfinite(ex)) {
       /* dlogPDF must be -/+ infinity at +/-infinity */
       return (x>1. ? -INFINITY : INFINITY);
@@ -921,19 +931,19 @@ _unur_dlogpdf_cxtrans( double x, const struct unur_distr *cxt )
     else {
       double logfx = logPDF(ex);
       double dlogfx = dlogPDF(ex);
-      return (_unur_isfinite(logfx) ? dlogfx*ex + 1 : CXT.dlogPDFPOLE);
+      return (_unur_isfinite(logfx) ? s*dlogfx*ex + 1 : CXT.dlogPDFPOLE);
     }
   }
 
   /* identical transformation */
   if (alpha == 1.) {
     double logfx = logPDF(x);
-    return (_unur_isfinite(logfx) ? dlogPDF(x) : CXT.dlogPDFPOLE);
+    return (_unur_isfinite(logfx) ? s*dlogPDF(x) : CXT.dlogPDFPOLE);
   }
 
   if (alpha > 0.) {
     /* power transformation */
-    double phix = Phi(x);
+    double phix = s*POW(x)+mu;
     if (! _unur_isfinite(phix)) {
       /* dlogPDF must be -/+ infinity at +/-infinity */
       return ((x>1. || (x>-1. && x < 0.)) ? -INFINITY : INFINITY);
@@ -941,7 +951,7 @@ _unur_dlogpdf_cxtrans( double x, const struct unur_distr *cxt )
     else {
       double logfx = logPDF(phix);
       if (_unur_isfinite(logfx) && (x!=0. || alpha <= 1.)) {
-	double dlogfcx = ((x>=0.)?1.:-1.) * (dlogPDF(phix) * dPhi(x) + (1./alpha-1.)/x);
+	double dlogfcx = ((x>=0.)?1.:-1.) * (dlogPDF(phix) * s*dPOW(x) + (1./alpha-1.)/x);
 	if (! _unur_isfinite(dlogfcx)) {
 	  /* if logf(phix) is finite but dlogfcx is not, we assume that dPDF */
 	  /* of the transformed variable is zero.                            */
@@ -962,6 +972,28 @@ _unur_dlogpdf_cxtrans( double x, const struct unur_distr *cxt )
   return INFINITY;
 
 } /* end of _unur_dlogpdf_cxtrans() */
+
+/*---------------------------------------------------------------------------*/
+
+double 
+_unur_pdf_at_pole( const struct unur_distr *cxt )
+     /* return PDF at pole using logPDF at pole */
+{
+  return exp(CXT.logPDFPOLE);
+} /* end of _unur_pdf_at_pole() */
+
+/*---------------------------------------------------------------------------*/
+double
+_unur_dpdf_at_pole( const struct unur_distr *cxt )
+     /* return derivative of PDF at pole using derivative of logPDF at pole */
+{
+  double fx = _unur_pdf_at_pole(cxt);
+
+  if (! (_unur_isfinite(CXT.logPDFPOLE) && _unur_isfinite(fx)) )
+    return UNUR_INFINITY;
+  else 
+    return (fx * CXT.dlogPDFPOLE);
+} /* end of _unur_dpdf_at_pole() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -1000,18 +1032,19 @@ _unur_distr_cxtrans_debug( const struct unur_distr *cxt, const char *genid )
   fprintf(log,"%s:\tname = %s\n",genid,cxt->name);
   fprintf(log,"%s:\talpha = %g\t",genid,CXT.ALPHA);
   if (_unur_isinf(CXT.ALPHA)==1)
-    fprintf(log,"[ exponential transformation: Z = exp(X) ]\n"); 
+    fprintf(log,"[ exponential transformation: Y = exp(Z) ]\n"); 
   else if (CXT.ALPHA == 0.)
-    fprintf(log,"[ logarithmic transformation: Z = log(X) ]\n"); 
+    fprintf(log,"[ logarithmic transformation: Y = log(Z) ]\n"); 
   else
-    fprintf(log,"[ power transformation: Z = X^alpha ]\n"); 
+    fprintf(log,"[ power transformation: Y = Z^alpha ]\n"); 
+  fprintf(log,"%s:\tmu = %g, sigma = %g\t[Z = (X-%g)/%g]\n",genid, CXT.MU, CXT.SIGMA, CXT.MU, CXT.SIGMA);
   fprintf(log,"%s:\n",genid);
 
   fprintf(log,"%s:\tvalues used at pole of underlying distribution\n",genid);
-  fprintf(log,"%s:\t\tPDF  = %g\t(logPDF  = %g)",genid, CXT.PDFPOLE, CXT.logPDFPOLE);
+  fprintf(log,"%s:\t\tlogPDF  = %g\t(PDF  = %g)",genid, CXT.logPDFPOLE, _unur_pdf_at_pole(cxt));
   _unur_print_if_default(cxt,UNUR_DISTR_SET_GENERIC);
   fprintf(log,"\n");
-  fprintf(log,"%s:\t\tdPDF = %g\t(dlogPDF = %g)",genid, CXT.dPDFPOLE, CXT.dlogPDFPOLE);
+  fprintf(log,"%s:\t\tdlogPDF = %g\t(dPDF = %g)",genid, CXT.dlogPDFPOLE, _unur_dpdf_at_pole(cxt));
   _unur_print_if_default(cxt,UNUR_DISTR_SET_GENERIC);
   fprintf(log,"\n");
 

@@ -62,7 +62,7 @@
 
       Currently, only power transformations, logarithmic and 
       exponential transformation are supported. Additionally,
-      The random variable can be shifted and rescaled
+      The random variable can be relocated and rescaled
       ("standardized"):
 
       @unurmathdisplay{
@@ -136,7 +136,7 @@ UNUR_DISTR *unur_distr_cxtrans_new( const UNUR_DISTR *distribution );
    unur_distr_cont_new() call.
 
    To select a transformation the unur_distr_cxtrans_set_alpha() call
-   must be used. For the parameters for shifting and rescaling of the
+   must be used. For the parameters for relocating and rescaling of the
    random variate unur_distr_cxtrans_set_rescale() has to be used.
 
    Without one of these additional calls the identity transformation
@@ -172,7 +172,7 @@ int unur_distr_cxtrans_set_alpha( UNUR_DISTR *distribution, double alpha );
    where @unurmath{Z = (X-\mu)/\sigma.}
    Negative values for @var{alpha} are not allowed.
 
-   The shifting and rescaling parameters @unurmath{\mu} and
+   The relocating and rescaling parameters @unurmath{\mu} and
    @unurmath{\sigma} can be set by the respective call
    unur_distr_cxtrans_set_rescale().
 
@@ -181,7 +181,7 @@ int unur_distr_cxtrans_set_alpha( UNUR_DISTR *distribution, double alpha );
 
 int unur_distr_cxtrans_set_rescale( UNUR_DISTR *distribution, double mu, double sigma );
 /* 
-   Change shifting and rescaling parameter. @var{sigma} must be
+   Change relocating and rescaling parameter. @var{sigma} must be
    strictly positive.
 
    Default: @var{mu} = @code{0.} and @var{sigma} = @code{1.} (i.e., identity)
@@ -196,17 +196,17 @@ double unur_distr_cxtrans_get_mu( const UNUR_DISTR *distribution );
 double unur_distr_cxtrans_get_sigma( const UNUR_DISTR *distribution );
 /* 
    Get parameters @unurmath{\alpha,} @unurmath{\mu,} and
-   @unurmath{\sigma} for the power transformation, shifting and
+   @unurmath{\sigma} for the power transformation, relocating and
    rescaling of the random variate.
 */
 
-int unur_distr_cxtrans_set_pdfpole( UNUR_DISTR *distribution, double pdfpole, double dpdfpole );
+int unur_distr_cxtrans_set_logpdfpole( UNUR_DISTR *distribution, double logpdfpole, double dlogpdfpole );
 /* 
-   Set value for PDF and its derivative that are used whenever 
-   a pole of the underlying distribution is detected (i.e., when the
-   PDF of the underlying distribution returns UNUR_INFINITY).
+   Set value for logarithm of PDF and its derivative that are used
+   whenever a pole of the underlying distribution is detected (i.e.,
+   when the PDF of the underlying distribution returns UNUR_INFINITY).
 
-   Default: @code{0.} and UNUR_INFINITY, respectively.
+   Default: @code{-UNUR_INFINITY} and @code{UNUR_INFINITY}, respectively.
 */
 
 

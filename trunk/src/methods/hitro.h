@@ -379,7 +379,7 @@ int unur_hitro_set_adaptive_multiplier( UNUR_PAR *parameters, double factor );
    values for @var{factor} less than @code{1.0001}. If this value is
    UNUR_INFINITY this results in infinite loops.
 
-   Default: Golden ratio.
+   Default: @code{1.1}
 */ 
 
 /*...........................................................................*/

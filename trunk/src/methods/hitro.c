@@ -70,7 +70,7 @@
 /* Constants                                                                 */
 
 /* increase size of adaptive bounding rectangle by this factor */
-#define HITRO_DEFAULT_ADAPTIVE_MULTIPLIER  1.618      /* we use golden ratio */
+#define HITRO_DEFAULT_ADAPTIVE_MULTIPLIER  1.1
 
 /*---------------------------------------------------------------------------*/
 /* Variants                                                                  */

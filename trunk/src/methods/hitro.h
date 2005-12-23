@@ -40,7 +40,7 @@
 /*
    =METHOD  HITRO   Markov Chain - HIT-and-run sampler with Ratio-Of-uniforms
 
-   =UP  Methods_for_CVEC
+   =UP  MCMC_Methods_for_CVEC
 
    =REQUIRED PDF
 

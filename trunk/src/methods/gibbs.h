@@ -40,7 +40,7 @@
 /* 
    =METHOD  GIBBS   Markov Chain - GIBBS sampler
 
-   =UP  Methods_for_CVEC
+   =UP  MCMC_Methods_for_CVEC
 
    =REQUIRED T-concave logPDF, derivatives of logPDF
 

@@ -100,6 +100,21 @@ VMT: Requires the mean vector and the covariance matrix.
 
 /*---------------------------------------------------------------------------*/
 
+=NODEX  MCMC_Methods_for_CVEC    Markov chain samplers for continuous multivariate distributions
+=UP Methods [35]
+=DESCRIPTION
+
+Markov chain samplers generate sequences of random vectors which have 
+the target distribution as stationary distribution. 
+There generated vectors are (more or less) correlated and it might take a long 
+time until the sequence has converged to the given target distribution.
+
+@strong{Beware: MCMC sampling can be dangerous!}
+
+=EON
+
+/*---------------------------------------------------------------------------*/
+
 =NODEX  Methods_for_CVEMP   Methods for continuous empirical multivariate distributions
 =UP Methods [40]
 =DESCRIPTION

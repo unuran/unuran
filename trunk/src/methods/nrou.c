@@ -497,6 +497,7 @@ _unur_nrou_init( struct unur_par *par )
 
   /* compute bounding rectangle */
   if (_unur_nrou_rectangle(gen)!=UNUR_SUCCESS) {
+    _unur_error(gen->genid , UNUR_ERR_GEN_CONDITION, "Cannot compute bounding rectangle");  
     _unur_par_free(par); _unur_nrou_free(gen);
     return NULL;
   }
@@ -583,17 +584,21 @@ _unur_nrou_rectangle( struct unur_gen *gen )
     /* get (optional) mode if present or find it numerically */
     mode = unur_distr_cont_get_mode(gen->distr);
 
-    if (_unur_isinf(mode)!=0) {
-      /* unur_distr_cont_get_mode was unable to get mode, returning UNUR_INFINITY */
-      _unur_error(gen->genid , UNUR_ERR_GENERIC, "Bounding rect (vmax)");  
+    if (!_unur_isfinite(mode))
       return UNUR_ERR_GENERIC;
-    }
-    
+      
     /* setting vmax to be (f(mode))^(1/(1+r)) */
     GEN->vmax = pow(PDF(mode), 1./(1.+GEN->r));
 
     /* additional scaling of boundary rectangle */
     GEN->vmax = GEN->vmax * ( 1. + NROU_RECT_SCALING);
+
+    /* check for bounded rectangle */
+    if (! _unur_isfinite(GEN->vmax)) {
+      _unur_error(gen->genid , UNUR_ERR_GENERIC, "vmax not finite");  
+      return UNUR_ERR_GENERIC;
+    }
+    
   }
 
   /* --------------------------------------------------------------------- */
@@ -617,14 +622,7 @@ _unur_nrou_rectangle( struct unur_gen *gen )
        bx = bx/10.; sx = bx/2.;  
        x = _unur_util_find_max(faux, bx, cx, sx);
     }
-         
-    if (!_unur_isfinite(x)) {
-       /* not able to compute a boundary recangle ...  */ 
-       _unur_error(gen->genid , UNUR_ERR_GENERIC, "Bounding rect (umin)");  
-       return UNUR_ERR_GENERIC;
-    }
-
-    /* umin found */
+    /* umin */
     GEN->umin = -faux.f(x,faux.params);
 
     /* and now, an analogue calculation for umax */
@@ -644,19 +642,19 @@ _unur_nrou_rectangle( struct unur_gen *gen )
        bx = bx/10.; sx = bx/2.; 
        x = _unur_util_find_max(faux, cx, bx, sx);
     }
-           
-    if (!_unur_isfinite(x)) {
-       /* not able to compute a boundary recangle ...  */ 
-       _unur_error(gen->genid , UNUR_ERR_GENERIC, "Bounding rect (umax)");  
-       return UNUR_ERR_GENERIC;
-    }
-
-    /* umax found */
+    /* umax */
     GEN->umax = faux.f(x,faux.params);
-    
+
     /* additional scaling of boundary rectangle */
     GEN->umin = GEN->umin - (GEN->umax-GEN->umin)*NROU_RECT_SCALING/2.;
     GEN->umax = GEN->umax + (GEN->umax-GEN->umin)*NROU_RECT_SCALING/2.;
+
+    /* check for bounded rectangle */
+    if (! (_unur_isfinite(GEN->umin) && _unur_isfinite(GEN->umax))) {
+       _unur_error(gen->genid , UNUR_ERR_GENERIC, "umin or umax not finite");  
+       return UNUR_ERR_GENERIC;
+    }
+
   }
 
   /* o.k. */

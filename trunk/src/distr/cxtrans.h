@@ -41,7 +41,7 @@
 /*---------------------------------------------------------------------------*/
 
 /* 
-   =NODEX   CXTRANS   Continuous univariate distribution of transformed random variables
+   =ExperimentalNODEX   CXTRANS   Continuous univariate distribution of transformed random variables
 
    =UP Distribution_objects [13]
 

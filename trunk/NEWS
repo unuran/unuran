@@ -1,4 +1,4 @@
-Version 0.7.0: ???? 200?
+Version 0.7.0: January 2007
 
 	* Methods:
 
@@ -7,6 +7,8 @@ Version 0.7.0: ???? 200?
 	- new method NORTA (NORmal To Anything)
 
 	- new method HITROU  
+	
+	- new method GIBBS
 	
 	- method TDR: added reinit routine
 
@@ -20,7 +22,7 @@ Version 0.7.0: ???? 200?
 
 	* Distributions:
 
-	- addind new distribution type for full conditional distributions
+	- added new distribution type for full conditional distributions
 
 	- continuous distribution objects (CONT) have a slot for the center
 	  of the distribution. It is now set for the distribution

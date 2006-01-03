@@ -52,9 +52,8 @@ AC_CHECK_LIB([prng], [prng_new])
 AC_CHECK_HEADERS([prng.h])
 dnl RngStream: Pierre L'Ecuyers multiple random stream generator
 AC_CHECK_LIB([rngstreams], [RngStream_CreateStream])
-AC_CHECK_HEADERS([RngStreams.h])
+AC_CHECK_HEADERS([RngStream.h])
 dnl GSL: GNU Scientific Library
-dnl AC_CHECK_LIB([gslcblas], [gsl_blas_ddot])
 AC_CHECK_LIB([gslcblas], [main])
 AC_CHECK_LIB([gsl], [gsl_poly_eval])
 AC_CHECK_HEADERS([gsl/gsl_rng.h])

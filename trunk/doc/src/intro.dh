@@ -159,7 +159,7 @@
 	 ld.so(8) manual pages.
 
    @item Documentation in various formats (PS, PDF, info, dvi, HTML,
-	 plain text) can be found in the directory @file{doc}.
+	 plain text) can be found in directory @file{doc}.
 
    @item You can run some tests my 
 	 @smallexample

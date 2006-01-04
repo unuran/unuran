@@ -56,7 +56,8 @@
       independent streams of pseudo-random numbers. 
       It allows to split a randpm stream into many substreams.
       It is available from
-      @uref{http://www.iro.umontreal.ca/~lecuyer/myftp/streams00/c/}.        
+      A GNU-style package is available from
+      @uref{http://statistik.wu-wien.ac.at/software/RngStreams/}.
 
    =HOWTOUSE
       This library has to be installed before compiling UNURAN and

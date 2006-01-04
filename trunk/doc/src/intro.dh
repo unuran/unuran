@@ -70,13 +70,32 @@
 	 @end smallexample
 
    @item Edit the file @file{src/unuran_config.h}.
-	 Set the appropriate source of uniform random numbers:
-	 @code{#define UNUR_URNG_TYPE}
-	 (@pxref{URNG} for details).
 
-	 @emph{Important:} If neither @code{UNUR_URNG_FVOID} nor
-         @code{UNUR_URNG_GENERIC} is used, check if the corresponding
-         library is installed.
+   @item Set sources of uniform random numbers in file @file{src/unuran_config.h}.
+
+         Set @code{UNUR_URNG_DEFAULT_TYPE} to one of the
+	 given types. The setting in the distributed file
+	 is a built-in generator, so no other libraries need to
+	 be installed.
+
+	 You can change the default uniform generators for
+	 the chosen type.
+
+	 UNURAN provides wrapper functions for some
+	 libraries for uniform random number generators.
+	 If you want to use these libraries, then
+	 uncomment the corresponding @code{UNURAN_HAS_} macro. 
+	 Notice that these libraries have to be installed before
+	 running UNURAN's configure script.
+	 Moreover, it is important that these libraries have to
+	 be linked when making an executable.
+
+	 @emph{Important:} Do @strong{not} set 
+	 @code{UNUR_URNG_TYPE} to other values but
+	 @code{UNUR_URNG_GENERIC} unless you have serious reasons. 
+	 With UNURAN-0.7.0 these other types are depreciated and not tested any
+  	 more. They are only provided for backwards compatibility if
+	 this is required.
 
    @item Run a configuration script:
 	 @smallexample
@@ -88,7 +107,7 @@
 
 	 Use @code{configure --help} to get a list of other options.
 
-	 @emph{Important:} You must install PRNG
+	 @emph{Important:} You must install PRNG or RngStreams
 	 @emph{before} @code{configure} is executed.
 
 	 @emph{Important:} UNU.RAN now relies on some aspects of IEEE
@@ -126,6 +145,11 @@
 	    export C_INCLURE_PATH="<prefix>/include"
 	 @end smallexample
 
+	 If you want to make a shared library, than making such
+	 a library can be enabled using
+	 @smallexample
+	    sh ./configure --enable-shared
+	 @end smallexample
 	 If you want to link against the shared library make sure that 
 	 it can be found when executing the binary that links to the 
 	 library. If it is not installed in the usual path, then the
@@ -133,12 +157,6 @@
 	 variable. See any operating system documentation about shared
 	 libraries for more information, such as the ld(1) and
 	 ld.so(8) manual pages.
-
-	 If you do not want to make a shared library, than making such
-	 a library can be disabled using
-	 @smallexample
-	    sh ./configure --disable-shared
-	 @end smallexample
 
    @item Documentation in various formats (PS, PDF, info, dvi, HTML,
 	 plain text) can be found in the directory @file{doc}.

@@ -133,8 +133,8 @@
 
       Pierre L'Ecuyer's @code{RngStream} library for multiple 
       independent streams of pseudo-random numbers. 
-      It is available from
-      @uref{http://www.iro.umontreal.ca/~lecuyer/myftp/streams00/c/}.        
+      A GNU-style package is available from
+      @uref{http://statistik.wu-wien.ac.at/software/RngStreams/}.
 
       @item
       @code{UNUR_URNG_GSL}

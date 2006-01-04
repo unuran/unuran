@@ -85,7 +85,7 @@
 /* Debugging information is written into the log file.                       */
 /* It only works if additionally UNUR_ENABLE_LOGGING is defined (see above). */
 
-#define UNUR_DEBUGFLAG_DEFAULT   UNUR_DEBUG_INIT
+#define UNUR_DEBUGFLAG_DEFAULT   UNUR_DEBUG_OFF
 
 /*---------------------------------------------------------------------------*/
 /* Warnings and error messages.                                              */
@@ -121,7 +121,7 @@
 /* However checking against an invalid NULL pointer can be switched on for   */
 /* each pointer that occurs by defining  UNUR_ENABLE_CHECKNULL.              */
 
-#define UNUR_ENABLE_CHECKNULL 1
+/* #define UNUR_ENABLE_CHECKNULL 1 */
 
 /*---------------------------------------------------------------------------*/
 /* Debugging tools.                                                          */
@@ -129,7 +129,7 @@
 /* changes are made in the library.)                                         */
 
 /* use magic cookies to validate type of pointer */
-#define UNUR_COOKIES  1
+/* #define UNUR_COOKIES  1 */
 
 /*****************************************************************************
  *  Compile time parameters for generators.                                  *
@@ -189,6 +189,8 @@
 /*     `RngStreams' library for multiple independent streams of              */
 /*     pseudo-random numbers.                                                */
 /*     (see http://www.iro.umontreal.ca/~lecuyer/myftp/streams00/c/)         */
+/*     A GNU-style package is available from                                 */
+/*     http://statistik.wu-wien.ac.at/software/RngStreams/                   */
 /*                                                                           */
 /* UNUR_URNG_GSL:                                                            */
 /*     Use a pointer to a uniform RNG object from the GNU Scientific         */
@@ -222,7 +224,7 @@
 #define UNUR_URNG_TYPE UNUR_URNG_GENERIC
 
 /* For backward compatibility only! */
-/* (These random number generators can used more flexible via the            */
+/* (These random number generators can be used more flexible via the         */
 /*  generic interface!)                                                      */
 /* #define UNUR_URNG_TYPE UNUR_URNG_FVOID */
 /* #define UNUR_URNG_TYPE UNUR_URNG_PRNG */
@@ -279,9 +281,11 @@
 /*    http://statistik.wu-wien.ac.at/prng/                                   */
 /* #define UNURAN_HAS_PRNG 1 */
 
-/* Use from Pierre L'Ecuyer's `RngStreams' library for multiple independent  */
-/* streams of pseudo-random numbers.                                         */
-/*    http://www.iro.umontreal.ca/~lecuyer/myftp/streams00/c/                */
+/* Use Pierre L'Ecuyer's `RngStreams' library for multiple independent       */
+/*    streams of pseudo-random numbers                                       */
+/*    (see http://www.iro.umontreal.ca/~lecuyer/myftp/streams00/c/).         */
+/* UNURAN makes use of a GNU-style package which is available from           */
+/*    http://statistik.wu-wien.ac.at/software/RngStreams/                    */
 /* #define UNURAN_HAS_RNGSTREAMS 1 */
 
 /* Use uniform RNG objects from the GNU Scientific Library (GSL)             */

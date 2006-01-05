@@ -145,7 +145,7 @@
 	    export C_INCLURE_PATH="<prefix>/include"
 	 @end smallexample
 
-	 If you want to make a shared library, than making such
+	 If you want to make a shared library, then making such
 	 a library can be enabled using
 	 @smallexample
 	    sh ./configure --enable-shared

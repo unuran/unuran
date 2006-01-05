@@ -8,7 +8,7 @@
 
                Installation instructions for the UNURAN library.
 
-                              Version 0.1.0
+                              Version 0.7.0
 
 
 While the code is plain ANSI C and thus quite portable, the following
@@ -19,28 +19,38 @@ Uniform random number generator
 ...............................
 
    UNURAN can be used with any uniform random number generator but (at the 
-moment) some features work best with Otmar Lendl's prng library (see
-<http://statistik.wu-wien.ac.at/prng/> for description and downloading).
+moment) some features work best with Pierre L'Ecuyer's RngStreams library
+(see <http://statistik.wu-wien.ac.at/software/RngStreams/> for description 
+and downloading).
 
 
 Installing UNURAN
 .................
 
   1. First unzip and untar the package and change to the directory:
-          tar zxvf unuran-0.1.0.tar.gz
-          cd unuran-0.1.0
+          tar zxvf unuran-0.7.0.tar.gz
+          cd unuran-0.7.0
 
-  2. Edit the file `src/unuran_config.h'.  Set the appropriate source of
-     uniform random numbers: 
+  2. Edit the file `src/unuran_config.h'.  
+     Set the default type of the uniform random number generator:
 
-     #define UNUR_URNG_TYPE.
+     #define UNUR_URNG_DEFAULT_TYPE UNUR_URNG_FVOID
 
-     Important: If the prng library is not installed you must not use
-     `UNUR_URNG_PRNG'.
+     Type UNUR_URNG_FVOID (default of distribution) uses a simple 
+     function pointer of type 'double uniform (void)'. 
+     There exist built-in generators of this type and thus there
+     is no need to use external sources of random numbers.
+     
+     Nevertheless we suggest you install and use RngStreams:
 
-     Warning: If `UNUR_URNG_POINTER' is used then the buildin default uniform
-     random number generators should be used only for small sample sizes or for
-     demonstration. They are not state of the art any more.
+     #define UNUR_URNG_DEFAULT_TYPE UNUR_URNG_RNGSTREAMS
+
+     Important: If the RngStreams library (or any other library for
+     which UNU.RAN provides a direct interface) before running the configure
+     script in Step 3 this the UNU.RAN interface is not compiled and
+     thus cannot be used.
+     (The library itself can still be used but you have to use the 
+     generic interface for uniform random number generators.)
 
   3. Run a configuration script:
 
@@ -49,9 +59,12 @@ Installing UNURAN
      where `<prefix>' is the root of the installation tree.  When omitted
      `/usr/local' is used.
 
-     Use `configure --help' to get a list of other options.
+     If you want to make also a shared library, then making such a
+     library can be enabled using
 
-     Important: You must install PRNG _before_ `configure' is executed.
+          sh ./configure --enable-shared
+
+     Use `configure --help' to get a list of other options.
 
      Important: UNU.RAN now relies on some aspects of IEEE 754
      compliant floating point arithmetic. In particular, 
@@ -73,6 +86,8 @@ Installing UNURAN
           $(prefix)/include/unuran_tests.h
           $(prefix)/lib/libunuran.a
           $(prefix)/info/unuran.info
+          $(prefix)/info/unuran.info-1
+          $(prefix)/info/unuran.info-2
 
      Obviously `$(prefix)/include' and `$(prefix)/lib' must be in the search
      path of your compiler. You can use environment variables to add these

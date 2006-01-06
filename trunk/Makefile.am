@@ -10,7 +10,7 @@ else
 EXPERIMENTAL_DIRS = 
 endif
 
-SUBDIRS = . scripts src examples experiments tests doc $(EXPERIMENTAL_DIRS)
+SUBDIRS = . scripts src examples experiments tests $(EXPERIMENTAL_DIRS) doc
 
 EXTRA_DIST = \
  Announcement-0.1.0 \

@@ -83,21 +83,22 @@ int check_errorcode( FILE *LOG, int line, unsigned cherrno )
 /*---------------------------------------------------------------------------*/
 /* check for expected NULL pointer */
 
-int check_expected_NULL( FILE *LOG, int line, const void *ptr )
+int do_check_expected_NULL( FILE *LOG, int line, int is_NULL )
 {
   fprintf(LOG,"line %4d: NULL pointer expected ...\t",line);
 
-  if (ptr != NULL) { 
+  if (is_NULL) {
+    fprintf(LOG," ok\n");
+    fflush(LOG);
+    return UNUR_SUCCESS;
+  }
+
+  else {
     fprintf(LOG," Failed\n");
     fflush(LOG);
     return UNUR_FAILURE;
   }
 
-  else {
-    fprintf(LOG," ok\n");
-    fflush(LOG);
-    return UNUR_SUCCESS;
-  }
 } /* end of check_expected_NULL() */
 
 /*---------------------------------------------------------------------------*/

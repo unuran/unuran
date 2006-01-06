@@ -70,7 +70,10 @@ void abort_if_NULL( FILE *LOG, int line, const void *ptr );
 int check_errorcode( FILE *LOG, int line, unsigned cherrno );
 
 /* check for expected NULL pointer */
-int check_expected_NULL( FILE *LOG, int line, const void *ptr );
+/* int do_check_expected_NULL( FILE *LOG, int line, const void *ptr ); */
+int do_check_expected_NULL( FILE *LOG, int line, int is_NULL );
+#define check_expected_NULL(LOG,line,ptr) \
+   do_check_expected_NULL((LOG),(line),((ptr)==NULL)?1:0 )
 
 /* check for "set failed" */
 int check_expected_setfailed( FILE *LOG, int line, int rcode );

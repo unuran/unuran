@@ -234,7 +234,7 @@ void update_meanvar(MEANVAR *p, double xi)
     printf("error update_meanvar; cookie check failed!! exiting\n");
     exit(1);
   }
-  //  printf("update mit %f\n",xi);
+  /*  printf("update mit %f\n",xi); */
   p->i++;
   dx= (xi - p->mean)/(double)p->i;
   p->mean+=dx;
@@ -296,7 +296,7 @@ void getresult_meanvar_ci(
     emax = 1.96*sqrt((p->var/p->i)/p->i);
     ci[0] = p->mean-emax;
     ci[1] = p->mean+emax;
-    //printf("emax %f lb %f ub %f\n",emax,ci[0],ci[1]);
+    /* printf("emax %f lb %f ub %f\n",emax,ci[0],ci[1]); */
   } 
 }
 

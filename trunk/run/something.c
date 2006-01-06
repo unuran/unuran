@@ -14,6 +14,14 @@
 
 /*---------------------------------------------------------------------------*/
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#else
+#  error "config.h" required
+#endif
+
+/*---------------------------------------------------------------------------*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -31,6 +39,10 @@
 #include <tests/testdistributions/testdistributions.h>
 #include "meanvarcor.c"
 /*#include <src/utils/fft.c>*/
+
+#ifdef HAVE_UNISTD_H
+#  include <unistd.h>
+#endif
 
 #define DISTRIBUTION_NORMAL 0 
 #define DISTRIBUTION_STUDENT 1
@@ -90,7 +102,7 @@ void printarray(char *info, double *a) {
     }
     average /= DIM;
     printf("  % .3e", average);
-    if (isinf(average)) printf("     ");
+    if (_unur_isinf(average)) printf("     ");
   }
   
   printf("\n");
@@ -152,6 +164,8 @@ void math2(struct unur_gen *gen) {
 
 int main(int argc, char *argv[])
 {
+#if HAVE_DECL_GETOPT
+
 #define ic(a,b)  ((a)*DIM+(b))  /* index for covariance matrix */
 #define im(a,b)  ((a)*5+(b))    /* index for moments */
 
@@ -193,6 +207,13 @@ int main(int argc, char *argv[])
   MEANVAR *mv[MAXDIM*5];
   QUANTILE *quant[MAXDIM*5];  
   
+  double *uv;
+  double *eigenvalues;
+  double *eigenvectors;
+
+  double fx;  /* pdf value at the point x */
+  double V;
+
   char c;
 
 /* discrete fft tests ... 
@@ -510,10 +531,6 @@ int main(int argc, char *argv[])
 
   gen_timing = unur_test_timing(par_timing, 3, &time_setup, &time_sample, TRUE, stdout);
     
-  double *uv;
-  double *eigenvalues;
-  double *eigenvectors;
-  
   eigenvalues = _unur_vector_new(DIM);
   eigenvectors = _unur_vector_new(DIM*DIM);
   _unur_matrix_eigensystem(DIM, covar, eigenvalues, eigenvectors);
@@ -531,15 +548,13 @@ int main(int argc, char *argv[])
   }  
   
   
-  double fx;  /* pdf value at the point x */
   fx=PDF(x);  
 
-//  printf("f(x)=%g\n", fx); 
+  /*   printf("f(x)=%g\n", fx);  */
     
   x[DIM] = fx * 0.9; /* used by the pdf ball sampler */
   /* transforming x[] into uv[] coordinates (at RoU boundary */
   /* valid for the case, that the RoU r-parameter is 1 */
-  double V;
   V = pow(PDF(x), 1./(DIM + 1.));
   uv[DIM] = V;
   for (d=0; d<DIM; d++) {
@@ -547,9 +562,9 @@ int main(int argc, char *argv[])
   } 
   
   /* scaling uv[]-coordinates */
-//  for (d=0; d<=DIM; d++) {
-//    uv[d] *= 0.9;
-//  }
+  /*   for (d=0; d<=DIM; d++) { */
+  /*     uv[d] *= 0.9; */
+  /*   } */
     
   par = _unur_par_clone(par_clone);
   gen = unur_init(par);
@@ -564,8 +579,8 @@ int main(int argc, char *argv[])
     || METHOD==METHOD_HITRO_BOX 
     || METHOD==METHOD_HITRO_BOX_COORDINATE
     || METHOD==METHOD_HITRO_STRIP_ADAPTIVE) {
-     // _unur_hitro_set_point_current( gen, uv );
-     // unur_hitro_chg_state(gen, uv);      
+      /*       _unur_hitro_set_point_current( gen, uv ); */
+      /*       unur_hitro_chg_state(gen, uv);       */
       unur_hitro_reset_state(gen);      
     }
     
@@ -645,10 +660,11 @@ int main(int argc, char *argv[])
 
 #if 1    
   unur_run_tests(par,~0u);
-//  unur_run_tests(par_aux,~0u);
+  /*   unur_run_tests(par_aux,~0u); */
   
   if ( METHOD == METHOD_GIBBS ) {   
-  //  unur_test_par_count_pdf(par_aux, SAMPLESIZE, 2, stdout);
+    ;
+    /*     unur_test_par_count_pdf(par_aux, SAMPLESIZE, 2, stdout); */
   }
   else {
     unur_test_count_pdf(gen, SAMPLESIZE, 2, stdout);
@@ -663,9 +679,9 @@ int main(int argc, char *argv[])
     }
   }
     
-//  if (par_clone) unur_par_free(par_clone);
-//  if (par_timing) unur_par_free(par_timing);
-//  if (par_aux) unur_par_free(par_timing);
+  /*   if (par_clone) unur_par_free(par_clone); */
+  /*   if (par_timing) unur_par_free(par_timing); */
+  /*   if (par_aux) unur_par_free(par_timing); */
   
   if (distr) unur_distr_free(distr);
   if (gen)   _unur_generic_free(gen);
@@ -681,10 +697,15 @@ int main(int argc, char *argv[])
   if (eigenvalues) free(eigenvalues); 
   if (eigenvectors) free(eigenvectors);
   
-  return 0;
+  return EXIT_SUCCESS;
 
 #undef ic
 #undef im
+
+#else
+  /* we do not have getopt(), so we can't do anything */
+  return EXIT_FAILURE;
+#endif /* end of #if HAVE_DECL_GETOPT */
 
 }
 

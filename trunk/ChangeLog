@@ -1,3 +1,2294 @@
+2006-01-06  author  <author@zwirn>
+
+	* Makefile.am, configure.ac, run/Makefile, run/Makefile.am, run/Makefile.old:
+	added directory run to experimental code switch
+
+	* configure.ac, src/unuran_config.h: start working in next release
+
+2006-01-05  author  <author@zwirn>
+
+	* INSTALL: updated description
+
+	* doc/src/intro.dh: fixed typo
+
+2006-01-04  author  <author@zwirn>
+
+	* doc/src/intro.dh: fixed typo
+
+	* configure.ac, src/unuran_config.h: draft version 0.7.0
+
+	* doc/src/intro.dh, src/uniform/urng.h, src/uniform/urng_rngstreams.h:
+	updated manual
+
+2006-01-03  author  <author@zwirn>
+
+	* configure.ac, src/uniform/urng_rngstreams.h:
+	RngStreams.h renamed to RngStream.h
+
+2006-01-02  author  <author@zwirn>
+
+	* NEWS: updated NEWS file
+
+2005-12-23  author  <author@zwirn>
+
+	* run/run.c: *** empty log message ***
+
+	* src/distr/cxtrans.h: marked CXTRANS as experimental
+
+	* doc/src/methods.dh, src/methods/gibbs.h, src/methods/hitro.h:
+	made subsection for MCMC methods in docu
+
+	* src/methods/nrou.c: fixed bug with non-detected NaNs
+
+2005-12-20  author  <author@zwirn>
+
+	* src/distr/cxtrans.c, src/distr/cxtrans.h, tests/t_distr_cxtrans.conf:
+	added rescaling and relocation
+
+	* src/methods/hitro.c, src/methods/hitro.h:
+	changed default for adaptive multiplier
+
+	* run/something.c: something.c
+
+2005-12-17  author  <author@zwirn>
+
+	* run/something.c, src/experimental/Makefile.am, src/experimental/hitrou.c, src/experimental/hitrou.h, src/experimental/hitrou_struct.h, src/methods/unur_methods_source.h, src/tests/tests.c, src/unur_cookies.h, tests/Makefile.am, tests/t_gibbs.conf, tests/t_hitro.conf, tests/t_hitrou.conf:
+	removed experimental method HITROU
+
+	* src/tests/tests.c: added tests for method NROU
+
+2005-12-15  author  <author@zwirn>
+
+	* run/something.c: something.c
+
+2005-12-08  author  <author@zwirn>
+
+	* src/distr/cxtrans.c, src/distr/cxtrans.h, tests/t_distr_cxtrans.conf:
+	change API for CXTRANS distribution objects
+
+	* doc/src/make_texi.pl:
+	added handling of some more greek letters in @unurmath{}
+
+2005-12-05  author  <author@zwirn>
+
+	* src/tests/tests.c: added method HITRO to tests
+
+	* src/methods/hitro.h: fixed wrong texinfo macro in docu
+
+2005-12-04  author  <author@zwirn>
+
+	* run/run.c, src/experimental/Makefile.am, src/experimental/hitro.c, src/experimental/hitro.h, src/experimental/hitro_struct.h, src/methods/Makefile.am, src/methods/hitro.c, src/methods/hitro.h, src/methods/hitro_struct.h, src/methods/unur_methods_source.h, src/unur_cookies.h, src/unuran.h.in, tests/Makefile.am, tests/t_gibbs.conf, tests/t_hitro.conf, tests/t_hitrou.conf:
+	moved files for method HITRO from src/experimentalm to src/methods
+
+	* src/experimental/hitro.c, src/experimental/hitro.h, src/experimental/hitro_struct.h, tests/t_hitro.conf:
+	added unur_hitro_set_adaptive_multiplier()
+
+2005-12-03  author  <author@zwirn>
+
+	* src/experimental/hitro.c: fixed comment
+
+	* src/methods/gibbs.c:
+	replace string API by C API for creating auxiliary normal generator
+
+2005-12-02  author  <author@zwirn>
+
+	* tests/t_hitro.conf: added tests for r=3
+
+	* src/experimental/hitro.c, tests/t_hitro.conf:
+	added _unur_hitro_clone()
+
+	* tests/t_hitro.conf: added tests
+
+2005-12-01  author  <author@zwirn>
+
+	* src/experimental/hitro.c: fixed bug with negative lower bound for v
+
+	* src/experimental/hitro.c, tests/t_hitro.conf: work on progress
+
+2005-11-30  author  <author@zwirn>
+
+	* tests/t_hitro.conf: added more tests
+
+	* src/methods/gibbs.c: use method AROU for auxiliary normal generator
+
+	* src/experimental/hitro.c, src/experimental/hitro_struct.h:
+	work in progress
+
+	* tests/Makefile.am, tests/t_hitro.conf:
+	added tests for experimental method HITRO
+
+	* src/experimental/hitro.c, src/experimental/hitro_struct.h:
+	replaced vmax, umin and umax by vumin and vumax
+
+	* src/experimental/hitro.c, src/experimental/hitro.h, src/experimental/hitro_struct.h, run/run.c, src/experimental/Makefile.am:
+	work in progress
+
+	* src/methods/gibbs.c: fixed bug in unur_gibbs_reset_state()
+
+	* src/methods/gibbs.c:
+	copy debugging flag into normal auxiliary generator
+
+	* src/utils/mrou_rectangle.c:
+	added comments; check for invalid NULL pointer
+
+2005-11-29  author  <author@zwirn>
+
+	* src/experimental/hitro.c, src/experimental/hitro_struct.h:
+	added files; work in progress
+
+	* src/utils/mrou_rectangle.c:
+	do not touch rr->umin and rr->umax when these are not computed
+
+	* src/experimental/hitro.h: *** empty log message ***
+
+2005-11-28  author  <author@zwirn>
+
+	* src/experimental/hitro.h: add file
+
+	* run/something.c: *** empty log message ***
+
+2005-11-27  author  <author@zwirn>
+
+	* run/run.c, run/something.c, src/methods/gibbs.c, src/methods/gibbs.h, src/methods/gibbs_struct.h, src/methods/unur_methods_source.h, src/tests/tests.c, src/unur_cookies.h, tests/t_gibbs.conf:
+	renamed method MCGIBBS to GIBBS
+
+	* run/run.c, src/methods/Makefile.am, src/methods/gibbs.c, src/methods/gibbs.h, src/methods/gibbs_struct.h, src/methods/mcgibbs.c, src/methods/mcgibbs.h, src/methods/mcgibbs_struct.h, src/unuran.h.in, tests/Makefile.am, tests/t_gibbs.conf, tests/t_mcgibbs.conf:
+	renamed files mcgibbs* to gibbs*
+
+	* tests/t_mcgibbs.conf:
+	added routines  unur_mcgibbs_get_state(),  unur_mcgibbs_chg_state(),  unur_mcgibbs_reset_state()
+
+	* src/methods/mcgibbs.c, src/methods/mcgibbs.h, src/methods/mcgibbs_struct.h:
+	added routines  unur_mcgibbs_get_state(),  unur_mcgibbs_chg_state(),  unur_mcgibbs_reset_state()
+	use result of unur_distr_cvec_get_center() as default starting point
+	updated docu
+
+	* tests/testroutines.c:
+	reset URNG of generator object instead of global default URNG
+
+	* tests/t_norta.conf, tests/t_varou.conf, tests/t_vmt.conf, tests/t_vnrou.conf:
+	fixed incorrect testing of clones
+
+2005-11-26  author  <author@zwirn>
+
+	* src/methods/mcgibbs.c, src/methods/mcgibbs.h, src/methods/mcgibbs_struct.h, tests/t_mcgibbs.conf:
+	added unur_mcgibbs_set_burnin()
+
+	* src/methods/mcgibbs.c: fixed possible infinite loop
+
+2005-11-24  author  <author@zwirn>
+
+	* src/methods/mcgibbs.h: changes in docu
+
+	* src/methods/mcgibbs.c, src/methods/mcgibbs.h, src/methods/mcgibbs_struct.h, src/experimental/Makefile.am, src/experimental/mcgibbs.c, src/experimental/mcgibbs.h, src/experimental/mcgibbs_struct.h, src/methods/Makefile.am, src/methods/tdrgw.h, src/methods/unur_methods_source.h, src/tests/tests.c, src/unur_cookies.h, src/unuran.h.in, tests/Makefile.am, tests/t_mcgibbs.conf:
+	moved method MCGIBBS from src/experimental into src/methods; replaced GIBBS by MCGIBBS
+
+	* src/experimental/gibbs.c, src/experimental/gibbs.h, src/experimental/gibbs_struct.h:
+	removed experimental method GIBBS (is replaced by MCGIBBS)
+
+	* tests/t_mcgibbs.conf: minor changes
+
+	* src/experimental/mcgibbs.h: added docu
+
+	* tests/t_mcgibbs.conf: added more tests
+
+	* src/experimental/mcgibbs.c: added remark about error handling
+
+	* src/methods/tdr_debug.ch: fixed wrong COOKIE
+
+	* src/methods/tdr_init.ch, src/methods/tdrgw.c:
+	fixed bug in reinit routine where an infinite loop occurs when percentiles percentiles are INFINITY in empty generator object
+
+	* tests/t_mcgibbs.conf:
+	increase thinning factor to avoid too many failures in chi2 test
+
+2005-11-23  author  <author@zwirn>
+
+	* src/methods/tdr.c, src/methods/tdr.h, src/methods/tdr_debug.ch, src/methods/tdr_init.ch, src/methods/tdr_newset.ch, src/methods/tdr_struct.h:
+	added second trial for reinit routine; added functions unur_tdr_set/chg_reinit_ncpoints()
+
+	* src/methods/tdrgw.c: removed some obsolete bracket {}
+
+	* src/experimental/mcgibbs.c, src/methods/tdr.h, src/methods/tdr_init.ch, src/methods/tdr_newset.ch, tests/t_tdr.conf, tests/t_tdr_gw.conf, tests/t_tdr_ia.conf, tests/t_tdr_ps.conf:
+	renamed unur_tdr_set/chg_usepercentiles() to unur_tdr_set/chg_reinit_percentiles
+
+	* src/experimental/mcgibbs.c:
+	renamed unur_tdrgw_set_usepercentiles() to unur_tdrgw_set_reinit_percentiles()
+
+	* src/methods/tdrgw.c, src/methods/tdrgw.h, src/methods/tdrgw_struct.h, tests/t_tdrgw.conf:
+	renamed unur_tdrgw_set_usepercentiles() to unur_tdrgw_set_reinit_percentiles(); added second trial for reinit routine; added functions unur_tdrgw_set/chg_reinit_ncpoints()
+
+2005-11-21  author  <author@zwirn>
+
+	* src/distributions/vc_multiexponential.c:
+	fixing typos and setting stdmarginal array
+
+2005-11-18  author  <author@zwirn>
+
+	* src/methods/tdr_gw_sample.ch: removed print statement
+
+	* src/methods/tdrgw.c: adding case for parallel tangents
+
+	* src/distributions/vc_multiexponential.c:
+	changing dlogpdf calculation parameter
+
+	* run/something.c: *** empty log message ***
+
+2005-11-17  author  <author@zwirn>
+
+	* src/distributions/vc_multiexponential.c: work in progress
+
+	* src/distributions/vc_multiexponential.c:
+	bugfix in dlogpdf - removing LOGNORMCONSTANT
+
+	* src/methods/arou.c, src/methods/tdr_debug.ch, src/methods/tdr_gw_sample.ch, src/methods/tdrgw.c:
+	fixing typo
+
+	* NEWS: updated
+
+	* src/experimental/mcgibbs.c: added handling of some errors at init
+
+	* tests/t_mcgibbs.conf: added tests
+
+	* tests/README.conf, tests/make_test_files.pl, tests/t_mcgibbs.conf, tests/testunuran.h:
+	added macro CHI2_FAILURES_TOLERATED for fine tuning of number of tolerated failures in chisquare tests
+
+	* src/experimental/mcgibbs.c, src/experimental/mcgibbs.h, src/experimental/mcgibbs_struct.h, tests/t_mcgibbs.conf:
+	added parameter c for generators of conditional distributions
+
+2005-11-16  author  <author@zwirn>
+
+	* run/something.c: something.c
+
+	* src/methods/tdr_init.ch, src/methods/tdrgw.c:
+	fixed bug in reinit routine when percentiles are used
+
+	* src/distributions/vc_multiexponential.c: adding checks for finiteness
+
+	* run/something.c: run/something.c
+
+	* src/distributions/vc_multiexponential.c:
+	implementing order statistics for the arguments
+
+2005-11-15  author  <author@zwirn>
+
+	* tests/t_tdr_gw.conf, tests/t_tdr_ia.conf, tests/t_tdr_ps.conf:
+	added tests for reinit routine
+
+	* tests/Makefile.am, tests/t_tdr.conf, tests/t_tdr_gw.conf, tests/t_tdr_ia.conf, tests/t_tdr_ps.conf:
+	splitted file t_tdr.conf into t_tdr.conf, t_tdr_gw.conf, t_tdr_ps.conf, and t_tdr_ia.conf
+
+	* tests/t_tdr.conf: added tests
+
+	* src/methods/tdr_gw_init.ch, src/methods/tdr_gw_sample.ch, src/methods/tdr_ps_init.ch, src/methods/tdr_ps_sample.ch:
+	fixed bug that caused infinite loops in run_dars
+
+	* src/tests/tests.c: adding HITROU method
+
+	* src/distributions/vc_multiexponential.c: fixing NULL-pointer bug
+
+	* run/something.c: tests with multiexponential
+
+	* tests/t_tdr.conf, src/methods/tdr_newset.ch, src/methods/tdr_ps_init.ch, src/methods/tdr_ps_sample.ch, src/methods/tdr_sample.ch, src/methods/tdr_struct.h, src/methods/tdr.c, src/methods/tdr.h, src/methods/tdr_debug.ch, src/methods/tdr_gw_init.ch, src/methods/tdr_gw_sample.ch, src/methods/tdr_ia_sample.ch, src/methods/tdr_init.ch:
+	added unur_tdr_reinit()
+
+	* src/methods/tdrgw.c:
+	added test for empty generator object in unur_tdrgw_eval_invcdfhat()
+
+2005-11-14  author  <author@zwirn>
+
+	* tests/t_mcgibbs.conf: removed obsolete tests
+
+	* tests/t_hitrou.conf: fixed memory leak
+
+	* src/methods/unur_methods_source.h:
+	mark invalid parameter object and generator object in set, get and chg calls as error instead of warning
+
+	* tests/t_mcgibbs.conf:
+	replaced multinormal with random covariance matrix with multinormal with fixed covariance matrix
+
+	* NEWS: updated
+
+2005-11-12  author  <author@zwirn>
+
+	* run/something.c: adjusting gibbs sampler
+
+2005-11-11  author  <author@zwirn>
+
+	* tests/Makefile.am, tests/t_mcgibbs.conf:
+	added tests for method MCGIBBS
+
+	* tests/t_hitrou.conf: renaming skip parameter into thinning parameter
+
+2005-11-10  author  <author@zwirn>
+
+	* src/distributions/vc_multinormal.c:
+	fixed bug in partial derivative of logPDF
+
+	* src/tests/tests.c, src/tests/unuran_tests.h:
+	added counting of PDF calls to unur_run_tests()
+
+	* src/experimental/ball.c, src/experimental/ball.h, src/experimental/ball_struct.h, src/experimental/gibbs.c, src/experimental/gibbs.h, src/experimental/gibbs_struct.h, src/experimental/hitrou.c, src/experimental/hitrou.h, src/experimental/hitrou_struct.h, src/experimental/mcgibbs.h, src/experimental/walk.c, src/experimental/walk.h, src/experimental/walk_struct.h:
+	refactoring skip-parameter into thinning-parameter, fixing different bugs
+
+	* src/parser/make_stringparser.pl: adding vc_multinormal
+
+	* src/distributions/unur_distributions.h, src/distributions/vc_multiexponential.c:
+	work in progress
+
+	* run/Makefile, run/something.c: adjusting gibbs calls into mcgibbs
+
+	* run/run.c: *** empty log message ***
+
+	* src/experimental/mcgibbs.c: GIBBS sampling with random directions
+
+	* src/experimental/mcgibbs.c, src/experimental/mcgibbs_struct.h:
+	replaced GEN->gen_condi by generic gen->gen_aux_list
+
+	* src/experimental/mcgibbs.c:
+	added debugging switch to suppress debugging of generators for conditional distributions
+
+	* src/distr/cvec.h: adjusting parameter list and description
+
+	* src/distributions/Makefile.am, src/distributions/unur_stddistr.h, src/distributions/vc_multiexponential.c:
+	Adding skeleton for the multivariate exponential distribution
+
+	* src/methods/tdrgw.c: remove obsolete debugging code
+
+	* src/experimental/Makefile.am, src/experimental/mcgibbs.c, src/experimental/mcgibbs.h, src/experimental/mcgibbs_struct.h:
+	added first version of method MCGIBBS
+
+	* run/Makefile, run/run.c: *** empty log message ***
+
+	* src/methods/tdrgw.c:
+	print whether distribution object is private copy
+
+	* src/tests/tests.c: added GIBBS sampler; print sample with 10 rows
+
+2005-11-09  author  <author@zwirn>
+
+	* tests/t_tdrgw.conf: added more tests
+
+	* tests/make_test_files.pl:
+	use local copy of distribution objects for testing in section [validate]
+
+	* src/methods/tdrgw.c, src/methods/tdrgw.h, src/methods/tdrgw_struct.h:
+	added routine unur_tdrgw_reinit()
+
+	* src/methods/x_gen.c: fixed typo in comment
+
+	* src/methods/ssr.h: fixed typo in docu
+
+	* src/distr/distr.c, src/distr/distr.h: added routine unur_distr_clone
+
+2005-11-08  author  <author@zwirn>
+
+	* tests/t_distr_condi.conf: added tests
+
+	* src/methods/tdrgw.c: adding additional debugging
+
+	* run/something.c: something.c
+
+	* tests/make_test_files.pl: no functional change
+
+	* src/experimental/gibbs.c: adding some comments
+
+	* run/something.c: work in progress
+
+	* run/something.c: counting pdf-calls for gibbs sampler
+
+	* src/experimental/gibbs.c:
+	fixing ugly memory mismatch when freeing clone generator
+
+	* run/something.c: fixed problem with generator freeing
+
+	* run/something.c: work in progress
+
+2005-11-07  author  <author@zwirn>
+
+	* tests/t_tdrgw.conf: added tests
+
+	* src/methods/tdrgw.h: fixed typo
+
+	* run/something.c: work in progress
+
+	* src/methods/tdrgw.h: minor typo
+
+	* src/experimental/gibbs.c, src/experimental/gibbs.h, src/experimental/gibbs_struct.h:
+	fixed differend bugs
+
+2005-11-06  author  <author@zwirn>
+
+	* src/methods/x_gen.c, src/methods/x_gen.h, src/methods/x_gen_struct.h, src/tests/countpdf.c:
+	added switch via unur_set_use_distr_privatecopy() call to allow copying of pointer to distr object into generator object without cloning the distr object
+
+	* src/methods/dari.c, src/methods/dau.c, src/methods/dgt.c, src/methods/ssr.c, src/methods/tdr_init.ch:
+	used _unur_generic_free(gen) instead of _unur_distr_free(gen->distr); free(gen);
+
+	* src/methods/norta.c: fixed memory leak
+
+	* src/methods/tdr_newset.ch, src/methods/dau.c, src/methods/dgt.c, src/methods/empk.c, src/methods/empl.c, src/methods/hinv.c, src/methods/hrb.c, src/methods/hri.c, src/methods/ninv.c, src/methods/nrou.c, src/methods/srou.c, src/methods/ssr.c, src/methods/tabl_newset.ch:
+	fixed some comments
+
+2005-11-05  author  <author@zwirn>
+
+	* src/distr/distr_struct.h, src/experimental/ball_struct.h, src/experimental/gibbs_struct.h, src/experimental/hitrou_struct.h, src/experimental/varou_struct.h, src/experimental/walk_struct.h, src/methods/arou_struct.h, src/methods/auto_struct.h, src/methods/cstd_struct.h, src/methods/dari_struct.h, src/methods/dau_struct.h, src/methods/dgt_struct.h, src/methods/dsrou_struct.h, src/methods/dss_struct.h, src/methods/dstd_struct.h, src/methods/empk_struct.h, src/methods/empl_struct.h, src/methods/hinv_struct.h, src/methods/hrb_struct.h, src/methods/hrd_struct.h, src/methods/hri_struct.h, src/methods/mcorr_struct.h, src/methods/ninv_struct.h, src/methods/norta_struct.h, src/methods/nrou_struct.h, src/methods/srou_struct.h, src/methods/ssr_struct.h, src/methods/tabl_struct.h, src/methods/tdr_struct.h, src/methods/tdrgw_struct.h, src/methods/unif_struct.h, src/methods/utdr_struct.h, src/methods/vempk_struct.h, src/methods/vmt_struct.h, src/methods/vnrou_struct.h:
+	updated comments
+
+	* src/methods/Makefile.am, src/methods/x_gen_struct.h, src/unur_struct.h:
+	added file x_gen_struct.h for definition of structures unur_par and unur_gen
+
+2005-11-03  author  <author@zwirn>
+
+	* run/Makefile, run/hit.c, run/something.c: something.c
+
+	* src/experimental/gibbs.c: removing debugging printf()
+
+	* src/experimental/gibbs.c: fixing bug for coordinate variant
+
+	* src/distr/condi.c: adding dlogpdf functionality
+
+	* src/methods/tdrgw.c, src/methods/tdrgw.h, tests/t_tdrgw.conf:
+	added unur_tdrgw_eval_invcdfhat()
+
+	* tests/t_tdrgw.conf:
+	added tests with distributions having extremely small area below density
+
+	* src/methods/tdrgw.c: fixed check for unbounded area below hat
+
+2005-11-02  author  <author@zwirn>
+
+	* src/methods/tdrgw.c, src/methods/tdrgw.h, src/methods/tdrgw_struct.h, tests/t_tdrgw.conf:
+	removed guide table
+
+	* src/methods/tdrgw.c, src/methods/tdrgw_struct.h:
+	intersection point of tangent only stored in structure when compiler flag DEBUG_STORE_IP is set; use mean point instead of X when running ARS when X is not finite
+
+	* src/methods/tdrgw.c, src/methods/tdrgw.h, src/methods/tdrgw_struct.h, tests/t_tdrgw.conf:
+	replaced iv->Ahat by iv->logAhat; use rescaled values for areas and f(x) relative to maximal area in interval
+
+2005-11-01  author  <author@zwirn>
+
+	* src/methods/tdrgw.c, src/methods/tdrgw_struct.h:
+	replaced Ahatr by Ahatr_fract in iv structure
+
+	* src/methods/tdrgw.c, src/methods/tdrgw.h, src/methods/tdrgw_struct.h, tests/t_tdrgw.conf:
+	removed Asqueeze
+
+	* src/methods/tdrgw.c, src/methods/tdrgw.h, src/methods/tdrgw_struct.h, tests/t_tdrgw.conf:
+	removed max_ratio and bound_for_adding from parameter and generator object; remove functions unur_tdrgw_set/get_sqhratio()
+
+	* src/methods/tdrgw.c:
+	changes in sampling algorithm: constant squeeze removed, adaptive step only when rejected
+
+2005-10-31  author  <author@zwirn>
+
+	* src/methods/tdrgw.c:
+	fixed bug in _unur_tdrgw_interval_logarea() when both boundaries are infinity
+
+2005-10-27  author  <author@zwirn>
+
+	* src/methods/tdr_init.ch:
+	moved default definition of Umin in more appropriate place
+
+	* src/methods/tabl_init.ch: fixed bug in DARS module
+
+	* src/methods/tdrgw.c:
+	added routine to compute log of area below hat or squeeze
+
+	* src/unur_source.h:
+	work around when log1p has to be replaced by _unur_log1p
+
+2005-10-26  author  <author@zwirn>
+
+	* src/methods/tdrgw.c: used logarithm in sampling algorithm
+
+	* tests/t_tdrgw.conf:
+	moved method TDRGW into src/methods; added some tests for stringAPI
+
+	* src/experimental/Makefile.am, src/experimental/tdrgw.c, src/experimental/tdrgw.h, src/experimental/tdrgw_struct.h, src/methods/Makefile.am, src/methods/tdrgw.c, src/methods/tdrgw.h, src/methods/tdrgw_struct.h, src/unuran.h.in, tests/Makefile.am:
+	moved method TDRGW into src/methods
+
+	* src/experimental/tdrgw.c: added debugging routines
+
+	* tests/t_tdrgw.conf: removed obsolete code
+
+	* src/distributions/c_laplace.c, src/distributions/c_uniform.c, tests/t_tdrgw.conf, tests/testdistributions/c_wo_logpdf.c, tests/testdistributions/testdistributions.h:
+	added logPDF to laplace and uniform distributions
+
+	* src/experimental/Makefile.am, src/experimental/tdrgw.c, src/experimental/tdrgw.h, src/experimental/tdrgw_struct.h, src/methods/unur_methods_source.h, src/unur_cookies.h, tests/Makefile.am, tests/t_tdrgw.conf:
+	first version of new method TDRGW
+
+	* src/methods/tabl.h, src/methods/tdr.h: fixed typo in docu
+
+2005-10-04  author  <author@zwirn>
+
+	* src/experimental/gibbs.c:
+	storing and using construction points for TDR
+
+2005-09-28  author  <author@zwirn>
+
+	* src/utils/mrou_rectangle.c:
+	MROU_HOOKE_MAXITER=1000 is enough for most practical situations
+
+	* src/utils/hooke.c: bug fixed in wrong setting of stepsize
+
+2005-09-27  author  <author@zwirn>
+
+	* src/methods/tdr.c, src/methods/tdr_init.ch: use dlogPDF if available
+
+	* src/distr/distr_source.h: added macro for testing existance of logPDF
+
+2005-09-22  author  <author@zwirn>
+
+	* run/run.c, src/methods/Makefile.am, src/methods/tdr.c, src/methods/tdr_source.h:
+	moved content from tdr_source.h into tdr.c
+
+	* src/methods/tdr_gw_init.ch, src/methods/tdr_init.ch, src/methods/tdr_newset.ch, src/methods/tdr_ps_init.ch:
+	added some tests to catch NaNs
+
+2005-09-21  author  <author@zwirn>
+
+	* src/methods/tdr_init.ch:
+	fixed overflow when computing area below hat for log transformation
+
+	* scripts/compute_machine_constants.c: added log of DBL_EPSILON
+
+	* src/methods/tdr_init.ch: avoided uninitialized values for intervals
+
+	* src/methods/tdr.c, src/methods/tdr_debug.ch, src/methods/tdr_gw_debug.ch, src/methods/tdr_init.ch, src/methods/tdr_ps_debug.ch:
+	reorganized logging
+
+	* src/methods/tabl.c: fixed comment
+
+2005-09-20  author  <author@zwirn>
+
+	* src/methods/tdr.c, src/methods/tdr_gw_sample.ch, src/methods/tdr_ia_sample.ch, src/methods/tdr_ps_sample.ch:
+	added _unur_tdr_gw_improve_hat() and _unur_tdr_ps_improve_hat()
+
+	* src/methods/tabl.c: fixed typo
+
+2005-08-25  author  <author@zwirn>
+
+	* src/experimental/hitrou.c, src/experimental/hitrou.h:
+	improving unidirectional hit&run sampler
+
+	* run/something.c, src/experimental/hitrou.c, src/experimental/hitrou.h, src/experimental/hitrou_struct.h:
+	experiments with unidirectional hit&run sampler
+
+2005-08-24  author  <author@zwirn>
+
+	* src/methods/Makefile.am, src/methods/tdr_debug.ch, src/methods/tdr_gw_debug.ch, src/methods/tdr_gw_init.ch, src/methods/tdr_gw_sample.ch, src/methods/tdr_ia_sample.ch, src/methods/tdr_init.ch, src/methods/tdr_ps_debug.ch, src/methods/tdr_ps_init.ch, src/methods/tdr_ps_sample.ch, src/methods/tdr_sample.ch:
+	splitted files tdr_init.ch, tdr_sample.ch, and tdr_debug.ch
+
+	* src/uniform/urng_default.c: including additional header-files
+
+	* src/distr/condi.h:
+	update docu: use partial derivative for full conditional distribution if available
+
+	* src/distr/condi.c:
+	used partial derivative for full conditional distribution if available
+
+	* src/tests/countpdf.c: added counter for partial derivative
+
+2005-08-23  author  <author@zwirn>
+
+	* tests/t_tabl.conf, src/methods/tabl.c, src/methods/tabl.h, src/methods/tabl_debug.ch, src/methods/tabl_newset.ch:
+	change function unur_tabl_set_variant_ia()
+
+	* src/methods/tabl.c, src/methods/tabl.h, src/methods/tabl_debug.ch, src/methods/tabl_init.ch:
+	some changes caused by adding and deleting experimental code
+
+	* src/methods/tabl_fast.ch: removed experimental code
+
+	* src/methods/tabl_fast.ch: added experimental code (fast table method)
+
+2005-08-22  author  <author@zwirn>
+
+	* tests/t_distr_condi.conf: added distribution for test
+
+	* tests/t_distr_condi.conf:
+	added tests for conditional distribution objects
+
+	* tests/t_distr_cont.conf: added tests for wrapper functions
+
+	* tests/t_distr_cvec.conf: added tests for handling pd(log)PDF
+
+	* tests/t_arou.conf: updated comments
+
+	* tests/testroutines.c:
+	increased BUFSIZE for comparing distribution names
+
+	* tests/testdistributions/testdistributions.h:
+	added new test distributions
+
+	* tests/testdistributions/c_wo_logpdf.c: fixed comments
+
+	* tests/testdistributions/Makefile.am, tests/testdistributions/c_w_pdf_from_logpdf.c:
+	added new test distributions
+
+	* src/unur_typedefs.h:
+	added type UNUR_FUNCTD_CVEC for pdPDF and pdlogPDF
+
+	* src/distr/condi.c: modified output into LOG file
+
+	* src/distr/cont.c:
+	fixed bug when parameter vector is freed but not set to NULL; moved prototypes for evaluating (d)PDF from (d)logPDF into distr_source.h
+
+	* src/distr/cvec.c, src/distr/cvec.h:
+	added functions to handle pd(log)PDF for multivariate distr
+
+	* src/distr/distr_struct.h: added pointer for pd(log)PDF
+
+	* src/distr/distr_source.h:
+	added macros for calling pdlogPDF and prototypes for evalulating for (pd)PDF from (pd)logPDF
+
+	* src/distributions/vc_multistudent.c: added pdlogPDF; minor fixes
+
+	* src/distributions/vc_multicauchy.c, src/distributions/vc_multinormal.c:
+	added pdlogPDF
+
+	* src/distributions/unur_distributions.h:
+	removed obsolete const qualifier in prototype for unur_distr_multistudent
+
+	* src/distributions/c_cauchy.c, src/distributions/c_gamma.c, src/distributions/c_normal.c:
+	fixed error in dlogPDF
+
+2005-08-10  author  <author@zwirn>
+
+	* tests/Makefile.am, tests/t_unur_tests.conf, src/tests/Makefile.am, src/tests/countpdf.c, src/tests/unuran_tests.h:
+	added unur_test_count_pdf() and unur_test_par_count_pdf()
+
+	* src/tests/counturn.c: minor change in output
+
+	* tests/README.conf, tests/make_test_files.pl, tests/t_arou.conf, tests/t_cstd.conf, tests/t_dstd.conf:
+	removed obsolete tag [validate - timing:] from .conf files
+
+	* tests/Makefile.am, tests/t_timing_dsrou.conf, tests/t_timing_ninv.conf:
+	removed obsolete test files
+
+2005-08-05  author  <author@zwirn>
+
+	* tests/testdistributions/Makefile.am, tests/testdistributions/testdistributions.h, tests/testdistributions/vc_cauchy_RoU_ball.c:
+	added testdistribution: multicauchy with RoU region being a ball
+
+	* tests/testdistributions/vc_special_correlations.c:
+	removed obsolete file
+
+2005-07-28  author  <author@zwirn>
+
+	* run/spheres.c: aux mixing
+
+	* run/spheres.c: fish experiments
+
+2005-07-26  author  <author@zwirn>
+
+	* src/uniform/urng.h: updated docu
+
+	* doc/src/references.dh: fixed typo
+
+	* src/unuran.h.in, src/uniform/Makefile.am, src/uniform/urng_gslqmc.c, src/uniform/urng_gslqmc.h, src/uniform/urng_gslqrng.c, src/uniform/urng_gslqrng.h:
+	renamed files urng_gslqmc.* to urng_gslqrng.* to be consistent with function call
+
+	* src/unuran.h.in:
+	made separate header files for APIs to external URNGs
+
+	* src/uniform/Makefile.am, src/uniform/urng.h, src/uniform/urng_default.c, src/uniform/urng_fvoid.c, src/uniform/urng_fvoid.h, src/uniform/urng_gsl.c, src/uniform/urng_gsl.h, src/uniform/urng_gslqmc.c, src/uniform/urng_gslqmc.h, src/uniform/urng_prng.c, src/uniform/urng_prng.h, src/uniform/urng_randomshift.c, src/uniform/urng_randomshift.h, src/uniform/urng_rngstreams.c, src/uniform/urng_rngstreams.h, src/uniform/urng_typedefs.h:
+	made separate header files for APIs to external URNGs; some fixes
+
+	* doc/src/references.dh: added reference [CPa76]
+
+	* scripts/merge_h.pl:
+	non-unuran header files are now always #included in unuran.h
+
+	* run/spheres.c: bugfix
+
+2005-07-25  author  <author@zwirn>
+
+	* examples/example4_str.c, examples/example_anti_str.c:
+	updated examples to new URNG API
+
+	* src/parser/stringparser.c.in:
+	added checks for correct settings in unuran_config.h
+
+	* src/uniform/urng_gsl.c, src/uniform/urng_prng.c, src/uniform/urng_rngstreams.c:
+	added checking for invalid input for new URNG object
+
+	* tests/t_stringparser.conf:
+	updated usage of PRNG to new generic URNG API
+
+	* run/spheres.c: adding stretched spheres
+
+	* run/spheres.c: fixed memory leak with uniform generator
+
+	* run/spheres.c: adding bias calculations
+
+	* src/parser/stringparser.c.in: adjusting _unur_str2urng()
+
+	* run/run.c: *** empty log message ***
+
+2005-07-22  author  <author@zwirn>
+
+	* src/uniform/Makefile.am, src/uniform/urng_randomshift.c:
+	added URNG object 'randomshift'
+
+	* src/uniform/urng_API.c:
+	replaced function 'nextsub' by new function 'sync'; renamed _unur_urng_gslqrng_samplearray to _unur_urng_gslqrng_sample_array
+
+	* src/uniform/urng.h:
+	added function 'sync'; added URNG object 'randomshift'
+
+	* src/uniform/urng_gslqmc.c:
+	replaced function 'nextsub' by new function 'sync'; renamed _unur_urng_gslqrng_samplearray to _unur_urng_gslqrng_sample_array; some comments changed
+
+	* src/uniform/urng_struct.h: added new function 'sync' for URNG
+
+	* src/uniform/urng_gsl.c: fixed comments
+
+2005-07-21  author  <author@zwirn>
+
+	* src/distributions/unur_distributions.h: fixed typo in docu
+
+	* src/uniform/urng_gslqmc.c: added checking of arguments
+
+	* src/uniform/Makefile.am, src/uniform/urng.h, src/uniform/urng_gslqmc.c, src/uniform/urng_typedefs.h:
+	added support for GSL quasi-random sequences
+
+	* src/tests/tests.c: added method
+
+	* run/spheres.c: translation of inner sphere and calculation of bias
+
+	* run/spheres.c: calculating mse of mean radius
+
+	* src/uniform/urng_gsl.c, src/uniform/urng_prng.c, src/uniform/urng_rngstreams.c:
+	added checking for existance of necessary libraries
+
+	* src/unuran_config.h: removed obsolete macro definition
+
+	* src/uniform/urng.h, src/uniform/urng_API.c, src/uniform/urng_struct.h:
+	added unur_urng_samplearray()
+
+2005-07-19  author  <author@zwirn>
+
+	* src/unuran_config.h: fixed comments
+
+	* src/uniform/urng_gsl.c, src/uniform/urng_struct.h:
+	fixed types in comments
+
+	* experiments/timings_chap_8.conf: fixed distribution
+
+	* tests/t_tabl.conf: added tests
+
+	* src/methods/tabl_newset.ch, src/methods/tabl_sample.ch:
+	added possibility of using auxiliary urng
+
+2005-07-18  author  <author@zwirn>
+
+	* tests/t_tabl.conf, src/methods/tabl.c, src/methods/tabl.h, src/methods/tabl_init.ch, src/methods/tabl_newset.ch, src/methods/tabl_sample.ch, src/methods/tabl_struct.h:
+	added function unur_tabl_chg_truncated()
+
+	* src/methods/tdr_newset.ch: removed irritating comment
+
+	* src/methods/tdr.h: fixed typo in docu
+
+	* run/Makefile, run/spheres.c: *** empty log message ***
+
+	* run/Makefile, run/spheres.c:
+	experiments with random walk inside sphere
+
+	* run/something.c: cloning par-object
+
+	* src/methods/tabl.c, src/methods/tabl_init.ch: cleared debugging flags
+
+	* src/methods/tabl.c, src/methods/tabl_debug.ch, src/methods/tabl_init.ch, src/methods/tabl_newset.ch:
+	changes in log output
+
+	* src/methods/ninv.h: fixes docu
+
+	* src/methods/ninv.c, src/methods/ninv.h, tests/t_ninv.conf:
+	added function unur_ninv_eval_approxinvcdf()
+
+2005-07-17  author  <author@zwirn>
+
+	* tests/t_tabl.conf: added test for function unur_tabl_set_useear()
+
+2005-07-16  author  <author@zwirn>
+
+	* src/methods/tabl.c, src/methods/tabl.h, src/methods/tabl_newset.ch:
+	added function unur_tabl_set_useear()
+
+2005-07-14  author  <author@zwirn>
+
+	* src/methods/tabl.c, src/methods/tabl.h, src/methods/tabl_debug.ch, src/methods/tabl_init.ch, src/methods/tabl_newset.ch, src/methods/tabl_sample.ch, tests/t_tabl.conf:
+	added sampling using 'classical' acceptance/rejection
+
+	* tests/t_tabl.conf, src/methods/tabl_init.ch:
+	added possibility to use discontinuous PDFs
+
+	* src/methods/Makefile.am: removed obsolete file from source list
+
+2005-07-13  author  <author@zwirn>
+
+	* run/run.c, src/methods/tabl_init.ch, tests/t_tabl.conf:
+	added check monotonicity
+
+	* src/methods/tabl.c, src/methods/tabl.h, src/methods/tabl_debug.ch, src/methods/tabl_init.ch, src/methods/tabl_newset.ch, src/methods/tabl_struct.h, tests/t_tabl.conf:
+	added possibility define slopes by construction points
+
+2005-07-12  author  <author@zwirn>
+
+	* src/methods/tabl_init.ch: restrict slopes to given domain
+
+	* src/methods/tabl.c, src/methods/tabl.h, src/methods/tabl_newset.ch, src/methods/tabl_sample.ch, tests/t_tabl.conf:
+	added _unur_tabl_set_pedantic
+
+	* src/methods/tabl_init.ch, src/methods/tabl_sample.ch:
+	added error handling
+
+2005-07-11  author  <author@zwirn>
+
+	* run/matr.c: run/matr.c
+
+	* run/something.c: intermediary version (setting initial point)
+
+	* src/experimental/gibbs.c, src/experimental/gibbs.h, src/experimental/walk.c, src/experimental/walk.h:
+	set/get routines for current point
+
+	* src/methods/tabl_init.ch: minor changes
+
+	* src/methods/tabl.c, src/methods/tabl_init.ch, src/methods/tabl_newset.ch:
+	started to clean-up code of method TABL
+
+2005-07-10  author  <author@zwirn>
+
+	* src/methods/tabl.c, src/methods/tabl_debug.ch, src/methods/tabl_init.ch, src/methods/tabl_newset.ch, src/methods/tabl_sample.ch, src/methods/tabl_struct.h:
+	started to clean-up code of method TABL
+
+	* src/methods/x_gen.c, src/unur_struct.h: added field status
+
+	* experiments/timings_chap_8.conf: replaced nstp by cpoints
+
+2005-07-08  author  <author@zwirn>
+
+	* src/methods/Makefile.am, src/methods/tabl.c, src/methods/tabl_debug.ch, src/methods/tabl_init.ch, src/methods/tabl_newset.ch, src/methods/tabl_sample.ch:
+	splitted file tabl.c
+
+2005-07-07  author  <author@zwirn>
+
+	* src/methods/arou.c:
+	no description of generator object in log file if debugging flag is set to 0
+
+	* src/methods/srou.c: minor change
+
+2005-07-06  author  <author@zwirn>
+
+	* tests/t_tabl.conf, src/methods/tabl.c, src/methods/tabl.h, src/methods/tabl_struct.h:
+	added function unur_tabl_set_cpoints(); function unur_tabl_set_n_stp() obsolete
+
+	* src/methods/tdr_newset.ch: fixed typo
+
+	* NEWS: updated
+
+	* doc/src/README, src/parser/make_stringparser.pl: added tag =OBSOLETE
+
+	* tests/testdistributions/c_sawtooth_contpdf.c:
+	added new testfunction with continuous sawtooth PDF
+
+	* tests/t_srou.conf, tests/t_ssr.conf: for some tests setup should fail
+
+	* tests/testdistributions/Makefile.am, tests/testdistributions/testdistributions.h:
+	add testdistribution with continuous sawtooth pdf
+
+	* src/utils/hooke.c:
+	reorganizing source code and removing unnecesary variables
+
+	* tests/testdistributions/Makefile.am, tests/testdistributions/c_sawtooth_discpdf.c, tests/testdistributions/c_zigzag.c, tests/testdistributions/testdistributions.h:
+	renamed zigzag to sawtooth_discpdf
+
+	* tests/testdistributions/Makefile.am, tests/testdistributions/c_zigzag.c, tests/testdistributions/testdistributions.h:
+	added zigzag distribution
+
+2005-07-05  author  <author@zwirn>
+
+	* src/distr/cont.c: replaced _unur_FP_is_infinity by _unur_isfinite
+
+	* src/methods/srou.c, src/methods/ssr.c:
+	replaced _unur_FP_is_infinity by \!_unur_isfinite
+
+	* tests/t_srou.conf, tests/t_ssr.conf:
+	added tests with non-working distribution
+
+	* src/methods/vnrou.c, src/utils/mrou_rectangle.c:
+	adding check for non-finite bounding rectangle
+
+	* src/utils/hooke.c:
+	adding counter for sub-iterations in hooke algorithm
+
+	* src/methods/tabl.h: removed comment
+
+	* src/methods/tabl.c: updated reference
+
+	* tests/t_vnrou.conf: adding tests
+
+	* tests/testdistributions/Makefile.am, tests/testdistributions/vc_special_correlations_constantrho.c:
+	adding distributions having correlation matrix with constant off-diagonal elements
+
+2005-07-04  author  <author@zwirn>
+
+	* tests/t_vnrou.conf:
+	added tests for function unur_vnrou_get_volumehat()
+
+	* src/methods/vnrou.c: bugfix in unur_vnrou_get_volumehat()
+
+	* src/methods/vnrou.h:
+	added some comments to unur_vnrou_get_volumehat()
+
+	* src/methods/vnrou.c, src/methods/vnrou.h:
+	added function unur_vnrou_get_volumehat()
+
+	* tests/t_vnrou.conf:
+	addded tests for AR(1), removed random corr-tests for dim=4,5
+
+	* tests/t_vmt.conf: added tests
+
+	* tests/testdistributions/Makefile.am, tests/testdistributions/testdistributions.h, tests/testdistributions/vc_special_correlations_ar1.c:
+	moved distributions with AR1 correlation matrix into its own file
+
+	* run/matr.c, src/distr/cvec.c, src/tests/chi2test.c, src/utils/matrix.c, src/utils/matrix_source.h:
+	removing 'detmin' conditions in matrix inversion
+
+	* run/Makefile, run/matr.c:
+	inverting and multipying correlation matrices
+
+	* run/something.c: *** empty log message ***
+
+	* tests/testdistributions/vc_special_correlations.c: minor bug-fix
+
+	* src/utils/matrix.c, src/utils/matrix_source.h:
+	adding matrix multiplication
+
+2005-07-02  author  <author@zwirn>
+
+	* TODO: updated
+
+2005-07-01  author  <author@zwirn>
+
+	* tests/testdistributions/testdistributions.h, tests/testdistributions/vc_special_correlations.c:
+	adding correlation matrix with constant off diagonal elements
+
+	* tests/testdistributions/vc_special_correlations.c:
+	removing LOGNORMCONSTANT
+
+	* tests/testdistributions/vc_special_correlations.c:
+	removing unur_source.h inclusion
+
+	* tests/testdistributions/Makefile.am, tests/testdistributions/testdistributions.h, tests/testdistributions/vc_special_correlations.c:
+	multivariate distributions with special correlation matrices
+
+	* src/distr/cvec.c:
+	removing calculations of special inverse corr-matrices
+
+	* doc/src/texinfo.tex: updated texinfo
+
+	* src/methods/utdr.h: changes in docu
+
+	* src/distr/cvec.c:
+	fixed logical bug in the calculation of the inverse corr-matrix
+
+	* src/methods/srou.h, src/methods/ssr.h: fixed typos
+
+	* src/methods/srou.h: changes docu
+
+	* tests/t_ssr.conf: minor changes
+
+	* src/methods/ssr.h: changes in docu
+
+	* src/distr/cvec.c, src/distr/cvec.h, tests/t_distr_cvec.conf:
+	added function unur_distr_cvec_set_covar_inv()
+
+2005-06-30  author  <author@zwirn>
+
+	* tests/t_mcorr.conf: corrected comment
+
+	* tests/t_norta.conf: added test
+
+	* src/methods/norta.c:
+	correlation matrix sigma_y made symmtric (ignore round-off errors)
+
+	* src/methods/hinv.h: changes in docu
+
+	* src/methods/hinv.c: added references
+
+	* doc/src/references.dh: added reference [HLa03]
+
+	* tests/t_ninv.conf: added tests
+
+	* src/methods/ninv.h: added comment in docu
+
+	* src/methods/ninv.c: minor change
+
+	* src/distr/cvec.c:
+	analytic calculation of two special types of the correlation matrix
+
+	* src/methods/ninv.h: changes in docu
+
+	* src/distr/cxtrans.c: check for NaNs in boundaries for new domains
+
+	* src/distributions/c_gamma.c: added comment
+
+	* tests/t_stringparser.conf:
+	return code for incorrect use of gamma(0.5) distribution has changed
+
+	* src/methods/ninv.c:
+	use bisection step if a pole of the PDF is hit in Newton algorithm
+
+2005-06-29  author  <author@zwirn>
+
+	* src/distributions/c_powerexponential.c, src/distributions/c_gamma.c:
+	added logPDF and dlogPDF
+
+	* src/distributions/c_beta.c: workaround for bug in method AROU
+
+	* run/Makefile: adding -lprng for lotto.c
+
+	* tests/t_arou.conf: added tests
+
+	* run/lotto.c: removing command line arguments
+
+	* src/distributions/c_normal.c, src/distributions/c_cauchy.c:
+	added logPDF and dlogPDF
+
+	* configure.ac:
+	added replacement _unur_log1p for missing C99 function log1p
+
+	* src/specfunct/Makefile.am, src/specfunct/log1p.c, src/specfunct/unur_specfunct_source.h:
+	added _unur_log1p
+
+	* tests/t_arou.conf, tests/t_tdr.conf: added more tests
+
+	* src/distributions/c_beta.c: added logPDF and dlogPDF
+
+	* run/Makefile, run/lotto.c:
+	example for calculating lotto numbers with unuran
+
+	* tests/t_distr_cxtrans.conf: added more tests
+
+	* src/distr/cxtrans.c: made dPDF and dlogPDF numerically more stable
+
+2005-06-28  author  <author@zwirn>
+
+	* tests/t_distr_cxtrans.conf: added more tests
+
+	* src/distr/cxtrans.c: made PDF and logPDF numerically more stable
+
+	* tests/testunuran.h:
+	include header file testdistributions.h in testunuran.h
+
+	* tests/testdistributions/c_wo_logpdf.c:
+	fixed bug with wrong underlying distribution
+
+	* src/distributions/c_exponential.c:
+	added logPDF and dlogPDF; minor changes to code of PDF
+
+	* src/distr/cont.c: print available functions into log file
+
+	* run/something.c: experiments with fft
+
+2005-06-17  author  <author@zwirn>
+
+	* doc/src/make_texi.pl: parsing DOMAIN string as PDF
+
+2005-06-16  author  <author@zwirn>
+
+	* src/distributions/unur_distributions.h, src/distributions/vc_copula.c, src/distributions/vc_multicauchy.c, src/distributions/vc_multinormal.c, src/distributions/vc_multistudent.c:
+	adjusting documentation
+
+	* src/distr/cxtrans.h: no change
+
+2005-06-14  author  <author@zwirn>
+
+	* configure.ac, tests/Makefile.am, tests/testdistributions/Makefile.am, tests/testdistributions/c_wo_logpdf.c, tests/testdistributions/testdistributions.h:
+	added directory for test distributions
+
+2005-06-12  author  <author@zwirn>
+
+	* tests/t_distr_cxtrans.conf:
+	added tests for new meta distribution CXTRANS
+
+	* src/unuran.h.in: added new meta distribution CXTRANS
+
+	* src/distr/cxtrans.c:
+	added checking of distribution ID in unur_distr_cxtrans_set_domain(); added line breaks in log output
+
+2005-06-11  author  <author@zwirn>
+
+	* tests/Makefile.am, tests/t_corder.conf, tests/t_distr_corder.conf:
+	merged t_corder.conf and t_distr_corder.conf into t_distr_corder.conf
+
+2005-06-10  author  <author@zwirn>
+
+	* doc/src/make_texi.pl: added support for TeX symbols | and \exp
+
+	* src/distr/cxtrans.c, src/distr/cxtrans.h, src/distr/Makefile.am, src/distr/cont.c, src/distr/distr_source.h:
+	added meta distribution type CXTRANS
+
+	* src/distributions/unur_stddistr.h: added meta distribution CXTRANS
+
+	* tests/Makefile.am: removed test for experimental method VAROU
+
+	* src/distr/corder.c: fixed right boundary of truncated domain
+
+2005-05-17  author  <author@zwirn>
+
+	* src/parser/parser.h:
+	adjusting documentation for the usage of single quotes in api-strings
+
+	* src/parser/parser.c, src/parser/parser.h:
+	adding usage of single quotes in api-strings
+
+2005-05-13  author  <author@zwirn>
+
+	* doc/src/make_texi.pl: added symbol phi
+
+2005-05-10  author  <author@zwirn>
+
+	* run/something.c, src/experimental/Makefile.am, src/experimental/walk.c, src/experimental/walk.h, src/experimental/walk_struct.h, src/methods/unur_methods_source.h, src/unur_cookies.h:
+	new method WALK added (Metropolis random walk sampler)
+
+	* src/experimental/hitrou.c, src/experimental/hitrou.h:
+	renaming of internal routine for setting/getting current point
+
+2005-05-09  author  <author@zwirn>
+
+	* run/something.c, src/experimental/ball.c, src/experimental/ball.h, src/experimental/ball_struct.h:
+	implementing 'pdf-variant' of ball sampler
+
+2005-05-06  author  <author@zwirn>
+
+	* src/experimental/ball.c, src/experimental/ball.h, src/experimental/ball_struct.h, src/methods/unur_methods_source.h, src/experimental/Makefile.am, src/unur_cookies.h:
+	adding BALL sampler method
+
+	* src/experimental/hitrou.c, src/experimental/hitrou.h, src/experimental/hitrou_struct.h:
+	removing ball sampler from HITROU method
+
+	* run/something.c: adapting example program for BALL method
+
+2005-05-03  author  <author@zwirn>
+
+	* doc/src/make_texi.pl:  fixed bug in transformation into TeX
+
+	* src/experimental/hitrou.c:
+	introducing multiplication factor for adaptive ball size
+
+	* run/something.c, src/experimental/hitrou.c, src/experimental/hitrou.h, src/experimental/hitrou_struct.h:
+	adding adaptive ball sampler
+
+	* run/Makefile, run/something.c:
+	added xperiments with ball sampler
+
+	* src/experimental/hitrou.c: bugfix in ball sampler (negative v-values)
+
+2005-05-01  author  <author@zwirn>
+
+	* src/distr/condi.c: fixed comments
+
+2005-04-29  author  <author@zwirn>
+
+	* src/experimental/hitrou.c: minor code reorganization
+
+	* src/experimental/hitrou.c, src/experimental/hitrou.h, src/experimental/hitrou_struct.h:
+	experiments with ball sampler
+
+2005-04-25  author  <author@zwirn>
+
+	* run/meanvarcor.c:
+	test routines
+
+	* run/Makefile, run/something.c:
+	test program
+
+	* src/experimental/hitrou.c: adjusting adaptive strip routines
+
+2005-04-22  author  <author@zwirn>
+
+	* src/experimental/hitrou.c, src/experimental/hitrou.h, src/experimental/hitrou_struct.h:
+	cleaning up in source code & introducing routines for adaptive strip
+
+	* src/utils/mrou_rectangle.c, src/utils/mrou_rectangle_struct.h:
+	renaming u_planes to bounding_rectangle
+
+2005-04-21  author  <author@zwirn>
+
+	* src/experimental/gibbs.c: using arou instead or tdr for conditionals
+
+2005-04-15  author  <author@zwirn>
+
+	* src/experimental/hitrou.c, src/experimental/hitrou.h, src/experimental/hitrou_struct.h:
+	adding variant : coordinate sampling
+
+2005-04-14  author  <author@zwirn>
+
+	* src/experimental/gibbs.c:
+	disabling dars, adding starting points for tdr (not yet active)
+
+	* src/experimental/gibbs_struct.h: adding starting points for tdr
+
+2005-04-13  author  <author@zwirn>
+
+	* src/methods/mcorr.c:
+	now given eigenvalues are always normalize such that sum is equal to dimension
+
+	* src/utils/matrix.c:
+	_unur_matrix_cholesky_decomposition now gives an error message in case of NaN
+
+	* src/methods/hrb.c, src/methods/hrd.c, src/methods/hri.c:
+	avoid log(0.) when U==1.
+
+	* src/methods/hrb.h, src/methods/hrd.h, src/methods/hri.h:
+	added HOWTOUSE section in docu
+
+	* src/methods/empl.h, src/methods/empk.h, src/methods/vempk.h:
+	added HOWTOUSE section to docu
+
+	* src/methods/cstd.h: fixed typo in docu
+
+2005-04-12  author  <author@zwirn>
+
+	* src/methods/auto.h, src/methods/cstd.h, src/methods/dari.h, src/methods/dau.h, src/methods/dgt.h, src/methods/dsrou.h, src/methods/dss.h, src/methods/dstd.h, src/methods/unif.h:
+	added =HOWTOUSE section
+
+	* src/methods/dari.c: removed obsolete code
+
+2005-04-11  author  <author@zwirn>
+
+	* src/distr/condi.c, src/experimental/gibbs.c:
+	bugfix for sampling along given direction
+
+2005-04-06  author  <author@zwirn>
+
+	* src/experimental/gibbs.c: added normalization of random unit vector
+
+	* src/experimental/gibbs.c, src/experimental/gibbs.h, src/experimental/gibbs_struct.h:
+	adding variant with random direction sampling
+
+2005-04-04  author  <author@zwirn>
+
+	* src/experimental/gibbs.c, src/experimental/gibbs_struct.h:
+	using single (cyclic) coordinate steps
+
+	* src/experimental/gibbs.c:
+	adjusting conditional parameters (direction-vectors)
+
+	* src/distr/condi.c, src/distr/condi.h, tests/t_distr_condi.conf:
+	added support for conditional distribution along arbitrary direction for distribution type CONDI
+
+	* tests/t_mcorr.conf, tests/t_urng.conf:
+	fixed code that violates ISO C89 standard
+
+	* src/distr/cvec.c, src/distr/cvec.h, tests/t_distr_cvec.conf:
+	unur_distr_cvec_set_pdfparam_vecs() now allows clearing of parameters by means of NULL as arguments
+
+	* src/distr/cont.c, src/distr/cont.h, tests/t_distr_cont.conf:
+	unur_distr_cont_set_pdfparam_vecs() now allows clearing of parameters by means of NULL as arguments
+
+	* tests/make_test_files.pl: removed annoying gcc compiler warning
+
+2005-04-01  author  <author@zwirn>
+
+	* src/experimental/gibbs.c: code cleanup - no functional changes
+
+	* src/distr/cont.c:
+	adding case in debug routine to include conditional distribution
+
+	* src/distr/condi.c: minor bug-fix in debug routine
+
+	* src/distr/cont.c:
+	fixed bug with cloning underlying distribution object in derived distribution
+
+	* src/experimental/gibbs.c, src/experimental/gibbs.h:
+	implementing conditional distributions from condi.c
+
+	* src/distr/condi.h: minor change in documentaion text
+
+	* src/experimental/gibbs.h, src/experimental/gibbs.c: minor changes
+
+	* src/distr/condi.h: added some more comments to docu of CONDI
+
+2005-03-31  author  <author@zwirn>
+
+	* NEWS: updated file
+
+	* tests/Makefile.am, tests/t_distr_condi.conf, src/distr/Makefile.am, src/distr/condi.c, src/distr/condi.h, src/distr/distr_source.h, src/distributions/unur_stddistr.h, src/unuran.h.in:
+	added new distribution type for conditional distributions
+
+	* src/distr/corder.c: removed obsolete prototoype declaration
+
+	* tests/t_distr_cont.conf, tests/t_distr_cvec.conf:
+	added tests for memory leaks
+
+	* run/Makefile, src/unuran_config.h: run/Makefile
+
+	* src/experimental/gibbs.c: different bugfixes
+
+	* src/distr/cvec.c, src/distr/cont.c:
+	bugfix in param_vecs (re)allocation
+
+	* src/methods/mcorr_struct.h:
+	fixed const qualifier in structure for MCORR
+
+	* tests/Makefile.am: fixed broken dependencies
+
+	* tests/test_functionparser.m:
+	removed some tests that do not run any more due to changes in Mathematica 5.1
+
+	* src/distr/corder.c:
+	fixed bug introduced by new parameter vector; now calls unur_distr_cont_new instead of initializing all variables itself
+
+	* src/distr/cont.c, src/distr/cont.h: fixed typos
+
+	* src/experimental/gibbs.c, src/experimental/gibbs.h, src/experimental/gibbs_struct.h:
+	GIBBS sampling method
+
+	* src/experimental/Makefile.am: adding GIBBS method
+
+	* src/unur_cookies.h: adding constants for GIBBS sampling method
+
+	* src/distr/cont.h: minor change
+
+	* src/methods/unur_methods_source.h: adding GIBBS sampling method
+
+2005-03-22  author  <author@zwirn>
+
+	* tests/t_distr_cont.conf: adding tests for parameter arrays
+
+	* src/distr/cont.c, src/distr/cont.h, src/distr/distr_struct.h:
+	adding parameter arrays & set/get functions.
+
+2005-03-15  author  <author@zwirn>
+
+	* src/tests/moments.c: bugfix in index-macro
+
+	* src/tests/unuran_tests.h: updating description
+
+	* src/experimental/hitrou.c:
+	bug fix in logic when to calculate bounding rectangle
+
+2005-03-14  author  <author@zwirn>
+
+	* tests/Makefile.am: minor change
+
+	* src/distr/corder.c: fixed missing initialization of pointer to logPDF
+
+	* src/methods/mcorr.c, src/methods/mcorr.h:
+	fixed incorrect handling of NULL pointer
+
+	* run/Makefile: update
+
+	* src/tests/moments.c: implementing calculation for multivariate case
+
+	* src/distr/cvec.c: additional check for invalid params
+
+	* tests/t_distr_cvec.conf:
+	updating tests with invalid set_params() and get_params()
+
+2005-03-11  author  <author@zwirn>
+
+	* NEWS: update
+
+	* tests/t_distr_cvec.conf:
+	change: unur_distr_cvec_set_pdfparams() and unur_distr_cvec_get_pdfparams() has been renamed to *pdfparams_vec() in cvec.c
+
+2005-03-10  author  <author@zwirn>
+
+	* src/distributions/vc_multicauchy.c:
+	bug fixed in the calculation of dlogpdf
+
+	* NEWS: updated
+
+	* src/distributions/vc_multicauchy.c, src/distributions/vc_multistudent.c:
+	adding calculation of dlogpdf
+
+2005-03-09  author  <author@zwirn>
+
+	* tests/t_hitrou.conf: added tests with fractional degrees of freedom
+
+	* src/distributions/unur_distributions.h, src/distributions/vc_multistudent.c:
+	changed degrees of freedom (nu) from 'int' to 'double'
+
+	* tests/t_hitrou.conf: increasing skip
+
+	* src/distr/cvec.c, src/distr/cvec.h:
+	adding set/get routines for scalar parameters, renaming vector parameters
+
+2005-03-08  author  <author@zwirn>
+
+	* tests/t_hitrou.conf:
+	adding tests for random multicauchy and multistudent distributions
+
+	* run/Makefile, run/hit.c: *** empty log message ***
+
+	* experiments/expect.c: commenting out the header includes
+
+	* run/Makefile, run/hit.c: *** empty log message ***
+
+	* tests/t_distr_cont.conf, tests/t_stringparser.conf, src/parser/make_stringparser.pl:
+	added API for logPDF for continuous distributions
+
+	* src/specfunct/Makefile.am, src/specfunct/cdfstudent.c, src/specfunct/unur_specfunct_source.h:
+	cleaning up code, moving cdf calculation of student's distribution
+	into src/distributions/c_student.c
+
+	* src/distributions/c_student.c:
+	adding calculation of cdf, cleaning up code
+
+	* src/experimental/expect.c, src/experimental/expect_source.h, experiments/expect.c, experiments/expect_source.h:
+	moving integral calculations to experiments folder
+
+	* src/experimental/Makefile.am:
+	moving integral calculations to experiments
+
+2005-03-07  author  <author@zwirn>
+
+	* src/distr/cont.c, src/distr/cont.h, src/distr/distr_source.h, src/distr/distr_struct.h:
+	added string API for logPDF
+
+	* tests/t_distr_cont.conf, src/distr/cont.c, src/distr/cont.h, src/distr/distr_source.h, src/distr/distr_struct.h:
+	added API for logPDF
+
+	* src/distributions/Makefile.am: removed trailing white space
+
+	* src/specfunct/Makefile.am, src/specfunct/cdfstudent.c, src/specfunct/unur_specfunct_source.h:
+	adding calculation of the cdf for the Student's distribution
+
+	* src/distributions/vc_multistudent.c:
+	minor changes and bugfix in the evaluation of the pdf
+
+	* src/distributions/c_student.c: minor bugfix
+
+	* tests/t_hitrou.conf: different skips
+
+	* src/tests/chi2test.c:
+	additional global multivariate test when dim>1 and CHI2_TEST_ADDITIONAL
+
+2005-03-04  author  <author@zwirn>
+
+	* tests/t_vmt.conf: added tests for multicauchy distributions
+
+2005-03-03  author  <author@zwirn>
+
+	* src/distributions/vc_multicauchy.c, src/distributions/vc_multistudent.c:
+	settin standartized marginal distributions
+
+2005-03-02  author  <author@zwirn>
+
+	* src/distr/cvec.c: initialization & clone of scalar parameters
+
+	* src/distr/cvec.c, src/distr/distr_struct.h:
+	adjusting parameter arrays
+
+	* src/parser/make_stringparser.pl:
+	excluding multicauchy and multinormal distributions
+
+	* src/distributions/vc_multistudent.c:
+	multivariate student distribution
+
+	* src/distributions/unur_distributions.h, src/distributions/unur_stddistr.h, src/distributions/Makefile.am:
+	adding multivariate student distribution
+
+	* src/distributions/c_normal.c, src/distributions/vc_multicauchy.c, src/distributions/vc_multinormal.c:
+	minor consistency adjustment of LOGNORMCONSTANT
+
+2005-02-28  author  <author@zwirn>
+
+	* src/distributions/vc_multicauchy.c: adjusting comments
+
+	* src/distributions/Makefile.am, src/distributions/unur_stddistr.h, src/distributions/vc_multicauchy.c:
+	creating skeleton for the multicauchy distribution
+
+	* run/hit.c:
+	adapting move of utils/integral*.* --> experimental/expect*.*
+
+	* src/experimental/Makefile.am, src/experimental/expect.c, src/experimental/expect_source.h:
+	moving utils/integral*.* --> experimental/expect*.*
+
+	* src/utils/integral.c, src/utils/integral_source.h, src/utils/Makefile.am:
+	moving integral*.* to ../experimental/expect*.*
+
+2005-02-24  author  <author@zwirn>
+
+	* run/Makefile, run/hit.c:
+	test-application for the hit&run sampler
+
+	* src/utils/Makefile.am, src/utils/integral.c, src/utils/integral_source.h:
+	routines for multidimensional integral calculations
+
+	* src/parser/functparser_deriv.ch: minor bugfix with logging definition
+
+2005-02-22  author  <author@zwirn>
+
+	* src/methods/tabl.c:
+	fixed infinite loop due to numeric roundoff on athlon64
+
+	* src/utils/mrou_rectangle.c:
+	direct calculation of vmax when mode is known
+
+	* src/experimental/hitrou.h:
+	adjusting description of the skip default value
+
+	* src/experimental/hitrou.c: adding skip-value to logfile output
+
+2005-02-14  author  <author@zwirn>
+
+	* src/experimental/Makefile.am: added file
+
+2005-02-13  author  <author@zwirn>
+
+	* tests/Makefile.am: run experimental t_varou
+
+	* tests/README.conf, tests/make_test_files.pl:
+	scan header files included in *.conf when searching for functions
+
+	* autogen.sh, configure.ac, src/Makefile.am, src/experimental/hitrou.c, src/experimental/hitrou.h, src/experimental/hitrou_struct.h, src/experimental/varou.c, src/experimental/varou.h, src/experimental/varou_struct.h, src/methods/Makefile.am, src/methods/hitrou.c, src/methods/hitrou.h, src/methods/hitrou_struct.h, src/methods/varou.c, src/methods/varou.h, src/methods/varou_struct.h, src/unuran.h.in, tests/Makefile.am, tests/t_hitrou.conf, tests/t_varou.conf:
+	made experimental zone
+
+2005-02-12  author  <author@zwirn>
+
+	* run/Makefile, src/methods/arou.c, src/methods/auto.c, src/methods/cstd.c, src/methods/dari.c, src/methods/dau.c, src/methods/dgt.c, src/methods/dsrou.c, src/methods/dss.c, src/methods/dstd.c, src/methods/empk.c, src/methods/empl.c, src/methods/hinv.c, src/methods/hitrou.c, src/methods/hrb.c, src/methods/hrd.c, src/methods/hri.c, src/methods/mcorr.c, src/methods/ninv.c, src/methods/norta.c, src/methods/nrou.c, src/methods/srou.c, src/methods/ssr.c, src/methods/tabl.c, src/methods/tdr_debug.ch, src/methods/tdr_init.ch, src/methods/tdr_newset.ch, src/methods/tdr_sample.ch, src/methods/unif.c, src/methods/utdr.c, src/methods/varou.c, src/methods/vempk.c, src/methods/vmt.c, src/methods/vnrou.c, src/unuran_config.h:
+	included marker for public and private part in methods file
+
+	* experiments/make_timing_table.c, src/distributions/c_beta_gen.c, src/distributions/c_burr_gen.c, src/distributions/c_cauchy_gen.c, src/distributions/c_chi_gen.c, src/distributions/c_exponential_gen.c, src/distributions/c_extremeII_gen.c, src/distributions/c_extremeI_gen.c, src/distributions/c_gamma_gen.c, src/distributions/c_gig_gen.c, src/distributions/c_laplace_gen.c, src/distributions/c_logistic_gen.c, src/distributions/c_lomax_gen.c, src/distributions/c_normal_gen.c, src/distributions/c_pareto_gen.c, src/distributions/c_powerexponential_gen.c, src/distributions/c_slash_gen.c, src/distributions/c_student_gen.c, src/distributions/c_triangular_gen.c, src/distributions/c_uniform_gen.c, src/distributions/c_weibull_gen.c, src/distributions/d_binomial_gen.c, src/distributions/d_geometric_gen.c, src/distributions/d_hypergeometric_gen.c, src/distributions/d_logarithmic_gen.c, src/distributions/d_poisson_gen.c, src/distributions/d_zipf_gen.c, src/distributions/unur_distributions_source.h, src/methods/arou.c, src/methods/auto.c, src/methods/cstd.c, src/methods/dari.c, src/methods/dau.c, src/methods/dgt.c, src/methods/dsrou.c, src/methods/dss.c, src/methods/dstd.c, src/methods/empk.c, src/methods/empl.c, src/methods/hinv.c, src/methods/hitrou.c, src/methods/hrb.c, src/methods/hrd.c, src/methods/hri.c, src/methods/mcorr.c, src/methods/ninv.c, src/methods/norta.c, src/methods/nrou.c, src/methods/srou.c, src/methods/ssr.c, src/methods/tabl.c, src/methods/tdr.c, src/methods/tdr_debug.ch, src/methods/tdr_init.ch, src/methods/tdr_newset.ch, src/methods/tdr_sample.ch, src/methods/tdr_source.h, src/methods/unif.c, src/methods/utdr.c, src/methods/varou.c, src/methods/vempk.c, src/methods/vmt.c, src/methods/vnrou.c, src/methods/x_gen.c, src/methods/x_gen.h, src/methods/x_gen_source.h, src/parser/stringparser.c.in, src/tests/timing.c, src/unur_struct.h, src/unuran_config.h, tests/Makefile.am, tests/t_arou.conf, tests/t_auto.conf, tests/t_cstd.conf, tests/t_dari.conf, tests/t_dau.conf, tests/t_dgt.conf, tests/t_dsrou.conf, tests/t_dstd.conf, tests/t_empk.conf, tests/t_hinv.conf, tests/t_hrb.conf, tests/t_hrd.conf, tests/t_hri.conf, tests/t_mcorr.conf, tests/t_ninv.conf, tests/t_norta.conf, tests/t_nrou.conf, tests/t_srou.conf, tests/t_ssr.conf, tests/t_tabl.conf, tests/t_tdr.conf, tests/t_timing_ninv.conf, tests/t_urng.conf, tests/t_utdr.conf, tests/t_varou.conf, tests/t_vempk.conf, tests/t_vnrou.conf:
+	replaced union by void* for data structure in generator object. let us hope that this was a good decision
+
+2005-02-11  author  <author@zwirn>
+
+	* src/methods/arou.c, src/methods/cstd.c, src/methods/dari.c, src/methods/dau.c, src/methods/dgt.c, src/methods/dsrou.c, src/methods/dss.c, src/methods/dstd.c, src/methods/empk.c, src/methods/empl.c, src/methods/hinv.c, src/methods/hitrou.c, src/methods/hrb.c, src/methods/hrd.c, src/methods/hri.c, src/methods/mcorr.c, src/methods/ninv.c, src/methods/norta.c, src/methods/nrou.c, src/methods/srou.c, src/methods/ssr.c, src/methods/tabl.c, src/methods/tdr.c, src/methods/unif.c, src/methods/utdr.c, src/methods/varou.c, src/methods/vempk.c, src/methods/vmt.c, src/methods/vnrou.c, src/methods/x_gen_source.h:
+	made ..._clone routines static
+
+2005-02-10  author  <author@zwirn>
+
+	* src/utils/slist.c, src/utils/slist.h:
+	added routine _unur_slist_replace
+
+2005-02-09  author  <author@zwirn>
+
+	* tests/Makefile.am:  - updated target valgrind
+
+	* scripts/run_valgrind.sh: added support for suppressing messages
+
+	* examples/Makefile.am:  - updated target valgrind
+
+2005-02-08  author  <author@zwirn>
+
+	* NEWS, src/methods/norta.c, src/methods/norta.h, src/methods/vmt.h:
+	updated docu for methods VMT and NORTA
+
+	* src/methods/vmt.c, src/methods/vmt.h: updated docu for method VMT
+
+	* doc/src/make_texi.pl: texify @unurmath string
+
+	* src/methods/norta.c, src/methods/norta_struct.h, tests/t_norta.conf:
+	finished method NORTA
+
+2005-02-07  author  <author@zwirn>
+
+	* src/methods/norta.c: added marginal generators
+
+	* src/tests/correlation.c: fixed typo
+
+	* run/run.c: *** empty log message ***
+
+	* src/methods/norta.c, src/methods/norta_struct.h:
+	started to implement non-uniform marginals
+
+	* run/run.c, src/tests/correlation.c, src/tests/unuran_tests.h:
+	added test for rank correlation between components of random vector
+
+	* tests/t_norta.conf: added more tests
+
+	* tests/t_distr_cvec.conf: fixed function prototype
+
+	* tests/t_norta.conf, tests/make_test_files.pl, tests/testroutines.c, tests/testunuran.h:
+	added chi2 test for marginal distributions
+
+	* src/tests/chi2test.c, src/tests/unuran_tests.h:
+	added unur_test_chi2_marginal() to test marginal distributions only
+
+2005-02-06  author  <author@zwirn>
+
+	* src/methods/norta.c, src/methods/norta_struct.h: first draft of NORTU
+
+	* src/utils/matrix.c, src/utils/matrix_source.h:
+	add routine to compute M'.D.M
+
+	* tests/Makefile.am, tests/t_norta.conf:
+	added test file for new method NORTA
+
+2005-02-04  author  <author@zwirn>
+
+	* src/methods/norta.c, src/methods/norta.h, src/methods/norta_struct.h, run/run.c, src/methods/Makefile.am, src/methods/unur_methods_source.h, src/methods/x_gen_source.h, src/parser/make_stringparser.pl, src/tests/tests.c, src/unur_cookies.h, src/unur_struct.h, src/unuran.h.in:
+	added files for new method NORTA
+
+	* src/distributions/Makefile.am, src/distributions/unur_distributions.h, src/distributions/unur_stddistr.h, src/distributions/vc_copula.c:
+	added distribution object for copulas
+
+	* src/distributions/vc_multinormal.c:
+	fixed typo; update dimension constraint
+
+	* src/distr/cvec.c, src/distr/cvec.h, src/distr/distr_source.h, src/distr/distr_struct.h:
+	added cholesky factor for rank correlation
+
+2005-02-02  author  <author@zwirn>
+
+	* src/methods/vmt.c: fixed memory leak
+
+	* tests/t_vmt.conf:
+	added test for handling distribution without marginal generator
+
+2005-02-01  author  <author@zwirn>
+
+	* run/run.c, src/distr/cvec.c, src/distr/cvec.h, src/distr/distr_source.h, src/distributions/vc_multinormal.c, src/unur_typedefs.h:
+	removed bothering const qualifier for pointer to CVEC distribution object
+
+	* src/distributions/vc_multinormal.c: fixed bug with standard form
+
+	* src/distributions/vc_multinormal.c:
+	added logPDF to multinormal distribution
+
+	* src/distr/cvec.c, src/distr/distr_source.h:
+	make wrapper functions for computing PDF when logPDF is given globally available
+
+2005-01-31  author  <author@zwirn>
+
+	* src/distr/cvec.c: decreasing constant COVARIANCE_DETMIN to 1e-40
+
+	* src/methods/hitrou.c: adding ellipsoidal test shape
+
+2005-01-27  author  <author@zwirn>
+
+	* tests/t_distr_cvec.conf, src/distr/cvec.c, src/distr/cvec.h, src/distr/distr_source.h, src/distr/distr_struct.h:
+	added API for logPDF for CVEC distribution type
+
+2005-01-18  author  <author@zwirn>
+
+	* src/methods/hitrou.c, src/methods/hitrou.h, src/methods/hitrou_struct.h:
+	renaming 'recursive' -> 'adaptive'
+
+	* src/methods/hitrou.c, src/methods/hitrou.h, src/methods/hitrou_struct.h:
+	adding more testshapes (simplices), recursion flag
+
+	* src/tests/chi2test.c: _unur_test_chi2test not static anymore
+
+2005-01-13  author  <author@zwirn>
+
+	* src/methods/hitrou.c, src/methods/hitrou.h, src/methods/hitrou_struct.h, src/utils/mrou_rectangle.c, src/utils/mrou_rectangle_struct.h:
+	introducing the possibility to use an infinite bounding strip
+	instead of the full bounding rectangle.
+	this can drastically reduce the setup time for higher dimensions.
+
+2004-12-29  author  <author@zwirn>
+
+	* src/methods/hitrou.c: change of inside-check for testrectangle
+
+	* src/methods/hitrou.c, src/methods/hitrou.h:
+	adding test-routines for setting and getting the current (interior) uv-point
+
+	* src/methods/hitrou.c, src/methods/hitrou.h, src/methods/hitrou_struct.h:
+	added internal routines for testrectangle
+	changed tab's into spaces
+
+2004-12-21  author  <author@zwirn>
+
+	* src/methods/hitrou.h: added DESCRIPTION to docu
+
+	* tests/t_mcorr.conf:
+	added tests for setting eigenvalues and made special tests more verbose
+
+	* src/methods/mcorr.h, src/methods/mcorr.c: minor change
+
+	* tests/t_mcorr.conf:
+	writing some additional info from test into logfile
+
+	* src/methods/mcorr.c: writting eigenvalues into log-file
+
+2004-12-20  author  <author@zwirn>
+
+	* src/methods/mcorr.c:
+	eigenvalues are no more copied into parameter object; renamed _unur_mcorr_sample_matr to _unur_mcorr_sample_matr_HH; special routines for setup the two variants are in their subroutines
+
+	* src/methods/mcorr.h: modified docu
+
+	* src/methods/mcorr.c, src/methods/mcorr.h:
+	explicit symmetrization of the correlation matrix (rounding errors)
+
+2004-12-16  author  <author@zwirn>
+
+	* tests/t_hitrou.conf: testing with different parameters
+
+	* src/methods/hitrou.c, src/methods/hitrou.h:
+	removing verifying routines for hut
+
+	* src/methods/hitrou.c, src/methods/hitrou_struct.h:
+	using auxiliary generator for normal distribution
+
+	* src/methods/mcorr.c: fixing potential memory leak
+
+2004-12-15  author  <author@zwirn>
+
+	* tests/t_mcorr.conf:
+	adding tests to check if generated matrices have correct eigenvalues
+
+	* tests/testroutines.c, tests/testunuran.h:
+	moving _unur_FP_equal macro from testroutines.c to testunuran.h
+
+	* src/methods/mcorr.c, src/methods/mcorr_struct.h:
+	adding working array to speed-up sampling routine
+
+	* src/methods/mcorr.c: reorganizing and restructuring source code
+
+2004-12-14  author  <author@zwirn>
+
+	* src/methods/mcorr.c: minor changes
+
+	* src/utils/matrix.c: removed obsolete includes
+
+	* src/methods/mcorr.c: including eigenvalues in clone
+
+	* src/methods/hitrou.h: minor adjustments in description
+
+	* src/methods/mcorr.c: added check for all eigenvalues being ~1
+
+2004-12-13  author  <author@zwirn>
+
+	* NEWS: updated
+
+	* src/utils/matrix.c, src/utils/matrix_source.h:
+	generation of random correlation matrices with given eigenvalues
+	have been moved to mcorr.
+
+	* src/methods/mcorr.c, src/methods/mcorr.h:
+	adding generation method for correlation matrices with given eigenvalues
+
+	* src/methods/mcorr_struct.h: adding eigenvalue arrays
+
+	* doc/src/references.dh: added [MOa84]
+
+	* src/utils/matrix.c, src/utils/matrix_source.h:
+	adding routine to generate random correlation matrix
+	having given eigenvalues.
+	this is only temporary and will be re-implemented in mcorr.
+
+	* src/utils/vector.c, src/utils/vector_source.h:
+	added vector normalization routine
+
+2004-12-09  author  <author@zwirn>
+
+	* src/methods/hitrou.h: added short description of the HITROU method
+
+	* tests/t_hitrou.conf: random tests with greater skip
+
+	* src/tests/chi2test.c:
+	adjusting return value from multivariate chi2test
+
+2004-12-04  author  <author@zwirn>
+
+	* examples/example4.c, examples/example_anti.c:
+	adapted example to new URNG API
+
+	* tests/Makefile.am: added tests for new methods HITROU
+
+	* tests/Makefile.am: temporary removing tests with the HITROU method
+
+	* tests/Makefile.am, tests/t_hitrou.conf: test for the hitrou method
+
+	* src/unuran.h.in, src/unur_struct.h, src/unur_cookies.h:
+	adding method hitrou
+
+	* src/methods/Makefile.am, src/methods/hitrou.c, src/methods/hitrou.h, src/methods/hitrou_struct.h, src/methods/unur_methods_source.h:
+	method hitrou = HIT nd run Ratio Of Uniform
+
+2004-12-03  author  <author@zwirn>
+
+	* src/methods/varou.c, src/methods/vnrou.c, src/utils/Makefile.am, src/utils/mrou_rectangle.c, src/utils/mrou_rectangle_source.h, src/utils/mrou_rectangle_struct.h, src/utils/rou_rectangle.c, src/utils/rou_rectangle_source.h:
+	renamed rou_rectangle* to mrou_rectangle*; added genid to MROU_RECTANGLE structure
+
+	* src/methods/varou.c: removing aux_dim from CLONE copy
+
+	* src/methods/varou_struct.h, src/methods/vnrou_struct.h:
+	removing aux_dim from generator data
+
+	* src/methods/varou.c, src/methods/vnrou.c:
+	adjusting bounding rectangle calculations
+
+	* src/utils/Makefile.am, src/utils/rou_rectangle.c, src/utils/rou_rectangle_source.h:
+	moving and adapting calculations of the minimum bounding rectangle
+
+2004-12-02  author  <author@zwirn>
+
+	* src/methods/vnrou.c: minor changes
+
+	* src/methods/vnrou.h: fixed docu
+
+	* src/methods/vnrou_struct.h: fix structure
+
+	* src/methods/nrou.c: minor change
+
+	* src/methods/nrou.h: fixed docu
+
+	* src/utils/eigensystem.c: matrix may have dimension = 1
+
+	* src/methods/nrou.c: minor changes
+
+	* src/methods/nrou.h: fixed docu
+
+	* tests/t_vmt.conf, tests/t_vnrou.conf: added tests for dimension 1
+
+	* tests/testroutines.c: fix for dimension 1
+
+	* src/methods/x_gen.c: bug fix for dimension 1
+
+2004-12-01  author  <author@zwirn>
+
+	* tests/t_distr_cvec.conf, tests/t_distr_matr.conf, tests/t_vmt.conf, src/distr/cvec.c, src/distr/cvec.h, src/distr/distr_source.h, src/distr/matr.c, src/distr/matr.h, src/methods/vmt.c, src/tests/chi2test.c, src/utils/matrix.c:
+	matrices and vectors may have dimension 1
+
+	* src/utils/vector.c: fixed docu
+
+	* src/unuran_config.h: minor changes in docu
+
+	* src/uniform/urng.h: fixed docu for new URNG API
+
+	* src/uniform/urng_API.c: minor changes
+
+	* doc/src/make_texi.pl:
+	parse functions with function pointer as arguments correctly
+
+2004-11-24  author  <author@zwirn>
+
+	* src/uniform/urng.c: delete obsolete file
+
+2004-11-23  author  <author@zwirn>
+
+	* src/uniform/urng_source.h, src/unuran_config.h:
+	new handling of default URNG types at compile time
+
+	* tests/Makefile.am, tests/t_urng.conf: added simple tests for URNG API
+
+	* src/uniform/urng_API.c, src/uniform/urng_struct.h, src/unur_cookies.h:
+	added cookies for URNG objects
+
+2004-11-17  author  <author@zwirn>
+
+	* src/uniform/Makefile.am, src/uniform/urng.h, src/uniform/urng_gsl.c, src/uniform/urng_prng.c, src/uniform/urng_source.h, src/uniform/urng_typedefs.h, src/unur_source.h, src/unuran.h.in, src/unuran_config.h:
+	moved typedef for UNUR_URNG_TYPE into new file ./src/uniform/urng_typedefs.h
+
+	* src/uniform/urng_rngstreams.c:
+	added more functionality for URNG type RNGSTREAMS
+
+	* tests/t_varou.conf: tests with different covariance matrices
+
+	* src/uniform/urng.h, src/uniform/urng_API.c, src/uniform/urng_fvoid.c, src/uniform/urng_gsl.c, src/uniform/urng_prng.c, src/uniform/urng_rngstreams.c, src/uniform/urng_source.h, src/uniform/urng_struct.h:
+	renamed urng->params to urng->state; added slot urng->seed
+
+	* src/methods/varou.c: minor change to output log
+
+2004-11-16  author  <author@zwirn>
+
+	* NEWS, src/tests/counturn.c, src/uniform/Makefile.am, src/uniform/urng.c, src/uniform/urng.h, src/uniform/urng_API.c, src/uniform/urng_fvoid.c, src/uniform/urng_gsl.c, src/uniform/urng_prng.c, src/uniform/urng_rngstreams.c, src/uniform/urng_source.h, src/uniform/urng_struct.h, src/unur_source.h, src/unur_struct.h, src/unuran_config.h, src/utils/error.c, src/utils/unur_errno.h, tests/Makefile.am, tests/testroutines.c:
+	completely new interface for URNG: generic interface enhanced, is now default
+
+	* doc/src/glossary.dh: added entry to glossary
+
+	* scripts/run_valgrind.sh: options changed for valgrind
+
+	* configure.ac: fixed name in test of library
+
+	* hmake: added support for 'make check' output
+
+2004-11-10  author  <author@zwirn>
+
+	* src/uniform/urng_set.c: removed obsolete include unur_uniform.h
+
+	* src/uniform/urng_default.c: changed include unur_uniform.h
+
+	* src/uniform/Makefile.am, src/uniform/urng.h, src/uniform/urng_default.c, src/uniform/urng_set.c:
+	moved calls for setting URNGs in parameter and generator objects from urng_default.c into urng_set.c
+
+	* src/unuran.h.in: moved src/methods/x_urng.h to src/uniform/urng.h
+
+	* src/tests/timing.c, src/methods/arou.c, src/methods/cstd.c, src/methods/dari.c, src/methods/dau.c, src/methods/dgt.c, src/methods/dsrou.c, src/methods/dss.c, src/methods/dstd.c, src/methods/empk.c, src/methods/empl.c, src/methods/hinv.c, src/methods/hrb.c, src/methods/hrd.c, src/methods/hri.c, src/methods/mcorr.c, src/methods/ninv.c, src/methods/nrou.c, src/methods/srou.c, src/methods/ssr.c, src/methods/tabl.c, src/methods/tdr.c, src/methods/unif.c, src/methods/utdr.c, src/methods/varou.c, src/methods/vempk.c, src/methods/vmt.c, src/methods/vnrou.c:
+	include <uniform/urng.h>
+
+	* src/methods/Makefile.am, src/methods/x_urng.c, src/methods/x_urng.h, src/uniform/Makefile.am, src/uniform/urng.h, src/uniform/urng_default.c:
+	moved src/methods/x_urng.h to src/uniform/urng.h and src/methods/x_urng.c to src/uniform/urng_default.c
+
+	* src/unur_struct.h: removed including of methods/x_urng.h
+
+	* src/methods/varou.c: fixed bug in simplex sampling routine
+
+2004-11-09  author  <author@zwirn>
+
+	* src/methods/varou.c: minor change
+
+2004-11-08  author  <author@zwirn>
+
+	* src/utils/matrix.c: minor changes
+
+	* hmake: added make with colored output
+
+2004-11-02  author  <author@zwirn>
+
+	* tests/Makefile.am: temporary removing tests for the varou method
+
+	* tests/Makefile.am, tests/t_varou.conf: *** empty log message ***
+
+	* src/methods/varou.c:
+	sampling using PDF() function instead of _unur_varou_f()
+
+	* src/methods/varou.c: source-code reorganization
+
+2004-10-29  author  <author@zwirn>
+
+	* src/methods/varou.c:
+	excluding top vertex in splitting as long as we have infinite volumes
+
+	* src/methods/varou.c: check for inifinite hut
+
+2004-10-28  author  <author@zwirn>
+
+	* src/methods/varou.c: checking hat in _unur_varou_sample_check()
+
+	* src/methods/varou.c: bugfix in sampling routine
+
+2004-10-22  author  <author@zwirn>
+
+	* src/distr/cvec.c, src/utils/matrix.c: minor change
+
+	* src/distr/cvec.c, src/methods/varou.c, src/utils/matrix.c:
+	m inor changes
+
+2004-10-21  author  <author@zwirn>
+
+	* src/methods/varou.c, src/methods/varou_struct.h:
+	implementing volume minimization using brent's method
+
+	* src/utils/fmax.c, src/utils/fmax_source.h:
+	moving _unur_util_brent() declaratiob to header file
+
+2004-10-20  author  <author@zwirn>
+
+	* src/methods/varou.c: check if initial cones can be computed
+
+	* src/methods/varou.c, src/methods/varou.h:
+	adding routine unur_varou_set_cones()
+
+	* src/methods/varou_struct.h:
+	adding max_cones to parameter and generator  object
+
+	* src/methods/varou.c: sampling routine : _unur_varou_sample_cvec()
+
+	* src/methods/varou.c: minor change in debugging code
+
+	* src/methods/varou.c: added routine to sample uniformly in cone
+
+	* src/methods/varou_struct.h:
+	adding cummulate volume sum to the cone structure
+
+2004-10-19  author  <author@zwirn>
+
+	* src/methods/varou.c: adjusting CLONE object
+
+	* src/methods/varou.c: cone volume calculations in own routine
+
+2004-10-18  author  <author@zwirn>
+
+	* src/methods/varou.c:
+	changing role of VAROU_MAX_nnn constants, definition of N_ALPHA
+
+	* src/methods/varou.c: fixed bug in the calculation of unut volumes
+
+	* src/methods/varou.c: experimenting with tangent plane positions
+
+2004-10-15  author  <author@zwirn>
+
+	* src/methods/varou.c:
+	introducing alpha : intermediant point between top vertex and barycentre
+
+	* src/methods/varou_struct.h: removing index_normal from cone struct
+
+	* src/methods/varou.c: adjusting changes in cone structure
+
+	* src/methods/varou_struct.h: adding touching point to cone structure
+
+2004-10-14  author  <author@zwirn>
+
+	* src/methods/varou.c: minor change
+
+	* src/methods/varou.c: restructuring to made source-code more readable
+
+	* src/utils/matrix.c: minor change in log-text
+
+2004-10-13  author  <author@zwirn>
+
+	* src/methods/varou.c: debugging version
+
+2004-10-12  author  <author@zwirn>
+
+	* src/methods/varou.c:
+	calculation of cone parameters (norms, volume, etc)
+
+	* src/methods/varou_struct.h:
+	adding surface gradient vector to cone structure
+
+2004-10-11  author  <author@zwirn>
+
+	* src/methods/varou_struct.h: adding simplex volume to struct
+
+	* src/methods/varou.c: adding skeleton for cone-splitting
+
+	* src/methods/varou.c: adjusting calculations of f(), F() and dF()
+
+2004-10-10  author  <author@zwirn>
+
+	* src/methods/varou.c: added routines for initial verteces and cones
+
+	* src/methods/varou_struct.h: additions to generator structure
+
+	* run/Makefile: removing double occurence of 'something'
+
+2004-10-06  author  <author@zwirn>
+
+	* src/methods/varou.c:
+	adding routine for uniform sampling vector in a simplex
+
+2004-09-30  author  <author@zwirn>
+
+	* src/methods/varou.c: added initial bounding rectangle calculations
+
+	* src/methods/vnrou.c:
+	minor bug in bounding rectangle calculation fixed
+
+	* src/methods/varou_struct.h:
+	adding initial boundary rectangle into unur_varou_gen struct
+
+	* src/methods/varou.h: minor change
+
+	* src/methods/vnrou.c: added declarations of auxiliary functions
+
+2004-09-22  author  <author@zwirn>
+
+	* src/utils/vector.c, src/utils/vector_source.h: minor changes
+
+	* makewin.sh: fixed path
+
+2004-09-21  author  <author@zwirn>
+
+	* src/methods/varou.c: gradient calculations for tangent plane
+
+	* src/utils/vector_struct.h: *** empty log message ***
+
+	* src/methods/varou.c, src/unur_struct.h, src/utils/vector.c, src/utils/vector_source.h:
+	removing vector struct UNUR_VECTOR
+
+2004-09-20  author  <author@zwirn>
+
+	* src/methods/varou.c: including auxiliary function definitions
+
+	* src/unur_source.h: including utils/vector_source.h
+
+	* src/unur_struct.h: including utils/vector_struct.h
+
+	* src/utils/vector_source.h, src/utils/vector_struct.h:
+	moving UNUR_VECTOR from vector_source.h to vector_struct.h
+
+	* src/utils/vector.c, src/utils/vector_source.h:
+	renamed unur_vector_routines() to _unur_vector_routines()
+
+2004-09-17  author  <author@zwirn>
+
+	* src/utils/vector.c, src/utils/vector_source.h:
+	calculations of scalar_product and norm
+
+	* makewin.sh, src/methods/varou.c: minor change
+
+	* src/utils/Makefile.am, src/utils/vector.c, src/utils/vector_source.h:
+	vector structures and functions
+
+2004-09-14  author  <author@zwirn>
+
+	* src/methods/nrou.c: simplifying calculation of vmax
+
+2004-09-13  author  <author@zwirn>
+
+	* makewin.sh: *** empty log message ***
+
+	* Makefile.am, makewin.sh:
+	experimental script for making Windows libraries
+
+	* scripts/Makefile.am, src/utils/Makefile.am:
+	fixed dependencies of unur_fp_constants_source.h
+
+	* scripts/Makefile.am, src/utils/Makefile.am:
+	unur_fp_const_source.h is not cleaned when running make distclean
+
+	* configure.ac: changed ordering of some tests
+
+	* src/methods/nrou.c: simplifying calculation of vmax
+
+2004-09-10  author  <author@zwirn>
+
+	* run/run.c: *** empty log message ***
+
+	* src/distr/discr.h, src/distr/cvec.h:
+	added short desciption of parameters in docu
+
+	* src/distr/cont.h, src/distr/cemp.h, src/distr/cvemp.h:
+	minor change in docu
+
+2004-09-09  author  <author@zwirn>
+
+	* tests/t_nrou.conf, src/methods/nrou.c, src/methods/nrou.h:
+	some changes with center
+
+	* doc/src/glossary.dh, doc/src/make_texi.pl: fixed \sign
+
+	* doc/src/make_texi.pl: added TeX macro \cdot
+
+	* doc/src/glossary.dh: minor change
+
+	* src/methods/tdr.h: removed internal routine from manual
+
+	* src/distr/cont.h, src/distr/discr.h, src/utils/unur_errno.h:
+	fixed error with (old) return codes
+
+	* src/distr/cemp.h, src/distr/cont.c, src/distr/cont.h, src/distr/corder.h, src/distr/cvemp.h, src/distr/distr.h, src/distr/matr.h:
+	updated docu
+
+	* doc/src/make_texi.pl: added TeX macros \pm and \infty
+
+	* doc/src/intro.dh, TODO, configure.ac: updated
+
+	* src/distr/cont.h, src/distr/distr.h: new docu
+
+	* doc/src/make_texi.pl:
+	fixed bug with automatic conversion of special strings at beginning of line
+
+	* doc/src/README, doc/src/make_texi.pl:
+	added list of calls at top of Function Reference sections in HTML manual
+
+2004-09-08  author  <author@zwirn>
+
+	* doc/src/make_texi.pl: added list of calls to functions references
+
+	* src/methods/vnrou.h, src/methods/nrou.h:
+	improved docu; made use of new @unurmathdisplay macro
+
+	* src/distr/cvec.h: minor change
+
+	* doc/src/arvag.dh: made use of new @unurmathdisplay macro
+
+	* doc/src/README: added @unurmathdisplay
+
+	* doc/src/make_texi.pl:
+	added @unurmathdisplay; fixed problem with @unurmath and new paragraphs
+
+	* src/parser/make_stringparser.pl:
+	exclude header files containing # from file list
+
+	* src/parser/functparser_doc.dh, src/parser/parser.h:
+	changed =NODE to =NODEX to force page breaks
+
+	* src/methods/nrou.h: minor change in docu
+
+	* src/distr/cemp.h, src/distr/cont.h, src/distr/corder.h, src/distr/cvec.h, src/distr/cvemp.h, src/distr/discr.h, src/distr/distr.h, src/distr/matr.h:
+	changed =NODE to =NODEX to force page breaks
+
+	* doc/src/make_texi.pl:
+	page break before =METHOD; added tag =NODEX with page break
+
+	* doc/src/README: added tag =NODEX with page break
+
+	* doc/src/examples.dh, doc/src/methods.dh, doc/src/stddist.dh:
+	changed =NODE to =NODEX to force page breaks
+
+2004-09-07  author  <author@zwirn>
+
+	* src/distr/cont.c, src/distr/cont.h, src/distr/cvec.c:
+	added center to debugging info
+
+	* NEWS, src/distr/cont.c, src/distr/cont.h, src/distr/distr_struct.h, tests/t_distr_cont.conf:
+	added unur_distr_cont_set_center() and unur_distr_cont_get_center() calls
+
+	* src/methods/nrou.h:
+	updated docu; added description for generalized RoU method
+
+	* doc/src/arvag.dh: added description of generalized RoU method
+
+	* src/methods/varou.h: fixed broken reference
+
+	* src/unuran_config.h: enabled cookies
+
+	* src/unur_cookies.h: added cookies for method VAROU
+
+2004-08-26  author  <author@zwirn>
+
+	* run/run.c, src/methods/Makefile.am, src/methods/unur_methods_source.h, src/methods/varou.c, src/methods/varou.h, src/methods/varou_struct.h, src/methods/x_gen_source.h, src/unur_struct.h, src/unuran.h.in:
+	Skeleton for method VAROU (Vector Adaptive ROU)
+
+2004-08-24  author  <author@zwirn>
+
+	* src/methods/nrou.c:
+	replacing pow-function with sqrt() for r=1 in sampling evaluations
+
+2004-08-09  author  <author@zwirn>
+
+	* tests/t_nrou.conf: adding tests with r=0.5 and r=2
+
+	* src/methods/nrou.c, src/methods/nrou.h, src/methods/nrou_struct.h:
+	implementing r-parameter for generalized rou method
+
+	* src/methods/nrou.c: removing global copy of generator object
+
+2004-08-06  author  <author@zwirn>
+
+	* doc/unuran.texi: added authore
+
+	* configure.ac, src/unuran_config.h: make ready for release
+
+	* tests/Makefile.am, tests/t_arou.conf: fixed minor problems
+
+	* configure.ac: next release
+
+	* ChangeLog: updated
+
+	* src/methods/nrou.h:
+	renamed unur_nrou_set_rect_u() to unur_nrou_set_rect_v(); improved manual
+
+	* src/methods/nrou.c:
+	renamed unur_nrou_set_rect_u() to unur_nrou_set_rect_v()
+
+	* tests/t_nrou.conf:
+	renamed unur_nrou_set_rect_u() to unur_nrou_set_rect_v(); added tests for stringparser; added validate tests
+
+	* INSTALL, doc/src/intro.dh: added comment about IEEE FPA
+
+	* AUTHORS, NEWS, THANKS: updated
+
+	* src/methods/vnrou.c:
+	minor bugfix with starting point initialization for bounding rectangle calculation
+
+	* doc/src/unuran_method_requirements.texi: added VNROU
+
+	* doc/src/references.dh: added [HJa61] and [WGS91]; update [JLa02]
+
+	* src/methods/vnrou.h: improved version of manual
+
+	* src/distr/cvec.h: added introduction to CVEC distributions
+
+	* src/distr/discr.c:
+	bugfix: right boundary was wrong in unur_distr_discr_make_pv()
+
+	* src/distributions/d_binomial.c: minor change
+
 2004-08-06  Josef Leydold  <leydold@zwirn.appstat.wu-wien.ac.at>
 
 	* src/methods/nrou.h:

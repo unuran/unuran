@@ -425,9 +425,9 @@ sub scan_validate {
 		my @lines = split /\n/, $genline;
 		
 		# print lines 
+		print "\tunur_errno = 0;\n";
 		print "\tdo {\n";
 		print "\tUNUR_DISTR *distr_localcopy = unur_distr_clone(distr[$n_distr]);\n";
-		print "\tunur_errno = 0;\n";
 		
 		my $have_gen_lines = 0;
 		foreach my $l (@lines) {
@@ -511,9 +511,9 @@ sub scan_validate {
 		my @lines = split /\n/, $genline;
 		
 		# print lines 
+		print "\tunur_errno = 0;\n";
 		print "\tdo {\n";
 		print "\tUNUR_DISTR *distr_localcopy = unur_distr_clone(distr[$n_distr]);\n";
-		print "\tunur_errno = 0;\n";
 		
 		my $have_gen_lines = 0;
 		foreach my $l (@lines) {

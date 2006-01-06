@@ -156,8 +156,11 @@ AC_CONFIG_FILES([\
 	examples/Makefile \
 	experiments/Makefile ])
 
+dnl Makefiles for experimental code
 AC_CHECK_FILE(${srcdir}/src/experimental/Makefile.am, 
-	AC_CONFIG_FILES(src/experimental/Makefile) )
+	AC_CONFIG_FILES(src/experimental/Makefile))
+AC_CHECK_FILE(${srcdir}/run/Makefile.am, 
+	AC_CONFIG_FILES(run/Makefile))
 
 AC_OUTPUT
 

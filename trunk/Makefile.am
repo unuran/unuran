@@ -3,7 +3,14 @@
 
 # AUTOMAKE_OPTIONS = 
 
-SUBDIRS = . scripts src examples experiments tests doc
+# Experimental code
+if INCLUDE_EXPERIMENTAL
+EXPERIMENTAL_DIRS = run
+else
+EXPERIMENTAL_DIRS = 
+endif
+
+SUBDIRS = . scripts src examples experiments tests doc $(EXPERIMENTAL_DIRS)
 
 EXTRA_DIST = \
  Announcement-0.1.0 \

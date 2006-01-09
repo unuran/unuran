@@ -3,7 +3,7 @@ dnl $Id$
 
 dnl Initialize.
 AC_PREREQ(2.59)
-AC_INIT([UNURAN],[0.7.1],[unuran@statistik.wu-wien.ac.at])
+AC_INIT([UNURAN],[0.8.0],[unuran@statistik.wu-wien.ac.at])
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([src/unuran_config.h])
 AC_CONFIG_HEADER([config.h])
@@ -19,13 +19,13 @@ dnl unuran-0.6.0   3:0:0
 dnl unuran-0.7.0   4:0:0
 dnl unuran-0.7.1   4:0:1
 
-UNURAN_LT_VERSION="4:0:1"
+UNURAN_LT_VERSION="5:0:0"
 AC_SUBST([UNURAN_LT_VERSION])
 
 dnl Whether experimental code should be included
 dnl (set to false before releasing a new version)
-dnl AM_CONDITIONAL(INCLUDE_EXPERIMENTAL,true)
-AM_CONDITIONAL(INCLUDE_EXPERIMENTAL,false)
+AM_CONDITIONAL(INCLUDE_EXPERIMENTAL,true)
+dnl AM_CONDITIONAL(INCLUDE_EXPERIMENTAL,false)
 
 dnl Add dmalloc support.
 AM_WITH_DMALLOC

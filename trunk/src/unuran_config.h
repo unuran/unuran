@@ -85,7 +85,7 @@
 /* Debugging information is written into the log file.                       */
 /* It only works if additionally UNUR_ENABLE_LOGGING is defined (see above). */
 
-#define UNUR_DEBUGFLAG_DEFAULT   UNUR_DEBUG_OFF
+#define UNUR_DEBUGFLAG_DEFAULT   UNUR_DEBUG_INIT
 
 /*---------------------------------------------------------------------------*/
 /* Warnings and error messages.                                              */
@@ -121,7 +121,7 @@
 /* However checking against an invalid NULL pointer can be switched on for   */
 /* each pointer that occurs by defining  UNUR_ENABLE_CHECKNULL.              */
 
-/* #define UNUR_ENABLE_CHECKNULL 1 */
+#define UNUR_ENABLE_CHECKNULL 1
 
 /*---------------------------------------------------------------------------*/
 /* Debugging tools.                                                          */
@@ -129,7 +129,7 @@
 /* changes are made in the library.)                                         */
 
 /* use magic cookies to validate type of pointer */
-/* #define UNUR_COOKIES  1 */
+#define UNUR_COOKIES  1
 
 /*****************************************************************************
  *  Compile time parameters for generators.                                  *

@@ -8,7 +8,7 @@
 
                Installation instructions for the UNURAN library.
 
-                              Version 0.7.0
+                              Version 0.7.1
 
 
 While the code is plain ANSI C and thus quite portable, the following
@@ -28,8 +28,8 @@ Installing UNURAN
 .................
 
   1. First unzip and untar the package and change to the directory:
-          tar zxvf unuran-0.7.0.tar.gz
-          cd unuran-0.7.0
+          tar zxvf unuran-0.7.1.tar.gz
+          cd unuran-0.7.1
 
   2. Edit the file `src/unuran_config.h'.  
      Set the default type of the uniform random number generator:

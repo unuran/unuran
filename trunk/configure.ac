@@ -17,14 +17,15 @@ dnl unuran-0.4.4   1:0:2
 dnl unuran-0.5.0   2:0:0
 dnl unuran-0.6.0   3:0:0
 dnl unuran-0.7.0   4:0:0
+dnl unuran-0.7.1   4:0:1
 
-UNURAN_LT_VERSION="4:0:0"
+UNURAN_LT_VERSION="4:0:1"
 AC_SUBST([UNURAN_LT_VERSION])
 
 dnl Whether experimental code should be included
 dnl (set to false before releasing a new version)
-AM_CONDITIONAL(INCLUDE_EXPERIMENTAL,true)
-dnl AM_CONDITIONAL(INCLUDE_EXPERIMENTAL,false)
+dnl AM_CONDITIONAL(INCLUDE_EXPERIMENTAL,true)
+AM_CONDITIONAL(INCLUDE_EXPERIMENTAL,false)
 
 dnl Add dmalloc support.
 AM_WITH_DMALLOC

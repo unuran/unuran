@@ -1,3 +1,7 @@
+Version 0.7.1: January 2007
+
+	- fixed non-ASCII C compliant code in tests directory
+
 Version 0.7.0: January 2007
 
 	* Methods:

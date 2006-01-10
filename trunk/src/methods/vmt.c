@@ -486,7 +486,7 @@ _unur_vmt_debug_init( const struct unur_gen *gen )
     fprintf(log,"[%s] ", GEN->marginalgen_list[i]->genid);
   fprintf(log,"\n%s:\n",gen->genid);
 
-  fprintf(log,"%s: sampling routine = _unur_vmt_sample()\n",gen->genid);
+  fprintf(log,"%s: sampling routine = _unur_vmt_sample_cvec()\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
   fprintf(log,"%s:\n",gen->genid);

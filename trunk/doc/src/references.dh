@@ -123,6 +123,12 @@ Proceedings of the 2000 Winter Simulation Conference, pp. 675-682.
 @i{Continuous Random Variate Generation by Fast Numerical Inversion},
 ACM TOMACS 13(4), 347-362.
 
+@anchor{bib:LJa98}
+@item [LJa98]
+@sc{J. Leydold} (1998).
+@i{A Rejection Technique for Sampling from Log-Concave Multivariate Distributions},
+ACM TOMACS 8(3), pp. 254-280.
+
 @anchor{bib:LJa00}
 @item [LJa00]
 @sc{J. Leydold} (2000).

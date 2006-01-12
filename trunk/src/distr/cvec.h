@@ -138,7 +138,7 @@ int unur_distr_cvec_set_pdf( UNUR_DISTR *distribution, UNUR_FUNCT_CVEC *pdf );
 /* 
    Set respective pointer to the PDF of the @var{distribution}.
    This function must be of type 
-   @code{double funct(const double *x, const UNUR_DISTR *distr)},
+   @code{double funct(const double *x, UNUR_DISTR *distr)},
    where @var{x} must be a pointer to a double array of appropriate
    size (i.e. of the same size as given to the unur_distr_cvec_new()
    call).
@@ -156,7 +156,7 @@ int unur_distr_cvec_set_pdf( UNUR_DISTR *distribution, UNUR_FUNCT_CVEC *pdf );
 int unur_distr_cvec_set_dpdf( UNUR_DISTR *distribution, UNUR_VFUNCT_CVEC *dpdf );
 /* 
    Set pointer to the gradient of the PDF. The type of this function must be
-   @code{int funct(double *result, const double *x, const UNUR_DISTR *distr)},
+   @code{int funct(double *result, const double *x, UNUR_DISTR *distr)},
    where @var{result} and @var{x} must be pointers to double arrays of
    appropriate size (i.e. of the same size as given to the
    unur_distr_cvec_new() call).
@@ -176,7 +176,7 @@ int unur_distr_cvec_set_dpdf( UNUR_DISTR *distribution, UNUR_VFUNCT_CVEC *dpdf )
 int unur_distr_cvec_set_pdpdf( UNUR_DISTR *distribution, UNUR_FUNCTD_CVEC *pdpdf );
 /* 
    Set pointer to partial derivatives of the PDF. The type of this function must be
-   @code{double funct(const double *x, int coord, const UNUR_DISTR *distr)},
+   @code{double funct(const double *x, int coord, UNUR_DISTR *distr)},
    where @var{x} must be a pointer to a double array of appropriate
    size (i.e. of the same size as given to the unur_distr_cvec_new()
    call). @var{coord} is the coordinate for which the partial dervative should be
@@ -194,7 +194,7 @@ UNUR_FUNCT_CVEC *unur_distr_cvec_get_pdf( const UNUR_DISTR *distribution );
 /* 
    Get the pointer to the PDF of the @var{distribution}. The
    pointer is of type 
-   @code{double funct(const double *x, const UNUR_DISTR *distr)}.
+   @code{double funct(const double *x, UNUR_DISTR *distr)}.
    If the corresponding function is not available for the
    @var{distribution}, the NULL pointer is returned.
 */
@@ -203,7 +203,7 @@ UNUR_VFUNCT_CVEC *unur_distr_cvec_get_dpdf( const UNUR_DISTR *distribution );
 /* 
    Get the pointer to the gradient of the PDF of the
    @var{distribution}. The pointer is of type 
-   @code{int double funct(double *result, const double *x, const UNUR_DISTR *distr)}.
+   @code{int double funct(double *result, const double *x, UNUR_DISTR *distr)}.
    If the corresponding function is not available for the
    @var{distribution}, the NULL pointer is returned.
 */
@@ -212,7 +212,7 @@ UNUR_FUNCTD_CVEC *unur_distr_cvec_get_pdpdf( const UNUR_DISTR *distribution );
 /* 
    Get the pointer to the partial derivative of the PDF of the @var{distribution}.
    The pointer is of type 
-   @code{double funct(const double *x, int coord, const UNUR_DISTR *distr)}.
+   @code{double funct(const double *x, int coord, UNUR_DISTR *distr)}.
    If the corresponding function is not available for the
    @var{distribution}, the NULL pointer is returned.
 */

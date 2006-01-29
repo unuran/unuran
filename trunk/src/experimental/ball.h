@@ -38,7 +38,7 @@
  *****************************************************************************/
 
 /*
-   =METHOD  BALL   ball-sampler
+   =EXPERIMENTALMETHOD  BALL   ball-sampler
 
    =UP  Methods_for_CVEC
 

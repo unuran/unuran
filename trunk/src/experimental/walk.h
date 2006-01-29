@@ -38,7 +38,7 @@
  *****************************************************************************/
 
 /*
-   =METHOD  WALK   Metropolis random-walk sampler
+   =EXPERIMENTALMETHOD  WALK   Metropolis random-walk sampler
 
    =UP  Methods_for_CVEC
 

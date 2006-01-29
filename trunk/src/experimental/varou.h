@@ -38,7 +38,7 @@
  *****************************************************************************/
 
 /* 
-   =METHOD  VAROU   Multivariate Adaptive Ratio-Of-Uniforms method
+   =EXPERIMENTALMETHOD  VAROU   Multivariate Adaptive Ratio-Of-Uniforms method
 
    =UP  Methods_for_CVEC
 

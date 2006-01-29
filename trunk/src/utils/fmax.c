@@ -279,11 +279,10 @@ _unur_util_find_max( struct unur_funct_generic fs, /* function structure */
 } /* end of _unur_util_find_max() */
 
 /*---------------------------------------------------------------------------*/
-
-
-
-
-
+/*                                                                           */
+/* Brent algorithm for maximum-calculation of a continous function           */
+/*                                                                           */
+/*---------------------------------------------------------------------------*/
 /*
  *****************************************************************************
  *	    		    C math library                                   *
@@ -293,6 +292,7 @@ _unur_util_find_max( struct unur_funct_generic fs, /* function structure */
  * Author: Oleg Keselyov.                                                    *
  *                                                                           *
  * modified by Josef Leydold (documentation unchanged)                       *
+ * computed maximum instead of minimum.                                      *
  *                                                                           *
  * Input                                                                     *
  *	double fminbr(f, a,b,c,tol)                                          *
@@ -349,9 +349,11 @@ _unur_util_brent(            /* An estimate to the min or max location */
      double c,                     /* first guess for the min/max            */
      double tol)                   /* Acceptable tolerance                   */
 {
-#define f(x) ( (-1) * ((fs.f)(x, fs.params)) )          
 #define SQRT_EPSILON  (1.e-7)           /* tolerance for relative error      */
 #define MAXIT         (1000)            /* maximum number of iterations      */
+
+  /* compute maximum (instead of minimum as in original implementation ) */
+#define f(x) ( (-1) * ((fs.f)(x, fs.params)) )          
 
 
   int i;

@@ -112,12 +112,11 @@ _unur_vector_normalize(int dim, double *v)
   /* checking if v is NULL */
   if (v==NULL) return; 
   
-  norm=_unur_vector_norm(dim, v);
+  norm = _unur_vector_norm(dim, v);
   
   for (i=0; i<dim; i++)  v[i] /= norm;
 
-}
-
+} /* end of _unur_vector_normalize() */
 
 /*--------------------------------------------------------------------------*/
 

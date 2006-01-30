@@ -15,4 +15,7 @@ echo "run valgrind on ${PROG} ..."
 
 valgrind --logfile=${LOGFILENAME} ${VALGRINDOPTIONS} ./${PROG}
 
+echo ""; echo "Summary:"; echo ""
+grep ERROR ${LOGFILENAME}*; grep lost ${LOGFILENAME}*
+
 exit 0

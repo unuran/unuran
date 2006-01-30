@@ -604,8 +604,6 @@ _unur_vnrou_create( struct unur_par *par )
   /* get center of the distribution */
   GEN->center = unur_distr_cvec_get_center(gen->distr);
  
-  /* initialize parameters */
-
   /* return pointer to (almost empty) generator object */
   return gen;
 
@@ -638,7 +636,7 @@ _unur_vnrou_clone( const struct unur_gen *gen )
   /* create generic clone */
   clone = _unur_generic_clone( gen, GENTYPE );
 
-  /* allocate memory for u-arrays and center */
+  /* allocate memory for u-arrays */
   CLONE->umin = _unur_xmalloc( GEN->dim * sizeof(double));
   CLONE->umax = _unur_xmalloc( GEN->dim * sizeof(double));
   

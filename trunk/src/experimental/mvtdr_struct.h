@@ -121,13 +121,15 @@ struct unur_mvtdr_par {
 struct unur_mvtdr_gen { 
   int    dim;               /* dimension of distribution                     */
 
-  CONE *ccc;                        /* root of list of cones */
-  int n_ccc;                      /* number of cones */
-  CONE *last_ccc;                   /* pointer to last cone in list */
+  const double *center;          /* center of distribution */
 
-  VERTEX *vvv;                      /* root of list of vertices */
-  VERTEX *last_vvv;                 /* pointer to last vertex in list */
-  int n_vvv;                      /* number of vertices */
+  CONE *cone;                        /* root of list of cones */
+  int n_cone;                      /* number of cones */
+  CONE *last_cone;                   /* pointer to last cone in list */
+
+  VERTEX *vertex;                      /* root of list of vertices */
+  VERTEX *last_vertex;                 /* pointer to last vertex in list */
+  int n_vertex;                      /* number of vertices */
 
   E_TABLE **etable;                   /* pointer to edge table */
   int etable_size;                    /* size of edge table */
@@ -138,6 +140,7 @@ struct unur_mvtdr_gen {
   double *S;                      /* working array for storing point on simples */
   double *g;                      /* working array for vector g (direction of sweeping plane) */
   double *tp_coord;               /* working array for storing coordinates of touching point of hat */
+  double *tp_mcoord;              /* working array for storing coordinates of touching point of hat moved into center */
   double *tp_Tgrad;               /* working array for storing gradient of transformed density at tp */
 
 /* #if MODE == 1 */

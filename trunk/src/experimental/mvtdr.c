@@ -63,7 +63,7 @@
 #include <unur_source.h>
 #include <distr/distr.h>
 #include <distr/distr_source.h>
-/* #include <distr/cvec.h> */
+#include <distr/cvec.h>
 #include <distributions/unur_distributions.h>
 #include <utils/fmax_source.h>
 #include <uniform/urng.h>

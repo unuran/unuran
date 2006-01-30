@@ -63,23 +63,20 @@ _unur_mvtdr_sample_cvec( struct unur_gen *gen, double *rpoint )
     /* nonnegative uniform random numbers with sum u_i = 1 */
     _unur_mvtdr_simplex_sample(gen, S);
       
-    /* clear array */
-    for( i=0; i<GEN->dim; i++ ) rpoint[i] = 0.;
+    /* move point into center */
+    for( i=0; i<GEN->dim; i++ ) rpoint[i] = GEN->center[i];
       
     /* calculate random point on chosen hyper-plane */
     for( j=0; j<GEN->dim; j++ ) {
-      double x = gx * S[j] / (c->gv)[j];
+      double x = gx * S[j] / c->gv[j];
       for( i=0; i<GEN->dim; i++ )
-	rpoint[i] += x * ((c->v)[j]->coord)[i];
+	rpoint[i] += x * (c->v[j])->coord[i];
     }
 
     /*.................................................................*/
 
 /* #if RECTANGLE == 1 */
 /*     /\* is point inside domain (rectangle) ? *\/ */
-/* #endif */
-/* #if MODE == 1 */
-/*     /\** move point into original location *\/ */
 /* #endif */
 
     /*.................................................................*/

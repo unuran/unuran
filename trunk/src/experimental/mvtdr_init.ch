@@ -117,13 +117,13 @@ _unur_mvtdr_create( struct unur_par *par )
   GEN->steps_max = 0;  /* no triangulation steps yet */
 
   /* initialize  pointers to lists */
-  GEN->ccc = NULL;
-  GEN->last_ccc = NULL;
-  GEN->n_ccc = 0;                      /* maximum number of vertices */
+  GEN->cone = NULL;
+  GEN->last_cone = NULL;
+  GEN->n_cone = 0;                      /* maximum number of vertices */
 
-  GEN->vvv = NULL;
-  GEN->last_vvv = NULL;
-  GEN->n_vvv = 0;                      /* maximum number of vertices */
+  GEN->vertex = NULL;
+  GEN->last_vertex = NULL;
+  GEN->n_vertex = 0;                      /* maximum number of vertices */
 
   GEN->etable = NULL;                   /* pointer to edge table */
   GEN->etable_size = 0;                    /* size of edge table */
@@ -135,8 +135,12 @@ _unur_mvtdr_create( struct unur_par *par )
   GEN->S = _unur_xmalloc( GEN->dim * sizeof(double) );  /* for point on simples */
   GEN->g = _unur_xmalloc( GEN->dim * sizeof(double) );  /* vector g (direction of sweeping plane) */
   GEN->tp_coord = _unur_xmalloc( GEN->dim * sizeof(double) );  /* for coordinates of touching point of hat */
+  GEN->tp_mcoord = _unur_xmalloc( GEN->dim * sizeof(double) );  /* for coordinates of touching point of hat moved into center */
   GEN->tp_Tgrad = _unur_xmalloc( GEN->dim * sizeof(double) );  /* for gradient of transformed density at tp */
 
+  /* get center of the distribution */
+  GEN->center = unur_distr_cvec_get_center(gen->distr);
+ 
   /* return pointer to (almost empty) generator object */
   return gen;
   
@@ -168,6 +172,9 @@ _unur_mvtdr_clone( const struct unur_gen *gen )
 
   /* create generic clone */
   clone = _unur_generic_clone( gen, GENTYPE );
+
+  /* copy data */
+  CLONE->center = unur_distr_cvec_get_center(clone->distr);
 
   return clone;
 
@@ -211,14 +218,14 @@ _unur_mvtdr_free( struct unur_gen *gen )
   _unur_mvtdr_etable_free(gen);
 
   /* linked list of vertices */
-  for (vt = GEN->vvv; vt != NULL; vt = vt_next) {
+  for (vt = GEN->vertex; vt != NULL; vt = vt_next) {
     vt_next = vt->next;
     free (vt->coord);      /* coordinates of vertex */
     free (vt);
   }
 
   /* linked list of cones */
-  for (c = GEN->ccc; c != NULL; c = c_next) {
+  for (c = GEN->cone; c != NULL; c = c_next) {
       c_next = c->next;
       free (c->v);  /* list of vertices of the cone */
       free (c->center);   /* barycenter of cone */
@@ -233,6 +240,7 @@ _unur_mvtdr_free( struct unur_gen *gen )
   if (GEN->S) free (GEN->S); /* for point on simples */
   if (GEN->g) free (GEN->g);  /* vector g (direction of sweeping plane) */
   if (GEN->tp_coord) free (GEN->tp_coord);  /* for coordinates of touching point of hat */
+  if (GEN->tp_mcoord) free (GEN->tp_mcoord);  /* for coordinates of touching point of hat moved into center */
   if (GEN->tp_Tgrad) free (GEN->tp_Tgrad);  /* for gradient of transformed density at tp */
 
   _unur_generic_free(gen);
@@ -302,7 +310,7 @@ _unur_mvtdr_create_hat( struct unur_gen *gen )
     _unur_mvtdr_triangulate(gen,step,TRUE);
 
   /* compute optimal distance of touching points now */
-  for( c = GEN->ccc; c != NULL; c = c->next )
+  for( c = GEN->cone; c != NULL; c = c->next )
       _unur_mvtdr_tp_find (gen,c);
 
   /* some of cones with invalid hats must be split */
@@ -314,7 +322,7 @@ _unur_mvtdr_create_hat( struct unur_gen *gen )
 
   /* compute cumulated volumes in all cones */
   GEN->Htot = 0.;                 /* accumulated sum of volumes */
-  for( c=GEN->ccc; c!=NULL; c=c->next ) {
+  for( c=GEN->cone; c!=NULL; c=c->next ) {
     /* volume below hat */
     GEN->Htot += c->Hi;           /* volume below hat */
     c->Hsum = GEN->Htot;          /* accumulated sum of volumes */
@@ -322,21 +330,21 @@ _unur_mvtdr_create_hat( struct unur_gen *gen )
 
   /* bound for splitting cones */
   /* do until all cones have approx same hat volumes */
-  Hi_bound = 1.5 * GEN->Htot / GEN->n_ccc;
+  Hi_bound = 1.5 * GEN->Htot / GEN->n_cone;
 
   /* and now check all the cones again */
   GEN->Htot = 0.;
-  for( c=GEN->ccc; c!=NULL; c=c->next ) {   /* all cones */
+  for( c=GEN->cone; c!=NULL; c=c->next ) {   /* all cones */
     while( Hi_bound < c->Hi ) { 
       /* we (must) split the cone again */
       _unur_mvtdr_cone_split(gen,c,c->level+1);
       /* and compute optimal touching point */
       _unur_mvtdr_tp_find (gen,c);
-      _unur_mvtdr_tp_find (gen,GEN->last_ccc);
+      _unur_mvtdr_tp_find (gen,GEN->last_cone);
     }
     GEN->Htot += c->Hi;           /* volume below hat */
     c->Hsum = GEN->Htot;          /* accumulated sum of volumes */
-    if( c == GEN->last_ccc ) break;
+    if( c == GEN->last_cone ) break;
   }
 
   /* create guide table for finding cones */
@@ -378,7 +386,7 @@ _unur_mvtdr_initial_cones( struct unur_gen *gen )
 
   /* make array of initial vertices */
   ivtl = _unur_xmalloc( 2 * dim * sizeof(VERTEX*) );
-  for (vt = GEN->vvv, i=0; i < 2*GEN->dim && vt!=NULL; vt = vt->next, i++)
+  for (vt = GEN->vertex, i=0; i < 2*GEN->dim && vt!=NULL; vt = vt->next, i++)
     ivtl[i] = vt;    
 
   /* we have (at most) 2^dim initial cones */
@@ -428,11 +436,11 @@ _unur_mvtdr_cone_new( struct unur_gen *gen )
   CONE *c; 
 
   /* allocate memory */
-  if (GEN->ccc == NULL) {
-    c = GEN->last_ccc = GEN->ccc = _unur_xmalloc(sizeof(CONE));
+  if (GEN->cone == NULL) {
+    c = GEN->last_cone = GEN->cone = _unur_xmalloc(sizeof(CONE));
   }
   else {
-    c = GEN->last_ccc = GEN->last_ccc->next = _unur_xmalloc(sizeof(CONE));
+    c = GEN->last_cone = GEN->last_cone->next = _unur_xmalloc(sizeof(CONE));
   }
   c->next = NULL;
 
@@ -450,7 +458,7 @@ _unur_mvtdr_cone_new( struct unur_gen *gen )
   c->Hi = INFINITY;
 
   /* and update counter */
-  ++(GEN->n_ccc);
+  ++(GEN->n_cone);
 
   /* return pointer to next vertex */
   return c;
@@ -471,16 +479,16 @@ _unur_mvtdr_cone_center( struct unur_gen *gen, CONE *c )
   
   norm = 0.;
   for( i=0; i<dim; i++ ) {
-    (c->center)[i] = 0.;
+    c->center[i] = 0.;
     for( k=0; k<dim; k++ )
-      (c->center)[i] += ((c->v[k])->coord)[i];        /* dim * barycenter */
-    norm += (c->center)[i] * (c->center)[i];            /* norm ^2 */
+      c->center[i] += (c->v[k])->coord[i];        /* dim * barycenter */
+    norm += c->center[i] * c->center[i];            /* norm ^2 */
   }
   
   /* norm --> 1 */
   norm = sqrt(norm);
   for( i=0; i<dim; i++ )
-    (c->center)[i] /= norm;
+    c->center[i] /= norm;
 
   return UNUR_SUCCESS;
 } /* end of _unur_mvtdr_cone_center() */
@@ -501,35 +509,25 @@ _unur_mvtdr_cone_params( struct unur_gen *gen, CONE *c )
 
   double *g = GEN->g;                  /* Vector g (direction of sweeping plane) */
   double *coord = GEN->tp_coord;              /* coordinates of touching point */
+  double *mcoord = GEN->tp_mcoord;              /* coordinates of touching point moved into center */
   double *Tgrad = GEN->tp_Tgrad;              /* gradient of transformed density */
 
-
   /* coordinates of touching point */
-  for( i=0; i<dim; i++ )
-    coord[i] = c->tp * (c->center)[i];
-/* #if MODE == 1 */
+  for( i=0; i<dim; i++ ) {
+    coord[i] = c->tp * c->center[i];
+    mcoord[i] = coord[i] + GEN->center[i];
+  }
+
 /* #if RECTANGLE == 1 */
 /*     /\* check if point is in domain *\/ */
 /*     for( i=0; i<N; i++ ) */
 /*       if( coord[i] < GEN->rl[i] || coord[i] > GEN->ru[i] ) */
 /* 	return TP_FZERO; */
 /* #endif */
-/*   { */
-/*     /\* move origin (0,0,...,0) into mode of density *\/ */
-/*     double mcoord[N]; */
-/*     for( i=0; i<N; i++ ) */
-/*       mcoord[i] = coord[i] + GEN->mode[i]; */
-/*     /\* density and its gradient *\/ */
-/*     f = PDF(mcoord); */
-/*     dPDF(Tgrad,mcoord); */
-/*   } */
-/* #else /\* mode = origin *\/ */
 
   /* density and its gradient */
-  f = PDF(coord);
-  dPDF(Tgrad,coord);
-
-/* #endif */
+  f = PDF(mcoord);
+  dPDF(Tgrad,mcoord);
 
   /* check density */
   if( f < TOLERANCE )    /* f = 0. */
@@ -677,23 +675,23 @@ _unur_mvtdr_triangulate( struct unur_gen *gen, int step, int all )
   }
 
   /*   number of cones before triangulation */
-  nc = GEN->n_ccc;
+  nc = GEN->n_cone;
 
   /*   triangulate every cone */
-  for( k=0, c=GEN->ccc; k<nc; k++ ) {
+  for( k=0, c=GEN->cone; k<nc; k++ ) {
     if( all )
       _unur_mvtdr_cone_split(gen,c,step);         /* split cone */
     else if ( c->tp < 0. ) {
       _unur_mvtdr_cone_split(gen,c,step);       /* split cone */
       _unur_mvtdr_tp_find (gen,c);
-      _unur_mvtdr_tp_find (gen,GEN->last_ccc);
+      _unur_mvtdr_tp_find (gen,GEN->last_cone);
     }
     /* next cone */
     c=c->next;
   }
 
   /* return number of new cones */
-  return (GEN->n_ccc - nc);
+  return (GEN->n_cone - nc);
 
 } /* end of _unur_mvtdr_triangulate() */
 
@@ -976,24 +974,24 @@ _unur_mvtdr_vertex_new( struct unur_gen *gen )
 */
 {
   /* allocate memory */
-  if (GEN->vvv == NULL) {
-    GEN->last_vvv = GEN->vvv = _unur_xmalloc(sizeof(VERTEX));
+  if (GEN->vertex == NULL) {
+    GEN->last_vertex = GEN->vertex = _unur_xmalloc(sizeof(VERTEX));
   }
   else {
-    GEN->last_vvv = GEN->last_vvv->next = _unur_xmalloc(sizeof(VERTEX));
+    GEN->last_vertex = GEN->last_vertex->next = _unur_xmalloc(sizeof(VERTEX));
   }
-  (GEN->last_vvv)->next = NULL;
+  (GEN->last_vertex)->next = NULL;
   
   /* coordinates of vertex */
-  (GEN->last_vvv)->coord = _unur_xmalloc(GEN->dim * sizeof(double));
+  (GEN->last_vertex)->coord = _unur_xmalloc(GEN->dim * sizeof(double));
 
   /* index of vertex */
-  (GEN->last_vvv)->index = GEN->n_vvv;
+  (GEN->last_vertex)->index = GEN->n_vertex;
   /* and update counter */
-  ++(GEN->n_vvv);
+  ++(GEN->n_vertex);
 
   /* return pointer to next vertex */
-  return GEN->last_vvv;
+  return GEN->last_vertex;
 
 } /* end of _unur_mvtdr_vertex_new() */
 
@@ -1228,25 +1226,25 @@ _unur_mvtdr_make_guide_table( struct unur_gen *gen )
   CONE *c;
 
   /* memory for the guide table */
-  GEN->guide_size = GEN->n_ccc * GUIDE_TABLE_SIZE;
+  GEN->guide_size = GEN->n_cone * GUIDE_TABLE_SIZE;
   GEN->guide = _unur_xmalloc (GEN->guide_size * sizeof(CONE*));
   /* initialize table */
   for( j = 0; j < GEN->guide_size ; j++ )
     GEN->guide[j] = NULL;
 
   /* make table */
-  for( c=GEN->ccc, j=0; c!=NULL && j<GEN->guide_size; j++ ) {
+  for( c=GEN->cone, j=0; c!=NULL && j<GEN->guide_size; j++ ) {
     while( c->Hsum / GEN->Htot < (double) j / GEN->guide_size )
       c=c->next;
     (GEN->guide)[j] = c;
-    if( c == GEN->last_ccc ) break;
+    if( c == GEN->last_cone ) break;
   }
 
   /* is there an error ? */
   if( j<GEN->guide_size )
     /* this should not happen */
     for( ; j<GEN->guide_size; j++ )
-      (GEN->guide)[j] = GEN->last_ccc;
+      (GEN->guide)[j] = GEN->last_cone;
 
   return UNUR_SUCCESS;
 

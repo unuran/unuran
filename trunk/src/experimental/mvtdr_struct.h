@@ -106,7 +106,6 @@ struct unur_mvtdr_par {
 
   int max_cones;                  /* maximum number of cones (at least 2^(N+T_STEPS_MIN) */
   int steps_min;                  /* minimum number of triangulation steps */
-  int step_tp;                    /* triangulation step when optimal touching points is calculated */
 
 #if MODE == 1
   double mode_to_boundary;        /* move mode to boundary if |mode - boundary| / length < MODE_TO_BOUNDARY */
@@ -143,18 +142,14 @@ struct unur_mvtdr_gen {
   double *tp_mcoord;              /* working array for storing coordinates of touching point of hat moved into center */
   double *tp_Tgrad;               /* working array for storing gradient of transformed density at tp */
 
-/* #if MODE == 1 */
-/*   double mode[N];                 /\* mode of distribution *\/ */
-/* #endif */
+  double Htot;                    /* total volume below hat */
+  int steps_min;                  /* minimum number of triangulation steps */
+  int n_steps;                  /* (highest) number of triangulation steps */
+
 /* #if RECTANGLE == 1                /\* rectangle moved to mode == origin *\/ */
 /*   double rl[N];                   /\* lower bounds for rectangle *\/ */
 /*   double ru[N];                   /\* upper bounds for rectangle *\/ */
 /* #endif */
-
-  double Htot;                    /* total volume below hat */
-  int steps_min;                  /* minimum number of triangulation steps */
-  int steps_max;                  /* maximum number of triangulation steps */
-  int step_tp;                    /* triangulation step, when touching point is calculated */
 
 /* #if RECTANGLE == 1 */
 /*   double max_gamma;               /\* maximum value for gamma variaties *\/ */
@@ -166,15 +161,6 @@ struct unur_mvtdr_gen {
 /* #if RECTANGLE == 1 */
 /*   int db_n_rpoint_reject_outside; /\* number of rejected random points outside domain (for debugging only) *\/ */
 /* #endif */
-/* #if GAMMA == 2 */
-/*   int db_n_tdrg_accept;           /\* number of accepted random points (gamma dist.; for debugging only) *\/ */
-/*   int db_n_tdrg_reject;           /\* number of rejected random points (gamma dist.; for debugging only) *\/ */
-/* #endif */
-/* #endif */
-/* #if GAMMA == 2 */
-/*   int tdrg_ntp;                   /\* total number of touching points for constructing hat function of gamma density *\/ */
-/* #endif */
-
 
 };
 

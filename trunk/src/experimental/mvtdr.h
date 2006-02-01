@@ -70,6 +70,33 @@ UNUR_PAR *unur_mvtdr_new( const UNUR_DISTR *distribution );
    Get parameters for generator.
 */
 
+/*...........................................................................*/
+
+int unur_mvtdr_set_stepsmin( UNUR_PAR *par, int stepsmin );
+/* 
+   Set minimum number of triangulation step for each starting cone.
+   @var{stepsmin} must be nonnegative.
+
+   Default: @code{5}.
+*/
+
+int unur_mvtdr_set_maxcones( UNUR_PAR *par, int maxcones );
+/* 
+   Set maximum number of cones. 
+
+   Notice that this number is always increased to 
+   @unurmath{2^{dim+stepsmin}} where @i{dim} is the dimension of the
+   distribution object and @i{stepsmin} the given mimimum number of
+   triangulation steps.
+
+   Notice: For higher dimensions and/or higher correlations between the
+   coordinates of the random vector the required number of cones can
+   be very high. A too small maximum number of cones can lead to 
+   a very high rejection constant.
+
+   Default: @code{10000}.
+*/
+
 /* =END */
 /*---------------------------------------------------------------------------*/
 

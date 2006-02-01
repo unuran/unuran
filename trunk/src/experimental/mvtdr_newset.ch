@@ -1,3 +1,41 @@
+/*****************************************************************************
+ *                                                                           *
+ *          UNURAN -- Universal Non-Uniform Random number generator          *
+ *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ *   FILE:      mvtdr_newset.c                                               *
+ *                                                                           *
+ *   TYPE:      continuous multivariate random variate                       *
+ *   METHOD:    multivariate transformed density rejection                   *
+ *                                                                           *
+ *   DESCRIPTION:                                                            *
+ *      Given (logarithm of the) PDF of a log-concave distribution;          *
+ *      produce a value x consistent with its density.                       *
+ *                                                                           *
+ *****************************************************************************
+     $Id$
+ *****************************************************************************
+ *                                                                           *
+ *   Copyright (c) 2000 Wolfgang Hoermann and Josef Leydold                  *
+ *   Dept. for Statistics, University of Economics, Vienna, Austria          *
+ *                                                                           *
+ *   This program is free software; you can redistribute it and/or modify    *
+ *   it under the terms of the GNU General Public License as published by    *
+ *   the Free Software Foundation; either version 2 of the License, or       *
+ *   (at your option) any later version.                                     *
+ *                                                                           *
+ *   This program is distributed in the hope that it will be useful,         *
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of          *
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
+ *   GNU General Public License for more details.                            *
+ *                                                                           *
+ *   You should have received a copy of the GNU General Public License       *
+ *   along with this program; if not, write to the                           *
+ *   Free Software Foundation, Inc.,                                         *
+ *   59 Temple Place, Suite 330, Boston, MA 02111-1307, USA                  *
+ *                                                                           *
+ *****************************************************************************/
 
 /*****************************************************************************/
 /**  Public: User Interface (API)                                           **/
@@ -28,21 +66,13 @@ unur_mvtdr_new( const struct unur_distr *distr )
     _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,""); return NULL; }
   COOKIE_CHECK(distr,CK_DISTR_CVEC,NULL);
 
-  /* first we check parameters */
-  
-  /* dim (=N) must be an integer >= 2 */
-/*   if( (int) N != N || N < 2 || N > 15 ) */
-/*     FATAL( "N in config.h not an integer >= 2 and <= 15" ); */
+  if (distr->dim < 2) {
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_PROP,"dim < 2"); return NULL; }
 
-
-/*   if (!(distr->set & UNUR_DISTR_SET_MEAN)) { */
-/*     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mean"); return NULL; } */
-/*   if (!(distr->set & UNUR_DISTR_SET_COVAR)) { */
-/*     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"covariance matrix"); */
-/*     return NULL; } */
-/*   if (!(distr->set & UNUR_DISTR_SET_STDMARGINAL)) { */
-/*     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"standardized marginals"); */
-/*     return NULL; } */
+  if ( ! ((DISTR_IN.pdf && DISTR_IN.dpdf) || (DISTR_IN.logpdf && DISTR_IN.dlogpdf)) ) { 
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"d/(log)PDF");
+    return NULL;
+  }
 
   /* allocate structure */
   par = _unur_par_new( sizeof(struct unur_mvtdr_par) );
@@ -52,7 +82,7 @@ unur_mvtdr_new( const struct unur_distr *distr )
   par->distr    = distr;      /* pointer to distribution object              */
 
   /* set default values */
-  par->method   = UNUR_METH_MVTDR ;     /* method                              */
+  par->method   = UNUR_METH_MVTDR ;   /* method                              */
   par->variant  = 0u;                 /* default variant                     */
   par->set      = 0u;                 /* inidicate default parameters        */    
   par->urng     = unur_get_default_urng(); /* use default urng               */
@@ -63,30 +93,89 @@ unur_mvtdr_new( const struct unur_distr *distr )
   /* routine for starting generator */
   par->init = _unur_mvtdr_init;
 
+  /* set default values */
+  /* minimum number of triangulation steps */
+  PAR->steps_min = 5;
 
-  /*
-    get default values for construction of hat function 
-  */
-  /** set default values **/
-  /* the mode */
-#if MODE == 1
-#endif
+  /* maximum number of cones (at least 2^(dim+T_STEPS_MIN) */
+  PAR->max_cones = 10000;
 
-  /* control generation of cones */
-  PAR->max_cones = MAX_N_CONES;                /* maximum number of cones (at least 2^(N+T_STEPS_MIN) */
-  PAR->steps_min = T_STEPS_MIN;                /* minimum number of triangulation steps */
-  PAR->step_tp = OPTIMAL_TP_STEP;              /* triangulation step when optimal touching points is calculated */
-
-#if MODE == 1
-  /* parameters for finding mode */
-  PAR->mode_to_boundary = MODE_TO_BOUNDARY;    /* move mode to boundary if |mode - boundary| / length < MODE_TO_BOUNDARY */
-#endif
-
-#if RECTANGLE == 1
-#endif
+  /** TODO !! **/
+  /* move mode to boundary if |mode - boundary| / length < MODE_TO_BOUNDARY */
+  /*   PAR->mode_to_boundary = 0.01; */
 
   return par;
 
 } /* end of unur_mvtdr_new() */
+
+/*---------------------------------------------------------------------------*/
+
+int 
+unur_mvtdr_set_stepsmin( struct unur_par *par, int stepsmin )
+     /*----------------------------------------------------------------------*/
+     /* set minimum number of triangulation step for each starting cone      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par      ... pointer to parameter object                           */
+     /*   stepsmin ... minimum number of triangulation steps                 */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, MVTDR );
+
+  /* check new parameter for generator */
+  if (stepsmin < 0) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"stepsmin < 0");
+    return UNUR_ERR_PAR_SET;
+  }
+
+  /* store date */
+  PAR->steps_min = stepsmin;
+
+  /* changelog */
+  par->set |= MVTDR_SET_STEPSMIN;
+
+  return UNUR_SUCCESS;
+
+} /* end of unur_mvtdr_set_stepsmin() */
+
+/*---------------------------------------------------------------------------*/
+
+int 
+unur_mvtdr_set_maxcones( struct unur_par *par, int maxcones )
+     /*----------------------------------------------------------------------*/
+     /* set maximum number of cones                                          */
+     /* (this number is always increased to 2^(dim+stepsmin) )               */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par      ... pointer to parameter object                           */
+     /*   maxcones ... maximum number of cones                               */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, MVTDR );
+
+  /* check new parameter for generator */
+  /* none here: it is always increased to 2^(dim+stepsmin) during init */
+
+  /* store date */
+  PAR->max_cones = maxcones;
+
+  /* changelog */
+  par->set |= MVTDR_SET_MAXCONES;
+
+  return UNUR_SUCCESS;
+
+} /* end of unur_mvtdr_set_maxcones() */
 
 /*---------------------------------------------------------------------------*/

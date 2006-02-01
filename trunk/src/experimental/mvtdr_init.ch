@@ -100,21 +100,14 @@ _unur_mvtdr_create( struct unur_par *par )
   gen->destroy = _unur_mvtdr_free;
   gen->clone = _unur_mvtdr_clone;
 
-  /* initialize and check counters and some given parameters */
-  GEN->steps_max = 0;   /* no triangulation steps yet */
+  /* initialize counter and check given parameters */
+  GEN->n_steps = 0;   /* no triangulation steps yet */
   GEN->steps_min = max( 0, PAR->steps_min );  /* minimum number of triangulation steps */
   /* check maximal number of cones */
   if ( (1 << (GEN->dim + GEN->steps_min)) > PAR->max_cones) {
     /*     WARNING( "number of cones raised to 2^(dim + T_STEPS_MIN)" ); */
     PAR->max_cones = 1 << (GEN->dim + GEN->steps_min);
   }
-  /* when should the touching point be computed ? */
-  GEN->step_tp = max( 0, PAR->step_tp );             /* at least 0 !! */
-  GEN->step_tp = min( GEN->step_tp, GEN->steps_min );       /* at most GEN->steps_min !! */
-
-  /* we have to check the given number of triangulation step */
-  GEN->steps_min = max( 0, PAR->steps_min );
-  GEN->steps_max = 0;  /* no triangulation steps yet */
 
   /* initialize  pointers to lists */
   GEN->cone = NULL;
@@ -305,20 +298,20 @@ _unur_mvtdr_create_hat( struct unur_gen *gen )
   /* initial cones */
   _unur_mvtdr_initial_cones(gen);
 
-  /* triangulate until step for computing touching point */
-  for( step = 1; step <= GEN->step_tp; step++ )
+  /* execute minimal number of triangulation steps */
+  for( step = 1; step <= GEN->steps_min; step++ )
     _unur_mvtdr_triangulate(gen,step,TRUE);
 
   /* compute optimal distance of touching points now */
   for( c = GEN->cone; c != NULL; c = c->next )
       _unur_mvtdr_tp_find (gen,c);
 
-  /* some of cones with invalid hats must be split */
+  /* some of cones with invalid hats (or too large volumes) must be split */
   while( _unur_mvtdr_triangulate(gen,step,FALSE) )
     step++;
 
   /* maximum number of triangulations yet */
-  GEN->steps_max = step-1;
+  GEN->n_steps = step-1;
 
   /* compute cumulated volumes in all cones */
   GEN->Htot = 0.;                 /* accumulated sum of volumes */
@@ -645,7 +638,7 @@ _unur_mvtdr_cone_split( struct unur_gen *gen, CONE *c, int step )
   c->logdetf = newc->logdetf;                           /* the determinant */
 
   /* store maximal triangulation level for debugging */
-  GEN->steps_max = max(GEN->steps_max, step); 
+  GEN->n_steps = max(GEN->n_steps, step); 
 
   return UNUR_SUCCESS;
 

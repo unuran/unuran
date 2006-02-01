@@ -96,16 +96,13 @@
 /** TODO **/
 
 /* control triangulation of cones                                  */
-#define MAX_N_CONES         10000    /* maximum number of cones (at least 2^(N+T_STEPS_MIN) */
-#define T_STEPS_MIN         5        /* minimum number of triangulation steps */
-#define OPTIMAL_TP_STEP     100      /* triangulation step when optimal touching points is calculated */
+/* #define MAX_N_CONES         10000    /\* maximum number of cones (at least 2^(N+T_STEPS_MIN) *\/ */
+/* #define T_STEPS_MIN         5        /\* minimum number of triangulation steps *\/ */
+/* #define OPTIMAL_TP_STEP     100      /\* triangulation step when optimal touching points is calculated *\/ */
 
 /** fine tuning of generator                                       **/
 /* a number is considered to be zero if abs is below this bound     */
 #define TOLERANCE   1.e-8
-
-/* move mode to boundary if | mode - boundary | / length < MODE_TO_BOUNDARY */
-#define MODE_TO_BOUNDARY    1.E-2
 
 /*---------------------------------------------------------------------------*/
 /* Variants                                                                  */
@@ -119,6 +116,9 @@
 
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
+
+#define MVTDR_SET_STEPSMIN    0x001u    /* min number of triangulation steps */
+#define MVTDR_SET_MAXCONES    0x002u    /* max number of cones               */
 
 /*---------------------------------------------------------------------------*/
 

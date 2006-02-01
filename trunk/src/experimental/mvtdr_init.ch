@@ -1,3 +1,41 @@
+/*****************************************************************************
+ *                                                                           *
+ *          UNURAN -- Universal Non-Uniform Random number generator          *
+ *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ *   FILE:      mvtdr_init.c                                                 *
+ *                                                                           *
+ *   TYPE:      continuous multivariate random variate                       *
+ *   METHOD:    multivariate transformed density rejection                   *
+ *                                                                           *
+ *   DESCRIPTION:                                                            *
+ *      Given (logarithm of the) PDF of a log-concave distribution;          *
+ *      produce a value x consistent with its density.                       *
+ *                                                                           *
+ *****************************************************************************
+     $Id$
+ *****************************************************************************
+ *                                                                           *
+ *   Copyright (c) 2000 Wolfgang Hoermann and Josef Leydold                  *
+ *   Dept. for Statistics, University of Economics, Vienna, Austria          *
+ *                                                                           *
+ *   This program is free software; you can redistribute it and/or modify    *
+ *   it under the terms of the GNU General Public License as published by    *
+ *   the Free Software Foundation; either version 2 of the License, or       *
+ *   (at your option) any later version.                                     *
+ *                                                                           *
+ *   This program is distributed in the hope that it will be useful,         *
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of          *
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
+ *   GNU General Public License for more details.                            *
+ *                                                                           *
+ *   You should have received a copy of the GNU General Public License       *
+ *   along with this program; if not, write to the                           *
+ *   Free Software Foundation, Inc.,                                         *
+ *   59 Temple Place, Suite 330, Boston, MA 02111-1307, USA                  *
+ *                                                                           *
+ *****************************************************************************/
 
 /*****************************************************************************/
 /**  Private                                                                **/
@@ -42,8 +80,7 @@ _unur_mvtdr_init( struct unur_par *par )
   /* we need an auxiliary generator for gamma random variates */
   GEN_GAMMA = _unur_mvtdr_gammagen( gen, (double)(GEN->dim) );
   if ( GEN_GAMMA == NULL ) {
-      _unur_mvtdr_free(gen); return NULL;
-  }
+      _unur_mvtdr_free(gen); return NULL; }
 
   /* make hat function */
   _unur_mvtdr_create_hat(gen);
@@ -124,12 +161,17 @@ _unur_mvtdr_create( struct unur_par *par )
   GEN->guide = NULL;
   GEN->guide_size = 0;
   
-  /* initialize working arrays */
-  GEN->S = _unur_xmalloc( GEN->dim * sizeof(double) );  /* for point on simples */
-  GEN->g = _unur_xmalloc( GEN->dim * sizeof(double) );  /* vector g (direction of sweeping plane) */
-  GEN->tp_coord = _unur_xmalloc( GEN->dim * sizeof(double) );  /* for coordinates of touching point of hat */
-  GEN->tp_mcoord = _unur_xmalloc( GEN->dim * sizeof(double) );  /* for coordinates of touching point of hat moved into center */
-  GEN->tp_Tgrad = _unur_xmalloc( GEN->dim * sizeof(double) );  /* for gradient of transformed density at tp */
+  /* initialize working arrays: */
+  /*   point on simples */
+  GEN->S = _unur_xmalloc( GEN->dim * sizeof(double) );
+  /*   vector g (direction of sweeping plane) */
+  GEN->g = _unur_xmalloc( GEN->dim * sizeof(double) );
+  /*   coordinates of touching point of hat */
+  GEN->tp_coord = _unur_xmalloc( GEN->dim * sizeof(double) );
+  /*   coordinates of touching point of hat moved into center */
+  GEN->tp_mcoord = _unur_xmalloc( GEN->dim * sizeof(double) );
+  /*   gradient of transformed density at tp */
+  GEN->tp_Tgrad = _unur_xmalloc( GEN->dim * sizeof(double) );
 
   /* get center of the distribution */
   GEN->center = unur_distr_cvec_get_center(gen->distr);
@@ -198,14 +240,10 @@ _unur_mvtdr_free( struct unur_gen *gen )
     return; }
   COOKIE_CHECK(gen,CK_MVTDR_GEN,RETURN_VOID);
 
-
-/*   db_close(gen->datap); */
-
-
   /* we cannot use this generator object any more */
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
-  /* clear lists */
+  /* clear lists: */
 
   /* hash table for edges */
   _unur_mvtdr_etable_free(gen);
@@ -213,16 +251,16 @@ _unur_mvtdr_free( struct unur_gen *gen )
   /* linked list of vertices */
   for (vt = GEN->vertex; vt != NULL; vt = vt_next) {
     vt_next = vt->next;
-    free (vt->coord);      /* coordinates of vertex */
+    free (vt->coord);    /* coordinates of vertex */
     free (vt);
   }
 
   /* linked list of cones */
   for (c = GEN->cone; c != NULL; c = c_next) {
       c_next = c->next;
-      free (c->v);  /* list of vertices of the cone */
+      free (c->v);        /* list of vertices of the cone */
       free (c->center);   /* barycenter of cone */
-      free (c->gv);  /* <g,v> for all vertices v */
+      free (c->gv);       /* <g,v> for all vertices v */
       free (c);
   }
 
@@ -230,11 +268,11 @@ _unur_mvtdr_free( struct unur_gen *gen )
   if (GEN->guide) free (GEN->guide);
 
   /* working arrays */
-  if (GEN->S) free (GEN->S); /* for point on simples */
-  if (GEN->g) free (GEN->g);  /* vector g (direction of sweeping plane) */
-  if (GEN->tp_coord) free (GEN->tp_coord);  /* for coordinates of touching point of hat */
-  if (GEN->tp_mcoord) free (GEN->tp_mcoord);  /* for coordinates of touching point of hat moved into center */
-  if (GEN->tp_Tgrad) free (GEN->tp_Tgrad);  /* for gradient of transformed density at tp */
+  if (GEN->S)         free (GEN->S);
+  if (GEN->g)         free (GEN->g);
+  if (GEN->tp_coord)  free (GEN->tp_coord);
+  if (GEN->tp_mcoord) free (GEN->tp_mcoord);
+  if (GEN->tp_Tgrad)  free (GEN->tp_Tgrad);
 
   _unur_generic_free(gen);
 
@@ -251,6 +289,8 @@ _unur_mvtdr_gammagen( struct unur_gen *gen, double alpha )
      /*   gen   ... pointer to MVTDR generator object                        */
      /*   alpha ... shape parameter                                          */
      /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to generator object                                        */
      /*----------------------------------------------------------------------*/
 {
   struct unur_distr *gammadistr;
@@ -258,12 +298,14 @@ _unur_mvtdr_gammagen( struct unur_gen *gen, double alpha )
   struct unur_gen   *gammagen;
   double shape[1];
 
+  /* make generator object */
   shape[0] = alpha;
   gammadistr = unur_distr_gamma(shape,1);
   gammapar = unur_tdr_new( gammadistr );
-
   gammagen = unur_init( gammapar );
   _unur_distr_free( gammadistr );
+
+  /* check result */
   if (gammagen == NULL) {
     _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,
 		"Cannot create aux Gamma generator");
@@ -286,7 +328,16 @@ _unur_mvtdr_gammagen( struct unur_gen *gen, double alpha )
 
 int
 _unur_mvtdr_create_hat( struct unur_gen *gen )
-/* get hat function */
+     /*----------------------------------------------------------------------*/
+     /* create hat function.                                                 */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
 {
   int step;            /* triangulation steps */
   double Hi_bound;     /* lower bound on Hi for splitting cone */
@@ -360,18 +411,25 @@ _unur_mvtdr_create_hat( struct unur_gen *gen )
 
 int
 _unur_mvtdr_initial_cones( struct unur_gen *gen )
-/*
-  get initial cones
-*/
+     /*----------------------------------------------------------------------*/
+     /* get initial cones                                                    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
 {
   int i,j,k;
-  int max_c;       /* maximum number of cones */
-  int dim = GEN->dim;
   CONE *c;
-  VERTEX **ivtl;   /* list of initial vertices */
+  int max_c;       /* maximum number of cones */
   VERTEX *vt;
-
+  VERTEX **ivtl;   /* list of initial vertices */
+  int dim = GEN->dim;
   double logfak;
+
   /* factorial of (dim-1)*/
   logfak = 0.;
   for( i=2; i<dim; i++ ) 
@@ -422,9 +480,16 @@ _unur_mvtdr_initial_cones( struct unur_gen *gen )
 
 CONE *
 _unur_mvtdr_cone_new( struct unur_gen *gen )
-/*
-  next allocated cone in list 
-*/
+     /*----------------------------------------------------------------------*/
+     /* allocate new cone and append it to linked list of all cones.         */
+     /* increment counter for cones.                                         */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to newly allocated cone                                    */
+     /*----------------------------------------------------------------------*/
 {
   CONE *c; 
 
@@ -462,20 +527,29 @@ _unur_mvtdr_cone_new( struct unur_gen *gen )
 
 int
 _unur_mvtdr_cone_center( struct unur_gen *gen, CONE *c )
-/*
-  computer center of cone and normalize the corresponding vector it
-*/
+     /*----------------------------------------------------------------------*/
+     /* computer center of cone and normalize the corresponding vector       */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*   c   ... cone for which center has to be computed                   */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
 {
   int i,k;
   double norm;
   int dim = GEN->dim;
   
+  /* compute sum of all vertices and square of its norm */
   norm = 0.;
   for( i=0; i<dim; i++ ) {
     c->center[i] = 0.;
     for( k=0; k<dim; k++ )
-      c->center[i] += (c->v[k])->coord[i];        /* dim * barycenter */
-    norm += c->center[i] * c->center[i];            /* norm ^2 */
+      c->center[i] += (c->v[k])->coord[i];       /* dim * barycenter */
+    norm += c->center[i] * c->center[i];         /* norm ^2 */
   }
   
   /* norm --> 1 */
@@ -484,26 +558,36 @@ _unur_mvtdr_cone_center( struct unur_gen *gen, CONE *c )
     c->center[i] /= norm;
 
   return UNUR_SUCCESS;
+
 } /* end of _unur_mvtdr_cone_center() */
 
 /*---------------------------------------------------------------------------*/
 
 int
 _unur_mvtdr_cone_params( struct unur_gen *gen, CONE *c )
-/*
-  compute parameters for hat for a cone
-  (expect touching point and volume below hat)
-*/
+     /*----------------------------------------------------------------------*/
+     /* compute parameters for hat for a cone                                */
+     /* (expect touching point and volume below hat)                         */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*   c   ... cone for which parameters have to be computed              */
+     /*                                                                      */
+     /* return:                                                              */
+     /** TODO!                                                             **/
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
 {
   double Tf,f;                  /* (transformed) density */
   double Tderf;                 /* T'(f(x)) */
   int i;                        /* aux variable */
   int dim = GEN->dim;           /* dimension */
 
-  double *g = GEN->g;                  /* Vector g (direction of sweeping plane) */
-  double *coord = GEN->tp_coord;              /* coordinates of touching point */
-  double *mcoord = GEN->tp_mcoord;              /* coordinates of touching point moved into center */
-  double *Tgrad = GEN->tp_Tgrad;              /* gradient of transformed density */
+  double *g = GEN->g;               /* Vector g (direction of sweeping plane) */
+  double *coord = GEN->tp_coord;    /* coordinates of touching point */
+  double *mcoord = GEN->tp_mcoord;  /* coordinates of touching point moved into center */
+  double *Tgrad = GEN->tp_Tgrad;    /* gradient of transformed density */
 
   /* coordinates of touching point */
   for( i=0; i<dim; i++ ) {
@@ -524,6 +608,7 @@ _unur_mvtdr_cone_params( struct unur_gen *gen, CONE *c )
 
   /* check density */
   if( f < TOLERANCE )    /* f = 0. */
+    /** TODO!! **/
     return TP_FZERO;
 
   /* transformed density and its gradient */
@@ -537,7 +622,7 @@ _unur_mvtdr_cone_params( struct unur_gen *gen, CONE *c )
   c->alpha = Tf - _unur_vector_scalar_product(dim,Tgrad,coord);
   c->beta = _unur_vector_norm(GEN->dim,Tgrad);
 
-  /* |Tgrad| must not be to small */
+  /* |Tgrad| must not be too small */
   if( c->beta < TOLERANCE )
     return TP_GZERO;
 
@@ -572,11 +657,21 @@ _unur_mvtdr_cone_params( struct unur_gen *gen, CONE *c )
 
 /*---------------------------------------------------------------------------*/
 
-double _unur_mvtdr_cone_logH( struct unur_gen *gen, CONE *c )
-     /* calculate log of volume below hat for given touching point */
-     /* volume below hat for cone c constructed at touching point located at t.
-       t > 0.
-     */
+double
+_unur_mvtdr_cone_logH( struct unur_gen *gen, CONE *c )
+     /*----------------------------------------------------------------------*/
+     /* calculate log of volume below hat for given touching point.          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*   c   ... cone for which volume below hat has to be computed         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   logarithm of volume below hat                                      */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return INFINITY                                                    */
+     /*----------------------------------------------------------------------*/
 {
   double logH;
 
@@ -603,9 +698,18 @@ double _unur_mvtdr_cone_logH( struct unur_gen *gen, CONE *c )
 
 int
 _unur_mvtdr_cone_split( struct unur_gen *gen, CONE *c, int step )
-/*
-  split a cone along "oldest" edge
-*/
+     /*----------------------------------------------------------------------*/
+     /* split a cone along "oldest" edge                                     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*   c    ... cone which has to be split                                */
+     /*   step ... triangulation level                                       */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
 {
   CONE *newc;       /* new cone */
   VERTEX *newv;      /* new vertex */
@@ -622,20 +726,20 @@ _unur_mvtdr_cone_split( struct unur_gen *gen, CONE *c, int step )
   /* construct two new cones */
 
   /* first cone */
-  newc = _unur_mvtdr_cone_new(gen);                             /* pointer to new cone */
-  newc->level = step;                             /* level */
+  newc = _unur_mvtdr_cone_new(gen);   /* new cone */
+  newc->level = step;                 /* triangulation level */
   for (i=0; i<dim-1; i++)
-    newc->v[i] = c->v[i+1]; /* copy list of vertices to new cone */
-  newc->v[dim-1] = newv;                          /* the new vertex */
-  newc->logdetf = c->logdetf - log(2.*newv->norm);        /* the log of determinant of spanning vectors */
-  newc->tp = c->tp;                               /* distance of touching point remains unchanged */
+    newc->v[i] = c->v[i+1];           /* copy list of vertices to new cone */
+  newc->v[dim-1] = newv;              /* add new vertex */
+  newc->logdetf = c->logdetf - log(2.*newv->norm);  /* log of det of spanning vectors */
+  newc->tp = c->tp;                   /* distance of touching point remains unchanged */
 
   /* second cone */
-  c->level = step;                                /* level */
+  c->level = step;                    /* triangulation level */
   for (i=0; i<dim-2; i++)
-    c->v[i+1] = c->v[i+2];             /* shift list of vertices */
-  (c->v)[dim-1] = newv;                             /* the new vertex */
-  c->logdetf = newc->logdetf;                           /* the determinant */
+    c->v[i+1] = c->v[i+2];            /* shift list of vertices */
+  (c->v)[dim-1] = newv;               /* add new vertex */
+  c->logdetf = newc->logdetf;         /* the determinant */
 
   /* store maximal triangulation level for debugging */
   GEN->n_steps = max(GEN->n_steps, step); 
@@ -648,9 +752,18 @@ _unur_mvtdr_cone_split( struct unur_gen *gen, CONE *c, int step )
 
 int
 _unur_mvtdr_triangulate( struct unur_gen *gen, int step, int all )
-/*
-  make one triangulation step
-*/
+     /*----------------------------------------------------------------------*/
+     /* make one triangulation step                                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*   step ... level of triangulation steps                              */
+     /*   all  ... whether all (TRUE) cones have to be split                 */
+     /*            or only those cones where volumes are too big             */ 
+     /*                                                                      */
+     /* return:                                                              */
+     /*   number of new cones                                                */
+     /*----------------------------------------------------------------------*/
 {
   int k,nc;
   CONE *c;
@@ -680,7 +793,7 @@ _unur_mvtdr_triangulate( struct unur_gen *gen, int step, int all )
       _unur_mvtdr_tp_find (gen,GEN->last_cone);
     }
     /* next cone */
-    c=c->next;
+    c = c->next;
   }
 
   /* return number of new cones */
@@ -695,10 +808,18 @@ _unur_mvtdr_triangulate( struct unur_gen *gen, int step, int all )
 /*                                                                           */
 /*****************************************************************************/
 
-double _unur_mvtdr_tp_min (double t, void *p )
-     /* 
-	function to be minimized 
-     */
+double
+_unur_mvtdr_tp_min (double t, void *p )
+     /*----------------------------------------------------------------------*/
+     /* volume function.                                                     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   t ... location of touching point                                   */
+     /*   p ... pointer to arguments of volume functions                     */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   logarithm of the volume below the hat                              */
+     /*----------------------------------------------------------------------*/
 {
   /* unpack arguments */
   TP_ARG *a = p;
@@ -716,7 +837,22 @@ double _unur_mvtdr_tp_min (double t, void *p )
   return a->logH;
 } /* end of _unur_mvtdr_tp_min() */
 
-double _unur_mvtdr_tp_min_aux(double t, void *p) { 
+
+double
+_unur_mvtdr_tp_min_aux(double t, void *p)
+     /*----------------------------------------------------------------------*/
+     /* auxiliary function to be used with _unur_util_brent().               */
+     /* _unur_util_brent() maximizes functions, so we need the negative      */
+     /* of the volume function.                                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   t ... location of touching point                                   */
+     /*   p ... pointer to arguments of volume functions                     */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   negative of logarithm of the volume below the hat                  */
+     /*----------------------------------------------------------------------*/
+{
   return (- _unur_mvtdr_tp_min(t, p) );
 }
 
@@ -724,10 +860,17 @@ double _unur_mvtdr_tp_min_aux(double t, void *p) {
 
 int
 _unur_mvtdr_tp_find( struct unur_gen *gen, CONE *c )
-/*
-  find optimal touching point for cone
-  Brent's method
-*/
+     /*----------------------------------------------------------------------*/
+     /* find optimal touching point for cone using Brent's method            */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*   c   ... cone for which touching point has to be computed           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
 {
   struct unur_funct_generic tpaux;
   TP_ARG a[3];    /* left, middle and right point of bracket for Brent algorithm */
@@ -740,7 +883,7 @@ _unur_mvtdr_tp_find( struct unur_gen *gen, CONE *c )
   for (i=0; i<3; i++) { a[i].c = c; a[i].gen = gen; }
 
   /* find proper touching point */
-  if( ! _unur_mvtdr_tp_search(gen,a) )
+  if( _unur_mvtdr_tp_search(gen,a) != UNUR_SUCCESS )
     /* no proper point found */
     return TP_EMPTY;
 
@@ -776,18 +919,25 @@ _unur_mvtdr_tp_find( struct unur_gen *gen, CONE *c )
 
 } /* end of _unur_mvtdr_tp_find() */
 
-/*-----------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 int
 _unur_mvtdr_tp_search( struct unur_gen *gen, TP_ARG *a )
-/* 
-   search for proper touching point 
-   returns 0 if no proper point could be found
-   1 otherwise
-   a[0], a[1], a[2] ... left, middle and right point of intervall
-   the proper touching point is stored on a[1].
-   (see find_bracket() )
-*/
+     /*----------------------------------------------------------------------*/
+     /* search for proper touching point.                                    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*   a   ... arguments for function that should be minimized            */
+     /*           a[0], a[1], a[2] ... left, middle and right point of       */
+     /*           bracket used for Brent's algorithm,                        */
+     /*           see _unur_util_brent().                                    */
+     /*           the result is stored in a[1].                              */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
 {
   int i;      /* aux counter */
 
@@ -812,7 +962,7 @@ _unur_mvtdr_tp_search( struct unur_gen *gen, TP_ARG *a )
       a[1].t *= FIND_TP_STEP_SIZE;
     }
     else
-      return 1;
+      return UNUR_SUCCESS;
   }
       
   /** search from infinity --> 0 **/
@@ -832,11 +982,11 @@ _unur_mvtdr_tp_search( struct unur_gen *gen, TP_ARG *a )
       a[1].t /= FIND_TP_STEP_SIZE;
     }
     else
-      return 1;
+      return UNUR_SUCCESS;
   }
 
   /* no proper touching point found */
-  return 0;
+  return UNUR_FAILURE;
 
 } /* end of _unur_mvtdr_tp_search() */
 
@@ -844,12 +994,21 @@ _unur_mvtdr_tp_search( struct unur_gen *gen, TP_ARG *a )
 
 int 
 _unur_mvtdr_tp_bracket( struct unur_gen *gen, TP_ARG *a )
-/* 
-   search for proper bracket of minimum of function tp_min()
-   returns 0 if no proper bracket could be found
-   1 otherwise
-   a[0], a[1], a[2] ... left, middle and right point of intervall
-*/
+     /*----------------------------------------------------------------------*/
+     /* search for proper bracket for Brent's algorithm                      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*   a   ... arguments for function that should be minimized            */
+     /*           a[0], a[1], a[2] ... left, middle and right point of       */
+     /*           bracket used for Brent's algorithm,                        */
+     /*           see _unur_util_brent().                                    */
+     /*                                                                      */
+     /* return:                                                              */
+     /** TODO                                                              **/
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
 {
   int i;                 /* aux variable */
   double tleft, tright;  /* left boundary of searching region */
@@ -862,11 +1021,11 @@ _unur_mvtdr_tp_bracket( struct unur_gen *gen, TP_ARG *a )
 
   /* search */
   for( i=1; i <= max(1,FIND_TP_STEPS_LB); i++ ) {
-    _unur_mvtdr_tp_min(a[0].t, a);  /* calculate volume function */
+    _unur_mvtdr_tp_min(a[0].t, a);  /* volume function */
 
     if( ! a[0].valid ) {
       /* a[0] not a proper touching point */
-      tleft = a[0].t;                      /* change boundary of searching region */
+      tleft = a[0].t;                     /* change boundary of searching region */
       a[0].t += (a[1].t - a[0].t) / 2.;   /* try another one */
     }
 
@@ -898,7 +1057,7 @@ _unur_mvtdr_tp_bracket( struct unur_gen *gen, TP_ARG *a )
 
   /* search */
   for( i=1; i <= max(1,FIND_TP_STEPS_UB); i++ ) {
-    _unur_mvtdr_tp_min(a[2].t, a+2);  /* calculate volume function */
+    _unur_mvtdr_tp_min(a[2].t, a+2);  /* volume function */
     if( ! a[2].valid ) {
       /* a[2] not a proper touching point */
       tright = a[2].t;
@@ -934,15 +1093,24 @@ _unur_mvtdr_tp_bracket( struct unur_gen *gen, TP_ARG *a )
 
 int
 _unur_mvtdr_initial_vertices( struct unur_gen *gen )
-/*
-  get vertices of initial cones and return number of vertices
-*/
+     /*----------------------------------------------------------------------*/
+     /* get vertices of initial cones.                                       */
+     /* these are the vertices (0,...,0,+/- 1, 0, ..., 0).                   */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
 {
   VERTEX *vt;
   int i,k,d;
 
   /* unit vectors e_k  and -e_k */
   for ( d=1.; d > -2; d -= 2.) {
+    /* '+'-sign and '-'-sign */
     for( k=0; k<GEN->dim; k++ ) {
       vt = _unur_mvtdr_vertex_new(gen);
       for( i=0; i<GEN->dim; i++ ) {
@@ -962,9 +1130,16 @@ _unur_mvtdr_initial_vertices( struct unur_gen *gen )
 
 VERTEX *
 _unur_mvtdr_vertex_new( struct unur_gen *gen )
-/*
-  next allocated vertex in list 
-*/
+     /*----------------------------------------------------------------------*/
+     /* allocate new vertex and append it to linked list of all vertices.    */
+     /* increment counter for vertices.                                      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to newly allocated vertex                                  */
+     /*----------------------------------------------------------------------*/
 {
   /* allocate memory */
   if (GEN->vertex == NULL) {
@@ -992,9 +1167,16 @@ _unur_mvtdr_vertex_new( struct unur_gen *gen )
 
 VERTEX *
 _unur_mvtdr_vertex_on_edge( struct unur_gen *gen, VERTEX **vl )
-/*
-  compute new vertex on edge and return its index
-*/
+     /*----------------------------------------------------------------------*/
+     /* compute new vertex on edge (i.e., its barycenter)                    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*   vl  ... arraqy of the two end vertices of the edge.                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to new vertex                                              */
+     /*----------------------------------------------------------------------*/
 {
   int i;
   VERTEX *newv;          /* pointer to new vertex */
@@ -1022,14 +1204,26 @@ _unur_mvtdr_vertex_on_edge( struct unur_gen *gen, VERTEX **vl )
 
 int
 _unur_mvtdr_number_vertices( struct unur_gen *gen, int level )
-/*
-  calculate (approximate) number of vertices in given triangulation level
-  (WARNING! The numbers are found by computer experiments)
-*/
+     /*----------------------------------------------------------------------*/
+     /* calculate (approximate) number of vertices in a given triangulation  */
+     /* level (when all initial cones are splitted).                         */
+     /* These numbers are used for the size of the hash table for edges.     */
+     /* (WARNING! The numbers are found by computer experiments.)            */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen   ... pointer to generator object                              */
+     /*   level ... number of triangulation steps                            */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   number of vertices                                                 */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return -1                                                          */
+     /*----------------------------------------------------------------------*/
 {
   if (level < 0 || GEN->dim < 2) {
     _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    return -1;  /** TODO: errorcode **/
+    return -1;  /** errorcode **/
   }
 
   switch (GEN->dim) {
@@ -1095,9 +1289,18 @@ _unur_mvtdr_number_vertices( struct unur_gen *gen, int level )
 
 int
 _unur_mvtdr_etable_new( struct unur_gen *gen, int size )
-/*
-  make new hash table
-*/
+     /*----------------------------------------------------------------------*/
+     /* make a new hash table.                                               */
+     /* destroy old table if it exists.                                      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*   size ... size of hash table                                        */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
 {
   int n;
 
@@ -1122,9 +1325,12 @@ _unur_mvtdr_etable_new( struct unur_gen *gen, int size )
 
 void
 _unur_mvtdr_etable_free( struct unur_gen *gen )
-/*
-  free hash table
-*/
+     /*----------------------------------------------------------------------*/
+     /* free hash table.                                                     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
 {
   int i;
   E_TABLE *et, *et_next;
@@ -1153,11 +1359,27 @@ _unur_mvtdr_etable_free( struct unur_gen *gen )
 
 VERTEX *
 _unur_mvtdr_etable_find_or_insert( struct unur_gen *gen, VERTEX **vidx )
-/*
-  find or insert entry in hash table
-  it returns pointer to corresponding vertex (barycenter of edge)
-  we use "oldest" edge which is given by vertices vidx[0] and vidx[1]
-*/
+     /*----------------------------------------------------------------------*/
+     /* search for an edge in the hash table.                                */
+     /* the edge is given by its end vertices vidx[0] and vidx[1].           */
+     /* (if vidx is an ordered array of the vertices of a cone then this     */
+     /* edge is the "oldest" edge of that cone (i.e., the end vertices have  */
+     /* the smallest indices of all vertices of the cone.)                   */
+     /*                                                                      */
+     /* if the edge is found, a pointer to the vertex that corresponds to    */
+     /* the barycenter of the edge.                                          */
+     /*                                                                      */
+     /* if the edge is not found in the table, it is created and inserted    */
+     /* into the table, the barycenter is computed.                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*   vidx ... array of pointers to vertices                             */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
 {
   E_TABLE *pet, *pet_last;  /* table entry */
   int idx[2];               /* store indices */
@@ -1211,9 +1433,16 @@ _unur_mvtdr_etable_find_or_insert( struct unur_gen *gen, VERTEX **vidx )
 
 int
 _unur_mvtdr_make_guide_table( struct unur_gen *gen )
-/* 
-   create guide table 
-*/
+     /*----------------------------------------------------------------------*/
+     /* create guide table.                                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
 {
   int j;
   CONE *c;

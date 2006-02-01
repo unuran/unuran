@@ -1,3 +1,41 @@
+/*****************************************************************************
+ *                                                                           *
+ *          UNURAN -- Universal Non-Uniform Random number generator          *
+ *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ *   FILE:      mvtdr_sample.c                                               *
+ *                                                                           *
+ *   TYPE:      continuous multivariate random variate                       *
+ *   METHOD:    multivariate transformed density rejection                   *
+ *                                                                           *
+ *   DESCRIPTION:                                                            *
+ *      Given (logarithm of the) PDF of a log-concave distribution;          *
+ *      produce a value x consistent with its density.                       *
+ *                                                                           *
+ *****************************************************************************
+     $Id$
+ *****************************************************************************
+ *                                                                           *
+ *   Copyright (c) 2000 Wolfgang Hoermann and Josef Leydold                  *
+ *   Dept. for Statistics, University of Economics, Vienna, Austria          *
+ *                                                                           *
+ *   This program is free software; you can redistribute it and/or modify    *
+ *   it under the terms of the GNU General Public License as published by    *
+ *   the Free Software Foundation; either version 2 of the License, or       *
+ *   (at your option) any later version.                                     *
+ *                                                                           *
+ *   This program is distributed in the hope that it will be useful,         *
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of          *
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
+ *   GNU General Public License for more details.                            *
+ *                                                                           *
+ *   You should have received a copy of the GNU General Public License       *
+ *   along with this program; if not, write to the                           *
+ *   Free Software Foundation, Inc.,                                         *
+ *   59 Temple Place, Suite 330, Boston, MA 02111-1307, USA                  *
+ *                                                                           *
+ *****************************************************************************/
 
 /*****************************************************************************/
 /**  Private                                                                **/
@@ -25,7 +63,7 @@ _unur_mvtdr_sample_cvec( struct unur_gen *gen, double *rpoint )
   double f, h;   /* value of density and hat at random point */
   int i,j;
 
-  double *S = GEN->S;            /* working array for storing point on simples */
+  double *S = GEN->S;  /* working array for storing point on simples */
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);
@@ -34,27 +72,18 @@ _unur_mvtdr_sample_cvec( struct unur_gen *gen, double *rpoint )
   /* loop until random point is accepted */
   while( 1 ) { 
 
-    /*.................................................................*/
+    /*.......................................................................*/
     /** find a cone **/
 
-    U = _unur_call_urng(gen->urng);    /* sample from uniform distribution */
+    U = _unur_call_urng(gen->urng);      /* sample from uniform distribution */
 
     /* look up in guide table and search for cone */
-    for( c = (GEN->guide)[(int) (U * GEN->guide_size)]; 
-	 c!=NULL && c->Hsum < GEN->Htot * U;
-	 c=c->next );
+    c = (GEN->guide)[(int) (U * GEN->guide_size)]; 
+    U *= GEN->Htot;
+    while (c->next!=NULL && c->Hsum < U) 
+      c = c->next;
 
-/* #if DEBUG > 0 */
-/*     if( c == NULL ) { */
-/*       /\* something is wrong. This should not happen *\/ */
-/* /\*       WARNING( "c==NULL" ); *\/ */
-/*       c=GEN->last_c;      /\* we simple use the last cone *\/ */
-/*     } */
-/*     if( DEBUG & DB_RPOINT ) */
-/*       fprintf(LOG,"H = %g (%g) --> cone = %d",GEN->Htot * u,GEN->Htot,c->index); */
-/* #endif */
-
-    /*.................................................................*/
+    /*.......................................................................*/
     /** get random point and distance of hyper plane **/
 
     /* get x value for marginal distribution of hat --> hyperplane */
@@ -73,14 +102,10 @@ _unur_mvtdr_sample_cvec( struct unur_gen *gen, double *rpoint )
 	rpoint[i] += x * (c->v[j])->coord[i];
     }
 
-    /*.................................................................*/
-
-/* #if RECTANGLE == 1 */
-/*     /\* is point inside domain (rectangle) ? *\/ */
-/* #endif */
-
-    /*.................................................................*/
+    /*.......................................................................*/
     /** accept or reject **/
+
+    /** TODO: is point inside domain (rectangle) ? **/
 
     f = PDF(rpoint);                        /* density */
     h = T_inv( c->alpha - c->beta * gx );   /* hat */
@@ -106,6 +131,7 @@ _unur_mvtdr_simplex_sample( const struct unur_gen *gen, double *U )
 {
   int dim = GEN->dim;
 
+  /*................................................................*/
   if (dim == 2) {
     U[0] = _unur_call_urng(gen->urng);
     U[1] = 1. - U[0];
@@ -146,10 +172,11 @@ _unur_mvtdr_simplex_sample( const struct unur_gen *gen, double *U )
 
     return UNUR_SUCCESS;
   }
-
+  /*................................................................*/
   /* else --> make error message!! */
+  _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+  return UNUR_FAILURE;
 
-  return UNUR_SUCCESS;
 } /* end of _unur_mvtdr_simplex_sample() */
 
 /*---------------------------------------------------------------------------*/

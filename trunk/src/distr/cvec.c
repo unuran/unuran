@@ -2358,16 +2358,18 @@ _unur_distr_cvec_debug( const struct unur_distr *distr, const char *genid )
   /* center vector */
   if ((distr->set & UNUR_DISTR_SET_CENTER) && DISTR.center)
     _unur_matrix_print_vector( distr->dim, DISTR.center, "\tcenter vector =", log, genid, "\t   ");
-   
+  else {
+    fprintf(log,"%s:\tcenter = mode [not given explicitly]\n",genid);
+    fprintf(log,"%s:\n",genid);
+  }
+    
   /* covariance matrix */
   mat = ((distr->set & UNUR_DISTR_SET_COVAR) && DISTR.covar) ? DISTR.covar : NULL;
   _unur_matrix_print_matrix( distr->dim, mat, "\tcovariance matrix =", log, genid, "\t   ");
 
   /* inverse covariance matrix */
-/*  
-  mat = ((distr->set & UNUR_DISTR_SET_COVAR_INV) && DISTR.covar_inv) ? DISTR.covar_inv : NULL;
-  _unur_matrix_print_matrix( distr->dim, mat, "\tinverse covariance matrix =", log, genid, "\t   ");
-*/
+  /*   mat = ((distr->set & UNUR_DISTR_SET_COVAR_INV) && DISTR.covar_inv) ? DISTR.covar_inv : NULL; */
+  /*   _unur_matrix_print_matrix( distr->dim, mat, "\tinverse covariance matrix =", log, genid, "\t   "); */
   
   /* cholesky factor of covariance matrix */
   mat = ((distr->set & UNUR_DISTR_SET_CHOLESKY) && DISTR.cholesky) ? DISTR.cholesky : NULL;

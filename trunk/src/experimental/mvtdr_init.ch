@@ -77,6 +77,14 @@ _unur_mvtdr_init( struct unur_par *par )
   gen = _unur_mvtdr_create(par);
   if (!gen) { _unur_par_free(par); return NULL; }
 
+  /* free parameters */
+  _unur_par_free(par);
+
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  if (gen->debug) _unur_mvtdr_debug_init_start(gen);
+#endif
+
   /* we need an auxiliary generator for gamma random variates */
   GEN_GAMMA = _unur_mvtdr_gammagen( gen, (double)(GEN->dim) );
   if ( GEN_GAMMA == NULL ) {
@@ -87,11 +95,8 @@ _unur_mvtdr_init( struct unur_par *par )
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-  if (gen->debug) _unur_mvtdr_debug_init(gen);
+  if (gen->debug) _unur_mvtdr_debug_init_finished(gen);
 #endif
-
-  /* free parameters */
-  _unur_par_free(par);
 
   /* o.k. */
   return gen;
@@ -574,7 +579,6 @@ _unur_mvtdr_cone_params( struct unur_gen *gen, CONE *c )
      /*   c   ... cone for which parameters have to be computed              */
      /*                                                                      */
      /* return:                                                              */
-     /** TODO!                                                             **/
      /*   UNUR_SUCCESS ... on success                                        */
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
@@ -599,7 +603,7 @@ _unur_mvtdr_cone_params( struct unur_gen *gen, CONE *c )
 /*     /\* check if point is in domain *\/ */
 /*     for( i=0; i<N; i++ ) */
 /*       if( coord[i] < GEN->rl[i] || coord[i] > GEN->ru[i] ) */
-/* 	return TP_FZERO; */
+/*     return UNUR_FAILURE; */
 /* #endif */
 
   /* density and its gradient */
@@ -609,7 +613,7 @@ _unur_mvtdr_cone_params( struct unur_gen *gen, CONE *c )
   /* check density */
   if( f < TOLERANCE )    /* f = 0. */
     /** TODO!! **/
-    return TP_FZERO;
+    return UNUR_FAILURE;
 
   /* transformed density and its gradient */
   Tf = T(f);
@@ -624,7 +628,8 @@ _unur_mvtdr_cone_params( struct unur_gen *gen, CONE *c )
 
   /* |Tgrad| must not be too small */
   if( c->beta < TOLERANCE )
-    return TP_GZERO;
+    /** TODO **/
+    return UNUR_FAILURE;
 
   /* compute g and <g,v> for all vertices of cone */
   /* vector g = - grad(T(f)) / |grad(T(f))| */
@@ -637,7 +642,8 @@ _unur_mvtdr_cone_params( struct unur_gen *gen, CONE *c )
   for( i=0; i<dim; i++ ) {
     (c->gv)[i] = _unur_vector_scalar_product(dim,g,(c->v[i])->coord);   /* <g,v> */
     if( c->gv[i] < TOLERANCE )
-      return TP_UGRAD;
+      /** TODO **/
+      return UNUR_FAILURE;
     else
       c->logai -= log(c->gv[i]);
   }
@@ -651,7 +657,7 @@ _unur_mvtdr_cone_params( struct unur_gen *gen, CONE *c )
 /* #endif */
 
   /* return error code */
-  return TP_VALID;
+  return UNUR_SUCCESS;
 
 } /* end of _unur_mvtdr_cone_params() */
 
@@ -676,7 +682,7 @@ _unur_mvtdr_cone_logH( struct unur_gen *gen, CONE *c )
   double logH;
 
   /* compute parameters for cone */
-  if( _unur_mvtdr_cone_params(gen,c) != TP_VALID )
+  if( _unur_mvtdr_cone_params(gen,c) != UNUR_SUCCESS )
     /* something is wrong: beta = 0 and/or <g,v> <= 0 */
     return INFINITY;
 
@@ -885,7 +891,7 @@ _unur_mvtdr_tp_find( struct unur_gen *gen, CONE *c )
   /* find proper touching point */
   if( _unur_mvtdr_tp_search(gen,a) != UNUR_SUCCESS )
     /* no proper point found */
-    return TP_EMPTY;
+    return UNUR_FAILURE;
 
   /* find "bracket" for Brent's algorithm */
   switch( _unur_mvtdr_tp_bracket(gen,a) ) {      /* searching for intervall that contains minimum */
@@ -909,8 +915,7 @@ _unur_mvtdr_tp_find( struct unur_gen *gen, CONE *c )
     c->tp = a[2].t;
     c->Hi = exp(a[2].logH);
     break;
-  case TP_EMPTY:                   /* no proper touching point found */
-  default:
+  default:                         /* no proper touching point found */
     c->tp = -1.;
     return UNUR_FAILURE;
   }
@@ -1005,9 +1010,10 @@ _unur_mvtdr_tp_bracket( struct unur_gen *gen, TP_ARG *a )
      /*           see _unur_util_brent().                                    */
      /*                                                                      */
      /* return:                                                              */
-     /** TODO                                                              **/
-     /*   UNUR_SUCCESS ... on success                                        */
-     /*   error code   ... on error                                          */
+     /*   TP_LEFT    ... minimum in left point                               */
+     /*   TP_MIDDLE  ... use middle point                                    */
+     /*   TP_RIGHT   ... minimum in right point                              */
+     /*   TP_BRACKET ... bracket found                                       */
      /*----------------------------------------------------------------------*/
 {
   int i;                 /* aux variable */
@@ -1041,8 +1047,8 @@ _unur_mvtdr_tp_bracket( struct unur_gen *gen, TP_ARG *a )
 
   /* search successful ? */
   if( ! a[0].valid )
-    /* no proper touching point on left side */
-    return TP_MIDDLE;   /* ????? */
+    /* no proper touching point on left side --> use middle point */
+    return TP_MIDDLE;
   if( a[0].logH <= a[1].logH )
     /* vol(left) <= vol(middle) */
     return TP_LEFT;
@@ -1074,7 +1080,7 @@ _unur_mvtdr_tp_bracket( struct unur_gen *gen, TP_ARG *a )
 
   /* search successful ? */
   if( ! a[2].valid )
-    /* no proper touching point on right side */
+    /* no proper touching point on right side --> use middle point */
     return TP_MIDDLE; 
   if( a[2].logH <= a[1].logH )
     /* f(right) <= f(middle) */

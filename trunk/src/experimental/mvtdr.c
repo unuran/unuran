@@ -36,7 +36,6 @@
  *   59 Temple Place, Suite 330, Boston, MA 02111-1307, USA                  *
  *                                                                           *
  *****************************************************************************
- *****************************************************************************
  *                                                                           *
  *   REFERENCES:                                                             *
  *   [1] Leydold, J. (1998): A Rejection Technique for Sampling from         *
@@ -45,16 +44,6 @@
  *                                                                           *
  *   [2] Hoermann, W., J. Leydold, and G. Derflinger (2004):                 *
  *       Automatic Nonuniform Random Variate Generation, Springer, Berlin.   *
- *                                                                           *
- *****************************************************************************
- *                                                                           *
- *  VMT generates random vectors for distributions with given mean           *
- *  vector mu and covariance matrix Sigma. It produces random vectors        *
- *  of the form X = L Y + mu, where L is the Cholesky factor of Sigma,       *
- *  i.e. L L^t = Sigma, and Y has independent components of the same         *
- *  distribution with mean 0 and standard deviation 1.                       *
- *                                                                           *
- *  See [2], Sect.11.1.6, Alg.11.3.                                          *
  *                                                                           *
  *****************************************************************************/
 
@@ -95,11 +84,6 @@
 
 /** TODO **/
 
-/* control triangulation of cones                                  */
-/* #define MAX_N_CONES         10000    /\* maximum number of cones (at least 2^(N+T_STEPS_MIN) *\/ */
-/* #define T_STEPS_MIN         5        /\* minimum number of triangulation steps *\/ */
-/* #define OPTIMAL_TP_STEP     100      /\* triangulation step when optimal touching points is calculated *\/ */
-
 /** fine tuning of generator                                       **/
 /* a number is considered to be zero if abs is below this bound     */
 #define TOLERANCE   1.e-8
@@ -113,6 +97,16 @@
 /*    bits 02-12 ... setup                                                   */
 /*    bits 13-24 ... adaptive steps                                          */
 /*    bits 25-32 ... trace sampling                                          */
+
+/* #define DB_VERTICES       2 */
+/* #define DB_CONES          4 */
+/* #define DB_EDGES          8 */
+/* #define DB_CPARAMS        16 */
+/* #define DB_RPOINT         32 */
+/* #define DB_GUIDE          64 */
+/* #define DB_GAMMA          128 */
+/* #define DB_VOLUME         1024 */
+/* #define DB_G              2048 */
 
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
@@ -167,7 +161,6 @@ static struct unur_gen *_unur_mvtdr_gammagen( struct unur_gen *gen, double alpha
 
 static int _unur_mvtdr_create_hat( struct unur_gen *gen );
 /* compute cones and hat function */
-
 
 /*****************************************************************************/
 /* CONES.                                                                    */
@@ -254,9 +247,14 @@ static int _unur_mvtdr_make_guide_table( struct unur_gen *gen );
 /* i.e., into the log file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_mvtdr_debug_init( const struct unur_gen *gen );
+static void _unur_mvtdr_debug_init_start( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* print after generator has been initialized has completed.                 */
+/* print after (almost empty generator) object has been created.             */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_mvtdr_debug_init_finished( const struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* print after generator has been initialized.                               */
 /*---------------------------------------------------------------------------*/
 #endif
 
@@ -278,61 +276,21 @@ static void _unur_mvtdr_debug_init( const struct unur_gen *gen );
 #define GEN_GAMMA  gen->gen_aux
 
 /*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+/* Transformation                                                            */
 
-/**
-  error codes
-**/
+/*  this version supports T(x) = log(x) only                                 */
+#define T(x)       (log(x))       /* transformation function                 */
+#define T_deriv(x) (1./(x))       /* first derivative of transform funtion   */
+#define T_inv(x)   (exp(x))       /* inverse of transform function           */
 
-#define TP_VALID 0                /* density at touching point not zero */
-#define TP_FZERO 1                /* denstiy 0 */
-#define TP_GZERO 2                /* grandient of denstiy 0 */
-#define TP_UGRAD 3                /* grandient of transformed denstiy does not fit into cone */
-#define TP_NAN   9                /* numerical errors (NaN) */
+/*---------------------------------------------------------------------------*/
+/* return codes for _unur_mvtdr_tp_bracket()                                 */
 
-#define TP_LEFT    1              /* minimum in left point */
-#define TP_MIDDLE  2              /* minimum in middle point */
-#define TP_RIGHT   3              /* minimum in right point */
-#define TP_BRACKET 4              /* bracket found */
-#define TP_EMPTY   0              /* no proper touching point found */
+#define TP_LEFT    1              /* minimum in left point                   */
+#define TP_MIDDLE  2              /* minimum in middle point                 */
+#define TP_RIGHT   3              /* minimum in right point                  */
+#define TP_BRACKET 4              /* bracket found                           */
  
-/*------------------------------------------------------------------*/
-
-/** global variables                                               **/
-/* /\* file handle for log file *\/ */
-/* FILE *LOG; */
-
-/* /\** debugging constanst                                            **\/ */
-/* #define DB_VERTICES       2 */
-/* #define DB_CONES          4 */
-/* #define DB_EDGES          8 */
-/* #define DB_CPARAMS        16 */
-/* #define DB_RPOINT         32 */
-/* #define DB_GUIDE          64 */
-/* #define DB_GAMMA          128 */
-/* #define DB_VOLUME         1024 */
-/* #define DB_G              2048 */
-
-/*------------------------------------------------------------------*/
-
-/** Macros                                                         **/
-
-/** Transformation                                                 **/
-/*  this version supports T(x) = log(x) only                        */
-#define T(x)       (log(x))       /* transformation function        */
-#define T_deriv(x) (1./(x))       /* first derivative of transform funtion */
-#define T_inv(x)   (exp(x))       /* inverse of transform function  */
-
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 /*---------------------------------------------------------------------------*/
 /* since there is only file scope or program code, we abuse the              */
 /* #include directive.                                                       */

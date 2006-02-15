@@ -100,6 +100,10 @@
 /*    bits 13-24 ... adaptive steps                                          */
 /*    bits 25-32 ... trace sampling                                          */
 
+#define MVTDR_DEBUG_VERTEX      0x00000010u   /* print list of vertices      */
+#define MVTDR_DEBUG_CONE        0x00000020u   /* print list of conesces      */
+
+
 /* #define DB_VERTICES       2 */
 /* #define DB_CONES          4 */
 /* #define DB_EDGES          8 */
@@ -241,6 +245,9 @@ static VERTEX *_unur_mvtdr_etable_find_or_insert( struct unur_gen *gen, VERTEX *
 static int _unur_mvtdr_make_guide_table( struct unur_gen *gen );
 /* create guide table */
 
+
+/*****************************************************************************/
+/* Debug.                                                                    */
 /*****************************************************************************/
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -257,6 +264,16 @@ static void _unur_mvtdr_debug_init_start( const struct unur_gen *gen );
 static void _unur_mvtdr_debug_init_finished( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized.                               */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_mvtdr_debug_vertices( const struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* print list of vertices.                                                   */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_mvtdr_debug_cones( const struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* print list of cones.                                                      */
 /*---------------------------------------------------------------------------*/
 #endif
 

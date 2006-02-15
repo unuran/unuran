@@ -607,7 +607,7 @@ _unur_mvtdr_cone_params( struct unur_gen *gen, CONE *c )
 /* #endif */
 
   /* density and its gradient */
-  f = PDF(mcoord);
+  c->fp = f = PDF(mcoord);
   dPDF(Tgrad,mcoord);
 
   /* check density */

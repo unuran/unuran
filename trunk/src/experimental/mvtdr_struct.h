@@ -65,6 +65,7 @@ typedef struct s_cone             /* a cone */
   double tp;                      /* coordinate of touching point */
   double Hi;                      /* volume under hat in cone */
   double Hsum;                    /* accumulated sum of volumes */
+  double fp;                      /* value of density at touching point */
 /* #if RECTANGLE == 1 */
 /*   double height;                  /\* height of pyramid *\/ */
 /*   double tdrg_vol;                /\* volume below hat of gamma density *\/ */
@@ -123,8 +124,8 @@ struct unur_mvtdr_gen {
   const double *center;          /* center of distribution */
 
   CONE *cone;                        /* root of list of cones */
-  int n_cone;                      /* number of cones */
   CONE *last_cone;                   /* pointer to last cone in list */
+  int n_cone;                      /* number of cones */
 
   VERTEX *vertex;                      /* root of list of vertices */
   VERTEX *last_vertex;                 /* pointer to last vertex in list */

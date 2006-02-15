@@ -91,6 +91,8 @@
 /*---------------------------------------------------------------------------*/
 /* Variants                                                                  */
 
+#define MVTDR_VARFLAG_VERIFY     0x01u   /* flag for verifying mode          */
+
 /*---------------------------------------------------------------------------*/
 /* Debugging flags                                                           */
 /*    bit  01    ... pameters and structure of generator (do not use here)   */

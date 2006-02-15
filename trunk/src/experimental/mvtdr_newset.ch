@@ -178,4 +178,70 @@ unur_mvtdr_set_maxcones( struct unur_par *par, int maxcones )
 
 } /* end of unur_mvtdr_set_maxcones() */
 
+
 /*---------------------------------------------------------------------------*/
+
+int
+unur_mvtdr_set_verify( struct unur_par *par, int verify )
+     /*----------------------------------------------------------------------*/
+     /* turn verifying of algorithm while sampling on/off                    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par    ... pointer to parameter for building generator object      */
+     /*   verify ... 0 = no verifying,  !0 = verifying                       */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   no verifying is the default                                        */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+
+  /* check input */
+  _unur_check_par_object( par, MVTDR );
+
+  /* we use a bit in variant */
+  par->variant = (verify) ? (par->variant | MVTDR_VARFLAG_VERIFY) : (par->variant & (~MVTDR_VARFLAG_VERIFY));
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+
+} /* end of unur_mvtdr_set_verify() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_mvtdr_chg_verify( struct unur_gen *gen, int verify )
+     /*----------------------------------------------------------------------*/
+     /* turn verifying of algorithm while sampling on/off                    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen    ... pointer to generator object                             */
+     /*   verify ... 0 = no verifying,  !0 = verifying                       */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   no verifying is the default                                        */
+     /*----------------------------------------------------------------------*/
+{
+  /* check input */
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, MVTDR, UNUR_ERR_GEN_INVALID );
+
+  /* we use a bit in variant */
+  gen->variant = (verify) ? (gen->variant | MVTDR_VARFLAG_VERIFY) : (gen->variant & (~MVTDR_VARFLAG_VERIFY));
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+
+} /* end of unur_mvtdr_chg_verify() */
+
+/*---------------------------------------------------------------------------*/
+

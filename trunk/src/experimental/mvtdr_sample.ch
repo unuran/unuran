@@ -110,6 +110,12 @@ _unur_mvtdr_sample_cvec( struct unur_gen *gen, double *rpoint )
     f = PDF(rpoint);                        /* density */
     h = T_inv( c->alpha - c->beta * gx );   /* hat */
 
+    /* verify hat function */
+    if ( (gen->variant & MVTDR_VARFLAG_VERIFY) &&
+	 ((1.+UNUR_EPSILON) * h < f ) )
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF(x) > hat(x)");
+
+    /* accept point */
     if( _unur_call_urng(gen->urng) * h <= f )
       return;
   }

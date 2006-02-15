@@ -467,8 +467,8 @@ _unur_mvtdr_initial_cones( struct unur_gen *gen )
     for( i=0; i < dim && j < dim; i++ )
       if ( ((k>>i)&1) * dim ) (c->v)[j++] = ivtl[i + dim];
 
-    /* determinant and volume of triangle [ = 1/((dim-1)!) ] */
-    c->logdetf = -logfak;
+    /* determinant and volume of triangle * ((dim-1)!) */
+    c->logdetf = 0.;
 
     /* touching point not known yet */
     c->tp = -1.;   /* > 0. if and only if tp is computed !! */
@@ -640,7 +640,7 @@ _unur_mvtdr_cone_params( struct unur_gen *gen, CONE *c )
   /* parameter a1 for volume of cone */
   c->logai = c->logdetf;
   for( i=0; i<dim; i++ ) {
-    (c->gv)[i] = _unur_vector_scalar_product(dim,g,(c->v[i])->coord);   /* <g,v> */
+    c->gv[i] = _unur_vector_scalar_product(dim,g,(c->v[i])->coord);   /* <g,v> */
     if( c->gv[i] < TOLERANCE )
       /** TODO **/
       return UNUR_FAILURE;

@@ -433,12 +433,6 @@ _unur_mvtdr_initial_cones( struct unur_gen *gen )
   VERTEX *vt;
   VERTEX **ivtl;   /* list of initial vertices */
   int dim = GEN->dim;
-  double logfak;
-
-  /* factorial of (dim-1)*/
-  logfak = 0.;
-  for( i=2; i<dim; i++ ) 
-    logfak += log((double) i);
 
   /* make array of initial vertices */
   ivtl = _unur_xmalloc( 2 * dim * sizeof(VERTEX*) );

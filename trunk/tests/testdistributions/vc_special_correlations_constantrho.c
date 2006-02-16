@@ -64,8 +64,16 @@
 /*---------------------------------------------------------------------------*/
 
 #include <unuran.h>
+#include <distr/distr_struct.h> 
+#include <utils/matrix_source.h> 
+#include <specfunct/unur_specfunct_source.h>
 #include <float.h>
 #include "testdistributions.h"
+
+/*---------------------------------------------------------------------------*/
+
+#define LOGNORMCONSTANT (distr->data.cvec.norm_constant)
+#define NORMCONSTANT    (distr->data.cvec.norm_constant)
 
 /*---------------------------------------------------------------------------*/
 
@@ -86,8 +94,8 @@ _unur_vc_set_corrmatrix_constantrho( UNUR_DISTR *distr, int dim, double rho )
      /*   rho   ... correlation between consecutive elements in process      */
      /*                                                                      */
      /* return:                                                              */
-     /*   0 ... success                                                      */
-     /*   1 ... failure                                                      */
+     /*   UNUR_SUCCESS ... success                                           */
+     /*   UNUR_FAILURE ... failure                                           */
      /*----------------------------------------------------------------------*/
 {
 #define idx(a,b) ((a)*dim+(b))
@@ -95,20 +103,20 @@ _unur_vc_set_corrmatrix_constantrho( UNUR_DISTR *distr, int dim, double rho )
   double *covar, *covar_inv;
   double a, b, denominator;
   int i,j;
-  int error = 1;
+  int error = UNUR_FAILURE;
   
   /* checking parameters */ 
   if (rho == 0.) /* nothing to do */
-    return 0;
+    return UNUR_SUCCESS;
+
+  if ( rho<0. || rho>=1. || dim<1)
+    /* invalid arguments */
+    return UNUR_FAILURE;
 
   /* entries of matrix */
   denominator = 1.+(dim-2)*rho-(dim-1)*rho*rho;    
   a = (1.+(dim-2)*rho)/denominator;
   b = -rho/denominator;
-
-  if ( rho<0. || rho>=1. || dim<1)
-    /* invalid arguments */
-    return 1;
 
   /* allocate memory */
   covar = malloc( dim * dim * sizeof(double) );
@@ -116,7 +124,7 @@ _unur_vc_set_corrmatrix_constantrho( UNUR_DISTR *distr, int dim, double rho )
   if (covar == NULL || covar_inv == NULL) {
     if (covar) free (covar);
     if (covar_inv) free (covar_inv);
-    return 1;
+    return UNUR_FAILURE;
   }
 
   /* create correlation matrix */
@@ -133,7 +141,7 @@ _unur_vc_set_corrmatrix_constantrho( UNUR_DISTR *distr, int dim, double rho )
   /* set covariance matrix and its inverse */
   if ( (unur_distr_cvec_set_covar( distr, covar ) == UNUR_SUCCESS) &&
        (unur_distr_cvec_set_covar_inv( distr, covar_inv ) == UNUR_SUCCESS) )
-    error = 0;
+    error = UNUR_SUCCESS;
 
   /* free working space */
   free (covar); free (covar_inv); 
@@ -153,6 +161,7 @@ unur_distr_multinormal_constantrho(int dim, const double *mean, double rho)
      /*---------------------------------------------------------------------------*/
 {
   struct unur_distr *distr;
+  double det_covar;
 
   /* checking parameters */ 
   if ( rho<0. || rho>=1. || dim<1)
@@ -165,11 +174,15 @@ unur_distr_multinormal_constantrho(int dim, const double *mean, double rho)
   unur_distr_set_name(distr, "multinormal_constantrho");
   
   /* set the correlation matrix and its inverse */
-  if (_unur_vc_set_corrmatrix_constantrho(distr, dim, rho) != 0) {
+  if (_unur_vc_set_corrmatrix_constantrho(distr, dim, rho) != UNUR_SUCCESS) {
     /* error */
     unur_distr_free(distr); distr = NULL; 
   }
   
+  /* compute normalization constant */
+  det_covar = _unur_matrix_determinant(distr->dim, distr->data.cvec.covar);
+  LOGNORMCONSTANT = - ( distr->dim * log(2 * M_PI) + log(det_covar) ) / 2.;
+
   /* return pointer to object */
   return distr;
 
@@ -184,6 +197,7 @@ unur_distr_multicauchy_constantrho(int dim, const double *mean, double rho)
      /*---------------------------------------------------------------------------*/
 {
   struct unur_distr *distr;
+  double det_covar;
   
   /* checking parameters */ 
   if ( rho<0. || rho>=1. || dim<1)
@@ -196,11 +210,16 @@ unur_distr_multicauchy_constantrho(int dim, const double *mean, double rho)
   unur_distr_set_name(distr, "multicauchy_constantrho");
   
   /* set the correlation matrix and its inverse */
-  if (_unur_vc_set_corrmatrix_constantrho(distr, dim, rho) != 0) {
+  if (_unur_vc_set_corrmatrix_constantrho(distr, dim, rho) != UNUR_SUCCESS) {
     /* error */
     unur_distr_free(distr); distr = NULL; 
   }
-  
+
+  /* compute normalization constant */
+  det_covar = _unur_matrix_determinant(distr->dim, distr->data.cvec.covar);
+  LOGNORMCONSTANT = _unur_sf_ln_gamma((distr->dim+1)/2.) 
+                  - ( (distr->dim+1) * log(M_PI) + log(det_covar) ) / 2.;
+
   /* return pointer to object */
   return distr;
 
@@ -215,6 +234,7 @@ unur_distr_multistudent_constantrho(int dim, double df, const double *mean, doub
      /*---------------------------------------------------------------------------*/
 {
   struct unur_distr *distr;
+  double det_covar;
   
   /* checking parameters */ 
   if ( rho<0. || rho>=1. || dim<1)
@@ -227,11 +247,16 @@ unur_distr_multistudent_constantrho(int dim, double df, const double *mean, doub
   unur_distr_set_name(distr, "multistudent_constantrho");
   
   /* set the correlation matrix and its inverse */
-  if (_unur_vc_set_corrmatrix_constantrho(distr, dim, rho) != 0) {
+  if (_unur_vc_set_corrmatrix_constantrho(distr, dim, rho) != UNUR_SUCCESS) {
     /* error */
     unur_distr_free(distr); distr = NULL; 
   }
-  
+
+  /* compute normalization constant */
+  det_covar = _unur_matrix_determinant(distr->dim, distr->data.cvec.covar);
+  LOGNORMCONSTANT = _unur_sf_ln_gamma((distr->dim+df)/2.) - _unur_sf_ln_gamma(df/2.)
+                  - ( distr->dim * log(df*M_PI) + log(det_covar) ) / 2.;
+
   /* return pointer to object */
   return distr;
 

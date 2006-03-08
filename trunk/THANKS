@@ -4,8 +4,13 @@ some of their codes:
 Ernst Stadlober (Stadlober@stat.tu-graz.ac.at)
    ... WinRand library. 
 
-Renee Touzin ()
+Renee Touzin 
    ... mrg31k3p.c  (Combined multiple recursive generator)
+
+
+We thank the following people for submitting bug reports:
+
+Richard Russell
 
 
 We also thank Philipp Tomsich for valuable help concerning 

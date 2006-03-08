@@ -11,6 +11,7 @@ EXPERIMENTAL_DIRS =
 endif
 
 SUBDIRS = . scripts src examples experiments tests $(EXPERIMENTAL_DIRS) doc
+DIST_SUBDIRS = $(SUBDIRS)
 
 EXTRA_DIST = \
  Announcement-0.1.0 \

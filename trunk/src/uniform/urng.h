@@ -564,7 +564,7 @@ int unur_urng_set_resetsub( UNUR_URNG *urng, void (*resetsub)(void *state) );
    of @var{urng} (if available).
 */
 
-int unur_urng_set_delete( UNUR_URNG *urng, void (*delete)(void *state) );
+int unur_urng_set_delete( UNUR_URNG *urng, void (*fpdelete)(void *state) );
 /*
    Set function for destroying @var{urng} (if available).
 */

@@ -80,6 +80,18 @@ int unur_mvtdr_set_stepsmin( UNUR_PAR *par, int stepsmin );
    Default: @code{5}.
 */
 
+int unur_mvtdr_set_boundsplitting( UNUR_PAR *par, double boundsplitting );
+/* 
+   Set bound for splitting cones. All cones are split which have a
+   volume below the hat is greater than @var{bound_splitting} times
+   the average over all volumes. However, the number given by the 
+   unur_mvtdr_set_maxcones() is not exceeded.
+   Notice that this number is always reached if @var{bound_splitting}
+   is less than 1.
+
+   Default: @code{1.5}
+*/
+
 int unur_mvtdr_set_maxcones( UNUR_PAR *par, int maxcones );
 /* 
    Set maximum number of cones. 

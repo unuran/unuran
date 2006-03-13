@@ -155,13 +155,15 @@ _unur_mvtdr_create( struct unur_par *par )
   GEN->cone = NULL;
   GEN->last_cone = NULL;
   GEN->n_cone = 0;                      /* maximum number of vertices */
+  GEN->max_cones = PAR->max_cones;      /* maximum number of cones    */
+  GEN->bound_splitting = PAR->bound_splitting;    /* bound for splitting cones */
 
   GEN->vertex = NULL;
   GEN->last_vertex = NULL;
-  GEN->n_vertex = 0;                      /* maximum number of vertices */
+  GEN->n_vertex = 0;                    /* maximum number of vertices */
 
   GEN->etable = NULL;                   /* pointer to edge table */
-  GEN->etable_size = 0;                    /* size of edge table */
+  GEN->etable_size = 0;                 /* size of edge table */
 
   GEN->guide = NULL;
   GEN->guide_size = 0;
@@ -347,6 +349,7 @@ _unur_mvtdr_create_hat( struct unur_gen *gen )
   int step;            /* triangulation steps */
   double Hi_bound;     /* lower bound on Hi for splitting cone */
   CONE *c;
+  int n_splitted;
 
   /* vertices of initial cones */
   _unur_mvtdr_initial_vertices(gen);
@@ -362,7 +365,7 @@ _unur_mvtdr_create_hat( struct unur_gen *gen )
   for( c = GEN->cone; c != NULL; c = c->next )
       _unur_mvtdr_tp_find (gen,c);
 
-  /* some of cones with invalid hats (or too large volumes) must be split */
+  /* cones with invalid hats (or too large volumes) must be split */
   while( _unur_mvtdr_triangulate(gen,step,FALSE) )
     step++;
 
@@ -377,23 +380,32 @@ _unur_mvtdr_create_hat( struct unur_gen *gen )
     c->Hsum = GEN->Htot;          /* accumulated sum of volumes */
   }
 
-  /* bound for splitting cones */
-  /* do until all cones have approx same hat volumes */
-  Hi_bound = 1.5 * GEN->Htot / GEN->n_cone;
+  /* split until stopping criterion in reached */
+  while (1) {
 
-  /* and now check all the cones again */
-  GEN->Htot = 0.;
-  for( c=GEN->cone; c!=NULL; c=c->next ) {   /* all cones */
-    while( Hi_bound < c->Hi ) { 
-      /* we (must) split the cone again */
-      _unur_mvtdr_cone_split(gen,c,c->level+1);
-      /* and compute optimal touching point */
-      _unur_mvtdr_tp_find (gen,c);
-      _unur_mvtdr_tp_find (gen,GEN->last_cone);
+    /* bound for splitting cones */
+    /* do until all cones have approx same hat volumes */
+    Hi_bound = GEN->bound_splitting * GEN->Htot / GEN->n_cone;
+
+    /* and now check all the cones again */
+    GEN->Htot = 0.;
+    n_splitted = 0;
+    for( c=GEN->cone; c!=NULL; c=c->next ) {   /* all cones */
+      while( Hi_bound < c->Hi && GEN->n_cone < GEN->max_cones ) { 
+	/* we (must) split the cone again */
+	_unur_mvtdr_cone_split(gen,c,c->level+1);
+	++n_splitted;
+	/* and compute optimal touching point */
+	_unur_mvtdr_tp_find (gen,c);
+	_unur_mvtdr_tp_find (gen,GEN->last_cone);
+      }
+      GEN->Htot += c->Hi;           /* volume below hat */
+      c->Hsum = GEN->Htot;          /* accumulated sum of volumes */
+      if( c == GEN->last_cone ) break;
     }
-    GEN->Htot += c->Hi;           /* volume below hat */
-    c->Hsum = GEN->Htot;          /* accumulated sum of volumes */
-    if( c == GEN->last_cone ) break;
+
+    /* stop when maximal number of cones is reached or no cones are split */
+    if (!n_splitted || GEN->n_cone >= GEN->max_cones) break;
   }
 
   /* create guide table for finding cones */

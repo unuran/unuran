@@ -107,6 +107,7 @@ struct unur_mvtdr_par {
 
   int max_cones;                  /* maximum number of cones (at least 2^(N+T_STEPS_MIN) */
   int steps_min;                  /* minimum number of triangulation steps */
+  double bound_splitting;         /* bound for splitting cones */
 
 #if MODE == 1
   double mode_to_boundary;        /* move mode to boundary if |mode - boundary| / length < MODE_TO_BOUNDARY */
@@ -126,6 +127,8 @@ struct unur_mvtdr_gen {
   CONE *cone;                        /* root of list of cones */
   CONE *last_cone;                   /* pointer to last cone in list */
   int n_cone;                      /* number of cones */
+  int max_cones;                  /* maximum number of cones */
+  double bound_splitting;         /* bound for splitting cones */
 
   VERTEX *vertex;                      /* root of list of vertices */
   VERTEX *last_vertex;                 /* pointer to last vertex in list */

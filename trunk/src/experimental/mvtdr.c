@@ -117,8 +117,9 @@
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
 
-#define MVTDR_SET_STEPSMIN    0x001u    /* min number of triangulation steps */
-#define MVTDR_SET_MAXCONES    0x002u    /* max number of cones               */
+#define MVTDR_SET_STEPSMIN        0x001u   /* min number of triangulation steps */
+#define MVTDR_SET_MAXCONES        0x002u   /* max number of cones            */
+#define MVTDR_SET_BOUNDSPLITTING  0x004u   /* bound for splitting cones      */
 
 /*---------------------------------------------------------------------------*/
 

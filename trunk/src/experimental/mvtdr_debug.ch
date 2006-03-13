@@ -36,6 +36,8 @@ _unur_mvtdr_debug_init_start( const struct unur_gen *gen )
 
   fprintf(log,"%s: sampling routine = _unur_mvtdr_sample_cvec()\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
+  fprintf(log,"%s: bound for splitting cones = %g * mean volume\n",gen->genid,GEN->bound_splitting);
+  fprintf(log,"%s:\n",gen->genid);
 
 } /* end of _unur_mvtdr_debug_init_start() */
 

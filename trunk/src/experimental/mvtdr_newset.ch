@@ -100,6 +100,9 @@ unur_mvtdr_new( const struct unur_distr *distr )
   /* maximum number of cones (at least 2^(dim+T_STEPS_MIN) */
   PAR->max_cones = 10000;
 
+  /* bound for splitting cones */
+  PAR->bound_splitting = 1.5;
+
   /** TODO !! **/
   /* move mode to boundary if |mode - boundary| / length < MODE_TO_BOUNDARY */
   /*   PAR->mode_to_boundary = 0.01; */
@@ -146,6 +149,40 @@ unur_mvtdr_set_stepsmin( struct unur_par *par, int stepsmin )
 
 /*---------------------------------------------------------------------------*/
 
+int
+unur_mvtdr_set_boundsplitting( UNUR_PAR *par, double boundsplitting )
+     /*----------------------------------------------------------------------*/
+     /* set bound for splitting cones. all cones are splitted when the       */
+     /* volume below the hat is greater than boundsplitting times the        */
+     /* average volume over all cones.                                       */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par            ... pointer to parameter object                     */
+     /*   boundsplitting ... maximum number of cones                         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, MVTDR );
+
+  /* check new parameter for generator */
+
+  /* store date */
+  PAR->bound_splitting = boundsplitting;
+
+  /* changelog */
+  par->set |= MVTDR_SET_BOUNDSPLITTING;
+
+  return UNUR_SUCCESS;
+
+} /* end of unur_mvtdr_set_boundsplitting() */
+
+/*---------------------------------------------------------------------------*/
+
 int 
 unur_mvtdr_set_maxcones( struct unur_par *par, int maxcones )
      /*----------------------------------------------------------------------*/
@@ -177,7 +214,6 @@ unur_mvtdr_set_maxcones( struct unur_par *par, int maxcones )
   return UNUR_SUCCESS;
 
 } /* end of unur_mvtdr_set_maxcones() */
-
 
 /*---------------------------------------------------------------------------*/
 

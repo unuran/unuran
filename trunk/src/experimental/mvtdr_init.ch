@@ -75,10 +75,12 @@ _unur_mvtdr_init( struct unur_par *par )
 
   /* create a new empty generator object */
   gen = _unur_mvtdr_create(par);
-  if (!gen) { _unur_par_free(par); return NULL; }
 
   /* free parameters */
   _unur_par_free(par);
+
+  /* check generator object */ 
+  if (!gen) return NULL;
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
@@ -91,7 +93,8 @@ _unur_mvtdr_init( struct unur_par *par )
       _unur_mvtdr_free(gen); return NULL; }
 
   /* make hat function */
-  _unur_mvtdr_create_hat(gen);
+  if(_unur_mvtdr_create_hat(gen) != UNUR_SUCCESS) {
+    _unur_mvtdr_free(gen); return NULL; }
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
@@ -121,7 +124,8 @@ _unur_mvtdr_create( struct unur_par *par )
      /*----------------------------------------------------------------------*/
 {
   struct unur_gen *gen;
-
+  int error = FALSE;
+  
   /* check arguments */
   CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_MVTDR_PAR,NULL);
 
@@ -170,19 +174,24 @@ _unur_mvtdr_create( struct unur_par *par )
   
   /* initialize working arrays: */
   /*   point on simples */
-  GEN->S = _unur_xmalloc( GEN->dim * sizeof(double) );
+  (GEN->S         = malloc( GEN->dim * sizeof(double) )) || (error = TRUE);
   /*   vector g (direction of sweeping plane) */
-  GEN->g = _unur_xmalloc( GEN->dim * sizeof(double) );
+  (GEN->g         = malloc( GEN->dim * sizeof(double) )) || (error = TRUE);
   /*   coordinates of touching point of hat */
-  GEN->tp_coord = _unur_xmalloc( GEN->dim * sizeof(double) );
+  (GEN->tp_coord  = malloc( GEN->dim * sizeof(double) )) || (error = TRUE);
   /*   coordinates of touching point of hat moved into center */
-  GEN->tp_mcoord = _unur_xmalloc( GEN->dim * sizeof(double) );
+  (GEN->tp_mcoord = malloc( GEN->dim * sizeof(double) )) || (error = TRUE);
   /*   gradient of transformed density at tp */
-  GEN->tp_Tgrad = _unur_xmalloc( GEN->dim * sizeof(double) );
+  (GEN->tp_Tgrad  = malloc( GEN->dim * sizeof(double) )) || (error = TRUE);
 
   /* get center of the distribution */
   GEN->center = unur_distr_cvec_get_center(gen->distr);
  
+  if (error == TRUE) {
+    _unur_error(gen->genid,UNUR_ERR_MALLOC,"");
+    _unur_mvtdr_free(gen); return NULL;
+  }
+
   /* return pointer to (almost empty) generator object */
   return gen;
   
@@ -352,21 +361,25 @@ _unur_mvtdr_create_hat( struct unur_gen *gen )
   int n_splitted;
 
   /* vertices of initial cones */
-  _unur_mvtdr_initial_vertices(gen);
+  if( _unur_mvtdr_initial_vertices(gen) != UNUR_SUCCESS ) 
+    return UNUR_FAILURE;
 
   /* initial cones */
-  _unur_mvtdr_initial_cones(gen);
+  if( _unur_mvtdr_initial_cones(gen) != UNUR_SUCCESS ) 
+    return UNUR_FAILURE;
 
   /* execute minimal number of triangulation steps */
-  for( step = 1; step <= GEN->steps_min; step++ )
-    _unur_mvtdr_triangulate(gen,step,TRUE);
+  for( step = 1; step <= GEN->steps_min; step++ ) {
+    if (_unur_mvtdr_triangulate(gen,step,TRUE) < 0)
+      return UNUR_FAILURE;
+  }
 
   /* compute optimal distance of touching points now */
   for( c = GEN->cone; c != NULL; c = c->next )
       _unur_mvtdr_tp_find (gen,c);
 
   /* cones with invalid hats (or too large volumes) must be split */
-  while( _unur_mvtdr_triangulate(gen,step,FALSE) )
+  while( _unur_mvtdr_triangulate(gen,step,FALSE) > 0 )
     step++;
 
   /* maximum number of triangulations yet */
@@ -393,7 +406,8 @@ _unur_mvtdr_create_hat( struct unur_gen *gen )
     for( c=GEN->cone; c!=NULL; c=c->next ) {   /* all cones */
       while( Hi_bound < c->Hi && GEN->n_cone < GEN->max_cones ) { 
 	/* we (must) split the cone again */
-	_unur_mvtdr_cone_split(gen,c,c->level+1);
+	if (_unur_mvtdr_cone_split(gen,c,c->level+1) != UNUR_SUCCESS)
+	  return UNUR_FAILURE;
 	++n_splitted;
 	/* and compute optimal touching point */
 	_unur_mvtdr_tp_find (gen,c);
@@ -409,7 +423,8 @@ _unur_mvtdr_create_hat( struct unur_gen *gen )
   }
 
   /* create guide table for finding cones */
-  _unur_mvtdr_make_guide_table(gen);
+  if (_unur_mvtdr_make_guide_table(gen) != UNUR_SUCCESS) 
+    return UNUR_FAILURE;
 
   /* we do not need the hash table generated in triangulate() cone any more */
   if (GEN->dim > 2)
@@ -445,9 +460,12 @@ _unur_mvtdr_initial_cones( struct unur_gen *gen )
   VERTEX *vt;
   VERTEX **ivtl;   /* list of initial vertices */
   int dim = GEN->dim;
+  int error = FALSE;
 
   /* make array of initial vertices */
-  ivtl = _unur_xmalloc( 2 * dim * sizeof(VERTEX*) );
+  ivtl = malloc(2 * dim * sizeof(VERTEX*));
+  if( ivtl==NULL ) {
+    _unur_error(gen->genid,UNUR_ERR_MALLOC,""); return UNUR_ERR_MALLOC; }
   for (vt = GEN->vertex, i=0; i < 2*GEN->dim && vt!=NULL; vt = vt->next, i++)
     ivtl[i] = vt;    
 
@@ -459,6 +477,7 @@ _unur_mvtdr_initial_cones( struct unur_gen *gen )
 
     /* get new (empty) cone object */
     c = _unur_mvtdr_cone_new(gen);
+    if (c==NULL) { error = TRUE; break; }
 
     /* this is level 0 of triangulation */
     c->level = 0;
@@ -483,6 +502,9 @@ _unur_mvtdr_initial_cones( struct unur_gen *gen )
   /* free list of initial vertices */
   free (ivtl);
 
+  if (error==TRUE) return UNUR_ERR_MALLOC;
+
+  /* o.k. */
   return UNUR_SUCCESS;
 
 } /* end of _unur_mvtdr_initial_cones() */
@@ -503,24 +525,31 @@ _unur_mvtdr_cone_new( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   CONE *c; 
+  int error = FALSE;
 
   /* allocate memory */
-  if (GEN->cone == NULL) {
-    c = GEN->last_cone = GEN->cone = _unur_xmalloc(sizeof(CONE));
-  }
-  else {
-    c = GEN->last_cone = GEN->last_cone->next = _unur_xmalloc(sizeof(CONE));
-  }
+  c = malloc(sizeof(CONE));
+  if (c==NULL) {
+    _unur_error(gen->genid,UNUR_ERR_MALLOC,""); return NULL; }
+
+  /* insert into list of cones */
+  if (GEN->cone == NULL)
+    GEN->last_cone = GEN->cone = c;
+  else
+    GEN->last_cone = GEN->last_cone->next = c;
   c->next = NULL;
 
   /* list of vertices of the cone */
-  c->v = _unur_xmalloc( GEN->dim * sizeof(VERTEX *) );
+  (c->v      = malloc( GEN->dim * sizeof(VERTEX *)) ) || (error = TRUE);
 
   /* barycenter of cone */
-  c->center = _unur_xmalloc( GEN->dim * sizeof(double) );
+  (c->center = malloc( GEN->dim * sizeof(double)) )   || (error = TRUE);
 
   /* <g,v> for all vertices v */
-  c->gv = _unur_xmalloc( GEN->dim * sizeof(double) );
+  (c->gv     = malloc( GEN->dim * sizeof(double)) )   || (error = TRUE);
+
+  if (error==TRUE) {
+    _unur_error(gen->genid,UNUR_ERR_MALLOC,""); return NULL; }
 
   /* mark as invalid */
   c->tp = -1.;
@@ -734,11 +763,13 @@ _unur_mvtdr_cone_split( struct unur_gen *gen, CONE *c, int step )
   else
     /* find "oldest" edge, read center of edge from table (or computer) */
     newv = _unur_mvtdr_etable_find_or_insert(gen,c->v);
-
+  if (newv==NULL) return UNUR_FAILURE;
+  
   /* construct two new cones */
 
   /* first cone */
   newc = _unur_mvtdr_cone_new(gen);   /* new cone */
+  if (newc==NULL) return UNUR_ERR_MALLOC;
   newc->level = step;                 /* triangulation level */
   for (i=0; i<dim-1; i++)
     newc->v[i] = c->v[i+1];           /* copy list of vertices to new cone */
@@ -775,6 +806,7 @@ _unur_mvtdr_triangulate( struct unur_gen *gen, int step, int all )
      /*                                                                      */
      /* return:                                                              */
      /*   number of new cones                                                */
+     /*   -1 in case of error                                                */
      /*----------------------------------------------------------------------*/
 {
   int k,nc;
@@ -788,8 +820,9 @@ _unur_mvtdr_triangulate( struct unur_gen *gen, int step, int all )
     /* length of cycle dim-1.                                                      */
     /* only necessary if dim > 2                                                   */
     if( step % (dim-1) == 1 )
-      /* TODO: Warum wird das hier IMMER ausgefuehrt ? */
-      _unur_mvtdr_etable_new(gen, _unur_mvtdr_number_vertices(gen, (step/(dim-1)+1)*(dim-1) ));
+      if( _unur_mvtdr_etable_new(gen, _unur_mvtdr_number_vertices(gen, (step/(dim-1)+1)*(dim-1) ))
+	  != UNUR_SUCCESS )
+	return -1;
   }
 
   /*   number of cones before triangulation */
@@ -797,10 +830,13 @@ _unur_mvtdr_triangulate( struct unur_gen *gen, int step, int all )
 
   /*   triangulate every cone */
   for( k=0, c=GEN->cone; k<nc; k++ ) {
-    if( all )
-      _unur_mvtdr_cone_split(gen,c,step);         /* split cone */
+    if( all ) {
+      if (_unur_mvtdr_cone_split(gen,c,step) != UNUR_SUCCESS)
+	return -1;
+    }
     else if ( c->tp < 0. ) {
-      _unur_mvtdr_cone_split(gen,c,step);       /* split cone */
+      if (_unur_mvtdr_cone_split(gen,c,step) != UNUR_SUCCESS)
+	return -1;
       _unur_mvtdr_tp_find (gen,c);
       _unur_mvtdr_tp_find (gen,GEN->last_cone);
     }
@@ -1125,6 +1161,8 @@ _unur_mvtdr_initial_vertices( struct unur_gen *gen )
     /* '+'-sign and '-'-sign */
     for( k=0; k<GEN->dim; k++ ) {
       vt = _unur_mvtdr_vertex_new(gen);
+      if (vt==NULL) return UNUR_FAILURE;
+
       for( i=0; i<GEN->dim; i++ ) {
 	/* coordinates */
 	(vt->coord)[i] = (i==k) ? d : 0.;
@@ -1153,20 +1191,29 @@ _unur_mvtdr_vertex_new( struct unur_gen *gen )
      /*   pointer to newly allocated vertex                                  */
      /*----------------------------------------------------------------------*/
 {
+  VERTEX *v;
+
   /* allocate memory */
+  v = malloc(sizeof(VERTEX));
+  if (v==NULL) {
+    _unur_error(gen->genid,UNUR_ERR_MALLOC,""); return NULL; }
+
+  /* insert into list of cones */
   if (GEN->vertex == NULL) {
-    GEN->last_vertex = GEN->vertex = _unur_xmalloc(sizeof(VERTEX));
+    GEN->last_vertex = GEN->vertex = v;
   }
   else {
-    GEN->last_vertex = GEN->last_vertex->next = _unur_xmalloc(sizeof(VERTEX));
+    GEN->last_vertex = GEN->last_vertex->next = v;
   }
-  (GEN->last_vertex)->next = NULL;
+  v->next = NULL;
   
   /* coordinates of vertex */
-  (GEN->last_vertex)->coord = _unur_xmalloc(GEN->dim * sizeof(double));
+  v->coord = malloc(GEN->dim * sizeof(double));
+  if (v->coord==NULL) {
+    _unur_error(gen->genid,UNUR_ERR_MALLOC,""); return NULL; }
 
   /* index of vertex */
-  (GEN->last_vertex)->index = GEN->n_vertex;
+  v->index = GEN->n_vertex;
   /* and update counter */
   ++(GEN->n_vertex);
 
@@ -1195,6 +1242,7 @@ _unur_mvtdr_vertex_on_edge( struct unur_gen *gen, VERTEX **vl )
 
   /* get an empty vertex */
   newv = _unur_mvtdr_vertex_new(gen);
+  if (newv==NULL) return NULL;
 
   /* barycenter of edge */
   for( i=0; i<GEN->dim; i++ )
@@ -1323,7 +1371,9 @@ _unur_mvtdr_etable_new( struct unur_gen *gen, int size )
   GEN->etable_size = size;
 
   /* make root */
-  GEN->etable = _unur_xmalloc( size * sizeof(E_TABLE*) );
+  GEN->etable = malloc( size * sizeof(E_TABLE*) );
+  if (GEN->etable==NULL) {
+    _unur_error(gen->genid,UNUR_ERR_MALLOC,""); return UNUR_ERR_MALLOC; }
 
   /* initialize table */
   for (n = 0; n< size; n++) 
@@ -1420,7 +1470,10 @@ _unur_mvtdr_etable_find_or_insert( struct unur_gen *gen, VERTEX **vidx )
     /* we have not found the index */
 
     /* new entry in hash table */
-    pet = _unur_xmalloc( sizeof(E_TABLE) );
+    pet = malloc( sizeof(E_TABLE) );
+    if (pet==NULL) {
+      _unur_error(gen->genid,UNUR_ERR_MALLOC,""); return NULL; }
+
     pet->next = NULL;
     if (pet_last == NULL)
       *(GEN->etable + hidx) = pet;
@@ -1461,7 +1514,9 @@ _unur_mvtdr_make_guide_table( struct unur_gen *gen )
 
   /* memory for the guide table */
   GEN->guide_size = GEN->n_cone * GUIDE_TABLE_SIZE;
-  GEN->guide = _unur_xmalloc (GEN->guide_size * sizeof(CONE*));
+  GEN->guide = malloc (GEN->guide_size * sizeof(CONE*));
+  if (GEN->guide==NULL) {
+    _unur_error(gen->genid,UNUR_ERR_MALLOC,""); return UNUR_ERR_MALLOC; }
   /* initialize table */
   for( j = 0; j < GEN->guide_size ; j++ )
     GEN->guide[j] = NULL;

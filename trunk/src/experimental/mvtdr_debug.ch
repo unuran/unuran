@@ -146,7 +146,7 @@ _unur_mvtdr_debug_cones( const struct unur_gen *gen )
     fprintf(log," }\n");
     fprintf(log,"%s:\tHi    = %g\t[ %g%% ]\n", gen->genid, c->Hi, 100.*c->Hi/GEN->Htot);
     fprintf(log,"%s:\ttp    = %g\n", gen->genid, c->tp);
-    fprintf(log,"%s:\tf(tp) = %g\n", gen->genid, c->fp);
+    fprintf(log,"%s:\tf(tp) = %g\n", gen->genid, exp(c->Tfp));
   }
 
   fprintf(log,"%s:\n",gen->genid);

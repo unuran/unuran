@@ -289,8 +289,10 @@ static void _unur_mvtdr_debug_cones( const struct unur_gen *gen );
 
 #define SAMPLE    gen->sample.cvec      /* pointer to sampling routine       */     
 
-#define PDF(x)    _unur_cvec_PDF((x),(gen->distr))    /* call to PDF         */
-#define dPDF(r,x) _unur_cvec_dPDF((r),(x),(gen->distr))    /* call to dPDF        */
+#define PDF(x)    _unur_cvec_PDF((x),(gen->distr))         /* call to PDF    */
+#define logPDF(x) _unur_cvec_logPDF((x),(gen->distr))      /* call to logPDF */
+#define dPDF(r,x) _unur_cvec_dPDF((r),(x),(gen->distr))    /* call to dPDF   */
+#define dlogPDF(r,x) _unur_cvec_dlogPDF((r),(x),(gen->distr))   /* call to dlogPDF */
 
 /* an auxiliary generator for gamma variates */
 #define GEN_GAMMA  gen->gen_aux

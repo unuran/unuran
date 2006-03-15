@@ -641,21 +641,33 @@ _unur_mvtdr_cone_params( struct unur_gen *gen, CONE *c )
 /*     return UNUR_FAILURE; */
 /* #endif */
 
-  /* density and its gradient */
-  c->fp = f = PDF(mcoord);
+  /* density at construction point */
+  if( DISTR.logpdf != NULL ) {
+    c->Tfp = Tf = logPDF(mcoord);
+  }
+  else {
+    f = PDF(mcoord);
+    /* check density */
+    if( f < TOLERANCE )    /* f = 0. */
+      /** TODO!! **/
+      return UNUR_FAILURE;
+    /* transformed density */
+    c->Tfp = Tf = T(f);
+  }
+  
+  /* gradient of logPDF */
+  if( DISTR.dlogpdf != NULL ) {
+    /* gradient of logPDF available */
+    dlogPDF(Tgrad,mcoord);
+  }
+  else {
+    /* grad( T(f(x) ) = T'(f(x)) * grad(f(x)) */
   dPDF(Tgrad,mcoord);
-
-  /* check density */
-  if( f < TOLERANCE )    /* f = 0. */
-    /** TODO!! **/
-    return UNUR_FAILURE;
-
-  /* transformed density and its gradient */
-  Tf = T(f);
-  Tderf = T_deriv(f);
+  Tderf = T_deriv(exp(Tf));
   for( i=0; i<dim; i++ )
-    /* grad( T(f(x) ) = T'(f(x)) * grad(f(x)) */    
+    /* grad( T(f(x) ) = T'(f(x)) * grad(f(x)) */
     Tgrad[i] *= Tderf;
+  }
 
   /* parameters alpha and beta */
   c->alpha = Tf - _unur_vector_scalar_product(dim,Tgrad,coord);

@@ -65,7 +65,7 @@ typedef struct s_cone             /* a cone */
   double tp;                      /* coordinate of touching point */
   double Hi;                      /* volume under hat in cone */
   double Hsum;                    /* accumulated sum of volumes */
-  double fp;                      /* value of density at touching point */
+  double Tfp;                      /* value of transformed density at touching point */
 /* #if RECTANGLE == 1 */
 /*   double height;                  /\* height of pyramid *\/ */
 /*   double tdrg_vol;                /\* volume below hat of gamma density *\/ */

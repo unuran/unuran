@@ -66,6 +66,7 @@
 #include <unuran.h>
 #include <distr/distr_struct.h> 
 #include <utils/matrix_source.h> 
+#include <utils/unur_math_source.h>
 #include <specfunct/unur_specfunct_source.h>
 #include <float.h>
 #include "testdistributions.h"

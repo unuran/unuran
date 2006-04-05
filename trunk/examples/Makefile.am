@@ -20,7 +20,10 @@ EXAMPLES = \
  example_FuncStr \
  example_mcorr \
  example_vmt_0 \
- example_vmt_1
+ example_vmt_1 \
+ example_cpp 
+
+example_cpp_SOURCES = example_cpp.cpp
 
 check_PROGRAMS = $(EXAMPLES)
 

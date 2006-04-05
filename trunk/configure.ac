@@ -135,6 +135,7 @@ AM_CONDITIONAL(HAVE_VALGRIND, test x$have_valgrind = xtrue)
 dnl Set flags for compiler
 if test X"$GCC" = Xyes ; then
 	AC_SUBST(AM_CFLAGS,-Wall)
+	AC_SUBST(AM_CPPFLAGS,-Wall)
 fi
 
 dnl create Makefiles

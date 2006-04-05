@@ -30,14 +30,14 @@
 #include <unur_struct.h>
 #include <unur_source.h>
 #include <unuran_tests.h>
+#include <testdistributions.h>
 
 #include <distr/distr_source.h>
-#include <src/utils/matrix_source.h>
+#include <utils/matrix_source.h>
 #include <experimental/ball.h>
 #include <experimental/walk.h>
 #include <methods/x_gen_source.h>
-#include <tests/testdistributions/testdistributions.h>
-#include "meanvarcor.c"
+
 /*#include <src/utils/fft.c>*/
 
 #ifdef HAVE_UNISTD_H

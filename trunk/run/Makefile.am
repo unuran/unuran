@@ -4,24 +4,24 @@ AM_LDFLAGS = -L$(top_builddir)/src
 
 INCLUDES = \
  -I$(top_srcdir)/src \
- -I$(top_srcdir)/src/experimental \
- -I$(top_srcdir)/src/tests
+ -I$(top_srcdir)/src/tests \
+ -I$(top_srcdir)/tests/testdistributions
 
 LDADD = \
- $(top_builddir)/src/libunuran.la \
  $(top_builddir)/tests/testdistributions/libtestdistributions.la \
- $(top_builddir)/src/experimental/libunurexperimental.la
+ $(top_builddir)/src/experimental/libunurexperimental.la \
+ $(top_builddir)/src/libunuran.la
 
 noinst_PROGRAMS = \
  run \
  something
 
+something_SOURCES = something.c meanvarcor.c
+
 ## make_correlation_table
 
-# clean backup files
-CLEANFILES = \
- unuran.log \
- *~
+# clean log files and backup files
+CLEANFILES = *~ *.log valgrind-*pid*
 
 # clean generated files
 MAINTAINERCLEANFILES = \

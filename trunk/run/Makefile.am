@@ -16,7 +16,7 @@ noinst_PROGRAMS = \
  run \
  something
 
-something_SOURCES = something.c meanvarcor.c
+noinst_HEADERS = meanvarcor.c
 
 ## make_correlation_table
 

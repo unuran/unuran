@@ -38,6 +38,8 @@
 #include <experimental/walk.h>
 #include <methods/x_gen_source.h>
 
+#include "meanvarcor.c"
+
 /*#include <src/utils/fft.c>*/
 
 #ifdef HAVE_UNISTD_H

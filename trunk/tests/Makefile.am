@@ -193,7 +193,7 @@ valgrind: $(check_PROGRAMS)
 endif
 
 # clean log files and backup files
-CLEANFILES = *~ *.log valgrind-*pid*
+CLEANFILES = *~ *.log valgrind-*
 
 # clean generated files
 DISTCLEANFILES = \

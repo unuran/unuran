@@ -41,7 +41,7 @@ endif
 # clean log files and backup files
 CLEANFILES = \
  unuran.log \
- valgrind-*pid* \
+ valgrind-* \
  *~
 
 # clean generated files

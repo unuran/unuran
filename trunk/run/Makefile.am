@@ -21,7 +21,7 @@ noinst_HEADERS = meanvarcor.c
 ## make_correlation_table
 
 # clean log files and backup files
-CLEANFILES = *~ *.log valgrind-*pid*
+CLEANFILES = *~ *.log valgrind-*
 
 # clean generated files
 MAINTAINERCLEANFILES = \

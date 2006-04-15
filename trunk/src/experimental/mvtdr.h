@@ -86,8 +86,8 @@ int unur_mvtdr_set_boundsplitting( UNUR_PAR *par, double boundsplitting );
    volume below the hat is greater than @var{bound_splitting} times
    the average over all volumes. However, the number given by the 
    unur_mvtdr_set_maxcones() is not exceeded.
-   Notice that this number is always reached if @var{bound_splitting}
-   is less than 1.
+   Notice that the later number is always reached 
+   if @var{bound_splitting} is less than 1.
 
    Default: @code{1.5}
 */

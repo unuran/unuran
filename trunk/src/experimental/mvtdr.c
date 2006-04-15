@@ -78,7 +78,7 @@
 #define FIND_TP_STEPS_LB    10      /* max steps for finding lower bound    */
 #define FIND_TP_STEPS_UB    10      /* max stepsfor finding upper bound     */
 /* acceptable tolerance for Brent's algorithm */
-#define FIND_TP_TOL         0.001 
+#define FIND_TP_TOL         0.001   /* TODO !! */
 
 
 
@@ -102,17 +102,6 @@
 
 #define MVTDR_DEBUG_VERTEX      0x00000010u   /* print list of vertices      */
 #define MVTDR_DEBUG_CONE        0x00000020u   /* print list of conesces      */
-
-
-/* #define DB_VERTICES       2 */
-/* #define DB_CONES          4 */
-/* #define DB_EDGES          8 */
-/* #define DB_CPARAMS        16 */
-/* #define DB_RPOINT         32 */
-/* #define DB_GUIDE          64 */
-/* #define DB_GAMMA          128 */
-/* #define DB_VOLUME         1024 */
-/* #define DB_G              2048 */
 
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */

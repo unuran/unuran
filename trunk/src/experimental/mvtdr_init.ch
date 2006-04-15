@@ -634,12 +634,13 @@ _unur_mvtdr_cone_params( struct unur_gen *gen, CONE *c )
     mcoord[i] = coord[i] + GEN->center[i];
   }
 
-/* #if RECTANGLE == 1 */
-/*     /\* check if point is in domain *\/ */
-/*     for( i=0; i<N; i++ ) */
-/*       if( coord[i] < GEN->rl[i] || coord[i] > GEN->ru[i] ) */
-/*     return UNUR_FAILURE; */
-/* #endif */
+  /* TODO! */
+  /* #if RECTANGLE == 1 */
+  /*     /\* check if point is in domain *\/ */
+  /*     for( i=0; i<N; i++ ) */
+  /*       if( coord[i] < GEN->rl[i] || coord[i] > GEN->ru[i] ) */
+  /*     return UNUR_FAILURE; */
+  /* #endif */
 
   /* density at construction point */
   if( DISTR.logpdf != NULL ) {
@@ -695,13 +696,14 @@ _unur_mvtdr_cone_params( struct unur_gen *gen, CONE *c )
       c->logai -= log(c->gv[i]);
   }
 
-/* #if RECTANGLE == 1 */
-/*   /\* at last calculate height of pyramid *\/ */
-/* #if FIND_TP_FUNCTION == 1 */
-/*   get_height(c);  /\* this is expensive for calculation for every touching point !!! *\/ */
-/*   /\* TODO: approximate gat_height with   max_{vertices of rectangle} || vertex - mode || *\/ */
-/* #endif */
-/* #endif */
+  /* TODO */
+  /* #if RECTANGLE == 1 */
+  /*   /\* at last calculate height of pyramid *\/ */
+  /* #if FIND_TP_FUNCTION == 1 */
+  /*   get_height(c);  /\* this is expensive for calculation for every touching point !!! *\/ */
+  /*   /\* TODO: approximate gat_height with   max_{vertices of rectangle} || vertex - mode || *\/ */
+  /* #endif */
+  /* #endif */
 
   /* return error code */
   return UNUR_SUCCESS;
@@ -1000,9 +1002,9 @@ _unur_mvtdr_tp_search( struct unur_gen *gen, TP_ARG *a )
 {
   int i;      /* aux counter */
 
-/* #if RECTANGLE == 1 */
-/*   /\* TODO: (a+1)->t has to be set to min of  FIND_TP_START and c->height if known *\/ */
-/* #endif */
+  /* #if RECTANGLE == 1 */
+  /*   /\* TODO: (a+1)->t has to be set to min of  FIND_TP_START and c->height if known *\/ */
+  /* #endif */
 
   /** search from 0 --> infinity **/
 

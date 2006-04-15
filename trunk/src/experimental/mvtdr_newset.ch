@@ -280,4 +280,3 @@ unur_mvtdr_chg_verify( struct unur_gen *gen, int verify )
 } /* end of unur_mvtdr_chg_verify() */
 
 /*---------------------------------------------------------------------------*/
-

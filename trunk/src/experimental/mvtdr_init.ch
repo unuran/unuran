@@ -217,6 +217,10 @@ _unur_mvtdr_clone( const struct unur_gen *gen )
 #define CLONE  ((struct unur_mvtdr_gen*)clone->datap)
 
   struct unur_gen *clone;
+  int error = FALSE;
+  size_t size;
+  VERTEX *vt, **vtindex;
+  CONE *c;
 
   /* check arguments */
   CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_MVTDR_GEN,NULL);
@@ -226,6 +230,76 @@ _unur_mvtdr_clone( const struct unur_gen *gen )
 
   /* copy data */
   CLONE->center = unur_distr_cvec_get_center(clone->distr);
+
+  /* working arrays */
+  size = GEN->dim * sizeof(double);
+  (CLONE->S         = malloc(size)) || (error = TRUE);
+  (CLONE->g         = malloc(size)) || (error = TRUE);
+  (CLONE->tp_coord  = malloc(size)) || (error = TRUE);
+  (CLONE->tp_mcoord = malloc(size)) || (error = TRUE);
+  (CLONE->tp_Tgrad  = malloc(size)) || (error = TRUE);
+  (vtindex = malloc(GEN->n_vertex * sizeof (VERTEX *))) || (error = TRUE);
+  if (error == TRUE) {
+    _unur_error(gen->genid,UNUR_ERR_MALLOC,"");
+    _unur_mvtdr_free(clone); return NULL;
+  }
+
+  /* copy data */
+  if (GEN->S) memcpy( CLONE->S, GEN->S, size );
+  if (GEN->g) memcpy( CLONE->g, GEN->g, size );
+  if (GEN->tp_coord) memcpy( CLONE->tp_coord, GEN->tp_coord, size );
+  if (GEN->tp_mcoord) memcpy( CLONE->tp_mcoord, GEN->tp_mcoord, size );
+  if (GEN->tp_Tgrad) memcpy( CLONE->tp_Tgrad, GEN->tp_Tgrad, size );
+
+  /* clear lists in clone */
+  CLONE->vertex = NULL;  CLONE->n_vertex = 0;
+  CLONE->cone = NULL;    CLONE->n_cone = 0;
+  CLONE->guide = NULL;
+
+  /* copy list of vertices */
+  for (vt = GEN->vertex; vt != NULL; vt = vt->next) {
+    VERTEX *vtc = _unur_mvtdr_vertex_new( clone );
+    if (vtc == NULL) {
+      error = TRUE; break; }
+    memcpy(vtc->coord, vt->coord, size);
+    vtc->index = vt->index;
+    vtindex[vt->index] = vtc;
+  }
+
+  /* copy list of cones */
+  for (c = GEN->cone; c != NULL && !error; c = c->next) {
+    CONE *cc, *cc_next;
+    VERTEX **v;
+    double *center, *gv;
+    int i;
+    cc = _unur_mvtdr_cone_new( clone );
+    if (cc == NULL) {
+      error = TRUE; break; }
+    cc_next = cc->next;
+    center = cc->center;
+    gv = cc->gv;
+    v = cc->v;
+    memcpy(cc,c,sizeof(CONE));
+    memcpy(center, c->center, size);
+    memcpy(gv, c->gv, size);
+    for (i=0; i<GEN->dim; i++)
+      v[i] = vtindex[(c->v[i])->index];
+    cc->next = cc_next;
+    cc->center = center;
+    cc->gv = gv;
+    cc->v = v;
+  }
+
+  /* make new guide table */
+  if (_unur_mvtdr_make_guide_table(clone) != UNUR_SUCCESS)
+    error = TRUE;
+
+  /* clear auxiliary array */
+  free (vtindex);
+
+  if (error == TRUE) {
+    _unur_mvtdr_free(clone); return NULL;
+  }
 
   return clone;
 

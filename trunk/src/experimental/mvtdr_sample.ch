@@ -164,6 +164,7 @@ _unur_mvtdr_simplex_sample( const struct unur_gen *gen, double *U )
       U[i] = _unur_call_urng(gen->urng);
 
     /* sort numbers (insertion sort) */
+    /** TODO!! replace by exp random variates!! **/
     for( i=1; i<dim-1; i++ ) {
       U_aux = U[i];
       for( j=i; j>0 && U[j-1] > U_aux; j-- )

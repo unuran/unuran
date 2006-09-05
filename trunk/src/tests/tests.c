@@ -252,6 +252,11 @@ _unur_print_method( struct unur_par *par )
     printf("METHOD:\t\thit&run ratio-of-uniforms (HITRO)\n");
     break;
     
+  case UNUR_METH_MVTDR:
+    COOKIE_CHECK(par,CK_MVTDR_PAR,UNUR_ERR_COOKIE);
+    printf("METHOD:\t\tmultivariate transformed density rejection (MVTDR)\n");
+    break;
+
   case UNUR_METH_NORTA:
     COOKIE_CHECK(par,CK_NORTA_PAR,UNUR_ERR_COOKIE);
     printf("METHOD:\t\tnormal to anything (NORTA)\n");

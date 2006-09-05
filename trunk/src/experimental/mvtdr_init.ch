@@ -184,8 +184,9 @@ _unur_mvtdr_create( struct unur_par *par )
   /*   gradient of transformed density at tp */
   (GEN->tp_Tgrad  = malloc( GEN->dim * sizeof(double) )) || (error = TRUE);
 
-  /* get center of the distribution */
+  /* get center of the distribution and its PDF */
   GEN->center = unur_distr_cvec_get_center(gen->distr);
+  GEN->pdfcenter = PDF(GEN->center);
  
   if (error == TRUE) {
     _unur_error(gen->genid,UNUR_ERR_MALLOC,"");
@@ -702,6 +703,10 @@ _unur_mvtdr_cone_params( struct unur_gen *gen, CONE *c )
   double *mcoord = GEN->tp_mcoord;  /* coordinates of touching point moved into center */
   double *Tgrad = GEN->tp_Tgrad;    /* gradient of transformed density */
 
+  /* we consider values for the PDF and of derivated numbers that are
+     too small as equal 0: */
+  double tolerance = TOLERANCE * GEN->pdfcenter / dim;
+
   /* coordinates of touching point */
   for( i=0; i<dim; i++ ) {
     coord[i] = c->tp * c->center[i];
@@ -723,8 +728,8 @@ _unur_mvtdr_cone_params( struct unur_gen *gen, CONE *c )
   else {
     f = PDF(mcoord);
     /* check density */
-    if( f < TOLERANCE )    /* f = 0. */
-      /** TODO!! **/
+    if( f < tolerance )
+      /* assume f = 0. */
       return UNUR_FAILURE;
     /* transformed density */
     c->Tfp = Tf = T(f);
@@ -749,8 +754,7 @@ _unur_mvtdr_cone_params( struct unur_gen *gen, CONE *c )
   c->beta = _unur_vector_norm(GEN->dim,Tgrad);
 
   /* |Tgrad| must not be too small */
-  if( c->beta < TOLERANCE )
-    /** TODO **/
+  if( c->beta < tolerance )
     return UNUR_FAILURE;
 
   /* compute g and <g,v> for all vertices of cone */
@@ -763,8 +767,8 @@ _unur_mvtdr_cone_params( struct unur_gen *gen, CONE *c )
   c->logai = c->logdetf;
   for( i=0; i<dim; i++ ) {
     c->gv[i] = _unur_vector_scalar_product(dim,g,(c->v[i])->coord);   /* <g,v> */
-    if( c->gv[i] < TOLERANCE )
-      /** TODO **/
+    if( c->gv[i] < tolerance )
+      /* too small: would result in severe numerical errors */
       return UNUR_FAILURE;
     else
       c->logai -= log(c->gv[i]);

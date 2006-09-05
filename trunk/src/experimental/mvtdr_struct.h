@@ -150,6 +150,8 @@ struct unur_mvtdr_gen {
   int steps_min;                  /* minimum number of triangulation steps */
   int n_steps;                  /* (highest) number of triangulation steps */
 
+  double pdfcenter;                /* PDF at center */
+
 /* #if RECTANGLE == 1                /\* rectangle moved to mode == origin *\/ */
 /*   double rl[N];                   /\* lower bounds for rectangle *\/ */
 /*   double ru[N];                   /\* upper bounds for rectangle *\/ */

@@ -70,28 +70,25 @@
 #define GUIDE_TABLE_SIZE    1
 
 /* find proper touching point using Brent's algorithm */
-#define FIND_TP_START       1.      /* starting point                       */
-#define FIND_TP_STEPS_R     10      /* max number of steps --> Infinity     */
-#define FIND_TP_STEPS_L     10      /* max number of steps --> 0            */
-#define FIND_TP_STEP_SIZE   2.      /* stepsize for searching routine       */
+#define FIND_TP_START       1.      /* starting point                        */
+#define FIND_TP_STEPS_R     10      /* max number of steps --> Infinity      */
+#define FIND_TP_STEPS_L     10      /* max number of steps --> 0             */
+#define FIND_TP_STEP_SIZE   2.      /* stepsize for searching routine        */
 /* find bracket for Brent's algorithm */
-#define FIND_TP_STEPS_LB    10      /* max steps for finding lower bound    */
-#define FIND_TP_STEPS_UB    10      /* max stepsfor finding upper bound     */
+#define FIND_TP_STEPS_LB    10      /* max steps for finding lower bound     */
+#define FIND_TP_STEPS_UB    10      /* max stepsfor finding upper bound      */
 /* acceptable tolerance for Brent's algorithm */
 #define FIND_TP_TOL         0.001   /* TODO !! */
 
-
-
-/** TODO **/
-
-/** fine tuning of generator                                       **/
-/* a number is considered to be zero if abs is below this bound     */
-#define TOLERANCE   1.e-8
+/* fine tuning of generator: */
+/* a number is considered to be zero if abs is below                         */
+/*   TOLERANCE * PDF(center) / dim                                           */                                
+#define TOLERANCE           (1.e-8)
 
 /*---------------------------------------------------------------------------*/
 /* Variants                                                                  */
 
-#define MVTDR_VARFLAG_VERIFY     0x01u   /* flag for verifying mode          */
+#define MVTDR_VARFLAG_VERIFY     0x01u   /* flag for verifying hat           */
 
 /*---------------------------------------------------------------------------*/
 /* Debugging flags                                                           */

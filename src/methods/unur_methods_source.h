@@ -66,13 +66,14 @@
 #define UNUR_METH_HRI      0x02000500u
 #define UNUR_METH_NINV     0x02000600u
 #define UNUR_METH_NROU     0x02000700u
-#define UNUR_METH_SROU     0x02000800u
-#define UNUR_METH_SSR      0x02000900u
-#define UNUR_METH_TABL     0x02000a00u
-#define UNUR_METH_TDR      0x02000b00u
-#define UNUR_METH_TDRGW    0x02000c00u
-#define UNUR_METH_UNIF     0x02000d00u
-#define UNUR_METH_UTDR     0x02000e00u
+#define UNUR_METH_ITDR     0x02000800u
+#define UNUR_METH_SROU     0x02000900u
+#define UNUR_METH_SSR      0x02000a00u
+#define UNUR_METH_TABL     0x02000b00u
+#define UNUR_METH_TDR      0x02000c00u
+#define UNUR_METH_TDRGW    0x02000d00u
+#define UNUR_METH_UNIF     0x02000e00u
+#define UNUR_METH_UTDR     0x02000f00u
 
 /* univariate continuous empirical distributions */
 #define UNUR_METH_CEMP     0x04000000u

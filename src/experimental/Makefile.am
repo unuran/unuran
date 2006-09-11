@@ -6,6 +6,7 @@ INCLUDES = -I$(top_srcdir)/src -I$(top_srcdir)/src/methods
 lib_LTLIBRARIES = libunurexperimental.la
 
 libunurexperimental_la_SOURCES = \
+ itdr.c    itdr.h    itdr_struct.h \
  ball.c    ball.h    ball_struct.h \
  varou.c   varou.h   varou_struct.h \
  walk.c    walk.h    walk_struct.h \

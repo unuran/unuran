@@ -271,8 +271,8 @@ unur_itdr_set_bx( struct unur_par *par, double bx )
   _unur_check_par_object( par, ITDR );
 
   /* check new parameter for generator */
-  if (! (_unur_FP_greater(bx, par->distr->data.cont.BD_LEFT)) || 
-      ! (_unur_FP_less(   bx, par->distr->data.cont.BD_RIGHT)) ) {
+  if (bx <= par->distr->data.cont.BD_LEFT || 
+      bx >= par->distr->data.cont.BD_RIGHT) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"bx out of domain");
     return UNUR_ERR_PAR_SET;
   }
@@ -769,29 +769,37 @@ _unur_itdr_get_hat( struct unur_gen *gen )
   /* -------------------- */
   /* Get candidate for bx */
 
-  if ( !(gen->set & ITDR_SET_BX) ) {
+  if (gen->set & ITDR_SET_BX) {
+    /* bx set user */
+    bx = GEN->bx;
+  }
+  else {
+    /* use intersection point of local concavity and inverse lc */
     GEN->bx = bx = _unur_itdr_find_xt( gen, 0. );
     if (!_unur_isfinite(bx)) {
       _unur_error(gen->genid,UNUR_ERR_DISTR_PROP,"cannot compute bx");
       return UNUR_ERR_DISTR_PROP;
     }
   }
-  else 
-    bx = GEN->bx;
 
   /* -------------------- */
   /* pole region          */
 
   /* get cp */
-  if ( !(gen->set & ITDR_SET_CP) ) {
+  if (gen->set & ITDR_SET_CP) {
+    /* cp set by user */
+    cp = GEN->cp;
+  }
+  else {
     near_pole = bx * NEAR_POLE;
     ilc_near_pole = log(PDF(near_pole)) / log(near_pole);
     ilc_bx = _unur_itdr_ilc(gen, bx);
     cp = min(ilc_near_pole,ilc_bx);
     if (cp > C_MAX) cp = C_MAX;
-    
-    if (!(gen->set & ITDR_SET_BX) && cp < -0.5) {
+
+    if (cp < -0.5 && !(gen->set & ITDR_SET_BX)) {
       bx *= 2.;
+      GEN->bx = bx;
       ilc_bx = _unur_itdr_ilc(gen, bx);
       if (cp > ilc_bx) cp = ilc_bx;
     }
@@ -802,8 +810,6 @@ _unur_itdr_get_hat( struct unur_gen *gen )
     }
     GEN->cp = cp;
   }
-  else
-    cp = GEN->cp;
 
   /* get design point xp */
   while (1) {
@@ -837,7 +843,11 @@ _unur_itdr_get_hat( struct unur_gen *gen )
 
   GEN->xt = xt = _unur_itdr_find_xt( gen, bx );
 
-  if ( !(gen->set & ITDR_SET_CT) ) {
+  if (gen->set & ITDR_SET_CT) {
+    /* ct set by user */
+    ct = GEN->ct;
+  }
+  else {
     ct = _unur_itdr_lc(gen, 0.5*(bx + xt));
     if (ct > C_MAX) ct = C_MAX;
     if (ct <= -1.) {
@@ -846,8 +856,6 @@ _unur_itdr_get_hat( struct unur_gen *gen )
     }
     GEN->ct = ct;
   }
-  else
-    ct = GEN->ct;
 
   /* get design point xp */
   lc_bx = _unur_itdr_lc(gen, bx);

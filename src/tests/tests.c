@@ -202,6 +202,10 @@ _unur_print_method( struct unur_par *par )
     COOKIE_CHECK(par,CK_HINV_PAR,UNUR_ERR_COOKIE);
     printf("METHOD:\t\tnumerical inversion of CDF by Hermite Interpolation (HINV)\n");
     break;
+  case UNUR_METH_ITDR:
+    COOKIE_CHECK(par,CK_ITDR_PAR,UNUR_ERR_COOKIE);
+    printf("METHOD:\t\tinverse transformed density rejection (ITDR)\n");
+    break;
   case UNUR_METH_NINV:
     COOKIE_CHECK(par,CK_NINV_PAR,UNUR_ERR_COOKIE);
     printf("METHOD:\t\tnumerical inversion of CDF (NINV)\n");

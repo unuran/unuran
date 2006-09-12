@@ -800,8 +800,6 @@ _unur_itdr_get_hat( struct unur_gen *gen )
     if (cp < -0.5 && !(gen->set & ITDR_SET_BX)) {
       bx *= 2.;
       GEN->bx = bx;
-      ilc_bx = _unur_itdr_ilc(gen, bx);
-      if (cp > ilc_bx) cp = ilc_bx;
     }
 
     if (cp <= -1.) {

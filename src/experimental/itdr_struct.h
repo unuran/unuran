@@ -47,13 +47,17 @@ struct unur_itdr_par {
 
 struct unur_itdr_gen { 
   double bx;                 /* splitting point between pole and tail region */
-  double cp, ct;             /* c-value for pole and tail region, resp.      */
-  double xp, xt;             /* desig point in pole and tail region, resp.   */
-  double alphap, betap;      /* parameters for hat in pole region            */
-  double Tfxt, dTfxt;        /* parameters for hat in tail region            */
-  double by;                 /* hat of pole region at bx                     */
-  double Ap, Ac, At;         /* areas in upper pole, center, and tail region */     
   double Atot;               /* total area below hat                         */     
+  double Ap, Ac, At;         /* areas in upper pole, center, and tail region */     
+  double cp, xp;             /* c-value and design point for pole region     */
+  double alphap, betap;      /* parameters for hat in pole region            */
+  double by;                 /* hat of pole region at bx                     */
+  double sy;                 /* PDF(bx) = squeeze for central region         */
+  double ct, xt;             /* c-value and design point for tail region     */
+  double Tfxt, dTfxt;        /* parameters for hat in tail region            */
+  double pole;               /* location of pole                             */
+  double bd_right;           /* right boundary of shifted domain             */
+  double slope;              /* slope (+1 ... decreasing, -1 ... increasing) */
 };
 
 /*---------------------------------------------------------------------------*/

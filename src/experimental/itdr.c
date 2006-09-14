@@ -55,8 +55,6 @@
 #include <unur_source.h>
 #include <distr/distr.h>
 #include <distr/distr_source.h>
-/* #include <distr/cont.h> */
-/* #include <utils/fmax_source.h> */
 #include <utils/unur_fp_source.h>
 #include <uniform/urng.h>
 #include "unur_methods_source.h"
@@ -68,6 +66,8 @@
 /* Constants:                                                                */
 
 /* maximum value for parameter c                                             */
+/* (if this value is changed, then also change the value in the WARNING      */
+/* message in the set calls unur_itdr_set_cp() and unur_itdr_set_cp()! )     */
 #define C_MAX  (-0.1)
 
 /* relative distance for computing derivatives numerically                   */
@@ -77,9 +77,6 @@
 /* point near pole for estimating lim_{x->plole} ilc(x)                      */
 /* the point x_i * NEAR_POLE is used                                         */
 #define NEAR_POLE  (1.e-8)
-
-/* point near pole for testing validitiy of hat function                     */
-#define TEST_NEAR_POLE  (1.e-100)
 
 /*---------------------------------------------------------------------------*/
 /* Variants:                                                                 */
@@ -171,17 +168,23 @@ static void _unur_itdr_debug_init( const struct unur_gen *gen, int error );
 
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */     
 
-#define PDF(x)    _unur_cont_PDF((x),(gen->distr))    /* call to PDF         */
-#define dPDF(x)   _unur_cont_dPDF((x),(gen->distr))   /* call to derivative of PDF */
+#define PDF(x)    _unur_cont_PDF((x)+GEN->pole,(gen->distr))    /* call to PDF         */
+#define dPDF(x)   _unur_cont_dPDF((x)+GEN->pole,(gen->distr))   /* call to derivative of PDF */
 
 /*---------------------------------------------------------------------------*/
 /* transformations */
 
+/* T_c(x) */
 #define T(c,x)   ( -1./pow((x),-(c)) )
 #define DT(c,x)  ( -(c)/pow((x),-((c)-1.)) )
 #define TI(c,x)  ( 1./pow(-(x),-1./((c))) )
 #define FT(c,x)  ( -1./pow(-(x),-((c)+1.)/(c))*((c)/((c)+1.)) )
 #define FTI(c,x) ( -1./pow(-(x)*((c)+1.)/(c),-(c)/((c)+1.)) )
+
+/* special case: T_{-1/2}(x)   ["square root transformation"] */
+#define TsI(c,x)  ( 1./((x)*(x)) )
+#define FTs(c,x)  ( -1./(x) )
+#define FTsI(c,x) ( -1./(x) )
 
 /*---------------------------------------------------------------------------*/
 
@@ -219,9 +222,20 @@ unur_itdr_new( const struct unur_distr *distr )
     return NULL;
   }
 
+  if (DISTR_IN.dpdf == NULL) {
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"dPDF");
+    return NULL;
+  }
+
   if (!(distr->set & UNUR_DISTR_SET_MODE)) {
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode (pole)");
     return NULL; 
+  }
+
+  if ( ! (_unur_FP_equal(DISTR_IN.mode,DISTR_IN.domain[0]) ||
+	  _unur_FP_equal(DISTR_IN.mode,DISTR_IN.domain[1]) )) {
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_PROP,"pole not on boundary of domain");
+    return NULL;
   }
 
   /* allocate structure */
@@ -519,6 +533,10 @@ _unur_itdr_create( struct unur_par *par )
   gen->destroy = _unur_itdr_free;
   gen->clone = _unur_itdr_clone;
 
+  /* copy data from distribution into generator object*/
+  GEN->pole = DISTR.mode;  /* location of pole                    */
+  GEN->bd_right = DISTR.BD_RIGHT - GEN->pole; /* right boundary of shifted domain */
+
   /* copy some parameters into generator object */
   GEN->bx = PAR->bx;       /* splitting point betw. pole and tail */
   GEN->cp = PAR->cp;       /* c-value for pole region             */
@@ -536,6 +554,8 @@ _unur_itdr_create( struct unur_par *par )
   GEN->Ac = INFINITY;      /* areas in central region             */     
   GEN->At = INFINITY;      /* areas in tail region                */     
   GEN->Atot = INFINITY;    /* total area below hat                */
+  GEN->sy = 0.;            /* squeeze for central region          */
+  GEN->slope = 1.;         /* +1 = decreasing, -1 = increasing    */
   
   /* return pointer to (almost empty) generator object */
   return gen;
@@ -591,7 +611,7 @@ _unur_itdr_sample( struct unur_gen *gen )
      /*   return INFINITY                                                    */
      /*----------------------------------------------------------------------*/
 {
-  double U, X, Y;
+  double U, V, X, Y;
 
   /* check arguments */
   CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_ITDR_GEN,INFINITY);
@@ -599,35 +619,62 @@ _unur_itdr_sample( struct unur_gen *gen )
   while (1) {
     /* generate point uniformly on (0,Atot) */
     U = _unur_call_urng(gen->urng) * GEN->Atot;
-  
+
     /* generate pair (X,Y) below hat */
     if (U < GEN->Ap) {
       /* upper pole region */
-      Y = ( FTI(GEN->cp, GEN->betap*U + FT(GEN->cp,GEN->alphap+GEN->betap*GEN->by)) 
-	    - GEN->alphap ) / GEN->betap;
-      X = _unur_call_urng(gen->urng) * TI(GEN->cp, GEN->alphap+GEN->betap*Y);
+      V = _unur_call_urng(gen->urng) * GEN->Ap;
+      if (GEN->cp == -0.5) {
+	/* square root transformation */
+	Y = ( FTsI(GEN->cp, GEN->betap*V + FTs(GEN->cp,GEN->alphap+GEN->betap*GEN->by))
+	      - GEN->alphap ) / GEN->betap;
+	X = U * TsI(GEN->cp, GEN->alphap+GEN->betap*Y) / GEN->Ap;
+      }
+      else {
+	/* general T_c transformation */
+	Y = ( FTI(GEN->cp, GEN->betap*V + FT(GEN->cp,GEN->alphap+GEN->betap*GEN->by))
+	      - GEN->alphap ) / GEN->betap;
+	X = U * TI(GEN->cp, GEN->alphap+GEN->betap*Y) / GEN->Ap;
+      }
     }
     else if ((U -= GEN->Ap) < GEN->Ac) {
       /* central region */
       X = U * GEN->bx / GEN->Ac;
       Y = _unur_call_urng(gen->urng) * GEN->by;
+      if (Y <= GEN->sy)
+	/* squeeze acceptance */
+	return (X + GEN->pole);
     }
     else {
       /* tail region */
       U -= GEN->Ac;
-      X = GEN->xt + (FTI(GEN->ct, 
-			 GEN->dTfxt*U 
-			 + FT(GEN->ct, 
-			      GEN->Tfxt + GEN->dTfxt*(GEN->bx-GEN->xt))
-			 )
-		     - GEN->Tfxt) / GEN->dTfxt;
-      Y = ( _unur_call_urng(gen->urng) 
-	    * TI(GEN->ct, GEN->Tfxt + GEN->dTfxt*(X - GEN->xt)));
+      if (GEN->ct == -0.5) {
+	/* square root transformation */
+	X = GEN->xt + (FTsI(GEN->ct,
+			   GEN->dTfxt*U
+			   + FTs(GEN->ct,
+				GEN->Tfxt + GEN->dTfxt*(GEN->bx-GEN->xt))
+			   )
+		       - GEN->Tfxt) / GEN->dTfxt;
+	Y = ( _unur_call_urng(gen->urng)
+	      * TsI(GEN->ct, GEN->Tfxt + GEN->dTfxt*(X - GEN->xt)));
+      }
+      else {
+	/* general T_c transformation */
+	X = GEN->xt + (FTI(GEN->ct,
+			   GEN->dTfxt*U
+			   + FT(GEN->ct,
+				GEN->Tfxt + GEN->dTfxt*(GEN->bx-GEN->xt))
+			   )
+		       - GEN->Tfxt) / GEN->dTfxt;
+	Y = ( _unur_call_urng(gen->urng)
+	      * TI(GEN->ct, GEN->Tfxt + GEN->dTfxt*(X - GEN->xt)));
+      }
     }
 
     /* accept or reject */
     if (Y <= PDF(X))
-      return X;
+      return (X + GEN->pole);
 
   }
 
@@ -771,7 +818,7 @@ _unur_itdr_get_hat( struct unur_gen *gen )
 
   if (gen->set & ITDR_SET_BX) {
     /* bx set user */
-    bx = GEN->bx;
+    bx = GEN->bx - GEN->pole;
   }
   else {
     /* use intersection point of local concavity and inverse lc */
@@ -791,13 +838,13 @@ _unur_itdr_get_hat( struct unur_gen *gen )
     cp = GEN->cp;
   }
   else {
-    near_pole = bx * NEAR_POLE;
+    near_pole = bx * NEAR_POLE + 2. * fabs(GEN->pole) * DBL_EPSILON;
     ilc_near_pole = log(PDF(near_pole)) / log(near_pole);
     ilc_bx = _unur_itdr_ilc(gen, bx);
     cp = min(ilc_near_pole,ilc_bx);
     if (cp > C_MAX) cp = C_MAX;
 
-    if (cp < -0.5 && !(gen->set & ITDR_SET_BX)) {
+    if (cp < -0.5) {
       bx *= 2.;
       GEN->bx = bx;
     }
@@ -817,16 +864,22 @@ _unur_itdr_get_hat( struct unur_gen *gen )
       return UNUR_ERR_DISTR_PROP;
     }
 
+    /* parameters for hat */
     GEN->betap = DT(cp,xp) / dPDF(xp);
     GEN->alphap = T(cp,xp) - GEN->betap * PDF(xp);
 
-    if ( hp(TEST_NEAR_POLE) < PDF(TEST_NEAR_POLE) ||
+    /* check hat */
+    near_pole = fabs(GEN->pole)*(1.+DBL_EPSILON);
+    if (near_pole < 1.e-100) near_pole = 1.e-100;
+
+    if ( hp(near_pole) < PDF(near_pole) ||
 	 hp(bx) < PDF(bx) ) {
       if (gen->set & ITDR_SET_CP) {
 	_unur_error(gen->genid,UNUR_ERR_DISTR_PROP,"inverse pdf not T_cp concave");
 	return UNUR_ERR_DISTR_PROP;
       }
-      GEN->cp = cp = 0.9 * cp -0.1;
+      /* try new value for cp */
+      GEN->cp = cp = 0.9*cp-0.1;
       if (cp < -0.999) {
 	_unur_error(gen->genid,UNUR_ERR_DISTR_PROP,"cannot compute hat for pole: cp");
 	return UNUR_ERR_DISTR_PROP;
@@ -839,8 +892,10 @@ _unur_itdr_get_hat( struct unur_gen *gen )
   /* -------------------- */
   /* tail region          */
 
+  /* get design point xt */
   GEN->xt = xt = _unur_itdr_find_xt( gen, bx );
 
+  /* get ct */
   if (gen->set & ITDR_SET_CT) {
     /* ct set by user */
     ct = GEN->ct;
@@ -855,18 +910,22 @@ _unur_itdr_get_hat( struct unur_gen *gen )
     GEN->ct = ct;
   }
 
-  /* get design point xp */
+  /* compute and check parameters for hat */
   lc_bx = _unur_itdr_lc(gen, bx);
   while (1) {
+    /* parameters for hat */
     GEN->Tfxt = T(ct, PDF(xt));
     GEN->dTfxt = DT(ct, PDF(xt)) * dPDF(xt);
 
-    if ( ht(1000.*bx) < PDF(1000.*bx) ||
-	 ht(bx) < PDF(bx) ) {
+    /* check hat */
+    if ( ((GEN->Tfxt + GEN->dTfxt*(bx-xt)) >= 0.) ||
+	 (ht(bx) < PDF(bx)) ||
+	 (ht(1000.*bx) < PDF(1000.*bx)) ) {
       if (gen->set & ITDR_SET_CT) {
 	_unur_error(gen->genid,UNUR_ERR_DISTR_PROP,"pdf not T_ct concave");
 	return UNUR_ERR_DISTR_PROP;
       }
+      /* try new value for ct */
       GEN->ct = ct = 0.5*(ct + lc_bx);
       if (ct < -0.999 || _unur_FP_approx(ct,lc_bx)) {
 	_unur_error(gen->genid,UNUR_ERR_DISTR_PROP,"cannot compute hat for tail: ct");
@@ -885,6 +944,9 @@ _unur_itdr_get_hat( struct unur_gen *gen )
   GEN->Ac = GEN->by * bx;
   GEN->At = -FT(ct, GEN->Tfxt + GEN->dTfxt * (bx-xt)) / GEN->dTfxt;
   GEN->Atot = GEN->Ap + GEN->Ac + GEN->At;
+
+  /* add squeeze for central region */
+  GEN->sy = PDF(bx);
 
   /* -------------------- */
 
@@ -914,9 +976,9 @@ _unur_itdr_lc( struct unur_gen *gen, double x )
 {
   double dx, f, df, ddf;
 
-  dx = x * DX;
-  if (x-dx < DISTR.BD_LEFT) dx = x - DISTR.BD_LEFT;
-  if (x+dx > DISTR.BD_RIGHT) dx = DISTR.BD_RIGHT - x;
+  dx = x * DX + fabs(GEN->pole) * UNUR_SQRT_DBL_EPSILON;
+  if (x-dx <= 0.) dx = x;
+  if (x+dx > GEN->bd_right) dx = GEN->bd_right - x;
 
   f = PDF(x);
   df = dPDF(x);
@@ -945,9 +1007,9 @@ _unur_itdr_ilc( struct unur_gen *gen, double x )
 {
   double dx, df, ddf;
 
-  dx = x * DX;
-  if (x-dx < DISTR.BD_LEFT) dx = x - DISTR.BD_LEFT;
-  if (x+dx > DISTR.BD_RIGHT) dx = DISTR.BD_RIGHT - x;
+  dx = x * DX + fabs(GEN->pole) * UNUR_SQRT_DBL_EPSILON;
+  if (x-dx <= 0.) dx = x;
+  if (x+dx > GEN->bd_right) dx = GEN->bd_right - x;
 
   df = dPDF(x);
   ddf = (dPDF(x+dx)-dPDF(x-dx))/(2.*dx);
@@ -979,23 +1041,30 @@ _unur_itdr_find_xt( struct unur_gen *gen, double b )
   double xn;      /* new guess for root */
 
   /* check parameter */
-  if (b < 0) return INFINITY;
+  if (b < 0.) return INFINITY;
 
-  /* find bracket for root */
-  /* l.h.s. boundary */
-  xl = (b>0.) ? b * (1.+DBL_EPSILON) : DBL_MIN;
-  while (!_unur_isfinite(FKT(xl))) {
-    xl += xl - b;
+  /* find appropriate starting value */
+  xl = b + max(1., (fabs(GEN->pole)+b)*UNUR_SQRT_DBL_EPSILON);
+  while (!_unur_isfinite(FKT(xl)) || PDF(xl) == 0. ) {
+    xl -= (xl - b)/2.;
     if (!_unur_isfinite(xl)) return INFINITY;
   }
-  if (FKT(xl)<0.) return INFINITY;
+  xu = xl;
 
-  /* r.h.s. boundary */
-  xu = max(2.*b, xl);
-  while(FKT(xu) > 0.){
-    xl = xu;
-    xu += xu - b;
-    if (!_unur_isfinite(xu)) return INFINITY;
+  /* find bracket for root */
+  if (FKT(xl)>0.) {
+    do {
+      xl = xu;
+      xu += xu - b;
+      if (!_unur_isfinite(xu)) return INFINITY;
+    } while(FKT(xu) > 0.);
+  }
+  else { /* FKT(xl)<=0. */
+    do {
+      xu = xl;
+      xl -= (xl - b)/2.;
+      if (!_unur_isfinite(xl)) return INFINITY;
+    } while(FKT(xl) < 0.);
   }
 
   /* use bisection to find root */
@@ -1065,9 +1134,12 @@ _unur_itdr_debug_init( const struct unur_gen *gen, int error )
   fprintf(log,"%s: Tfxt = %g, dTfxt = %g\n",gen->genid, GEN->Tfxt, GEN->dTfxt);
 
   fprintf(log,"%s: by = %g\n",gen->genid, GEN->by);
+  fprintf(log,"%s: pole = %g\n",gen->genid, GEN->pole);
 
   fprintf(log,"%s: Area = %g + %g + %g = %g\n",gen->genid,
 	  GEN->Ap, GEN->Ac, GEN->At, GEN->Atot);
+  fprintf(log,"%s: sy = %g\n",gen->genid, GEN->sy);
+  fprintf(log,"%s: slope = %g\n",gen->genid, GEN->slope);
 
   fprintf(log,"%s:\n",gen->genid);
   fprintf(log,"%s: **** INIT %s ***\n",gen->genid,

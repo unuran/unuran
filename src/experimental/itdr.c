@@ -365,7 +365,7 @@ unur_itdr_set_ct( struct unur_par *par, double ct )
   /* check new parameter for generator */
   range = ( par->distr->data.cont.BD_RIGHT
 	    - par->distr->data.cont.BD_LEFT );
-  if ( ct > C_MAX || (ct <= -1. && _unur_isfinite(range)) ) {
+  if ( ct > C_MAX || (ct <= -1. && !_unur_isfinite(range)) ) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"ct > -0.1 or <= -1");
     return UNUR_ERR_PAR_SET;
   }

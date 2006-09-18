@@ -239,12 +239,8 @@ unur_itdr_new( const struct unur_distr *distr )
     return NULL; 
   }
 
-/*   if ( ! (_unur_FP_equal(DISTR_IN.mode,DISTR_IN.domain[0]) || */
-/* 	  _unur_FP_equal(DISTR_IN.mode,DISTR_IN.domain[1]) )) { */
-/*     _unur_error(GENTYPE,UNUR_ERR_DISTR_PROP,"pole not on boundary of domain"); */
-/*     return NULL; */
-/*   } */
-  if ( ! (_unur_FP_equal(DISTR_IN.mode,DISTR_IN.domain[0]))) {
+  if ( ! (_unur_FP_equal(DISTR_IN.mode,DISTR_IN.domain[0]) ||
+	  _unur_FP_equal(DISTR_IN.mode,DISTR_IN.domain[1]) )) {
     _unur_error(GENTYPE,UNUR_ERR_DISTR_PROP,"pole not on boundary of domain");
     return NULL;
   }

@@ -78,6 +78,11 @@
 /* the point x_i * NEAR_POLE is used                                         */
 #define NEAR_POLE  (1.e-8)
 
+/* precision when computing intersection points.                             */
+/* since the performance is not very sensitive to the accuracy of the result */
+/* this value need not be very small.                                        */
+#define RESOLUTION_XI (1.e-5)
+
 /*---------------------------------------------------------------------------*/
 /* Variants:                                                                 */
 
@@ -123,6 +128,8 @@ static struct unur_gen *_unur_itdr_clone( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 
 static int _unur_itdr_get_hat( struct unur_gen *gen );
+static int _unur_itdr_get_hat_pole( struct unur_gen *gen );
+static int _unur_itdr_get_hat_tail( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* construct hat function                                                    */
 /*---------------------------------------------------------------------------*/
@@ -792,7 +799,57 @@ int
 _unur_itdr_get_hat( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* construct hat function                                               */
-     /* compute local concavity at x                                         */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_ITDR_GEN,UNUR_ERR_COOKIE);
+
+  /* Get candidate for bx */
+  if (gen->set & ITDR_SET_BX) {
+    /* bx set user; have to shift by pole */
+    GEN->bx -= GEN->pole;
+  }
+  else {
+    /* use intersection point of local concavity and inverse lc */
+    GEN->bx = _unur_itdr_find_xt( gen, 0. );
+    if (!_unur_isfinite(GEN->bx)) {
+      _unur_error(gen->genid,UNUR_ERR_DISTR_PROP,"cannot compute bx");
+      return UNUR_ERR_DISTR_PROP;
+    }
+  }
+
+  /* pole region          */
+  if (_unur_itdr_get_hat_pole(gen) != UNUR_SUCCESS)
+    return UNUR_ERR_DISTR_PROP;
+
+  /* tail region          */
+  if (_unur_FP_equal(GEN->bx, GEN->bd_right)) {
+    GEN->At = 0.;
+  }
+  else {
+    if (_unur_itdr_get_hat_tail(gen) != UNUR_SUCCESS)
+      return UNUR_ERR_DISTR_PROP;
+  }
+  
+  /* total area below hat */
+  GEN->Atot = GEN->Ap + GEN->Ac + GEN->At;
+
+  return UNUR_SUCCESS;
+} /* end of _unur_itdr_get_hat() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_itdr_get_hat_pole( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* construct hat function in pole region                                */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
@@ -803,34 +860,10 @@ _unur_itdr_get_hat( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
 #define hp(x)  ( (T(cp,(x)) - GEN->alphap) / GEN->betap )
-#define ht(x)  ( TI(ct, GEN->Tfxt + GEN->dTfxt*((x)-xt)) )
 
-  double bx, cp, xp, ct, xt;
-  double ilc_near_pole, ilc_bx;
-  double lc_bx;
+  double cp, xp;
   double near_pole;
-
-  /* check arguments */
-  CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_ITDR_GEN,UNUR_ERR_COOKIE);
-
-  /* -------------------- */
-  /* Get candidate for bx */
-
-  if (gen->set & ITDR_SET_BX) {
-    /* bx set user */
-    bx = GEN->bx - GEN->pole;
-  }
-  else {
-    /* use intersection point of local concavity and inverse lc */
-    GEN->bx = bx = _unur_itdr_find_xt( gen, 0. );
-    if (!_unur_isfinite(bx)) {
-      _unur_error(gen->genid,UNUR_ERR_DISTR_PROP,"cannot compute bx");
-      return UNUR_ERR_DISTR_PROP;
-    }
-  }
-
-  /* -------------------- */
-  /* pole region          */
+  double ilc_near_pole, ilc_bx;
 
   /* get cp */
   if (gen->set & ITDR_SET_CP) {
@@ -838,16 +871,14 @@ _unur_itdr_get_hat( struct unur_gen *gen )
     cp = GEN->cp;
   }
   else {
-    near_pole = bx * NEAR_POLE + 2. * fabs(GEN->pole) * DBL_EPSILON;
+    near_pole = GEN->bx*NEAR_POLE + 2.*fabs(GEN->pole)*DBL_EPSILON;
     ilc_near_pole = log(PDF(near_pole)) / log(near_pole);
-    ilc_bx = _unur_itdr_ilc(gen, bx);
+    ilc_bx = _unur_itdr_ilc(gen, GEN->bx);
     cp = min(ilc_near_pole,ilc_bx);
     if (cp > C_MAX) cp = C_MAX;
 
-    if (cp < -0.5) {
-      bx *= 2.;
-      GEN->bx = bx;
-    }
+    if (cp < -0.5)
+      GEN->bx = min (2.*GEN->bx, GEN->bd_right);
 
     if (cp <= -1.) {
       _unur_error(gen->genid,UNUR_ERR_DISTR_PROP,"cannot compute hat for pole: cp");
@@ -858,8 +889,8 @@ _unur_itdr_get_hat( struct unur_gen *gen )
 
   /* get design point xp */
   while (1) {
-    xp = bx * pow(1.+cp, -1./cp);
-    if ( !(xp > 0. && xp < bx) ) {
+    xp = GEN->bx * pow(1.+cp, -1./cp);
+    if ( !(xp > 0. && xp < GEN->bx) ) {
       _unur_error(gen->genid,UNUR_ERR_DISTR_PROP,"cannot compute hat for pole: xp");
       return UNUR_ERR_DISTR_PROP;
     }
@@ -873,7 +904,7 @@ _unur_itdr_get_hat( struct unur_gen *gen )
     if (near_pole < 1.e-100) near_pole = 1.e-100;
 
     if ( hp(near_pole) < PDF(near_pole) ||
-	 hp(bx) < PDF(bx) ) {
+	 hp(GEN->bx) < PDF(GEN->bx) ) {
       if (gen->set & ITDR_SET_CP) {
 	_unur_error(gen->genid,UNUR_ERR_DISTR_PROP,"inverse pdf not T_cp concave");
 	return UNUR_ERR_DISTR_PROP;
@@ -889,8 +920,41 @@ _unur_itdr_get_hat( struct unur_gen *gen )
   }
   GEN->xp = xp;
 
-  /* -------------------- */
-  /* tail region          */
+  /* hat at intersection point */
+  GEN->by = hp(GEN->bx);
+
+  /* area below hat */
+  GEN->Ap = -FT(cp, GEN->alphap + GEN->betap * GEN->by) / GEN->betap;
+  GEN->Ac = GEN->by * GEN->bx;
+
+  /* add squeeze for central region */
+  GEN->sy = PDF(GEN->bx);
+
+  return UNUR_SUCCESS;
+
+#undef hp
+} /* end of _unur_itdr_get_hat_pole() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_itdr_get_hat_tail( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* construct hat function in tail region                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+#define ht(x)  ( TI(ct, GEN->Tfxt + GEN->dTfxt*((x)-xt)) )
+
+  double ct, xt;
+  double lc_bx;
+  double bx = GEN->bx;
 
   /* get design point xt */
   GEN->xt = xt = _unur_itdr_find_xt( gen, bx );
@@ -936,25 +1000,15 @@ _unur_itdr_get_hat( struct unur_gen *gen )
       break;
   }
 
-  /* -------------------- */
-  /* parameters           */
-
-  GEN->by = hp(bx);
-  GEN->Ap = -FT(cp, GEN->alphap + GEN->betap * GEN->by) / GEN->betap;
-  GEN->Ac = GEN->by * bx;
-  GEN->At = -FT(ct, GEN->Tfxt + GEN->dTfxt * (bx-xt)) / GEN->dTfxt;
-  GEN->Atot = GEN->Ap + GEN->Ac + GEN->At;
-
-  /* add squeeze for central region */
-  GEN->sy = PDF(bx);
-
-  /* -------------------- */
+  /* area below hat */
+  GEN->At = (!_unur_isfinite(GEN->bd_right)) ? 0. 
+    : FT(ct, GEN->Tfxt + GEN->dTfxt * (GEN->bd_right - xt)) / GEN->dTfxt;
+  GEN->At += -FT(ct, GEN->Tfxt + GEN->dTfxt * (GEN->bx - xt)) / GEN->dTfxt;
 
   return UNUR_SUCCESS;
 
-#undef hp
 #undef ht
-} /* end of _unur_itdr_get_hat() */
+} /* end of _unur_itdr_get_hat_tail() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -976,13 +1030,15 @@ _unur_itdr_lc( struct unur_gen *gen, double x )
 {
   double dx, f, df, ddf;
 
-  dx = x * DX + fabs(GEN->pole) * UNUR_SQRT_DBL_EPSILON;
-  if (x-dx <= 0.) dx = x;
-  if (x+dx > GEN->bd_right) dx = GEN->bd_right - x;
-
   f = PDF(x);
   df = dPDF(x);
-  ddf = (dPDF(x+dx)-dPDF(x-dx))/(2.*dx);
+
+  dx = x * DX + fabs(GEN->pole) * UNUR_SQRT_DBL_EPSILON;
+  if (x-dx <= 0.) dx = x;
+  if (x+dx > GEN->bd_right)
+    ddf = (dPDF(x)-dPDF(x-dx))/dx;
+  else
+    ddf = (dPDF(x+dx)-dPDF(x-dx))/(2.*dx);
 
   return 1. - ddf*f/(df*df); 
 } /* end of _unur_itdr_lc() */
@@ -1007,12 +1063,14 @@ _unur_itdr_ilc( struct unur_gen *gen, double x )
 {
   double dx, df, ddf;
 
+  df = dPDF(x);
+
   dx = x * DX + fabs(GEN->pole) * UNUR_SQRT_DBL_EPSILON;
   if (x-dx <= 0.) dx = x;
-  if (x+dx > GEN->bd_right) dx = GEN->bd_right - x;
-
-  df = dPDF(x);
-  ddf = (dPDF(x+dx)-dPDF(x-dx))/(2.*dx);
+  if (x+dx > GEN->bd_right)
+    ddf = (dPDF(x)-dPDF(x-dx))/dx;
+  else
+    ddf = (dPDF(x+dx)-dPDF(x-dx))/(2.*dx);
 
   return 1.+x*ddf/(df); 
 } /* end of _unur_itdr_ilc() */
@@ -1045,18 +1103,27 @@ _unur_itdr_find_xt( struct unur_gen *gen, double b )
 
   /* find appropriate starting value */
   xl = b + max(1., (fabs(GEN->pole)+b)*UNUR_SQRT_DBL_EPSILON);
+  if (xl > GEN->bd_right) xl = GEN->bd_right;
   while (!_unur_isfinite(FKT(xl)) || PDF(xl) == 0. ) {
     xl -= (xl - b)/2.;
     if (!_unur_isfinite(xl)) return INFINITY;
   }
   xu = xl;
 
+  /* check upper value xu */
+  if (xu >= GEN->bd_right) return GEN->bd_right;
+
   /* find bracket for root */
   if (FKT(xl)>0.) {
     do {
       xl = xu;
       xu += xu - b;
-      if (!_unur_isfinite(xu)) return INFINITY;
+      if (!_unur_isfinite(xu) || xu < (1.+2.*DBL_EPSILON)*xl)
+	/* unable to proceed --> break to avoid infinite loop */
+	return INFINITY;
+      if (xu >= GEN->bd_right) 
+	/* we have reached right boundary */
+	return GEN->bd_right;
     } while(FKT(xu) > 0.);
   }
   else { /* FKT(xl)<=0. */
@@ -1068,7 +1135,7 @@ _unur_itdr_find_xt( struct unur_gen *gen, double b )
   }
 
   /* use bisection to find root */
-  while(!_unur_FP_approx(xl,xu)){
+  while(xu > (1.+RESOLUTION_XI)*xl) {
     xn = 0.5*(xl+xu);
     if(FKT(xn)>0.) 
       xl = xn;
@@ -1120,26 +1187,28 @@ _unur_itdr_debug_init( const struct unur_gen *gen, int error )
   fprintf(log,"()\n%s:\n",gen->genid);
 
   /* parameters */
+  fprintf(log,"%s: sign = %g\n",gen->genid, GEN->slope);
+  fprintf(log,"%s: pole = %g\n",gen->genid, GEN->pole);
+  fprintf(log,"%s: bd_right = %g\n",gen->genid, GEN->bd_right);
   fprintf(log,"%s: bx = %g",gen->genid, GEN->bx);
   fprintf(log,"%s\n", (gen->set & ITDR_SET_BX) ? "" : " [computed]");
-  fprintf(log,"%s: cp = %g",gen->genid, GEN->cp);
+
+  fprintf(log,"%s: pole region:\n",gen->genid);
+  fprintf(log,"%s:\tcp = %g",gen->genid, GEN->cp);
   fprintf(log,"%s\n", (gen->set & ITDR_SET_CP) ? "" : " [computed]");
-  fprintf(log,"%s: ct = %g",gen->genid, GEN->ct);
+  fprintf(log,"%s:\txp = %g\n",gen->genid, GEN->xp);
+  fprintf(log,"%s:\talphap = %g, betap = %g\n",gen->genid, GEN->alphap, GEN->betap);
+  fprintf(log,"%s:\tby = %g\n",gen->genid, GEN->by);
+  fprintf(log,"%s:\tsy = %g\n",gen->genid, GEN->sy);
+
+  fprintf(log,"%s: tail region:\n",gen->genid);
+  fprintf(log,"%s:\tct = %g",gen->genid, GEN->ct);
   fprintf(log,"%s\n", (gen->set & ITDR_SET_CT) ? "" : " [computed]");
-
-  fprintf(log,"%s: xp = %g\n",gen->genid, GEN->xp);
-  fprintf(log,"%s: xt = %g\n",gen->genid, GEN->xt);
-
-  fprintf(log,"%s: alphap = %g, betap = %g\n",gen->genid, GEN->alphap, GEN->betap);
-  fprintf(log,"%s: Tfxt = %g, dTfxt = %g\n",gen->genid, GEN->Tfxt, GEN->dTfxt);
-
-  fprintf(log,"%s: by = %g\n",gen->genid, GEN->by);
-  fprintf(log,"%s: pole = %g\n",gen->genid, GEN->pole);
+  fprintf(log,"%s:\txt = %g\n",gen->genid, GEN->xt);
+  fprintf(log,"%s:\tTfxt = %g, dTfxt = %g\n",gen->genid, GEN->Tfxt, GEN->dTfxt);
 
   fprintf(log,"%s: Area = %g + %g + %g = %g\n",gen->genid,
 	  GEN->Ap, GEN->Ac, GEN->At, GEN->Atot);
-  fprintf(log,"%s: sy = %g\n",gen->genid, GEN->sy);
-  fprintf(log,"%s: slope = %g\n",gen->genid, GEN->slope);
 
   fprintf(log,"%s:\n",gen->genid);
   fprintf(log,"%s: **** INIT %s ***\n",gen->genid,

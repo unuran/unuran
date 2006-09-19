@@ -38,7 +38,7 @@
 /* Information for constructing the generator                                */
 
 struct unur_itdr_par { 
-  double bx;                 /* splitting point between pole and tail region */
+  double xi;                 /* intersection point lc(x)=ilc(x)              */
   double cp, ct;             /* c-value for pole and tail region, resp.      */
 };
 
@@ -58,6 +58,7 @@ struct unur_itdr_gen {
   double pole;               /* location of pole                             */
   double bd_right;           /* right boundary of shifted domain             */
   double sign;               /* region: +1 ... (-oo,0], -1 ... [0,oo)        */
+  double xi;                 /* intersection point lc(x)=ilc(x)              */
 };
 
 /*---------------------------------------------------------------------------*/

@@ -72,10 +72,13 @@ UNUR_PAR *unur_itdr_new( const UNUR_DISTR *distribution );
 
 /*...........................................................................*/
 
-int unur_itdr_set_bx( UNUR_PAR *parameters, double bx );
+int unur_itdr_set_xi( UNUR_PAR *parameters, double xi );
 /* 
-   Sets splitting point @var{bx} between pole and tail region.
-   If no such point is provided it will be set automatically.
+   Sets points where local concavity and inverse local concavity
+   are (almost) equal. It is used to estimate the respective c-values
+   for pole region and hat regions and to determine the splitting point @i{bx} 
+   between pole and tail region. 
+   If no such point is provided it will be computed automatically.
 
    Default: not set.
 */

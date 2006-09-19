@@ -91,7 +91,7 @@
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
 
-#define ITDR_SET_BX      0x001u     /* set splitting point                   */
+#define ITDR_SET_XI      0x001u     /* set intersection point                */
 #define ITDR_SET_CP      0x002u     /* set c-value for pole region           */
 #define ITDR_SET_CT      0x004u     /* set c-value for tail region           */
 
@@ -254,7 +254,7 @@ unur_itdr_new( const struct unur_distr *distr )
   par->distr    = distr;          /* pointer to distribution object          */
 
   /* set default values */
-  PAR->bx = INFINITY;       /* splitting point betw. pole and tail (unknown) */
+  PAR->xi = INFINITY;       /* intersection point lc(x)=ilc(x)               */
   PAR->cp = INFINITY;       /* c-value for pole region (unknown)             */
   PAR->ct = INFINITY;       /* c-value for tail region (unknown)             */
   
@@ -276,12 +276,12 @@ unur_itdr_new( const struct unur_distr *distr )
 /*****************************************************************************/
 
 int
-unur_itdr_set_bx( struct unur_par *par, double bx )
+unur_itdr_set_xi( struct unur_par *par, double xi )
      /*----------------------------------------------------------------------*/
-     /* Sets splitting point bx between pole and tail region.                */
+     /* Sets intersection point xi where lc(x) = ilc(x)                      */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   bx ... splitting point                                             */
+     /*   xi ... intersection point                                          */
      /*                                                                      */
      /* return:                                                              */
      /*   UNUR_SUCCESS ... on success                                        */
@@ -293,17 +293,17 @@ unur_itdr_set_bx( struct unur_par *par, double bx )
   _unur_check_par_object( par, ITDR );
 
   /* check new parameter for generator */
-  if (bx <= par->distr->data.cont.BD_LEFT || 
-      bx >= par->distr->data.cont.BD_RIGHT) {
-    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"bx out of domain");
+  if (xi <= par->distr->data.cont.BD_LEFT || 
+      xi >= par->distr->data.cont.BD_RIGHT) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"xi out of domain");
     return UNUR_ERR_PAR_SET;
   }
   
   /* store value */
-  PAR->bx = bx;
+  PAR->xi = xi;
 
   /* changelog */
-  par->set |= ITDR_SET_BX;
+  par->set |= ITDR_SET_XI;
 
   return UNUR_SUCCESS;
 } /* end of unur_itdr_set_bx() */
@@ -569,11 +569,12 @@ _unur_itdr_create( struct unur_par *par )
   GEN->bd_right = DISTR.BD_RIGHT - GEN->pole; /* right boundary of shifted domain */
 
   /* copy some parameters into generator object */
-  GEN->bx = PAR->bx;       /* splitting point betw. pole and tail */
+  GEN->xi = PAR->xi;       /* intersection point lc(x)=ilc(x)     */
   GEN->cp = PAR->cp;       /* c-value for pole region             */
   GEN->ct = PAR->ct;       /* c-value for tail region             */
 
   /* initialize values */
+  GEN->bx = INFINITY;      /* splitting point betw. pole and tail */
   GEN->xp = INFINITY;      /* design point in pole region         */
   GEN->xt = INFINITY;      /* design point in tail region         */
   GEN->alphap = INFINITY;  /* parameters for hat in pole region   */
@@ -836,13 +837,13 @@ _unur_itdr_get_hat( struct unur_gen *gen )
   CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_ITDR_GEN,UNUR_ERR_COOKIE);
 
   /* Get candidate for bx */
-  if (gen->set & ITDR_SET_BX) {
+  if (gen->set & ITDR_SET_XI) {
     /* bx set user; have to shift by pole */
-    GEN->bx -= GEN->pole;
+    GEN->bx = GEN->xi - GEN->pole;
   }
   else {
-    /* use intersection point of local concavity and inverse lc */
-    GEN->bx = _unur_itdr_find_xt( gen, 0. );
+    /* compute intersection point of local concavity and inverse lc */
+    GEN->xi = GEN->bx = _unur_itdr_find_xt( gen, 0. );
     if (!_unur_isfinite(GEN->bx)) {
       _unur_error(gen->genid,UNUR_ERR_DISTR_PROP,"cannot compute bx");
       return UNUR_ERR_DISTR_PROP;
@@ -901,15 +902,15 @@ _unur_itdr_get_hat_pole( struct unur_gen *gen )
     cp = min(ilc_near_pole,ilc_bx);
     if (cp > C_MAX) cp = C_MAX;
 
-    if (cp < -0.5)
-      GEN->bx = min (2.*GEN->bx, GEN->bd_right);
-
     if (cp <= -1.) {
       _unur_error(gen->genid,UNUR_ERR_DISTR_PROP,"cannot compute hat for pole: cp");
       return UNUR_ERR_DISTR_PROP;
     }
     GEN->cp = cp;
   }
+  if (cp < -0.5)
+    GEN->bx = min (2.*GEN->bx, GEN->bd_right);
+
 
   /* get design point xp */
   while (1) {
@@ -1214,8 +1215,9 @@ _unur_itdr_debug_init( const struct unur_gen *gen, int error )
   fprintf(log,"%s: sign = %g\n",gen->genid, GEN->sign);
   fprintf(log,"%s: pole = %g\n",gen->genid, GEN->pole);
   fprintf(log,"%s: bd_right = %g\n",gen->genid, GEN->bd_right);
-  fprintf(log,"%s: bx = %g",gen->genid, GEN->bx);
-  fprintf(log,"%s\n", (gen->set & ITDR_SET_BX) ? "" : " [computed]");
+  fprintf(log,"%s: xi = %g",gen->genid, GEN->xi);
+  fprintf(log,"%s\n", (gen->set & ITDR_SET_XI) ? "" : " [computed]");
+  fprintf(log,"%s: bx = %g\n",gen->genid, GEN->bx);
 
   fprintf(log,"%s: pole region:\n",gen->genid);
   fprintf(log,"%s:\tcp = %g",gen->genid, GEN->cp);

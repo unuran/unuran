@@ -57,7 +57,7 @@ struct unur_itdr_gen {
   double Tfxt, dTfxt;        /* parameters for hat in tail region            */
   double pole;               /* location of pole                             */
   double bd_right;           /* right boundary of shifted domain             */
-  double slope;              /* slope (+1 ... decreasing, -1 ... increasing) */
+  double sign;               /* region: +1 ... (-oo,0], -1 ... [0,oo)        */
 };
 
 /*---------------------------------------------------------------------------*/

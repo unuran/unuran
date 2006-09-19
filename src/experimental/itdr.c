@@ -239,8 +239,9 @@ unur_itdr_new( const struct unur_distr *distr )
     return NULL; 
   }
 
-  if ( ! (_unur_FP_equal(DISTR_IN.mode,DISTR_IN.domain[0]) ||
-	  _unur_FP_equal(DISTR_IN.mode,DISTR_IN.domain[1]) )) {
+  if ( ! (_unur_isfinite(DISTR_IN.mode) &&
+	  (_unur_FP_equal(DISTR_IN.mode,DISTR_IN.domain[0]) ||
+	   _unur_FP_equal(DISTR_IN.mode,DISTR_IN.domain[1]))) ) {
     _unur_error(GENTYPE,UNUR_ERR_DISTR_PROP,"pole not on boundary of domain");
     return NULL;
   }
@@ -471,7 +472,7 @@ _unur_itdr_init( struct unur_par *par )
      /*----------------------------------------------------------------------*/
 {
   struct unur_gen *gen;
-  int error;
+  int error = UNUR_SUCCESS;
 
   /* check arguments */
   CHECK_NULL(par,NULL);
@@ -487,8 +488,31 @@ _unur_itdr_init( struct unur_par *par )
   _unur_par_free(par);
   if (!gen) return NULL;
 
+  /* estimate sign of region: +1 ... (-oo,0], -1 ... [0,oo) */
+  do {
+    if (_unur_isfinite(DISTR.BD_LEFT) && !_unur_isfinite(DISTR.BD_RIGHT)) {
+      GEN->sign = 1.; 
+      if (dPDF(DISTR.BD_LEFT) <= 0.) break;
+    }
+    if (!_unur_isfinite(DISTR.BD_LEFT) && _unur_isfinite(DISTR.BD_RIGHT)) {
+      GEN->sign = -1.; break;
+      if (dPDF(DISTR.BD_RIGHT) >= 0.) break;
+    }
+    if (_unur_isfinite(DISTR.BD_LEFT) && _unur_isfinite(DISTR.BD_RIGHT)) {
+      GEN->sign = (PDF(DISTR.BD_LEFT)>=PDF(DISTR.BD_RIGHT)) ? 1. : -1.;
+      if ( GEN->sign*dPDF(DISTR.BD_LEFT) <= 0. &&
+	   GEN->sign*dPDF(DISTR.BD_RIGHT) <= 0. )
+	break;
+    }
+    /* else */
+    _unur_error(gen->genid,UNUR_ERR_DISTR_PROP,"cannot compute sign of region");
+    error = UNUR_ERR_DISTR_PROP;
+    break;
+  } while (1);
+
   /* create hat function */
-  error = _unur_itdr_get_hat(gen);
+  if (error == UNUR_SUCCESS)
+    error = _unur_itdr_get_hat(gen);
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
@@ -562,7 +586,7 @@ _unur_itdr_create( struct unur_par *par )
   GEN->At = INFINITY;      /* areas in tail region                */     
   GEN->Atot = INFINITY;    /* total area below hat                */
   GEN->sy = 0.;            /* squeeze for central region          */
-  GEN->slope = 1.;         /* +1 = decreasing, -1 = increasing    */
+  GEN->sign = 1.;          /* region: +1 .. (-oo,0], -1 .. [0,oo) */
   
   /* return pointer to (almost empty) generator object */
   return gen;
@@ -1187,7 +1211,7 @@ _unur_itdr_debug_init( const struct unur_gen *gen, int error )
   fprintf(log,"()\n%s:\n",gen->genid);
 
   /* parameters */
-  fprintf(log,"%s: sign = %g\n",gen->genid, GEN->slope);
+  fprintf(log,"%s: sign = %g\n",gen->genid, GEN->sign);
   fprintf(log,"%s: pole = %g\n",gen->genid, GEN->pole);
   fprintf(log,"%s: bd_right = %g\n",gen->genid, GEN->bd_right);
   fprintf(log,"%s: bx = %g",gen->genid, GEN->bx);

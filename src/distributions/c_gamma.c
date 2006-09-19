@@ -197,7 +197,7 @@ _unur_dpdf_gamma( double x, const UNUR_DISTR *distr )
     return ( exp( log(x) * (alpha-2.) - x - LOGNORMCONSTANT) *  ((alpha-1.) -x) / beta ); 
 
   if (x==0. && alpha < 2.)
-    return (alpha>1. ? -INFINITY : INFINITY);
+    return (alpha>1. ? INFINITY : -INFINITY);
 
   /* out of domain */
   return 0.;

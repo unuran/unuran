@@ -175,8 +175,23 @@ static void _unur_itdr_debug_init( const struct unur_gen *gen, int error );
 
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */     
 
-#define PDF(x)    _unur_cont_PDF((x)+GEN->pole,(gen->distr))    /* call to PDF         */
-#define dPDF(x)   _unur_cont_dPDF((x)+GEN->pole,(gen->distr))   /* call to derivative of PDF */
+/* the hat is computed for density PDF(sign*(x-pole)). Thus we have to       */
+/* transform the internal x value back to the original scale before the PDF  */
+/* is evaluated or the generated value is returned.                          */
+/* likewise, all x values for the PDF given by the user has to transformed   */
+/* into the internal scale.                                                  */
+/* transformation: internal scale --> original scale */
+#define I2O(x)    ( GEN->sign*(x) + GEN->pole )
+/* transformation: original scale --> internal scale */
+#define O2I(x)    ( GEN->sign * ((x)-GEN->pole) )
+
+/* call to PDF and its derivative in internal scale */
+#define PDF(x)    ( _unur_cont_PDF(I2O(x), gen->distr) )
+#define dPDF(x)   ( GEN->sign * _unur_cont_dPDF(I2O(x), gen->distr) )
+
+/* call to PDF and its derivative in original scale */
+#define PDFo(x)    _unur_cont_PDF((x), gen->distr)
+#define dPDFo(x)   _unur_cont_dPDF((x), gen->distr)
 
 /*---------------------------------------------------------------------------*/
 /* transformations */
@@ -492,16 +507,16 @@ _unur_itdr_init( struct unur_par *par )
   do {
     if (_unur_isfinite(DISTR.BD_LEFT) && !_unur_isfinite(DISTR.BD_RIGHT)) {
       GEN->sign = 1.; 
-      if (dPDF(DISTR.BD_LEFT) <= 0.) break;
+      if (dPDFo(DISTR.BD_LEFT) <= 0.) break;
     }
     if (!_unur_isfinite(DISTR.BD_LEFT) && _unur_isfinite(DISTR.BD_RIGHT)) {
       GEN->sign = -1.; break;
-      if (dPDF(DISTR.BD_RIGHT) >= 0.) break;
+      if (dPDFo(DISTR.BD_RIGHT) >= 0.) break;
     }
     if (_unur_isfinite(DISTR.BD_LEFT) && _unur_isfinite(DISTR.BD_RIGHT)) {
-      GEN->sign = (PDF(DISTR.BD_LEFT)>=PDF(DISTR.BD_RIGHT)) ? 1. : -1.;
-      if ( GEN->sign*dPDF(DISTR.BD_LEFT) <= 0. &&
-	   GEN->sign*dPDF(DISTR.BD_RIGHT) <= 0. )
+      GEN->sign = (PDFo(DISTR.BD_LEFT)>=PDFo(DISTR.BD_RIGHT)) ? 1. : -1.;
+      if ( GEN->sign*dPDFo(DISTR.BD_LEFT) <= 0. &&
+	   GEN->sign*dPDFo(DISTR.BD_RIGHT) <= 0. )
 	break;
     }
     /* else */
@@ -509,6 +524,11 @@ _unur_itdr_init( struct unur_par *par )
     error = UNUR_ERR_DISTR_PROP;
     break;
   } while (1);
+
+  /* right boundary of shifted domain */
+  GEN->bd_right = ( (GEN->sign > 0) 
+		    ? DISTR.BD_RIGHT - GEN->pole
+		    : GEN->pole - DISTR.BD_LEFT );
 
   /* create hat function */
   if (error == UNUR_SUCCESS)
@@ -566,7 +586,6 @@ _unur_itdr_create( struct unur_par *par )
 
   /* copy data from distribution into generator object*/
   GEN->pole = DISTR.mode;  /* location of pole                    */
-  GEN->bd_right = DISTR.BD_RIGHT - GEN->pole; /* right boundary of shifted domain */
 
   /* copy some parameters into generator object */
   GEN->xi = PAR->xi;       /* intersection point lc(x)=ilc(x)     */
@@ -588,6 +607,7 @@ _unur_itdr_create( struct unur_par *par )
   GEN->Atot = INFINITY;    /* total area below hat                */
   GEN->sy = 0.;            /* squeeze for central region          */
   GEN->sign = 1.;          /* region: +1 .. (-oo,0], -1 .. [0,oo) */
+  GEN->bd_right = INFINITY; /* right boundary of shifted domain   */
   
   /* return pointer to (almost empty) generator object */
   return gen;
@@ -675,7 +695,7 @@ _unur_itdr_sample( struct unur_gen *gen )
       Y = _unur_call_urng(gen->urng) * GEN->by;
       if (Y <= GEN->sy)
 	/* squeeze acceptance */
-	return (X + GEN->pole);
+	return (I2O(X));
     }
     else {
       /* tail region */
@@ -704,10 +724,12 @@ _unur_itdr_sample( struct unur_gen *gen )
       }
     }
 
-    /* accept or reject */
-    if (Y <= PDF(X))
-      return (X + GEN->pole);
+    /* transform back into original scale */
+    X = I2O(X);
 
+    /* accept or reject */
+    if (Y <= PDFo(X))
+      return X;
   }
 
 } /* end of _unur_itdr_sample() */
@@ -839,11 +861,12 @@ _unur_itdr_get_hat( struct unur_gen *gen )
   /* Get candidate for bx */
   if (gen->set & ITDR_SET_XI) {
     /* bx set user; have to shift by pole */
-    GEN->bx = GEN->xi - GEN->pole;
+    GEN->bx = O2I(GEN->xi);
   }
   else {
     /* compute intersection point of local concavity and inverse lc */
-    GEN->xi = GEN->bx = _unur_itdr_find_xt( gen, 0. );
+    GEN->bx = _unur_itdr_find_xt( gen, 0. );
+    GEN->xi = I2O(GEN->bx);
     if (!_unur_isfinite(GEN->bx)) {
       _unur_error(gen->genid,UNUR_ERR_DISTR_PROP,"cannot compute bx");
       return UNUR_ERR_DISTR_PROP;
@@ -889,6 +912,7 @@ _unur_itdr_get_hat_pole( struct unur_gen *gen )
   double cp, xp;
   double near_pole;
   double ilc_near_pole, ilc_bx;
+  double pdf_near_pole, pdf_bx;
 
   /* get cp */
   if (gen->set & ITDR_SET_CP) {
@@ -900,6 +924,7 @@ _unur_itdr_get_hat_pole( struct unur_gen *gen )
     ilc_near_pole = log(PDF(near_pole)) / log(near_pole);
     ilc_bx = _unur_itdr_ilc(gen, GEN->bx);
     cp = min(ilc_near_pole,ilc_bx);
+
     if (cp > C_MAX) cp = C_MAX;
 
     if (cp <= -1.) {
@@ -911,6 +936,21 @@ _unur_itdr_get_hat_pole( struct unur_gen *gen )
   if (cp < -0.5)
     GEN->bx = min (2.*GEN->bx, GEN->bd_right);
 
+  /* compute PDF at check points */
+  pdf_bx = PDF(GEN->bx);
+  near_pole = fabs(GEN->pole)*(1.+DBL_EPSILON);
+  if (near_pole < 1.e-100) near_pole = 1.e-100;
+  while (1) {
+    /* we have to search for a point for PDF(x) < INFINITY */
+    pdf_near_pole = PDF(near_pole);
+    if (_unur_isfinite(pdf_near_pole)) 
+      break;
+    near_pole *= 2.;
+    if (!_unur_isfinite(near_pole)) {
+      _unur_error(gen->genid,UNUR_ERR_DISTR_PROP,"cannot compute hat for pole: cp");
+      return UNUR_ERR_DISTR_PROP;
+    }
+  }
 
   /* get design point xp */
   while (1) {
@@ -925,11 +965,8 @@ _unur_itdr_get_hat_pole( struct unur_gen *gen )
     GEN->alphap = T(cp,xp) - GEN->betap * PDF(xp);
 
     /* check hat */
-    near_pole = fabs(GEN->pole)*(1.+DBL_EPSILON);
-    if (near_pole < 1.e-100) near_pole = 1.e-100;
-
-    if ( hp(near_pole) < PDF(near_pole) ||
-	 hp(GEN->bx) < PDF(GEN->bx) ) {
+    if ( hp(near_pole) < pdf_near_pole ||
+	 hp(GEN->bx) < pdf_bx ) {
       if (gen->set & ITDR_SET_CP) {
 	_unur_error(gen->genid,UNUR_ERR_DISTR_PROP,"inverse pdf not T_cp concave");
 	return UNUR_ERR_DISTR_PROP;

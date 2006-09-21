@@ -1029,7 +1029,7 @@ _unur_itdr_get_hat_pole( struct unur_gen *gen )
     pdf_near_pole = PDF(near_pole);
     if (_unur_isfinite(pdf_near_pole)) 
       break;
-    near_pole *= 2.;
+    near_pole *= 1000.;
     if (!_unur_isfinite(near_pole)) {
       _unur_error(gen->genid,UNUR_ERR_DISTR_PROP,"cannot compute hat for pole: cp");
       return UNUR_ERR_DISTR_PROP;

@@ -1025,7 +1025,7 @@ _unur_itdr_get_hat_pole( struct unur_gen *gen )
   near_pole = fabs(GEN->pole)*(1.+DBL_EPSILON);
   if (near_pole < 1.e-100) near_pole = 1.e-100;
   while (1) {
-    /* we have to search for a point for PDF(x) < INFINITY */
+    /* we have to search for a point with PDF(x) < INFINITY */
     pdf_near_pole = PDF(near_pole);
     if (_unur_isfinite(pdf_near_pole)) 
       break;
@@ -1099,7 +1099,8 @@ _unur_itdr_get_hat_tail( struct unur_gen *gen )
 #define ht(x)  ( TI(ct, GEN->Tfxt + GEN->dTfxt*((x)-xt)) )
 
   double ct, xt;
-  double lc_bx;
+  double lc_bx, lc_inf;
+  double br;
   double bx = GEN->bx;
 
   /* get design point xt */
@@ -1111,10 +1112,24 @@ _unur_itdr_get_hat_tail( struct unur_gen *gen )
     ct = GEN->ct;
   }
   else {
+    /* first try: use point between bx and xt */
     ct = _unur_itdr_lc(gen, 0.5*(bx + xt));
+    /* check local concavity at right boundary */
+    if ( _unur_isfinite(GEN->bd_right)) 
+      lc_inf = _unur_itdr_lc(gen, GEN->bd_right);
+    else { /* right boundary = infinity */
+      lc_inf = log(1.e10*bx) / log(PDF(1.e10*bx));
+      /* we need lim x->oo log(x) / log(f(x))    */
+      /* however, this convergence is very slow. */
+      /* so we add -0.1 to be on the save side.  */
+      lc_inf += -0.1;
+    }
+    if (lc_inf < ct) ct = lc_inf;
+
+    /* ct should not be too close to 0. */
     if (ct > C_MAX) ct = C_MAX;
     if (ct <= -1.) {
-      _unur_error(gen->genid,UNUR_ERR_DISTR_PROP,"cannot compute hat for pole: ct");
+      _unur_error(gen->genid,UNUR_ERR_DISTR_PROP,"cannot compute hat for tail: ct");
       return UNUR_ERR_DISTR_PROP;
     }
     GEN->ct = ct;
@@ -1128,19 +1143,23 @@ _unur_itdr_get_hat_tail( struct unur_gen *gen )
     GEN->dTfxt = DT(ct, PDF(xt)) * dPDF(xt);
 
     /* check hat */
+    br = 1000.*bx;  /* "very large x" */
+    if (br > GEN->bd_right) br = GEN->bd_right;
     if ( ((GEN->Tfxt + GEN->dTfxt*(bx-xt)) >= 0.) ||
 	 (ht(bx) < PDF(bx)) ||
-	 (ht(1000.*bx) < PDF(1000.*bx)) ) {
+	 (ht(br) < PDF(br)) ) {
       if (gen->set & ITDR_SET_CT) {
 	_unur_error(gen->genid,UNUR_ERR_DISTR_PROP,"pdf not T_ct concave");
 	return UNUR_ERR_DISTR_PROP;
       }
       /* try new value for ct */
-      GEN->ct = ct = 0.5*(ct + lc_bx);
-      if (ct < -0.999 || _unur_FP_approx(ct,lc_bx)) {
+      ct = 0.5*(ct + lc_bx);
+      if (ct > GEN->ct || ct < -0.999 || _unur_FP_approx(ct,lc_bx)) {
+	/* new ct value is even larger or too small or its time to stop */ 
 	_unur_error(gen->genid,UNUR_ERR_DISTR_PROP,"cannot compute hat for tail: ct");
 	return UNUR_ERR_DISTR_PROP;
       }
+      GEN->ct = ct;
     }
     else
       break;

@@ -104,6 +104,36 @@ int unur_itdr_set_ct( UNUR_PAR *parameters, double ct );
    Default: not set.
 */
 
+double unur_itdr_get_xi( UNUR_GEN *generator );
+/* */
+
+double unur_itdr_get_cp( UNUR_GEN *generator );
+/* */
+
+double unur_itdr_get_ct( UNUR_GEN *generator );
+/* 
+   Get intersection poin @var{xi}, and c-values @var{cp} and @var{ct},
+   respectively. 
+   (In case of an error @code{UNUR_INFINITY} is returned.)
+*/
+
+double unur_itdr_get_area( UNUR_GEN *generator );
+/* 
+   Get area below hat.
+   (In case of an error @code{UNUR_INFINITY} is returned.)
+*/
+
+int unur_itdr_set_ct( UNUR_PAR *parameters, double ct );
+/* 
+   Sets parameter @var{ct} for transformation T for 
+   density in tail region.
+   It must be at most 0. For densities with unbounded domain
+   it must be greater than -1. 
+   If no @var{ct}-value is given it is estimated automatically.
+
+   Default: not set.
+*/
+
 int unur_itdr_set_verify( UNUR_PAR *parameters, int verify );
 /* 
    Turn verifying of algorithm while sampling on/off.

@@ -397,6 +397,90 @@ unur_itdr_set_ct( struct unur_par *par, double ct )
 
 /*---------------------------------------------------------------------------*/
 
+double unur_itdr_get_xi( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* get intersection point xi                                            */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   xi       ... on success                                            */
+     /*   INFINITY ... on error                                              */
+     /*----------------------------------------------------------------------*/
+{
+  /* check input */
+  _unur_check_NULL( GENTYPE, gen, INFINITY );
+  _unur_check_gen_object( gen, ITDR, INFINITY );
+
+  return GEN->xi;
+} /* end of unur_itdr_get_xi() */
+
+/*---------------------------------------------------------------------------*/
+
+double unur_itdr_get_cp( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* get intersection c-value for pole region                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   cp       ... on success                                            */
+     /*   INFINITY ... on error                                              */
+     /*----------------------------------------------------------------------*/
+{
+  /* check input */
+  _unur_check_NULL( GENTYPE, gen, INFINITY );
+  _unur_check_gen_object( gen, ITDR, INFINITY );
+
+  return GEN->cp;
+} /* end of unur_itdr_get_cp() */
+
+/*---------------------------------------------------------------------------*/
+
+double unur_itdr_get_ct( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* get intersection c-value for tail region                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   ct       ... on success                                            */
+     /*   INFINITY ... on error                                              */
+     /*----------------------------------------------------------------------*/
+{
+  /* check input */
+  _unur_check_NULL( GENTYPE, gen, INFINITY );
+  _unur_check_gen_object( gen, ITDR, INFINITY );
+
+  return GEN->ct;
+} /* end of unur_itdr_get_ct() */
+
+/*---------------------------------------------------------------------------*/
+
+double unur_itdr_get_area( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* get area below hat                                                   */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   area     ... on success                                            */
+     /*   INFINITY ... on error                                              */
+     /*----------------------------------------------------------------------*/
+{
+  /* check input */
+  _unur_check_NULL( GENTYPE, gen, INFINITY );
+  _unur_check_gen_object( gen, ITDR, INFINITY );
+
+  return GEN->Atot;
+} /* end of unur_itdr_get_area() */
+
+/*---------------------------------------------------------------------------*/
+
 int
 unur_itdr_set_verify( struct unur_par *par, int verify )
      /*----------------------------------------------------------------------*/

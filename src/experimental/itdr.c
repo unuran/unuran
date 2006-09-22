@@ -757,6 +757,7 @@ _unur_itdr_sample( struct unur_gen *gen )
     U = _unur_call_urng(gen->urng) * GEN->Atot;
 
     /* generate pair (X,Y) below hat */
+
     if (U < GEN->Ap) {
       /* upper pole region */
       V = _unur_call_urng(gen->urng) * GEN->Ap;
@@ -773,6 +774,7 @@ _unur_itdr_sample( struct unur_gen *gen )
 	X = U * TI(GEN->cp, GEN->alphap+GEN->betap*Y) / GEN->Ap;
       }
     }
+
     else if ((U -= GEN->Ap) < GEN->Ac) {
       /* central region */
       X = U * GEN->bx / GEN->Ac;
@@ -781,6 +783,7 @@ _unur_itdr_sample( struct unur_gen *gen )
 	/* squeeze acceptance */
 	return (I2O(X));
     }
+
     else {
       /* tail region */
       U -= GEN->Ac;
@@ -835,62 +838,99 @@ _unur_itdr_sample_check( struct unur_gen *gen )
      /*   return INFINITY                                                    */
      /*----------------------------------------------------------------------*/
 {
-/*   double U,V,X,fx,sfx,xfx; */
+#define ht(x)  ( TI(GEN->ct, GEN->Tfxt + GEN->dTfxt*((x)-GEN->xt)) )
+#define hp(x)  ( (T(GEN->cp,(x)) - GEN->alphap) / GEN->betap )
+
+  double U, V, X, Y;
+  double fx, hx, sqx;  /* values of PDF, hat and squeeze at x */
 
   /* check arguments */
   CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_ITDR_GEN,INFINITY);
 
-/*   while (1) { */
-/*     /\* generate point uniformly on rectangle *\/ */
-/*     while ( (V = _unur_call_urng(gen->urng)) == 0.); */
-/*     V *= GEN->vmax; */
-/*     U = GEN->umin + _unur_call_urng(gen->urng) * (GEN->umax - GEN->umin); */
-    
-/*     /\* compute x *\/ */
-/*     if (GEN->r == 1.) X = U/V + GEN->center; */
-/*     else             X = U/pow(V,GEN->r) + GEN->center; */
-    
-/*     /\* inside domain ? *\/ */
-/*     if ( (X < DISTR.BD_LEFT) || (X > DISTR.BD_RIGHT) ) */
-/*       continue; */
-    
-/*     /\* evaluate PDF *\/ */
-/*     fx = PDF(X); */
-    
-/*     /\* a point on the boundary of the region of acceptance */
-/*        has the coordinates ( (X-center) * (fx)^(r/(1+r)), (fx)^(1/(1+r)) ). *\/ */
-/*     if (GEN->r == 1.) { */
-/*       /\* normal rou-method with square-root *\/ */
-/*       sfx = sqrt(fx); */
-/*       xfx = (X-GEN->center) * sfx; */
-/*     } */
-/*     else { */
-/*       /\* generalized rou-method with pow-function *\/ */
-/*       sfx = pow(fx, 1./(1.+GEN->r)); */
-/*       xfx = (X-GEN->center) * pow(fx, GEN->r/(1.+GEN->r)); */
-/*     } */
-    
-/*     /\* check hat *\/ */
-/*     if ( ( sfx > (1.+DBL_EPSILON) * GEN->vmax )   /\* avoid roundoff error with FP registers *\/ */
-/* 	 || (xfx < (1.+UNUR_EPSILON) * GEN->umin)  */
-/* 	 || (xfx > (1.+UNUR_EPSILON) * GEN->umax) ) */
-/*       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF(x) > hat(x)"); */
-    
-/*     /\* accept or reject *\/ */
-/*     if (GEN->r ==1) { */
-/*       /\* normal rou-method with square-root *\/ */
-/*       if (V*V <= PDF(X)) */
-/*         return X; */
-/*     } */
-/*     else { */
-/*       /\* generalized rou-method with pow-function *\/ */
-/*       if (V <= pow(PDF(X), 1./(1.+GEN->r)) ) */
-/*         return X; */
-/*     } */
-/*   } */
+  while (1) {
+    /* generate point uniformly on (0,Atot) */
+    U = _unur_call_urng(gen->urng) * GEN->Atot;
 
-  return 0.;
+    /* generate pair (X,Y) below hat */
 
+    if (U < GEN->Ap) {
+      /* upper pole region */
+      V = _unur_call_urng(gen->urng) * GEN->Ap;
+      if (GEN->cp == -0.5) {
+	/* square root transformation */
+	Y = ( FTsI(GEN->cp, GEN->betap*V + FTs(GEN->cp,GEN->alphap+GEN->betap*GEN->by))
+	      - GEN->alphap ) / GEN->betap;
+	X = U * TsI(GEN->cp, GEN->alphap+GEN->betap*Y) / GEN->Ap;
+      }
+      else {
+	/* general T_c transformation */
+	Y = ( FTI(GEN->cp, GEN->betap*V + FT(GEN->cp,GEN->alphap+GEN->betap*GEN->by))
+	      - GEN->alphap ) / GEN->betap;
+	X = U * TI(GEN->cp, GEN->alphap+GEN->betap*Y) / GEN->Ap;
+      }
+      hx = hp(X);
+      sqx = 0.;
+    }
+
+    else if ((U -= GEN->Ap) < GEN->Ac) {
+      /* central region */
+      X = U * GEN->bx / GEN->Ac;
+      Y = _unur_call_urng(gen->urng) * GEN->by;
+      hx = hp(X);
+      sqx = GEN->sy;
+      /* no squeeze acceptance in verify mode */
+      /* [ if (Y <= GEN->sy) return (I2O(X)); ] */
+    }
+
+    else {
+      /* tail region */
+      U -= GEN->Ac;
+      if (GEN->ct == -0.5) {
+	/* square root transformation */
+	X = GEN->xt + (FTsI(GEN->ct,
+			   GEN->dTfxt*U
+			   + FTs(GEN->ct,
+				GEN->Tfxt + GEN->dTfxt*(GEN->bx-GEN->xt))
+			   )
+		       - GEN->Tfxt) / GEN->dTfxt;
+	Y = ( _unur_call_urng(gen->urng)
+	      * TsI(GEN->ct, GEN->Tfxt + GEN->dTfxt*(X - GEN->xt)));
+      }
+      else {
+	/* general T_c transformation */
+	X = GEN->xt + (FTI(GEN->ct,
+			   GEN->dTfxt*U
+			   + FT(GEN->ct,
+				GEN->Tfxt + GEN->dTfxt*(GEN->bx-GEN->xt))
+			   )
+		       - GEN->Tfxt) / GEN->dTfxt;
+	Y = ( _unur_call_urng(gen->urng)
+	      * TI(GEN->ct, GEN->Tfxt + GEN->dTfxt*(X - GEN->xt)));
+      }
+      hx = ht(X);
+      sqx = 0.;
+    }
+
+    /* transform back into original scale */
+    X = I2O(X);
+
+    /* compute PDF at x */
+    fx = PDFo(X);
+
+    /* verify hat and squeeze function */
+    if ( (1.+UNUR_EPSILON) * hx < fx )
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF(x) > hat(x)");
+
+    if ( (1.-UNUR_EPSILON) * sqx > fx )
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF(x) < squeeze(x)");
+
+    /* accept or reject */
+    if (Y <= PDFo(X))
+      return X;
+  }
+
+#undef ht
+#undef hp
 } /* end of _unur_itdr_sample_check() */
 
 /*****************************************************************************/
@@ -1022,7 +1062,7 @@ _unur_itdr_get_hat_pole( struct unur_gen *gen )
 
   /* compute PDF at check points */
   pdf_bx = PDF(GEN->bx);
-  near_pole = fabs(GEN->pole)*(1.+DBL_EPSILON);
+  near_pole = fabs(GEN->pole)*DBL_EPSILON;
   if (near_pole < 1.e-100) near_pole = 1.e-100;
   while (1) {
     /* we have to search for a point with PDF(x) < INFINITY */
@@ -1276,7 +1316,7 @@ _unur_itdr_find_xt( struct unur_gen *gen, double b )
   xu = xl;
 
   /* check upper value xu */
-  if (xu >= GEN->bd_right) return GEN->bd_right;
+  if (_unur_FP_greater(xu,GEN->bd_right)) return GEN->bd_right;
 
   /* find bracket for root */
   if (FKT(xl)>0.) {

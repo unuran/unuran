@@ -190,18 +190,30 @@ static void _unur_itdr_debug_init( const struct unur_gen *gen, int error );
 #define dPDF(x)   ( GEN->sign * _unur_cont_dPDF(I2O(x), gen->distr) )
 
 /* call to PDF and its derivative in original scale */
-#define PDFo(x)    _unur_cont_PDF((x), gen->distr)
-#define dPDFo(x)   _unur_cont_dPDF((x), gen->distr)
+#define PDFo(x)   ( _unur_cont_PDF((x), gen->distr) )
+#define dPDFo(x)  ( _unur_cont_dPDF((x), gen->distr) )
+
+
+
+#define logPDF(x)   ( _unur_cont_logPDF(I2O(x), gen->distr) )   /* call to logPDF   */
+#define dlogPDF(x)  ( GEN->sign * _unur_cont_dlogPDF(I2O(x), gen->distr) )  /* call to derivative of log PDF */
+
+#define logPDFo(x)  ( _unur_cont_logPDF((x), gen->distr) )  /* call to logPDF   */
+#define dlogPDFo(x) ( _unur_cont_dlogPDF((x), gen->distr) )  /* call to derivative of log PDF */
+
 
 /*---------------------------------------------------------------------------*/
 /* transformations */
 
 /* T_c(x) */
-#define T(c,x)   ( -1./pow((x),-(c)) )
-#define DT(c,x)  ( -(c)/pow((x),-((c)-1.)) )
-#define TI(c,x)  ( 1./pow(-(x),-1./((c))) )
-#define FT(c,x)  ( -1./pow(-(x),-((c)+1.)/(c))*((c)/((c)+1.)) )
-#define FTI(c,x) ( -1./pow(-(x)*((c)+1.)/(c),-(c)/((c)+1.)) )
+#define T(c,x)   ( -pow((x), (c)) )
+#define DT(c,x)  ( -(c)*pow((x), ((c)-1.)) )
+#define TI(c,x)  ( pow(-(x), 1./(c)) )
+#define FT(c,x)  ( -pow(-(x), ((c)+1.)/(c))*((c)/((c)+1.)) )
+#define FTI(c,x) ( -pow(-(x)*((c)+1.)/(c), (c)/((c)+1.)) )
+
+/* logarithm of inverse transformation */
+#define logTI(c,x)  ( -log(-(x)) / (c) )
 
 /* special case: T_{-1/2}(x)   ["square root transformation"] */
 #define TsI(c,x)  ( 1./((x)*(x)) )
@@ -1034,9 +1046,8 @@ _unur_itdr_get_hat_pole( struct unur_gen *gen )
 #define hp(x)  ( (T(cp,(x)) - GEN->alphap) / GEN->betap )
 
   double cp, xp;
-  double near_pole;
-  double ilc_near_pole, ilc_bx;
-  double pdf_near_pole, pdf_bx;
+  double ilc_bx, pdf_bx;
+  double near_pole, ilc_near_pole, pdf_near_pole, logpdf_near_pole;
 
   /* get cp */
   if (gen->set & ITDR_SET_CP) {
@@ -1044,13 +1055,13 @@ _unur_itdr_get_hat_pole( struct unur_gen *gen )
     cp = GEN->cp;
   }
   else {
-    near_pole = GEN->bx*NEAR_POLE + 2.*fabs(GEN->pole)*DBL_EPSILON;
-    ilc_near_pole = log(PDF(near_pole)) / log(near_pole);
     ilc_bx = _unur_itdr_ilc(gen, GEN->bx);
+    near_pole = GEN->bx*NEAR_POLE + fabs(GEN->pole)*DBL_EPSILON;
+    ilc_near_pole = (DISTR.logpdf) 
+      ? logPDF(near_pole) / log(near_pole)
+      : log(PDF(near_pole)) / log(near_pole);
     cp = min(ilc_near_pole,ilc_bx);
-
     if (cp > C_MAX) cp = C_MAX;
-
     if (cp <= -1.) {
       _unur_error(gen->genid,UNUR_ERR_DISTR_PROP,"cannot compute hat for pole: cp");
       return UNUR_ERR_DISTR_PROP;
@@ -1064,11 +1075,19 @@ _unur_itdr_get_hat_pole( struct unur_gen *gen )
   pdf_bx = PDF(GEN->bx);
   near_pole = fabs(GEN->pole)*DBL_EPSILON;
   if (near_pole < 1.e-100) near_pole = 1.e-100;
+  pdf_near_pole = logpdf_near_pole = INFINITY;
   while (1) {
     /* we have to search for a point with PDF(x) < INFINITY */
-    pdf_near_pole = PDF(near_pole);
-    if (_unur_isfinite(pdf_near_pole)) 
-      break;
+    if (DISTR.logpdf) {
+      logpdf_near_pole = logPDF(near_pole);
+      if (_unur_isfinite(logpdf_near_pole)) 
+	break;
+    }
+    else {
+      pdf_near_pole = PDF(near_pole);
+      if (_unur_isfinite(pdf_near_pole)) 
+	break;
+    }
     near_pole *= 1000.;
     if (!_unur_isfinite(near_pole)) {
       _unur_error(gen->genid,UNUR_ERR_DISTR_PROP,"cannot compute hat for pole: cp");
@@ -1089,8 +1108,9 @@ _unur_itdr_get_hat_pole( struct unur_gen *gen )
     GEN->alphap = T(cp,xp) - GEN->betap * PDF(xp);
 
     /* check hat */
-    if ( hp(near_pole) < pdf_near_pole ||
-	 hp(GEN->bx) < pdf_bx ) {
+    if ( hp(GEN->bx) < pdf_bx ||
+	 (DISTR.logpdf && _unur_FP_less(log(hp(near_pole)), logpdf_near_pole)) ||
+	 (DISTR.logpdf==NULL && _unur_FP_less(hp(near_pole), pdf_near_pole)) ) {
       if (gen->set & ITDR_SET_CP) {
 	_unur_error(gen->genid,UNUR_ERR_DISTR_PROP,"inverse pdf not T_cp concave");
 	return UNUR_ERR_DISTR_PROP;
@@ -1137,6 +1157,7 @@ _unur_itdr_get_hat_tail( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
 #define ht(x)  ( TI(ct, GEN->Tfxt + GEN->dTfxt*((x)-xt)) )
+#define loght(x)  ( TI(ct, GEN->Tfxt + GEN->dTfxt*((x)-xt)) )
 
   double ct, xt;
   double lc_bx, lc_inf;
@@ -1158,11 +1179,20 @@ _unur_itdr_get_hat_tail( struct unur_gen *gen )
     if ( _unur_isfinite(GEN->bd_right)) 
       lc_inf = _unur_itdr_lc(gen, GEN->bd_right);
     else { /* right boundary = infinity */
-      lc_inf = log(1.e10*bx) / log(PDF(1.e10*bx));
-      /* we need lim x->oo log(x) / log(f(x))    */
-      /* however, this convergence is very slow. */
-      /* so we add -0.1 to be on the save side.  */
-      lc_inf += -0.1;
+      if (DISTR.logpdf) {
+	lc_inf = log(1.e100) / logPDF(1.e100);
+	/* we need lim x->oo log(x) / log(f(x))    */
+	/* however, this convergence is very slow. */
+	/* so we add -0.1 to be on the save side.  */
+	lc_inf += -0.01;
+      }
+      else {
+	lc_inf = log(1.e10*bx) / log(PDF(1.e10*bx));
+	/* we need lim x->oo log(x) / log(f(x))    */
+	/* however, this convergence is very slow. */
+	/* so we add -0.1 to be on the save side.  */
+	lc_inf += -0.05;
+      }
     }
     if (lc_inf < ct) ct = lc_inf;
 
@@ -1185,9 +1215,12 @@ _unur_itdr_get_hat_tail( struct unur_gen *gen )
     /* check hat */
     br = 1000.*bx;  /* "very large x" */
     if (br > GEN->bd_right) br = GEN->bd_right;
+
     if ( ((GEN->Tfxt + GEN->dTfxt*(bx-xt)) >= 0.) ||
-	 (ht(bx) < PDF(bx)) ||
-	 (ht(br) < PDF(br)) ) {
+	 (DISTR.logpdf && (_unur_FP_less(loght(br),logPDF(br)) ||
+			   _unur_FP_less(loght(bx), logPDF(bx)) )) ||
+	 (DISTR.logpdf==NULL && (_unur_FP_less(ht(br),PDF(br)) ||
+				 _unur_FP_less(ht(bx), PDF(bx)) )) ) {
       if (gen->set & ITDR_SET_CT) {
 	_unur_error(gen->genid,UNUR_ERR_DISTR_PROP,"pdf not T_ct concave");
 	return UNUR_ERR_DISTR_PROP;
@@ -1213,6 +1246,7 @@ _unur_itdr_get_hat_tail( struct unur_gen *gen )
   return UNUR_SUCCESS;
 
 #undef ht
+#undef loght
 } /* end of _unur_itdr_get_hat_tail() */
 
 /*---------------------------------------------------------------------------*/
@@ -1235,17 +1269,34 @@ _unur_itdr_lc( struct unur_gen *gen, double x )
 {
   double dx, f, df, ddf;
 
-  f = PDF(x);
-  df = dPDF(x);
+  if (DISTR.dlogpdf == NULL) {
+    /* use PDF */
 
-  dx = x * DX + fabs(GEN->pole) * UNUR_SQRT_DBL_EPSILON;
-  if (x-dx <= 0.) dx = x;
-  if (x+dx > GEN->bd_right)
-    ddf = (dPDF(x)-dPDF(x-dx))/dx;
-  else
-    ddf = (dPDF(x+dx)-dPDF(x-dx))/(2.*dx);
+    f = PDF(x);
+    df = dPDF(x);
 
-  return 1. - ddf*f/(df*df); 
+    dx = x * DX + fabs(GEN->pole) * UNUR_SQRT_DBL_EPSILON;
+    if (x-dx <= 0.) dx = x;
+    if (x+dx > GEN->bd_right)
+      ddf = (dPDF(x)-dPDF(x-dx))/dx;
+    else
+      ddf = (dPDF(x+dx)-dPDF(x-dx))/(2.*dx);
+    
+    return 1. - ddf*f/(df*df); 
+  }
+
+  else {
+    /* use logarithm of PDF */
+
+    dx = x * DX + fabs(GEN->pole) * UNUR_SQRT_DBL_EPSILON;
+    if (x-dx <= 0.) dx = x;
+
+    if (x+dx > GEN->bd_right)
+      return (1./dlogPDF(x) - 1./dlogPDF(x-dx))/dx;
+    else
+      return (1./dlogPDF(x+dx) - 1./dlogPDF(x-dx))/(2.*dx);
+  }
+
 } /* end of _unur_itdr_lc() */
 
 /*---------------------------------------------------------------------------*/
@@ -1266,18 +1317,41 @@ _unur_itdr_ilc( struct unur_gen *gen, double x )
      /*   return INFINITY                                                    */
      /*----------------------------------------------------------------------*/
 {
-  double dx, df, ddf;
 
-  df = dPDF(x);
+  if (DISTR.dlogpdf == NULL) {
+    /* use PDF */
+    double dx, df, ddf;
 
-  dx = x * DX + fabs(GEN->pole) * UNUR_SQRT_DBL_EPSILON;
-  if (x-dx <= 0.) dx = x;
-  if (x+dx > GEN->bd_right)
-    ddf = (dPDF(x)-dPDF(x-dx))/dx;
-  else
-    ddf = (dPDF(x+dx)-dPDF(x-dx))/(2.*dx);
+    df = dPDF(x);
 
-  return 1.+x*ddf/(df); 
+    dx = x * DX + fabs(GEN->pole) * UNUR_SQRT_DBL_EPSILON;
+    if (x-dx <= 0.) dx = x;
+
+    if (x+dx > GEN->bd_right)
+      ddf = (dPDF(x)-dPDF(x-dx))/dx;
+    else
+      ddf = (dPDF(x+dx)-dPDF(x-dx))/(2.*dx);
+
+    return 1.+x*ddf/(df); 
+  }
+
+  else {
+    /* use logarithm of PDF */
+    double dx, dlf, ddlf;
+
+    dlf = dlogPDF(x);
+
+    dx = x * DX + fabs(GEN->pole) * UNUR_SQRT_DBL_EPSILON;
+    if (x-dx <= 0.) dx = x;
+    
+    if (x+dx > GEN->bd_right)
+      ddlf = (dlogPDF(x)-dlogPDF(x-dx))/dx;
+    else
+      ddlf = (dlogPDF(x+dx)-dlogPDF(x-dx))/(2.*dx);
+    
+    return 1.+x*(dlf + ddlf/dlf); 
+  }
+
 } /* end of _unur_itdr_ilc() */
 
 /*---------------------------------------------------------------------------*/
@@ -1298,7 +1372,10 @@ _unur_itdr_find_xt( struct unur_gen *gen, double b )
      /*   return INFINITY                                                    */
      /*----------------------------------------------------------------------*/
 {
-#define FKT(x)  (((x)-b)*dPDF(x) + PDF(x))   /* function for finding root */
+  /* function for finding root */
+#define FKT(x) ( DISTR.dlogpdf \
+                 ? (1./((x)-b) + dlogPDF(x)) \
+                 : (((x)-b)*dPDF(x) + PDF(x)) )
 
   double xl, xu;  /* lower and upper boundary of bracket */
   double xn;      /* new guess for root */

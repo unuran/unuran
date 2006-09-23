@@ -176,14 +176,18 @@ unur_test_count_pdf( struct unur_gen *gen, int samplesize, int verbosity, FILE *
     distr->data.cont.pdf = cont_pdf_with_counter;
     cont_dpdf_to_use = distr->data.cont.dpdf;
     distr->data.cont.dpdf = cont_dpdf_with_counter;
-    cont_logpdf_to_use = distr->data.cont.logpdf;
-    distr->data.cont.logpdf = cont_logpdf_with_counter;
-    cont_dlogpdf_to_use = distr->data.cont.dlogpdf;
-    distr->data.cont.dlogpdf = cont_dlogpdf_with_counter;
     cont_cdf_to_use = distr->data.cont.cdf;
     distr->data.cont.cdf = cont_cdf_with_counter;
     cont_hr_to_use = distr->data.cont.hr;
     distr->data.cont.hr = cont_hr_with_counter;
+    if (distr->data.cont.logpdf) {
+      cont_logpdf_to_use = distr->data.cont.logpdf;
+      distr->data.cont.logpdf = cont_logpdf_with_counter;
+    }
+    if (distr->data.cont.dlogpdf) {
+      cont_dlogpdf_to_use = distr->data.cont.dlogpdf;
+      distr->data.cont.dlogpdf = cont_dlogpdf_with_counter;
+    }
     break;
   case UNUR_DISTR_DISCR:
     discr_pmf_to_use = distr->data.discr.pmf;
@@ -198,12 +202,18 @@ unur_test_count_pdf( struct unur_gen *gen, int samplesize, int verbosity, FILE *
     distr->data.cvec.dpdf = cvec_dpdf_with_counter;
     cvec_pdpdf_to_use = distr->data.cvec.pdpdf;
     distr->data.cvec.pdpdf = cvec_pdpdf_with_counter;
-    cvec_logpdf_to_use = distr->data.cvec.logpdf;
-    distr->data.cvec.logpdf = cvec_logpdf_with_counter;
-    cvec_dlogpdf_to_use = distr->data.cvec.dlogpdf;
-    distr->data.cvec.dlogpdf = cvec_dlogpdf_with_counter;
-    cvec_pdlogpdf_to_use = distr->data.cvec.pdlogpdf;
-    distr->data.cvec.pdlogpdf = cvec_pdlogpdf_with_counter;
+    if (distr->data.cvec.logpdf) {
+      cvec_logpdf_to_use = distr->data.cvec.logpdf;
+      distr->data.cvec.logpdf = cvec_logpdf_with_counter;
+    }
+    if (distr->data.cvec.dlogpdf) {
+      cvec_dlogpdf_to_use = distr->data.cvec.dlogpdf;
+      distr->data.cvec.dlogpdf = cvec_dlogpdf_with_counter;
+    }
+    if (distr->data.cvec.pdlogpdf) {
+      cvec_pdlogpdf_to_use = distr->data.cvec.pdlogpdf;
+      distr->data.cvec.pdlogpdf = cvec_pdlogpdf_with_counter;
+    }
     break;
   default:
     if (verbosity)
@@ -322,7 +332,7 @@ unur_test_par_count_pdf( struct unur_par *par, int samplesize, int verbosity, FI
 
   /* make a copy (clone) of the parameter object */
   parclone = _unur_par_clone(par);
-  parclone->distr_is_privatecopy = TRUE; 
+  parclone->distr_is_privatecopy = TRUE;
 
   /* make a copy (clone) of the distribution object */
   distr = _unur_distr_clone(par->distr);
@@ -337,14 +347,18 @@ unur_test_par_count_pdf( struct unur_par *par, int samplesize, int verbosity, FI
     distr->data.cont.pdf = cont_pdf_with_counter;
     cont_dpdf_to_use = distr->data.cont.dpdf;
     distr->data.cont.dpdf = cont_dpdf_with_counter;
-    cont_logpdf_to_use = distr->data.cont.logpdf;
-    distr->data.cont.logpdf = cont_logpdf_with_counter;
-    cont_dlogpdf_to_use = distr->data.cont.dlogpdf;
-    distr->data.cont.dlogpdf = cont_dlogpdf_with_counter;
     cont_cdf_to_use = distr->data.cont.cdf;
     distr->data.cont.cdf = cont_cdf_with_counter;
     cont_hr_to_use = distr->data.cont.hr;
     distr->data.cont.hr = cont_hr_with_counter;
+    if (distr->data.cont.logpdf) {
+      cont_logpdf_to_use = distr->data.cont.logpdf;
+      distr->data.cont.logpdf = cont_logpdf_with_counter;
+    }
+    if (distr->data.cont.dlogpdf) {
+      cont_dlogpdf_to_use = distr->data.cont.dlogpdf;
+      distr->data.cont.dlogpdf = cont_dlogpdf_with_counter;
+    }
     break;
   case UNUR_DISTR_DISCR:
     discr_pmf_to_use = distr->data.discr.pmf;
@@ -359,12 +373,18 @@ unur_test_par_count_pdf( struct unur_par *par, int samplesize, int verbosity, FI
     distr->data.cvec.dpdf = cvec_dpdf_with_counter;
     cvec_pdpdf_to_use = distr->data.cvec.pdpdf;
     distr->data.cvec.pdpdf = cvec_pdpdf_with_counter;
-    cvec_logpdf_to_use = distr->data.cvec.logpdf;
-    distr->data.cvec.logpdf = cvec_logpdf_with_counter;
-    cvec_dlogpdf_to_use = distr->data.cvec.dlogpdf;
-    distr->data.cvec.dlogpdf = cvec_dlogpdf_with_counter;
-    cvec_pdlogpdf_to_use = distr->data.cvec.pdlogpdf;
-    distr->data.cvec.pdlogpdf = cvec_pdlogpdf_with_counter;
+    if (distr->data.cvec.logpdf) {
+      cvec_logpdf_to_use = distr->data.cvec.logpdf;
+      distr->data.cvec.logpdf = cvec_logpdf_with_counter;
+    }
+    if (distr->data.cvec.dlogpdf) {
+      cvec_dlogpdf_to_use = distr->data.cvec.dlogpdf;
+      distr->data.cvec.dlogpdf = cvec_dlogpdf_with_counter;
+    }
+    if (distr->data.cvec.pdlogpdf) {
+      cvec_pdlogpdf_to_use = distr->data.cvec.pdlogpdf;
+      distr->data.cvec.pdlogpdf = cvec_pdlogpdf_with_counter;
+    }
     break;
   default:
     if (verbosity)

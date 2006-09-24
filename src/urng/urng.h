@@ -67,22 +67,15 @@
       defined in @file{unuran_config.h} at compile time and can be
       changed at runtime.
 
-      In earlier versions of UNURAN the type of the source of the
-      random numbers (i.e., the library which is used for generating
-      streams of uniform random numbers) has to be set at compile time
-      which restricts the flexibility of this approach. With the
-      current UNURAN version a unified interface is used for all
-      sources of random numbers. Unfortunately, the API for random
-      number generators, like the @file{GSL} (GNU Scientific Library),
-      Otmar Lendl's @file{prng} (Pseudo random number generators), or
-      a single function implemented by the user herself, are quite
-      different. Hence an object of type @code{UNUR_URNG} is
-      introduced to store the URNG. Now it is possible to use
-      different types of uniform (pseudo- or quasi-) random numbers in
-      one simulation study. Moreover, it is possible to handle
-      different sources of such URNGs with a unified API. This
-      programming interface is inspired from and similar to Pierre
-      L'Ecuyers @file{RngStreams} library: 
+      UNURAN uses a unified interface for all sources of random numbers.
+      Unfortunately, the API for random number generators, like the
+      @file{GSL} (GNU Scientific Library), Otmar Lendl's @file{prng}
+      (Pseudo random number generators), or a single function
+      implemented by the user herself, are quite different. 
+      Hence an object of type @code{UNUR_URNG} is introduced to store
+      the URNG. Thus it is possible to handle different sources of
+      such URNGs with the unified API. It is inspired from similar to
+      Pierre L'Ecuyers @file{RngStreams} library: 
 
       @itemize @minus
       @item seed the random number generator;

@@ -58,14 +58,14 @@
 /*****************************************************************************/
 
 #include <unur_typedefs.h>
-#include <uniform/urng_typedefs.h>
+#include <urng/urng_typedefs.h>
 
 /*****************************************************************************/
 /**  Declarations for uniform random number generators                      **/
 /*****************************************************************************/
 
-#include <uniform/unur_uniform.h>
-#include <uniform/urng.h>
+#include <urng/urng.h>
+#include <uniform/urng_builtin.h>
 #include <uniform/urng_fvoid.h>
 #include <uniform/urng_gsl.h>
 #include <uniform/urng_gslqrng.h>

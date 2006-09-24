@@ -89,7 +89,7 @@
 #include <distr/distr_source.h>
 #include <distr/cont.h>
 #include <distributions/unur_stddistr.h>
-#include <uniform/urng.h>
+#include <urng/urng.h>
 #include "unur_methods_source.h"
 #include "x_gen_source.h"
 #include "cstd.h"

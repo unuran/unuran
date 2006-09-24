@@ -94,7 +94,7 @@ struct unur_funct_vgeneric {
 /**  URNG (uniform random number generator) objects                         **/
 /*****************************************************************************/
 
-#include <uniform/urng_struct.h>
+#include <urng/urng_struct.h>
 
 /*****************************************************************************/
 /**  Distribution objects                                                   **/

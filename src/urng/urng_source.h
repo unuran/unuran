@@ -4,9 +4,9 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: unur_typedefs.h                                                   *
+ *   FILE: unur_source.h                                                     *
  *                                                                           *
- *   type UNUR_URNG for uniform random number generators                     *
+ *   macros for calling and resetting uniform random number generators       *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -33,40 +33,67 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef URNG_TYPEDEFS_H_SEEN
-#define URNG_TYPEDEFS_H_SEEN
+#ifndef URNG_SOURCE_H_SEEN
+#define URNG_SOURCE_H_SEEN
 /*---------------------------------------------------------------------------*/
 #if UNUR_URNG_TYPE == UNUR_URNG_GENERIC
 /*---------------------------------------------------------------------------*/
 
-typedef struct unur_urng_generic UNUR_URNG;
+/* function call to uniform RNG */
+#define _unur_call_urng(urng)    ((urng)->sampleunif((urng)->state))
+
+/* reset uniform RNG */
+/* #define _unur_call_reset(urng) */
+/* is defined in unur_API.c */
+
+/*---------------------------------------------------------------------------*/
+/* The following types are for backward compatibility.                       */
+/* Its usage ist strongly depreciated!                                       */
+/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 #elif UNUR_URNG_TYPE == UNUR_URNG_FVOID
 /*---------------------------------------------------------------------------*/
 
-typedef double (UNUR_URNG)(void);
+/* function call to uniform RNG */
+#define _unur_call_urng(urng)    ((*(urng))())
+
+/* reset uniform RNG */
+#define _unur_call_reset(urng) \
+ ( (urng)==(unur_urng_MRG31k3p) ? (unur_urng_MRG31k3p_reset()) \
+    : ( (urng)==(unur_urng_fish) ? (unur_urng_fish_reset()) \
+      : ( (urng)==(unur_urng_mstd) ? (unur_urng_mstd_reset()) \
+	  : (UNUR_FAILURE) )))
 
 /*---------------------------------------------------------------------------*/
 #elif UNUR_URNG_TYPE == UNUR_URNG_PRNG
 /*---------------------------------------------------------------------------*/
 
-#include <prng.h>
-typedef struct prng UNUR_URNG;
+/* function call to uniform RNG */
+#define _unur_call_urng(urng)    (prng_get_next(urng))
+
+/* reset uniform RNG */
+#define _unur_call_reset(urng)   (prng_reset(urng),UNUR_SUCCESS)
 
 /*---------------------------------------------------------------------------*/
 #elif UNUR_URNG_TYPE == UNUR_URNG_RNGSTREAMS
 /*---------------------------------------------------------------------------*/
 
-#include <RngStreams.h>
-typedef struct RngStream_InfoState UNUR_URNG;
+/* function call to uniform RNG */
+#define _unur_call_urng(urng)    (RngStream_RandU01(urng))
+
+/* reset uniform RNG */
+#define _unur_call_reset(urng)   (RngStream_ResetStartStream(urng),UNUR_SUCCESS)
 
 /*---------------------------------------------------------------------------*/
 #elif UNUR_URNG_TYPE == UNUR_URNG_GSL
 /*---------------------------------------------------------------------------*/
 
-#include <gsl/gsl_rng.h>
-typedef gsl_rng UNUR_URNG;
+/* function call to uniform RNG */
+#define _unur_call_urng(urng)    (gsl_rng_uniform_pos(urng))
+
+/* reset uniform RNG */
+#define _unur_call_reset(urng)   (UNUR_FAILURE)
 
 /*---------------------------------------------------------------------------*/
 #else
@@ -75,6 +102,6 @@ typedef gsl_rng UNUR_URNG;
 /*---------------------------------------------------------------------------*/
 #endif  /* UNUR_URNG_TYPE */
 /*---------------------------------------------------------------------------*/
-#endif  /* #ifndef URNG_TYPEDEFS_H_SEEN */
+#endif  /* #ifndef URNG_SOURCE_H_SEEN */
 /*---------------------------------------------------------------------------*/
 

@@ -36,8 +36,9 @@
 /*---------------------------------------------------------------------------*/
 
 #include <unur_source.h>
-#include "unur_uniform.h"
-#include "urng.h"
+#include <urng/urng.h>
+#include "urng_default_source.h"
+#include "urng_builtin.h"
 #include "urng_fvoid.h"
 #include "urng_gsl.h"
 #include "urng_gslqrng.h"

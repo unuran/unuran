@@ -4,12 +4,12 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: unur_source.h                                                     *
+ *   FILE: unur_default_source.h                                             *
  *                                                                           *
- *   macros and prototypes for included uniform random number generators     *
+ *   macros for default uniform random number generators                     *
  *                                                                           *
  *****************************************************************************
-     $Id$
+     $Id: urng_source.h 2108 2004-11-23 19:43:55Z leydold $
  *****************************************************************************
  *                                                                           *
  *   Copyright (c) 2000 Wolfgang Hoermann and Josef Leydold                  *
@@ -33,20 +33,11 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef URNG_SOURCE_H_SEEN
-#define URNG_SOURCE_H_SEEN
+#ifndef URNG_DEFAULT_SOURCE_H_SEEN
+#define URNG_DEFAULT_SOURCE_H_SEEN
 /*---------------------------------------------------------------------------*/
 #if UNUR_URNG_TYPE == UNUR_URNG_GENERIC
 /*---------------------------------------------------------------------------*/
-
-/* function call to uniform RNG */
-#define _unur_call_urng(urng)    ((urng)->sampleunif((urng)->state))
-
-/* reset uniform RNG */
-/* #define _unur_call_reset(urng) */
-/* is defined in unur_API.c */
-
-/* default generators */
 
 #if UNUR_URNG_DEFAULT_TYPE == UNUR_URNG_PRNG
 /* use type PRNG */
@@ -86,20 +77,14 @@
 #endif
 
 /*---------------------------------------------------------------------------*/
+/* The following types are for backward compatibility.                       */
+/* Its usage ist strongly depreciated!                                       */
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
 #elif UNUR_URNG_TYPE == UNUR_URNG_FVOID
 /*---------------------------------------------------------------------------*/
 
-/* function call to uniform RNG */
-#define _unur_call_urng(urng)    ((*(urng))())
-
-/* reset uniform RNG */
-#define _unur_call_reset(urng) \
- ( (urng)==(unur_urng_MRG31k3p) ? (unur_urng_MRG31k3p_reset()) \
-    : ( (urng)==(unur_urng_fish) ? (unur_urng_fish_reset()) \
-      : ( (urng)==(unur_urng_mstd) ? (unur_urng_mstd_reset()) \
-	  : (UNUR_FAILURE) )))
-
-/* default generators */
 #define UNUR_URNG_DEFAULT        UNUR_URNG_DEFAULT_FVOID
 #define UNUR_URNG_AUX_DEFAULT    UNUR_URNG_AUX_DEFAULT_FVOID
 
@@ -107,13 +92,6 @@
 #elif UNUR_URNG_TYPE == UNUR_URNG_PRNG
 /*---------------------------------------------------------------------------*/
 
-/* function call to uniform RNG */
-#define _unur_call_urng(urng)    (prng_get_next(urng))
-
-/* reset uniform RNG */
-#define _unur_call_reset(urng)   (prng_reset(urng),UNUR_SUCCESS)
-
-/* default generators */
 #define UNUR_URNG_DEFAULT        (prng_new(UNUR_URNG_DEFAULT_PRNG))
 #define UNUR_URNG_AUX_DEFAULT    (prng_new(UNUR_URNG_AUX_DEFAULT_PRNG))
 
@@ -121,13 +99,6 @@
 #elif UNUR_URNG_TYPE == UNUR_URNG_RNGSTREAMS
 /*---------------------------------------------------------------------------*/
 
-/* function call to uniform RNG */
-#define _unur_call_urng(urng)    (RngStream_RandU01(urng))
-
-/* reset uniform RNG */
-#define _unur_call_reset(urng)   (RngStream_ResetStartStream(urng),UNUR_SUCCESS)
-
-/* default generators */
 #define UNUR_URNG_DEFAULT        (RngStream_CreateStream("URNG_main"))
 #define UNUR_URNG_AUX_DEFAULT    (RngStream_CreateStream("URNG_aux"))
 
@@ -135,13 +106,6 @@
 #elif UNUR_URNG_TYPE == UNUR_URNG_GSL
 /*---------------------------------------------------------------------------*/
 
-/* function call to uniform RNG */
-#define _unur_call_urng(urng)    (gsl_rng_uniform_pos(urng))
-
-/* reset uniform RNG */
-#define _unur_call_reset(urng)   (UNUR_FAILURE)
-
-/* default generators */
 #define UNUR_URNG_DEFAULT        (gsl_rng_alloc(UNUR_URNG_DEFAULT_GSL))
 #define UNUR_URNG_AUX_DEFAULT    (gsl_rng_alloc(UNUR_URNG_AUX_DEFAULT_GSL))
 
@@ -152,6 +116,6 @@
 /*---------------------------------------------------------------------------*/
 #endif  /* UNUR_URNG_TYPE */
 /*---------------------------------------------------------------------------*/
-#endif  /* #ifndef URNG_SOURCE_H_SEEN */
+#endif  /* #ifndef URNG_DEFAULT_SOURCE_H_SEEN */
 /*---------------------------------------------------------------------------*/
 

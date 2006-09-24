@@ -54,7 +54,7 @@
 #include <distr/distr_source.h>
 #include <distributions/unur_distributions.h>
 #include <distr/cvec.h>
-#include <uniform/urng.h>
+#include <urng/urng.h>
 #include <utils/matrix_source.h>
 #include <utils/mrou_rectangle_struct.h>
 #include <utils/mrou_rectangle_source.h>

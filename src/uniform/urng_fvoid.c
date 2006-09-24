@@ -35,8 +35,7 @@
 
 /*---------------------------------------------------------------------------*/
 #include <unur_source.h>
-#include "unur_uniform.h"
-#include "urng.h"
+#include <urng/urng.h>
 #include "urng_fvoid.h"
 /*---------------------------------------------------------------------------*/
 #if UNUR_URNG_TYPE == UNUR_URNG_GENERIC

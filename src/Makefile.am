@@ -18,6 +18,7 @@ SUBDIRS = \
  parser \
  tests \
  uniform \
+ urng \
  $(EXPERIMENTAL_DIRS) \
  .
 
@@ -31,6 +32,7 @@ SUBLIBS = \
  parser/libparser.la \
  tests/libtests.la \
  uniform/libuniform.la \
+ urng/liburng.la \
  utils/libutils.la
 
 lib_LTLIBRARIES = libunuran.la

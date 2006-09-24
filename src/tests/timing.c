@@ -42,7 +42,7 @@
 #include <methods/unif.h>
 #include <distr/distr.h>
 #include <distributions/unur_distributions.h>
-#include <uniform/urng.h>
+#include <urng/urng.h>
 #include "unuran_tests.h"
 
 /*---------------------------------------------------------------------------*/

@@ -4,27 +4,9 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: fish.c                                                            *
+ *   FILE: unur_typedefs.h                                                   *
  *                                                                           *
- *   PURPOSE:                                                                *
- *         uniform random number generator provided by UNURAN                *
- *         random number generators inside UNURAN.                           *
- *                                                                           *
- *   DESCRIPTION:                                                            *
- *         Linear congruential generator with                                *
- *         m = 2^31-1, a = 742938285, c = 0.                                 *
- *                                                                           *
- *   WARNING:                                                                *
- *         Not state-of-the-art. SHOULD NOT BE USED ANY MORE.                *
- *         In UNURAN only as auxilliary second stream.                       *
- *         Should be replaced in future releases.                            *
- *                                                                           *
- *   REFERENCE:                                                              *
- *   Fishman G.S., Moore L.R. (1986): An exhaustive analysis of              *
- *      multiplicative congruential number generators with modulus 2^31-1,   *
- *      SIAM Journal Sci. Stat. Comput., 24-45.                              *
- *                                                                           *
- *   Copyright for generator code by Ernst Stadlober.                        * 
+ *   type UNUR_URNG for uniform random number generators                     *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -51,64 +33,54 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#include <unur_source.h>
-#include "urng_builtin.h"
+#ifndef URNG_TYPEDEFS_H_SEEN
+#define URNG_TYPEDEFS_H_SEEN
+/*---------------------------------------------------------------------------*/
+#if UNUR_URNG_TYPE == UNUR_URNG_GENERIC
 /*---------------------------------------------------------------------------*/
 
-/* seed (must not be 0!) */
-#define SEED  (12345L)
+typedef struct unur_urng_generic UNUR_URNG;
 
-/* status variable */
-static unsigned long x = SEED;
-static unsigned long x_start = SEED; /* seed of last stream */
 
 /*---------------------------------------------------------------------------*/
-
-double
-unur_urng_fish (void)
-{
-  
-# define A   742938285
-# define AHI (A>>15)
-# define ALO (A&0x7FFF)
-
-  unsigned long xhi, xlo, mid;   /* for intermediate results */
-
-  /* generator */
-  xhi = x>>16;
-  xlo = x&0xFFFF;
-  mid = AHI*xlo + (ALO<<1)*xhi;
-  x   = AHI*xhi + (mid>>16) + ALO*xlo;
-  if (x&0x80000000) x -= 0x7FFFFFFF;
-  x += ((mid&0xFFFF)<<15);
-  if (x&0x80000000) x -= 0x7FFFFFFF;
-
-  return (x*4.656612875245797e-10);
-} /* end of unur_urng_fish() */
-
+/* The following types are for backward compatibility.                       */
+/* Its usage ist strongly depreciated!                                       */
 /*---------------------------------------------------------------------------*/
 
-int
-unur_urng_fish_seed (long seed)
-{
-  if (seed==0) {
-    _unur_error("URNG.fish",UNUR_ERR_GENERIC,"seed = 0");
-    return UNUR_ERR_GENERIC;
-  }
-  
-  x_start = seed;
-  x = seed;
-
-  return UNUR_SUCCESS;
-} /* end of unur_urng_fish_seed() */
-
+/*---------------------------------------------------------------------------*/
+#elif UNUR_URNG_TYPE == UNUR_URNG_FVOID
 /*---------------------------------------------------------------------------*/
 
-int 
-unur_urng_fish_reset (void)
-{
-  x = x_start;
-  return UNUR_SUCCESS;
-} /* end of unur_urng_fish_reset() */
+typedef double (UNUR_URNG)(void);
 
 /*---------------------------------------------------------------------------*/
+#elif UNUR_URNG_TYPE == UNUR_URNG_PRNG
+/*---------------------------------------------------------------------------*/
+
+#include <prng.h>
+typedef struct prng UNUR_URNG;
+
+/*---------------------------------------------------------------------------*/
+#elif UNUR_URNG_TYPE == UNUR_URNG_RNGSTREAMS
+/*---------------------------------------------------------------------------*/
+
+#include <RngStreams.h>
+typedef struct RngStream_InfoState UNUR_URNG;
+
+/*---------------------------------------------------------------------------*/
+#elif UNUR_URNG_TYPE == UNUR_URNG_GSL
+/*---------------------------------------------------------------------------*/
+
+#include <gsl/gsl_rng.h>
+typedef gsl_rng UNUR_URNG;
+
+/*---------------------------------------------------------------------------*/
+#else
+/*---------------------------------------------------------------------------*/
+#error UNUR_URNG_TYPE not valid !!
+/*---------------------------------------------------------------------------*/
+#endif  /* UNUR_URNG_TYPE */
+/*---------------------------------------------------------------------------*/
+#endif  /* #ifndef URNG_TYPEDEFS_H_SEEN */
+/*---------------------------------------------------------------------------*/
+

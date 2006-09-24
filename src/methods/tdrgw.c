@@ -57,7 +57,7 @@
 #include <unur_source.h>
 #include <distr/distr.h>
 #include <distr/distr_source.h>
-#include <uniform/urng.h>
+#include <urng/urng.h>
 #include "unur_methods_source.h"
 #include "x_gen_source.h"
 #include "tdrgw.h"

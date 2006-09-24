@@ -35,7 +35,7 @@
 
 /*---------------------------------------------------------------------------*/
 #include <unur_source.h>
-#include "urng.h"
+#include <urng/urng.h>
 #include "urng_rngstreams.h"
 /*---------------------------------------------------------------------------*/
 #if defined(UNURAN_HAS_RNGSTREAMS) && UNUR_URNG_TYPE == UNUR_URNG_GENERIC

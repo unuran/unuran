@@ -150,6 +150,7 @@ AC_CONFIG_FILES([\
 	src/specfunct/Makefile \
 	src/tests/Makefile \
 	src/uniform/Makefile \
+	src/urng/Makefile \
 	src/utils/Makefile \
 	doc/Makefile \
 	doc/src/Makefile \

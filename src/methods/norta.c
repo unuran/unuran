@@ -84,7 +84,7 @@
 #include <distr/cvec.h>
 #include <distr/cont.h>
 #include <distributions/unur_distributions.h>
-#include <uniform/urng.h>
+#include <urng/urng.h>
 #include <utils/matrix_source.h>
 #include "unur_methods_source.h"
 #include "x_gen.h"

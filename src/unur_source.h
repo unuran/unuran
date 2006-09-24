@@ -70,7 +70,7 @@
 /* globally used types                                                       */
 
 #include <unur_typedefs.h>
-#include <uniform/urng_typedefs.h>
+#include <urng/urng_typedefs.h>
 #include <unur_struct.h>
 
 /*---------------------------------------------------------------------------*/
@@ -84,7 +84,7 @@
 /* Utilities used by almost all sources                                      */
 
 /* uniform random number generators */
-#include <uniform/urng_source.h>
+#include <urng/urng_source.h>
 
 /* magic cookies */
 #include <unur_cookies.h>

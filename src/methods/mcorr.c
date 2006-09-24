@@ -68,7 +68,7 @@
 #include <distr/distr_source.h>
 #include <distr/matr.h>
 #include <distributions/unur_distributions.h>
-#include <uniform/urng.h>
+#include <urng/urng.h>
 #include <utils/unur_fp_source.h>
 #include <utils/matrix_source.h>
 #include "unur_methods_source.h"

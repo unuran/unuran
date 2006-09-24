@@ -62,7 +62,7 @@
 #include <utils/unur_fp_source.h>
 #include <utils/mrou_rectangle_struct.h>
 #include <utils/mrou_rectangle_source.h>
-#include <uniform/urng.h>
+#include <urng/urng.h>
 #include "unur_methods_source.h"
 #include "x_gen_source.h"
 #include "varou.h"

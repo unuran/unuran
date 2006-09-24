@@ -55,7 +55,7 @@
 #include <distr/cvec.h>
 #include <distributions/unur_distributions.h>
 #include <utils/fmax_source.h>
-#include <uniform/urng.h>
+#include <urng/urng.h>
 #include "unur_methods_source.h"
 #include "x_gen.h"
 #include "x_gen_source.h"

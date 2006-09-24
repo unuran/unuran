@@ -7,7 +7,7 @@
  *   FILE: unur_uniform.h                                                    *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         function prototypes for included uniform random number generators *
+ *      function prototypes for built-in uniform random number generators    *
  *                                                                           *
  *****************************************************************************
      $Id$
@@ -34,8 +34,8 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef UNUR_UNIFORM_H_SEEN
-#define UNUR_UNIFORM_H_SEEN
+#ifndef URNG_BUILTIN_H_SEEN
+#define URNG_BUILTIN_H_SEEN
 /*---------------------------------------------------------------------------*/
 
 /* Combined multiple recursive generator by Pierre L'Ecuyer and Renee Touzin */
@@ -60,5 +60,5 @@ int unur_urng_mstd_seed (long seed);
 int unur_urng_mstd_reset (void);
 
 /*---------------------------------------------------------------------------*/
-#endif  /* UNUR_UNIFORM_H_SEEN */
+#endif  /* URNG_BUILTIN_H_SEEN */
 /*---------------------------------------------------------------------------*/

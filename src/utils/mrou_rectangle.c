@@ -67,7 +67,6 @@
 #include <utils/unur_fp_source.h>
 #include <utils/mrou_rectangle_struct.h>
 #include <utils/mrou_rectangle_source.h>
-#include <uniform/urng.h>
 
 /*---------------------------------------------------------------------------*/
 /* Constants                                                                 */

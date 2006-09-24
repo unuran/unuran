@@ -49,7 +49,7 @@
 
 /*---------------------------------------------------------------------------*/
 #include <unur_source.h>
-#include "urng.h"
+#include <urng/urng.h>
 #include "urng_randomshift.h"
 /*---------------------------------------------------------------------------*/
 #if UNUR_URNG_TYPE == UNUR_URNG_GENERIC

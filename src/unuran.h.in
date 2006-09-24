@@ -108,6 +108,7 @@
 #include <methods/hrb.h>
 #include <methods/hrd.h>
 #include <methods/hri.h>
+#include <methods/itdr.h>
 #include <methods/mcorr.h>
 #include <methods/ninv.h>
 #include <methods/nrou.h>

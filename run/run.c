@@ -17,7 +17,7 @@
 #include <unuran_tests.h>
 #include <testdistributions.h>
 
-#include <experimental/mvtdr.h>
+#include <experimental/itdr.h>
 
 #define RUN_TESTS       (~0x0u)
 /* #define RUN_TESTS       UNUR_TEST_SAMPLE */
@@ -38,20 +38,18 @@ int main()
   UNUR_DISTR *distr;
   UNUR_PAR *par;
   UNUR_GEN *gen;
+  double fpar[3] = { 0.5, 1., 0. };
  
   unur_set_default_debug(~0U);
 
   /* standard normal */
-  distr = unur_distr_multinormal(4,NULL,NULL);
-
-  /* multinormal with AR(1) */ 
-/*   distr = unur_distr_multinormal_ar1(4,NULL,0.9); */
-
-  /* multinormal with constant rho */
-/*   distr = unur_distr_multinormal_constantrho(4,NULL,0.9); */
-
-/*   par = unur_hitro_new(distr); */
-  par = unur_mvtdr_new(distr);
+  distr = unur_distr_gamma(fpar,3);
+/*   distr = unur_distr_beta(fpar,2); */
+/*   unur_distr_cont_set_domain(distr,fpar[2],10); */
+  par = unur_itdr_new(distr);
+/*   unur_itdr_set_bx(par,fpar[0]+fpar[2]); */
+/*   unur_itdr_set_cp(par,-0.5); */
+/*   unur_itdr_set_ct(par,-0.5); */
 
 /*   gen = unur_init(par); */
 

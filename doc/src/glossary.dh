@@ -13,6 +13,17 @@ cumulative distribution function
 @item HR
 hazard rate (or failure rate)
 
+@item inverse local concavity
+local concavity of inverse PDF @unurmath{f^{-1}(y)} expressed in term of 
+@unurmath{x = f^{-1}(y).}
+Is is given by
+@unurmath{ilc_f(x) = 1 + x\,f''(x) / f'(x)}
+
+@item local concavity
+maximum value of @i{c} such that PDF @i{f(x)} is @unurmath{T_c.}
+Is is given by
+@unurmath{lc_f(x) = 1 - f''(x)\,f(x) / f'(x)^2}
+
 @item PDF
 probability density function
 
@@ -34,7 +45,7 @@ continuous uniform distribution on the interval @unurmath{(a,b)}
 @item T-concave
 a function @i{f(x)} is called @i{T}-convace if the transformed function
 @i{T(f(x))} is concave. 
-We only deal with transformations @unurmath{T_c}, where
+We only deal with transformations @unurmath{T_c,} where
 @table @code
 @item @i{c} = 0
 @unurmath{T(x) = \log(x)}

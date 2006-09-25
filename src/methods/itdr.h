@@ -76,7 +76,8 @@
       and its derivative and the location of the pole (or mode).
       The PDF must be monotone and may contain a pole.
       It must be set via the unur_distr_cont_set_pdf() and 
-      unur_distr_cont_set_dpdf() calls. Alternatively, one can also
+      unur_distr_cont_set_dpdf() calls. The PDF should return
+      UNUR_INFINITY for the pole. Alternatively, one can also
       set the logarithm of the PDF and its derivative via the 
       unur_distr_cont_set_logpdf() and unur_distr_cont_set_dlogpdf()
       calls. This is in especially useful since then the setup and

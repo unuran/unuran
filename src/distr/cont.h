@@ -79,7 +79,7 @@
       @item Set (and change) parameters (@command{pdfparams}) and the
       area below the graph (@command{pdfarea}) of the given density.
 
-      @item Set the @command{mode} of the distribution. 
+      @item Set the @command{mode} (or pole) of the distribution. 
 
       @item Set the @command{center} of the distribution. 
       It is used by some generation methods to adjust the parameters
@@ -474,6 +474,9 @@ int unur_distr_cont_set_mode( UNUR_DISTR *distribution, double mode );
    Set mode of @var{distribution}. The @var{mode} must be contained in
    the domain of @var{distribution}. Otherwise the mode is not set and 
    @code{unur_errno} is set to @code{UNUR_ERR_DISTR_SET}.
+   For distributions with unbounded density, this call is used to set
+   the pole of the PDF. Notice that the PDF should then return
+   UNUR_INFINITY at the pole.
    Notice that the mode is adjusted when the domain is set, see the
    remark for the unur_distr_cont_set_domain() call.
 */

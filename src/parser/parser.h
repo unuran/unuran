@@ -93,7 +93,7 @@ UNUR_DISTR *unur_str2distr( const char *string );
 
 UNUR_PAR *_unur_str2par( const UNUR_DISTR *distribution, const char *string, struct unur_slist **mlist );
 /*
-   Get a parameter object for the givne distribution object and for the 
+   Get a parameter object for the given distribution object and for the 
    method described in @var{string}. 
    See @ref{StringSyntax,,Syntax of String Interface},
    and @ref{StringMethod,,Method String},

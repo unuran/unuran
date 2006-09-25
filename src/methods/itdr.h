@@ -74,31 +74,32 @@
    =HOWTOUSE
       Method ITDR requires a distribution object with given PDF
       and its derivative and the location of the pole (or mode).
-      The PDF must me monotone and may contain a pole.
+      The PDF must be monotone and may contain a pole.
       It must be set via the unur_distr_cont_set_pdf() and 
       unur_distr_cont_set_dpdf() calls. Alternatively, one can also
       set the logarithm of the PDF and its derivative via the 
       unur_distr_cont_set_logpdf() and unur_distr_cont_set_dlogpdf()
       calls. This is in especially useful since then the setup and
       search routines are numerically more stable. Moreover, for many
-      distributions computing the logarithm of the PDF is often less
+      distributions computing the logarithm of the PDF is less
       expensive then computing the PDF directly.
 
       The pole of the distribution is given by a
       unur_distr_cont_set_mode() call. Notice that distributions with 
-      ``heavy'' poles may have numerical problems causes by the
+      ``heavy'' poles may have numerical problems caused by the
       resultion of the floating point numbers used by computers.
-      while this is about @code{1.e-320} near @code{1.} it increases
+      While the minimal distance between two different floating point 
+      numbers is about @code{1.e-320} near @code{0.} it increases
       to @code{1.e-16} near @code{1.} Thus any random variate
       generator implemented on a digital computer in fact draws samples
       from a discrete distribution that approximates the desired
       continuous distribution. For distributions with ``heavy'' poles
-      at 1 this approximation may be to crude and thus every
+      not at 0 this approximation may be too crude and thus every
       goodness-of-fit test will fail.
       Besides this theoretic problem that cannot be resolved we 
       have to take into consideration that round-off errors occur more 
       frequently when we have PDFs with poles far away from
-      @code{0.} Method ITDR tries to handles this situation as best as
+      @code{0.} Method ITDR tries to handles this situation as good as
       possible by moving the pole into @code{0.} 
       Thus do not use a wrapper for your PDF that hides this shift
       since the information about the resolution of the floating point

@@ -408,10 +408,11 @@ extern int unur_errno;
       
       All warnings, error messages and all debugging information
       are written onto the same output stream.
-      To destinguish between the messages for different generators define
-      the macro @code{UNUR_ENABLE_GENID} in @file{unuran_config.h}. 
-      Then every generator object has a unique identifier that is used 
-      for every message.
+      To destinguish between the messages for different generators 
+      every generator object has its own identifier which is 
+      composed by the generator type, followed by a dot and three digits.
+      (If there are more than 999 generators then the identifiers are
+      not unique.)
 
    =END      
 */

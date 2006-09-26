@@ -115,8 +115,6 @@ int unur_get_dimension( const UNUR_GEN *generator );
 const char *unur_get_genid( const UNUR_GEN *generator );
 /*
   Get identifier string for generator.
-  If @code{UNUR_ENABLE_GENID} is not defined in @file{unuran_config.h} then
-  only the method used for the generator is returned.
 */
 
 /*---------------------------------------------------------------------------*/

@@ -36,14 +36,9 @@
 /*---------------------------------------------------------------------------*/
 /* set generator id                                                          */
 
-#ifdef UNUR_ENABLE_GENID
 char *_unur_make_genid( const char *gentype );
 #define _unur_set_genid(gentype) _unur_make_genid(gentype)
 #define _unur_free_genid(gen)    do {if (gen->genid) free((gen)->genid);} while(0)
-#else
-#define _unur_set_genid(gentype) (gentype)
-#define _unur_free_genid(gen)    do { } while(0)
-#endif
 
 /*---------------------------------------------------------------------------*/
 /* default debugging flag for generator                                      */

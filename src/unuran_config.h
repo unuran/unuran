@@ -59,18 +59,6 @@
 #define UNUR_ENABLE_LOGGING 1
 
 /*---------------------------------------------------------------------------*/
-/* Every message about a generator that is written into the log file or      */
-/* or to the stderr starts with an identifier. Every generator has its own   */
-/* unique identifier (well if there are not more than 999 generators).       */
-/* It is composed by the generator type, followed by a dot and three digits. */
-/* Building such a generator id can be disabled by undefining the following  */
-/* macro. If it is disabled the generator type (a constant string) is used   */
-/* for the identifier (which is not unique any more if more than one         */
-/* generator of the same type is created).                                   */
-
-#define UNUR_ENABLE_GENID  1
-
-/*---------------------------------------------------------------------------*/
 /* Set default flag for debugging of generators:                             */
 /*                                                                           */
 /*   UNUR_DEBUG_OFF    ... switch off debugging information                  */

@@ -3,13 +3,14 @@ dnl $Id$
 
 dnl Initialize.
 AC_PREREQ(2.59)
-AC_INIT([UNURAN],[0.7.3],[unuran@statistik.wu-wien.ac.at])
+dnl AC_INIT([UNURAN],[0.8.0],[unuran@statistik.wu-wien.ac.at])
+AC_INIT([UNURAN],[devel],[unuran@statistik.wu-wien.ac.at])
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([src/unuran_config.h])
 AC_CONFIG_HEADER([config.h])
 
 dnl Library versioning (current:revision:age)
-dnl See the libtool manual for an explanation of the numbers
+dnl See the libtool manual  for an explanation of the numbers
 dnl 
 dnl unuran-0.4.0   0:0:0
 dnl unuran-0.4.2   1:0:1
@@ -20,7 +21,7 @@ dnl unuran-0.7.0   4:0:0
 dnl unuran-0.7.1   4:0:1
 dnl unuran-0.7.2   4:0:2
 
-UNURAN_LT_VERSION="4:0:3"
+UNURAN_LT_VERSION="5:0:0"
 AC_SUBST([UNURAN_LT_VERSION])
 
 dnl Whether experimental code should be included

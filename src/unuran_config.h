@@ -68,7 +68,7 @@
 /*   UNUR_DEBUG_SAMPLE ... trace sampling                                    */
 /*   UNUR_DEBUG_ALL    ... write all available debugging information         */
 /*                                                                           */
-/* Detailed discription of possible flags in file `./methods/x_debug.h'      */
+/* Detailed discription of possible flags in file `./utils/debug.h'          */
 /*                                                                           */
 /* Debugging information is written into the log file.                       */
 /* It only works if additionally UNUR_ENABLE_LOGGING is defined (see above). */
@@ -79,7 +79,7 @@
 /* Warnings and error messages.                                              */
 /*                                                                           */
 /* UNURAN produces a lot of (more or less useful) warnings and error         */
-/* messages. These three compiler switches controll their output.            */
+/* messages. The following three compiler switches controll their output.    */
 
 /* Enable warnings and error messages.                                       */
 /* #undef this macro to suppress warnings and error messages.                */
@@ -98,16 +98,17 @@
 
 /* Notice that if neither UNUR_ENABLE_LOGFILE nor UNUR_ENABLE_STDERR is      */
 /* defined, then there are no warnings and error messages at all.            */
-/* However then it is recommend _not_ to define UNUR_WARNINGS_ON, either.    */
+/* However, then it is recommend _not_ to define UNUR_WARNINGS_ON, either.   */
 
 /*---------------------------------------------------------------------------*/
-/* Check for invalide NULL pointer.                                          */
+/* Check for invalid NULL pointer.                                           */
 /*                                                                           */
-/* UNURAN expects that every generator object is not NULL. Thus the user     */
-/* is responsible to check the result of each unur_init() call!!             */
+/* UNURAN expects that every generator object is not a NULL pointer.         */
+/* Thus the user is responsible to check the result of each unur_init()      */
+/* call!!                                                                    */
 /*                                                                           */
-/* However checking against an invalid NULL pointer can be switched on for   */
-/* each pointer that occurs by defining  UNUR_ENABLE_CHECKNULL.              */
+/* However, checking against an invalid NULL pointer can be switched on      */
+/* for each pointer that occurs by defining  UNUR_ENABLE_CHECKNULL.          */
 
 #define UNUR_ENABLE_CHECKNULL 1
 
@@ -118,6 +119,7 @@
 
 /* use magic cookies to validate type of pointer */
 #define UNUR_COOKIES  1
+
 
 /*****************************************************************************
  *  Compile time parameters for generators.                                  *

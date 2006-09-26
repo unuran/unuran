@@ -38,7 +38,7 @@ SUBLIBS = \
 lib_LTLIBRARIES = libunuran.la
 libunuran_la_SOURCES = 
 libunuran_la_LIBADD = $(SUBLIBS)
-libunuran_la_LDFLAGS = --version-info $(UNURAN_LT_VERSION)
+libunuran_la_LDFLAGS = -version-info $(UNURAN_LT_VERSION)
 
 include_HEADERS = \
  unuran.h \

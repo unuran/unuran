@@ -51,7 +51,7 @@ struct unur_distr_cont {
   double params[UNUR_DISTR_MAXPARAMS];  /* parameters of the PDF             */
   int    n_params;              /* number of parameters of the PDF           */
 
-  double *param_vecs[UNUR_DISTR_MAXPARAMS];  /* parameter vectors            */
+  void  *param_vecs[UNUR_DISTR_MAXPARAMS];  /* parameter vectors            */
   int    n_param_vec[UNUR_DISTR_MAXPARAMS]; /* lengths of the parameter vecs */
   
   double norm_constant;         /* (log of) normalization constant for PDF   */

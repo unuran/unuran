@@ -62,10 +62,10 @@ static const char distr_name[] = "conditional";
 #define iXARG        2            /* working array for storing point x       */
 #define iGRADF       3            /* working array for storing grad of PDF   */
 
-#define POSITION     (condi->data.cont.param_vecs[iPOSITION])
-#define DIRECTION    (condi->data.cont.param_vecs[iDIRECTION])
-#define XARG         (condi->data.cont.param_vecs[iXARG])
-#define GRADF        (condi->data.cont.param_vecs[iGRADF])
+#define POSITION     ((double*)(condi->data.cont.param_vecs[iPOSITION]))
+#define DIRECTION    ((double*)(condi->data.cont.param_vecs[iDIRECTION]))
+#define XARG         ((double*)(condi->data.cont.param_vecs[iXARG]))
+#define GRADF        ((double*)(condi->data.cont.param_vecs[iGRADF]))
 
 /*---------------------------------------------------------------------------*/
 

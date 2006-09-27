@@ -125,6 +125,7 @@
 #include <unur_source.h>
 #include <distr/distr.h>
 #include <distr/distr_source.h>
+#include <distr/cont.h>
 #include <urng/urng.h>
 #include "unur_methods_source.h"
 #include "x_gen_source.h"
@@ -201,7 +202,7 @@ static int _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_ge
 /* "equi-angle rule".                                                        */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_arou_get_starting_segments( struct unur_par *par, struct unur_gen *gen );
+static int _unur_arou_get_starting_segments( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* compute segments from given starting construction points.                 */
 /*---------------------------------------------------------------------------*/
@@ -211,7 +212,7 @@ static double _unur_arou_compute_x( double v, double u );
 /* compute point x from (v,u) tuple.                                         */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_arou_run_dars( struct unur_par *par, struct unur_gen *gen );
+static int _unur_arou_run_dars( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* run derandomized adaptive rejection sampling.                             */
 /*---------------------------------------------------------------------------*/
@@ -257,12 +258,12 @@ static void _unur_arou_debug_init( const struct unur_par *par, const struct unur
 /* print after generator has been initialized has completed.                 */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_arou_debug_dars_start( const struct unur_par *par, const struct unur_gen *gen );
+static void _unur_arou_debug_dars_start( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print header before runniung derandomized adaptive rejection sampling.    */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_arou_debug_dars( const struct unur_par *par, const struct unur_gen *gen );
+static void _unur_arou_debug_dars( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print after generator has run derandomized adaptive rejection sampling.   */
 /*---------------------------------------------------------------------------*/
@@ -374,14 +375,6 @@ unur_arou_new( const struct unur_distr *distr )
   par->urng_aux = par->urng;               /* no special auxilliary URNG     */
 
   par->debug    = _unur_default_debugflag; /* set default debugging flags    */
-
-  /* we use the mode (if known) as center of the distribution */
-  if (distr->set & UNUR_DISTR_SET_MODE) {
-    PAR->center = DISTR_IN.mode;
-    par->set |= AROU_SET_CENTER;
-  }
-  else
-    PAR->center = 0.;        /* the default */
 
   /* routine for starting generator */
   par->init = _unur_arou_init;
@@ -705,39 +698,6 @@ unur_arou_set_max_segments( struct unur_par *par, int max_segs )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_arou_set_center( struct unur_par *par, double center )
-     /*----------------------------------------------------------------------*/
-     /* set center (approximate mode) of PDF                                 */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   par    ... pointer to parameter for building generator object      */
-     /*   center ... center of PDF                                           */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   UNUR_SUCCESS ... on success                                        */
-     /*   error code   ... on error                                          */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
-
-  /* check input */
-  _unur_check_par_object( par, AROU );
-
-  /* store data */
-  PAR->center = center;
-
-  /* changelog */
-  par->set |= AROU_SET_CENTER;
-
-  /* o.k. */
-  return UNUR_SUCCESS;
-
-} /* end of unur_arou_set_center() */
-
-/*---------------------------------------------------------------------------*/
-
-int
 unur_arou_set_usecenter( struct unur_par *par, int usecenter )
      /*----------------------------------------------------------------------*/
      /* set flag for using center as construction point                      */
@@ -919,7 +879,7 @@ _unur_arou_init( struct unur_par *par )
   }
 
   /* compute segments for given starting points */
-  if ( _unur_arou_get_starting_segments(par,gen)!=UNUR_SUCCESS ) {
+  if ( _unur_arou_get_starting_segments(gen)!=UNUR_SUCCESS ) {
     _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF not T-concave");
 #ifdef UNUR_ENABLE_LOGGING
     if (gen->debug) _unur_arou_debug_init(par,gen);
@@ -935,7 +895,7 @@ _unur_arou_init( struct unur_par *par )
     GEN->max_segs = GEN->n_segs;
   }
 
-  if (par->variant & AROU_VARFLAG_USEDARS) {
+  if (gen->variant & AROU_VARFLAG_USEDARS) {
     /* run derandomized adaptive rejection sampling (DARS) */
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -944,7 +904,7 @@ _unur_arou_init( struct unur_par *par )
       _unur_arou_make_guide_table(gen);
       /* write info into log file */
       _unur_arou_debug_init(par,gen);
-      _unur_arou_debug_dars_start(par,gen);
+      _unur_arou_debug_dars_start(gen);
     }
 #endif
 
@@ -952,7 +912,7 @@ _unur_arou_init( struct unur_par *par )
       /* we make several tries */
 
       /* run DARS */
-      if ( _unur_arou_run_dars(par,gen)!=UNUR_SUCCESS ) {
+      if ( _unur_arou_run_dars(gen)!=UNUR_SUCCESS ) {
 	_unur_par_free(par); _unur_arou_free(gen);
 	return NULL;
       }
@@ -974,7 +934,7 @@ _unur_arou_init( struct unur_par *par )
     /* write info into log file */
     if (gen->debug) {
       if (gen->debug & AROU_DEBUG_DARS)
-	_unur_arou_debug_dars(par,gen);
+	_unur_arou_debug_dars(gen);
       else 
   	_unur_arou_debug_init(par,gen);
     }
@@ -1039,7 +999,7 @@ _unur_arou_create( struct unur_par *par )
   gen->genid = _unur_set_genid(GENTYPE);
 
   /* routines for sampling and destroying generator */
-  SAMPLE = (par->variant & AROU_VARFLAG_VERIFY) ? _unur_arou_sample_check : _unur_arou_sample;
+  SAMPLE = (gen->variant & AROU_VARFLAG_VERIFY) ? _unur_arou_sample_check : _unur_arou_sample;
   gen->destroy = _unur_arou_free;
   gen->clone = _unur_arou_clone;
 
@@ -1059,14 +1019,18 @@ _unur_arou_create( struct unur_par *par )
   GEN->max_ratio = PAR->max_ratio;    
   GEN->darsfactor = PAR->darsfactor;
 
-  /* center known ?? */
-  if (!(par->set & AROU_SET_CENTER))
-    /* we cannot use the center as construction point */
-    par->variant = par->variant & (~AROU_VARFLAG_USECENTER);
-  else {
+  /* get center */
+  if ( (gen->distr->set & UNUR_DISTR_SET_CENTER) ||
+       (gen->distr->set & UNUR_DISTR_SET_MODE) ) {
+    GEN->center = unur_distr_cont_get_center(gen->distr);
     /* center must be in domain */
-    PAR->center = max(PAR->center,DISTR.BD_LEFT);
-    PAR->center = min(PAR->center,DISTR.BD_RIGHT);
+    GEN->center = max(GEN->center,DISTR.BD_LEFT);
+    GEN->center = min(GEN->center,DISTR.BD_RIGHT);
+    gen->set |= AROU_SET_CENTER;
+  }
+  else {
+    /* we cannot use the center as construction point */
+    gen->variant &= ~AROU_VARFLAG_USECENTER;
   }
 
   /* return pointer to (almost empty) generator object */
@@ -1452,7 +1416,7 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
   is_center = was_center = FALSE;
 
   /* use center as construction point ? */
-  use_center = (par->variant & AROU_VARFLAG_USECENTER) ? TRUE : FALSE;
+  use_center = (gen->variant & AROU_VARFLAG_USECENTER) ? TRUE : FALSE;
 
   /* reset counter of segments */
   GEN->n_segs = 0;
@@ -1461,8 +1425,8 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
   if (!PAR->starting_cpoints) {
     /* move center into  x = 0 */
     /* angles of boundary of domain */
-    left_angle =  ( DISTR.BD_LEFT  <= -INFINITY ) ? -M_PI/2. : atan(DISTR.BD_LEFT  - PAR->center);  
-    right_angle = ( DISTR.BD_RIGHT >= INFINITY )  ? M_PI/2.  : atan(DISTR.BD_RIGHT - PAR->center);
+    left_angle =  ( DISTR.BD_LEFT  <= -INFINITY ) ? -M_PI/2. : atan(DISTR.BD_LEFT  - GEN->center);  
+    right_angle = ( DISTR.BD_RIGHT >= INFINITY )  ? M_PI/2.  : atan(DISTR.BD_RIGHT - GEN->center);
     /* we use equal distances between the angles of the cpoints   */
     /* and the boundary points                                    */
     diff_angle = (right_angle-left_angle) / (PAR->n_starting_cpoints + 1);
@@ -1493,14 +1457,14 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
 	  continue;
 	}
 	if (x<=x_last) {
-	  _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"starting points are not strictly monotonically increasing -> skip");
+	  _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"starting points not increasing -> skip");
 	  continue;
 	}
       }
       else {
 	/* compute construction points by means of "equidistance" rule */
 	angle += diff_angle;
-	x = tan( angle ) + PAR->center;
+	x = tan( angle ) + GEN->center;
       }
     }
     else {
@@ -1510,16 +1474,16 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
     }
 
     /* insert center ? */
-    if (use_center && x >= PAR->center) {
+    if (use_center && x >= GEN->center) {
       use_center = FALSE;   /* we use the center only once (of course) */
       is_center = TRUE;     /* the next construction point is the center */
-      if (x>PAR->center) {
-	x = PAR->center;   /* use the center now ... */
+      if (x>GEN->center) {
+	x = GEN->center;   /* use the center now ... */
 	--i;              /* and push the orignal starting point back on stack */
 	if (!PAR->starting_cpoints)
 	  angle -= diff_angle; /* we have to compute the starting point in this case */
       }
-      /* else: x == PAR->center --> nothing to do */
+      /* else: x == GEN->center --> nothing to do */
     }
     else
       is_center = FALSE;
@@ -1595,12 +1559,11 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
 /*****************************************************************************/
 
 static int
-_unur_arou_get_starting_segments( struct unur_par *par, struct unur_gen *gen )
+_unur_arou_get_starting_segments( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* compute segments for starting points                                 */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   par          ... pointer to parameter list                         */
      /*   gen          ... pointer to generator object                       */
      /*                                                                      */
      /* return:                                                              */
@@ -1616,7 +1579,6 @@ _unur_arou_get_starting_segments( struct unur_par *par, struct unur_gen *gen )
   int n_it = 0;             /* counter for number of interations             */
 
   /* check arguments */
-  CHECK_NULL(par,UNUR_ERR_NULL);  COOKIE_CHECK(par,CK_AROU_PAR,UNUR_ERR_COOKIE);
   CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_AROU_GEN,UNUR_ERR_COOKIE);
 
   /* compute paramters for all segments */
@@ -2161,12 +2123,11 @@ _unur_arou_compute_x( double v, double u )
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_arou_run_dars( struct unur_par *par, struct unur_gen *gen )
+_unur_arou_run_dars( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* run derandomized adaptive rejection sampling.                         */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   par          ... pointer to parameter list                         */
      /*   gen          ... pointer to generator object                       */
      /*                                                                      */
      /* return:                                                              */
@@ -2183,7 +2144,6 @@ _unur_arou_run_dars( struct unur_par *par, struct unur_gen *gen )
   double xsp, fxsp;            /* splitting point in interval */
 
   /* check arguments */
-  CHECK_NULL(par,UNUR_ERR_NULL);     COOKIE_CHECK(par,CK_AROU_PAR,UNUR_ERR_COOKIE);
   CHECK_NULL(gen,UNUR_ERR_NULL);     COOKIE_CHECK(gen,CK_AROU_GEN,UNUR_ERR_COOKIE);
 
   /* there is no need to run DARS when the DARS factor is INFINITY */
@@ -2455,45 +2415,45 @@ _unur_arou_debug_init( const struct unur_par *par, const struct unur_gen *gen )
   _unur_distr_cont_debug( gen->distr, gen->genid );
 
   fprintf(log,"%s: sampling routine = _unur_arou_sample",gen->genid);
-  if (par->variant & AROU_VARFLAG_VERIFY)
+  if (gen->variant & AROU_VARFLAG_VERIFY)
     fprintf(log,"_check()\n");
   else
     fprintf(log,"()\n");
   fprintf(log,"%s:\n",gen->genid);
 
-  fprintf(log,"%s: center = %g",gen->genid,PAR->center);
-  _unur_print_if_default(par,AROU_SET_CENTER);
-  if (par->variant & AROU_VARFLAG_USECENTER)
+  fprintf(log,"%s: center = %g",gen->genid,GEN->center);
+  _unur_print_if_default(gen,AROU_SET_CENTER);
+  if (gen->variant & AROU_VARFLAG_USECENTER)
     fprintf(log,"\n%s: use center as construction point",gen->genid);
   fprintf(log,"\n%s:\n",gen->genid);
 
-  fprintf(log,"%s: maximum number of segments         = %d",gen->genid,PAR->max_segs);
-  _unur_print_if_default(par,AROU_SET_MAX_SEGS);
-  fprintf(log,"\n%s: bound for ratio  Asqueeze / Atotal = %g%%",gen->genid,PAR->max_ratio*100.);
-  _unur_print_if_default(par,AROU_SET_MAX_SQHRATIO);
+  fprintf(log,"%s: maximum number of segments         = %d",gen->genid,GEN->max_segs);
+  _unur_print_if_default(gen,AROU_SET_MAX_SEGS);
+  fprintf(log,"\n%s: bound for ratio  Asqueeze / Atotal = %g%%",gen->genid,GEN->max_ratio*100.);
+  _unur_print_if_default(gen,AROU_SET_MAX_SQHRATIO);
   fprintf(log,"\n%s:\n",gen->genid);
 
-  if (par->variant & AROU_VARFLAG_USEDARS) {
+  if (gen->variant & AROU_VARFLAG_USEDARS) {
     fprintf(log,"%s: Derandomized ARS enabled ",gen->genid);
-    _unur_print_if_default(par,AROU_SET_USE_DARS);
+    _unur_print_if_default(gen,AROU_SET_USE_DARS);
     fprintf(log,"\n%s:\tDARS factor = %g",gen->genid,GEN->darsfactor);
-    _unur_print_if_default(par,AROU_SET_DARS_FACTOR);
+    _unur_print_if_default(gen,AROU_SET_DARS_FACTOR);
   }
   else {
     fprintf(log,"%s: Derandomized ARS disabled ",gen->genid);
-    _unur_print_if_default(par,AROU_SET_USE_DARS);
+    _unur_print_if_default(gen,AROU_SET_USE_DARS);
   }
   fprintf(log,"\n%s:\n",gen->genid);
 
   fprintf(log,"%s: sampling from list of segments: indexed search (guide table method)\n",gen->genid);
-  fprintf(log,"%s:    relative guide table size = %g%%",gen->genid,100.*PAR->guide_factor);
-  _unur_print_if_default(par,AROU_SET_GUIDEFACTOR);
+  fprintf(log,"%s:    relative guide table size = %g%%",gen->genid,100.*GEN->guide_factor);
+  _unur_print_if_default(gen,AROU_SET_GUIDEFACTOR);
   fprintf(log,"\n%s:\n",gen->genid);
 
   fprintf(log,"%s: number of starting points = %d",gen->genid,PAR->n_starting_cpoints);
-  _unur_print_if_default(par,AROU_SET_N_STP);
+  _unur_print_if_default(gen,AROU_SET_N_STP);
   fprintf(log,"\n%s: starting points:",gen->genid);
-  if (par->set & AROU_SET_STP)
+  if (gen->set & AROU_SET_STP)
     for (i=0; i<PAR->n_starting_cpoints; i++) {
       if (i%5==0) fprintf(log,"\n%s:\t",gen->genid);
       fprintf(log,"   %#g,",PAR->starting_cpoints[i]);
@@ -2514,12 +2474,11 @@ _unur_arou_debug_init( const struct unur_par *par, const struct unur_gen *gen )
 /*****************************************************************************/
 
 void 
-_unur_arou_debug_dars_start( const struct unur_par *par, const struct unur_gen *gen )
+_unur_arou_debug_dars_start( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* print header before runniung DARS into logfile                       */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   par ... pointer to parameter for building generator object         */
      /*   gen ... pointer to generator object                                */
      /*----------------------------------------------------------------------*/
 {
@@ -2527,14 +2486,13 @@ _unur_arou_debug_dars_start( const struct unur_par *par, const struct unur_gen *
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_AROU_GEN,RETURN_VOID);
-  CHECK_NULL(par,RETURN_VOID);  COOKIE_CHECK(par,CK_AROU_PAR,RETURN_VOID);
 
   log = unur_get_stream();
 
   fprintf(log,"%s: DARS started **********************\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
   fprintf(log,"%s: DARS factor = %g",gen->genid,GEN->darsfactor);
-  _unur_print_if_default(par,AROU_SET_DARS_FACTOR);
+  _unur_print_if_default(gen,AROU_SET_DARS_FACTOR);
   fprintf(log,"\n%s:\n",gen->genid);
 
   fflush(log);
@@ -2543,12 +2501,11 @@ _unur_arou_debug_dars_start( const struct unur_par *par, const struct unur_gen *
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_arou_debug_dars( const struct unur_par *par, const struct unur_gen *gen )
+_unur_arou_debug_dars( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* print infor after generator has run DARS into logfile                */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   par ... pointer to parameter for building generator object         */
      /*   gen ... pointer to generator object                                */
      /*----------------------------------------------------------------------*/
 {
@@ -2556,7 +2513,6 @@ _unur_arou_debug_dars( const struct unur_par *par, const struct unur_gen *gen )
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_AROU_GEN,RETURN_VOID);
-  CHECK_NULL(par,RETURN_VOID);  COOKIE_CHECK(par,CK_AROU_PAR,RETURN_VOID);
 
   log = unur_get_stream();
 

@@ -39,7 +39,6 @@
 
 struct unur_arou_par { 
 
-  double  center;               /* (approximate) location of mode            */
   double  guide_factor;         /* relative size of guide table              */
   double  bound_for_adding;     /* lower bound for relative area             */
   double  max_ratio;            /* limit for ratio r_n = |P^s| / |P^e|       */
@@ -90,6 +89,7 @@ struct unur_arou_gen {
   int     n_segs;               /* number of construction points             */
   int     max_segs;             /* maximum number of segments                */
   double  darsfactor;           /* factor for (derandomized) ARS             */
+  double  center;               /* (approximate) location of mode            */
 };
 
 /*---------------------------------------------------------------------------*/

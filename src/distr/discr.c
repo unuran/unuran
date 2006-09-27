@@ -47,10 +47,6 @@
 
 /*---------------------------------------------------------------------------*/
 
-static const char unknown_distr_name[] = "unknown";
-
-/*---------------------------------------------------------------------------*/
-
 #define DISTR distr->data.discr
 
 /*---------------------------------------------------------------------------*/
@@ -110,8 +106,8 @@ unur_distr_discr_new( void )
   register struct unur_distr *distr;
   register int i;
 
-  /* allocate structure */
-  distr = _unur_xmalloc( sizeof(struct unur_distr) );
+  /* get empty distribution object */
+  distr = _unur_distr_generic_new();
   if (!distr) return NULL;
 
   /* set magic cookie */
@@ -125,13 +121,6 @@ unur_distr_discr_new( void )
 
   /* dimension of random vector */
   distr->dim = 1;   /* univariant */
-
-  /* name of distribution */
-  distr->name = unknown_distr_name;
-  distr->name_str = NULL;
-
-  /* this is not a derived distribution */
-  distr->base = NULL;
 
   /* destructor */
   distr->destroy = _unur_distr_discr_free;
@@ -174,8 +163,6 @@ unur_distr_discr_new( void )
   DISTR.pmftree    = NULL;         /* pointer to function tree for PMF       */
   DISTR.cdftree    = NULL;         /* pointer to function tree for CDF       */
 
-  distr->set = 0u;                 /* no parameters set                      */
-  
   /* return pointer to object */
   return distr;
 

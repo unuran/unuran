@@ -87,8 +87,8 @@ unur_distr_cvemp_new( int dim )
     return NULL;
   }
 
-  /* allocate structure */
-  distr = _unur_xmalloc( sizeof(struct unur_distr) );
+  /* get empty distribution object */
+  distr = _unur_distr_generic_new();
   if (!distr) return NULL;
 
   /* set magic cookie */
@@ -113,13 +113,11 @@ unur_distr_cvemp_new( int dim )
   /* clone */
   distr->clone = _unur_distr_cvemp_clone;
 
-  /* set defaults                                                            */
+  /* set defaults */
 
   /* observed sample */
-  DISTR.sample    = NULL;          /* sample                                 */
-  DISTR.n_sample  = 0;             /* sample size                            */
-
-  distr->set = 0u;                 /* no parameters set                      */
+  DISTR.sample    = NULL;    /* sample      */
+  DISTR.n_sample  = 0;       /* sample size */
   
   /* return pointer to object */
   return distr;

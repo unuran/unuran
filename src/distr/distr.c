@@ -41,8 +41,10 @@
 /*---------------------------------------------------------------------------*/
 
 #include <unur_source.h>
+#include <distributions/unur_stddistr.h>
 #include "distr.h"
 #include "distr_source.h"
+
 
 /*---------------------------------------------------------------------------*/
 
@@ -51,6 +53,53 @@
 /** routines for all distribution objects                                   **/
 /**                                                                         **/
 /*****************************************************************************/
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_distr *
+_unur_distr_generic_new( void )
+     /*----------------------------------------------------------------------*/
+     /* generic creator for distribution object                              */
+     /*                                                                      */
+     /* parameters: none                                                     */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer empty distribution object                                  */
+     /*   NULL in case of an error                                           */
+     /*----------------------------------------------------------------------*/
+{
+  register struct unur_distr *distr;
+
+  /* allocate structure */
+  distr = _unur_xmalloc( sizeof(struct unur_distr) );
+  if (!distr) return NULL;
+
+  /* set type of distribution */
+  distr->type = UNUR_DISTR_GENERIC;
+
+  /* set id to generic distribution */
+  distr->id = UNUR_DISTR_GENERIC;
+
+  /* dimension of random vector */
+  distr->dim = 1;   /* assume univariant */
+
+  /* name of distribution */
+  distr->name = "unknown";
+  distr->name_str = NULL;
+
+  /* this is not a derived distribution */
+  distr->base = NULL;
+
+  /* defaults */
+  distr->destroy = NULL;     /* destructor: not set */
+  distr->clone   = NULL;     /* copy operator: not set */
+  distr->extobj  = NULL;     /* pointer to external object: empty */
+  distr->set     = 0u;       /* parameters: none set */
+  
+  /* return pointer to object */
+  return distr;
+
+} /* end of _unur_distr_generic_new() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -312,6 +361,56 @@ unur_distr_clone( const struct unur_distr *distr )
 
   return (distr->clone(distr));
 } /* end of unur_distr_clone() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_distr_set_extobj( struct unur_distr *distr, const void *extobj )
+     /*----------------------------------------------------------------------*/
+     /* store a pointer to an external object                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr    ... pointer to distribution object                        */
+     /*   extobj   ... pointer to external object                            */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+
+  /* store data */
+  distr->extobj = extobj;
+
+  return UNUR_SUCCESS;
+
+} /* end of unur_distr_set_extobj() */
+
+/*---------------------------------------------------------------------------*/
+
+const void *
+unur_distr_get_extobj( const struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* get the pointer to the external object                               */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr    ... pointer to distribution object                        */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to external object                                         */
+     /*   (NULL if not is given)                                             */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, NULL );
+
+  return distr->extobj;
+} /* unur_distr_get_extobj() */
 
 /*---------------------------------------------------------------------------*/
 

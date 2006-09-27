@@ -47,10 +47,6 @@
 
 /*---------------------------------------------------------------------------*/
 
-static const char unknown_distr_name[] = "unknown";
-
-/*---------------------------------------------------------------------------*/
-
 #define DISTR distr->data.matr
 
 /*---------------------------------------------------------------------------*/
@@ -92,8 +88,8 @@ unur_distr_matr_new( int n_rows, int n_cols )
     return NULL;
   }
 
-  /* allocate structure */
-  distr = _unur_xmalloc( sizeof(struct unur_distr) );
+  /* get empty distribution object */
+  distr = _unur_distr_generic_new();
   if (!distr) return NULL;
 
   /* set magic cookie */
@@ -110,24 +106,15 @@ unur_distr_matr_new( int n_rows, int n_cols )
   DISTR.n_cols = n_cols;
   distr->dim = n_rows * n_cols;
 
-  /* name of distribution */
-  distr->name = unknown_distr_name;
-  distr->name_str = NULL;
-
-  /* this is not a derived distribution */
-  distr->base = NULL;
-
   /* destructor */
   distr->destroy = _unur_distr_matr_free;
 
   /* clone */
   distr->clone = _unur_distr_matr_clone;
 
-  /* set defaults                                                            */
+  /* set defaults */
   DISTR.init      = NULL;   /* pointer to special init routine (default: none) */
 
-  distr->set = 0u;          /* no parameters set                             */
-  
   /* return pointer to object */
   return distr;
 

@@ -47,10 +47,6 @@
 #include <stdarg.h>
 
 /*---------------------------------------------------------------------------*/
-
-static const char unknown_distr_name[] = "unknown";
-
-/*---------------------------------------------------------------------------*/
 /* copy and free marginal distributions                                      */
 
 static struct unur_distr **_unur_distr_cvec_marginals_clone ( struct unur_distr **marginals, int dim );
@@ -99,8 +95,8 @@ unur_distr_cvec_new( int dim )
     return NULL;
   }
 
-  /* allocate structure */
-  distr = _unur_xmalloc( sizeof(struct unur_distr) );
+  /* get empty distribution object */
+  distr = _unur_distr_generic_new();
   if (!distr) return NULL;
 
   /* set magic cookie */
@@ -113,11 +109,7 @@ unur_distr_cvec_new( int dim )
   distr->id = UNUR_DISTR_GENERIC;
 
   /* dimension of random vector */
-  distr->dim = dim;   /* mulitvariant */
-
-  /* name of distribution */
-  distr->name = unknown_distr_name;
-  distr->name_str = NULL;
+  distr->dim = dim;   /* multivariant */
 
   /* this is not a derived distribution */
   distr->base = NULL;
@@ -164,9 +156,6 @@ unur_distr_cvec_new( int dim )
   DISTR.center     = NULL;         /* location of center (default: not given)*/
   DISTR.volume     = INFINITY;     /* area below PDF (default: not known)    */
 
-
-  distr->set = 0u;          /* no parameters set                             */
-  
   /* return pointer to object */
   return distr;
 

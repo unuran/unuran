@@ -345,34 +345,6 @@ int unur_distr_cont_get_pdfparams_vec( const UNUR_DISTR *distribution, int par, 
    @emph{Important:} Do @strong{not} change the entries in @var{param_vecs}!
 */
 
-
-int unur_distr_cont_set_extobj( UNUR_DISTR *distribution, const void *extobj );
-/* 
-   Store a pointer to an external object. This might be usefull if the 
-   used PDF or CDF need a parameter set that cannot be stored as doubles
-   (e.g. pointers to some structure that holds information of the distribution).
-   
-   @strong{Important:} 
-   When UNURAN copies this distribution object into the generator object,
-   then the address @var{extobj} that this pointer contains is simply copied.
-   Thus the generator holds an address of a non-private object!
-   Once the generator object has been created any change in the external 
-   object might effect the generator object.
-   
-   @strong{Warning:} 
-   External objects must be used with care. One the generator object has been 
-   created or the distribution object has been copied you @emph{must not}
-   destroy this external object.
-*/
-
-const void *unur_distr_cont_get_extobj( const UNUR_DISTR *distribution );
-/* 
-   Get the pointer to the external object.
-
-   @emph{Important:} 
-   Changing of this object must be done with with extreme care.
-*/
-
 int unur_distr_cont_set_logpdfstr( UNUR_DISTR *distribution, const char *logpdfstr );
 /* */
 

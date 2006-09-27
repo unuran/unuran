@@ -81,8 +81,8 @@ unur_distr_cemp_new( void )
 {
   register struct unur_distr *distr;
 
-  /* allocate structure */
-  distr = _unur_xmalloc( sizeof(struct unur_distr) );
+  /* get empty distribution object */
+  distr = _unur_distr_generic_new();
   if (!distr) return NULL;
 
   /* set magic cookie */
@@ -101,23 +101,18 @@ unur_distr_cemp_new( void )
   distr->name = "(empirical)";
   distr->name_str = NULL;
 
-  /* this is not a derived distribution */
-  distr->base = NULL;
-
   /* destructor */
   distr->destroy = _unur_distr_cemp_free;
 
   /* clone */
   distr->clone = _unur_distr_cemp_clone;
 
-  /* set defaults                                                            */
+  /* set defaults */
 
   /* observed sample */
-  DISTR.sample    = NULL;          /* sample                                 */
-  DISTR.n_sample  = 0;             /* sample size                            */
+  DISTR.sample    = NULL;   /* sample      */
+  DISTR.n_sample  = 0;      /* sample size */
 
-  distr->set = 0u;                 /* no parameters set                      */
-  
   /* return pointer to object */
   return distr;
 

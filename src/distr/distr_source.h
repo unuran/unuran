@@ -114,6 +114,11 @@ int _unur_distr_cvec_eval_dpdf_from_dlogpdf( double *result, const double *x, st
 double _unur_distr_cvec_eval_pdpdf_from_pdlogpdf( const double *x, int coord, struct unur_distr *distr );
 
 /*---------------------------------------------------------------------------*/
+/* generic creator for distribution objects                                  */
+
+inline struct unur_distr *_unur_distr_generic_new( void );
+
+/*---------------------------------------------------------------------------*/
 /* make clone of distribution objects                                        */
 
 struct unur_distr *_unur_distr_cemp_clone ( const struct unur_distr *distr );

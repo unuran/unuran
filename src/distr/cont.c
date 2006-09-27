@@ -48,10 +48,6 @@
 
 /*---------------------------------------------------------------------------*/
 
-static const char unknown_distr_name[] = "unknown";
-
-/*---------------------------------------------------------------------------*/
-
 #define DISTR distr->data.cont
 
 /* for derived distributions (e.g. order statistics):
@@ -115,8 +111,8 @@ unur_distr_cont_new( void )
   register struct unur_distr *distr;
   int i;
 
-  /* allocate structure */
-  distr = _unur_xmalloc( sizeof(struct unur_distr) );
+  /* get empty distribution object */
+  distr = _unur_distr_generic_new();
   if (!distr) return NULL;
 
   /* set magic cookie */
@@ -130,13 +126,6 @@ unur_distr_cont_new( void )
 
   /* dimension of random vector */
   distr->dim = 1;   /* univariant */
-
-  /* name of distribution */
-  distr->name = unknown_distr_name;
-  distr->name_str = NULL;
-
-  /* this is not a derived distribution */
-  distr->base = NULL;
 
   /* destructor */
   distr->destroy = _unur_distr_cont_free;
@@ -165,8 +154,6 @@ unur_distr_cont_new( void )
     DISTR.param_vecs[i] = NULL;
   }  
 
-  DISTR.extobj = NULL;             /* pointer to an external object          */
-    
   DISTR.norm_constant = 1.;        /* (log of) normalization constant for p.d.f.
 				      (initialized to avoid accidently floating
 				      point exception                        */
@@ -189,8 +176,6 @@ unur_distr_cont_new( void )
   DISTR.cdftree    = NULL;         /* pointer to function tree for CDF       */
   DISTR.hrtree     = NULL;         /* pointer to function tree for HR        */
 
-  distr->set = 0u;                 /* no parameters set                      */
-  
   /* return pointer to object */
   return distr;
 
@@ -1522,59 +1507,6 @@ unur_distr_cont_get_pdfparams_vec( const struct unur_distr *distr, int par, cons
 
   return (*param_vecs) ? DISTR.n_param_vec[par] : 0;
 } /* end of unur_distr_cont_get_pdfparams_vec() */
-
-
-/*---------------------------------------------------------------------------*/
-
-int
-unur_distr_cont_set_extobj( struct unur_distr *distr, const void *extobj )
-     /*----------------------------------------------------------------------*/
-     /* store a pointer to an external object                                */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   distr    ... pointer to distribution object                        */
-     /*   extobj   ... pointer to external object                            */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   UNUR_SUCCESS ... on success                                        */
-     /*   error code   ... on error                                          */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
-  _unur_check_distr_object( distr, CONT, UNUR_ERR_DISTR_INVALID );
-
-  /* store data */
-  DISTR.extobj = extobj;
-
-  return UNUR_SUCCESS;
-
-} /* end of unur_distr_cont_set_extobj() */
-
-/*---------------------------------------------------------------------------*/
-
-const void *
-unur_distr_cont_get_extobj( const struct unur_distr *distr )
-     /*----------------------------------------------------------------------*/
-     /* get the pointer to the external object                               */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   distr    ... pointer to distribution object                        */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   pointer to external object                                         */
-     /*   (NULL if not is given)                                             */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return NULL                                                        */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  _unur_check_NULL( NULL, distr, NULL );
-  _unur_check_distr_object( distr, CONT, NULL );
-
-  return DISTR.extobj;
-} /* unur_distr_cont_get_extobj() */
 
 /*---------------------------------------------------------------------------*/
 

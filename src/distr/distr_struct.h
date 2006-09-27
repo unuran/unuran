@@ -56,8 +56,6 @@ struct unur_distr_cont {
   double *param_vecs[UNUR_DISTR_MAXPARAMS];  /* parameter vectors            */
   int    n_param_vec[UNUR_DISTR_MAXPARAMS]; /* lengths of the parameter vecs */
 
-  const void *extobj;           /* pointer to an object for additional data  */
-  
   double mode;                  /* location of mode                          */
   double center;                /* location of center                        */
   double area;                  /* area below PDF                            */
@@ -111,7 +109,6 @@ struct unur_distr_cvec {
   
   double *param_vecs[UNUR_DISTR_MAXPARAMS];  /* parameter vectors            */
   int    n_param_vec[UNUR_DISTR_MAXPARAMS]; /* lengths of the parameter vecs */
-  
   
   double norm_constant;         /* (log of) normalization constant for PDF   */
 
@@ -211,6 +208,8 @@ struct unur_distr {
   int dim;                          /* number of components of random vector */
 
   unsigned set;                     /* indicate changed parameters           */
+
+  const void *extobj;               /* pointer to an object for additional data */
 
   struct unur_distr *base;          /* pointer to distribution object for
 				       derived distribution 

@@ -67,6 +67,7 @@ my %IGNORED_COMMANDS =
       'unur_distr_cont_set_dlogpdf' => 1,
       'unur_distr_cont_set_cdf'     => 1,
       'unur_distr_cont_set_hr'      => 1,
+      'unur_distr_cont_set_extobj'  => 1,
       'unur_distr_discr_set_pmf'    => 1,
       'unur_distr_discr_set_cdf'    => 1
     );

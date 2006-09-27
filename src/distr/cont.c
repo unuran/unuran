@@ -164,6 +164,8 @@ unur_distr_cont_new( void )
     DISTR.n_param_vec[i] = 0;
     DISTR.param_vecs[i] = NULL;
   }  
+
+  DISTR.extobj = NULL;             /* pointer to an external object          */
     
   DISTR.norm_constant = 1.;        /* (log of) normalization constant for p.d.f.
 				      (initialized to avoid accidently floating
@@ -242,6 +244,14 @@ _unur_distr_cont_clone( const struct unur_distr *distr )
       memcpy( CLONE.param_vecs[i], DISTR.param_vecs[i], DISTR.n_param_vec[i] * sizeof(double) );
     }
   }  
+
+  /* Remark:
+     The external object to which DISTR.extobj is pointing to is not
+     copied. Only the pointer is copied.
+     Thus is is in the reponsibility of the user of the 
+     unur_distr_cont_set_extobj() call to handle this situation
+     correctly!
+  */
   
   /* copy user name for distribution */
   if (distr->name_str) {
@@ -1513,6 +1523,58 @@ unur_distr_cont_get_pdfparams_vec( const struct unur_distr *distr, int par, cons
   return (*param_vecs) ? DISTR.n_param_vec[par] : 0;
 } /* end of unur_distr_cont_get_pdfparams_vec() */
 
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_distr_cont_set_extobj( struct unur_distr *distr, const void *extobj )
+     /*----------------------------------------------------------------------*/
+     /* store a pointer to an external object                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr    ... pointer to distribution object                        */
+     /*   extobj   ... pointer to external object                            */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CONT, UNUR_ERR_DISTR_INVALID );
+
+  /* store data */
+  DISTR.extobj = extobj;
+
+  return UNUR_SUCCESS;
+
+} /* end of unur_distr_cont_set_extobj() */
+
+/*---------------------------------------------------------------------------*/
+
+const void *
+unur_distr_cont_get_extobj( const struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* get the pointer to the external object                               */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr    ... pointer to distribution object                        */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to external object                                         */
+     /*   (NULL if not is given)                                             */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, NULL );
+  _unur_check_distr_object( distr, CONT, NULL );
+
+  return DISTR.extobj;
+} /* unur_distr_cont_get_extobj() */
 
 /*---------------------------------------------------------------------------*/
 

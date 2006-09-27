@@ -48,14 +48,16 @@ struct unur_distr_cont {
   UNUR_FUNCT_CONT *dlogpdf;     /* pointer to derivative of logPDF           */
   UNUR_FUNCT_CONT *hr;          /* pointer to hazard rate                    */
 
+  double norm_constant;         /* (log of) normalization constant for PDF   */
+
   double params[UNUR_DISTR_MAXPARAMS];  /* parameters of the PDF             */
   int    n_params;              /* number of parameters of the PDF           */
 
   double *param_vecs[UNUR_DISTR_MAXPARAMS];  /* parameter vectors            */
   int    n_param_vec[UNUR_DISTR_MAXPARAMS]; /* lengths of the parameter vecs */
-  
-  double norm_constant;         /* (log of) normalization constant for PDF   */
 
+  const void *extobj;           /* pointer to an object for additional data  */
+  
   double mode;                  /* location of mode                          */
   double center;                /* location of center                        */
   double area;                  /* area below PDF                            */

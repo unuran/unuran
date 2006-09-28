@@ -271,7 +271,7 @@
  *     points.) As a consequence 0 starting points are allowed.              *
  *                                                                           *
  * (2) To make use of the automatic generation of starting points call       *
- *     `unur_set_cpoints()´ with the NULL pointer as the last argument       *
+ *     `unur_set_cpoints() with the NULL pointer as the last argument        *
  *     and the number of construction points (besides the boundary points    *
  *     and the mode) as its third argument.                                  *
  *                                                                           *
@@ -333,6 +333,7 @@
 #include <unur_source.h>
 #include <distr/distr.h>
 #include <distr/distr_source.h>
+#include <distr/cont.h>
 #include <urng/urng.h>
 #include "unur_methods_source.h"
 #include "x_gen_source.h"

@@ -10,6 +10,11 @@ Version 0.8.0: October 2006
           · removed unur_arou_set_center() as this functionality is 
             already covered by the unur_distr_cont_set_center() call
 
+        - method TDR:
+
+          · removed unur_tdr_set_center() as this functionality is 
+            already covered by the unur_distr_cont_set_center() call
+
 	* Distributions:
 
 	- added unur_diste_set_extobj() / unur_diste_get_extobj(): 

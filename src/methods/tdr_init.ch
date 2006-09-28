@@ -220,14 +220,14 @@ _unur_tdr_create( struct unur_par *par )
 
   /* which transformation */
   if (PAR->c_T == 0.)
-    par->variant = (par->variant & (~TDR_VARMASK_T)) | TDR_VAR_T_LOG;
+    gen->variant = (gen->variant & (~TDR_VARMASK_T)) | TDR_VAR_T_LOG;
   else if (_unur_FP_same(PAR->c_T, -0.5))
-    par->variant = (par->variant & (~TDR_VARMASK_T)) | TDR_VAR_T_SQRT;
+    gen->variant = (gen->variant & (~TDR_VARMASK_T)) | TDR_VAR_T_SQRT;
   else
-    par->variant = (par->variant & (~TDR_VARMASK_T)) | TDR_VAR_T_POW;
+    gen->variant = (gen->variant & (~TDR_VARMASK_T)) | TDR_VAR_T_POW;
 
   /** TODO: remove this **/
-  if ((par->variant & TDR_VARMASK_T) == TDR_VAR_T_POW) {
+  if ((gen->variant & TDR_VARMASK_T) == TDR_VAR_T_POW) {
     _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"c != 0. and c != -0.5 not implemented!");
     _unur_generic_free(gen);
     return NULL;
@@ -238,15 +238,15 @@ _unur_tdr_create( struct unur_par *par )
   gen->clone = _unur_tdr_clone;
 
   /* sampling routines */
-  switch (par->variant & TDR_VARMASK_VARIANT) {
+  switch (gen->variant & TDR_VARMASK_VARIANT) {
   case TDR_VARIANT_GW:    /* original variant (Gilks&Wild) */
-    SAMPLE = (par->variant & TDR_VARFLAG_VERIFY) ? _unur_tdr_gw_sample_check : _unur_tdr_gw_sample;
+    SAMPLE = (gen->variant & TDR_VARFLAG_VERIFY) ? _unur_tdr_gw_sample_check : _unur_tdr_gw_sample;
     break;
   case TDR_VARIANT_PS:    /* proportional squeeze */
-    SAMPLE = (par->variant & TDR_VARFLAG_VERIFY) ? _unur_tdr_ps_sample_check : _unur_tdr_ps_sample;
+    SAMPLE = (gen->variant & TDR_VARFLAG_VERIFY) ? _unur_tdr_ps_sample_check : _unur_tdr_ps_sample;
     break;
   case TDR_VARIANT_IA:    /* immediate acceptance */
-    SAMPLE = (par->variant & TDR_VARFLAG_VERIFY) ? _unur_tdr_ia_sample_check : _unur_tdr_ia_sample;
+    SAMPLE = (gen->variant & TDR_VARFLAG_VERIFY) ? _unur_tdr_ia_sample_check : _unur_tdr_ia_sample;
     break;
   default:
     _unur_error(GENTYPE,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
@@ -273,23 +273,27 @@ _unur_tdr_create( struct unur_par *par )
   GEN->max_ratio = PAR->max_ratio;    /* bound for ratio  Atotal / Asqueeze    */
   GEN->bound_for_adding = PAR->bound_for_adding;
 
-  /* mode known and in given domain ?? */
-  if ( !(par->distr->set & UNUR_DISTR_SET_MODE)
+  /* get center */
+  if ( (gen->distr->set & UNUR_DISTR_SET_CENTER) ||
+       (gen->distr->set & UNUR_DISTR_SET_MODE) ) {
+    GEN->center = unur_distr_cont_get_center(gen->distr);
+    /* center must be in domain */
+    GEN->center = max(GEN->center,DISTR.BD_LEFT);
+    GEN->center = min(GEN->center,DISTR.BD_RIGHT);
+    gen->set |= TDR_SET_CENTER;
+  }
+  else {
+    GEN->center = 0.;
+    /* we cannot use the center as construction point */
+    gen->variant &= ~TDR_VARFLAG_USECENTER;
+  }
+
+  /*   mode known and in given domain ?? */
+  if ( !(gen->distr->set & UNUR_DISTR_SET_MODE)
        || (DISTR.mode < DISTR.BD_LEFT)
        || (DISTR.mode > DISTR.BD_RIGHT))
     /* we cannot use the mode as construction point */
-    par->variant = par->variant & (~TDR_VARFLAG_USEMODE);
-
-  /* center known ?? */
-  if (!(par->set & TDR_SET_CENTER))
-    /* we cannot use the center as construction point */
-    par->variant = par->variant & (~TDR_VARFLAG_USECENTER);
-  else {
-    /* center must be in domain */
-    PAR->center = max(PAR->center,DISTR.BD_LEFT);
-    PAR->center = min(PAR->center,DISTR.BD_RIGHT);
-  }
-  GEN->center = PAR->center;
+    gen->variant = gen->variant & (~TDR_VARFLAG_USEMODE);
 
   /* copy starting points */
   GEN->n_starting_cpoints = PAR->n_starting_cpoints;
@@ -314,13 +318,13 @@ _unur_tdr_create( struct unur_par *par )
   GEN->Umax = 1.;
 
   /* set default for DARS */
-  if (!(par->set & TDR_SET_USE_DARS) && !PAR->starting_cpoints)
+  if (!(gen->set & TDR_SET_USE_DARS) && !PAR->starting_cpoints)
     /* no starting points given by user
        --> enable derandomized ARS      */
-    par->variant |= TDR_VARFLAG_USEDARS;
+    gen->variant |= TDR_VARFLAG_USEDARS;
 
   /* copy variant */
-  gen->variant = par->variant;
+/*   gen->variant = par->variant; */
 
   /* return pointer to (almost empty) generator object */
   return gen;

@@ -109,15 +109,7 @@ unur_tdr_new( const struct unur_distr* distr )
 
   par->debug    = _unur_default_debugflag; /* set default debugging flags    */
 
-  /* we use the mode (if known) as center of the distribution */
-  if (distr->set & UNUR_DISTR_SET_MODE) {
-    PAR->center = DISTR_IN.mode;
-    par->set |= TDR_SET_CENTER;
-  }
-  else
-    PAR->center = 0.;        /* the default */
-
-  /* routine for starting generator */
+  /* routine for initializing generator */
   par->init = _unur_tdr_init;
 
   return par;
@@ -585,37 +577,6 @@ _unur_tdr_is_ARS_running( const struct unur_gen *gen )
 
   return (GEN->n_ivs < GEN->max_ivs) ? TRUE : FALSE;
 } /* end of _unur_tdr_is_ARS_running() */
-
-/*---------------------------------------------------------------------------*/
-
-int
-unur_tdr_set_center( struct unur_par *par, double center )
-     /*----------------------------------------------------------------------*/
-     /* set center (approximate mode) of PDF                                 */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   par    ... pointer to parameter for building generator object      */
-     /*   center ... center of PDF                                           */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   UNUR_SUCCESS ... on success                                        */
-     /*   error code   ... on error                                          */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
-  _unur_check_par_object( par, TDR );
-
-  /* store data */
-  PAR->center = center;
-
-  /* changelog */
-  par->set |= TDR_SET_CENTER;
-
-  /* o.k. */
-  return UNUR_SUCCESS;
-
-} /* end of unur_tdr_set_center() */
 
 /*---------------------------------------------------------------------------*/
 

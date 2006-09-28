@@ -116,10 +116,13 @@
       unur_tdr_set_verify() and unur_tdr_chg_verify(), respectively.
       Notice however that sampling is (much) slower then.
 
-      For densities with modes not close to 0 it is suggested either
-      to set the mode of the distribution or to use the
-      unur_tdr_set_center() call for provide some information about
-      the main part of the PDF to avoid numerical problems.
+      For densities with modes not close to 0 it is suggested to set
+      either the mode or the center of the distribution by the
+      unur_distr_cont_set_mode() or unur_distr_cont_set_center() call.
+      The latter is the approximate location of the mode or the mean
+      of the distribution. This location provides some information
+      about the main part of the PDF and is used to avoid numerical
+      problems.
 
       It is possible to use this method for generating from truncated
       distributions. It even can be changed for an existing generator
@@ -382,20 +385,6 @@ int unur_tdr_set_max_intervals( UNUR_PAR *parameters, int max_ivs );
    points if this is larger.
 
    Default is @code{100}.
-*/
-
-int unur_tdr_set_center( UNUR_PAR *parameters, double center );
-/* 
-   Set the center (approximate mode) of the PDF.
-   It is used to find construction points by means of a heuristical
-   rule of thumb. If the mode is given the center is set equal to the
-   mode.
-
-   It is suggested to use this call to provide some information about
-   the main part of the PDF to avoid numerical problems.
-
-   By default the mode is used as center if available. 
-   Otherwise @code{0} is used.
 */
 
 int unur_tdr_set_usecenter( UNUR_PAR *parameters, int usecenter );

@@ -1029,6 +1029,7 @@ _unur_arou_create( struct unur_par *par )
     gen->set |= AROU_SET_CENTER;
   }
   else {
+    GEN->center = 0.;
     /* we cannot use the center as construction point */
     gen->variant &= ~AROU_VARFLAG_USECENTER;
   }

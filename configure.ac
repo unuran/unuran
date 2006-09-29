@@ -29,6 +29,11 @@ dnl (set to false before releasing a new version)
 AM_CONDITIONAL(INCLUDE_EXPERIMENTAL,true)
 dnl AM_CONDITIONAL(INCLUDE_EXPERIMENTAL,false)
 
+dnl Whether we distribute source code only
+dnl (without documentation, tests, and examples)
+dnl DO NOT CHANGE THIS HERE!
+AM_CONDITIONAL(INCLUDE_SOURCE_ONLY,false)
+
 dnl Add dmalloc support.
 AM_WITH_DMALLOC
 
@@ -139,10 +144,9 @@ if test X"$GCC" = Xyes ; then
 	AC_SUBST(AM_CPPFLAGS,-Wall)
 fi
 
-dnl create Makefiles
+dnl create Makefiles for source
 AC_CONFIG_FILES([\
 	Makefile \
-        scripts/Makefile \
 	src/Makefile \
 	src/distr/Makefile \
 	src/distributions/Makefile \
@@ -152,20 +156,41 @@ AC_CONFIG_FILES([\
 	src/tests/Makefile \
 	src/uniform/Makefile \
 	src/urng/Makefile \
-	src/utils/Makefile \
-	doc/Makefile \
-	doc/src/Makefile \
-	doc/figures/Makefile \
-        tests/Makefile \
-        tests/testdistributions/Makefile \
-	examples/Makefile \
-	experiments/Makefile ])
+	src/utils/Makefile ] )
 
-dnl Makefiles for experimental code
-AC_CHECK_FILE(${srcdir}/src/experimental/Makefile.am, 
-	AC_CONFIG_FILES(src/experimental/Makefile))
-AC_CHECK_FILE(${srcdir}/run/Makefile.am, 
-	AC_CONFIG_FILES(run/Makefile))
+dnl create Makefiles for auxiliary scripts (optional)
+AC_CHECK_FILE(${srcdir}/scripts/Makefile.am,
+	AC_CONFIG_FILES( [ \
+	   scripts/Makefile ] ))
+
+dnl create Makefiles for documentation (optional)
+AC_CHECK_FILE(${srcdir}/doc/Makefile.am,
+	AC_CONFIG_FILES( [ \
+	   doc/Makefile \
+	   doc/src/Makefile \
+	   doc/figures/Makefile ] ))
+
+dnl create Makefiles for tests (optional)
+AC_CHECK_FILE(${srcdir}/tests/Makefile.am,
+	AC_CONFIG_FILES( [ \
+	   tests/Makefile \
+	   tests/testdistributions/Makefile ] ))
+
+dnl create Makefiles for examples (optional)
+AC_CHECK_FILE(${srcdir}/examples/Makefile.am,
+	AC_CONFIG_FILES( [ \
+	   examples/Makefile ] ))
+AC_CHECK_FILE(${srcdir}/experiments/Makefile.am,
+	AC_CONFIG_FILES( [ \
+	   experiments/Makefile ] ))
+
+dnl Makefiles for experimental code (optional)
+AC_CHECK_FILE(${srcdir}/src/experimental/Makefile.am,
+	AC_CONFIG_FILES( [ \
+	   src/experimental/Makefile ] ))
+AC_CHECK_FILE(${srcdir}/run/Makefile.am,
+	AC_CONFIG_FILES( [ \
+	   run/Makefile ] ))
 
 AC_OUTPUT
 

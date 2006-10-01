@@ -33,21 +33,39 @@ remove_rootdir = \
     || { find $(rootdir) -type d ! -perm -200 -exec chmod u+w {} ';' \
          && rm -fr $(rootdir); }; }
 
-dist-root: $(PACKAGE)-$(VERSION).tar.gz
+dist-root:
 	@echo "Create tar ball for ROOT" | \
           sed 'h;s/./=/g;p;x;p;x'
-	@$(remove_rootdir)
-	@make dist
+	$(remove_rootdir)
+	make
+	make dist
 	mkdir $(rootdir)
 	tar zxf $(PACKAGE)-$(VERSION).tar.gz -C $(rootdir) 
 	(cd $(rootdir)/$(PACKAGE)-$(VERSION); \
-	   sed -r -e 's/(AM_CONDITIONAL\(\s*INCLUDE_SOURCE_ONLY)\s*,.*/\1,true)/' \
-	   < configure.ac > configure.ac.tmp.1; \
-	   sed -r -e 's/(AM_CONDITIONAL\(\s*INCLUDE_EXPERIMENTAL)\s*,.*/\1,false)/' \
-	   < configure.ac.tmp.1 > configure.ac.tmp.2; \
-	   sed -r -e 's/(AC_INIT\(\s*\[UNURAN\]\s*,\s*\[)(.*)\]\s*,\s*\[/\1\2-root\],\[/' \
-	   < configure.ac.tmp.2 > configure.ac; \
-	   rm -v configure.ac.tmp*; \
+	   sed -r --posix \
+		-e 's/(AM_CONDITIONAL\(\s*INCLUDE_SOURCE_ONLY)\s*,.*/\1,true)/' \
+		-e 's/(AM_CONDITIONAL\(\s*INCLUDE_EXPERIMENTAL)\s*,.*/\1,false)/' \
+		-e 's/(AC_INIT\(\s*\[UNURAN\]\s*,\s*\[)(.*)\]\s*,\s*\[/\1\2-root\\],\\[/' \
+	   < configure.ac > configure.ac.tmp; \
+	   mv -v configure.ac.tmp configure.ac; \
+	   for f in `find . -type f -name '*.[ch]'`; do \
+		./scripts/remove_comments.pl $$f; \
+	   done; \
+	   for f in `find . -type f -name '*.[cd]h'`; do \
+		./scripts/remove_comments.pl $$f; \
+	   done; \
+	   echo "AC_MSG_NOTICE([ " >> configure.ac; \
+	   echo "*===================================================" >> configure.ac; \
+	   echo "*" >> configure.ac; \
+	   echo "*   This is a pure source distribution!" >> configure.ac; \
+	   echo "*" >> configure.ac; \
+	   echo "*   For a manual, documentated sources, tests," >> configure.ac; \
+	   echo "*   and examples please download" >> configure.ac; \
+	   echo "*" >> configure.ac; \
+	   echo "*       $(PACKAGE)-$(VERSION).tar.gz" >> configure.ac; \
+	   echo "*" >> configure.ac; \
+	   echo "*===================================================" >> configure.ac; \
+	   echo "])" >> configure.ac; \
 	   autoreconf -v;  \
 	   ./configure; \
 	   make dist; \

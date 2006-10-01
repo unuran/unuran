@@ -5,7 +5,8 @@ noinst_PROGRAMS = compute_machine_constants
 
 EXTRA_DIST = \
  read_PDF.pl \
- merge_h.pl
+ merge_h.pl \
+ remove_comments.pl
 
 noinst_HEADERS = \
   $(top_srcdir)/src/utils/unur_fp_const_source.h

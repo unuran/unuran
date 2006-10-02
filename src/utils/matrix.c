@@ -12,9 +12,10 @@
  *   i.e. the entry with index [i,j] can be entered via (i*dim+j), where     *
  *   dim is the dimension of the dim x dim - matrix.                         *
  *                                                                           *
- *   Routines are mainly adapted from the GSL (GNU Scientifiy Library)       *
- *                                                                           *
  *****************************************************************************
+ *                                                                           *
+ *   Routines are mainly adapted from the GSL (GNU Scientifiy Library)       *
+ *   Copyright (C) 1996, 1997, 1998, 1999, 2000 Gerard Jungman, Brian Gough  *
  *                                                                           *
  *   adapted by Wolfgang Hoermann and Josef Leydold                          *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *

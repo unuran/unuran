@@ -16,11 +16,9 @@
  *   REQUIRED:  pointer to probability vector                                *
  *                                                                           *
  *****************************************************************************
-     $Id$
- *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000 Wolfgang Hoermann and Josef Leydold                  *
- *   Dept. for Statistics, University of Economics, Vienna, Austria          *
+ *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by    *
@@ -37,7 +35,6 @@
  *   Free Software Foundation, Inc.,                                         *
  *   59 Temple Place, Suite 330, Boston, MA 02111-1307, USA                  *
  *                                                                           *
- *****************************************************************************
  *****************************************************************************
  *                                                                           *
  *   REFERENCES:                                                             *

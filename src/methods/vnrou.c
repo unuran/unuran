@@ -22,8 +22,9 @@
  *      bounding rectangle of acceptance region                              *
  *                                                                           *
  *****************************************************************************
- *   (c) 2000 Wolfgang Hoermann and Josef Leydold                            *
- *   Dept. for Statistics, University of Economics, Vienna, Austria          *
+ *                                                                           *
+ *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by    *
@@ -41,7 +42,6 @@
  *   59 Temple Place, Suite 330, Boston, MA 02111-1307, USA                  *
  *                                                                           *
  *****************************************************************************
- *****************************************************************************
  *                                                                           *
  *   REFERENCES:                                                             *
  *   [1] Wakefield J.C., Gelfand A.E., Smith A.F.M.                          *
@@ -52,8 +52,6 @@
  *   [2] Hoermann, W., Leydold J., and Derflinger, G. (2004):                *
  *       Automatic non-uniform random variate generation, Springer, Berlin.  *
  *       Section 2.4, Algorithm 2.9 (RoU), p.35                              *
- *                                                                           *
- *****************************************************************************
  *                                                                           *
  *****************************************************************************/
 

@@ -7,15 +7,13 @@
  *   FILE: tdrgw_struct.h                                                    *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         declares structures for method TDRGW                                *
+ *         declares structures for method TDRGW                              *
  *         (Transformed Density Rejection - Gilks & Wild variant)            *
  *                                                                           *
  *****************************************************************************
-     $Id$
- *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000 Wolfgang Hoermann and Josef Leydold                  *
- *   Dept. for Statistics, University of Economics, Vienna, Austria          *
+ *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by    *

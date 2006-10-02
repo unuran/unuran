@@ -25,6 +25,7 @@ Version 0.8.0: October 2006
 
 	- removed keyword 'urng'
 
+
 Version 0.7.2: March 2006
 
 	- fixed function prototype that contained C++ keyword

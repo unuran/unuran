@@ -9,11 +9,15 @@
  *   compute correlation coefficient of two samples                          *
  *                                                                           *
  *****************************************************************************
-     $Id$
+ *                                                                           *
+ *   REFERENCES:                                                             *
+ *   [1] Spicer C.C. (1972): Algorithm AS 52: Calculation of Power Sums of   *
+ *       Deviations about the mean, Applied Statistics 21(2), pp. 226-227.   *
+ *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000 Wolfgang Hoermann and Josef Leydold                  *
- *   Dept. for Statistics, University of Economics, Vienna, Austria          *
+ *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by    *
@@ -29,13 +33,6 @@
  *   along with this program; if not, write to the                           *
  *   Free Software Foundation, Inc.,                                         *
  *   59 Temple Place, Suite 330, Boston, MA 02111-1307, USA                  *
- *                                                                           *
- *****************************************************************************
- *****************************************************************************
- *                                                                           *
- *   REFERENCES:                                                             *
- *   [1] Spicer C.C. (1972): Algorithm AS 52: Calculation of Power Sums of   *
- *       Deviations about the mean, Applied Statistics 21(2), pp. 226-227.   *
  *                                                                           *
  *****************************************************************************/
 

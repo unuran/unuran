@@ -1,6 +1,13 @@
 #!/usr/bin/perl
 ##############################################################################
 #                                                                            #
+#   FILE:    make_stringparser.pl                                            #
+#                                                                            #
+#   Read all UNURAN header files and create switch tables for stringparser   #
+#   and write doc file for keywords                                          #
+#                                                                            #
+##############################################################################
+#                                                                            #
 #   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold              #
 #   Department of Statistics and Mathematics, WU Wien, Austria               #
 #                                                                            #

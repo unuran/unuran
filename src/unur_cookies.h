@@ -14,11 +14,9 @@
  *          included only in source_unuran.h                                 *
  *                                                                           *
  *****************************************************************************
-     $Id$
- *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000 Wolfgang Hoermann and Josef Leydold                  *
- *   Dept. for Statistics, University of Economics, Vienna, Austria          *
+ *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by    *

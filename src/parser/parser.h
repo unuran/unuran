@@ -118,7 +118,7 @@ UNUR_PAR *_unur_str2par( const UNUR_DISTR *distribution, const char *string, str
    number generator invoked. The interpretation of the string is not
    case-sensitive, all white spaces are ignored.
 
-   The string consists of up to three blocks, separated by ampersands
+   The string consists of up to two blocks, separated by ampersands
    @code{&}.
 
    Each block consists of @code{<key>=<value>} pairs, separated by
@@ -135,9 +135,6 @@ UNUR_PAR *_unur_str2par( const UNUR_DISTR *distribution, const char *string, str
       description of the transformation method
       (@pxref{StringMethod,,Method String}).
 
-   @item urng
-      uniform random number generation
-      (@pxref{StringURNG,,Uniform RNG String}).
    @end table
 
    The @code{distr} block must be the very first block and is
@@ -341,38 +338,6 @@ UNUR_PAR *_unur_str2par( const UNUR_DISTR *distribution, const char *string, str
    If this block is omitted, a suitable default method is used. Notice
    however that the default method may change in future versions of
    UNURAN.
-
-=EON
-*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*
-
-=NODEX  StringURNG    Uniform RNG String
-=UP StringAPI [40]
-
-=DESCRIPTION
-
-   The value of the @code{urng} key is passed to the PRNG interface (see
-   @ifinfo
-      @xref{Top,,Overview,prng,PRNG Manual}.
-   @end ifinfo
-   @ifnotinfo
-      @uref{http://statistik.wu-wien.ac.at/prng/manual/,PRNG manual}
-   @end ifnotinfo
-   for details).
-   However it only works when using the PRNG library is enabled, 
-   see @ref{Installation} for details. There are no other keys.
-
-   IMPORTANT: UNURAN creates a new uniform random number generator for
-   the generator object. The pointer to this uniform generator 
-   has to be read and saved via a unur_get_urng() call in order to
-   clear the memory @emph{before} the UNURAN generator object is
-   destroyed.
-
-   If this block is omitted the UNURAN default generator is used
-   (which @emph{must not} be destroyed). 
 
 =EON
 */

@@ -13,9 +13,6 @@
 
 /*-----------------------------------------------------------------*/
 
-
-/*-----------------------------------------------------------------*/
-
 /* Nonlinear Optimization using the algorithm of Hooke and Jeeves  */
 /*	12 February 1994	author: Mark G. Johnson 	   */
 

@@ -15,11 +15,9 @@
  *   Routines are mainly adapted from the GSL (GNU Scientifiy Library)       *
  *                                                                           *
  *****************************************************************************
-    $Id$
- *****************************************************************************
  *                                                                           *
  *   adapted by Wolfgang Hoermann and Josef Leydold                          *
- *   Dept. for Statistics, University of Economics, Vienna, Austria          *
+ *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by    *

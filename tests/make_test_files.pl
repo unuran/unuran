@@ -1,6 +1,10 @@
 #!/usr/bin/perl
 ##############################################################################
 #                                                                            #
+#           UNURAN -- Universal Non-Uniform Random number generator          #
+#                                                                            #
+##############################################################################
+#                                                                            #
 #   FILE:    make_test_files.pl                                              #
 #                                                                            #
 #   Read test config file and create C file for tests                        #

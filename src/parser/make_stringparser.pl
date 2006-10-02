@@ -1,6 +1,10 @@
 #!/usr/bin/perl
 ##############################################################################
 #                                                                            #
+#           UNURAN -- Universal Non-Uniform Random number generator          #
+#                                                                            #
+##############################################################################
+#                                                                            #
 #   FILE:    make_stringparser.pl                                            #
 #                                                                            #
 #   Read all UNURAN header files and create switch tables for stringparser   #

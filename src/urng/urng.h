@@ -500,7 +500,7 @@ UNUR_URNG *unur_urng_new( double (*sampleunif)(void *state), void *state );
    generators, see below.
 */
 
-int unur_urng_free (UNUR_URNG *urng);
+void unur_urng_free (UNUR_URNG *urng);
 /* 
    Destroy @var{urng} object.
    It returns an error code if this is not possible. 

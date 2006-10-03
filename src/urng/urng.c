@@ -587,7 +587,7 @@ unur_urng_resetsub (UNUR_URNG *urng)
 
 /*---------------------------------------------------------------------------*/
 
-int
+void
 unur_urng_free (UNUR_URNG *urng)
      /*----------------------------------------------------------------------*/
      /* Destroy URNG object.                                                 */
@@ -602,13 +602,13 @@ unur_urng_free (UNUR_URNG *urng)
 {
   /* check argument */
   if (urng == NULL) return;  /* nothing to do */
-  COOKIE_CHECK(urng,CK_URNG,UNUR_ERR_COOKIE);
+  COOKIE_CHECK(urng,CK_URNG,RETURN_VOID);
 
   if (urng->delete != NULL) urng->delete (urng->state);
   free (urng);
   urng = NULL;
 
-  return UNUR_SUCCESS;
+  return;
 } /* end of unur_urng_free() */ 
 
 /*---------------------------------------------------------------------------*/

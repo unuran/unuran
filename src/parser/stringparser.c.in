@@ -1432,23 +1432,25 @@ _unur_str_par( char *str_method, const UNUR_DISTR *distr, struct unur_slist *mli
       value++;          /* set pointer to value string */
     }
 
-    /* get (default) parameter object for method */
-    if ( !strcmp( key, "method") ) {
-      if (key == str_method) {
-	/* "method" must be the first key.                                */
-	/* (on the other hand, the first keyword always must be "method"  */
-	/* since otherwise we had not called this subroutine.             */
-	/* hence, we only check, whether the keyword "method" is unique.) */
-	par = _unur_str_par_new(value,distr);
-	if (par == NULL) {
-	  /* error */
-	  _unur_error(GENTYPE,UNUR_ERR_STR,"setting method failed"); 
+    /* the first key is treated differently: get new parameter object */
+    if (key == str_method) {
+      /* the keyword "method" is optional */
+      if (value == NULL) {
+	/* no "method" keyword given, so the key points to the value */
+	value = key;
+      }
+      else {
+	if (*key != 'm') {
+	  _unur_error(GENTYPE,UNUR_ERR_STR_SYNTAX,"key for method does not start with 'd'"); 
 	  return NULL;
 	}
       }
-      else {
-	if (par) unur_par_free (par);
-	_unur_error(GENTYPE,UNUR_ERR_STR_SYNTAX,"method must be first key in block"); 
+      
+      /* get new parameter object */
+      par = _unur_str_par_new(value,distr);
+      if (par == NULL) {
+	/* error */
+	_unur_error(GENTYPE,UNUR_ERR_STR,"setting method failed"); 
 	return NULL;
       }
     }

@@ -204,8 +204,8 @@ _unur_slist_free( struct unur_slist *slist )
   int i;
 
   /* check arguments */
-  COOKIE_CHECK(slist,CK_SLIST,RETURN_VOID);
   if (slist == NULL) return;  /* nothing to do */
+  COOKIE_CHECK(slist,CK_SLIST,RETURN_VOID);
 
   if ( slist->ptr != NULL ) {
     /* free memory blocks */

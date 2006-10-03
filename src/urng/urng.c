@@ -601,7 +601,7 @@ unur_urng_free (UNUR_URNG *urng)
      /*----------------------------------------------------------------------*/
 {
   /* check argument */
-  _unur_check_NULL( "URNG", urng, UNUR_ERR_NULL );
+  if (urng == NULL) return;  /* nothing to do */
   COOKIE_CHECK(urng,CK_URNG,UNUR_ERR_COOKIE);
 
   if (urng->delete != NULL) urng->delete (urng->state);

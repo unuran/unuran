@@ -630,6 +630,187 @@ unur_str2distr (const char *string)
 
 /*---------------------------------------------------------------------------*/
 
+struct unur_gen *
+unur_makegen_ssu( const char *distrstr, const char *methodstr, UNUR_URNG *urng )
+     /*----------------------------------------------------------------------*/
+     /* get generator object for distribution and method                     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distrstr  ... distribution described by a string                   */
+     /*   methodstr ... chosen method described by a string                  */
+     /*   urng      ... pointer to uniform random number generator           */
+     /*                 (NULL = default generator)                           */ 
+     /*                                                                      */
+     /* return:                                                              */
+     /*   generator object                                                   */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  UNUR_DISTR *distr = NULL;       /* distribution object */
+  UNUR_PAR   *par   = NULL;       /* parameter object */
+  UNUR_GEN   *gen   = NULL;       /* generator object    */
+
+  char *str_distr   = NULL;       /* string for distribution */
+  char *str_method  = NULL;       /* string for method       */
+
+  struct unur_slist *mlist;       /* list of allocated memory blocks */
+
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, distrstr, NULL );
+
+  /* (empty) list of allocated memory blocks */
+  mlist = _unur_slist_new();
+
+  /* Prepare string for processing:            */
+  /*   Remove all white spaces,                */
+  /*   convert to lower case letters,          */
+  /*   copy into working string                */
+  str_distr = _unur_parser_prepare_string( distrstr );
+  str_method = (methodstr) 
+    ? _unur_parser_prepare_string( methodstr )
+    : NULL;
+
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  if (_unur_default_debugflag) {
+    _unur_str_debug_string(0,"[input-distr]",str_distr);
+    _unur_str_debug_string(0,"[input-method]",
+			   (str_method) ? str_method : "(NULL)" );
+  }
+#endif
+
+  do {
+    /* make distribution object */
+    distr = _unur_str_distr(str_distr);
+    if (distr == NULL) break;
+
+    /* get parameter object */
+    if ( str_method != NULL && strlen(str_method)>0 )
+      /* method is provided in string */
+      par = _unur_str_par(str_method, distr, mlist);
+    else
+      /* otherwise use default method */
+      par = unur_auto_new(distr);
+    if (par == NULL) break;
+    
+    /* make generator object */
+    gen = unur_init(par);
+    if (gen == NULL) break;
+
+    /* set uniform RNG */
+    if (urng != NULL) 
+      unur_chg_urng(gen, urng);
+
+  } while (0);
+
+  /* destroy distribution object */
+  unur_distr_free(distr);
+
+  /* free allocated memory blocks */
+  _unur_slist_free(mlist);
+  if (str_distr) free(str_distr);
+  if (str_method) free(str_method);
+
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  if (_unur_default_debugflag)
+    _unur_str_debug_string(0,"",NULL);
+#endif
+
+  /* return pointer to generator object */
+  return gen;
+
+} /* end of unur_makegen_ssu() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_gen *
+unur_makegen_dsu( const struct unur_distr *distr, const char *methodstr, UNUR_URNG *urng )
+     /*----------------------------------------------------------------------*/
+     /* get generator object for distribution and method                     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr     ... distribution object                                  */
+     /*   methodstr ... chosen method described by a string                  */
+     /*   urng      ... pointer to uniform random number generator           */
+     /*                 (NULL = default generator)                           */ 
+     /*                                                                      */
+     /* return:                                                              */
+     /*   generator object                                                   */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  UNUR_PAR   *par   = NULL;       /* parameter object */
+  UNUR_GEN   *gen   = NULL;       /* generator object    */
+
+  char *str_method  = NULL;       /* string for method       */
+
+  struct unur_slist *mlist;       /* list of allocated memory blocks */
+
+  /* check arguments */
+  _unur_check_NULL( GENTYPE,distr,NULL );
+
+  /* (empty) list of allocated memory blocks */
+  mlist = _unur_slist_new();
+
+  /* Prepare string for processing:            */
+  /*   Remove all white spaces,                */
+  /*   convert to lower case letters,          */
+  /*   copy into working string                */
+  str_method = (methodstr)
+    ? _unur_parser_prepare_string( methodstr )
+    : NULL;
+
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  if (_unur_default_debugflag) {
+    _unur_str_debug_string(0,"[input-distr]","(distribution object)");
+    _unur_str_debug_string(0,"[input-method]",
+			   (str_method) ? str_method : "(NULL)" );
+  }
+#endif
+
+  do {
+    /* get parameter object */
+    if ( str_method != NULL && strlen(str_method)>0 )
+      /* method is provided in string */
+      par = _unur_str_par(str_method, distr, mlist);
+    else
+      /* otherwise use default method */
+      par = unur_auto_new(distr);
+    if (par == NULL) break;
+    
+    /* make generator object */
+    gen = unur_init(par);
+    if (gen == NULL) break;
+
+    /* set uniform RNG */
+    if (urng != NULL)
+      unur_chg_urng(gen, urng);
+
+  } while (0);
+
+  /* free allocated memory blocks */
+  _unur_slist_free(mlist);
+  if (str_method) free(str_method);
+
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  if (_unur_default_debugflag)
+    _unur_str_debug_string(0,"",NULL);
+#endif
+
+  /* return pointer to generator object */
+  return gen;
+
+} /* end of unur_makegen_dsu() */
+
+/*---------------------------------------------------------------------------*/
+
 /*****************************************************************************/
 /**  Distributions                                                          **/
 /*****************************************************************************/

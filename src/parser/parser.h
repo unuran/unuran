@@ -70,8 +70,8 @@
 
 UNUR_GEN *unur_str2gen( const char *string );
 /* 
-   Get a generator object for the distribution, method and uniform
-   random number generator as described in the given @var{string}.
+   Get a generator object for the distribution and method 
+   as described in the given @var{string}.
    See @ref{StringSyntax,,Syntax of String Interface}, for details.
 */
 
@@ -85,9 +85,31 @@ UNUR_DISTR *unur_str2distr( const char *string );
    allowed.
 */
 
+UNUR_GEN *unur_makegen_ssu( const char *distrstr, const char *methodstr, UNUR_URNG *urng );
+/* */
+
+UNUR_GEN *unur_makegen_dsu( const UNUR_DISTR *distribution, const char *methodstr, UNUR_URNG *urng );
+/* 
+   Make a generator object for the distribution, method and uniform
+   random number generator. The distribution can be given either as
+   string @var{distrstr} or as a distribution object @var{distr}.
+   The method must be given as a string @var{methodstr}.
+   For the syntax of these strings see 
+   @ref{StringSyntax,,Syntax of String Interface}.
+   However, the @code{method} keyword is optional for these calls
+   and can be omitted. If @var{methodstr} is the empty (blank) string
+   or NULL method AUTO is used.
+   The uniform random number generator is optional. If 
+   @var{urng} is NULL then the default uniform random number generator
+   is used.
+*/
+
 /*
 =EON
 */
+
+/*...........................................................................*/
+
 
 UNUR_PAR *_unur_str2par( const UNUR_DISTR *distribution, const char *string, struct unur_slist **mlist );
 /*

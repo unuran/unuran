@@ -26,6 +26,8 @@
  *   We have three different blocks (yet):                                   *
  *      distr  ... contains the definition of the distribution               *
  *      method ... contains the description of the transformation methdod    *
+ *      urng   ... contains the definition of the uniform RNG                *
+ *                 (currently it only supports URNGs from the PRNG library)  *
  *                                                                           *
  *   The 'distr' block must be the very first block and is obligatory.       *
  *   For that reason the keyword "distr" is optional and can be omitted      *
@@ -48,6 +50,11 @@
  *   order.                                                                  *
  *   The value of the "method" key is the name of the transformation method  *
  *   and is used to execute the unur_<value>_new() call.                     *
+ *                                                                           *
+ *   The value of the "urng" key is passed to the PRNG interface.            *
+ *   However, it only works when using the PRNG library is enabled in        *
+ *   unuran_config.h (i.e. UNURAN_HAS_PRNG must be defined) and libprng      *
+ *   is linked to the executable.                                            *
  *                                                                           *
  *   In each block consecuting <key>=<value> pairs, separated by semicolons  *
  *   ';', are used to set parameters. The name of the parameter is given as  *
@@ -307,6 +314,12 @@ static int _unur_str_par_set_Di( UNUR_PAR *par, const char *key, char *type_args
 /*---------------------------------------------------------------------------*/
 
 
+static UNUR_URNG *_unur_str2urng( char *str_urng );
+/*---------------------------------------------------------------------------*/
+/* get uniform RNG.                                                          */
+/*---------------------------------------------------------------------------*/
+
+
 static int _unur_str_set_args( char *value, char *type_args, char **args, int max_args );
 /*---------------------------------------------------------------------------*/
 /* parse argument string for set call.                                       */
@@ -423,9 +436,11 @@ unur_str2gen (const char *string)
   UNUR_DISTR *distr = NULL;       /* distribution object */
   UNUR_PAR   *par   = NULL;       /* parameter object */
   UNUR_GEN   *gen   = NULL;       /* generator object    */
+  UNUR_URNG  *urng  = NULL;       /* uniform random number generator */
 
   char *str_distr   = NULL;       /* string for distribution */
   char *str_method  = NULL;       /* string for method       */
+  char *str_urng    = NULL;       /* string for uniform RNG  */
 
   char *str = NULL;               /* pointer to working string */
   char *token;
@@ -464,6 +479,9 @@ unur_str2gen (const char *string)
     if (!strncmp(token,"method=",7)) {
       str_method = token;
     }
+    else if (!strncmp(token,"urng=",5)) {
+      str_urng = token;
+    }
     else {
       _unur_error_unknown(token,"category");
       _unur_slist_free( mlist );
@@ -494,6 +512,14 @@ unur_str2gen (const char *string)
 
   /* destroy distribution object */
   unur_distr_free(distr);
+
+  /* set uniform random number generator -- if provided */
+  if ( str_urng != NULL )
+    if (gen != NULL) {
+      /* we need a valid generator object */
+      if ((urng = _unur_str2urng(str_urng)) != NULL )
+	unur_chg_urng(gen, urng);
+    }
 
   /* free allocated memory blocks */
   _unur_slist_free(mlist);
@@ -1622,7 +1648,7 @@ _unur_str_par( char *str_method, const UNUR_DISTR *distr, struct unur_slist *mli
       }
       else {
 	if (*key != 'm') {
-	  _unur_error(GENTYPE,UNUR_ERR_STR_SYNTAX,"key for method does not start with 'd'"); 
+	  _unur_error(GENTYPE,UNUR_ERR_STR_SYNTAX,"key for method does not start with 'm'"); 
 	  return NULL;
 	}
       }
@@ -2234,6 +2260,116 @@ _unur_str_par_set_Di (UNUR_PAR *par, const char *key, char *type_args, char **ar
 
   return UNUR_ERR_STR_INVALID;
 } /* end of _unur_str_par_set_Di() */
+
+/*---------------------------------------------------------------------------*/
+
+/*****************************************************************************/
+/**  Uniform RNG                                                            **/
+/*****************************************************************************/
+
+UNUR_URNG *
+_unur_str2urng( char *str_urng )
+     /*----------------------------------------------------------------------*/
+     /* get uniform RNG                                                      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   str_urng ... string that contains description of uniform RNG       */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to uniform RNG                                             */
+     /*                                                                      */
+     /* The string must not contain any other keywords than "urng".          */
+     /* the argument is passed unchanged to the PRNG package.                */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+/*---------------------------------------------------------------------------*/
+#if UNUR_URNG_TYPE == UNUR_URNG_GENERIC && defined(UNURAN_HAS_PRNG)
+/*---------------------------------------------------------------------------*/
+
+  UNUR_URNG *urng = NULL;
+
+  char *token;             /* pointer to token in string */
+  char *next;              /* pointer to next token in string */
+  char *key, *value;       /* the key and its value */
+
+  /* tokenize the string using ';' as separator and handle the tokens */
+  for ( token = next = str_urng;
+	next != NULL && *token != '\0';
+	token = next ) {
+
+    /* find end of token (i.e. the pointer to next token) */
+    next = strchr(token,';');
+    if (next != NULL) {
+      /* next separator found */
+      *next = '\0';     /* terminate token string    */
+      next++;           /* set pointer to next token */
+    }
+    
+    /* token points to a key */
+    key = token;
+
+    /* get the value from the pair key=value and terminate key string */
+    value = strchr(key, '=');
+    if (value != NULL) {
+      *value = '\0';    /* terminate key string        */
+      value++;          /* set pointer to value string */
+    }
+    
+    /* get (default) parameter object for method */
+    if ( !strcmp( key, "urng") ) {
+      if (key == str_urng) {
+	/* "urng" must be the first key.                                  */
+	/* (on the other hand, the first keyword always must be "urng"    */
+	/* since otherwise we had not called this subroutine.             */
+	/* hence, we only check, whether the keyword "urng" is unique.)   */
+	urng = unur_urng_prng_new(value);
+	if (urng == NULL) {
+	  /* error */
+	  _unur_error(GENTYPE,UNUR_ERR_STR,"setting URNG failed"); 
+	  return NULL;
+	}
+	else {
+#ifdef UNUR_ENABLE_LOGGING
+	  /* write info into log file */
+	  if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
+	    _unur_str_debug_string(1,"urng",value);
+#endif
+	  ;
+	}
+      }
+      else {
+	if (urng) unur_urng_free (urng);
+	_unur_error(GENTYPE,UNUR_ERR_STR_SYNTAX,"urng must be first key"); 
+	return NULL;
+      }
+    }
+
+    /* there are no other parameters */
+    else {
+      /* error: unknown parameter */
+      if (urng) unur_urng_free (urng);
+      _unur_error_unknown(key,"parameter for uniform RNG");
+      return NULL;
+    }
+  }
+
+  /*return pointer to uniform RNG */
+  return urng;
+
+/*---------------------------------------------------------------------------*/
+#else
+/*---------------------------------------------------------------------------*/
+
+  _unur_error(GENTYPE,UNUR_ERR_STR,"setting URNG requires PRNG library enabled"); 
+  return NULL;
+
+/*---------------------------------------------------------------------------*/
+#endif
+/*---------------------------------------------------------------------------*/
+} /* end of _unur_str2urng() */
 
 /*---------------------------------------------------------------------------*/
 

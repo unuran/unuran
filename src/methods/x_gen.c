@@ -151,7 +151,7 @@ unur_get_genid( const struct unur_gen *gen )
 
 /*---------------------------------------------------------------------------*/
 
-const struct unur_distr *
+struct unur_distr *
 unur_get_distr( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* get pointer to distribution object from generator object             */

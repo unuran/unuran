@@ -117,13 +117,18 @@ const char *unur_get_genid( const UNUR_GEN *generator );
 
 /*---------------------------------------------------------------------------*/
 
-const UNUR_DISTR *unur_get_distr( const UNUR_GEN *generator );
+UNUR_DISTR *unur_get_distr( const UNUR_GEN *generator );
 /* 
-   Get pointer to distribution object from generator object. This
-   function should be used with extreme care. 
-   @strong{Never} manipulate the distribution object returned by this
-   call. 
-   (How should the poor generator object know what you have done?)
+   Get pointer to distribution object from generator object. 
+   This function can be used to change the parameters of the distribution
+   and reinitialize the generator object.
+   Notice that currently @strong{not all} generating methods have a
+   reinitialize routine. 
+   This function should be used with extreme care. Changing the distribution
+   is changed and using the generator object without reinitializing
+   might cause wrong samples or segmentation faults.
+   Moreover, if the corresponding generator object is freed, the
+   pointer must not be used.
 */
 
 /*---------------------------------------------------------------------------*/

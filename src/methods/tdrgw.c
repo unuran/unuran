@@ -915,15 +915,6 @@ unur_tdrgw_reinit( struct unur_gen *gen )
   _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
   _unur_check_gen_object( gen, TDRGW, UNUR_ERR_GEN_INVALID );
 
-  /* when the generator object contains a private copy of the      */
-  /* distribution object, then there is (currently) no possibility */
-  /* to change the parameters of the distribution.                 */
-  /* However, then reinit does not make sense.                     */
-  if (gen->distr_is_privatecopy) {
-    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"Reinit of generator object with private copy of distribution object has no effect");
-    return UNUR_ERR_GEN_DATA;
-  }
-
   /* first trial */
   n_trials = 1;
 
@@ -2342,7 +2333,6 @@ _unur_tdrgw_debug_init_start( const struct unur_gen *gen )
     fprintf(log,"%s: use private copy of distribution object\n",gen->genid);
   else
     fprintf(log,"%s: use pointer to external distribution object (dangerous!)\n",gen->genid);
-
   fprintf(log,"%s:\n",gen->genid);
 
   _unur_distr_cont_debug( gen->distr, gen->genid );

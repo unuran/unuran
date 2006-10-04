@@ -87,6 +87,12 @@ _unur_tdr_debug_init_start( const struct unur_gen *gen )
   _unur_print_if_default(gen,TDR_SET_C);
   fprintf(log,"\n%s:\n",gen->genid);
 
+  if (gen->distr_is_privatecopy)
+    fprintf(log,"%s: use private copy of distribution object\n",gen->genid);
+  else
+    fprintf(log,"%s: use pointer to external distribution object (dangerous!)\n",gen->genid);
+  fprintf(log,"%s:\n",gen->genid);
+
   _unur_distr_cont_debug( gen->distr, gen->genid );
 
   fprintf(log,"%s: sampling routine = _unur_tdr_",gen->genid);

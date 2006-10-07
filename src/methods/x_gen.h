@@ -129,6 +129,9 @@ UNUR_DISTR *unur_get_distr( const UNUR_GEN *generator );
    might cause wrong samples or segmentation faults.
    Moreover, if the corresponding generator object is freed, the
    pointer must not be used.
+
+   @strong{Important:} The returned distribution object must not 
+   be freed.
 */
 
 /*---------------------------------------------------------------------------*/

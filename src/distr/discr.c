@@ -888,6 +888,12 @@ unur_distr_discr_set_pmfparams( struct unur_distr *distr, const double *params, 
   _unur_check_distr_object( distr, DISCR, UNUR_ERR_DISTR_INVALID );
   if (n_params>0) _unur_check_NULL(distr->name, params, UNUR_ERR_NULL);
 
+  /* first check number of new parameter for the distribution */
+  if (n_params < 0 || n_params > UNUR_DISTR_MAXPARAMS ) {
+    _unur_error(NULL,UNUR_ERR_DISTR_NPARAMS,"");
+    return UNUR_ERR_DISTR_NPARAMS;
+  }
+
   /* changelog */
   distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
   /* derived parameters like mode, area, etc. might be wrong now! */
@@ -903,12 +909,6 @@ unur_distr_discr_set_pmfparams( struct unur_distr *distr, const double *params, 
     return (DISTR.set_params(distr,params,n_params));
 
   /* otherwise simply copy parameters */
-
-  /* but first check number of new parameter for the distribution */
-  if (n_params < 0 || n_params > UNUR_DISTR_MAXPARAMS ) {
-    _unur_error(NULL,UNUR_ERR_DISTR_NPARAMS,"");
-    return UNUR_ERR_DISTR_NPARAMS;
-  }
 
   DISTR.n_params = n_params;
   if (n_params) memcpy( DISTR.params, params, n_params*sizeof(double) );

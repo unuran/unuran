@@ -25,7 +25,8 @@ distr/          ... sources for generic distributions
 distributions/  ... sources for standard distributions and special generators
 utils/          ... sources for utilities
 tests/          ... sources for various tests
-uniform/        ... sources for simple uniform RNG
+uniform/        ... sources for simple uniform RNGs and wrapper for external RNGs
+urng/           ... sources for interface to uniform RNGs
 
 --------------------------------------------------
 ./utils/:
@@ -63,7 +64,6 @@ unur_fp_const_source.h
 unur_methods_source.h  ... id's for methods
 
 x_gen.c         ... handle generator objects
-x_urng.c        ... handle uniform RNG
 
 --------------------------------------------------
 ./distr/:

@@ -7,13 +7,19 @@ Version 0.8.0: October 2006
 
         - method AROU:
 
-          · removed unur_arou_set_center() as this functionality is 
+          . removed unur_arou_set_center() as this functionality is 
             already covered by the unur_distr_cont_set_center() call
 
         - method TDR:
 
-          · removed unur_tdr_set_center() as this functionality is 
+          . removed unur_tdr_set_center() as this functionality is 
             already covered by the unur_distr_cont_set_center() call
+
+	- method SROU:
+
+	  . unur_srou_chg_pdfparams(), unur_srou_chg_cdfatmode(),
+	    unur_srou_chg_pdfatmode(), and unur_srou_chg_pdfarea()
+           is now deprecated
 
 	* Distributions:
 

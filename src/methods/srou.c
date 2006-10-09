@@ -554,6 +554,8 @@ unur_srou_set_usemirror( struct unur_par *par, int usemirror )
 int
 unur_srou_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
      /*----------------------------------------------------------------------*/
+     /* Deprecated call!                                                     */
+     /*----------------------------------------------------------------------*/
      /* change array of parameters for distribution                          */
      /*                                                                      */
      /* parameters:                                                          */
@@ -584,6 +586,8 @@ unur_srou_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
 int
 unur_srou_chg_mode( struct unur_gen *gen, double mode )
      /*----------------------------------------------------------------------*/
+     /* Deprecated call!                                                     */
+     /*----------------------------------------------------------------------*/
      /* change mode of distribution                                          */
      /*                                                                      */
      /* parameters:                                                          */
@@ -612,6 +616,8 @@ unur_srou_chg_mode( struct unur_gen *gen, double mode )
 
 int
 unur_srou_upd_mode( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* Deprecated call!                                                     */
      /*----------------------------------------------------------------------*/
      /* recompute mode of distribution                                       */
      /*                                                                      */
@@ -711,6 +717,8 @@ unur_srou_chg_pdfatmode( struct unur_gen *gen, double fmode )
 int 
 unur_srou_chg_domain( struct unur_gen *gen, double left, double right )
      /*----------------------------------------------------------------------*/
+     /* Deprecated call!                                                     */
+     /*----------------------------------------------------------------------*/
      /* change the left and right borders of the domain of the distribution  */
      /*                                                                      */
      /* parameters:                                                          */
@@ -754,6 +762,8 @@ unur_srou_chg_domain( struct unur_gen *gen, double left, double right )
 int
 unur_srou_chg_pdfarea( struct unur_gen *gen, double area )
      /*----------------------------------------------------------------------*/
+     /* Deprecated call!                                                     */
+     /*----------------------------------------------------------------------*/
      /* change area below PDF of distribution                                */
      /*                                                                      */
      /* parameters:                                                          */
@@ -788,6 +798,8 @@ unur_srou_chg_pdfarea( struct unur_gen *gen, double area )
 
 int
 unur_srou_upd_pdfarea( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* Deprecated call!                                                     */
      /*----------------------------------------------------------------------*/
      /* recompute area below PDF of distribution                             */
      /*                                                                      */

@@ -71,7 +71,7 @@
       (but need not be) used. 
       A way to increase the performance of the algorithm when the
       CDF at the mode is not provided is the usage of the mirror
-      principle (only if @code{r=1}). However using squeezes and using
+      principle (only if @code{r=1}). However, using squeezes and using
       the mirror principle is only recommended when the PDF is
       expensive to compute.
 
@@ -227,6 +227,8 @@ int unur_srou_set_usesqueeze( UNUR_PAR *parameters, int usesqueeze );
    Using squeezes is automatically disabled when the CDF at the mode
    is not given (then no universal squeezes exist).
 
+   Squeezes can only be used if @code{r=1}.
+
    Default is FALSE.
 */
 
@@ -241,6 +243,8 @@ int unur_srou_set_usemirror( UNUR_PAR *parameters, int usemirror );
    (Then there is no necessity to use the mirror principle. However disabling
    is only done during the initialization step but not at a re-initialization
    step.)
+
+   The mirror principle can only be used if @code{r=1}.
 
    Default is FALSE.
 */
@@ -261,6 +265,27 @@ int unur_srou_chg_verify( UNUR_GEN *generator, int verify );
 */
 
 /*...........................................................................*/
+
+int unur_srou_chg_cdfatmode( UNUR_GEN *generator, double Fmode );
+/* 
+   Change CDF at mode of distribution.
+   unur_srou_reinit() must be executed before sampling from the 
+   generator again.
+*/
+
+int unur_srou_chg_pdfatmode( UNUR_GEN *generator, double fmode );
+/* 
+   Change PDF at mode of distribution.
+   unur_srou_reinit() must be executed before sampling from the 
+   generator again.
+*/
+
+/* =END */
+/*---------------------------------------------------------------------------*/
+
+/* 
+   Deprecated calls
+*/
 
 int unur_srou_chg_pdfparams( UNUR_GEN *generator, double *params, int n_params );
 /* 
@@ -307,20 +332,6 @@ int unur_srou_upd_mode( UNUR_GEN *generator );
    generator again.
 */
 
-int unur_srou_chg_cdfatmode( UNUR_GEN *generator, double Fmode );
-/* 
-   Change CDF at mode of distribution.
-   unur_srou_reinit() must be executed before sampling from the 
-   generator again.
-*/
-
-int unur_srou_chg_pdfatmode( UNUR_GEN *generator, double fmode );
-/* 
-   Change PDF at mode of distribution.
-   unur_srou_reinit() must be executed before sampling from the 
-   generator again.
-*/
-
 int unur_srou_chg_pdfarea( UNUR_GEN *generator, double area );
 /* 
    Change area below PDF of distribution.
@@ -340,7 +351,5 @@ int unur_srou_upd_pdfarea( UNUR_GEN *generator );
    generator again.
 */
 
-/* =END */
+ 
 /*---------------------------------------------------------------------------*/
-
-

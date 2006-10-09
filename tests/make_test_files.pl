@@ -1028,9 +1028,9 @@ int main()
 #if UNUR_URNG_TYPE == UNUR_URNG_GENERIC
 	if (unur_urng_seed(NULL, 
 #  ifdef SEED
-	      $seed
-#  else
 	      SEED
+#  else
+	      $seed
 #  endif  
              ) != UNUR_SUCCESS) {
 	  fprintf(stderr,"WARNING: Seed could not be set at random\\n");

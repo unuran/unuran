@@ -1013,18 +1013,28 @@ int main()
 		fprintf(TESTLOG,"\\n====================================================\\n\\n");
 	}
 
-        /* seed build-in uniform generators */
-        unur_urng_MRG31k3p_seed($seed);
+       /* seed build-in uniform generators */
+#ifdef SEED
+       unur_urng_MRG31k3p_seed(SEED);
+	unur_urng_fish_seed(SEED);
+	unur_urng_mstd_seed(SEED);
+#else
+       unur_urng_MRG31k3p_seed($seed);
 	unur_urng_fish_seed($seed);
 	unur_urng_mstd_seed($seed);
+#endif
 
 	/* seed uniform random number generator */
 #if UNUR_URNG_TYPE == UNUR_URNG_GENERIC
-/*
-	if (unur_urng_seed(NULL, $seed) != UNUR_SUCCESS) {
+	if (unur_urng_seed(NULL, 
+#  ifdef SEED
+	      $seed
+#  else
+	      SEED
+#  endif  
+             ) != UNUR_SUCCESS) {
 	  fprintf(stderr,"WARNING: Seed could not be set at random\\n");
 	}  
-*/
 #elif UNUR_URNG_TYPE == UNUR_URNG_PRNG
 	unur_set_default_urng(prng_new("mt19937($seed)"));
 #elif UNUR_URNG_TYPE == UNUR_URNG_RNGSTREAM

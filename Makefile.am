@@ -42,10 +42,9 @@ dist-root:
 	mkdir $(rootdir)
 	tar zxf $(PACKAGE)-$(VERSION).tar.gz -C $(rootdir) 
 	(cd $(rootdir)/$(PACKAGE)-$(VERSION); \
-	   sed -r --posix \
-		-e 's/(AM_CONDITIONAL\(\s*INCLUDE_SOURCE_ONLY)\s*,.*/\1,true)/' \
-		-e 's/(AM_CONDITIONAL\(\s*INCLUDE_EXPERIMENTAL)\s*,.*/\1,false)/' \
-		-e 's/(AC_INIT\(\s*\[UNURAN\]\s*,\s*\[)(.*)\]\s*,\s*\[/\1\2-root\\],\\[/' \
+	   sed -e 's/\(AM_CONDITIONAL(\s*INCLUDE_SOURCE_ONLY\)\s*,.*/\1,true)/' \
+		-e 's/\(AM_CONDITIONAL(\s*INCLUDE_EXPERIMENTAL\)\s*,.*/\1,false)/' \
+		-e 's/\(AC_INIT(\s*\[UNURAN\]\s*,\s*\[\)\(.*\)\]\s*,\s*\[/\1\2-root\],\[/' \
 	   < configure.ac > configure.ac.tmp; \
 	   mv -v configure.ac.tmp configure.ac; \
 	   for f in `find . -type f -name '*.[ch]'`; do \

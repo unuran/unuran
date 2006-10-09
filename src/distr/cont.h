@@ -368,6 +368,9 @@ int unur_distr_cont_set_domain( UNUR_DISTR *distribution, double left, double ri
    is unimodal and thus monotone on either side of the mode! This is used in
    the case when the given mode is outside of the original domain. Then the
    mode is set to the corresponding boundary of the new domain.
+   If this result is not the desired it must be changed by using a 
+   unur_distr_cont_set_mode() call (or a unur_distr_cont_upd_mode()
+   call).
 */
 
 int unur_distr_cont_get_domain( const UNUR_DISTR *distribution, double *left, double *right );

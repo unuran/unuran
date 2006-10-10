@@ -24,13 +24,6 @@ ninv.h:int unur_ninv_chg_start(UNUR_GEN *gen, double left, double right);
 ninv.h:int unur_ninv_chg_table(UNUR_GEN *gen, int no_of_points);
 ninv.h:int unur_ninv_chg_pdfparams(UNUR_GEN *generator, double *params, int n_params);
 
-ssr.h:int unur_ssr_chg_pdfparams( UNUR_GEN *generator, double *params, int n_params );
-ssr.h:int unur_ssr_chg_domain( UNUR_GEN *generator, double left, double right );
-ssr.h:int unur_ssr_chg_mode( UNUR_GEN *generator, double mode );
-ssr.h:int unur_ssr_chg_cdfatmode( UNUR_GEN *generator, double Fmode );
-ssr.h:int unur_ssr_chg_pdfatmode( UNUR_GEN *generator, double fmode );
-ssr.h:int unur_ssr_chg_pdfarea( UNUR_GEN *generator, double area );
-
 tdr.h:int unur_tdr_chg_reinit_percentiles( UNUR_GEN *generator, int n_percentiles, const double *percentiles );
 tdr.h:int unur_tdr_chg_reinit_ncpoints( UNUR_GEN *generator, int ncpoints );
 
@@ -48,6 +41,49 @@ vempk.h:int unur_vempk_chg_varcor( UNUR_GEN *generator, int varcor );
 
 
 ###############################################################
-# Docu
+# update docu for reinit:
 
 srou.h
+ssr.h
+
+###############################################################
+# update reinit:
+
+srou.h
+ssr.h
+
+
+###############################################################
+# add reinit:
+
+arou.h
+auto.h
+cstd.h
+dari.h
+dau.h
+dgt.h
+dsrou.h
+dss.h
+dstd.h
+empk.h
+empl.h
+gibbs.h
+hinv.h
+hitro.h
+hrb.h
+hrd.h
+hri.h
+itdr.h
+mcorr.h
+ninv.h
+norta.h
+nrou.h
+ssr.h
+tabl.h
+tdr.h
+tdrgw.h
+unif.h
+utdr.h
+vempk.h
+vmt.h
+vnrou.h

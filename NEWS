@@ -36,6 +36,12 @@ Version 0.8.0: October 2006
            unur_utdr_chg_pdfarea(), and unur_utdr_upd_pdfarea()
 	    are now deprecated
 
+	- method DARI:
+
+	  . unur_dari_chg_pmfparams(), unur_dari_chg_domain(),
+	    unur_dari_chg_mode(), unur_dari_upd_mode(),
+	    unur_dari_chg_pmfsum(), and unur_dari_upd_pmfsum()
+	    are now deprecated
 
 	* Distributions:
 

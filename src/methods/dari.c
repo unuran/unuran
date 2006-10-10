@@ -421,6 +421,8 @@ unur_dari_chg_verify( struct unur_gen *gen, int verify )
 int
 unur_dari_chg_pmfparams( struct unur_gen *gen, double *params, int n_params )
      /*----------------------------------------------------------------------*/
+     /* Deprecated call!                                                     */
+     /*----------------------------------------------------------------------*/
      /* change array of parameters for distribution                          */
      /*                                                                      */
      /* parameters:                                                          */
@@ -450,6 +452,8 @@ unur_dari_chg_pmfparams( struct unur_gen *gen, double *params, int n_params )
 
 int 
 unur_dari_chg_domain( struct unur_gen *gen, int left, int right )
+     /*----------------------------------------------------------------------*/
+     /* Deprecated call!                                                     */
      /*----------------------------------------------------------------------*/
      /* change the left and right borders of the domain of the distribution  */
      /*                                                                      */
@@ -497,6 +501,8 @@ unur_dari_chg_domain( struct unur_gen *gen, int left, int right )
 int
 unur_dari_chg_mode( struct unur_gen *gen, int mode )
      /*----------------------------------------------------------------------*/
+     /* Deprecated call!                                                     */
+     /*----------------------------------------------------------------------*/
      /* change mode of distribution                                          */
      /*                                                                      */
      /* parameters:                                                          */
@@ -527,6 +533,8 @@ unur_dari_chg_mode( struct unur_gen *gen, int mode )
 int
 unur_dari_upd_mode( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
+     /* Deprecated call!                                                     */
+     /*----------------------------------------------------------------------*/
      /* recompute mode of distribution                                       */
      /*                                                                      */
      /* parameters:                                                          */
@@ -548,6 +556,8 @@ unur_dari_upd_mode( struct unur_gen *gen )
 
 int
 unur_dari_chg_pmfsum( struct unur_gen *gen, double sum )
+     /*----------------------------------------------------------------------*/
+     /* Deprecated call!                                                     */
      /*----------------------------------------------------------------------*/
      /* change sum over PMF of distribution                                  */
      /*                                                                      */
@@ -583,6 +593,8 @@ unur_dari_chg_pmfsum( struct unur_gen *gen, double sum )
 
 int
 unur_dari_upd_pmfsum( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* Deprecated call!                                                     */
      /*----------------------------------------------------------------------*/
      /* recompute sum over PMF of distribution                               */
      /*                                                                      */
@@ -713,7 +725,7 @@ _unur_dari_create( struct unur_par *par )
   GEN->c_factor = PAR->c_factor;      /* constant for choice of design point   */
 
   /* size of auxiliary table; 0 for none
-     it cannot be larger than the given domai (avoid overflow) */
+     it cannot be larger than the given domain (avoid overflow) */
   if ((unsigned)DISTR.BD_RIGHT - (unsigned)DISTR.BD_LEFT < INT_MAX)
     GEN->size = min(PAR->size,DISTR.BD_RIGHT-DISTR.BD_LEFT+1);
   else /* length of interval > INT_MAX */

@@ -16,8 +16,6 @@ dstd.h:int unur_dstd_chg_pmfparams( UNUR_GEN *gen, double *params, int n_params 
 empk.h:int unur_empk_chg_smoothing( UNUR_GEN *generator, double smoothing );
 empk.h:int unur_empk_chg_varcor( UNUR_GEN *generator, int varcor );
 
-hitro.h:int unur_hitro_chg_state( UNUR_GEN *generator, const double *state );
-
 ninv.h:int unur_ninv_chg_max_iter(UNUR_GEN *generator, int max_iter);
 ninv.h:int unur_ninv_chg_x_resolution(UNUR_GEN *generator, double x_resolution);
 ninv.h:int unur_ninv_chg_start(UNUR_GEN *gen, double left, double right);
@@ -29,12 +27,6 @@ tdr.h:int unur_tdr_chg_reinit_ncpoints( UNUR_GEN *generator, int ncpoints );
 
 tdrgw.h:int unur_tdrgw_chg_reinit_percentiles( UNUR_GEN *generator, int n_percentiles, const double *percentiles );
 tdrgw.h:int unur_tdrgw_chg_reinit_ncpoints( UNUR_GEN *generator, int ncpoints );
-
-utdr.h:int unur_utdr_chg_pdfparams( UNUR_GEN *generator, double *params, int n_params );
-utdr.h:int unur_utdr_chg_domain( UNUR_GEN *generator, double left, double right );
-utdr.h:int unur_utdr_chg_mode( UNUR_GEN *generator, double mode );
-utdr.h:int unur_utdr_chg_pdfatmode( UNUR_GEN *generator, double fmode );
-utdr.h:int unur_utdr_chg_pdfarea( UNUR_GEN *generator, double area );
 
 vempk.h:int unur_vempk_chg_smoothing( UNUR_GEN *generator, double smoothing );
 vempk.h:int unur_vempk_chg_varcor( UNUR_GEN *generator, int varcor );

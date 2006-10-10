@@ -172,7 +172,12 @@ int unur_dari_chg_verify( UNUR_GEN *generator, int verify );
    Default is FALSE.
 */
 
-/*...........................................................................*/
+/* =END */
+/*---------------------------------------------------------------------------*/
+
+/**********************
+ *  Deprecated calls  *
+ **********************/
 
 int unur_dari_chg_pmfparams( UNUR_GEN *generator, double *params, int n_params );
 /* 
@@ -243,7 +248,5 @@ int unur_dari_upd_pmfsum( UNUR_GEN *generator );
    generator again.
 */
 
-/* =END */
-/*---------------------------------------------------------------------------*/
 
 

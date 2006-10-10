@@ -1,16 +1,5 @@
 cstd.h:int unur_cstd_chg_pdfparams( UNUR_GEN *generator, double *params, int n_params );
 
-dari.h:int unur_dari_chg_pmfparams( UNUR_GEN *generator, double *params, int n_params );
-dari.h:int unur_dari_chg_domain( UNUR_GEN *generator, int left, int right );
-dari.h:int unur_dari_chg_mode( UNUR_GEN *generator, int mode );
-dari.h:int unur_dari_chg_pmfsum( UNUR_GEN *generator, double sum );
-
-dsrou.h:int unur_dsrou_chg_pmfparams( UNUR_GEN *generator, double *params, int n_params );
-dsrou.h:int unur_dsrou_chg_domain( UNUR_GEN *generator, int left, int right );
-dsrou.h:int unur_dsrou_chg_mode( UNUR_GEN *generator, int mode );
-dsrou.h:int unur_dsrou_chg_cdfatmode( UNUR_GEN *generator, double Fmode );
-dsrou.h:int unur_dsrou_chg_pmfsum( UNUR_GEN *generator, double sum );
-
 dstd.h:int unur_dstd_chg_pmfparams( UNUR_GEN *gen, double *params, int n_params );
 
 empk.h:int unur_empk_chg_smoothing( UNUR_GEN *generator, double smoothing );

@@ -143,6 +143,20 @@ int unur_dsrou_chg_verify( UNUR_GEN *generator, int verify );
 
 /*...........................................................................*/
 
+int unur_dsrou_chg_cdfatmode( UNUR_GEN *generator, double Fmode );
+/* 
+   Change CDF at mode of distribution.
+   unur_dsrou_reinit() must be executed before sampling from the 
+   generator again.
+*/
+
+/* =END */
+/*---------------------------------------------------------------------------*/
+
+/**********************
+ *  Deprecated calls  *
+ **********************/
+
 int unur_dsrou_chg_pmfparams( UNUR_GEN *generator, double *params, int n_params );
 /* 
    Change array of parameters of the distribution in a given generator
@@ -188,14 +202,6 @@ int unur_dsrou_upd_mode( UNUR_GEN *generator );
    generator again.
 */
 
-int unur_dsrou_chg_cdfatmode( UNUR_GEN *generator, double Fmode );
-/* 
-   Change CDF at mode of distribution.
-   unur_dsrou_reinit() must be executed before sampling from the 
-   generator again.
-*/
-
-
 int unur_dsrou_chg_pmfsum( UNUR_GEN *generator, double sum );
 /* 
    Change sum over PMF of distribution.
@@ -214,8 +220,4 @@ int unur_dsrou_upd_pmfsum( UNUR_GEN *generator );
    unur_dsrou_reinit() must be executed before sampling from the 
    generator again.
 */
-
-/* =END */
-/*---------------------------------------------------------------------------*/
-
 

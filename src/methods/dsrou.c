@@ -374,6 +374,8 @@ unur_dsrou_chg_verify( struct unur_gen *gen, int verify )
 int
 unur_dsrou_chg_pmfparams( struct unur_gen *gen, double *params, int n_params )
      /*----------------------------------------------------------------------*/
+     /* Deprecated call!                                                     */
+     /*----------------------------------------------------------------------*/
      /* change array of parameters for distribution                          */
      /*                                                                      */
      /* parameters:                                                          */
@@ -404,6 +406,8 @@ unur_dsrou_chg_pmfparams( struct unur_gen *gen, double *params, int n_params )
 int
 unur_dsrou_chg_mode( struct unur_gen *gen, int mode )
      /*----------------------------------------------------------------------*/
+     /* Deprecated call!                                                     */
+     /*----------------------------------------------------------------------*/
      /* change mode of distribution                                          */
      /*                                                                      */
      /* parameters:                                                          */
@@ -432,6 +436,8 @@ unur_dsrou_chg_mode( struct unur_gen *gen, int mode )
 
 int
 unur_dsrou_upd_mode( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* Deprecated call!                                                     */
      /*----------------------------------------------------------------------*/
      /* recompute mode of distribution                                       */
      /*                                                                      */
@@ -491,6 +497,8 @@ unur_dsrou_chg_cdfatmode( struct unur_gen *gen, double Fmode )
 int 
 unur_dsrou_chg_domain( struct unur_gen *gen, int left, int right )
      /*----------------------------------------------------------------------*/
+     /* Deprecated call!                                                     */
+     /*----------------------------------------------------------------------*/
      /* change the left and right borders of the domain of the distribution  */
      /*                                                                      */
      /* parameters:                                                          */
@@ -535,6 +543,8 @@ unur_dsrou_chg_domain( struct unur_gen *gen, int left, int right )
 int
 unur_dsrou_chg_pmfsum( struct unur_gen *gen, double sum )
      /*----------------------------------------------------------------------*/
+     /* Deprecated call!                                                     */
+     /*----------------------------------------------------------------------*/
      /* change sum over PMF of distribution                                  */
      /*                                                                      */
      /* parameters:                                                          */
@@ -569,6 +579,8 @@ unur_dsrou_chg_pmfsum( struct unur_gen *gen, double sum )
 
 int
 unur_dsrou_upd_pmfsum( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* Deprecated call!                                                     */
      /*----------------------------------------------------------------------*/
      /* recompute sum over PMF of distribution                               */
      /*                                                                      */

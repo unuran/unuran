@@ -140,6 +140,7 @@ struct unur_gen {
 
   void (*destroy)(struct unur_gen *gen); /* pointer to destructor            */ 
   struct unur_gen* (*clone)(const struct unur_gen *gen ); /* clone generator */
+  int (*reinit)(struct unur_gen *gen); /* pointer to reinit routine          */ 
 
 #ifdef UNUR_COOKIES
   unsigned cookie;            /* magic cookie                                */

@@ -341,6 +341,11 @@ _unur_generic_create( struct unur_par *par, size_t s )
   else
     gen->distr = (struct unur_distr *) par->distr;
 
+  /* initialize function pointers */
+  gen->destroy = NULL;              /* destructor      */ 
+  gen->clone = NULL;                /* clone generator */
+  gen->reinit = NULL;               /* reinit routine  */ 
+
   /* copy some parameters into generator object */
   gen->method = par->method;        /* indicates method and variant          */
   gen->variant = par->variant;      /* indicates variant                     */

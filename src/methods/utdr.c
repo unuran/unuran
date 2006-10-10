@@ -473,6 +473,8 @@ unur_utdr_chg_verify( struct unur_gen *gen, int verify )
 int
 unur_utdr_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
      /*----------------------------------------------------------------------*/
+     /* Deprecated call!                                                     */
+     /*----------------------------------------------------------------------*/
      /* change array of parameters for distribution                          */
      /*                                                                      */
      /* parameters:                                                          */
@@ -502,6 +504,8 @@ unur_utdr_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
 
 int 
 unur_utdr_chg_domain( struct unur_gen *gen, double left, double right )
+     /*----------------------------------------------------------------------*/
+     /* Deprecated call!                                                     */
      /*----------------------------------------------------------------------*/
      /* change the left and right borders of the domain of the distribution  */
      /*                                                                      */
@@ -547,6 +551,8 @@ unur_utdr_chg_domain( struct unur_gen *gen, double left, double right )
 int
 unur_utdr_chg_mode( struct unur_gen *gen, double mode )
      /*----------------------------------------------------------------------*/
+     /* Deprecated call!                                                     */
+     /*----------------------------------------------------------------------*/
      /* change mode of distribution                                          */
      /*                                                                      */
      /* parameters:                                                          */
@@ -575,6 +581,8 @@ unur_utdr_chg_mode( struct unur_gen *gen, double mode )
 
 int
 unur_utdr_upd_mode( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* Deprecated call!                                                     */
      /*----------------------------------------------------------------------*/
      /* recompute mode of distribution                                       */
      /*                                                                      */
@@ -635,6 +643,8 @@ unur_utdr_chg_pdfatmode( struct unur_gen *gen, double fmode )
 int
 unur_utdr_chg_pdfarea( struct unur_gen *gen, double area )
      /*----------------------------------------------------------------------*/
+     /* Deprecated call!                                                     */
+     /*----------------------------------------------------------------------*/
      /* change area below PDF of distribution                                */
      /*                                                                      */
      /* parameters:                                                          */
@@ -669,6 +679,8 @@ unur_utdr_chg_pdfarea( struct unur_gen *gen, double area )
 
 int
 unur_utdr_upd_pdfarea( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* Deprecated call!                                                     */
      /*----------------------------------------------------------------------*/
      /* recompute area below PDF of distribution                             */
      /*                                                                      */
@@ -1111,6 +1123,10 @@ unur_utdr_reinit( struct unur_gen *gen )
   /* check arguments */
   _unur_check_NULL( GENTYPE,gen, UNUR_ERR_NULL );
   _unur_check_gen_object( gen, UTDR, UNUR_ERR_GEN_INVALID );
+
+  /* update left and right boundary for algorithm */
+  GEN->il = DISTR.BD_LEFT;
+  GEN->ir = DISTR.BD_RIGHT;
 
   /* compute universal bounding rectangle */
   return _unur_utdr_hat( gen );

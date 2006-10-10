@@ -164,6 +164,20 @@ int unur_utdr_chg_verify( UNUR_GEN *generator, int verify );
 
 /*...........................................................................*/
 
+int unur_utdr_chg_pdfatmode( UNUR_GEN *generator, double fmode );
+/* 
+   Change PDF at mode of distribution.
+   unur_utdr_reinit() must be executed before sampling from the 
+   generator again.
+*/
+
+/* =END */
+/*---------------------------------------------------------------------------*/
+
+/**********************
+ *  Deprecated calls  *
+ **********************/
+
 int unur_utdr_chg_pdfparams( UNUR_GEN *generator, double *params, int n_params );
 /* 
    Change array of parameters of the distribution in a given generator
@@ -208,13 +222,6 @@ int unur_utdr_upd_mode( UNUR_GEN *generator );
    generator again.
 */
 
-int unur_utdr_chg_pdfatmode( UNUR_GEN *generator, double fmode );
-/* 
-   Change PDF at mode of distribution.
-   unur_utdr_reinit() must be executed before sampling from the 
-   generator again.
-*/
-
 int unur_utdr_chg_pdfarea( UNUR_GEN *generator, double area );
 /* 
    Change area below PDF of distribution.
@@ -234,5 +241,4 @@ int unur_utdr_upd_pdfarea( UNUR_GEN *generator );
    generator again.
 */
 
-/* =END */
-/*---------------------------------------------------------------------------*/
+

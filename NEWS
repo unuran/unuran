@@ -17,9 +17,25 @@ Version 0.8.0: October 2006
 
 	- method SROU:
 
-	  . unur_srou_chg_pdfparams(), unur_srou_chg_cdfatmode(),
-	    unur_srou_chg_pdfatmode(), and unur_srou_chg_pdfarea()
-           is now deprecated
+	  . unur_srou_chg_pdfparams(), unur_srou_chg_domain(),
+	    unur_srou_chg_mode(), unur_srou_upd_mode(), 
+           unur_srou_chg_pdfarea(), and unur_srou_upd_pdfarea()
+	    are now deprecated
+
+	- method SSR:
+
+	  . unur_ssr_chg_pdfparams(), unur_ssr_chg_domain(),
+	    unur_ssr_chg_mode(), unur_ssr_upd_mode(), 
+           unur_ssr_chg_pdfarea(), and unur_ssr_upd_pdfarea()
+	    are now deprecated
+
+	- method UTDR:
+
+	  . unur_utdr_chg_pdfparams(), unur_utdr_chg_domain(),
+	    unur_utdr_chg_mode(), unur_utdr_upd_mode(), 
+           unur_utdr_chg_pdfarea(), and unur_utdr_upd_pdfarea()
+	    are now deprecated
+
 
 	* Distributions:
 

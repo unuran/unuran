@@ -43,14 +43,24 @@ vempk.h:int unur_vempk_chg_varcor( UNUR_GEN *generator, int varcor );
 ###############################################################
 # update docu for reinit:
 
+dari.h
+dsrou.h
 srou.h
 ssr.h
+tdr.h
+tdrgw.h
+utdr.h
 
 ###############################################################
 # update reinit:
 
+dari.h
+dsrou.h
 srou.h
 ssr.h
+tdr.h
+tdrgw.h
+utdr.h
 
 
 ###############################################################
@@ -87,3 +97,4 @@ utdr.h
 vempk.h
 vmt.h
 vnrou.h
+

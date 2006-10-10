@@ -283,9 +283,9 @@ int unur_srou_chg_pdfatmode( UNUR_GEN *generator, double fmode );
 /* =END */
 /*---------------------------------------------------------------------------*/
 
-/* 
-   Deprecated calls
-*/
+/**********************
+ *  Deprecated calls  *
+ **********************/
 
 int unur_srou_chg_pdfparams( UNUR_GEN *generator, double *params, int n_params );
 /* 

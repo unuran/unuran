@@ -110,8 +110,8 @@ static struct unur_gen *_unur_gibbs_create( struct unur_par *par );
 /* create new (almost empty) generator object.                               */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_gibbs_coord_sample_cvec( struct unur_gen *gen, double *vec );
-static void _unur_gibbs_randomdir_sample_cvec( struct unur_gen *gen, double *vec );
+static int _unur_gibbs_coord_sample_cvec( struct unur_gen *gen, double *vec );
+static int _unur_gibbs_randomdir_sample_cvec( struct unur_gen *gen, double *vec );
 /*---------------------------------------------------------------------------*/
 /* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/
@@ -891,7 +891,7 @@ _unur_gibbs_clone( const struct unur_gen *gen )
 
 /*****************************************************************************/
 
-void
+int
 _unur_gibbs_coord_sample_cvec( struct unur_gen *gen, double *vec )
      /*----------------------------------------------------------------------*/
      /* sample from generator                                                */
@@ -905,8 +905,8 @@ _unur_gibbs_coord_sample_cvec( struct unur_gen *gen, double *vec )
   int thinning;
 
   /* check arguments */
-  CHECK_NULL(gen,RETURN_VOID);
-  COOKIE_CHECK(gen,CK_GIBBS_GEN,RETURN_VOID);
+  CHECK_NULL(gen,UNUR_ERR_NULL);
+  COOKIE_CHECK(gen,CK_GIBBS_GEN,UNUR_ERR_COOKIE);
 
   for (thinning = GEN->thinning; thinning > 0; --thinning) {
 
@@ -936,7 +936,7 @@ _unur_gibbs_coord_sample_cvec( struct unur_gen *gen, double *vec )
     case GIBBS_VAR_T_POW:
     default:
       _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-      return;
+      return UNUR_SUCCESS;
     }
     
     /* sample from distribution */
@@ -950,13 +950,13 @@ _unur_gibbs_coord_sample_cvec( struct unur_gen *gen, double *vec )
   /* copy current state into given vector */
   memcpy(vec, GEN->state, GEN->dim * sizeof(double)); 
 
-  return;
+  return UNUR_SUCCESS;
 
 } /* end of _unur_gibbs_coord_sample_cvec() */
 
 /*---------------------------------------------------------------------------*/
 
-void
+int
 _unur_gibbs_randomdir_sample_cvec( struct unur_gen *gen, double *vec )
      /*----------------------------------------------------------------------*/
      /* sample from generator                                                */
@@ -971,8 +971,8 @@ _unur_gibbs_randomdir_sample_cvec( struct unur_gen *gen, double *vec )
   int thinning;
 
   /* check arguments */
-  CHECK_NULL(gen,RETURN_VOID);
-  COOKIE_CHECK(gen,CK_GIBBS_GEN,RETURN_VOID);
+  CHECK_NULL(gen,UNUR_ERR_NULL);
+  COOKIE_CHECK(gen,CK_GIBBS_GEN,UNUR_ERR_COOKIE);
 
   for (thinning = GEN->thinning; thinning > 0; --thinning) {
 
@@ -1002,7 +1002,7 @@ _unur_gibbs_randomdir_sample_cvec( struct unur_gen *gen, double *vec )
     case GIBBS_VAR_T_POW:
     default:
       _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-      return;
+      return UNUR_SUCCESS;
     }
 
     /* sample from distribution */
@@ -1017,7 +1017,7 @@ _unur_gibbs_randomdir_sample_cvec( struct unur_gen *gen, double *vec )
   /* copy current state into given vector */
   memcpy(vec, GEN->state, GEN->dim * sizeof(double)); 
 
-  return;
+  return UNUR_SUCCESS;
 
 } /* end of _unur_gibbs_randomdir_sample_cvec() */
 

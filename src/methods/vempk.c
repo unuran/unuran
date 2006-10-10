@@ -164,7 +164,7 @@ static struct unur_gen *_unur_vempk_create( struct unur_par *par );
 /* create new (almost empty) generator object.                               */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_vempk_sample_cvec( struct unur_gen *gen, double *result );
+static int _unur_vempk_sample_cvec( struct unur_gen *gen, double *result );
 /*---------------------------------------------------------------------------*/
 /* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/
@@ -617,7 +617,7 @@ _unur_vempk_clone( const struct unur_gen *gen )
 
 /*****************************************************************************/
 
-void
+int
 _unur_vempk_sample_cvec( struct unur_gen *gen, double *result )
      /*----------------------------------------------------------------------*/
      /* sample from generator                                                */
@@ -632,7 +632,7 @@ _unur_vempk_sample_cvec( struct unur_gen *gen, double *result )
   int j,k;
 
   /* check arguments */
-  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_VEMPK_GEN,RETURN_VOID);
+  CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_VEMPK_GEN,UNUR_ERR_COOKIE);
 
   /* select uniformly one of the observations */
   U = _unur_call_urng(gen->urng) * GEN->n_observ;
@@ -651,6 +651,7 @@ _unur_vempk_sample_cvec( struct unur_gen *gen, double *result )
     for (k=0; k<GEN->dim; k++) 
       result[k] = GEN->hact * result[k] + GEN->observ[idx(j,k)];
   
+  return UNUR_SUCCESS;
 #undef idx
 } /* end of _unur_vempk_sample() */
 

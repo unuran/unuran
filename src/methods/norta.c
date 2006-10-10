@@ -151,7 +151,7 @@ static struct unur_gen *_unur_norta_make_marginalgen( const struct unur_gen *gen
 /* make generator for marginal distribution                                  */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_norta_sample_cvec( struct unur_gen *gen, double *vec );
+static int _unur_norta_sample_cvec( struct unur_gen *gen, double *vec );
 /*---------------------------------------------------------------------------*/
 /* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/
@@ -712,7 +712,7 @@ _unur_norta_make_marginalgen( const struct unur_gen *gen,
 
 /*****************************************************************************/
 
-void
+int
 _unur_norta_sample_cvec( struct unur_gen *gen, double *vec )
      /*----------------------------------------------------------------------*/
      /* sample from generator                                                */
@@ -727,8 +727,8 @@ _unur_norta_sample_cvec( struct unur_gen *gen, double *vec )
   double *u;
 
   /* check arguments */
-  CHECK_NULL(gen,RETURN_VOID);
-  COOKIE_CHECK(gen,CK_NORTA_GEN,RETURN_VOID);
+  CHECK_NULL(gen,UNUR_ERR_NULL);
+  COOKIE_CHECK(gen,CK_NORTA_GEN,UNUR_ERR_COOKIE);
 
   /* pointer to auxiliary array of uniforms */
   u = GEN->copula;
@@ -743,7 +743,7 @@ _unur_norta_sample_cvec( struct unur_gen *gen, double *vec )
   if (gen->distr->id == UNUR_DISTR_COPULA) {
     /* we want to have a normal copula --> just copy data */
     for (j=0; j<GEN->dim; j++) vec[j] = u[j];
-    return;
+    return UNUR_SUCCESS;
   }
 
   /* else non-uniform marginals */
@@ -754,7 +754,7 @@ _unur_norta_sample_cvec( struct unur_gen *gen, double *vec )
     vec[j] = unur_sample_cont(GEN->marginalgen_list[j]);
   }
   
-  return;
+  return UNUR_SUCCESS;
 
 #undef idx
 } /* end of _unur_norta_sample_cvec() */

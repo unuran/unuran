@@ -88,7 +88,7 @@ static struct unur_gen *_unur_walk_create( struct unur_par *par );
 /* create new (almost empty) generator object.                               */
 /*---------------------------------------------------------------------------*/
 
-static void  _unur_walk_sample_cvec( struct unur_gen *gen, double *vec );
+static int _unur_walk_sample_cvec( struct unur_gen *gen, double *vec );
 /*---------------------------------------------------------------------------*/
 /* sample from generator.                                                    */
 /*---------------------------------------------------------------------------*/
@@ -460,7 +460,7 @@ _unur_walk_clone( const struct unur_gen *gen )
 
 /*****************************************************************************/
 
-void
+int
 _unur_walk_sample_cvec( struct unur_gen *gen, double *vec )
      /*----------------------------------------------------------------------*/
      /* sample from generator                                                */
@@ -476,8 +476,8 @@ _unur_walk_sample_cvec( struct unur_gen *gen, double *vec )
   double u;
 
   /* check arguments */
-  CHECK_NULL(gen,RETURN_VOID);
-  COOKIE_CHECK(gen,CK_WALK_GEN,RETURN_VOID);
+  CHECK_NULL(gen,UNUR_ERR_NULL);
+  COOKIE_CHECK(gen,CK_WALK_GEN,UNUR_ERR_COOKIE);
 
   dim = GEN->dim;
 
@@ -527,7 +527,7 @@ _unur_walk_sample_cvec( struct unur_gen *gen, double *vec )
   printf("GEN->ball_radius = %f\n", GEN->ball_radius);
 #endif
   
-  return;
+  return UNUR_SUCCESS;
 } /* end of _unur_walk_sample() */
 
 

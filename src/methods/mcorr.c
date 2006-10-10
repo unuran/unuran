@@ -111,9 +111,9 @@ static struct unur_gen *_unur_mcorr_create( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 /* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/
-static void _unur_mcorr_sample_matr_HH( struct unur_gen *gen, double *mat );
+static int _unur_mcorr_sample_matr_HH( struct unur_gen *gen, double *mat );
 /* Algorithm (1) */
-static void _unur_mcorr_sample_matr_eigen( struct unur_gen *gen, double *mat );
+static int _unur_mcorr_sample_matr_eigen( struct unur_gen *gen, double *mat );
 /* Algorithm (2) */
 /*---------------------------------------------------------------------------*/
 
@@ -505,7 +505,7 @@ _unur_mcorr_clone( const struct unur_gen *gen )
 
 /*****************************************************************************/
 
-void
+int
 _unur_mcorr_sample_matr_HH( struct unur_gen *gen, double *mat )
      /*----------------------------------------------------------------------*/
      /* sample from generator - Algorithm (1)                                */
@@ -520,9 +520,9 @@ _unur_mcorr_sample_matr_HH( struct unur_gen *gen, double *mat )
   double sum, norm, x;
 
   /* check arguments */
-  CHECK_NULL(gen,RETURN_VOID);
-  COOKIE_CHECK(gen,CK_MCORR_GEN,RETURN_VOID);
-  CHECK_NULL(mat,RETURN_VOID);
+  CHECK_NULL(gen,UNUR_ERR_NULL);
+  COOKIE_CHECK(gen,CK_MCORR_GEN,UNUR_ERR_COOKIE);
+  CHECK_NULL(mat,UNUR_ERR_NULL);
 
   /* generate rows vectors of matrix H uniformly distributed in the unit sphere */
   /** TODO: sum != 0 and all columns must be independent **/
@@ -553,12 +553,13 @@ _unur_mcorr_sample_matr_HH( struct unur_gen *gen, double *mat )
       }
     }
 
+  return UNUR_SUCCESS;
 #undef idx
 } /* end of _unur_mcorr_sample_matr_HH() */
 
 /*--------------------------------------------------------------------------*/
 
-void
+int
 _unur_mcorr_sample_matr_eigen( struct unur_gen *gen, double *mat )
      /*----------------------------------------------------------------------*/
      /* sample from generator - Algorithm (2)                                */
@@ -577,15 +578,15 @@ _unur_mcorr_sample_matr_eigen( struct unur_gen *gen, double *mat )
   int s; /* random sign +-1 */
 
   /* check parameters */
-  CHECK_NULL(gen, RETURN_VOID);
-  COOKIE_CHECK(gen,CK_MCORR_GEN,RETURN_VOID);
-  CHECK_NULL(mat, RETURN_VOID);
+  CHECK_NULL(gen, UNUR_ERR_NULL);
+  COOKIE_CHECK(gen,CK_MCORR_GEN,UNUR_ERR_COOKIE);
+  CHECK_NULL(mat, UNUR_ERR_NULL);
 
   dim = GEN->dim; 
   
   if (dim<1) {
     _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"dimension < 1");
-    return;
+    return UNUR_ERR_SHOULD_NOT_HAPPEN;
   }
 
   /* initialization steps */
@@ -628,7 +629,7 @@ _unur_mcorr_sample_matr_eigen( struct unur_gen *gen, double *mat )
 	}}
       _unur_warning(gen->genid, UNUR_ERR_GEN_CONDITION,"all eigenvalues are ~1 -> identity matrix");
       
-      return;
+      return UNUR_ERR_GEN_CONDITION;
     }
 
     do {
@@ -717,6 +718,8 @@ _unur_mcorr_sample_matr_eigen( struct unur_gen *gen, double *mat )
       mat[idx(j,i)] = mat[idx(i,j)];
     }
   }  
+
+  return UNUR_SUCCESS;
 
 #undef idx
 } /* end of _unur_mcorr_sample_eigen() */

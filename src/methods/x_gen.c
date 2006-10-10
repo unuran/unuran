@@ -58,36 +58,30 @@ UNUR_GEN *unur_init( UNUR_PAR *par )
 
 int unur_sample_discr(UNUR_GEN *gen)
 {
-  CHECK_NULL(gen,0);
+  CHECK_NULL(gen,INT_MAX);
   return (gen->sample.discr(gen));
 } /* end of unur_sample_discr() */
 
 double unur_sample_cont(UNUR_GEN *gen)
 {
-  CHECK_NULL(gen,0.);
+  CHECK_NULL(gen,INFINITY);
   return (gen->sample.cont(gen));
 } /* end of unur_sample_cont() */
 
-void unur_sample_vec(UNUR_GEN *gen, double *vector)
+int unur_sample_vec(UNUR_GEN *gen, double *vector)
 {
-  CHECK_NULL(gen,RETURN_VOID);
-  gen->sample.cvec(gen,vector);
+  CHECK_NULL(gen,UNUR_ERR_NULL);
+  return (gen->sample.cvec(gen,vector));
 } /* end of unur_sample_vec() */
 
-void unur_sample_matr(UNUR_GEN *gen, double *matrix)
+int unur_sample_matr(UNUR_GEN *gen, double *matrix)
 {
-  CHECK_NULL(gen,RETURN_VOID);
-  gen->sample.matr(gen,matrix);
+  CHECK_NULL(gen,UNUR_ERR_NULL);
+  return (gen->sample.matr(gen,matrix));
 } /* end of unur_sample_matr() */
 
 /*---------------------------------------------------------------------------*/
 /* aux routines when no sampling routine is available                         */
-
-double _unur_sample_cont_error( UNUR_GEN *gen )
-{
-  /* no sampling routine available */
-  return INFINITY;
-} /* end of _unur_sample_cont_error() */
 
 int _unur_sample_discr_error( UNUR_GEN *gen )
 {
@@ -95,12 +89,31 @@ int _unur_sample_discr_error( UNUR_GEN *gen )
   return INT_MAX;
 } /* end of _unur_sample_discr_error() */
 
-void
+double _unur_sample_cont_error( UNUR_GEN *gen )
+{
+  /* no sampling routine available */
+  return INFINITY;
+} /* end of _unur_sample_cont_error() */
+
+int
 _unur_sample_cvec_error( struct unur_gen *gen, double *vec )
 { 
   int d;
   for (d=0; d<(gen->distr->dim); d++) vec[d] = INFINITY;
-  return;
+  return UNUR_FAILURE;
+} /* end of _unur_sample_cvec_error() */
+
+int
+_unur_sample_matr_error( struct unur_gen *gen, double *mat )
+{ 
+#define idx(a,b) ((a)*dim+(b))
+  int dim = gen->distr->dim;
+  int i,j;
+
+  for (i=0; i<dim; i++)
+    for (j=0; j<dim; j++)
+      mat[idx(i,j)] = INFINITY;
+  return UNUR_FAILURE;
 } /* end of _unur_sample_cvec_error() */
 
 /*---------------------------------------------------------------------------*/

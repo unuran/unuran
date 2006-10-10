@@ -113,8 +113,8 @@ static struct unur_gen *_unur_varou_create( struct unur_par *par );
 /* create new (almost empty) generator object.                               */
 /*---------------------------------------------------------------------------*/
 
-static void  _unur_varou_sample_cvec( struct unur_gen *gen, double *vec );
-static void  _unur_varou_sample_check( struct unur_gen *gen, double *vec );
+static int _unur_varou_sample_cvec( struct unur_gen *gen, double *vec );
+static int _unur_varou_sample_check( struct unur_gen *gen, double *vec );
 /*---------------------------------------------------------------------------*/
 /* sample from generator.                                                    */
 /*---------------------------------------------------------------------------*/
@@ -640,7 +640,7 @@ _unur_varou_clone( const struct unur_gen *gen )
 
 /*---------------------------------------------------------------------------*/
 
-void
+int
 _unur_varou_sample_cvec( struct unur_gen *gen, double *vec )
      /*----------------------------------------------------------------------*/
      /* sample from generator                                                */
@@ -656,8 +656,8 @@ _unur_varou_sample_cvec( struct unur_gen *gen, double *vec )
   double vol;
 
   /* check arguments */
-  CHECK_NULL(gen,RETURN_VOID);  
-  COOKIE_CHECK(gen,CK_VAROU_GEN,RETURN_VOID); 
+  CHECK_NULL(gen,UNUR_ERR_NULL);  
+  COOKIE_CHECK(gen,CK_VAROU_GEN,UNUR_ERR_COOKIE); 
 
   dim = GEN->dim;
 
@@ -687,7 +687,7 @@ _unur_varou_sample_cvec( struct unur_gen *gen, double *vec )
     /* check if sample point is inside the potato volume */
     if ( pow(UV[dim], 1.+dim) <= PDF(vec) ) {
        free(UV);
-       return;
+       return UNUR_SUCCESS;
     }  
   }
   
@@ -696,7 +696,7 @@ _unur_varou_sample_cvec( struct unur_gen *gen, double *vec )
 
 /*---------------------------------------------------------------------------*/
 
-void
+int
 _unur_varou_sample_check( struct unur_gen *gen, double *vec )
      /*----------------------------------------------------------------------*/
      /* sample from generator and verify that method can be used             */
@@ -713,8 +713,8 @@ _unur_varou_sample_check( struct unur_gen *gen, double *vec )
   double norm_factor;
   
   /* check arguments */
-  CHECK_NULL(gen,RETURN_VOID);  
-  COOKIE_CHECK(gen,CK_VAROU_GEN,RETURN_VOID); 
+  CHECK_NULL(gen,UNUR_ERR_NULL);  
+  COOKIE_CHECK(gen,CK_VAROU_GEN,UNUR_ERR_COOKIE); 
 
   dim = GEN->dim;
   
@@ -757,7 +757,7 @@ _unur_varou_sample_check( struct unur_gen *gen, double *vec )
        }
        
        free(UV);
-       return;
+       return UNUR_SUCCESS;
       
     }  
   }

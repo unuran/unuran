@@ -44,7 +44,7 @@ typedef double _UNUR_SAMPLING_ROUTINE_CONT(struct unur_gen *gen);
 typedef int _UNUR_SAMPLING_ROUTINE_DISCR(struct unur_gen *gen);
 
 /* for multivariate continuous distribution */
-typedef void _UNUR_SAMPLING_ROUTINE_VEC(struct unur_gen *gen, double *vec);
+typedef int _UNUR_SAMPLING_ROUTINE_VEC(struct unur_gen *gen, double *vec);
 
 
 /*---------------------------------------------------------------------------*/

@@ -99,7 +99,7 @@ static struct unur_gen *_unur_vmt_create( struct unur_par *par );
 /* create new (almost empty) generator object.                               */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_vmt_sample_cvec( struct unur_gen *gen, double *vec );
+static int _unur_vmt_sample_cvec( struct unur_gen *gen, double *vec );
 /*---------------------------------------------------------------------------*/
 /* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/
@@ -377,7 +377,7 @@ _unur_vmt_clone( const struct unur_gen *gen )
 
 /*****************************************************************************/
 
-void
+int
 _unur_vmt_sample_cvec( struct unur_gen *gen, double *vec )
      /*----------------------------------------------------------------------*/
      /* sample from generator                                                */
@@ -391,8 +391,8 @@ _unur_vmt_sample_cvec( struct unur_gen *gen, double *vec )
   int j,k;
 
   /* check arguments */
-  CHECK_NULL(gen,RETURN_VOID);
-  COOKIE_CHECK(gen,CK_VMT_GEN,RETURN_VOID);
+  CHECK_NULL(gen,UNUR_ERR_NULL);
+  COOKIE_CHECK(gen,CK_VMT_GEN,UNUR_ERR_COOKIE);
 
   /* generate random vector with independent components */
   for (j=0; j<GEN->dim; j++)
@@ -414,6 +414,7 @@ _unur_vmt_sample_cvec( struct unur_gen *gen, double *vec )
     vec[k] += DISTR.mean[k];
   }
 
+  return UNUR_SUCCESS;
 #undef idx
 } /* end of _unur_vmt_sample_cvec() */
 

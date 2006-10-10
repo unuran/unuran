@@ -121,7 +121,7 @@ static struct unur_gen *_unur_mvtdr_create( struct unur_par *par );
 /* create new (almost empty) generator object.                               */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_mvtdr_sample_cvec( struct unur_gen *gen, double *vec );
+static int _unur_mvtdr_sample_cvec( struct unur_gen *gen, double *vec );
 /*---------------------------------------------------------------------------*/
 /* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/

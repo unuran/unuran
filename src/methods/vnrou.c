@@ -106,8 +106,8 @@ static struct unur_gen *_unur_vnrou_create( struct unur_par *par );
 /* create new (almost empty) generator object.                               */
 /*---------------------------------------------------------------------------*/
 
-static void  _unur_vnrou_sample_cvec( struct unur_gen *gen, double *vec );
-static void  _unur_vnrou_sample_check( struct unur_gen *gen, double *vec );
+static int _unur_vnrou_sample_cvec( struct unur_gen *gen, double *vec );
+static int _unur_vnrou_sample_check( struct unur_gen *gen, double *vec );
 /*---------------------------------------------------------------------------*/
 /* sample from generator.                                                    */
 /*---------------------------------------------------------------------------*/
@@ -652,7 +652,7 @@ _unur_vnrou_clone( const struct unur_gen *gen )
 
 /*****************************************************************************/
 
-void
+int
 _unur_vnrou_sample_cvec( struct unur_gen *gen, double *vec )
      /*----------------------------------------------------------------------*/
      /* sample from generator                                                */
@@ -666,8 +666,8 @@ _unur_vnrou_sample_cvec( struct unur_gen *gen, double *vec )
   int d, dim; /* index used in dimension loops (0 <= d < dim) */
 
   /* check arguments */
-  CHECK_NULL(gen,RETURN_VOID);  
-  COOKIE_CHECK(gen,CK_VNROU_GEN,RETURN_VOID); 
+  CHECK_NULL(gen,UNUR_ERR_NULL);  
+  COOKIE_CHECK(gen,CK_VNROU_GEN,UNUR_ERR_COOKIE); 
 
   dim = GEN->dim;
  
@@ -685,14 +685,14 @@ _unur_vnrou_sample_cvec( struct unur_gen *gen, double *vec )
     
     /* accept or reject */
     if (V <= pow(PDF(vec),1./(GEN->r * dim + 1.)))
-      return;
+      return UNUR_SUCCESS;
   }
 
 } /* end of _unur_vnrou_sample() */
 
 /*---------------------------------------------------------------------------*/
 
-void
+int
 _unur_vnrou_sample_check( struct unur_gen *gen, double *vec )
      /*----------------------------------------------------------------------*/
      /* sample from generator and verify that method can be used             */
@@ -709,8 +709,8 @@ _unur_vnrou_sample_check( struct unur_gen *gen, double *vec )
   double fx,sfx,xfx;
   
   /* check arguments */
-  CHECK_NULL(gen,RETURN_VOID);  
-  COOKIE_CHECK(gen,CK_VNROU_GEN,RETURN_VOID); 
+  CHECK_NULL(gen,UNUR_ERR_NULL);  
+  COOKIE_CHECK(gen,CK_VNROU_GEN,UNUR_ERR_COOKIE); 
 
   dim = GEN->dim;
  
@@ -747,7 +747,7 @@ _unur_vnrou_sample_check( struct unur_gen *gen, double *vec )
  
     /* accept or reject */
     if (V <= pow(PDF(vec),1./( GEN->r * dim + 1.)))
-      return;
+      return UNUR_SUCCESS;
   }
 
 } /* end of _unur_vnrou_sample_check() */

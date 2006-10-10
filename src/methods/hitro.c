@@ -124,8 +124,8 @@ static int _unur_hitro_rectangle( struct unur_gen *gen );
 /* compute (minimal) bounding rectangle.                                     */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_hitro_coord_sample_cvec( struct unur_gen *gen, double *vec );
-static void _unur_hitro_randomdir_sample_cvec( struct unur_gen *gen, double *vec );
+static int _unur_hitro_coord_sample_cvec( struct unur_gen *gen, double *vec );
+static int _unur_hitro_randomdir_sample_cvec( struct unur_gen *gen, double *vec );
 /*---------------------------------------------------------------------------*/
 /* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/
@@ -1134,7 +1134,7 @@ _unur_hitro_clone( const struct unur_gen *gen )
 
 /*****************************************************************************/
 
-void
+int
 _unur_hitro_coord_sample_cvec( struct unur_gen *gen, double *vec )
      /*----------------------------------------------------------------------*/
      /* sample from generator                                                */
@@ -1151,8 +1151,8 @@ _unur_hitro_coord_sample_cvec( struct unur_gen *gen, double *vec )
   double U;       /* uniform random number */
 
   /* check arguments */
-  CHECK_NULL(gen,RETURN_VOID);
-  COOKIE_CHECK(gen,CK_HITRO_GEN,RETURN_VOID);
+  CHECK_NULL(gen,UNUR_ERR_NULL);
+  COOKIE_CHECK(gen,CK_HITRO_GEN,UNUR_ERR_COOKIE);
 
   /* pointer to auxiliary working array */
   vuaux = GEN->vu;
@@ -1206,13 +1206,13 @@ _unur_hitro_coord_sample_cvec( struct unur_gen *gen, double *vec )
   /* transform current state into point in original scale */
   _unur_hitro_vu_to_x( gen, GEN->state, vec );
   
-  return;
+  return UNUR_SUCCESS;
 
 } /* end of _unur_hitro_coord_sample_cvec() */
 
 /*---------------------------------------------------------------------------*/
 
-void
+int
 _unur_hitro_randomdir_sample_cvec( struct unur_gen *gen, double *vec )
      /*----------------------------------------------------------------------*/
      /* sample from generator                                                */
@@ -1233,8 +1233,8 @@ _unur_hitro_randomdir_sample_cvec( struct unur_gen *gen, double *vec )
   int dim = GEN->dim;
 
   /* check arguments */
-  CHECK_NULL(gen,RETURN_VOID);
-  COOKIE_CHECK(gen,CK_HITRO_GEN,RETURN_VOID);
+  CHECK_NULL(gen,UNUR_ERR_NULL);
+  COOKIE_CHECK(gen,CK_HITRO_GEN,UNUR_ERR_COOKIE);
 
   /* entire bounding rectangle or just covering plate ? */
   d = (gen->variant & HITRO_VARFLAG_BOUNDRECT) ? dim+1 : 1;
@@ -1309,7 +1309,7 @@ _unur_hitro_randomdir_sample_cvec( struct unur_gen *gen, double *vec )
   /* transform current state into point in original scale */
   _unur_hitro_vu_to_x( gen, GEN->state, vec );
   
-  return;
+  return UNUR_SUCCESS;
 
 #undef new_point
 

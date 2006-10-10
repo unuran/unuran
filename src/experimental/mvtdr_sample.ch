@@ -45,7 +45,7 @@
 
 /*---------------------------------------------------------------------------*/
 
-void
+int
 _unur_mvtdr_sample_cvec( struct unur_gen *gen, double *rpoint )
      /*----------------------------------------------------------------------*/
      /* sample from generator                                                */
@@ -64,8 +64,8 @@ _unur_mvtdr_sample_cvec( struct unur_gen *gen, double *rpoint )
   double *S = GEN->S;  /* working array for storing point on simples */
 
   /* check arguments */
-  CHECK_NULL(gen,RETURN_VOID);
-  COOKIE_CHECK(gen,CK_MVTDR_GEN,RETURN_VOID);
+  CHECK_NULL(gen,UNUR_ERR_NULL);
+  COOKIE_CHECK(gen,CK_MVTDR_GEN,UNUR_ERR_COOKIE);
 
   /* loop until random point is accepted */
   while( 1 ) { 
@@ -115,7 +115,7 @@ _unur_mvtdr_sample_cvec( struct unur_gen *gen, double *rpoint )
 
     /* accept point */
     if( _unur_call_urng(gen->urng) * h <= f )
-      return;
+      return UNUR_SUCCESS;
   }
 
 } /* end of _unur_mvtdr_sample_cvec() */

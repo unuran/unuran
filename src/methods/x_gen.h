@@ -75,10 +75,10 @@ int    unur_sample_discr(UNUR_GEN *generator);
 double unur_sample_cont(UNUR_GEN *generator);
 /* */
 
-void   unur_sample_vec(UNUR_GEN *generator, double *vector);
+int    unur_sample_vec(UNUR_GEN *generator, double *vector);
 /* */
 
-void   unur_sample_matr(UNUR_GEN *generator, double *matrix);
+int    unur_sample_matr(UNUR_GEN *generator, double *matrix);
 /*
   Sample from generator object. The three routines depend on the type
   of the generator object (discrete or continuous univariate
@@ -86,6 +86,10 @@ void   unur_sample_matr(UNUR_GEN *generator, double *matrix);
 
   @emph{Notice:} UNURAN uses arrays of @code{double}s to handle
   matrices. There the rows of the matrix are stored consecutively.
+
+  @emph{Notice:} The routines unur_sample_vec() and unur_sample_matr()
+  return @code{UNUR_SUCCESS} if generation was successful and 
+  some error code otherwise.
 
   @strong{Important:} These routines do @strong{not} check whether 
   @var{generator} is an invalid NULL pointer.

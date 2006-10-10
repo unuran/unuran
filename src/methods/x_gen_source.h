@@ -56,9 +56,10 @@
 /*---------------------------------------------------------------------------*/
 /* aux routine when no sampling routine is available                         */
 
-double _unur_sample_cont_error( struct unur_gen *gen );
 int _unur_sample_discr_error( struct unur_gen *gen );
-void  _unur_sample_cvec_error( struct unur_gen *gen, double *vec );
+double _unur_sample_cont_error( struct unur_gen *gen );
+int _unur_sample_cvec_error( struct unur_gen *gen, double *vec );
+int _unur_sample_matr_error( struct unur_gen *gen, double *mat );
 
 /*---------------------------------------------------------------------------*/
 /* create, copy and free parameter object                                    */

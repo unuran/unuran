@@ -51,7 +51,6 @@
 UNUR_GEN *unur_init( UNUR_PAR *par )
 {                
   _unur_check_NULL(NULL,par,NULL);
-
   return (par->init(par));
 } /* end of unur_init() */
 
@@ -89,6 +88,20 @@ double _unur_sample_cont_error( UNUR_GEN *gen )
   /* no sampling routine available */
   return INFINITY;
 } /* end of _unur_sample_cont_error() */
+
+int _unur_sample_discr_error( UNUR_GEN *gen )
+{
+  /* no sampling routine available */
+  return INT_MAX;
+} /* end of _unur_sample_discr_error() */
+
+void
+_unur_sample_cvec_error( struct unur_gen *gen, double *vec )
+{ 
+  int d;
+  for (d=0; d<(gen->distr->dim); d++) vec[d] = INFINITY;
+  return;
+} /* end of _unur_sample_cvec_error() */
 
 /*---------------------------------------------------------------------------*/
 

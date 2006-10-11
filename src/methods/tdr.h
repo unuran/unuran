@@ -126,6 +126,9 @@
       distributions. It even can be changed for an existing generator
       object by an unur_tdr_chg_truncated() call.
 
+      It is possible to change the parameters and the domain of the chosen 
+      distribution and run unur_reinit() to reinitialize the generator object.
+
       @emph{Important:} The ratio between the area below the hat and
       the area below the squeeze changes when the sampling region is
       restricted. Especially it becomes (very) small when sampling
@@ -313,7 +316,8 @@ int unur_tdr_chg_truncated(UNUR_GEN *gen, double left, double right);
    Notice that the given truncated domain must be a subset of the
    domain of the given distribution. The generator always uses the
    intersection of the domain of the distribution and the truncated
-   domain given by this call. The hat function will not be changed.
+   domain given by this call. The hat function will not be changed and
+   there is no need to run unur_reinit().
 
    @emph{Important:}
    The ratio between the area below the hat and the area below the

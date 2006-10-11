@@ -92,15 +92,12 @@
       unur_ssr_set_cdfatmode() is not allowed.
       
       It is possible to change the parameters and the domain of the chosen 
-      distribution without building a new generator object using the
-      unur_ssr_chg_pdfparams() and unur_ssr_chg_domain() call, respectively.
-      Then unur_ssr_chg_pdfarea(), unur_ssr_chg_mode() and 
-      unur_ssr_chg_cdfatmode() have to be used to reset the corresponding figures 
-      whenever they have changed.
-      If the PDF at the mode has been provided by a
+      distribution and run unur_reinit() to reinitialize the generator object.
+      Notice, that if the PDF at the mode has been provided by a 
       unur_ssr_set_pdfatmode() call, additionally
       unur_ssr_chg_pdfatmode() must be used (otherwise this call is
-      not necessary since then this figure is computed directly from the PDF).
+      not necessary since then this figure is computed directly from
+      the PDF). 
 
       @emph{Important:}
       If any of mode, PDF or CDF at the mode, or the area below the mode

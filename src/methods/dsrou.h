@@ -69,13 +69,8 @@
       However, this @strong{must not} be called if the sum over the
       PMF is replaced by an upper bound.
       
-      It is possible to change the parameters and the domain of the
-      chosen distribution without building a new generator object
-      using the unur_dsrou_chg_pmfparams() and unur_dsrou_chg_domain()
-      call, respectively. But then unur_dsrou_chg_pmfsum(),
-      unur_dsrou_chg_mode() and unur_dsrou_chg_cdfatmode() have to
-      be used to reset the corresponding figures whenever they have
-      changed. 
+      It is possible to change the parameters and the domain of the chosen 
+      distribution and run unur_reinit() to reinitialize the generator object.
 
       If any of mode, CDF at mode, or the sum over the PMF has been
       changed, then unur_dsrou_reinit() must be executed. 
@@ -109,7 +104,7 @@ int unur_dsrou_reinit( UNUR_GEN *generator );
    of the distribution have been changed (see below).
    It is faster than destroying the existing object and building
    a new one from scratch.
-   If reinitialization has been successful @code{1} is returned,
+   If reinitialization has been successful @code{UNUR_SUCCESS} is returned,
    in case of a failure an error code is returned.
 */
 

@@ -125,24 +125,14 @@
       the PDF at the mode.  Again setting the squeeze flag and using
       unur_srou_set_cdfatmode() is not allowed.
       
-      
-      It is possible to change the parameters and the domain of the
-      chosen distribution without building a new generator object
-      using the unur_srou_chg_pdfparams() and unur_srou_chg_domain()
-      call, respectively. But then unur_srou_chg_pdfarea(),
-      unur_srou_chg_mode() and unur_srou_chg_cdfatmode() have to be
-      used to reset the corresponding figures whenever they have
-      changed. If the PDF at the mode has been provided by a 
+      It is possible to change the parameters and the domain of the chosen 
+      distribution and run unur_reinit() to reinitialize the generator object.
+      Notice, that if the PDF at the mode has been provided by a 
       unur_srou_set_pdfatmode() call, additionally
       unur_srou_chg_pdfatmode() must be used (otherwise this call is
       not necessary since then this figure is computed directly from
       the PDF). 
 
-      @emph{Important:}
-      If any of mode, PDF or CDF at the mode, or the area below the
-      mode has been changed, then unur_srou_reinit() must be executed.
-      (Otherwise the generator produces garbage).
-      
       There exists a test mode that verifies whether the conditions
       for the method are satisfied or not while sampling. It can be
       switched on by calling unur_srou_set_verify() and

@@ -78,12 +78,7 @@
       the use of squeezes by means of unur_dari_set_squeeze().
 
       It is possible to change the parameters and the domain of the chosen 
-      distribution without building a new generator object by using the
-      unur_dari_chg_pmfparams() and unur_dari_chg_domain() call, respectively.
-      But then unur_dari_chg_mode() and unur_dari_chg_pmfsum() have to be used
-      to reset the corresponding figures whenever they were changed.
-      Before sampling from the distribution again, unur_dari_reinit() must be 
-      executed. (Otherwise the generator might produce garbage).
+      distribution and run unur_reinit() to reinitialize the generator object.
       
       There exists a test mode that verifies whether the conditions for
       the method are satisfied or not. It can be switched on by calling 

@@ -67,12 +67,7 @@
       mode and approximate area below PDF. 
 
       It is possible to change the parameters and the domain of the chosen 
-      distribution without building a new generator object by using the
-      unur_utdr_chg_pdfparams() and unur_utdr_chg_domain() call, respectively.
-      But then unur_utdr_chg_mode() and unur_utdr_chg_pdfarea() have to be used
-      to reset the corresponding figures whenever these have changed.
-      Before sampling from the distribution again, unur_utdr_reinit() must be 
-      executed. (Otherwise the generator produces garbage).
+      distribution and run unur_reinit() to reinitialize the generator object.
       
       When the PDF does not change at the mode for varying parameters, then
       this value can be set with unur_utdr_set_pdfatmode() to avoid some 

@@ -596,7 +596,7 @@ _unur_fstr_error_scan (const struct parser_data *pdata, const char *symb)
 
   /* print remaining part of function string including unknown symbol */
   wsp = pdata->lastpos-3;
-  wsp = max(wsp,1);
+  wsp = _unur_max(wsp,1);
   sprintf( format, "%s: --> %%%d.%ds",GENTYPE,wsp,wsp);
   _unur_stream_printf_simple ( format, "");
   _unur_stream_printf_simple ( "%s\n",pdata->fstr + pdata->lastpos);

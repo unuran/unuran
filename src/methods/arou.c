@@ -1021,8 +1021,8 @@ _unur_arou_create( struct unur_par *par )
        (gen->distr->set & UNUR_DISTR_SET_MODE) ) {
     GEN->center = unur_distr_cont_get_center(gen->distr);
     /* center must be in domain */
-    GEN->center = max(GEN->center,DISTR.BD_LEFT);
-    GEN->center = min(GEN->center,DISTR.BD_RIGHT);
+    GEN->center = _unur_max(GEN->center,DISTR.BD_LEFT);
+    GEN->center = _unur_min(GEN->center,DISTR.BD_RIGHT);
     gen->set |= AROU_SET_CENTER;
   }
   else {

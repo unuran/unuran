@@ -232,10 +232,10 @@ _unur_test_chi2_discr( struct unur_gen *gen,
   /* samplesize */
   if( samplesize <= 0 ) {
     samplesize = (INT_MAX/n_pv > n_pv) ? n_pv * n_pv : 1000000;
-    samplesize = max(samplesize,1000000);
+    samplesize = _unur_max(samplesize,1000000);
   }
 
-  samplesize = min( samplesize, CHI2_MAX_SAMPLESIZE );
+  samplesize = _unur_min( samplesize, CHI2_MAX_SAMPLESIZE );
 
   /* now run generator */
   for( i=0; i<samplesize; i++ ) {
@@ -339,7 +339,7 @@ _unur_test_chi2_cont( struct unur_gen *gen,
   if( samplesize <= 0 )
     samplesize = (INT_MAX/intervals > intervals) ? intervals*intervals : INT_MAX;
 
-  samplesize = min( samplesize, CHI2_MAX_SAMPLESIZE );
+  samplesize = _unur_min( samplesize, CHI2_MAX_SAMPLESIZE );
 
   /* compute Fl and Fr */
   if (gen->distr->set & UNUR_DISTR_SET_TRUNCATED) {
@@ -464,7 +464,7 @@ _unur_test_chi2_cemp( struct unur_gen *gen,
   /* samplesize */
   if( samplesize <= 0 )
     samplesize = (INT_MAX/intervals > intervals) ? intervals*intervals : INT_MAX;
-  samplesize = min( samplesize, CHI2_MAX_SAMPLESIZE );
+  samplesize = _unur_min( samplesize, CHI2_MAX_SAMPLESIZE );
 
   /* now run generator */
   for( i=0; i<samplesize; i++ ) {
@@ -579,7 +579,7 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
 
   /* samplesize */
   if( samplesize <= 0 ) samplesize = CHI2_DEFAULT_SAMPLESIZE;
-  samplesize = min( samplesize, CHI2_MAX_SAMPLESIZE );
+  samplesize = _unur_min( samplesize, CHI2_MAX_SAMPLESIZE );
 
   /* dimension of distribution */
   dim = gen->distr->dim;  
@@ -705,7 +705,7 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
     }
 
     pval = _unur_test_chi2test(NULL, bm+(j*n_intervals), n_intervals, classmin, verbose, out );
-    pval_min = min(pval_min,pval);
+    pval_min = _unur_min(pval_min,pval);
   }
   
   /* ----------------------------------------------------------------------------*/
@@ -810,7 +810,7 @@ unur_test_chi2_marginal( struct unur_gen *gen,
 
   /* samplesize */
   if( samplesize <= 0 ) samplesize = CHI2_DEFAULT_SAMPLESIZE;
-  samplesize = min( samplesize, CHI2_MAX_SAMPLESIZE );
+  samplesize = _unur_min( samplesize, CHI2_MAX_SAMPLESIZE );
 
   /* dimension of distribution */
   dim = gen->distr->dim;
@@ -878,7 +878,7 @@ unur_test_chi2_marginal( struct unur_gen *gen,
     }
 
     pval = _unur_test_chi2test(NULL, bm+(j*n_intervals), n_intervals, classmin, verbose, out );
-    pval_min = min(pval_min,pval);
+    pval_min = _unur_min(pval_min,pval);
   }
 
   /* ----------------------------------------------------------------------------*/
@@ -898,7 +898,7 @@ free_memory:
 
   /* return result of test */
   pval_min *= dim;
-  pval_min = min(pval_min,1.);
+  pval_min = _unur_min(pval_min,1.);
   return pval_min;
 
 #undef DISTR

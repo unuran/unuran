@@ -267,7 +267,7 @@ _unur_tdr_create( struct unur_par *par )
   GEN->darsrule = PAR->darsrule;      /* rule for finding splitting points in DARS */
 
   /* bounds for adding construction points  */
-  GEN->max_ivs = max(2*PAR->n_starting_cpoints,PAR->max_ivs);  /* maximum number of intervals */
+  GEN->max_ivs = _unur_max(2*PAR->n_starting_cpoints,PAR->max_ivs);  /* maximum number of intervals */
   GEN->max_ratio = PAR->max_ratio;    /* bound for ratio  Atotal / Asqueeze    */
   GEN->bound_for_adding = PAR->bound_for_adding;
 
@@ -276,8 +276,8 @@ _unur_tdr_create( struct unur_par *par )
        (gen->distr->set & UNUR_DISTR_SET_MODE) ) {
     GEN->center = unur_distr_cont_get_center(gen->distr);
     /* center must be in domain */
-    GEN->center = max(GEN->center,DISTR.BD_LEFT);
-    GEN->center = min(GEN->center,DISTR.BD_RIGHT);
+    GEN->center = _unur_max(GEN->center,DISTR.BD_LEFT);
+    GEN->center = _unur_min(GEN->center,DISTR.BD_RIGHT);
     gen->set |= TDR_SET_CENTER;
   }
   else {

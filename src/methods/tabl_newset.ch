@@ -635,8 +635,8 @@ unur_tabl_set_slopes( struct unur_par *par, const double *slopes, int n_slopes )
   lmin = -INFINITY;
   lmax = -INFINITY;
   for( i=0; i<n_slopes; i++ ) {
-    rmin = min(slopes[2*i],slopes[2*i+1]);
-    rmax = max(slopes[2*i],slopes[2*i+1]);
+    rmin = _unur_min(slopes[2*i],slopes[2*i+1]);
+    rmax = _unur_max(slopes[2*i],slopes[2*i+1]);
     if (!(lmax<=rmin || _unur_FP_same(lmax,rmin))) {
       _unur_error(GENTYPE,UNUR_ERR_PAR_SET,"slopes (overlapping or not in ascending order)");
       return UNUR_ERR_PAR_SET;

@@ -894,8 +894,8 @@ _unur_srou_init( struct unur_par *par )
        assume: user has change domain without changing mode.
        but then, she probably has not updated area and is to large */
     _unur_warning(GENTYPE,UNUR_ERR_GEN_DATA,"area and/or CDF at mode");
-    DISTR.mode = max(DISTR.mode,DISTR.BD_LEFT);
-    DISTR.mode = min(DISTR.mode,DISTR.BD_RIGHT);
+    DISTR.mode = _unur_max(DISTR.mode,DISTR.BD_LEFT);
+    DISTR.mode = _unur_min(DISTR.mode,DISTR.BD_RIGHT);
   }
 
   /* compute universal bounding envelope */

@@ -199,14 +199,14 @@ binomial_bruec_init( struct unur_gen *gen )
 
   /* -X- setup code -X- */
 
-  par = min(p,1.0-p);
+  par = _unur_min(p,1.0-p);
   q1 = 1.0 - par;
   np = n*par;                                /*np=min(n*p,n*(1-p))*/
 
   if (np < 5) {
     p0 = exp(n*log(q1));                     /* Set-up for Inversion */
     bh = (int)(np + 10.0*sqrt(np*q1));
-    b = min(n,bh);                           /* safety-bound */
+    b = _unur_min(n,bh);                     /* safety-bound */
   }
 
   else {                                     /* Set-up for Ratio of Uniforms */
@@ -217,7 +217,7 @@ binomial_bruec_init( struct unur_gen *gen )
     t = (n+1) * r;
     r1 = log(r);
     bh = (int)(a + 7.0*c);
-    b = min(n,bh);                           /* safety-bound */
+    b = _unur_min(n,bh);                     /* safety-bound */
     g = flogfak(m) + flogfak(n-m);           /* binomial const. */
     k1 = (int)(a-c);
     x = (a-k1-1.0)/(a-k1);

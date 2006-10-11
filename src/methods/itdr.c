@@ -1057,7 +1057,7 @@ _unur_itdr_get_hat_pole( struct unur_gen *gen )
     ilc_near_pole = (DISTR.logpdf) 
       ? logPDF(near_pole) / log(near_pole)
       : log(PDF(near_pole)) / log(near_pole);
-    cp = min(ilc_near_pole,ilc_bx);
+    cp = _unur_min(ilc_near_pole,ilc_bx);
     if (cp > C_MAX) cp = C_MAX;
     if (cp <= -1.) {
       _unur_error(gen->genid,UNUR_ERR_DISTR_PROP,"cannot compute hat for pole: cp");
@@ -1066,7 +1066,7 @@ _unur_itdr_get_hat_pole( struct unur_gen *gen )
     GEN->cp = cp;
   }
   if (cp < -0.5)
-    GEN->bx = min (2.*GEN->bx, GEN->bd_right);
+    GEN->bx = _unur_min(2.*GEN->bx, GEN->bd_right);
 
   /* compute PDF at check points */
   pdf_bx = PDF(GEN->bx);
@@ -1381,7 +1381,7 @@ _unur_itdr_find_xt( struct unur_gen *gen, double b )
   if (b < 0.) return INFINITY;
 
   /* find appropriate starting value */
-  xl = b + max(1., (fabs(GEN->pole)+b)*UNUR_SQRT_DBL_EPSILON);
+  xl = b + _unur_max(1., (fabs(GEN->pole)+b)*UNUR_SQRT_DBL_EPSILON);
   if (xl > GEN->bd_right) xl = GEN->bd_right;
   while (!_unur_isfinite(FKT(xl)) || PDF(xl) == 0. ) {
     xl -= (xl - b)/2.;

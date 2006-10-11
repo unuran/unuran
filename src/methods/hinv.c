@@ -612,8 +612,8 @@ unur_hinv_chg_truncated( struct unur_gen *gen, double left, double right )
      sampling algorithm U is always in a range where a table
      is available for the inverse CDF.
      So this is a safe guard against segfault for U=0. or U=1. */ 
-  Uminbound = max(0.,GEN->intervals[0]);
-  Umaxbound = min(1.,GEN->intervals[(GEN->N-1)*(GEN->order+2)]);
+  Uminbound = _unur_max(0.,GEN->intervals[0]);
+  Umaxbound = _unur_min(1.,GEN->intervals[(GEN->N-1)*(GEN->order+2)]);
 
   /* check new parameter for generator */
   /* (the truncated domain must be a subset of the domain) */
@@ -655,8 +655,8 @@ unur_hinv_chg_truncated( struct unur_gen *gen, double left, double right )
   /* copy new boundaries into generator object */
   DISTR.trunc[0] = left;
   DISTR.trunc[1] = right;
-  GEN->Umin = max(Umin, Uminbound);
-  GEN->Umax = min(Umax, Umaxbound);
+  GEN->Umin = _unur_max(Umin, Uminbound);
+  GEN->Umax = _unur_min(Umax, Umaxbound);
 
   /* changelog */
   gen->distr->set |= UNUR_DISTR_SET_TRUNCATED;
@@ -722,12 +722,12 @@ _unur_hinv_init( struct unur_par *par )
 
   /* cut points for tails */
   if (DISTR.domain[0] <= -INFINITY || PDF(DISTR.domain[0])<=0.) {
-    GEN->tailcutoff_left = min(HINV_TAILCUTOFF, 0.1*GEN->u_resolution);
-    GEN->tailcutoff_left = max(GEN->tailcutoff_left,2*DBL_EPSILON);
+    GEN->tailcutoff_left = _unur_min(HINV_TAILCUTOFF, 0.1*GEN->u_resolution);
+    GEN->tailcutoff_left = _unur_max(GEN->tailcutoff_left,2*DBL_EPSILON);
   }
   if (DISTR.domain[1] >= INFINITY || PDF(DISTR.domain[1])<=0.) {
-    GEN->tailcutoff_right = min(HINV_TAILCUTOFF, 0.1*GEN->u_resolution);
-    GEN->tailcutoff_right = max(GEN->tailcutoff_right,2*DBL_EPSILON);
+    GEN->tailcutoff_right = _unur_min(HINV_TAILCUTOFF, 0.1*GEN->u_resolution);
+    GEN->tailcutoff_right = _unur_max(GEN->tailcutoff_right,2*DBL_EPSILON);
     GEN->tailcutoff_right = 1. - GEN->tailcutoff_right;
   }
 
@@ -745,8 +745,8 @@ _unur_hinv_init( struct unur_par *par )
   _unur_hinv_list_to_array( gen );
 
   /* adjust minimal and maximal U value */
-  GEN->Umin = max(0.,GEN->intervals[0]);
-  GEN->Umax = min(1.,GEN->intervals[(GEN->N-1)*(GEN->order+2)]);
+  GEN->Umin = _unur_max(0.,GEN->intervals[0]);
+  GEN->Umax = _unur_min(1.,GEN->intervals[(GEN->N-1)*(GEN->order+2)]);
 
   /* this setting of Umin and Umax guarantees that in the 
      sampling algorithm U is always in a range where a table
@@ -811,8 +811,8 @@ _unur_hinv_create( struct unur_par *par )
   GEN->order = PAR->order;            /* order of polynomial                   */
   GEN->u_resolution = PAR->u_resolution; /* maximal error in u-direction       */
   GEN->guide_factor = PAR->guide_factor; /* relative size of guide tables      */
-  GEN->bleft  = max(PAR->bleft,DISTR.domain[0]);
-  GEN->bright = min(PAR->bright,DISTR.domain[1]);
+  GEN->bleft  = _unur_max(PAR->bleft,DISTR.domain[0]);
+  GEN->bright = _unur_min(PAR->bright,DISTR.domain[1]);
 
   /* default values */
   GEN->tailcutoff_left  = -1.;       /* no cut-off by default                 */
@@ -1307,7 +1307,7 @@ _unur_hinv_make_guide_table( struct unur_gen *gen )
 # undef u
 
   /* check i */
-  i = min(i,imax);
+  i = _unur_min(i,imax);
 
   /* if there has been an round off error, we have to complete the guide table */
   for( ; j<GEN->guide_size ;j++ )

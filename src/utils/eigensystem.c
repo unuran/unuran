@@ -260,7 +260,7 @@ int _unur_eigensystem_newqr(int dim, double *a, double *b, double *b2, double *g
 
   /* Gershgorin */
   xnull = a[0]-fabs(b[0]);
-  for (i=2; i<=dim; i++) xnull = min( xnull, a[i-1]-fabs(b[i-2])-fabs(b[i-1]) );
+  for (i=2; i<=dim; i++) xnull = _unur_min( xnull, a[i-1]-fabs(b[i-2])-fabs(b[i-1]) );
   for (i=1; i<=dim; i++) a[i-1] -= xnull;
   
   shift = ZERO; 
@@ -269,7 +269,7 @@ int _unur_eigensystem_newqr(int dim, double *a, double *b, double *b2, double *g
 
   for (ll=1; ll<dim; ll++) {
     l = dim+1-ll;
-    crit = max(crit, EPS*(a[l-1]+fabs(b[l-2])) );
+    crit = _unur_max(crit, EPS*(a[l-1]+fabs(b[l-2])) );
     crit2 = crit * crit;
     /* Newton */
     w = ZERO;
@@ -399,7 +399,7 @@ _unur_eigensystem_trinv(int dim, double *a, double *b, double *g, double *c,
   double epsc = 1e-5;
   double reps, epsa, f, t, pi, pidim;
 
-  reps = max(epsc, 16000.*EPS);
+  reps = _unur_max(epsc, 16000.*EPS);
   epsa = EPS2*EPS2;
   close = 0;
   b[dim-1]=0.;

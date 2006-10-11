@@ -989,8 +989,8 @@ _unur_ninv_compute_start( struct unur_gen *gen )
   case NINV_VARFLAG_REGULA:
 
     /* get arbitrary points */
-    GEN->s[0] = max( DISTR.domain[0], -10.);
-    GEN->s[1] = min( DISTR.domain[1], GEN->s[0]+20. );
+    GEN->s[0] = _unur_max( DISTR.domain[0], -10.);
+    GEN->s[1] = _unur_min( DISTR.domain[1], GEN->s[0]+20. );
     GEN->CDFs[0] = CDF(GEN->s[0]);
     GEN->CDFs[1] = CDF(GEN->s[1]);    
 
@@ -1000,7 +1000,7 @@ _unur_ninv_compute_start( struct unur_gen *gen )
     GEN->CDFs[0] = CDF(GEN->s[0]);
 
     /* right percentile */
-    GEN->s[1] = min( DISTR.domain[1], GEN->s[0]+20. );
+    GEN->s[1] = _unur_min( DISTR.domain[1], GEN->s[0]+20. );
     u = GEN->CDFmin + 0.5*(1.+INTERVAL_COVERS)*(GEN->CDFmax-GEN->CDFmin);
     GEN->s[1] = _unur_ninv_regula(gen,u);
     GEN->CDFs[1] = CDF(GEN->s[1]);
@@ -1010,8 +1010,8 @@ _unur_ninv_compute_start( struct unur_gen *gen )
   case NINV_VARFLAG_NEWTON:
 
     /* get arbitrary points */
-    GEN->s[0] = max( DISTR.domain[0], -9.987655 );
-    GEN->s[1] = min( DISTR.domain[1], GEN->s[0]+20. );
+    GEN->s[0] = _unur_max( DISTR.domain[0], -9.987655 );
+    GEN->s[1] = _unur_min( DISTR.domain[1], GEN->s[0]+20. );
     GEN->CDFs[0] = CDF(GEN->s[0]); 
     GEN->CDFs[1] = CDF(GEN->s[1]);
 
@@ -1062,8 +1062,8 @@ _unur_ninv_create_table( struct unur_gen *gen )
   GEN->f_table  = _unur_xrealloc( GEN->f_table, table_size * sizeof(double));
 
   /* get arbitrary points */
-  GEN->s[0] = max( DISTR.domain[0], -10.);
-  GEN->s[1] = min( DISTR.domain[1], GEN->s[0]+20. );
+  GEN->s[0] = _unur_max( DISTR.domain[0], -10.);
+  GEN->s[1] = _unur_min( DISTR.domain[1], GEN->s[0]+20. );
   GEN->CDFs[0]  = CDF(GEN->s[0]);
   GEN->CDFs[1]  = CDF(GEN->s[1]);
 
@@ -1306,8 +1306,8 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
       _unur_error(gen->genid,UNUR_ERR_GEN_SAMPLING,
 		  "Regula Falsi can't find interval with sign change");
       x2 = 0.5*x1 + 0.5*x2;
-      x2 = max( x2, DISTR.trunc[0]);
-      x2 = min( x2, DISTR.trunc[1]);
+      x2 = _unur_max( x2, DISTR.trunc[0]);
+      x2 = _unur_min( x2, DISTR.trunc[1]);
       return x2;
     }
   }  /* while end -- interval found */ 
@@ -1389,8 +1389,8 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
   if (i >= GEN->max_iter) {
     _unur_warning(gen->genid,UNUR_ERR_GEN_SAMPLING,
 		  "max number of iterations exceeded");
-    x2 = max( x2, DISTR.trunc[0]);
-    x2 = min( x2, DISTR.trunc[1]);
+    x2 = _unur_max( x2, DISTR.trunc[0]);
+    x2 = _unur_min( x2, DISTR.trunc[1]);
   }
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -1521,11 +1521,11 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
 
       if (fx > 0.) {         /* try another x */
         xtmp = x - step; 
-	xtmp = max( xtmp, DISTR.domain[0] );
+	xtmp = _unur_max( xtmp, DISTR.domain[0] );
       }
       else {
         xtmp  = x + step;
-	xtmp = min( xtmp, DISTR.domain[1] );
+	xtmp = _unur_min( xtmp, DISTR.domain[1] );
       }
 
       fxtmp    = CDF(xtmp) - U;
@@ -1554,8 +1554,8 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
       else {
 	_unur_error(gen->genid,UNUR_ERR_GEN_SAMPLING,
 		    "Newton's method can't leave flat region");
-	x = max( x, DISTR.trunc[0]);
-	x = min( x, DISTR.trunc[1]);
+	x = _unur_max( x, DISTR.trunc[0]);
+	x = _unur_min( x, DISTR.trunc[1]);
 	return x;
       }
     }   /* end of while-loop, (leaving flat region) */
@@ -1571,8 +1571,8 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
 	damp /= 2.;
 	xtmp = x - damp * fx/dfx;
 	/* make sure that new point is inside (truncated) domain */
-	xtmp = min( xtmp, DISTR.trunc[1] );
-	xtmp = max( xtmp, DISTR.trunc[0] );
+	xtmp = _unur_min( xtmp, DISTR.trunc[1] );
+	xtmp = _unur_max( xtmp, DISTR.trunc[0] );
 	fxtmp = CDF(xtmp) - U;
       } while (fabs(fxtmp) > fxabs * (1.+GEN->rel_x_resolution));   /* no improvement */
     }
@@ -1606,8 +1606,8 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
 		  "max number of iterations exceeded");
 
   /* make sure that result is within boundaries of (truncated) domain */
-  x = max( x, DISTR.trunc[0]);
-  x = min( x, DISTR.trunc[1]);
+  x = _unur_max( x, DISTR.trunc[0]);
+  x = _unur_min( x, DISTR.trunc[1]);
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file (in case error) */

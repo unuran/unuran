@@ -250,7 +250,7 @@ unur_test_timing_total( const UNUR_PAR *par, int samplesize, double avg_duration
   repeat_pilot = 11 - log(samplesize)/M_LN2;
   if (repeat_pilot<1) repeat_pilot = 1;
 
-  size_pilot = min(samplesize,1000);
+  size_pilot = _unur_min(samplesize,1000);
 
   time_pilot = unur_test_timing_total_run(par, size_pilot, repeat_pilot);
   if (time_pilot < 0) return -1.;   /* init failed */
@@ -282,7 +282,7 @@ unur_test_timing_total( const UNUR_PAR *par, int samplesize, double avg_duration
   size_result = samplesize;
 
   if (repeat_result >= 1) {
-    repeat_result = max(4,repeat_result);
+    repeat_result = _unur_max(4,repeat_result);
     if (repeat_result <= repeat_pilot && size_result == size_pilot) {
       /* there is no need to run this test again */
       time_result = time_pilot;

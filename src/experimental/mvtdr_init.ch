@@ -146,7 +146,7 @@ _unur_mvtdr_create( struct unur_par *par )
 
   /* initialize counter and check given parameters */
   GEN->n_steps = 0;   /* no triangulation steps yet */
-  GEN->steps_min = max( 0, PAR->steps_min );  /* minimum number of triangulation steps */
+  GEN->steps_min = _unur_max( 0, PAR->steps_min );  /* minimum number of triangulation steps */
   /* check maximal number of cones */
   if ( (1 << (GEN->dim + GEN->steps_min)) > PAR->max_cones) {
     /*     WARNING( "number of cones raised to 2^(dim + T_STEPS_MIN)" ); */
@@ -875,7 +875,7 @@ _unur_mvtdr_cone_split( struct unur_gen *gen, CONE *c, int step )
   c->logdetf = newc->logdetf;         /* the determinant */
 
   /* store maximal triangulation level for debugging */
-  GEN->n_steps = max(GEN->n_steps, step); 
+  GEN->n_steps = _unur_max(GEN->n_steps, step); 
 
   return UNUR_SUCCESS;
 
@@ -1089,7 +1089,7 @@ _unur_mvtdr_tp_search( struct unur_gen *gen, TP_ARG *a )
   a[1].t = FIND_TP_START;       /* starting point for searching proper touching point */
   a[2].t = -1.;                 /* not known. marked by setting to -1. */
 
-  for( i=1; i <= max(1,FIND_TP_STEPS_R); i++ ) {
+  for( i=1; i <= _unur_max(1,FIND_TP_STEPS_R); i++ ) {
     /* TODO: if vol==0 for a point we need not continue */
     _unur_mvtdr_tp_min(a[1].t, a+1);  /* calculate volume function */
 
@@ -1109,7 +1109,7 @@ _unur_mvtdr_tp_search( struct unur_gen *gen, TP_ARG *a )
   a[1].t = FIND_TP_START / FIND_TP_STEP_SIZE;/* starting point for searching proper touching point */
   a[2].t = FIND_TP_START;       /* t[2] must >= t[1]. */
 
-  for( i=0; i <= max(0,FIND_TP_STEPS_L); i++ ) {
+  for( i=0; i <= _unur_max(0,FIND_TP_STEPS_L); i++ ) {
     /* TODO: if vol==0 for a point we need not continue */
     _unur_mvtdr_tp_min(a[1].t, a+1);  /* calculate volume function */
 
@@ -1158,7 +1158,7 @@ _unur_mvtdr_tp_bracket( struct unur_gen *gen, TP_ARG *a )
   a[0].t = a[1].t / 2.;
 
   /* search */
-  for( i=1; i <= max(1,FIND_TP_STEPS_LB); i++ ) {
+  for( i=1; i <= _unur_max(1,FIND_TP_STEPS_LB); i++ ) {
     _unur_mvtdr_tp_min(a[0].t, a);  /* volume function */
 
     if( ! a[0].valid ) {
@@ -1194,7 +1194,7 @@ _unur_mvtdr_tp_bracket( struct unur_gen *gen, TP_ARG *a )
   tleft = a[1].t;
 
   /* search */
-  for( i=1; i <= max(1,FIND_TP_STEPS_UB); i++ ) {
+  for( i=1; i <= _unur_max(1,FIND_TP_STEPS_UB); i++ ) {
     _unur_mvtdr_tp_min(a[2].t, a+2);  /* volume function */
     if( ! a[2].valid ) {
       /* a[2] not a proper touching point */
@@ -1383,43 +1383,43 @@ _unur_mvtdr_number_vertices( struct unur_gen *gen, int level )
   }
   case 3: {
     static int nv[]={ 6, 13, 18, 40, 66,142,258,538,1026,2098,4098,8290,16386,32962,65538,131458,262146};
-    return nv[min(level,16)];
+    return nv[_unur_min(level,16)];
   }
   case 4: {
     static int nv[]={ 8, 19, 25, 32, 80,128,192,456, 824,1408,3120,5968,11008,23264,45600, 87552};
-    return nv[min(level,15)];
+    return nv[_unur_min(level,15)];
   }
   case 5: {
     static int nv[]={10, 26, 33, 41, 50,140,220,321, 450,1186,2158,3636, 5890,13970,27130};
-    return nv[min(level,14)];
+    return nv[_unur_min(level,14)];
   }
   case 6: {
     static int nv[]={12, 34, 42, 51, 61, 72,224,348, 501, 681, 912,2660, 4896, 8254};
-    return nv[min(level,13)];
+    return nv[_unur_min(level,13)];
   }
   case 7: {
     static int nv[]={14, 43, 52, 62, 73, 85, 98,336, 518, 743, 985,1289, 1666};
-    return nv[min(level,12)];
+    return nv[_unur_min(level,12)];
   }
   case 8: {
     static int nv[]={16, 53, 63, 74, 86, 99,113,128, 480, 736,1059};
-    return nv[min(level,10)];
+    return nv[_unur_min(level,10)];
   }
   case 9: {
     static int nv[]={18, 64, 75, 87,100,114,129,145, 162, 660};
-    return nv[min(level,9)];
+    return nv[_unur_min(level,9)];
   }
   case 10: {
     static int nv[]={20, 76, 88,101,115,130,146,163, 181, 200};
-    return nv[min(level,9)];
+    return nv[_unur_min(level,9)];
   }
   case 11: {
     static int nv[]={22, 89,102,116,131,147,164,182, 201, 221, 242};
-    return nv[min(level,10)];
+    return nv[_unur_min(level,10)];
   }
   default: { /* dim >= 12 */
     static int nv[]={24,103,117,132,148,165,183,202, 222, 243, 265, 288};
-    return nv[min(level,11)];
+    return nv[_unur_min(level,11)];
   }
   }
 

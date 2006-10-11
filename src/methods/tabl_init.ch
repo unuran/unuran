@@ -206,8 +206,8 @@ _unur_tabl_create( struct unur_par *par )
   /* the boundaries for our computation limits are intersection of the       */
   /* domain of the distribution and the given computation boundaries.        */
   if (par->distr->set & UNUR_DISTR_SET_DOMAIN) {
-    PAR->bleft  = max(PAR->bleft, DISTR.BD_LEFT);
-    PAR->bright = min(PAR->bright,DISTR.BD_RIGHT);
+    PAR->bleft  = _unur_max(PAR->bleft, DISTR.BD_LEFT);
+    PAR->bright = _unur_min(PAR->bright,DISTR.BD_RIGHT);
   }
   GEN->bleft       = PAR->bleft;         /* left boundary of domain            */
   GEN->bright      = PAR->bright;        /* right boundary of domain           */
@@ -442,13 +442,13 @@ _unur_tabl_get_intervals_from_slopes( struct unur_par *par, struct unur_gen *gen
     /* estimate domain */
     if (xmax > xmin) {
       /* increasing slope */
-      GEN->bleft = min(GEN->bleft,xmin);
-      GEN->bright = max(GEN->bright,xmax);
+      GEN->bleft = _unur_min(GEN->bleft,xmin);
+      GEN->bright = _unur_max(GEN->bright,xmax);
     }
     else {
       /* decreasing slope */
-      GEN->bleft = min(GEN->bleft,xmax);
-      GEN->bright = max(GEN->bright,xmin);
+      GEN->bleft = _unur_min(GEN->bleft,xmax);
+      GEN->bright = _unur_max(GEN->bright,xmin);
     }
   }
 

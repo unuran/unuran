@@ -551,8 +551,8 @@ _unur_stdgen_sample_normal_kr( struct unur_gen *gen )
       V = uniform();
       W = uniform();
       z = V - W;
-      t = XI - 0.630834801921960 * min(V,W);
-    } while (max(V,W) > 0.755591531667601 &&
+      t = XI - 0.630834801921960 * _unur_min(V,W);
+    } while (_unur_max(V,W) > 0.755591531667601 &&
 	     0.034240503750111 * fabs(z) > (PIhochK * exp(t*t/(-2.)) - 0.180025191068563*(XI-fabs(t))) );
     X = (z<0) ? t : -t;
   }
@@ -562,8 +562,8 @@ _unur_stdgen_sample_normal_kr( struct unur_gen *gen )
       V = uniform();
       W = uniform();
       z = V - W;
-      t = 0.479727404222441 + 1.105473661022070 * min(V,W);
-    } while (max(V,W) > 0.872834976671790 &&
+      t = 0.479727404222441 + 1.105473661022070 * _unur_min(V,W);
+    } while (_unur_max(V,W) > 0.872834976671790 &&
 	     0.049264496373128*fabs(z) > (PIhochK * exp(t*t/(-2)) -0.180025191068563*(XI-fabs(t))) );
     X = (z<0) ? t : -t;
   }
@@ -573,9 +573,9 @@ _unur_stdgen_sample_normal_kr( struct unur_gen *gen )
       V = uniform();
       W = uniform(); 
       z = V - W;
-      t = 0.479727404222441 - 0.595507138015940 * min(V,W);
+      t = 0.479727404222441 - 0.595507138015940 * _unur_min(V,W);
       if (t<=0.) continue;
-    } while (max(V,W)>0.805777924423817 &&
+    } while (_unur_max(V,W)>0.805777924423817 &&
 	     0.053377549506886*fabs(z) > (PIhochK * exp(t*t/(-2)) -0.180025191068563*(XI-fabs(t))) );
     X = (z<0) ? t : -t;
   }

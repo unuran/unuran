@@ -110,7 +110,7 @@ _unur_pmf_hypergeometric(int k, const UNUR_DISTR *distr)
 { 
   register double *params = DISTR.params;
 
-  if ( k<max(0,(n-N+M-0.5)) || k > min(n,M)+0.5 ) 
+  if ( k < _unur_max(0,(n-N+M-0.5)) || k > _unur_min(n,M)+0.5 ) 
     return 0.;
 
   else
@@ -229,8 +229,8 @@ _unur_set_params_hypergeometric( UNUR_DISTR *distr, const double *params, int n_
 
   /* set (standard) domain */
   if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
-    DISTR.domain[0] = (int) (max(0,(DISTR.n - DISTR.N + DISTR.M + 0.5)));  /* left boundary  */
-    DISTR.domain[1] = (int) (min(DISTR.n, DISTR.M) + 0.5);                 /* right boundary */
+    DISTR.domain[0] = (int) (_unur_max(0,(DISTR.n - DISTR.N + DISTR.M + 0.5)));  /* left boundary  */
+    DISTR.domain[1] = (int) (_unur_min(DISTR.n, DISTR.M) + 0.5);                 /* right boundary */
   }
 
   return UNUR_SUCCESS;

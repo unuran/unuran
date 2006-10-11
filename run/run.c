@@ -35,9 +35,9 @@ int main()
 {
   UNUR_DISTR *distr;
   UNUR_PAR *par;
-  UNUR_GEN *gen;
+/*   UNUR_GEN *gen; */
 /*   double fpar[4] = {0.5, 1., 1.}; */
-  double fpar[4] = {3.,0.5, -1., 0.};
+/*   double fpar[4] = {3.,0.5, -1., 0.}; */
  
   unur_set_default_debug(~0U);
 

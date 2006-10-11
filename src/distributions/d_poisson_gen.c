@@ -223,7 +223,7 @@ _unur_stdgen_sample_poisson_pdtabl( struct unur_gen *gen )
 
     /* Step T. Table comparison */
     if (ll != 0) {               
-      i = (U > 0.458) ? min(ll,m) : 1;
+      i = (U > 0.458) ? _unur_min(ll,m) : 1;
       for (K = i; K <=ll; K++)
 	if (U <= pp[K])
 	  return K;

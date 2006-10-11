@@ -880,7 +880,7 @@ _unur_tdrgw_create( struct unur_par *par )
   GEN->retry_ncpoints = PAR->retry_ncpoints;   /* number of cpoints for second trial of reinit */
 
   /* bounds for adding construction points  */
-  GEN->max_ivs = max(2*PAR->n_starting_cpoints,PAR->max_ivs);  /* maximum number of intervals */
+  GEN->max_ivs = _unur_max(2*PAR->n_starting_cpoints,PAR->max_ivs);  /* maximum number of intervals */
 
   /* copy variant */
   gen->variant = par->variant;

@@ -727,7 +727,7 @@ _unur_dari_create( struct unur_par *par )
   /* size of auxiliary table; 0 for none
      it cannot be larger than the given domain (avoid overflow) */
   if ((unsigned)DISTR.BD_RIGHT - (unsigned)DISTR.BD_LEFT < INT_MAX)
-    GEN->size = min(PAR->size,DISTR.BD_RIGHT-DISTR.BD_LEFT+1);
+    GEN->size = _unur_min(PAR->size,DISTR.BD_RIGHT-DISTR.BD_LEFT+1);
   else /* length of interval > INT_MAX */
     GEN->size = PAR->size;
 
@@ -826,7 +826,7 @@ _unur_dari_hat( struct unur_gen *gen )
   b[0] = DISTR.BD_LEFT;
   b[1] = DISTR.BD_RIGHT;
   GEN->pm = PMF(GEN->m);
-  d = max(2, (int)( GEN->c_factor/(GEN->pm/DISTR.sum)));
+  d = _unur_max(2, (int)( GEN->c_factor/(GEN->pm/DISTR.sum)));
 
   /* step 0.1 */
   do {
@@ -865,7 +865,7 @@ _unur_dari_hat( struct unur_gen *gen )
       GEN->vcr = GEN->vc+v[1];
 
       /* step 0.3 */ 
-      GEN->n[0] = max(b[0],GEN->m - GEN->size/2);
+      GEN->n[0] = _unur_max(b[0],GEN->m - GEN->size/2);
       GEN->n[1] = GEN->n[0] + GEN->size - 1;
       if (GEN->n[1] > b[1]) {
 	GEN->n[1] = b[1];

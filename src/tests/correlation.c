@@ -114,7 +114,7 @@ unur_test_correlation( UNUR_GEN *genx, UNUR_GEN *geny, int samplesize, int verbo
 
   /* samplesize */
   if( samplesize <= 0 ) samplesize = CORR_DEFAULT_SAMPLESIZE;
-  samplesize = min( samplesize, CORR_MAX_SAMPLESIZE );
+  samplesize = _unur_min( samplesize, CORR_MAX_SAMPLESIZE );
 
   /* sampling */  
   for (n=1; n<=samplesize; n++) {
@@ -201,7 +201,7 @@ unur_test_cvec_rankcorr( double *rc, struct unur_gen *gen, int samplesize, int v
 
   /* samplesize */
   if( samplesize <= 0 ) samplesize = CORR_DEFAULT_SAMPLESIZE;
-  samplesize = min( samplesize, CORR_MAX_SAMPLESIZE );
+  samplesize = _unur_min( samplesize, CORR_MAX_SAMPLESIZE );
 
   /* dimension of distribution */
   dim = gen->distr->dim;

@@ -216,13 +216,13 @@ hypergeometric_hruec_init( struct unur_gen *gen )
   p = Mp / Np;
   q = 1.0 - p;
   my = np * p;
-  bh = min(nc,Mc);
+  bh = _unur_min(nc,Mc);
   m = (int) ((np+1.0)*(Mp+1.0)/(Np+2.0));       /* mode */
 
   if (m < 5) {
     /* Set-up for Inversion */
     c = my + 10.0*sqrt(my*q*(1.0-np/Np));
-    b = min(bh,(int)c);                         /* safety-bound */
+    b = _unur_min(bh,(int)c);                   /* safety-bound */
     p0 = exp(flogfak(N-Mc)+flogfak(N-nc)-flogfak(NMn)-flogfak(N));
   }
 
@@ -230,7 +230,7 @@ hypergeometric_hruec_init( struct unur_gen *gen )
     /* Set-up for Ratio of Uniforms */
     a = my+0.5;
     c = sqrt(2.0*a*q*(1.0-np/Np));
-    b = min(bh,(int)(a+7.0*c));                 /* safety-bound */
+    b = _unur_min(bh,(int)(a+7.0*c));           /* safety-bound */
     g = delta(m);
     k1 = (int)(a-c);
     x = (a-k1-1.0)/(a-k1);

@@ -754,8 +754,8 @@ _unur_utdr_init( struct unur_par *par )
     }
 
   /* mode must be in domain */
-  DISTR.mode = max(DISTR.mode,GEN->il);
-  DISTR.mode = min(DISTR.mode,GEN->ir);
+  DISTR.mode = _unur_max(DISTR.mode,GEN->il);
+  DISTR.mode = _unur_min(DISTR.mode,GEN->ir);
 
   /* create hat and squeeze (setup procedure) */
   if ( _unur_utdr_hat(gen)==UNUR_SUCCESS )

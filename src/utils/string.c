@@ -69,7 +69,7 @@ _unur_string_append ( struct unur_string *string, const char *format, ... )
      /* Append to string                                                     */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   string ... structure for stringing string                          */
+     /*   string ... structure for string                                    */
      /*   format ... format for sprintf()                                    */
      /*   ...    ... (optional) arguments to be be printed                   */
      /*                                                                      */

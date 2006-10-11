@@ -58,7 +58,7 @@ dist-root:
 	   echo "*" >> configure.ac; \
 	   echo "*   This is a pure source distribution!" >> configure.ac; \
 	   echo "*" >> configure.ac; \
-	   echo "*   For a manual, documentated sources, tests," >> configure.ac; \
+	   echo "*   For a manual, documented sources, tests," >> configure.ac; \
 	   echo "*   and examples please download" >> configure.ac; \
 	   echo "*" >> configure.ac; \
 	   echo "*       $(PACKAGE)-$(VERSION).tar.gz" >> configure.ac; \

@@ -58,7 +58,7 @@ UNUR_GEN *unur_init( UNUR_PAR *par )
 
 int unur_sample_discr(UNUR_GEN *gen)
 {
-  CHECK_NULL(gen,INT_MAX);
+  CHECK_NULL(gen,0);
   return (gen->sample.discr(gen));
 } /* end of unur_sample_discr() */
 
@@ -86,7 +86,7 @@ int unur_sample_matr(UNUR_GEN *gen, double *matrix)
 int _unur_sample_discr_error( UNUR_GEN *gen )
 {
   /* no sampling routine available */
-  return INT_MAX;
+  return 0;
 } /* end of _unur_sample_discr_error() */
 
 double _unur_sample_cont_error( UNUR_GEN *gen )

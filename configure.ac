@@ -109,9 +109,9 @@ AC_CACHE_CHECK([for IEEE comparisons], ac_cv_c_ieee_comparisons,
 int main (void) 
 { 
    int status; double inf, nan;
-   /* inf = exp(1.0e10); */
-   /* nan = inf / inf ; */
-   nan = 0.0 / 0.0;
+   inf = exp(1.0e10);
+   nan = inf / inf;
+   /* nan = 0.0 / 0.0; */
    status = (nan == nan);
    exit (status);
 }]])],

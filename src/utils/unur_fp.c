@@ -51,6 +51,8 @@ _unur_isfinite (const double x)
 {
 #if HAVE_DECL_ISFINITE
   return (isfinite(x) ? TRUE : FALSE);
+#elif defined(_MSC_VER) /* Microsoft Visual C++ */
+  return (_finite(x) ? TRUE : FALSE);
 #elif HAVE_IEEE_COMPARISONS
   if (x < INFINITY && x > -INFINITY)
     return TRUE;
@@ -83,6 +85,8 @@ _unur_isnan (const double x)
 {
 #if HAVE_DECL_ISNAN
   return (isnan(x) ? TRUE : FALSE);
+#elif defined(_MSC_VER) /* Microsoft Visual C++ */
+  return (_isnan(x) ? TRUE : FALSE);
 #elif HAVE_IEEE_COMPARISONS
   return ((x!=x) ? TRUE : FALSE);
 #else
@@ -112,12 +116,16 @@ _unur_isinf (const double x)
      /*----------------------------------------------------------------------*/
 {
 #if HAVE_DECL_ISINF
-  if (isinf(x)==0)
-    return 0;
-  else if (x>0) 
-    return 1;
-  else
+  return isinf(x);
+#elif defined(_MSC_VER) /* Microsoft Visual C++ */
+  int fpc = _fpclass(x);
+
+  if (fpc == _FPCLASS_PINF)
+    return +1;
+  else if (fpc == _FPCLASS_NINF)
     return -1;
+  else 
+    return 0;
 #elif HAVE_IEEE_COMPARISONS
   if (x>=INFINITY)
     return 1;

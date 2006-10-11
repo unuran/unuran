@@ -1033,7 +1033,8 @@ int main()
 	      $seed
 #  endif  
              ) != UNUR_SUCCESS) {
-	  fprintf(stderr,"WARNING: Seed could not be set at random\\n");
+	    ;
+	/*  fprintf(stderr,"WARNING: Seed could not be set at random\\n"); */
 	}  
 #elif UNUR_URNG_TYPE == UNUR_URNG_PRNG
 	unur_set_default_urng(prng_new("mt19937($seed)"));

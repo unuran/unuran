@@ -2,6 +2,57 @@
 
 =NODE  Methods   Methods for generating non-uniform random variates
 =UP TOP [40]
+
+=DESCRIPTION
+
+Sampling from a particular distribution with UNURAN requires the
+following steps:
+
+@enumerate
+@item
+Create a distribution object
+(@pxref{Distribution_objects,,Handling distribution objects}).
+
+@item
+Select a method and create a parameter object.
+
+@item
+Initizialize the generator object using unur_init().
+@sp 1
+@emph{Important}: Initialization of the generator object might fail.
+unur_init() returns a NULL pointer then, which @strong{must} not be
+used for sampling.
+
+@item
+Draw a sample from the generator object using the 
+corresponding sampling function (depending on the type of
+distribution:
+univariate continuous, univariate discrete, multivariate
+continuous, and random matrix).
+
+@item
+It is possible for a generator object to change the parameters and the
+domain of the underlying distribution. This must be done by extracting
+this object by means of a unur_get_distr() call and
+changing the distribution using the correspondig set calls, 
+see @ref{Distribution_objects,,Handling distribution objects}.
+(A second -- not recommended! -- approach is to use the
+unur_set_use_distr_privatecopy() call.)
+The generator object @strong{must} then be reinitialized by means of
+the unur_reinit() call.
+
+@emph{Important}: Reinitialization of the generator object might fail.
+Moreover, currently not all methods allow reinitialization. Thus one
+@strong{must} check the return code of the unur_reinit() call.
+
+@emph{Important}: When reinitialization fails then sampling routines
+always return INFINITY (for continuous distributions) or @code{0} (for
+discrete distributions), respectively.
+However, it is still possible to change the underlying distribution
+and try to reinitialize again.
+
+@end enumerate
+
 =EON
 
 /*---------------------------------------------------------------------------*/

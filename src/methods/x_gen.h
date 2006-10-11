@@ -66,6 +66,39 @@ UNUR_GEN *unur_init( UNUR_PAR *parameters );
   automatically. Thus it is not necessary/allowed to free it.
 */
 
+/*...........................................................................*/
+
+int unur_reinit( UNUR_GEN *generator );
+/*
+   Update an existing generator object after the underlying
+   distribution has been modified (using unur_get_distr() together
+   with corresponding set calls, or -- not recommended! -- set 
+   unur_set_use_distr_privatecopy() to FALSE).
+   It @strong{must} be executed before sampling using this generator
+   object is continued as otherwise it produces an invalid sample or
+   might even cause a segmentation fault.
+
+   @emph{Important}: Reinitialization of the generator object might fail.
+   Moreover, currently not all methods allow reinitialization. Thus one
+   @strong{must} check the return code:
+
+   @table @asis 
+   @item @code{UNUR_SUCCESS (0x0u)}
+   success (no error)
+   @item @code{UNUR_ERR_NO_REINIT}
+   reinit routine not implemented.
+   @item other values
+   some error has occured while trying to reinitialize the generator
+   object. 
+   @end table
+
+   @emph{Important}: When reinitialization fails then sampling routines
+   always return INFINITY (for continuous distributions) or @code{0} (for
+   discrete distributions), respectively.
+   However, it is still possible to change the underlying distribution
+   and try to reinitialize again.
+*/
+
 /*---------------------------------------------------------------------------*/
 /* Sample from generator                                                     */
 

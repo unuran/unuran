@@ -17,7 +17,6 @@ utdr.h
 ###############################################################
 # update reinit:
 
-dsrou.h
 srou.h
 ssr.h
 tdr.h
@@ -31,10 +30,8 @@ utdr.h
 arou.h
 auto.h
 cstd.h
-dari.h
 dau.h
 dgt.h
-dsrou.h
 dss.h
 dstd.h
 empk.h
@@ -50,12 +47,8 @@ mcorr.h
 ninv.h
 norta.h
 nrou.h
-ssr.h
 tabl.h
-tdr.h
-tdrgw.h
 unif.h
-utdr.h
 vempk.h
 vmt.h
 vnrou.h

@@ -99,17 +99,6 @@ UNUR_PAR *unur_dsrou_new( const UNUR_DISTR *distribution );
 
 /*...........................................................................*/
 
-int unur_dsrou_reinit( UNUR_GEN *generator );
-/* 
-   Update an existing generator object after the distribution has been
-   modified. It must be executed whenever the parameters or the domain
-   of the distribution have been changed (see below).
-   It is faster than destroying the existing object and building
-   a new one from scratch.
-   If reinitialization has been successful @code{UNUR_SUCCESS} is returned,
-   in case of a failure an error code is returned.
-*/
-
 int unur_dsrou_set_cdfatmode( UNUR_PAR *parameters, double Fmode );
 /* 
    Set CDF at mode. 
@@ -153,6 +142,17 @@ int unur_dsrou_chg_cdfatmode( UNUR_GEN *generator, double Fmode );
 /**********************
  *  Deprecated calls  *
  **********************/
+
+int unur_dsrou_reinit( UNUR_GEN *generator );
+/* 
+   Update an existing generator object after the distribution has been
+   modified. It must be executed whenever the parameters or the domain
+   of the distribution have been changed (see below).
+   It is faster than destroying the existing object and building
+   a new one from scratch.
+   If reinitialization has been successful @code{UNUR_SUCCESS} is returned,
+   in case of a failure an error code is returned.
+*/
 
 int unur_dsrou_chg_pmfparams( UNUR_GEN *generator, double *params, int n_params );
 /* 

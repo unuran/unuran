@@ -144,6 +144,11 @@ static struct unur_gen *_unur_dsrou_init( struct unur_par *par );
 /* Initialize new generator.                                                 */
 /*---------------------------------------------------------------------------*/
 
+static int _unur_dsrou_reinit( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* Reinitialize generator.                                                   */
+/*---------------------------------------------------------------------------*/
+
 static int _unur_dsrou_rectangle( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* compute universal bounding rectangle.                                     */
@@ -197,6 +202,12 @@ static void _unur_dsrou_debug_init( const struct unur_gen *gen, int is_reinit );
 #define SAMPLE    gen->sample.discr     /* pointer to sampling routine       */     
 
 #define PMF(x)    _unur_discr_PMF((x),(gen->distr))   /* call to PMF         */
+
+/*---------------------------------------------------------------------------*/
+
+#define _unur_dsrou_getSAMPLE(gen) \
+   ( ((gen)->variant & DSROU_VARFLAG_VERIFY) \
+     ? _unur_dsrou_sample_check : _unur_dsrou_sample )
 
 /*---------------------------------------------------------------------------*/
 /* constants                                                                 */
@@ -353,16 +364,14 @@ unur_dsrou_chg_verify( struct unur_gen *gen, int verify )
   _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
   _unur_check_gen_object( gen, DSROU, UNUR_ERR_GEN_INVALID );
  
-  if (verify) {
+  if (verify)
     /* turn verify mode on */
     gen->variant |= DSROU_VARFLAG_VERIFY;
-    SAMPLE = _unur_dsrou_sample_check;
-  }
-  else {
+  else
     /* turn verify mode off */
     gen->variant &= ~DSROU_VARFLAG_VERIFY;
-    SAMPLE = _unur_dsrou_sample;
-  }
+
+  SAMPLE = _unur_dsrou_getSAMPLE(gen); 
 
   /* o.k. */
   return UNUR_SUCCESS;
@@ -713,9 +722,10 @@ _unur_dsrou_create( struct unur_par *par )
   gen->genid = _unur_set_genid(GENTYPE);
 
   /* routines for sampling and destroying generator */
-  SAMPLE = (par->variant & DSROU_VARFLAG_VERIFY) ? _unur_dsrou_sample_check : _unur_dsrou_sample;
+  SAMPLE = _unur_dsrou_getSAMPLE(gen);
   gen->destroy = _unur_dsrou_free;
   gen->clone = _unur_dsrou_clone;
+  gen->reinit = _unur_dsrou_reinit;
 
   /* copy some parameters into generator object */
   GEN->Fmode = PAR->Fmode;            /* CDF at mode                           */
@@ -786,6 +796,30 @@ _unur_dsrou_rectangle( struct unur_gen *gen )
 int
 unur_dsrou_reinit( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
+     /* Deprecated call!                                                     */
+     /*----------------------------------------------------------------------*/
+     /* re-initialize (existing) generator.                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, DSROU, UNUR_ERR_GEN_DATA );
+
+  return _unur_dsrou_reinit( gen );
+} /* end of unur_dsrou_reinit() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_dsrou_reinit( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
      /* re-initialize (existing) generator.                                  */
      /*                                                                      */
      /* parameters:                                                          */
@@ -798,9 +832,8 @@ unur_dsrou_reinit( struct unur_gen *gen )
 {
   int result;
 
-  /* check arguments */
-  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
-  _unur_check_gen_object( gen, DSROU, UNUR_ERR_GEN_DATA );
+  /* (re)set sampling routine */
+  SAMPLE = _unur_dsrou_getSAMPLE(gen);
 
   /* compute universal bounding rectangle */
   result = _unur_dsrou_rectangle( gen );
@@ -812,7 +845,7 @@ unur_dsrou_reinit( struct unur_gen *gen )
 #endif
 
   return result;
-} /* end of unur_dsrou_reinit() */
+} /* end of _unur_dsrou_reinit() */
 
 /*---------------------------------------------------------------------------*/
 

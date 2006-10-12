@@ -40,14 +40,16 @@ Version 0.8.0: October 2006
 
 	  . unur_dari_chg_pmfparams(), unur_dari_chg_domain(),
 	    unur_dari_chg_mode(), unur_dari_upd_mode(),
-	    unur_dari_chg_pmfsum(), and unur_dari_upd_pmfsum()
+	    unur_dari_chg_pmfsum(), unur_dari_upd_pmfsum(), and
+	    unur_dari_reinit()
 	    are now deprecated
 
 	- method DSROU:
 
 	  . unur_dsrou_chg_pmfparams(), unur_dsrou_chg_domain(),
 	    unur_dsrou_chg_mode(), unur_dsrou_upd_mode(),
-	    unur_dsrou_chg_pmfsum(), and unur_dsrou_upd_pmfsum()
+	    unur_dsrou_chg_pmfsum(), unur_dsrou_upd_pmfsum(), and
+	    unur_dsrou_reinit()
 	    are now deprecated
 
 	* Distributions:

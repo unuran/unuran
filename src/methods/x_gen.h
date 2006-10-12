@@ -97,6 +97,11 @@ int unur_reinit( UNUR_GEN *generator );
    discrete distributions), respectively.
    However, it is still possible to change the underlying distribution
    and try to reinitialize again.
+
+   @emph{Important}: When one tries to run unur_reinit(), but reinitialization
+   is not implemented, then the generator object cannot be used any more
+   and must be destroyed and a new one has to be built from scratch.
+   
 */
 
 /*---------------------------------------------------------------------------*/

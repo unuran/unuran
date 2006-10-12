@@ -96,6 +96,7 @@ my %TAGs =
      "=REQUIRED"    => { "scan" => \&scan_chop_blanks },
      "=OPTIONAL"    => { "scan" => \&scan_chop_blanks },
      "=SPEED"       => { "scan" => \&scan_chop_blanks },
+     "=REINIT"      => { "scan" => \&scan_chop_blanks },
      "=SEEALSO"     => { "scan" => \&scan_do_nothing },
      "=ABSTRACT"    => { "scan" => \&scan_do_nothing },
      "=REF"         => { "scan" => \&scan_REF },
@@ -483,6 +484,9 @@ sub texi_node {
 	    }
 	    if ($IN->{$node}->{"=SPEED"}) {
 		$TEXI .= "\@item Speed:\n".$IN->{$node}->{"=SPEED"}."\n";
+	    }
+	    if ($IN->{$node}->{"=REINIT"}) {
+		$TEXI .= "\@item Reinit:\n".$IN->{$node}->{"=REINIT"}."\n";
 	    }
 	    if ($IN->{$node}->{"=REF"}) {
 		$TEXI .= "\@item Reference:\n".$IN->{$node}->{"=REF"}."\n";

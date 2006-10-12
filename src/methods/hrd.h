@@ -46,6 +46,8 @@
 
    =REF  [HLD04: Sect.9.1.5, Alg.9.5]
 
+   =REINIT not implemented
+
    =DESCRIPTION
       Generates random variate with given non-increasing hazard rate.
       It is necessary that the distribution object contains this

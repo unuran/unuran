@@ -44,6 +44,8 @@
 
    =SPEED Set-up: slow (linear with the vector-length), Sampling: very fast
 
+   =REINIT not implemented
+
    =REF  [WAa77] [HLD04: Sect.3.2]
 
    =DESCRIPTION

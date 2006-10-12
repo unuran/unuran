@@ -44,6 +44,8 @@
 
    =SPEED Set-up: fast, Sampling: slow
 
+   =REINIT not implemented
+
    =REF  [LJa01] [LJa02] [HLD04: Sect.6.3.1, Sect.6.3.2, Sect.6.4.1, Alg.6.4, Alg.6.5, Alg.6.7]
 
    =DESCRIPTION

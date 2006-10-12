@@ -46,6 +46,8 @@
 
    =SPEED Set-up: slow, Sampling: fast
 
+   =REINIT not implemented
+
    =REF  [LJa00]
 
    =DESCRIPTION

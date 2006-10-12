@@ -41,6 +41,8 @@
 
    =UP  Methods_for_UNID
 
+   =REINIT not implemented
+
    =DESCRIPTION
       UNIF is a simple wrapper that makes it possible to use a uniform
       random number generator as a UNURAN generator. There are no

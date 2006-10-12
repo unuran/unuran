@@ -46,6 +46,8 @@
 
    =SPEED Set-up: (very) slow, Sampling: fast
 
+   =REINIT not implemented
+
    =REF  [AJa93] [AJa95] [HLD04: Cha.5.1]  
 
    =ABSTRACT Large tables necessary for heavy tailed distributions 

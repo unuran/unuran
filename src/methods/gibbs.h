@@ -44,6 +44,8 @@
 
    =SPEED Set-up: fast, Sampling: moderate
 
+   =REINIT not implemented
+
    =REF  [HLD04: Sect.14.1.2]
 
    =DESCRIPTION

@@ -44,6 +44,8 @@
 
    =SPEED Set-up: moderate, Sampling: Moderate
 
+   =REINIT not implemented
+
    =REF  [HWa95] [HLD04: Sect.4.5.4, Alg.4.4]
 
    =DESCRIPTION

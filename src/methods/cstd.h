@@ -46,6 +46,8 @@
 
    =SPEED Set-up: fast, Sampling: depends on distribution and generator
 
+   =REINIT not implemented
+
    =DESCRIPTION
       CSTD is a wrapper for special generators for continuous
       univariate standard distributions. It only works for

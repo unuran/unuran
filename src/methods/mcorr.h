@@ -47,6 +47,8 @@
    =SPEED Set-up: fast,
           Sampling: depends on dimension
 
+   =REINIT not implemented
+
    =REF  [DLa86: Sect.6.1; p.605] [MOa84]
 
    =DESCRIPTION

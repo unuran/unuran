@@ -46,6 +46,8 @@
 
    =SPEED Set-up: slow, Sampling: fast
 
+   =REINIT not implemented
+
    =REF  [GWa92] [HWa95] [HLD04: Cha.4]
 
    =DESCRIPTION

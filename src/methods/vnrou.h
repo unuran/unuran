@@ -46,6 +46,8 @@
 
    =SPEED Set-up: fast or slow, Sampling: slow
 
+   =REINIT not implemented
+
    =REF  [WGS91]
 
    =DESCRIPTION 

@@ -45,6 +45,8 @@
    =SPEED Set-up: slow (as sample is sorted),
           Sampling: very fast (inversion) 
 
+   =REINIT not implemented
+
    =REF  [HLa00] [HLD04: Sect.12.1.3]
 
    =DESCRIPTION

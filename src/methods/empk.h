@@ -45,6 +45,8 @@
    =SPEED Set-up: slow (as sample is sorted),
           Sampling: fast (depends on kernel)
 
+   =REINIT not implemented
+
    =REF  [HLa00] [HLD04: Sect.12.1.2]
 
    =DESCRIPTION

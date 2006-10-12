@@ -46,6 +46,8 @@
 
    =SPEED Set-up: moderate, Sampling: moderate
 
+   =REINIT not implemented
+
    =REF  [HLDa06]
 
    =DESCRIPTION

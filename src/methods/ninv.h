@@ -46,6 +46,8 @@
 
    =SPEED Set-up: optional, Sampling: (very) slow
 
+   =REINIT not implemented
+
    =DESCRIPTION
       NINV is the implementation of numerical inversion.
       For finding the root it is possible to choose between

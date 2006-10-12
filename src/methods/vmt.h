@@ -45,6 +45,8 @@
    =SPEED Set-up: slow,
           Sampling: depends on dimension
 
+   =REINIT not implemented
+
    =REF  [HLD04: Sect.11.1.6, Alg.11.3.]
 
    =DESCRIPTION

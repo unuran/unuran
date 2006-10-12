@@ -48,6 +48,8 @@
 
    =SPEED Set-up: (very) slow, Sampling: (very) fast
 
+   =REINIT not implemented
+
    =DESCRIPTION
       HINV is a variant of numerical inversion, where the inverse CDF
       is approximated using Hermite interpolation, i.e., the interval 

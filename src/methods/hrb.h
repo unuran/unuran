@@ -46,6 +46,8 @@
 
    =SPEED Set-up: fast, Sampling: slow
 
+   =REINIT not implemented
+
    =REF  [HLD04: Sect.9.1.4, Alg.9.4]
 
    =DESCRIPTION

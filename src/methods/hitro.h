@@ -46,6 +46,8 @@
 
    =SPEED Set-up: fast, Sampling: fast
 
+   =REINIT not implemented
+
    =DESCRIPTION
       HITRO is an implementation of a hit-and-run sampler that runs on
       the acceptance region of the multivariate ratio-of-uniforms

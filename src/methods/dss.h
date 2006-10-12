@@ -46,6 +46,8 @@
 
    =SPEED Set-up: fast, Sampling: very slow (linear in expectation)
 
+   =REINIT not implemented
+
    =REF [HLD04: Sect.3.1.1, Alg.3.1]
 
    =DESCRIPTION

@@ -72,15 +72,16 @@ int unur_reinit( UNUR_GEN *generator );
 /*
    Update an existing generator object after the underlying
    distribution has been modified (using unur_get_distr() together
-   with corresponding set calls, or -- not recommended! -- set 
-   unur_set_use_distr_privatecopy() to FALSE).
+   with corresponding set calls.
    It @strong{must} be executed before sampling using this generator
    object is continued as otherwise it produces an invalid sample or
    might even cause a segmentation fault.
 
+   @emph{Important}: Currently not all methods allow reinitialization,
+   see the description of the particular method (keyword @i{Reinit}).
+
    @emph{Important}: Reinitialization of the generator object might fail.
-   Moreover, currently not all methods allow reinitialization. Thus one
-   @strong{must} check the return code:
+   Thus one @strong{must} check the return code:
 
    @table @asis 
    @item @code{UNUR_SUCCESS (0x0u)}

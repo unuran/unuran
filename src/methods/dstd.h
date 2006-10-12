@@ -46,6 +46,8 @@
 
    =SPEED Set-up: fast, Sampling: depends on distribution and generator
 
+   =REINIT not implemented
+
    =DESCRIPTION
       DSTD is a wrapper for special generators for discrete univariate
       standard distributions. It only works for distributions in the 

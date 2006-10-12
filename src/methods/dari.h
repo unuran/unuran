@@ -44,6 +44,8 @@
 
    =SPEED Set-up: moderate, Sampling: fast
 
+   =REINIT not implemented
+
    =REF  [HDa96] [HLD04: Sect.10.2, Alg.10.4]
 
    =DESCRIPTION

@@ -40,6 +40,8 @@
 
    =UP Methods [05]
 
+   =REINIT not implemented
+
    =DESCRIPTION
       AUTO selects a an appropriate method for the given distribution
       object automatically. There are no parameters for this method,

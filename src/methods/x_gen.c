@@ -34,6 +34,7 @@
 
 #include <unur_source.h>
 #include <distr/distr_source.h>
+#include <distr/matr.h>
 #include "unur_methods_source.h"
 #include "x_gen.h"
 #include "x_gen_source.h"
@@ -48,7 +49,7 @@
 
 /*---------------------------------------------------------------------------*/
 
-UNUR_GEN *unur_init( UNUR_PAR *par )
+struct unur_gen *unur_init( struct unur_par *par )
 {                
   _unur_check_NULL(NULL,par,NULL);
   return (par->init(par));
@@ -56,25 +57,67 @@ UNUR_GEN *unur_init( UNUR_PAR *par )
 
 /*---------------------------------------------------------------------------*/
 
-int unur_sample_discr(UNUR_GEN *gen)
+int unur_reinit( struct unur_gen *gen )
+{
+  int status = UNUR_SUCCESS;
+  _unur_check_NULL(NULL,gen,UNUR_ERR_NULL);
+
+  if (gen->reinit) {
+    status = gen->reinit(gen);
+    if (status == UNUR_SUCCESS) return status;
+  }
+  else {
+    _unur_error(gen->genid,UNUR_ERR_NO_REINIT,"");
+    status = UNUR_ERR_NO_REINIT;
+  }
+
+  /* error: change sampling routine */
+  switch (gen->method & UNUR_MASK_TYPE) {
+  case UNUR_METH_DISCR:
+    gen->sample.discr = _unur_sample_discr_error;
+    break;
+  case UNUR_METH_CONT:
+  case UNUR_METH_CEMP:
+    gen->sample.cont = _unur_sample_cont_error;
+    break;
+  case UNUR_METH_VEC:
+    gen->sample.cvec = _unur_sample_cvec_error;
+    break;
+  case UNUR_METH_MAT:
+    gen->sample.matr = _unur_sample_matr_error;
+    break;
+  default:
+    _unur_error("reinit",UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+  }
+
+  return status;
+} /* end of unur_reinit() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_sample_discr( struct unur_gen *gen )
 {
   CHECK_NULL(gen,0);
   return (gen->sample.discr(gen));
 } /* end of unur_sample_discr() */
 
-double unur_sample_cont(UNUR_GEN *gen)
+double
+unur_sample_cont( struct unur_gen *gen )
 {
   CHECK_NULL(gen,INFINITY);
   return (gen->sample.cont(gen));
 } /* end of unur_sample_cont() */
 
-int unur_sample_vec(UNUR_GEN *gen, double *vector)
+int
+unur_sample_vec( struct unur_gen *gen, double *vector )
 {
   CHECK_NULL(gen,UNUR_ERR_NULL);
   return (gen->sample.cvec(gen,vector));
 } /* end of unur_sample_vec() */
 
-int unur_sample_matr(UNUR_GEN *gen, double *matrix)
+int
+unur_sample_matr( struct unur_gen *gen, double *matrix )
 {
   CHECK_NULL(gen,UNUR_ERR_NULL);
   return (gen->sample.matr(gen,matrix));
@@ -83,15 +126,15 @@ int unur_sample_matr(UNUR_GEN *gen, double *matrix)
 /*---------------------------------------------------------------------------*/
 /* aux routines when no sampling routine is available                         */
 
-int _unur_sample_discr_error( UNUR_GEN *gen )
+int
+_unur_sample_discr_error( struct unur_gen *gen )
 {
-  /* no sampling routine available */
   return 0;
 } /* end of _unur_sample_discr_error() */
 
-double _unur_sample_cont_error( UNUR_GEN *gen )
+double
+_unur_sample_cont_error( struct unur_gen *gen )
 {
-  /* no sampling routine available */
   return INFINITY;
 } /* end of _unur_sample_cont_error() */
 
@@ -106,19 +149,19 @@ _unur_sample_cvec_error( struct unur_gen *gen, double *vec )
 int
 _unur_sample_matr_error( struct unur_gen *gen, double *mat )
 { 
-#define idx(a,b) ((a)*dim+(b))
-  int dim = gen->distr->dim;
-  int i,j;
-
-  for (i=0; i<dim; i++)
-    for (j=0; j<dim; j++)
-      mat[idx(i,j)] = INFINITY;
+  int n_rows, n_cols, dim, j;
+  
+  unur_distr_matr_get_dim(gen->distr, &n_rows, &n_cols );
+  dim = n_rows * n_cols;
+  for (j=0; j<dim; j++)
+    mat[j] = INFINITY;
   return UNUR_FAILURE;
 } /* end of _unur_sample_cvec_error() */
 
 /*---------------------------------------------------------------------------*/
 
-void unur_free( UNUR_GEN *gen )
+void
+unur_free( struct unur_gen *gen )
 {                
   if (gen) gen->destroy(gen);
 } /* end of unur_free() */

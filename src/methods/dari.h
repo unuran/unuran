@@ -44,7 +44,7 @@
 
    =SPEED Set-up: moderate, Sampling: fast
 
-   =REINIT not implemented
+   =REINIT supported
 
    =REF  [HDa96] [HLD04: Sect.10.2, Alg.10.4]
 
@@ -105,17 +105,6 @@ UNUR_PAR *unur_dari_new( const UNUR_DISTR *distribution );
 
 /*...........................................................................*/
 
-int unur_dari_reinit( UNUR_GEN *generator );
-/* 
-   Update an existing generator object after the distribution has been
-   modified. It must be executed whenever the parameters or the domain
-   of the distributions has been changed (see below).
-   It is faster than destroying the existing object and building
-   a new one from scratch.
-   If reinitialization has been successful @code{UNUR_SUCCESS} is returned,
-   in case of a failure an error code is returned.
-*/
-
 int unur_dari_set_squeeze( UNUR_PAR *parameters, int squeeze );
 /* 
    Turn utilization of the squeeze of the algorithm on/off.
@@ -175,6 +164,17 @@ int unur_dari_chg_verify( UNUR_GEN *generator, int verify );
 /**********************
  *  Deprecated calls  *
  **********************/
+
+int unur_dari_reinit( UNUR_GEN *generator );
+/* 
+   Update an existing generator object after the distribution has been
+   modified. It must be executed whenever the parameters or the domain
+   of the distributions has been changed (see below).
+   It is faster than destroying the existing object and building
+   a new one from scratch.
+   If reinitialization has been successful @code{UNUR_SUCCESS} is returned,
+   in case of a failure an error code is returned.
+*/
 
 int unur_dari_chg_pmfparams( UNUR_GEN *generator, double *params, int n_params );
 /* 

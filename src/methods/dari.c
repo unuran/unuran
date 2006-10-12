@@ -94,6 +94,11 @@ static struct unur_gen *_unur_dari_init( struct unur_par *par );
 /* Initialize new generator.                                                 */
 /*---------------------------------------------------------------------------*/
 
+static int _unur_dari_reinit( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* Reinitialize generator.                                                   */
+/*---------------------------------------------------------------------------*/
+
 static int _unur_dari_hat( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* compute hat.                                                              */
@@ -104,8 +109,8 @@ static struct unur_gen *_unur_dari_create( struct unur_par *par );
 /* create new (almost empty) generator object.                               */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_dari_sample( struct unur_gen *generator );
-static int _unur_dari_sample_check( struct unur_gen *generator );
+static int _unur_dari_sample( struct unur_gen *gen );
+static int _unur_dari_sample_check( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/
@@ -147,6 +152,12 @@ static void _unur_dari_debug_init( struct unur_gen *gen );
 #define SAMPLE    gen->sample.discr     /* pointer to sampling routine       */     
 
 #define PMF(x)    _unur_discr_PMF((x),(gen->distr))    /* call to PMF        */
+
+/*---------------------------------------------------------------------------*/
+
+#define _unur_dari_getSAMPLE(gen) \
+   ( ((gen)->variant & DARI_VARFLAG_VERIFY) \
+     ? _unur_dari_sample_check : _unur_dari_sample )
 
 /*---------------------------------------------------------------------------*/
 
@@ -400,16 +411,14 @@ unur_dari_chg_verify( struct unur_gen *gen, int verify )
   _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
   _unur_check_gen_object( gen, DARI, UNUR_ERR_GEN_INVALID );
 
-  if (verify) {
+  if (verify)
     /* turn verify mode on */
     gen->variant |= DARI_VARFLAG_VERIFY;
-    SAMPLE = _unur_dari_sample_check;
-  }
-  else {
+  else
     /* turn verify mode off */
     gen->variant &= ~DARI_VARFLAG_VERIFY;
-    SAMPLE = _unur_dari_sample;
-  }
+
+  SAMPLE = _unur_dari_getSAMPLE(gen); 
 
   /* o.k. */
   return UNUR_SUCCESS;
@@ -716,9 +725,10 @@ _unur_dari_create( struct unur_par *par )
   gen->genid = _unur_set_genid(GENTYPE);
 
   /* routines for sampling and destroying generator */
-  SAMPLE = (par->variant & DARI_VARFLAG_VERIFY) ? _unur_dari_sample_check : _unur_dari_sample;
+  SAMPLE = _unur_dari_getSAMPLE(gen);
   gen->destroy = _unur_dari_free;
   gen->clone = _unur_dari_clone;
+  gen->reinit = _unur_dari_reinit;
 
   /* copy some parameters into generator object */
   GEN->squeeze = PAR->squeeze;        /* squeeze yes/no?                       */
@@ -916,6 +926,8 @@ _unur_dari_hat( struct unur_gen *gen )
 int
 unur_dari_reinit( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
+     /* Deprecated call!                                                     */
+     /*----------------------------------------------------------------------*/
      /* re-initialize (existing) generator.                                  */
      /*                                                                      */
      /* parameters:                                                          */
@@ -929,10 +941,31 @@ unur_dari_reinit( struct unur_gen *gen )
   /* check arguments */
   _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
   _unur_check_gen_object( gen, DARI, UNUR_ERR_GEN_INVALID );
+
+  return _unur_dari_reinit(gen);
+} /* end of unur_dari_reinit() */
   
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_dari_reinit( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* re-initialize (existing) generator.                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* (re)set sampling routine */
+  SAMPLE = _unur_dari_getSAMPLE(gen);
+
   /* compute hat  */
   return _unur_dari_hat( gen );
-} /* end of unur_dari_reinit() */
+} /* end of _unur_dari_reinit() */
 
 /*---------------------------------------------------------------------------*/
 

@@ -19,7 +19,8 @@ Version 0.8.0: October 2006
 
 	  . unur_srou_chg_pdfparams(), unur_srou_chg_domain(),
 	    unur_srou_chg_mode(), unur_srou_upd_mode(), 
-           unur_srou_chg_pdfarea(), and unur_srou_upd_pdfarea()
+           unur_srou_chg_pdfarea(), unur_srou_upd_pdfarea(),
+	    unur_srou_reinit()
 	    are now deprecated
 
 	- method SSR:

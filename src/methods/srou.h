@@ -44,7 +44,7 @@
 
    =SPEED Set-up: fast, Sampling: slow
 
-   =REINIT not implemented
+   =REINIT supported
 
    =REF  [LJa01] [LJa02] [HLD04: Sect.6.3.1, Sect.6.3.2, Sect.6.4.1, Alg.6.4, Alg.6.5, Alg.6.7]
 
@@ -155,17 +155,6 @@ UNUR_PAR *unur_srou_new( const UNUR_DISTR *distribution );
 */
 
 /*...........................................................................*/
-
-int unur_srou_reinit( UNUR_GEN *generator );
-/* 
-   Update an existing generator object after the distribution has been
-   modified. It must be executed whenever the parameters or the domain
-   of the distributions have been changed (see below).
-   It is faster than destroying the existing object and building
-   a new one from scratch.
-   If reinitialization has been successful @code{UNUR_SUCCESS} is returned,
-   in case of a failure an error code is returned.
-*/
 
 int unur_srou_set_r( UNUR_PAR *parameters, double r );
 /* 
@@ -278,6 +267,17 @@ int unur_srou_chg_pdfatmode( UNUR_GEN *generator, double fmode );
 /**********************
  *  Deprecated calls  *
  **********************/
+
+int unur_srou_reinit( UNUR_GEN *generator );
+/* 
+   Update an existing generator object after the distribution has been
+   modified. It must be executed whenever the parameters or the domain
+   of the distributions have been changed (see below).
+   It is faster than destroying the existing object and building
+   a new one from scratch.
+   If reinitialization has been successful @code{UNUR_SUCCESS} is returned,
+   in case of a failure an error code is returned.
+*/
 
 int unur_srou_chg_pdfparams( UNUR_GEN *generator, double *params, int n_params );
 /* 

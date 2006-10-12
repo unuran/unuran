@@ -159,6 +159,11 @@ static struct unur_gen *_unur_srou_init( struct unur_par *par );
 /* Initialize new generator.                                                 */
 /*---------------------------------------------------------------------------*/
 
+static int _unur_srou_reinit( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* Reinitialize generator.                                                   */
+/*---------------------------------------------------------------------------*/
+
 static int _unur_srou_rectangle( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* compute universal bounding rectangle (case r=1).                          */
@@ -224,6 +229,21 @@ static void _unur_srou_debug_init( const struct unur_gen *gen, int is_reinit );
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */     
 
 #define PDF(x)    _unur_cont_PDF((x),(gen->distr))    /* call to PDF         */
+
+/*---------------------------------------------------------------------------*/
+
+static _UNUR_SAMPLING_ROUTINE_CONT *
+_unur_srou_getSAMPLE( struct unur_gen *gen )
+{
+  if (gen->variant & SROU_VARFLAG_VERIFY)
+    return (gen->set & SROU_SET_R) ? _unur_gsrou_sample_check : _unur_srou_sample_check;
+  else {
+    if (gen->set & SROU_SET_R)
+      return _unur_gsrou_sample;
+    else
+      return (gen->variant & SROU_VARFLAG_MIRROR) ? _unur_srou_sample_mirror : _unur_srou_sample;
+  }
+} /* end of _unur_srou_getSAMPLE() */
 
 /*---------------------------------------------------------------------------*/
 /* constants                                                                 */
@@ -468,19 +488,14 @@ unur_srou_chg_verify( struct unur_gen *gen, int verify )
   _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
   _unur_check_gen_object( gen, SROU, UNUR_ERR_GEN_INVALID );
 
-  if (verify) {
+  if (verify)
     /* turn verify mode on */
     gen->variant |= SROU_VARFLAG_VERIFY;
-    SAMPLE = (gen->set & SROU_SET_R) ? _unur_gsrou_sample_check : _unur_srou_sample_check;
-  }
-  else {
+  else
     /* turn verify mode off */
     gen->variant &= ~SROU_VARFLAG_VERIFY;
-    if (gen->set & SROU_SET_R)
-      SAMPLE = _unur_gsrou_sample;
-    else
-      SAMPLE = (gen->variant & SROU_VARFLAG_MIRROR) ? _unur_srou_sample_mirror : _unur_srou_sample;
-  }
+
+  SAMPLE = _unur_srou_getSAMPLE(gen);
 
   /* o.k. */
   return UNUR_SUCCESS;
@@ -1084,17 +1099,10 @@ _unur_srou_create( struct unur_par *par )
   gen->genid = _unur_set_genid(GENTYPE);
 
   /* routines for sampling and destroying generator */
-  if (par->variant & SROU_VARFLAG_VERIFY)
-    SAMPLE = (par->set & SROU_SET_R) ? _unur_gsrou_sample_check : _unur_srou_sample_check;
-  else {
-    if (par->set & SROU_SET_R)
-      SAMPLE = _unur_gsrou_sample;
-    else
-      SAMPLE = (par->variant & SROU_VARFLAG_MIRROR) ? _unur_srou_sample_mirror : _unur_srou_sample;
-  }
-
+  SAMPLE = _unur_srou_getSAMPLE(gen);
   gen->destroy = _unur_srou_free;
   gen->clone = _unur_srou_clone;
+  gen->reinit = _unur_srou_reinit;
 
   /* copy some parameters into generator object */
   GEN->r     = PAR->r;                /* parameter for power transformation    */
@@ -1120,6 +1128,30 @@ _unur_srou_create( struct unur_par *par )
 int
 unur_srou_reinit( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
+     /* Deprecated call!                                                     */
+     /*----------------------------------------------------------------------*/
+     /* re-initialize (existing) generator.                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, SROU, UNUR_ERR_GEN_INVALID );
+
+  return _unur_srou_reinit(gen);
+} /* end of unur_srou_reinit() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_srou_reinit( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
      /* re-initialize (existing) generator.                                  */
      /*                                                                      */
      /* parameters:                                                          */
@@ -1132,9 +1164,8 @@ unur_srou_reinit( struct unur_gen *gen )
 {
   int rcode;
 
-  /* check arguments */
-  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
-  _unur_check_gen_object( gen, SROU, UNUR_ERR_GEN_INVALID );
+  /* (re)set sampling routine */
+  SAMPLE = _unur_srou_getSAMPLE(gen);
 
   /* compute universal bounding envelope */
   if (gen->set & SROU_SET_R)
@@ -1149,7 +1180,7 @@ unur_srou_reinit( struct unur_gen *gen )
 #endif
 
   return rcode;
-} /* end of unur_srou_reinit() */
+} /* end of _unur_srou_reinit() */
 
 /*---------------------------------------------------------------------------*/
 

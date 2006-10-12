@@ -17,7 +17,9 @@ utdr.h
 ###############################################################
 # update reinit:
 
-srou.h
+(dari.h)
+(dsrou.h)
+(srou.h)
 ssr.h
 tdr.h
 tdrgw.h

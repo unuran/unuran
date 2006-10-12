@@ -109,6 +109,11 @@ static struct unur_gen *_unur_ssr_init( struct unur_par *par );
 /* Initialize new generator.                                                 */
 /*---------------------------------------------------------------------------*/
 
+static int _unur_ssr_reinit( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* Reinitialize generator.                                                   */
+/*---------------------------------------------------------------------------*/
+
 static int _unur_ssr_hat( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* compute universal hat.                                                    */
@@ -162,6 +167,12 @@ static void _unur_ssr_debug_init( const struct unur_gen *gen, int is_reinit );
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */     
 
 #define PDF(x)    _unur_cont_PDF((x),(gen->distr))    /* call to PDF         */
+
+/*---------------------------------------------------------------------------*/
+
+#define _unur_ssr_getSAMPLE(gen) \
+   ( ((gen)->variant & SSR_VARFLAG_VERIFY) \
+     ? _unur_ssr_sample_check : _unur_ssr_sample )
 
 /*---------------------------------------------------------------------------*/
 /* constants                                                                 */
@@ -362,16 +373,14 @@ unur_ssr_chg_verify( struct unur_gen *gen, int verify )
   _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
   _unur_check_gen_object( gen, SSR, UNUR_ERR_GEN_INVALID );
 
-  if (verify) {
+  if (verify)
     /* turn verify mode on */
     gen->variant |= SSR_VARFLAG_VERIFY;
-    SAMPLE = _unur_ssr_sample_check;
-  }
-  else {
+  else
     /* turn verify mode off */
     gen->variant &= ~SSR_VARFLAG_VERIFY;
-    SAMPLE = _unur_ssr_sample;
-  }
+
+  SAMPLE = _unur_ssr_getSAMPLE(gen);
 
   /* o.k. */
   return UNUR_SUCCESS;
@@ -798,9 +807,10 @@ _unur_ssr_create( struct unur_par *par )
   gen->genid = _unur_set_genid(GENTYPE);
 
   /* routines for sampling and destroying generator */
-  SAMPLE = (par->variant & SSR_VARFLAG_VERIFY) ? _unur_ssr_sample_check : _unur_ssr_sample;
+  SAMPLE = _unur_ssr_getSAMPLE(gen);
   gen->destroy = _unur_ssr_free;
   gen->clone = _unur_ssr_clone;
+  gen->reinit = _unur_ssr_reinit;
 
   /* copy some parameters into generator object */
   GEN->Fmode = PAR->Fmode;            /* CDF at mode                           */
@@ -921,6 +931,30 @@ _unur_ssr_hat( struct unur_gen *gen )
 int
 unur_ssr_reinit( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
+     /* Deprecated call!                                                     */
+     /*----------------------------------------------------------------------*/
+     /* re-initialize (existing) generator.                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, SSR, UNUR_ERR_GEN_INVALID );
+
+  return _unur_ssr_reinit(gen);
+} /* end of unur_ssr_reinit() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_ssr_reinit( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
      /* re-initialize (existing) generator.                                  */
      /*                                                                      */
      /* parameters:                                                          */
@@ -933,9 +967,8 @@ unur_ssr_reinit( struct unur_gen *gen )
 {
   int result;
 
-  /* check arguments */
-  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
-  _unur_check_gen_object( gen, SSR, UNUR_ERR_GEN_INVALID );
+  /* (re)set sampling routine */
+  SAMPLE = _unur_ssr_getSAMPLE(gen);
 
   /* compute universal bounding rectangle */
   result = _unur_ssr_hat( gen );
@@ -947,7 +980,7 @@ unur_ssr_reinit( struct unur_gen *gen )
 #endif
 
   return result;
-} /* end of unur_ssr_reinit() */
+} /* end of _unur_ssr_reinit() */
 
 /*---------------------------------------------------------------------------*/
 

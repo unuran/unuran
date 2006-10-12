@@ -44,7 +44,7 @@
 
    =SPEED Set-up: fast, Sampling: slow
 
-   =REINIT not implemented
+   =REINIT supported
 
    =REF  [LJa01] [HLD04: Sect.6.3.3, Alg.6.6]
 
@@ -127,17 +127,6 @@ UNUR_PAR *unur_ssr_new( const UNUR_DISTR *distribution );
 
 /*...........................................................................*/
 
-int unur_ssr_reinit( UNUR_GEN *generator );
-/* 
-   Update an existing generator object after the distribution has been
-   modified. It must be executed whenever the parameters or the domain
-   of the distribution has been changed (see below).
-   It is faster than destroying the existing object and build
-   a new one from scratch.
-   If reinitialization has been successful @code{UNUR_SUCCESS} is returned,
-   in case of a failure an error code is returned.
-*/
-
 int unur_ssr_set_cdfatmode( UNUR_PAR *parameters, double Fmode );
 /* 
    Set CDF at mode. 
@@ -208,6 +197,17 @@ int unur_ssr_chg_pdfatmode( UNUR_GEN *generator, double fmode );
 /**********************
  *  Deprecated calls  *
  **********************/
+
+int unur_ssr_reinit( UNUR_GEN *generator );
+/* 
+   Update an existing generator object after the distribution has been
+   modified. It must be executed whenever the parameters or the domain
+   of the distribution has been changed (see below).
+   It is faster than destroying the existing object and build
+   a new one from scratch.
+   If reinitialization has been successful @code{UNUR_SUCCESS} is returned,
+   in case of a failure an error code is returned.
+*/
 
 int unur_ssr_chg_pdfparams( UNUR_GEN *generator, double *params, int n_params );
 /* 

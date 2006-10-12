@@ -36,6 +36,7 @@ Version 0.8.0: October 2006
 	  . unur_utdr_chg_pdfparams(), unur_utdr_chg_domain(),
 	    unur_utdr_chg_mode(), unur_utdr_upd_mode(), 
            unur_utdr_chg_pdfarea(), and unur_utdr_upd_pdfarea()
+	    unur_utdr_reinit()
 	    are now deprecated
 
 	- method DARI:

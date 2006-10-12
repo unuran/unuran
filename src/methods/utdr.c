@@ -108,6 +108,11 @@ static struct unur_gen *_unur_utdr_init( struct unur_par *par );
 /* Initialize new generator.                                                 */
 /*---------------------------------------------------------------------------*/
 
+static int _unur_utdr_reinit( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* Reinitialize generator.                                                   */
+/*---------------------------------------------------------------------------*/
+
 static int _unur_utdr_hat( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* compute hat and squeezes.                                                 */
@@ -163,6 +168,12 @@ static void _unur_utdr_debug_init( const struct unur_gen *gen,
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */     
 
 #define PDF(x)    _unur_cont_PDF((x),(gen->distr))    /* call to PDF         */
+
+/*---------------------------------------------------------------------------*/
+
+#define _unur_utdr_getSAMPLE(gen) \
+   ( ((gen)->variant & UTDR_VARFLAG_VERIFY) \
+     ? _unur_utdr_sample_check : _unur_utdr_sample )
 
 /*---------------------------------------------------------------------------*/
 
@@ -452,16 +463,14 @@ unur_utdr_chg_verify( struct unur_gen *gen, int verify )
   _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
   _unur_check_gen_object( gen, UTDR, UNUR_ERR_GEN_INVALID );
 
-  if (verify) {
+  if (verify)
     /* turn verify mode on */
     gen->variant |= UTDR_VARFLAG_VERIFY;
-    SAMPLE = _unur_utdr_sample_check;
-  }
-  else {
+  else
     /* turn verify mode off */
     gen->variant &= ~UTDR_VARFLAG_VERIFY;
-    SAMPLE = _unur_utdr_sample;
-  }
+
+  SAMPLE = _unur_utdr_getSAMPLE(gen);
 
   /* o.k. */
   return UNUR_SUCCESS;
@@ -801,9 +810,10 @@ _unur_utdr_create( struct unur_par *par )
   gen->genid = _unur_set_genid(GENTYPE);
 
   /* routines for sampling and destroying generator */
-  SAMPLE = (par->variant & UTDR_VARFLAG_VERIFY) ? _unur_utdr_sample_check : _unur_utdr_sample;
+  SAMPLE = _unur_utdr_getSAMPLE(gen);
   gen->destroy = _unur_utdr_free;
   gen->clone = _unur_utdr_clone;
+  gen->reinit = _unur_utdr_reinit;
 
   /* copy some parameters into generator object */
   GEN->il = DISTR.BD_LEFT;           /* left boundary of domain               */
@@ -1110,6 +1120,8 @@ _unur_utdr_hat( struct unur_gen *gen )
 int
 unur_utdr_reinit( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
+     /* Deprecated call!                                                     */
+     /*----------------------------------------------------------------------*/
      /* re-initialize (existing) generator.                                  */
      /*                                                                      */
      /* parameters:                                                          */
@@ -1124,13 +1136,34 @@ unur_utdr_reinit( struct unur_gen *gen )
   _unur_check_NULL( GENTYPE,gen, UNUR_ERR_NULL );
   _unur_check_gen_object( gen, UTDR, UNUR_ERR_GEN_INVALID );
 
+  return _unur_utdr_reinit(gen);
+} /* end of unur_utdr_reinit() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_utdr_reinit( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* re-initialize (existing) generator.                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* (re)set sampling routine */
+  SAMPLE = _unur_utdr_getSAMPLE(gen);
+
   /* update left and right boundary for algorithm */
   GEN->il = DISTR.BD_LEFT;
   GEN->ir = DISTR.BD_RIGHT;
 
   /* compute universal bounding rectangle */
   return _unur_utdr_hat( gen );
-} /* end of unur_utdr_reinit() */
+} /* end of _unur_utdr_reinit() */
 
 /*---------------------------------------------------------------------------*/
 

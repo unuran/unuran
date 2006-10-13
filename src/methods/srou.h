@@ -250,14 +250,14 @@ int unur_srou_chg_verify( UNUR_GEN *generator, int verify );
 int unur_srou_chg_cdfatmode( UNUR_GEN *generator, double Fmode );
 /* 
    Change CDF at mode of distribution.
-   unur_srou_reinit() must be executed before sampling from the 
+   unur_reinit() must be executed before sampling from the 
    generator again.
 */
 
 int unur_srou_chg_pdfatmode( UNUR_GEN *generator, double fmode );
 /* 
    Change PDF at mode of distribution.
-   unur_srou_reinit() must be executed before sampling from the 
+   unur_reinit() must be executed before sampling from the 
    generator again.
 */
 

@@ -149,7 +149,7 @@ int unur_utdr_chg_verify( UNUR_GEN *generator, int verify );
 int unur_utdr_chg_pdfatmode( UNUR_GEN *generator, double fmode );
 /* 
    Change PDF at mode of distribution.
-   unur_utdr_reinit() must be executed before sampling from the 
+   unur_reinit() must be executed before sampling from the 
    generator again.
 */
 

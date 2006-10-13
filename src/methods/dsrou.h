@@ -75,7 +75,7 @@
       distribution and run unur_reinit() to reinitialize the generator object.
 
       If any of mode, CDF at mode, or the sum over the PMF has been
-      changed, then unur_dsrou_reinit() must be executed. 
+      changed, then unur_reinit() must be executed. 
       (Otherwise the generator produces garbage).
 
       There exists a test mode that verifies whether the conditions
@@ -132,7 +132,7 @@ int unur_dsrou_chg_verify( UNUR_GEN *generator, int verify );
 int unur_dsrou_chg_cdfatmode( UNUR_GEN *generator, double Fmode );
 /* 
    Change CDF at mode of distribution.
-   unur_dsrou_reinit() must be executed before sampling from the 
+   unur_reinit() must be executed before sampling from the 
    generator again.
 */
 

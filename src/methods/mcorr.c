@@ -155,7 +155,7 @@ static void _unur_mcorr_debug_init( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 
 #define _unur_mcorr_getSAMPLE(gen) \
-   ( ((gen)->set && MCORR_SET_EIGENVALUES) \
+   ( ((gen)->set & MCORR_SET_EIGENVALUES) \
      ? _unur_mcorr_sample_matr_eigen : _unur_mcorr_sample_matr_HH )
 
 /*---------------------------------------------------------------------------*/

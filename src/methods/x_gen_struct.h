@@ -38,13 +38,13 @@
 /* types for sampling routines                                               */
 
 /* for univariate continuous distribution */
-typedef double _UNUR_SAMPLING_ROUTINE_CONT(struct unur_gen *gen);
+typedef double UNUR_SAMPLING_ROUTINE_CONT(struct unur_gen *gen);
 
 /* for univariate discrete distribution */
-typedef int _UNUR_SAMPLING_ROUTINE_DISCR(struct unur_gen *gen);
+typedef int UNUR_SAMPLING_ROUTINE_DISCR(struct unur_gen *gen);
 
 /* for multivariate continuous distribution */
-typedef int _UNUR_SAMPLING_ROUTINE_VEC(struct unur_gen *gen, double *vec);
+typedef int UNUR_SAMPLING_ROUTINE_CVEC(struct unur_gen *gen, double *vec);
 
 
 /*---------------------------------------------------------------------------*/
@@ -96,10 +96,10 @@ struct unur_gen {
   void *datap;                /* pointer to data for method                  */
   
   union {
-    _UNUR_SAMPLING_ROUTINE_CONT  *cont;
-    _UNUR_SAMPLING_ROUTINE_DISCR *discr;
-    _UNUR_SAMPLING_ROUTINE_VEC   *cvec;
-    _UNUR_SAMPLING_ROUTINE_VEC   *matr;
+    UNUR_SAMPLING_ROUTINE_CONT  *cont;
+    UNUR_SAMPLING_ROUTINE_DISCR *discr;
+    UNUR_SAMPLING_ROUTINE_CVEC  *cvec;
+    UNUR_SAMPLING_ROUTINE_CVEC  *matr;
   } sample;                   /* pointer to sampling routine                 */
   
   UNUR_URNG *urng;            /* pointer to uniform random number generator  */

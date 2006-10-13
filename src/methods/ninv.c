@@ -231,7 +231,7 @@ static void _unur_ninv_debug_chg_truncated( const struct unur_gen *gen);
 
 /*---------------------------------------------------------------------------*/
 
-static _UNUR_SAMPLING_ROUTINE_CONT *
+static UNUR_SAMPLING_ROUTINE_CONT *
 _unur_ninv_getSAMPLE( struct unur_gen *gen )
 {
   switch (gen->variant) {

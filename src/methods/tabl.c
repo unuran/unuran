@@ -279,7 +279,7 @@ static void _unur_tabl_debug_intervals( const struct unur_gen *gen, const char *
 
 /*---------------------------------------------------------------------------*/
 
-static _UNUR_SAMPLING_ROUTINE_CONT *
+static UNUR_SAMPLING_ROUTINE_CONT *
 _unur_tabl_getSAMPLE( struct unur_gen *gen )
 {
   if (gen->variant & TABL_VARIANT_IA)

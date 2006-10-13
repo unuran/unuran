@@ -182,7 +182,7 @@ static void _unur_gibbs_debug_init_finished( const struct unur_gen *gen, int suc
 
 /*---------------------------------------------------------------------------*/
 
-static _UNUR_SAMPLING_ROUTINE_VEC *
+static UNUR_SAMPLING_ROUTINE_CVEC *
 _unur_gibbs_getSAMPLE( struct unur_gen *gen )
 {
   switch (gen->variant & GIBBS_VARMASK_VARIANT) {

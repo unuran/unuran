@@ -202,7 +202,7 @@ static void _unur_hitro_debug_free( const struct unur_gen *gen );
 
 /*---------------------------------------------------------------------------*/
 
-static _UNUR_SAMPLING_ROUTINE_VEC *
+static UNUR_SAMPLING_ROUTINE_CVEC *
 _unur_hitro_getSAMPLE( struct unur_gen *gen )
 {
   switch (gen->variant & HITRO_VARMASK_VARIANT) {

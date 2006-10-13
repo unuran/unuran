@@ -630,7 +630,7 @@ static void _unur_tdr_ps_debug_split_stop( const struct unur_gen *gen,
 
 /*---------------------------------------------------------------------------*/
 
-static _UNUR_SAMPLING_ROUTINE_CONT *
+static UNUR_SAMPLING_ROUTINE_CONT *
 _unur_tdr_getSAMPLE( struct unur_gen *gen )
 {
   switch (gen->variant & TDR_VARMASK_VARIANT) {

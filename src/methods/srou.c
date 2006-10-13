@@ -232,7 +232,7 @@ static void _unur_srou_debug_init( const struct unur_gen *gen, int is_reinit );
 
 /*---------------------------------------------------------------------------*/
 
-static _UNUR_SAMPLING_ROUTINE_CONT *
+static UNUR_SAMPLING_ROUTINE_CONT *
 _unur_srou_getSAMPLE( struct unur_gen *gen )
 {
   if (gen->variant & SROU_VARFLAG_VERIFY)

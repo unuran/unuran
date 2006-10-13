@@ -89,6 +89,10 @@ static struct unur_gen *_unur_unif_clone( const struct unur_gen *gen );
 
 /*---------------------------------------------------------------------------*/
 
+#define _unur_unif_getSAMPLE(gen)  ( _unur_unif_sample )
+
+/*---------------------------------------------------------------------------*/
+
 /*****************************************************************************/
 /**  Public: User Interface (API)                                           **/
 /*****************************************************************************/
@@ -210,7 +214,7 @@ _unur_unif_create( struct unur_par *par )
   gen->genid = _unur_set_genid(GENTYPE);
 
   /* routines for sampling and destroying generator */
-  SAMPLE = _unur_unif_sample;
+  SAMPLE = _unur_unif_getSAMPLE(gen);
   gen->destroy = _unur_unif_free;
   gen->clone = _unur_unif_clone;
 

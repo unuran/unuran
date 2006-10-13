@@ -194,6 +194,10 @@ static void _unur_dau_debug_table( struct unur_gen *gen );
 
 /*---------------------------------------------------------------------------*/
 
+#define _unur_dau_getSAMPLE(gen)   (_unur_dau_sample)
+
+/*---------------------------------------------------------------------------*/
+
 /*****************************************************************************/
 /**  Public: User Interface (API)                                           **/
 /*****************************************************************************/
@@ -489,7 +493,7 @@ _unur_dau_create( struct unur_par *par)
   gen->genid = _unur_set_genid(GENTYPE);
 
   /* routines for sampling and destroying generator */
-  SAMPLE = _unur_dau_sample;
+  SAMPLE = _unur_dau_getSAMPLE(gen);
   gen->destroy = _unur_dau_free;
   gen->clone = _unur_dau_clone;
 

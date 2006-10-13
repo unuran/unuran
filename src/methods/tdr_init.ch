@@ -232,26 +232,10 @@ _unur_tdr_create( struct unur_par *par )
   }
 
   /* routines for sampling and destroying generator */
+  SAMPLE = _unur_tdr_getSAMPLE(gen);
   gen->destroy = _unur_tdr_free;
   gen->clone = _unur_tdr_clone;
 
-  /* sampling routines */
-  switch (gen->variant & TDR_VARMASK_VARIANT) {
-  case TDR_VARIANT_GW:    /* original variant (Gilks&Wild) */
-    SAMPLE = (gen->variant & TDR_VARFLAG_VERIFY) ? _unur_tdr_gw_sample_check : _unur_tdr_gw_sample;
-    break;
-  case TDR_VARIANT_PS:    /* proportional squeeze */
-    SAMPLE = (gen->variant & TDR_VARFLAG_VERIFY) ? _unur_tdr_ps_sample_check : _unur_tdr_ps_sample;
-    break;
-  case TDR_VARIANT_IA:    /* immediate acceptance */
-    SAMPLE = (gen->variant & TDR_VARFLAG_VERIFY) ? _unur_tdr_ia_sample_check : _unur_tdr_ia_sample;
-    break;
-  default:
-    _unur_error(GENTYPE,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    _unur_generic_free(gen);
-    return NULL;
-  }
-  
   /* set all pointers to NULL */
   GEN->guide       = NULL;
   GEN->guide_size  = 0;

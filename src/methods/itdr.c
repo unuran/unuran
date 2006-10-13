@@ -219,6 +219,12 @@ static void _unur_itdr_debug_init( const struct unur_gen *gen, int error );
 
 /*---------------------------------------------------------------------------*/
 
+#define _unur_itdr_getSAMPLE(gen) \
+   ( ((gen)->variant & ITDR_VARFLAG_VERIFY) \
+     ? _unur_itdr_sample_check : _unur_itdr_sample )
+
+/*---------------------------------------------------------------------------*/
+
 /*****************************************************************************/
 /**  Public: User Interface (API)                                           **/
 /*****************************************************************************/
@@ -543,16 +549,14 @@ unur_itdr_chg_verify( struct unur_gen *gen, int verify )
   _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
   _unur_check_gen_object( gen, ITDR, UNUR_ERR_GEN_INVALID );
 
-  if (verify) {
+  if (verify)
     /* turn verify mode on */
     gen->variant |= ITDR_VARFLAG_VERIFY;
-    SAMPLE = _unur_itdr_sample_check;
-  }
-  else {
+  else
     /* turn verify mode off */
     gen->variant &= ~ITDR_VARFLAG_VERIFY;
-    SAMPLE = _unur_itdr_sample;
-  }
+
+  SAMPLE = _unur_itdr_getSAMPLE(gen);
 
   /* o.k. */
   return UNUR_SUCCESS;
@@ -672,8 +676,7 @@ _unur_itdr_create( struct unur_par *par )
   gen->genid = _unur_set_genid(GENTYPE);
 
   /* routines for sampling and destroying generator */
-  SAMPLE = (par->variant & ITDR_VARFLAG_VERIFY) ? _unur_itdr_sample_check : _unur_itdr_sample;
-
+  SAMPLE = _unur_itdr_getSAMPLE(gen);
   gen->destroy = _unur_itdr_free;
   gen->clone = _unur_itdr_clone;
 

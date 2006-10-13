@@ -202,6 +202,20 @@ static void _unur_hitro_debug_free( const struct unur_gen *gen );
 
 /*---------------------------------------------------------------------------*/
 
+static _UNUR_SAMPLING_ROUTINE_VEC *
+_unur_hitro_getSAMPLE( struct unur_gen *gen )
+{
+  switch (gen->variant & HITRO_VARMASK_VARIANT) {
+  case HITRO_VARIANT_COORD:
+    return _unur_hitro_coord_sample_cvec;
+  case HITRO_VARIANT_RANDOMDIR:
+  default:
+    return _unur_hitro_randomdir_sample_cvec;
+  }
+} /* end of _unur_hitro_getSAMPLE() */
+
+/*---------------------------------------------------------------------------*/
+
 /*****************************************************************************/
 /**  Public: User Interface (API)                                           **/
 /*****************************************************************************/
@@ -927,18 +941,7 @@ _unur_hitro_create( struct unur_par *par )
   gen->genid = _unur_set_genid(GENTYPE);
 
   /* routines for sampling and destroying generator */
-  switch (gen->variant & HITRO_VARMASK_VARIANT) {
-  case HITRO_VARIANT_COORD:
-    SAMPLE = _unur_hitro_coord_sample_cvec; break;
-  case HITRO_VARIANT_RANDOMDIR:
-    SAMPLE = _unur_hitro_randomdir_sample_cvec; break;
-  default:
-    SAMPLE = NULL;
-    _unur_error(GENTYPE,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    _unur_generic_free(gen);
-    return NULL;
-  }
-
+  SAMPLE = _unur_hitro_getSAMPLE(gen);
   gen->destroy = _unur_hitro_free;
   gen->clone = _unur_hitro_clone;
 

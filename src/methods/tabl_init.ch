@@ -188,10 +188,8 @@ _unur_tabl_create( struct unur_par *par )
   /* set generator identifier */
   gen->genid = _unur_set_genid(GENTYPE);
 
-  /* sampling routines */
-  unur_tabl_chg_verify(gen,(gen->variant & TABL_VARFLAG_VERIFY));
-  
-  /* routines for cloning and destroying generator */
+  /* routines for sampling, cloning and destroying generator */
+  SAMPLE = _unur_tabl_getSAMPLE(gen);
   gen->destroy = _unur_tabl_free;
   gen->clone = _unur_tabl_clone;
 

@@ -147,6 +147,12 @@ static void _unur_vnrou_debug_init( const struct unur_gen *gen );
 
 /*---------------------------------------------------------------------------*/
 
+#define _unur_vnrou_getSAMPLE(gen) \
+   ( ((gen)->variant & VNROU_VARFLAG_VERIFY) \
+     ? _unur_vnrou_sample_check : _unur_vnrou_sample_cvec )
+
+/*---------------------------------------------------------------------------*/
+
 /*****************************************************************************/
 /**  Public: User Interface (API)                                           **/
 /*****************************************************************************/
@@ -380,16 +386,14 @@ unur_vnrou_chg_verify( struct unur_gen *gen, int verify )
   _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
   _unur_check_gen_object( gen, VNROU, UNUR_ERR_GEN_INVALID );
 
-  if (verify) {
+  if (verify)
     /* turn verify bounding rectangle on */
     gen->variant |= VNROU_VARFLAG_VERIFY;
-    SAMPLE = _unur_vnrou_sample_check;
-  }
-  else {
+  else
     /* turn verify bounding rectangle off */
     gen->variant &= ~VNROU_VARFLAG_VERIFY;
-    SAMPLE = _unur_vnrou_sample_cvec;
-  }
+
+  SAMPLE = _unur_vnrou_getSAMPLE(gen);
 
   /* o.k. */
   return UNUR_SUCCESS;
@@ -582,8 +586,7 @@ _unur_vnrou_create( struct unur_par *par )
   gen->genid = _unur_set_genid(GENTYPE);
 
   /* routines for sampling and destroying generator */
-  SAMPLE = (par->variant & VNROU_VARFLAG_VERIFY) ? _unur_vnrou_sample_check : _unur_vnrou_sample_cvec;
-
+  SAMPLE = _unur_vnrou_getSAMPLE(gen);
   gen->destroy = _unur_vnrou_free;
   gen->clone = _unur_vnrou_clone;
 

@@ -219,6 +219,10 @@ static void _unur_norta_debug_nmgenerator( const struct unur_gen *gen );
 
 /*---------------------------------------------------------------------------*/
 
+#define _unur_norta_getSAMPLE(gen)   (_unur_norta_sample_cvec)
+
+/*---------------------------------------------------------------------------*/
+
 /*****************************************************************************/
 /**  Public: User Interface (API)                                           **/
 /*****************************************************************************/
@@ -409,7 +413,7 @@ _unur_norta_create( struct unur_par *par )
   gen->genid = _unur_set_genid(GENTYPE);
 
   /* routines for sampling and destroying generator */
-  SAMPLE = _unur_norta_sample_cvec;
+  SAMPLE = _unur_norta_getSAMPLE(gen);
   gen->destroy = _unur_norta_free;
   gen->clone = _unur_norta_clone;
 

@@ -278,6 +278,23 @@ static void _unur_tabl_debug_intervals( const struct unur_gen *gen, const char *
 #define PDF(x)    _unur_cont_PDF((x),(gen->distr))    /* call to PDF         */
 
 /*---------------------------------------------------------------------------*/
+
+static _UNUR_SAMPLING_ROUTINE_CONT *
+_unur_tabl_getSAMPLE( struct unur_gen *gen )
+{
+  if (gen->variant & TABL_VARIANT_IA)
+    /* immediate acceptance */
+    return (gen->variant & TABL_VARFLAG_VERIFY) 
+      ? _unur_tabl_ia_sample_check 
+      : _unur_tabl_ia_sample;
+  else
+    /* "classical" acceptance/rejection method */
+    return (gen->variant & TABL_VARFLAG_VERIFY) 
+      ? _unur_tabl_rh_sample_check 
+      : _unur_tabl_rh_sample;
+} /* end of _unur_tabl_getSAMPLE() */
+
+/*---------------------------------------------------------------------------*/
 /* since there is only file scope or program code, we abuse the              */
 /* #include directive.                                                       */
 

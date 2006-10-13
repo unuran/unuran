@@ -287,6 +287,10 @@ compare_doubles (const void *a, const void *b)
 
 /*---------------------------------------------------------------------------*/
 
+#define _unur_empk_getSAMPLE(gen)   (_unur_empk_sample)
+
+/*---------------------------------------------------------------------------*/
+
 /*****************************************************************************/
 /**  Public: User Interface (API)                                           **/
 /*****************************************************************************/
@@ -880,7 +884,7 @@ _unur_empk_create( struct unur_par *par )
   gen->genid = _unur_set_genid(GENTYPE);
 
   /* routines for sampling and destroying generator */
-  SAMPLE = _unur_empk_sample;
+  SAMPLE = _unur_empk_getSAMPLE(gen);
   gen->destroy = _unur_empk_free;
   gen->clone = _unur_empk_clone;
 

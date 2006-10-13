@@ -182,6 +182,20 @@ static void _unur_gibbs_debug_init_finished( const struct unur_gen *gen, int suc
 
 /*---------------------------------------------------------------------------*/
 
+static _UNUR_SAMPLING_ROUTINE_VEC *
+_unur_gibbs_getSAMPLE( struct unur_gen *gen )
+{
+  switch (gen->variant & GIBBS_VARMASK_VARIANT) {
+  case GIBBS_VARIANT_RANDOMDIR:
+    return _unur_gibbs_randomdir_sample_cvec;
+  case GIBBS_VARIANT_COORD:
+  default:
+    return _unur_gibbs_coord_sample_cvec;
+  }
+} /* end of _unur_gibbs_getSAMPLE() */
+
+/*---------------------------------------------------------------------------*/
+
 /*****************************************************************************/
 /**  Public: User Interface (API)                                           **/
 /*****************************************************************************/
@@ -788,16 +802,7 @@ _unur_gibbs_create( struct unur_par *par )
     par->variant = (par->variant & (~GIBBS_VARMASK_T)) | GIBBS_VAR_T_POW;
 
   /* routines for sampling and destroying generator */
-  switch (gen->variant & GIBBS_VARMASK_VARIANT) {
-  case GIBBS_VARIANT_COORD:
-    SAMPLE = _unur_gibbs_coord_sample_cvec; break;
-  case GIBBS_VARIANT_RANDOMDIR:
-    SAMPLE = _unur_gibbs_randomdir_sample_cvec; break;
-  default:
-    SAMPLE = NULL;
-    /* the error message is produced in _unur_gibbs_init() */
-  }
-
+  SAMPLE = _unur_gibbs_getSAMPLE(gen);
   gen->destroy = _unur_gibbs_free;
   gen->clone = _unur_gibbs_clone;
 

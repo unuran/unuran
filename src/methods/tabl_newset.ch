@@ -798,15 +798,12 @@ unur_tabl_chg_verify( struct unur_gen *gen, int verify )
   _unur_check_gen_object( gen, TABL, UNUR_ERR_GEN_INVALID );
 
   /* we use a bit in variant */
-  gen->variant = (verify) ? (gen->variant | TABL_VARFLAG_VERIFY) : (gen->variant & (~TABL_VARFLAG_VERIFY));
+  gen->variant = (verify) 
+    ? (gen->variant | TABL_VARFLAG_VERIFY) 
+    : (gen->variant & (~TABL_VARFLAG_VERIFY));
 
   /* sampling routines */
-  if (gen->variant & TABL_VARIANT_IA)
-    /* immediate acceptance */
-    SAMPLE = (verify) ? _unur_tabl_ia_sample_check : _unur_tabl_ia_sample;
-  else
-    /* "classical" acceptance/rejection method */
-    SAMPLE = (verify) ? _unur_tabl_rh_sample_check : _unur_tabl_rh_sample;
+  SAMPLE = _unur_tabl_getSAMPLE(gen);
 
   /* o.k. */
   return UNUR_SUCCESS;

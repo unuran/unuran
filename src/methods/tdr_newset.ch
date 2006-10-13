@@ -909,20 +909,7 @@ unur_tdr_chg_verify( struct unur_gen *gen, int verify )
   gen->variant = (verify) ? (gen->variant | TDR_VARFLAG_VERIFY) : (gen->variant & (~TDR_VARFLAG_VERIFY));
 
   /* sampling routines */
-  switch (gen->variant & TDR_VARMASK_VARIANT) {
-  case TDR_VARIANT_GW:    /* original variant (Gilks&Wild) */
-    SAMPLE = (verify) ? _unur_tdr_gw_sample_check : _unur_tdr_gw_sample;
-    break;
-  case TDR_VARIANT_PS:    /* proportional squeeze */
-    SAMPLE = (verify) ? _unur_tdr_ps_sample_check : _unur_tdr_ps_sample;
-    break;
-  case TDR_VARIANT_IA:    /* immediate acceptance */
-    SAMPLE = (verify) ? _unur_tdr_ia_sample_check : _unur_tdr_ia_sample;
-    break;
-  default:
-    _unur_warning(GENTYPE,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    return UNUR_ERR_SHOULD_NOT_HAPPEN;
-  }
+  SAMPLE = _unur_tdr_getSAMPLE(gen);
 
   /* o.k. */
   return UNUR_SUCCESS;

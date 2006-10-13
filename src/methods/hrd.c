@@ -146,6 +146,13 @@ static void _unur_hrd_debug_sample( const struct unur_gen *gen, double x, int i 
 
 #define HR(x)     _unur_cont_HR((x),(gen->distr))   /* call to hazard rate   */
 
+/*---------------------------------------------------------------------------*/
+
+#define _unur_hrd_getSAMPLE(gen) \
+   ( ((gen)->variant & HRD_VARFLAG_VERIFY) \
+     ? _unur_hrd_sample_check : _unur_hrd_sample )
+
+/*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/
 /**  Public: User Interface (API)                                           **/
@@ -259,10 +266,12 @@ unur_hrd_chg_verify( struct unur_gen *gen, int verify )
   _unur_check_gen_object( gen, HRD, UNUR_ERR_GEN_INVALID );
 
   /* we use a bit in variant */
-  gen->variant = (verify) ? (gen->variant | HRD_VARFLAG_VERIFY) : (gen->variant & (~HRD_VARFLAG_VERIFY));
+  gen->variant = (verify) 
+    ? (gen->variant | HRD_VARFLAG_VERIFY) 
+    : (gen->variant & (~HRD_VARFLAG_VERIFY));
 
   /* sampling routine */
-  SAMPLE = (verify) ? _unur_hrd_sample_check : _unur_hrd_sample;
+  SAMPLE = _unur_hrd_getSAMPLE(gen);
 
   /* o.k. */
   return UNUR_SUCCESS;
@@ -361,8 +370,7 @@ _unur_hrd_create( struct unur_par *par )
   gen->genid = _unur_set_genid(GENTYPE);
 
   /* routines for sampling and destroying generator */
-  SAMPLE = (par->variant & HRD_VARFLAG_VERIFY) ? _unur_hrd_sample_check : _unur_hrd_sample;
-
+  SAMPLE = _unur_hrd_getSAMPLE(gen);
   gen->destroy = _unur_hrd_free;
   gen->clone = _unur_hrd_clone;
 

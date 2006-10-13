@@ -239,6 +239,11 @@ static void _unur_hinv_debug_chg_truncated( const struct unur_gen *gen);
 /* call to derivative of PDF: */   
 #define dPDF(x) (_unur_cont_dPDF((x),(gen->distr))/(GEN->CDFmax-GEN->CDFmin))
 
+/*---------------------------------------------------------------------------*/
+
+#define _unur_hinv_getSAMPLE(gen)  (_unur_hinv_sample)
+
+/*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/
 /**  Public: User Interface (API)                                           **/
@@ -802,8 +807,7 @@ _unur_hinv_create( struct unur_par *par )
   gen->genid = _unur_set_genid(GENTYPE);
 
   /* routines for sampling and destroying generator */
-  SAMPLE = _unur_hinv_sample;
-
+  SAMPLE = _unur_hinv_getSAMPLE(gen);
   gen->destroy = _unur_hinv_free;
   gen->clone = _unur_hinv_clone;
 

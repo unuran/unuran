@@ -178,6 +178,10 @@ static void _unur_dgt_debug_table( struct unur_gen *gen );
 
 /*---------------------------------------------------------------------------*/
 
+#define _unur_dgt_getSAMPLE(gen)  (_unur_dgt_sample)
+
+/*---------------------------------------------------------------------------*/
+
 /*****************************************************************************/
 /**  Public: User Interface (API)                                           **/
 /*****************************************************************************/
@@ -462,7 +466,7 @@ _unur_dgt_create( struct unur_par *par )
   gen->genid = _unur_set_genid(GENTYPE);
 
   /* routines for sampling and destroying generator */
-  SAMPLE = _unur_dgt_sample;
+  SAMPLE = _unur_dgt_getSAMPLE(gen);
   gen->destroy = _unur_dgt_free;
   gen->clone = _unur_dgt_clone;
 

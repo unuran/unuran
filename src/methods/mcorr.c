@@ -154,6 +154,12 @@ static void _unur_mcorr_debug_init( const struct unur_gen *gen );
 #define NORMAL    gen->gen_aux        /* pointer to normal variate generator */
 /*---------------------------------------------------------------------------*/
 
+#define _unur_mcorr_getSAMPLE(gen) \
+   ( ((gen)->set && MCORR_SET_EIGENVALUES) \
+     ? _unur_mcorr_sample_matr_eigen : _unur_mcorr_sample_matr_HH )
+
+/*---------------------------------------------------------------------------*/
+
 /*****************************************************************************/
 /**  Public: User Interface (API)                                           **/
 /*****************************************************************************/
@@ -424,11 +430,7 @@ _unur_mcorr_create( struct unur_par *par )
   gen->genid = _unur_set_genid(GENTYPE);
 
   /* routines for sampling and destroying generator */
-  if (gen->set && MCORR_SET_EIGENVALUES)
-    SAMPLE = _unur_mcorr_sample_matr_eigen;
-  else
-    SAMPLE = _unur_mcorr_sample_matr_HH;
-
+  SAMPLE = _unur_mcorr_getSAMPLE(gen);
   gen->destroy = _unur_mcorr_free;
   gen->clone = _unur_mcorr_clone;
 

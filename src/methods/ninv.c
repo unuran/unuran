@@ -229,6 +229,22 @@ static void _unur_ninv_debug_chg_truncated( const struct unur_gen *gen);
 #define PDF(x)    _unur_cont_PDF((x),(gen->distr))    /* call to PDF         */
 #define CDF(x)    _unur_cont_CDF((x),(gen->distr))    /* call to CDF         */
 
+/*---------------------------------------------------------------------------*/
+
+static _UNUR_SAMPLING_ROUTINE_CONT *
+_unur_ninv_getSAMPLE( struct unur_gen *gen )
+{
+  switch (gen->variant) {
+  case NINV_VARFLAG_NEWTON:
+    return _unur_ninv_sample_newton;
+  case NINV_VARFLAG_REGULA:
+  default:
+    return _unur_ninv_sample_regula;
+  }
+} /* end of _unur_ninv_getSAMPLE() */
+
+/*---------------------------------------------------------------------------*/
+
 /*****************************************************************************/
 /**  Public: User Interface (API)                                           **/
 /*****************************************************************************/
@@ -921,16 +937,7 @@ _unur_ninv_create( struct unur_par *par )
   gen->genid = _unur_set_genid(GENTYPE);
 
   /* routines for sampling and destroying generator */
-  switch (par->variant) {
-  case NINV_VARFLAG_NEWTON:
-    SAMPLE = _unur_ninv_sample_newton;
-    break;
-  case NINV_VARFLAG_REGULA:
-  default:
-    SAMPLE = _unur_ninv_sample_regula;
-    break;
-  }
-
+  SAMPLE = _unur_ninv_getSAMPLE(gen);
   gen->destroy = _unur_ninv_free;
   gen->clone = _unur_ninv_clone;
 

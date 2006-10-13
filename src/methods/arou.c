@@ -310,6 +310,12 @@ static void _unur_arou_debug_printratio( double v, double u, char *string );
 
 /*---------------------------------------------------------------------------*/
 
+#define _unur_arou_getSAMPLE(gen) \
+   ( ((gen)->variant & AROU_VARFLAG_VERIFY) \
+     ? _unur_arou_sample_check : _unur_arou_sample )
+
+/*---------------------------------------------------------------------------*/
+
 /*****************************************************************************/
 /**  Public: User Interface (API)                                           **/
 /*****************************************************************************/
@@ -781,16 +787,14 @@ unur_arou_chg_verify( struct unur_gen *gen, int verify )
   _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
   _unur_check_gen_object( gen, AROU, UNUR_ERR_GEN_INVALID );
 
-  if (verify) {
+  if (verify)
     /* turn verify mode on */
     gen->variant |= AROU_VARFLAG_VERIFY;
-    SAMPLE = _unur_arou_sample_check;
-  }
-  else {
+  else
     /* turn verify mode off */
     gen->variant &= ~AROU_VARFLAG_VERIFY;
-    SAMPLE = _unur_arou_sample;
-  }
+
+  SAMPLE = _unur_arou_getSAMPLE(gen);
 
   /* o.k. */
   return UNUR_SUCCESS;
@@ -996,7 +1000,7 @@ _unur_arou_create( struct unur_par *par )
   gen->genid = _unur_set_genid(GENTYPE);
 
   /* routines for sampling and destroying generator */
-  SAMPLE = (gen->variant & AROU_VARFLAG_VERIFY) ? _unur_arou_sample_check : _unur_arou_sample;
+  SAMPLE = _unur_arou_getSAMPLE(gen);
   gen->destroy = _unur_arou_free;
   gen->clone = _unur_arou_clone;
 

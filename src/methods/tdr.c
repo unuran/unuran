@@ -629,6 +629,22 @@ static void _unur_tdr_ps_debug_split_stop( const struct unur_gen *gen,
 #define dlogPDF(x) _unur_cont_dlogPDF((x),(gen->distr))  /* call to derivative of log PDF */
 
 /*---------------------------------------------------------------------------*/
+
+static _UNUR_SAMPLING_ROUTINE_CONT *
+_unur_tdr_getSAMPLE( struct unur_gen *gen )
+{
+  switch (gen->variant & TDR_VARMASK_VARIANT) {
+  case TDR_VARIANT_GW:    /* original variant (Gilks&Wild) */
+    return (gen->variant & TDR_VARFLAG_VERIFY) ? _unur_tdr_gw_sample_check : _unur_tdr_gw_sample;
+  case TDR_VARIANT_IA:    /* immediate acceptance */
+    return (gen->variant & TDR_VARFLAG_VERIFY) ? _unur_tdr_ia_sample_check : _unur_tdr_ia_sample;
+  case TDR_VARIANT_PS:    /* proportional squeeze */
+  default:
+    return (gen->variant & TDR_VARFLAG_VERIFY) ? _unur_tdr_ps_sample_check : _unur_tdr_ps_sample;
+  }
+} /* end of _unur_tdr_getSAMPLE() */
+
+/*---------------------------------------------------------------------------*/
 /* since there is only file scope or program code, we abuse the              */
 /* #include directive.                                                       */
 

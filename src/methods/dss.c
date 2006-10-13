@@ -143,6 +143,10 @@ static void _unur_dss_debug_init( struct unur_par *par, struct unur_gen *gen );
 
 /*---------------------------------------------------------------------------*/
 
+#define _unur_dss_getSAMPLE(gen)   (_unur_dss_sample)
+
+/*---------------------------------------------------------------------------*/
+
 /*****************************************************************************/
 /**  Public: User Interface (API)                                           **/
 /*****************************************************************************/
@@ -287,7 +291,7 @@ _unur_dss_create( struct unur_par *par )
   gen->genid = _unur_set_genid(GENTYPE);
 
   /* routines for sampling and destroying generator */
-  SAMPLE = _unur_dss_sample;
+  SAMPLE = _unur_dss_getSAMPLE(gen);
   gen->destroy = _unur_dss_free;
   gen->clone = _unur_dss_clone;
 

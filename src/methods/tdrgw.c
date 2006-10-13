@@ -253,6 +253,12 @@ static void _unur_tdrgw_debug_split_stop( const struct unur_gen *gen,
 
 /*---------------------------------------------------------------------------*/
 
+#define _unur_tdrgw_getSAMPLE(gen) \
+   ( ((gen)->variant & TDRGW_VARFLAG_VERIFY) \
+     ? _unur_tdrgw_sample_check : _unur_tdrgw_sample )
+
+/*---------------------------------------------------------------------------*/
+
 /*****************************************************************************/
 /**  Public: User Interface (API)                                           **/
 /*****************************************************************************/
@@ -670,11 +676,12 @@ unur_tdrgw_chg_verify( struct unur_gen *gen, int verify )
   _unur_check_gen_object( gen, TDRGW, UNUR_ERR_GEN_INVALID );
 
   /* we use a bit in variant */
-  gen->variant = (verify) ? (gen->variant | TDRGW_VARFLAG_VERIFY) : (gen->variant & (~TDRGW_VARFLAG_VERIFY));
+  gen->variant = (verify) 
+    ? (gen->variant | TDRGW_VARFLAG_VERIFY) 
+    : (gen->variant & (~TDRGW_VARFLAG_VERIFY));
 
   /* sampling routines */
-  SAMPLE = (gen->variant & TDRGW_VARFLAG_VERIFY) ? _unur_tdrgw_sample_check : _unur_tdrgw_sample;
-
+  SAMPLE = _unur_tdrgw_getSAMPLE(gen);
   /* o.k. */
   return UNUR_SUCCESS;
 
@@ -849,12 +856,10 @@ _unur_tdrgw_create( struct unur_par *par )
   gen->genid = _unur_set_genid(GENTYPE);
 
   /* routines for sampling and destroying generator */
+  SAMPLE = _unur_tdrgw_getSAMPLE(gen);
   gen->destroy = _unur_tdrgw_free;
   gen->clone = _unur_tdrgw_clone;
 
-  /* sampling routines */
-  SAMPLE = (par->variant & TDRGW_VARFLAG_VERIFY) ? _unur_tdrgw_sample_check : _unur_tdrgw_sample;
-  
   /* set all pointers to NULL */
   GEN->iv          = NULL;
   GEN->n_ivs       = 0;

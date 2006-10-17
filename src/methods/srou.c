@@ -164,19 +164,24 @@ static int _unur_srou_reinit( struct unur_gen *gen );
 /* Reinitialize generator.                                                   */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_srou_rectangle( struct unur_gen *gen );
-/*---------------------------------------------------------------------------*/
-/* compute universal bounding rectangle (case r=1).                          */
-/*---------------------------------------------------------------------------*/
-
-static int _unur_gsrou_envelope( struct unur_gen *gen );
-/*---------------------------------------------------------------------------*/
-/* compute parameters for universal bounding envelope (case r>1).            */
-/*---------------------------------------------------------------------------*/
-
 static struct unur_gen *_unur_srou_create( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 /* create new (almost empty) generator object.                               */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_srou_check_par( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* Check parameters of given distribution and method                         */
+/*---------------------------------------------------------------------------*/
+
+static struct unur_gen *_unur_srou_clone( const struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* copy (clone) generator object.                                            */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_srou_free( struct unur_gen *gen);
+/*---------------------------------------------------------------------------*/
+/* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
 static double _unur_srou_sample( struct unur_gen *gen );
@@ -192,14 +197,14 @@ static double _unur_gsrou_sample_check( struct unur_gen *gen );
 /* sample from generator (case r>1).                                         */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_srou_free( struct unur_gen *gen);
+static int _unur_srou_rectangle( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* destroy generator object.                                                 */
+/* compute universal bounding rectangle (case r=1).                          */
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *_unur_srou_clone( const struct unur_gen *gen );
+static int _unur_gsrou_envelope( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* copy (clone) generator object.                                            */
+/* compute parameters for universal bounding envelope (case r>1).            */
 /*---------------------------------------------------------------------------*/
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -882,56 +887,32 @@ _unur_srou_init( struct unur_par *par )
 
   /* create a new empty generator object */
   gen = _unur_srou_create(par);
-  if (!gen) { _unur_par_free(par); return NULL; }
 
-  /* check for required data: mode */
-  if (!(gen->distr->set & UNUR_DISTR_SET_MODE)) {
-    _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode: try finding it (numerically)"); 
-    if (unur_distr_cont_upd_mode(gen->distr)!=UNUR_SUCCESS) {
-      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode"); 
-      _unur_par_free(par); _unur_srou_free(gen);
-      return NULL; 
-    }
-  }
+  /* free parameters */
+  _unur_par_free(par);
 
-  /* check for required data: area */
-  if (!(gen->distr->set & UNUR_DISTR_SET_PDFAREA))
-    if (unur_distr_cont_upd_pdfarea(gen->distr)!=UNUR_SUCCESS) {
-      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"area below PDF");
-      _unur_par_free(par); _unur_srou_free(gen);
-      return NULL; 
-    }
+  if (!gen) return NULL;
 
-  /* mode must be in domain */
-  if ( (DISTR.mode < DISTR.BD_LEFT) ||
-       (DISTR.mode > DISTR.BD_RIGHT) ) {
-    /* there is something wrong.
-       assume: user has change domain without changing mode.
-       but then, she probably has not updated area and is to large */
-    _unur_warning(GENTYPE,UNUR_ERR_GEN_DATA,"area and/or CDF at mode");
-    DISTR.mode = _unur_max(DISTR.mode,DISTR.BD_LEFT);
-    DISTR.mode = _unur_min(DISTR.mode,DISTR.BD_RIGHT);
+  /* check parameters */
+  if (_unur_srou_check_par(gen) != UNUR_SUCCESS) {
+    _unur_srou_free(gen); return NULL;
   }
 
   /* compute universal bounding envelope */
-  if (par->set & SROU_SET_R)
+  if (gen->set & SROU_SET_R)
     rcode = _unur_gsrou_envelope( gen );
   else
     rcode = _unur_srou_rectangle( gen );
 
   if (rcode!=UNUR_SUCCESS) {
     /* error */
-    _unur_par_free(par); _unur_srou_free(gen);
-    return NULL;
+    _unur_srou_free(gen); return NULL;
   }
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
   if (gen->debug) _unur_srou_debug_init(gen, FALSE);
 #endif
-
-  /* free parameters */
-  _unur_par_free(par);
 
   return gen;
 
@@ -940,9 +921,9 @@ _unur_srou_init( struct unur_par *par )
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_srou_rectangle( struct unur_gen *gen )
+_unur_srou_reinit( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* compute universal bounding rectangle                                 */
+     /* re-initialize (existing) generator.                                  */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
@@ -951,59 +932,39 @@ _unur_srou_rectangle( struct unur_gen *gen )
      /*   UNUR_SUCCESS ... on success                                        */
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
-{ 
-  double vm, fm;             /* width of rectangle, PDF at mode              */
+{
+  int rcode;
 
-  /* check arguments */
-  CHECK_NULL( gen, UNUR_ERR_NULL );
-  COOKIE_CHECK( gen,CK_SROU_GEN, UNUR_ERR_COOKIE );
+  /* (re)set sampling routine */
+  SAMPLE = _unur_srou_getSAMPLE(gen);
 
-  /* compute PDF at mode (if not given by user) */
-  if (!(gen->set & SROU_SET_PDFMODE)) {
-    fm = PDF(DISTR.mode);
-    /* fm must be positive */
-    if (fm <= 0.) {
-      _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF(mode) <= 0.");
-      return UNUR_ERR_GEN_DATA;
-    }
-    if (!_unur_isfinite(fm)) {
-      _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"PDF(mode) overflow");
-      return UNUR_ERR_PAR_SET;
-    }
-    GEN->um = sqrt(fm);    /* height of rectangle */
-  }
+  /* check parameters */
+  if ( (rcode = _unur_srou_check_par(gen)) != UNUR_SUCCESS)
+    return rcode;
 
-  /* width of rectangle */
-  vm = DISTR.area / GEN->um;
+  /* compute universal bounding envelope */
+  if (gen->set & SROU_SET_R)
+    rcode = _unur_gsrou_envelope( gen );
+  else
+    rcode = _unur_srou_rectangle( gen );
 
-  if (gen->set & SROU_SET_CDFMODE) {
-    /* cdf at mode known */
-    GEN->vl = -GEN->Fmode * vm;
-    GEN->vr = vm + GEN->vl;
-    GEN->xl = GEN->vl/GEN->um;
-    GEN->xr = GEN->vr/GEN->um;
-  }
-  else {
-    /* cdf at mode unknown */
-    GEN->vl = -vm;
-    GEN->vr = vm;
-    GEN->xl = GEN->vl/GEN->um;
-    GEN->xr = GEN->vr/GEN->um;
-    /* we cannot use universal squeeze */
-    gen->variant &= ~SROU_VARFLAG_SQUEEZE;
-  }
+#ifdef UNUR_ENABLE_LOGGING
+    /* write info into log file */
+  if (gen->debug & SROU_DEBUG_REINIT)
+    if (gen->debug) _unur_srou_debug_init(gen,TRUE);
+#endif
 
-  /* o.k. */
-  return UNUR_SUCCESS;
-
-} /* end of _unur_srou_rectangle() */
+  return rcode;
+} /* end of _unur_srou_reinit() */
 
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_gsrou_envelope( struct unur_gen *gen )
+unur_srou_reinit( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* compute parameters for universal bounding envelope.                  */
+     /* Deprecated call!                                                     */
+     /*----------------------------------------------------------------------*/
+     /* re-initialize (existing) generator.                                  */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
@@ -1012,60 +973,13 @@ _unur_gsrou_envelope( struct unur_gen *gen )
      /*   UNUR_SUCCESS ... on success                                        */
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
-{ 
-  double fm;             /* PDF at mode               */
-  double vm;             /* maximal width of envelope */
-  double pr;             /* p^r                       */
-
-  double p;              /* short cuts                */
-  double r = GEN->r;
-
+{
   /* check arguments */
-  CHECK_NULL( gen, UNUR_ERR_NULL );
-  COOKIE_CHECK( gen, CK_SROU_GEN, UNUR_ERR_COOKIE );
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, SROU, UNUR_ERR_GEN_INVALID );
 
-  if (!(gen->set & SROU_SET_PDFMODE)) {
-    /* compute PDF at mode */
-    fm = PDF(DISTR.mode);
-    /* fm must be positive */
-    if (fm <= 0.) {
-      _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF(mode) <= 0.");
-      return UNUR_ERR_GEN_DATA;
-    }
-    if (!_unur_isfinite(fm)) {
-      _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"PDF(mode) overflow");
-      return UNUR_ERR_PAR_SET;
-    }
-    GEN->um = pow(fm,1./(r+1.));    /* height of envelope */
-  }
-
-  /* maximal width of envelope */
-  vm = DISTR.area / (GEN->r*GEN->um);
-
-  if (gen->set & SROU_SET_CDFMODE) {
-    /* cdf at mode known */
-    GEN->vl = -GEN->Fmode * vm;
-    GEN->vr = vm + GEN->vl;
-  }
-  else {
-    /* cdf at mode unknown */
-    GEN->vl = -vm;
-    GEN->vr = vm;
-  }
-
-  /* construction point for bounding curve */
-  GEN->p = p = 1. - 2.187/pow(r + 5 - 1.28/r, 0.9460 );
-  pr = pow(p,r);
-
-  /* parameters for bounding envelope */
-  GEN->b = (1. - r * pr/p + (r-1.)*pr) / ((pr-1.)*(pr-1));
-  GEN->a = -(p-1.)/(pr-1.) - p * GEN->b;
-  GEN->log_ab = log(GEN->a/(GEN->a+GEN->b));
-
-  /* o.k. */
-  return UNUR_SUCCESS;
-
-} /* end of _unur_gsrou_envelope() */
+  return _unur_srou_reinit(gen);
+} /* end of unur_srou_reinit() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -1126,11 +1040,9 @@ _unur_srou_create( struct unur_par *par )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_srou_reinit( struct unur_gen *gen )
+_unur_srou_check_par( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* Deprecated call!                                                     */
-     /*----------------------------------------------------------------------*/
-     /* re-initialize (existing) generator.                                  */
+     /* check parameters of given distribution and method                    */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
@@ -1140,47 +1052,36 @@ unur_srou_reinit( struct unur_gen *gen )
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
-  /* check arguments */
-  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
-  _unur_check_gen_object( gen, SROU, UNUR_ERR_GEN_INVALID );
+  /* check for required data: mode */
+  if (!(gen->distr->set & UNUR_DISTR_SET_MODE)) {
+    _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode: try finding it (numerically)");
+    if (unur_distr_cont_upd_mode(gen->distr)!=UNUR_SUCCESS) {
+      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode");
+      return UNUR_ERR_DISTR_REQUIRED;
+    }
+  }
 
-  return _unur_srou_reinit(gen);
-} /* end of unur_srou_reinit() */
+  /* check for required data: area */
+  if (!(gen->distr->set & UNUR_DISTR_SET_PDFAREA)) {
+    if (unur_distr_cont_upd_pdfarea(gen->distr)!=UNUR_SUCCESS) {
+      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"area below PDF");
+      return UNUR_ERR_DISTR_REQUIRED;
+    }
+  }
 
-/*---------------------------------------------------------------------------*/
+  /* mode must be in domain */
+  if ( (DISTR.mode < DISTR.BD_LEFT) ||
+       (DISTR.mode > DISTR.BD_RIGHT) ) {
+    /* there is something wrong.
+       assume: user has change domain without changing mode.
+       but then, she probably has not updated area and is to large */
+    _unur_warning(GENTYPE,UNUR_ERR_GEN_DATA,"area and/or CDF at mode");
+    DISTR.mode = _unur_max(DISTR.mode,DISTR.BD_LEFT);
+    DISTR.mode = _unur_min(DISTR.mode,DISTR.BD_RIGHT);
+  }
 
-int
-_unur_srou_reinit( struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* re-initialize (existing) generator.                                  */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   UNUR_SUCCESS ... on success                                        */
-     /*   error code   ... on error                                          */
-     /*----------------------------------------------------------------------*/
-{
-  int rcode;
-
-  /* (re)set sampling routine */
-  SAMPLE = _unur_srou_getSAMPLE(gen);
-
-  /* compute universal bounding envelope */
-  if (gen->set & SROU_SET_R)
-    rcode = _unur_gsrou_envelope( gen );
-  else
-    rcode = _unur_srou_rectangle( gen );
-
-#ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
-  if (gen->debug & SROU_DEBUG_REINIT)
-    if (gen->debug) _unur_srou_debug_init(gen,TRUE);
-#endif
-
-  return rcode;
-} /* end of _unur_srou_reinit() */
+  return UNUR_SUCCESS;
+} /* end of _unur_dari_check_par() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -1213,6 +1114,35 @@ _unur_srou_clone( const struct unur_gen *gen )
 
 #undef CLONE
 } /* end of _unur_srou_clone() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_srou_free( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* deallocate generator object                                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{ 
+  /* check arguments */
+  if( !gen ) /* nothing to do */
+    return;
+
+  /* check input */
+  if ( gen->method != UNUR_METH_SROU ) {
+    _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
+    return; }
+  COOKIE_CHECK(gen,CK_SROU_GEN,RETURN_VOID);
+
+  /* we cannot use this generator object any more */
+  SAMPLE = NULL;   /* make sure to show up a programming error */
+
+  /* free memory */
+  _unur_generic_free(gen);
+
+} /* end of _unur_srou_free() */
 
 /*****************************************************************************/
 
@@ -1554,37 +1484,136 @@ _unur_gsrou_sample_check( struct unur_gen *gen )
 } /* end of _unur_gsrou_sample_check() */
 
 /*****************************************************************************/
+/**  Auxilliary Routines                                                    **/
+/*****************************************************************************/
 
-void
-_unur_srou_free( struct unur_gen *gen )
+int
+_unur_srou_rectangle( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* deallocate generator object                                          */
+     /* compute universal bounding rectangle                                 */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 { 
+  double vm, fm;             /* width of rectangle, PDF at mode              */
+
   /* check arguments */
-  if( !gen ) /* nothing to do */
-    return;
+  CHECK_NULL( gen, UNUR_ERR_NULL );
+  COOKIE_CHECK( gen,CK_SROU_GEN, UNUR_ERR_COOKIE );
 
-  /* check input */
-  if ( gen->method != UNUR_METH_SROU ) {
-    _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
-    return; }
-  COOKIE_CHECK(gen,CK_SROU_GEN,RETURN_VOID);
+  /* compute PDF at mode (if not given by user) */
+  if (!(gen->set & SROU_SET_PDFMODE)) {
+    fm = PDF(DISTR.mode);
+    /* fm must be positive */
+    if (fm <= 0.) {
+      _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF(mode) <= 0.");
+      return UNUR_ERR_GEN_DATA;
+    }
+    if (!_unur_isfinite(fm)) {
+      _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"PDF(mode) overflow");
+      return UNUR_ERR_PAR_SET;
+    }
+    GEN->um = sqrt(fm);    /* height of rectangle */
+  }
 
-  /* we cannot use this generator object any more */
-  SAMPLE = NULL;   /* make sure to show up a programming error */
+  /* width of rectangle */
+  vm = DISTR.area / GEN->um;
 
-  /* free memory */
-  _unur_generic_free(gen);
+  if (gen->set & SROU_SET_CDFMODE) {
+    /* cdf at mode known */
+    GEN->vl = -GEN->Fmode * vm;
+    GEN->vr = vm + GEN->vl;
+    GEN->xl = GEN->vl/GEN->um;
+    GEN->xr = GEN->vr/GEN->um;
+  }
+  else {
+    /* cdf at mode unknown */
+    GEN->vl = -vm;
+    GEN->vr = vm;
+    GEN->xl = GEN->vl/GEN->um;
+    GEN->xr = GEN->vr/GEN->um;
+    /* we cannot use universal squeeze */
+    gen->variant &= ~SROU_VARFLAG_SQUEEZE;
+  }
 
-} /* end of _unur_srou_free() */
+  /* o.k. */
+  return UNUR_SUCCESS;
 
-/*****************************************************************************/
-/**  Auxilliary Routines                                                    **/
-/*****************************************************************************/
+} /* end of _unur_srou_rectangle() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_gsrou_envelope( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* compute parameters for universal bounding envelope.                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{ 
+  double fm;             /* PDF at mode               */
+  double vm;             /* maximal width of envelope */
+  double pr;             /* p^r                       */
+
+  double p;              /* short cuts                */
+  double r = GEN->r;
+
+  /* check arguments */
+  CHECK_NULL( gen, UNUR_ERR_NULL );
+  COOKIE_CHECK( gen, CK_SROU_GEN, UNUR_ERR_COOKIE );
+
+  if (!(gen->set & SROU_SET_PDFMODE)) {
+    /* compute PDF at mode */
+    fm = PDF(DISTR.mode);
+    /* fm must be positive */
+    if (fm <= 0.) {
+      _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF(mode) <= 0.");
+      return UNUR_ERR_GEN_DATA;
+    }
+    if (!_unur_isfinite(fm)) {
+      _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"PDF(mode) overflow");
+      return UNUR_ERR_PAR_SET;
+    }
+    GEN->um = pow(fm,1./(r+1.));    /* height of envelope */
+  }
+
+  /* maximal width of envelope */
+  vm = DISTR.area / (GEN->r*GEN->um);
+
+  if (gen->set & SROU_SET_CDFMODE) {
+    /* cdf at mode known */
+    GEN->vl = -GEN->Fmode * vm;
+    GEN->vr = vm + GEN->vl;
+  }
+  else {
+    /* cdf at mode unknown */
+    GEN->vl = -vm;
+    GEN->vr = vm;
+  }
+
+  /* construction point for bounding curve */
+  GEN->p = p = 1. - 2.187/pow(r + 5 - 1.28/r, 0.9460 );
+  pr = pow(p,r);
+
+  /* parameters for bounding envelope */
+  GEN->b = (1. - r * pr/p + (r-1.)*pr) / ((pr-1.)*(pr-1));
+  GEN->a = -(p-1.)/(pr-1.) - p * GEN->b;
+  GEN->log_ab = log(GEN->a/(GEN->a+GEN->b));
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+
+} /* end of _unur_gsrou_envelope() */
 
 /*****************************************************************************/
 /**  Debugging utilities                                                    **/

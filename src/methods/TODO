@@ -6,7 +6,7 @@ ninv.h:int unur_ninv_chg_pdfparams(UNUR_GEN *generator, double *params, int n_pa
 ###############################################################
 # update docu for reinit:
 
-dari.h
+( dari.h
 dsrou.h
 srou.h
 ssr.h

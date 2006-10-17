@@ -81,6 +81,8 @@
 
       It is possible to change the parameters and the domain of the chosen 
       distribution and run unur_reinit() to reinitialize the generator object.
+      Notice, that derived parameters like the mode must also be (re-) set
+      if the parameters or the domain has be changed.
       
       There exists a test mode that verifies whether the conditions for
       the method are satisfied or not. It can be switched on by calling 

@@ -61,11 +61,9 @@
 /*---------------------------------------------------------------------------*/
 /* init routines for special generators                                      */
 
-#ifdef HAVE_UNUR_SF_LN_FACTORIAL
 inline static int hypergeometric_hruec_init( struct unur_gen *gen );
 static int _unur_stdgen_sample_hypergeometric_hruec( struct unur_gen *gen );
 inline static int h_util(int N_, int M_, int n_, int k_);
-#endif
 
 /*---------------------------------------------------------------------------*/
 
@@ -97,12 +95,8 @@ _unur_stdgen_hypergeometric_init( struct unur_par *par, struct unur_gen *gen )
 
   case 0:  /* DEFAULT */
   case 1:  /* HRUEC  method */
-#ifdef HAVE_UNUR_SF_LN_FACTORIAL
      _unur_dstd_set_sampling_routine( par,gen,_unur_stdgen_sample_hypergeometric_hruec );
      return hypergeometric_hruec_init( gen );
-#else
-     return UNUR_ERR_DISTR_REQUIRED;
-#endif
 
   case UNUR_STDGEN_INVERSION:   /* inversion method */
   default: /* no such generator */
@@ -119,8 +113,6 @@ _unur_stdgen_hypergeometric_init( struct unur_par *par, struct unur_gen *gen )
 /**  Special generators                                                     **/
 /**                                                                         **/
 /*****************************************************************************/
-
-#ifdef HAVE_UNUR_SF_LN_FACTORIAL
 
 /*---------------------------------------------------------------------------*/
 
@@ -183,7 +175,7 @@ _unur_stdgen_hypergeometric_init( struct unur_par *par, struct unur_gen *gen )
 
 /*---------------------------------------------------------------------------*/
 
-inline static int
+int
 hypergeometric_hruec_init( struct unur_gen *gen )
 {
   int k1,bh;
@@ -362,6 +354,4 @@ h_util(int N_, int M_, int n_, int k)
 	 }                            /* therefore k by M-N+n+k              */
 } /* end of h_util() */
 
-/*---------------------------------------------------------------------------*/
-#endif   /*  HAVE_UNUR_SF_LN_FACTORIAL  */
 /*---------------------------------------------------------------------------*/

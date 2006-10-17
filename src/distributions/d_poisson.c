@@ -67,37 +67,16 @@ static const char distr_name[] = "poisson";
 /*  #define LOGNORMCONSTANT (distr->data.discr.norm_constant) */
 
 /*---------------------------------------------------------------------------*/
-/* do we have the cdf of the distribution ? */
-#if defined(HAVE_UNUR_SF_LN_GAMMA) && defined(HAVE_UNUR_SF_INCOMPLETE_GAMMA)
-#  define HAVE_CDF
-#else
-#  undef  HAVE_CDF
-#endif
-
-/* can we compute the area below the pdf ? */
-#ifdef HAVE_UNUR_SF_LN_FACTORIAL
-#  define HAVE_PMF
-#else
-#  undef  HAVE_PMF
-#endif
-
-/*---------------------------------------------------------------------------*/
 
 /* function prototypes                                                       */
-#ifdef HAVE_PMF
 static double _unur_pmf_poisson( int k, const UNUR_DISTR *distr );
-#endif
-#ifdef HAVE_CDF
 static double _unur_cdf_poisson( int k, const UNUR_DISTR *distr );      
-#endif
 
 static int _unur_upd_mode_poisson( UNUR_DISTR *distr );
 static int _unur_upd_sum_poisson( UNUR_DISTR *distr );
 static int _unur_set_params_poisson( UNUR_DISTR *distr, const double *params, int n_params );
 
 /*---------------------------------------------------------------------------*/
-
-#ifdef HAVE_PMF
 
 double
 _unur_pmf_poisson(int k, const UNUR_DISTR *distr)
@@ -108,11 +87,7 @@ _unur_pmf_poisson(int k, const UNUR_DISTR *distr)
     return 0.;
 } /* end of _unur_pmf_poisson() */
 
-#endif
-
 /*---------------------------------------------------------------------------*/
-
-#ifdef HAVE_CDF
 
 double
 _unur_cdf_poisson(int k, const UNUR_DISTR *distr)
@@ -122,8 +97,6 @@ _unur_cdf_poisson(int k, const UNUR_DISTR *distr)
   else
     return 0.;
 } /* end of _unur_cdf_poisson() */
-
-#endif
 
 /*---------------------------------------------------------------------------*/
 
@@ -154,15 +127,10 @@ _unur_upd_sum_poisson( UNUR_DISTR *distr )
     return UNUR_SUCCESS;
   }
   
-#ifdef HAVE_CDF
   /* else */
   DISTR.sum = ( _unur_cdf_poisson( DISTR.domain[1],distr) 
 		 - _unur_cdf_poisson( DISTR.domain[0]-1,distr) );
   return UNUR_SUCCESS;
-#else
-  return UNUR_ERR_DISTR_REQUIRED;
-#endif
-
 } /* end of _unur_upd_sum_poisson() */
 
 /*---------------------------------------------------------------------------*/
@@ -222,12 +190,8 @@ unur_distr_poisson( const double *params, int n_params )
   DISTR.init = _unur_stdgen_poisson_init;
    
   /* functions */
-#ifdef HAVE_PMF
   DISTR.pmf  = _unur_pmf_poisson;   /* pointer to PMF */
-#endif
-#ifdef HAVE_CDF
   DISTR.cdf  = _unur_cdf_poisson;   /* pointer to CDF */
-#endif
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

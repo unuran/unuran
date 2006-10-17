@@ -74,36 +74,21 @@ static const char distr_name[] = "hypergeometric";
 #define LOGNORMCONSTANT (distr->data.discr.norm_constant)
 
 /*---------------------------------------------------------------------------*/
-/* do we have the PMF of the distribution ? */
-#ifdef HAVE_UNUR_SF_LN_FACTORIAL
-#  define HAVE_PMF
-#  define HAVE_SUM
-#else
-#  undef  HAVE_PMF
-#  undef  HAVE_SUM
-#endif
-
 /** In Cephes there is no CDF for the hypergeometric distribution**/
 #undef HAVE_CDF
 
 /*---------------------------------------------------------------------------*/
 /* function prototypes                                                       */
-#ifdef HAVE_PMF
 static double _unur_pmf_hypergeometric( int k, const UNUR_DISTR *distr );
-#endif
 #ifdef HAVE_CDF
 static double _unur_cdf_hypergeometric( int k, const UNUR_DISTR *distr ); 
 #endif
 
 static int _unur_upd_mode_hypergeometric( UNUR_DISTR *distr );
-#ifdef HAVE_SUM
 static int _unur_upd_sum_hypergeometric( UNUR_DISTR *distr );
-#endif
 static int _unur_set_params_hypergeometric( UNUR_DISTR *distr, const double *params, int n_params );
 
 /*---------------------------------------------------------------------------*/
-
-#ifdef HAVE_PMF
 
 double
 _unur_pmf_hypergeometric(int k, const UNUR_DISTR *distr)
@@ -118,8 +103,6 @@ _unur_pmf_hypergeometric(int k, const UNUR_DISTR *distr)
                 _unur_sf_ln_factorial(n-k) - _unur_sf_ln_factorial(N-M-n+k) );
 
 } /* end of _unur_pmf_hypergeometric() */
-
-#endif
 
 /*---------------------------------------------------------------------------*/
 
@@ -154,8 +137,6 @@ _unur_upd_mode_hypergeometric( UNUR_DISTR *distr )
 
 /*---------------------------------------------------------------------------*/
 
-#ifdef HAVE_SUM
-
 int
 _unur_upd_sum_hypergeometric( UNUR_DISTR *distr )
 {
@@ -180,8 +161,6 @@ _unur_upd_sum_hypergeometric( UNUR_DISTR *distr )
 #endif
 
 } /* end of _unur_upd_sum_hypergeometric() */
-
-#endif
 
 /*---------------------------------------------------------------------------*/
 
@@ -256,9 +235,7 @@ unur_distr_hypergeometric( const double *params, int n_params )
   DISTR.init = _unur_stdgen_hypergeometric_init;
    
   /* functions */
-#ifdef HAVE_PMF
   DISTR.pmf  = _unur_pmf_hypergeometric;   /* pointer to PMF */
-#endif
 #ifdef HAVE_CDF
   DISTR.cdf  = _unur_cdf_hypergeometric;   /* pointer to CDF */
 #endif
@@ -266,9 +243,7 @@ unur_distr_hypergeometric( const double *params, int n_params )
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |
 		 UNUR_DISTR_SET_STDDOMAIN |
-#ifdef HAVE_SUM
 		 UNUR_DISTR_SET_PMFSUM |
-#endif
 		 UNUR_DISTR_SET_MODE );
                 
   /* set parameters for distribution */
@@ -278,12 +253,7 @@ unur_distr_hypergeometric( const double *params, int n_params )
   }
 
   /* log of normalization constant */
-#ifdef HAVE_SUM
   _unur_upd_sum_hypergeometric( distr );
-#else
-  LOGNORMCONSTANT = 0.;
-#endif
-  /* log of normalization constant: none */
 
   /* mode and sum over PMF */
   _unur_upd_mode_hypergeometric(distr);
@@ -294,9 +264,7 @@ unur_distr_hypergeometric( const double *params, int n_params )
 
   /* function for updating derived parameters */
   DISTR.upd_mode = _unur_upd_mode_hypergeometric; /* funct for computing mode */
-#ifdef HAVE_SUM
   DISTR.upd_sum  = _unur_upd_sum_hypergeometric;  /* funct for computing area */
-#endif
 
   /* return pointer to object */
   return distr;

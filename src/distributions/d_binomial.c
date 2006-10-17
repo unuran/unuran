@@ -72,39 +72,15 @@ static const char distr_name[] = "binomial";
 /* #define LOGNORMCONSTANT (distr->data.discr.norm_constant) */
 
 /*---------------------------------------------------------------------------*/
-/* do we have the PMF of the distribution ? */
-#ifdef HAVE_UNUR_SF_LN_FACTORIAL
-#  define HAVE_PMF
-#  define HAVE_SUM
-#else
-#  undef  HAVE_PMF
-#  undef  HAVE_SUM
-#endif
-
-#ifdef HAVE_UNUR_SF_INCOMPLETE_BETA
-# define HAVE_CDF
-#else
-#  undef HAVE_CDF
-#endif
-
-/*---------------------------------------------------------------------------*/
 /* function prototypes                                                       */
-#ifdef HAVE_PMF
 static double _unur_pmf_binomial( int k, const UNUR_DISTR *distr );
-#endif
-#ifdef HAVE_CDF
 static double _unur_cdf_binomial( int k, const UNUR_DISTR *distr ); 
-#endif
 
 static int _unur_upd_mode_binomial( UNUR_DISTR *distr );
-#ifdef HAVE_SUM
 static int _unur_upd_sum_binomial( UNUR_DISTR *distr );
-#endif
 static int _unur_set_params_binomial( UNUR_DISTR *distr, const double *params, int n_params );
 
 /*---------------------------------------------------------------------------*/
-
-#ifdef HAVE_PMF
 
 double
 _unur_pmf_binomial(int k, const UNUR_DISTR *distr)
@@ -120,11 +96,7 @@ _unur_pmf_binomial(int k, const UNUR_DISTR *distr)
 
 } /* end of _unur_pmf_binomial() */
 
-#endif
-
 /*---------------------------------------------------------------------------*/
-
-#ifdef HAVE_CDF
 
 double
 _unur_cdf_binomial(int k, const UNUR_DISTR *distr)
@@ -145,8 +117,6 @@ _unur_cdf_binomial(int k, const UNUR_DISTR *distr)
 
 } /* end of _unur_cdf_binomial() */
 
-#endif
-
 /*---------------------------------------------------------------------------*/
 
 int
@@ -166,8 +136,6 @@ _unur_upd_mode_binomial( UNUR_DISTR *distr )
 
 /*---------------------------------------------------------------------------*/
 
-#ifdef HAVE_SUM
-
 int
 _unur_upd_sum_binomial( UNUR_DISTR *distr )
 {
@@ -178,18 +146,12 @@ _unur_upd_sum_binomial( UNUR_DISTR *distr )
     return UNUR_SUCCESS;
   }
 
-#ifdef HAVE_CDF
   /* else */
   DISTR.sum = ( _unur_cdf_binomial( DISTR.domain[1],distr) 
 		 - _unur_cdf_binomial( DISTR.domain[0]-1,distr) );
   return UNUR_SUCCESS;
-#else
-  return UNUR_ERR_DISTR_REQUIRED;
-#endif
 
 } /* end of _unur_upd_sum_binomial() */
-
-#endif
 
 /*---------------------------------------------------------------------------*/
 
@@ -256,19 +218,13 @@ unur_distr_binomial( const double *params, int n_params )
   DISTR.init = _unur_stdgen_binomial_init;
    
   /* functions */
-#ifdef HAVE_PMF
   DISTR.pmf  = _unur_pmf_binomial;   /* pointer to PMF */
-#endif
-#ifdef HAVE_CDF
   DISTR.cdf  = _unur_cdf_binomial;   /* pointer to CDF */
-#endif
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |
 		 UNUR_DISTR_SET_STDDOMAIN |
-#ifdef HAVE_SUM
 		 UNUR_DISTR_SET_PMFSUM |
-#endif
 		 UNUR_DISTR_SET_MODE );
 
   /* set parameters for distribution */
@@ -288,9 +244,7 @@ unur_distr_binomial( const double *params, int n_params )
 
   /* function for updating derived parameters */
   DISTR.upd_mode = _unur_upd_mode_binomial; /* funct for computing mode */
-#ifdef HAVE_SUM
   DISTR.upd_sum  = _unur_upd_sum_binomial;  /* funct for computing area */
-#endif
                 
   /* return pointer to object */
   return distr;

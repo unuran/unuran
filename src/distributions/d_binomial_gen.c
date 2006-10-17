@@ -41,10 +41,8 @@
 /*---------------------------------------------------------------------------*/
 /* init routines for special generators                                      */
 
-#ifdef HAVE_UNUR_SF_LN_FACTORIAL
 inline static int binomial_bruec_init( struct unur_gen *gen );
 static int _unur_stdgen_sample_binomial_bruec( struct unur_gen *gen );
-#endif
 
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
@@ -97,13 +95,9 @@ _unur_stdgen_binomial_init( struct unur_par *par, struct unur_gen *gen )
 
   case 0:  /* DEFAULT */
   case 1:  /* Ratio of Uniforms/Inversion */
-#ifdef HAVE_UNUR_SF_LN_FACTORIAL
      if (gen==NULL) return UNUR_SUCCESS; /* test existence only  */
      _unur_dstd_set_sampling_routine( par,gen,_unur_stdgen_sample_binomial_bruec );
      return binomial_bruec_init( gen );
-#else
-     return UNUR_ERR_DISTR_REQUIRED;
-#endif
 
   case UNUR_STDGEN_INVERSION:   /* inversion method */
   default: /* no such generator */
@@ -120,8 +114,6 @@ _unur_stdgen_binomial_init( struct unur_par *par, struct unur_gen *gen )
 /**  Special generators                                                     **/
 /**                                                                         **/
 /*****************************************************************************/
-
-#ifdef HAVE_UNUR_SF_LN_FACTORIAL
 
 #define flogfak(k) _unur_sf_ln_factorial(k)
 
@@ -180,7 +172,7 @@ _unur_stdgen_binomial_init( struct unur_par *par, struct unur_gen *gen )
 
 /*---------------------------------------------------------------------------*/
 
-inline static int
+int
 binomial_bruec_init( struct unur_gen *gen )
 {
   int bh,k1;
@@ -320,9 +312,6 @@ _unur_stdgen_sample_binomial_bruec( struct unur_gen *gen )
 #undef p0      
 
 /*---------------------------------------------------------------------------*/
-#endif  /*  HAVE_UNUR_SF_LN_FACTORIAL */
-/*---------------------------------------------------------------------------*/
-
 
 
 

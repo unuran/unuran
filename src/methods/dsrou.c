@@ -646,7 +646,11 @@ _unur_dsrou_init( struct unur_par *par )
 
   /* create a new empty generator object */
   gen = _unur_dsrou_create(par);
-  if (!gen) { _unur_par_free(par); return NULL; }
+
+  /* free parameters */
+  _unur_par_free(par);
+
+  if (!gen) return NULL;
 
   /* check parameters */
   if (_unur_dsrou_check_par(gen) != UNUR_SUCCESS) {
@@ -655,17 +659,13 @@ _unur_dsrou_init( struct unur_par *par )
 
   /* compute universal bounding rectangle */
   if ( _unur_dsrou_rectangle(gen)!=UNUR_SUCCESS ) {
-    _unur_par_free(par); _unur_dsrou_free(gen);
-    return NULL;
+    _unur_dsrou_free(gen); return NULL;
   }
 
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
     if (gen->debug) _unur_dsrou_debug_init(gen, FALSE);
 #endif
-
-  /* free parameters */
-  _unur_par_free(par);
 
   return gen;
 

@@ -665,6 +665,10 @@ _unur_dari_init( struct unur_par *par )
 
   /* create a new empty generator object */
   gen = _unur_dari_create(par);
+
+  /* free parameters */
+  _unur_par_free(par);
+
   if (!gen) return NULL;
 
   /* check parameters */
@@ -683,9 +687,6 @@ _unur_dari_init( struct unur_par *par )
   /* write info into log file */
   if (gen->debug) _unur_dari_debug_init(gen,"INIT completed");
 #endif
-
-  /* free parameters */
-  _unur_par_free(par);
 
   /* o.k. */
   return gen;

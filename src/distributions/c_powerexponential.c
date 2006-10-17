@@ -74,34 +74,15 @@ static const char distr_name[] = "powerexponential";
 #define LOGNORMCONSTANT (distr->data.cont.norm_constant)
 
 /*---------------------------------------------------------------------------*/
-/* do we have the cdf of the distribution ? */
-#ifdef HAVE_UNUR_SF_INCOMPLETE_GAMMA
-#  define HAVE_CDF
-#else
-#  undef  HAVE_CDF
-#endif
-
-/* can we compute the area below the pdf ? */
-#ifdef HAVE_UNUR_SF_LN_GAMMA
-#  define HAVE_AREA
-#else
-#  undef  HAVE_AREA
-#endif
-
-/*---------------------------------------------------------------------------*/
 /* function prototypes                                                       */
 static double _unur_pdf_powerexponential( double x, const UNUR_DISTR *distr );
 static double _unur_logpdf_powerexponential( double x, const UNUR_DISTR *distr );
 static double _unur_dpdf_powerexponential( double x, const UNUR_DISTR *distr );
 static double _unur_dlogpdf_powerexponential( double x, const UNUR_DISTR *distr );
-#ifdef HAVE_CDF
 static double _unur_cdf_powerexponential( double x, const UNUR_DISTR *distr );
-#endif
 
 static int _unur_upd_mode_powerexponential( UNUR_DISTR *distr );
-#ifdef HAVE_AREA
 static int _unur_upd_area_powerexponential( UNUR_DISTR *distr );
-#endif
 static int _unur_set_params_powerexponential( UNUR_DISTR *distr, const double *params, int n_params );
 
 /*---------------------------------------------------------------------------*/
@@ -155,8 +136,6 @@ _unur_dlogpdf_powerexponential( double x, const UNUR_DISTR *distr )
 
 /*---------------------------------------------------------------------------*/
 
-#ifdef HAVE_CDF
-
 double
 _unur_cdf_powerexponential( double x, const UNUR_DISTR *distr )
 { 
@@ -168,8 +147,6 @@ _unur_cdf_powerexponential( double x, const UNUR_DISTR *distr )
   return ((x<0.) ? 0.5 - cdf : 0.5 + cdf);
 
 } /* end of _unur_cdf_powerexponential() */
-
-#endif
 
 /*---------------------------------------------------------------------------*/
 
@@ -189,8 +166,6 @@ _unur_upd_mode_powerexponential( UNUR_DISTR *distr )
 
 /*---------------------------------------------------------------------------*/
 
-#ifdef HAVE_AREA
-
 int
 _unur_upd_area_powerexponential( UNUR_DISTR *distr )
 {
@@ -202,18 +177,11 @@ _unur_upd_area_powerexponential( UNUR_DISTR *distr )
     return UNUR_SUCCESS;
   }
   
-#ifdef HAVE_CDF
   /* else */
   DISTR.area = ( _unur_cdf_powerexponential( DISTR.domain[1],distr) 
 		 - _unur_cdf_powerexponential( DISTR.domain[0],distr) );
   return UNUR_SUCCESS;
-#else
-  return UNUR_ERR_DISTR_REQUIRED;
-#endif
-
 } /* end of _unur_upd_area_powerexponential() */
-
-#endif
 
 /*---------------------------------------------------------------------------*/
 
@@ -277,16 +245,12 @@ unur_distr_powerexponential( const double *params, int n_params )
   DISTR.dpdf    = _unur_dpdf_powerexponential;    /* pointer to derivative of PDF    */
   DISTR.dlogpdf = _unur_dlogpdf_powerexponential; /* pointer to derivative of logPDF */
   DISTR.cdf     = _unur_cdf_powerexponential;     /* pointer to CDF                  */
-#ifdef HAVE_CDF
   DISTR.cdf     = _unur_cdf_powerexponential;     /* pointer to CDF                  */
-#endif
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |
 		 UNUR_DISTR_SET_STDDOMAIN |
-#ifdef HAVE_AREA
 		 UNUR_DISTR_SET_PDFAREA |
-#endif
 		 UNUR_DISTR_SET_MODE );
 
   /* set parameters for distribution */
@@ -296,11 +260,7 @@ unur_distr_powerexponential( const double *params, int n_params )
   }
 
   /* log of normalization constant */
-#ifdef HAVE_AREA
   LOGNORMCONSTANT = _unur_sf_ln_gamma(1. + 1./DISTR.tau) + M_LN2;
-#else
-  LOGNORMCONSTANT = 0.;
-#endif
 
   /* mode and area below p.d.f. */
   DISTR.mode = 0;
@@ -311,9 +271,7 @@ unur_distr_powerexponential( const double *params, int n_params )
 
   /* function for updating derived parameters */
   DISTR.upd_mode  = _unur_upd_mode_powerexponential; /* funct for computing mode */
-#ifdef HAVE_AREA
   DISTR.upd_area  = _unur_upd_area_powerexponential; /* funct for computing area */
-#endif
 
   /* return pointer to object */
   return distr;

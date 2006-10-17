@@ -86,22 +86,12 @@ static const char distr_name[] = "normal";
 #define LOGNORMCONSTANT (distr->data.cont.norm_constant)
 
 /*---------------------------------------------------------------------------*/
-/* do we have the cdf of the distribution ? */
-#ifdef HAVE_UNUR_SF_CDFNORMAL
-#  define HAVE_CDF
-#else
-#  undef  HAVE_CDF
-#endif
-
-/*---------------------------------------------------------------------------*/
 /* function prototypes                                                       */
 static double _unur_pdf_normal( double x, const UNUR_DISTR *distr );
 static double _unur_logpdf_normal( double x, const UNUR_DISTR *distr );
 static double _unur_dpdf_normal( double x, const UNUR_DISTR *distr );
 static double _unur_dlogpdf_normal( double x, const UNUR_DISTR *distr );
-#ifdef HAVE_CDF
 static double _unur_cdf_normal( double x, const UNUR_DISTR *distr );
-#endif
 
 static int _unur_upd_mode_normal( UNUR_DISTR *distr );
 static int _unur_upd_area_normal( UNUR_DISTR *distr );
@@ -178,8 +168,6 @@ _unur_dlogpdf_normal( double x, const UNUR_DISTR *distr )
 
 /*---------------------------------------------------------------------------*/
 
-#ifdef HAVE_CDF
-
 double
 _unur_cdf_normal( double x, const UNUR_DISTR *distr ) 
 {
@@ -194,8 +182,6 @@ _unur_cdf_normal( double x, const UNUR_DISTR *distr )
   return _unur_sf_cdfnormal(x);
 
 } /* end of _unur_cdf_normal() */
-
-#endif
 
 /*---------------------------------------------------------------------------*/
 
@@ -226,14 +212,10 @@ _unur_upd_area_normal( UNUR_DISTR *distr )
     return UNUR_SUCCESS;
   }
 
-#ifdef HAVE_CDF
   /* else */
   DISTR.area = ( _unur_cdf_normal( DISTR.domain[1],distr) 
 		 - _unur_cdf_normal( DISTR.domain[0],distr) );
   return UNUR_SUCCESS;
-#else
-  return UNUR_ERR_DISTR_REQUIRED;
-#endif
 } /* end of _unur_upd_area_normal() */
 
 /*---------------------------------------------------------------------------*/
@@ -316,9 +298,7 @@ unur_distr_normal( const double *params, int n_params )
   DISTR.logpdf  = _unur_logpdf_normal;  /* pointer to logPDF               */
   DISTR.dpdf    = _unur_dpdf_normal;    /* pointer to derivative of PDF    */
   DISTR.dlogpdf = _unur_dlogpdf_normal; /* pointer to derivative of logPDF */
-#ifdef HAVE_CDF
   DISTR.cdf     = _unur_cdf_normal;     /* pointer to CDF                  */
-#endif
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

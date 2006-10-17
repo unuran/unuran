@@ -120,11 +120,9 @@ _unur_stdgen_normal_init( struct unur_par *par, struct unur_gen *gen )
     return UNUR_SUCCESS;
 
   case UNUR_STDGEN_INVERSION:   /* inversion method */
-#ifdef HAVE_UNUR_SF_INV_CDFNORMAL
     if (par) PAR->is_inversion = TRUE;
     _unur_cstd_set_sampling_routine(par,gen,_unur_stdgen_sample_normal_inv); 
     return UNUR_SUCCESS;
-#endif
 
   default: /* no such generator */
     if (gen) _unur_warning(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
@@ -142,8 +140,6 @@ _unur_stdgen_normal_init( struct unur_par *par, struct unur_gen *gen )
 /*****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-
-#ifdef HAVE_UNUR_SF_INV_CDFNORMAL
 
 /*****************************************************************************
  *                                                                           *
@@ -180,8 +176,6 @@ double _unur_stdgen_sample_normal_inv( struct unur_gen *gen )
   return ((DISTR.n_params==0) ? X : mu + sigma * X );
 
 } /* end of _unur_stdgen_sample_normal_inv() */
-
-#endif
 
 /*---------------------------------------------------------------------------*/
 

@@ -91,36 +91,17 @@ static const char distr_name[] = "beta";
 #define LOGNORMCONSTANT (distr->data.cont.norm_constant)
 
 /*---------------------------------------------------------------------------*/
-/* do we have the cdf of the distribution ? */
-#ifdef HAVE_UNUR_SF_INCOMPLETE_BETA
-#  define HAVE_CDF
-#else
-#  undef  HAVE_CDF
-#endif
-
-/* can we compute the area below the pdf ? */
-#ifdef HAVE_UNUR_SF_LN_GAMMA
-#  define HAVE_AREA
-#else
-#  undef  HAVE_AREA
-#endif
-
-/*---------------------------------------------------------------------------*/
 
 /* function prototypes                                                       */
 static double _unur_pdf_beta( double x, const UNUR_DISTR *distr );
 static double _unur_logpdf_beta( double x, const UNUR_DISTR *distr );
 static double _unur_dpdf_beta( double x, const UNUR_DISTR *distr );
 static double _unur_dlogpdf_beta( double x, const UNUR_DISTR *distr );
-#ifdef HAVE_CDF
 static double _unur_cdf_beta( double x, const UNUR_DISTR *distr );
-#endif
 
 static int _unur_upd_mode_beta( UNUR_DISTR *distr );
-#ifdef HAVE_AREA
 static int _unur_upd_area_beta( UNUR_DISTR *distr );
 inline static double _unur_lognormconstant_beta( const double *params, int n_params );
-#endif
 static int _unur_set_params_beta( UNUR_DISTR *distr, const double *params, int n_params );
 
 /*---------------------------------------------------------------------------*/
@@ -265,8 +246,6 @@ _unur_dlogpdf_beta(double x, const UNUR_DISTR *distr)
 
 /*---------------------------------------------------------------------------*/
 
-#ifdef HAVE_CDF
-
 double
 _unur_cdf_beta(double x, const UNUR_DISTR *distr)
 {
@@ -285,8 +264,6 @@ _unur_cdf_beta(double x, const UNUR_DISTR *distr)
   return _unur_sf_incomplete_beta(x,p,q);
 
 } /* end of _unur_cdf_beta() */
-
-#endif
 
 /*---------------------------------------------------------------------------*/
 
@@ -325,8 +302,6 @@ _unur_upd_mode_beta( UNUR_DISTR *distr )
 
 /*---------------------------------------------------------------------------*/
 
-#ifdef HAVE_AREA
-
 int
 _unur_upd_area_beta( UNUR_DISTR *distr )
 {
@@ -338,14 +313,10 @@ _unur_upd_area_beta( UNUR_DISTR *distr )
     return UNUR_SUCCESS;
   }
   
-#ifdef HAVE_CDF
   /* else */
   DISTR.area = ( _unur_cdf_beta( DISTR.domain[1],distr) 
 		 - _unur_cdf_beta( DISTR.domain[0],distr) );
   return UNUR_SUCCESS;
-#else
-  return UNUR_ERR_DISTR_REQUIRED;
-#endif
 
 } /* end of _unur_upd_area_beta() */
 
@@ -365,8 +336,6 @@ _unur_lognormconstant_beta(const double *params, int n_params)
     return (_unur_sf_ln_gamma(p) + _unur_sf_ln_gamma(q) - _unur_sf_ln_gamma(p+q));
 
 } /* end of _unur_lognormconstant_beta() */
-
-#endif
 
 /*---------------------------------------------------------------------------*/
 
@@ -444,22 +413,17 @@ unur_distr_beta( const double *params, int n_params )
   DISTR.init = _unur_stdgen_beta_init;
 
   /* functions */
-  /* functions */
   DISTR.pdf     = _unur_pdf_beta;     /* pointer to PDF                  */
   DISTR.logpdf  = _unur_logpdf_beta;  /* pointer to logPDF               */
   DISTR.dpdf    = _unur_dpdf_beta;    /* pointer to derivative of PDF    */
   DISTR.dlogpdf = _unur_dlogpdf_beta; /* pointer to derivative of logPDF */
   DISTR.cdf     = _unur_cdf_beta;     /* pointer to CDF                  */
-#ifdef HAVE_CDF
   DISTR.cdf     = _unur_cdf_beta;     /* pointer to CDF                  */
-#endif
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |
 		 UNUR_DISTR_SET_STDDOMAIN |
-#ifdef HAVE_AREA
 		 UNUR_DISTR_SET_PDFAREA |
-#endif
 		 UNUR_DISTR_SET_MODE );
 
   /* set parameters for distribution */
@@ -469,11 +433,7 @@ unur_distr_beta( const double *params, int n_params )
   }
 
   /* log of normalization constant */
-#ifdef HAVE_AREA
   LOGNORMCONSTANT = _unur_lognormconstant_beta(DISTR.params,DISTR.n_params);
-#else
-  LOGNORMCONSTANT = 0.;
-#endif
 
   /* mode and area below p.d.f. */
   _unur_upd_mode_beta( distr );
@@ -484,9 +444,7 @@ unur_distr_beta( const double *params, int n_params )
 
   /* function for updating derived parameters */
   DISTR.upd_mode  = _unur_upd_mode_beta; /* funct for computing mode */
-#ifdef HAVE_AREA
   DISTR.upd_area  = _unur_upd_area_beta; /* funct for computing area */
-#endif
 
   /* return pointer to object */
   return distr;

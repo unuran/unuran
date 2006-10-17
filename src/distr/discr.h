@@ -388,3 +388,16 @@ double unur_distr_discr_get_pmfsum( UNUR_DISTR *distribution );
 /* =END */
 
 /*---------------------------------------------------------------------------*/
+
+/* Non-exported calls (for internal use only) */
+
+int _unur_distr_discr_upd_pmfsum_generic( UNUR_DISTR *distribution );
+/* 
+   Recompute the sum over the PMF of the @var{distribution} with a 
+   naive summation loop.
+
+   @emph{Warning}: This call must be used with care as it does not
+   check the size of the domain and thus might run for a @emph{very} long
+   time.
+*/
+

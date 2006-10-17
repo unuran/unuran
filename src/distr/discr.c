@@ -1254,6 +1254,69 @@ unur_distr_discr_get_pmfsum( struct unur_distr *distr )
 
 /*---------------------------------------------------------------------------*/
 
+int
+_unur_distr_discr_upd_pmfsum_generic( struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* (re-) compute sum over PMF of distribution with a naive summation    */
+     /* loop                                                                 */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  double sum = 0.;
+  int k, left, right;
+
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, DISCR, UNUR_ERR_DISTR_SET );
+
+  /* changelog */
+  distr->set |= UNUR_DISTR_SET_PMFSUM;
+
+  if (DISTR.upd_sum != NULL) {
+    /* try function given by distribution */
+    if ((DISTR.upd_sum)(distr)==UNUR_SUCCESS)
+      return UNUR_SUCCESS;
+  }
+
+  /* no function to compute sum available */
+  left  = DISTR.domain[0];
+  right = DISTR.domain[1];
+ 
+  if (DISTR.cdf != NULL) {
+    /* use CDF */
+    if (left > INT_MIN) left -= 1;
+    DISTR.sum = _unur_discr_CDF(right,distr) - _unur_discr_CDF(left,distr);
+    return UNUR_SUCCESS;
+  }
+
+  if (DISTR.pv != NULL) {
+    for (k = 0; k<= right-left; k++)
+      /* use probability vector */
+      sum += DISTR.pv[k];
+    DISTR.sum = sum;
+    return UNUR_SUCCESS;
+  }
+
+  if (DISTR.pmf != NULL) {
+    /* use PMF */
+    for (k = left; k<= right; k++)
+      sum += _unur_discr_PMF(k,distr);
+    DISTR.sum = sum;
+    return UNUR_SUCCESS;
+  }
+
+  /* error: data missing */
+  _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"Cannot compute sum");
+  return UNUR_ERR_DISTR_DATA;
+
+} /* end of unur_distr_discr_upd_pmfsum() */
+
 /*****************************************************************************/
 
 /*---------------------------------------------------------------------------*/

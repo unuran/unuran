@@ -68,15 +68,22 @@
       given @i{T}-concave PDF (with @unurmath{T(x) = -1/\sqrt{x},)}
       mode and approximate area below PDF. 
 
-      It is possible to change the parameters and the domain of the chosen 
-      distribution and run unur_reinit() to reinitialize the generator object.
-      
       When the PDF does not change at the mode for varying parameters, then
       this value can be set with unur_utdr_set_pdfatmode() to avoid some 
       computations. Since this value will not be updated any more when the 
       parameters of the distribution are changed,
       the unur_utdr_chg_pdfatmode() call is necessary to do this manually.
       
+      It is possible to change the parameters and the domain of the chosen 
+      distribution and run unur_reinit() to reinitialize the generator object.
+      Notice, that derived parameters like the mode must also be (re-) set
+      if the parameters or the domain has be changed.
+      Moreover, if the PDF at the mode has been provided by a 
+      unur_utdr_set_pdfatmode() call, additionally
+      unur_utdr_chg_pdfatmode() must be used (otherwise this call is
+      not necessary since then this figure is computed directly from
+      the PDF). 
+
       There exists a test mode that verifies whether the conditions for
       the method are satisfied or not. It can be switched on by calling 
       unur_utdr_set_verify() and unur_utdr_chg_verify(), respectively.

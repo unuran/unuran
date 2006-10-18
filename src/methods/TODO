@@ -4,20 +4,10 @@ ninv.h:int unur_ninv_chg_pdfparams(UNUR_GEN *generator, double *params, int n_pa
 
 
 ###############################################################
-# update docu for reinit:
-
-ssr.h
-tdr.h
-tdrgw.h
-utdr.h
-
-###############################################################
 # update reinit:
 
 tdr.h
 tdrgw.h
-( utdr.h)
-
 
 ###############################################################
 # add reinit:

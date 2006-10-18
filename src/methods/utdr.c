@@ -113,14 +113,24 @@ static int _unur_utdr_reinit( struct unur_gen *gen );
 /* Reinitialize generator.                                                   */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_utdr_hat( struct unur_gen *gen );
-/*---------------------------------------------------------------------------*/
-/* compute hat and squeezes.                                                 */
-/*---------------------------------------------------------------------------*/
-
 static struct unur_gen *_unur_utdr_create( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 /* create new (almost empty) generator object.                               */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_utdr_check_par( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* Check parameters of given distribution and method                         */
+/*---------------------------------------------------------------------------*/
+
+static struct unur_gen *_unur_utdr_clone( const struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* copy (clone) generator object.                                            */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_utdr_free( struct unur_gen *gen);
+/*---------------------------------------------------------------------------*/
+/* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
 static double _unur_utdr_sample( struct unur_gen *generator );
@@ -129,14 +139,9 @@ static double _unur_utdr_sample_check( struct unur_gen *generator );
 /* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_utdr_free( struct unur_gen *gen);
+static int _unur_utdr_hat( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* destroy generator object.                                                 */
-/*---------------------------------------------------------------------------*/
-
-static struct unur_gen *_unur_utdr_clone( const struct unur_gen *gen );
-/*---------------------------------------------------------------------------*/
-/* copy (clone) generator object.                                            */
+/* compute hat and squeezes.                                                 */
 /*---------------------------------------------------------------------------*/
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -744,39 +749,76 @@ _unur_utdr_init( struct unur_par *par )
   _unur_par_free(par);
   if (!gen) return NULL;
 
-  /* check for required data: mode */
-  if (!(gen->distr->set & UNUR_DISTR_SET_MODE)) {
-    _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode: try finding it (numerically)"); 
-    if (unur_distr_cont_upd_mode(gen->distr)!=UNUR_SUCCESS) {
-      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode"); 
-      _unur_utdr_free(gen);
-      return NULL; 
-    }
+  /* check parameters */
+  if (_unur_utdr_check_par(gen) != UNUR_SUCCESS) {
+    _unur_utdr_free(gen); return NULL;
   }
-
-  /* check for required data: area */
-  if (!(gen->distr->set & UNUR_DISTR_SET_PDFAREA))
-    if (unur_distr_cont_upd_pdfarea(gen->distr)!=UNUR_SUCCESS) {
-      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"area below PDF");
-      _unur_utdr_free(gen);
-      return NULL; 
-    }
-
-  /* mode must be in domain */
-  DISTR.mode = _unur_max(DISTR.mode,GEN->il);
-  DISTR.mode = _unur_min(DISTR.mode,GEN->ir);
 
   /* create hat and squeeze (setup procedure) */
-  if ( _unur_utdr_hat(gen)==UNUR_SUCCESS )
-    /* hat successfully created */
-    return gen;
-
-  else {  /* error */
-    _unur_utdr_free(gen);
-    return NULL;
+  if ( _unur_utdr_hat(gen)!=UNUR_SUCCESS ) {
+    _unur_utdr_free(gen); return NULL;
   }
 
+  /* hat successfully created */
+  return gen;
+
 } /* end of _unur_utdr_init() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_utdr_reinit( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* re-initialize (existing) generator.                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  int rcode;
+
+  /* (re)set sampling routine */
+  SAMPLE = _unur_utdr_getSAMPLE(gen);
+
+  /* check parameters */
+  if ( (rcode = _unur_utdr_check_par(gen)) != UNUR_SUCCESS)
+    return rcode;
+
+  /* update left and right boundary for algorithm */
+  GEN->il = DISTR.BD_LEFT;
+  GEN->ir = DISTR.BD_RIGHT;
+
+  /* compute universal bounding rectangle */
+  return _unur_utdr_hat( gen );
+} /* end of _unur_utdr_reinit() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_utdr_reinit( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* Deprecated call!                                                     */
+     /*----------------------------------------------------------------------*/
+     /* re-initialize (existing) generator.                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE,gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, UTDR, UNUR_ERR_GEN_INVALID );
+
+  return _unur_utdr_reinit(gen);
+} /* end of unur_utdr_reinit() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -852,6 +894,268 @@ _unur_utdr_create( struct unur_par *par )
 } /* end of _unur_utdr_create() */
 
 /*---------------------------------------------------------------------------*/
+
+int
+_unur_utdr_check_par( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* check parameters of given distribution and method                    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+
+  /* check for required data: mode */
+  if (!(gen->distr->set & UNUR_DISTR_SET_MODE)) {
+    _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode: try finding it (numerically)");
+    if (unur_distr_cont_upd_mode(gen->distr)!=UNUR_SUCCESS) {
+      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"mode");
+      return UNUR_ERR_DISTR_REQUIRED;
+    }
+  }
+
+  /* check for required data: area */
+  if (!(gen->distr->set & UNUR_DISTR_SET_PDFAREA)) {
+    if (unur_distr_cont_upd_pdfarea(gen->distr)!=UNUR_SUCCESS) {
+      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"area below PDF");
+      return UNUR_ERR_DISTR_REQUIRED;
+    }
+  }
+
+/*   /\* mode must be in domain *\/ */
+/*   DISTR.mode = _unur_max(DISTR.mode,GEN->il); */
+/*   DISTR.mode = _unur_min(DISTR.mode,GEN->ir); */
+
+  /* mode must be in domain */
+  if ( (DISTR.mode < DISTR.BD_LEFT) ||
+       (DISTR.mode > DISTR.BD_RIGHT) ) {
+    /* there is something wrong.
+       assume: user has change domain without changing mode.
+       but then, she probably has not updated area and is to large */
+    _unur_warning(GENTYPE,UNUR_ERR_GEN_DATA,"area and/or CDF at mode");
+    DISTR.mode = _unur_max(DISTR.mode,DISTR.BD_LEFT);
+    DISTR.mode = _unur_min(DISTR.mode,DISTR.BD_RIGHT);
+  }
+
+  return UNUR_SUCCESS;
+} /* end of _unur_utdr_check_par() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_gen *
+_unur_utdr_clone( const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* copy (clone) generator object                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to clone of generator object                               */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+#define CLONE  ((struct unur_utdr_gen*)clone->datap)
+
+  struct unur_gen *clone;
+
+  /* check arguments */
+  CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_UTDR_GEN,NULL);
+
+  /* create generic clone */
+  clone = _unur_generic_clone( gen, GENTYPE );
+
+  return clone;
+
+#undef CLONE
+} /* end of _unur_utdr_clone() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_utdr_free( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* deallocate generator object                                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{ 
+
+  /* check arguments */
+  if( !gen ) /* nothing to do */
+    return;
+
+  /* check input */
+  if ( gen->method != UNUR_METH_UTDR ) {
+    _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
+    return; }
+  COOKIE_CHECK(gen,CK_UTDR_GEN,RETURN_VOID);
+
+  /* we cannot use this generator object any more */
+  SAMPLE = NULL;   /* make sure to show up a programming error */
+
+  /* free memory */
+  _unur_generic_free(gen);
+
+} /* end of _unur_utdr_free() */
+
+/*****************************************************************************/
+
+double
+_unur_utdr_sample( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* sample from generator                                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   double (sample from random variate)                                */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return INFINITY                                                    */
+     /*----------------------------------------------------------------------*/
+{ 
+  double u,v,x,help,linx;
+
+  /* check arguments */
+  CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_UTDR_GEN,INFINITY);
+
+  while (1) {
+    /*2*/
+    u = _unur_call_urng(gen->urng) * GEN->volcompl;
+    /*2.1*/
+    if (u <= GEN->voll) {
+      u = GEN->voll-u; /*added to ensure inversion for the hat-generation*/
+      x = -GEN->dlal+GEN->ooal2/(u-GEN->col);
+      help = GEN->al*(u-GEN->col);
+      linx = help*help;
+    }
+    else {
+      if (u <= GEN->vollc) {
+	x = (u-GEN->voll) * GEN->brblvolc + GEN->bl;
+	linx = GEN->fm;
+      }
+      else {
+	x = - GEN->drar - GEN->ooar2 / (u-GEN->vollc - GEN->cor);
+	help = GEN->ar * (u-GEN->vollc - GEN->cor);
+	linx = help*help;
+      }
+    }
+    /*2.2*/
+    v = _unur_call_urng(gen->urng) * linx;
+    /*2.3*/
+    if (x<DISTR.mode) {
+      if (x >= GEN->tlx) {
+	help = GEN->hm - (DISTR.mode - x) * GEN->sal;
+	if (v * help * help <= 1.) return x;
+      } 
+    }
+    else {
+      if (x <= GEN->trx) {
+	help = GEN->hm - (DISTR.mode - x) * GEN->sar;
+	if (v * help * help <= 1.) return x; 
+      }
+    }
+    if (v <= PDF(x)) return x; 
+  }
+
+} /* end of _unur_utdr_sample() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_utdr_sample_check( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* sample from generator                                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   double (sample from random variate)                                */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return INFINITY                                                    */
+     /*----------------------------------------------------------------------*/
+{ 
+  double u,v,x,help,linx,pdfx,squeezex;
+
+  /* check arguments */
+  CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_UTDR_GEN,INFINITY);
+  
+  while (1) {
+    /*2*/
+    u = _unur_call_urng(gen->urng) * GEN->volcompl;
+    /*2.1*/
+    if (u <= GEN->voll) {
+      u = GEN->voll-u; /* added to ensure inversion for the hat-generation */
+      x = -GEN->dlal+GEN->ooal2/(u-GEN->col);
+      help = GEN->al*(u-GEN->col);
+      linx = help*help;
+    }
+    else {
+      if (u <= GEN->vollc) {
+	x = (u-GEN->voll) * GEN->brblvolc + GEN->bl;
+	linx = GEN->fm;
+      }
+      else {
+	x = - GEN->drar - GEN->ooar2 / (u-GEN->vollc - GEN->cor);
+	help = GEN->ar * (u-GEN->vollc - GEN->cor);
+	linx = help*help;
+      }
+    }
+    /*2.2*/
+    v = _unur_call_urng(gen->urng) * linx;
+    /*2.3*/
+    squeezex=0.;
+    if (x<DISTR.mode) {
+      if (x >= GEN->tlx) {
+	help = GEN->hm - (DISTR.mode - x) * GEN->sal;
+        squeezex=1./(help*help);
+	/*        if (v * help * help <= 1.) return x;*/
+      } 
+    }
+    else {
+      if (x <= GEN->trx) {
+	help = GEN->hm - (DISTR.mode - x) * GEN->sar;
+        squeezex=1./(help*help);
+	/*        if (v * help * help <= 1.) return x; */
+      }
+    }
+    /*evaluate density-function*/
+    pdfx=PDF(x);
+    
+    /* verify hat function */
+    if(_unur_FP_less(linx,pdfx))
+      { _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF(x) > hat(x)");
+      _unur_stream_printf(gen->genid,__FILE__,__LINE__,"x %e PDF(x) %e hat(x) %e squeeze(x) %e", \
+                          x,pdfx,linx,squeezex ); 
+      }
+    /* verify squeeze function */
+    if(_unur_FP_less(pdfx,squeezex))
+      { _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF(x) < squeeze(x)");
+      _unur_stream_printf(gen->genid,__FILE__,__LINE__,"x %e PDF(x) %e hat(x) %e squeeze(x) %e", \
+                          x,pdfx,linx,squeezex ); 
+      }
+    if (v <= PDF(x)) return x;
+  }
+  
+} /* end of _unur_utdr_sample_check() */
+
+/*****************************************************************************/
+
+/*****************************************************************************/
+/**  Auxilliary Routines                                                    **/
+/*****************************************************************************/
+
 
 /** TODO gibts da schon eine UNURAN constante? ich hab sie nicht gefunden!! **/
 #define SMALL_VAL 1.e-50
@@ -1115,265 +1419,7 @@ _unur_utdr_hat( struct unur_gen *gen )
 
 } /* end of _unur_utdr_hat() */
 
-/*---------------------------------------------------------------------------*/
-
-int
-unur_utdr_reinit( struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* Deprecated call!                                                     */
-     /*----------------------------------------------------------------------*/
-     /* re-initialize (existing) generator.                                  */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   UNUR_SUCCESS ... on success                                        */
-     /*   error code   ... on error                                          */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  _unur_check_NULL( GENTYPE,gen, UNUR_ERR_NULL );
-  _unur_check_gen_object( gen, UTDR, UNUR_ERR_GEN_INVALID );
-
-  return _unur_utdr_reinit(gen);
-} /* end of unur_utdr_reinit() */
-
-/*---------------------------------------------------------------------------*/
-
-int
-_unur_utdr_reinit( struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* re-initialize (existing) generator.                                  */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   UNUR_SUCCESS ... on success                                        */
-     /*   error code   ... on error                                          */
-     /*----------------------------------------------------------------------*/
-{
-  /* (re)set sampling routine */
-  SAMPLE = _unur_utdr_getSAMPLE(gen);
-
-  /* update left and right boundary for algorithm */
-  GEN->il = DISTR.BD_LEFT;
-  GEN->ir = DISTR.BD_RIGHT;
-
-  /* compute universal bounding rectangle */
-  return _unur_utdr_hat( gen );
-} /* end of _unur_utdr_reinit() */
-
-/*---------------------------------------------------------------------------*/
-
-struct unur_gen *
-_unur_utdr_clone( const struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* copy (clone) generator object                                        */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   pointer to clone of generator object                               */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return NULL                                                        */
-     /*----------------------------------------------------------------------*/
-{
-#define CLONE  ((struct unur_utdr_gen*)clone->datap)
-
-  struct unur_gen *clone;
-
-  /* check arguments */
-  CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_UTDR_GEN,NULL);
-
-  /* create generic clone */
-  clone = _unur_generic_clone( gen, GENTYPE );
-
-  return clone;
-
-#undef CLONE
-} /* end of _unur_utdr_clone() */
-
-/*****************************************************************************/
-
-double
-_unur_utdr_sample( struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* sample from generator                                                */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   double (sample from random variate)                                */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return INFINITY                                                    */
-     /*----------------------------------------------------------------------*/
-{ 
-  double u,v,x,help,linx;
-
-  /* check arguments */
-  CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_UTDR_GEN,INFINITY);
-
-  while (1) {
-    /*2*/
-    u = _unur_call_urng(gen->urng) * GEN->volcompl;
-    /*2.1*/
-    if (u <= GEN->voll) {
-      u = GEN->voll-u; /*added to ensure inversion for the hat-generation*/
-      x = -GEN->dlal+GEN->ooal2/(u-GEN->col);
-      help = GEN->al*(u-GEN->col);
-      linx = help*help;
-    }
-    else {
-      if (u <= GEN->vollc) {
-	x = (u-GEN->voll) * GEN->brblvolc + GEN->bl;
-	linx = GEN->fm;
-      }
-      else {
-	x = - GEN->drar - GEN->ooar2 / (u-GEN->vollc - GEN->cor);
-	help = GEN->ar * (u-GEN->vollc - GEN->cor);
-	linx = help*help;
-      }
-    }
-    /*2.2*/
-    v = _unur_call_urng(gen->urng) * linx;
-    /*2.3*/
-    if (x<DISTR.mode) {
-      if (x >= GEN->tlx) {
-	help = GEN->hm - (DISTR.mode - x) * GEN->sal;
-	if (v * help * help <= 1.) return x;
-      } 
-    }
-    else {
-      if (x <= GEN->trx) {
-	help = GEN->hm - (DISTR.mode - x) * GEN->sar;
-	if (v * help * help <= 1.) return x; 
-      }
-    }
-    if (v <= PDF(x)) return x; 
-  }
-
-} /* end of _unur_utdr_sample() */
-
-/*****************************************************************************/
-
-double
-_unur_utdr_sample_check( struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* sample from generator                                                */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   double (sample from random variate)                                */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return INFINITY                                                    */
-     /*----------------------------------------------------------------------*/
-{ 
-  double u,v,x,help,linx,pdfx,squeezex;
-
-  /* check arguments */
-  CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_UTDR_GEN,INFINITY);
-  
-  while (1) {
-    /*2*/
-    u = _unur_call_urng(gen->urng) * GEN->volcompl;
-    /*2.1*/
-    if (u <= GEN->voll) {
-      u = GEN->voll-u; /* added to ensure inversion for the hat-generation */
-      x = -GEN->dlal+GEN->ooal2/(u-GEN->col);
-      help = GEN->al*(u-GEN->col);
-      linx = help*help;
-    }
-    else {
-      if (u <= GEN->vollc) {
-	x = (u-GEN->voll) * GEN->brblvolc + GEN->bl;
-	linx = GEN->fm;
-      }
-      else {
-	x = - GEN->drar - GEN->ooar2 / (u-GEN->vollc - GEN->cor);
-	help = GEN->ar * (u-GEN->vollc - GEN->cor);
-	linx = help*help;
-      }
-    }
-    /*2.2*/
-    v = _unur_call_urng(gen->urng) * linx;
-    /*2.3*/
-    squeezex=0.;
-    if (x<DISTR.mode) {
-      if (x >= GEN->tlx) {
-	help = GEN->hm - (DISTR.mode - x) * GEN->sal;
-        squeezex=1./(help*help);
-	/*        if (v * help * help <= 1.) return x;*/
-      } 
-    }
-    else {
-      if (x <= GEN->trx) {
-	help = GEN->hm - (DISTR.mode - x) * GEN->sar;
-        squeezex=1./(help*help);
-	/*        if (v * help * help <= 1.) return x; */
-      }
-    }
-    /*evaluate density-function*/
-    pdfx=PDF(x);
-    
-    /* verify hat function */
-    if(_unur_FP_less(linx,pdfx))
-      { _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF(x) > hat(x)");
-      _unur_stream_printf(gen->genid,__FILE__,__LINE__,"x %e PDF(x) %e hat(x) %e squeeze(x) %e", \
-                          x,pdfx,linx,squeezex ); 
-      }
-    /* verify squeeze function */
-    if(_unur_FP_less(pdfx,squeezex))
-      { _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF(x) < squeeze(x)");
-      _unur_stream_printf(gen->genid,__FILE__,__LINE__,"x %e PDF(x) %e hat(x) %e squeeze(x) %e", \
-                          x,pdfx,linx,squeezex ); 
-      }
-    if (v <= PDF(x)) return x;
-  }
-  
-} /* end of _unur_utdr_sample_check() */
-
-/*****************************************************************************/
-
-void
-_unur_utdr_free( struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* deallocate generator object                                          */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*----------------------------------------------------------------------*/
-{ 
-
-  /* check arguments */
-  if( !gen ) /* nothing to do */
-    return;
-
-  /* check input */
-  if ( gen->method != UNUR_METH_UTDR ) {
-    _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
-    return; }
-  COOKIE_CHECK(gen,CK_UTDR_GEN,RETURN_VOID);
-
-  /* we cannot use this generator object any more */
-  SAMPLE = NULL;   /* make sure to show up a programming error */
-
-  /* free memory */
-  _unur_generic_free(gen);
-
-} /* end of _unur_utdr_free() */
-
-/*****************************************************************************/
-/**  Auxilliary Routines                                                    **/
-/*****************************************************************************/
+#undef SMALL_VAL
 
 /*****************************************************************************/
 /**  Debugging utilities                                                    **/

@@ -1081,7 +1081,7 @@ _unur_srou_check_par( struct unur_gen *gen )
   }
 
   return UNUR_SUCCESS;
-} /* end of _unur_dari_check_par() */
+} /* end of _unur_srou_check_par() */
 
 /*---------------------------------------------------------------------------*/
 

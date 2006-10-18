@@ -95,7 +95,9 @@
       
       It is possible to change the parameters and the domain of the chosen 
       distribution and run unur_reinit() to reinitialize the generator object.
-      Notice, that if the PDF at the mode has been provided by a 
+      Notice, that derived parameters like the mode must also be (re-) set
+      if the parameters or the domain has be changed.
+      Moreover, if the PDF at the mode has been provided by a 
       unur_ssr_set_pdfatmode() call, additionally
       unur_ssr_chg_pdfatmode() must be used (otherwise this call is
       not necessary since then this figure is computed directly from

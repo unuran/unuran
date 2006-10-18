@@ -6,9 +6,6 @@ ninv.h:int unur_ninv_chg_pdfparams(UNUR_GEN *generator, double *params, int n_pa
 ###############################################################
 # update docu for reinit:
 
-( dari.h
-dsrou.h
-srou.h
 ssr.h
 tdr.h
 tdrgw.h
@@ -17,10 +14,6 @@ utdr.h
 ###############################################################
 # update reinit:
 
-( dari.h)
-( dsrou.h)
-( srou.h)
-( ssr.h)
 tdr.h
 tdrgw.h
 ( utdr.h)

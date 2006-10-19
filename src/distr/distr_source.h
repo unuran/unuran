@@ -114,7 +114,7 @@ double _unur_distr_cvec_eval_pdpdf_from_pdlogpdf( const double *x, int coord, st
 /*---------------------------------------------------------------------------*/
 /* generic creator for distribution objects                                  */
 
-inline struct unur_distr *_unur_distr_generic_new( void );
+struct unur_distr *_unur_distr_generic_new( void );
 
 /*---------------------------------------------------------------------------*/
 /* make clone of distribution objects                                        */

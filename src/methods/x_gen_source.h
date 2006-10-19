@@ -65,7 +65,7 @@ int _unur_sample_matr_error( struct unur_gen *gen, double *mat );
 /* create, copy and free parameter object                                    */
 
 /* create an empty parameter object with data structure of size 's'          */ 
-inline struct unur_par *_unur_par_new( size_t s );
+struct unur_par *_unur_par_new( size_t s );
 
 struct unur_par *_unur_par_clone( const struct unur_par *par );
 

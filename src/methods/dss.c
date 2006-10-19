@@ -38,7 +38,6 @@
  *   59 Temple Place, Suite 330, Boston, MA 02111-1307, USA                  *
  *                                                                           *
  *****************************************************************************
- *****************************************************************************
  *                                                                           *
  *   SUMMARY:                                                                *
  *   [1] Devroye, L. (1986): Non-Uniform Random Variate Generation, New-York *
@@ -79,6 +78,7 @@
 /*    bits 13-24 ... adaptive steps                                          */
 /*    bits 25-32 ... trace sampling                                          */
 
+#define DSS_DEBUG_REINIT        0x00000010u   /* print parameters after reinit  */
 #define DSS_DEBUG_PRINTVECTOR   0x00000100u
 
 /*---------------------------------------------------------------------------*/
@@ -95,14 +95,24 @@ static struct unur_gen *_unur_dss_init( struct unur_par *par );
 /* Initialize new generator.                                                 */
 /*---------------------------------------------------------------------------*/
 
+static int _unur_dss_reinit( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* Reinitialize generator.                                                   */
+/*---------------------------------------------------------------------------*/
+
 static struct unur_gen *_unur_dss_create( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 /* create new (almost empty) generator object.                               */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_dss_sample( struct unur_gen *gen );
+static int _unur_dss_check_par( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* sample from generator                                                     */
+/* Check parameters of given distribution and method                         */
+/*---------------------------------------------------------------------------*/
+
+static struct unur_gen *_unur_dss_clone( const struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* copy (clone) generator object.                                            */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_dss_free( struct unur_gen *gen);
@@ -110,9 +120,9 @@ static void _unur_dss_free( struct unur_gen *gen);
 /* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *_unur_dss_clone( const struct unur_gen *gen );
+static int _unur_dss_sample( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* copy (clone) generator object.                                            */
+/* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -121,7 +131,7 @@ static struct unur_gen *_unur_dss_clone( const struct unur_gen *gen );
 /* i.e., into the log file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_dss_debug_init( struct unur_par *par, struct unur_gen *gen );
+static void _unur_dss_debug_init( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed.                 */
 /*---------------------------------------------------------------------------*/
@@ -245,23 +255,53 @@ _unur_dss_init( struct unur_par *par )
   
   /* create a new empty generator object */
   gen = _unur_dss_create(par);
-  if (!gen) { _unur_par_free(par); return NULL; }
+  _unur_par_free(par);
+  if (!gen) return NULL;
   
   /* write info into log file */
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-  if (gen->debug) _unur_dss_debug_init(par,gen);
+  if (gen->debug) _unur_dss_debug_init(gen);
 #endif
-
-  /* free parameters */
-  _unur_par_free(par);
 
   return gen;
 } /* end of _unur_dss_init() */
 
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *
+int
+_unur_dss_reinit( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* re-initialize (existing) generator.                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  int rcode;
+
+  /* (re)set sampling routine */
+  SAMPLE = _unur_dss_getSAMPLE(gen);
+
+  /* check parameters */
+  if ( (rcode = _unur_dss_check_par(gen)) != UNUR_SUCCESS)
+    return rcode;
+
+#ifdef UNUR_ENABLE_LOGGING
+    /* write info into log file */
+  if (gen->debug & DSS_DEBUG_REINIT) _unur_dss_debug_init(gen);
+#endif
+
+  return UNUR_SUCCESS;
+} /* end of _unur_dss_reinit() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_gen *
 _unur_dss_create( struct unur_par *par )
      /*----------------------------------------------------------------------*/
      /* allocate memory for generator                                        */
@@ -294,11 +334,58 @@ _unur_dss_create( struct unur_par *par )
   SAMPLE = _unur_dss_getSAMPLE(gen);
   gen->destroy = _unur_dss_free;
   gen->clone = _unur_dss_clone;
+  gen->reinit = _unur_dss_reinit;
 
   /* return pointer to (almost empty) generator object */
   return gen;
 
 } /* end of _unur_dss_create() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_dss_check_par( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* check parameters of given distribution and method                    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  switch(gen->variant) {
+  case DSS_VARIANT_PV:
+    if (DISTR.pv != NULL) break;
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"PV");
+    return UNUR_ERR_DISTR_REQUIRED;
+
+  case DSS_VARIANT_PMF:
+    if (DISTR.pmf != NULL) break;
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"PMF");
+    return UNUR_ERR_DISTR_REQUIRED;
+
+  case DSS_VARIANT_CDF:
+    if (DISTR.cdf != NULL) return UNUR_SUCCESS;
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"CDF");
+    return UNUR_ERR_DISTR_REQUIRED;
+
+  default:
+    _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+    return UNUR_ERR_SHOULD_NOT_HAPPEN;
+  }
+
+  /* additionally check for required data: sum over PMF */
+  if (!(gen->distr->set & UNUR_DISTR_SET_PMFSUM))
+    if (unur_distr_discr_upd_pmfsum(gen->distr)!=UNUR_SUCCESS) {
+      _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"sum over PMF");
+      return UNUR_ERR_DISTR_REQUIRED;
+    }
+
+  return UNUR_SUCCESS;
+} /* end of _unur_dss_check_par() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -331,6 +418,36 @@ _unur_dss_clone( const struct unur_gen *gen )
 
 #undef CLONE
 } /* end of _unur_dss_clone() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_dss_free( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* deallocate generator object                                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{ 
+
+  /* check arguments */
+  if (!gen) /* nothing to do */
+    return;
+
+  /* check input */
+  if ( gen->method != UNUR_METH_DSS ) {
+    _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
+    return; }
+  COOKIE_CHECK(gen,CK_DSS_GEN,RETURN_VOID);
+
+  /* we cannot use this generator object any more */
+  SAMPLE = NULL;   /* make sure to show up a programming error */
+
+  /* free memory */
+  _unur_generic_free(gen);
+
+} /* end of _unur_dss_free() */
 
 /*****************************************************************************/
 
@@ -390,36 +507,6 @@ _unur_dss_sample( struct unur_gen *gen )
 } /* end of _unur_dss_sample() */
 
 /*****************************************************************************/
-
-void
-_unur_dss_free( struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* deallocate generator object                                          */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*----------------------------------------------------------------------*/
-{ 
-
-  /* check arguments */
-  if (!gen) /* nothing to do */
-    return;
-
-  /* check input */
-  if ( gen->method != UNUR_METH_DSS ) {
-    _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
-    return; }
-  COOKIE_CHECK(gen,CK_DSS_GEN,RETURN_VOID);
-
-  /* we cannot use this generator object any more */
-  SAMPLE = NULL;   /* make sure to show up a programming error */
-
-  /* free memory */
-  _unur_generic_free(gen);
-
-} /* end of _unur_dss_free() */
-
-/*****************************************************************************/
 /**  Auxilliary Routines                                                    **/
 /*****************************************************************************/
 
@@ -431,20 +518,18 @@ _unur_dss_free( struct unur_gen *gen )
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 
-static void
-_unur_dss_debug_init( struct unur_par *par, struct unur_gen *gen )
+void
+_unur_dss_debug_init( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* write info about generator into logfile                              */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   par ... pointer to parameter for building generator object         */
      /*   gen ... pointer to generator object                                */
      /*----------------------------------------------------------------------*/
 {
   FILE *log;
 
   /* check arguments */
-  CHECK_NULL(par,RETURN_VOID);  COOKIE_CHECK(par,CK_DSS_PAR,RETURN_VOID);
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_DSS_GEN,RETURN_VOID);
 
   log = unur_get_stream();

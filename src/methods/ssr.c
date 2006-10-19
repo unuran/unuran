@@ -784,8 +784,7 @@ _unur_ssr_reinit( struct unur_gen *gen )
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-  if (gen->debug & SSR_DEBUG_REINIT)
-    if (gen->debug) _unur_ssr_debug_init(gen,TRUE);
+  if (gen->debug & SSR_DEBUG_REINIT) _unur_ssr_debug_init(gen,TRUE);
 #endif
 
   return rcode;

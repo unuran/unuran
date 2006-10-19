@@ -701,8 +701,7 @@ _unur_dsrou_reinit( struct unur_gen *gen )
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-  if (gen->debug & DSROU_DEBUG_REINIT)
-    if (gen->debug) _unur_dsrou_debug_init(gen,TRUE);
+  if (gen->debug & DSROU_DEBUG_REINIT) _unur_dsrou_debug_init(gen,TRUE);
 #endif
 
   return UNUR_SUCCESS;

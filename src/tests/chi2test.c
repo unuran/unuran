@@ -961,12 +961,12 @@ _unur_test_chi2test( double *prob,
   classmin = (classmin > 0) ? classmin : CHI2_CLASSMIN_DEFAULT;
 
   /* compute sample size */
-  for( i=0; i<len; i++) 
+  for( samplesize=0., i=0; i<len; i++) 
     samplesize += observed[i];
-  
+
   /* sum of probabilities (if not uniform distribution) */
   if (prob != NULL) {
-    for( i=0; i<len; i++ )
+    for( probsum=0., i=0; i<len; i++ )
       probsum += prob[i];
     factor = samplesize/probsum;
   }
@@ -974,15 +974,19 @@ _unur_test_chi2test( double *prob,
     factor = ((double)samplesize)/len;
 
   /* compute chi^2 value */
-  for( i=0; i<len; i++ ) {
+  clexpd = 0.;
+  clobsd = 0;
+  classes = 0;
+  for( chi2=0., i=0; i<len; i++ ) {
     clexpd += (prob) ? prob[i]*factor : factor;  /* expected occurrences in this class */
     clobsd += observed[i];                       /* observed occurrences in this class */
 
     if (clexpd >= classmin || i == len-1) {
       /* number of expected occurrences is large enough or end of array */
+      if (clobsd <= 0 && clexpd <= 0.) break;
       chi2 += (clobsd-clexpd)*(clobsd-clexpd)/clexpd;
       if (verbose >= 2)
-  fprintf(out,"Class #%d:\tobserved %d\texpected %.2f\n",classes,clobsd,clexpd);
+	fprintf(out,"Class #%d:\tobserved %d\texpected %.2f\n",classes,clobsd,clexpd);
       clexpd = 0.;
       clobsd = 0;
       classes++;

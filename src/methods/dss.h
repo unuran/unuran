@@ -46,7 +46,7 @@
 
    =SPEED Set-up: fast, Sampling: very slow (linear in expectation)
 
-   =REINIT not implemented
+   =REINIT supported
 
    =REF [HLD04: Sect.3.1.1, Alg.3.1]
 
@@ -77,6 +77,9 @@
    =HOWTOUSE
       It works with a discrete distribution object with contains at
       least the PV, the PMF, or the CDF. 
+
+      It is possible to change the parameters and the domain of the chosen 
+      distribution and run unur_reinit() to reinitialize the generator object.
 
    =END
 */

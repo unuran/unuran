@@ -35,6 +35,11 @@
 #include "testunuran.h"
 
 /*---------------------------------------------------------------------------*/
+/* function prototypes for internal UNURAN functions                         */
+
+int _unur_isnan (const double x);
+
+/*---------------------------------------------------------------------------*/
 /* check whether unur_urng_reset() works                                     */
 
 static int 
@@ -46,14 +51,14 @@ cannot_compare_sequence ( FILE *LOG )
   return UNUR_SUCCESS; /* indicate as "not failed" for practical reasons */
 }
 
-#  define reset_sequence(urng) \
-     if (unur_urng_reset((urng)) != UNUR_SUCCESS) {return UNUR_SUCCESS;}
-#  define reset_sequence_warning(urng) \
-     if (unur_urng_reset((urng)) != UNUR_SUCCESS) {return cannot_compare_sequence(LOG);}
-#  define reset_sequence_par(urng,par) \
-     if (unur_urng_reset((urng)) != UNUR_SUCCESS) {if (par) free(par); return UNUR_SUCCESS;}
-#  define reset_sequence_par_warning(urng,par) \
-     if (unur_urng_reset((urng)) != UNUR_SUCCESS) {if (par) free(par); return cannot_compare_sequence(LOG);}
+#define reset_sequence(urng) \
+   if (unur_urng_reset((urng)) != UNUR_SUCCESS) {return UNUR_SUCCESS;}
+#define reset_sequence_warning(urng) \
+   if (unur_urng_reset((urng)) != UNUR_SUCCESS) {return cannot_compare_sequence(LOG);}
+#define reset_sequence_par(urng,par) \
+   if (unur_urng_reset((urng)) != UNUR_SUCCESS) {if (par) free(par); return UNUR_SUCCESS;}
+#define reset_sequence_par_warning(urng,par) \
+   if (unur_urng_reset((urng)) != UNUR_SUCCESS) {if (par) free(par); return cannot_compare_sequence(LOG);}
 
 /*---------------------------------------------------------------------------*/
 /* check for invalid NULL pointer, that should not happen in this program */
@@ -855,9 +860,14 @@ int print_pval( FILE *LOG, UNUR_GEN *gen, const UNUR_DISTR *distr, double pval, 
     
   }
 
-  if (pval >= 0.) {
+  if (pval < 0.) {
+    fprintf(LOG,"   setup failed\t\t");
+  }
+  else {
     fprintf(LOG,"   pval = %8.6f   ",pval);
-    l = -(int) ((pval_corrected > 1e-6) ? (log(pval_corrected) / M_LN10) : 6.);
+    l = _unur_isnan(pval_corrected) 
+      ? 10000
+      : -(int) ((pval_corrected > 1e-6) ? (log(pval_corrected) / M_LN10) : 6.);
     switch (l) {
     case 0:
       fprintf(LOG,"      "); break;
@@ -875,13 +885,14 @@ int print_pval( FILE *LOG, UNUR_GEN *gen, const UNUR_DISTR *distr, double pval, 
       fprintf(LOG,"######"); break;
     }
   }
-  else {
-    fprintf(LOG,"   setup failed\t\t");
-  }
   
   switch (todo) {
   case '+':
-    if (pval_corrected < PVAL_LIMIT) {
+    if (pval_corrected >= PVAL_LIMIT) {
+      fprintf(LOG,"\t ok");
+      printf("+");
+    }
+    else {
       failed = 1;
       if (trial > 1) {
 	fprintf(LOG,"\t Failed");
@@ -891,10 +902,6 @@ int print_pval( FILE *LOG, UNUR_GEN *gen, const UNUR_DISTR *distr, double pval, 
 	fprintf(LOG,"\t Try again");
 	printf("?");
       }
-    }
-    else {
-      fprintf(LOG,"\t ok");
-      printf("+");
     }
     break;
   case '0':
@@ -982,7 +989,6 @@ int run_validate_chi2( FILE *LOG, int line, UNUR_GEN *gen, const UNUR_DISTR *dis
 
   if (gen == NULL) {
     if (todo == '-') {
-/*       printf("0");  fflush(stdout); */
       print_pval(LOG,gen,distr,-0.5,10,todo);
       return UNUR_SUCCESS;
     }
@@ -1027,7 +1033,7 @@ int run_validate_chi2( FILE *LOG, int line, UNUR_GEN *gen, const UNUR_DISTR *dis
       exit (EXIT_FAILURE);
     }
 
-    if ( print_pval(LOG,gen,distr,pval,i,todo) )
+    if ( print_pval(LOG,gen,distr,pval,i,todo) != UNUR_SUCCESS )
       /* test failed */
       failed++;
     else

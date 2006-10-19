@@ -322,7 +322,7 @@ unur_distr_discr_make_pv( struct unur_distr *distr )
 {
   double *pv;          /* pointer to probability vector */
   int n_pv;            /* length of PV */
-  double cdf;          /* cumulated sum of PV */
+  double cdf, cdf_old; /* cumulated sum of PV */
   double thresh_cdf;   /* threshold for truncating PV */
   int valid;           /* whether cumputed PV is valid */
   int i;
@@ -352,9 +352,8 @@ unur_distr_discr_make_pv( struct unur_distr *distr )
       for (i=0; i<n_pv; i++)
 	pv[i] = _unur_discr_PMF(DISTR.domain[0]+i,distr);
     }
-    else if (DISTR.pmf) {
-      int cdf_old = 0.;
-      int cdf;
+    else if (DISTR.cdf) {
+      cdf_old = 0.;
       for (i=0; i<n_pv; i++) {
 	cdf = _unur_discr_CDF(DISTR.domain[0]+i,distr);
 	pv[i] = cdf - cdf_old;
@@ -387,7 +386,8 @@ unur_distr_discr_make_pv( struct unur_distr *distr )
     n_pv = 0;
     pv = NULL;
     valid = FALSE;  /* created PV is empty yet and not valid */
-    cdf = 0.;       /* cumulated sum of PV */
+    cdf = 0.;       /* cumulated sum of PV                   */
+    cdf_old = 0.;   /* cumulated sum of PV in last iteration */
     /* threshold for truncating PV */
     thresh_cdf = (distr->set & UNUR_DISTR_SET_PMFSUM) ? (1.-1.e-8)*DISTR.sum : INFINITY;
 
@@ -403,9 +403,8 @@ unur_distr_discr_make_pv( struct unur_distr *distr )
 	}
       }
       else if (DISTR.cdf) {
-	int cdf_old = 0.;
 	for (i=0; i<size_alloc; i++) {
-	  cdf = _unur_discr_CDF(DISTR.domain[0]+i,distr);
+	  cdf = _unur_discr_CDF(DISTR.domain[0]+n_pv,distr);
 	  pv[n_pv] = cdf - cdf_old;
 	  cdf_old = cdf;
 	  n_pv++;

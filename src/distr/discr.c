@@ -292,7 +292,7 @@ unur_distr_discr_set_pv( struct unur_distr *distr, const double *pv, int n_pv )
      (it is cheaper to do it when unur_init() is called */
 
   /* allocate memory for probability vector */
-  DISTR.pv = _unur_xmalloc( n_pv * sizeof(double) );
+  DISTR.pv = _unur_xrealloc( DISTR.pv, n_pv * sizeof(double) );
   if (!DISTR.pv) return UNUR_ERR_MALLOC;
 
   /* copy probability vector */

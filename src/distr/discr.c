@@ -269,8 +269,8 @@ unur_distr_discr_set_pv( struct unur_distr *distr, const double *pv, int n_pv )
   _unur_check_distr_object( distr, DISCR, UNUR_ERR_DISTR_INVALID );
 
   /* it is not possible to set a PV when a PMF is given. */
-  if (DISTR.pmf != NULL) {
-    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"PMF given, cannot set PV");
+  if (DISTR.pmf != NULL || DISTR.cdf != NULL) {
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"PMF/CDF given, cannot set PV");
     return UNUR_ERR_DISTR_SET;
   }
 
@@ -338,8 +338,9 @@ unur_distr_discr_make_pv( struct unur_distr *distr )
   }
 
   /* if there exists a PV, it has to be removed */
-  if (DISTR.pv != NULL)
-    free(DISTR.pv);
+  if (DISTR.pv != NULL) {
+    free(DISTR.pv); DISTR.n_pv = 0;
+  }
 
   /* compute PV */
 
@@ -522,10 +523,10 @@ unur_distr_discr_set_pmf( struct unur_distr *distr, UNUR_FUNCT_DISCR *pmf )
   _unur_check_NULL( distr->name, pmf, UNUR_ERR_NULL );
   _unur_check_distr_object( distr, DISCR, UNUR_ERR_DISTR_INVALID );
 
-  /* it is not possible to set a PMF when a PV is given. */
+  /* it is not possible to set both a PMF and a PV */
   if (DISTR.pv != NULL) {
-    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"PV given, cannot set PMF");
-    return UNUR_ERR_DISTR_SET;
+    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"delete exisiting PV");
+    free(DISTR.pv); DISTR.n_pv = 0;
   }
 
   /* we do not allow overwriting a PMF */
@@ -564,6 +565,12 @@ unur_distr_discr_set_cdf( struct unur_distr *distr, UNUR_FUNCT_DISCR *cdf )
   _unur_check_NULL( distr->name, cdf, UNUR_ERR_NULL );
   _unur_check_distr_object( distr, DISCR, UNUR_ERR_DISTR_INVALID );
   
+  /* it is not possible to set both a CDF and a PV */
+  if (DISTR.pv != NULL) {
+    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"delete exisiting PV");
+    free(DISTR.pv); DISTR.n_pv = 0;
+  }
+
   /* we do not allow overwriting a CDF */
   if (DISTR.cdf != NULL) {
     _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of CDF not allowed");

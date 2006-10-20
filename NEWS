@@ -1,5 +1,21 @@
 Version 0.8.0: October 2006
 
+	* String API:
+
+	 - New functions unur_makegen_ssu() and unur_makegen_dsu()
+	   to allow disribution object, generation method and 
+          uniform random number generator as separate arguments.
+
+	 - the keyword "urng" is deprecated now and will be removed
+          in the next release.
+
+	* Distributions:
+
+ 	 - DISCR:
+          now unur_distr_discr_set_pmf() and unur_distr_discr_set_cdf()
+	   can be used after a unur_distr_discr_set_pv() call.
+	   However, the probability vector is then removed.
+
 	* Methods:
 
         - new method ITDR (Inverse Transformed Density Rejection)

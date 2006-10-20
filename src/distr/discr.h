@@ -127,14 +127,15 @@ int unur_distr_discr_set_pv( UNUR_DISTR *distribution, const double *pv, int n_p
    left boundary + @var{n_pv} exceeds the range of integers, 
    then the call fails. 
 
-   Notice that it is not possible to set both a PV and a PMF.
-   (E.g., it is not possible to set a PV for a @var{distribution} from
-   UNURAN library of standard distributions.)
+   Notice that it is not possible to set both a PV and a PMF or CDF.
+   If the PMF or CDF is set first one cannot set the PV.
+   If the PMF or CDF is set first after a PV is set, the latter is 
+   removed (and recomputed using unur_distr_discr_make_pv() when required).
 */
 
 int unur_distr_discr_make_pv( UNUR_DISTR *distribution );
 /* 
-   Compute a PV when a PMF is given. However, when the
+   Compute a PV when a PMF or CDF is given. However, when the
    domain is not given or is too large and the sum over the PMF is given
    then the (right) tail of the @var{distribution} is chopped off such that
    the probability for the tail region is less than 1.e-8.
@@ -187,8 +188,10 @@ int unur_distr_discr_set_cdf( UNUR_DISTR *distribution, UNUR_FUNCT_DISCR *cdf );
    CDF is set it cannot be overwritten. A new distribution object
    has to be used instead.
 
-   Notice that it not possible to set both a PV and a PMF, i.e. it is not
-   possible to use this call after a unur_distr_discr_set_pv() call.
+   Notice that it is not possible to set both a PV and a PMF or CDF.
+   If the PMF or CDF is set first one cannot set the PV.
+   If the PMF or CDF is set first after a PV is set, the latter is 
+   removed (and recomputed using unur_distr_discr_make_pv() when required).
 */
 
 

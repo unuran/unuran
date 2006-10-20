@@ -49,6 +49,7 @@ struct unur_dau_gen {
   int     urn_size;    /* size of table for alias-urn method                 */
   double *qx;          /* pointer to cut points for strips                   */
   int    *jx;          /* pointer to donor                                   */
+  double  urn_factor;  /* relative length of table for alias-urn method      */
 };
 
 /*---------------------------------------------------------------------------*/

@@ -144,14 +144,19 @@ static struct unur_gen *_unur_dau_init( struct unur_par *par );
 /* Initialize new generator.                                                 */
 /*---------------------------------------------------------------------------*/
 
+static int _unur_dau_reinit( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* Reinitialize generator.                                                   */
+/*---------------------------------------------------------------------------*/
+
 static struct unur_gen *_unur_dau_create( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 /* create new (almost empty) generator object.                               */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_dau_sample( struct unur_gen *gen );
+static struct unur_gen *_unur_dau_clone( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* sample from generator                                                     */
+/* copy (clone) generator object.                                            */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_dau_free( struct unur_gen *gen);
@@ -159,9 +164,9 @@ static void _unur_dau_free( struct unur_gen *gen);
 /* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *_unur_dau_clone( const struct unur_gen *gen );
+static int _unur_dau_sample( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* copy (clone) generator object.                                            */
+/* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -170,7 +175,7 @@ static struct unur_gen *_unur_dau_clone( const struct unur_gen *gen );
 /* i.e., into the log file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_dau_debug_init( struct unur_par *par, struct unur_gen *gen );
+static void _unur_dau_debug_init( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed.                 */
 /*---------------------------------------------------------------------------*/
@@ -341,7 +346,8 @@ _unur_dau_init( struct unur_par *par )
   
   /* create a new empty generator object */
   gen = _unur_dau_create(par);
-  if (!gen) { _unur_par_free(par); return NULL; }
+  _unur_par_free(par);
+  if (!gen) return NULL;
 
   /* probability vector */
   pv = DISTR.pv;
@@ -353,8 +359,7 @@ _unur_dau_init( struct unur_par *par )
     /* ... and check probability vector */
     if (pv[i] < 0.) {
       _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"probability < 0");
-      _unur_par_free(par); _unur_dau_free(gen);
-      return NULL;
+      _unur_dau_free(gen); return NULL;
     }
   }
 
@@ -392,7 +397,7 @@ _unur_dau_init( struct unur_par *par )
     /* this must not happen:
        no rich strips found for Robin Hood algorithm. */
     _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    _unur_dau_free(gen); _unur_par_free(par); free(begin);
+    _unur_dau_free(gen); free(begin);
     return NULL;
   }
   
@@ -440,15 +445,48 @@ _unur_dau_init( struct unur_par *par )
   /* write info into log file */
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-  if (gen->debug) _unur_dau_debug_init(par,gen);
+  if (gen->debug) _unur_dau_debug_init(gen);
 #endif
 
-  /* free parameters */
-  _unur_par_free(par);
-  
   return gen;
 
 } /* end of _unur_dau_init() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_dau_reinit( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* re-initialize (existing) generator.                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  int rcode;
+
+  /* (re)set sampling routine */
+  SAMPLE = _unur_dau_getSAMPLE(gen);
+
+/*   /\* check parameters *\/ */
+/*   if ( (result = _unur_dau_check_par(gen)) != UNUR_SUCCESS) */
+/*     return result; */
+
+/*   /\* compute universal bounding rectangle *\/ */
+/*   if ( (result = _unur_dau_rectangle(gen)) != UNUR_SUCCESS) */
+/*     return result; */
+
+/* #ifdef UNUR_ENABLE_LOGGING */
+/*   /\* write info into log file *\/ */
+/*   if (gen->debug & DAU_DEBUG_REINIT) _unur_dau_debug_init(gen,TRUE); */
+/* #endif */
+
+  return UNUR_SUCCESS;
+} /* end of _unur_dau_reinit() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -478,6 +516,18 @@ _unur_dau_create( struct unur_par *par)
   /* magic cookies */
   COOKIE_SET(gen,CK_DAU_GEN);
 
+  /* set generator identifier */
+  gen->genid = _unur_set_genid(GENTYPE);
+
+  /* routines for sampling and destroying generator */
+  SAMPLE = _unur_dau_getSAMPLE(gen);
+  gen->destroy = _unur_dau_free;
+  gen->clone = _unur_dau_clone;
+
+  /* copy parameters */
+  GEN->urn_factor = PAR->urn_factor; /* relative length of table */
+
+
   /* we need a PV */
   if (DISTR.pv == NULL) {
     /* try to compute PV */
@@ -489,19 +539,11 @@ _unur_dau_create( struct unur_par *par)
     }
   }
 
-  /* set generator identifier */
-  gen->genid = _unur_set_genid(GENTYPE);
-
-  /* routines for sampling and destroying generator */
-  SAMPLE = _unur_dau_getSAMPLE(gen);
-  gen->destroy = _unur_dau_free;
-  gen->clone = _unur_dau_clone;
-
   /* copy some parameters into generator object */
   GEN->len = DISTR.n_pv;             /* length of probability vector          */
 
   /* size of table */
-  GEN->urn_size = (int)(GEN->len * PAR->urn_factor);
+  GEN->urn_size = (int)(GEN->len * GEN->urn_factor);
   if (GEN->urn_size < GEN->len)
     /* do not use a table that is smaller then length of probability vector */
     GEN->urn_size = GEN->len;
@@ -553,6 +595,39 @@ _unur_dau_clone( const struct unur_gen *gen )
 #undef CLONE
 } /* end of _unur_dau_clone() */
 
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_dau_free( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* deallocate generator object                                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{ 
+  /* check arguments */
+  if( !gen ) /* nothing to do */
+    return;
+
+  /* check input */
+  if ( gen->method != UNUR_METH_DAU ) {
+    _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
+    return; }
+  COOKIE_CHECK(gen,CK_DAU_GEN,RETURN_VOID);
+
+  /* we cannot use this generator object any more */
+  SAMPLE = NULL;   /* make sure to show up a programming error */
+
+  /* free two auxiliary tables */
+  if (GEN->jx) free(GEN->jx);
+  if (GEN->qx) free(GEN->qx);
+
+  /* free memory */
+  _unur_generic_free(gen);
+
+} /* end of _unur_dau_free() */
+
 /*****************************************************************************/
 
 int
@@ -592,42 +667,8 @@ _unur_dau_sample( struct unur_gen *gen )
 } /* end of _unur_dau_sample() */
 
 /*****************************************************************************/
-
-void
-_unur_dau_free( struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* deallocate generator object                                          */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*----------------------------------------------------------------------*/
-{ 
-  /* check arguments */
-  if( !gen ) /* nothing to do */
-    return;
-
-  /* check input */
-  if ( gen->method != UNUR_METH_DAU ) {
-    _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
-    return; }
-  COOKIE_CHECK(gen,CK_DAU_GEN,RETURN_VOID);
-
-  /* we cannot use this generator object any more */
-  SAMPLE = NULL;   /* make sure to show up a programming error */
-
-  /* free two auxiliary tables */
-  if (GEN->jx) free(GEN->jx);
-  if (GEN->qx) free(GEN->qx);
-
-  /* free memory */
-  _unur_generic_free(gen);
-
-} /* end of _unur_dau_free() */
-
-/*****************************************************************************/
 /**  Auxilliary Routines                                                    **/
 /*****************************************************************************/
-
 
 /*****************************************************************************/
 /**  Debugging utilities                                                    **/
@@ -638,19 +679,17 @@ _unur_dau_free( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 static void
-_unur_dau_debug_init( struct unur_par *par, struct unur_gen *gen )
+_unur_dau_debug_init( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* write info about generator into logfile                              */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   par ... pointer to parameter for building generator object         */
      /*   gen ... pointer to generator object                                */
      /*----------------------------------------------------------------------*/
 {
   FILE *log;
 
   /* check arguments */
-  CHECK_NULL(par,RETURN_VOID);  COOKIE_CHECK(par,CK_DAU_PAR,RETURN_VOID);
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_DAU_GEN,RETURN_VOID);
 
   log = unur_get_stream();
@@ -667,8 +706,8 @@ _unur_dau_debug_init( struct unur_par *par, struct unur_gen *gen )
 
   fprintf(log,"%s: length of probability vector = %d\n",gen->genid,GEN->len);
   fprintf(log,"%s: size of urn table = %d   (rel. = %g%%",
-	  gen->genid,GEN->urn_size,100.*PAR->urn_factor);
-  _unur_print_if_default(par,DAU_SET_URNFACTOR);
+	  gen->genid,GEN->urn_size,100.*GEN->urn_factor);
+  _unur_print_if_default(gen,DAU_SET_URNFACTOR);
   if (GEN->urn_size == GEN->len)
     fprintf(log,")   (--> alias method)\n");
   else

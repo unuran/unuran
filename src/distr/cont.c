@@ -82,6 +82,11 @@ static int _unur_distr_cont_find_mode( struct unur_distr *distr );
 /* find mode of unimodal univariate PDF numerically                          */
 /*---------------------------------------------------------------------------*/
 
+static double _unur_aux_pdf(double x, void *p);
+/*---------------------------------------------------------------------------*/
+/* Auxiliary function used in the computation of the mode                    */
+/*---------------------------------------------------------------------------*/
+
 /*****************************************************************************/
 /**                                                                         **/
 /** univariate continuous distributions                                     **/

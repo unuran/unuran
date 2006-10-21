@@ -1322,7 +1322,7 @@ unur_distr_cvec_set_rankcorr( struct unur_distr *distr, const double *rankcorr )
     
     /* check rankcorriance matrix: diagonal entries == 1 */
     for (i=0; i<dim*dim; i+= dim+1) {
-      if (!_unur_FP_same(rankcorr[i],1)) {
+      if (!_unur_FP_same(rankcorr[i],1.)) {
 	_unur_error(distr->name ,UNUR_ERR_DISTR_DOMAIN,"diagonals != 1");
 	return UNUR_ERR_DISTR_DOMAIN;
       }

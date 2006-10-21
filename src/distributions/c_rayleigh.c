@@ -68,7 +68,7 @@ static const char distr_name[] =  "rayleigh";
 /* function prototypes                                                       */
 static double _unur_pdf_rayleigh( double x, const UNUR_DISTR *distr );
 static double _unur_dpdf_rayleigh( double x, const UNUR_DISTR *distr );
-static double _unur_pdf_rayleigh( double x, const UNUR_DISTR *distr );
+static double _unur_cdf_rayleigh( double x, const UNUR_DISTR *distr );
 
 static int _unur_upd_mode_rayleigh( UNUR_DISTR *distr );
 static int _unur_upd_area_rayleigh( UNUR_DISTR *distr );

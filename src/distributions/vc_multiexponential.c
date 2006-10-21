@@ -103,6 +103,8 @@ static double _unur_pdf_multiexponential( const double *x, UNUR_DISTR *distr );
 static double _unur_logpdf_multiexponential( const double *x, UNUR_DISTR *distr );
 static int _unur_dlogpdf_multiexponential( double *result, const double *x, UNUR_DISTR *distr );
 
+static int _unur_set_params_multiexponential( UNUR_DISTR *distr, const double *sigma, const double *theta );
+
 /*---------------------------------------------------------------------------*/
 
 double

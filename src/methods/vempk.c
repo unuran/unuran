@@ -488,7 +488,7 @@ _unur_vempk_init( struct unur_par *par )
   /* compute bandwith:
      Silverman (1986), p.86, formular 4.14 for normal kernel */
   GEN->hopt = (exp((1./(GEN->dim+4.))*log(4./(GEN->dim+2.)))*
-	      exp(-1./(GEN->dim+4.) *log(GEN->n_observ)));
+	      exp(-1./(GEN->dim+4.) *log((double)GEN->n_observ)));
 
   /* hopt is optimal for the multi-normal distribution
      as it is oversmoothing especially multimodal distributions */

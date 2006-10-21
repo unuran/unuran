@@ -29,7 +29,6 @@
  *   59 Temple Place, Suite 330, Boston, MA 02111-1307, USA                  *
  *                                                                           *
  *****************************************************************************
- *****************************************************************************
  *                                                                           *
  *   REFERENCES:                                                             *
  *   [1] Spicer C.C. (1972): Algorithm AS 52: Calculation of Power Sums of   *
@@ -121,7 +120,7 @@ unur_test_moments( UNUR_GEN *gen, double *moments, int n_moments, int samplesize
     /* which type of distribution */
     switch (gen->method & UNUR_MASK_TYPE) {
     case UNUR_METH_DISCR:
-      x[0] = (double)(_unur_sample_discr(gen)); break;
+      x[0] = _unur_sample_discr(gen); break;
     case UNUR_METH_CONT:
       x[0] = _unur_sample_cont(gen); break;
     case UNUR_METH_VEC:

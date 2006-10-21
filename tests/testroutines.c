@@ -87,7 +87,7 @@ void abort_if_NULL( FILE *LOG, int line, const void *ptr )
 /*---------------------------------------------------------------------------*/
 /* compare error code */
 
-int check_errorcode( FILE *LOG, int line, unsigned cherrno )
+int check_errorcode( FILE *LOG, int line, int cherrno )
 {
   fprintf(LOG,"line %4d: Error code ...\t\t",line);
 

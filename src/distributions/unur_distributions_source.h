@@ -466,7 +466,7 @@ int _unur_stdgen_sample_poisson_pdtabl( UNUR_GEN *generator );
 int _unur_stdgen_sample_poisson_pdac( UNUR_GEN *generator );
 
 /* Tabulated Inversion combined with Patchwork Rejection                     */
-int _unur_stdgen_sample_poisson_pdtabl( UNUR_GEN *generator );
+/* int _unur_stdgen_sample_poisson_pdtabl( UNUR_GEN *generator ); */
 int _unur_stdgen_sample_poisson_pprsc( UNUR_GEN *generator );
 
 

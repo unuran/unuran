@@ -172,7 +172,7 @@ _unur_util_find_max( struct unur_funct_generic fs, /* function structure */
   step = pow(x[1]-max_l, 1.0/MAX_SRCH);
   i = 0;  
   while (i <= MAX_SRCH && _unur_FP_same(0.0, fx[1]) ){
-    x[1]  = max - pow(step, i);
+    x[1]  = max - pow(step, (double)i);
     fx[1] = fs.f(x[1], fs.params);
     i++;
   }
@@ -182,7 +182,7 @@ _unur_util_find_max( struct unur_funct_generic fs, /* function structure */
     step = pow(max_u-x[1], 1.0/MAX_SRCH);
     i = 0;
     while (i <= MAX_SRCH && _unur_FP_same(0.0, fx[1]) ){
-      x[1]  = max + pow(step, i);
+      x[1]  = max + pow(step, (double)i);
       fx[1] = fs.f(x[1], fs.params);
       i++;
     }

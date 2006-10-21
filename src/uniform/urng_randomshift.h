@@ -106,7 +106,7 @@
 
 /*---------------------------------------------------------------------------*/
 
-UNUR_URNG *unur_urng_randomshift_new( UNUR_URNG *qrng, UNUR_URNG *srng, unsigned int dim );
+UNUR_URNG *unur_urng_randomshift_new( UNUR_URNG *qrng, UNUR_URNG *srng, int dim );
 /* 
    Make object for URNG with randomly shifted point sets.
    @var{qrng} is a generated that generates point sets of dimension @var{dim}.

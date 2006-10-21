@@ -29,7 +29,6 @@
  *   59 Temple Place, Suite 330, Boston, MA 02111-1307, USA                  *
  *                                                                           *
  *****************************************************************************
- *****************************************************************************
  *                                                                           *
  *   REFERENCES:                                                             *
  *   [1] R. Jain, I. Chlamtac (1985): The P^2 Algorithm for Dynamic          *
@@ -108,7 +107,7 @@ unur_test_quartiles( UNUR_GEN *gen, double *q0 ,double *q1, double *q2, double *
     /* which type of distribution */
     switch (gen->method & UNUR_MASK_TYPE) {
     case UNUR_METH_DISCR:
-      x = (double)(_unur_sample_discr(gen)); break;
+      x = _unur_sample_discr(gen); break;
     case UNUR_METH_CONT:
       x = _unur_sample_cont(gen); break;
     }

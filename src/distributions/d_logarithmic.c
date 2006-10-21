@@ -88,7 +88,7 @@ static int _unur_set_params_logarithmic( UNUR_DISTR *distr, const double *params
 double
 _unur_pmf_logarithmic(int k, const UNUR_DISTR *distr)
 { 
-  return ((k<1) ? 0. : pow( DISTR.theta, k ) / k * NORMCONSTANT);
+  return ((k<1) ? 0. : pow( DISTR.theta, (double)k ) / k * NORMCONSTANT);
 } /* end of _unur_pmf_logarithmic() */
 
 /*---------------------------------------------------------------------------*/

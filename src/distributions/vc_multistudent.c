@@ -88,6 +88,8 @@ static double _unur_logpdf_multistudent( const double *x, UNUR_DISTR *distr );
 static int _unur_dlogpdf_multistudent( double *result, const double *x, UNUR_DISTR *distr );
 static double _unur_pdlogpdf_multistudent( const double *x, int coord, UNUR_DISTR *distr );
 
+static int _unur_set_params_multistudent( UNUR_DISTR *distr, const double *params, int n_params );
+
 /*---------------------------------------------------------------------------*/
 
 double

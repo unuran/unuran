@@ -122,13 +122,13 @@ unur_test_correlation( UNUR_GEN *genx, UNUR_GEN *geny, int samplesize, int verbo
     /* which type of distribution */
     switch (genx->method & UNUR_MASK_TYPE) {
     case UNUR_METH_DISCR:
-      x = (double)(_unur_sample_discr(genx)); break;
+      x = _unur_sample_discr(genx); break;
     case UNUR_METH_CONT:
       x = _unur_sample_cont(genx); break;
     }
     switch (geny->method & UNUR_MASK_TYPE) {
     case UNUR_METH_DISCR:
-      y = (double)(_unur_sample_discr(geny)); break;
+      y = _unur_sample_discr(geny); break;
     case UNUR_METH_CONT:
       y = _unur_sample_cont(geny); break;
     }

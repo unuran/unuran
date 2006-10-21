@@ -41,12 +41,11 @@
 /*---------------------------------------------------------------------------*/
 
 static FILE *_unur_logfile_open( const char *filename );  
-inline FILE *unur_get_stream( void );
 
 /*---------------------------------------------------------------------------*/
 
 static FILE *unur_stream = NULL;
-const static char GENID_UNKNOWN[] = "UNURAN";
+static const char GENID_UNKNOWN[] = "UNURAN";
 
 /*---------------------------------------------------------------------------*/
 
@@ -154,7 +153,7 @@ unur_set_stream( FILE *new_stream )
 
 /*---------------------------------------------------------------------------*/
 
-inline FILE * 
+FILE * 
 unur_get_stream( void )
      /*----------------------------------------------------------------------*/
      /* get output stream for (error) messages                               */

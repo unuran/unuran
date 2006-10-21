@@ -12,7 +12,7 @@
 
 /* ------------------------------------------------------------- */
 
-int main()
+int main(void)
 {
   UNUR_DISTR *distr;    /* distribution object */
   char *pdfstr;

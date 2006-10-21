@@ -834,7 +834,7 @@ _unur_empk_init( struct unur_par *par )
   if (GEN->stddev_observ < sigma) sigma = GEN->stddev_observ;
 
   /* compute band width (also called window width) */
-  GEN->bwidth_opt = PAR->alpha * PAR->beta * sigma / exp(0.2 * log(GEN->n_observ));
+  GEN->bwidth_opt = PAR->alpha * PAR->beta * sigma / exp(0.2 * log((double)GEN->n_observ));
   GEN->bwidth = PAR->smoothing * GEN->bwidth_opt;
 
   /* compute constant for variance corrected version */

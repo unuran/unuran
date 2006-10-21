@@ -135,7 +135,7 @@ static int _unur_tdrgw_starting_intervals( struct unur_gen *gen );
 /* compute intervals from given starting construction points.                */
 /*---------------------------------------------------------------------------*/
 
-inline static int _unur_tdrgw_interval_parameter( struct unur_gen *gen, struct unur_tdrgw_interval *iv );
+static int _unur_tdrgw_interval_parameter( struct unur_gen *gen, struct unur_tdrgw_interval *iv );
 /*---------------------------------------------------------------------------*/
 /* compute all necessary data for interval.                                  */
 /*---------------------------------------------------------------------------*/

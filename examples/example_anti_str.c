@@ -31,7 +31,7 @@
 
 /* ------------------------------------------------------------- */
 
-int main()
+int main(void)
 {
 #if UNUR_URNG_TYPE == UNUR_URNG_GENERIC && defined(UNURAN_HAS_PRNG)
 

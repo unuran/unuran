@@ -38,11 +38,12 @@
  *****************************************************************************/
 					 
 #include <unur_source.h>
+#include <matrix_source.h>
 
 /* ---------------------------------------------------------------------------- */
 
-const static double EPS = DBL_EPSILON;
-const static double EPS2 = (DBL_EPSILON * DBL_EPSILON);
+static const double EPS = DBL_EPSILON;
+static const double EPS2 = (DBL_EPSILON * DBL_EPSILON);
 
 /* ---------------------------------------------------------------------------- */
 
@@ -184,10 +185,10 @@ _unur_eigensystem_house(int dim, double *A, double *d, double *e, double *e2)
         s += A[idx1(i,k)]*A[idx1(i,k)];
       }
       e2[k-1]=s;
-      if (s == 0.) e[k-1]=0;
+      if (s == 0.) e[k-1]=0.;
       else {
         f = A[idx1(k1,k)];
-        ek = sqrt(s) * ((f <= 0) ? 1 : -1);
+        ek = sqrt(s) * ((f <= 0.) ? 1. : -1.);
         A[idx1(k1,k)] = f-ek;
 	h = s-f*ek;
 
@@ -396,7 +397,7 @@ _unur_eigensystem_trinv(int dim, double *a, double *b, double *g, double *c,
   int i,j,k,l=0;
   int close;
   
-  double epsc = 1e-5;
+  double epsc = 1.e-5;
   double reps, epsa, f, t, pi, pidim;
 
   reps = _unur_max(epsc, 16000.*EPS);

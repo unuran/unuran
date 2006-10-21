@@ -124,7 +124,7 @@ _unur_string_appendtext ( struct unur_string *string, const char *text )
      /*   text   ... char array with text to be appended                     */
      /*----------------------------------------------------------------------*/
 {
-  size_t len;
+  int len;
 
   /* length of text string */
   len = strlen(text);

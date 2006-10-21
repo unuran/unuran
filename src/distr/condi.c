@@ -41,6 +41,7 @@
 #include <utils/matrix_source.h>
 #include "distr.h"
 #include "cont.h"
+#include "condi.h"
 #include "distr_source.h"
 
 /*---------------------------------------------------------------------------*/

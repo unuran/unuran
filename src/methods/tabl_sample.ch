@@ -95,7 +95,7 @@ _unur_tabl_rh_sample( struct unur_gen *gen )
 
     /* being above squeeze is bad. split interval. */
     if (GEN->n_ivs < GEN->max_ivs) {
-      if ( (_unur_tabl_improve_hat( gen, iv, X, fx,(gen->variant & TABL_VARMASK_SPLIT)) != UNUR_SUCCESS)
+      if ( (_unur_tabl_improve_hat( gen, iv, X, fx ) != UNUR_SUCCESS)
 	   && (gen->variant & TABL_VARFLAG_PEDANTIC) )
 	return UNUR_INFINITY;
     }
@@ -181,7 +181,7 @@ _unur_tabl_rh_sample_check( struct unur_gen *gen )
 
     /* being above squeeze is bad. split interval. */
     if (GEN->n_ivs < GEN->max_ivs) {
-      if ( (_unur_tabl_improve_hat( gen, iv, X, fx,(gen->variant & TABL_VARMASK_SPLIT)) != UNUR_SUCCESS)
+      if ( (_unur_tabl_improve_hat( gen, iv, X, fx ) != UNUR_SUCCESS)
 	   && (gen->variant & TABL_VARFLAG_PEDANTIC) )
 	return UNUR_INFINITY;
     }
@@ -253,7 +253,7 @@ _unur_tabl_ia_sample( struct unur_gen *gen )
 
       /* being above squeeze is bad. split interval. */
       if (GEN->n_ivs < GEN->max_ivs) {
-	if ( (_unur_tabl_improve_hat( gen, iv, X, fx,(gen->variant & TABL_VARMASK_SPLIT)) != UNUR_SUCCESS)
+	if ( (_unur_tabl_improve_hat( gen, iv, X, fx ) != UNUR_SUCCESS)
 	     && (gen->variant & TABL_VARFLAG_PEDANTIC) )
 	  return UNUR_INFINITY;
       }
@@ -334,7 +334,7 @@ _unur_tabl_ia_sample_check( struct unur_gen *gen )
 
       /* being above squeeze is bad. split interval. */
       if (GEN->n_ivs < GEN->max_ivs) {
-	if ( (_unur_tabl_improve_hat( gen, iv, X, fx,(gen->variant & TABL_VARMASK_SPLIT)) != UNUR_SUCCESS)
+	if ( (_unur_tabl_improve_hat( gen, iv, X, fx ) != UNUR_SUCCESS)
 	     && (gen->variant & TABL_VARFLAG_PEDANTIC) )
 	  return UNUR_INFINITY;
       }
@@ -351,7 +351,7 @@ _unur_tabl_ia_sample_check( struct unur_gen *gen )
 
 int
 _unur_tabl_improve_hat( struct unur_gen *gen, struct unur_tabl_interval *iv,
-			double x, double fx, unsigned split_mode )
+			double x, double fx)
      /*----------------------------------------------------------------------*/
      /* improve hat function and by splitting interval                       */
      /*                                                                      */
@@ -360,10 +360,6 @@ _unur_tabl_improve_hat( struct unur_gen *gen, struct unur_tabl_interval *iv,
      /*   iv         ... pointer to interval that has to be split            */
      /*   x          ... splitting point                                     */
      /*   fx         ... value of PDF at splitting point                     */
-     /*   split_mode ... how to split interval                               */
-     /*                  TABL_VARFLAG_SPLIT_POINT: split at given point x    */
-     /*                  TABL_VARFLAG_SPLIT_MEAN:  at mean point of interval */
-     /*                  TABL_VARFLAG_SPLIT_ARC:   at arc mean point         */
      /*                                                                      */
      /* return:                                                              */
      /*   UNUR_SUCCESS    ... improving hat successful                       */

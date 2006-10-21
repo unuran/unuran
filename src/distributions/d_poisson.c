@@ -93,7 +93,7 @@ double
 _unur_cdf_poisson(int k, const UNUR_DISTR *distr)
 { 
   if (k>=0)
-    return (1.-_unur_sf_incomplete_gamma(DISTR.theta,k+1));
+    return (1.-_unur_sf_incomplete_gamma(DISTR.theta,k+1.));
   else
     return 0.;
 } /* end of _unur_cdf_poisson() */

@@ -970,7 +970,7 @@ _unur_dari_sample( struct unur_gen *gen )
   double U, h;
   double X = 0.;
   int k,i;
-  const static int sign[2] = {-1,1};
+  static const int sign[2] = {-1,1};
 
   /* check arguments */
   CHECK_NULL(gen,INT_MAX);  COOKIE_CHECK(gen,CK_DARI_GEN,INT_MAX);
@@ -1058,7 +1058,7 @@ _unur_dari_sample_check( struct unur_gen *gen )
   double X = 0.;
   double hkm05;
   int k,i;
-  const static int sign[2] = {-1,1};
+  static const int sign[2] = {-1,1};
   
   /* check arguments */
   CHECK_NULL(gen,INT_MAX);  COOKIE_CHECK(gen,CK_DARI_GEN,INT_MAX);

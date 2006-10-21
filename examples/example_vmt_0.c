@@ -13,7 +13,7 @@
 
 #define dim (3)
 
-int main()
+int main(void)
 {
   int    i;
   double X[dim];

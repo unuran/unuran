@@ -464,8 +464,8 @@ static int _unur_tdr_ps_dars( struct unur_gen *gen );
 /* run derandomized adaptive rejection sampling.                             */
 /*---------------------------------------------------------------------------*/
 
-inline static int _unur_tdr_gw_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval *iv );
-inline static int _unur_tdr_ps_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval *iv );
+static int _unur_tdr_gw_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval *iv );
+static int _unur_tdr_ps_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval *iv );
 /*---------------------------------------------------------------------------*/
 /* compute all necessary data for interval.                                  */
 /*---------------------------------------------------------------------------*/

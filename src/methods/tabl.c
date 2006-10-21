@@ -214,7 +214,7 @@ _unur_tabl_split_interval( struct unur_gen *gen, struct unur_tabl_interval *iv,
 
 static int
 _unur_tabl_improve_hat( struct unur_gen *gen, struct unur_tabl_interval *iv, 
-			double x, double fx, unsigned split_mode );
+			double x, double fx );
 /*---------------------------------------------------------------------------*/
 /* improve hat function by splitting interval                                */
 /*---------------------------------------------------------------------------*/

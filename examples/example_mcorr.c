@@ -13,7 +13,7 @@
 
 #define dim (4)
 
-int main()
+int main(void)
 {
   int    i,j;
   double M[dim*dim];

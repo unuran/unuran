@@ -914,7 +914,7 @@ _unur_dsrou_sample( struct unur_gen *gen )
     U *= (V<0.) ? GEN->ul : GEN->ur;
 
     /* ratio */
-    I = (int)(floor(V/U)) + DISTR.mode;
+    I = floor(V/U) + DISTR.mode;
 
     /* inside domain ? */
     if ( (I < DISTR.BD_LEFT) || (I > DISTR.BD_RIGHT) )
@@ -959,7 +959,7 @@ _unur_dsrou_sample_check( struct unur_gen *gen )
     U *= (V<0.) ? GEN->ul : GEN->ur;
 
     /* ratios */
-    I = (int)(floor(V/U)) + DISTR.mode;
+    I = floor(V/U) + DISTR.mode;
 
     /* inside domain ? */
     if ( (I < DISTR.BD_LEFT) || (I > DISTR.BD_RIGHT) )

@@ -61,8 +61,8 @@ struct unur_urng_randomshift {
   UNUR_URNG *srng;   /* generator for shift vector */
   double *shift;     /* shift vector */
   double *X;         /* working array for storing points */
-  unsigned dim;      /* dimension for QRNG         */
-  unsigned n;        /* current coordinate         */
+  int dim;           /* dimension for QRNG         */
+  int n;             /* current coordinate         */
 };
 
 /*---------------------------------------------------------------------------*/
@@ -73,7 +73,7 @@ static double _unur_urng_randomshift_sample( struct unur_urng_randomshift *rs );
 /* Skip to first coordinate of next point after last coordinate.             */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_urng_randomshift_sample_array( struct unur_urng_randomshift *rs, double *X, unsigned dim );
+static int _unur_urng_randomshift_sample_array( struct unur_urng_randomshift *rs, double *X, int dim );
 /*---------------------------------------------------------------------------*/
 /* Sample random point and store in X. use only the first dim coordinates    */
 /* if dim is less than the dimension of the generated points.                */
@@ -138,7 +138,7 @@ _unur_urng_randomshift_sample( struct unur_urng_randomshift *rs )
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_urng_randomshift_sample_array( struct unur_urng_randomshift *rs, double *X, unsigned dim )
+_unur_urng_randomshift_sample_array( struct unur_urng_randomshift *rs, double *X, int dim )
      /*----------------------------------------------------------------------*/
      /* Sample random point and store in X. use only the first dim coordin.  */
      /* if dim is less than the dimension of the generated points.           */
@@ -229,7 +229,7 @@ _unur_urng_randomshift_nextpoint( struct unur_urng_randomshift *rs )
 /*---------------------------------------------------------------------------*/
 
 UNUR_URNG *
-unur_urng_randomshift_new( UNUR_URNG *qrng, UNUR_URNG *srng, unsigned int dim )
+unur_urng_randomshift_new( UNUR_URNG *qrng, UNUR_URNG *srng, int dim )
      /*----------------------------------------------------------------------*/
      /* get new URNG object of type GSL-QRNG                                 */
      /*                                                                      */
@@ -257,7 +257,7 @@ unur_urng_randomshift_new( UNUR_URNG *qrng, UNUR_URNG *srng, unsigned int dim )
 
   /* make UNURAN_URNG object */
   urng = unur_urng_new ( (double(*)(void*)) _unur_urng_randomshift_sample, rs );
-  unur_urng_set_sample_array (urng, (unsigned int(*)(void*,double*,unsigned int)) _unur_urng_randomshift_sample_array);
+  unur_urng_set_sample_array (urng, (unsigned int(*)(void*,double*,int)) _unur_urng_randomshift_sample_array);
   unur_urng_set_delete (urng, (void(*)(void*)) _unur_urng_randomshift_free);
   unur_urng_set_reset (urng, (void(*)(void*)) _unur_urng_randomshift_reset);
   unur_urng_set_sync (urng, (void(*)(void*)) _unur_urng_randomshift_nextpoint);

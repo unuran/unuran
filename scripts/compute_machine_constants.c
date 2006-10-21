@@ -45,7 +45,7 @@
 
 /*---------------------------------------------------------------------------*/
 
-int main()
+int main(void)
 {
 
   printf("/** File automatically created by scripts/compute_machine_constants         **/\n\n");

@@ -107,8 +107,8 @@ _unur_cdf_student(double x, const UNUR_DISTR *distr)
   double xx;
   if (DISTR.nu==0) return 0; /* maybe we could return the Heaviside step-function here ... */
   xx=1./(1.+x*x/DISTR.nu);
-  if (x>0) return 1-.5*_unur_sf_incomplete_beta(xx,.5*DISTR.nu,.5)/_unur_sf_incomplete_beta(1,.5*DISTR.nu,.5);
-  else     return   .5*_unur_sf_incomplete_beta(xx,.5*DISTR.nu,.5)/_unur_sf_incomplete_beta(1,.5*DISTR.nu,.5);
+  if (x>0) return 1-.5*_unur_sf_incomplete_beta(xx,.5*DISTR.nu,.5)/_unur_sf_incomplete_beta(1.,.5*DISTR.nu,.5);
+  else     return   .5*_unur_sf_incomplete_beta(xx,.5*DISTR.nu,.5)/_unur_sf_incomplete_beta(1.,.5*DISTR.nu,.5);
 } /* end of _unur_cdf_student() */
 
 /*---------------------------------------------------------------------------*/

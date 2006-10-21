@@ -973,6 +973,18 @@ int unur_$method\_set_verify( UNUR_PAR *par, int );
 
 /*---------------------------------------------------------------------------*/
 
+void test_new (void);
+void test_set (void);
+void test_get (void);
+void test_chg (void);
+void test_init (void);
+void test_reinit (void);
+void test_sample (void);
+void test_validate (void);
+void test_special(void);
+
+/*---------------------------------------------------------------------------*/
+
 $C_header_aux
 
 /*---------------------------------------------------------------------------*/
@@ -993,7 +1005,7 @@ sub print_C_main {
 
 /*---------------------------------------------------------------------------*/
 
-int main()
+int main(void)
 { 
 	/* open log file for unuran and set output stream for unuran messages */
 	UNURANLOG = fopen( "$file_unuranlog","w" );

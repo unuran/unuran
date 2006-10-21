@@ -46,7 +46,7 @@ double mydpdf( double x, const UNUR_DISTR *distr )
 
 /* ------------------------------------------------------------- */
 
-int main()
+int main(void)
 {
   int    i;     /* loop variable                                 */
   double x;     /* will hold the random number                   */

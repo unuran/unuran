@@ -41,6 +41,7 @@
 #include <distributions/unur_stddistr.h>
 #include "distr.h"
 #include "cont.h"
+#include "corder.h"
 #include "distr_source.h"
 
 /*---------------------------------------------------------------------------*/

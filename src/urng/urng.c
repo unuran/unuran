@@ -66,8 +66,8 @@ unur_urng_sample (UNUR_URNG *urng)
 
 /*---------------------------------------------------------------------------*/
 
-unsigned int
-unur_urng_sample_array (UNUR_URNG *urng, double *X, unsigned dim)
+int
+unur_urng_sample_array (UNUR_URNG *urng, double *X, int dim)
      /*----------------------------------------------------------------------*/
      /* Sample from URNG object and fill array X.                            */
      /* if URNG has a "natural" dimension s then only the first min(s,dim)   */
@@ -212,7 +212,7 @@ unur_urng_new( double (*sampleunif)(void *state), void *state )
 
 int
 unur_urng_set_sample_array( UNUR_URNG *urng, 
-			   unsigned int (*samplearray)(void *state, double *X, unsigned int dim) )
+			   unsigned int (*samplearray)(void *state, double *X, int dim) )
      /*----------------------------------------------------------------------*/
      /* Set function to sample random point                                  */
      /*                                                                      */

@@ -36,7 +36,6 @@
 #include <unuran.h.in>
 #include "unur_methods_source.h"
 #include "x_gen_source.h"
-#include "auto.h"
 #include "auto_struct.h"
 
 /*---------------------------------------------------------------------------*/

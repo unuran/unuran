@@ -336,7 +336,7 @@ _unur_stdgen_sample_poisson_pdac( struct unur_gen *gen )
 {
   /* -X- generator code -X- */
   /* factorial for 0 <= k <= 9 */
-  const static int fac[] = {1,1,2,6,24,120,720,5040,40320,362880};
+  static const int fac[] = {1,1,2,6,24,120,720,5040,40320,362880};
 
   double t,g,theta_k;
   double gx,gy,px,py,x,xx,delta,v;

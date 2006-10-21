@@ -81,7 +81,7 @@ static int _unur_set_params_geometric( UNUR_DISTR *distr, const double *params, 
 double
 _unur_pmf_geometric(int k, const UNUR_DISTR *distr)
 { 
-  return ((k<0) ? 0. : DISTR.p * pow( 1. - DISTR.p, k ));
+  return ((k<0) ? 0. : DISTR.p * pow( 1. - DISTR.p, (double)k ));
 } /* end of _unur_pmf_geometric() */
 
 /*---------------------------------------------------------------------------*/
@@ -89,7 +89,7 @@ _unur_pmf_geometric(int k, const UNUR_DISTR *distr)
 double
 _unur_cdf_geometric(int k, const UNUR_DISTR *distr)
 { 
-  return ((k<0) ? 0. : (1. - pow(1. - DISTR.p, k+1)) );
+  return ((k<0) ? 0. : (1. - pow(1. - DISTR.p, k+1.)) );
 } /* end of _unur_cdf_geometric() */
 
 /*---------------------------------------------------------------------------*/

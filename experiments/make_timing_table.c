@@ -53,13 +53,16 @@
 /* ------------------------------------------------------------------------- */
 
 /* Program name                                                              */
-const static char *progname = "make_timing_table";
+static const char *progname = "make_timing_table";
 
 /*---------------------------------------------------------------------------*/
 
 extern char *_unur_parser_prepare_string( const char *str );
 
 /*---------------------------------------------------------------------------*/
+
+/* print help */
+void print_usage(void);
 
 /* get unit for relative timing */
 double get_timing_unit(void);
@@ -90,7 +93,7 @@ double *compute_timings ( struct unur_slist *distr_str_list, struct unur_slist *
 /* print timings table */
 int print_timings ( double *timings,
 		    struct unur_slist *distr_str_list, struct unur_slist *meth_str_list,
-		    int samplesize, int rowentry );
+		    int rowentry );
 
 #define ROW_DISTRIBUTION   1  /* print distributions on row, methods in columns */
 #define ROW_METHOD         2  /* print distributions on columns, methods in rows*/
@@ -218,8 +221,8 @@ int main (int argc, char *argv[])
 
   /* print timings */
   print_timing_legend(samplesize, timing_unit,((unit<= 0.)?TRUE:FALSE));
-  print_timings(time_0,distr_str_list,meth_str_list,samplesize,ROW_DISTRIBUTION);
-  print_timings(time_0,distr_str_list,meth_str_list,samplesize,ROW_METHOD);
+  print_timings(time_0,distr_str_list,meth_str_list,ROW_DISTRIBUTION);
+  print_timings(time_0,distr_str_list,meth_str_list,ROW_METHOD);
 
   /* free memory */
   _unur_slist_free(distr_str_list);
@@ -489,7 +492,7 @@ compute_timings ( struct unur_slist *distr_str_list, struct unur_slist *meth_str
 int 
 print_timings ( double *timings,
 		struct unur_slist *distr_str_list, struct unur_slist *meth_str_list,
-		int samplesize, int rowentry )
+		int rowentry )
      /* print timings table */
 {
   int n_distr, n_meth;          /* number of distributions and methods */

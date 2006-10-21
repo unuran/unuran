@@ -7,7 +7,7 @@
 
 /* ------------------------------------------------------------- */
 
-int main()
+int main(void)
 {
   int    i;          /* loop variable                            */
   double x;          /* will hold the random number              */

@@ -63,7 +63,7 @@ struct unur_par {
   UNUR_URNG *urng;            /* pointer to uniform random number generator  */
   UNUR_URNG *urng_aux;        /* pointer to second (auxiliary) uniform RNG   */
 
-  const struct unur_distr *distr;   /* pointer to distribution object        */
+  const struct unur_distr *distr;  /* pointer to distribution object         */
   int distr_is_privatecopy;   /* whether the distribution object has to be
 				 copied into the generator object (TRUE) or
 				 just the pointer to the given (external)

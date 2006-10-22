@@ -58,7 +58,6 @@
 #include <utils/fmax_source.h>
 #include <utils/hooke_source.h> 
 #include <utils/matrix_source.h>
-#include <utils/vector_source.h>
 #include <utils/unur_fp_source.h>
 #include <utils/mrou_rectangle_struct.h>
 #include <utils/mrou_rectangle_source.h>
@@ -216,7 +215,6 @@ static void _unur_varou_dF( struct unur_gen *gen, double *uv, double *dF);
 /* calculate the value the gradient of v^(dim+1)-PDF(...) at the point (u,v) */
 /*---------------------------------------------------------------------------*/
 
-
 /*---------------------------------------------------------------------------*/
 
 /* abbreviations */
@@ -228,21 +226,6 @@ static void _unur_varou_dF( struct unur_gen *gen, double *uv, double *dF);
 #define DISTR     gen->distr->data.cvec  /* data for distribution in generator object */
 #define SAMPLE    gen->sample.cvec       /* pointer to sampling routine      */     
 #define PDF(x)    _unur_cvec_PDF((x),(gen->distr))    /* call to PDF         */
-
-/*---------------------------------------------------------------------------*/
-
-void __printf_vector(int dim, double *x) 
-     /*------------------------------------*/
-     /* quick and very dirty debugging ... */
-     /*------------------------------------*/
-{
-  int i;
-  printf(" (" );
-  for (i=0; i<dim; i++) {
-    printf("%g ", x[i]);
-  }
-  printf(")\n");
-}
 
 /*---------------------------------------------------------------------------*/
 
@@ -340,7 +323,7 @@ unur_varou_set_cones( struct unur_par *par, long ncones  )
   _unur_check_par_object( par, VAROU );
 
   /* check if the number of cones sufficies for an initial splitting */
-  if (pow(2, PAR->dim) > ncones) return UNUR_FAILURE;
+  if (pow(2., (double)PAR->dim) > ncones) return UNUR_FAILURE;
   
   /* setting the number of cones */
   PAR->max_cones = ncones ;
@@ -462,7 +445,7 @@ _unur_varou_init( struct unur_par *par )
   if (!gen) { return NULL; }
 
   /* check if initial cones can be computed */ 
-  if (pow(2, GEN->dim) > GEN->max_cones) {
+  if (pow(2., (double)GEN->dim) > GEN->max_cones) {
     _unur_error(GENTYPE,UNUR_ERR_PAR_INVALID,"max_cones too small");
     _unur_varou_free(gen);
     return NULL;
@@ -926,7 +909,7 @@ _unur_varou_cones_init( struct unur_gen *gen )
   GEN->n_vertex  = 2*dim + 1;
 
   /* updating (initial) number of cones */
-  GEN->n_cone = pow(2, dim);
+  GEN->n_cone = pow(2., (double)dim);
 
   /* setting parameters for the 2^dim initial cones */
   for (ic=0; ic<GEN->n_cone; ic++) {
@@ -1009,36 +992,36 @@ _unur_varou_minimize_volume(struct unur_gen *gen, struct unur_varou_cone *c)
 
 /*---------------------------------------------------------------------------*/
 
-double 
-_unur_varou_calculate_unit_volume(struct unur_gen *gen, struct unur_varou_cone *c )
-     /* calculation of the unit volume using determinant calculation */
-     /* currently this is only implemented for dim=2                 */
-     /* and is only needed for testing purposes (may be removed)     */
-{
-  int dim;
-  double x11,x12,x13, x21,x22,x23, x31,x32,x33;
-  double det;
+/* double  */
+/* _unur_varou_calculate_unit_volume(struct unur_gen *gen, struct unur_varou_cone *c ) */
+/*      /\* calculation of the unit volume using determinant calculation *\/ */
+/*      /\* currently this is only implemented for dim=2                 *\/ */
+/*      /\* and is only needed for testing purposes (may be removed)     *\/ */
+/* { */
+/*   int dim; */
+/*   double x11,x12,x13, x21,x22,x23, x31,x32,x33; */
+/*   double det; */
   
-  dim = GEN->dim;
+/*   dim = GEN->dim; */
   
-  x11=GEN->vertex_list[ c->index[0] ][0];
-  x12=GEN->vertex_list[ c->index[0] ][1];
-  x13=GEN->vertex_list[ c->index[0] ][2];
+/*   x11=GEN->vertex_list[ c->index[0] ][0]; */
+/*   x12=GEN->vertex_list[ c->index[0] ][1]; */
+/*   x13=GEN->vertex_list[ c->index[0] ][2]; */
 
-  x21=GEN->vertex_list[ c->index[1] ][0];
-  x22=GEN->vertex_list[ c->index[1] ][1];
-  x23=GEN->vertex_list[ c->index[1] ][2];
+/*   x21=GEN->vertex_list[ c->index[1] ][0]; */
+/*   x22=GEN->vertex_list[ c->index[1] ][1]; */
+/*   x23=GEN->vertex_list[ c->index[1] ][2]; */
 
-  x31=GEN->vertex_list[ c->index[2] ][0];
-  x32=GEN->vertex_list[ c->index[2] ][1];
-  x33=GEN->vertex_list[ c->index[2] ][2];
+/*   x31=GEN->vertex_list[ c->index[2] ][0]; */
+/*   x32=GEN->vertex_list[ c->index[2] ][1]; */
+/*   x33=GEN->vertex_list[ c->index[2] ][2]; */
 
-  det = fabs( x11*x22*x33 + x12*x23*x31 + x13*x21*x32
-        - x31*x22*x13 - x32*x23*x11 - x33*x21*x12 ) / 6.;
+/*   det = fabs( x11*x22*x33 + x12*x23*x31 + x13*x21*x32 */
+/*         - x31*x22*x13 - x32*x23*x11 - x33*x21*x12 ) / 6.; */
 
-  return det;
+/*   return det; */
   
-}
+/* } */
 
 /*---------------------------------------------------------------------------*/
 
@@ -1507,7 +1490,7 @@ _unur_varou_dF( struct unur_gen *gen, double *uv, double *dF )
   _unur_cvec_dPDF(dPDF, x, gen->distr);
 
   /* gradient coordinates of F() */
-  dF[dim] = (1.+dim) * pow(v, dim);
+  dF[dim] = (1.+dim) * pow(v, (double)dim);
   for (d=0; d<dim; d++) {
     dF[d] = - dPDF[d] / v;
     dF[dim] += uv[d]*dPDF[d]/(v*v);

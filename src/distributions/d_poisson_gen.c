@@ -559,7 +559,7 @@ poisson_pprsc_init( struct unur_gen *gen )
   /* mode m, reflection points k2 and k4, and points k1 and k5, which        */
   /* delimit the centre region of h(x)                                       */
   m  = (int) theta;
-  k2 = (int) ceil(theta - 0.5 - Ds);
+  k2 = /* (int) */ ceil(theta - 0.5 - Ds);
   k4 = (int)     (theta - 0.5 + Ds);
   k1 = k2 + k2 - m + 1;
   k5 = k4 + k4 - m;

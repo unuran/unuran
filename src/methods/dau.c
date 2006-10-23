@@ -125,8 +125,9 @@
 /*    bits 13-24 ... adaptive steps                                          */
 /*    bits 25-32 ... trace sampling                                          */
 
-#define DAU_DEBUG_PRINTVECTOR   0x00000100u
-#define DAU_DEBUG_TABLE         0x00000200u
+#define DAU_DEBUG_REINIT       0x00000010u  /* print parameters after reinit */
+#define DAU_DEBUG_PRINTVECTOR  0x00000100u
+#define DAU_DEBUG_TABLE        0x00000200u
 
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
@@ -154,6 +155,11 @@ static struct unur_gen *_unur_dau_create( struct unur_par *par );
 /* create new (almost empty) generator object.                               */
 /*---------------------------------------------------------------------------*/
 
+static int _unur_dau_check_par( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* Check parameters of given distribution and method                         */
+/*---------------------------------------------------------------------------*/
+
 static struct unur_gen *_unur_dau_clone( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* copy (clone) generator object.                                            */
@@ -167,6 +173,16 @@ static void _unur_dau_free( struct unur_gen *gen);
 static int _unur_dau_sample( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* sample from generator                                                     */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_dau_create_tables( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* create (allocate) tables for alias method                                 */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_dau_make_urntable( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* create table for alias method                                             */
 /*---------------------------------------------------------------------------*/
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -328,12 +344,6 @@ _unur_dau_init( struct unur_par *par )
      /*----------------------------------------------------------------------*/
 { 
   struct unur_gen *gen;
-  int *begin, *poor, *rich;     /* list of (rich and poor) strips */
-  int *npoor;                   /* next poor on stack */
-  double *pv;                   /* pointer to probability vector */
-  int n_pv;                     /* length of probability vector */
-  double sum, ratio;
-  int i;                        /* aux variable */
 
   /* check arguments */
   CHECK_NULL(par,NULL);
@@ -349,99 +359,17 @@ _unur_dau_init( struct unur_par *par )
   _unur_par_free(par);
   if (!gen) return NULL;
 
-  /* probability vector */
-  pv = DISTR.pv;
-  n_pv = DISTR.n_pv;
-
-  /* compute sum of all probabilities */
-  for( sum=0, i=0; i<n_pv; i++ ) {
-    sum += pv[i];
-    /* ... and check probability vector */
-    if (pv[i] < 0.) {
-      _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"probability < 0");
-      _unur_dau_free(gen); return NULL;
-    }
+  /* check parameters */
+  if ( _unur_dau_check_par(gen) != UNUR_SUCCESS ) {
+    _unur_dau_free(gen); return NULL;
   }
 
-  /* make list of poor and rich strips */
-  begin = _unur_xmalloc( (GEN->urn_size+2) * sizeof(int) );
-  poor = begin;                    /* poor strips are stored at the beginning ... */
-  rich = begin + GEN->urn_size + 1; /* ... rich strips at the end of the list      */
-
-  /* copy probability vector; scale so that it sums to GEN->urn_size and */
-  /* find rich and poor strips at start                                 */
-  ratio = GEN->urn_size / sum;
-  for( i=0; i<n_pv; i++ ) {
-    GEN->qx[i] = pv[i] * ratio;  /* probability rescaled        */
-    if (GEN->qx[i] >= 1.) {      /* rich strip                  */
-      *rich = i;                /* add to list ...             */
-      --rich;                   /* and update pointer          */
-      GEN->jx[i] = i;            /* init donor (itself)           */
-    }
-    else {                      /* poor strip                    */
-      *poor = i;                /* add to list                 */
-      ++poor;                   /* update pointer              */
-      /* it is not necessary to mark donor                     */
-    }
+  /* compute table */
+  if ( (_unur_dau_create_tables(gen) != UNUR_SUCCESS) ||
+       (_unur_dau_make_urntable(gen) != UNUR_SUCCESS) ) {
+    _unur_dau_free(gen); return NULL;
   }
 
-  /* all other (additional) strips own nothing yet */
-  for( ; i<GEN->urn_size; i++ ) {
-    GEN->qx[i] = 0.;
-    *poor = i; 
-    ++poor;
-  }
-
-  /* there must be at least one rich strip */
-  if (rich == begin + GEN->urn_size + 1 ) {
-    /* this must not happen:
-       no rich strips found for Robin Hood algorithm. */
-    _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    _unur_dau_free(gen); free(begin);
-    return NULL;
-  }
-  
-  /* rich must point to the first rich strip yet */
-  ++rich;
-
-  /* now make the "squared histogram" with Robin Hood algorithm (Marsaglia) */
-  while (poor != begin) {
-    if (rich > begin + GEN->urn_size + 1) {
-      /* there might be something wrong; assume a neglectable round off error */
-      break;
-    }
-
-    npoor = poor - 1;                       /* take next poor from stack */
-    GEN->jx[*npoor] = *rich;                 /* store the donor */
-    GEN->qx[*rich] -= 1. - GEN->qx[*npoor];   /* update rich */
-
-    /* rich might has given too much, so it is poor then */
-    if (GEN->qx[*rich] < 1.) {
-      *npoor = *rich;      /* exchange noveau-poor with former poor in list */
-      ++rich;              /* remove it from list of rich */
-    }
-    else
-      --poor;              /* remove poor from list */
-  }
-
-  /* if there has been an round off error, we have to complete the table */
-  if (poor != begin) {
-    sum = 0.;                   /* we estimate the round off error            */
-    while (poor != begin) {
-      npoor = poor - 1;         /* take next poor from stack */
-      sum += 1. - GEN->qx[*npoor];
-      GEN->jx[*npoor] = *npoor;  /* mark donor as "not valid" */
-      GEN->qx[*npoor] = 1.;      /* set probability to 1 (we assume that it is very close to one) */
-      --poor;                   /* remove from list */
-    }
-    if (fabs(sum) > UNUR_SQRT_DBL_EPSILON)
-      /* sum of deviations very large */
-      _unur_warning(gen->genid,UNUR_ERR_ROUNDOFF,"squared histogram");
-  }
-
-  /* free lists of strips */
-  free(begin);
-  
   /* write info into log file */
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
@@ -472,18 +400,20 @@ _unur_dau_reinit( struct unur_gen *gen )
   /* (re)set sampling routine */
   SAMPLE = _unur_dau_getSAMPLE(gen);
 
-/*   /\* check parameters *\/ */
-/*   if ( (result = _unur_dau_check_par(gen)) != UNUR_SUCCESS) */
-/*     return result; */
+  /* check parameters */
+  if ( (rcode = _unur_dau_check_par(gen)) != UNUR_SUCCESS)
+    return rcode;
 
-/*   /\* compute universal bounding rectangle *\/ */
-/*   if ( (result = _unur_dau_rectangle(gen)) != UNUR_SUCCESS) */
-/*     return result; */
+  /* compute table */
+  if ( ((rcode = _unur_dau_create_tables(gen)) != UNUR_SUCCESS) ||
+       ((rcode = _unur_dau_make_urntable(gen)) != UNUR_SUCCESS) ) {
+    return rcode;
+  }
 
-/* #ifdef UNUR_ENABLE_LOGGING */
-/*   /\* write info into log file *\/ */
-/*   if (gen->debug & DAU_DEBUG_REINIT) _unur_dau_debug_init(gen,TRUE); */
-/* #endif */
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  if (gen->debug & DAU_DEBUG_REINIT) _unur_dau_debug_init(gen);
+#endif
 
   return UNUR_SUCCESS;
 } /* end of _unur_dau_reinit() */
@@ -523,39 +453,49 @@ _unur_dau_create( struct unur_par *par)
   SAMPLE = _unur_dau_getSAMPLE(gen);
   gen->destroy = _unur_dau_free;
   gen->clone = _unur_dau_clone;
+  gen->reinit = _unur_dau_reinit;
 
   /* copy parameters */
   GEN->urn_factor = PAR->urn_factor; /* relative length of table */
 
+  /* initialize parameters */
+  GEN->len = 0;             /* length of probability vector          */
+  GEN->urn_size = 0;
+  GEN->jx = NULL;
+  GEN->qx = NULL;
 
+  /* return pointer to (almost empty) generator object */
+  return gen;
+
+} /* end of _unur_dau_create() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_dau_check_par( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* check parameters of given distribution and method                    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
   /* we need a PV */
   if (DISTR.pv == NULL) {
     /* try to compute PV */
     if (unur_distr_discr_make_pv( gen->distr ) <= 0) {
       /* not successful */
       _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"PV"); 
-      _unur_generic_free(gen);
-      return NULL;
+      return UNUR_ERR_DISTR_REQUIRED;
     }
   }
 
-  /* copy some parameters into generator object */
-  GEN->len = DISTR.n_pv;             /* length of probability vector          */
-
-  /* size of table */
-  GEN->urn_size = (int)(GEN->len * GEN->urn_factor);
-  if (GEN->urn_size < GEN->len)
-    /* do not use a table that is smaller then length of probability vector */
-    GEN->urn_size = GEN->len;
-
-  /* allocate memory for the tables */
-  GEN->jx = _unur_xmalloc( GEN->urn_size * sizeof(int) );
-  GEN->qx = _unur_xmalloc( GEN->urn_size * sizeof(double) );
-
-  /* return pointer to (almost empty) generator object */
-  return gen;
-
-} /* end of _unur_dau_create() */
+  return UNUR_SUCCESS;
+} /* end of _unur_dau_check_par() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -669,6 +609,156 @@ _unur_dau_sample( struct unur_gen *gen )
 /*****************************************************************************/
 /**  Auxilliary Routines                                                    **/
 /*****************************************************************************/
+
+int
+_unur_dau_create_tables( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* create table for alias method using the Robin Hood algorithm         */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{ 
+  /* length of probability vector */
+  GEN->len = DISTR.n_pv;
+
+  /* size of table */
+  GEN->urn_size = (int)(GEN->len * GEN->urn_factor);
+  if (GEN->urn_size < GEN->len)
+    /* do not use a table that is smaller then length of probability vector */
+    GEN->urn_size = GEN->len;
+
+  /* allocate memory for the tables */
+  GEN->jx = _unur_xrealloc( GEN->jx, GEN->urn_size * sizeof(int) );
+  GEN->qx = _unur_xrealloc( GEN->qx, GEN->urn_size * sizeof(double) );
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+} /* end of _unur_dau_create_tables() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_dau_make_urntable( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* create table for alias method using the Robin Hood algorithm         */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{ 
+  int *begin, *poor, *rich;     /* list of (rich and poor) strips */
+  int *npoor;                   /* next poor on stack */
+  double *pv;                   /* pointer to probability vector */
+  int n_pv;                     /* length of probability vector */
+  double sum, ratio;
+  int i;                        /* aux variable */
+
+  /* probability vector */
+  pv = DISTR.pv;
+  n_pv = DISTR.n_pv;
+
+  /* compute sum of all probabilities */
+  for( sum=0, i=0; i<n_pv; i++ ) {
+    sum += pv[i];
+    /* ... and check probability vector */
+    if (pv[i] < 0.) {
+      _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"probability < 0");
+      return UNUR_ERR_GEN_DATA;
+    }
+  }
+
+  /* make list of poor and rich strips */
+  begin = _unur_xmalloc( (GEN->urn_size+2) * sizeof(int) );
+  poor = begin;                    /* poor strips are stored at the beginning ... */
+  rich = begin + GEN->urn_size + 1; /* ... rich strips at the end of the list      */
+
+  /* copy probability vector; scale so that it sums to GEN->urn_size and */
+  /* find rich and poor strips at start                                 */
+  ratio = GEN->urn_size / sum;
+  for( i=0; i<n_pv; i++ ) {
+    GEN->qx[i] = pv[i] * ratio;  /* probability rescaled        */
+    if (GEN->qx[i] >= 1.) {      /* rich strip                  */
+      *rich = i;                /* add to list ...             */
+      --rich;                   /* and update pointer          */
+      GEN->jx[i] = i;            /* init donor (itself)           */
+    }
+    else {                      /* poor strip                    */
+      *poor = i;                /* add to list                 */
+      ++poor;                   /* update pointer              */
+      /* it is not necessary to mark donor                     */
+    }
+  }
+
+  /* all other (additional) strips own nothing yet */
+  for( ; i<GEN->urn_size; i++ ) {
+    GEN->qx[i] = 0.;
+    *poor = i; 
+    ++poor;
+  }
+
+  /* there must be at least one rich strip */
+  if (rich == begin + GEN->urn_size + 1 ) {
+    /* this must not happen:
+       no rich strips found for Robin Hood algorithm. */
+    _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+    free (begin);
+    return UNUR_ERR_SHOULD_NOT_HAPPEN;
+  }
+
+  /* rich must point to the first rich strip yet */
+  ++rich;
+
+  /* now make the "squared histogram" with Robin Hood algorithm (Marsaglia) */
+  while (poor != begin) {
+    if (rich > begin + GEN->urn_size + 1) {
+      /* there might be something wrong; assume a neglectable round off error */
+      break;
+    }
+
+    npoor = poor - 1;                       /* take next poor from stack */
+    GEN->jx[*npoor] = *rich;                 /* store the donor */
+    GEN->qx[*rich] -= 1. - GEN->qx[*npoor];   /* update rich */
+
+    /* rich might has given too much, so it is poor then */
+    if (GEN->qx[*rich] < 1.) {
+      *npoor = *rich;      /* exchange noveau-poor with former poor in list */
+      ++rich;              /* remove it from list of rich */
+    }
+    else
+      --poor;              /* remove poor from list */
+  }
+
+  /* if there has been an round off error, we have to complete the table */
+  if (poor != begin) {
+    sum = 0.;                   /* we estimate the round off error            */
+    while (poor != begin) {
+      npoor = poor - 1;         /* take next poor from stack */
+      sum += 1. - GEN->qx[*npoor];
+      GEN->jx[*npoor] = *npoor;  /* mark donor as "not valid" */
+      GEN->qx[*npoor] = 1.;      /* set probability to 1 (we assume that it is very close to one) */
+      --poor;                   /* remove from list */
+    }
+    if (fabs(sum) > UNUR_SQRT_DBL_EPSILON)
+      /* sum of deviations very large */
+      _unur_warning(gen->genid,UNUR_ERR_ROUNDOFF,"squared histogram");
+  }
+
+  /* free list of strips */
+  free(begin);
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+
+} /* end of _unur_dau_make_urntable() */
 
 /*****************************************************************************/
 /**  Debugging utilities                                                    **/

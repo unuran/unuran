@@ -44,7 +44,7 @@
 
    =SPEED Set-up: slow (linear with the vector-length), Sampling: very fast
 
-   =REINIT not implemented
+   =REINIT supported
 
    =REF  [WAa77] [HLD04: Sect.3.2]
 
@@ -72,6 +72,8 @@
       influenced by setting the size of the used table which can be
       changed by unur_dau_set_urnfactor().
 
+      It is possible to change the parameters and the domain of the chosen 
+      distribution and run unur_reinit() to reinitialize the generator object.
    =END
 */
 

@@ -46,7 +46,7 @@
 
    =SPEED Set-up: slow or fast, Sampling: moderate
 
-   =REINIT not implemented
+   =REINIT supported
 
    =REF  [HLD04: Sect.2.4 and Sect.6.4]
 
@@ -120,6 +120,14 @@
       distribution. When in doubt (e.g., when it is not clear whether
       the numerical routine has worked correctly) this can be used to
       run a small Monte Carlo study.
+
+      It is possible to change the parameters and the domain of the chosen 
+      distribution and run unur_reinit() to reinitialize the generator object.
+      Notice, that derived parameters like the mode must also be (re-) set
+      if the parameters or the domain has be changed.
+      Notice, however, that then the values that has been set by 
+      unur_vnrou_set_u() and unur_vnrou_set_v() calls are removed and 
+      the coordinates of the bounding box are computed numerically.
 
    =END
 */

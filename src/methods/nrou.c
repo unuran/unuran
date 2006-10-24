@@ -106,6 +106,15 @@
 #define NROU_VARFLAG_VERIFY   0x002u   /* run verify mode                    */
 
 /*---------------------------------------------------------------------------*/
+/* Debugging flags                                                           */
+/*    bit  01    ... pameters and structure of generator (do not use here)   */
+/*    bits 02-12 ... setup                                                   */
+/*    bits 13-24 ... adaptive steps                                          */
+/*    bits 25-32 ... trace sampling                                          */
+
+#define NROU_DEBUG_REINIT    0x00000010u   /* print parameters after reinit  */
+
+/*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
 
 #define NROU_SET_U       0x001u     /* set u values of bounding rectangle    */
@@ -124,14 +133,29 @@ static struct unur_gen *_unur_nrou_init( struct unur_par *par );
 /* Initialize new generator.                                                 */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_nrou_rectangle( struct unur_gen *gen );
+static int _unur_nrou_reinit( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* compute (minimal) bounding rectangle.                                     */
+/* Reinitialize generator.                                                   */
 /*---------------------------------------------------------------------------*/
 
 static struct unur_gen *_unur_nrou_create( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 /* create new (almost empty) generator object.                               */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_nrou_check_par( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* Check parameters of given distribution and method                         */
+/*---------------------------------------------------------------------------*/
+
+static struct unur_gen *_unur_nrou_clone( const struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* copy (clone) generator object.                                            */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_nrou_free( struct unur_gen *gen);
+/*---------------------------------------------------------------------------*/
+/* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
 static double _unur_nrou_sample( struct unur_gen *gen );
@@ -140,22 +164,16 @@ static double _unur_nrou_sample_check( struct unur_gen *gen );
 /* sample from generator.                                                    */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_nrou_free( struct unur_gen *gen);
-/*---------------------------------------------------------------------------*/
-/* destroy generator object.                                                 */
-/*---------------------------------------------------------------------------*/
-
-static struct unur_gen *_unur_nrou_clone( const struct unur_gen *gen );
-/*---------------------------------------------------------------------------*/
-/* copy (clone) generator object.                                            */
-/*---------------------------------------------------------------------------*/
-
 static double _unur_aux_bound_umax(double x, void *p);
 static double _unur_aux_bound_umin(double x, void *p);
 /*---------------------------------------------------------------------------*/
 /* auxiliary functions to be used in the calculation of umin/umax            */
 /*---------------------------------------------------------------------------*/
 
+static int _unur_nrou_rectangle( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* compute (minimal) bounding rectangle.                                     */
+/*---------------------------------------------------------------------------*/
 
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
@@ -494,13 +512,18 @@ _unur_nrou_init( struct unur_par *par )
 
   /* create a new empty generator object */
   gen = _unur_nrou_create(par);
-  if (!gen) { _unur_par_free(par); return NULL; }
+  _unur_par_free(par);
+  if (!gen) return NULL;
+
+  /* check parameters */
+  if (_unur_nrou_check_par(gen) != UNUR_SUCCESS) {
+    _unur_nrou_free(gen); return NULL;
+  }
 
   /* compute bounding rectangle */
   if (_unur_nrou_rectangle(gen)!=UNUR_SUCCESS) {
     _unur_error(gen->genid , UNUR_ERR_GEN_CONDITION, "Cannot compute bounding rectangle");  
-    _unur_par_free(par); _unur_nrou_free(gen);
-    return NULL;
+    _unur_nrou_free(gen); return NULL;
   }
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -508,14 +531,303 @@ _unur_nrou_init( struct unur_par *par )
     if (gen->debug) _unur_nrou_debug_init(gen);
 #endif
 
-  /* free parameters */
-  _unur_par_free(par);
-
   return gen;
 
 } /* end of _unur_nrou_init() */
 
 /*---------------------------------------------------------------------------*/
+
+int
+_unur_nrou_reinit( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* re-initialize (existing) generator.                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  int rcode;
+
+  /* (re)set sampling routine */
+  SAMPLE = _unur_nrou_getSAMPLE(gen);
+
+  /* mark U and V as unknown */
+  gen->set &= ~(NROU_SET_V | NROU_SET_U);
+
+  /* check parameters */
+  if ( (rcode = _unur_nrou_check_par(gen)) != UNUR_SUCCESS)
+    return rcode;
+
+  /* compute bounding rectangle */
+  return _unur_nrou_rectangle(gen);
+} /* end of _unur_utdr_reinit() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_gen *
+_unur_nrou_create( struct unur_par *par )
+     /*----------------------------------------------------------------------*/
+     /* allocate memory for generator                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter for building generator object         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to (empty) generator object with default settings          */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_gen *gen;
+
+  /* check arguments */
+  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_NROU_PAR,NULL);
+
+  /* create new generic generator object */
+  gen = _unur_generic_create( par, sizeof(struct unur_nrou_gen) );
+
+  /* magic cookies */
+  COOKIE_SET(gen,CK_NROU_GEN);
+
+  /* set generator identifier */
+  gen->genid = _unur_set_genid(GENTYPE);
+
+  /* routines for sampling and destroying generator */
+  SAMPLE = _unur_nrou_getSAMPLE(gen);
+  gen->destroy = _unur_nrou_free;
+  gen->clone = _unur_nrou_clone;
+  gen->reinit = _unur_nrou_reinit;
+
+  /* copy some parameters into generator object */
+  GEN->umin  = PAR->umin;             /* left u-boundary of bounding rectangle */
+  GEN->umax  = PAR->umax;             /* right u-boundary of bounding rectangle */
+  GEN->vmax  = PAR->vmax;             /* upper v-boundary of bounding rectangle */
+  GEN->center = PAR->center;          /* center of distribution */
+  GEN->r = PAR->r;                    /* r-parameter of the generalized rou-method */
+
+  /* return pointer to (almost empty) generator object */
+  return gen;
+
+} /* end of _unur_nrou_create() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_nrou_check_par( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* check parameters of given distribution and method                    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+
+  /* check for required data: center */
+  if (!(gen->set & NROU_SET_CENTER))
+    /* center not set via unur_nrou_set_center */
+    /* use center of distribution instead.     */
+    GEN->center = unur_distr_cont_get_center(gen->distr) ;
+
+  return UNUR_SUCCESS;
+} /* end of _unur_nrou_check_par() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_gen *
+_unur_nrou_clone( const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* copy (clone) generator object                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to clone of generator object                               */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{ 
+#define CLONE  ((struct unur_nrou_gen*)clone->datap)
+
+  struct unur_gen *clone;
+
+  /* check arguments */
+  CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_NROU_GEN,NULL);
+
+  /* create generic clone */
+  clone = _unur_generic_clone( gen, GENTYPE );
+
+  return clone;
+
+#undef CLONE
+} /* end of _unur_nrou_clone() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_nrou_free( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* deallocate generator object                                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{ 
+  /* check arguments */
+  if( !gen ) /* nothing to do */
+    return;
+
+  /* check input */
+  if ( gen->method != UNUR_METH_NROU ) {
+    _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
+    return; }
+  COOKIE_CHECK(gen,CK_NROU_GEN,RETURN_VOID);
+
+  /* we cannot use this generator object any more */
+  SAMPLE = NULL;   /* make sure to show up a programming error */
+
+  /* free memory */
+  _unur_generic_free(gen);
+
+} /* end of _unur_nrou_free() */
+
+/*****************************************************************************/
+
+double
+_unur_nrou_sample( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* sample from generator                                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   double (sample from random variate)                                */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return INFINITY                                                    */
+     /*----------------------------------------------------------------------*/
+{ 
+  double U,V,X;
+
+  /* check arguments */
+  CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_NROU_GEN,INFINITY);
+
+  while (1) {
+    /* generate point uniformly on rectangle */
+    while ( (V = _unur_call_urng(gen->urng)) == 0.);
+    V *= GEN->vmax;
+    U = GEN->umin + _unur_call_urng(gen->urng) * (GEN->umax - GEN->umin);
+
+    /* compute X */
+    if (GEN->r == 1.) X = U/V + GEN->center;
+    else             X = U/pow(V,GEN->r) + GEN->center;
+
+    /* inside domain ? */
+    if ( (X < DISTR.BD_LEFT) || (X > DISTR.BD_RIGHT) )
+      continue;
+
+    /* accept or reject */
+    if (GEN->r ==1) {
+      /* normal rou-method with square-root */
+      if (V*V <= PDF(X)) 
+        return X;
+    }
+    else {
+      /* generalized rou-method with pow-function */
+      if (V <= pow(PDF(X), 1./(1.+GEN->r)) )
+        return X;
+    }
+  }
+
+} /* end of _unur_nrou_sample() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_nrou_sample_check( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* sample from generator and verify that method can be used             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   double (sample from random variate)                                */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return INFINITY                                                    */
+     /*----------------------------------------------------------------------*/
+{ 
+  double U,V,X,fx,sfx,xfx;
+
+  /* check arguments */
+  CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_NROU_GEN,INFINITY);
+
+  while (1) {
+    /* generate point uniformly on rectangle */
+    while ( (V = _unur_call_urng(gen->urng)) == 0.);
+    V *= GEN->vmax;
+    U = GEN->umin + _unur_call_urng(gen->urng) * (GEN->umax - GEN->umin);
+    
+    /* compute x */
+    if (GEN->r == 1.) X = U/V + GEN->center;
+    else             X = U/pow(V,GEN->r) + GEN->center;
+    
+    /* inside domain ? */
+    if ( (X < DISTR.BD_LEFT) || (X > DISTR.BD_RIGHT) )
+      continue;
+    
+    /* evaluate PDF */
+    fx = PDF(X);
+    
+    /* a point on the boundary of the region of acceptance
+       has the coordinates ( (X-center) * (fx)^(r/(1+r)), (fx)^(1/(1+r)) ). */
+    if (GEN->r == 1.) {
+      /* normal rou-method with square-root */
+      sfx = sqrt(fx);
+      xfx = (X-GEN->center) * sfx;
+    }
+    else {
+      /* generalized rou-method with pow-function */
+      sfx = pow(fx, 1./(1.+GEN->r));
+      xfx = (X-GEN->center) * pow(fx, GEN->r/(1.+GEN->r));
+    }
+    
+    /* check hat */
+    if ( ( sfx > (1.+DBL_EPSILON) * GEN->vmax )   /* avoid roundoff error with FP registers */
+	 || (xfx < (1.+UNUR_EPSILON) * GEN->umin) 
+	 || (xfx > (1.+UNUR_EPSILON) * GEN->umax) )
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF(x) > hat(x)");
+    
+    /* accept or reject */
+    if (GEN->r ==1) {
+      /* normal rou-method with square-root */
+      if (V*V <= PDF(X))
+        return X;
+    }
+    else {
+      /* generalized rou-method with pow-function */
+      if (V <= pow(PDF(X), 1./(1.+GEN->r)) )
+        return X;
+    }
+  }
+
+} /* end of _unur_nrou_sample_check() */
+
+/*****************************************************************************/
+/**  Auxilliary Routines                                                    **/
+/*****************************************************************************/
 
 double
 _unur_aux_bound_umax(double x, void *p) 
@@ -662,249 +974,6 @@ _unur_nrou_rectangle( struct unur_gen *gen )
   return UNUR_SUCCESS;
 
 } /* end of _unur_nrou_rectangle() */
-
-/*---------------------------------------------------------------------------*/
-
-struct unur_gen *
-_unur_nrou_create( struct unur_par *par )
-     /*----------------------------------------------------------------------*/
-     /* allocate memory for generator                                        */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   par ... pointer to parameter for building generator object         */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   pointer to (empty) generator object with default settings          */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return NULL                                                        */
-     /*----------------------------------------------------------------------*/
-{
-  struct unur_gen *gen;
-
-  /* check arguments */
-  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_NROU_PAR,NULL);
-
-  /* create new generic generator object */
-  gen = _unur_generic_create( par, sizeof(struct unur_nrou_gen) );
-
-  /* magic cookies */
-  COOKIE_SET(gen,CK_NROU_GEN);
-
-  /* set generator identifier */
-  gen->genid = _unur_set_genid(GENTYPE);
-
-  /* routines for sampling and destroying generator */
-  SAMPLE = _unur_nrou_getSAMPLE(gen);
-  gen->destroy = _unur_nrou_free;
-  gen->clone = _unur_nrou_clone;
-
-  /* copy some parameters into generator object */
-  GEN->umin  = PAR->umin;             /* left u-boundary of bounding rectangle */
-  GEN->umax  = PAR->umax;             /* right u-boundary of bounding rectangle */
-  GEN->vmax  = PAR->vmax;             /* upper v-boundary of bounding rectangle */
-  GEN->center = PAR->center;          /* center of distribution */
-  GEN->r = PAR->r;                    /* r-parameter of the generalized rou-method */
-
-  /* initialize parameters */
-  if (!(gen->set & NROU_SET_CENTER))
-    /* center not set via unur_nrou_set_center */
-    /* use center of distribution instead.     */
-    GEN->center = unur_distr_cont_get_center(par->distr) ;
-
-  /* return pointer to (almost empty) generator object */
-  return gen;
-
-} /* end of _unur_nrou_create() */
-
-/*---------------------------------------------------------------------------*/
-
-struct unur_gen *
-_unur_nrou_clone( const struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* copy (clone) generator object                                        */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   pointer to clone of generator object                               */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return NULL                                                        */
-     /*----------------------------------------------------------------------*/
-{ 
-#define CLONE  ((struct unur_nrou_gen*)clone->datap)
-
-  struct unur_gen *clone;
-
-  /* check arguments */
-  CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_NROU_GEN,NULL);
-
-  /* create generic clone */
-  clone = _unur_generic_clone( gen, GENTYPE );
-
-  return clone;
-
-#undef CLONE
-} /* end of _unur_nrou_clone() */
-
-/*****************************************************************************/
-
-double
-_unur_nrou_sample( struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* sample from generator                                                */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   double (sample from random variate)                                */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return INFINITY                                                    */
-     /*----------------------------------------------------------------------*/
-{ 
-  double U,V,X;
-
-  /* check arguments */
-  CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_NROU_GEN,INFINITY);
-
-  while (1) {
-    /* generate point uniformly on rectangle */
-    while ( (V = _unur_call_urng(gen->urng)) == 0.);
-    V *= GEN->vmax;
-    U = GEN->umin + _unur_call_urng(gen->urng) * (GEN->umax - GEN->umin);
-
-    /* compute X */
-    if (GEN->r == 1.) X = U/V + GEN->center;
-    else             X = U/pow(V,GEN->r) + GEN->center;
-
-    /* inside domain ? */
-    if ( (X < DISTR.BD_LEFT) || (X > DISTR.BD_RIGHT) )
-      continue;
-
-    /* accept or reject */
-    if (GEN->r ==1) {
-      /* normal rou-method with square-root */
-      if (V*V <= PDF(X)) 
-        return X;
-    }
-    else {
-      /* generalized rou-method with pow-function */
-      if (V <= pow(PDF(X), 1./(1.+GEN->r)) )
-        return X;
-    }
-  }
-
-} /* end of _unur_nrou_sample() */
-
-/*---------------------------------------------------------------------------*/
-
-double
-_unur_nrou_sample_check( struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* sample from generator and verify that method can be used             */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   double (sample from random variate)                                */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return INFINITY                                                    */
-     /*----------------------------------------------------------------------*/
-{ 
-  double U,V,X,fx,sfx,xfx;
-
-  /* check arguments */
-  CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_NROU_GEN,INFINITY);
-
-  while (1) {
-    /* generate point uniformly on rectangle */
-    while ( (V = _unur_call_urng(gen->urng)) == 0.);
-    V *= GEN->vmax;
-    U = GEN->umin + _unur_call_urng(gen->urng) * (GEN->umax - GEN->umin);
-    
-    /* compute x */
-    if (GEN->r == 1.) X = U/V + GEN->center;
-    else             X = U/pow(V,GEN->r) + GEN->center;
-    
-    /* inside domain ? */
-    if ( (X < DISTR.BD_LEFT) || (X > DISTR.BD_RIGHT) )
-      continue;
-    
-    /* evaluate PDF */
-    fx = PDF(X);
-    
-    /* a point on the boundary of the region of acceptance
-       has the coordinates ( (X-center) * (fx)^(r/(1+r)), (fx)^(1/(1+r)) ). */
-    if (GEN->r == 1.) {
-      /* normal rou-method with square-root */
-      sfx = sqrt(fx);
-      xfx = (X-GEN->center) * sfx;
-    }
-    else {
-      /* generalized rou-method with pow-function */
-      sfx = pow(fx, 1./(1.+GEN->r));
-      xfx = (X-GEN->center) * pow(fx, GEN->r/(1.+GEN->r));
-    }
-    
-    /* check hat */
-    if ( ( sfx > (1.+DBL_EPSILON) * GEN->vmax )   /* avoid roundoff error with FP registers */
-	 || (xfx < (1.+UNUR_EPSILON) * GEN->umin) 
-	 || (xfx > (1.+UNUR_EPSILON) * GEN->umax) )
-      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF(x) > hat(x)");
-    
-    /* accept or reject */
-    if (GEN->r ==1) {
-      /* normal rou-method with square-root */
-      if (V*V <= PDF(X))
-        return X;
-    }
-    else {
-      /* generalized rou-method with pow-function */
-      if (V <= pow(PDF(X), 1./(1.+GEN->r)) )
-        return X;
-    }
-  }
-
-} /* end of _unur_nrou_sample_check() */
-
-/*****************************************************************************/
-
-void
-_unur_nrou_free( struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* deallocate generator object                                          */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*----------------------------------------------------------------------*/
-{ 
-  /* check arguments */
-  if( !gen ) /* nothing to do */
-    return;
-
-  /* check input */
-  if ( gen->method != UNUR_METH_NROU ) {
-    _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
-    return; }
-  COOKIE_CHECK(gen,CK_NROU_GEN,RETURN_VOID);
-
-  /* we cannot use this generator object any more */
-  SAMPLE = NULL;   /* make sure to show up a programming error */
-
-  /* free memory */
-  _unur_generic_free(gen);
-
-} /* end of _unur_nrou_free() */
-
-/*****************************************************************************/
-/**  Auxilliary Routines                                                    **/
-/*****************************************************************************/
 
 /*****************************************************************************/
 /**  Debugging utilities                                                    **/

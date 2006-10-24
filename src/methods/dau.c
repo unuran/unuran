@@ -420,7 +420,7 @@ _unur_dau_reinit( struct unur_gen *gen )
 
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *
+struct unur_gen *
 _unur_dau_create( struct unur_par *par)
      /*----------------------------------------------------------------------*/
      /* allocate memory for generator                                        */
@@ -613,7 +613,7 @@ _unur_dau_sample( struct unur_gen *gen )
 int
 _unur_dau_create_tables( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* create table for alias method using the Robin Hood algorithm         */
+     /* allocate memory for tables                                           */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
@@ -768,7 +768,7 @@ _unur_dau_make_urntable( struct unur_gen *gen )
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 
-static void
+void
 _unur_dau_debug_init( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* write info about generator into logfile                              */
@@ -815,7 +815,7 @@ _unur_dau_debug_init( struct unur_gen *gen )
 
 #define HIST_WIDTH   40  /* width of histogram for printing alias table      */
 
-static void
+void
 _unur_dau_debug_table( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* print alias table into logfile                                       */

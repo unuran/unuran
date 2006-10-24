@@ -1,0 +1,1 @@
+-O2 -g -pedantic -Wall -Wextra -Wno-div-by-zero -Wfloat-equal -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wcast-align -Wwrite-strings -Wconversion -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wmissing-format-attribute  -Wredundant-decls -Wnested-externs -Wunreachable-code -Winline

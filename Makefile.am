@@ -74,6 +74,13 @@ dist-root:
 	@echo "$(distrootfile) is ready for distribution" | \
           sed 'h;s/./=/g;p;x;p;x'
 
+# compile with almost all GCC warnings enabled
+setgccWflags:
+	export CFLAGS="`cat $(top_srcdir)/scripts/gccWflags`"; ./configure
+
+setgccWflags-ansi:
+	export CFLAGS="-ansi `cat $(top_srcdir)/scripts/gccWflags`"; ./configure
+
 
 # clean backup files
 CLEANFILES = *~

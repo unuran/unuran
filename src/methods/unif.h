@@ -41,7 +41,7 @@
 
    =UP  Methods_for_UNID
 
-   =REINIT not implemented
+   =REINIT supported
 
    =DESCRIPTION
       UNIF is a simple wrapper that makes it possible to use a uniform

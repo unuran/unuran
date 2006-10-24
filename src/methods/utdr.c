@@ -926,10 +926,6 @@ _unur_utdr_check_par( struct unur_gen *gen )
     }
   }
 
-/*   /\* mode must be in domain *\/ */
-/*   DISTR.mode = _unur_max(DISTR.mode,GEN->il); */
-/*   DISTR.mode = _unur_min(DISTR.mode,GEN->ir); */
-
   /* mode must be in domain */
   if ( (DISTR.mode < DISTR.BD_LEFT) ||
        (DISTR.mode > DISTR.BD_RIGHT) ) {

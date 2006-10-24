@@ -48,6 +48,8 @@ struct unur_dgt_gen {
   double *cumpv;        /* pointer to the vector of cumulated probabilities  */
   int    *guide_table;  /* pointer to guide table                            */
   int     guide_size;   /* length of guide table                             */
+  double  guide_factor; /* relative length of guide table.  (DEFAULT = 1)    */
+                        /*   length of guide table = guide_factor * len      */
 };
 
 /*---------------------------------------------------------------------------*/

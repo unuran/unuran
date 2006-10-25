@@ -17,7 +17,7 @@ Version 0.8.0: October 2006
 	   However, the probability vector is then removed.
 
 	* Methods:
-
+	
         - new method ITDR (Inverse Transformed Density Rejection)
           for distributions with monotone unbounded densities
 
@@ -70,6 +70,10 @@ Version 0.8.0: October 2006
 	    unur_dsrou_chg_pmfsum(), unur_dsrou_upd_pmfsum(), and
 	    unur_dsrou_reinit()
 	    are now deprecated
+
+       - method CSTD:
+	  . unur_dsrou_chg_pdfparams() is now deprecated
+
 
 	* Distributions:
 

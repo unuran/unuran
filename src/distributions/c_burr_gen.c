@@ -89,7 +89,7 @@ _unur_stdgen_burr_init( struct unur_par *par, struct unur_gen *gen )
       _unur_error(NULL,UNUR_ERR_GEN_CONDITION,"");
       return UNUR_ERR_GEN_CONDITION;
     }
-    if (par) PAR->is_inversion = TRUE;
+    if (gen) GEN->is_inversion = TRUE;
     _unur_cstd_set_sampling_routine(par,gen,_unur_stdgen_sample_burr_inv); 
     return UNUR_SUCCESS;
 

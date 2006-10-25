@@ -46,7 +46,7 @@
 
    =SPEED Set-up: fast, Sampling: depends on distribution and generator
 
-   =REINIT not implemented
+   =REINIT supported
 
    =DESCRIPTION
       CSTD is a wrapper for special generators for continuous
@@ -90,6 +90,9 @@
       It is possible to change the parameters and the domain of the chosen 
       distribution without building a new generator object
       by means of unur_cstd_chg_pdfparams().
+
+      It is possible to change the parameters and the domain of the chosen 
+      distribution and run unur_reinit() to reinitialize the generator object.
 
    =END
 */
@@ -139,15 +142,6 @@ int unur_cstd_set_variant( UNUR_PAR *parameters, unsigned variant );
 
 /*...........................................................................*/
 
-int unur_cstd_chg_pdfparams( UNUR_GEN *generator, double *params, int n_params );
-/* 
-   Change array of parameters of the distribution in a given generator
-   object. If the given parameters are invalid for the distribution,
-   no parameters are set.
-   Notice that optional parameters are (re-)set to their default values if 
-   not given for UNURAN standard distributions.
-*/
-
 int unur_cstd_chg_truncated( UNUR_GEN *generator, double left, double right );
 /* 
    Change left and right border of the domain of the (truncated) distribution.
@@ -159,15 +153,33 @@ int unur_cstd_chg_truncated( UNUR_GEN *generator, double left, double right );
    intersection of the domain of the distribution and the truncated
    domain given by this call.
 
+   It is not required to run unur_reinit() after this call has been used.
+
    @emph{Important:} If the CDF is (almost) the same for @var{left} and 
    @var{right} and (almost) equal to @code{0} or @code{1}, then the truncated 
    domain is not chanced and the call returns an error code.
 
-   @emph{Notice:} If the parameters of the distribution has been changed by a 
-   unur_cstd_chg_pdfparams() call it is recommended to set the truncated domain
-   again, since the former call might change the domain of the distribution 
-   but not update the values for the boundaries of the truncated distribution.
+   @emph{Notice:} If the parameters of the distribution has been changed
+   it is recommended to set the truncated domain again, since the
+   former call might change the domain of the distribution but not
+   update the values for the boundaries of the truncated
+   distribution.
 */
 
 /* =END */
 /*---------------------------------------------------------------------------*/
+
+/**********************
+ *  Deprecated calls  *
+ **********************/
+
+int unur_cstd_chg_pdfparams( UNUR_GEN *generator, double *params, int n_params );
+/* 
+   Change array of parameters of the distribution in a given generator
+   object. If the given parameters are invalid for the distribution,
+   no parameters are set.
+   Notice that optional parameters are (re-)set to their default values if 
+   not given for UNURAN standard distributions.
+*/
+
+

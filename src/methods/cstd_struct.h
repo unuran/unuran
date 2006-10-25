@@ -34,15 +34,10 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-
-#define UNUR_MAX_DIST_PARAMS  5    /* maximal numbers of parameters for distributions */
-
-/*---------------------------------------------------------------------------*/
 /* Information for constructing the generator                                */
 
 struct unur_cstd_par { 
-  const char *sample_routine_name; /* name of sampling routine               */
-  int  is_inversion;      /* indicate whether method is inversion method     */     
+  int dummy;              /* no special parameters                           */
 };
 
 /*---------------------------------------------------------------------------*/
@@ -58,6 +53,7 @@ struct unur_cstd_gen {
   double  umax;           /* cdf at right boundary of domain                 */
 
   int  is_inversion;      /* indicate whether method is inversion method     */     
+  const char *sample_routine_name; /* name of sampling routine               */
 };
 
 /*---------------------------------------------------------------------------*/

@@ -102,7 +102,8 @@
 /*    bits 13-24 ... adaptive steps                                          */
 /*    bits 25-32 ... trace sampling                                          */
 
-#define CSTD_DEBUG_CHG          0x00001000u   /* print changed parameters    */
+#define CSTD_DEBUG_REINIT    0x00000010u   /* print parameters after reinit  */
+#define CSTD_DEBUG_CHG       0x00001000u   /* print changed parameters       */
 
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
@@ -120,9 +121,29 @@ static struct unur_gen *_unur_cstd_init( struct unur_par *par );
 /* Initialize new generator.                                                 */
 /*---------------------------------------------------------------------------*/
 
+static int _unur_cstd_reinit( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* Reinitialize generator.                                                   */
+/*---------------------------------------------------------------------------*/
+
 static struct unur_gen *_unur_cstd_create( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 /* create new (almost empty) generator object.                               */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_cstd_check_par( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* Check parameters of given distribution and method                         */
+/*---------------------------------------------------------------------------*/
+
+static struct unur_gen *_unur_cstd_clone( const struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* copy (clone) generator object.                                            */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_cstd_free( struct unur_gen *gen);
+/*---------------------------------------------------------------------------*/
+/* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
@@ -131,23 +152,13 @@ static struct unur_gen *_unur_cstd_create( struct unur_par *par );
 /* double _unur_cstd_sample( UNUR_GEN *gen ); does not exist!                */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_cstd_free( struct unur_gen *gen);
-/*---------------------------------------------------------------------------*/
-/* destroy generator object.                                                 */
-/*---------------------------------------------------------------------------*/
-
-static struct unur_gen *_unur_cstd_clone( const struct unur_gen *gen );
-/*---------------------------------------------------------------------------*/
-/* copy (clone) generator object.                                            */
-/*---------------------------------------------------------------------------*/
-
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 /* the following functions print debugging information on output stream,     */
 /* i.e., into the log file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_cstd_debug_init( struct unur_par *par, struct unur_gen *gen );
+static void _unur_cstd_debug_init( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed.                 */
 /*---------------------------------------------------------------------------*/
@@ -225,9 +236,6 @@ unur_cstd_new( const struct unur_distr *distr )
   par->distr    = distr;            /* pointer to distribution object        */
 
   /* set default values */
-  PAR->sample_routine_name = NULL ;  /* name of sampling routine              */
-  PAR->is_inversion = FALSE;         /* method not based on inversion         */
-
   par->method   = UNUR_METH_CSTD;   /* method                                */
   par->variant  = 0u;               /* default variant                       */
   par->set      = 0u;               /* inidicate default parameters          */    
@@ -290,6 +298,8 @@ unur_cstd_set_variant( struct unur_par *par, unsigned variant )
 int 
 unur_cstd_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
      /*----------------------------------------------------------------------*/
+     /* Deprecated call!                                                     */
+     /*----------------------------------------------------------------------*/
      /* change array of parameters for distribution                          */
      /*                                                                      */
      /* parameters:                                                          */
@@ -315,32 +325,8 @@ unur_cstd_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
   if (unur_distr_cont_set_pdfparams(gen->distr, params,n_params)!=UNUR_SUCCESS)
     return UNUR_ERR_DISTR_SET;
 
-  /* run special init routine for generator */
-  if ( DISTR.init(NULL,gen)!=UNUR_SUCCESS ) {
-    /* init failed --> could not find a sampling routine */
-    _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"parameters");
-    return UNUR_ERR_GEN_DATA;
-  }
-
-  if ( GEN->is_inversion )
-    if (!(gen->distr->set & UNUR_DISTR_SET_STDDOMAIN)) {
-      /* truncated domain */
-      if (DISTR.cdf == NULL) {
-	_unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-	return UNUR_ERR_SHOULD_NOT_HAPPEN; }
-      /* compute umin and umax */
-      GEN->umin = (DISTR.trunc[0] > -INFINITY) ? CDF(DISTR.trunc[0]) : 0.;
-      GEN->umax = (DISTR.trunc[1] < INFINITY)  ? CDF(DISTR.trunc[1]) : 1.;
-    }
-
-#ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
-    if (gen->debug & CSTD_DEBUG_CHG) 
-      _unur_cstd_debug_chg_pdfparams( gen );
-#endif
-
-  /* o.k. */
-  return UNUR_SUCCESS;
+  /* reinit */
+  return _unur_cstd_reinit(gen);
 
 } /* end of unur_cstd_chg_pdfparams() */
 
@@ -470,7 +456,11 @@ _unur_cstd_init( struct unur_par *par )
 
   /* check arguments */
   CHECK_NULL(par,NULL);
-  _unur_check_NULL( GENTYPE, par->DISTR_IN.init, NULL );
+  /* check for required data: initializing routine for special generator */
+  if (par->DISTR_IN.init == NULL) {
+    _unur_error(GENTYPE,UNUR_ERR_NULL,"");
+    return NULL;
+  }
 
   /* check input */
   if ( par->method != UNUR_METH_CSTD ) {
@@ -478,62 +468,29 @@ _unur_cstd_init( struct unur_par *par )
     return NULL;
   }
   COOKIE_CHECK(par,CK_CSTD_PAR,NULL);
-  
+
   /* create a new empty generator object */
   gen = _unur_cstd_create(par);
-  if (!gen) { _unur_par_free(par); return NULL; }
+  _unur_par_free(par);
+  if (!gen) return NULL;
   
-  /* check for initializing routine for special generator */
-  if (DISTR.init == NULL) {
-    _unur_error(gen->genid,UNUR_ERR_NULL,"");
-    free (par);
-    return NULL;
-  }
-  
-  /* reset flag for inversion method */
-  PAR->is_inversion = FALSE;
-
   /* run special init routine for generator */
-  if ( DISTR.init(par,gen)!=UNUR_SUCCESS ) {
+  GEN->is_inversion = FALSE;   /* reset flag for inversion method */
+  if ( DISTR.init(NULL,gen)!=UNUR_SUCCESS ) {
     /* init failed --> could not find a sampling routine */
     _unur_error(GENTYPE,UNUR_ERR_GEN_DATA,"variant for special generator");
-    _unur_par_free(par); _unur_cstd_free(gen); return NULL; 
+    _unur_cstd_free(gen); return NULL; 
   }
-  
-  /* copy information about type of special generator */
-  GEN->is_inversion = PAR->is_inversion;
-  
-  /* domain valid for special generator ?? */
-  if (!(gen->distr->set & UNUR_DISTR_SET_STDDOMAIN)) {
-    /* domain has been modified */
-    gen->distr->set &= UNUR_DISTR_SET_TRUNCATED;
-    DISTR.trunc[0] = DISTR.domain[0];
-    DISTR.trunc[1] = DISTR.domain[1];
 
-    if ( ! GEN->is_inversion ) { 
-      /* this is not the inversion method */
-      _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"domain changed for non inversion method");
-      _unur_par_free(par); _unur_cstd_free(gen); return NULL; 
-    }
-
-    if (DISTR.cdf == NULL) {
-      /* using a truncated distribution requires a CDF */
-      _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"domain changed, CDF required");
-      _unur_par_free(par); _unur_cstd_free(gen); return NULL; 
-    }
-
-    /* compute umin and umax */
-    GEN->umin = (DISTR.trunc[0] > -INFINITY) ? CDF(DISTR.trunc[0]) : 0.;
-    GEN->umax = (DISTR.trunc[1] < INFINITY)  ? CDF(DISTR.trunc[1]) : 1.;
+  /* check parameters */
+  if (_unur_cstd_check_par(gen) != UNUR_SUCCESS) {
+    _unur_cstd_free(gen); return NULL;
   }
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-  if (gen->debug) _unur_cstd_debug_init(par,gen);
+  if (gen->debug) _unur_cstd_debug_init(gen);
 #endif
-
-  /* free parameters */
-  _unur_par_free(par);
 
   /* o.k. */
   return gen;
@@ -542,7 +499,46 @@ _unur_cstd_init( struct unur_par *par )
 
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *
+int
+_unur_cstd_reinit( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* re-initialize (existing) generator.                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  int rcode;
+
+  /* run special init routine for generator */
+  GEN->is_inversion = FALSE;   /* reset flag for inversion method */
+  if ( DISTR.init(NULL,gen)!=UNUR_SUCCESS ) {
+    /* init failed --> could not find a sampling routine */
+    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"parameters");
+    return UNUR_ERR_GEN_DATA;
+  }
+
+  /* check parameters */
+  if ( (rcode = _unur_cstd_check_par(gen)) != UNUR_SUCCESS)
+    return rcode;
+
+#ifdef UNUR_ENABLE_LOGGING
+    /* write info into log file */
+    if (gen->debug & CSTD_DEBUG_REINIT) 
+      _unur_cstd_debug_chg_pdfparams( gen );
+#endif
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+} /* end of _unur_cstd_reinit() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_gen *
 _unur_cstd_create( struct unur_par *par )
      /*----------------------------------------------------------------------*/
      /* allocate memory for generator                                        */
@@ -575,14 +571,17 @@ _unur_cstd_create( struct unur_par *par )
   SAMPLE = NULL;      /* will be set in _unur_cstd_init() */
   gen->destroy = _unur_cstd_free;
   gen->clone = _unur_cstd_clone;
+  gen->reinit = _unur_cstd_reinit;
 
   /* defaults */
-  GEN->gen_param = NULL;  /* parameters for the generator                     */
-  GEN->n_gen_param = 0;   /* (computed in special GEN->init()                  */
+  GEN->gen_param = NULL;        /* parameters for the generator              */
+  GEN->n_gen_param = 0;         /* (computed in special GEN->init()          */
+  GEN->is_inversion = FALSE;    /* method not based on inversion             */
+  GEN->sample_routine_name = NULL ;  /* name of sampling routine             */
 
   /* copy some parameters into generator object */
-  GEN->umin        = 0;    /* cdf at left boundary of domain                  */
-  GEN->umax        = 1;    /* cdf at right boundary of domain                 */
+  GEN->umin        = 0;    /* cdf at left boundary of domain                 */
+  GEN->umax        = 1;    /* cdf at right boundary of domain                */
 
   /* GEN->is_inversion is set in _unur_cstd_init() */
 
@@ -590,6 +589,48 @@ _unur_cstd_create( struct unur_par *par )
   return gen;
   
 } /* end of _unur_cstd_create() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_cstd_check_par( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* check parameters of given distribution and method                    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* domain valid for special generator ?? */
+  if (!(gen->distr->set & UNUR_DISTR_SET_STDDOMAIN)) {
+    /* domain has been modified */
+    gen->distr->set &= UNUR_DISTR_SET_TRUNCATED;
+    DISTR.trunc[0] = DISTR.domain[0];
+    DISTR.trunc[1] = DISTR.domain[1];
+
+    if ( ! GEN->is_inversion ) {
+      /* this is not the inversion method */
+      _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"domain changed for non inversion method");
+      return UNUR_ERR_GEN_DATA;
+    }
+
+    if (DISTR.cdf == NULL) {
+      /* using a truncated distribution requires a CDF */
+      _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"domain changed, CDF required");
+      return UNUR_ERR_GEN_DATA;
+    }
+
+    /* compute umin and umax */
+    GEN->umin = (DISTR.trunc[0] > -INFINITY) ? CDF(DISTR.trunc[0]) : 0.;
+    GEN->umax = (DISTR.trunc[1] < INFINITY)  ? CDF(DISTR.trunc[1]) : 1.;
+  }
+
+  return UNUR_SUCCESS;
+} /* end of _unur_cstd_check_par() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -629,15 +670,7 @@ _unur_cstd_clone( const struct unur_gen *gen )
 #undef CLONE
 } /* end of _unur_cstd_clone() */
 
-/*****************************************************************************/
-
-/** 
-    double _unur_cstd_sample( struct unur_gen *gen ) {}
-    Does not exists !!!
-    Sampling routines are defined in ../distributions/ for each distributions.
-**/
-
-/*****************************************************************************/
+/*---------------------------------------------------------------------------*/
 
 void
 _unur_cstd_free( struct unur_gen *gen )
@@ -673,6 +706,14 @@ _unur_cstd_free( struct unur_gen *gen )
 } /* end of _unur_cstd_free() */
 
 /*****************************************************************************/
+
+/** 
+    double _unur_cstd_sample( struct unur_gen *gen ) {}
+    Does not exists !!!
+    Sampling routines are defined in ../distributions/ for each distributions.
+**/
+
+/*****************************************************************************/
 /**  Auxilliary Routines                                                    **/
 /*****************************************************************************/
 
@@ -685,20 +726,18 @@ _unur_cstd_free( struct unur_gen *gen )
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 
-static void
-_unur_cstd_debug_init( struct unur_par *par, struct unur_gen *gen )
+void
+_unur_cstd_debug_init( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* write info about generator into logfile                              */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   par ... pointer to parameter for building generator object         */
      /*   gen ... pointer to generator object                                */
      /*----------------------------------------------------------------------*/
 {
   FILE *log;
 
   /* check arguments */
-  CHECK_NULL(par,RETURN_VOID);  COOKIE_CHECK(par,CK_CSTD_PAR,RETURN_VOID);
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_CSTD_GEN,RETURN_VOID);
 
   log = unur_get_stream();
@@ -713,15 +752,15 @@ _unur_cstd_debug_init( struct unur_par *par, struct unur_gen *gen )
 
   /* sampling routine */
   fprintf(log,"%s: sampling routine = ",gen->genid);
-  if (PAR->sample_routine_name)
-    fprintf(log,"%s()",PAR->sample_routine_name);
+  if (GEN->sample_routine_name)
+    fprintf(log,"%s()",GEN->sample_routine_name);
   else
     fprintf(log,"(Unknown)");
-  if (PAR->is_inversion)
+  if (GEN->is_inversion)
     fprintf(log,"   (Inversion)");
   fprintf(log,"\n%s:\n",gen->genid);
 
-  if (!(par->distr->set & UNUR_DISTR_SET_STDDOMAIN)) {
+  if (!(gen->distr->set & UNUR_DISTR_SET_STDDOMAIN)) {
     fprintf(log,"%s: domain has been changed. U in (%g,%g)\n",gen->genid,GEN->umin,GEN->umax);
     fprintf(log,"%s:\n",gen->genid);
   }
@@ -730,7 +769,7 @@ _unur_cstd_debug_init( struct unur_par *par, struct unur_gen *gen )
 
 /*---------------------------------------------------------------------------*/
 
-static void 
+void 
 _unur_cstd_debug_chg_pdfparams( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* print new (changed) parameters of distribution                       */
@@ -757,7 +796,7 @@ _unur_cstd_debug_chg_pdfparams( struct unur_gen *gen )
 
 /*---------------------------------------------------------------------------*/
 
-static void 
+void 
 _unur_cstd_debug_chg_truncated( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* print new (changed) domain of (truncated) distribution               */

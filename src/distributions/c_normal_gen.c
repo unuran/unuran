@@ -120,7 +120,7 @@ _unur_stdgen_normal_init( struct unur_par *par, struct unur_gen *gen )
     return UNUR_SUCCESS;
 
   case UNUR_STDGEN_INVERSION:   /* inversion method */
-    if (par) PAR->is_inversion = TRUE;
+    if (gen) GEN->is_inversion = TRUE;
     _unur_cstd_set_sampling_routine(par,gen,_unur_stdgen_sample_normal_inv); 
     return UNUR_SUCCESS;
 

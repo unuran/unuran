@@ -408,7 +408,7 @@ _unur_hrb_reinit( struct unur_gen *gen )
 
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *
+struct unur_gen *
 _unur_hrb_create( struct unur_par *par )
      /*----------------------------------------------------------------------*/
      /* allocate memory for generator                                        */

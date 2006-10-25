@@ -46,7 +46,7 @@
 
    =REF  [HLD04: Sect.9.1.5, Alg.9.5]
 
-   =REINIT not implemented
+   =REINIT supported
 
    =DESCRIPTION
       Generates random variate with given non-increasing hazard rate.
@@ -72,6 +72,9 @@
       (@pxref{HRB,,Hazard Rate Bounded}).
       For distributions with increasing hazard rate method HRI 
       (@pxref{HRI,,Hazard Rate Increasing}) is required.
+
+      It is possible to change the parameters and the domain of the chosen 
+      distribution and run unur_reinit() to reinitialize the generator object.
 
    =END
 */

@@ -78,8 +78,9 @@
 /*    bits 13-24 ... adaptive steps                                          */
 /*    bits 25-32 ... trace sampling                                          */
 
-#define HRI_DEBUG_SAMPLE       0x01000000u    /* trace sampling
-						 (only if verify mode is on) */
+#define HRB_DEBUG_REINIT    0x00000010u   /* print parameters after reinit  */
+#define HRI_DEBUG_SAMPLE    0x01000000u    /* trace sampling
+					      (only if verify mode is on) */
                                                 
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
@@ -97,15 +98,24 @@ static struct unur_gen *_unur_hri_init( struct unur_par *par );
 /* Initialize new generator.                                                 */
 /*---------------------------------------------------------------------------*/
 
+static int _unur_hri_reinit( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* Reinitialize generator.                                                   */
+/*---------------------------------------------------------------------------*/
+
 static struct unur_gen *_unur_hri_create( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 /* create new (almost empty) generator object.                               */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_hri_sample( struct unur_gen *gen );
-static double _unur_hri_sample_check( struct unur_gen *gen );
+static int _unur_hri_check_par( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* sample from generator                                                     */
+/* Check parameters of given distribution and method                         */
+/*---------------------------------------------------------------------------*/
+
+static struct unur_gen *_unur_hri_clone( const struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* copy (clone) generator object.                                            */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_hri_free( struct unur_gen *gen );
@@ -113,9 +123,10 @@ static void _unur_hri_free( struct unur_gen *gen );
 /* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *_unur_hri_clone( const struct unur_gen *gen );
+static double _unur_hri_sample( struct unur_gen *gen );
+static double _unur_hri_sample_check( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* copy (clone) generator object.                                            */
+/* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -354,31 +365,12 @@ _unur_hri_init( struct unur_par *par )
 
   /* create a new empty generator object */    
   gen = _unur_hri_create(par);
-  if (!gen) { _unur_par_free(par); return NULL; }
+  _unur_par_free(par);
+  if (!gen) return NULL;
 
-  /* set left border and check domain */
-  if (DISTR.domain[0] < 0.)       DISTR.domain[0] = 0.;
-  if (DISTR.domain[1] < INFINITY) DISTR.domain[1] = INFINITY;
-  GEN->left_border = DISTR.domain[0];
-
-  /* check design point */
-  if (gen->set & HRI_SET_P0) {
-    if (GEN->p0 <= GEN->left_border) {
-      _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"p0 <= left boundary");
-      GEN->p0 = GEN->left_border + 1.;
-    }
-  }
-  else {
-    /* p0 not set */
-    GEN->p0 = GEN->left_border + 1.;
-  }
-
-  /* compute hazard rate at construction point */
-  GEN->hrp0 = HR(GEN->p0);
-  if (GEN->hrp0 <= 0. || _unur_FP_is_infinity(GEN->hrp0)) {
-    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"design point p0 not valid");
-    _unur_par_free(par); _unur_free(gen);
-    return NULL;
+  /* check parameters */
+  if (_unur_hri_check_par(gen) != UNUR_SUCCESS) {
+    _unur_hri_free(gen); return NULL;
   }
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -386,16 +378,41 @@ _unur_hri_init( struct unur_par *par )
   if (gen->debug) _unur_hri_debug_init(gen);
 #endif
 
-  /* free parameters */
-  _unur_par_free(par);
-  
   return gen;
 
 } /* end of _unur_hri_init() */
 
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *
+int
+_unur_hri_reinit( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* re-initialize (existing) generator.                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  int rcode;
+
+  /* (re)set sampling routine */
+  SAMPLE = _unur_hri_getSAMPLE(gen);
+
+  /* check parameters */
+  if ( (rcode = _unur_hri_check_par(gen)) != UNUR_SUCCESS)
+    return rcode;
+
+  /* nothing to do */
+  return UNUR_SUCCESS;
+} /* end of _unur_hri_reinit() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_gen *
 _unur_hri_create( struct unur_par *par )
      /*----------------------------------------------------------------------*/
      /* allocate memory for generator                                        */
@@ -428,6 +445,7 @@ _unur_hri_create( struct unur_par *par )
   SAMPLE = _unur_hri_getSAMPLE(gen);
   gen->destroy = _unur_hri_free;
   gen->clone = _unur_hri_clone;
+  gen->reinit = _unur_hri_reinit;
 
   /* copy parameters into generator object */
   GEN->p0 = PAR->p0;                  /* design (splitting) point              */
@@ -443,6 +461,49 @@ _unur_hri_create( struct unur_par *par )
   return gen;
 
 } /* end of _unur_hri_create() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_hri_check_par( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* check parameters of given distribution and method                    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+
+  /* set left border and check domain */
+  if (DISTR.domain[0] < 0.)       DISTR.domain[0] = 0.;
+  if (DISTR.domain[1] < INFINITY) DISTR.domain[1] = INFINITY;
+  GEN->left_border = DISTR.domain[0];
+
+  /* check design point */
+  if (gen->set & HRI_SET_P0) {
+    if (GEN->p0 <= GEN->left_border) {
+      _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"p0 <= left boundary");
+      GEN->p0 = GEN->left_border + 1.;
+    }
+  }
+  else {
+    /* p0 not set */
+    GEN->p0 = GEN->left_border + 1.;
+  }
+
+  /* compute hazard rate at construction point */
+  GEN->hrp0 = HR(GEN->p0);
+  if (GEN->hrp0 <= 0. || _unur_FP_is_infinity(GEN->hrp0)) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"design point p0 not valid");
+    return UNUR_ERR_GEN_CONDITION;
+  }
+
+  return UNUR_SUCCESS;
+} /* end of _unur_hri_check_par() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -476,7 +537,7 @@ _unur_hri_clone( const struct unur_gen *gen )
 #undef CLONE
 } /* end of _unur_hri_clone() */
 
-/*****************************************************************************/
+/*---------------------------------------------------------------------------*/
 
 void
 _unur_hri_free( struct unur_gen *gen )
@@ -758,58 +819,7 @@ _unur_hri_sample_check( struct unur_gen *gen )
 
   return ((X <= p1) ? X : p1);
 
-
-#if 0
-  double U,V,E,X,hx;
-  double lambda;
-  int i;
-
-  /* parameter for majorizing hazard rate */
-  lambda = GEN->upper_bound;
-
-  /* starting point */
-  X = GEN->left_border;
-
-  for(i=1;;i++) {
-    /* sample from U(0,1) */
-    while ( (U = _unur_call_urng(gen->urng)) == 0.);
-
-    /* sample from exponential distribution with scale parameter lambda */
-    E = -log(1.-U) / lambda;
-
-    /* next step */
-    X += E;
-
-    /* hazard rate at generated point */
-    hx = HR(X);
-
-    /* verify upper bound */
-    if ( (1.+UNUR_EPSILON) * lambda < hx )
-      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"HR not increasing");
-
-    /* reject or accept */
-    V =  lambda * _unur_call_urng(gen->urng);
-    if( V <= hx ) {
-#ifdef UNUR_ENABLE_LOGGING
-      /* write info into log file */
-      if (gen->debug & HRI_DEBUG_SAMPLE)
-	_unur_hri_debug_sample( gen, X, i );
-#endif
-      return X;
-    }
-    else {
-      /* reject */
-      lambda = hx;   /* update majorizing hazard rate */
-    }
-  }
-
-#endif
-
-  return INFINITY;
-
 } /* end of _unur_hri_sample_check() */
-
-/*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/
 /**  Auxilliary Routines                                                    **/

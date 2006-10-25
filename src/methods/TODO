@@ -1,5 +1,3 @@
-cstd.h:int unur_cstd_chg_pdfparams( UNUR_GEN *generator, double *params, int n_params );
-dstd.h:int unur_dstd_chg_pmfparams( UNUR_GEN *gen, double *params, int n_params );
 ninv.h:int unur_ninv_chg_pdfparams(UNUR_GEN *generator, double *params, int n_params);
 
 
@@ -14,25 +12,16 @@ tdrgw.h
 
 arou.h
 auto.h
-cstd.h
-dau.h
-dgt.h
-dstd.h
 empk.h
 empl.h
 gibbs.h
 hinv.h
 hitro.h
-hrb.h
-hrd.h
-hri.h
 itdr.h
 mcorr.h
 ninv.h
 norta.h
-nrou.h
 tabl.h
-unif.h
 vempk.h
 vmt.h
 vnrou.h

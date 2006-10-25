@@ -494,7 +494,7 @@ int _unur_stdgen_sample_zipf_zet( UNUR_GEN *generator );
    do { \
      if ((gen)==NULL) return UNUR_SUCCESS;           /* test existence only  */ \
      (gen)->sample.cont = (routine);                 /* set pointer        */ \
-     {((struct unur_cstd_gen*)gen->datap)->sample_routine_name = #routine;}  /* set routine name */ \
+     ((struct unur_cstd_gen*)gen->datap)->sample_routine_name = #routine;  /* set routine name */ \
    } while (0)
 
 
@@ -502,10 +502,8 @@ int _unur_stdgen_sample_zipf_zet( UNUR_GEN *generator );
    do { \
      if ((gen)==NULL) return UNUR_SUCCESS;           /* test existence only  */ \
      (gen)->sample.discr = (routine);                /* set pointer        */ \
-     if (par) {((struct unur_dstd_par*)par->datap)->sample_routine_name = #routine;}  /* set routine name */ \
+     ((struct unur_dstd_gen*)gen->datap)->sample_routine_name = #routine;  /* set routine name */ \
    } while (0)
-
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 #endif  /* UNUR_DISTRIBUTIONS_SOURCE_H_SEEN */

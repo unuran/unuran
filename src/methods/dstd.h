@@ -46,7 +46,7 @@
 
    =SPEED Set-up: fast, Sampling: depends on distribution and generator
 
-   =REINIT not implemented
+   =REINIT supported
 
    =DESCRIPTION
       DSTD is a wrapper for special generators for discrete univariate
@@ -88,8 +88,7 @@
       is possible but requires the inversion method.
 
       It is possible to change the parameters and the domain of the chosen 
-      distribution without building a new generator object
-      by means of unur_dstd_chg_pmfparams().
+      distribution and run unur_reinit() to reinitialize the generator object.
 
    =END
 */
@@ -130,6 +129,16 @@ int unur_dstd_set_variant( UNUR_PAR *parameters, unsigned variant );
    If the selected variant number is not implemented, this call has no effect.
 */
 
+/*
+  =END
+*/
+
+/*---------------------------------------------------------------------------*/
+
+/**********************
+ *  Deprecated calls  *
+ **********************/
+
 int unur_dstd_chg_pmfparams( UNUR_GEN *gen, double *params, int n_params );
 /*
    Change array of parameters of the distribution in a given generator
@@ -140,12 +149,6 @@ int unur_dstd_chg_pmfparams( UNUR_GEN *gen, double *params, int n_params );
 
    @emph{Important:} Integer parameter must be given as doubles.
 */
-
-/*
-  =END
-*/
-
-/*---------------------------------------------------------------------------*/
 
 
 

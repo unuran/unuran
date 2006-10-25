@@ -92,7 +92,8 @@
 /*    bits 13-24 ... adaptive steps                                          */
 /*    bits 25-32 ... trace sampling                                          */
 
-#define DSTD_DEBUG_CHG          0x00001000u   /* print changed parameters    */
+#define DSTD_DEBUG_REINIT    0x00000010u   /* print parameters after reinit  */
+#define DSTD_DEBUG_CHG       0x00001000u   /* print changed parameters       */
 
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
@@ -110,9 +111,29 @@ static struct unur_gen *_unur_dstd_init( struct unur_par *par );
 /* Initialize new generator.                                                 */
 /*---------------------------------------------------------------------------*/
 
+static int _unur_dstd_reinit( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* Reinitialize generator.                                                   */
+/*---------------------------------------------------------------------------*/
+
 static struct unur_gen *_unur_dstd_create( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 /* create new (almost empty) generator object.                               */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_dstd_check_par( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* Check parameters of given distribution and method                         */
+/*---------------------------------------------------------------------------*/
+
+static struct unur_gen *_unur_dstd_clone( const struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* copy (clone) generator object.                                            */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_dstd_free( struct unur_gen *gen);
+/*---------------------------------------------------------------------------*/
+/* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
@@ -121,23 +142,13 @@ static struct unur_gen *_unur_dstd_create( struct unur_par *par );
 /* double _unur_dstd_sample( UNUR_GEN *gen ); does not exist!                */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_dstd_free( struct unur_gen *gen);
-/*---------------------------------------------------------------------------*/
-/* destroy generator object.                                                 */
-/*---------------------------------------------------------------------------*/
-
-static struct unur_gen *_unur_dstd_clone( const struct unur_gen *gen );
-/*---------------------------------------------------------------------------*/
-/* copy (clone) generator object.                                            */
-/*---------------------------------------------------------------------------*/
-
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 /* the following functions print debugging information on output stream,     */
 /* i.e., into the log file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_dstd_debug_init( const struct unur_par *par, const struct unur_gen *gen );
+static void _unur_dstd_debug_init( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed.                 */
 /*---------------------------------------------------------------------------*/
@@ -211,9 +222,6 @@ unur_dstd_new( const struct unur_distr *distr )
   par->distr    = distr;            /* pointer to distribution object        */
 
   /* set default values */
-  PAR->sample_routine_name = NULL ;  /* name of sampling routine              */
-  PAR->is_inversion = FALSE;         /* method not based on inversion         */
-
   par->method   = UNUR_METH_DSTD;   /* method                                */
   par->variant  = 0u;               /* default variant                       */
   par->set      = 0u;               /* inidicate default parameters          */    
@@ -295,21 +303,24 @@ unur_dstd_chg_pmfparams( struct unur_gen *gen, double *params, int n_params )
   if (unur_distr_discr_set_pmfparams(gen->distr,params,n_params)!=UNUR_SUCCESS)
     return UNUR_ERR_GEN_DATA;
 
-  /* run special init routine for generator */
-  if ( DISTR.init(NULL,gen)!=UNUR_SUCCESS ) {
-    /* init failed --> could not find a sampling routine */
-    _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"parameters");
-    return UNUR_ERR_GEN_DATA;
-  }
+  /* reinit */
+  return _unur_dstd_reinit(gen);
 
-#ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
-    if (gen->debug & DSTD_DEBUG_CHG) 
-      _unur_dstd_debug_chg_pmfparams( gen );
-#endif
+/*   /\* run special init routine for generator *\/ */
+/*   if ( DISTR.init(NULL,gen)!=UNUR_SUCCESS ) { */
+/*     /\* init failed --> could not find a sampling routine *\/ */
+/*     _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"parameters"); */
+/*     return UNUR_ERR_GEN_DATA; */
+/*   } */
 
-  /* o.k. */
-  return UNUR_SUCCESS;
+/* #ifdef UNUR_ENABLE_LOGGING */
+/*     /\* write info into log file *\/ */
+/*     if (gen->debug & DSTD_DEBUG_CHG)  */
+/*       _unur_dstd_debug_chg_pmfparams( gen ); */
+/* #endif */
+
+/*   /\* o.k. *\/ */
+/*   return UNUR_SUCCESS; */
 
 } /* end of unur_dstd_chg_pmfparams() */
 
@@ -337,7 +348,11 @@ _unur_dstd_init( struct unur_par *par )
 
   /* check arguments */
   CHECK_NULL(par,NULL);
-  _unur_check_NULL( GENTYPE,par->DISTR_IN.init,NULL );
+  /* check for required data: initializing routine for special generator */
+  if (par->DISTR_IN.init == NULL) {
+    _unur_error(GENTYPE,UNUR_ERR_NULL,"");
+    return NULL;
+  }
 
   /* check input */
   if ( par->method != UNUR_METH_DSTD ) {
@@ -348,41 +363,149 @@ _unur_dstd_init( struct unur_par *par )
 
   /* create a new empty generator object */
   gen = _unur_dstd_create(par);
-  if (!gen) { _unur_par_free(par); return NULL; }
+  _unur_par_free(par);
+  if (!gen) return NULL;
 
-  /* check for initializing routine for special generator */
-  if (DISTR.init == NULL) {
-    _unur_error(gen->genid,UNUR_ERR_NULL,"");
-    free (par);
-    return NULL;
+  /* check parameters */
+  if (_unur_dstd_check_par(gen) != UNUR_SUCCESS) {
+    _unur_dstd_free(gen); return NULL;
   }
-  
+
   /* run special init routine for generator */
-  if ( DISTR.init(par,gen)!=UNUR_SUCCESS ) {
+  GEN->is_inversion = FALSE;   /* reset flag for inversion method */
+  if ( DISTR.init(NULL,gen)!=UNUR_SUCCESS ) {
     /* init failed --> could not find a sampling routine */
     _unur_error(GENTYPE,UNUR_ERR_GEN_DATA,"variant for special generator");
-    _unur_par_free(par); _unur_dstd_free(gen); return NULL; 
-  }
-
-  /* domain must not be changed */
-  if (!(gen->distr->set & UNUR_DISTR_SET_STDDOMAIN)) {
-    /* domain has been modified --> not allowed */
-    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"domain changed");
-    _unur_par_free(par); _unur_dstd_free(gen); return NULL; 
+    _unur_dstd_free(gen); return NULL; 
   }
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-  if (gen->debug) _unur_dstd_debug_init(par,gen);
+  if (gen->debug) _unur_dstd_debug_init(gen);
 #endif
-
-  /* free parameters */
-  _unur_par_free(par);
 
   /* o.k. */
   return gen;
 
 } /* end of _unur_dstd_init() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_dstd_reinit( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* re-initialize (existing) generator.                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  int rcode;
+
+  /* check parameters */
+  if ( (rcode = _unur_dstd_check_par(gen)) != UNUR_SUCCESS)
+    return rcode;
+
+  /* run special init routine for generator */
+  GEN->is_inversion = FALSE;   /* reset flag for inversion method */
+  if ( DISTR.init(NULL,gen)!=UNUR_SUCCESS ) {
+    /* init failed --> could not find a sampling routine */
+    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"parameters");
+    return UNUR_ERR_GEN_DATA;
+  }
+
+#ifdef UNUR_ENABLE_LOGGING
+    /* write info into log file */
+    if (gen->debug & DSTD_DEBUG_REINIT)
+      _unur_dstd_debug_chg_pmfparams( gen );
+#endif
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+} /* end of _unur_dstd_reinit() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_gen *
+_unur_dstd_create( struct unur_par *par )
+     /*----------------------------------------------------------------------*/
+     /* allocate memory for generator                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter for building generator object         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to (empty) generator object with default settings          */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_gen *gen;
+
+  /* check arguments */
+  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_DSTD_PAR,NULL);
+
+  /* create new generic generator object */
+  gen = _unur_generic_create( par, sizeof(struct unur_dstd_gen) );
+
+  /* magic cookies */
+  COOKIE_SET(gen,CK_DSTD_GEN);
+
+  /* set generator identifier */
+  gen->genid = _unur_set_genid(GENTYPE);
+
+  /* routines for sampling and destroying generator */
+  SAMPLE = NULL;    /* will be set in _unur_dstd_init() */
+  gen->destroy = _unur_dstd_free;
+  gen->clone = _unur_dstd_clone;
+  gen->reinit = _unur_dstd_reinit;
+
+  /* defaults */
+  GEN->gen_param = NULL;  /* parameters for the generator      */
+  GEN->n_gen_param = 0;   /* (computed in special GEN->init()   */
+  GEN->gen_iparam = NULL; /* array for integer parameters      */
+  GEN->n_gen_iparam = 0;
+  GEN->is_inversion = FALSE;    /* method not based on inversion             */
+  GEN->sample_routine_name = NULL ;  /* name of sampling routine  */
+
+  /* copy some parameters into generator object */
+  GEN->umin        = 0;    /* cdf at left boundary of domain   */
+  GEN->umax        = 1;    /* cdf at right boundary of domain  */
+
+  /* return pointer to (almost empty) generator object */
+  return gen;
+  
+} /* end of _unur_dstd_create() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_dstd_check_par( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* check parameters of given distribution and method                    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* domain must not be changed */
+  if (!(gen->distr->set & UNUR_DISTR_SET_STDDOMAIN)) {
+    /* domain has been modified --> not allowed */
+    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"domain changed");
+    return UNUR_ERR_GEN_DATA;
+  }
+
+  return UNUR_SUCCESS;
+} /* end of _unur_dstd_check_par() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -426,15 +549,7 @@ _unur_dstd_clone( const struct unur_gen *gen )
 #undef CLONE
 } /* end of _unur_dstd_clone() */
 
-/*****************************************************************************/
-
-/** 
-    double _unur_dstd_sample( struct unur_gen *gen ) {}
-    Does not exists !!!
-    Sampling routines are defined in ../distributions/ for each distributions.
-**/
-
-/*****************************************************************************/
+/*---------------------------------------------------------------------------*/
 
 void
 _unur_dstd_free( struct unur_gen *gen )
@@ -470,57 +585,16 @@ _unur_dstd_free( struct unur_gen *gen )
 } /* end of _unur_dstd_free() */
 
 /*****************************************************************************/
+
+/** 
+    double _unur_dstd_sample( struct unur_gen *gen ) {}
+    Does not exists !!!
+    Sampling routines are defined in ../distributions/ for each distributions.
+**/
+
+/*****************************************************************************/
 /**  Auxilliary Routines                                                    **/
 /*****************************************************************************/
-
-static struct unur_gen *
-_unur_dstd_create( struct unur_par *par )
-     /*----------------------------------------------------------------------*/
-     /* allocate memory for generator                                        */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   par ... pointer to parameter for building generator object         */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   pointer to (empty) generator object with default settings          */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return NULL                                                        */
-     /*----------------------------------------------------------------------*/
-{
-  struct unur_gen *gen;
-
-  /* check arguments */
-  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_DSTD_PAR,NULL);
-
-  /* create new generic generator object */
-  gen = _unur_generic_create( par, sizeof(struct unur_dstd_gen) );
-
-  /* magic cookies */
-  COOKIE_SET(gen,CK_DSTD_GEN);
-
-  /* set generator identifier */
-  gen->genid = _unur_set_genid(GENTYPE);
-
-  /* routines for sampling and destroying generator */
-  SAMPLE = NULL;    /* will be set in _unur_dstd_init() */
-  gen->destroy = _unur_dstd_free;
-  gen->clone = _unur_dstd_clone;
-
-  /* defaults */
-  GEN->gen_param = NULL;  /* parameters for the generator      */
-  GEN->n_gen_param = 0;   /* (computed in special GEN->init()   */
-  GEN->gen_iparam = NULL; /* smake for integer parameters      */
-  GEN->n_gen_iparam = 0;
-
-  /* copy some parameters into generator object */
-  GEN->umin        = 0;    /* cdf at left boundary of domain   */
-  GEN->umax        = 1;    /* cdf at right boundary of domain  */
-
-  /* return pointer to (almost empty) generator object */
-  return gen;
-  
-} /* end of _unur_dstd_create() */
 
 /*****************************************************************************/
 /**  Debugging utilities                                                    **/
@@ -530,20 +604,19 @@ _unur_dstd_create( struct unur_par *par )
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 
-static void
-_unur_dstd_debug_init( const struct unur_par *par, const struct unur_gen *gen )
+void
+_unur_dstd_debug_init( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* write info about generator into logfile                              */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   par ... pointer to parameter for building generator object         */
      /*   gen ... pointer to generator object                                */
      /*----------------------------------------------------------------------*/
 {
   FILE *log;
 
   /* check arguments */
-  CHECK_NULL(par,RETURN_VOID);  COOKIE_CHECK(par,CK_DSTD_PAR,RETURN_VOID);
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_DSTD_GEN,RETURN_VOID);
 
   log = unur_get_stream();
 
@@ -557,15 +630,15 @@ _unur_dstd_debug_init( const struct unur_par *par, const struct unur_gen *gen )
 
   /* sampling routine */
   fprintf(log,"%s: sampling routine = ",gen->genid);
-  if (PAR->sample_routine_name)
-    fprintf(log,"%s()",PAR->sample_routine_name);
+  if (GEN->sample_routine_name)
+    fprintf(log,"%s()",GEN->sample_routine_name);
   else
     fprintf(log,"(Unknown)");
-  if (PAR->is_inversion)
+  if (GEN->is_inversion)
     fprintf(log,"   (Inversion)");
   fprintf(log,"\n%s:\n",gen->genid);
 
-  if (!(par->distr->set & UNUR_DISTR_SET_STDDOMAIN)) {
+  if (!(gen->distr->set & UNUR_DISTR_SET_STDDOMAIN)) {
     fprintf(log,"%s: domain has been changed. U in (%g,%g)\n",gen->genid,GEN->umin,GEN->umax);
     fprintf(log,"%s:\n",gen->genid);
   }
@@ -574,7 +647,7 @@ _unur_dstd_debug_init( const struct unur_par *par, const struct unur_gen *gen )
 
 /*---------------------------------------------------------------------------*/
 
-static void 
+void 
 _unur_dstd_debug_chg_pmfparams( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* print new (changed) parameters of distribution                       */

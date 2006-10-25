@@ -83,7 +83,7 @@ _unur_stdgen_geometric_init( struct unur_par *par, struct unur_gen *gen )
 
   case 0:  /* DEFAULT */
   case UNUR_STDGEN_INVERSION:   /* inversion method */
-    if (par) PAR->is_inversion = TRUE;
+    if (gen) GEN->is_inversion = TRUE;
     _unur_dstd_set_sampling_routine( par,gen,_unur_stdgen_sample_geometric_inv );
     return UNUR_SUCCESS;
 

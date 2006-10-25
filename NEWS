@@ -72,7 +72,10 @@ Version 0.8.0: October 2006
 	    are now deprecated
 
        - method CSTD:
-	  . unur_dsrou_chg_pdfparams() is now deprecated
+	  . unur_cstd_chg_pdfparams() is now deprecated
+
+       - method DSTD:
+	  . unur_dstd_chg_pmfparams() is now deprecated
 
 
 	* Distributions:

@@ -118,9 +118,10 @@
 /*    bits 13-24 ... adaptive steps                                          */
 /*    bits 25-32 ... trace sampling                                          */
 
-#define NINV_DEBUG_TABLE        0x00000010u   /* print table                 */
-#define NINV_DEBUG_CHG          0x00001000u   /* print changed parameters    */
-#define NINV_DEBUG_SAMPLE       0x01000000u   /* trace sampling              */
+#define NINV_DEBUG_REINIT    0x00000002u   /* print parameters after reinit  */
+#define NINV_DEBUG_TABLE     0x00000010u   /* print table                    */
+#define NINV_DEBUG_CHG       0x00001000u   /* print changed parameters       */
+#define NINV_DEBUG_SAMPLE    0x01000000u   /* trace sampling                 */
 
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
@@ -140,15 +141,24 @@ static struct unur_gen *_unur_ninv_init( struct unur_par *par );
 /* Initialize new generator.                                                 */
 /*---------------------------------------------------------------------------*/
 
+static int _unur_ninv_reinit( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* Reinitialize generator.                                                   */
+/*---------------------------------------------------------------------------*/
+
 static struct unur_gen *_unur_ninv_create( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 /* create new (almost empty) generator object.                               */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_ninv_sample_regula( struct unur_gen *gen );
-static double _unur_ninv_sample_newton( struct unur_gen *gen );
+static int _unur_ninv_check_par( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* sample from generator                                                     */
+/* Check parameters of given distribution and method                         */
+/*---------------------------------------------------------------------------*/
+
+static struct unur_gen *_unur_ninv_clone( const struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* copy (clone) generator object.                                            */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_ninv_free( struct unur_gen *gen );
@@ -156,9 +166,10 @@ static void _unur_ninv_free( struct unur_gen *gen );
 /* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *_unur_ninv_clone( const struct unur_gen *gen );
+static double _unur_ninv_sample_regula( struct unur_gen *gen );
+static double _unur_ninv_sample_newton( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* copy (clone) generator object.                                            */
+/* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/
 
 static double _unur_ninv_regula( struct unur_gen *gen, double u );
@@ -765,6 +776,8 @@ unur_ninv_chg_truncated( struct unur_gen *gen, double left, double right )
 int
 unur_ninv_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
      /*----------------------------------------------------------------------*/
+     /* Deprecated call!                                                     */
+     /*----------------------------------------------------------------------*/
      /* change array of parameters for distribution                          */
      /*                                                                      */
      /* parameters:                                                          */
@@ -777,8 +790,6 @@ unur_ninv_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
-  int result;
-
   /* check arguments */
   CHECK_NULL(gen, UNUR_ERR_NULL);
   _unur_check_gen_object( gen, NINV, UNUR_ERR_GEN_INVALID );
@@ -788,43 +799,8 @@ unur_ninv_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
   if (unur_distr_cont_set_pdfparams(gen->distr,params,n_params)!=UNUR_SUCCESS)
     return UNUR_ERR_GEN_DATA;
 
-  /* set boundary of truncated domain */
-  DISTR.trunc[0] = DISTR.domain[0];
-  DISTR.trunc[1] = DISTR.domain[1];
-
-  /* set bounds of U -- in respect to given bounds                */
-  GEN->CDFmin = GEN->Umin = (DISTR.trunc[0] > -INFINITY) ? CDF(DISTR.trunc[0]) : 0.;
-  GEN->CDFmax = GEN->Umax = (DISTR.trunc[1] < INFINITY)  ? CDF(DISTR.trunc[1]) : 1.;
-
-  if (_unur_FP_greater(GEN->CDFmin, GEN->CDFmax)) {
-    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"CDF not increasing");
-    /* this is really bad. but we only can make this error message */
-  }
-
-  /* compute normalization constant for standard distribution */
-  if (DISTR.upd_area != NULL)
-    if ((DISTR.upd_area)(gen->distr)!=UNUR_SUCCESS) {
-      _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"cannot compute normalization constant");
-      return UNUR_ERR_GEN_DATA;
-    }
-
-  /* regenerate table */
-  if (GEN->table != NULL)
-    result = _unur_ninv_create_table(gen);
-
-  else /* or compute starting points */
-    result = unur_ninv_chg_start( gen, 0., 0. );
-
-#ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
-  if (gen->debug & NINV_DEBUG_CHG) {
-    _unur_distr_cont_debug( gen->distr, gen->genid );
-    if (result==UNUR_SUCCESS) _unur_ninv_debug_start( gen );
-  }
-#endif
-
-  return result;
-
+  /* reinit */
+  return _unur_ninv_reinit(gen);
 } /* end of unur_ninv_chg_pdfparams() */
 
 
@@ -869,16 +845,8 @@ _unur_ninv_init( struct unur_par *par )
   _unur_par_free(par);
   if (!gen) { return NULL; }
   
-  /* domain not truncated at init */
-  DISTR.trunc[0] = DISTR.domain[0];
-  DISTR.trunc[1] = DISTR.domain[1];
-
-  /* set bounds of U -- in respect to given bounds                          */
-  GEN->CDFmin = GEN->Umin = (DISTR.trunc[0] > -INFINITY) ? CDF(DISTR.trunc[0]) : 0.;
-  GEN->CDFmax = GEN->Umax = (DISTR.trunc[1] < INFINITY)  ? CDF(DISTR.trunc[1]) : 1.;
-
-  if (_unur_FP_greater(GEN->CDFmin, GEN->CDFmax)) {
-    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"CDF not increasing");
+  /* check parameters */
+  if (_unur_ninv_check_par(gen) != UNUR_SUCCESS) {
     _unur_ninv_free(gen); return NULL;
   }
 
@@ -889,13 +857,13 @@ _unur_ninv_init( struct unur_par *par )
       _unur_ninv_free(gen); return NULL;
     }
   }
-  else { 
-    /* either use points given by user or use percentiles */
+  else {
+    /* use given points or percentiles */
     if (_unur_ninv_compute_start(gen)!=UNUR_SUCCESS) {
       _unur_ninv_free(gen); return NULL;
     }
   }
-  
+
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
   if (gen->debug) _unur_ninv_debug_init(gen);
@@ -904,6 +872,55 @@ _unur_ninv_init( struct unur_par *par )
   return gen;
 
 } /* end of _unur_ninv_init() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_ninv_reinit( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* re-initialize (existing) generator.                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  int rcode;
+
+  /* (re)set sampling routine */
+  SAMPLE = _unur_ninv_getSAMPLE(gen);
+
+  /* check parameters */
+  if ( (rcode = _unur_ninv_check_par(gen)) != UNUR_SUCCESS)
+    return rcode;
+
+  /* compute normalization constant for standard distribution */
+  if (DISTR.upd_area != NULL)
+    if ((DISTR.upd_area)(gen->distr)!=UNUR_SUCCESS) {
+      _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"cannot compute normalization constant");
+      return UNUR_ERR_GEN_DATA;
+    }
+
+  /* regenerate table */
+  if (GEN->table != NULL)
+    rcode = _unur_ninv_create_table(gen);
+
+  else /* or compute starting points */
+    rcode = unur_ninv_chg_start( gen, 0., 0. );
+
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  if (gen->debug & NINV_DEBUG_REINIT) {
+    _unur_distr_cont_debug( gen->distr, gen->genid );
+    if (rcode==UNUR_SUCCESS) _unur_ninv_debug_start( gen );
+  }
+#endif
+
+  return UNUR_SUCCESS;
+} /* end of _unur_ninv_reinit() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -961,169 +978,33 @@ _unur_ninv_create( struct unur_par *par )
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_ninv_compute_start( struct unur_gen *gen )
+_unur_ninv_check_par( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* compute starting points for numerical inversion.                     */
-     /* use 5% percentiles.                                                  */
+     /* check parameters of given distribution and method                    */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   gen ... pointer generator object                                   */
+     /*   gen ... pointer to generator object                                */
      /*                                                                      */
      /* return:                                                              */
      /*   UNUR_SUCCESS ... on success                                        */
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
-  double u;
+  /* domain not truncated at init */
+  DISTR.trunc[0] = DISTR.domain[0];
+  DISTR.trunc[1] = DISTR.domain[1];
 
-  /* check arguments */
-  CHECK_NULL(gen, UNUR_ERR_NULL);
-  _unur_check_gen_object(gen, NINV, UNUR_ERR_GEN_INVALID);
+  /* set bounds of U -- in respect to given bounds                          */
+  GEN->CDFmin = GEN->Umin = (DISTR.trunc[0] > -INFINITY) ? CDF(DISTR.trunc[0]) : 0.;
+  GEN->CDFmax = GEN->Umax = (DISTR.trunc[1] < INFINITY)  ? CDF(DISTR.trunc[1]) : 1.;
 
-  if( GEN->table_on )
-    /* we have a table --> nothing to do */
-    return UNUR_SUCCESS;
-
-  if( !_unur_FP_same(GEN->s[0],GEN->s[1])) {
-    /* use given starting points (indicated by s[0] != s[1]) --> nothing to do */
-    GEN->CDFs[0] = CDF(GEN->s[0]);
-    GEN->CDFs[1] = CDF(GEN->s[1]);
-    return UNUR_SUCCESS;
+  if (_unur_FP_greater(GEN->CDFmin, GEN->CDFmax)) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"CDF not increasing");
+    return UNUR_ERR_GEN_DATA;
   }
 
-  switch (gen->variant) {
-
-  case NINV_VARFLAG_REGULA:
-
-    /* get arbitrary points */
-    GEN->s[0] = _unur_max( DISTR.domain[0], -10.);
-    GEN->s[1] = _unur_min( DISTR.domain[1], GEN->s[0]+20. );
-    GEN->CDFs[0] = CDF(GEN->s[0]);
-    GEN->CDFs[1] = CDF(GEN->s[1]);    
-
-    /* left percentile */
-    u = GEN->CDFmin + 0.5*(1.-INTERVAL_COVERS)*(GEN->CDFmax-GEN->CDFmin);
-    GEN->s[0] = _unur_ninv_regula(gen,u);
-    GEN->CDFs[0] = CDF(GEN->s[0]);
-
-    /* right percentile */
-    GEN->s[1] = _unur_min( DISTR.domain[1], GEN->s[0]+20. );
-    u = GEN->CDFmin + 0.5*(1.+INTERVAL_COVERS)*(GEN->CDFmax-GEN->CDFmin);
-    GEN->s[1] = _unur_ninv_regula(gen,u);
-    GEN->CDFs[1] = CDF(GEN->s[1]);
-    
-    break;    /* case REGULA end */
-
-  case NINV_VARFLAG_NEWTON:
-
-    /* get arbitrary points */
-    GEN->s[0] = _unur_max( DISTR.domain[0], -9.987655 );
-    GEN->s[1] = _unur_min( DISTR.domain[1], GEN->s[0]+20. );
-    GEN->CDFs[0] = CDF(GEN->s[0]); 
-    GEN->CDFs[1] = CDF(GEN->s[1]);
-
-    /* median */
-    u = 0.5 * (GEN->CDFmin + GEN->CDFmax);
-    GEN->s[0] = _unur_ninv_regula(gen, u); /* reglua more stable */
-    GEN->CDFs[0] = CDF(GEN->s[0]);
-
-    break;    /* case NEWTON end */
-
-  default:
-
-    _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    return UNUR_ERR_SHOULD_NOT_HAPPEN;
-
-  }  /* end of switch  */
-
-  /* o.k. */
   return UNUR_SUCCESS;
-
-}  /* end of _unur_ninv_compute_start() */
-
-/*---------------------------------------------------------------------------*/
-
-int
-_unur_ninv_create_table( struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* create a table for starting points and a table with                  */
-     /* the corresponding function values                                    */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer generator object                                   */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   UNUR_SUCCESS ... on success                                        */
-     /*   error code   ... on error                                          */
-     /*----------------------------------------------------------------------*/
-{
-  int i;
-  double x;
-  int table_size = GEN->table_size;
-
-  /* check arguments */
-  CHECK_NULL(gen, UNUR_ERR_NULL);
-  _unur_check_gen_object(gen, NINV, UNUR_ERR_GEN_INVALID);
-
-  GEN->table    = _unur_xrealloc( GEN->table,   table_size * sizeof(double));
-  GEN->f_table  = _unur_xrealloc( GEN->f_table, table_size * sizeof(double));
-
-  /* get arbitrary points */
-  GEN->s[0] = _unur_max( DISTR.domain[0], -10.);
-  GEN->s[1] = _unur_min( DISTR.domain[1], GEN->s[0]+20. );
-  GEN->CDFs[0]  = CDF(GEN->s[0]);
-  GEN->CDFs[1]  = CDF(GEN->s[1]);
-
-  /* table can't be used to calculate itself */
-  GEN->table_on = FALSE;
-  
-  /* calculation of the tables   */
-
-  /* left and right boundary */
-  GEN->table[0]              = DISTR.domain[0];
-  GEN->f_table[0]            = GEN->CDFmin;    /* CDF(DISTR.domain[0]) */
-  GEN->table[table_size-1]   = DISTR.domain[1];
-  GEN->f_table[table_size-1] = GEN->CDFmax;    /* CDF(DISTR.domain[1]) */
-  
-  /* all the other points. we compute these points from boundary to center */
-  for (i=1; i<table_size/2; i++){
-
-    /* compute table point and CDF at table point */
-    x = GEN->CDFmin + i * (GEN->CDFmax - GEN->CDFmin) / (table_size-1.);  
-    GEN->table[i]   = _unur_ninv_regula(gen,x);
-    GEN->f_table[i] = CDF(GEN->table[i]);
-
-    x = GEN->CDFmin + (table_size-i-1) * (GEN->CDFmax - GEN->CDFmin) / (table_size-1.);  
-    GEN->table[table_size-1-i] = _unur_ninv_regula(gen,x);
-    GEN->f_table[table_size-1-i] = CDF(GEN->table[table_size-1-i]);
-
-    /* set new starting points for computing table points in next step */
-    if (GEN->table[i] > -INFINITY) {
-      GEN->s[0] = GEN->table[i];
-      GEN->CDFs[0] = GEN->f_table[i];
-    }
-    if (GEN->table[table_size-1-i] < INFINITY) {
-      GEN->s[1] = GEN->table[table_size-1-i];
-      GEN->CDFs[1] = GEN->f_table[table_size-1-i];
-    }
-
-  }  /* end of for()                                                     */
-
-  /* the median point (only if table_size is odd) */
-  if (table_size & 1) { 
-    x = GEN->CDFmin + (table_size/2) * (GEN->CDFmax - GEN->CDFmin) / (table_size-1.);  
-    GEN->table[table_size/2] = _unur_ninv_regula(gen,x);
-    GEN->f_table[table_size/2] = CDF(GEN->table[table_size/2]);
-  }  
-
-  /* calculation of tables finished  */
-
-  GEN->table_on = TRUE;
-
-  /* o.k. */
-  return UNUR_SUCCESS;
-
-}  /* end of _unur_ninv_create_table() */
+} /* end of _unur_ninv_check_par() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -1165,6 +1046,40 @@ _unur_ninv_clone( const struct unur_gen *gen )
 #undef CLONE
 } /* end of _unur_ninv_clone() */
 
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_ninv_free( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* deallocate generator object                                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{ 
+
+  /* check arguments */
+  if( !gen ) /* nothing to do */
+    return;
+
+  /* check input */
+  if ( gen->method != UNUR_METH_NINV ) {
+    _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
+    return; }
+  COOKIE_CHECK(gen,CK_NINV_GEN,RETURN_VOID);
+
+  /* we cannot use this generator object any more */
+  SAMPLE = NULL;   /* make sure to show up a programming error */
+
+  /* free tables */
+  if (GEN->table)   free(GEN->table);
+  if (GEN->f_table) free(GEN->f_table);
+
+  /* free memory */
+  _unur_generic_free(gen);
+
+} /* end of _unur_ninv_free() */
+
 /*****************************************************************************/
 
 double
@@ -1184,6 +1099,82 @@ _unur_ninv_sample_regula( struct unur_gen *gen )
 } /* end of _unur_ninv_sample_regula() */
 
 /*---------------------------------------------------------------------------*/
+
+double 
+_unur_ninv_sample_newton( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* sample from generator (use newtons method)                           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   double (sample from random variate)                                */
+     /*----------------------------------------------------------------------*/
+{
+  return _unur_ninv_newton( gen, 
+         GEN->Umin + (_unur_call_urng(gen->urng)) * (GEN->Umax - GEN->Umin) );
+}
+
+/*---------------------------------------------------------------------------*/
+
+double
+unur_ninv_eval_approxinvcdf( struct unur_gen *gen, double u )
+     /*----------------------------------------------------------------------*/
+     /* get approximate value of inverse CDF at u approximately              */
+     /* (user call)                                                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*   u   ... argument for inverse CDF (0<=u<=1)                         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   double (approximate inverse CDF)                                   */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return INFINITY                                                    */
+     /*----------------------------------------------------------------------*/
+{ 
+  double x;
+
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, gen, INFINITY );
+  if ( gen->method != UNUR_METH_NINV ) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_INVALID,"");
+    return INFINITY; 
+  }
+  COOKIE_CHECK(gen,CK_NINV_GEN,INFINITY);
+
+  if ( u<0. || u>1.) {
+    _unur_warning(gen->genid,UNUR_ERR_DOMAIN,"argument u not in [0,1]");
+  }
+
+  /* validate argument */
+  if (u<=0.) return DISTR.domain[0];
+  if (u>=1.) return DISTR.domain[1];
+
+  /* compute inverse CDF */
+  switch (gen->variant) {
+  case NINV_VARFLAG_NEWTON:
+    x = _unur_ninv_newton(gen,u);
+    break;
+  case NINV_VARFLAG_REGULA:
+  default:
+    x = _unur_ninv_regula(gen,u);
+    break;
+  }
+
+  /* validate range */
+  if (x<DISTR.domain[0]) x = DISTR.domain[0];
+  if (x>DISTR.domain[1]) x = DISTR.domain[1];
+
+  return x;
+
+} /* end of unur_hinv_eval_approxinvcdf() */
+
+/*****************************************************************************/
+/**  Auxilliary Routines                                                    **/
+/*****************************************************************************/
 
 double 
 _unur_ninv_regula( struct unur_gen *gen, double u )
@@ -1411,24 +1402,6 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
 
 } /* end of _unur_ninv_sample_regula()  */
 
-/*****************************************************************************/
-
-double 
-_unur_ninv_sample_newton( struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* sample from generator (use newtons method)                           */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   double (sample from random variate)                                */
-     /*----------------------------------------------------------------------*/
-{
-  return _unur_ninv_newton( gen, 
-         GEN->Umin + (_unur_call_urng(gen->urng)) * (GEN->Umax - GEN->Umin) );
-}
-
 /*---------------------------------------------------------------------------*/
 
 double
@@ -1627,99 +1600,170 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
 } /* end of _unur_ninv_sample_newton() */
 
 /*---------------------------------------------------------------------------*/
-
-double
-unur_ninv_eval_approxinvcdf( struct unur_gen *gen, double u )
+int
+_unur_ninv_create_table( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* get approximate value of inverse CDF at u approximately              */
-     /* (user call)                                                          */
+     /* create a table for starting points and a table with                  */
+     /* the corresponding function values                                    */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*   u   ... argument for inverse CDF (0<=u<=1)                         */
+     /*   gen ... pointer generator object                                   */
      /*                                                                      */
      /* return:                                                              */
-     /*   double (approximate inverse CDF)                                   */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return INFINITY                                                    */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
-{ 
+{
+  int i;
   double x;
+  int table_size = GEN->table_size;
 
   /* check arguments */
-  _unur_check_NULL( GENTYPE, gen, INFINITY );
-  if ( gen->method != UNUR_METH_NINV ) {
-    _unur_error(gen->genid,UNUR_ERR_GEN_INVALID,"");
-    return INFINITY; 
-  }
-  COOKIE_CHECK(gen,CK_NINV_GEN,INFINITY);
+  CHECK_NULL(gen, UNUR_ERR_NULL);
+  _unur_check_gen_object(gen, NINV, UNUR_ERR_GEN_INVALID);
 
-  if ( u<0. || u>1.) {
-    _unur_warning(gen->genid,UNUR_ERR_DOMAIN,"argument u not in [0,1]");
-  }
+  GEN->table    = _unur_xrealloc( GEN->table,   table_size * sizeof(double));
+  GEN->f_table  = _unur_xrealloc( GEN->f_table, table_size * sizeof(double));
 
-  /* validate argument */
-  if (u<=0.) return DISTR.domain[0];
-  if (u>=1.) return DISTR.domain[1];
+  /* get arbitrary points */
+  GEN->s[0] = _unur_max( DISTR.domain[0], -10.);
+  GEN->s[1] = _unur_min( DISTR.domain[1], GEN->s[0]+20. );
+  GEN->CDFs[0]  = CDF(GEN->s[0]);
+  GEN->CDFs[1]  = CDF(GEN->s[1]);
 
-  /* compute inverse CDF */
-  switch (gen->variant) {
-  case NINV_VARFLAG_NEWTON:
-    x = _unur_ninv_newton(gen,u);
-    break;
-  case NINV_VARFLAG_REGULA:
-  default:
-    x = _unur_ninv_regula(gen,u);
-    break;
-  }
+  /* table can't be used to calculate itself */
+  GEN->table_on = FALSE;
+  
+  /* calculation of the tables   */
 
-  /* validate range */
-  if (x<DISTR.domain[0]) x = DISTR.domain[0];
-  if (x>DISTR.domain[1]) x = DISTR.domain[1];
+  /* left and right boundary */
+  GEN->table[0]              = DISTR.domain[0];
+  GEN->f_table[0]            = GEN->CDFmin;    /* CDF(DISTR.domain[0]) */
+  GEN->table[table_size-1]   = DISTR.domain[1];
+  GEN->f_table[table_size-1] = GEN->CDFmax;    /* CDF(DISTR.domain[1]) */
+  
+  /* all the other points. we compute these points from boundary to center */
+  for (i=1; i<table_size/2; i++){
 
-  return x;
+    /* compute table point and CDF at table point */
+    x = GEN->CDFmin + i * (GEN->CDFmax - GEN->CDFmin) / (table_size-1.);  
+    GEN->table[i]   = _unur_ninv_regula(gen,x);
+    GEN->f_table[i] = CDF(GEN->table[i]);
 
-} /* end of unur_hinv_eval_approxinvcdf() */
+    x = GEN->CDFmin + (table_size-i-1) * (GEN->CDFmax - GEN->CDFmin) / (table_size-1.);  
+    GEN->table[table_size-1-i] = _unur_ninv_regula(gen,x);
+    GEN->f_table[table_size-1-i] = CDF(GEN->table[table_size-1-i]);
 
-/*****************************************************************************/
+    /* set new starting points for computing table points in next step */
+    if (GEN->table[i] > -INFINITY) {
+      GEN->s[0] = GEN->table[i];
+      GEN->CDFs[0] = GEN->f_table[i];
+    }
+    if (GEN->table[table_size-1-i] < INFINITY) {
+      GEN->s[1] = GEN->table[table_size-1-i];
+      GEN->CDFs[1] = GEN->f_table[table_size-1-i];
+    }
 
-void
-_unur_ninv_free( struct unur_gen *gen )
+  }  /* end of for()                                                     */
+
+  /* the median point (only if table_size is odd) */
+  if (table_size & 1) { 
+    x = GEN->CDFmin + (table_size/2) * (GEN->CDFmax - GEN->CDFmin) / (table_size-1.);  
+    GEN->table[table_size/2] = _unur_ninv_regula(gen,x);
+    GEN->f_table[table_size/2] = CDF(GEN->table[table_size/2]);
+  }  
+
+  /* calculation of tables finished  */
+
+  GEN->table_on = TRUE;
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+
+}  /* end of _unur_ninv_create_table() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_ninv_compute_start( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* deallocate generator object                                          */
+     /* compute starting points for numerical inversion.                     */
+     /* use 5% percentiles.                                                  */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
+     /*   gen ... pointer generator object                                   */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
-{ 
+{
+  double u;
 
   /* check arguments */
-  if( !gen ) /* nothing to do */
-    return;
+  CHECK_NULL(gen, UNUR_ERR_NULL);
+  _unur_check_gen_object(gen, NINV, UNUR_ERR_GEN_INVALID);
 
-  /* check input */
-  if ( gen->method != UNUR_METH_NINV ) {
-    _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
-    return; }
-  COOKIE_CHECK(gen,CK_NINV_GEN,RETURN_VOID);
+  if( GEN->table_on )
+    /* we have a table --> nothing to do */
+    return UNUR_SUCCESS;
 
-  /* we cannot use this generator object any more */
-  SAMPLE = NULL;   /* make sure to show up a programming error */
+  if( !_unur_FP_same(GEN->s[0],GEN->s[1])) {
+    /* use given starting points (indicated by s[0] != s[1]) --> nothing to do */
+    GEN->CDFs[0] = CDF(GEN->s[0]);
+    GEN->CDFs[1] = CDF(GEN->s[1]);
+    return UNUR_SUCCESS;
+  }
 
-  /* free tables */
-  if (GEN->table)   free(GEN->table);
-  if (GEN->f_table) free(GEN->f_table);
+  switch (gen->variant) {
 
-  /* free memory */
-  _unur_generic_free(gen);
+  case NINV_VARFLAG_REGULA:
 
-} /* end of _unur_ninv_free() */
+    /* get arbitrary points */
+    GEN->s[0] = _unur_max( DISTR.domain[0], -10.);
+    GEN->s[1] = _unur_min( DISTR.domain[1], GEN->s[0]+20. );
+    GEN->CDFs[0] = CDF(GEN->s[0]);
+    GEN->CDFs[1] = CDF(GEN->s[1]);    
 
-/*****************************************************************************/
-/**  Auxilliary Routines                                                    **/
-/*****************************************************************************/
+    /* left percentile */
+    u = GEN->CDFmin + 0.5*(1.-INTERVAL_COVERS)*(GEN->CDFmax-GEN->CDFmin);
+    GEN->s[0] = _unur_ninv_regula(gen,u);
+    GEN->CDFs[0] = CDF(GEN->s[0]);
 
+    /* right percentile */
+    GEN->s[1] = _unur_min( DISTR.domain[1], GEN->s[0]+20. );
+    u = GEN->CDFmin + 0.5*(1.+INTERVAL_COVERS)*(GEN->CDFmax-GEN->CDFmin);
+    GEN->s[1] = _unur_ninv_regula(gen,u);
+    GEN->CDFs[1] = CDF(GEN->s[1]);
+    
+    break;    /* case REGULA end */
+
+  case NINV_VARFLAG_NEWTON:
+
+    /* get arbitrary points */
+    GEN->s[0] = _unur_max( DISTR.domain[0], -9.987655 );
+    GEN->s[1] = _unur_min( DISTR.domain[1], GEN->s[0]+20. );
+    GEN->CDFs[0] = CDF(GEN->s[0]); 
+    GEN->CDFs[1] = CDF(GEN->s[1]);
+
+    /* median */
+    u = 0.5 * (GEN->CDFmin + GEN->CDFmax);
+    GEN->s[0] = _unur_ninv_regula(gen, u); /* reglua more stable */
+    GEN->CDFs[0] = CDF(GEN->s[0]);
+
+    break;    /* case NEWTON end */
+
+  default:
+
+    _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+    return UNUR_ERR_SHOULD_NOT_HAPPEN;
+
+  }  /* end of switch  */
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+
+}  /* end of _unur_ninv_compute_start() */
 
 /*****************************************************************************/
 /**  Debugging utilities                                                    **/

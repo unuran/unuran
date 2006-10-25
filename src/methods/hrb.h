@@ -46,7 +46,7 @@
 
    =SPEED Set-up: fast, Sampling: slow
 
-   =REINIT not implemented
+   =REINIT supported
 
    =REF  [HLD04: Sect.9.1.4, Alg.9.4]
 
@@ -78,6 +78,10 @@
       For distributions with increasing hazard rate method HRI 
       (@pxref{HRI,,Hazard Rate Increasing}) is required.
 
+      It is possible to change the parameters and the domain of the chosen 
+      distribution and run unur_reinit() to reinitialize the generator object.
+      Notice, that the upper bound given by the unur_hrb_set_upperbound() call
+      cannot be changed and must be valid for the changed distribution.
    =END
 */
 

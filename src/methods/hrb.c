@@ -78,8 +78,9 @@
 /*    bits 13-24 ... adaptive steps                                          */
 /*    bits 25-32 ... trace sampling                                          */
 
-#define HRB_DEBUG_SAMPLE       0x01000000u    /* trace sampling
-						 (only if verify mode is on) */
+#define HRB_DEBUG_REINIT    0x00000010u   /* print parameters after reinit  */
+#define HRB_DEBUG_SAMPLE    0x01000000u   /* trace sampling
+					      (only if verify mode is on) */
                                                 
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
@@ -97,15 +98,24 @@ static struct unur_gen *_unur_hrb_init( struct unur_par *par );
 /* Initialize new generator.                                                 */
 /*---------------------------------------------------------------------------*/
 
+static int _unur_hrb_reinit( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* Reinitialize generator.                                                   */
+/*---------------------------------------------------------------------------*/
+
 static struct unur_gen *_unur_hrb_create( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 /* create new (almost empty) generator object.                               */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_hrb_sample( struct unur_gen *gen );
-static double _unur_hrb_sample_check( struct unur_gen *gen );
+static int _unur_hrb_check_par( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* sample from generator                                                     */
+/* Check parameters of given distribution and method                         */
+/*---------------------------------------------------------------------------*/
+
+static struct unur_gen *_unur_hrb_clone( const struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* copy (clone) generator object.                                            */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_hrb_free( struct unur_gen *gen );
@@ -113,9 +123,10 @@ static void _unur_hrb_free( struct unur_gen *gen );
 /* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *_unur_hrb_clone( const struct unur_gen *gen );
+static double _unur_hrb_sample( struct unur_gen *gen );
+static double _unur_hrb_sample_check( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* copy (clone) generator object.                                            */
+/* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -350,21 +361,12 @@ _unur_hrb_init( struct unur_par *par )
 
   /* create a new empty generator object */    
   gen = _unur_hrb_create(par);
-  if (!gen) { _unur_par_free(par); return NULL; }
+  _unur_par_free(par);
+  if (!gen) return NULL;
 
-  /* set left border and check domain */
-  if (DISTR.domain[0] < 0.)       DISTR.domain[0] = 0.;
-  if (DISTR.domain[1] < INFINITY) DISTR.domain[1] = INFINITY;
-  GEN->left_border = DISTR.domain[0];
-
-  /* check upper bound for hazard rate */
-  if (!(gen->set & HRB_SET_UPPERBOUND)) {
-    GEN->upper_bound = HR(GEN->left_border);
-    if (GEN->upper_bound <= 0. || _unur_FP_is_infinity(GEN->upper_bound)) {
-      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"no valid upper bound for HR at left boundary");
-      _unur_par_free(par); _unur_free(gen);
-      return NULL;
-    }
+  /* check parameters */
+  if (_unur_hrb_check_par(gen) != UNUR_SUCCESS) {
+    _unur_hrb_free(gen); return NULL;
   }
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -372,12 +374,37 @@ _unur_hrb_init( struct unur_par *par )
   if (gen->debug) _unur_hrb_debug_init(gen);
 #endif
 
-  /* free parameters */
-  _unur_par_free(par);
-
   return gen;
 
 } /* end of _unur_hrb_init() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_hrb_reinit( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* re-initialize (existing) generator.                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  int rcode;
+
+  /* (re)set sampling routine */
+  SAMPLE = _unur_hrb_getSAMPLE(gen);
+
+  /* check parameters */
+  if ( (rcode = _unur_hrb_check_par(gen)) != UNUR_SUCCESS)
+    return rcode;
+
+  /* nothing to do */
+  return UNUR_SUCCESS;
+} /* end of _unur_hrb_reinit() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -414,6 +441,7 @@ _unur_hrb_create( struct unur_par *par )
   SAMPLE = _unur_hrb_getSAMPLE(gen);
   gen->destroy = _unur_hrb_free;
   gen->clone = _unur_hrb_clone;
+  gen->reinit = _unur_hrb_reinit;
 
   /* copy parameters into generator object */
   GEN->upper_bound = PAR->upper_bound;   /* upper bound for hazard rate        */ 
@@ -427,6 +455,39 @@ _unur_hrb_create( struct unur_par *par )
   return gen;
 
 } /* end of _unur_hrb_create() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_hrb_check_par( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* check parameters of given distribution and method                    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+
+  /* check for required data: upper bound for hazard rate */
+  if (!(gen->set & HRB_SET_UPPERBOUND)) {
+    GEN->upper_bound = HR(GEN->left_border);
+    if (GEN->upper_bound <= 0. || _unur_FP_is_infinity(GEN->upper_bound)) {
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"no valid upper bound for HR at left boundary");
+      return UNUR_ERR_GEN_CONDITION;
+    }
+  }
+
+  /* set left border and check domain */
+  if (DISTR.domain[0] < 0.)       DISTR.domain[0] = 0.;
+  if (DISTR.domain[1] < INFINITY) DISTR.domain[1] = INFINITY;
+  GEN->left_border = DISTR.domain[0];
+
+  return UNUR_SUCCESS;
+} /* end of _unur_hrb_check_par() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -460,7 +521,7 @@ _unur_hrb_clone( const struct unur_gen *gen )
 #undef CLONE
 } /* end of _unur_hrb_clone() */
 
-/*****************************************************************************/
+/*---------------------------------------------------------------------------*/
 
 void
 _unur_hrb_free( struct unur_gen *gen )
@@ -601,8 +662,6 @@ _unur_hrb_sample_check( struct unur_gen *gen )
   }
 
 } /* end of _unur_hrb_sample_check() */
-
-/*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/
 /**  Auxilliary Routines                                                    **/

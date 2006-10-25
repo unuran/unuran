@@ -88,10 +88,6 @@
       is possible but requires the inversion method.
    
       It is possible to change the parameters and the domain of the chosen 
-      distribution without building a new generator object
-      by means of unur_cstd_chg_pdfparams().
-
-      It is possible to change the parameters and the domain of the chosen 
       distribution and run unur_reinit() to reinitialize the generator object.
 
    =END

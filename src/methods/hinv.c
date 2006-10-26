@@ -103,9 +103,10 @@
 /*    bits 13-24 ... adaptive steps                                          */
 /*    bits 25-32 ... trace sampling                                          */
 
-#define HINV_DEBUG_TABLE        0x00000010u   /* print table                 */
-#define HINV_DEBUG_CHG          0x00001000u   /* print changed parameters    */
-#define HINV_DEBUG_SAMPLE       0x01000000u   /* trace sampling              */
+#define HINV_DEBUG_REINIT    0x00000002u   /* print parameters after reinit  */
+#define HINV_DEBUG_TABLE     0x00000010u   /* print table                    */
+#define HINV_DEBUG_CHG       0x00001000u   /* print changed parameters       */
+#define HINV_DEBUG_SAMPLE    0x01000000u   /* trace sampling                 */
 
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
@@ -128,9 +129,29 @@ static struct unur_gen *_unur_hinv_init( struct unur_par *par );
 /* Initialize new generator.                                                 */
 /*---------------------------------------------------------------------------*/
 
+static int _unur_hinv_reinit( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* Reinitialize generator.                                                   */
+/*---------------------------------------------------------------------------*/
+
 static struct unur_gen *_unur_hinv_create( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 /* create new (almost empty) generator object.                               */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_hinv_check_par( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* Check parameters of given distribution and method                         */
+/*---------------------------------------------------------------------------*/
+
+static struct unur_gen *_unur_hinv_clone( const struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* copy (clone) generator object.                                            */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_hinv_free( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
 static double _unur_hinv_sample( struct unur_gen *gen );
@@ -143,17 +164,7 @@ static double _unur_hinv_eval_approxinvcdf( const struct unur_gen *gen, double u
 /* evaluate Hermite interpolation of inverse CDF at u.                       */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_hinv_free( struct unur_gen *gen );
-/*---------------------------------------------------------------------------*/
-/* destroy generator object.                                                 */
-/*---------------------------------------------------------------------------*/
-
-static struct unur_gen *_unur_hinv_clone( const struct unur_gen *gen );
-/*---------------------------------------------------------------------------*/
-/* copy (clone) generator object.                                            */
-/*---------------------------------------------------------------------------*/
-
-static int _unur_hinv_create_table( struct unur_par *par, struct unur_gen *gen );
+static int _unur_hinv_create_table( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* create the table with splines                                             */
 /*---------------------------------------------------------------------------*/
@@ -201,9 +212,7 @@ static int _unur_hinv_make_guide_table( struct unur_gen *gen );
 /* i.e., into the log file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_hinv_debug_init( const struct unur_par *par, 
-				   const struct unur_gen *gen,
-				   int ok);
+static void _unur_hinv_debug_init( const struct unur_gen *gen, int ok);
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed.                 */
 /*---------------------------------------------------------------------------*/
@@ -710,40 +719,24 @@ _unur_hinv_init( struct unur_par *par )
 
   /* create a new empty generator object */    
   gen = _unur_hinv_create(par);
-  if (!gen) { _unur_par_free(par); return NULL; }
+  _unur_par_free(par);
+  if (!gen) return NULL;
 
-  /* domain not truncated at init */
-  DISTR.trunc[0] = DISTR.domain[0];
-  DISTR.trunc[1] = DISTR.domain[1];
-
-  /* set bounds of U -- in respect to given bounds                          */
-  GEN->CDFmin = (DISTR.domain[0] > -INFINITY) ? _unur_cont_CDF((DISTR.domain[0]),(gen->distr)) : 0.;
-  GEN->CDFmax = (DISTR.domain[1] < INFINITY)  ? _unur_cont_CDF((DISTR.domain[1]),(gen->distr)) : 1.;
-
-  if (!_unur_FP_less(GEN->CDFmin,GEN->CDFmax)) {
-    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"CDF not increasing");
-    _unur_hinv_free(gen); _unur_par_free(par); return NULL;
-  }
-
-  /* cut points for tails */
-  if (DISTR.domain[0] <= -INFINITY || PDF(DISTR.domain[0])<=0.) {
-    GEN->tailcutoff_left = _unur_min(HINV_TAILCUTOFF, 0.1*GEN->u_resolution);
-    GEN->tailcutoff_left = _unur_max(GEN->tailcutoff_left,2*DBL_EPSILON);
-  }
-  if (DISTR.domain[1] >= INFINITY || PDF(DISTR.domain[1])<=0.) {
-    GEN->tailcutoff_right = _unur_min(HINV_TAILCUTOFF, 0.1*GEN->u_resolution);
-    GEN->tailcutoff_right = _unur_max(GEN->tailcutoff_right,2*DBL_EPSILON);
-    GEN->tailcutoff_right = 1. - GEN->tailcutoff_right;
+  /* check parameters */
+  if (_unur_hinv_check_par(gen) != UNUR_SUCCESS) {
+    _unur_hinv_free(gen); return NULL;
   }
 
   /* compute splines */
-  if (_unur_hinv_create_table(par,gen)!=UNUR_SUCCESS) {
+  if (_unur_hinv_create_table(gen)!=UNUR_SUCCESS) {
     /* make entry in log file */
 #ifdef UNUR_ENABLE_LOGGING
-    _unur_hinv_list_to_array( gen );
-    if (gen->debug) _unur_hinv_debug_init(par,gen,FALSE);
+    if (gen->debug) {
+      _unur_hinv_list_to_array( gen );
+      _unur_hinv_debug_init(gen,FALSE);
+    }
 #endif
-    _unur_hinv_free(gen); _unur_par_free(par); return NULL;
+    _unur_hinv_free(gen); return NULL;
   }
 
   /* copy linked list into array */
@@ -757,6 +750,7 @@ _unur_hinv_init( struct unur_par *par )
      sampling algorithm U is always in a range where a table
      is available for the inverse CDF.
      So this is a safe guard against segfault for U=0. or U=1. */ 
+
   /* These values for Umin and Umax are only changed in 
      unur_hinv_chg_truncated(). */
 
@@ -765,19 +759,67 @@ _unur_hinv_init( struct unur_par *par )
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-  if (gen->debug) _unur_hinv_debug_init(par,gen,TRUE);
+  if (gen->debug) _unur_hinv_debug_init(gen,TRUE);
 #endif
 
-  /* free parameters */
-  _unur_par_free(par);
-  
+  /* we do not use 'stp' any more. since it contains a pointer to
+     an array outside the generator object. thus we set the pointer
+     to NULL
+  */
+  GEN->stp = NULL;
+  GEN->n_stp = 0;
+
+  /* o.k. */
   return gen;
 
 } /* end of _unur_hinv_init() */
 
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *
+int
+_unur_hinv_reinit( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* re-initialize (existing) generator.                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  int rcode;
+
+  /* (re)set sampling routine */
+  SAMPLE = _unur_hinv_getSAMPLE(gen);
+
+  /* check parameters */
+  if ( (rcode = _unur_hinv_check_par(gen)) != UNUR_SUCCESS)
+    return rcode;
+
+  /* compute splines */
+  if ( (rcode = _unur_hinv_create_table(gen)) != UNUR_SUCCESS)
+    return rcode;
+
+  /* copy linked list into array */
+  _unur_hinv_list_to_array( gen );
+
+  /* adjust minimal and maximal U value */
+  GEN->Umin = _unur_max(0.,GEN->intervals[0]);
+  GEN->Umax = _unur_min(1.,GEN->intervals[(GEN->N-1)*(GEN->order+2)]);
+
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  if (gen->debug & HINV_DEBUG_REINIT) _unur_hinv_debug_init(gen,TRUE);
+#endif
+
+  return UNUR_SUCCESS;
+} /* end of _unur_hinv_reinit() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_gen *
 _unur_hinv_create( struct unur_par *par )
      /*----------------------------------------------------------------------*/
      /* allocate memory for generator                                        */
@@ -812,14 +854,17 @@ _unur_hinv_create( struct unur_par *par )
   gen->clone = _unur_hinv_clone;
 
   /* copy parameters into generator object */
-  GEN->order = PAR->order;            /* order of polynomial                   */
-  GEN->u_resolution = PAR->u_resolution; /* maximal error in u-direction       */
-  GEN->guide_factor = PAR->guide_factor; /* relative size of guide tables      */
-  GEN->bleft  = _unur_max(PAR->bleft,DISTR.domain[0]);
-  GEN->bright = _unur_min(PAR->bright,DISTR.domain[1]);
+  GEN->order = PAR->order;            /* order of polynomial                 */
+  GEN->u_resolution = PAR->u_resolution; /* maximal error in u-direction     */
+  GEN->guide_factor = PAR->guide_factor; /* relative size of guide tables    */
+  GEN->bleft  = PAR->bleft;              /* border of computational domain   */
+  GEN->bright = PAR->bright;
+  GEN->max_ivs = PAR->max_ivs;           /* maximum number of intervals      */
+  GEN->stp = PAR->stp;               /* pointer to array of starting points  */
+  GEN->n_stp = PAR->n_stp;           /* number of construction points        */
 
   /* default values */
-  GEN->tailcutoff_left  = -1.;       /* no cut-off by default                 */
+  GEN->tailcutoff_left  = -1.;       /* no cut-off by default                */
   GEN->tailcutoff_right = 10.;
 
   /* initialize variables */
@@ -837,7 +882,315 @@ _unur_hinv_create( struct unur_par *par )
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_hinv_create_table( struct unur_par *par, struct unur_gen *gen )
+_unur_hinv_check_par( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* check parameters of given distribution and method                    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+
+  /* border of the computational domain must not exceed domain of distribution */
+  if (GEN->bleft  < DISTR.domain[0]) GEN->bleft  = DISTR.domain[0];
+  if (GEN->bright > DISTR.domain[1]) GEN->bright = DISTR.domain[1];
+
+  /* domain not truncated at init */
+  DISTR.trunc[0] = DISTR.domain[0];
+  DISTR.trunc[1] = DISTR.domain[1];
+
+  /* set bounds of U -- in respect to given bounds                          */
+  GEN->CDFmin = (DISTR.domain[0] > -INFINITY) ? _unur_cont_CDF((DISTR.domain[0]),(gen->distr)) : 0.;
+  GEN->CDFmax = (DISTR.domain[1] < INFINITY)  ? _unur_cont_CDF((DISTR.domain[1]),(gen->distr)) : 1.;
+
+  if (!_unur_FP_less(GEN->CDFmin,GEN->CDFmax)) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"CDF not increasing");
+    return UNUR_ERR_GEN_DATA;
+  }
+
+  /* cut points for tails */
+  if (DISTR.domain[0] <= -INFINITY || PDF(DISTR.domain[0])<=0.) {
+    GEN->tailcutoff_left = _unur_min(HINV_TAILCUTOFF, 0.1*GEN->u_resolution);
+    GEN->tailcutoff_left = _unur_max(GEN->tailcutoff_left,2*DBL_EPSILON);
+  }
+  if (DISTR.domain[1] >= INFINITY || PDF(DISTR.domain[1])<=0.) {
+    GEN->tailcutoff_right = _unur_min(HINV_TAILCUTOFF, 0.1*GEN->u_resolution);
+    GEN->tailcutoff_right = _unur_max(GEN->tailcutoff_right,2*DBL_EPSILON);
+    GEN->tailcutoff_right = 1. - GEN->tailcutoff_right;
+  }
+
+  return UNUR_SUCCESS;
+} /* end of _unur_hinv_check_par() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_gen *
+_unur_hinv_clone( const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* copy (clone) generator object                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to clone of generator object                               */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{ 
+#define CLONE  ((struct unur_hinv_gen*)clone->datap)
+
+  struct unur_gen *clone;
+
+  /* check arguments */
+  CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_HINV_GEN,NULL);
+
+  /* create generic clone */
+  clone = _unur_generic_clone( gen, GENTYPE );
+
+  /* copy tables for generator object */
+  CLONE->intervals = _unur_xmalloc( GEN->N*(GEN->order+2) * sizeof(double) );
+  memcpy( CLONE->intervals, GEN->intervals, GEN->N*(GEN->order+2) * sizeof(double) );
+  CLONE->guide = _unur_xmalloc( GEN->guide_size * sizeof(int) );
+  memcpy( CLONE->guide, GEN->guide, GEN->guide_size * sizeof(int) );
+
+  return clone;
+
+#undef CLONE
+} /* end of _unur_hinv_clone() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_hinv_free( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* deallocate generator object                                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{ 
+  /* check arguments */
+  if( !gen ) /* nothing to do */
+    return;
+
+  /* check input */
+  if ( gen->method != UNUR_METH_HINV ) {
+    _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
+    return; }
+  COOKIE_CHECK(gen,CK_HINV_GEN,RETURN_VOID);
+
+  /* we cannot use this generator object any more */
+  SAMPLE = NULL;   /* make sure to show up a programming error */
+
+  /* free linked list of intervals */
+  if (GEN->iv) {
+    struct unur_hinv_interval *iv,*next;
+    for (iv = GEN->iv; iv != NULL; iv = next) {
+      next = iv->next;
+      free(iv);
+    }
+  }
+
+  /* free tables */
+  if (GEN->intervals) free (GEN->intervals);
+  if (GEN->guide)     free (GEN->guide);
+
+  /* free memory */
+  _unur_generic_free(gen);
+
+} /* end of _unur_hinv_free() */
+
+/*****************************************************************************/
+
+double
+_unur_hinv_sample( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* sample from generator                                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   double (sample from random variate)                                */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return INFINITY                                                    */
+     /*----------------------------------------------------------------------*/
+{ 
+  double U,X;
+
+  /* check arguments */
+  CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_HINV_GEN,INFINITY);
+
+  /* sample from U( Umin, Umax ) */
+  U = GEN->Umin + _unur_call_urng(gen->urng) * (GEN->Umax - GEN->Umin);
+
+  /* compute inverse CDF */
+  X = _unur_hinv_eval_approxinvcdf(gen,U);
+
+  if (X<DISTR.trunc[0]) return DISTR.trunc[0];
+  if (X>DISTR.trunc[1]) return DISTR.trunc[1];
+
+  return X;
+
+} /* end of _unur_hinv_sample() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_hinv_eval_approxinvcdf( const struct unur_gen *gen, double u )
+     /*----------------------------------------------------------------------*/
+     /* evaluate Hermite interpolation of inverse CDF at u                   */
+     /* (internal call)                                                      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*   u   ... argument for inverse CDF (0<=u<=1, no validation!)         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   double (approximate inverse CDF)                                   */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return INFINITY                                                    */
+     /*----------------------------------------------------------------------*/
+{ 
+  int i;
+
+  /* check arguments */
+  CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_HINV_GEN,INFINITY);
+
+  /* look up in guide table and search for interval */
+  i =  GEN->guide[(int) (GEN->guide_size*u)];
+  while (u > GEN->intervals[i+GEN->order+2])
+    i += GEN->order+2;
+
+  /* rescale uniform random number */
+  u = (u-GEN->intervals[i])/(GEN->intervals[i+GEN->order+2] - GEN->intervals[i]);
+
+  /* evaluate polynome */
+  return _unur_hinv_eval_polynomial( u, GEN->intervals+i+1, GEN->order );
+
+} /* end of _unur_hinv_eval_approxinvcdf() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+unur_hinv_eval_approxinvcdf( const struct unur_gen *gen, double u )
+     /*----------------------------------------------------------------------*/
+     /* evaluate Hermite interpolation of inverse CDF at u                   */
+     /* (user call)                                                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*   u   ... argument for inverse CDF (0<=u<=1)                         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   double (approximate inverse CDF)                                   */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return INFINITY                                                    */
+     /*----------------------------------------------------------------------*/
+{ 
+  double x;
+
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, gen, INFINITY );
+  if ( gen->method != UNUR_METH_HINV ) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_INVALID,"");
+    return INFINITY; 
+  }
+  COOKIE_CHECK(gen,CK_HINV_GEN,INFINITY);
+
+  if ( u<0. || u>1.) {
+    _unur_warning(gen->genid,UNUR_ERR_DOMAIN,"argument u not in [0,1]");
+  }
+
+  /* validate argument */
+  if (u<=0.) return DISTR.domain[0];
+  if (u>=1.) return DISTR.domain[1];
+
+  /* compute inverse CDF */
+  x = _unur_hinv_eval_approxinvcdf(gen,u);
+
+  /* validate range */
+  if (x<DISTR.domain[0]) x = DISTR.domain[0];
+  if (x>DISTR.domain[1]) x = DISTR.domain[1];
+
+  return x;
+
+} /* end of unur_hinv_eval_approxinvcdf() */
+
+/*****************************************************************************/
+
+int
+unur_hinv_estimate_error( const UNUR_GEN *gen, int samplesize, double *max_error, double *MAE )
+     /*----------------------------------------------------------------------*/
+     /* Estimate maximal u-error and mean absolute error (MAE) by means of   */
+     /* Monte-Carlo simulation.                                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen        ... pointer to generator object                         */
+     /*   samplesize ... sample size for Monte Carlo simulation              */
+     /*   max_error  ... pointer to double for storing maximal u-error       */
+     /*   MEA        ... pointer to double for storing MA u-error            */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{ 
+  double U, ualt, X;
+  double max=0., average=0., uerror, errorat=0.;
+  int j, outside_interval=0;
+
+  /* check arguments */
+  CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_HINV_GEN,UNUR_ERR_COOKIE);
+
+  for(j=0;j<samplesize;j++) {  
+    /* sample from U( Umin, Umax ) */
+    U = GEN->Umin + _unur_call_urng(gen->urng) * (GEN->Umax - GEN->Umin);
+    ualt=U;
+
+    /* compute inverse CDF */
+    X = _unur_hinv_eval_approxinvcdf(gen,U);
+
+    if (X<DISTR.trunc[0]) { X = DISTR.trunc[0]; outside_interval++; }
+    if (X>DISTR.trunc[1]) { X = DISTR.trunc[1]; outside_interval++; }
+
+    uerror = fabs(ualt-CDF(X));
+
+    average += uerror;
+    if(uerror>max) {
+      max = uerror;
+      errorat = X;
+    }
+    /* printf("j %d uerror %e maxerror %e average %e\n",j,uerror,max,average/(j+1)); */
+  }
+  /*
+  printf("maximal error occured at x= %.16e percentage outside interval %e \n",
+	 errorat,(double)outside_interval/(double)samplesize); 
+  */
+
+  *max_error = max;
+  *MAE = average/samplesize;
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+
+} /* end of unur_hinv_estimate_error() */
+
+/*****************************************************************************/
+/**  Auxilliary Routines                                                    **/
+/*****************************************************************************/
+
+int
+_unur_hinv_create_table( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* create a table of splines                                            */
      /*                                                                      */
@@ -864,14 +1217,14 @@ _unur_hinv_create_table( struct unur_par *par, struct unur_gen *gen )
   if (GEN->iv->next == NULL) return UNUR_ERR_GEN_DATA;
 
   /* use starting design points of given */
-  if (PAR->stp) {
+  if (GEN->stp) {
     iv = GEN->iv;
-    for (i=0; i<PAR->n_stp; i++) {
-      if (!_unur_FP_greater(PAR->stp[i],GEN->bleft)) continue; /* skip */
-      if (!_unur_FP_less(PAR->stp[i],GEN->bright))   break;    /* no more points */
+    for (i=0; i<GEN->n_stp; i++) {
+      if (!_unur_FP_greater(GEN->stp[i],GEN->bleft)) continue; /* skip */
+      if (!_unur_FP_less(GEN->stp[i],GEN->bright))   break;    /* no more points */
  
-      Fx = CDF(PAR->stp[i]);
-      iv_new = _unur_hinv_interval_new(gen,PAR->stp[i],Fx);
+      Fx = CDF(GEN->stp[i]);
+      iv_new = _unur_hinv_interval_new(gen,GEN->stp[i],Fx);
       if (iv_new == NULL) return UNUR_ERR_GEN_DATA;
       iv_new->next = iv->next;
       iv->next = iv_new;
@@ -897,7 +1250,7 @@ _unur_hinv_create_table( struct unur_par *par, struct unur_gen *gen )
   /* now split intervals where approximation error is too large */
   for (iv=GEN->iv; iv->next!=NULL; ) {
     COOKIE_CHECK(iv,CK_HINV_IV,UNUR_ERR_COOKIE);
-    if (GEN->N >= PAR->max_ivs) {
+    if (GEN->N >= GEN->max_ivs) {
       /* emergency break */
       _unur_error(GENTYPE,UNUR_ERR_GEN_CONDITION,"too many intervals");
       return UNUR_ERR_GEN_CONDITION; 
@@ -914,7 +1267,65 @@ _unur_hinv_create_table( struct unur_par *par, struct unur_gen *gen )
 
 /*---------------------------------------------------------------------------*/
 
-static struct unur_hinv_interval *
+struct unur_hinv_interval *
+_unur_hinv_interval_new( struct unur_gen *gen, double p, double u )
+     /*----------------------------------------------------------------------*/
+     /* make a new interval with node (u=F(p),p).                            */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*   p   ... left design point of new interval                          */
+     /*   u   ... value of CDF at p, u=CDF(p)                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to new interval                                            */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_hinv_interval *iv;
+
+  /* check arguments */
+  CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_HINV_GEN,NULL);
+
+  /* first check u */
+  if (u<0.) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"CDF(x) < 0.");
+    return NULL;
+  }
+
+  /* we need new interval */
+  iv = _unur_xmalloc( sizeof(struct unur_hinv_interval) );
+  COOKIE_SET(iv,CK_HINV_IV);
+
+  /* compute and store data */
+  switch (GEN->order) {
+  case 5:
+    iv->df = dPDF(p);
+  case 3:
+    iv->f = PDF(p);
+  case 1:
+    iv->p = p;
+    iv->u = u;
+    break;
+  default:
+    _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+    free(iv);
+    return NULL;
+  }
+
+  iv->next = NULL;  /* add eol marker */
+  ++(GEN->N);   /* increment counter for intervals */
+
+  /* o.k. */
+  return iv;
+
+} /* end of _unur_hinv_interval_new() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_hinv_interval *
 _unur_hinv_interval_adapt( struct unur_gen *gen, struct unur_hinv_interval *iv,
                            int *error_count_shortinterval )
      /*----------------------------------------------------------------------*/
@@ -1023,64 +1434,6 @@ _unur_hinv_interval_adapt( struct unur_gen *gen, struct unur_hinv_interval *iv,
   return iv->next;
 
 } /* end of _unur_hinv_interval_adapt() */
-
-/*---------------------------------------------------------------------------*/
-
-static struct unur_hinv_interval *
-_unur_hinv_interval_new( struct unur_gen *gen, double p, double u )
-     /*----------------------------------------------------------------------*/
-     /* make a new interval with node (u=F(p),p).                            */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*   p   ... left design point of new interval                          */
-     /*   u   ... value of CDF at p, u=CDF(p)                                */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   pointer to new interval                                            */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return NULL                                                        */
-     /*----------------------------------------------------------------------*/
-{
-  struct unur_hinv_interval *iv;
-
-  /* check arguments */
-  CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_HINV_GEN,NULL);
-
-  /* first check u */
-  if (u<0.) {
-    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"CDF(x) < 0.");
-    return NULL;
-  }
-
-  /* we need new interval */
-  iv = _unur_xmalloc( sizeof(struct unur_hinv_interval) );
-  COOKIE_SET(iv,CK_HINV_IV);
-
-  /* compute and store data */
-  switch (GEN->order) {
-  case 5:
-    iv->df = dPDF(p);
-  case 3:
-    iv->f = PDF(p);
-  case 1:
-    iv->p = p;
-    iv->u = u;
-    break;
-  default:
-    _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    free(iv);
-    return NULL;
-  }
-
-  iv->next = NULL;  /* add eol marker */
-  ++(GEN->N);   /* increment counter for intervals */
-
-  /* o.k. */
-  return iv;
-
-} /* end of _unur_hinv_interval_new() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -1321,266 +1674,6 @@ _unur_hinv_make_guide_table( struct unur_gen *gen )
   return UNUR_SUCCESS;
 } /* end of _unur_hinv_make_guide_table() */
 
-/*---------------------------------------------------------------------------*/
-
-struct unur_gen *
-_unur_hinv_clone( const struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* copy (clone) generator object                                        */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   pointer to clone of generator object                               */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return NULL                                                        */
-     /*----------------------------------------------------------------------*/
-{ 
-#define CLONE  ((struct unur_hinv_gen*)clone->datap)
-
-  struct unur_gen *clone;
-
-  /* check arguments */
-  CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_HINV_GEN,NULL);
-
-  /* create generic clone */
-  clone = _unur_generic_clone( gen, GENTYPE );
-
-  /* copy tables for generator object */
-  CLONE->intervals = _unur_xmalloc( GEN->N*(GEN->order+2) * sizeof(double) );
-  memcpy( CLONE->intervals, GEN->intervals, GEN->N*(GEN->order+2) * sizeof(double) );
-  CLONE->guide = _unur_xmalloc( GEN->guide_size * sizeof(int) );
-  memcpy( CLONE->guide, GEN->guide, GEN->guide_size * sizeof(int) );
-
-  return clone;
-
-#undef CLONE
-} /* end of _unur_hinv_clone() */
-
-/*****************************************************************************/
-
-void
-_unur_hinv_free( struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* deallocate generator object                                          */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*----------------------------------------------------------------------*/
-{ 
-  /* check arguments */
-  if( !gen ) /* nothing to do */
-    return;
-
-  /* check input */
-  if ( gen->method != UNUR_METH_HINV ) {
-    _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
-    return; }
-  COOKIE_CHECK(gen,CK_HINV_GEN,RETURN_VOID);
-
-  /* we cannot use this generator object any more */
-  SAMPLE = NULL;   /* make sure to show up a programming error */
-
-  /* free linked list of intervals */
-  if (GEN->iv) {
-    struct unur_hinv_interval *iv,*next;
-    for (iv = GEN->iv; iv != NULL; iv = next) {
-      next = iv->next;
-      free(iv);
-    }
-  }
-
-  /* free tables */
-  if (GEN->intervals) free (GEN->intervals);
-  if (GEN->guide)     free (GEN->guide);
-
-  /* free memory */
-  _unur_generic_free(gen);
-
-} /* end of _unur_hinv_free() */
-
-/*****************************************************************************/
-
-double
-_unur_hinv_sample( struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* sample from generator                                                */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   double (sample from random variate)                                */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return INFINITY                                                    */
-     /*----------------------------------------------------------------------*/
-{ 
-  double U,X;
-
-  /* check arguments */
-  CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_HINV_GEN,INFINITY);
-
-  /* sample from U( Umin, Umax ) */
-  U = GEN->Umin + _unur_call_urng(gen->urng) * (GEN->Umax - GEN->Umin);
-
-  /* compute inverse CDF */
-  X = _unur_hinv_eval_approxinvcdf(gen,U);
-
-  if (X<DISTR.trunc[0]) return DISTR.trunc[0];
-  if (X>DISTR.trunc[1]) return DISTR.trunc[1];
-
-  return X;
-
-} /* end of _unur_hinv_sample() */
-
-/*---------------------------------------------------------------------------*/
-
-double
-_unur_hinv_eval_approxinvcdf( const struct unur_gen *gen, double u )
-     /*----------------------------------------------------------------------*/
-     /* evaluate Hermite interpolation of inverse CDF at u                   */
-     /* (internal call)                                                      */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*   u   ... argument for inverse CDF (0<=u<=1, no validation!)         */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   double (approximate inverse CDF)                                   */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return INFINITY                                                    */
-     /*----------------------------------------------------------------------*/
-{ 
-  int i;
-
-  /* check arguments */
-  CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_HINV_GEN,INFINITY);
-
-  /* look up in guide table and search for interval */
-  i =  GEN->guide[(int) (GEN->guide_size*u)];
-  while (u > GEN->intervals[i+GEN->order+2])
-    i += GEN->order+2;
-
-  /* rescale uniform random number */
-  u = (u-GEN->intervals[i])/(GEN->intervals[i+GEN->order+2] - GEN->intervals[i]);
-
-  /* evaluate polynome */
-  return _unur_hinv_eval_polynomial( u, GEN->intervals+i+1, GEN->order );
-
-} /* end of _unur_hinv_eval_approxinvcdf() */
-
-/*---------------------------------------------------------------------------*/
-
-double
-unur_hinv_eval_approxinvcdf( const struct unur_gen *gen, double u )
-     /*----------------------------------------------------------------------*/
-     /* evaluate Hermite interpolation of inverse CDF at u                   */
-     /* (user call)                                                          */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*   u   ... argument for inverse CDF (0<=u<=1)                         */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   double (approximate inverse CDF)                                   */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return INFINITY                                                    */
-     /*----------------------------------------------------------------------*/
-{ 
-  double x;
-
-  /* check arguments */
-  _unur_check_NULL( GENTYPE, gen, INFINITY );
-  if ( gen->method != UNUR_METH_HINV ) {
-    _unur_error(gen->genid,UNUR_ERR_GEN_INVALID,"");
-    return INFINITY; 
-  }
-  COOKIE_CHECK(gen,CK_HINV_GEN,INFINITY);
-
-  if ( u<0. || u>1.) {
-    _unur_warning(gen->genid,UNUR_ERR_DOMAIN,"argument u not in [0,1]");
-  }
-
-  /* validate argument */
-  if (u<=0.) return DISTR.domain[0];
-  if (u>=1.) return DISTR.domain[1];
-
-  /* compute inverse CDF */
-  x = _unur_hinv_eval_approxinvcdf(gen,u);
-
-  /* validate range */
-  if (x<DISTR.domain[0]) x = DISTR.domain[0];
-  if (x>DISTR.domain[1]) x = DISTR.domain[1];
-
-  return x;
-
-} /* end of unur_hinv_eval_approxinvcdf() */
-
-/*****************************************************************************/
-/**  Auxilliary Routines                                                    **/
-/*****************************************************************************/
-
-int
-unur_hinv_estimate_error( const UNUR_GEN *gen, int samplesize, double *max_error, double *MAE )
-     /*----------------------------------------------------------------------*/
-     /* Estimate maximal u-error and mean absolute error (MAE) by means of   */
-     /* Monte-Carlo simulation.                                              */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen        ... pointer to generator object                         */
-     /*   samplesize ... sample size for Monte Carlo simulation              */
-     /*   max_error  ... pointer to double for storing maximal u-error       */
-     /*   MEA        ... pointer to double for storing MA u-error            */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   UNUR_SUCCESS ... on success                                        */
-     /*   error code   ... on error                                          */
-     /*----------------------------------------------------------------------*/
-{ 
-  double U, ualt, X;
-  double max=0., average=0., uerror, errorat=0.;
-  int j, outside_interval=0;
-
-  /* check arguments */
-  CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_HINV_GEN,UNUR_ERR_COOKIE);
-
-  for(j=0;j<samplesize;j++) {  
-    /* sample from U( Umin, Umax ) */
-    U = GEN->Umin + _unur_call_urng(gen->urng) * (GEN->Umax - GEN->Umin);
-    ualt=U;
-
-    /* compute inverse CDF */
-    X = _unur_hinv_eval_approxinvcdf(gen,U);
-
-    if (X<DISTR.trunc[0]) { X = DISTR.trunc[0]; outside_interval++; }
-    if (X>DISTR.trunc[1]) { X = DISTR.trunc[1]; outside_interval++; }
-
-    uerror = fabs(ualt-CDF(X));
-
-    average += uerror;
-    if(uerror>max) {
-      max = uerror;
-      errorat = X;
-    }
-    /* printf("j %d uerror %e maxerror %e average %e\n",j,uerror,max,average/(j+1)); */
-  }
-  /*
-  printf("maximal error occured at x= %.16e percentage outside interval %e \n",
-	 errorat,(double)outside_interval/(double)samplesize); 
-  */
-
-  *max_error = max;
-  *MAE = average/samplesize;
-
-  /* o.k. */
-  return UNUR_SUCCESS;
-
-} /* end of unur_hinv_estimate_error() */
 
 /*****************************************************************************/
 /**  Debugging utilities                                                    **/
@@ -1591,12 +1684,11 @@ unur_hinv_estimate_error( const UNUR_GEN *gen, int samplesize, double *max_error
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_hinv_debug_init( const struct unur_par *par, const struct unur_gen *gen, int ok )
+_unur_hinv_debug_init( const struct unur_gen *gen, int ok )
      /*----------------------------------------------------------------------*/
      /* write info about generator into logfile                              */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   par ... pointer to parameter for building generator object         */
      /*   gen ... pointer to generator object                                */
      /*   ok  ... exitcode of init call                                      */
      /*----------------------------------------------------------------------*/
@@ -1626,20 +1718,19 @@ _unur_hinv_debug_init( const struct unur_par *par, const struct unur_gen *gen, i
   _unur_print_if_default(gen,HINV_SET_U_RESOLUTION);
   fprintf(log,"\n%s: tail cut-off points = ",gen->genid);
   if (GEN->tailcutoff_left < 0.)  fprintf(log,"none, ");
-  else                           fprintf(log,"%g, ",GEN->tailcutoff_left);
+  else                            fprintf(log,"%g, ",GEN->tailcutoff_left);
   if (GEN->tailcutoff_right > 1.) fprintf(log,"none\n");
-  else                           fprintf(log,"1.-%g\n",1.-GEN->tailcutoff_right);
+  else                            fprintf(log,"1.-%g\n",1.-GEN->tailcutoff_right);
   
   fprintf(log,"%s: domain of computation = [%g,%g]\n",gen->genid,GEN->bleft,GEN->bright);
   fprintf(log,"%s:\tU in (%g,%g)\n",gen->genid,GEN->Umin,GEN->Umax);
   fprintf(log,"%s:\n",gen->genid);
 
-  if (gen->set & HINV_SET_STP) {
-    fprintf(log,"%s: starting points: (%d)",gen->genid,PAR->n_stp);
-    if (par->set & HINV_SET_STP)
-      for (i=0; i<PAR->n_stp; i++) {
+  if (GEN->stp && gen->set & HINV_SET_STP) {
+    fprintf(log,"%s: starting points: (%d)",gen->genid,GEN->n_stp);
+    for (i=0; i<GEN->n_stp; i++) {
       if (i%5==0) fprintf(log,"\n%s:\t",gen->genid);
-      fprintf(log,"   %#g,",PAR->stp[i]);
+      fprintf(log,"   %#g,",GEN->stp[i]);
     }
   fprintf(log,"\n%s:\n",gen->genid);
   }
@@ -1727,7 +1818,3 @@ _unur_hinv_debug_chg_truncated( const struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 #endif   /* end UNUR_ENABLE_LOGGING */
 /*---------------------------------------------------------------------------*/
-
-
-
-

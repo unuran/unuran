@@ -281,7 +281,7 @@ unur_utdr_new( const struct unur_distr *distr )
 int 
 unur_utdr_set_pdfatmode( UNUR_PAR *par, double fmode )
      /*----------------------------------------------------------------------*/
-     /* Set PDF at mode. if set the PDF at the mode is never changed.        */
+     /* Set PDF at mode. if set, the PDF at the mode is never changed.       */
      /*                                                                      */
      /* parameters:                                                          */
      /*   par   ... pointer to parameter for building generator object       */
@@ -1147,11 +1147,8 @@ _unur_utdr_sample_check( struct unur_gen *gen )
 } /* end of _unur_utdr_sample_check() */
 
 /*****************************************************************************/
-
-/*****************************************************************************/
 /**  Auxilliary Routines                                                    **/
 /*****************************************************************************/
-
 
 /** TODO gibts da schon eine UNURAN constante? ich hab sie nicht gefunden!! **/
 #define SMALL_VAL 1.e-50

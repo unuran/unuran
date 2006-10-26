@@ -957,6 +957,7 @@ _unur_ninv_create( struct unur_par *par )
   SAMPLE = _unur_ninv_getSAMPLE(gen);
   gen->destroy = _unur_ninv_free;
   gen->clone = _unur_ninv_clone;
+  gen->reinit = _unur_ninv_reinit;
 
   /* copy parameters into generator object */
   GEN->max_iter = PAR->max_iter;      /* maximal number of iterations          */

@@ -861,8 +861,8 @@ _unur_hinv_create( struct unur_par *par )
   GEN->order = PAR->order;            /* order of polynomial                 */
   GEN->u_resolution = PAR->u_resolution; /* maximal error in u-direction     */
   GEN->guide_factor = PAR->guide_factor; /* relative size of guide tables    */
-  GEN->bleft  = PAR->bleft;              /* border of computational domain   */
-  GEN->bright = PAR->bright;
+  GEN->bleft_par  = PAR->bleft;          /* border of computational domain   */
+  GEN->bright_par = PAR->bright;
   GEN->max_ivs = PAR->max_ivs;           /* maximum number of intervals      */
   GEN->stp = PAR->stp;               /* pointer to array of starting points  */
   GEN->n_stp = PAR->n_stp;           /* number of construction points        */
@@ -872,6 +872,8 @@ _unur_hinv_create( struct unur_par *par )
   GEN->tailcutoff_right = 10.;
 
   /* initialize variables */
+  GEN->bleft = GEN->bleft_par;
+  GEN->bright = GEN->bright_par;
   GEN->N = 0;
   GEN->iv = NULL;
   GEN->intervals = NULL;
@@ -898,6 +900,9 @@ _unur_hinv_check_par( struct unur_gen *gen )
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
+  /* computational domain as given by user */
+  GEN->bleft = GEN->bleft_par;
+  GEN->bright = GEN->bright_par;
 
   /* border of the computational domain must not exceed domain of distribution */
   if (GEN->bleft  < DISTR.domain[0]) GEN->bleft  = DISTR.domain[0];
@@ -1260,7 +1265,7 @@ _unur_hinv_create_table( struct unur_gen *gen )
     if (GEN->N >= GEN->max_ivs) {
       /* emergency break */
       _unur_error(GENTYPE,UNUR_ERR_GEN_CONDITION,"too many intervals");
-      return UNUR_ERR_GEN_CONDITION; 
+      return UNUR_ERR_GEN_CONDITION;
     }
     iv = _unur_hinv_interval_adapt(gen,iv, &error_count_shortinterval);
   }
@@ -1305,6 +1310,10 @@ _unur_hinv_interval_new( struct unur_gen *gen, double p, double u )
     else { /* round off error */
       u = 0.;
     }
+  }
+  if (u>1.) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"CDF(x) > 1.");
+    return NULL;
   }
 
   /* we need new interval */

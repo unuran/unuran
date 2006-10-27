@@ -96,6 +96,8 @@ struct unur_hinv_gen {
   int     max_ivs;         /* maximum number of intervals                    */
   const double *stp;       /* pointer to array of starting points            */
   int     n_stp;           /* number of construction points at start         */
+  double  bleft_par;       /* border of the computational domain as ...      */
+  double  bright_par;      /* ... given by user                              */
 };
 
 

@@ -48,7 +48,7 @@
 
    =SPEED Set-up: (very) slow, Sampling: (very) fast
 
-   =REINIT not implemented
+   =REINIT supported
 
    =DESCRIPTION
       HINV is a variant of numerical inversion, where the inverse CDF
@@ -128,6 +128,20 @@
       recommend to compute this error using unur_hinv_estimate_error()
       which runs a small Monte Carlo simulation.
       
+      It is possible to change the parameters and the domain of the chosen 
+      distribution and run unur_reinit() to reinitialize the generator object.
+      The values given by the last unur_hinv_chg_truncated() call will be 
+      then changed to the values of the domain of the underlying distribution
+      object. Moreover, starting construction points (nodes) that are given by
+      a unur_hinv_set_cpoints() call are ignored when unur_reinit() is
+      called.
+      It is important to note that for a distribution from the 
+      UNURAN library of standard distributions
+      (@pxref{Stddist,,Standard distributions})
+      the normalization constant has to be updated using the 
+      unur_distr_cont_upd_pdfarea() call whenever its parameters have been
+      changed by means of a unur_distr_cont_set_pdfparams() call.
+
    =END
 */
 

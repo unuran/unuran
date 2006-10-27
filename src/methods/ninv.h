@@ -114,7 +114,12 @@
       distribution and run unur_reinit() to reinitialize the generator object.
       The values given by the last unur_ninv_chg_truncated() call will be 
       then changed to the values of the domain of the underlying distribution
-      object.
+      object. It is important to note that for a distribution from the 
+      UNURAN library of standard distributions
+      (@pxref{Stddist,,Standard distributions})
+      the normalization constant has to be updated using the 
+      unur_distr_cont_upd_pdfarea() call whenever its parameters have been
+      changed by means of a unur_distr_cont_set_pdfparams() call.
 
       It might happen that NINV aborts unur_sample_cont() without
       computing the correct value (because the maximal number

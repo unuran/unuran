@@ -296,10 +296,20 @@ int unur_distr_cont_set_pdfparams( UNUR_DISTR *distribution, const double *param
    has been changed before by a unur_distr_cont_set_domain() call.
    If the given parameters are invalid for the standard distribution,
    then no parameters are set and an error code is returned.
-   Notice that the given parameter list for such a distribution is
+   Notice, that the given parameter list for such a distribution is
    handled in the same way as in the corresponding @command{new}
    calls, i.e. optional parameters for the PDF that are not present in
    the given list are (re-)set to their default values.
+
+   @strong{Important:} If the parameters of a distribution from the 
+   UNURAN library of standard distributions
+   (@pxref{Stddist,,Standard distributions})
+   are changed, then neither its domain nor the mode or the normalization 
+   constant are updated. Please use the respective calls
+   unur_distr_cont_set_domain(), unur_distr_cont_upd_mode(), and
+   unur_distr_cont_upd_pdfarea().
+   Updating the normalization constant is in particular very important,
+   when the CDF of the distribution is used.
 */
 
 int unur_distr_cont_get_pdfparams( const UNUR_DISTR *distribution, const double **params );

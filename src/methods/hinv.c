@@ -746,15 +746,15 @@ _unur_hinv_init( struct unur_par *par )
   GEN->Umin = _unur_max(0.,GEN->intervals[0]);
   GEN->Umax = _unur_min(1.,GEN->intervals[(GEN->N-1)*(GEN->order+2)]);
 
-  /* this setting of Umin and Umax guarantees that in the 
+  /* this setting of Umin and Umax guarantees that in the
      sampling algorithm U is always in a range where a table
      is available for the inverse CDF.
-     So this is a safe guard against segfault for U=0. or U=1. */ 
+     So this is a safe guard against segfault for U=0. or U=1. */
 
-  /* These values for Umin and Umax are only changed in 
+  /* These values for Umin and Umax are only changed in
      unur_hinv_chg_truncated(). */
 
-  /* make initial guide table */
+  /* make guide table */
   _unur_hinv_make_guide_table(gen);
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -814,6 +814,9 @@ _unur_hinv_reinit( struct unur_gen *gen )
   if (gen->debug & HINV_DEBUG_REINIT) _unur_hinv_debug_init(gen,TRUE);
 #endif
 
+  /* make guide table */
+  _unur_hinv_make_guide_table(gen);
+
   return UNUR_SUCCESS;
 } /* end of _unur_hinv_reinit() */
 
@@ -852,6 +855,7 @@ _unur_hinv_create( struct unur_par *par )
   SAMPLE = _unur_hinv_getSAMPLE(gen);
   gen->destroy = _unur_hinv_free;
   gen->clone = _unur_hinv_clone;
+  gen->reinit = _unur_hinv_reinit;
 
   /* copy parameters into generator object */
   GEN->order = PAR->order;            /* order of polynomial                 */
@@ -1210,6 +1214,9 @@ _unur_hinv_create_table( struct unur_gen *gen )
   /* check arguments */
   CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_HINV_GEN,UNUR_ERR_COOKIE);
 
+  /* reset counter for intervals */
+  GEN->N = 0;
+
   /* make starting intervals */
   GEN->iv = _unur_hinv_interval_new(gen,GEN->bleft,CDF(GEN->bleft));
   if (GEN->iv == NULL) return UNUR_ERR_GEN_DATA;
@@ -1238,7 +1245,7 @@ _unur_hinv_create_table( struct unur_gen *gen )
 
   else /* mode - if known - is inserted as "default design point" */
     if( (gen->distr->set & UNUR_DISTR_SET_MODE) &&
-        _unur_FP_greater(DISTR.mode, GEN->bleft) && 
+        _unur_FP_greater(DISTR.mode, GEN->bleft) &&
         _unur_FP_less(DISTR.mode, GEN->bright) ) {
       iv = GEN->iv;
       iv_new = _unur_hinv_interval_new(gen,DISTR.mode,CDF(DISTR.mode));
@@ -1291,8 +1298,13 @@ _unur_hinv_interval_new( struct unur_gen *gen, double p, double u )
 
   /* first check u */
   if (u<0.) {
-    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"CDF(x) < 0.");
-    return NULL;
+    if (u < -UNUR_SQRT_DBL_EPSILON) {
+      _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"CDF(x) < 0.");
+      return NULL;
+    }
+    else { /* round off error */
+      u = 0.;
+    }
   }
 
   /* we need new interval */
@@ -1596,7 +1608,8 @@ _unur_hinv_list_to_array( struct unur_gen *gen )
   CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_HINV_GEN,UNUR_ERR_COOKIE);
 
   /* allocate memory */
-  GEN->intervals = malloc( GEN->N*(GEN->order+2) * sizeof(double) );
+  GEN->intervals = 
+    _unur_xrealloc( GEN->intervals, GEN->N*(GEN->order+2)*sizeof(double) );
 
   i = 0;
   for (iv=GEN->iv; iv!=NULL; iv=next) {
@@ -1638,11 +1651,9 @@ _unur_hinv_make_guide_table( struct unur_gen *gen )
 
   /* allocate blocks for guide table (if necessary).
      (we allocate blocks for maximal guide table.) */
-  if (!GEN->guide) {
-    GEN->guide_size = GEN->N * GEN->guide_factor;
-    if (GEN->guide_size <= 0) GEN->guide_size = 1; 
-    GEN->guide = _unur_xmalloc( GEN->guide_size * sizeof(int) );
-  }
+  GEN->guide_size = GEN->N * GEN->guide_factor;
+  if (GEN->guide_size <= 0) GEN->guide_size = 1; 
+  GEN->guide = _unur_xrealloc( GEN->guide, GEN->guide_size * sizeof(int) );
 
   imax = (GEN->N-2) * (GEN->order+2);
 

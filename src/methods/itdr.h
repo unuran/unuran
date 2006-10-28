@@ -46,7 +46,7 @@
 
    =SPEED Set-up: moderate, Sampling: moderate
 
-   =REINIT not implemented
+   =REINIT supported
 
    =REF  [HLDa06]
 
@@ -125,6 +125,11 @@
       than for other values of @i{c}. Depending on the expenses of
       evaluating the PDF the resulting algorithm is usually faster.
 
+      It is possible to change the parameters and the domain of the chosen 
+      distribution and run unur_reinit() to reinitialize the generator object.
+      However, the values given by unur_itdr_set_xi(), unur_itdr_set_cp(), 
+      or unur_itdr_set_ct() calls are then ignored when unur_reinit() is
+      called.
    =END
 */
 

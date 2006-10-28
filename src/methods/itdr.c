@@ -86,6 +86,15 @@
 #define ITDR_VARFLAG_VERIFY   0x001u   /* run verify mode                    */
 
 /*---------------------------------------------------------------------------*/
+/* Debugging flags                                                           */
+/*    bit  01    ... pameters and structure of generator (do not use here)   */
+/*    bits 02-12 ... setup                                                   */
+/*    bits 13-24 ... adaptive steps                                          */
+/*    bits 25-32 ... trace sampling                                          */
+
+#define ITDR_DEBUG_REINIT    0x00000010u   /* print parameters after reinit  */
+
+/*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
 
 #define ITDR_SET_XI      0x001u     /* set intersection point                */
@@ -103,15 +112,24 @@ static struct unur_gen *_unur_itdr_init( struct unur_par *par );
 /* Initialize new generator.                                                 */
 /*---------------------------------------------------------------------------*/
 
+static int _unur_itdr_reinit( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* Reinitialize generator.                                                   */
+/*---------------------------------------------------------------------------*/
+
 static struct unur_gen *_unur_itdr_create( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 /* create new (almost empty) generator object.                               */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_itdr_sample( struct unur_gen *gen );
-static double _unur_itdr_sample_check( struct unur_gen *gen );
+static int _unur_itdr_check_par( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* sample from generator.                                                    */
+/* Check parameters of given distribution and method                         */
+/*---------------------------------------------------------------------------*/
+
+static struct unur_gen *_unur_itdr_clone( const struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* copy (clone) generator object.                                            */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_itdr_free( struct unur_gen *gen);
@@ -119,9 +137,10 @@ static void _unur_itdr_free( struct unur_gen *gen);
 /* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *_unur_itdr_clone( const struct unur_gen *gen );
+static double _unur_itdr_sample( struct unur_gen *gen );
+static double _unur_itdr_sample_check( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* copy (clone) generator object.                                            */
+/* sample from generator.                                                    */
 /*---------------------------------------------------------------------------*/
 
 static int _unur_itdr_get_hat( struct unur_gen *gen );
@@ -584,7 +603,6 @@ _unur_itdr_init( struct unur_par *par )
      /*----------------------------------------------------------------------*/
 {
   struct unur_gen *gen;
-  int error = UNUR_SUCCESS;
 
   /* check arguments */
   CHECK_NULL(par,NULL);
@@ -600,49 +618,67 @@ _unur_itdr_init( struct unur_par *par )
   _unur_par_free(par);
   if (!gen) return NULL;
 
-  /* estimate sign of region: +1 ... (-oo,0], -1 ... [0,oo) */
-  do {
-    if (_unur_isfinite(DISTR.BD_LEFT) && !_unur_isfinite(DISTR.BD_RIGHT)) {
-      GEN->sign = 1.; 
-      if (dPDFo(DISTR.BD_LEFT) <= 0.) break;
-    }
-    if (!_unur_isfinite(DISTR.BD_LEFT) && _unur_isfinite(DISTR.BD_RIGHT)) {
-      GEN->sign = -1.; break;
-      if (dPDFo(DISTR.BD_RIGHT) >= 0.) break;
-    }
-    if (_unur_isfinite(DISTR.BD_LEFT) && _unur_isfinite(DISTR.BD_RIGHT)) {
-      GEN->sign = (PDFo(DISTR.BD_LEFT)>=PDFo(DISTR.BD_RIGHT)) ? 1. : -1.;
-      if ( GEN->sign*dPDFo(DISTR.BD_LEFT) <= 0. &&
-	   GEN->sign*dPDFo(DISTR.BD_RIGHT) <= 0. )
-	break;
-    }
-    /* else */
-    _unur_error(gen->genid,UNUR_ERR_DISTR_PROP,"cannot compute sign of region");
-    error = UNUR_ERR_DISTR_PROP;
-    break;
-  } while (1);
-
-  /* right boundary of shifted domain */
-  GEN->bd_right = ( (GEN->sign > 0) 
-		    ? DISTR.BD_RIGHT - GEN->pole
-		    : GEN->pole - DISTR.BD_LEFT );
-
-  /* create hat function */
-  if (error == UNUR_SUCCESS)
-    error = _unur_itdr_get_hat(gen);
-
-#ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
-  if (gen->debug) _unur_itdr_debug_init(gen,error);
-#endif
-  
-  if (error != UNUR_SUCCESS) {
+  /* check parameters */
+  if (_unur_itdr_check_par(gen) != UNUR_SUCCESS) {
     _unur_itdr_free(gen); return NULL;
   }
+
+  /* create hat function */
+  if (_unur_itdr_get_hat(gen) != UNUR_SUCCESS) {
+#ifdef UNUR_ENABLE_LOGGING
+    /* write info into log file */
+    if (gen->debug) _unur_itdr_debug_init(gen,UNUR_FAILURE);
+#endif
+    _unur_itdr_free(gen); return NULL;
+  }
+
+#ifdef UNUR_ENABLE_LOGGING
+    /* write info into log file */
+    if (gen->debug) _unur_itdr_debug_init(gen,UNUR_SUCCESS);
+#endif
 
   return gen;
 
 } /* end of _unur_itdr_init() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_itdr_reinit( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* re-initialize (existing) generator.                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  int rcode;
+
+  /* (re)set sampling routine */
+  SAMPLE = _unur_itdr_getSAMPLE(gen);
+
+  /* we do not use the given values for when we run reinit */
+  gen->set &= ~(ITDR_SET_XI | ITDR_SET_CP | ITDR_SET_CT);
+
+  /* check parameters */
+  if ( (rcode = _unur_itdr_check_par(gen)) != UNUR_SUCCESS)
+    return rcode;
+
+  /* create hat function */
+  rcode = _unur_itdr_get_hat(gen);
+
+#ifdef UNUR_ENABLE_LOGGING
+    /* write info into log file */
+    if (gen->debug & ITDR_DEBUG_REINIT)
+      _unur_itdr_debug_init(gen,rcode);
+#endif
+
+  return rcode;
+} /* end of _unur_itdr_reinit() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -679,6 +715,7 @@ _unur_itdr_create( struct unur_par *par )
   SAMPLE = _unur_itdr_getSAMPLE(gen);
   gen->destroy = _unur_itdr_free;
   gen->clone = _unur_itdr_clone;
+  gen->reinit = _unur_itdr_reinit;
 
   /* copy data from distribution into generator object*/
   GEN->pole = DISTR.mode;  /* location of pole                    */
@@ -712,6 +749,54 @@ _unur_itdr_create( struct unur_par *par )
 
 /*---------------------------------------------------------------------------*/
 
+int
+_unur_itdr_check_par( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* check parameters of given distribution and method                    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+
+  /* copy data from distribution into generator object*/
+  GEN->pole = DISTR.mode;  /* location of pole                    */
+
+  /* estimate sign of region: +1 ... (-oo,0], -1 ... [0,oo) */
+  do {
+    if (_unur_isfinite(DISTR.BD_LEFT) && !_unur_isfinite(DISTR.BD_RIGHT)) {
+      GEN->sign = 1.; 
+      if (dPDFo(DISTR.BD_LEFT) <= 0.) break;
+    }
+    if (!_unur_isfinite(DISTR.BD_LEFT) && _unur_isfinite(DISTR.BD_RIGHT)) {
+      GEN->sign = -1.; break;
+      if (dPDFo(DISTR.BD_RIGHT) >= 0.) break;
+    }
+    if (_unur_isfinite(DISTR.BD_LEFT) && _unur_isfinite(DISTR.BD_RIGHT)) {
+      GEN->sign = (PDFo(DISTR.BD_LEFT)>=PDFo(DISTR.BD_RIGHT)) ? 1. : -1.;
+      if ( GEN->sign*dPDFo(DISTR.BD_LEFT) <= 0. &&
+	   GEN->sign*dPDFo(DISTR.BD_RIGHT) <= 0. )
+	break;
+    }
+    /* else */
+    _unur_error(gen->genid,UNUR_ERR_DISTR_PROP,"cannot compute sign of region");
+    return UNUR_ERR_DISTR_PROP;
+  } while (1);
+
+  /* right boundary of shifted domain */
+  GEN->bd_right = ( (GEN->sign > 0) 
+		    ? DISTR.BD_RIGHT - GEN->pole
+		    : GEN->pole - DISTR.BD_LEFT );
+
+  return UNUR_SUCCESS;
+} /* end of _unur_itdr_check_par() */
+
+/*---------------------------------------------------------------------------*/
+
 struct unur_gen *
 _unur_itdr_clone( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
@@ -741,6 +826,35 @@ _unur_itdr_clone( const struct unur_gen *gen )
 
 #undef CLONE
 } /* end of _unur_itdr_clone() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_itdr_free( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* deallocate generator object                                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  if( !gen ) /* nothing to do */
+    return;
+
+  /* check input */
+  if ( gen->method != UNUR_METH_ITDR ) {
+    _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
+    return; }
+  COOKIE_CHECK(gen,CK_ITDR_GEN,RETURN_VOID);
+
+  /* we cannot use this generator object any more */
+  SAMPLE = NULL;   /* make sure to show up a programming error */
+
+  /* free memory */
+  _unur_generic_free(gen);
+
+} /* end of _unur_itdr_free() */
 
 /*****************************************************************************/
 
@@ -944,35 +1058,6 @@ _unur_itdr_sample_check( struct unur_gen *gen )
 #undef ht
 #undef hp
 } /* end of _unur_itdr_sample_check() */
-
-/*****************************************************************************/
-
-void
-_unur_itdr_free( struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* deallocate generator object                                          */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  if( !gen ) /* nothing to do */
-    return;
-
-  /* check input */
-  if ( gen->method != UNUR_METH_ITDR ) {
-    _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
-    return; }
-  COOKIE_CHECK(gen,CK_ITDR_GEN,RETURN_VOID);
-
-  /* we cannot use this generator object any more */
-  SAMPLE = NULL;   /* make sure to show up a programming error */
-
-  /* free memory */
-  _unur_generic_free(gen);
-
-} /* end of _unur_itdr_free() */
 
 /*****************************************************************************/
 /**  Auxilliary Routines                                                    **/
@@ -1388,7 +1473,7 @@ _unur_itdr_find_xt( struct unur_gen *gen, double b )
   if (xl > GEN->bd_right) xl = GEN->bd_right;
   while (!_unur_isfinite(FKT(xl)) || PDF(xl) == 0. ) {
     xl -= (xl - b)/2.;
-    if (!_unur_isfinite(xl)) return INFINITY;
+    if (!_unur_isfinite(xl) || _unur_FP_same(xl,b)) return INFINITY;
   }
   xu = xl;
 

@@ -787,6 +787,11 @@ unur_arou_chg_verify( struct unur_gen *gen, int verify )
   _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
   _unur_check_gen_object( gen, AROU, UNUR_ERR_GEN_INVALID );
 
+  /* we must not change this switch when sampling has been disabled by
+     using a pointer to the error producing routine                          */
+  if (SAMPLE == _unur_sample_cont_error) 
+    return UNUR_FAILURE;
+
   if (verify)
     /* turn verify mode on */
     gen->variant |= AROU_VARFLAG_VERIFY;

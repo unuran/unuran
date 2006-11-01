@@ -315,6 +315,11 @@ unur_hrb_chg_verify( struct unur_gen *gen, int verify )
   _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
   _unur_check_gen_object( gen, HRB, UNUR_ERR_GEN_INVALID );
 
+  /* we must not change this switch when sampling has been disabled by
+     using a pointer to the error producing routine                          */
+  if (SAMPLE == _unur_sample_cont_error) 
+    return UNUR_FAILURE;
+
   /* we use a bit in variant */
   gen->variant = (verify) 
     ? (gen->variant | HRB_VARFLAG_VERIFY) 

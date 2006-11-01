@@ -1,98 +1,89 @@
-Version 0.8.0: October 2006
+Version 0.8.0: November 2006
+
+	* Methods:
+
+        - new method ITDR (Inverse Transformed Density Rejection)
+          for distributions with monotone unbounded densities.
+
+	 - Implemented new routine unur_reinit() for reinitializing
+	   existing generator object. This can be done by extracting
+	   the underlying distribution object by a unur_get_distr(),
+	   modify it and reinitialize the generator by running
+	   unur_reinit().
+
+        - More methods support reinitialization now.
 
 	* String API:
 
 	 - New functions unur_makegen_ssu() and unur_makegen_dsu()
 	   to allow disribution object, generation method and 
-          uniform random number generator as separate arguments.
+	   uniform random number generator as separate arguments.
 
 	 - the keyword "urng" is deprecated now and will be removed
-          in the next release.
+	   in the next release.
 
 	* Distributions:
 
  	 - DISCR:
-          now unur_distr_discr_set_pmf() and unur_distr_discr_set_cdf()
+	   now unur_distr_discr_set_pmf() and unur_distr_discr_set_cdf()
 	   can be used after a unur_distr_discr_set_pv() call.
 	   However, the probability vector is then removed.
 
-	* Methods:
-	
-        - new method ITDR (Inverse Transformed Density Rejection)
-          for distributions with monotone unbounded densities
+	 - added unur_distr_set_extobj() / unur_distr_get_extobj(): 
+	   Store pointer to external object that can be passed to
+	   PDF, CDF, PMF or similar functions 
 
-        - method AROU:
+	* Deprecated calls:
 
-          . removed unur_arou_set_center() as this functionality is 
-            already covered by the unur_distr_cont_set_center() call
+	   The API for UNURAN has been modified.
+	   Now there exists a general unur_reinit() call that replaces
+	   such a call for particular methods.
+	   Thus the following calls are now deprecated and will be
+	   removed in the next release:
 
-        - method TDR:
+	     unur_dari_reinit()
+	     unur_dsrou_reinit()
+	     unur_srou_reinit()
+	     unur_ssr_reinit()
+	     unur_utdr_reinit()
+	     unur_tdr_reinit()
+	     unur_tdrgw_reinit()
 
-          . removed unur_tdr_set_center() as this functionality is 
-            already covered by the unur_distr_cont_set_center() call
+	   To avoid lots of calls for changing the parameters or domains
+	   of the underlying distribution the prefered method now is to 
+	   extract the distribution object from the generator object,
+	   use the corresponding calls for distributions to change it,
+	   and run unur_reinit().
+	   Thus the following calls are now deprecated and will be
+	   removed in the next release:
 
-	- method SROU:
+	   . unur_cstd_chg_pdfparams(),
+	   . unur_dari_chg_pmfparams(), unur_dari_chg_domain(),
+	     unur_dari_chg_mode(), unur_dari_upd_mode(),
+	     unur_dari_chg_pmfsum(), unur_dari_upd_pmfsum(), and
+	   . unur_dsrou_chg_pmfparams(), unur_dsrou_chg_domain(),
+	     unur_dsrou_chg_mode(), unur_dsrou_upd_mode(),
+	     unur_dsrou_chg_pmfsum(), unur_dsrou_upd_pmfsum(), and
+	   . unur_dstd_chg_pmfparams(),
+	   . unur_ninv_chg_pmfparams(),
+	   . unur_srou_chg_pdfparams(), unur_srou_chg_domain(),
+	     unur_srou_chg_mode(), unur_srou_upd_mode(), 
+	     unur_srou_chg_pdfarea(), unur_srou_upd_pdfarea()
+	   . unur_ssr_chg_pdfparams(), unur_ssr_chg_domain(),
+	     unur_ssr_chg_mode(), unur_ssr_upd_mode(), 
+	     unur_ssr_chg_pdfarea(), unur_ssr_upd_pdfarea()
+	   . unur_utdr_chg_pdfparams(), unur_utdr_chg_domain(),
+	     unur_utdr_chg_mode(), unur_utdr_upd_mode(), 
+	     unur_utdr_chg_pdfarea(), unur_utdr_upd_pdfarea()
 
-	  . unur_srou_chg_pdfparams(), unur_srou_chg_domain(),
-	    unur_srou_chg_mode(), unur_srou_upd_mode(), 
-           unur_srou_chg_pdfarea(), unur_srou_upd_pdfarea(),
-	    unur_srou_reinit()
-	    are now deprecated
+	  Other calls:	  
 
-	- method SSR:
+	   . removed unur_arou_set_center() as this functionality is 
+	     already covered by the unur_distr_cont_set_center() call.
 
-	  . unur_ssr_chg_pdfparams(), unur_ssr_chg_domain(),
-	    unur_ssr_chg_mode(), unur_ssr_upd_mode(), 
-           unur_ssr_chg_pdfarea(), and unur_ssr_upd_pdfarea()
-	    unur_ssr_reinit()
-	    are now deprecated
+	   . removed unur_tdr_set_center() as this functionality is 
+	     already covered by the unur_distr_cont_set_center() call.
 
-	- method UTDR:
-
-	  . unur_utdr_chg_pdfparams(), unur_utdr_chg_domain(),
-	    unur_utdr_chg_mode(), unur_utdr_upd_mode(), 
-           unur_utdr_chg_pdfarea(), and unur_utdr_upd_pdfarea()
-	    unur_utdr_reinit()
-	    are now deprecated
-
-	- method DARI:
-
-	  . unur_dari_chg_pmfparams(), unur_dari_chg_domain(),
-	    unur_dari_chg_mode(), unur_dari_upd_mode(),
-	    unur_dari_chg_pmfsum(), unur_dari_upd_pmfsum(), and
-	    unur_dari_reinit()
-	    are now deprecated
-
-	- method DSROU:
-
-	  . unur_dsrou_chg_pmfparams(), unur_dsrou_chg_domain(),
-	    unur_dsrou_chg_mode(), unur_dsrou_upd_mode(),
-	    unur_dsrou_chg_pmfsum(), unur_dsrou_upd_pmfsum(), and
-	    unur_dsrou_reinit()
-	    are now deprecated
-
-       - method CSTD:
-	  . unur_cstd_chg_pdfparams() is now deprecated
-
-       - method DSTD:
-	  . unur_dstd_chg_pmfparams() is now deprecated
-
-       - method NINV:
-	  . unur_ninv_chg_pmfparams() is now deprecated
-
-	- method TDRGW:
-	  . unur_tdrgw_reinit() is now deprecated
-
-	- method TDRGW:
-	  . unur_tdr_reinit() is now deprecated
-
-	* Distributions:
-
-	- added unur_diste_set_extobj() / unur_diste_get_extobj(): 
-	  Store pointer to external object that can be passed to
-          PDF, CDF, PMF or similar functions 
-
-	* String API:
 
 Version 0.7.2: March 2006
 

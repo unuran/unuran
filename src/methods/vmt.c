@@ -80,6 +80,8 @@
 /*    bits 13-24 ... adaptive steps                                          */
 /*    bits 25-32 ... trace sampling                                          */
 
+#define VMT_DEBUG_REINIT     0x00000010u   /* print parameters after reinit  */
+
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
 
@@ -94,14 +96,19 @@ static struct unur_gen *_unur_vmt_init( struct unur_par *par );
 /* Initialize new generator.                                                 */
 /*---------------------------------------------------------------------------*/
 
+static int _unur_vmt_reinit( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* Reinitialize generator.                                                   */
+/*---------------------------------------------------------------------------*/
+
 static struct unur_gen *_unur_vmt_create( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 /* create new (almost empty) generator object.                               */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_vmt_sample_cvec( struct unur_gen *gen, double *vec );
+static struct unur_gen *_unur_vmt_clone( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* sample from generator                                                     */
+/* copy (clone) generator object.                                            */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_vmt_free( struct unur_gen *gen);
@@ -109,9 +116,14 @@ static void _unur_vmt_free( struct unur_gen *gen);
 /* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *_unur_vmt_clone( const struct unur_gen *gen );
+static int _unur_vmt_sample_cvec( struct unur_gen *gen, double *vec );
 /*---------------------------------------------------------------------------*/
-/* copy (clone) generator object.                                            */
+/* sample from generator                                                     */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_vmt_make_marginal_gen( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* make generators for marginal distributions                                */
 /*---------------------------------------------------------------------------*/
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -237,53 +249,18 @@ _unur_vmt_init( struct unur_par *par )
 
   /* create a new empty generator object */
   gen = _unur_vmt_create(par);
-  if (!gen) { _unur_par_free(par); return NULL; }
+  _unur_par_free(par);
+  if (!gen) return NULL;
 
   /* initialize generators for marginal distribution */
-
-  if (_unur_distr_cvec_marginals_are_equal(DISTR.stdmarginals, GEN->dim)) {
-    /* we can use the same generator object for all marginal distribuitons */
-    struct unur_gen *marginalgen = unur_init( unur_auto_new( DISTR.stdmarginals[0] ) );
-    if (marginalgen)
-      gen->gen_aux_list = _unur_gen_list_set(marginalgen,GEN->dim);
-  }
-
-  else {
-    int i,j;
-    int failed = FALSE;
-    struct unur_gen **marginalgens = _unur_xmalloc( GEN->dim * sizeof(struct unur_gen*) );
-    for (i=0; i<GEN->dim; i++) {
-      marginalgens[i] = unur_init( unur_auto_new( DISTR.stdmarginals[i] ) );
-      if (marginalgens[i]==NULL) {
-	failed=TRUE; break; 
-      }
-    }
-    if (failed) {
-      for (j=0; j<i; j++) _unur_free(marginalgens[j]);
-      free (marginalgens);
-    }
-    else
-      gen->gen_aux_list = marginalgens;
-  }
-
-  /* the marginal generator is an auxiliary generator for method VMT, of course */
-  GEN->marginalgen_list = gen->gen_aux_list;
-  
-  /* verify initialization of marginal generators */
-  if (GEN->marginalgen_list == NULL) {
-    _unur_error(gen->genid,UNUR_ERR_GENERIC,"init of marginal generators failed");
-    _unur_vmt_free(gen);
-    _unur_par_free(par);
-    return NULL;
+  if (_unur_vmt_make_marginal_gen(gen) != UNUR_SUCCESS) {
+    _unur_vmt_free(gen); return NULL;
   }
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
   if (gen->debug) _unur_vmt_debug_init(gen);
 #endif
-
-  /* free parameters */
-  _unur_par_free(par);
 
   /* o.k. */
   return gen;
@@ -292,7 +269,33 @@ _unur_vmt_init( struct unur_par *par )
 
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *
+int
+_unur_vmt_reinit( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* re-initialize (existing) generator.                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* (re)set sampling routine */
+  SAMPLE = _unur_vmt_getSAMPLE(gen);
+
+  /* free list of (old) marginal generators */
+  if (gen->gen_aux_list)
+    _unur_gen_list_free( gen->gen_aux_list, gen->distr->dim );
+
+  /* initialize generators for marginal distribution */
+  return _unur_vmt_make_marginal_gen(gen);
+} /* end of _unur_vmt_reinit() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_gen *
 _unur_vmt_create( struct unur_par *par )
      /*----------------------------------------------------------------------*/
      /* allocate memory for generator                                        */
@@ -328,6 +331,7 @@ _unur_vmt_create( struct unur_par *par )
   SAMPLE = _unur_vmt_getSAMPLE(gen);
   gen->destroy = _unur_vmt_free;
   gen->clone = _unur_vmt_clone;
+  gen->reinit = _unur_vmt_reinit;
 
   /* cholesky factor of covariance matrix */
   GEN->cholesky =  DISTR.cholesky;  
@@ -379,6 +383,34 @@ _unur_vmt_clone( const struct unur_gen *gen )
 #undef CLONE
 } /* end of _unur_vmt_clone() */
 
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_vmt_free( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* deallocate generator object                                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{ 
+  /* check arguments */
+  if( !gen ) /* nothing to do */
+    return;
+
+  /* check input */
+  if ( gen->method != UNUR_METH_VMT ) {
+    _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
+    return; }
+  COOKIE_CHECK(gen,CK_VMT_GEN,RETURN_VOID);
+
+  /* we cannot use this generator object any more */
+  SAMPLE = NULL;   /* make sure to show up a programming error */
+
+  _unur_generic_free(gen);
+
+} /* end of _unur_vmt_free() */
+
 /*****************************************************************************/
 
 int
@@ -423,32 +455,54 @@ _unur_vmt_sample_cvec( struct unur_gen *gen, double *vec )
 } /* end of _unur_vmt_sample_cvec() */
 
 /*****************************************************************************/
+/**  Auxilliary Routines                                                    **/
+/*****************************************************************************/
 
-void
-_unur_vmt_free( struct unur_gen *gen )
+int
+_unur_vmt_make_marginal_gen( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* deallocate generator object                                          */
+     /* make generators for marginal distributions                           */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
      /*----------------------------------------------------------------------*/
-{ 
-  /* check arguments */
-  if( !gen ) /* nothing to do */
-    return;
+{
+  if (_unur_distr_cvec_marginals_are_equal(DISTR.stdmarginals, GEN->dim)) {
+    /* we can use the same generator object for all marginal distribuitons */
+    struct unur_gen *marginalgen = unur_init( unur_auto_new( DISTR.stdmarginals[0] ) );
+    if (marginalgen)
+      gen->gen_aux_list = _unur_gen_list_set(marginalgen,GEN->dim);
+  }
 
-  /* check input */
-  if ( gen->method != UNUR_METH_VMT ) {
-    _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
-    return; }
-  COOKIE_CHECK(gen,CK_VMT_GEN,RETURN_VOID);
+  else {
+    int i,j;
+    int failed = FALSE;
+    struct unur_gen **marginalgens = _unur_xmalloc( GEN->dim * sizeof(struct unur_gen*) );
+    for (i=0; i<GEN->dim; i++) {
+      marginalgens[i] = unur_init( unur_auto_new( DISTR.stdmarginals[i] ) );
+      if (marginalgens[i]==NULL) {
+	failed=TRUE; break; 
+      }
+    }
+    if (failed) {
+      for (j=0; j<i; j++) _unur_free(marginalgens[j]);
+      free (marginalgens);
+    }
+    else
+      gen->gen_aux_list = marginalgens;
+  }
 
-  /* we cannot use this generator object any more */
-  SAMPLE = NULL;   /* make sure to show up a programming error */
+  /* the marginal generator is an auxiliary generator for method VMT, of course */
+  GEN->marginalgen_list = gen->gen_aux_list;
+  
+  /* verify initialization of marginal generators */
+  if (GEN->marginalgen_list == NULL) {
+    _unur_error(gen->genid,UNUR_ERR_GENERIC,"init of marginal generators failed");
+    return UNUR_FAILURE;
+  }
 
-  _unur_generic_free(gen);
-
-} /* end of _unur_vmt_free() */
+  return UNUR_SUCCESS;
+} /* end of _unur_vmt_make_marginal_gen() */
 
 /*****************************************************************************/
 /**  Debugging utilities                                                    **/

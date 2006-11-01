@@ -45,7 +45,7 @@
    =SPEED Set-up: slow,
           Sampling: depends on dimension
 
-   =REINIT not implemented
+   =REINIT supported
 
    =REF  [HLD04: Sect.11.1.6, Alg.11.3.]
 
@@ -84,6 +84,9 @@
       unur_distr_cvec_set_stdmarginal_list().
       (Do not use the corresponding calls for the (non-standard)
       marginal distributions).
+
+      It is possible to change the parameters and the domain of the chosen 
+      distribution and run unur_reinit() to reinitialize the generator object.
 
       There are no optional parameters for this method.
 

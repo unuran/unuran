@@ -491,6 +491,20 @@
    or even an empirical distribution.
 
 
+   @subheading Reinitializing
+
+   It is possible for a generator object to change the parameters and
+   the domain of the underlying distribution. This must be done by
+   extracting this object by means of a unur_get_distr() call and
+   changing the distribution using the correspondig set calls, 
+   see @ref{Distribution_objects,,Handling distribution objects}.
+   The generator object @strong{must} then be reinitialized by means
+   of the unur_reinit() call.
+
+   @emph{Important}: Currently not all methods allow reinitialization,
+   see the description of the particular method (keyword @i{Reinit}).
+
+
    @subheading Destroy
 
    When you do not need your generator object any more, you should

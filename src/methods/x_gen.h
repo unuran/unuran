@@ -174,7 +174,8 @@ UNUR_DISTR *unur_get_distr( const UNUR_GEN *generator );
    pointer must not be used.
 
    @strong{Important:} The returned distribution object must not 
-   be freed.
+   be freed. If the distribution object is changed then one @strong{must}
+   run unur_reinit()!
 */
 
 /*---------------------------------------------------------------------------*/

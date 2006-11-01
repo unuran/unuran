@@ -118,13 +118,13 @@ unur_distr_cvec_new( int dim )
   /* clone */
   distr->clone = _unur_distr_cvec_clone;
 
-  /* set defaults                                                    */
-  DISTR.pdf       = NULL;   /* pointer to PDF                        */
-  DISTR.dpdf      = NULL;   /* pointer to gradient of PDF            */
-  DISTR.pdpdf     = NULL;   /* pointer to partial derivative of PDF  */
-  DISTR.logpdf    = NULL;   /* pointer to logPDF                     */
-  DISTR.dlogpdf   = NULL;   /* pointer to gradient of logPDF         */
-  DISTR.pdlogpdf  = NULL;   /* pointer to partial derivative of logPDF */
+  /* set defaults */
+  DISTR.pdf       = NULL;   /* pointer to PDF                                */
+  DISTR.dpdf      = NULL;   /* pointer to gradient of PDF                    */
+  DISTR.pdpdf     = NULL;   /* pointer to partial derivative of PDF          */
+  DISTR.logpdf    = NULL;   /* pointer to logPDF                             */
+  DISTR.dlogpdf   = NULL;   /* pointer to gradient of logPDF                 */
+  DISTR.pdlogpdf  = NULL;   /* pointer to partial derivative of logPDF       */
   DISTR.init      = NULL;   /* pointer to special init routine       [default: none]         */
   DISTR.mean      = NULL;   /* mean vector                           [default: not known]    */
   DISTR.covar     = NULL;   /* covariance matrix                     [default: not known]    */
@@ -132,8 +132,11 @@ unur_distr_cvec_new( int dim )
   DISTR.covar_inv = NULL;   /* inverse covariance matrix             [default: not computed] */
   DISTR.rankcorr  = NULL;   /* rank correlation                      [default: not known]    */
   DISTR.rk_cholesky = NULL; /* cholesky factor of rank correlation   [default: not computed] */
-  DISTR.marginals = NULL;   /* array of pointers to marginal distributions */
+  DISTR.marginals = NULL;   /* array of pointers to marginal distributions   */
   DISTR.stdmarginals = NULL;  /* array of pointers to standardized marginal distributions */
+
+  DISTR.upd_mode  = NULL;   /* funct for computing mode                      */
+  DISTR.upd_volume = NULL;  /* funct for computing volume                    */
 
   /* initialize parameters of the p.d.f.                                     */
   DISTR.n_params  = 0;             /* number of parameters of the pdf        */
@@ -1953,7 +1956,7 @@ unur_distr_cvec_set_pdfparams( struct unur_distr *distr, const double *params, i
   /* changelog */
   distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
   /* derived parameters like mode, area, etc. might be wrong now! */
-  
+
   DISTR.n_params = n_params;
   if (n_params) memcpy( DISTR.params, params, n_params*sizeof(double) );
 
@@ -2119,8 +2122,47 @@ unur_distr_cvec_set_mode( struct unur_distr *distr, const double *mode )
 
 /*---------------------------------------------------------------------------*/
 
+int 
+unur_distr_cvec_upd_mode( struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* (re-) compute mode of distribution (if possible)                     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CVEC, UNUR_ERR_DISTR_INVALID );
+
+  if (DISTR.upd_mode == NULL) {
+    /* no function to compute mode available */
+    _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
+    return UNUR_ERR_DISTR_DATA;
+  }
+
+  /* compute mode */
+  if ((DISTR.upd_mode)(distr)==UNUR_SUCCESS) {
+    /* changelog */
+    distr->set |= UNUR_DISTR_SET_MODE;
+    return UNUR_SUCCESS;
+  }
+  else {
+    /* computing of mode failed */
+    _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
+    return UNUR_ERR_DISTR_DATA;
+  }
+
+} /* end of unur_distr_cvec_upd_mode() */
+  
+/*---------------------------------------------------------------------------*/
+
 const double *
-unur_distr_cvec_get_mode( const struct unur_distr *distr )
+unur_distr_cvec_get_mode( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get mode of distribution                                             */
      /*                                                                      */
@@ -2137,8 +2179,20 @@ unur_distr_cvec_get_mode( const struct unur_distr *distr )
 
   /* mode known ? */
   if ( !(distr->set & UNUR_DISTR_SET_MODE) ) {
-    _unur_error(distr->name,UNUR_ERR_DISTR_GET,"mode");
-    return NULL;
+    /* try to compute mode */
+    if (DISTR.upd_mode == NULL) {
+      /* no function to compute mode available */
+      _unur_error(distr->name,UNUR_ERR_DISTR_GET,"mode");
+      return NULL;
+    }
+    else {
+      /* compute mode */
+      if (unur_distr_cvec_upd_mode(distr)!=UNUR_SUCCESS) {
+	/* finding mode not successfully */
+	_unur_error(distr->name,UNUR_ERR_DISTR_GET,"mode");
+	return NULL;
+      }
+    }
   }
 
   return DISTR.mode;
@@ -2266,8 +2320,48 @@ unur_distr_cvec_set_pdfvol( struct unur_distr *distr, double volume )
 
 /*---------------------------------------------------------------------------*/
 
+int 
+unur_distr_cvec_upd_pdfvol( struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* (re-) compute volume below p.d.f. of distribution (if possible)      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CVEC, UNUR_ERR_DISTR_INVALID );
+
+  if (DISTR.upd_volume == NULL) {
+    /* no function to compute mode available */
+    _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
+    return UNUR_ERR_DISTR_DATA;
+  }
+
+  /* compute area */
+  if (((DISTR.upd_volume)(distr)!=UNUR_SUCCESS) || DISTR.volume <= 0.) {
+    /* computing of area failed */
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"upd volume <= 0");
+    DISTR.volume = 1.;   /* avoid possible floating point exceptions */
+    distr->set &= ~UNUR_DISTR_SET_PDFVOLUME;
+    return UNUR_ERR_DISTR_SET;
+  }
+
+  /* changelog */
+  distr->set |= UNUR_DISTR_SET_PDFVOLUME;
+
+  return UNUR_SUCCESS;
+} /* end of unur_distr_cvec_upd_pdfvol() */
+  
+/*---------------------------------------------------------------------------*/
+
 double
-unur_distr_cvec_get_pdfvol( const struct unur_distr *distr )
+unur_distr_cvec_get_pdfvol( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get volume below PDF of distribution                                 */
      /*                                                                      */
@@ -2284,15 +2378,21 @@ unur_distr_cvec_get_pdfvol( const struct unur_distr *distr )
 
   /* volume known ? */
   if ( !(distr->set & UNUR_DISTR_SET_PDFVOLUME) ) {
-    _unur_error(distr->name,UNUR_ERR_DISTR_GET,"volume");
-    return INFINITY;
+    /* try to compute volume */
+    if (DISTR.upd_volume == NULL) {
+      /* no function to compute area available */
+      _unur_error(distr->name,UNUR_ERR_DISTR_GET,"volume");
+      return INFINITY;
+    }
+    else {
+      /* compute area */
+      unur_distr_cvec_upd_pdfvol( distr );
+    }
   }
 
   return DISTR.volume;
 
 } /* end of unur_distr_cvec_get_pdfvol() */
-
-/*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/
 

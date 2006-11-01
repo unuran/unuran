@@ -114,6 +114,11 @@ struct unur_distr_cvec {
   double *center;               /* location of center                        */
   double volume;                /* volume below PDF                          */
 
+  int (*upd_mode)(struct unur_distr *distr);
+                                /* function for computing mode               */
+  int (*upd_volume)(struct unur_distr *distr);
+                                /* function for computing volume             */
+
   int  (*init)(struct unur_par *par,struct unur_gen *gen);
                                 /* pointer to special init routine           */
 };

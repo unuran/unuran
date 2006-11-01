@@ -296,6 +296,13 @@ int unur_distr_cvec_set_mean( UNUR_DISTR *distribution, const double *mean );
    @code{dim} is the dimension returned by unur_distr_get_dim().
    A NULL pointer for @var{mean} is interpreted as the zero
    vector (0,@dots{},0).
+
+   @strong{Important:} If the parameters of a distribution from the 
+   UNURAN library of standard distributions
+   (@pxref{Stddist,,Standard distributions})
+   are changed, then neither its mode nor the normalization 
+   constant are updated. Please use the respective calls
+   unur_distr_cvec_upd_mode() and unur_distr_cvec_upd_pdfvol().
 */
 
 const double *unur_distr_cvec_get_mean( const UNUR_DISTR *distribution );
@@ -344,6 +351,13 @@ int unur_distr_cvec_set_covar( UNUR_DISTR *distribution, const double *covar );
    Moreover, the covariance matrix is not set and is marked as
    unknown. A previously set covariance matrix is then no longer
    available.
+
+   @strong{Important:} If the parameters of a distribution from the 
+   UNURAN library of standard distributions
+   (@pxref{Stddist,,Standard distributions})
+   are changed, then neither its mode nor the normalization 
+   constant are updated. Please use the respective calls
+   unur_distr_cvec_upd_mode() and unur_distr_cvec_upd_pdfvol().
 
    @emph{Remark:} UNU.RAN does not check whether the an eventually
    set covariance matrix and a rank-correlation matrix do not
@@ -539,6 +553,13 @@ int unur_distr_cvec_set_pdfparams( UNUR_DISTR *distribution, const double *param
    handled in the same way as in the corresponding @command{new}
    calls, i.e. optional parameters for the PDF that are not present in
    the given list are (re-)set to their default values.
+
+   @strong{Important:} If the parameters of a distribution from the 
+   UNURAN library of standard distributions
+   (@pxref{Stddist,,Standard distributions})
+   are changed, then neither its mode nor the normalization 
+   constant are updated. Please use the respective calls
+   unur_distr_cvec_upd_mode() and unur_distr_cvec_upd_pdfvol().
 */
 
 int unur_distr_cvec_get_pdfparams( const UNUR_DISTR *distribution, const double **params );
@@ -549,7 +570,6 @@ int unur_distr_cvec_get_pdfparams( const UNUR_DISTR *distribution, const double 
    
    @emph{Important:} Do @strong{not} change the entries in @var{params}!
 */
-
 
 
 int unur_distr_cvec_set_pdfparams_vec( UNUR_DISTR *distribution, int par, const double *param_vec, int n_params );
@@ -575,6 +595,13 @@ int unur_distr_cvec_set_pdfparams_vec( UNUR_DISTR *distribution, int par, const 
    @var{distribution} there is no simpler interface.
 
    If @var{param_vec} is NULL then the corresponding entry is cleared.
+
+   @strong{Important:} If the parameters of a distribution from the 
+   UNURAN library of standard distributions
+   (@pxref{Stddist,,Standard distributions})
+   are changed, then neither its mode nor the normalization 
+   constant are updated. Please use the respective calls
+   unur_distr_cvec_upd_mode() and unur_distr_cvec_upd_pdfvol().
 
    If an error occurs no parameters are copied into the parameter
    object @code{unur_errno} is set to @code{UNUR_ERR_DISTR_DATA}.
@@ -607,7 +634,16 @@ int unur_distr_cvec_set_mode( UNUR_DISTR *distribution, const double *mode );
    vector (0,@dots{},0).
 */
 
-const double *unur_distr_cvec_get_mode( const UNUR_DISTR *distribution );
+int unur_distr_cvec_upd_mode( UNUR_DISTR *distribution );
+/* 
+   Recompute the mode of the @var{distribution}. This call works
+   properly for distribution objects from the UNURAN library of
+   standard distributions when the corresponding function is
+   available. If it failes @code{unur_errno} is set to
+   @code{UNUR_ERR_DISTR_DATA}.
+*/
+
+const double *unur_distr_cvec_get_mode( UNUR_DISTR *distribution );
 /* 
    Get mode of the @var{distribution}. The function returns a pointer to
    an array of the size returned by unur_distr_get_dim().
@@ -653,7 +689,19 @@ int unur_distr_cvec_set_pdfvol( UNUR_DISTR *distribution, double volume );
    @code{UNUR_ERR_DISTR_SET}. 
 */
 
-double unur_distr_cvec_get_pdfvol( const UNUR_DISTR *distribution );
+int unur_distr_cvec_upd_pdfvol( UNUR_DISTR *distribution );
+/*
+   Recompute the volume below the PDF of the distribution. 
+   It only works for distribution objects from the
+   UNURAN library of standard distributions when the
+   corresponding function is available. Otherwise @code{unur_errno} is
+   set to @code{UNUR_ERR_DISTR_DATA}. 
+
+   This call also sets the normalization constant such that the given
+   PDF is the derivative of a given CDF, i.e. the volume is 1.
+*/
+
+double unur_distr_cvec_get_pdfvol( UNUR_DISTR *distribution );
 /* 
    Get the volume below the PDF of the @var{distribution}. If this volume is
    not known,@* unur_distr_cont_upd_pdfarea() is called to compute

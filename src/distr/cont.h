@@ -304,10 +304,11 @@ int unur_distr_cont_set_pdfparams( UNUR_DISTR *distribution, const double *param
    @strong{Important:} If the parameters of a distribution from the 
    UNURAN library of standard distributions
    (@pxref{Stddist,,Standard distributions})
-   are changed, then neither its domain nor the mode or the normalization 
+   are changed, then neither its mode nor the normalization 
    constant are updated. Please use the respective calls
-   unur_distr_cont_set_domain(), unur_distr_cont_upd_mode(), and
-   unur_distr_cont_upd_pdfarea().
+   unur_distr_cont_upd_mode() and unur_distr_cont_upd_pdfarea().
+   Moreover, if the domain has been changed by a
+   unur_distr_cont_set_domain() it is not automatically updated, either.
    Updating the normalization constant is in particular very important,
    when the CDF of the distribution is used.
 */
@@ -553,7 +554,7 @@ int unur_distr_cont_upd_pdfarea( UNUR_DISTR *distribution );
    corresponding function is available. Otherwise @code{unur_errno} is
    set to @code{UNUR_ERR_DISTR_DATA}. 
 
-   This call sets the normalization constant such that the given
+   This call also sets the normalization constant such that the given
    PDF is the derivative of a given CDF, i.e. the area is 1.
    However, for truncated distributions the area is smaller than 1.
 

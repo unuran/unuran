@@ -402,6 +402,11 @@ static struct unur_gen *_unur_tdr_init( struct unur_par *par );
 /* Initialize new generator.                                                 */
 /*---------------------------------------------------------------------------*/
 
+static int _unur_tdr_reinit( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* Reinitialize generator.                                                   */
+/*---------------------------------------------------------------------------*/
+
 static int _unur_tdr_make_gen( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* Make generator object.                                                    */

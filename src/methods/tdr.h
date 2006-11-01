@@ -46,7 +46,7 @@
 
    =SPEED Set-up: slow, Sampling: fast
 
-   =REINIT not implemented
+   =REINIT supported
 
    =REF  [GWa92] [HWa95] [HLD04: Cha.4]
 
@@ -149,29 +149,6 @@
 UNUR_PAR *unur_tdr_new( const UNUR_DISTR* distribution );
 /* 
    Get default parameters for generator.
-*/
-
-/*...........................................................................*/
-
-int unur_tdr_reinit( UNUR_GEN *generator );
-/* 
-   Update an existing generator object after the distribution has been
-   modified. It must be executed whenever the parameters of the
-   distribution has been changed. 
-   It is faster than destroying the existing object and build
-   a new one from scratch.
-   If reinitialization has been successful @code{UNUR_SUCCESS} is
-   returned. In case of a failure an error code is returned. Then
-   @var{generator} cannot be used before another successful reinit
-   (with proper parameters for the underlying distribution).
-
-   Notice that currently reinit only makes sense when the
-   @var{generator} object does not use a private copy of the given
-   distribution object. This behavior can be switched on by means of a
-   unur_set_use_distr_privatecopy() call.
-   The it is possible to manipulate the (external) distribution and
-   (immediately after doing this) reinitialize the generator object.
-   Obviously using this procedure must be done with extreme care.
 */
 
 /*...........................................................................*/
@@ -496,4 +473,28 @@ int _unur_tdr_is_ARS_running( const UNUR_GEN *generator );
 
 /*---------------------------------------------------------------------------*/
 
+/**********************
+ *  Deprecated calls  *
+ **********************/
+
+int unur_tdr_reinit( UNUR_GEN *generator );
+/* 
+   Update an existing generator object after the distribution has been
+   modified. It must be executed whenever the parameters of the
+   distribution has been changed. 
+   It is faster than destroying the existing object and build
+   a new one from scratch.
+   If reinitialization has been successful @code{UNUR_SUCCESS} is
+   returned. In case of a failure an error code is returned. Then
+   @var{generator} cannot be used before another successful reinit
+   (with proper parameters for the underlying distribution).
+
+   Notice that currently reinit only makes sense when the
+   @var{generator} object does not use a private copy of the given
+   distribution object. This behavior can be switched on by means of a
+   unur_set_use_distr_privatecopy() call.
+   The it is possible to manipulate the (external) distribution and
+   (immediately after doing this) reinitialize the generator object.
+   Obviously using this procedure must be done with extreme care.
+*/
 

@@ -235,6 +235,7 @@ _unur_tdr_create( struct unur_par *par )
   SAMPLE = _unur_tdr_getSAMPLE(gen);
   gen->destroy = _unur_tdr_free;
   gen->clone = _unur_tdr_clone;
+  gen->reinit = _unur_tdr_reinit;
 
   /* set all pointers to NULL */
   GEN->guide       = NULL;
@@ -316,7 +317,7 @@ _unur_tdr_create( struct unur_par *par )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_tdr_reinit( struct unur_gen *gen )
+_unur_tdr_reinit( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* re-initialize (existing) generator.                                  */
      /*                                                                      */
@@ -421,6 +422,30 @@ unur_tdr_reinit( struct unur_gen *gen )
 #endif
 
   return UNUR_SUCCESS;
+} /* end of _unur_tdr_reinit() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_tdr_reinit( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* Deprecated call!                                                     */
+     /*----------------------------------------------------------------------*/
+     /* re-initialize (existing) generator.                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE,gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, TDR, UNUR_ERR_GEN_INVALID );
+
+  return _unur_tdr_reinit(gen);
 } /* end of unur_tdr_reinit() */
 
 /*---------------------------------------------------------------------------*/

@@ -83,6 +83,9 @@ Version 0.8.0: October 2006
 	- method TDRGW:
 	  . unur_tdrgw_reinit() is now deprecated
 
+	- method TDRGW:
+	  . unur_tdr_reinit() is now deprecated
+
 	* Distributions:
 
 	- added unur_diste_set_extobj() / unur_diste_get_extobj(): 

@@ -129,12 +129,14 @@ unur_sample_matr( struct unur_gen *gen, double *matrix )
 int
 _unur_sample_discr_error( struct unur_gen *gen )
 {
+  unur_errno = UNUR_ERR_GEN_CONDITION;
   return 0;
 } /* end of _unur_sample_discr_error() */
 
 double
 _unur_sample_cont_error( struct unur_gen *gen )
 {
+  unur_errno = UNUR_ERR_GEN_CONDITION;
   return INFINITY;
 } /* end of _unur_sample_cont_error() */
 
@@ -142,6 +144,7 @@ int
 _unur_sample_cvec_error( struct unur_gen *gen, double *vec )
 { 
   int d;
+  unur_errno = UNUR_ERR_GEN_CONDITION;
   for (d=0; d<(gen->distr->dim); d++) vec[d] = INFINITY;
   return UNUR_FAILURE;
 } /* end of _unur_sample_cvec_error() */
@@ -151,6 +154,7 @@ _unur_sample_matr_error( struct unur_gen *gen, double *mat )
 { 
   int n_rows, n_cols, dim, j;
   
+  unur_errno = UNUR_ERR_GEN_CONDITION;
   unur_distr_matr_get_dim(gen->distr, &n_rows, &n_cols );
   dim = n_rows * n_cols;
   for (j=0; j<dim; j++)

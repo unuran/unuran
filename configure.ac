@@ -127,11 +127,24 @@ if test "$ac_cv_c_ieee_comparisons" != no ; then
 fi
 
 
-dnl We need Mathematica(R) for some tests
-AC_CHECK_PROG(have_mathematica,math,true,false) 
-AM_CONDITIONAL(HAVE_MATHEMATICA, test x$have_mathematica = xtrue)
-dnl AM_CONDITIONAL(HAVE_MATHEMATICA,true)
-dnl AM_CONDITIONAL(HAVE_MATHEMATICA,false)
+dnl Some tests compare the return values of PDFs, CDFs and of
+dnl the function parser with the output of corresponding
+dnl Mathematica(R) scripts.
+dnl Thus for these tests we need Mathematica(R).
+dnl However, simply checking for the existance of programm 'math'
+dnl breaks the configure script when 'math' is available but
+dnl ask for a password. 
+dnl Hence these tests are enabled by means of a configure option.
+AC_ARG_WITH(mathematica,
+	AS_HELP_STRING([--with-mathematica],
+                       [Use Mathematica(R) for some checks (default=no) ]),
+	[case "${withval}" in
+	  yes) mathematica=true ;;
+	  no)  mathematica=false ;;
+	  *) AC_MSG_ERROR(bad value ${withval} for --with-mathematica) ;;
+	esac],
+	[mathematica=false])
+AM_CONDITIONAL(HAVE_MATHEMATICA, test x$mathematica = xtrue)
 
 dnl check for Valgrind
 dnl (Valgrind is a GPL'd system for debugging and profiling x86-Linux programs)

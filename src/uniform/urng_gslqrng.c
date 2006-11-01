@@ -235,7 +235,7 @@ _unur_urng_gslqrngptr_new( gsl_qrng *qrngptr, unsigned int dim )
 
   /* make UNURAN_URNG object */
   urng = unur_urng_new ( (double(*)(void*)) _unur_urng_gslqrng_sample, qrng );
-  unur_urng_set_sample_array (urng, (unsigned int(*)(void*,double*,unsigned int)) _unur_urng_gslqrng_sample_array);
+  unur_urng_set_sample_array (urng, (unsigned int(*)(void*,double*,int)) _unur_urng_gslqrng_sample_array);
   unur_urng_set_delete (urng, (void(*)(void*)) _unur_urng_gslqrng_free);
   unur_urng_set_reset (urng, (void(*)(void*)) _unur_urng_gslqrng_reset);
   unur_urng_set_sync (urng, (void(*)(void*)) _unur_urng_gslqrng_nextpoint);

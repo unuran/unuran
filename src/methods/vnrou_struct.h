@@ -36,7 +36,6 @@
 /* Information for constructing the generator                                */
 
 struct unur_vnrou_par { 
-  int    dim;               /* dimension of distribution                     */
   double r;		    /* r-parameter of the vnrou method 	             */
   double *umin, *umax;      /* boundary rectangle u-coordinates              */
   double vmax;              /* boundary rectangle v-coordinate               */

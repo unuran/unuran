@@ -46,7 +46,7 @@
 
    =SPEED Set-up: fast or slow, Sampling: slow
 
-   =REINIT not implemented
+   =REINIT supported
 
    =REF  [WGS91]
 
@@ -137,6 +137,15 @@
       number divided by the volume below the PDF (which is 1 in case
       of a normalized PDF) gives the rejection constant.
 
+      It is possible to change the parameters and the domain of the chosen 
+      distribution and run unur_reinit() to reinitialize the generator object.
+      Notice, that the coordinates of a bounding rectangle given by
+      unur_vnrou_set_u() and unur_vnrou_set_v() calls are used also
+      when the generator is reused. These can be changed by means of
+      unur_vnrou_chg_u() and unur_vnrou_chg_v() calls.
+      (If no such coordinates have been given, then they are computed
+      numerically during the reinitialization proceedure.) 
+
    =END
 */
 
@@ -170,6 +179,11 @@ int unur_vnrou_set_u( UNUR_PAR *parameters, double *umin, double *umax );
    Default: not set (i.e. computed automatically)
 */
 
+int unur_vnrou_chg_u( UNUR_GEN *generator, double *umin, double *umax );
+/* 
+   Change left and right boundaries of bounding hyper-rectangle.
+*/
+
 int unur_vnrou_set_v( UNUR_PAR *parameters, double vmax );
 /* 
    Set upper boundary for bounding hyper-rectangle. 
@@ -178,6 +192,11 @@ int unur_vnrou_set_v( UNUR_PAR *parameters, double vmax );
    numerically (and might fail).
   
    Default: not set (i.e. computed automatically)
+*/
+
+int unur_vnrou_chg_v( UNUR_GEN *generator, double vmax );
+/*
+   Change upper boundary for bounding hyper-rectangle. 
 */
 
 int unur_vnrou_set_r( UNUR_PAR *parameters, double r );

@@ -46,7 +46,7 @@
 
    =SPEED Set-up: fast, Sampling: slow
 
-   =REINIT not implemented
+   =REINIT supported
 
    =REF  [GWa92] [HLD04: Cha.4]
 
@@ -81,17 +81,9 @@
       adaptive rejection sampling until the maximal number of
       intervals given by unur_tdrgw_set_max_intervals() is reached.
       
-      A generated distribution object can be re-initialized using the
-      unur_tdrgw_reinit() call. However, this only works if the
-      generator does not use a private copy but a pointer to the
-      distribution object. This feature can be switched on by means of 
-      a unur_set_use_distr_privatecopy() call. Of course the
-      distribution object given as argument to the unur_tdrgw_new()
-      must not be freed and unur_tdrgw_reinit() must be called
-      whenever this distribution object has been changed.
-
-      When unur_tdrgw_reinit() is called construction points for the
-      new generator are necessary. There are two options:
+      A generated distribution object can be reinitialized using the
+      unur_reinit() call. When unur_reinit() is called construction
+      points for the new generator are necessary. There are two options:
       Either the same construction points as for the initial generator 
       (given by a unur_tdrgw_set_cpoints() call) are used (this is the
       default), or percentiles of the old hat function can be used.
@@ -117,29 +109,6 @@
 UNUR_PAR *unur_tdrgw_new( const UNUR_DISTR* distribution );
 /* 
    Get default parameters for generator.
-*/
-
-/*...........................................................................*/
-
-int unur_tdrgw_reinit( UNUR_GEN *generator );
-/* 
-   Update an existing generator object after the distribution has been
-   modified. It must be executed whenever the parameters of the
-   distribution has been changed. 
-   It is faster than destroying the existing object and build
-   a new one from scratch.
-   If reinitialization has been successful @code{UNUR_SUCCESS} is
-   returned. In case of a failure an error code is returned. Then
-   @var{generator} cannot be used before another successful reinit
-   (with proper parameters for the underlying distribution).
-
-   Notice that currently reinit only makes sense when the
-   @var{generator} object does not use a private copy of the given
-   distribution object. This behavior can be switched on by means of a
-   unur_set_use_distr_privatecopy() call.
-   The it is possible to manipulate the (external) distribution and
-   (immediately after doing this) reinitialize the generator object.
-   Obviously using this procedure must be done with extreme care.
 */
 
 /*...........................................................................*/
@@ -257,3 +226,29 @@ double unur_tdrgw_eval_invcdfhat( const UNUR_GEN *generator, double u );
 
 /* =END */
 /*---------------------------------------------------------------------------*/
+
+/**********************
+ *  Deprecated calls  *
+ **********************/
+
+int unur_tdrgw_reinit( UNUR_GEN *generator );
+/* 
+   Update an existing generator object after the distribution has been
+   modified. It must be executed whenever the parameters of the
+   distribution has been changed. 
+   It is faster than destroying the existing object and build
+   a new one from scratch.
+   If reinitialization has been successful @code{UNUR_SUCCESS} is
+   returned. In case of a failure an error code is returned. Then
+   @var{generator} cannot be used before another successful reinit
+   (with proper parameters for the underlying distribution).
+
+   Notice that currently reinit only makes sense when the
+   @var{generator} object does not use a private copy of the given
+   distribution object. This behavior can be switched on by means of a
+   unur_set_use_distr_privatecopy() call.
+   The it is possible to manipulate the (external) distribution and
+   (immediately after doing this) reinitialize the generator object.
+   Obviously using this procedure must be done with extreme care.
+*/
+

@@ -77,9 +77,9 @@
 /*    bits 13-24 ... adaptive steps                                          */
 /*    bits 25-32 ... trace sampling                                          */
 
+#define TDRGW_DEBUG_REINIT    0x00000002u  /* print parameters after reinit  */
 #define TDRGW_DEBUG_IV        0x00000010u
 #define TDRGW_DEBUG_SPLIT     0x00010000u
-#define TDRGW_DEBUG_REINIT    0x00000020u  /* print parameters after reinit  */
 
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
@@ -102,15 +102,19 @@ static struct unur_gen *_unur_tdrgw_init( struct unur_par *par );
 /* Initialize new generator.                                                 */
 /*---------------------------------------------------------------------------*/
 
+static int _unur_tdrgw_reinit( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* Reinitialize generator.                                                   */
+/*---------------------------------------------------------------------------*/
+
 static struct unur_gen *_unur_tdrgw_create( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 /* create new (almost empty) generator object.                               */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_tdrgw_sample( struct unur_gen *generator );
-static double _unur_tdrgw_sample_check( struct unur_gen *generator );
+static struct unur_gen *_unur_tdrgw_clone( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* sample from generator                                                     */
+/* copy (clone) generator object.                                            */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_tdrgw_free( struct unur_gen *gen);
@@ -118,9 +122,10 @@ static void _unur_tdrgw_free( struct unur_gen *gen);
 /* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *_unur_tdrgw_clone( const struct unur_gen *gen );
+static double _unur_tdrgw_sample( struct unur_gen *generator );
+static double _unur_tdrgw_sample_check( struct unur_gen *generator );
 /*---------------------------------------------------------------------------*/
-/* copy (clone) generator object.                                            */
+/* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/
 
 static int _unur_tdrgw_starting_cpoints( struct unur_gen *gen );
@@ -746,7 +751,6 @@ unur_tdrgw_get_loghatarea( const struct unur_gen *gen )
 
 } /* end of unur_tdrgw_get_loghatarea() */
 
-/*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/
 /**  Private                                                                **/
@@ -781,10 +785,8 @@ _unur_tdrgw_init( struct unur_par *par )
 
   /* create a new empty generator object */
   gen = _unur_tdrgw_create(par);
-  if (!gen) { _unur_par_free(par); return NULL; }
-
-  /* free parameters */
   _unur_par_free(par);
+  if (!gen) return NULL;
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
@@ -831,79 +833,8 @@ _unur_tdrgw_init( struct unur_par *par )
 
 /*---------------------------------------------------------------------------*/
 
-struct unur_gen *
-_unur_tdrgw_create( struct unur_par *par )
-     /*----------------------------------------------------------------------*/
-     /* allocate memory for generator                                        */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   par ... pointer to parameter for building generator object         */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   pointer to (empty) generator object with default settings          */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return NULL                                                        */
-     /*----------------------------------------------------------------------*/
-{
-  struct unur_gen *gen;
-
-  /* check arguments */
-  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_TDRGW_PAR,NULL);
-
-  /* create new generic generator object */
-  gen = _unur_generic_create( par, sizeof(struct unur_tdrgw_gen) );
-
-  /* magic cookies */
-  COOKIE_SET(gen,CK_TDRGW_GEN);
-
-  /* set generator identifier */
-  gen->genid = _unur_set_genid(GENTYPE);
-
-  /* routines for sampling and destroying generator */
-  SAMPLE = _unur_tdrgw_getSAMPLE(gen);
-  gen->destroy = _unur_tdrgw_free;
-  gen->clone = _unur_tdrgw_clone;
-
-  /* set all pointers to NULL */
-  GEN->iv          = NULL;
-  GEN->n_ivs       = 0;
-  GEN->percentiles = NULL;
-  GEN->Atotal      = 0.;
-  GEN->logAmax     = 0.;
-
-  /* copy starting points */
-  GEN->n_starting_cpoints = PAR->n_starting_cpoints;
-  if (PAR->starting_cpoints) {
-    GEN->starting_cpoints = _unur_xmalloc( PAR->n_starting_cpoints * sizeof(double) );
-    memcpy( GEN->starting_cpoints, PAR->starting_cpoints, PAR->n_starting_cpoints * sizeof(double) );
-  }
-  else {
-    GEN->starting_cpoints = NULL;
-  }
-
-  /* copy percentiles */
-  if (gen->set & TDRGW_SET_N_PERCENTILES)
-    unur_tdrgw_chg_reinit_percentiles( gen, PAR->n_percentiles, PAR->percentiles );
-
-  /* copy all other parameters */
-  GEN->retry_ncpoints = PAR->retry_ncpoints;   /* number of cpoints for second trial of reinit */
-
-  /* bounds for adding construction points  */
-  GEN->max_ivs = _unur_max(2*PAR->n_starting_cpoints,PAR->max_ivs);  /* maximum number of intervals */
-
-  /* copy variant */
-  gen->variant = par->variant;
-
-  /* return pointer to (almost empty) generator object */
-  return gen;
-
-} /* end of _unur_tdrgw_create() */
-
-/*---------------------------------------------------------------------------*/
-
 int
-unur_tdrgw_reinit( struct unur_gen *gen )
+_unur_tdrgw_reinit( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* re-initialize (existing) generator.                                  */
      /*                                                                      */
@@ -1019,7 +950,103 @@ unur_tdrgw_reinit( struct unur_gen *gen )
 #endif
 
   return UNUR_SUCCESS;
+} /* end of _unur_tdrgw_reinit() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_tdrgw_reinit( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* Deprecated call!                                                     */
+     /*----------------------------------------------------------------------*/
+     /* re-initialize (existing) generator.                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE,gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, TDRGW, UNUR_ERR_GEN_INVALID );
+
+  return _unur_tdrgw_reinit(gen);
 } /* end of unur_tdrgw_reinit() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_gen *
+_unur_tdrgw_create( struct unur_par *par )
+     /*----------------------------------------------------------------------*/
+     /* allocate memory for generator                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter for building generator object         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to (empty) generator object with default settings          */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_gen *gen;
+
+  /* check arguments */
+  CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_TDRGW_PAR,NULL);
+
+  /* create new generic generator object */
+  gen = _unur_generic_create( par, sizeof(struct unur_tdrgw_gen) );
+
+  /* magic cookies */
+  COOKIE_SET(gen,CK_TDRGW_GEN);
+
+  /* set generator identifier */
+  gen->genid = _unur_set_genid(GENTYPE);
+
+  /* routines for sampling and destroying generator */
+  SAMPLE = _unur_tdrgw_getSAMPLE(gen);
+  gen->destroy = _unur_tdrgw_free;
+  gen->clone = _unur_tdrgw_clone;
+  gen->reinit = _unur_tdrgw_reinit;
+
+  /* set all pointers to NULL */
+  GEN->iv          = NULL;
+  GEN->n_ivs       = 0;
+  GEN->percentiles = NULL;
+  GEN->Atotal      = 0.;
+  GEN->logAmax     = 0.;
+
+  /* copy starting points */
+  GEN->n_starting_cpoints = PAR->n_starting_cpoints;
+  if (PAR->starting_cpoints) {
+    GEN->starting_cpoints = _unur_xmalloc( PAR->n_starting_cpoints * sizeof(double) );
+    memcpy( GEN->starting_cpoints, PAR->starting_cpoints, PAR->n_starting_cpoints * sizeof(double) );
+  }
+  else {
+    GEN->starting_cpoints = NULL;
+  }
+
+  /* copy percentiles */
+  if (gen->set & TDRGW_SET_N_PERCENTILES)
+    unur_tdrgw_chg_reinit_percentiles( gen, PAR->n_percentiles, PAR->percentiles );
+
+  /* copy all other parameters */
+  GEN->retry_ncpoints = PAR->retry_ncpoints;   /* number of cpoints for second trial of reinit */
+
+  /* bounds for adding construction points  */
+  GEN->max_ivs = _unur_max(2*PAR->n_starting_cpoints,PAR->max_ivs);  /* maximum number of intervals */
+
+  /* copy variant */
+  gen->variant = par->variant;
+
+  /* return pointer to (almost empty) generator object */
+  return gen;
+
+} /* end of _unur_tdrgw_create() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -1139,7 +1166,7 @@ _unur_tdrgw_free( struct unur_gen *gen )
 
 } /* end of _unur_tdrgw_free() */
 
-/*---------------------------------------------------------------------------*/
+/*****************************************************************************/
 
 double
 _unur_tdrgw_sample( struct unur_gen *gen )
@@ -1505,7 +1532,10 @@ unur_tdrgw_eval_invcdfhat( const struct unur_gen *gen, double U )
   
 } /* end of unur_tdrgw_eval_invcdfhat() */
 
-/*---------------------------------------------------------------------------*/
+
+/*****************************************************************************/
+/**  Auxilliary Routines                                                    **/
+/*****************************************************************************/
 
 int
 _unur_tdrgw_improve_hat( struct unur_gen *gen, struct unur_tdrgw_interval *iv,

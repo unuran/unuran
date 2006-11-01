@@ -80,6 +80,8 @@ Version 0.8.0: October 2006
        - method NINV:
 	  . unur_ninv_chg_pmfparams() is now deprecated
 
+	- method TDRGW:
+	  . unur_tdrgw_reinit() is now deprecated
 
 	* Distributions:
 

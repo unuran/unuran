@@ -247,9 +247,10 @@ int unur_ninv_chg_truncated(UNUR_GEN *gen, double left, double right);
    domain is @emph{not} chanced and the call returns an error code.
 
    @emph{Notice:} If the parameters of the distribution has been changed by a 
-   unur_ninv_chg_pdfparams() call it is recommended to set the truncated domain
-   again, since the former call might change the domain of the distribution 
-   but not update the values for the boundaries of the truncated distribution.
+   unur_distr_cont_set_pdfparams() call it is recommended to set the
+   truncated domain again, since the former call might change the
+   domain of the distribution but not update the values for the
+   boundaries of the truncated distribution.
 */
 
 double unur_ninv_eval_approxinvcdf( UNUR_GEN *generator, double u );

@@ -78,6 +78,8 @@
 /*---------------------------------------------------------------------------*/
 /* Variants                                                                  */
 
+#define MCORR_DEBUG_REINIT    0x00000010u  /* print parameters after reinit  */
+
 /*---------------------------------------------------------------------------*/
 /* Debugging flags                                                           */
 /*    bit  01    ... pameters and structure of generator (do not use here)   */
@@ -103,9 +105,29 @@ static int _unur_mcorr_init_eigen( struct unur_gen *gen );
 /* Initialize new generator.                                                 */
 /*---------------------------------------------------------------------------*/
 
+static int _unur_mcorr_reinit( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* Reinitialize generator.                                                   */
+/*---------------------------------------------------------------------------*/
+
 static struct unur_gen *_unur_mcorr_create( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 /* create new (almost empty) generator object.                               */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_mcorr_check_par( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* Check parameters of given distribution and method                         */
+/*---------------------------------------------------------------------------*/
+
+static struct unur_gen *_unur_mcorr_clone( const struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* copy (clone) generator object.                                            */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_mcorr_free( struct unur_gen *gen);
+/*---------------------------------------------------------------------------*/
+/* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
@@ -115,16 +137,6 @@ static int _unur_mcorr_sample_matr_HH( struct unur_gen *gen, double *mat );
 /* Algorithm (1) */
 static int _unur_mcorr_sample_matr_eigen( struct unur_gen *gen, double *mat );
 /* Algorithm (2) */
-/*---------------------------------------------------------------------------*/
-
-static void _unur_mcorr_free( struct unur_gen *gen);
-/*---------------------------------------------------------------------------*/
-/* destroy generator object.                                                 */
-/*---------------------------------------------------------------------------*/
-
-static struct unur_gen *_unur_mcorr_clone( const struct unur_gen *gen );
-/*---------------------------------------------------------------------------*/
-/* copy (clone) generator object.                                            */
 /*---------------------------------------------------------------------------*/
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -252,6 +264,40 @@ unur_mcorr_set_eigenvalues( UNUR_PAR *par, const double *eigenvalues )
 } /* unur_mcorr_set_eigenvalues() */
 
 
+/*---------------------------------------------------------------------------*/
+
+int
+unur_mcorr_chg_eigenvalues( UNUR_GEN *gen, const double *eigenvalues )
+     /*----------------------------------------------------------------------*/
+     /* change the (optional) eigenvalues of the correlation matrix          */
+     /*----------------------------------------------------------------------*/
+{
+  int i;
+
+  /* check input */
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, MCORR, UNUR_ERR_GEN_INVALID );
+  _unur_check_NULL( GENTYPE, eigenvalues, UNUR_ERR_NULL );
+
+  /* check for eigenvalues */
+  for (i=0; i<GEN->dim; i++)
+    if (eigenvalues[i] <= 0.) {
+      _unur_error(GENTYPE, UNUR_ERR_PAR_SET,"eigenvalue <= 0");
+      return UNUR_ERR_PAR_SET;
+    }
+
+  /* store date */
+  if (GEN->eigenvalues == NULL)
+    GEN->eigenvalues = _unur_xmalloc(GEN->dim * sizeof(double));
+  memcpy(GEN->eigenvalues, eigenvalues, GEN->dim * sizeof(double));
+
+  /* changelog */
+  gen->set |= MCORR_SET_EIGENVALUES;
+
+  return UNUR_SUCCESS;
+} /* unur_mcorr_chg_eigenvalues() */
+
+
 /*****************************************************************************/
 /**  Private                                                                **/
 /*****************************************************************************/
@@ -284,22 +330,18 @@ _unur_mcorr_init( struct unur_par *par )
 
   /* create a new empty generator object */
   gen = _unur_mcorr_create(par);
-  if (!gen) { 
-    _unur_par_free(par); 
-    return NULL; 
-  }
+  _unur_par_free(par);
+  if (!gen) return NULL; 
 
   /* run special initialize routines */
   if (gen->set && MCORR_SET_EIGENVALUES) {
     if (_unur_mcorr_init_eigen(gen) != UNUR_SUCCESS) {
-      _unur_free(gen); free (par);
-      return NULL;
+      _unur_mcorr_free(gen); return NULL;
     }
   }
   else {
     if (_unur_mcorr_init_HH(gen) != UNUR_SUCCESS) {
-      _unur_free(gen); free (par);
-      return NULL;
+      _unur_mcorr_free(gen); return NULL;
     }
   }
 
@@ -307,9 +349,6 @@ _unur_mcorr_init( struct unur_par *par )
   /* write info into log file */
   if (gen->debug) _unur_mcorr_debug_init(gen);
 #endif
-
-  /* free parameters */
-  _unur_par_free(par);
 
   /* o.k. */
   return gen;
@@ -395,6 +434,29 @@ _unur_mcorr_init_eigen( struct unur_gen *gen )
 
 /*---------------------------------------------------------------------------*/
 
+int
+_unur_mcorr_reinit( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* re-initialize (existing) generator.                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  int rcode;
+
+  /* (re)set sampling routine */
+  SAMPLE = _unur_mcorr_getSAMPLE(gen);
+
+  return UNUR_SUCCESS;
+} /* end of _unur_mcorr_reinit() */
+
+/*---------------------------------------------------------------------------*/
+
 struct unur_gen *
 _unur_mcorr_create( struct unur_par *par )
      /*----------------------------------------------------------------------*/
@@ -458,6 +520,24 @@ _unur_mcorr_create( struct unur_par *par )
 
 /*---------------------------------------------------------------------------*/
 
+int
+_unur_mcorr_check_par( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* check parameters of given distribution and method                    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  return UNUR_SUCCESS;
+} /* end of _unur_mcorr_check_par() */
+
+/*---------------------------------------------------------------------------*/
+
 struct unur_gen *
 _unur_mcorr_clone( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
@@ -504,6 +584,39 @@ _unur_mcorr_clone( const struct unur_gen *gen )
 
 #undef CLONE
 } /* end of _unur_mcorr_clone() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_mcorr_free( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* deallocate generator object                                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  if( !gen ) /* nothing to do */
+    return;
+
+  /* check input */
+  if ( gen->method != UNUR_METH_MCORR ) {
+    _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
+    return; }
+  COOKIE_CHECK(gen,CK_MCORR_GEN,RETURN_VOID);
+
+  /* we cannot use this generator object any more */
+  SAMPLE = NULL;   /* make sure to show up a programming error */
+
+  /* free memory */
+  if (GEN->eigenvalues) free(GEN->eigenvalues);
+  if (GEN->H)           free(GEN->H);
+  if (GEN->M)           free(GEN->M);
+
+  _unur_generic_free(gen);
+
+} /* end of _unur_mcorr_free() */
 
 /*****************************************************************************/
 
@@ -725,41 +838,6 @@ _unur_mcorr_sample_matr_eigen( struct unur_gen *gen, double *mat )
 
 #undef idx
 } /* end of _unur_mcorr_sample_eigen() */
-
-/*****************************************************************************/
-
-void
-_unur_mcorr_free( struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* deallocate generator object                                          */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  if( !gen ) /* nothing to do */
-    return;
-
-  /* check input */
-  if ( gen->method != UNUR_METH_MCORR ) {
-    _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
-    return; }
-  COOKIE_CHECK(gen,CK_MCORR_GEN,RETURN_VOID);
-
-  /* we cannot use this generator object any more */
-  SAMPLE = NULL;   /* make sure to show up a programming error */
-
-  /* free memory */
-  if (GEN->eigenvalues) free(GEN->eigenvalues);
-  if (GEN->H)           free(GEN->H);
-  if (GEN->M)           free(GEN->M);
-
-  _unur_generic_free(gen);
-
-} /* end of _unur_mcorr_free() */
-
-/*--------------------------------------------------------------------------*/
 
 /*****************************************************************************/
 /**  Debugging utilities                                                    **/

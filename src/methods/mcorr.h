@@ -106,6 +106,10 @@
       not positive definite for a Cholesky decomposition algorithm,
       especially when the dimension of the distribution is high.
 
+      It is possible to change the given eigenvalues using
+      unur_mcorr_chg_eigenvalues() and run unur_reinit() to 
+      reinitialize the generator object. 
+
    =END
 */
 
@@ -131,6 +135,13 @@ int unur_mcorr_set_eigenvalues( UNUR_PAR *par, const double *eigenvalues );
    and an error code is returned.
    In case, that their sum is different from the dimension, an implicit
    scaling to give the correct sum is performed. 
+*/
+
+int unur_mcorr_chg_eigenvalues( UNUR_GEN *gen, const double *eigenvalues );
+/*
+   Change the eigenvalues of the correlation matrix.
+   One must run unur_reinit() to reinitialize the generator 
+   object then.
 */
 
 /* =END */

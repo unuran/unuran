@@ -115,11 +115,6 @@ static struct unur_gen *_unur_mcorr_create( struct unur_par *par );
 /* create new (almost empty) generator object.                               */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_mcorr_check_par( struct unur_gen *gen );
-/*---------------------------------------------------------------------------*/
-/* Check parameters of given distribution and method                         */
-/*---------------------------------------------------------------------------*/
-
 static struct unur_gen *_unur_mcorr_clone( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* copy (clone) generator object.                                            */
@@ -410,6 +405,9 @@ _unur_mcorr_init_eigen( struct unur_gen *gen )
   int i;
   double sum_eigenvalues = 0.;
 
+  /* allocate working array */
+  GEN->M = _unur_xrealloc(GEN->M, (5*GEN->dim + 2*GEN->dim*GEN->dim)*sizeof(double));
+
   /* we have to normalize the eigenvalues:    */
   /*   sum(eigenvalues) == dim                */
 
@@ -447,12 +445,15 @@ _unur_mcorr_reinit( struct unur_gen *gen )
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
-  int rcode;
-
   /* (re)set sampling routine */
   SAMPLE = _unur_mcorr_getSAMPLE(gen);
 
-  return UNUR_SUCCESS;
+  /* run special initialize routines */
+  if (gen->set && MCORR_SET_EIGENVALUES)
+    return _unur_mcorr_init_eigen(gen);
+  else
+    return _unur_mcorr_init_HH(gen);
+
 } /* end of _unur_mcorr_reinit() */
 
 /*---------------------------------------------------------------------------*/
@@ -495,46 +496,31 @@ _unur_mcorr_create( struct unur_par *par )
   SAMPLE = _unur_mcorr_getSAMPLE(gen);
   gen->destroy = _unur_mcorr_free;
   gen->clone = _unur_mcorr_clone;
+  gen->reinit = _unur_mcorr_reinit;
+
+  /* initialize pointers */
+  GEN->M = NULL;
+  GEN->H = NULL;
+  GEN->eigenvalues = NULL;
+
+  /* copy optional eigenvalues of the correlation matrix */
+  if (gen->set && MCORR_SET_EIGENVALUES) {
+    GEN->eigenvalues = _unur_xmalloc(GEN->dim * sizeof(double));
+    memcpy(GEN->eigenvalues, PAR->eigenvalues, GEN->dim * sizeof(double));
+  }
 
   /* allocate working array */
   if (gen->set && MCORR_SET_EIGENVALUES) {
     GEN->M = _unur_xmalloc((5*GEN->dim + 2*GEN->dim*GEN->dim) * sizeof(double));
-    GEN->H = NULL;
   }
   else {
-    GEN->M = NULL;
     GEN->H = _unur_xmalloc(GEN->dim * GEN->dim * sizeof(double));
-  }
-
-  /* copy optional eigenvalues of the correlation matrix */
-  GEN->eigenvalues = NULL;
-  if (gen->set && MCORR_SET_EIGENVALUES) {
-    GEN->eigenvalues = _unur_xmalloc(GEN->dim * sizeof(double));
-    memcpy(GEN->eigenvalues, PAR->eigenvalues, GEN->dim * sizeof(double));
   }
 
   /* return pointer to (almost empty) generator object */
   return gen;
 
 } /* end of _unur_mcorr_create() */
-
-/*---------------------------------------------------------------------------*/
-
-int
-_unur_mcorr_check_par( struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* check parameters of given distribution and method                    */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   UNUR_SUCCESS ... on success                                        */
-     /*   error code   ... on error                                          */
-     /*----------------------------------------------------------------------*/
-{
-  return UNUR_SUCCESS;
-} /* end of _unur_mcorr_check_par() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -564,17 +550,12 @@ _unur_mcorr_clone( const struct unur_gen *gen )
   clone = _unur_generic_clone( gen, GENTYPE );
 
   /* allocate new working array */
-  if (gen->set && MCORR_SET_EIGENVALUES) {
+  if (GEN->M) 
     CLONE->M = _unur_xmalloc((5*GEN->dim + 2*GEN->dim*GEN->dim) * sizeof(double));
-    CLONE->H = NULL;
-  }  
-  else {
-    CLONE->M = NULL;
+  if (GEN->H)
     CLONE->H = _unur_xmalloc(GEN->dim * GEN->dim * sizeof(double));
-  }
 
   /* copy optional eigenvalues */
-  CLONE->eigenvalues = NULL;
   if (GEN->eigenvalues) {
     CLONE->eigenvalues = _unur_xmalloc(GEN->dim * sizeof(double));
     memcpy(CLONE->eigenvalues, GEN->eigenvalues, GEN->dim * sizeof(double));

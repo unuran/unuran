@@ -12,9 +12,10 @@ LDADD = \
  $(top_builddir)/src/experimental/libunurexperimental.la \
  $(top_builddir)/src/libunuran.la
 
-noinst_PROGRAMS = \
- run \
- something
+noinst_PROGRAMS = run 
+
+## noinst_PROGRAMS = run something
+
 
 noinst_HEADERS = meanvarcor.c
 

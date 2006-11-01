@@ -104,6 +104,8 @@ static double _unur_logpdf_multiexponential( const double *x, UNUR_DISTR *distr 
 static int _unur_dlogpdf_multiexponential( double *result, const double *x, UNUR_DISTR *distr );
 
 static int _unur_set_params_multiexponential( UNUR_DISTR *distr, const double *sigma, const double *theta );
+static int _unur_upd_mode_multiexponential( UNUR_DISTR *distr );
+static int _unur_upd_volume_multiexponential( UNUR_DISTR *distr );
 
 /*---------------------------------------------------------------------------*/
 
@@ -240,6 +242,38 @@ _unur_set_params_multiexponential( UNUR_DISTR *distr, const double *sigma, const
   return UNUR_SUCCESS;
 } /* end of _unur_set_params_multiexponential() */
 
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_upd_mode_multiexponential( UNUR_DISTR *distr )
+{
+  /* TODO: checking if mode is inside domain */
+  int i;
+
+  if (DISTR.mode == NULL) _unur_xmalloc( distr->dim * sizeof(double) );
+  for (i=0; i<distr->dim; i++)  DISTR.mode[i]=0.;
+
+  return UNUR_SUCCESS;
+} /* end of _unur_upd_mode_multiexponential() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_upd_volume_multiexponential( UNUR_DISTR *distr )
+{
+  /* TODO: checking for modified domain */
+  int i;
+  double sumsigma = 0.;
+
+  for (i=0; i<distr->dim; i++) {
+    sumsigma += DISTR.param_vecs[INDEX_SIGMA][i];
+  }
+  LOGNORMCONSTANT = - 1. / sumsigma;   
+
+  return UNUR_SUCCESS;
+} /* end of _unur_upd_volume_multiexponential() */
+
+/*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/
 /**                                                                         **/
@@ -333,6 +367,10 @@ unur_distr_multiexponential( int dim, const double *sigma, const double *theta )
   /* volume below p.d.f. */
   DISTR.volume = 1.; 
 
+  /* function for updating derived parameters */
+  DISTR.upd_mode   = _unur_upd_mode_multiexponential;   /* funct for computing mode   */
+  DISTR.upd_volume = _unur_upd_volume_multiexponential; /* funct for computing volume */
+                
   /* indicate which parameters are set (additional to mean and covariance) */
   distr->set |= ( UNUR_DISTR_SET_STDDOMAIN |
 		  UNUR_DISTR_SET_PDFVOLUME |

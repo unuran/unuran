@@ -92,6 +92,9 @@ static double _unur_logpdf_multicauchy( const double *x, UNUR_DISTR *distr );
 static int _unur_dlogpdf_multicauchy( double *result, const double *x, UNUR_DISTR *distr );
 static double _unur_pdlogpdf_multicauchy( const double *x, int coord, UNUR_DISTR *distr );
 
+static int _unur_upd_mode_multicauchy( UNUR_DISTR *distr );
+static int _unur_upd_volume_multicauchy( UNUR_DISTR *distr );
+
 /*---------------------------------------------------------------------------*/
 
 double
@@ -244,6 +247,37 @@ _unur_pdlogpdf_multicauchy( const double *x, int coord, UNUR_DISTR *distr )
 
 /*---------------------------------------------------------------------------*/
 
+int
+_unur_upd_mode_multicauchy( UNUR_DISTR *distr )
+{
+  /* TODO: checking if mode is inside domain */
+
+  if (DISTR.mode == NULL) _unur_xmalloc( distr->dim * sizeof(double) );
+  memcpy( DISTR.mode, DISTR.mean, distr->dim * sizeof(double) );
+
+  return UNUR_SUCCESS;
+} /* end of _unur_upd_mode_multicauchy() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_upd_volume_multicauchy( UNUR_DISTR *distr )
+{
+  /* TODO: checking for modified domain */
+
+  double det_covar;
+
+  /* log of normalization constant */
+  det_covar = (DISTR.covar == NULL)
+    ? 1. : _unur_matrix_determinant(distr->dim, DISTR.covar);
+  LOGNORMCONSTANT = _unur_sf_ln_gamma((distr->dim+1)/2.) 
+                  - ( (distr->dim+1) * log(M_PI) + log(det_covar) ) / 2.;
+
+  return UNUR_SUCCESS;
+} /* end of _unur_upd_volume_multicauchy() */
+
+/*---------------------------------------------------------------------------*/
+
 /*****************************************************************************/
 /**                                                                         **/
 /**  Make distribution object                                               **/
@@ -334,6 +368,10 @@ unur_distr_multicauchy( int dim, const double *mean, const double *covar )
   /* volume below p.d.f. */
   DISTR.volume = 1.; 
 
+  /* function for updating derived parameters */
+  DISTR.upd_mode   = _unur_upd_mode_multicauchy;   /* funct for computing mode   */
+  DISTR.upd_volume = _unur_upd_volume_multicauchy; /* funct for computing volume */
+                
   /* indicate which parameters are set (additional to mean and covariance) */
   distr->set |= ( UNUR_DISTR_SET_STDDOMAIN |
 		  UNUR_DISTR_SET_PDFVOLUME |

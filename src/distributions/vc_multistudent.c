@@ -89,6 +89,8 @@ static int _unur_dlogpdf_multistudent( double *result, const double *x, UNUR_DIS
 static double _unur_pdlogpdf_multistudent( const double *x, int coord, UNUR_DISTR *distr );
 
 static int _unur_set_params_multistudent( UNUR_DISTR *distr, const double *params, int n_params );
+static int _unur_upd_mode_multistudent( UNUR_DISTR *distr );
+static int _unur_upd_volume_multistudent( UNUR_DISTR *distr );
 
 /*---------------------------------------------------------------------------*/
 
@@ -268,6 +270,37 @@ _unur_set_params_multistudent( UNUR_DISTR *distr, const double *params, int n_pa
   return UNUR_SUCCESS;
 } /* end of _unur_set_params_multistudent() */
 
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_upd_mode_multistudent( UNUR_DISTR *distr )
+{
+  /* TODO: checking if mode is inside domain */
+
+  if (DISTR.mode == NULL) _unur_xmalloc( distr->dim * sizeof(double) );
+  memcpy( DISTR.mode, DISTR.mean, distr->dim * sizeof(double) );
+
+  return UNUR_SUCCESS;
+} /* end of _unur_upd_mode_multistudent() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_upd_volume_multistudent( UNUR_DISTR *distr )
+{
+  /* TODO: checking for modified domain */
+
+  double det_covar;
+
+  /* log of normalization constant */
+  det_covar = (DISTR.covar == NULL) 
+    ? 1. : _unur_matrix_determinant(distr->dim, DISTR.covar);
+  LOGNORMCONSTANT = _unur_sf_ln_gamma((distr->dim+DISTR.nu)/2.) 
+    - _unur_sf_ln_gamma(DISTR.nu/2.)
+    - ( distr->dim * log(DISTR.nu*M_PI) + log(det_covar) ) / 2.;
+
+  return UNUR_SUCCESS;
+} /* end of _unur_upd_volume_multistudent() */
 
 /*****************************************************************************/
 /**                                                                         **/
@@ -363,6 +396,10 @@ unur_distr_multistudent( int dim, double df, const double *mean, const double *c
   /* volume below p.d.f. */
   DISTR.volume = 1.; 
 
+  /* function for updating derived parameters */
+  DISTR.upd_mode   = _unur_upd_mode_multistudent;   /* funct for computing mode   */
+  DISTR.upd_volume = _unur_upd_volume_multistudent; /* funct for computing volume */
+                
   /* indicate which parameters are set (additional to mean and covariance) */
   distr->set |= ( UNUR_DISTR_SET_STDDOMAIN |
 		  UNUR_DISTR_SET_PDFVOLUME |

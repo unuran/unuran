@@ -65,7 +65,7 @@ dist-root:
 	   echo "*" >> configure.ac; \
 	   echo "*===================================================" >> configure.ac; \
 	   echo "])" >> configure.ac; \
-	   autoreconf -v;  \
+	   aclocal; autoheader; automake; autoconf; \
 	   ./configure; \
 	   make dist; \
 	)

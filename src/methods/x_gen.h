@@ -221,6 +221,13 @@ int unur_set_use_distr_privatecopy( UNUR_PAR *parameters, int use_privatecopy );
    However, if @var{use_privatecopy} is set to FALSE this qualifier is
    discarded and the distribution might be changed.
 
+   @strong{Important!}
+   If @var{use_localcopy} is set to FALSE and the corresponding
+   distribution object is changed then one must run unur_reinit()
+   on the generator object.
+   (Notice that currently not all generation methods support
+   reinitialization.)
+
    Default: @var{use_privatecopy} is TRUE.
 
 */

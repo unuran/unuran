@@ -33,7 +33,8 @@ int main(void)
   }
   
   /* Second distribution: defined by (finite) PV.                */
-  gen2 = unur_str2gen("distr=discr; pv=(1,2,3,4,5,6,7,8,4,3) & method=dgt");
+  gen2 = unur_str2gen(
+             "distr=discr; pv=(1,2,3,4,5,6,7,8,4,3) & method=dgt");
   if (gen2 == NULL) {
      fprintf(stderr, "ERROR: cannot create generator object\n");
      exit (EXIT_FAILURE);

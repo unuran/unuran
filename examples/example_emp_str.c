@@ -24,9 +24,9 @@ int main(void)
 
   /* Create the generator object.                                */
   gen = unur_str2gen("distr = cemp; \
-                         data=(-0.10, 0.05,-0.50, 0.08, 0.13, \
-                               -0.21,-0.44,-0.43,-0.33,-0.30, \
-                                0.18, 0.20,-0.37,-0.29,-0.90)    & \
+                         data=(-0.10, 0.05,-0.50, 0.08, 0.13,   \
+                               -0.21,-0.44,-0.43,-0.33,-0.30,   \
+                                0.18, 0.20,-0.37,-0.29,-0.90) & \
                       method=empk; smoothing=0.8");
 
   /* It is important to check if the creation of the generator   */

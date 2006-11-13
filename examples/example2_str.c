@@ -34,7 +34,8 @@ int main(void)
   /* Create the generator object.                                */
   /* Use a generic continuous distribution.                      */
   /* Choose a method: TDR.                                       */
-  gen = unur_str2gen("distr = cont; pdf=\"1-x*x\"; domain=(-1,1) & method=tdr");
+  gen = unur_str2gen(
+        "distr = cont; pdf=\"1-x*x\"; domain=(-1,1) & method=tdr");
 
   /* It is important to check if the creation of the generator   */
   /* object was successful. Otherwise `gen' is the NULL pointer  */ 

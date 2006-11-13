@@ -24,7 +24,8 @@ int main(void)
   /*   c = 0: use T(x)=log(x) for the transformation;            */
   /*   variant "immediate acceptance";                           */
   /*   number of construction points = 10.                       */
-  gen = unur_str2gen("normal(2,0.5) & method=tdr; c=0.; variant_ia; cpoints=10");         
+  gen = unur_str2gen(
+       "normal(2,0.5) & method=tdr; c=0.; variant_ia; cpoints=10");         
 
   /* It is important to check if the creation of the generator   */
   /* object was successful. Otherwise `gen' is the NULL pointer  */ 

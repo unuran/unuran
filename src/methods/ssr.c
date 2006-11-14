@@ -421,7 +421,9 @@ unur_ssr_set_usesqueeze( struct unur_par *par, int usesqueeze )
   _unur_check_par_object( par, SSR );
 
   /* we use a bit in variant */
-  par->variant = (usesqueeze) ? (par->variant | SSR_VARFLAG_SQUEEZE) : (par->variant & (~SSR_VARFLAG_SQUEEZE));
+  par->variant = (usesqueeze) 
+    ? (par->variant | SSR_VARFLAG_SQUEEZE) 
+    : (par->variant & (~SSR_VARFLAG_SQUEEZE));
 
   /* o.k. */
   return UNUR_SUCCESS;
@@ -429,93 +431,6 @@ unur_ssr_set_usesqueeze( struct unur_par *par, int usesqueeze )
 } /* end of unur_ssr_set_usesqueeze() */
 
 /*****************************************************************************/
-
-int
-unur_ssr_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
-     /*----------------------------------------------------------------------*/
-     /* Deprecated call!                                                     */
-     /*----------------------------------------------------------------------*/
-     /* change array of parameters for distribution                          */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen      ... pointer to generator object                           */
-     /*   params   ... list of arguments                                     */
-     /*   n_params ... number of arguments                                   */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   UNUR_SUCCESS ... on success                                        */
-     /*   error code   ... on error                                          */
-     /*                                                                      */
-     /* IMPORTANT: The given parameters are not checked against domain       */
-     /*            errors (in opposition to the unur_<distr>_new() call).    */
-     /*                                                                      */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
-  _unur_check_gen_object( gen, SSR, UNUR_ERR_GEN_INVALID );
-  
-  /* set new parameters in distribution object */
-  return unur_distr_cont_set_pdfparams( gen->distr, params,n_params );
-
-} /* end of unur_ssr_chg_pdfparams() */
-
-/*---------------------------------------------------------------------------*/
-
-int
-unur_ssr_chg_mode( struct unur_gen *gen, double mode )
-     /*----------------------------------------------------------------------*/
-     /* Deprecated call!                                                     */
-     /*----------------------------------------------------------------------*/
-     /* change mode of distribution                                          */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen   ... pointer to generator object                              */
-     /*   mode  ... mode                                                     */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   UNUR_SUCCESS ... on success                                        */
-     /*   error code   ... on error                                          */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
-  _unur_check_gen_object( gen, SSR, UNUR_ERR_GEN_INVALID );
-  
-  /* copy parameters */
-  DISTR.mode = mode;
-
-  /* no changelog required */
-
-  /* o.k. */
-  return UNUR_SUCCESS;
-} /* end of unur_ssr_chg_mode() */
-
-/*---------------------------------------------------------------------------*/
-
-int
-unur_ssr_upd_mode( struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* Deprecated call!                                                     */
-     /*----------------------------------------------------------------------*/
-     /* recompute mode of distribution                                       */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen   ... pointer to generator object                              */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   UNUR_SUCCESS ... on success                                        */
-     /*   error code   ... on error                                          */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
-  _unur_check_gen_object( gen, SSR, UNUR_ERR_GEN_INVALID );
-
-  return unur_distr_cont_upd_mode( gen->distr );
-} /* end of unur_ssr_upd_mode() */
-
-/*---------------------------------------------------------------------------*/
 
 int
 unur_ssr_chg_cdfatmode( struct unur_gen *gen, double Fmode )
@@ -591,112 +506,6 @@ unur_ssr_chg_pdfatmode( struct unur_gen *gen, double fmode )
   /* o.k. */
   return UNUR_SUCCESS;
 } /* end of unur_ssr_chg_pdfatmode() */
-
-/*---------------------------------------------------------------------------*/
-
-int 
-unur_ssr_chg_domain( struct unur_gen *gen, double left, double right )
-     /*----------------------------------------------------------------------*/
-     /* Deprecated call!                                                     */
-     /*----------------------------------------------------------------------*/
-     /* change the left and right borders of the domain of the distribution  */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen      ... pointer to generator object                           */
-     /*   left  ... left boundary point                                      */
-     /*   right ... right boundary point                                     */
-     /*                                                                      */
-     /* comment:                                                             */
-     /*   the new boundary points may be +/- INFINITY                        */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
-  _unur_check_gen_object( gen, SSR, UNUR_ERR_GEN_INVALID );
-
-  /* check new parameter for generator */
-  if (left >= right) {
-    _unur_warning(NULL,UNUR_ERR_DISTR_SET,"domain, left >= right");
-    return UNUR_ERR_DISTR_SET;
-  }
-
-  /* copy new boundaries into generator object */
-  DISTR.BD_LEFT = left;
-  DISTR.BD_RIGHT = right;
-
-  /* changelog */
-  gen->distr->set &= ~(UNUR_DISTR_SET_STDDOMAIN | UNUR_DISTR_SET_MASK_DERIVED );
-  gen->distr->set |= UNUR_DISTR_SET_DOMAIN;
-
-#ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
-#endif
-  
-  /* o.k. */
-  return UNUR_SUCCESS;
-  
-} /* end of unur_ssr_chg_domain() */
-
-/*---------------------------------------------------------------------------*/
-
-int
-unur_ssr_chg_pdfarea( struct unur_gen *gen, double area )
-     /*----------------------------------------------------------------------*/
-     /* Deprecated call!                                                     */
-     /*----------------------------------------------------------------------*/
-     /* change area below PDF of distribution                                */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen   ... pointer to generator object                              */
-     /*   area  ... area                                                     */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   UNUR_SUCCESS ... on success                                        */
-     /*   error code   ... on error                                          */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
-  _unur_check_gen_object( gen, SSR, UNUR_ERR_GEN_INVALID );
-  
-  /* check new parameter for generator */
-  if (area <= 0.) {
-    _unur_warning(NULL,UNUR_ERR_DISTR_SET,"area <= 0");
-    return UNUR_ERR_DISTR_SET;
-  }
-
-  /* copy parameters */
-  DISTR.area = area;
-
-  /* no changelog required */
-
-  /* o.k. */
-  return UNUR_SUCCESS;
-} /* end of unur_ssr_chg_pdfarea() */
-
-/*---------------------------------------------------------------------------*/
-
-int
-unur_ssr_upd_pdfarea( struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* Deprecated call!                                                     */
-     /*----------------------------------------------------------------------*/
-     /* recompute area below PDF of distribution                             */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen   ... pointer to generator object                              */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   UNUR_SUCCESS ... on success                                        */
-     /*   error code   ... on error                                          */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
-  _unur_check_gen_object( gen, SSR, UNUR_ERR_GEN_INVALID );
-
-  return unur_distr_cont_upd_pdfarea( gen->distr );
-} /* end of unur_ssr_upd_pdfarea() */
 
 
 /*****************************************************************************/

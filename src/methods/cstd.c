@@ -296,43 +296,6 @@ unur_cstd_set_variant( struct unur_par *par, unsigned variant )
 /*---------------------------------------------------------------------------*/
 
 int 
-unur_cstd_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
-     /*----------------------------------------------------------------------*/
-     /* Deprecated call!                                                     */
-     /*----------------------------------------------------------------------*/
-     /* change array of parameters for distribution                          */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen      ... pointer to generator object                           */
-     /*   params   ... list of arguments                                     */
-     /*   n_params ... number of arguments                                   */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   UNUR_SUCCESS ... on success                                        */
-     /*   error code   ... on error                                          */
-     /*                                                                      */
-     /* IMPORTANT: The given parameters are not checked against domain       */
-     /*            errors (in opposition to the unur_<distr>_new() call).    */
-     /*                                                                      */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
-  _unur_check_gen_object( gen, CSTD, UNUR_ERR_GEN_INVALID );
-  if (n_params>0) CHECK_NULL(params, UNUR_ERR_NULL);
-
-  /* set new parameters in distribution object */
-  if (unur_distr_cont_set_pdfparams(gen->distr, params,n_params)!=UNUR_SUCCESS)
-    return UNUR_ERR_DISTR_SET;
-
-  /* reinit */
-  return _unur_cstd_reinit(gen);
-
-} /* end of unur_cstd_chg_pdfparams() */
-
-/*---------------------------------------------------------------------------*/
-
-int 
 unur_cstd_chg_truncated( struct unur_gen *gen, double left, double right )
      /*----------------------------------------------------------------------*/
      /* change the left and right borders of the domain of the               */

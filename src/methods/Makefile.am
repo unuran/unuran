@@ -8,6 +8,8 @@ noinst_LTLIBRARIES = libmethods.la
 libmethods_la_SOURCES = \
  x_gen.c  x_gen.h  x_gen_struct.h x_gen_source.h \
 \
+ deprecated.c  deprecated.h \
+\
  auto.c   auto.h   auto_struct.h \
  arou.c   arou.h   arou_struct.h \
  cstd.c   cstd.h   cstd_struct.h \

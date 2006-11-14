@@ -269,27 +269,3 @@ double unur_ninv_eval_approxinvcdf( UNUR_GEN *generator, double u );
 
 /* =END */
 /*---------------------------------------------------------------------------*/
-
-/**********************
- *  Deprecated calls  *
- **********************/
-
-int unur_ninv_chg_pdfparams(UNUR_GEN *generator, double *params, int n_params);
-/*
-   Change array of parameters of the distribution in a given generator
-   object. 
-
-   For standard distributions from the UNURAN library the parameters
-   are checked. It these are invalid, then an error code is
-   returned. Moreover the domain is updated automatically unless it
-   has been changed before by a unur_distr_discr_set_domain() call.
-   Notice that optional parameters are (re-)set to their default
-   values if not given for UNURAN standard distributions.
-
-   For other distributions @var{params} is simply copied into to
-   distribution object. It is only checked that @var{n_params} does
-   not exceed the maximum number of parameters allowed.
-   Then an error code is returned and @code{unur_errno} is set to
-   @code{UNUR_ERR_DISTR_NPARAMS}.
-*/ 
-

@@ -134,21 +134,3 @@ int unur_dstd_set_variant( UNUR_PAR *parameters, unsigned variant );
 */
 
 /*---------------------------------------------------------------------------*/
-
-/**********************
- *  Deprecated calls  *
- **********************/
-
-int unur_dstd_chg_pmfparams( UNUR_GEN *gen, double *params, int n_params );
-/*
-   Change array of parameters of the distribution in a given generator
-   object. If the given parameters are invalid for the distribution,
-   no parameters are set.
-   Notice that optional parameters are (re-)set to their default values if 
-   not given for UNURAN standard distributions.
-
-   @emph{Important:} Integer parameter must be given as doubles.
-*/
-
-
-

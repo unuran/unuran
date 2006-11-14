@@ -136,6 +136,9 @@
 /* wrapper for uniform random number generator */
 #include <methods/unif.h>
 
+/* deprecated routines */
+#include <methods/deprecated.h>
+
 /*****************************************************************************/
 /**  String parser                                                          **/
 /*****************************************************************************/

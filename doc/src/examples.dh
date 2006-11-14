@@ -187,38 +187,12 @@ See @ref{URNG,,Using uniform random number generators},
 for details.
 
 The following example shows how the uniform random number generator
-can be set or changed for a generator object. It requires the PRNG
-library to be installed and used. Otherwise the example must be
+can be set or changed for a generator object. It requires the 
+RNGSTREAMS library to be installed and used. Otherwise the example must be
 modified accordingly.
 
 @smallexample
-@include ref_example4.texi
-@end smallexample
-
-=EON
-
-/*---------------------------------------------------------------------------*/
-
-=NODEX  Example_4_str  Change uniform random generator (String API)
-=UP Examples [41]
-
-=DESCRIPTION
-
-All generator object use the same default uniform random number
-generator by default. This can be changed to any generator of your
-choice such that each generator object has its own random number
-generator or can share it with some other objects.
-It is also possible to change the default generator at any time.
-See @ref{URNG,,Using uniform random number generators},
-for details.
-
-The following example shows how the uniform random number generator
-can be set or changed for a generator object. It requires the PRNG
-library to be installed and used. Otherwise the example must be
-modified accordingly.
-
-@smallexample
-@include ref_example4_str.texi
+@include ref_example_rngstreams.texi
 @end smallexample
 
 =EON

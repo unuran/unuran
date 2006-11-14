@@ -20,7 +20,7 @@ unuran_examples = \
  ./src/ref_example1.texi	./src/ref_example1_str.texi \
  ./src/ref_example2.texi	./src/ref_example2_str.texi \
  ./src/ref_example3.texi	./src/ref_example3_str.texi \
- ./src/ref_example4.texi	./src/ref_example4_str.texi \
+ ./src/ref_example_rngstreams.texi	\
  ./src/ref_example_anti.texi	./src/ref_example_anti_str.texi \
  ./src/ref_example_cont.texi	./src/ref_example_cont_str.texi \
  ./src/ref_example_discr.texi	./src/ref_example_discr_str.texi \

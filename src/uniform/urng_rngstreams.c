@@ -48,6 +48,11 @@
 #endif
 /*---------------------------------------------------------------------------*/
 
+static void _unur_urng_rngstream_delete( RngStream rngstream );
+/* wrapper for destructor of rngstream object */
+
+/*---------------------------------------------------------------------------*/
+
 UNUR_URNG *
 unur_urng_rngstreamptr_new( RngStream rngstream )
      /*----------------------------------------------------------------------*/
@@ -67,13 +72,13 @@ unur_urng_rngstreamptr_new( RngStream rngstream )
 
   urng = unur_urng_new( (double(*)(void*)) RngStream_RandU01, rngstream );
   unur_urng_set_reset    (urng, (void(*)(void*)) RngStream_ResetStartStream);
-  unur_urng_set_delete   (urng, (void(*)(void*)) RngStream_DeleteStream);
+  unur_urng_set_delete   (urng, (void(*)(void*)) _unur_urng_rngstream_delete);
   unur_urng_set_anti     (urng, (void(*)(void*,int)) RngStream_SetAntithetic);
   unur_urng_set_nextsub  (urng, (void(*)(void*)) RngStream_ResetNextSubstream);
   unur_urng_set_resetsub (urng, (void(*)(void*)) RngStream_ResetStartSubstream);
 
-  /* There only a function for seeding the RngStreams package, but no  */
-  /* function for seeding an individual random stream.                 */
+  /* There is only a function for seeding the RngStreams package, but no  */
+  /* function for seeding an individual random stream.                    */
 
   return urng;
 } /* end of unur_urng_rngstreamptr_new() */
@@ -91,6 +96,20 @@ unur_urng_rngstream_new( const char *urngstr )
 {
   return unur_urng_rngstreamptr_new(RngStream_CreateStream(urngstr));
 } /* end of unur_urng_prng_new() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_urng_rngstream_delete( RngStream rngstream )
+     /*----------------------------------------------------------------------*/
+     /* wrapper for destructor of rngstream object                           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   rngstream ... pointer to generator structure                       */
+     /*----------------------------------------------------------------------*/
+{
+  RngStream_DeleteStream(&rngstream);
+} /* end of _unur_urng_rngstream_delete() */
 
 /*---------------------------------------------------------------------------*/
 #endif /* defined(UNURAN_HAS_RNGSTREAMS) && UNUR_URNG_TYPE == UNUR_URNG_GENERIC */

@@ -1,4 +1,4 @@
-Version 0.8.0: November 2006
+Version 0.8.1: November 2006
 
 	* Methods:
 
@@ -84,14 +84,21 @@ Version 0.8.0: November 2006
 	   . removed unur_tdr_set_center() as this functionality is 
 	     already covered by the unur_distr_cont_set_center() call.
 
+	* Bug fixes:
+
+	- fixed segfault when calling unur_urng_free() with RngStreams
+         object.
+
 
 Version 0.7.2: March 2006
 
 	- fixed function prototype that contained C++ keyword
 
+
 Version 0.7.1: January 2006
 
 	- fixed non-ASCII C compliant code in tests directory
+
 
 Version 0.7.0: January 2006
 
@@ -140,9 +147,11 @@ Version 0.7.0: January 2006
           has been enhanced. However, it cannot be accessed directly any more.
           Use the corresponding calls instead (see also the message above). 
 
+
 Version 0.6.0: June 2005
 
 	- precompiles version for Windows 
+
 
 Version 0.5.0: August 2004
 
@@ -180,6 +189,7 @@ Version 0.5.0: August 2004
 
 	- some other minor bug fixes
 
+
 Version 0.4.5: July 2003
 
 	- added method DSS (discrete sequential search)
@@ -188,6 +198,7 @@ Version 0.4.5: July 2003
 
 	- bug fixes with discrete distributions
 
+
 Version 0.4.4: July 2003
 
 	- "orderstatistics" need not be last entry in string API
@@ -195,17 +206,20 @@ Version 0.4.4: July 2003
 	- replaced unur_tabl_set_variant_setup() by unur_tabl_set_usedars()
           with a slightly different interface.
 
+
 Version 0.4.3: June 2003
 
 	- fixed problem with prepocessor for MacOS X
 
 	- fixed bug in Kinderman-Ramage Gaussian variate generator
 
+
 Version 0.4.2: March 2003
 
 	- new interface for unur_tdr_eval_invcdfhat()
 
 	- fixed bug in error handling of method AROU
+
 
 Version 0.4.1: January 2003
 
@@ -215,6 +229,7 @@ Version 0.4.1: January 2003
 	              parsing of numbers does not depend on locale any more
 
 	- fixed bug in Makefile
+
 
 Version 0.4.0: January 2003
 	
@@ -229,6 +244,7 @@ Version 0.4.0: January 2003
 	- reorganization of source tree
 
 	- bug fixes
+
 
 Version 0.3.0: October 2002
 
@@ -249,6 +265,7 @@ Version 0.3.0: October 2002
 
 	- many bug fixes
 
+
 Version 0.2.0: June 2002
 
 	- added new simple API (String interface)
@@ -261,6 +278,7 @@ Version 0.2.0: June 2002
 	  (Derandomized adaptive rejection sampling)
 
 	- many bug fixes
+
 
 Version 0.1.0: March 2001
 

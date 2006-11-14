@@ -100,6 +100,30 @@ unur_cstd_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
 /*---------------------------------------------------------------------------*/
 
 int
+unur_dari_reinit( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* Deprecated call!                                                     */
+     /*----------------------------------------------------------------------*/
+     /* re-initialize (existing) generator.                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, DARI, UNUR_ERR_GEN_INVALID );
+
+  return unur_reinit(gen);
+} /* end of unur_dari_reinit() */
+  
+/*---------------------------------------------------------------------------*/
+
+int
 unur_dari_chg_pmfparams( struct unur_gen *gen, double *params, int n_params )
      /*----------------------------------------------------------------------*/
      /* Deprecated call!                                                     */
@@ -305,6 +329,30 @@ unur_dari_upd_pmfsum( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 int
+unur_dsrou_reinit( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* Deprecated call!                                                     */
+     /*----------------------------------------------------------------------*/
+     /* re-initialize (existing) generator.                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, DSROU, UNUR_ERR_GEN_DATA );
+
+  return unur_reinit( gen );
+} /* end of unur_dsrou_reinit() */
+
+/*---------------------------------------------------------------------------*/
+
+int
 unur_dsrou_chg_pmfparams( struct unur_gen *gen, double *params, int n_params )
      /*----------------------------------------------------------------------*/
      /* Deprecated call!                                                     */
@@ -502,7 +550,63 @@ unur_dsrou_upd_pmfsum( struct unur_gen *gen )
 
 /*****************************************************************************/
 
+int
+unur_ninv_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
+     /*----------------------------------------------------------------------*/
+     /* Deprecated call!                                                     */
+     /*----------------------------------------------------------------------*/
+     /* change array of parameters for distribution                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen      ... pointer to generator object                           */
+     /*   params   ... list of arguments                                     */
+     /*   n_params ... number of arguments                                   */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(gen, UNUR_ERR_NULL);
+  _unur_check_gen_object( gen, NINV, UNUR_ERR_GEN_INVALID );
+  if (n_params>0) CHECK_NULL(params, UNUR_ERR_NULL);
+  
+  /* set new parameters in distribution object */
+  if (unur_distr_cont_set_pdfparams(gen->distr,params,n_params)!=UNUR_SUCCESS)
+    return UNUR_ERR_GEN_DATA;
+
+  /* reinit */
+  return unur_reinit(gen);
+} /* end of unur_ninv_chg_pdfparams() */
+
+/*****************************************************************************/
+
 #define DISTR gen->distr->data.cont /* data for distribution in generator object */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_srou_reinit( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* Deprecated call!                                                     */
+     /*----------------------------------------------------------------------*/
+     /* re-initialize (existing) generator.                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, SROU, UNUR_ERR_GEN_INVALID );
+
+  return unur_reinit(gen);
+} /* end of unur_srou_reinit() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -708,6 +812,30 @@ unur_srou_upd_pdfarea( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 int
+unur_ssr_reinit( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* Deprecated call!                                                     */
+     /*----------------------------------------------------------------------*/
+     /* re-initialize (existing) generator.                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, SSR, UNUR_ERR_GEN_INVALID );
+
+  return unur_reinit(gen);
+} /* end of unur_ssr_reinit() */
+
+/*---------------------------------------------------------------------------*/
+
+int
 unur_ssr_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
      /*----------------------------------------------------------------------*/
      /* Deprecated call!                                                     */
@@ -906,8 +1034,56 @@ unur_ssr_upd_pdfarea( struct unur_gen *gen )
 
 /*****************************************************************************/
 
+int
+unur_tdrgw_reinit( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* Deprecated call!                                                     */
+     /*----------------------------------------------------------------------*/
+     /* re-initialize (existing) generator.                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE,gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, TDRGW, UNUR_ERR_GEN_INVALID );
+
+  return unur_reinit(gen);
+} /* end of unur_tdrgw_reinit() */
+
+/*****************************************************************************/
+
 #define DISTR gen->distr->data.cont /* data for distribution in generator object */
 #define GEN   ((struct unur_utdr_gen*)gen->datap) /* data for generator object */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_utdr_reinit( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* Deprecated call!                                                     */
+     /*----------------------------------------------------------------------*/
+     /* re-initialize (existing) generator.                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE,gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, UTDR, UNUR_ERR_GEN_INVALID );
+
+  return unur_reinit(gen);
+} /* end of unur_utdr_reinit() */
 
 /*---------------------------------------------------------------------------*/
 

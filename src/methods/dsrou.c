@@ -520,30 +520,6 @@ _unur_dsrou_reinit( struct unur_gen *gen )
 
 /*---------------------------------------------------------------------------*/
 
-int
-unur_dsrou_reinit( struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* Deprecated call!                                                     */
-     /*----------------------------------------------------------------------*/
-     /* re-initialize (existing) generator.                                  */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   UNUR_SUCCESS ... on success                                        */
-     /*   error code   ... on error                                          */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
-  _unur_check_gen_object( gen, DSROU, UNUR_ERR_GEN_DATA );
-
-  return _unur_dsrou_reinit( gen );
-} /* end of unur_dsrou_reinit() */
-
-/*---------------------------------------------------------------------------*/
-
 struct unur_gen *
 _unur_dsrou_create( struct unur_par *par )
      /*----------------------------------------------------------------------*/

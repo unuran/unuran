@@ -770,30 +770,6 @@ _unur_srou_reinit( struct unur_gen *gen )
 
 /*---------------------------------------------------------------------------*/
 
-int
-unur_srou_reinit( struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* Deprecated call!                                                     */
-     /*----------------------------------------------------------------------*/
-     /* re-initialize (existing) generator.                                  */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   UNUR_SUCCESS ... on success                                        */
-     /*   error code   ... on error                                          */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
-  _unur_check_gen_object( gen, SROU, UNUR_ERR_GEN_INVALID );
-
-  return _unur_srou_reinit(gen);
-} /* end of unur_srou_reinit() */
-
-/*---------------------------------------------------------------------------*/
-
 struct unur_gen *
 _unur_srou_create( struct unur_par *par )
      /*----------------------------------------------------------------------*/

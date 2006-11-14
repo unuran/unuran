@@ -606,30 +606,6 @@ _unur_ssr_reinit( struct unur_gen *gen )
 
 /*---------------------------------------------------------------------------*/
 
-int
-unur_ssr_reinit( struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* Deprecated call!                                                     */
-     /*----------------------------------------------------------------------*/
-     /* re-initialize (existing) generator.                                  */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   UNUR_SUCCESS ... on success                                        */
-     /*   error code   ... on error                                          */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
-  _unur_check_gen_object( gen, SSR, UNUR_ERR_GEN_INVALID );
-
-  return _unur_ssr_reinit(gen);
-} /* end of unur_ssr_reinit() */
-
-/*---------------------------------------------------------------------------*/
-
 struct unur_gen *
 _unur_ssr_create( struct unur_par *par )
      /*----------------------------------------------------------------------*/

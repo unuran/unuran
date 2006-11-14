@@ -771,38 +771,6 @@ unur_ninv_chg_truncated( struct unur_gen *gen, double left, double right )
   
 } /* end of unur_ninv_chg_truncated() */
 
-/*---------------------------------------------------------------------------*/
-
-int
-unur_ninv_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
-     /*----------------------------------------------------------------------*/
-     /* Deprecated call!                                                     */
-     /*----------------------------------------------------------------------*/
-     /* change array of parameters for distribution                          */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen      ... pointer to generator object                           */
-     /*   params   ... list of arguments                                     */
-     /*   n_params ... number of arguments                                   */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   UNUR_SUCCESS ... on success                                        */
-     /*   error code   ... on error                                          */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  CHECK_NULL(gen, UNUR_ERR_NULL);
-  _unur_check_gen_object( gen, NINV, UNUR_ERR_GEN_INVALID );
-  if (n_params>0) CHECK_NULL(params, UNUR_ERR_NULL);
-  
-  /* set new parameters in distribution object */
-  if (unur_distr_cont_set_pdfparams(gen->distr,params,n_params)!=UNUR_SUCCESS)
-    return UNUR_ERR_GEN_DATA;
-
-  /* reinit */
-  return _unur_ninv_reinit(gen);
-} /* end of unur_ninv_chg_pdfparams() */
-
 
 /*****************************************************************************/
 /**  Private                                                                **/

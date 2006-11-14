@@ -42,7 +42,7 @@ typedef struct unur_urng_generic UNUR_URNG;
 
 /*---------------------------------------------------------------------------*/
 /* The following types are for backward compatibility.                       */
-/* Its usage ist strongly depreciated!                                       */
+/* Its usage ist strongly deprecated!                                        */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/

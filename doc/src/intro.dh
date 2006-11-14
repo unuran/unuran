@@ -93,8 +93,8 @@
 	 @emph{Important:} Do @strong{not} set 
 	 @code{UNUR_URNG_TYPE} to other values but
 	 @code{UNUR_URNG_GENERIC} unless you have serious reasons. 
-	 With UNURAN-0.7.0 these other types are depreciated and not tested any
-  	 more. They are only provided for backwards compatibility if
+	 With UNURAN-0.7.0 these other types are deprecated and are not tested 
+	 any more. They are only provided for backwards compatibility if
 	 this is required.
 
    @item Run a configuration script:
@@ -235,11 +235,11 @@
    support shared libraries.  The default location of these files is
    @file{/usr/local/lib}.  To link against the library you need to
    specify the main library.  The following example shows how to link
-   an application with the library (and the the PRNG library if you
+   an application with the library (and the the RNGSTREAMS library if you
    decide to use this source of uniform pseudo-random numbers), 
 
    @smallexample
-   gcc app.o -lunuran -lprng -lm
+   gcc app.o -lunuran -lrngstreams -lm
    @end smallexample
 
 
@@ -258,7 +258,7 @@
    @code{-static} flag in @code{gcc},
 
    @smallexample
-   gcc -static app.o -lunuran -lprng -lm
+   gcc -static app.o -lunuran -lrngstreams -lm
    @end smallexample
 
 
@@ -303,22 +303,22 @@
       necessary due to various parameters and switches for each of
       these generation methods. 
 
-      For programming notice that the parameter objects only hold
-      pointer to arrays but do not have their own copy of such an
-      array. Especially, if a dynamically allocated array is used
+      Notice that the parameter objects only hold pointers to arrays
+      but do not have their own copy of such an array. 
+      Especially, if a dynamically allocated array is used
       it @emph{must not} be freed until the generator object has
       been created!
    
    @end itemize
 
-   The idea behind these structures is to make distributions, choosing
-   a generation method and sampling to orthogonal (ie. independent)
-   functions of the library. 
+   The idea behind these structures is that creatin distributions, 
+   choosing a generation method and draing samples are orthogonal
+   (ie. independent) functions of the library. 
    The parameter object is only introduced due to the necessity to
    deal with various parameters and switches for
    each of these generation methods which are required to adjust the
    algorithms to unusual distributions with extreme properties but
-   have defaut values that are suitable for most applications.
+   have default values that are suitable for most applications.
    These parameters and the data for distributions are set by various
    functions.
 
@@ -349,9 +349,9 @@
    @item discr
       Discrete univariate distributions.
    @item cemp
-      Continuous empirical univariate distribution, ie. given by sample.
+      Continuous empirical univariate distribution, ie. given by a sample.
    @item cvemp
-      Continuous empirical multivariate distribution, ie. given by sample.
+      Continuous empirical multivariate distribution, ie. given by a sample.
    @item matr
       Matrix distributions.
 
@@ -380,9 +380,9 @@
    This command stores a PDF named @code{mypdf} in the distribution
    object @code{distr} which must have the type @code{cont}.
 
-   Of course UNURAN provides an easier way to use standard distribution.
+   Of course UNURAN provides an easier way to use standard distributions.
    Instead of using @command{unur_distr_<type>_new} calls and fuctions
-   @command{unur_distr_<type>_set_<@dots{}>} for setting data
+   @command{unur_distr_<type>_set_<@dots{}>} for setting data,
    objects for standard distribution can be created by a single call.
    Eg. to get an object for the normal distribution with mean 2 and
    standard deviation 5 use
@@ -397,17 +397,17 @@
 
    @subheading Generation methods
 
-   The information a distribution object must contain depends
-   heavily on the method choosen for sampling random variates.
+   The information that a distribution object must contain depends
+   heavily on the chosen generation method choosen.
 
    @include unuran_method_requirements.texi
 
    @sp 2
 
    Because of tremendous variety of possible problems, UNURAN provides many
-   methods. All information for creating an generator object have to
-   collected in a parameter first.
-   For example if the task is to sample from a continuous distribution
+   methods. All information for creating a generator object has to be
+   collected in a parameter object first.
+   For example, if the task is to sample from a continuous distribution
    the method AROU might be a good choice. Then the call
    @example
      UNUR_PAR *par = unur_arou_new(distribution);
@@ -423,8 +423,8 @@
    @end example
    @noindent
    This sets the default values for all necessary parameters for the
-   chosen methods. These are suitable for almost all
-   applications. Nevertheless it is possible to control the behaviour
+   chosen method. These are suitable for almost all
+   applications. Nevertheless, it is possible to control the behavior
    of the method using corresponding @command{set} calls for each method.
    This might be necessary to adjust the algorithm for an unusual
    distribution with extreme properties, or just for fine tuning the
@@ -454,28 +454,28 @@
    @noindent
    @strong{Important:}
    The call of unur_init() @strong{destroys} the parameter object!@*
-   Moreover it is recommended to call unur_init() immediately after
+   Moreover, it is recommended to call unur_init() immediately after
    the parameter object @code{par} has created and modified.
 
    @sp 1
    An existing generator object is a rather static construct.
-   Nevertheless some of the parameters can still be modified by
+   Nevertheless, some of the parameters can still be modified by
    @command{chg} calls, e.g.
    @example
      unur_ninv_chg_max_iteration(gen, 30);
    @end example
   
    @sp 1
-   Notice that it is important @emph{when} pararameters are
+   Notice that it is important @emph{when} parameters are
    changed because different functions must be used:
 
-   To change the parameters @emph{before} creating the generator object,
-   the function name includes the term @command{set} and the first
-   argument must be of type @code{UNUR_PAR}. 
+   The function name includes the term @command{set} and the first
+   argument must be of type @code{UNUR_PAR} when the parameters are
+   changed @emph{before} the generator object is created.
 
-   To change the parameters for an @emph{existing} generator object,
-   the function name includes the term @command{chg} and the first
-   argument must be of type @code{UNUR_GEN}.
+   The function name includes the term @command{chg} and the first
+   argument must be of type @code{UNUR_GEN} when the parameters are
+   changed for an @emph{existing} generator object.
 
    For details see @ref{Methods}.
 
@@ -483,9 +483,9 @@
    @subheading Sampling
 
    You can now use your generator object in any place of your program
-   to sample from your distribution. You only have take about the type
-   of number it computes: @code{double}, @code{int} or a vector (array
-   of @code{double}s). 
+   to sample from your distribution. You only have to take care about
+   the type of variates it computes: @code{double}, @code{int} or a 
+   vector (array of @code{double}s). 
    Notice that at this point it does not matter whether you are
    sampling from a gamma distribution, a truncated normal distribution
    or even an empirical distribution.
@@ -519,7 +519,7 @@
    Each generator object can have its own uniform random number
    generator or share one with others.
    When created a parameter object the pointer for the uniform random
-   number generator is set to the default generator. However it can be
+   number generator is set to the default generator. However, it can be
    changed at any time to any other generator:
    @example
      unur_set_urng(par, urng);
@@ -543,7 +543,7 @@
 
 =DESCRIPTION
    If you have any problems with UNURAN, suggestions how to improve
-   the library or find a bug, please contact us via email
+   the library, or find a bug, please contact us via email
    @email{unuran@@statistik.wu-wien.ac.at}.
 
    For news please visit out homepage at

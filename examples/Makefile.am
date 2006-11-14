@@ -11,6 +11,7 @@ EXAMPLES = \
  example1 example1_str \
  example2 example2_str \
  example3 example3_str \
+ example_rngstreams \
  example4 example4_str \
  example_anti  example_anti_str \
  example_discr example_discr_str \

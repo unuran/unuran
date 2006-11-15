@@ -931,19 +931,8 @@ _unur_gibbs_coord_sample_cvec( struct unur_gen *gen, double *vec )
     unur_distr_condi_set_condition( GEN->distr_condi, GEN->state, NULL, GEN->coord);
 
     /* reinit generator object */
-    switch( gen->variant & GIBBS_VARMASK_T ) {
-    case GIBBS_VAR_T_LOG:
-      unur_tdrgw_reinit(GEN_CONDI[GEN->coord]);
-      break;
-    case GIBBS_VAR_T_SQRT:
-      unur_tdr_reinit(GEN_CONDI[GEN->coord]);
-      break;
-    case GIBBS_VAR_T_POW:
-    default:
-      _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-      return UNUR_SUCCESS;
-    }
-    
+    unur_reinit(GEN_CONDI[GEN->coord]);
+
     /* sample from distribution */
     X = unur_sample_cont(GEN_CONDI[GEN->coord]);
     /* remark: if reinit failed we get X=INFINITY here */
@@ -997,18 +986,7 @@ _unur_gibbs_randomdir_sample_cvec( struct unur_gen *gen, double *vec )
     unur_distr_condi_set_condition( GEN->distr_condi, GEN->state, GEN->direction, 0);
 
     /* reinit generator object */
-    switch( gen->variant & GIBBS_VARMASK_T ) {
-    case GIBBS_VAR_T_LOG:
-      unur_tdrgw_reinit(*GEN_CONDI);
-      break;
-    case GIBBS_VAR_T_SQRT:
-      unur_tdr_reinit(*GEN_CONDI);
-      break;
-    case GIBBS_VAR_T_POW:
-    default:
-      _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-      return UNUR_SUCCESS;
-    }
+    unur_reinit(*GEN_CONDI);
 
     /* sample from distribution */
     X = unur_sample_cont(*GEN_CONDI);

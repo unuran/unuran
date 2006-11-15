@@ -195,18 +195,3 @@ int unur_ssr_chg_pdfatmode( UNUR_GEN *generator, double fmode );
 
 /* =END */
 /*---------------------------------------------------------------------------*/
-
-/**********************
- *  Deprecated calls  *
- **********************/
-
-int unur_ssr_reinit( UNUR_GEN *generator );
-/* 
-   Update an existing generator object after the distribution has been
-   modified. It must be executed whenever the parameters or the domain
-   of the distribution has been changed (see below).
-   It is faster than destroying the existing object and build
-   a new one from scratch.
-   If reinitialization has been successful @code{UNUR_SUCCESS} is returned,
-   in case of a failure an error code is returned.
-*/

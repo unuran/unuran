@@ -51,6 +51,17 @@ int unur_cstd_chg_pdfparams( UNUR_GEN *generator, double *params, int n_params )
 
 /*---------------------------------------------------------------------------*/
 
+int unur_dari_reinit( UNUR_GEN *generator );
+/* 
+   Update an existing generator object after the distribution has been
+   modified. It must be executed whenever the parameters or the domain
+   of the distributions has been changed (see below).
+   It is faster than destroying the existing object and building
+   a new one from scratch.
+   If reinitialization has been successful @code{UNUR_SUCCESS} is returned,
+   in case of a failure an error code is returned.
+*/
+
 int unur_dari_chg_pmfparams( UNUR_GEN *generator, double *params, int n_params );
 /* 
    Change array of parameters of the distribution in a given generator
@@ -121,6 +132,17 @@ int unur_dari_upd_pmfsum( UNUR_GEN *generator );
 */
 
 /*---------------------------------------------------------------------------*/
+
+int unur_dsrou_reinit( UNUR_GEN *generator );
+/* 
+   Update an existing generator object after the distribution has been
+   modified. It must be executed whenever the parameters or the domain
+   of the distribution have been changed (see below).
+   It is faster than destroying the existing object and building
+   a new one from scratch.
+   If reinitialization has been successful @code{UNUR_SUCCESS} is returned,
+   in case of a failure an error code is returned.
+*/
 
 int unur_dsrou_chg_pmfparams( UNUR_GEN *generator, double *params, int n_params );
 /* 
@@ -222,6 +244,17 @@ int unur_ninv_chg_pdfparams(UNUR_GEN *generator, double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
 
+int unur_srou_reinit( UNUR_GEN *generator );
+/* 
+   Update an existing generator object after the distribution has been
+   modified. It must be executed whenever the parameters or the domain
+   of the distributions have been changed (see below).
+   It is faster than destroying the existing object and building
+   a new one from scratch.
+   If reinitialization has been successful @code{UNUR_SUCCESS} is returned,
+   in case of a failure an error code is returned.
+*/
+
 int unur_srou_chg_pdfparams( UNUR_GEN *generator, double *params, int n_params );
 /* 
    Change array of parameters of the distribution in a given generator
@@ -288,6 +321,17 @@ int unur_srou_upd_pdfarea( UNUR_GEN *generator );
 
 /*---------------------------------------------------------------------------*/
 
+int unur_ssr_reinit( UNUR_GEN *generator );
+/* 
+   Update an existing generator object after the distribution has been
+   modified. It must be executed whenever the parameters or the domain
+   of the distribution has been changed (see below).
+   It is faster than destroying the existing object and build
+   a new one from scratch.
+   If reinitialization has been successful @code{UNUR_SUCCESS} is returned,
+   in case of a failure an error code is returned.
+*/
+
 int unur_ssr_chg_pdfparams( UNUR_GEN *generator, double *params, int n_params );
 /* 
    Change array of parameters of the distribution in a given generator
@@ -351,6 +395,70 @@ int unur_ssr_upd_pdfarea( UNUR_GEN *generator );
 */
 
 /*---------------------------------------------------------------------------*/
+
+int unur_tdr_reinit( UNUR_GEN *generator );
+/* 
+   Update an existing generator object after the distribution has been
+   modified. It must be executed whenever the parameters of the
+   distribution has been changed. 
+   It is faster than destroying the existing object and build
+   a new one from scratch.
+   If reinitialization has been successful @code{UNUR_SUCCESS} is
+   returned. In case of a failure an error code is returned. Then
+   @var{generator} cannot be used before another successful reinit
+   (with proper parameters for the underlying distribution).
+*/
+
+/*---------------------------------------------------------------------------*/
+
+int unur_tdrgw_reinit( UNUR_GEN *generator );
+/* 
+   Update an existing generator object after the distribution has been
+   modified. It must be executed whenever the parameters of the
+   distribution has been changed. 
+   It is faster than destroying the existing object and build
+   a new one from scratch.
+   If reinitialization has been successful @code{UNUR_SUCCESS} is
+   returned. In case of a failure an error code is returned. Then
+   @var{generator} cannot be used before another successful reinit
+   (with proper parameters for the underlying distribution).
+*/
+
+/*---------------------------------------------------------------------------*/
+
+int unur_utdr_reinit( UNUR_GEN *generator );
+/* 
+   Update an existing generator object after the distribution has been
+   modified. It must be executed whenever the parameters or the domain
+   of the distributions has been changed (see below).
+   It is faster than destroying the existing object and building
+   a new one from scratch.
+   If reinitialization has been successful @code{UNUR_SUCCESS} is returned,
+   in case of a failure an error code is returned.
+
+   @emph{Important:} Do not use the @var{generator} object for
+   sampling after a failed reinit, since otherwise it may produce
+   garbage.
+*/
+
+int unur_utdr_chg_pdfparams( UNUR_GEN *generator, double *params, int n_params );
+/* 
+   Change array of parameters of the distribution in a given generator
+   object. 
+
+   For standard distributions from the UNURAN library the parameters
+   are checked. It these are invalid, then an error code is
+   returned. Moreover the domain is updated automatically unless it
+   has been changed before by a unur_distr_discr_set_domain() call.
+   Notice that optional parameters are (re-)set to their default
+   values if not given for UNURAN standard distributions.
+
+   For other distributions @var{params} is simply copied into to
+   distribution object. It is only checked that @var{n_params} does
+   not exceed the maximum number of parameters allowed.
+   Then an error code is returned and @code{unur_errno} is set to
+   @code{UNUR_ERR_DISTR_NPARAMS}.
+*/
 
 int unur_utdr_chg_domain( UNUR_GEN *generator, double left, double right );
 /* 

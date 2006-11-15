@@ -89,8 +89,7 @@ unur_cstd_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
     return UNUR_ERR_DISTR_SET;
 
   /* reinit */
-  return unur_reinit(gen);
-
+  return gen->reinit(gen);
 } /* end of unur_cstd_chg_pdfparams() */
 
 /*****************************************************************************/
@@ -118,7 +117,7 @@ unur_dari_reinit( struct unur_gen *gen )
   _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
   _unur_check_gen_object( gen, DARI, UNUR_ERR_GEN_INVALID );
 
-  return unur_reinit(gen);
+  return gen->reinit(gen);
 } /* end of unur_dari_reinit() */
   
 /*---------------------------------------------------------------------------*/
@@ -347,7 +346,7 @@ unur_dsrou_reinit( struct unur_gen *gen )
   _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
   _unur_check_gen_object( gen, DSROU, UNUR_ERR_GEN_DATA );
 
-  return unur_reinit( gen );
+  return gen->reinit(gen);
 } /* end of unur_dsrou_reinit() */
 
 /*---------------------------------------------------------------------------*/
@@ -577,7 +576,7 @@ unur_ninv_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
     return UNUR_ERR_GEN_DATA;
 
   /* reinit */
-  return unur_reinit(gen);
+  return gen->reinit(gen);
 } /* end of unur_ninv_chg_pdfparams() */
 
 /*****************************************************************************/
@@ -605,7 +604,7 @@ unur_srou_reinit( struct unur_gen *gen )
   _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
   _unur_check_gen_object( gen, SROU, UNUR_ERR_GEN_INVALID );
 
-  return unur_reinit(gen);
+  return gen->reinit(gen);
 } /* end of unur_srou_reinit() */
 
 /*---------------------------------------------------------------------------*/
@@ -830,7 +829,7 @@ unur_ssr_reinit( struct unur_gen *gen )
   _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
   _unur_check_gen_object( gen, SSR, UNUR_ERR_GEN_INVALID );
 
-  return unur_reinit(gen);
+  return gen->reinit(gen);
 } /* end of unur_ssr_reinit() */
 
 /*---------------------------------------------------------------------------*/
@@ -921,7 +920,6 @@ unur_ssr_upd_mode( struct unur_gen *gen )
 } /* end of unur_ssr_upd_mode() */
 
 /*---------------------------------------------------------------------------*/
-
 
 int 
 unur_ssr_chg_domain( struct unur_gen *gen, double left, double right )
@@ -1035,6 +1033,30 @@ unur_ssr_upd_pdfarea( struct unur_gen *gen )
 /*****************************************************************************/
 
 int
+unur_tdr_reinit( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* Deprecated call!                                                     */
+     /*----------------------------------------------------------------------*/
+     /* re-initialize (existing) generator.                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE,gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, TDR, UNUR_ERR_GEN_INVALID );
+
+  return gen->reinit(gen);
+} /* end of unur_tdr_reinit() */
+
+/*****************************************************************************/
+
+int
 unur_tdrgw_reinit( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* Deprecated call!                                                     */
@@ -1053,7 +1075,7 @@ unur_tdrgw_reinit( struct unur_gen *gen )
   _unur_check_NULL( GENTYPE,gen, UNUR_ERR_NULL );
   _unur_check_gen_object( gen, TDRGW, UNUR_ERR_GEN_INVALID );
 
-  return unur_reinit(gen);
+  return gen->reinit(gen);
 } /* end of unur_tdrgw_reinit() */
 
 /*****************************************************************************/
@@ -1082,7 +1104,7 @@ unur_utdr_reinit( struct unur_gen *gen )
   _unur_check_NULL( GENTYPE,gen, UNUR_ERR_NULL );
   _unur_check_gen_object( gen, UTDR, UNUR_ERR_GEN_INVALID );
 
-  return unur_reinit(gen);
+  return gen->reinit(gen);
 } /* end of unur_utdr_reinit() */
 
 /*---------------------------------------------------------------------------*/

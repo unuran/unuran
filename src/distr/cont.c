@@ -1934,14 +1934,9 @@ unur_distr_cont_get_pdfarea( struct unur_distr *distr )
   /* area known ? */
   if ( !(distr->set & UNUR_DISTR_SET_PDFAREA) ) {
     /* try to compute area */
-    if (DISTR.upd_area == NULL) {
-      /* no function to compute area available */
+    if ( unur_distr_cont_upd_pdfarea(distr) != UNUR_SUCCESS ) {
       _unur_error(distr->name,UNUR_ERR_DISTR_GET,"area");
       return INFINITY;
-    }
-    else {
-      /* compute area */
-      unur_distr_cont_upd_pdfarea( distr );
     }
   }
 

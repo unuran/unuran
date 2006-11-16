@@ -370,10 +370,12 @@ int unur_distr_discr_upd_pmfsum( UNUR_DISTR *distribution );
 /*
    Recompute the sum over the PMF of the @var{distribution}. 
    In most cases the normalization constant is recomputed and thus the
-   sum is 1. This call only works for distribution objects from the
-   UNURAN library of standard distributions when the
-   corresponding function is available. Otherwise @code{unur_errno} is
-   set to @code{UNUR_ERR_DISTR_DATA}. 
+   sum is 1. This call works for distribution objects from the UNURAN
+   library of standard distributions when the corresponding function
+   is available. When a PV, a PMF with finite domain, or a CDF is
+   given, a simple generic function which uses a naive summation loop
+   is used. If this computation is not possible, an error code is
+   returned and @code{unur_errno} is set to @code{UNUR_ERR_DISTR_DATA}. 
 
    The call does not work for distributions from the 
    UNURAN library of standard distributions with truncated
@@ -391,16 +393,3 @@ double unur_distr_discr_get_pmfsum( UNUR_DISTR *distribution );
 /* =END */
 
 /*---------------------------------------------------------------------------*/
-
-/* Non-exported calls (for internal use only) */
-
-int _unur_distr_discr_upd_pmfsum_generic( UNUR_DISTR *distribution );
-/* 
-   Recompute the sum over the PMF of the @var{distribution} with a 
-   naive summation loop.
-
-   @emph{Warning}: This call must be used with care as it does not
-   check the size of the domain and thus might run for a @emph{very} long
-   time.
-*/
-

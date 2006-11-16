@@ -48,6 +48,12 @@
 #define DISTR distr->data.discr
 
 /*---------------------------------------------------------------------------*/
+/* Constants */
+
+/* maximum size of domain for which the pmfsum is computed automatically */
+#define MAX_PMF_DOMAIN_FOR_UPD_PMFSUM   (1000)
+
+/*---------------------------------------------------------------------------*/
 
 static double _unur_distr_discr_eval_pmf_tree( int k, const struct unur_distr *distr );
 /*---------------------------------------------------------------------------*/
@@ -1189,83 +1195,6 @@ unur_distr_discr_upd_pmfsum( struct unur_distr *distr )
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
-  /* check arguments */
-  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
-  _unur_check_distr_object( distr, DISCR, UNUR_ERR_DISTR_SET );
-
-  if (DISTR.upd_sum == NULL) {
-    /* no function to compute sum available */
-    _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
-    return UNUR_ERR_DISTR_DATA;
-  }
-
-  /* compute sum */
-  if ((DISTR.upd_sum)(distr)==UNUR_SUCCESS) {
-    /* changelog */
-    distr->set |= UNUR_DISTR_SET_PMFSUM;
-    return UNUR_SUCCESS;
-  }
-  else
-    return UNUR_ERR_DISTR_DATA;
-
-} /* end of unur_distr_discr_upd_pmfsum() */
-  
-/*---------------------------------------------------------------------------*/
-
-double
-unur_distr_discr_get_pmfsum( struct unur_distr *distr )
-     /*----------------------------------------------------------------------*/
-     /* get sum over PMF of distribution                                     */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   distr ... pointer to distribution object                           */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   sum over PMF of distribution                                       */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  _unur_check_NULL( NULL, distr, INFINITY );
-  _unur_check_distr_object( distr, DISCR, INFINITY );
-
-  /* mode known ? */
-  if ( !(distr->set & UNUR_DISTR_SET_PMFSUM) ) {
-    /* try to compute sum */
-    if (DISTR.upd_sum == NULL) {
-      /* no function to compute sum available */
-      _unur_error(distr->name,UNUR_ERR_DISTR_GET,"sum");
-      return INFINITY;
-    }
-    else {
-      /* compute sum */
-      if ((DISTR.upd_sum)(distr)==UNUR_SUCCESS)
-	/* changelog */
-	distr->set |= UNUR_DISTR_SET_PMFSUM;
-      else
-	return INFINITY;
-    }
-  }
-
-  return DISTR.sum;
-
-} /* end of unur_distr_discr_get_pmfsum() */
-
-/*---------------------------------------------------------------------------*/
-
-int
-_unur_distr_discr_upd_pmfsum_generic( struct unur_distr *distr )
-     /*----------------------------------------------------------------------*/
-     /* (re-) compute sum over PMF of distribution with a naive summation    */
-     /* loop                                                                 */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   distr ... pointer to distribution object                           */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   UNUR_SUCCESS ... on success                                        */
-     /*   error code   ... on error                                          */
-     /*----------------------------------------------------------------------*/
-{
   double sum = 0.;
   int k, left, right;
 
@@ -1301,7 +1230,7 @@ _unur_distr_discr_upd_pmfsum_generic( struct unur_distr *distr )
     return UNUR_SUCCESS;
   }
 
-  if (DISTR.pmf != NULL) {
+  if (DISTR.pmf != NULL && (right-left) <= MAX_PMF_DOMAIN_FOR_UPD_PMFSUM) {
     /* use PMF */
     for (k = left; k<= right; k++)
       sum += _unur_discr_PMF(k,distr);
@@ -1310,10 +1239,42 @@ _unur_distr_discr_upd_pmfsum_generic( struct unur_distr *distr )
   }
 
   /* error: data missing */
+  distr->set &= ~UNUR_DISTR_SET_PMFSUM;
   _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"Cannot compute sum");
   return UNUR_ERR_DISTR_DATA;
 
 } /* end of unur_distr_discr_upd_pmfsum() */
+  
+/*---------------------------------------------------------------------------*/
+
+double
+unur_distr_discr_get_pmfsum( struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* get sum over PMF of distribution                                     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   sum over PMF of distribution                                       */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, INFINITY );
+  _unur_check_distr_object( distr, DISCR, INFINITY );
+
+  /* sum known ? */
+  if ( !(distr->set & UNUR_DISTR_SET_PMFSUM) ) {
+    /* try to compute sum */
+    if ( unur_distr_discr_upd_pmfsum(distr) != UNUR_SUCCESS ) {
+      _unur_error(distr->name,UNUR_ERR_DISTR_GET,"sum");
+      return INFINITY;
+    }
+  }
+
+  return DISTR.sum;
+
+} /* end of unur_distr_discr_get_pmfsum() */
 
 /*****************************************************************************/
 

@@ -1136,8 +1136,9 @@ _unur_itdr_get_hat_pole( struct unur_gen *gen )
 #define hp(x)  ( (T(cp,(x)) - GEN->alphap) / GEN->betap )
 
   double cp, xp;
-  double ilc_bx, pdf_bx;
+  double pdf_bx;
   double near_pole, ilc_near_pole, pdf_near_pole, logpdf_near_pole;
+  double ilc_bx = -INFINITY;
 
   /* get cp */
   if (gen->set & ITDR_SET_CP) {
@@ -1150,7 +1151,7 @@ _unur_itdr_get_hat_pole( struct unur_gen *gen )
     ilc_near_pole = (DISTR.logpdf) 
       ? logPDF(near_pole) / log(near_pole)
       : log(PDF(near_pole)) / log(near_pole);
-    cp = _unur_min(ilc_near_pole,ilc_bx);
+    cp = ilc_near_pole;
     if (cp > C_MAX) cp = C_MAX;
     if (cp <= -1.) {
       _unur_error(gen->genid,UNUR_ERR_DISTR_PROP,"cannot compute hat for pole: cp");
@@ -1207,6 +1208,11 @@ _unur_itdr_get_hat_pole( struct unur_gen *gen )
       }
       /* try new value for cp */
       GEN->cp = cp = 0.9*cp-0.1;
+      if (cp < ilc_bx) {
+	/* we try ilc at bx first before we use an even smaller value for cp */
+	GEN->cp = cp = ilc_bx; 
+	ilc_bx = -INFINITY;
+      }
       if (cp < -0.999) {
 	_unur_error(gen->genid,UNUR_ERR_DISTR_PROP,"cannot compute hat for pole: cp");
 	return UNUR_ERR_DISTR_PROP;

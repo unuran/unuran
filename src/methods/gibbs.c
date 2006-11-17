@@ -110,10 +110,9 @@ static struct unur_gen *_unur_gibbs_create( struct unur_par *par );
 /* create new (almost empty) generator object.                               */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_gibbs_coord_sample_cvec( struct unur_gen *gen, double *vec );
-static int _unur_gibbs_randomdir_sample_cvec( struct unur_gen *gen, double *vec );
+static struct unur_gen *_unur_gibbs_clone( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* sample from generator                                                     */
+/* copy (clone) generator object.                                            */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_gibbs_free( struct unur_gen *gen);
@@ -121,9 +120,10 @@ static void _unur_gibbs_free( struct unur_gen *gen);
 /* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *_unur_gibbs_clone( const struct unur_gen *gen );
+static int _unur_gibbs_coord_sample_cvec( struct unur_gen *gen, double *vec );
+static int _unur_gibbs_randomdir_sample_cvec( struct unur_gen *gen, double *vec );
 /*---------------------------------------------------------------------------*/
-/* copy (clone) generator object.                                            */
+/* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/
 
 static struct unur_gen *_unur_gibbs_normalgen( struct unur_gen *gen );
@@ -552,7 +552,6 @@ unur_gibbs_reset_state( struct unur_gen *gen )
   return UNUR_SUCCESS;
 } /* end of unur_gibbs_reset_state() */
 
-/*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/
 /**  Private                                                                **/
@@ -589,10 +588,8 @@ _unur_gibbs_init( struct unur_par *par )
 
   /* create a new empty generator object */
   gen = _unur_gibbs_create(par);
-  if (!gen) { _unur_par_free(par); return NULL; }
-
-  /* free parameters */
   _unur_par_free(par);
+  if (!gen) return NULL;
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
@@ -894,6 +891,44 @@ _unur_gibbs_clone( const struct unur_gen *gen )
 #undef CLONE_CONDI
 } /* end of _unur_gibbs_clone() */
 
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_gibbs_free( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* deallocate generator object                                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  if( !gen ) /* nothing to do */
+    return;
+
+  /* check input */
+  if ( gen->method != UNUR_METH_GIBBS ) {
+    _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
+    return; }
+  COOKIE_CHECK(gen,CK_GIBBS_GEN,RETURN_VOID);
+
+  /* we cannot use this generator object any more */
+  SAMPLE = NULL;   /* make sure to show up a programming error */
+
+  /* free vectors */
+  if (GEN->state) free (GEN->state);
+  if (GEN->x0) free (GEN->x0);
+  if (GEN->direction) free (GEN->direction);
+
+  /* free conditional distribution object */
+  if (GEN->distr_condi) _unur_distr_free (GEN->distr_condi);
+
+  /* GEN_CONDI is freed by _unur_generic_free */
+
+  _unur_generic_free(gen);
+
+} /* end of _unur_gibbs_free() */
+
 /*****************************************************************************/
 
 int
@@ -1004,7 +1039,10 @@ _unur_gibbs_randomdir_sample_cvec( struct unur_gen *gen, double *vec )
 
 } /* end of _unur_gibbs_randomdir_sample_cvec() */
 
-/*---------------------------------------------------------------------------*/
+
+/*****************************************************************************/
+/**  Auxilliary Routines                                                    **/
+/*****************************************************************************/
 
 struct unur_gen *
 _unur_gibbs_normalgen( struct unur_gen *gen )
@@ -1064,43 +1102,6 @@ _unur_gibbs_random_unitvector( struct unur_gen *gen, double *direction )
 
 } /* end of _unur_gibbs_random_unitvector() */
 
-/*****************************************************************************/
-
-void
-_unur_gibbs_free( struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* deallocate generator object                                          */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  if( !gen ) /* nothing to do */
-    return;
-
-  /* check input */
-  if ( gen->method != UNUR_METH_GIBBS ) {
-    _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
-    return; }
-  COOKIE_CHECK(gen,CK_GIBBS_GEN,RETURN_VOID);
-
-  /* we cannot use this generator object any more */
-  SAMPLE = NULL;   /* make sure to show up a programming error */
-
-  /* free vectors */
-  if (GEN->state) free (GEN->state);
-  if (GEN->x0) free (GEN->x0);
-  if (GEN->direction) free (GEN->direction);
-
-  /* free conditional distribution object */
-  if (GEN->distr_condi) _unur_distr_free (GEN->distr_condi);
-
-  /* GEN_CONDI is freed by _unur_generic_free */
-
-  _unur_generic_free(gen);
-
-} /* end of _unur_gibbs_free() */
 
 /*****************************************************************************/
 /**  Debugging utilities                                                    **/

@@ -164,9 +164,9 @@ static struct unur_gen *_unur_vempk_create( struct unur_par *par );
 /* create new (almost empty) generator object.                               */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_vempk_sample_cvec( struct unur_gen *gen, double *result );
+static struct unur_gen *_unur_vempk_clone( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* sample from generator                                                     */
+/* copy (clone) generator object.                                            */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_vempk_free( struct unur_gen *gen);
@@ -174,9 +174,9 @@ static void _unur_vempk_free( struct unur_gen *gen);
 /* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *_unur_vempk_clone( const struct unur_gen *gen );
+static int _unur_vempk_sample_cvec( struct unur_gen *gen, double *result );
 /*---------------------------------------------------------------------------*/
-/* copy (clone) generator object.                                            */
+/* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/
 
 static int compute_mean_covar( double *data, int n_data, int dim, double *xbar, double *S );
@@ -472,7 +472,7 @@ _unur_vempk_init( struct unur_par *par )
   GEN->kerngen = unur_init( unur_vmt_new( kernel_distr ) );
   if (GEN->kerngen==NULL) {
     _unur_error(GENTYPE,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    free (par); free (S); _unur_vempk_free(gen);
+    _unur_par_free (par); free (S); _unur_vempk_free(gen);
     return NULL;
   }
 
@@ -614,6 +614,38 @@ _unur_vempk_clone( const struct unur_gen *gen )
 #undef CLONE
 } /* end of _unur_vempk_clone() */
 
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_vempk_free( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* deallocate generator object                                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{ 
+
+  /* check arguments */
+  if( !gen ) /* nothing to do */
+    return;
+
+  /* check input */
+  if ( gen->method != UNUR_METH_VEMPK ) {
+    _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
+    return; }
+  COOKIE_CHECK(gen,CK_VEMPK_GEN,RETURN_VOID);
+
+  /* we cannot use this generator object any more */
+  SAMPLE = NULL;   /* make sure to show up a programming error */
+
+  /* free memory */
+  if (GEN->xbar)   free( GEN->xbar );
+
+  _unur_generic_free(gen);
+
+} /* end of _unur_vempk_free() */
+
 /*****************************************************************************/
 
 int
@@ -654,43 +686,10 @@ _unur_vempk_sample_cvec( struct unur_gen *gen, double *result )
 #undef idx
 } /* end of _unur_vempk_sample() */
 
-/*****************************************************************************/
-
-void
-_unur_vempk_free( struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* deallocate generator object                                          */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*----------------------------------------------------------------------*/
-{ 
-
-  /* check arguments */
-  if( !gen ) /* nothing to do */
-    return;
-
-  /* check input */
-  if ( gen->method != UNUR_METH_VEMPK ) {
-    _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
-    return; }
-  COOKIE_CHECK(gen,CK_VEMPK_GEN,RETURN_VOID);
-
-  /* we cannot use this generator object any more */
-  SAMPLE = NULL;   /* make sure to show up a programming error */
-
-  /* free memory */
-  if (GEN->xbar)   free( GEN->xbar );
-
-  _unur_generic_free(gen);
-
-} /* end of _unur_vempk_free() */
 
 /*****************************************************************************/
 /**  Auxilliary Routines                                                    **/
 /*****************************************************************************/
-
-/*---------------------------------------------------------------------------*/
 
 int
 compute_mean_covar( double *data, int n_data, int dim, 

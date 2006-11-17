@@ -58,15 +58,6 @@
  * unur_dstd_set_variant() return 0 if a variant is not implemented, and 1   *
  * otherwise. In the first case the selected variant is not changed.         *
  *                                                                           *
- * It is possible to change the parameters of the chosen distribution        *
- * without building a new generator object by means of the                   *
- * unur_dstd_chg_pmfparams() call.                                           *
- * Notice that it is not possible to change the number of parameters.        *
- * This function only copies the given arguments into the array of           *
- * parameters.                                                               *
- * IMPORTANT: The given parameters are not checked against domain errors     *
- * (as the unur_<distr>_new() calls do).                                     *
- *                                                                           *
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
@@ -276,53 +267,6 @@ unur_dstd_set_variant( struct unur_par *par, unsigned variant )
   return UNUR_ERR_PAR_VARIANT;
 
 } /* end of unur_dstd_set_variant() */
-
-/*---------------------------------------------------------------------------*/
-
-int 
-unur_dstd_chg_pmfparams( struct unur_gen *gen, double *params, int n_params )
-     /*----------------------------------------------------------------------*/
-     /* change array of parameters for distribution                          */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen      ... pointer to generator object                           */
-     /*   params   ... list of arguments                                     */
-     /*   n_params ... number of arguments                                   */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   UNUR_SUCCESS ... on success                                        */
-     /*   error code   ... on error                                          */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
-  _unur_check_gen_object( gen, DSTD, UNUR_ERR_GEN_INVALID );
-  if (n_params>0) CHECK_NULL(params, UNUR_ERR_NULL);
-  
-  /* set new parameters in distribution object */
-  if (unur_distr_discr_set_pmfparams(gen->distr,params,n_params)!=UNUR_SUCCESS)
-    return UNUR_ERR_GEN_DATA;
-
-  /* reinit */
-  return _unur_dstd_reinit(gen);
-
-/*   /\* run special init routine for generator *\/ */
-/*   if ( DISTR.init(NULL,gen)!=UNUR_SUCCESS ) { */
-/*     /\* init failed --> could not find a sampling routine *\/ */
-/*     _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"parameters"); */
-/*     return UNUR_ERR_GEN_DATA; */
-/*   } */
-
-/* #ifdef UNUR_ENABLE_LOGGING */
-/*     /\* write info into log file *\/ */
-/*     if (gen->debug & DSTD_DEBUG_CHG)  */
-/*       _unur_dstd_debug_chg_pmfparams( gen ); */
-/* #endif */
-
-/*   /\* o.k. *\/ */
-/*   return UNUR_SUCCESS; */
-
-} /* end of unur_dstd_chg_pmfparams() */
 
 
 /*****************************************************************************/

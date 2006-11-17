@@ -119,9 +119,14 @@ static struct unur_gen *_unur_hitro_create( struct unur_par *par );
 /* create new (almost empty) generator object.                               */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_hitro_rectangle( struct unur_gen *gen );
+static struct unur_gen *_unur_hitro_clone( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* compute (minimal) bounding rectangle.                                     */
+/* copy (clone) generator object.                                            */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_hitro_free( struct unur_gen *gen);
+/*---------------------------------------------------------------------------*/
+/* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
 static int _unur_hitro_coord_sample_cvec( struct unur_gen *gen, double *vec );
@@ -130,14 +135,9 @@ static int _unur_hitro_randomdir_sample_cvec( struct unur_gen *gen, double *vec 
 /* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_hitro_free( struct unur_gen *gen);
+static int _unur_hitro_rectangle( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* destroy generator object.                                                 */
-/*---------------------------------------------------------------------------*/
-
-static struct unur_gen *_unur_hitro_clone( const struct unur_gen *gen );
-/*---------------------------------------------------------------------------*/
-/* copy (clone) generator object.                                            */
+/* compute (minimal) bounding rectangle.                                     */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_hitro_xy_to_vu( const struct unur_gen *gen, const double *x, double y, double *vu );
@@ -788,7 +788,6 @@ unur_hitro_reset_state( struct unur_gen *gen )
   return UNUR_SUCCESS;
 } /* end of unur_hitro_reset_state() */
 
-/*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/
 /**  Private                                                                **/
@@ -833,10 +832,8 @@ _unur_hitro_init( struct unur_par *par )
 
   /* create a new empty generator object */
   gen = _unur_hitro_create(par);
-  if (!gen) { _unur_par_free(par); return NULL; }
-
-  /* free parameters */
   _unur_par_free(par);
+  if (!gen) return NULL;
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
@@ -1000,73 +997,6 @@ _unur_hitro_create( struct unur_par *par )
 
 /*---------------------------------------------------------------------------*/
 
-int
-_unur_hitro_rectangle( struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* compute bounding rectangle                                           */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   UNUR_SUCCESS ... on success                                        */
-     /*   error code   ... on error                                          */
-     /*----------------------------------------------------------------------*/
-{
-
-  int d; /* index used in dimension loops (0 <= d < dim) */
-  struct MROU_RECTANGLE *rr;
-
-  /* check arguments */
-  CHECK_NULL( gen, UNUR_ERR_NULL );
-  COOKIE_CHECK( gen,CK_HITRO_GEN, UNUR_ERR_COOKIE );
-
-  /* Boundary rectangle is already set ? */
-  if ((gen->set & HITRO_SET_U) && (gen->set & HITRO_SET_V))
-    return UNUR_SUCCESS;
-
-  /* Allocating and filling mrou_rectangle struct */
-  rr = _unur_mrou_rectangle_new();
-
-  rr->distr  = gen->distr;
-  rr->dim    = GEN->dim;
-  rr->umin   = GEN->vumin+1;
-  rr->umax   = GEN->vumax+1;
-  rr->r      = GEN->r;
-  rr->center = GEN->center;
-  rr->genid  = gen->genid;
-  rr->bounding_rectangle = 
-    ( (gen->variant & HITRO_VARFLAG_BOUNDRECT) && !(gen->set & HITRO_SET_U) )
-    ? 1 : 0;
-  
-  /* calculate bounding rectangle */
-  if ( _unur_mrou_rectangle_compute(rr) != UNUR_SUCCESS ) {
-    _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"Cannot compute bounding rectangle, try adaptive");
-    gen->variant &= HITRO_VARFLAG_ADAPTRECT;
-    free(rr); return UNUR_ERR_GEN_CONDITION;
-  }
-
-  if (!(gen->set & HITRO_SET_V)) {
-    /* user has not provided any upper bound for v */
-    GEN->vumax[0] = rr->vmax;
-  }
-
-  if (rr->bounding_rectangle) {
-    /* user has not provided required bounds for u */
-    for (d=0; d<GEN->dim; d++) GEN->vumin[d+1] = rr->umin[d];
-    for (d=0; d<GEN->dim; d++) GEN->vumax[d+1] = rr->umax[d];
-  }
-
-  /* free working space */
-  free(rr);
-
-  /* o.k. */
-  return UNUR_SUCCESS;
-
-} /* end of _unur_hitro_rectangle() */
-
-/*---------------------------------------------------------------------------*/
-
 struct unur_gen *
 _unur_hitro_clone( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
@@ -1134,6 +1064,48 @@ _unur_hitro_clone( const struct unur_gen *gen )
 
 #undef CLONE
 } /* end of _unur_hitro_clone() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_hitro_free( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* deallocate generator object                                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  if( !gen ) /* nothing to do */
+    return;
+
+  /* check input */
+  if ( gen->method != UNUR_METH_HITRO ) {
+    _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
+    return; }
+  COOKIE_CHECK(gen,CK_HITRO_GEN,RETURN_VOID);
+
+  /* we cannot use this generator object any more */
+  SAMPLE = NULL;   /* make sure to show up a programming error */
+
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  if (gen->debug) _unur_hitro_debug_free(gen);
+#endif
+
+  /* free vectors */
+  if (GEN->state) free (GEN->state);
+  if (GEN->x0) free (GEN->x0);
+  if (GEN->x) free (GEN->x);
+  if (GEN->vu) free (GEN->vu);
+  if (GEN->direction) free (GEN->direction);
+  if (GEN->vumin) free (GEN->vumin);
+  if (GEN->vumax) free (GEN->vumax);
+
+  _unur_generic_free(gen);
+
+} /* end of _unur_hitro_free() */
 
 /*****************************************************************************/
 
@@ -1318,6 +1290,76 @@ _unur_hitro_randomdir_sample_cvec( struct unur_gen *gen, double *vec )
 
 } /* end of _unur_hitro_randomdir_sample_cvec() */
 
+
+/*****************************************************************************/
+/**  Auxilliary Routines                                                    **/
+/*****************************************************************************/
+
+int
+_unur_hitro_rectangle( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* compute bounding rectangle                                           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+
+  int d; /* index used in dimension loops (0 <= d < dim) */
+  struct MROU_RECTANGLE *rr;
+
+  /* check arguments */
+  CHECK_NULL( gen, UNUR_ERR_NULL );
+  COOKIE_CHECK( gen,CK_HITRO_GEN, UNUR_ERR_COOKIE );
+
+  /* Boundary rectangle is already set ? */
+  if ((gen->set & HITRO_SET_U) && (gen->set & HITRO_SET_V))
+    return UNUR_SUCCESS;
+
+  /* Allocating and filling mrou_rectangle struct */
+  rr = _unur_mrou_rectangle_new();
+
+  rr->distr  = gen->distr;
+  rr->dim    = GEN->dim;
+  rr->umin   = GEN->vumin+1;
+  rr->umax   = GEN->vumax+1;
+  rr->r      = GEN->r;
+  rr->center = GEN->center;
+  rr->genid  = gen->genid;
+  rr->bounding_rectangle = 
+    ( (gen->variant & HITRO_VARFLAG_BOUNDRECT) && !(gen->set & HITRO_SET_U) )
+    ? 1 : 0;
+  
+  /* calculate bounding rectangle */
+  if ( _unur_mrou_rectangle_compute(rr) != UNUR_SUCCESS ) {
+    _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"Cannot compute bounding rectangle, try adaptive");
+    gen->variant &= HITRO_VARFLAG_ADAPTRECT;
+    free(rr); return UNUR_ERR_GEN_CONDITION;
+  }
+
+  if (!(gen->set & HITRO_SET_V)) {
+    /* user has not provided any upper bound for v */
+    GEN->vumax[0] = rr->vmax;
+  }
+
+  if (rr->bounding_rectangle) {
+    /* user has not provided required bounds for u */
+    for (d=0; d<GEN->dim; d++) GEN->vumin[d+1] = rr->umin[d];
+    for (d=0; d<GEN->dim; d++) GEN->vumax[d+1] = rr->umax[d];
+  }
+
+  /* free working space */
+  free(rr);
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+
+} /* end of _unur_hitro_rectangle() */
+
 /*---------------------------------------------------------------------------*/
 
 void 
@@ -1470,47 +1512,6 @@ _unur_hitro_random_unitvector( struct unur_gen *gen, double *direction )
 
 } /* end of _unur_hitro_random_unitvector() */
 
-/*****************************************************************************/
-
-void
-_unur_hitro_free( struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* deallocate generator object                                          */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  if( !gen ) /* nothing to do */
-    return;
-
-  /* check input */
-  if ( gen->method != UNUR_METH_HITRO ) {
-    _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
-    return; }
-  COOKIE_CHECK(gen,CK_HITRO_GEN,RETURN_VOID);
-
-  /* we cannot use this generator object any more */
-  SAMPLE = NULL;   /* make sure to show up a programming error */
-
-#ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
-  if (gen->debug) _unur_hitro_debug_free(gen);
-#endif
-
-  /* free vectors */
-  if (GEN->state) free (GEN->state);
-  if (GEN->x0) free (GEN->x0);
-  if (GEN->x) free (GEN->x);
-  if (GEN->vu) free (GEN->vu);
-  if (GEN->direction) free (GEN->direction);
-  if (GEN->vumin) free (GEN->vumin);
-  if (GEN->vumax) free (GEN->vumax);
-
-  _unur_generic_free(gen);
-
-} /* end of _unur_hitro_free() */
 
 /*****************************************************************************/
 /**  Debugging utilities                                                    **/

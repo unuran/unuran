@@ -96,9 +96,9 @@ static struct unur_gen *_unur_empl_create( struct unur_par *par );
 /* create new (almost empty) generator object.                               */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_empl_sample( struct unur_gen *gen );
+static struct unur_gen *_unur_empl_clone( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* sample from generator                                                     */
+/* copy (clone) generator object.                                            */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_empl_free( struct unur_gen *gen);
@@ -106,9 +106,9 @@ static void _unur_empl_free( struct unur_gen *gen);
 /* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *_unur_empl_clone( const struct unur_gen *gen );
+static double _unur_empl_sample( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* copy (clone) generator object.                                            */
+/* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -116,7 +116,7 @@ static struct unur_gen *_unur_empl_clone( const struct unur_gen *gen );
 /* the following functions print debugging information on output stream,     */
 /* i.e., into the log file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
-static void _unur_empl_debug_init( const struct unur_par *par, const struct unur_gen *gen );
+static void _unur_empl_debug_init( const struct unur_gen *gen );
 
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed.                 */
@@ -246,7 +246,8 @@ _unur_empl_init( struct unur_par *par )
 
   /* create a new empty generator object */
   gen = _unur_empl_create(par);
-  if (!gen) { _unur_par_free(par); return NULL; }
+  _unur_par_free(par);
+  if (!gen) return NULL; 
 
   /* the observed data */
 
@@ -255,11 +256,8 @@ _unur_empl_init( struct unur_par *par )
 
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
-    if (gen->debug) _unur_empl_debug_init(par,gen);
+    if (gen->debug) _unur_empl_debug_init(gen);
 #endif
-
-  /* free parameters */
-  _unur_par_free(par);
 
   return gen;
 
@@ -345,6 +343,36 @@ _unur_empl_clone( const struct unur_gen *gen )
 #undef CLONE
 } /* end of _unur_empl_clone() */
 
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_empl_free( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* deallocate generator object                                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{ 
+
+  /* check arguments */
+  if( !gen ) /* nothing to do */
+    return;
+
+  /* check input */
+  if ( gen->method != UNUR_METH_EMPL ) {
+    _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
+    return; }
+  COOKIE_CHECK(gen,CK_EMPL_GEN,RETURN_VOID);
+
+  /* we cannot use this generator object any more */
+  SAMPLE = NULL;   /* make sure to show up a programming error */
+
+  /* free memory */
+  _unur_generic_free(gen);
+
+} /* end of _unur_empl_free() */
+
 /*****************************************************************************/
 
 double
@@ -380,36 +408,6 @@ _unur_empl_sample( struct unur_gen *gen )
 } /* end of _unur_empl_sample() */
 
 /*****************************************************************************/
-
-void
-_unur_empl_free( struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* deallocate generator object                                          */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*----------------------------------------------------------------------*/
-{ 
-
-  /* check arguments */
-  if( !gen ) /* nothing to do */
-    return;
-
-  /* check input */
-  if ( gen->method != UNUR_METH_EMPL ) {
-    _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
-    return; }
-  COOKIE_CHECK(gen,CK_EMPL_GEN,RETURN_VOID);
-
-  /* we cannot use this generator object any more */
-  SAMPLE = NULL;   /* make sure to show up a programming error */
-
-  /* free memory */
-  _unur_generic_free(gen);
-
-} /* end of _unur_empl_free() */
-
-/*****************************************************************************/
 /**  Auxilliary Routines                                                    **/
 /*****************************************************************************/
 
@@ -422,19 +420,17 @@ _unur_empl_free( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 static void
-_unur_empl_debug_init( const struct unur_par *par, const struct unur_gen *gen )
+_unur_empl_debug_init( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* write info about generator into logfile                              */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   par ... pointer to parameter for building generator object         */
      /*   gen ... pointer to generator object                                */
      /*----------------------------------------------------------------------*/
 {
   FILE *log;
 
   /* check arguments */
-  CHECK_NULL(par,RETURN_VOID);  COOKIE_CHECK(par,CK_EMPL_PAR,RETURN_VOID);
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_EMPL_GEN,RETURN_VOID);
 
   log = unur_get_stream();

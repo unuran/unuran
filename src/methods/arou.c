@@ -176,10 +176,9 @@ static struct unur_gen *_unur_arou_create( struct unur_par *par );
 /* create new (almost empty) generator object.                               */
 /*---------------------------------------------------------------------------*/
 
-double _unur_arou_sample( struct unur_gen *gen );
-double _unur_arou_sample_check( struct unur_gen *gen );
+static struct unur_gen *_unur_arou_clone( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* sample from generator                                                     */
+/* copy (clone) generator object.                                            */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_arou_free( struct unur_gen *gen);
@@ -187,9 +186,10 @@ static void _unur_arou_free( struct unur_gen *gen);
 /* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *_unur_arou_clone( const struct unur_gen *gen );
+double _unur_arou_sample( struct unur_gen *gen );
+double _unur_arou_sample_check( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* copy (clone) generator object.                                            */
+/* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/
 
 static int _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen );
@@ -285,10 +285,6 @@ static void _unur_arou_debug_split_stop( const struct unur_gen *gen,
 /* print before and after a segment has been split (not / successfully).     */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_arou_debug_printratio( double v, double u, char *string );
-/*---------------------------------------------------------------------------*/
-/* print the ratio of two double if possible, and Inf or NaN otherwise.      */
-/*---------------------------------------------------------------------------*/
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -1107,6 +1103,51 @@ _unur_arou_clone( const struct unur_gen *gen )
 #undef CLONE
 } /* end of _unur_arou_clone() */
 
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_arou_free( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* deallocate generator object                                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{ 
+  /* check arguments */
+  if( !gen ) /* nothing to do */
+    return;
+
+  /* check input */
+  if ( gen->method != UNUR_METH_AROU ) {
+    _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
+    return; }
+  COOKIE_CHECK(gen,CK_AROU_GEN,RETURN_VOID);
+
+  /* we cannot use this generator object any more */
+  SAMPLE = NULL;   /* make sure to show up a programming error */
+
+  /* write info into log file */
+#ifdef UNUR_ENABLE_LOGGING
+  if (gen->debug) _unur_arou_debug_free(gen);
+#endif
+
+  /* free linked list of segments */
+  {
+    struct unur_arou_segment *seg,*next;
+    for (seg = GEN->seg; seg != NULL; seg = next) {
+      next = seg->next;
+      free(seg);
+    }
+  }
+
+  /* free other memory not stored in list */
+  if (GEN->guide) free(GEN->guide);
+
+  _unur_generic_free(gen);
+
+} /* end of _unur_arou_free() */
+
 /*****************************************************************************/
 
 double
@@ -1213,7 +1254,7 @@ _unur_arou_sample( struct unur_gen *gen )
   }
 } /* end of _unur_arou_sample() */
 
-/*****************************************************************************/
+/*---------------------------------------------------------------------------*/
 
 double
 _unur_arou_sample_check( struct unur_gen *gen )
@@ -1345,50 +1386,6 @@ _unur_arou_sample_check( struct unur_gen *gen )
 
 } /* end of _unur_arou_sample_check() */
 
-/*****************************************************************************/
-
-void
-_unur_arou_free( struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* deallocate generator object                                          */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*----------------------------------------------------------------------*/
-{ 
-  /* check arguments */
-  if( !gen ) /* nothing to do */
-    return;
-
-  /* check input */
-  if ( gen->method != UNUR_METH_AROU ) {
-    _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
-    return; }
-  COOKIE_CHECK(gen,CK_AROU_GEN,RETURN_VOID);
-
-  /* we cannot use this generator object any more */
-  SAMPLE = NULL;   /* make sure to show up a programming error */
-
-  /* write info into log file */
-#ifdef UNUR_ENABLE_LOGGING
-  if (gen->debug) _unur_arou_debug_free(gen);
-#endif
-
-  /* free linked list of segments */
-  {
-    struct unur_arou_segment *seg,*next;
-    for (seg = GEN->seg; seg != NULL; seg = next) {
-      next = seg->next;
-      free(seg);
-    }
-  }
-
-  /* free other memory not stored in list */
-  if (GEN->guide) free(GEN->guide);
-
-  _unur_generic_free(gen);
-
-} /* end of _unur_arou_free() */
 
 /*****************************************************************************/
 /**  Auxilliary Routines                                                    **/
@@ -2661,7 +2658,6 @@ _unur_arou_debug_split_start( const struct unur_gen *gen,
      /*----------------------------------------------------------------------*/
 {
   FILE *log;
-  char ratio[14];
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_AROU_GEN,RETURN_VOID);
@@ -2672,17 +2668,14 @@ _unur_arou_debug_split_start( const struct unur_gen *gen,
   fprintf(log,"%s: split segment at x = %g \t\tf(x) = %g\n",gen->genid,x,fx);
   fprintf(log,"%s: old segment:\n",gen->genid);
 
-  _unur_arou_debug_printratio(seg->ltp[0],seg->ltp[1],ratio);
-  fprintf(log,"%s:   left  construction point = (%-12.6g,%-12.6g)\t x = v/u = %s\tf(x) = %-12.6g\n",
-	  gen->genid, seg->ltp[0], seg->ltp[1], ratio, sqrt(seg->ltp[1]) );
+  fprintf(log,"%s:   left  construction point = (%-12.6g,%-12.6g)\t x = v/u = %-12.6g\tf(x) = %-12.6g\n",
+	  gen->genid, seg->ltp[0], seg->ltp[1], seg->ltp[0]/seg->ltp[1], sqrt(seg->ltp[1]) );
 
-  _unur_arou_debug_printratio(seg->mid[0],seg->mid[1],ratio);
-  fprintf(log,"%s:   intersection point       = (%-12.6g,%-12.6g)\t x = v/u = %s\n",
-	  gen->genid, seg->mid[0], seg->mid[1], ratio);
+  fprintf(log,"%s:   intersection point       = (%-12.6g,%-12.6g)\t x = v/u = %-12.6g\n",
+	  gen->genid, seg->mid[0], seg->mid[1], seg->mid[0]/seg->mid[1]);
 
-  _unur_arou_debug_printratio(seg->rtp[0],seg->rtp[1],ratio);
-  fprintf(log,"%s:   right construction point = (%-12.6g,%-12.6g)\t x = v/u = %s\tf(x) = %-12.6g\n",
-	  gen->genid, seg->rtp[0], seg->rtp[1], ratio, sqrt(seg->rtp[1]) );
+  fprintf(log,"%s:   right construction point = (%-12.6g,%-12.6g)\t x = v/u = %-12.6g\tf(x) = %-12.6g\n",
+	  gen->genid, seg->rtp[0], seg->rtp[1], seg->rtp[0]/seg->rtp[1], sqrt(seg->rtp[1]) );
 
   fprintf(log,"%s:   A(squeeze)     = %-12.6g\t(%6.3f%%)\n",gen->genid,
 	  seg->Ain, seg->Ain * 100./GEN->Atotal);
@@ -2711,7 +2704,6 @@ _unur_arou_debug_split_stop( const struct unur_gen *gen,
      /*----------------------------------------------------------------------*/
 {
   FILE *log;
-  char ratio[14];
   int chopped;
 
   /* check arguments */
@@ -2729,32 +2721,25 @@ _unur_arou_debug_split_stop( const struct unur_gen *gen,
   else
     fprintf(log,"%s: new segments:\n",gen->genid);
 
-  _unur_arou_debug_printratio(seg_left->ltp[0],seg_left->ltp[1],ratio);
-  fprintf(log,"%s:   left  construction point  = (%-12.6g,%-12.6g)\t x = v/u = %s\tf(x) = %-12.6g\n",
-	  gen->genid, seg_left->ltp[0], seg_left->ltp[1], ratio, sqrt(seg_left->ltp[1]) );
+  fprintf(log,"%s:   left  construction point  = (%-12.6g,%-12.6g)\t x = v/u = %-12.6g\tf(x) = %-12.6g\n",
+	  gen->genid, seg_left->ltp[0], seg_left->ltp[1], seg_left->ltp[0]/seg_left->ltp[1], sqrt(seg_left->ltp[1]) );
   
-  _unur_arou_debug_printratio(seg_left->mid[0],seg_left->mid[1],ratio);
-  fprintf(log,"%s:   intersection point        = (%-12.6g,%-12.6g)\t x = v/u = %s\n",
-	  gen->genid, seg_left->mid[0], seg_left->mid[1], ratio );
+  fprintf(log,"%s:   intersection point        = (%-12.6g,%-12.6g)\t x = v/u = %-12.6g\n",
+	  gen->genid, seg_left->mid[0], seg_left->mid[1], seg_left->mid[0]/seg_left->mid[1] );
     
-  
   if (chopped) {
-    _unur_arou_debug_printratio(seg_left->rtp[0],seg_left->rtp[1],ratio);
-    fprintf(log,"%s:   right construction point  = (%-12.6g,%-12.6g)\t x = v/u = %s\tf(x) = %-12.6g\n",
-	    gen->genid, seg_left->rtp[0], seg_left->rtp[1], ratio, sqrt(seg_left->rtp[1]) );
+    fprintf(log,"%s:   right construction point  = (%-12.6g,%-12.6g)\t x = v/u = %-12.6g\tf(x) = %-12.6g\n",
+	    gen->genid, seg_left->rtp[0], seg_left->rtp[1], seg_left->rtp[0]/seg_left->rtp[1], sqrt(seg_left->rtp[1]) );
   }
   else {
-    _unur_arou_debug_printratio(seg_left->rtp[0],seg_left->rtp[1],ratio);
-    fprintf(log,"%s:   middle construction point = (%-12.6g,%-12.6g)\t x = v/u = %s\tf(x) = %-12.6g\n",
-	    gen->genid, seg_left->rtp[0], seg_left->rtp[1], ratio, sqrt(seg_left->rtp[1]) );
+    fprintf(log,"%s:   middle construction point = (%-12.6g,%-12.6g)\t x = v/u = %-12.6g\tf(x) = %-12.6g\n",
+	    gen->genid, seg_left->rtp[0], seg_left->rtp[1], seg_left->rtp[0]/seg_left->rtp[1], sqrt(seg_left->rtp[1]) );
     
-    _unur_arou_debug_printratio(seg_right->mid[0],seg_right->mid[1],ratio);
-    fprintf(log,"%s:   intersection point        = (%-12.6g,%-12.6g)\t x = v/u = %s\n",
-	    gen->genid, seg_right->mid[0], seg_right->mid[1], ratio );
+    fprintf(log,"%s:   intersection point        = (%-12.6g,%-12.6g)\t x = v/u = %-12.6g\n",
+	    gen->genid, seg_right->mid[0], seg_right->mid[1], seg_right->mid[0]/seg_right->mid[1] );
     
-    _unur_arou_debug_printratio(seg_right->rtp[0],seg_right->rtp[1],ratio);
-    fprintf(log,"%s:   right construction point  = (%-12.6g,%-12.6g)\t x = v/u = %s\tf(x) = %-12.6g\n",
-	    gen->genid, seg_right->rtp[0], seg_right->rtp[1], ratio, sqrt(seg_right->rtp[1]) );
+    fprintf(log,"%s:   right construction point  = (%-12.6g,%-12.6g)\t x = v/u = %-12.6g\tf(x) = %-12.6g\n",
+	    gen->genid, seg_right->rtp[0], seg_right->rtp[1], seg_right->rtp[0]/seg_right->rtp[1], sqrt(seg_right->rtp[1]) );
   }
   
   if (!chopped) {
@@ -2788,37 +2773,6 @@ _unur_arou_debug_split_stop( const struct unur_gen *gen,
 
 } /* end of _unur_arou_debug_split_stop() */
 
-/*****************************************************************************/
-
-void
-_unur_arou_debug_printratio( double v, double u, char *string )
-     /*----------------------------------------------------------------------*/
-     /* evaluate ratio v/u and write result on string.                       */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   v      ... numerator                                               */
-     /*   u      ... denominator                                             */
-     /*   string ... character string of length 14                           */
-     /*                                                                      */
-     /* comment:                                                             */
-     /*   necessary to avoid floating point exception, when u = 0.           */
-     /*----------------------------------------------------------------------*/
-{
-  if (u!=0.)
-    sprintf(string,"%-12.6g",v/u);   /** TODO: possible overflow ?? **/
-  else    /* u == 0 */
-    if (v==0.)
-      sprintf(string,"NaN         ");
-    else {
-      if (v>0.)
-	sprintf(string,"Inf         ");
-      else
-	sprintf(string,"-Inf        ");
-    }
-
-} /* end of _unur_arou_debug_printratio() */
-
-/*****************************************************************************/
 /*---------------------------------------------------------------------------*/
 #endif    /* end UNUR_ENABLE_LOGGING */
 /*---------------------------------------------------------------------------*/

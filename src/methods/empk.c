@@ -218,9 +218,9 @@ static struct unur_gen *_unur_empk_create( struct unur_par *par );
 /* create new (almost empty) generator object.                               */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_empk_sample( struct unur_gen *gen );
+static struct unur_gen *_unur_empk_clone( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* sample from generator                                                     */
+/* copy (clone) generator object.                                            */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_empk_free( struct unur_gen *gen);
@@ -228,9 +228,9 @@ static void _unur_empk_free( struct unur_gen *gen);
 /* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *_unur_empk_clone( const struct unur_gen *gen );
+static double _unur_empk_sample( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* copy (clone) generator object.                                            */
+/* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/
 
 inline static int _unur_empk_comp_stddev( double *data, int n_data,
@@ -953,6 +953,36 @@ _unur_empk_clone( const struct unur_gen *gen )
 #undef CLONE
 } /* end of _unur_empk_clone() */
 
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_empk_free( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* deallocate generator object                                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{ 
+
+  /* check arguments */
+  if( !gen ) /* nothing to do */
+    return;
+
+  /* check input */
+  if ( gen->method != UNUR_METH_EMPK ) {
+    _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
+    return; }
+  COOKIE_CHECK(gen,CK_EMPK_GEN,RETURN_VOID);
+
+  /* we cannot use this generator object any more */
+  SAMPLE = NULL;   /* make sure to show up a programming error */
+
+  /* free memory */
+  _unur_generic_free(gen);
+
+} /* end of _unur_empk_free() */
+
 /*****************************************************************************/
 
 double
@@ -1002,35 +1032,6 @@ _unur_empk_sample( struct unur_gen *gen )
 
 } /* end of _unur_empk_sample() */
 
-/*****************************************************************************/
-
-void
-_unur_empk_free( struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* deallocate generator object                                          */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*----------------------------------------------------------------------*/
-{ 
-
-  /* check arguments */
-  if( !gen ) /* nothing to do */
-    return;
-
-  /* check input */
-  if ( gen->method != UNUR_METH_EMPK ) {
-    _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
-    return; }
-  COOKIE_CHECK(gen,CK_EMPK_GEN,RETURN_VOID);
-
-  /* we cannot use this generator object any more */
-  SAMPLE = NULL;   /* make sure to show up a programming error */
-
-  /* free memory */
-  _unur_generic_free(gen);
-
-} /* end of _unur_empk_free() */
 
 /*****************************************************************************/
 /**  Auxilliary Routines                                                    **/

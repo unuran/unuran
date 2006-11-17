@@ -549,6 +549,37 @@ unur_dsrou_upd_pmfsum( struct unur_gen *gen )
 
 /*****************************************************************************/
 
+int 
+unur_dstd_chg_pmfparams( struct unur_gen *gen, double *params, int n_params )
+     /*----------------------------------------------------------------------*/
+     /* change array of parameters for distribution                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen      ... pointer to generator object                           */
+     /*   params   ... list of arguments                                     */
+     /*   n_params ... number of arguments                                   */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
+  _unur_check_gen_object( gen, DSTD, UNUR_ERR_GEN_INVALID );
+  if (n_params>0) CHECK_NULL(params, UNUR_ERR_NULL);
+  
+  /* set new parameters in distribution object */
+  if (unur_distr_discr_set_pmfparams(gen->distr,params,n_params)!=UNUR_SUCCESS)
+    return UNUR_ERR_GEN_DATA;
+
+  /* reinit */
+  return gen->reinit(gen);
+
+} /* end of unur_dstd_chg_pmfparams() */
+
+/*****************************************************************************/
+
 int
 unur_ninv_chg_pdfparams( struct unur_gen *gen, double *params, int n_params )
      /*----------------------------------------------------------------------*/

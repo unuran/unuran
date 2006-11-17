@@ -158,12 +158,9 @@ static struct unur_gen *_unur_tabl_create( struct unur_par *par );
 /* create new (almost empty) generator object.                               */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_tabl_rh_sample( struct unur_gen *gen );
-static double _unur_tabl_rh_sample_check( struct unur_gen *gen );
-static double _unur_tabl_ia_sample( struct unur_gen *gen );
-static double _unur_tabl_ia_sample_check( struct unur_gen *gen );
+static struct unur_gen *_unur_tabl_clone( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* sample from generator                                                     */
+/* copy (clone) generator object.                                            */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_tabl_free( struct unur_gen *gen);
@@ -171,9 +168,12 @@ static void _unur_tabl_free( struct unur_gen *gen);
 /* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *_unur_tabl_clone( const struct unur_gen *gen );
+static double _unur_tabl_rh_sample( struct unur_gen *gen );
+static double _unur_tabl_rh_sample_check( struct unur_gen *gen );
+static double _unur_tabl_ia_sample( struct unur_gen *gen );
+static double _unur_tabl_ia_sample_check( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* copy (clone) generator object.                                            */
+/* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/
 
 static int _unur_tabl_get_intervals_from_slopes( struct unur_par *par, struct unur_gen *gen );

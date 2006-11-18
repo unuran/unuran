@@ -20,6 +20,7 @@ dnl unuran-0.6.0   3:0:0
 dnl unuran-0.7.0   4:0:0
 dnl unuran-0.7.1   4:0:1
 dnl unuran-0.7.2   4:0:2
+dnl unuran-0.8.1   5:0:0
 
 UNURAN_LT_VERSION="5:0:0"
 AC_SUBST([UNURAN_LT_VERSION])
@@ -126,6 +127,17 @@ if test "$ac_cv_c_ieee_comparisons" != no ; then
   AC_SUBST(HAVE_IEEE_COMPARISONS)
 fi
 
+dnl Some routines are deprecated.
+dnl Compiling and linking these into the library can be controlled
+dnl by a configure flag. 
+dnl default is disabled.
+
+AC_ARG_ENABLE(deprecated,
+	[AS_HELP_STRING([--enable-deprecated],
+		[enable support for deprecated routines (default=no)])],
+	[],
+	[enable_deprecated=no])
+AM_CONDITIONAL(ENABLE_DEPRECATED, test x$enable_deprecated = xyes)
 
 dnl Some tests compare the return values of PDFs, CDFs and of
 dnl the function parser with the output of corresponding

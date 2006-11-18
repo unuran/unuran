@@ -5,10 +5,18 @@ INCLUDES = -I$(top_srcdir)/src
 
 noinst_LTLIBRARIES = libmethods.la
 
+# Files that contain deprecated routines
+if ENABLE_DEPRECATED
+DEPRECATED_FILES = deprecated.c deprecated.h
+else
+DEPRECATED_FILES = 
+endif
+
+
 libmethods_la_SOURCES = \
- x_gen.c  x_gen.h  x_gen_struct.h x_gen_source.h \
+ $(DEPRECATED_FILES) \
 \
- deprecated.c  deprecated.h \
+ x_gen.c  x_gen.h  x_gen_struct.h x_gen_source.h \
 \
  auto.c   auto.h   auto_struct.h \
  arou.c   arou.h   arou_struct.h \

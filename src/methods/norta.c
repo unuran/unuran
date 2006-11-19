@@ -94,7 +94,7 @@
 #include "norta_struct.h"
 
 /*---------------------------------------------------------------------------*/
-#if UNUR_URNG_TYPE == UNUR_URNG_GENERIC
+#ifdef UNUR_URNG_UNURAN
 /* This routine does not work with other URNG APIs!                          */
 /*---------------------------------------------------------------------------*/
 
@@ -456,9 +456,6 @@ _unur_norta_clone( const struct unur_gen *gen )
 
   /* check arguments */
   CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_NORTA_GEN,NULL);
-
-/*   /\* the marginal generator is an auxiliary generator for method NORTA, of course *\/ */
-/*   GEN->marginalgen_list = gen->gen_aux_list; */
 
   /* create generic clone */
   clone = _unur_generic_clone( gen, GENTYPE );
@@ -928,6 +925,6 @@ _unur_norta_debug_nmgenerator( const struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
-#endif   /* UNUR_URNG_TYPE == UNUR_URNG_GENERIC */
+#endif   /* end define(UNUR_URNG_UNURAN) */
 /*---------------------------------------------------------------------------*/
 

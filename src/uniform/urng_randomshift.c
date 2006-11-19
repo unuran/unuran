@@ -50,7 +50,7 @@
 #include <urng/urng.h>
 #include "urng_randomshift.h"
 /*---------------------------------------------------------------------------*/
-#if UNUR_URNG_TYPE == UNUR_URNG_GENERIC
+#if defined(UNUR_URNG_UNURAN)
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
@@ -288,5 +288,5 @@ unur_urng_randomshift_nextshift( UNUR_URNG *urng )
 } /* end of unur_urng_randomshift_nextshift() */
 
 /*---------------------------------------------------------------------------*/
-#endif   /* #if UNUR_URNG_TYPE == UNUR_URNG_GENERIC */
+#endif   /* #if defined(UNUR_URNG_UNURAN) */
 /*---------------------------------------------------------------------------*/

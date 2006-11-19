@@ -37,7 +37,7 @@
 #include <urng/urng.h>
 #include "urng_prng.h"
 /*---------------------------------------------------------------------------*/
-#if defined(UNURAN_HAS_PRNG) && UNUR_URNG_TYPE == UNUR_URNG_GENERIC
+#if defined(UNURAN_HAS_PRNG) && defined(UNUR_URNG_UNURAN)
 /*---------------------------------------------------------------------------*/
 #ifndef HAVE_LIBPRNG
 # error
@@ -91,5 +91,5 @@ unur_urng_prng_new( const char *prngstr )
 } /* end of unur_urng_prng_new() */
 
 /*---------------------------------------------------------------------------*/
-#endif   /* defined(UNURAN_HAS_PRNG) && UNUR_URNG_TYPE == UNUR_URNG_GENERIC  */
+#endif   /* defined(UNURAN_HAS_PRNG) && defined(UNUR_URNG_UNURAN) */
 /*---------------------------------------------------------------------------*/

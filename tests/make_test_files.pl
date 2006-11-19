@@ -1037,7 +1037,7 @@ int main(void)
 #endif
 
 	/* seed uniform random number generator */
-#if UNUR_URNG_TYPE == UNUR_URNG_GENERIC
+#if defined(UNUR_URNG_UNURAN)
 	if (unur_urng_seed(NULL, 
 #  ifdef SEED
 	      SEED
@@ -1048,14 +1048,10 @@ int main(void)
 	    ;
 	/*  fprintf(stderr,"WARNING: Seed could not be set at random\\n"); */
 	}  
-#elif UNUR_URNG_TYPE == UNUR_URNG_PRNG
-	unur_set_default_urng(prng_new("mt19937($seed)"));
-#elif UNUR_URNG_TYPE == UNUR_URNG_RNGSTREAM
-	{
-	    unsigned long seed[6] = {$seed,$seed,$seed,$seed,$seed,$seed};
-	    RngStream_SetPackageSeed(seed);
-	}
-#endif  /* UNUR_URNG_TYPE */
+#else
+	fprintf(stderr,"WARNING: Seed not set \\n");
+#endif  /* UNUR_URNG_UNURAN */
+ 
 
 	/* set default debugging flag */
 	unur_set_default_debug(UNUR_DEBUG_ALL);

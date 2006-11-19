@@ -68,7 +68,6 @@
 /* globally used types                                                       */
 
 #include <unur_typedefs.h>
-#include <urng/urng_typedefs.h>
 #include <unur_struct.h>
 
 /*---------------------------------------------------------------------------*/

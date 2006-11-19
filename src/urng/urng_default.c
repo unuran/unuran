@@ -34,15 +34,14 @@
 /*---------------------------------------------------------------------------*/
 
 #include <unur_source.h>
-#include <urng/urng.h>
-#include "urng_default_source.h"
-#include "urng_builtin.h"
-#include "urng_fvoid.h"
-#include "urng_gsl.h"
-#include "urng_gslqrng.h"
-#include "urng_prng.h"
-#include "urng_randomshift.h"
-#include "urng_rngstreams.h"
+#include "urng.h"
+#include <uniform/urng_builtin.h>
+#include <uniform/urng_fvoid.h>
+#include <uniform/urng_gsl.h>
+#include <uniform/urng_gslqrng.h>
+#include <uniform/urng_prng.h>
+#include <uniform/urng_randomshift.h>
+#include <uniform/urng_rngstreams.h>
 
 /*---------------------------------------------------------------------------*/
 /* pointer to default uniform random number generator */
@@ -114,7 +113,6 @@ unur_set_default_urng( UNUR_URNG *urng_new )
   return (urng_old);
 } /* end of unur_set_default_urng() */
 
-/*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/
 /**                                                                         **/

@@ -41,11 +41,18 @@
 struct unur_distr;                       /* distribution object              */
 typedef struct unur_distr UNUR_DISTR;
 
-struct unur_par;                         /* parameters for generator */
+struct unur_par;                         /* parameters for generator         */
 typedef struct unur_par   UNUR_PAR;
 
-struct unur_gen;                         /* generator object         */
+struct unur_gen;                         /* generator object                 */
 typedef struct unur_gen   UNUR_GEN;
+
+struct unur_urng;                        /* uniform random number generator  */
+typedef struct unur_urng  UNUR_URNG;
+/* comment out the following definition when type 'UNUR_URNG' is changed !!  */
+/* You have to define  _unur_call_urng(urng) and _unur_call_reset(urng)      */
+/* in file 'src/urng/urng_source.h' then!                                    */
+#define UNUR_URNG_UNURAN 1
 
 /*---------------------------------------------------------------------------*/
 /* functions for continuous univariate PDF, CDF, and their derivatives       */

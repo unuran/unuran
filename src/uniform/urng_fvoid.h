@@ -39,7 +39,7 @@
 #ifndef URNG_FVOID_H_SEEN
 #define URNG_FVOID_H_SEEN
 /*---------------------------------------------------------------------------*/
-#if UNUR_URNG_TYPE == UNUR_URNG_GENERIC
+#if defined(UNUR_URNG_UNURAN)
 /*---------------------------------------------------------------------------*/
 
 /* 
@@ -102,7 +102,7 @@ UNUR_URNG *unur_urng_fvoid_new( double (*random)(void), int (*reset)(void) );
 /* =END */
 
 /*---------------------------------------------------------------------------*/
-#endif  /* #if UNUR_URNG_TYPE == UNUR_URNG_GENERIC */
+#endif  /* #if defined(UNUR_URNG_UNURAN) */
 /*---------------------------------------------------------------------------*/
 #endif  /* URNG_FVOID_H_SEEN */
 /*---------------------------------------------------------------------------*/

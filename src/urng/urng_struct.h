@@ -31,10 +31,8 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#if UNUR_URNG_TYPE == UNUR_URNG_GENERIC
-/*---------------------------------------------------------------------------*/
 
-struct unur_urng_generic {
+struct unur_urng {
   double (*sampleunif)(void *state);  /* function for generating uniform RNG */
   void *state;                        /* state of the generator              */
   unsigned int (*samplearray)(void *state, double *X, int dim);
@@ -65,6 +63,4 @@ struct unur_urng_generic {
 /* Thus we have introduced an additional field 'seed' to store the           */
 /* starting value.                                                           */
 
-/*---------------------------------------------------------------------------*/
-#endif  /* #if UNUR_URNG_TYPE == UNUR_URNG_GENERIC */
 /*---------------------------------------------------------------------------*/

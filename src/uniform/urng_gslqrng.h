@@ -41,7 +41,7 @@
 #ifndef URNG_GSLQRNG_H_SEEN
 #define URNG_GSLQRNG_H_SEEN
 /*---------------------------------------------------------------------------*/
-#if defined(UNURAN_HAS_GSL) && UNUR_URNG_TYPE == UNUR_URNG_GENERIC
+#if defined(UNURAN_HAS_GSL) && defined(UNUR_URNG_UNURAN)
 /*---------------------------------------------------------------------------*/
 #include <gsl/gsl_qrng.h>
 /*---------------------------------------------------------------------------*/
@@ -98,7 +98,7 @@ UNUR_URNG *unur_urng_gslqrng_new( const gsl_qrng_type *qrngtype, unsigned int di
 /* =END */
 
 /*---------------------------------------------------------------------------*/
-#endif  /* defined(UNURAN_HAS_GSL) && UNUR_URNG_TYPE == UNUR_URNG_GENERIC    */
+#endif  /* defined(UNURAN_HAS_GSL) && defined(UNUR_URNG_UNURAN) */
 /*---------------------------------------------------------------------------*/
 #endif  /* URNG_GSLQRNG_H_SEEN */
 /*---------------------------------------------------------------------------*/

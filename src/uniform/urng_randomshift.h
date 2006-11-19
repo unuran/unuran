@@ -39,7 +39,7 @@
 #ifndef URNG_RANDOMSHIFT_H_SEEN
 #define URNG_RANDOMSHIFT_H_SEEN
 /*---------------------------------------------------------------------------*/
-#if UNUR_URNG_TYPE == UNUR_URNG_GENERIC
+#if defined(UNUR_URNG_UNURAN)
 /*---------------------------------------------------------------------------*/
 
 /* 
@@ -129,7 +129,7 @@ int unur_urng_randomshift_nextshift( UNUR_URNG *urng );
 */
 
 /*---------------------------------------------------------------------------*/
-#endif   /* #if UNUR_URNG_TYPE == UNUR_URNG_GENERIC */
+#endif   /* #if defined(UNUR_URNG_UNURAN) */
 /*---------------------------------------------------------------------------*/
 #endif  /* URNG_RANDOMSHIFT_H_SEEN */
 /*---------------------------------------------------------------------------*/

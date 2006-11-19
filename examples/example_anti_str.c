@@ -19,7 +19,6 @@
 /* uniform random numbers.                                       */
 /* To compile this example you must have set                     */
 /*                                                               */
-/*   #define  UNUR_URNG_TYPE  UNUR_URNG_GENERIC                  */
 /*   #define  UNURAN_HAS_PRNG 1                                  */
 /*                                                               */
 /* in `src/unuran_config.h'.                                     */
@@ -33,7 +32,7 @@
 
 int main(void)
 {
-#if UNUR_URNG_TYPE == UNUR_URNG_GENERIC && defined(UNURAN_HAS_PRNG)
+#if defined(UNUR_URNG_UNURAN) && defined(UNURAN_HAS_PRNG)
 
   int    i;          /* loop variable                            */
   double xn, xg;     /* will hold the random number              */

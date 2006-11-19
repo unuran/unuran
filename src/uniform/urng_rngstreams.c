@@ -36,7 +36,7 @@
 #include <urng/urng.h>
 #include "urng_rngstreams.h"
 /*---------------------------------------------------------------------------*/
-#if defined(UNURAN_HAS_RNGSTREAMS) && UNUR_URNG_TYPE == UNUR_URNG_GENERIC
+#if defined(UNURAN_HAS_RNGSTREAMS) && defined(UNUR_URNG_UNURAN)
 /*---------------------------------------------------------------------------*/
 #ifndef HAVE_LIBRNGSTREAMS
 # error
@@ -112,5 +112,5 @@ _unur_urng_rngstream_delete( RngStream rngstream )
 } /* end of _unur_urng_rngstream_delete() */
 
 /*---------------------------------------------------------------------------*/
-#endif /* defined(UNURAN_HAS_RNGSTREAMS) && UNUR_URNG_TYPE == UNUR_URNG_GENERIC */
+#endif /* defined(UNURAN_HAS_RNGSTREAMS) && defined(UNUR_URNG_UNURAN) */
 /*---------------------------------------------------------------------------*/

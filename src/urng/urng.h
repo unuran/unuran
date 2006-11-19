@@ -310,11 +310,6 @@ UNUR_URNG *unur_get_urng_aux( UNUR_GEN *generator );
 /* ==DOC
    @subheading Handle uniform RNGs
 
-   @emph{Notice:} Most of these calls are only available for the new
-   generic API to uniform URNGs
-   (that is, @code{UNUR_URNG_TYPE} must be set to
-   @code{UNUR_URNG_GENERIC} in @file{unuran_config.h})!
-
    @emph{Notice:} Some of the below function calls do not work for
    every source of random numbers since not every library has
    implemented these features.
@@ -370,7 +365,7 @@ int unur_urng_reset (UNUR_URNG *urng);
 */
 
 /*---------------------------------------------------------------------------*/
-#if UNUR_URNG_TYPE == UNUR_URNG_GENERIC
+#ifdef UNUR_URNG_UNURAN
 /*---------------------------------------------------------------------------*/
 
 int unur_urng_sync (UNUR_URNG *urng);
@@ -458,12 +453,7 @@ int unur_gen_resetsub (UNUR_GEN *generator);
 /*---------------------------------------------------------------------------*/
 
 /* ==DOC
-   @subheading Generic API to create a new URNG object
-
-   @emph{Notice:} These calls are only available for the new
-   generic API to uniform URNGs
-   (that is, @code{UNUR_URNG_TYPE} must be set to
-   @code{UNUR_URNG_GENERIC} in @file{unuran_config.h})!
+   @subheading API to create a new URNG object
 
    @emph{Notice:} These functions are provided to built a 
    UNUR_URNG object for a particular external random number
@@ -561,7 +551,7 @@ int unur_urng_set_delete( UNUR_URNG *urng, void (*fpdelete)(void *state) );
 */
 
 /*---------------------------------------------------------------------------*/
-#endif   /* #if UNUR_URNG_TYPE == UNUR_URNG_GENERIC */
+#endif   /* end defined(UNUR_URNG_UNURAN) */
 /*---------------------------------------------------------------------------*/
 
 /* =END */

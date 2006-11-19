@@ -41,7 +41,7 @@
 #ifndef URNG_PRNG_H_SEEN
 #define URNG_PRNG_H_SEEN
 /*---------------------------------------------------------------------------*/
-#if defined(UNURAN_HAS_PRNG) && UNUR_URNG_TYPE == UNUR_URNG_GENERIC
+#if defined(UNURAN_HAS_PRNG) && defined(UNUR_URNG_UNURAN)
 /*---------------------------------------------------------------------------*/
 #include <prng.h>
 /*---------------------------------------------------------------------------*/
@@ -119,7 +119,7 @@ UNUR_URNG *unur_urng_prngptr_new( struct prng *urng );
 /* =END */
 
 /*---------------------------------------------------------------------------*/
-#endif  /* defined(UNURAN_HAS_PRNG) && UNUR_URNG_TYPE == UNUR_URNG_GENERIC   */
+#endif  /* defined(UNURAN_HAS_PRNG) && defined(UNUR_URNG_UNURAN) */
 /*---------------------------------------------------------------------------*/
 #endif  /* URNG_PRNG_H_SEEN */
 /*---------------------------------------------------------------------------*/

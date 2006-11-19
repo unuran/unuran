@@ -36,7 +36,7 @@
 #include <urng/urng.h>
 #include "urng_gsl.h"
 /*---------------------------------------------------------------------------*/
-#if defined(UNURAN_HAS_GSL) && UNUR_URNG_TYPE == UNUR_URNG_GENERIC
+#if defined(UNURAN_HAS_GSL) && defined(UNUR_URNG_UNURAN)
 /*---------------------------------------------------------------------------*/
 #ifndef HAVE_LIBGSL
 # error
@@ -88,5 +88,5 @@ unur_urng_gsl_new( const gsl_rng_type *urngtype )
 } /* end of unur_urng_gsl_new() */
 
 /*---------------------------------------------------------------------------*/
-#endif   /* defined(UNURAN_HAS_GSL) && UNUR_URNG_TYPE == UNUR_URNG_GENERIC   */
+#endif   /* defined(UNURAN_HAS_GSL) && defined(UNUR_URNG_UNURAN) */
 /*---------------------------------------------------------------------------*/

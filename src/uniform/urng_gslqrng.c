@@ -37,7 +37,7 @@
 #include <urng/urng.h>
 #include "urng_gslqrng.h"
 /*---------------------------------------------------------------------------*/
-#if defined(UNURAN_HAS_GSL) && UNUR_URNG_TYPE == UNUR_URNG_GENERIC
+#if defined(UNURAN_HAS_GSL) && defined(UNUR_URNG_UNURAN)
 /*---------------------------------------------------------------------------*/
 #ifndef HAVE_LIBGSL
 # error
@@ -265,5 +265,5 @@ unur_urng_gslqrng_new( const gsl_qrng_type *qrngtype, unsigned int dim )
 } /* end of unur_urng_gslqrng_new() */
 
 /*---------------------------------------------------------------------------*/
-#endif   /* defined(UNURAN_HAS_GSL) && UNUR_URNG_TYPE == UNUR_URNG_GENERIC   */
+#endif   /* defined(UNURAN_HAS_GSL) && defined(UNUR_URNG_UNURAN) */
 /*---------------------------------------------------------------------------*/

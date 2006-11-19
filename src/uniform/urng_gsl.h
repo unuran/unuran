@@ -40,7 +40,7 @@
 #ifndef URNG_GSL_H_SEEN
 #define URNG_GSL_H_SEEN
 /*---------------------------------------------------------------------------*/
-#if defined(UNURAN_HAS_GSL) && UNUR_URNG_TYPE == UNUR_URNG_GENERIC
+#if defined(UNURAN_HAS_GSL) && defined(UNUR_URNG_UNURAN)
 /*---------------------------------------------------------------------------*/
 #include <gsl/gsl_rng.h>
 /*---------------------------------------------------------------------------*/
@@ -107,7 +107,7 @@ UNUR_URNG *unur_urng_gslptr_new( gsl_rng *urng );
 /* =END */
 
 /*---------------------------------------------------------------------------*/
-#endif  /* defined(UNURAN_HAS_GSL) && UNUR_URNG_TYPE == UNUR_URNG_GENERIC    */
+#endif  /* defined(UNURAN_HAS_GSL) && defined(UNUR_URNG_UNURAN) */
 /*---------------------------------------------------------------------------*/
 #endif  /* URNG_GSL_H_SEEN */
 /*---------------------------------------------------------------------------*/

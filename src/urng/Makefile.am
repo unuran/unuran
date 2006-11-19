@@ -6,8 +6,9 @@ INCLUDES = -I$(top_srcdir)/src
 noinst_LTLIBRARIES = liburng.la
 
 liburng_la_SOURCES = \
- urng_source.h urng_struct.h urng_typedefs.h \
- urng.h urng.c urng_set.c
+ urng_source.h urng_struct.h \
+ urng.h urng.c urng_set.c urng_default.c \
+ urng_unuran.c
 
 # clean backup files
 CLEANFILES = *~

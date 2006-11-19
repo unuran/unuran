@@ -52,39 +52,7 @@ static long urng_counter = 0;                /* count uniform random numbers */
 /* wrapper for uniform random number generator that performs counting        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-#if UNUR_URNG_TYPE == UNUR_URNG_FVOID 
-/*---------------------------------------------------------------------------*/
-static double (*urng_to_use)(void);          /* pointer to real uniform RNG  */
-/*---------------------------------------------------------------------------*/
-
-static double
-_urng_with_counter(void)
-     /*----------------------------------------------------------------------*/
-     /* wrapper for uniform random number generator that performs counting   */
-     /*----------------------------------------------------------------------*/
-{
-  ++urng_counter;
-  return urng_to_use();
-} /* end of urng_with_counter() */
-
-/*---------------------------------------------------------------------------*/
-#elif UNUR_URNG_TYPE == UNUR_URNG_PRNG
-/*---------------------------------------------------------------------------*/
-static double (*urng_to_use)(struct prng *); /* pointer to real uniform RNG  */
-/*---------------------------------------------------------------------------*/
-
-static double
-_urng_with_counter( struct prng *gen )
-     /*----------------------------------------------------------------------*/
-     /* wrapper for uniform random number generator that performs counting   */
-     /*----------------------------------------------------------------------*/
-{
-  ++urng_counter;
-  return urng_to_use(gen);
-} /* end of urng_with_counter() */
-
-/*---------------------------------------------------------------------------*/
-#elif UNUR_URNG_TYPE == UNUR_URNG_GENERIC
+#ifdef UNUR_URNG_UNURAN
 /*---------------------------------------------------------------------------*/
 static double (*urng_to_use)(void*);         /* pointer to real uniform RNG  */
 /*---------------------------------------------------------------------------*/
@@ -100,7 +68,7 @@ _urng_with_counter(void *params)
 } /* end of urng_with_counter() */
 
 /*---------------------------------------------------------------------------*/
-#endif  /* UNUR_URNG_TYPE */
+#endif  /* end defined(UNUR_URNG_UNURAN) */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
@@ -136,23 +104,16 @@ unur_test_count_urn( struct unur_gen *gen, int samplesize, int verbosity, FILE *
   urng_aux = gen->urng_aux;
 
   /* exchange pointer to uniform rng with counting wrapper */
-#if UNUR_URNG_TYPE == UNUR_URNG_FVOID
-  urng_to_use = gen->urng;
-  unur_chg_urng(gen,_urng_with_counter);
-#elif UNUR_URNG_TYPE == UNUR_URNG_PRNG
-  urng_to_use = gen->urng->get_next;
-  gen->urng->get_next = _urng_with_counter;
-  if (gen->urng_aux) gen->urng_aux = gen->urng;
-#elif UNUR_URNG_TYPE == UNUR_URNG_GENERIC
+#ifdef UNUR_URNG_UNURAN
   urng_to_use = gen->urng->sampleunif;
   gen->urng->sampleunif = _urng_with_counter;
   if (gen->urng_aux) gen->urng_aux = gen->urng;
 #else
   /* no counter available */
   if (verbosity)
-    fprintf(out,"\nCOUNT: ---  (cannot count urng for URNG type)\n");
+    fprintf(out,"\nCOUNT: ---  (cannot count URNs)\n");
   return -1;
-#endif  /* UNUR_URNG_TYPE */
+#endif
 
   /* run generator */
   switch (gen->method & UNUR_MASK_TYPE) {
@@ -185,13 +146,9 @@ unur_test_count_urn( struct unur_gen *gen, int samplesize, int verbosity, FILE *
   }
 
   /* reset pointer to uniform rng */
-#if UNUR_URNG_TYPE == UNUR_URNG_FVOID
-  unur_chg_urng(gen,urng_to_use);
-#elif UNUR_URNG_TYPE == UNUR_URNG_PRNG
-  gen->urng->get_next = urng_to_use;
-#elif UNUR_URNG_TYPE == UNUR_URNG_GENERIC
+#ifdef UNUR_URNG_UNURAN
   gen->urng->sampleunif = urng_to_use;
-#endif  /* UNUR_URNG_TYPE */
+#endif
 
   /* restore auxilliary generator */
   gen->urng_aux = urng_aux;

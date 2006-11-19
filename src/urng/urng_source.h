@@ -34,71 +34,53 @@
 #ifndef URNG_SOURCE_H_SEEN
 #define URNG_SOURCE_H_SEEN
 /*---------------------------------------------------------------------------*/
-#if UNUR_URNG_TYPE == UNUR_URNG_GENERIC
+#ifdef UNUR_URNG_UNURAN
 /*---------------------------------------------------------------------------*/
 
 /* function call to uniform RNG */
 #define _unur_call_urng(urng)    ((urng)->sampleunif((urng)->state))
 
-/* reset uniform RNG */
-/* #define _unur_call_reset(urng) */
-/* is defined in unur_API.c */
-
-/*---------------------------------------------------------------------------*/
-/* The following types are for backward compatibility.                       */
-/* Its usage ist strongly deprecated!                                        */
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-#elif UNUR_URNG_TYPE == UNUR_URNG_FVOID
-/*---------------------------------------------------------------------------*/
-
-/* function call to uniform RNG */
-#define _unur_call_urng(urng)    ((*(urng))())
-
-/* reset uniform RNG */
-#define _unur_call_reset(urng) \
- ( (urng)==(unur_urng_MRG31k3p) ? (unur_urng_MRG31k3p_reset()) \
-    : ( (urng)==(unur_urng_fish) ? (unur_urng_fish_reset()) \
-      : ( (urng)==(unur_urng_mstd) ? (unur_urng_mstd_reset()) \
-	  : (UNUR_FAILURE) )))
-
-/*---------------------------------------------------------------------------*/
-#elif UNUR_URNG_TYPE == UNUR_URNG_PRNG
-/*---------------------------------------------------------------------------*/
-
-/* function call to uniform RNG */
-#define _unur_call_urng(urng)    (prng_get_next(urng))
-
-/* reset uniform RNG */
-#define _unur_call_reset(urng)   (prng_reset(urng),UNUR_SUCCESS)
-
-/*---------------------------------------------------------------------------*/
-#elif UNUR_URNG_TYPE == UNUR_URNG_RNGSTREAMS
-/*---------------------------------------------------------------------------*/
-
-/* function call to uniform RNG */
-#define _unur_call_urng(urng)    (RngStream_RandU01(urng))
-
-/* reset uniform RNG */
-#define _unur_call_reset(urng)   (RngStream_ResetStartStream(urng),UNUR_SUCCESS)
-
-/*---------------------------------------------------------------------------*/
-#elif UNUR_URNG_TYPE == UNUR_URNG_GSL
-/*---------------------------------------------------------------------------*/
-
-/* function call to uniform RNG */
-#define _unur_call_urng(urng)    (gsl_rng_uniform_pos(urng))
-
-/* reset uniform RNG */
-#define _unur_call_reset(urng)   (UNUR_FAILURE)
-
 /*---------------------------------------------------------------------------*/
 #else
 /*---------------------------------------------------------------------------*/
-#error UNUR_URNG_TYPE not valid !!
+#error
+#error UNUR_URNG changed!
+#error
+#error Define _unur_call_urng(urng) and _unur_call_reset(urng) in
+#error file 'urng_source'
+#error
 /*---------------------------------------------------------------------------*/
-#endif  /* UNUR_URNG_TYPE */
+/* The UNURAN API to uniform random number generator should be flexible      */
+/* enough to use any source of uniform random number generators.             */
+/*                                                                           */
+/* Please, report any problem with this interface to this interface to the   */
+/* UNURAN development team.                                                  */
+/*                                                                           */
+/* When the UNURAN interface to uniform random number generator must be      */
+/* changed (not recommended), proceed as following:                          */
+/*                                                                           */
+/* (1) Change the typedef for 'UNUR_URNG' in file 'src/unur_typedefs.h'.     */
+/* (2) Comment out the #definition of 'UNUR_URNG_UNURAN' to remove all       */
+/*     code from the UNURAN API.                                             */
+/* (3) Comment out the above error directives.                               */
+/* (4) Define  _unur_call_urng(urng) and _unur_call_reset(urng).             */
+/*     Here is a template:                                                   */
+/*                                                                           */
+/*  -  function call to uniform RNG:                                         */
+/*       #define _unur_call_urng(urng)  (my_uniform_generator(urng))         */
+/*                                                                           */
+/*  -  reset uniform RNG:                                                    */
+/*       #define _unur_call_reset(urng) (my_reset_unif(urng),UNUR_SUCCESS)   */
+/*     if no such reset call exists:                                         */
+/*       #define _unur_call_reset(urng) (UNUR_FAILURE)                       */
+/*                                                                           */
+/* (5) Define defaults 'UNUR_URNG_DEFAULT' and 'UNUR_URNG_AUX_DEFAULT'       */
+/*     in file 'src/unuran_config.h'.                                        */
+/*                                                                           */
+/* Notice that some test routines (like counting URNGs) and the test suite   */
+/* do not work for a non-UNURAN interface.                                   */ 
+/*---------------------------------------------------------------------------*/
+#endif  /* UNUR_URNG_UNURAN */
 /*---------------------------------------------------------------------------*/
 #endif  /* #ifndef URNG_SOURCE_H_SEEN */
 /*---------------------------------------------------------------------------*/

@@ -56,7 +56,6 @@
 /*****************************************************************************/
 
 #include <unur_typedefs.h>
-#include <urng/urng_typedefs.h>
 
 /*****************************************************************************/
 /**  Declarations for uniform random number generators                      **/

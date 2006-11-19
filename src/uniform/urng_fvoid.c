@@ -36,7 +36,7 @@
 #include <urng/urng.h>
 #include "urng_fvoid.h"
 /*---------------------------------------------------------------------------*/
-#if UNUR_URNG_TYPE == UNUR_URNG_GENERIC
+#if defined(UNUR_URNG_UNURAN)
 /*---------------------------------------------------------------------------*/
 
 UNUR_URNG *
@@ -55,6 +55,6 @@ unur_urng_fvoid_new( double (*random)(void), int (*reset)(void) )
 } /* end of unur_urng_fvoid_new() */
 
 /*---------------------------------------------------------------------------*/
-#endif   /* #if UNUR_URNG_TYPE == UNUR_URNG_GENERIC */
+#endif   /* #if defined(UNUR_URNG_UNURAN) */
 /*---------------------------------------------------------------------------*/
 

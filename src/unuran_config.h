@@ -196,6 +196,12 @@
 /*   The structure cannot be used directly any more.                         */
 /*---------------------------------------------------------------------------*/
 
+/* TODO: */
+/*   remove pointer to these macros from docu: */
+/* #define UNUR_URNG_TYPE UNUR_URNG_GENERIC */
+
+
+
 /*---------------------------------------------------------------------------*/
 /* Define the possible sources for uniform (pseudo-) random numbers.         */
 #define UNUR_URNG_GENERIC    99   /* use a generic interface (recommended)   */
@@ -209,21 +215,11 @@
 /* (Define one of the following)                                             */
 
 /* Recommended type */
-#define UNUR_URNG_TYPE UNUR_URNG_GENERIC
-
-/* For backward compatibility only! */
-/* (These random number generators can be used more flexible via the         */
-/*  generic interface!)                                                      */
-/* #define UNUR_URNG_TYPE UNUR_URNG_FVOID */
-/* #define UNUR_URNG_TYPE UNUR_URNG_PRNG */
-/* #define UNUR_URNG_TYPE UNUR_URNG_RNGSTREAMS */
-/* #define UNUR_URNG_TYPE UNUR_URNG_GSL */
+/* #define UNUR_URNG_TYPE UNUR_URNG_GENERIC */
+/* #define UNUR_URNG_DEFAULT_TYPE UNUR_URNG_FVOID */
 
 /*---------------------------------------------------------------------------*/
 /* Default generators                                                        */
-
-/* Set a default generator type for the UNUR_URNG_GENERIC interface.         */
-/* (Define one of the following)                                             */
 
 /* IMPORTANT!                                                                */
 /*   The corresponding library must be installed and linked when a           */
@@ -231,32 +227,21 @@
 /*   UNUR_URNG_FVOID which is included in UNURAN).                           */
 /*   If you have none of these libraries use UNUR_URNG_FVOID.                */
 
-#define UNUR_URNG_DEFAULT_TYPE UNUR_URNG_FVOID
-/* #define UNUR_URNG_DEFAULT_TYPE UNUR_URNG_PRNG */
-/* #define UNUR_URNG_DEFAULT_TYPE UNUR_URNG_RNGSTREAMS */
-/* #define UNUR_URNG_DEFAULT_TYPE UNUR_URNG_GSL */
+/* use type FVOID */
+#define UNUR_URNG_DEFAULT      (unur_urng_fvoid_new(unur_urng_MRG31k3p, unur_urng_MRG31k3p_reset))
+#define UNUR_URNG_AUX_DEFAULT  (unur_urng_fvoid_new(unur_urng_fish, unur_urng_fish_reset))
 
-/*...........................................................................*/
-/* Default generators for different sources of uniform random numbers.       */
-/* (These defaults are only used if the source is chosen via                 */
-/*  UNUR_URNG_TYPE / UNUR_URNG_DEFAULT_TYPE.)                                */ 
+/* use type PRNG */
+/* #define UNUR_URNG_DEFAULT      (unur_urng_prng_new("mt19937(19863)")) */
+/* #define UNUR_URNG_AUX_DEFAULT  (unur_urng_prng_new("LCG(2147483647,16807,0,1)")) */
 
-/* type: FVOID */
-#define UNUR_URNG_DEFAULT_FVOID           (unur_urng_MRG31k3p)
-#define UNUR_URNG_DEFAULT_RESET_FVOID     (unur_urng_MRG31k3p_reset)
-#define UNUR_URNG_AUX_DEFAULT_FVOID       (unur_urng_fish)
-#define UNUR_URNG_AUX_DEFAULT_RESET_FVOID (unur_urng_fish_reset)
+/* use type RNGSTREAMS */
+/* #define UNUR_URNG_DEFAULT      (unur_urng_rngstream_new("URNG_main")) */
+/* #define UNUR_URNG_AUX_DEFAULT  (unur_urng_rngstream_new("URNG_aux")) */
 
-/* type: PRNG */
-#define UNUR_URNG_DEFAULT_PRNG            ("mt19937(19863)")
-#define UNUR_URNG_AUX_DEFAULT_PRNG        ("LCG(2147483647,16807,0,1)")
-
-/* type: RNGSTREAMS */
-/*   none required  */
-
-/* type: GSL */
-#define UNUR_URNG_DEFAULT_GSL             (gsl_rng_mt19937)
-#define UNUR_URNG_AUX_DEFAULT_GSL         (gsl_rng_cmrg)
+/* use type GSL */
+/* #define UNUR_URNG_DEFAULT      (unur_urng_gsl_new(gsl_rng_mt19937)) */
+/* #define UNUR_URNG_AUX_DEFAULT  (unur_urng_gsl_new(gsl_rng_cmrg)) */
 
 /*---------------------------------------------------------------------------*/
 /* Enable interfaces to different sources.                                   */
@@ -267,14 +252,14 @@
 
 /* Use Otmar Lendl's `prng' library                                          */
 /*    http://statistik.wu-wien.ac.at/prng/                                   */
-/* #define UNURAN_HAS_PRNG 1 */
+#define UNURAN_HAS_PRNG 1
 
 /* Use Pierre L'Ecuyer's `RngStreams' library for multiple independent       */
 /*    streams of pseudo-random numbers                                       */
 /*    (see http://www.iro.umontreal.ca/~lecuyer/myftp/streams00/c/).         */
 /* UNURAN makes use of a GNU-style package which is available from           */
 /*    http://statistik.wu-wien.ac.at/software/RngStreams/                    */
-/* #define UNURAN_HAS_RNGSTREAMS 1 */
+#define UNURAN_HAS_RNGSTREAMS 1
 
 /* Use uniform RNG objects from the GNU Scientific Library (GSL)             */
 /*    http://www.gnu.org/software/gsl/                                       */

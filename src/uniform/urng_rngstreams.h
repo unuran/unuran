@@ -39,7 +39,7 @@
 #ifndef URNG_RNGSTREAMS_H_SEEN
 #define URNG_RNGSTREAMS_H_SEEN
 /*---------------------------------------------------------------------------*/
-#if defined(UNURAN_HAS_RNGSTREAMS) && UNUR_URNG_TYPE == UNUR_URNG_GENERIC
+#if defined(UNURAN_HAS_RNGSTREAMS) && defined(UNUR_URNG_UNURAN)
 /*---------------------------------------------------------------------------*/
 #include <RngStream.h>
 /*---------------------------------------------------------------------------*/
@@ -104,7 +104,7 @@ UNUR_URNG *unur_urng_rngstreamptr_new( RngStream rngstream );
 /* =END */
 
 /*---------------------------------------------------------------------------*/
-#endif  /* defined(UNURAN_HAS_RNGSTREAMS) && UNUR_URNG_TYPE == UNUR_URNG_GENERIC */
+#endif  /* defined(UNURAN_HAS_RNGSTREAMS) && defined(UNUR_URNG_UNURAN) */
 /*---------------------------------------------------------------------------*/
 #endif  /* URNG_RNGSTREAMS_H_SEEN */
 /*---------------------------------------------------------------------------*/

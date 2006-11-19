@@ -73,7 +73,7 @@
 
    @item Set sources of uniform random numbers in file @file{src/unuran_config.h}.
 
-         Set @code{UNUR_URNG_DEFAULT_TYPE} to one of the
+        Set @code{UNUR_URNG_DEFAULT_TYPE} to one of the
 	 given types. The setting in the distributed file
 	 is a built-in generator, so no other libraries need to
 	 be installed.

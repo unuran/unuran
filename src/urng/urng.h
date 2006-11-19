@@ -95,7 +95,7 @@
       @enumerate
 
       @item
-      @code{UNUR_URNG_FVOID}
+      @code{FVOID}
       
       URNGs of type @code{double uniform(void)}.
       If independent versions of the same URNG should be used, a copy of
@@ -105,7 +105,7 @@
       @file{src/uniform/}.
       
       @item
-      @code{UNUR_URNG_PRNG}
+      @code{PRNG}
       
       URNGs from the @code{prng} library. It provides a very
       flexible way to sample form arbitrary URNGs by means of an object
@@ -120,7 +120,7 @@
       @uref{http://random.mat.sbg.ac.at/}.
       
       @item
-      @code{UNUR_URNG_RNGSTREAM}
+      @code{RNGSTREAM}
 
       Pierre L'Ecuyer's @code{RngStream} library for multiple 
       independent streams of pseudo-random numbers. 
@@ -128,7 +128,7 @@
       @uref{http://statistik.wu-wien.ac.at/software/RngStreams/}.
 
       @item
-      @code{UNUR_URNG_GSL}
+      @code{GSL}
 
       URNG from the GNU Scientific Library (GSL).
       It is available from

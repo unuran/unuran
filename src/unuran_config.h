@@ -139,116 +139,15 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-/* Invoke uniform random number generator (URNG).                            */
-/*                                                                           */
-/* There are several ways to use a uniform pseudo random number generator:   */
-/*                                                                           */
-/* UNUR_URNG_GENERIC:                                                        */
-/*     This the most flexible interface to URNGs.                            */
-/*     All required data for a URNG are stored in an object.                 */
-/*     Thus it is possible to use all the other generator types listed       */
-/*     below without recompilation.                                          */
-/*     The URNG objects are created and handled with appropriate calls.      */
-/*     Another advantage of this approach is that a unified interface        */
-/*     to different sources of random numbers is available.                  */
-/*     In particular, one can use all sources of uniform random numbers      */
-/*     for which the below compiler switches originally have been designed.  */
-/*                                                                           */
-/*...........................................................................*/
-/*                                                                           */
-/* The following compiler switches are for backward compatibility.           */
-/* Their usage, however, is DEPRECIATED!                                     */
-/*                                                                           */
-/* These sources are still available under the new extended                  */
-/* UNUR_URNG_GENERIC interface.                                              */
-/*                                                                           */
-/* UNUR_URNG_FVOID:                                                          */
-/*     Use a pointer to the routine without an argment, i.e.                 */
-/*        double uniform(void);                                              */
-/*     E.g., the uniform generator included in UNURAN.                       */ 
-/*                                                                           */
-/* UNUR_URNG_PRNG:                                                           */
-/*     Use a pointer to a uniform RNG object from the `prng' library.        */
-/*     (see http://random.mat.sbg.ac.at/ftp/pub/software/gen/ or             */
-/*     or http://statistik.wu-wien.ac.at/prng/).                             */
-/*                                                                           */
-/* UNUR_URNG_RNGSTREAMS:                                                     */
-/*     Use a pointer to a uniform RNG object from Pierre L'Ecuyer's          */
-/*     `RngStreams' library for multiple independent streams of              */
-/*     pseudo-random numbers.                                                */
-/*     (see http://www.iro.umontreal.ca/~lecuyer/myftp/streams00/c/)         */
-/*     A GNU-style package is available from                                 */
-/*     http://statistik.wu-wien.ac.at/software/RngStreams/                   */
-/*                                                                           */
-/* UNUR_URNG_GSL:                                                            */
-/*     Use a pointer to a uniform RNG object from the GNU Scientific         */
-/*     Library (GSL).                                                        */
-/*     (see http://www.gnu.org/software/gsl/)                                */
-/*                                                                           */
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/* IMPORTANT!                                                                */
-/*   The generic interface has been changed and extended!                    */
-/*   It is now the recommended interface to uniform random number generators */
-/*   (URNG). For this reason there are calls to create and handle objects    */
-/*   that contain all necessary data about a URNG (see ... ).                */
-/*                                                                           */
-/*   The structure cannot be used directly any more.                         */
-/*---------------------------------------------------------------------------*/
-
-/* TODO: */
-/*   remove pointer to these macros from docu: */
-/* #define UNUR_URNG_TYPE UNUR_URNG_GENERIC */
-
-
-
-/*---------------------------------------------------------------------------*/
-/* Define the possible sources for uniform (pseudo-) random numbers.         */
-#define UNUR_URNG_GENERIC    99   /* use a generic interface (recommended)   */
-/*...........................................................................*/
-#define UNUR_URNG_FVOID       1   /* use type `double urng(void)'            */
-#define UNUR_URNG_PRNG        2   /* use prng-3.x                            */
-#define UNUR_URNG_RNGSTREAMS  3   /* use RngStreams                          */
-#define UNUR_URNG_GSL         4   /* use GNU Scientific Library              */
-/*---------------------------------------------------------------------------*/
-/* Set type of the API to uniform random number generators.                  */
-/* (Define one of the following)                                             */
-
-/* Recommended type */
-/* #define UNUR_URNG_TYPE UNUR_URNG_GENERIC */
-/* #define UNUR_URNG_DEFAULT_TYPE UNUR_URNG_FVOID */
-
-/*---------------------------------------------------------------------------*/
-/* Default generators                                                        */
-
-/* IMPORTANT!                                                                */
-/*   The corresponding library must be installed and linked when a           */
-/*   particular default is chosen (with the exception of type                */
-/*   UNUR_URNG_FVOID which is included in UNURAN).                           */
-/*   If you have none of these libraries use UNUR_URNG_FVOID.                */
-
-/* use type FVOID */
-#define UNUR_URNG_DEFAULT      (unur_urng_fvoid_new(unur_urng_MRG31k3p, unur_urng_MRG31k3p_reset))
-#define UNUR_URNG_AUX_DEFAULT  (unur_urng_fvoid_new(unur_urng_fish, unur_urng_fish_reset))
-
-/* use type PRNG */
-/* #define UNUR_URNG_DEFAULT      (unur_urng_prng_new("mt19937(19863)")) */
-/* #define UNUR_URNG_AUX_DEFAULT  (unur_urng_prng_new("LCG(2147483647,16807,0,1)")) */
-
-/* use type RNGSTREAMS */
-/* #define UNUR_URNG_DEFAULT      (unur_urng_rngstream_new("URNG_main")) */
-/* #define UNUR_URNG_AUX_DEFAULT  (unur_urng_rngstream_new("URNG_aux")) */
-
-/* use type GSL */
-/* #define UNUR_URNG_DEFAULT      (unur_urng_gsl_new(gsl_rng_mt19937)) */
-/* #define UNUR_URNG_AUX_DEFAULT  (unur_urng_gsl_new(gsl_rng_cmrg)) */
-
-/*---------------------------------------------------------------------------*/
 /* Enable interfaces to different sources.                                   */
+/*                                                                           */
 /* Uncomment the following lines when the source of uniform random numbers   */
-/* should be used. However, the corresponding libraries have to be linked    */
-/* into each executable.                                                     */
-
+/* should be used. This allows UNURAN to provide the corresponding wrapper   */
+/* functions. (This wrapper functions are not required to use these          */
+/* libraries but simplifies their usage significantly.)                      */
+/*                                                                           */
+/* Notice, that then the  corresponding libraries have to be linked into     */
+/* each executable.                                                          */
 
 /* Use Otmar Lendl's `prng' library                                          */
 /*    http://statistik.wu-wien.ac.at/prng/                                   */
@@ -264,6 +163,51 @@
 /* Use uniform RNG objects from the GNU Scientific Library (GSL)             */
 /*    http://www.gnu.org/software/gsl/                                       */
 /* #define UNURAN_HAS_GSL 1 */
+
+
+/*---------------------------------------------------------------------------*/
+/* Default generators                                                        */
+
+/* IMPORTANT!                                                                */
+/*                                                                           */
+/*   When a particular default is chosen then the corresponding library must */
+/*   be installed and the wrapper functions must be enabled by defining the  */
+/*   above macros. Moreover, the library must linked when creating an        */
+/*   executable.                                                             */
+/*                                                                           */
+/*   If you have none of these libraries use type FVOID.                     */
+/*                                                                           */
+/*   Notice: You must not use more than one macro definition for each macro  */
+/*   'UNUR_URNG_DEFAULT' and 'UNUR_URNG_AUX_DEFAULT'!                        */
+
+/* use type FVOID (built-in) */
+#define UNUR_URNG_DEFAULT      (unur_urng_fvoid_new(unur_urng_MRG31k3p, unur_urng_MRG31k3p_reset))
+#define UNUR_URNG_AUX_DEFAULT  (unur_urng_fvoid_new(unur_urng_fish, unur_urng_fish_reset))
+
+/* use type PRNG */
+/* #define UNUR_URNG_DEFAULT      (unur_urng_prng_new("mt19937(19863)")) */
+/* #define UNUR_URNG_AUX_DEFAULT  (unur_urng_prng_new("LCG(2147483647,16807,0,1)")) */
+
+/* use type RNGSTREAMS */
+/* #define UNUR_URNG_DEFAULT      (unur_urng_rngstream_new("URNG_main")) */
+/* #define UNUR_URNG_AUX_DEFAULT  (unur_urng_rngstream_new("URNG_aux")) */
+
+/* use type GSL */
+/* #define UNUR_URNG_DEFAULT      (unur_urng_gsl_new(gsl_rng_mt19937)) */
+/* #define UNUR_URNG_AUX_DEFAULT  (unur_urng_gsl_new(gsl_rng_cmrg)) */
+
+
+/*---------------------------------------------------------------------------*/
+
+/* TODO: */
+/*   remove pointer to these macros from docu: INSTALL, doc/src/intro.h */
+/* #define UNUR_URNG_TYPE UNUR_URNG_GENERIC */
+/* #define UNUR_URNG_GENERIC    99   /\* use a generic interface (recommended)   *\/ */
+/* #define UNUR_URNG_FVOID       1   /\* use type `double urng(void)'            *\/ */
+/* #define UNUR_URNG_PRNG        2   /\* use prng-3.x                            *\/ */
+/* #define UNUR_URNG_RNGSTREAMS  3   /\* use RngStreams                          *\/ */
+/* #define UNUR_URNG_GSL         4   /\* use GNU Scientific Library              *\/ */
+
 
 /*---------------------------------------------------------------------------*/
 #endif  /* UNURAN_CONFIG_H_SEEN */

@@ -8,11 +8,11 @@
 
                Installation instructions for the UNURAN library.
 
-                              Version 0.7.1
+                              Version 0.9.x
 
 
 While the code is plain ANSI C and thus quite portable, the following
-adaptions might be neccessary for compile this library.
+adaptions might be neccessary for compiling this library.
 
 
 Uniform random number generator
@@ -20,7 +20,7 @@ Uniform random number generator
 
    UNURAN can be used with any uniform random number generator but (at the 
 moment) some features work best with Pierre L'Ecuyer's RngStreams library
-(see <http://statistik.wu-wien.ac.at/software/RngStreams/> for description 
+(see <http://statistik.wu-wien.ac.at/software/RngStreams/> for a description 
 and downloading).
 
 
@@ -28,29 +28,36 @@ Installing UNURAN
 .................
 
   1. First unzip and untar the package and change to the directory:
-          tar zxvf unuran-0.7.1.tar.gz
-          cd unuran-0.7.1
+          tar zxvf unuran-0.9.x.tar.gz
+          cd unuran-0.9.x
+
 
   2. Edit the file `src/unuran_config.h'.  
-     Set the default type of the uniform random number generator:
 
-     #define UNUR_URNG_DEFAULT_TYPE UNUR_URNG_FVOID
+     - Enable interfaces to different sources:
 
-     Type UNUR_URNG_FVOID (default of distribution) uses a simple 
-     function pointer of type 'double uniform (void)'. 
-     There exist built-in generators of this type and thus there
-     is no need to use external sources of random numbers.
-     
-     Nevertheless we suggest you install and use RngStreams:
+	UNU.RAN can use any source of random numbers. 
+       For some libraries that provide uniform random numbers there are
+	convenient wrapper functions. These can be enabled by defining one 
+	or more of the macros 'UNURAN_HAS_RNGSTREAMS', 'UNURAN_HAS_PRNG',
+	and 'UNURAN_HAS_GSL' (see comments in `unuran_config.h').
+	Notice that you must link against that library when the corresponding
+	wrapper functions are used.
 
-     #define UNUR_URNG_DEFAULT_TYPE UNUR_URNG_RNGSTREAMS
+     	Important: If one of these library is enabled it must have been 
+	installed _before_ running the configure script in Step 3.
 
-     Important: If the RngStreams library (or any other library for
-     which UNU.RAN provides a direct interface) before running the configure
-     script in Step 3 this the UNU.RAN interface is not compiled and
-     thus cannot be used.
-     (The library itself can still be used but you have to use the 
-     generic interface for uniform random number generators.)
+	We strong recommend to install and use the RngStreams library.
+
+     - Set the default type of the uniform random number generator:
+
+	Define the macros 'UNUR_URNG_DEFAULT' and 'UNUR_URNG_AUX_DEFAULT'.
+	(There exist suggestions for all libraries for which UNU.RAN 
+	provides wrapper functions. Uncomment the one that should be used.)
+
+	We strong recommend to use the RngStreams generator as global 
+	default.
+
 
   3. Run a configuration script:
 
@@ -74,6 +81,7 @@ Installing UNURAN
      in hardware. For others there should be a special compiler flag
      to get this feature (e.g. -MIEEE on DEC alpha).
 
+
   4. Compile and install the libray:
 
           make
@@ -82,7 +90,6 @@ Installing UNURAN
      This installs the following files:
 
           $(prefix)/include/unuran.h
-          $(prefix)/include/unuran_config.h
           $(prefix)/include/unuran_tests.h
           $(prefix)/lib/libunuran.a
           $(prefix)/info/unuran.info
@@ -97,10 +104,12 @@ Installing UNURAN
           export LIBRARY_PATH="HOMEDIRECTORY/lib"
           export C_INCLURE_PATH="HOMEDIRECTORY/include"
 
+
   5. Documentation in various formats (PS, PDF, info, dvi, HTML, plain text)
      can be found in the directory `doc'.
 
-  6. You can run some tests my
+
+  6. You can run some tests by
 
           make check
 
@@ -112,6 +121,19 @@ Installing UNURAN
 (For further targets for make and more details see the GNU generic installation
 instructions below.)
 
+
+Upgrading UNURAN
+................
+
+With UNU.RAN version 0.8.x the interface for changing underlying
+distributions and running a reinitialization routine has been 
+simplified. The old routines can be compiled into the library using 
+the following configure flag:
+
+          sh ./configure --enable-deprecated
+
+Notice: Using these deprecated routines is not supported any more
+and this strong discouraged.
 
 
 

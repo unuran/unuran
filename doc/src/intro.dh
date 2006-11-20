@@ -51,11 +51,11 @@
 
    @subsubheading Uniform random number generator
 
-   It can be used with any uniform random number generator but (at the
-   moment) some features work best with Otmar Lendl's @emph{prng}
-   library (see @url{http://statistik.wu-wien.ac.at/prng/} for
-   description and downloading).
-   For more details on using uniform random number in UNURAN
+   UNURAN can be used with any uniform random number generator but (at the 
+   moment) some features work best with Pierre L'Ecuyer's RngStreams library
+   (see @url{http://statistik.wu-wien.ac.at/software/RngStreams/} for a 
+   description and downloading.
+   For details on using uniform random number in UNURAN
    see @ref{URNG,,Using uniform random number generators}.
 
 
@@ -71,15 +71,8 @@
 
    @item Edit the file @file{src/unuran_config.h}.
 
-   @item Set sources of uniform random numbers in file @file{src/unuran_config.h}.
-
-        Set @code{UNUR_URNG_DEFAULT_TYPE} to one of the
-	 given types. The setting in the distributed file
-	 is a built-in generator, so no other libraries need to
-	 be installed.
-
-	 You can change the default uniform generators for
-	 the chosen type.
+   @item Enable interfaces to different sources of uniform random
+         numbers in file @file{src/unuran_config.h}.
 
 	 UNURAN provides wrapper functions for some
 	 libraries for uniform random number generators.
@@ -90,12 +83,19 @@
 	 Moreover, it is important that these libraries have to
 	 be linked when making an executable.
 
-	 @emph{Important:} Do @strong{not} set 
-	 @code{UNUR_URNG_TYPE} to other values but
-	 @code{UNUR_URNG_GENERIC} unless you have serious reasons. 
-	 With UNURAN-0.7.0 these other types are deprecated and are not tested 
-	 any more. They are only provided for backwards compatibility if
-	 this is required.
+	 We strong recommend to install and use the @file{RngStreams}
+	 library.
+
+   @item Set the default type of the uniform random number generator
+	  in file @file{src/unuran_config.h}.
+
+	 Define the macros @code{UNUR_URNG_DEFAULT} and
+	 @code{UNUR_URNG_AUX_DEFAULT}.
+	 (There exist suggestions for all libraries for which UNURAN 
+	 provides wrapper functions. Uncomment the one that should be used.)
+
+	 We strong recommend to use the @file{RngStreams} generator as
+	 global default.
 
    @item Run a configuration script:
 	 @smallexample
@@ -128,7 +128,6 @@
 	 This installs the following files:
 	 @smallexample
 	    $(prefix)/include/unuran.h
-	    $(prefix)/include/unuran_config.h
 	    $(prefix)/include/unuran_tests.h
 	    $(prefix)/info/unuran.info
 	    $(prefix)/lib/libunuran.a
@@ -161,7 +160,7 @@
    @item Documentation in various formats (PS, PDF, info, dvi, HTML,
 	 plain text) can be found in directory @file{doc}.
 
-   @item You can run some tests my 
+   @item You can run some tests by
 	 @smallexample
 	    make check
 	 @end smallexample
@@ -172,6 +171,20 @@
          since we have used some extreme settings to test the library.
 
    @end enumerate
+
+
+   @subsubheading Upgrading
+
+   With UNURAN version 0.8.0 the interface for changing underlying
+   distributions and running a reinitialization routine has been 
+   simplified. The old routines can be compiled into the library using
+   the following configure flag:
+   @smallexample
+	sh ./configure --enable-deprecated
+   @end smallexample
+
+   Notice: Using these deprecated routines is not supported any more
+   and this strong discouraged.
 
 =EON
 

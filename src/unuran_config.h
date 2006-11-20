@@ -164,7 +164,6 @@
 /*    http://www.gnu.org/software/gsl/                                       */
 /* #define UNURAN_HAS_GSL 1 */
 
-
 /*---------------------------------------------------------------------------*/
 /* Default generators                                                        */
 
@@ -180,6 +179,10 @@
 /*   Notice: You must not use more than one macro definition for each macro  */
 /*   'UNUR_URNG_DEFAULT' and 'UNUR_URNG_AUX_DEFAULT'!                        */
 
+/* use type RNGSTREAMS (_recommended_!) */
+/* #define UNUR_URNG_DEFAULT      (unur_urng_rngstream_new("URNG_main")) */
+/* #define UNUR_URNG_AUX_DEFAULT  (unur_urng_rngstream_new("URNG_aux")) */
+
 /* use type FVOID (built-in) */
 #define UNUR_URNG_DEFAULT      (unur_urng_fvoid_new(unur_urng_MRG31k3p, unur_urng_MRG31k3p_reset))
 #define UNUR_URNG_AUX_DEFAULT  (unur_urng_fvoid_new(unur_urng_fish, unur_urng_fish_reset))
@@ -188,26 +191,9 @@
 /* #define UNUR_URNG_DEFAULT      (unur_urng_prng_new("mt19937(19863)")) */
 /* #define UNUR_URNG_AUX_DEFAULT  (unur_urng_prng_new("LCG(2147483647,16807,0,1)")) */
 
-/* use type RNGSTREAMS */
-/* #define UNUR_URNG_DEFAULT      (unur_urng_rngstream_new("URNG_main")) */
-/* #define UNUR_URNG_AUX_DEFAULT  (unur_urng_rngstream_new("URNG_aux")) */
-
 /* use type GSL */
 /* #define UNUR_URNG_DEFAULT      (unur_urng_gsl_new(gsl_rng_mt19937)) */
 /* #define UNUR_URNG_AUX_DEFAULT  (unur_urng_gsl_new(gsl_rng_cmrg)) */
-
-
-/*---------------------------------------------------------------------------*/
-
-/* TODO: */
-/*   remove pointer to these macros from docu: INSTALL, doc/src/intro.h */
-/* #define UNUR_URNG_TYPE UNUR_URNG_GENERIC */
-/* #define UNUR_URNG_GENERIC    99   /\* use a generic interface (recommended)   *\/ */
-/* #define UNUR_URNG_FVOID       1   /\* use type `double urng(void)'            *\/ */
-/* #define UNUR_URNG_PRNG        2   /\* use prng-3.x                            *\/ */
-/* #define UNUR_URNG_RNGSTREAMS  3   /\* use RngStreams                          *\/ */
-/* #define UNUR_URNG_GSL         4   /\* use GNU Scientific Library              *\/ */
-
 
 /*---------------------------------------------------------------------------*/
 #endif  /* UNURAN_CONFIG_H_SEEN */

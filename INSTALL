@@ -90,6 +90,7 @@ Installing UNURAN
      This installs the following files:
 
           $(prefix)/include/unuran.h
+          $(prefix)/include/unuran_config.h
           $(prefix)/include/unuran_tests.h
           $(prefix)/lib/libunuran.a
           $(prefix)/info/unuran.info

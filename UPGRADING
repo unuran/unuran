@@ -1,0 +1,22 @@
+
+ *****************************************************************************
+ *                                                                           *
+ *          UNURAN -- Universal Non-Uniform Random number generator          *
+ *                                                                           *
+ *****************************************************************************
+
+
+Upgrading UNURAN from version 0.8.x or earlier
+..............................................
+
+With UNU.RAN version 0.8.x the interface for changing underlying
+distributions and running a reinitialization routine has been 
+simplified. The old routines can be compiled into the library using 
+the following configure flag:
+
+          sh ./configure --enable-deprecated
+
+Notice: Using these deprecated routines is not supported any more
+and this strong discouraged.
+
+

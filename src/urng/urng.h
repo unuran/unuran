@@ -39,8 +39,6 @@
 #ifndef URNG_H_SEEN
 #define URNG_H_SEEN
 /*---------------------------------------------------------------------------*/
-#include <unuran_config.h>
-/*---------------------------------------------------------------------------*/
 
 /* 
    =NODE  URNG  Using uniform random number generators

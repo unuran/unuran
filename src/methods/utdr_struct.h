@@ -52,7 +52,7 @@ struct unur_utdr_gen {
   double  hm;               /* transformed PDF at mode                       */
 
   double  vollc,volcompl,voll,
-    al,ar,col,cor,sal,sar,bl,br,tlx,trx,
+    al,ar,col,cor,sal,sar,bl,br,ttlx,ttrx,
     brblvolc,drar,dlal,ooar2,ooal2;/* constants of the hat and for generation*/
 
   double  c_factor;         /* constant for choosing the design points       */

@@ -151,7 +151,7 @@ static int _unur_utdr_hat( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 
 static void _unur_utdr_debug_init( const struct unur_gen *gen, 
-				   double tly, double tlys, double try, double trys,
+				   double ttly, double ttlys, double ttry, double ttrys,
 				   double cfac, int setupok, double c );
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed.                 */
@@ -666,8 +666,8 @@ _unur_utdr_create( struct unur_par *par )
   GEN->sar = 0.; 
   GEN->bl = 0.; 
   GEN->br = 0.; 
-  GEN->tlx = 0.; 
-  GEN->trx = 0.; 
+  GEN->ttlx = 0.; 
+  GEN->ttrx = 0.; 
   GEN->brblvolc = 0.; 
   GEN->drar = 0.; 
   GEN->dlal = 0.; 
@@ -836,13 +836,13 @@ _unur_utdr_sample( struct unur_gen *gen )
     v = _unur_call_urng(gen->urng) * linx;
     /*2.3*/
     if (x<DISTR.mode) {
-      if (x >= GEN->tlx) {
+      if (x >= GEN->ttlx) {
 	help = GEN->hm - (DISTR.mode - x) * GEN->sal;
 	if (v * help * help <= 1.) return x;
       } 
     }
     else {
-      if (x <= GEN->trx) {
+      if (x <= GEN->ttrx) {
 	help = GEN->hm - (DISTR.mode - x) * GEN->sar;
 	if (v * help * help <= 1.) return x; 
       }
@@ -900,14 +900,14 @@ _unur_utdr_sample_check( struct unur_gen *gen )
     /*2.3*/
     squeezex=0.;
     if (x<DISTR.mode) {
-      if (x >= GEN->tlx) {
+      if (x >= GEN->ttlx) {
 	help = GEN->hm - (DISTR.mode - x) * GEN->sal;
         squeezex=1./(help*help);
 	/*        if (v * help * help <= 1.) return x;*/
       } 
     }
     else {
-      if (x <= GEN->trx) {
+      if (x <= GEN->ttrx) {
 	help = GEN->hm - (DISTR.mode - x) * GEN->sar;
         squeezex=1./(help*help);
 	/*        if (v * help * help <= 1.) return x; */
@@ -963,7 +963,7 @@ _unur_utdr_hat( struct unur_gen *gen )
   double fm;
 
   int setupok=1;
-  double c,cfac,volc,volr,tly,tlys,try,trys,dl,dr,delta,delta1,delta2,pdfx;
+  double c,cfac,volc,volr,ttly,ttlys,ttry,ttrys,dl,dr,delta,delta1,delta2,pdfx;
 
   /* check arguments */
   CHECK_NULL( gen, UNUR_ERR_NULL );
@@ -986,19 +986,19 @@ _unur_utdr_hat( struct unur_gen *gen )
 
   /** ich habe diese variablen initialisiert, weil ich auf einem
       alpha rechner eine flaoting exception bei der ersten verwendung
-      von try oder trys bekommen habe.
+      von ttry oder ttrys bekommen habe.
       das ist keine IEEE 764 architektur.
-      es stand dann try irgend ein bitmuster, dass keiner regulaeren
+      es stand dann ttry irgend ein bitmuster, dass keiner regulaeren
       zahl entsprochen hat und daher die FPE versucht hat
       (in eine if abfrage !!)
-      das zeigt, das da try tatsaechlich nicht initialiesiert verwendet 
+      das zeigt, das da ttry tatsaechlich nicht initialiesiert verwendet 
       wurde. das sollte man sauberer programmieren.
   **/
 
-  try = 0.;
-  trys = 0.;
-  tly = 0.;
-  tlys = 0.;
+  ttry = 0.;
+  ttrys = 0.;
+  ttly = 0.;
+  ttlys = 0.;
   dl = 0.;
   dr = 0.;
   volr = 0.;
@@ -1015,46 +1015,46 @@ _unur_utdr_hat( struct unur_gen *gen )
     c = cfac * DISTR.area/GEN->fm;
     setupok=1;         
 
-    GEN->tlx = DISTR.mode - c;
-    GEN->trx = DISTR.mode + c;
+    GEN->ttlx = DISTR.mode - c;
+    GEN->ttrx = DISTR.mode + c;
 
     /* 1.2 */
     /** TODO: kann man das nicht loeschen ?? **/
-    if (/*GEN->il > -INFINITY &&*/ GEN->tlx < GEN->il) { 
+    if (/*GEN->il > -INFINITY &&*/ GEN->ttlx < GEN->il) { 
       /* this is the case of no left tail*/
       GEN->bl = GEN->il;
       GEN->al = 0.;
       GEN->voll = 0.;
       if (GEN->il < DISTR.mode) {
-	/* if the left domain border is left of the mode we set tlx
+	/* if the left domain border is left of the mode we set ttlx
 	   only to use it for the squeeze*/
-        GEN->tlx = DISTR.mode + (GEN->il - DISTR.mode) * 0.6;
-        pdfx=PDF(GEN->tlx);
+        GEN->ttlx = DISTR.mode + (GEN->il - DISTR.mode) * 0.6;
+        pdfx=PDF(GEN->ttlx);
         if (pdfx > SMALL_VAL)
-          GEN->sal = (GEN->hm + 1./sqrt(pdfx)) / (DISTR.mode - GEN->tlx);
+          GEN->sal = (GEN->hm + 1./sqrt(pdfx)) / (DISTR.mode - GEN->ttlx);
         else 
-	  GEN->tlx = DISTR.mode;
-	/* pdfx is too small. We set tlx=mode that no squeeze is used */
+	  GEN->ttlx = DISTR.mode;
+	/* pdfx is too small. We set ttlx=mode that no squeeze is used */
       }  
     }
     else {
-     tlys = PDF(GEN->tlx);
-     if (tlys < SMALL_VAL) { 
+     ttlys = PDF(GEN->ttlx);
+     if (ttlys < SMALL_VAL) { 
        /* in this case we cut off the left tail*/
-       GEN->il = GEN->tlx;
+       GEN->il = GEN->ttlx;
        GEN->bl = GEN->il;
        GEN->al = 0.;
        GEN->voll = 0.;
-       GEN->tlx=DISTR.mode;
-       /* pdfx is too small. We set tlx=mode that no squeeze is used */
+       GEN->ttlx=DISTR.mode;
+       /* pdfx is too small. We set ttlx=mode that no squeeze is used */
      }
      else {
-       tlys = -1./sqrt(tlys);
-       GEN->sal =  (GEN->hm - tlys) / (DISTR.mode - GEN->tlx);
+       ttlys = -1./sqrt(ttlys);
+       GEN->sal =  (GEN->hm - ttlys) / (DISTR.mode - GEN->ttlx);
 
-       /* delta1> 0 as -tlys>0 und sal >0; */
-       delta2 = ( GEN->sal > 0. ) ? -tlys/GEN->sal : -tlys;
-       delta1 = fabs(GEN->tlx);
+       /* delta1> 0 as -ttlys>0 und sal >0; */
+       delta2 = ( GEN->sal > 0. ) ? -ttlys/GEN->sal : -ttlys;
+       delta1 = fabs(GEN->ttlx);
        delta = GEN->delta_factor * ((delta1<=delta2) ? delta2 : delta1);
        if (delta > c * 0.01) {
 	 delta = UNUR_SQRT_DBL_EPSILON * ((delta1<=delta2) ? delta2 : delta1);
@@ -1071,16 +1071,16 @@ _unur_utdr_hat( struct unur_gen *gen )
          }
        }
        
-       tly = -1./sqrt(PDF(GEN->tlx+delta));
-       GEN->al = (tly-tlys)/delta;
+       ttly = -1./sqrt(PDF(GEN->ttlx+delta));
+       GEN->al = (ttly-ttlys)/delta;
 
        if (GEN->al <= 0.) 
 	 /* setupok==0 means that this setup is quitted and set-up is restarted
 	    with different value for cfac */
 	 setupok = 0; 
        else {
-	 GEN->bl = GEN->tlx + (GEN->hm - tly)/GEN->al;
-	 dl = tly - GEN->al * GEN->tlx;
+	 GEN->bl = GEN->ttlx + (GEN->hm - ttly)/GEN->al;
+	 dl = ttly - GEN->al * GEN->ttlx;
 	 GEN->voll = -1./(GEN->al * GEN->hm);
 	 GEN->col = GEN->voll;
 	 if (GEN->il > -INFINITY)
@@ -1091,41 +1091,41 @@ _unur_utdr_hat( struct unur_gen *gen )
 
     /* 1.3 */
     if(setupok) {
-      if (/*GEN->ir < INFINITY &&*/ GEN->trx > GEN->ir) {
+      if (/*GEN->ir < INFINITY &&*/ GEN->ttrx > GEN->ir) {
 	/* this is the case of no right tail */
         GEN->br = GEN->ir;
         GEN->ar = 0.;
         volr = 0.;
         if (GEN->ir > DISTR.mode) {
-	  /* if the right domain border is right of the mode we set trx
+	  /* if the right domain border is right of the mode we set ttrx
 	     only to use it for the squeeze */
-          GEN->trx = DISTR.mode + (GEN->ir - DISTR.mode) * 0.6;
-          pdfx = PDF(GEN->trx);
+          GEN->ttrx = DISTR.mode + (GEN->ir - DISTR.mode) * 0.6;
+          pdfx = PDF(GEN->ttrx);
           if (pdfx > SMALL_VAL)
-            GEN->sar = (GEN->hm + 1./sqrt(PDF(GEN->trx))) / (DISTR.mode - GEN->trx);
+            GEN->sar = (GEN->hm + 1./sqrt(PDF(GEN->ttrx))) / (DISTR.mode - GEN->ttrx);
           else 
-	    GEN->trx = DISTR.mode;
-	  /* pdfx is too small. We set trx=mode that no squeeze is used */
+	    GEN->ttrx = DISTR.mode;
+	  /* pdfx is too small. We set ttrx=mode that no squeeze is used */
         } 
       }
       else {
-        trys = PDF(GEN->trx);
-        if (trys < SMALL_VAL){
+        ttrys = PDF(GEN->ttrx);
+        if (ttrys < SMALL_VAL){
 	  /* in this case we cut off the right tail */
-          GEN->ir = GEN->trx;
+          GEN->ir = GEN->ttrx;
           GEN->br = GEN->ir;
           GEN->ar = 0.;
           volr = 0.;
-          GEN->trx = DISTR.mode;
-	  /* pdfx is too small. We set trx=mode that no squeeze is used */
+          GEN->ttrx = DISTR.mode;
+	  /* pdfx is too small. We set ttrx=mode that no squeeze is used */
 	}
 	else {
-	  trys= -1./sqrt(trys);
+	  ttrys= -1./sqrt(ttrys);
 	  /* see 1.2. for explanations */
-	  GEN->sar = (GEN->hm - trys) / (DISTR.mode - GEN->trx);
-	  /* delta is positive, da trys<0 und sar <0 */
-	  delta2 = (GEN->sar<0.) ? trys/GEN->sar : -trys;
-	  delta1 = fabs(GEN->trx);
+	  GEN->sar = (GEN->hm - ttrys) / (DISTR.mode - GEN->ttrx);
+	  /* delta is positive, da ttrys<0 und sar <0 */
+	  delta2 = (GEN->sar<0.) ? ttrys/GEN->sar : -ttrys;
+	  delta1 = fabs(GEN->ttrx);
 	  delta = GEN->delta_factor * ((delta1<=delta2) ? delta2 : delta1);
 	  if (delta > c*0.01) { 
 	    delta = UNUR_SQRT_DBL_EPSILON * ((delta1<=delta2) ? delta2 : delta1);
@@ -1141,15 +1141,15 @@ _unur_utdr_hat( struct unur_gen *gen )
 	    }
 	  }
 	  
-	  try = -1./sqrt(PDF(GEN->trx-delta));
-	  GEN->ar = (trys - try)/delta;
+	  ttry = -1./sqrt(PDF(GEN->ttrx-delta));
+	  GEN->ar = (ttrys - ttry)/delta;
 	  if (GEN->ar >= 0.) 
 	    /* setupok==0 means that this setup is quitted and set-up is 
 	       restarted with different value for cfac */
 	    setupok = 0;
 	  else { 
-	    GEN->br = GEN->trx + (GEN->hm - try) / GEN->ar;
-	    dr = try - GEN->ar * GEN->trx;
+	    GEN->br = GEN->ttrx + (GEN->hm - ttry) / GEN->ar;
+	    dr = ttry - GEN->ar * GEN->ttrx;
 	    volr = 1./(GEN->ar * GEN->hm);
 	    GEN->cor = volr;
 	    if (GEN->ir<INFINITY)
@@ -1178,7 +1178,7 @@ _unur_utdr_hat( struct unur_gen *gen )
 
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
-    if (gen->debug) _unur_utdr_debug_init(gen,tly,tlys,try,trys,cfac,setupok,c);
+    if (gen->debug) _unur_utdr_debug_init(gen,ttly,ttlys,ttry,ttrys,cfac,setupok,c);
 #endif
 
     if (cfac!=2.) {
@@ -1211,7 +1211,7 @@ _unur_utdr_hat( struct unur_gen *gen )
 
 static void
 _unur_utdr_debug_init( const struct unur_gen *gen,
-		       double tly, double tlys, double try, double trys,
+		       double ttly, double ttlys, double ttry, double ttrys,
 		       double cfac, int setupok, double c )
      /*----------------------------------------------------------------------*/
      /* write info about generator into logfile                              */
@@ -1245,10 +1245,10 @@ _unur_utdr_debug_init( const struct unur_gen *gen,
   fprintf(log,"%s: Data for hat and squeeze:\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
   fprintf(log,"%s:\tc_factor=%e delta_factor=%e real c=%e\n",gen->genid,GEN->c_factor,GEN->delta_factor,c);
-  fprintf(log,"%s:\ttlx=%e bl=%e mode=%e\n",gen->genid,GEN->tlx,GEN->bl,DISTR.mode);
-  fprintf(log,"%s:\tbr=%e trx=%e\n",gen->genid,GEN->br,GEN->trx);
-  fprintf(log,"%s:\ttly=%e tlys=%e al=%e \n",gen->genid,tly,tlys,GEN->al);
-  fprintf(log,"%s:\ttry=%e trys=%e ar=%e \n",gen->genid,try,trys,GEN->ar);
+  fprintf(log,"%s:\ttlx=%e bl=%e mode=%e\n",gen->genid,GEN->ttlx,GEN->bl,DISTR.mode);
+  fprintf(log,"%s:\tbr=%e trx=%e\n",gen->genid,GEN->br,GEN->ttrx);
+  fprintf(log,"%s:\ttly=%e tlys=%e al=%e \n",gen->genid,ttly,ttlys,GEN->al);
+  fprintf(log,"%s:\ttry=%e trys=%e ar=%e \n",gen->genid,ttry,ttrys,GEN->ar);
   fprintf(log,"%s:\tcfac=%e setupok=%d volcompl=%e pdf_area=%e\n",gen->genid,cfac,setupok,GEN->volcompl,DISTR.area);
   fprintf(log,"%s:\n",gen->genid);
   fprintf(log,"%s: INIT completed **********************\n",gen->genid);

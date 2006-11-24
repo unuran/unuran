@@ -88,16 +88,17 @@ CLEANFILES = *~
 # clean generated files
 MAINTAINERCLEANFILES = \
  Makefile.in \
- configure \
  aclocal.m4 \
- config.guess \
+ configure \
  config.h.in \
- config.sub \
- depcomp \
- install-sh \
- ltmain.sh \
- missing \
- mkinstalldirs
+ autoconf/config.guess \
+ autoconf/config.sub \
+ autoconf/depcomp \
+ autoconf/install-sh \
+ autoconf/ltmain.sh \
+ autoconf/mdate-sh \
+ autoconf/missing \
+ autoconf/mkinstalldirs
 
 # remove windows directory
 maintainer-clean-local:

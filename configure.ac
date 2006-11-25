@@ -2,8 +2,8 @@ dnl Process this file with autoconf to produce a configure script.
 dnl $Id$
 
 dnl Initialize.
-AC_PREREQ(2.59)
-dnl AC_INIT([UNURAN],[0.8.0],[unuran@statistik.wu-wien.ac.at])
+AC_PREREQ(2.60)
+dnl AC_INIT([UNURAN],[0.9.0],[unuran@statistik.wu-wien.ac.at])
 AC_INIT([UNURAN],[devel],[unuran@statistik.wu-wien.ac.at])
 AC_CONFIG_AUX_DIR(autoconf)
 AM_INIT_AUTOMAKE
@@ -14,16 +14,17 @@ dnl Library versioning (current:revision:age)
 dnl See the libtool manual  for an explanation of the numbers
 dnl 
 dnl unuran-0.4.0   0:0:0
-dnl unuran-0.4.2   1:0:1
-dnl unuran-0.4.4   1:0:2
+dnl unuran-0.4.2   1:1:0
+dnl unuran-0.4.4   1:2:0
 dnl unuran-0.5.0   2:0:0
 dnl unuran-0.6.0   3:0:0
 dnl unuran-0.7.0   4:0:0
-dnl unuran-0.7.1   4:0:1
-dnl unuran-0.7.2   4:0:2
+dnl unuran-0.7.1   4:1:0
+dnl unuran-0.7.2   4:2:0
 dnl unuran-0.8.1   5:0:0
+dnl unuran-0.9.x   6:0:0
 
-UNURAN_LT_VERSION="5:0:0"
+UNURAN_LT_VERSION="6:0:0"
 AC_SUBST([UNURAN_LT_VERSION])
 
 dnl Whether experimental code should be included

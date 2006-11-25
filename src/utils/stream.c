@@ -200,6 +200,7 @@ _unur_logfile_open( const char *logfilename )
 
   /* write header into log file */
   fprintf(LOG,"\nUNURAN - Universal Non-Uniform RANdom number generator\n\n");
+  fprintf(LOG,"Version: %s\n",PACKAGE_VERSION);
 
   /* time when created */
   if (time( &started ) != -1)

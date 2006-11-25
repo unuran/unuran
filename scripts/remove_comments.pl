@@ -53,6 +53,9 @@ EOM
 
 ############################################################
 
+# year
+my $year = 1900 + (localtime(time))[5];
+
 # read file name from argument list ...
 my $file = shift;
 (usage and die) unless $file;
@@ -72,7 +75,7 @@ $content =~ s /\n\s*\n/\n/gsx;
 
 # copyright statment
 my $copyright =
-    "/* Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold */\n" .
+    "/* Copyright (c) 2000-$year Wolfgang Hoermann and Josef Leydold */\n" .
     "/* Department of Statistics and Mathematics, WU Wien, Austria  */\n";
 
 # print into file

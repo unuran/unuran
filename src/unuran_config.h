@@ -140,6 +140,10 @@
 
 /*---------------------------------------------------------------------------*/
 /* Enable interfaces to different sources.                                   */
+
+/* TODO: OBSOLETE !!! */
+
+
 /*                                                                           */
 /* Uncomment the following lines when the source of uniform random numbers   */
 /* should be used. This allows UNURAN to provide the corresponding wrapper   */
@@ -151,14 +155,14 @@
 
 /* Use Otmar Lendl's `prng' library                                          */
 /*    http://statistik.wu-wien.ac.at/prng/                                   */
-#define UNURAN_HAS_PRNG 1
+/* #define UNURAN_HAS_PRNG 1 */
 
 /* Use Pierre L'Ecuyer's `RngStreams' library for multiple independent       */
 /*    streams of pseudo-random numbers                                       */
 /*    (see http://www.iro.umontreal.ca/~lecuyer/myftp/streams00/c/).         */
 /* UNURAN makes use of a GNU-style package which is available from           */
 /*    http://statistik.wu-wien.ac.at/software/RngStreams/                    */
-#define UNURAN_HAS_RNGSTREAMS 1
+/* #define UNURAN_HAS_RNGSTREAMS 1 */
 
 /* Use uniform RNG objects from the GNU Scientific Library (GSL)             */
 /*    http://www.gnu.org/software/gsl/                                       */

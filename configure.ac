@@ -59,20 +59,78 @@ AC_PROG_LIBTOOL
 dnl Checks for libraries.
 dnl libm: the standard math library
 AC_CHECK_LIB([m], [sqrt])
-dnl prng: Otmar Lendl's library for pseudo random number generators
-AC_CHECK_LIB([prng], [prng_new])
-AC_CHECK_HEADERS([prng.h])
-dnl RngStream: Pierre L'Ecuyers multiple random stream generator
-AC_CHECK_LIB([rngstreams], [RngStream_CreateStream])
-AC_CHECK_HEADERS([RngStream.h])
-dnl GSL: GNU Scientific Library
-AC_CHECK_LIB([gslcblas], [main])
-AC_CHECK_LIB([gsl], [gsl_poly_eval])
-AC_CHECK_HEADERS([gsl/gsl_rng.h])
 
-dnl cephes: Stephen L. Moshier's library of mathematical functions 
-dnl However, at the moment we do not use it any more.
-dnl AC_CHECK_LIB([md], [lgam])
+dnl Optional support for external uniform random number generators
+
+dnl RngStream: Pierre L'Ecuyer's multiple random stream generator
+AC_ARG_WITH(urng_rngstream,
+	[AS_HELP_STRING([--with-urng-rngstream],
+	   [URNG: use Pierre L'Ecuyer's RNGSTREAM library @<:@default=no@:>@])],
+	[case "${withval}" in
+	   yes) ;; no) ;; 
+	   *) AC_MSG_ERROR(bad value '${withval}' for --with-urng-rngstream) ;;
+	esac],
+	[with_urng_rngstream=no])
+AS_IF([test "x$with_urng_rngstream" != xno],
+	[AC_CHECK_LIB([rngstreams], [RngStream_CreateStream], [], [])
+	 AC_CHECK_HEADERS([RngStream.h],
+	   [AC_DEFINE([UNURAN_HAS_RNGSTREAMS], [1], 
+             [Define to 1 if you use Pierre L'Ecuyer's RNGSTREAM library.])],
+	   [AC_MSG_FAILURE([
+****************************************************************
+*                                                              *
+*   --with-urng-rngstream given, but 'RngStream.h' not found   *
+*                                                              *
+****************************************************************
+	   ]) ]) ], [])
+
+
+dnl prng: Otmar Lendl's library for pseudo random number generators
+AC_ARG_WITH(urng_prng,
+	[AS_HELP_STRING([--with-urng-prng],
+	   [URNG: use Otmar Lendl's PRNG library @<:@default=no@:>@])],
+	[case "${withval}" in
+	   yes) ;; no) ;; 
+	   *) AC_MSG_ERROR(bad value '${withval}' for --with-urng-prng) ;;
+	esac],
+	[with_urng_prng=no])
+AS_IF([test "x$with_urng_prng" != xno],
+	[AC_CHECK_LIB([prng], [prng_new], [], [])
+	 AC_CHECK_HEADERS([prng.h],
+	   [AC_DEFINE([UNURAN_HAS_PRNG], [1], 
+             [Define to 1 if you use Otmar Lendl's PRNG library.])],
+	   [AC_MSG_FAILURE([
+******************************************************
+*                                                    *
+*   --with-urng-prng given, but 'prng.h' not found   *
+*                                                    *
+******************************************************
+	   ]) ]) ], [])
+
+
+dnl GSL: GNU Scientific Library
+AC_ARG_WITH(urng_gsl,
+	[AS_HELP_STRING([--with-urng-gsl],
+	   [URNG: use random number generators from GNU Scientific Library @<:@default=no@:>@])],
+	[case "${withval}" in
+	   yes) ;; no) ;; 
+	   *) AC_MSG_ERROR(bad value '${withval}' for --with-urng-gsl) ;;
+	esac],
+	[with_urng_gsl=no])
+AS_IF([test "x$with_urng_gsl" != xno],
+	[AC_CHECK_LIB([gslcblas], [main])
+	 AC_CHECK_LIB([gsl], [gsl_rng_alloc], [], [])
+	 AC_CHECK_HEADERS([gsl/gsl_rng.h],
+	   [AC_DEFINE([UNURAN_HAS_GSL], [1], 
+             [Define to 1 if you use uniform random number generators from GSL.])],
+	   [AC_MSG_FAILURE([
+********************************************************
+*                                                      *
+*   --with-urng-gsl given, but 'gsl_rng.h' not found   *
+*                                                      *
+********************************************************
+	   ]) ]) ], [])
+
 
 dnl Checks for header files.
 AC_HEADER_STDC
@@ -136,7 +194,7 @@ dnl default is disabled.
 
 AC_ARG_ENABLE(deprecated,
 	[AS_HELP_STRING([--enable-deprecated],
-		[enable support for deprecated routines (default=no)])],
+		[enable support for deprecated routines @<:@default=use both@:>@])],
 	[],
 	[enable_deprecated=no])
 AM_CONDITIONAL(ENABLE_DEPRECATED, test x$enable_deprecated = xyes)
@@ -150,12 +208,12 @@ dnl breaks the configure script when 'math' is available but
 dnl ask for a password. 
 dnl Hence these tests are enabled by means of a configure option.
 AC_ARG_WITH(mathematica,
-	AS_HELP_STRING([--with-mathematica],
-                       [Use Mathematica(R) for some checks (default=no) ]),
+	[AS_HELP_STRING([--with-mathematica],
+		[Use Mathematica(R) for some checks @<:@default=no@:>@])],
 	[case "${withval}" in
 	  yes) mathematica=true ;;
 	  no)  mathematica=false ;;
-	  *) AC_MSG_ERROR(bad value ${withval} for --with-mathematica) ;;
+	  *) AC_MSG_ERROR(bad value '${withval}' for --with-mathematica) ;;
 	esac],
 	[mathematica=false])
 AM_CONDITIONAL(HAVE_MATHEMATICA, test x$mathematica = xtrue)

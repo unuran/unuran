@@ -954,6 +954,10 @@ sub print_C_header {
     
 /*---------------------------------------------------------------------------*/
 #include "testunuran.h"
+
+#ifdef UNUR_URNG_DEFAULT_RNGSTREAM
+#include <RngStream.h>
+#endif
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
@@ -1007,6 +1011,8 @@ sub print_C_main {
 
 int main(void)
 { 
+       unsigned long seed;
+
 	/* open log file for unuran and set output stream for unuran messages */
 	UNURANLOG = fopen( "$file_unuranlog","w" );
 	abort_if_NULL( stderr,-1, UNURANLOG );
@@ -1025,34 +1031,34 @@ int main(void)
 		fprintf(TESTLOG,"\\n====================================================\\n\\n");
 	}
 
-       /* seed build-in uniform generators */
+       /* seed for uniform generators */
 #ifdef SEED
-       unur_urng_MRG31k3p_seed(SEED);
-	unur_urng_fish_seed(SEED);
-	unur_urng_mstd_seed(SEED);
+	seed = SEED;
 #else
-       unur_urng_MRG31k3p_seed($seed);
-	unur_urng_fish_seed($seed);
-	unur_urng_mstd_seed($seed);
+       seed = $seed;
 #endif
+
+       /* seed build-in uniform generators */
+       unur_urng_MRG31k3p_seed(seed);
+	unur_urng_fish_seed(seed);
+	unur_urng_mstd_seed(seed);
 
 	/* seed uniform random number generator */
 #ifdef UNUR_URNG_UNURAN
-	if (unur_urng_seed(NULL, 
-#  ifdef SEED
-	      SEED
+#  ifdef UNUR_URNG_DEFAULT_RNGSTREAM
+	{
+	   unsigned long sa[6];
+	   int i;
+	   for (i=0; i<6; i++) sa[i] = seed;
+          RngStream_SetPackageSeed(sa);
+       }
 #  else
-	      $seed
-#  endif  
-             ) != UNUR_SUCCESS) {
-	    ;
-	/*  fprintf(stderr,"WARNING: Seed could not be set at random\\n"); */
-	}  
-#else
-	fprintf(stderr,"WARNING: Seed not set \\n");
+	if (unur_urng_seed(NULL,seed) != UNUR_SUCCESS) {
+	  fprintf(stderr,"WARNING: Seed could not be set at random\\n");
+	}
+#  endif  /* UNUR_URNG_DEFAULT_RNGSTREAM */
 #endif  /* UNUR_URNG_UNURAN */
  
-
 	/* set default debugging flag */
 	unur_set_default_debug(UNUR_DEBUG_ALL);
 

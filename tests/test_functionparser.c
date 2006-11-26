@@ -41,8 +41,8 @@
 #include <string.h>
 #include <time.h>
 
-#include <unuran.h>
 #include <config.h>
+#include <unuran.h>
 
 #ifdef WITH_DMALLOC
 #  include <dmalloc.h>

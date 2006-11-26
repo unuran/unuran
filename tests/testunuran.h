@@ -39,11 +39,11 @@
 #include <math.h>
 #include <float.h>
 
+#include <config.h>
 #include <unuran.h>
 #include <unuran_tests.h>
 #include "testdistributions/testdistributions.h"
 
-#include <config.h>
 #ifdef WITH_DMALLOC
 #  include <dmalloc.h>
 #endif

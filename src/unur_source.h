@@ -37,12 +37,7 @@
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
-/* compiler switches and defaults                                            */
-#include <unuran_config.h>
-
-/*---------------------------------------------------------------------------*/
 /* config file generated be autoconf                                         */
-
 
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
@@ -50,6 +45,9 @@
 #  error "config.h" required
 #endif
 
+/*---------------------------------------------------------------------------*/
+/* compiler switches and defaults                                            */
+#include <unuran_config.h>
 
 /*---------------------------------------------------------------------------*/
 /* include standard header files                                             */

@@ -4,10 +4,9 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: unur_uniform.h                                                    *
+ *   FILE: urng_builtin.c                                                    *
  *                                                                           *
- *   PURPOSE:                                                                *
- *      function prototypes for built-in uniform random number generators    *
+ *      routines for default built-in uniform random number generators.      *
  *                                                                           *
  *****************************************************************************
  *                                                                           *
@@ -32,43 +31,38 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef URNG_BUILTIN_H_SEEN
-#define URNG_BUILTIN_H_SEEN
+#include <unur_source.h>
+#include <urng/urng.h>
+#include "urng_fvoid.h"
+#include "urng_builtin.h"
 /*---------------------------------------------------------------------------*/
 
-/* Combined multiple recursive generator by Pierre L'Ecuyer and Renee Touzin */
-/* Copyright (c) 2002 Renee Touzin.                                          */
-
-double unur_urng_MRG31k3p (void);
-int unur_urng_MRG31k3p_seed (long seed);
-int unur_urng_MRG31k3p_reset (void);
-
-/* Linear congruential generator by Fishman and Moore                        */
-/* m = 2^31-1, a = 742938285, c = 0.                                         */
-
-double unur_urng_fish (void);
-int unur_urng_fish_seed (long seed);
-int unur_urng_fish_reset (void);
-
-/* Linear congruential generator "Minimal Standard"                          */
-/* m = 2^31-1, a = 16807, c = 0.                                             */
-
-double unur_urng_mstd (void);
-int unur_urng_mstd_seed (long seed);
-int unur_urng_mstd_reset (void);
+UNUR_URNG *unur_urng_builtin( void )
+     /*----------------------------------------------------------------------*/
+     /* get new URNG object of FVOID.                                        */
+     /*                                                                      */
+     /* parameters: none                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  UNUR_URNG *urng;
+  urng = unur_urng_fvoid_new(unur_urng_MRG31k3p, unur_urng_MRG31k3p_reset);
+  unur_urng_set_seed(urng, (void(*)(void*,unsigned long)) unur_urng_MRG31k3p_seed);
+  return urng;
+} /* unur_urng_builtin() */
 
 /*---------------------------------------------------------------------------*/
 
-UNUR_URNG *unur_urng_builtin( void );
-/*
-   Make object for the default builtin URNG.
-*/
+UNUR_URNG *unur_urng_builtin_aux( void )
+     /*----------------------------------------------------------------------*/
+     /* get new URNG object of FVOID.                                        */
+     /*                                                                      */
+     /* parameters: none                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  UNUR_URNG *urng;
+  urng = unur_urng_fvoid_new(unur_urng_fish, unur_urng_fish_reset);
+  unur_urng_set_seed(urng, (void(*)(void*,unsigned long)) unur_urng_fish_seed);
+  return urng;
+} /* end of unur_urng_builtin_aux() */
 
-UNUR_URNG *unur_urng_builtin_aux( void );
-/*
-   Make object for the default builtin URNG.
-*/
-
-/*---------------------------------------------------------------------------*/
-#endif  /* URNG_BUILTIN_H_SEEN */
 /*---------------------------------------------------------------------------*/

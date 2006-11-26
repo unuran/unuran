@@ -139,38 +139,11 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-/* Enable interfaces to different sources.                                   */
-
-/* TODO: OBSOLETE !!! */
-
-
-/*                                                                           */
-/* Uncomment the following lines when the source of uniform random numbers   */
-/* should be used. This allows UNURAN to provide the corresponding wrapper   */
-/* functions. (This wrapper functions are not required to use these          */
-/* libraries but simplifies their usage significantly.)                      */
-/*                                                                           */
-/* Notice, that then the  corresponding libraries have to be linked into     */
-/* each executable.                                                          */
-
-/* Use Otmar Lendl's `prng' library                                          */
-/*    http://statistik.wu-wien.ac.at/prng/                                   */
-/* #define UNURAN_HAS_PRNG 1 */
-
-/* Use Pierre L'Ecuyer's `RngStreams' library for multiple independent       */
-/*    streams of pseudo-random numbers                                       */
-/*    (see http://www.iro.umontreal.ca/~lecuyer/myftp/streams00/c/).         */
-/* UNURAN makes use of a GNU-style package which is available from           */
-/*    http://statistik.wu-wien.ac.at/software/RngStreams/                    */
-/* #define UNURAN_HAS_RNGSTREAMS 1 */
-
-/* Use uniform RNG objects from the GNU Scientific Library (GSL)             */
-/*    http://www.gnu.org/software/gsl/                                       */
-/* #define UNURAN_HAS_GSL 1 */
-
-/*---------------------------------------------------------------------------*/
 /* Default generators                                                        */
 
+/* Macros 'UNUR_URNG_DEFAULT' and 'UNUR_URNG_AUX_DEFAULT' must expand to     */
+/* (a function returning) an object of type UNUR_URNG.                       */
+/*                                                                           */
 /* IMPORTANT!                                                                */
 /*                                                                           */
 /*   When a particular default is chosen then the corresponding library must */
@@ -180,16 +153,28 @@
 /*                                                                           */
 /*   If you have none of these libraries use type FVOID.                     */
 /*                                                                           */
-/*   Notice: You must not use more than one macro definition for each macro  */
-/*   'UNUR_URNG_DEFAULT' and 'UNUR_URNG_AUX_DEFAULT'!                        */
 
-/* use type RNGSTREAMS (_recommended_!) */
-/* #define UNUR_URNG_DEFAULT      (unur_urng_rngstream_new("URNG_main")) */
-/* #define UNUR_URNG_AUX_DEFAULT  (unur_urng_rngstream_new("URNG_aux")) */
+/* The following is switched on by the configure flag                        */
+/*   --with-urng-default=rngstream                                           */
 
+#ifdef UNUR_URNG_DEFAULT_RNGSTREAM
+/* use type RNGSTREAM (recommended!) */
+#  define UNUR_URNG_DEFAULT      (unur_urng_rngstream_new("URNG_main"))
+#  define UNUR_URNG_AUX_DEFAULT  (unur_urng_rngstream_new("URNG_aux"))
+
+/* else we assume that we have                                               */
+/*   --with-urng-default=builtin                                             */
+
+#else
 /* use type FVOID (built-in) */
-#define UNUR_URNG_DEFAULT      (unur_urng_fvoid_new(unur_urng_MRG31k3p, unur_urng_MRG31k3p_reset))
-#define UNUR_URNG_AUX_DEFAULT  (unur_urng_fvoid_new(unur_urng_fish, unur_urng_fish_reset))
+#  define UNUR_URNG_DEFAULT      (unur_urng_builtin())
+#  define UNUR_URNG_AUX_DEFAULT  (unur_urng_builtin_aux())
+#endif
+
+/* However, it is also possible to use any other URNG.                       */
+/* Then one must comment out the above #definitions (and thus disables the   */
+/* the corresponding configure flags) and #defines new ones.                 */
+/* Here are two examples:                                                    */
 
 /* use type PRNG */
 /* #define UNUR_URNG_DEFAULT      (unur_urng_prng_new("mt19937(19863)")) */

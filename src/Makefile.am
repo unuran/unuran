@@ -40,10 +40,10 @@ libunuran_la_SOURCES =
 libunuran_la_LIBADD = $(SUBLIBS)
 libunuran_la_LDFLAGS = -version-info $(UNURAN_LT_VERSION)
 
-include_HEADERS = unuran.h \
- unuran_config.h
+include_HEADERS = unuran.h
 
 noinst_HEADERS = \
+ unuran_config.h \
  unuran.h.in \
  unur_source.h \
  unur_cookies.h \

@@ -33,19 +33,11 @@
 
 /*---------------------------------------------------------------------------*/
 #include <unur_source.h>
-#include <urng/urng.h>
-#include "urng_gsl.h"
 /*---------------------------------------------------------------------------*/
 #if defined(UNURAN_HAS_GSL) && defined(UNUR_URNG_UNURAN)
 /*---------------------------------------------------------------------------*/
-#ifndef HAVE_LIBGSL
-# error
-# error +-------------------------------------------------------------+
-# error ! You have defined UNURAN_HAS_GSL in unuran_config.h          +
-# error ! but the GNU Scientific library (GSL) is not installed.      +
-# error +-------------------------------------------------------------+
-# error
-#endif
+#include <urng/urng.h>
+#include "urng_gsl.h"
 /*---------------------------------------------------------------------------*/
 
 UNUR_URNG *

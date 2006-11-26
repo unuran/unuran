@@ -39,8 +39,6 @@
 #ifndef URNG_FVOID_H_SEEN
 #define URNG_FVOID_H_SEEN
 /*---------------------------------------------------------------------------*/
-#if defined(UNUR_URNG_UNURAN)
-/*---------------------------------------------------------------------------*/
 
 /* 
    =NODE  URNG-FVOID  Simple interface for uniform random number generators
@@ -101,8 +99,6 @@ UNUR_URNG *unur_urng_fvoid_new( double (*random)(void), int (*reset)(void) );
 
 /* =END */
 
-/*---------------------------------------------------------------------------*/
-#endif  /* #if defined(UNUR_URNG_UNURAN) */
 /*---------------------------------------------------------------------------*/
 #endif  /* URNG_FVOID_H_SEEN */
 /*---------------------------------------------------------------------------*/

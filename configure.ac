@@ -74,7 +74,8 @@ AC_ARG_WITH(urng_rngstream,
 AS_IF([test "x$with_urng_rngstream" != xno],
 	[AC_CHECK_LIB([rngstreams], [RngStream_CreateStream], [], [])
 	 AC_CHECK_HEADERS([RngStream.h],
-	   [AC_DEFINE([UNURAN_HAS_RNGSTREAMS], [1], 
+	   [AC_SUBST(UNURAN_SUPPORTS_RNGSTREAM,-DUNURAN_SUPPORTS_RNGSTREAM)
+	    AC_DEFINE([UNURAN_HAS_RNGSTREAM], [1], 
              [Define to 1 if you use Pierre L'Ecuyer's RNGSTREAM library.])],
 	   [AC_MSG_FAILURE([
 ****************************************************************
@@ -97,7 +98,8 @@ AC_ARG_WITH(urng_prng,
 AS_IF([test "x$with_urng_prng" != xno],
 	[AC_CHECK_LIB([prng], [prng_new], [], [])
 	 AC_CHECK_HEADERS([prng.h],
-	   [AC_DEFINE([UNURAN_HAS_PRNG], [1], 
+	   [AC_SUBST(UNURAN_SUPPORTS_PRNG,-DUNURAN_SUPPORTS_PRNG)
+	    AC_DEFINE([UNURAN_HAS_PRNG], [1], 
              [Define to 1 if you use Otmar Lendl's PRNG library.])],
 	   [AC_MSG_FAILURE([
 ******************************************************
@@ -120,8 +122,9 @@ AC_ARG_WITH(urng_gsl,
 AS_IF([test "x$with_urng_gsl" != xno],
 	[AC_CHECK_LIB([gslcblas], [main])
 	 AC_CHECK_LIB([gsl], [gsl_rng_alloc], [], [])
-	 AC_CHECK_HEADERS([gsl/gsl_rng.h],
-	   [AC_DEFINE([UNURAN_HAS_GSL], [1], 
+	 AC_CHECK_HEADERS([gsl/gsl_rng.h gsl/gsl_qrng.h],
+	   [AC_SUBST(UNURAN_SUPPORTS_GSL,-DUNURAN_SUPPORTS_GSL)
+	    AC_DEFINE([UNURAN_HAS_GSL], [1], 
              [Define to 1 if you use uniform random number generators from GSL.])],
 	   [AC_MSG_FAILURE([
 ********************************************************

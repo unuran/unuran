@@ -4,9 +4,11 @@
 noinst_PROGRAMS = compute_machine_constants
 
 EXTRA_DIST = \
- read_PDF.pl \
+ make_urng_header.pl \
  merge_h.pl \
- remove_comments.pl
+ read_PDF.pl \
+ remove_comments.pl \
+ run_valgrind.sh
 
 noinst_HEADERS = \
   $(top_srcdir)/src/utils/unur_fp_const_source.h

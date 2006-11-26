@@ -64,11 +64,13 @@
 #include <urng/urng.h>
 #include <uniform/urng_builtin.h>
 #include <uniform/urng_fvoid.h>
-#include <uniform/urng_gsl.h>
-#include <uniform/urng_gslqrng.h>
-#include <uniform/urng_prng.h>
-#include <uniform/urng_rngstreams.h>
 #include <uniform/urng_randomshift.h>
+
+/* The following are now separate header files! */
+/* #include <uniform/urng_gsl.h>                */
+/* #include <uniform/urng_gslqrng.h>            */
+/* #include <uniform/urng_prng.h>               */
+/* #include <uniform/urng_rngstreams.h>         */
 
 /*****************************************************************************/
 /**  Function prototypes for manipulating distribution objects              **/

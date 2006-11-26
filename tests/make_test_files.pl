@@ -1037,7 +1037,7 @@ int main(void)
 #endif
 
 	/* seed uniform random number generator */
-#if defined(UNUR_URNG_UNURAN)
+#ifdef UNUR_URNG_UNURAN
 	if (unur_urng_seed(NULL, 
 #  ifdef SEED
 	      SEED

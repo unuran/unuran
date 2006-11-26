@@ -6,6 +6,12 @@ INCLUDES = \
  -I$(top_srcdir)/src \
  -I$(top_srcdir)/src/tests
 
+AM_CPPFLAGS = \
+ $(UNURAN_SUPPORTS_GSL) \
+ $(UNURAN_SUPPORTS_PRNG) \
+ $(UNURAN_SUPPORTS_RNGSTREAM)
+
+
 # Experimental code
 if INCLUDE_EXPERIMENTAL
 EXPERIMENTAL_LDADD = $(top_builddir)/src/experimental/libunurexperimental.la

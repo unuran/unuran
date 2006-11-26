@@ -626,6 +626,6 @@ unur_gen_resetsub (UNUR_GEN *gen)
 } /* end of unur_gen_resetsub() */ 
 
 /*---------------------------------------------------------------------------*/
-#endif    /* defined(UNUR_URNG_UNURAN) */
+#endif    /* UNUR_URNG_UNURAN */
 /*---------------------------------------------------------------------------*/
 

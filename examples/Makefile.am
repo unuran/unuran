@@ -2,18 +2,21 @@
 
 AM_LDFLAGS = -L$(top_builddir)/src
 
-INCLUDES = -I$(top_srcdir)/src
+INCLUDES = -I$(top_srcdir)/src -I$(top_srcdir)/src/uniform
 
 LDADD = $(top_builddir)/src/libunuran.la
+
+AM_CPPFLAGS = \
+ $(UNURAN_SUPPORTS_GSL) \
+ $(UNURAN_SUPPORTS_PRNG) \
+ $(UNURAN_SUPPORTS_RNGSTREAM)
+
 
 EXAMPLES = \
  example0 example0_str \
  example1 example1_str \
  example2 example2_str \
  example3 example3_str \
- example_rngstreams \
- example_prng  example_prng_str \
- example_anti  example_anti_str \
  example_discr example_discr_str \
  example_cont  example_cont_str \
  example_emp   example_emp_str \
@@ -22,7 +25,10 @@ EXAMPLES = \
  example_mcorr \
  example_vmt_0 \
  example_vmt_1 \
- example_cpp 
+ example_cpp \
+ example_rngstreams \
+ example_prng  example_prng_str \
+ example_anti  example_anti_str
 
 example_cpp_SOURCES = example_cpp.cpp
 
@@ -36,7 +42,6 @@ valgrind: $(check_PROGRAMS)
 	@list='$(check_PROGRAMS)'; for p in $$list; do \
 		$(top_srcdir)/scripts/run_valgrind.sh ./$$p; \
 	done
-
 endif
 
 # clean log files and backup files

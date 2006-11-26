@@ -1,29 +1,25 @@
 /* ------------------------------------------------------------- */
-/* File: example4.c                                              */
+/* File: example_rngstreams.c                                    */
 /* ------------------------------------------------------------- */
-
-/* Include UNURAN header file.                                   */
-#include <unuran.h>
-
+#ifdef UNURAN_SUPPORTS_RNGSTREAM
 /* ------------------------------------------------------------- */
-
-/* This example makes use of the PRNG library (see               */
-/* http://statistik.wu-wien.ac.at/prng/) for generating          */
-/* uniform random numbers.                                       */
+/* This example makes use of the RNGSTREAM library for           */
+/* for generating uniform random numbers.                        */
+/* (see http://statmath.wu-wien.ac.at/software/RngStreams/)      */
 /* To compile this example you must have set                     */
-/*                                                               */
-/*   #define  UNURAN_HAS_PRNG 1                                  */
-/*                                                               */
-/* in `src/unuran_config.h'.                                     */
+/*   ./configure --with-urng-rngstream                           */
 /* (Of course the executable has to be linked against the        */
-/* prng library.)                                                */
+/* RNGSTREAM library.)                                           */
+/* ------------------------------------------------------------- */
+
+/* Include UNURAN header files.                                  */
+#include <unuran.h>
+#include <unuran_urng_rngstreams.h>
 
 /* ------------------------------------------------------------- */
 
 int main(void)
 {
-#if defined(UNUR_URNG_UNURAN) && defined(UNURAN_HAS_RNGSTREAMS)
-
   int    i;          /* loop variable                            */
   double x;          /* will hold the random number              */
   double fparams[2]; /* array for parameters for distribution    */
@@ -36,7 +32,7 @@ int main(void)
   /* Declare objects for uniform random number generators.       */
   UNUR_URNG  *urng1, *urng2;    /* uniform generator objects     */
 
-  /* We set a package seed.                                      */
+  /* The RNGSTREAMS library sets a package seed.                 */
   unsigned long seed[] = {111u, 222u, 333u, 444u, 555u, 666u};
   RngStream_SetPackageSeed(seed);
 
@@ -106,13 +102,16 @@ int main(void)
   unur_urng_free(urng2);
 
   exit (EXIT_SUCCESS);
-
-#else
-  printf("You must use the RNGSTREAMS library to run this example!\n\n");
-  exit (77);    /* exit code for automake check routines */
-#endif
-
 } /* end of main() */
 
+/* ------------------------------------------------------------- */
+#else
+#include <stdio.h>
+#include <stdlib.h>
+int main(void) {
+  printf("You must enable the RNGSTREAM library to run this example!\n\n");
+  exit (77);    /* exit code for automake check routines */
+}
+#endif
 /* ------------------------------------------------------------- */
 

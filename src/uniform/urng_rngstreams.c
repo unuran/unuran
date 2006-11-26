@@ -33,19 +33,11 @@
 
 /*---------------------------------------------------------------------------*/
 #include <unur_source.h>
+/*---------------------------------------------------------------------------*/
+#if defined(UNURAN_HAS_RNGSTREAM) && defined(UNUR_URNG_UNURAN)
+/*---------------------------------------------------------------------------*/
 #include <urng/urng.h>
 #include "urng_rngstreams.h"
-/*---------------------------------------------------------------------------*/
-#if defined(UNURAN_HAS_RNGSTREAMS) && defined(UNUR_URNG_UNURAN)
-/*---------------------------------------------------------------------------*/
-#ifndef HAVE_LIBRNGSTREAMS
-# error
-# error +------------------------------------------------------------+
-# error ! You have defined UNURAN_HAS_RNGSTREAMS in unuran_config.h  +
-# error ! but Pierre L`Ecuyer`s RNGSTREAMS library is not installed. +
-# error +------------------------------------------------------------+
-# error
-#endif
 /*---------------------------------------------------------------------------*/
 
 static void _unur_urng_rngstream_delete( RngStream rngstream );
@@ -112,5 +104,5 @@ _unur_urng_rngstream_delete( RngStream rngstream )
 } /* end of _unur_urng_rngstream_delete() */
 
 /*---------------------------------------------------------------------------*/
-#endif /* defined(UNURAN_HAS_RNGSTREAMS) && defined(UNUR_URNG_UNURAN) */
+#endif /* defined(UNURAN_HAS_RNGSTREAM) && defined(UNUR_URNG_UNURAN) */
 /*---------------------------------------------------------------------------*/

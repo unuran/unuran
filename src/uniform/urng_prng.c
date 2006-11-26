@@ -34,19 +34,11 @@
 
 /*---------------------------------------------------------------------------*/
 #include <unur_source.h>
-#include <urng/urng.h>
-#include "urng_prng.h"
 /*---------------------------------------------------------------------------*/
 #if defined(UNURAN_HAS_PRNG) && defined(UNUR_URNG_UNURAN)
 /*---------------------------------------------------------------------------*/
-#ifndef HAVE_LIBPRNG
-# error
-# error +-----------------------------------------------------+
-# error ! You have defined UNURAN_HAS_PRNG in unuran_config.h +
-# error ! but Otmar Lendl`s PRNG library is not installed.    +
-# error +-----------------------------------------------------+
-# error
-#endif
+#include <urng/urng.h>
+#include "urng_prng.h"
 /*---------------------------------------------------------------------------*/
 
 UNUR_URNG *

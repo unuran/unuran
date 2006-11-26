@@ -39,8 +39,6 @@
 #ifndef URNG_RANDOMSHIFT_H_SEEN
 #define URNG_RANDOMSHIFT_H_SEEN
 /*---------------------------------------------------------------------------*/
-#if defined(UNUR_URNG_UNURAN)
-/*---------------------------------------------------------------------------*/
 
 /* 
    =NODE  URNG-RANDOMSHIFT  Combine point set generator with random shifts
@@ -128,8 +126,6 @@ int unur_urng_randomshift_nextshift( UNUR_URNG *urng );
    =END
 */
 
-/*---------------------------------------------------------------------------*/
-#endif   /* #if defined(UNUR_URNG_UNURAN) */
 /*---------------------------------------------------------------------------*/
 #endif  /* URNG_RANDOMSHIFT_H_SEEN */
 /*---------------------------------------------------------------------------*/

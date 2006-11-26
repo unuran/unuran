@@ -921,10 +921,10 @@ _unur_norta_debug_nmgenerator( const struct unur_gen *gen )
 } /* end of _unur_norta_debug_nmgenerator() */
 
 /*---------------------------------------------------------------------------*/
-#endif   /* end UNUR_ENABLE_LOGGING */
+#endif   /* UNUR_ENABLE_LOGGING */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
-#endif   /* end define(UNUR_URNG_UNURAN) */
+#endif   /* UNUR_URNG_UNURAN */
 /*---------------------------------------------------------------------------*/
 

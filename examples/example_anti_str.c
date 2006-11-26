@@ -3,10 +3,15 @@
 /* ------------------------------------------------------------- */
 /* String API.                                                   */
 /* ------------------------------------------------------------- */
-
-/* Include UNURAN header file.                                   */
-#include <unuran.h>
-
+#ifdef UNURAN_SUPPORTS_PRNG
+/* ------------------------------------------------------------- */
+/* This example makes use of the PRNG library for generating     */
+/* uniform random numbers.                                       */
+/* (see http://statistik.wu-wien.ac.at/prng/)                    */
+/* To compile this example you must have set                     */
+/*   ./configure --with-urng-prng                                */
+/* (Of course the executable has to be linked against the        */
+/* PRNG library.)                                                */
 /* ------------------------------------------------------------- */
 
 /* Example how to sample from two streams of antithetic random   */
@@ -14,26 +19,14 @@
 
 /* ------------------------------------------------------------- */
 
-/* This example makes use of the PRNG library (see               */
-/* http://statistik.wu-wien.ac.at/prng/) for generating          */
-/* uniform random numbers.                                       */
-/* To compile this example you must have set                     */
-/*                                                               */
-/*   #define  UNURAN_HAS_PRNG 1                                  */
-/*                                                               */
-/* in `src/unuran_config.h'.                                     */
-/* (Of course the executable has to be linked against the        */
-/* prng library.)                                                */
-
-/* It also works with necessary modifications with other uniform */
-/* random number generators.                                     */
+/* Include UNURAN header files.                                  */
+#include <unuran.h>
+#include <unuran_urng_prng.h>
 
 /* ------------------------------------------------------------- */
 
 int main(void)
 {
-#if defined(UNUR_URNG_UNURAN) && defined(UNURAN_HAS_PRNG)
-
   int    i;          /* loop variable                            */
   double xn, xg;     /* will hold the random number              */
 
@@ -85,12 +78,15 @@ int main(void)
 
 
   exit (EXIT_SUCCESS);
-
-#else
-  printf("You must use the PRNG library to run this example!\n\n");
-  exit (77);    /* exit code for automake check routines */
-#endif
-
 } /* end of main() */
 
+/* ------------------------------------------------------------- */
+#else
+#include <stdio.h>
+#include <stdlib.h>
+int main(void) {
+  printf("You must enable the PRNG library to run this example!\n\n");
+  exit (77);    /* exit code for automake check routines */
+}
+#endif
 /* ------------------------------------------------------------- */

@@ -39,13 +39,11 @@
 #ifndef URNG_RNGSTREAMS_H_SEEN
 #define URNG_RNGSTREAMS_H_SEEN
 /*---------------------------------------------------------------------------*/
-#if defined(UNURAN_HAS_RNGSTREAMS) && defined(UNUR_URNG_UNURAN)
-/*---------------------------------------------------------------------------*/
 #include <RngStream.h>
 /*---------------------------------------------------------------------------*/
 
 /* 
-   =NODE  URNG-RNGSTREAMS  Interface to L'Ecuyer's RNGSTREAMS random number generators
+   =NODE  URNG-RNGSTREAM  Interface to L'Ecuyer's RNGSTREAM random number generators
 
    =UP URNG [50]
 
@@ -59,7 +57,7 @@
 
    =HOWTOUSE
       This library has to be installed before compiling UNURAN and
-      UNURAN_HAS_RNGSTREAMS has to be defined in @file{src/unuran_config.h}.
+      UNURAN_HAS_RNGSTREAM has to be defined in @file{src/unuran_config.h}.
       Do not forget to link your executables against this library.
 
       The following routines are supported for URNG objects of
@@ -103,8 +101,6 @@ UNUR_URNG *unur_urng_rngstreamptr_new( RngStream rngstream );
 
 /* =END */
 
-/*---------------------------------------------------------------------------*/
-#endif  /* defined(UNURAN_HAS_RNGSTREAMS) && defined(UNUR_URNG_UNURAN) */
 /*---------------------------------------------------------------------------*/
 #endif  /* URNG_RNGSTREAMS_H_SEEN */
 /*---------------------------------------------------------------------------*/

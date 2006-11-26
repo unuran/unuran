@@ -135,6 +135,32 @@ AS_IF([test "x$with_urng_gsl" != xno],
 	   ]) ]) ], [])
 
 
+dnl Default URNG
+AC_ARG_WITH(urng_default,
+	[AS_HELP_STRING([--with-urng-default],
+	   [URNG: global default (builtin|rngstream) @<:@default=builtin@:>@])],
+	[case "${withval}" in
+	   builtin) ;; rngstream) ;; 
+	   *) AC_MSG_ERROR(bad value '${withval}' for --with-urng-default) ;;
+	esac],
+	[with_urng_default=builtin])
+AS_IF([test "x$with_urng_default" == xrngstream],
+      AS_IF([test "x$with_urng_rngstream" == xno],
+	     [with_urng_default=builtin
+              AC_MSG_NOTICE([
+********************************************************
+*
+*   --with-urng-default=rngstream
+*   but --with-urng-rngstream=no.
+*   use --with-urng-default=builtin instead
+*
+********************************************************
+             ]) ], 
+             [AC_DEFINE([UNUR_URNG_DEFAULT_RNGSTREAM], [1], 
+                [Define to 1 if you use RNGSTREAM as global URNG.])]), 
+      [])
+
+
 dnl Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS([float.h limits.h stdlib.h string.h sys/time.h unistd.h])
@@ -280,6 +306,28 @@ AC_CHECK_FILE(${srcdir}/run/Makefile.am,
 	   run/Makefile ] ))
 
 AC_OUTPUT
+
+dnl -----------------------------------------
+
+AC_MSG_RESULT([
+*========================================================
+*
+* Configuration for ${PACKAGE}-${VERSION}:
+*
+*  Source directory:          ${srcdir}
+*  Installation directory:    ${prefix}
+*
+*  Deprecated code:           ${enable_deprecated}
+*
+*  Support for external uniform random number generators
+*    Rngstream:               ${with_urng_rngstream}
+*    PRNG:                    ${with_urng_prng}
+*    GSL:                     ${with_urng_gsl}
+*
+*  Default URNG:              ${with_urng_default}
+*
+*========================================================
+])
 
 dnl -----------------------------------------
 

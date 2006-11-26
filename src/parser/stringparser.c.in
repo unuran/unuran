@@ -52,9 +52,8 @@
  *   and is used to execute the unur_<value>_new() call.                     *
  *                                                                           *
  *   The value of the "urng" key is passed to the PRNG interface.            *
- *   However, it only works when using the PRNG library is enabled in        *
- *   unuran_config.h (i.e. UNURAN_HAS_PRNG must be defined) and libprng      *
- *   is linked to the executable.                                            *
+ *   However, it only works when using the PRNG library is enabled           *
+ *   --with-urng-prng flag and libprng is linked by the executable.          *
  *                                                                           *
  *   In each block consecuting <key>=<value> pairs, separated by semicolons  *
  *   ';', are used to set parameters. The name of the parameter is given as  *
@@ -147,6 +146,10 @@
 #include <distr/distr_source.h>
 #include <methods/unur_methods_source.h>
 #include "parser_source.h"
+
+#if defined(UNUR_URNG_UNURAN) && defined(UNURAN_HAS_PRNG)
+#include <uniform/urng_prng.h>
+#endif
 
 /*---------------------------------------------------------------------------*/
 /* Variants: none                                                            */

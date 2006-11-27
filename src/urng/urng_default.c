@@ -37,11 +37,20 @@
 #include "urng.h"
 #include <uniform/urng_builtin.h>
 #include <uniform/urng_fvoid.h>
-#include <uniform/urng_gsl.h>
-#include <uniform/urng_gslqrng.h>
-#include <uniform/urng_prng.h>
 #include <uniform/urng_randomshift.h>
-#include <uniform/urng_rngstreams.h>
+
+#if defined(UNURAN_HAS_GSL) && defined(UNUR_URNG_UNURAN)
+#  include <uniform/urng_gsl.h>
+#  include <uniform/urng_gslqrng.h>
+#endif
+
+#if defined(UNURAN_HAS_PRNG) && defined(UNUR_URNG_UNURAN)
+#  include <uniform/urng_prng.h>
+#endif
+
+#if defined(UNURAN_HAS_RNGSTREAM) && defined(UNUR_URNG_UNURAN)
+#  include <uniform/urng_rngstreams.h>
+#endif
 
 /*---------------------------------------------------------------------------*/
 /* pointer to default uniform random number generator */

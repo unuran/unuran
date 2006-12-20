@@ -55,13 +55,23 @@
       Documentation and source code of this library is available from
       @uref{http://www.gnu.org/software/gsl/}.
 
-   =HOWTOUSE
-      This library has to be installed before compiling UNURAN and
-      UNURAN_HAS_GSL has to be defined in @file{src/unuran_config.h}.
-      Do not forget to link your executables against @file{libgsl}.
+      The interface to the GSL must be compiled into UNURAN using the
+      configure flag @code{--with-urng-gsl}.
+      Notice that the GSL has to be installed before running
+      @code{./configure}.
 
-      The following routines are supported for URNG objects of
-      type GSL-QRNG:
+   =HOWTOUSE
+      When using this interface @file{unuran_urng_gsl.h} must be included
+      in the corresponding C file, i.e., one must add the line
+      @smallexample
+      #include <unuran_urng_gsl.h>
+      @end smallexample
+
+      Moreover, one must not forget to link the executable against
+      @file{libgsl}.
+
+      The following routines are supported for URNG objects of this
+      type:
 
       @itemize @minus
       @item unur_urng_sample()

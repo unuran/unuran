@@ -55,13 +55,23 @@
       A GNU-style package is available from
       @uref{http://statistik.wu-wien.ac.at/software/RngStreams/}.
 
-   =HOWTOUSE
-      This library has to be installed before compiling UNURAN and
-      UNURAN_HAS_RNGSTREAM has to be defined in @file{src/unuran_config.h}.
-      Do not forget to link your executables against this library.
+      The interface to the RngStream library must be compiled into UNURAN using the
+      configure flag @code{--with-urng-rngstream}.
+      Notice that the RngStream library has to be installed before running
+      @code{./configure}.
 
-      The following routines are supported for URNG objects of
-      type RANDOMSTREAMS:
+   =HOWTOUSE
+      When using this interface @file{unuran_urng_rngstream.h} must be included
+      in the corresponding C file, i.e., one must add the line
+      @smallexample
+      #include <unuran_urng_rngstream.h>
+      @end smallexample
+
+      Moreover, one must not forget to link the executable against
+      @file{librngstream}.
+
+      The following routines are supported for URNG objects of this
+      type:
 
       @itemize @minus
       @item unur_urng_sample()

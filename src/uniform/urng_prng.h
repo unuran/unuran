@@ -62,10 +62,20 @@
       or from the pLab site at
       @uref{http://random.mat.sbg.ac.at/}.
 
+      The interface to the PRNG library must be compiled into UNURAN using the
+      configure flag @code{--with-urng-prng}.
+      Notice that the PRNG library has to be installed before running
+      @code{./configure}.
+
    =HOWTOUSE
-      This library has to be installed before compiling UNURAN and
-      UNURAN_HAS_PRNG has to be defined in @file{src/unuran_config.h}.
-      Do not forget to link your executables against @file{libprng}.
+      When using this interface @file{unuran_urng_prng.h} must be included
+      in the corresponding C file, i.e., one must add the line
+      @smallexample
+      #include <unuran_urng_prng.h>
+      @end smallexample
+
+      Moreover, one must not forget to link the executable against
+      @file{libprng}.
 
       The following routines are supported for URNG objects of
       type PRNG:

@@ -46,14 +46,28 @@
    =UP URNG [10]
 
    =DESCRIPTION
-      Simple interface for URNGs of type @code{FVOID}, i.e.,
-      routines without an argment:  @code{double uniform(void)}.
+      Simple interface for URNGs of type @code{double uniform(void)},
+      i.e., routines without an argment.
 
       If independent versions of the same URNG should be used, a copy of
       the subroutine has to be implement in the program code (with
       different names, of course).
-      UNURAN contains some build-in URNGs of this type in directory
-      @file{src/uniform/}.
+      UNURAN contains some build-in URNGs of this type:
+      @table @code
+      @item unur_urng_MRG31k3p
+      Combined multiple recursive generator by Pierre L'Ecuyer and
+      Renee Touzin.
+      @item unur_urng_fish
+      Linear congruential generator by Fishman and Moore.
+      @item unur_urng_mstd
+      Linear congruential generator "Minimal Standard".
+      @end table
+      
+      Notice, however, that these generators are provided as a
+      fallback for the case that no state-of-the-art uniform random
+      number generators (e.g. @pxref{URNG-RNGSTREAM,Pierre L'Ecuyer's
+      @file{Rngstream} library, Pierre L'Ecuyer's @file{Rngstream}
+      library}) are used.
       
    =HOWTOUSE
       Create an URNG object using unur_urng_fvoid_new(). 
@@ -64,8 +78,8 @@
       URNG object by the respective calls, e.g. by
       unur_urng_set_seed().
 
-      The following routines are supported for URNG objects of
-      type FVOID:
+      The following routines are supported for URNG objects of this
+      type: 
 
       @itemize @minus
       @item unur_urng_sample()
@@ -92,9 +106,6 @@ UNUR_URNG *unur_urng_fvoid_new( double (*random)(void), int (*reset)(void) );
    implement in the program code.
 
    If there is no reset function use NULL for the second argument.
-   
-   UNURAN contains some build-in URNGs of this type in directory
-   @file{src/uniform/}.
 */
 
 /* =END */

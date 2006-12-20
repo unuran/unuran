@@ -317,7 +317,7 @@ AC_MSG_RESULT([
 *  Source directory:          ${srcdir}
 *  Installation directory:    ${prefix}
 *
-*  Deprecated code:           ${enable_deprecated}
+*  Use deprecated code:       ${enable_deprecated}
 *
 *  Support for external uniform random number generators
 *    Rngstream:               ${with_urng_rngstream}

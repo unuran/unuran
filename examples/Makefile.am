@@ -26,6 +26,7 @@ EXAMPLES = \
  example_vmt_0 \
  example_vmt_1 \
  example_cpp \
+ example_gsl \
  example_rngstreams \
  example_prng  example_prng_str \
  example_anti  example_anti_str

@@ -265,7 +265,7 @@
    is installed.  For example, 
 
    @smallexample
-   LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH ./app
+   LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
    @end smallexample
    @noindent
    To compile a statically linked version of the program instead, use the

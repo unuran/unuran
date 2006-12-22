@@ -197,10 +197,19 @@ valgrind: $(check_PROGRAMS)
 		$(top_srcdir)/scripts/run_valgrind.sh ./$$p; \
 	done
 
+valgrind-cluster: $(check_PROGRAMS)
+	@list='$(check_PROGRAMS)'; for p in $$list; do \
+		qsub -b y -q node.q -N "unuran-valgrind-$$p" "$(top_srcdir)/scripts/run_valgrind.sh ./$$p"; \
+	done
+
 endif
 
 # clean log files and backup files
-CLEANFILES = *~ *.log valgrind-*
+CLEANFILES = \
+ *.log \
+ valgrind-* \
+ unuran-valgrind-* \
+ *~
 
 # clean generated files
 DISTCLEANFILES = \

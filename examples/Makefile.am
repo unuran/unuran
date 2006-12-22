@@ -44,7 +44,7 @@ valgrind: $(check_PROGRAMS)
 		$(top_srcdir)/scripts/run_valgrind.sh ./$$p; \
 	done
 
-valgrind-cluster: $(check_PROGRAMS)
+valgrind-cluster: 
 	qsub -b y -N "unuran-valgrind-examples" "make valgrind"
 
 endif

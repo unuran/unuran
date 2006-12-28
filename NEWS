@@ -1,47 +1,57 @@
-Version 0.9.0: ????
+
+Version 0.9.0: December 2006
+
+	* This is a pre-1.0 release.
 
 	* Deprecated Routines:
-
-	  Deprecated routines (see release notes to Version 0.8.1 below)
-         are now disabled by default. They are still available but 
-	  must be enable at using
+	
+	  Deprecated routines (see release notes to Version 0.8.1
+	  below) are now disabled by default. They are still available
+	  but must be enable at using
 
 		./configure --enable-deprecated
 
 	  Notice: Deprecated routines are not tested any more and
 	  their usage is strongly discouraged.
 
+	* Wrapper functions for external sources of uniform random
+	  numbers are now enabled by configure flags and not by macros
+	  defined in file 'src/unuran_config.h'.
 
-	TODO: Docu, string API !!!!
+	* The file 'src/unuran_config.h' is not installed any more. 
+	  It is now only included when the library is compiled.
+	  It should be removed from the global include path of the compiler.
+
+	* Some bugs have been fixed.
 
 
 Version 0.8.1: November 2006
 
 	* Methods:
 
-        - new method ITDR (Inverse Transformed Density Rejection)
-          for distributions with monotone unbounded densities.
+	- new method ITDR (Inverse Transformed Density Rejection)
+	  for distributions with monotone unbounded densities.
 
-	 - Implemented new routine unur_reinit() for reinitializing
-	   existing generator object. This can be done by extracting
-	   the underlying distribution object by a unur_get_distr(),
-	   modify it and reinitialize the generator by running
-	   unur_reinit().
+	- Implemented new routine unur_reinit() for reinitializing
+	  existing generator object. This can be done by extracting
+	  the underlying distribution object by a unur_get_distr(),
+	  modify it and reinitialize the generator by running
+	  unur_reinit().
 
-        - More methods support reinitialization now.
+	- More methods support reinitialization now.
 
 	* String API:
 
-	 - New functions unur_makegen_ssu() and unur_makegen_dsu()
-	   to allow disribution object, generation method and 
-	   uniform random number generator as separate arguments.
+	- New functions unur_makegen_ssu() and unur_makegen_dsu()
+	  to allow disribution object, generation method and 
+	  uniform random number generator as separate arguments.
 
-	 - the keyword "urng" is deprecated now and will be removed
-	   in the next release.
+	- the keyword "urng" is deprecated now and will be removed
+	  in the next release.
 
 	* Distributions:
 
- 	 - DISCR:
+	 - DISCR:
 	   now unur_distr_discr_set_pmf() and unur_distr_discr_set_cdf()
 	   can be used after a unur_distr_discr_set_pv() call.
 	   However, the probability vector is then removed.
@@ -52,11 +62,11 @@ Version 0.8.1: November 2006
 
 	* Deprecated calls:
 
-	   The API for UNURAN has been modified.
-	   Now there exists a general unur_reinit() call that replaces
-	   such a call for particular methods.
-	   Thus the following calls are now deprecated and will be
-	   removed in the next release:
+	  The API for UNURAN has been modified.
+	  ow there exists a general unur_reinit() call that replaces
+	  such a call for particular methods.
+	  Thus the following calls are now deprecated and will be
+	  removed in the next release:
 
 	     unur_dari_reinit()
 	     unur_dsrou_reinit()
@@ -66,13 +76,13 @@ Version 0.8.1: November 2006
 	     unur_tdr_reinit()
 	     unur_tdrgw_reinit()
 
-	   To avoid lots of calls for changing the parameters or domains
-	   of the underlying distribution the prefered method now is to 
-	   extract the distribution object from the generator object,
-	   use the corresponding calls for distributions to change it,
-	   and run unur_reinit().
-	   Thus the following calls are now deprecated and will be
-	   removed in the next release:
+	  To avoid lots of calls for changing the parameters or domains
+	  of the underlying distribution the prefered method now is to 
+	  extract the distribution object from the generator object,
+	  use the corresponding calls for distributions to change it,
+	  and run unur_reinit().
+	  Thus the following calls are now deprecated and will be
+	  removed in the next release:
 
 	   . unur_cstd_chg_pdfparams(),
 	   . unur_dari_chg_pmfparams(), unur_dari_chg_domain(),
@@ -104,7 +114,7 @@ Version 0.8.1: November 2006
 	* Bug fixes:
 
 	- fixed segfault when calling unur_urng_free() with RngStreams
-         object.
+	  object.
 
 
 Version 0.7.2: March 2006
@@ -132,11 +142,11 @@ Version 0.7.0: January 2006
 	- method TDR: added reinit routine
 
 	- method TABL: construction points can be set by new function 
-          unur_tdr_set_cpoints(). It also replaces function 
+	  unur_tdr_set_cpoints(). It also replaces function 
 	  unur_tabl_set_nstp() which should not be used any more
 	  (but is still available for compatibility).
 
-        - method MCORR: extended to cover generation of random
+	- method MCORR: extended to cover generation of random
 	  correlation matrices with given eigenvalues.
 
 	* Distributions:
@@ -148,8 +158,8 @@ Version 0.7.0: January 2006
 	  directly. This mechanism replaces the _set_ calls for 
 	  all methods that make use of the center.
 
-        - interface for setting and getting parameter-arrays for 
-          multivariate distributions (CVEC) has been renamed.
+	- interface for setting and getting parameter-arrays for 
+	  multivariate distributions (CVEC) has been renamed.
 
 	- adding multivariate Cauchy and Student distributions.
 
@@ -161,8 +171,8 @@ Version 0.7.0: January 2006
 	  recompiling UNURAN.
 
 	- The generic interface to uniform random number generators
-          has been enhanced. However, it cannot be accessed directly any more.
-          Use the corresponding calls instead (see also the message above). 
+	  has been enhanced. However, it cannot be accessed directly any more.
+	  Use the corresponding calls instead (see also the message above). 
 
 
 Version 0.6.0: June 2005
@@ -221,7 +231,7 @@ Version 0.4.4: July 2003
 	- "orderstatistics" need not be last entry in string API
 
 	- replaced unur_tabl_set_variant_setup() by unur_tabl_set_usedars()
-          with a slightly different interface.
+	  with a slightly different interface.
 
 
 Version 0.4.3: June 2003
@@ -243,7 +253,7 @@ Version 0.4.1: January 2003
 	- use build-in generator as default uniform random number generator
 
 	- string API: fixed bug with string 'inf' in cygwin.
-	              parsing of numbers does not depend on locale any more
+		      parsing of numbers does not depend on locale any more
 
 	- fixed bug in Makefile
 
@@ -299,5 +309,5 @@ Version 0.2.0: June 2002
 
 Version 0.1.0: March 2001
 
-        - First public release.
+	- First public release.
  

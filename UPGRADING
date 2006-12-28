@@ -20,3 +20,11 @@ Notice: Using these deprecated routines is not supported any more
 and this strong discouraged.
 
 
+Wrapper functions for external sources of uniform random numbers
+are now enabled by configure flags and not by macros defined in 
+file 'src/unuran_config.h'.
+
+
+The file 'src/unuran_config.h' is not installed any more. 
+It is now only included when the library is compiled.
+It should be removed from the global include path of the compiler.

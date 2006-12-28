@@ -18,10 +18,12 @@ adaptions might be neccessary for compiling this library.
 Uniform random number generator
 ...............................
 
-   UNURAN can be used with any uniform random number generator but (at the 
-moment) some features work best with Pierre L'Ecuyer's RngStreams library
-(see <http://statistik.wu-wien.ac.at/software/RngStreams/> for a description 
-and downloading).
+   UNURAN can be used with any uniform random number generator but (at
+the moment) some features work best with Pierre L'Ecuyer's RngStreams
+library (see <http://statistik.wu-wien.ac.at/software/RngStreams/> for
+a description and downloading).
+
+   Install the requires libraries first.
 
 
 Installing UNURAN
@@ -32,46 +34,32 @@ Installing UNURAN
           cd unuran-0.9.x
 
 
-  2. Edit the file `src/unuran_config.h'.  
-
-     - Enable interfaces to different sources:
-
-	UNU.RAN can use any source of random numbers. 
-       For some libraries that provide uniform random numbers there are
-	convenient wrapper functions. These can be enabled by defining one 
-	or more of the macros 'UNURAN_HAS_RNGSTREAMS', 'UNURAN_HAS_PRNG',
-	and 'UNURAN_HAS_GSL' (see comments in `unuran_config.h').
-	Notice that you must link against that library when the corresponding
-	wrapper functions are used.
-
-     	Important: If one of these library is enabled it must have been 
-	installed _before_ running the configure script in Step 3.
-
-	We strong recommend to install and use the RngStreams library.
-
-     - Set the default type of the uniform random number generator:
-
-	Define the macros 'UNUR_URNG_DEFAULT' and 'UNUR_URNG_AUX_DEFAULT'.
-	(There exist suggestions for all libraries for which UNU.RAN 
-	provides wrapper functions. Uncomment the one that should be used.)
-
-	We strong recommend to use the RngStreams generator as global 
-	default.
+  2. Optional: Edit the file `src/unuran_config.h'.
 
 
   3. Run a configuration script:
 
           sh ./configure --prefix=<prefix>
 
-     where `<prefix>' is the root of the installation tree.  When omitted
-     `/usr/local' is used.
+     where `<prefix>' is the root of the installation tree.  When
+     omitted `/usr/local' is used.
+
+     Use configure --help to get a list of other options. In
+     particular it shows the flags for compiling the wrapper functions
+     for various external sources of uniform random number
+     generators. All these are of the form --with-urng-*. We strongly
+     recommend to use RngStreams library: 
+
+          sh ./configure --with-urng-rngstream --with-urng-default=rngstream
+     
+
+     Important: You must install PRNG or RngStreams before ./configure
+     is executed.
 
      If you want to make also a shared library, then making such a
      library can be enabled using
 
           sh ./configure --enable-shared
-
-     Use `configure --help' to get a list of other options.
 
      Important: UNU.RAN now relies on some aspects of IEEE 754
      compliant floating point arithmetic. In particular, 
@@ -90,7 +78,6 @@ Installing UNURAN
      This installs the following files:
 
           $(prefix)/include/unuran.h
-          $(prefix)/include/unuran_config.h
           $(prefix)/include/unuran_tests.h
           $(prefix)/lib/libunuran.a
           $(prefix)/info/unuran.info
@@ -136,6 +123,13 @@ the following configure flag:
 Notice: Using these deprecated routines is not supported any more
 and this strong discouraged.
 
+Wrapper functions for external sources of uniform random numbers
+are now enabled by configure flags and not by macros defined in 
+file 'src/unuran_config.h'.
+
+The file 'src/unuran_config.h' is not installed any more. 
+It is now only included when the library is compiled.
+It should be removed from the global include path of the compiler.
 
 
 *********************************************************************

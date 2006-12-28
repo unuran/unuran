@@ -405,7 +405,30 @@
    The information that a distribution object must contain depends
    heavily on the chosen generation method choosen.
 
-   @include unuran_method_requirements.texi
+   Brackets indicate optional information while a tilde indicates
+   that only an approximation must be provided.
+   See @ref{Glossary}, for unfamiliar terms.
+
+   @sp 1
+   @include methods_cont.texi
+
+   @sp 1
+   @include methods_cemp.texi
+
+   @sp 1
+   @include methods_cvec.texi
+
+   @sp 1
+   @include methods_cvemp.texi
+
+   @sp 1
+   @include methods_discr.texi
+
+   @sp 1
+   @include methods_matr.texi
+
+   @sp 1
+   @include methods_mcmc.texi
 
    @sp 2
 

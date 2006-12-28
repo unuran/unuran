@@ -65,24 +65,7 @@ and try to reinitialize again.
 
 @subheading Overview of methods
 
-@cartouche
-@noindent 
-Methods for @b{continuous univariate distributions}@*
-sample with @command{unur_sample_cont}
-@sp 1
-@multitable {method} {PDF} {dPDF} {mode} {area} {build-in standard distributionxx}
-@item method @tab PDF @tab dPDF @tab mode @tab area @tab other
-@item AROU   @tab  x  @tab  x   @tab  [x] @tab      @tab T-concave
-@item CSTD   @tab     @tab      @tab      @tab      @tab build-in standard distribution
-@item HINV   @tab [x] @tab [x]  @tab      @tab      @tab CDF 
-@item NINV   @tab [x] @tab      @tab      @tab      @tab CDF 
-@item SROU   @tab  x  @tab      @tab   x  @tab   x  @tab T-concave
-@item SSR    @tab  x  @tab      @tab   x  @tab   x  @tab T-concave
-@item TABLE  @tab  x  @tab      @tab   x  @tab  [~] @tab all local extrema
-@item TDR    @tab  x  @tab  x   @tab      @tab      @tab T-concave
-@item UTDR   @tab  x  @tab      @tab   x  @tab   ~  @tab T-concave
-@end multitable
-@end cartouche
+@include methods_cont.texi
 
 @subheading Example
 
@@ -106,15 +89,7 @@ sample with @command{unur_sample_cont}
 
 @subheading Overview of methods
 
-@cartouche
-@noindent
-Methods for @b{continuous empirical univariate distributions}@*
-sample with @command{unur_sample_cont}
-@sp 1
-@noindent
-EMPK:  Requires an observed sample.
-EMPL:  Requires an observed sample.
-@end cartouche
+@include methods_cemp.texi
 
 @subheading Example
 
@@ -138,14 +113,7 @@ EMPL:  Requires an observed sample.
 
 @subheading Overview of methods
 
-@cartouche
-@noindent
-Methods for @b{continuous multivariate distributions}@*
-sample with @command{unur_sample_vec}
-@sp 1
-@noindent
-VMT: Requires the mean vector and the covariance matrix.
-@end cartouche
+@include methods_cvec.texi
 
 =EON
 
@@ -162,6 +130,10 @@ time until the sequence has converged to the given target distribution.
 
 @strong{Beware: MCMC sampling can be dangerous!}
 
+@subheading Overview of methods
+
+@include methods_mcmc.texi
+
 =EON
 
 /*---------------------------------------------------------------------------*/
@@ -172,14 +144,7 @@ time until the sequence has converged to the given target distribution.
 
 @subheading Overview of methods
 
-@cartouche
-@noindent
-Methods for @b{continuous empirical multivariate distributions}@*
-sample with @command{unur_sample_vec}
-@sp 1
-@noindent
-VEMPK: Requires an observed sample.
-@end cartouche
+@include methods_cvemp.texi
 
 @subheading Example
 
@@ -201,20 +166,7 @@ VEMPK: Requires an observed sample.
 
 @subheading Overview of methods
 
-@cartouche
-@noindent 
-Methods for @b{discrete univariate distributions}@*
-sample with @command{unur_sample_discr}
-@sp 1
-@multitable {method} {PMF} {PV} {mode} {area} {build-in standard distributionxx}
-@item method@tab PMF @tab PV  @tab mode @tab sum @tab other
-@item DARI  @tab  x  @tab     @tab  x   @tab  ~  @tab T-concave
-@item DAU   @tab [x] @tab  x  @tab      @tab     @tab 
-@item DGT   @tab [x] @tab  x  @tab      @tab     @tab 
-@item DSTD  @tab     @tab     @tab      @tab     @tab build-in standard distribution
-@item DSS   @tab [x] @tab  x  @tab      @tab  x  @tab 
-@end multitable
-@end cartouche
+@include methods_discr.texi
 
 @subheading Example
 
@@ -235,6 +187,11 @@ sample with @command{unur_sample_discr}
 =NODEX  Methods_for_MATR    Methods for random matrices
 =UP Methods [60]
 =DESCRIPTION
+
+@subheading Overview of methods
+
+@include methods_matr.texi
+
 =EON
 
 /*---------------------------------------------------------------------------*/

@@ -31,7 +31,13 @@ unuran_examples = \
 # Sources of texinfo file
 unuran_TEXINFOS = \
  unuran.texi \
- ./src/unuran_method_requirements.texi \
+ ./src/methods_cont.texi \
+ ./src/methods_discr.texi \
+ ./src/methods_cemp.texi \
+ ./src/methods_cvec.texi \
+ ./src/methods_mcmc.texi \
+ ./src/methods_cvemp.texi \
+ ./src/methods_matr.texi \
  $(unuran_src) \
  $(unuran_examples) \
  $(top_srcdir)/doc/figures/*.eps \

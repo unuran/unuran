@@ -50,7 +50,7 @@
    =UP URNG [40]
 
    =DESCRIPTION
-      URNGs from the @code{prng} library. It provides a very
+      URNGs from Otmar Lendl's @code{prng} library. It provides a very
       flexible way to sample form arbitrary URNGs by means of an object
       oriented programing paradigma. Similarly to the UNURAN library
       independent generator objects can be build and used.

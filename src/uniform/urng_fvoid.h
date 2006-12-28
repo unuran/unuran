@@ -60,7 +60,7 @@
       @item unur_urng_fish
       Linear congruential generator by Fishman and Moore.
       @item unur_urng_mstd
-      Linear congruential generator "Minimal Standard".
+      Linear congruential generator "Minimal Standard" by Park and Miller.
       @end table
       
       Notice, however, that these generators are provided as a

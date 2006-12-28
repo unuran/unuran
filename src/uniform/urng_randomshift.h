@@ -46,7 +46,7 @@
    =UP URNG [90]
 
    =DESCRIPTION
-      Generators of type RANDOMSHIFT combine a point set generators with
+      Generators of type RANDOMSHIFT combine a point set generator with
       generators to apply random shifts as proposed in
       @unurbibref{CPa76}:
 

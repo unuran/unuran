@@ -105,18 +105,21 @@
       @item
       @code{PRNG}
       
-      URNGs from the @code{prng} library. It provides a very
+      URNGs from Otmar Lendl's @code{prng} library. It provides a very
       flexible way to sample form arbitrary URNGs by means of an object
       oriented programing paradigma. Similarly to the UNURAN library
       independent generator objects can be build and used.
       
       This library has been developed by the pLab group at the university
       of Salzburg (Austria, EU) and implemented by Otmar Lendl.
-      It is available via anonymous ftp from
+      It is available from
       @uref{http://statistik.wu-wien.ac.at/prng/}
       or from the pLab site at
       @uref{http://random.mat.sbg.ac.at/}.
       
+      This interface must be compiled into UNURAN using the
+      configure flag @code{--with-urng-prng}.
+
       @item
       @code{RNGSTREAM}
 
@@ -125,12 +128,18 @@
       A GNU-style package is available from
       @uref{http://statistik.wu-wien.ac.at/software/RngStreams/}.
 
+      This interface must be compiled into UNURAN using the
+      configure flag @code{--with-urng-rngstream}.
+
       @item
       @code{GSL}
 
       URNG from the GNU Scientific Library (GSL).
       It is available from
       @uref{http://www.gnu.org/software/gsl/}.                               
+
+      This interface must be compiled into UNURAN using the
+      configure flag @code{--with-urng-gsl}.
 
       @end enumerate
 
@@ -188,6 +197,9 @@
       There are wrapper functions for some libraries of uniform random
       number generators to simplify the task of creating a UNURAN
       object for URNGs.
+      These functions must be compiled into UNURAN using the
+      corresponding configure flags (see description of the respective
+      interface below).
 
    =END
 

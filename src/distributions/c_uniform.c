@@ -83,7 +83,7 @@ static int _unur_set_params_uniform( UNUR_DISTR *distr, const double *params, in
 double
 _unur_pdf_uniform( double x, const UNUR_DISTR *distr )
 { 
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
 
   if (x < a || x > b)
     return 0.;
@@ -98,7 +98,7 @@ _unur_pdf_uniform( double x, const UNUR_DISTR *distr )
 double
 _unur_logpdf_uniform( double x, const UNUR_DISTR *distr )
 { 
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
 
   if (x < a || x > b)
     return -INFINITY;
@@ -128,7 +128,7 @@ _unur_dlogpdf_uniform( double x, const UNUR_DISTR *distr )
 double
 _unur_cdf_uniform( double x, const UNUR_DISTR *distr )
 { 
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
 
   /* standardize */
   x = (x-a) / (b-a);

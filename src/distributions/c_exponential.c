@@ -96,7 +96,7 @@ static int _unur_set_params_exponential( UNUR_DISTR *distr, const double *params
 double
 _unur_pdf_exponential( double x, const UNUR_DISTR *distr )
 {
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
 
   if (DISTR.n_params > 0)
     /* standardize */
@@ -112,7 +112,7 @@ _unur_pdf_exponential( double x, const UNUR_DISTR *distr )
 double
 _unur_logpdf_exponential( double x, const UNUR_DISTR *distr )
 {
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
 
   if (DISTR.n_params > 0)
     /* standardize */
@@ -128,7 +128,7 @@ _unur_logpdf_exponential( double x, const UNUR_DISTR *distr )
 double
 _unur_dpdf_exponential( double x, const UNUR_DISTR *distr )
 {
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
 
   if (DISTR.n_params > 0)
     /* standardize */
@@ -144,7 +144,7 @@ _unur_dpdf_exponential( double x, const UNUR_DISTR *distr )
 double
 _unur_dlogpdf_exponential( double x, const UNUR_DISTR *distr )
 {
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
 
   if (DISTR.n_params > 0)
     /* standardize */
@@ -160,7 +160,7 @@ _unur_dlogpdf_exponential( double x, const UNUR_DISTR *distr )
 double
 _unur_cdf_exponential( double x, const UNUR_DISTR *distr )
 {
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
 
   if (DISTR.n_params > 0)
     /* standardize */

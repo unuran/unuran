@@ -102,7 +102,7 @@ static int _unur_set_params_normal( UNUR_DISTR *distr, const double *params, int
 double
 _unur_pdf_normal( double x, const UNUR_DISTR *distr )
 { 
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
 
   if (DISTR.n_params > 0)
     /* standardize */
@@ -119,7 +119,7 @@ _unur_pdf_normal( double x, const UNUR_DISTR *distr )
 double
 _unur_logpdf_normal( double x, const UNUR_DISTR *distr )
 { 
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
 
   if (DISTR.n_params > 0)
     /* standardize */
@@ -136,7 +136,7 @@ _unur_logpdf_normal( double x, const UNUR_DISTR *distr )
 double
 _unur_dpdf_normal( double x, const UNUR_DISTR *distr )
 {
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
 
   if (DISTR.n_params > 0) {
     /* standardize */
@@ -154,7 +154,7 @@ _unur_dpdf_normal( double x, const UNUR_DISTR *distr )
 double
 _unur_dlogpdf_normal( double x, const UNUR_DISTR *distr )
 {
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
 
   if (DISTR.n_params > 0)
     /* non-standard form */
@@ -171,7 +171,7 @@ _unur_dlogpdf_normal( double x, const UNUR_DISTR *distr )
 double
 _unur_cdf_normal( double x, const UNUR_DISTR *distr ) 
 {
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
 
   if (DISTR.n_params > 0)
     /* standardize */

@@ -90,7 +90,7 @@ static int _unur_set_params_powerexponential( UNUR_DISTR *distr, const double *p
 double
 _unur_pdf_powerexponential( double x, const UNUR_DISTR *distr )
 { 
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
   return exp( - pow( fabs(x), tau ) - LOGNORMCONSTANT);
 } /* end of _unur_pdf_powerexponential() */
 
@@ -99,7 +99,7 @@ _unur_pdf_powerexponential( double x, const UNUR_DISTR *distr )
 double
 _unur_logpdf_powerexponential( double x, const UNUR_DISTR *distr )
 { 
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
   return ( - pow( fabs(x), tau ) - LOGNORMCONSTANT);
 } /* end of _unur_logpdf_powerexponential() */
 
@@ -108,7 +108,7 @@ _unur_logpdf_powerexponential( double x, const UNUR_DISTR *distr )
 double
 _unur_dpdf_powerexponential( double x, const UNUR_DISTR *distr )
 {
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
   register double tmp;
 
   if (x == 0.)    /* derivative may not be defined, but ...    */
@@ -125,7 +125,7 @@ _unur_dpdf_powerexponential( double x, const UNUR_DISTR *distr )
 double
 _unur_dlogpdf_powerexponential( double x, const UNUR_DISTR *distr )
 {
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
 
   if (x == 0.)    /* derivative may not be defined, but ...    */
     return 0.;    /* a tangent parallel to x-axis is possible. */
@@ -139,7 +139,7 @@ _unur_dlogpdf_powerexponential( double x, const UNUR_DISTR *distr )
 double
 _unur_cdf_powerexponential( double x, const UNUR_DISTR *distr )
 { 
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
   register double cdf;
 
   /* compute cdf(abs(x)) - cdf(0) */

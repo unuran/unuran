@@ -86,7 +86,7 @@ static int _unur_set_params_student( UNUR_DISTR *distr, const double *params, in
 double
 _unur_pdf_student( double x, const UNUR_DISTR *distr )
 {
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
   return pow( (1. + x*x/nu), (-nu-1.)*0.5 ) / NORMCONSTANT;
 }  /* end of _unur_pdf_student() */
 
@@ -95,7 +95,7 @@ _unur_pdf_student( double x, const UNUR_DISTR *distr )
 double
 _unur_dpdf_student( double x, const UNUR_DISTR *distr )
 {
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
   return ( (-nu-1.)*x/nu * pow( (1. + x*x/nu), (-nu-3.)*0.5 ) / NORMCONSTANT );
 } /* end of _unur_dpdf_student() */
 

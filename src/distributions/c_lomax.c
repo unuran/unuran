@@ -81,7 +81,7 @@ static int _unur_set_params_lomax( UNUR_DISTR *distr, const double *params, int 
 double
 _unur_pdf_lomax( double x, const UNUR_DISTR *distr )
 { 
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
   if (x<0.) 
     return 0.;
   /* else */
@@ -95,7 +95,7 @@ _unur_pdf_lomax( double x, const UNUR_DISTR *distr )
 double
 _unur_dpdf_lomax( double x, const UNUR_DISTR *distr )
 { 
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
 
   return ( (x<0.) ? 0. : -(a+1.) * pow(x+C,-(a+2.)) * NORMCONSTANT );
 } /* end of _unur_dpdf_lomax() */
@@ -105,7 +105,7 @@ _unur_dpdf_lomax( double x, const UNUR_DISTR *distr )
 double
 _unur_cdf_lomax( double x, const UNUR_DISTR *distr )
 { 
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
   return ( (x<0.) ? 0. : 1. - pow((C/(x+C)),a) );
 } /* end of _unur_cdf_lomax() */
 

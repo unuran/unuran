@@ -84,7 +84,7 @@ static int _unur_set_params_cauchy( UNUR_DISTR *distr, const double *params, int
 double
 _unur_pdf_cauchy(double x, const UNUR_DISTR *distr)
 { 
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
 
   if (DISTR.n_params > 0)
     /* standardize */
@@ -101,7 +101,7 @@ _unur_pdf_cauchy(double x, const UNUR_DISTR *distr)
 double
 _unur_logpdf_cauchy(double x, const UNUR_DISTR *distr)
 { 
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
 
   if (DISTR.n_params > 0)
     /* standardize */
@@ -118,7 +118,7 @@ _unur_logpdf_cauchy(double x, const UNUR_DISTR *distr)
 double
 _unur_dpdf_cauchy(double x, const UNUR_DISTR *distr)
 {
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
 
   if (DISTR.n_params > 0)
     /* standardize */
@@ -135,7 +135,7 @@ _unur_dpdf_cauchy(double x, const UNUR_DISTR *distr)
 double
 _unur_dlogpdf_cauchy(double x, const UNUR_DISTR *distr)
 {
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
 
   if (DISTR.n_params > 0)
     /* standardize */
@@ -152,7 +152,7 @@ _unur_dlogpdf_cauchy(double x, const UNUR_DISTR *distr)
 double
 _unur_cdf_cauchy(double x, const UNUR_DISTR *distr)
 {
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
   register double Fx;
 
   if (DISTR.n_params > 0)

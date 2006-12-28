@@ -91,7 +91,7 @@ static int _unur_set_params_negativebinomial( UNUR_DISTR *distr, const double *p
 double
 _unur_pmf_negativebinomial(int k, const UNUR_DISTR *distr)
 { 
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
 
   if (k<0)
     return 0.;
@@ -109,7 +109,7 @@ _unur_pmf_negativebinomial(int k, const UNUR_DISTR *distr)
 double
 _unur_cdf_negativebinomial(int k, const UNUR_DISTR *distr)
 { 
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
 
   if (k<0)
     return 0.;

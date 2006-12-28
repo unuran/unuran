@@ -109,7 +109,7 @@ static int _unur_set_params_beta( UNUR_DISTR *distr, const double *params, int n
 double
 _unur_pdf_beta(double x, const UNUR_DISTR *distr)
 { 
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
 
   if (DISTR.n_params > 2)
     /* standardize */
@@ -136,7 +136,7 @@ _unur_pdf_beta(double x, const UNUR_DISTR *distr)
 double
 _unur_logpdf_beta(double x, const UNUR_DISTR *distr)
 { 
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
 
   if (DISTR.n_params > 2)
     /* standardize */
@@ -163,7 +163,7 @@ _unur_logpdf_beta(double x, const UNUR_DISTR *distr)
 double
 _unur_dpdf_beta(double x, const UNUR_DISTR *distr)
 { 
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
 
   if (DISTR.n_params > 2) {
     /* standardize */
@@ -209,7 +209,7 @@ _unur_dpdf_beta(double x, const UNUR_DISTR *distr)
 double
 _unur_dlogpdf_beta(double x, const UNUR_DISTR *distr)
 { 
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
 
   if (DISTR.n_params > 2) {
     /* standardize */
@@ -249,7 +249,7 @@ _unur_dlogpdf_beta(double x, const UNUR_DISTR *distr)
 double
 _unur_cdf_beta(double x, const UNUR_DISTR *distr)
 {
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
 
   if (DISTR.n_params > 2)
     /* standardize */

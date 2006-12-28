@@ -85,7 +85,7 @@ static int _unur_set_params_binomial( UNUR_DISTR *distr, const double *params, i
 double
 _unur_pmf_binomial(int k, const UNUR_DISTR *distr)
 { 
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
 
   if ( k<0 || k>(n+0.5) )
     return 0.;
@@ -101,7 +101,7 @@ _unur_pmf_binomial(int k, const UNUR_DISTR *distr)
 double
 _unur_cdf_binomial(int k, const UNUR_DISTR *distr)
 { 
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
 
   if (k<0)
     return 0.;

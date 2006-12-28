@@ -93,7 +93,7 @@ static int _unur_set_params_hypergeometric( UNUR_DISTR *distr, const double *par
 double
 _unur_pmf_hypergeometric(int k, const UNUR_DISTR *distr)
 { 
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
 
   if ( k < _unur_max(0,(n-N+M-0.5)) || k > _unur_min(n,M)+0.5 ) 
     return 0.;

@@ -98,7 +98,7 @@ static int _unur_set_params_weibull( UNUR_DISTR *distr, const double *params, in
 double
 _unur_pdf_weibull( double x, const UNUR_DISTR *distr )
 { 
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
 
   if (DISTR.n_params > 1)
     /* standardize */
@@ -125,7 +125,7 @@ _unur_pdf_weibull( double x, const UNUR_DISTR *distr )
 double
 _unur_dpdf_weibull( double x, const UNUR_DISTR *distr )
 { 
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
   register double factor = 1.;
   register double xc;
 
@@ -154,7 +154,7 @@ _unur_dpdf_weibull( double x, const UNUR_DISTR *distr )
 double
 _unur_cdf_weibull( double x, const UNUR_DISTR *distr )
 { 
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
 
   if (DISTR.n_params > 1)
     /* standardize */

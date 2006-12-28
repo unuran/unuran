@@ -96,7 +96,7 @@ static int _unur_set_params_logistic( UNUR_DISTR *distr, const double *params, i
 double
 _unur_pdf_logistic( double x, const UNUR_DISTR *distr )
 { 
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
   register double ex;
 
   if (DISTR.n_params > 0)
@@ -116,7 +116,7 @@ _unur_pdf_logistic( double x, const UNUR_DISTR *distr )
 double
 _unur_dpdf_logistic( double x, const UNUR_DISTR *distr )
 { 
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
   register double factor = 1.;
   register double ex;
 
@@ -141,7 +141,7 @@ _unur_dpdf_logistic( double x, const UNUR_DISTR *distr )
 double
 _unur_cdf_logistic( double x, const UNUR_DISTR *distr )
 { 
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
 
   if (DISTR.n_params > 0)
     /* standardize */

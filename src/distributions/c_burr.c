@@ -238,7 +238,7 @@ static int _unur_set_params_burr( UNUR_DISTR *distr, const double *params, int n
 double
 _unur_cdf_burr( double x, const UNUR_DISTR *distr )
 {
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
 
   switch ((int) (burr_type + 0.5)) {
 

@@ -105,7 +105,7 @@ double
 _unur_pdf_extremeII( double x, const UNUR_DISTR *distr )
 { 
   register double xk;
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
 
   if (DISTR.n_params > 1)
     /* standardize */
@@ -128,7 +128,7 @@ _unur_dpdf_extremeII( double x, const UNUR_DISTR *distr )
 { 
   register double factor = 1.;
   register double xk;
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
 
   if (DISTR.n_params > 1) {
     /* standardize */
@@ -151,7 +151,7 @@ _unur_dpdf_extremeII( double x, const UNUR_DISTR *distr )
 double
 _unur_cdf_extremeII( double x, const UNUR_DISTR *distr )
 { 
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
 
   if (DISTR.n_params > 1)
     /* standardize */

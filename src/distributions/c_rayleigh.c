@@ -79,7 +79,7 @@ static int _unur_set_params_rayleigh( UNUR_DISTR *distr, const double *params, i
 double
 _unur_pdf_rayleigh( double x, const UNUR_DISTR *distr )
 { 
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
   
   if (x<=0.) 
     return 0.;
@@ -94,7 +94,7 @@ _unur_pdf_rayleigh( double x, const UNUR_DISTR *distr )
 double
 _unur_dpdf_rayleigh( double x, const UNUR_DISTR *distr )
 { 
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
   register double z;
 
   z = x*x/(sigma*sigma);
@@ -106,7 +106,7 @@ _unur_dpdf_rayleigh( double x, const UNUR_DISTR *distr )
 double
 _unur_cdf_rayleigh( double x, const UNUR_DISTR *distr )
 { 
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
   return ( (x<=0.) ? 0. : 1. - exp(-x*x/(2.*sigma*sigma)) );
 } /* end of _unur_cdf_rayleigh() */
 

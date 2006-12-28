@@ -80,7 +80,7 @@ static int _unur_set_params_logistic( UNUR_DISTR *distr, const double *params, i
 double
 _unur_pdf_lognormal( double x, const UNUR_DISTR *distr )
 { 
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
   register double z;
 
   if (x <= theta)
@@ -96,7 +96,7 @@ _unur_pdf_lognormal( double x, const UNUR_DISTR *distr )
 double
 _unur_dpdf_lognormal( double x, const UNUR_DISTR *distr )
 { 
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
   register double z, sigmasqu;
 
   if (x <= theta)

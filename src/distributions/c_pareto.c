@@ -81,7 +81,7 @@ static int _unur_set_params_pareto( UNUR_DISTR *distr, const double *params, int
 double
 _unur_pdf_pareto( double x, const UNUR_DISTR *distr )
 { 
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
   if (x<k)
     return 0.;
   /* else */
@@ -95,7 +95,7 @@ _unur_pdf_pareto( double x, const UNUR_DISTR *distr )
 double
 _unur_dpdf_pareto( double x, const UNUR_DISTR *distr )
 { 
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
   return ( (x<k) ? 0. : a * (-a-1.) / (k * k) * pow(x/k,-a-2.) );
 } /* end of _unur_dpdf_pareto() */
 
@@ -104,7 +104,7 @@ _unur_dpdf_pareto( double x, const UNUR_DISTR *distr )
 double
 _unur_cdf_pareto( double x, const UNUR_DISTR *distr )
 { 
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
   return ( (x<k) ? 0. : (1. - pow(k/x,a)) );
 } /* end of _unur_cdf_pareto() */
 

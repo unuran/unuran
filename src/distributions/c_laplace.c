@@ -96,7 +96,7 @@ static int _unur_set_params_laplace( UNUR_DISTR *distr, const double *params, in
 double
 _unur_pdf_laplace( double x, const UNUR_DISTR *distr )
 { 
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
 
   if (x<theta) 
     return ( exp( (x-theta)/phi ) / (2.*phi) ); 
@@ -110,7 +110,7 @@ _unur_pdf_laplace( double x, const UNUR_DISTR *distr )
 double
 _unur_logpdf_laplace( double x, const UNUR_DISTR *distr )
 { 
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
 
   if (x<theta) 
     return ( (x-theta)/phi - log(2.*phi) ); 
@@ -124,7 +124,7 @@ _unur_logpdf_laplace( double x, const UNUR_DISTR *distr )
 double
 _unur_dpdf_laplace( double x, const UNUR_DISTR *distr )
 { 
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
   register double z;
 
   z = (x>theta) ? (x-theta)/phi : (theta-x)/phi;
@@ -140,7 +140,7 @@ _unur_dpdf_laplace( double x, const UNUR_DISTR *distr )
 double
 _unur_dlogpdf_laplace( double x, const UNUR_DISTR *distr )
 { 
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
   return ( (x<theta) ? 1./phi : -1./phi );
 } /* end of unur_dpdf_laplace() */
 
@@ -149,7 +149,7 @@ _unur_dlogpdf_laplace( double x, const UNUR_DISTR *distr )
 double
 _unur_cdf_laplace( double x, const UNUR_DISTR *distr )
 { 
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
   register double z;
 
   z = (x-theta)/phi;

@@ -84,7 +84,7 @@ static int _unur_set_params_chisquare( UNUR_DISTR *distr, const double *params, 
 double
 _unur_pdf_chisquare(double x, const UNUR_DISTR *distr)
 { 
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
 
   if (x <= 0.)
     /* out of support */
@@ -102,7 +102,7 @@ _unur_pdf_chisquare(double x, const UNUR_DISTR *distr)
 double
 _unur_dpdf_chisquare(double x, const UNUR_DISTR *distr)
 { 
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
 
   if (x <= 0.)
     /* out of support */
@@ -120,7 +120,7 @@ _unur_dpdf_chisquare(double x, const UNUR_DISTR *distr)
 double
 _unur_cdf_chisquare(double x, const UNUR_DISTR *distr)
 { 
-  register double *params = DISTR.params;
+  register const double *params = DISTR.params;
 
   if (x <= 0.)
     /* out of support of p.d.f. */

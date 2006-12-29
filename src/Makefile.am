@@ -1,14 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 ## $Id$
 
-# Experimental code
-if INCLUDE_EXPERIMENTAL
-EXPERIMENTAL_DIRS = experimental
-else
-EXPERIMENTAL_DIRS = 
-endif
-
-
 SUBDIRS = \
  utils \
  methods \
@@ -19,7 +11,6 @@ SUBDIRS = \
  tests \
  uniform \
  urng \
- $(EXPERIMENTAL_DIRS) \
  .
 
 DIST_SUBDIRS = $(SUBDIRS)

@@ -1,7 +1,10 @@
 ## Process this file with automake to produce Makefile.in
 ## $Id$
 
-INCLUDES = -I$(top_srcdir)/src -I$(top_srcdir)/src/methods
+INCLUDES = \
+ -I$(top_srcdir)/src \
+ -I$(unuran_srcdir)/src \
+ -I$(unuran_srcdir)/src/methods
 
 lib_LTLIBRARIES = libunurexperimental.la
 
@@ -15,7 +18,6 @@ libunurexperimental_la_SOURCES = \
 # walk.c    walk.h    walk_struct.h \
 # mvtdr.c   mvtdr.h   mvtdr_struct.h \
 #   mvtdr_newset.ch mvtdr_init.ch mvtdr_sample.ch mvtdr_debug.ch
-
 
 noinst_HEADERS = 
 

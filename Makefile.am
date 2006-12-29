@@ -3,23 +3,17 @@
 
 # AUTOMAKE_OPTIONS = 
 
-# Experimental code
-if INCLUDE_EXPERIMENTAL
-EXPERIMENTAL_DIRS = run
-else
-EXPERIMENTAL_DIRS = 
-endif
-
 if INCLUDE_SOURCE_ONLY
 SUBDIRS = . src
 else
-SUBDIRS = . scripts src examples experiments tests $(EXPERIMENTAL_DIRS) doc
+SUBDIRS = . scripts src examples experiments tests doc
 endif
 
 DIST_SUBDIRS = $(SUBDIRS)
 
 EXTRA_DIST = \
  Announcement-0.1.0 \
+ UPGRADE \
  KNOWN-PROBLEMS \
  autogen.sh
 
@@ -43,7 +37,6 @@ dist-root:
 	tar zxf $(PACKAGE)-$(VERSION).tar.gz -C $(rootdir) 
 	(cd $(rootdir)/$(PACKAGE)-$(VERSION); \
 	   sed -e 's/\(AM_CONDITIONAL(\s*INCLUDE_SOURCE_ONLY\)\s*,.*/\1,true)/' \
-		-e 's/\(AM_CONDITIONAL(\s*INCLUDE_EXPERIMENTAL\)\s*,.*/\1,false)/' \
 		-e 's/\(AC_INIT(\s*\[UNURAN\]\s*,\s*\[\)\(.*\)\]\s*,\s*\[/\1\2-root\],\[/' \
 	   < configure.ac > configure.ac.tmp; \
 	   mv -v configure.ac.tmp configure.ac; \
@@ -101,7 +94,7 @@ MAINTAINERCLEANFILES = \
  autoconf/missing \
  autoconf/mkinstalldirs
 
-# remove windows directory
+# auxiliary directories
 maintainer-clean-local:
 	rm -rf win
 	@$(remove_rootdir)

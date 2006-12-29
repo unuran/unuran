@@ -4,31 +4,17 @@ dnl $Id$
 dnl Initialize.
 AC_PREREQ(2.60)
 dnl AC_INIT([UNURAN],[0.9.0],[unuran@statistik.wu-wien.ac.at])
-AC_INIT([UNURAN],[devel],[unuran@statistik.wu-wien.ac.at])
+AC_INIT([UNURAN-DEVEL],[x],[unuran@statistik.wu-wien.ac.at])
 AC_CONFIG_AUX_DIR(autoconf)
 AM_INIT_AUTOMAKE
-AC_CONFIG_SRCDIR([src/unuran_config.h])
+AC_CONFIG_SRCDIR([run/run.c])
 AC_CONFIG_HEADER([config.h])
 
-dnl Library versioning (current:revision:age)
-dnl See the libtool manual  for an explanation of the numbers
-dnl 
-dnl unuran-0.4.0   0:0:0
-dnl unuran-0.4.2   1:1:0
-dnl unuran-0.4.4   1:2:0
-dnl unuran-0.5.0   2:0:0
-dnl unuran-0.6.0   3:0:0
-dnl unuran-0.7.0   4:0:0
-dnl unuran-0.7.1   4:1:0
-dnl unuran-0.7.2   4:2:0
-dnl unuran-0.8.1   5:0:0
-dnl unuran-0.9.x   6:0:0
-
-UNURAN_LT_VERSION="6:0:0"
-AC_SUBST([UNURAN_LT_VERSION])
-
-dnl use maintainer mode
-AM_MAINTAINER_MODE
+# Main source of unuran
+unuran_srcdir="\$(top_srcdir)/.."
+AC_SUBST([unuran_srcdir])
+unuran_builddir="\$(top_builddir)/.."
+AC_SUBST([unuran_builddir])
 
 dnl Whether we distribute source code only
 dnl (without documentation, tests, and examples)
@@ -258,70 +244,11 @@ fi
 dnl create Makefiles for source
 AC_CONFIG_FILES([\
 	Makefile \
+	run/Makefile \
 	src/Makefile \
-	src/distr/Makefile \
-	src/distributions/Makefile \
-	src/methods/Makefile \
-	src/parser/Makefile \
-	src/specfunct/Makefile \
-	src/tests/Makefile \
-	src/uniform/Makefile \
-	src/urng/Makefile \
-	src/utils/Makefile ] )
-
-
-dnl create Makefiles for auxiliary scripts (optional)
-AC_CHECK_FILE(${srcdir}/scripts/Makefile.am,
-	AC_CONFIG_FILES( [ \
-	   scripts/Makefile ] ))
-
-dnl create Makefiles for documentation (optional)
-AC_CHECK_FILE(${srcdir}/doc/Makefile.am,
-	AC_CONFIG_FILES( [ \
-	   doc/Makefile \
-	   doc/src/Makefile \
-	   doc/figures/Makefile ] ))
-
-dnl create Makefiles for tests (optional)
-AC_CHECK_FILE(${srcdir}/tests/Makefile.am,
-	AC_CONFIG_FILES( [ \
-	   tests/Makefile \
-	   tests/testdistributions/Makefile ] ))
-
-dnl create Makefiles for examples (optional)
-AC_CHECK_FILE(${srcdir}/examples/Makefile.am,
-	AC_CONFIG_FILES( [ \
-	   examples/Makefile ] ))
-AC_CHECK_FILE(${srcdir}/experiments/Makefile.am,
-	AC_CONFIG_FILES( [ \
-	   experiments/Makefile ] ))
+	tests/Makefile ] )
 
 AC_OUTPUT
 
 dnl -----------------------------------------
-
-AC_MSG_RESULT([
-*========================================================
-*
-* Configuration for ${PACKAGE}-${VERSION}:
-*
-*  Source directory:          ${srcdir}
-*  Installation directory:    ${prefix}
-*
-*  Use deprecated code:       ${enable_deprecated}
-*
-*  Support for external uniform random number generators
-*    Rngstream:               ${with_urng_rngstream}
-*    PRNG:                    ${with_urng_prng}
-*    GSL:                     ${with_urng_gsl}
-*
-*  Default URNG:              ${with_urng_default}
-*
-*========================================================
-])
-
-dnl -----------------------------------------
-
-
-
 

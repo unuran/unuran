@@ -6,9 +6,9 @@ test -z "$srcdir" && srcdir=.
 
 ORIGDIR=`pwd`
 cd $srcdir
-PROJECT=unuran
+PROJECT=unuran-devel
 TEST_TYPE=-f
-FILE=src/unuran_config.h          # a file that should exist in the source dir
+FILE=run/run.c          # a file that should exist in the source dir
 export WANT_AUTOMAKE=1.9
 
 DIE=0
@@ -86,7 +86,7 @@ automake --add-missing $am_opt
 autoconf
 cd $ORIGDIR
 
-$srcdir/configure --enable-maintainer-mode "$@"
+$srcdir/configure "$@"
 
 echo 
 echo "Now type 'make' to compile $PROJECT."

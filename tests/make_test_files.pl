@@ -35,13 +35,34 @@ use English;
 use strict;
 
 # ---------------------------------------------------------------------------
-# Constants
+
+sub usage {
+    my $progname = $0;
+    $progname =~ s#^.*/##g;
+    
+    print STDERR <<EOM;
+usage: $progname <srcdir> <test.conf>
+      
+  Scans <test.conf>, generates the C source for test routines,
+  and writes it on stdout.
+  File must have suffix "conf".
+      
+EOM
+      
+} # end of usage()
+
+# ---------------------------------------------------------------------------
+# read arguments
 
 # src directory
-my $src_dir = "../src";
+my $src_dir = shift or die "No argument given";
+usage and die "$src_dir: No such directory" unless -d $src_dir;
+
+# ---------------------------------------------------------------------------
+# Constants
 
 # unuran header file
-my $unuran_h_file = "$src_dir/unuran.h";
+my $unuran_h_file = "$src_dir/src/unuran.h";
 
 # seed for uniform random number generator.
 my $seed = int(rand 1000000) + 1;
@@ -66,24 +87,6 @@ my @header_files;     # additional header file included in *.conf
 my @othersections = ("new", "set", "get", "chg", "init", "reinit", "sample");
 
 my $test_routines;
-
-# ---------------------------------------------------------------------------
-
-sub usage {
-    my $progname = $0;
-    $progname =~ s#^.*/##g;
-    
-    print STDERR <<EOM;
-usage: $progname <test.conf>
-      
-  Scans <test.conf>, generates the C source for test routines,
-  and writes it on stdout.
-  File must have suffix "conf".
-      
-EOM
-      
-    exit;
-} # end of usage()
 
 # ---------------------------------------------------------------------------
 

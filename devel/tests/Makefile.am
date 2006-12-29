@@ -5,6 +5,7 @@ SUBDIRS = .
 INCLUDES = \
  -I$(unuran_srcdir) \
  -I$(unuran_srcdir)/src \
+ -I$(unuran_srcdir)/src/tests \
  -I$(unuran_srcdir)/tests
 
 AM_CPPFLAGS = \

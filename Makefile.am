@@ -28,11 +28,12 @@ remove_rootdir = \
          && rm -fr $(rootdir); }; }
 
 dist-root:
+if MAINTAINER_MODE
 	@echo "Create tar ball for ROOT" | \
           sed 'h;s/./=/g;p;x;p;x'
 	$(remove_rootdir)
-	make
-	make dist
+	$(MAKE)
+	$(MAKE) dist
 	mkdir $(rootdir)
 	tar zxf $(PACKAGE)-$(VERSION).tar.gz -C $(rootdir) 
 	(cd $(rootdir)/$(PACKAGE)-$(VERSION); \
@@ -58,22 +59,29 @@ dist-root:
 	   echo "*" >> configure.ac; \
 	   echo "*===================================================" >> configure.ac; \
 	   echo "])" >> configure.ac; \
-	   aclocal; autoheader; automake; autoconf; \
-	   ./configure; \
-	   make dist; \
+	   autoreconf; ./configure; \
+	   $(MAKE) dist; \
 	)
 	cp $(rootdir)/$(PACKAGE)-$(VERSION)/$(PACKAGE)-*.tar.gz .
 	$(remove_rootdir)
 	@echo "$(distrootfile) is ready for distribution" | \
           sed 'h;s/./=/g;p;x;p;x'
+else
+	@echo "You must enable maintainer mode using"
+	@echo "   sh ./configure --enable-maintainer-mode"
+	@echo "first to run 'make dist-root'!"
+endif
 
 # compile with almost all GCC warnings enabled
+if MAINTAINER_MODE
 setgccWflags:
-	export CFLAGS="`cat $(top_srcdir)/scripts/gccWflags`"; ./configure
+	export CFLAGS="`cat $(top_srcdir)/scripts/gccWflags`"; \
+	./configure --enable-maintainer-mode
 
 setgccWflags-ansi:
-	export CFLAGS="-ansi `cat $(top_srcdir)/scripts/gccWflags`"; ./configure
-
+	export CFLAGS="-ansi `cat $(top_srcdir)/scripts/gccWflags`"; \
+	./configure --enable-maintainer-mode
+endif
 
 # clean backup files
 CLEANFILES = *~

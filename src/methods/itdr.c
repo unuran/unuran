@@ -1483,7 +1483,7 @@ _unur_itdr_find_xt( struct unur_gen *gen, double b )
   xl = b + _unur_max(1., (fabs(GEN->pole)+b)*UNUR_SQRT_DBL_EPSILON);
   if (xl > GEN->bd_right) xl = GEN->bd_right;
   while (!_unur_isfinite(FKT(xl)) || PDF(xl) == 0. ) {
-    xl -= (xl - b)/2.;
+    xl = 0.5*(xl + b);
     if (!_unur_isfinite(xl) || _unur_FP_same(xl,b)) return INFINITY;
   }
   xu = xl;
@@ -1507,7 +1507,7 @@ _unur_itdr_find_xt( struct unur_gen *gen, double b )
   else { /* FKT(xl)<=0. */
     do {
       xu = xl;
-      xl -= (xl - b)/2.;
+      xl = 0.5*(xl + b);
       if (!_unur_isfinite(xl)) return INFINITY;
     } while(FKT(xl) < 0.);
   }

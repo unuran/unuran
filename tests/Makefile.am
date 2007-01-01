@@ -2,14 +2,12 @@
 
 SUBDIRS = testdistributions .
 
-INCLUDES = \
- -I$(top_srcdir)/src \
- -I$(top_srcdir)/src/tests
-
 AM_CPPFLAGS = \
  $(UNURAN_SUPPORTS_GSL) \
  $(UNURAN_SUPPORTS_PRNG) \
- $(UNURAN_SUPPORTS_RNGSTREAM)
+ $(UNURAN_SUPPORTS_RNGSTREAM) \
+ -I$(top_srcdir)/src \
+ -I$(top_srcdir)/src/tests
 
 noinst_LTLIBRARIES = libtestroutines.la
 libtestroutines_la_SOURCES = testroutines.c

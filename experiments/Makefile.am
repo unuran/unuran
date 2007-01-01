@@ -1,12 +1,14 @@
 ## Process this file with automake to produce Makefile.in
 
-AM_LDFLAGS = -L$(top_builddir)/src
-
-INCLUDES = \
+AM_CPPFLAGS = \
  -I$(top_srcdir)/src \
  -I$(top_srcdir)/src/tests
 
-LDADD = $(top_builddir)/src/libunuran.la
+AM_LDFLAGS = \
+ -L$(top_builddir)/src
+
+LDADD = \
+ $(top_builddir)/src/libunuran.la
 
 noinst_PROGRAMS = \
  make_timing_table

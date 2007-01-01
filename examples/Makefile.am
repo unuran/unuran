@@ -1,16 +1,17 @@
 ## Process this file with automake to produce Makefile.in
 
-AM_LDFLAGS = -L$(top_builddir)/src
-
-INCLUDES = -I$(top_srcdir)/src -I$(top_srcdir)/src/uniform
-
-LDADD = $(top_builddir)/src/libunuran.la
-
 AM_CPPFLAGS = \
  $(UNURAN_SUPPORTS_GSL) \
  $(UNURAN_SUPPORTS_PRNG) \
- $(UNURAN_SUPPORTS_RNGSTREAM)
+ $(UNURAN_SUPPORTS_RNGSTREAM) \
+ -I$(top_srcdir)/src \
+ -I$(top_srcdir)/src/uniform
 
+AM_LDFLAGS = \
+ -L$(top_builddir)/src
+
+LDADD = \
+ $(top_builddir)/src/libunuran.la
 
 EXAMPLES = \
  example0 example0_str \

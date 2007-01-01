@@ -7,7 +7,11 @@ info_TEXINFOS = unuran.texi
 
 # Location of same source files 
 TEXINFO_TEX = ./src/texinfo.tex
-AM_MAKEINFOFLAGS = -I $(top_srcdir)/doc -I $(top_srcdir)/doc/src
+
+AM_MAKEINFOFLAGS = \
+ -I $(top_srcdir)/doc \
+ -I $(top_srcdir)/doc/src \
+ --no-split
 
 # Automatically created part of manual
 unuran_src = ./src/unuran_src.texi
@@ -56,7 +60,6 @@ EXTRA_DIST = \
  unuran.ps \
  unuran.pdf
 
-
 # Generated texi files ...
 sinclude ./src/.dep-unuran_src_texi
 $(unuran_src): $(top_srcdir)/doc/src/make_texi.pl
@@ -66,31 +69,17 @@ $(unuran_src): $(top_srcdir)/doc/src/make_texi.pl
 $(unuran_examples): $(top_srcdir)/examples/example*.c
 	sed 's/{/@{/g;s/}/@}/g' < $(top_srcdir)/examples/`echo $* | sed 's/src\/ref_//'`.c > $@
 
-# Rules for creating info, dvi, ps, and pdf files are provided by automake.
-# Add new rules for html and txt.
-SUFFIXES = .html .txt
-
-.texi.html:
-	$(MAKEINFO) $(AM_MAKEINFOFLAGS) --html --no-split $< -o tmp-$@
-	sed -e 's/\&OUML\;/\&Ouml\;/g' tmp-$@ > $@
-	rm -f tmp-$@
-
-.texi.txt:
-	$(MAKEINFO) $(AM_MAKEINFOFLAGS) --fill-column=80 --no-headers --number-sections $< -o $@
-
-# Dependencies
-unuran.html: unuran.texi version.texi $(unuran_TEXINFOS)
+# Rules for creating info, html, dvi, ps, and pdf files are provided by automake.
+# Add new rules for txt.
 unuran.txt: unuran.texi version.texi $(unuran_TEXINFOS)
+	$(MAKEINFO) $(AM_MAKEINFOFLAGS) --fill-column=80 --no-headers --number-sections \
+		unuran.texi -o unuran.txt
 
-# Abbreviations
-.PHONY: html txt
-html: unuran.html
 txt: unuran.txt
 
 # Clean backup and temp files
 CLEANFILES = \
- *~ \
- tmp-unuran.html
+ *~
 
 # Clean generated files
 MAINTAINERCLEANFILES = \

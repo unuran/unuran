@@ -1,6 +1,7 @@
 #! /bin/sh
 # Run this to generate all the initial makefiles, etc.
 
+# Constants
 srcdir=`dirname $0`
 test -z "$srcdir" && srcdir=.
 
@@ -9,88 +10,78 @@ cd $srcdir
 PROJECT=unuran
 TEST_TYPE=-f
 FILE=src/unuran_config.h          # a file that should exist in the source dir
-export WANT_AUTOMAKE=1.9
+# export WANT_AUTOMAKE=1.10
 
-DIE=0
+# Check for required programs
+(libtool --version) < /dev/null > /dev/null 2>&1 || {
+	echo
+	echo "You must have libtool installed to compile $PROJECT."
+	exit 1
+}
+
+(autoheader --version) < /dev/null > /dev/null 2>&1 || {
+	echo
+	echo "You must have autoheader installed to compile $PROJECT."
+	exit 1
+}
 
 (autoconf --version) < /dev/null > /dev/null 2>&1 || {
 	echo
 	echo "You must have autoconf installed to compile $PROJECT."
-	DIE=1
-}
-
-(libtool --version) < /dev/null > /dev/null 2>&1 || {
-	echo
-	echo "You must have libtool installed to compile $PROJECT."
-	DIE=1
+	exit 1
 }
 
 (automake --version) < /dev/null > /dev/null 2>&1 || {
 	echo
 	echo "You must have automake installed to compile $PROJECT."
-	DIE=1
-}
-
-if test "$DIE" -eq 1; then
 	exit 1
-fi
+}
 
 test $TEST_TYPE $FILE || {
 	echo "You must run this script in the top-level $PROJECT directory"
 	exit 1
 }
 
+# Check for given command line arguments
 if test -z "$*"; then
 	echo "I am going to run ./configure with no arguments - if you wish "
-        echo "to pass any to it, please specify them on the $0 command line."
+	echo "to pass any to it, please specify them on the $0 command line."
+	echo
 fi
 
+# Set flags for special compilers
 case $CC in
 *xlc | *xlc\ * | *lcc | *lcc\ *) am_opt=--include-deps;;
 esac
 
-#if test -z "$ACLOCAL_FLAGS"; then
-#
-#	acdir=`aclocal --print-ac-dir`
-#        m4list="glib.m4 gettext.m4"
-#
-#	for file in $m4list
-#	do
-#		if [ ! -f "$acdir/$file" ]; then
-#			echo "WARNING: aclocal's directory is $acdir, but..."
-#			echo "         no file $acdir/$file"
-#			echo "         You may see fatal macro warnings below."
-#			echo "         If these files are installed in /some/dir, set the ACLOCAL_FLAGS "
-#			echo "         environment variable to \"-I /some/dir\", or install"
-#			echo "         $acdir/$file."
-#			echo ""
-#		fi
-#	done
-#fi
-
-#echo "Running gettextize...  Ignore non-fatal messages."
-# Hmm, we specify --force here, since otherwise things dont'
-# get added reliably, but we don't want to overwrite intl
-# while making dist.
-#echo "no" | gettextize --copy --force
-
+# Run autotools
+echo "Running libtoolize ..."
 libtoolize --automake
 
-aclocal $ACLOCAL_FLAGS
+echo; echo "Running aclocal ..."
+aclocal
 
-# optionally feature autoheader
-(autoheader --version)  < /dev/null > /dev/null 2>&1 && autoheader
+echo; echo "Running autoheader ..."
+autoheader --warnings=all
 
-automake --add-missing $am_opt
-#autoconf -Wobsolete
-autoconf
+echo; echo "Running automake ..."
+automake --warnings=all --add-missing $am_opt
+
+echo; echo "Running autoconf ..."
+autoconf --warnings=all
+echo
+
+# Change to original directory
 cd $ORIGDIR
 
+# Run ./configure script
+echo; echo "Running configure ..."
 $srcdir/configure --enable-maintainer-mode "$@"
 
+# End
 echo 
 echo "Now type 'make' to compile $PROJECT."
-
+echo 
 
 
 

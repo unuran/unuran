@@ -3,10 +3,10 @@ dnl $Id$
 
 dnl Initialize.
 AC_PREREQ(2.60)
-dnl AC_INIT([UNURAN],[0.9.0],[unuran@statistik.wu-wien.ac.at])
-AC_INIT([UNURAN],[devel],[unuran@statistik.wu-wien.ac.at])
+dnl AC_INIT([unuran],[0.9.0],[unuran@statistik.wu-wien.ac.at])
+AC_INIT([unuran],[devel],[unuran@statistik.wu-wien.ac.at])
 AC_CONFIG_AUX_DIR(autoconf)
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([unuran],[devel])
 AC_CONFIG_SRCDIR([src/unuran_config.h])
 AC_CONFIG_HEADER([config.h])
 
@@ -29,14 +29,6 @@ AC_SUBST([UNURAN_LT_VERSION])
 
 dnl use maintainer mode
 AM_MAINTAINER_MODE
-
-dnl Whether we distribute source code only
-dnl (without documentation, tests, and examples)
-dnl DO NOT CHANGE THIS HERE!
-AM_CONDITIONAL(INCLUDE_SOURCE_ONLY,false)
-
-dnl Add dmalloc support.
-AM_WITH_DMALLOC
 
 dnl Check for which system.
 AC_CANONICAL_HOST
@@ -61,77 +53,16 @@ AC_CHECK_LIB([m], [sqrt])
 dnl Optional support for external uniform random number generators
 
 dnl RngStream: Pierre L'Ecuyer's multiple random stream generator
-AC_ARG_WITH(urng_rngstream,
-	[AS_HELP_STRING([--with-urng-rngstream],
-	   [URNG: use Pierre L'Ecuyer's RNGSTREAM library @<:@default=no@:>@])],
-	[case "${withval}" in
-	   yes) ;; no) ;; 
-	   *) AC_MSG_ERROR(bad value '${withval}' for --with-urng-rngstream) ;;
-	esac],
-	[with_urng_rngstream=no])
-AS_IF([test "x$with_urng_rngstream" != xno],
-	[AC_CHECK_LIB([rngstreams], [RngStream_CreateStream], [], [])
-	 AC_CHECK_HEADERS([RngStream.h],
-	   [AC_SUBST(UNURAN_SUPPORTS_RNGSTREAM,-DUNURAN_SUPPORTS_RNGSTREAM)
-	    AC_DEFINE([UNURAN_HAS_RNGSTREAM], [1], 
-             [Define to 1 if you use Pierre L'Ecuyer's RNGSTREAM library.])],
-	   [AC_MSG_FAILURE([
-****************************************************************
-*                                                              *
-*   --with-urng-rngstream given, but 'RngStream.h' not found   *
-*                                                              *
-****************************************************************
-	   ]) ]) ], [])
-
+AX_ADD_URNG_LIB([rngstream],[RNGSTREAM],[Pierre L'Ecuyer's RNGSTREAM library],
+                [rngstreams],[RngStream_CreateStream],[RngStream.h])
 
 dnl prng: Otmar Lendl's library for pseudo random number generators
-AC_ARG_WITH(urng_prng,
-	[AS_HELP_STRING([--with-urng-prng],
-	   [URNG: use Otmar Lendl's PRNG library @<:@default=no@:>@])],
-	[case "${withval}" in
-	   yes) ;; no) ;; 
-	   *) AC_MSG_ERROR(bad value '${withval}' for --with-urng-prng) ;;
-	esac],
-	[with_urng_prng=no])
-AS_IF([test "x$with_urng_prng" != xno],
-	[AC_CHECK_LIB([prng], [prng_new], [], [])
-	 AC_CHECK_HEADERS([prng.h],
-	   [AC_SUBST(UNURAN_SUPPORTS_PRNG,-DUNURAN_SUPPORTS_PRNG)
-	    AC_DEFINE([UNURAN_HAS_PRNG], [1], 
-             [Define to 1 if you use Otmar Lendl's PRNG library.])],
-	   [AC_MSG_FAILURE([
-******************************************************
-*                                                    *
-*   --with-urng-prng given, but 'prng.h' not found   *
-*                                                    *
-******************************************************
-	   ]) ]) ], [])
-
+AX_ADD_URNG_LIB([prng],[PRNG],[Otmar Lendl's PRNG library],
+                [prng],[prng_new],[prng.h])
 
 dnl GSL: GNU Scientific Library
-AC_ARG_WITH(urng_gsl,
-	[AS_HELP_STRING([--with-urng-gsl],
-	   [URNG: use random number generators from GNU Scientific Library @<:@default=no@:>@])],
-	[case "${withval}" in
-	   yes) ;; no) ;; 
-	   *) AC_MSG_ERROR(bad value '${withval}' for --with-urng-gsl) ;;
-	esac],
-	[with_urng_gsl=no])
-AS_IF([test "x$with_urng_gsl" != xno],
-	[AC_CHECK_LIB([gslcblas], [main])
-	 AC_CHECK_LIB([gsl], [gsl_rng_alloc], [], [])
-	 AC_CHECK_HEADERS([gsl/gsl_rng.h gsl/gsl_qrng.h],
-	   [AC_SUBST(UNURAN_SUPPORTS_GSL,-DUNURAN_SUPPORTS_GSL)
-	    AC_DEFINE([UNURAN_HAS_GSL], [1], 
-             [Define to 1 if you use uniform random number generators from GSL.])],
-	   [AC_MSG_FAILURE([
-********************************************************
-*                                                      *
-*   --with-urng-gsl given, but 'gsl_rng.h' not found   *
-*                                                      *
-********************************************************
-	   ]) ]) ], [])
-
+AX_ADD_URNG_LIB([gsl],[GSL],[random number generators from GNU Scientific Library],
+                [gsl],[gsl_rng_alloc],[gsl/gsl_rng.h])
 
 dnl Default URNG
 AC_ARG_WITH(urng_default,
@@ -191,28 +122,7 @@ AC_CHECK_DECLS(INFINITY,,,[#include <math.h>])
 AC_CHECK_DECLS(HUGE_VAL,,,[#include <math.h>])
 
 dnl Check IEEE comparisons, whether "x != x" is true for NaNs
-AC_CACHE_CHECK([for IEEE comparisons], ac_cv_c_ieee_comparisons,
-[AC_RUN_IFELSE([AC_LANG_SOURCE([[
-#include <math.h>
-int main (void) 
-{ 
-   int status; double inf, nan;
-   inf = exp(1.0e10);
-   nan = inf / inf;
-   /* nan = 0.0 / 0.0; */
-   status = (nan == nan);
-   exit (status);
-}]])],
-[ac_cv_c_ieee_comparisons="yes"],
-[ac_cv_c_ieee_comparisons="no"],
-[ac_cv_c_ieee_comparisons="yes"])
-])
-
-if test "$ac_cv_c_ieee_comparisons" != no ; then
-  AC_DEFINE([HAVE_IEEE_COMPARISONS], [1], 
-      [Define to 1 if "x != x" is true for NaNs])
-  AC_SUBST(HAVE_IEEE_COMPARISONS)
-fi
+AX_IEEE_COMP
 
 dnl Some routines are deprecated.
 dnl Compiling and linking these into the library can be controlled
@@ -267,34 +177,16 @@ AC_CONFIG_FILES([\
 	src/tests/Makefile \
 	src/uniform/Makefile \
 	src/urng/Makefile \
-	src/utils/Makefile ] )
-
-
-dnl create Makefiles for auxiliary scripts (optional)
-AC_CHECK_FILE(${srcdir}/scripts/Makefile.am,
-	AC_CONFIG_FILES( [ \
-	   scripts/Makefile ] ))
-
-dnl create Makefiles for documentation (optional)
-AC_CHECK_FILE(${srcdir}/doc/Makefile.am,
-	AC_CONFIG_FILES( [ \
-	   doc/Makefile \
-	   doc/src/Makefile \
-	   doc/figures/Makefile ] ))
-
-dnl create Makefiles for tests (optional)
-AC_CHECK_FILE(${srcdir}/tests/Makefile.am,
-	AC_CONFIG_FILES( [ \
-	   tests/Makefile \
-	   tests/testdistributions/Makefile ] ))
-
-dnl create Makefiles for examples (optional)
-AC_CHECK_FILE(${srcdir}/examples/Makefile.am,
-	AC_CONFIG_FILES( [ \
-	   examples/Makefile ] ))
-AC_CHECK_FILE(${srcdir}/experiments/Makefile.am,
-	AC_CONFIG_FILES( [ \
-	   experiments/Makefile ] ))
+	src/utils/Makefile \
+	scripts/Makefile \
+	doc/Makefile \
+	doc/src/Makefile \
+	doc/figures/Makefile \
+	tests/Makefile \
+	tests/testdistributions/Makefile \
+	examples/Makefile \
+	experiments/Makefile \
+])
 
 AC_OUTPUT
 

@@ -3,11 +3,7 @@
 
 # AUTOMAKE_OPTIONS = 
 
-if INCLUDE_SOURCE_ONLY
-SUBDIRS = . src
-else
 SUBDIRS = . scripts src examples experiments tests doc
-endif
 
 DIST_SUBDIRS = $(SUBDIRS)
 
@@ -37,14 +33,13 @@ if MAINTAINER_MODE
 	mkdir $(rootdir)
 	tar zxf $(PACKAGE)-$(VERSION).tar.gz -C $(rootdir) 
 	(cd $(rootdir)/$(PACKAGE)-$(VERSION); \
-	   sed -e 's/\(AM_CONDITIONAL(\s*INCLUDE_SOURCE_ONLY\)\s*,.*/\1,true)/' \
-		-e 's/\(AC_INIT(\s*\[UNURAN\]\s*,\s*\[\)\(.*\)\]\s*,\s*\[/\1\2-root\],\[/' \
-	   < configure.ac > configure.ac.tmp; \
-	   mv -v configure.ac.tmp configure.ac; \
-	   for f in `find . -type f -name '*.[ch]'`; do \
-		./scripts/remove_comments.pl $$f; \
-	   done; \
-	   for f in `find . -type f -name '*.[cd]h'`; do \
+	   sed -e 's/\(AC_INIT(\s*\[unuran\]\s*,\s*\[\)\(.*\)\]\s*,\s*\[/\1\2-root\],\[/' \
+		-e 's/\(AM_INIT_AUTOMAKE(\s*\[unuran\]\s*,\s*\[\)\(.*\)\]\s*)/\1\2-root\])/' \
+		-e '/^\s*src.*\/Makefile\s*\\/p' -e '/^\s*.*\/Makefile\s*\\/d' \
+		< ../../configure.ac > ./configure.ac; \
+	   sed -e 's/^\s*SUBDIRS\s*=.*/SUBDIRS = \. src/' \
+		< ../../Makefile.am > Makefile.am; \
+	   for f in `find ./src -type f -name '*.[ch]' -o -name '*.ch'`; do \
 		./scripts/remove_comments.pl $$f; \
 	   done; \
 	   echo "AC_MSG_NOTICE([ " >> configure.ac; \

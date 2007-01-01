@@ -10,7 +10,7 @@ cd $srcdir
 PROJECT=unuran-devel
 TEST_TYPE=-f
 FILE=run/run.c          # a file that should exist in the source dir
-export WANT_AUTOMAKE=1.9
+# export WANT_AUTOMAKE=1.10
 
 # Check for required programs
 (libtool --version) < /dev/null > /dev/null 2>&1 || {
@@ -55,18 +55,19 @@ case $CC in
 esac
 
 # Run autotools
+echo "Running libtoolize ..."
 libtoolize --automake
-echo
 
+echo; echo "Running aclocal ..."
 aclocal
-echo
 
+echo; echo "Running autoheader ..."
 autoheader --warnings=all
-echo
 
+echo; echo "Running automake ..."
 automake --warnings=all --add-missing $am_opt
-echo
 
+echo; echo "Running autoconf ..."
 autoconf --warnings=all
 echo
 
@@ -74,6 +75,7 @@ echo
 cd $ORIGDIR
 
 # Run ./configure script
+echo; echo "Running configure ..."
 $srcdir/configure "$@"
 
 # End

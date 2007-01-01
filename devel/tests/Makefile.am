@@ -1,17 +1,13 @@
 ## Process this file with automake to produce Makefile.in
 
-SUBDIRS = . 
-
-INCLUDES = \
+AM_CPPFLAGS = \
+ $(UNURAN_SUPPORTS_GSL) \
+ $(UNURAN_SUPPORTS_PRNG) \
+ $(UNURAN_SUPPORTS_RNGSTREAM) \
  -I$(unuran_srcdir) \
  -I$(unuran_srcdir)/src \
  -I$(unuran_srcdir)/src/tests \
  -I$(unuran_srcdir)/tests
-
-AM_CPPFLAGS = \
- $(UNURAN_SUPPORTS_GSL) \
- $(UNURAN_SUPPORTS_PRNG) \
- $(UNURAN_SUPPORTS_RNGSTREAM)
 
 LDADD = \
  $(unuran_builddir)/tests/libtestroutines.la \

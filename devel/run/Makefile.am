@@ -2,7 +2,7 @@
 
 AM_LDFLAGS = -L$(unuran_builddir)/src
 
-INCLUDES = \
+AM_CPPFLAGS = \
  -I$(top_srcdir)/src \
  -I$(unuran_srcdir)/src \
  -I$(unuran_srcdir)/src/tests \

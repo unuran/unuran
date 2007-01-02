@@ -1323,7 +1323,7 @@ _unur_itdr_get_hat_tail( struct unur_gen *gen )
       }
       /* try new value for ct */
       ct = 0.5*(ct + lc_bx);
-      if (ct > GEN->ct || ct < -0.999 || _unur_FP_approx(ct,lc_bx)) {
+      if (ct > GEN->ct || ct < -0.999 || _unur_FP_cmp_approx(ct,lc_bx)==0) {
 	/* new ct value is even larger or too small or its time to stop */ 
 	_unur_error(gen->genid,UNUR_ERR_DISTR_PROP,"cannot compute hat for tail: ct");
 	return UNUR_ERR_DISTR_PROP;

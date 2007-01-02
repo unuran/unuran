@@ -221,7 +221,7 @@ _unur_tdr_gw_dars( struct unur_gen *gen )
 	  
 	  if ( _unur_FP_is_minus_infinity(x0) ||
 	       _unur_FP_is_infinity(x1) ||
-	       _unur_FP_approx(x0,x1) )
+	       _unur_FP_cmp_approx(x0,x1)==0 )
 	    /* we do not use the expected value in case of unbounded intervals */
 	    continue;  /* try next rule */
 	  
@@ -362,7 +362,7 @@ _unur_tdr_gw_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval 
 
     /* we do not compute the slope when the construction points
        are too close. at least 8 significant digits should remain. */
-    if (_unur_FP_approx(iv->x, iv->next->x) )
+    if (_unur_FP_cmp_approx(iv->x, iv->next->x)==0 )
       return UNUR_ERR_SILENT;   /* construction points too close */
 
     /* slope of transformed squeeze */
@@ -371,8 +371,8 @@ _unur_tdr_gw_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval 
     /* check squeeze */
     /* we have to take care about round off error.
        the following accepts PDFs with might be a little bit not T_concave */
-    if ( ( (iv->sq > iv->dTfx       && !_unur_FP_approx(iv->sq,iv->dTfx)) || 
-	   (iv->sq < iv->next->dTfx && !_unur_FP_approx(iv->sq,iv->next->dTfx)) )
+    if ( ( (iv->sq > iv->dTfx      && _unur_FP_cmp_approx(iv->sq,iv->dTfx)!=0) || 
+	   (iv->sq < iv->next->dTfx && _unur_FP_cmp_approx(iv->sq,iv->next->dTfx)!=0) )
 	 && iv->next->dTfx < INFINITY ) {
       /* There are big troubles when the density is extremely small. 
 	 Then round-off errors may cancel out all significant figures and
@@ -414,7 +414,7 @@ _unur_tdr_gw_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval 
 
   /* check area */
   /* we cannot be more accurate than in the `check squeeze' section */
-  if ( iv->Asqueeze > iv->Ahat && !_unur_FP_approx(iv->Asqueeze, iv->Ahat) ) {
+  if ( iv->Asqueeze > iv->Ahat && _unur_FP_cmp_approx(iv->Asqueeze, iv->Ahat)!=0 ) {
     _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"A(squeeze) > A(hat). PDF not T-concave!");
     return UNUR_ERR_GEN_CONDITION; 
   }

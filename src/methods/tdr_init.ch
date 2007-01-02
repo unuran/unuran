@@ -1013,7 +1013,7 @@ _unur_tdr_tangent_intersection_point( struct unur_gen *gen, struct unur_tdr_inte
   /*    } */
   
   /* case (2): computing intersection of tangents is unstable */
-  if (_unur_FP_approx(iv->dTfx, iv->next->dTfx)) {
+  if (_unur_FP_cmp_approx(iv->dTfx, iv->next->dTfx)==0) {
     /* use mean point */
     *ipt = 0.5 * (iv->x + iv->next->x);
     return UNUR_SUCCESS;

@@ -1481,7 +1481,7 @@ _unur_hinv_interval_is_monotone( struct unur_gen *gen, struct unur_hinv_interval
        as approximation we use the same check for order 5*/
   case 3:
     /* we skip the test if computing the bound has too many round-off errors */
-    if (iv->u==0. || _unur_FP_approx(iv->u,iv->next->u))
+    if (iv->u==0. || _unur_FP_cmp_approx(iv->u,iv->next->u)==0)
       return TRUE;
     /* difference quotient */
     bound = 3.*(iv->next->p - iv->p)/(iv->next->u - iv->u);

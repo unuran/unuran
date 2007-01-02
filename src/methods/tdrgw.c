@@ -1912,7 +1912,7 @@ _unur_tdrgw_interval_parameter( struct unur_gen *gen, struct unur_tdrgw_interval
 
     /* we do not compute the slope when the construction points
        are too close. at least 8 significant digits should remain. */
-    if (_unur_FP_approx(iv->x, iv->next->x) )
+    if (_unur_FP_cmp_approx(iv->x, iv->next->x)==0 )
       return UNUR_ERR_SILENT;   /* construction points too close */
 
     /* slope of transformed squeeze */
@@ -1921,8 +1921,8 @@ _unur_tdrgw_interval_parameter( struct unur_gen *gen, struct unur_tdrgw_interval
     /* check squeeze */
     /* we have to take care about round off error.
        the following accepts PDFs with might be a little bit not T_concave */
-    if ( ( (iv->sq > iv->dlogfx       && !_unur_FP_approx(iv->sq,iv->dlogfx)) ||
-	   (iv->sq < iv->next->dlogfx && !_unur_FP_approx(iv->sq,iv->next->dlogfx)) )
+    if ( ( (iv->sq > iv->dlogfx      && _unur_FP_cmp_approx(iv->sq,iv->dlogfx)!=0) ||
+	   (iv->sq < iv->next->dlogfx && _unur_FP_cmp_approx(iv->sq,iv->next->dlogfx)!=0) )
 	 && iv->next->dlogfx < INFINITY ) {   
 
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"Squeeze too steep/flat. PDF not T-concave!");
@@ -2144,7 +2144,7 @@ _unur_tdrgw_tangent_intersection_point( struct unur_gen *gen, struct unur_tdrgw_
       return UNUR_SUCCESS;
     }
     else {
-      if (_unur_FP_approx(iv->dlogfx, iv->next->dlogfx)) {
+      if (_unur_FP_cmp_approx(iv->dlogfx, iv->next->dlogfx)==0) {
         /* use mean point */
         *ipt = 0.5 * (iv->x + iv->next->x);
         return UNUR_SUCCESS;
@@ -2161,7 +2161,7 @@ _unur_tdrgw_tangent_intersection_point( struct unur_gen *gen, struct unur_tdrgw_
   /*    } */
   
   /* case (2): computing intersection of tangents is unstable */
-  if (_unur_FP_approx(iv->dlogfx, iv->next->dlogfx)) {
+  if (_unur_FP_cmp_approx(iv->dlogfx, iv->next->dlogfx)==0) {
     /* use mean point */
     *ipt = 0.5 * (iv->x + iv->next->x);
     return UNUR_SUCCESS;

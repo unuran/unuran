@@ -932,7 +932,7 @@ _unur_nrou_rectangle( struct unur_gen *gen )
     sx = _unur_isfinite(DISTR.BD_LEFT) ? (cx+DISTR.BD_LEFT)/2. : (cx-1.); 
     bx = _unur_isfinite(DISTR.BD_LEFT) ? DISTR.BD_LEFT : (-BD_MAX);
 
-    x = (_unur_FP_cmp_same(DISTR.BD_LEFT,cx)==0) 
+    x = (_unur_FP_same(DISTR.BD_LEFT,cx)) 
       ? cx : _unur_util_find_max(faux, bx, cx, sx);
           
     while (!_unur_isfinite(x) && (fabs(bx) >= UNUR_EPSILON) ) { 
@@ -953,7 +953,7 @@ _unur_nrou_rectangle( struct unur_gen *gen )
     sx = _unur_isfinite(DISTR.BD_RIGHT) ? (cx+DISTR.BD_RIGHT)/2. : (cx+1.); 
     bx = _unur_isfinite(DISTR.BD_RIGHT) ? DISTR.BD_RIGHT : BD_MAX;
 
-    x = (_unur_FP_cmp_same(DISTR.BD_RIGHT,cx)==0) 
+    x = (_unur_FP_same(DISTR.BD_RIGHT,cx)) 
       ? cx: _unur_util_find_max(faux, cx, bx, sx);
       
     while (!_unur_isfinite(x) && (fabs(bx) >= UNUR_EPSILON) ) { 

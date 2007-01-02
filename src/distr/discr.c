@@ -1476,7 +1476,7 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
 
       /* Information of point xnew isn't enough to
          refine interval containig the mode -- determine new xnew    */
-      if ( _unur_FP_cmp_same(fx[2], fxnew )==0 &&
+      if ( _unur_FP_same(fx[2], fxnew) &&
            (! x[0] > x[2]) && (! x[1] > x[2]) ){
 
 	interval = -1;  /* should be impossible when entering switch */
@@ -1484,21 +1484,21 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
 	  xtmp = x[1]/2 + x[2]/2;
 	  fxtmp = unur_distr_discr_eval_pv(xtmp, distr);
 	  interval = UNDEFINED;
-          if ( _unur_FP_cmp_same(fxtmp, fx[2])!=0 )
+          if ( !_unur_FP_same(fxtmp, fx[2]) )
 	    interval = INT3;
 	}
 	if ( abs(xnew-x[0]) > 1 ){
 	  xtmp = xnew/2 + x[0]/2;
 	  fxtmp = unur_distr_discr_eval_pv(xtmp, distr);
 	  interval = UNDEFINED;
-          if ( _unur_FP_cmp_same(fxtmp, fx[2])!=0 )
+          if ( !_unur_FP_same(fxtmp, fx[2]) )
 	    interval = INT1;
         }
 	if ( abs(x[2]-xnew) > 1 ){
 	  xtmp = x[2]/2 + xnew/2;
 	  fxtmp = unur_distr_discr_eval_pv(xtmp, distr);
 	  interval = UNDEFINED;
-          if ( _unur_FP_cmp_same(fxtmp, fx[2])!=0 )
+          if ( !_unur_FP_same(fxtmp, fx[2]) )
 	    interval = INT2;
 	}
 
@@ -1543,16 +1543,16 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
       else if ( fx[1] > fx[2] ){
 	bisect = XNEW_BORDER;
       }
-      else if ( _unur_FP_cmp_same(fx[0], fxnew)==0 && fxnew < fx[2] ){
+      else if ( _unur_FP_same(fx[0], fxnew) && fxnew < fx[2] ){
 	bisect = XNEW_BORDER;
       }
-      else if ( _unur_FP_cmp_same(fx[0], fxnew)==0 && fxnew > fx[2] ){
+      else if ( _unur_FP_same(fx[0], fxnew) && fxnew > fx[2] ){
 	bisect = X2_BORDER;
       }
-      else if ( _unur_FP_cmp_same(fx[2], fx[1])==0 && fxnew < fx[2] ){
+      else if ( _unur_FP_same(fx[2], fx[1]) && fxnew < fx[2] ){
 	bisect = XNEW_BORDER;
       }
-      else if ( _unur_FP_cmp_same(fx[2], fx[1])==0 && fxnew < fx[2] ){
+      else if ( _unur_FP_same(fx[2], fx[1]) && fxnew < fx[2] ){
 	bisect = X2_BORDER;
       }
       else {

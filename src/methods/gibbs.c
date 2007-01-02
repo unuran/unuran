@@ -793,7 +793,7 @@ _unur_gibbs_create( struct unur_par *par )
   /* which transformation for conditional distributions */
   if (PAR->c_T == 0.)
     par->variant = (par->variant & (~GIBBS_VARMASK_T)) | GIBBS_VAR_T_LOG;
-  else if (_unur_FP_cmp_same(PAR->c_T, -0.5)==0)
+  else if (_unur_FP_same(PAR->c_T, -0.5))
     par->variant = (par->variant & (~GIBBS_VARMASK_T)) | GIBBS_VAR_T_SQRT;
   else
     par->variant = (par->variant & (~GIBBS_VARMASK_T)) | GIBBS_VAR_T_POW;

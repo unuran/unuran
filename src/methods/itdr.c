@@ -1484,7 +1484,7 @@ _unur_itdr_find_xt( struct unur_gen *gen, double b )
   if (xl > GEN->bd_right) xl = GEN->bd_right;
   while (!_unur_isfinite(FKT(xl)) || PDF(xl) == 0. ) {
     xl = 0.5*(xl + b);
-    if (!_unur_isfinite(xl) || _unur_FP_cmp_same(xl,b)==0) return INFINITY;
+    if (!_unur_isfinite(xl) || _unur_FP_same(xl,b)) return INFINITY;
   }
   xu = xl;
 

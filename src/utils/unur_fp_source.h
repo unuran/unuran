@@ -55,14 +55,8 @@ int _unur_FP_cmp( double x1, double x2, double eps);
 /* a == b (except precision bit) */
 #define _unur_FP_same(a,b) (_unur_FP_cmp((a),(b),DBL_EPSILON)==0)
 
-
-
 /* a == b */
-#define _unur_FP_equal(a,b) \
- ((a)==(b) || \
- fabs((a)-(b)) <= ((fabs(a)<fabs(b))?fabs(a):fabs(b)) * UNUR_EPSILON)
-
-
+#define _unur_FP_equal(a,b) (_unur_FP_cmp((a),(b),UNUR_EPSILON)==0)
 
 /* a is approximately equal to b */
 #define _unur_FP_approx(a,b) (_unur_FP_cmp((a),(b),UNUR_SQRT_DBL_EPSILON)==0)

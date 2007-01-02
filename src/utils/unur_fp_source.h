@@ -79,9 +79,6 @@ int _unur_isinf (const double x);
 /* -oo */
 #define _unur_FP_is_minus_infinity(a)  ((a) <= -INFINITY)
 
-/* +oo or -oo */
-#define _unur_FP_is_plusminus_infinity(a) (_unur_FP_is_infinity(a) || _unur_FP_is_minus_infinity(a))
-
 /*---------------------------------------------------------------------------*/
 #endif  /* UNUR_FP_SOURCE_H_SEEN */
 /*---------------------------------------------------------------------------*/

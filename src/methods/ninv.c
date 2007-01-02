@@ -744,7 +744,7 @@ unur_ninv_chg_truncated( struct unur_gen *gen, double left, double right )
   if (_unur_FP_equal(Umin,Umax)) {
     /* CDF values very close */
     _unur_warning(gen->genid,UNUR_ERR_DISTR_SET,"CDF values very close");
-    if (Umin == 0. || _unur_FP_same(Umax,1.)) {
+    if (Umin == 0. || _unur_FP_cmp_same(Umax,1.)==0) {
       /* this is very bad */
       _unur_warning(gen->genid,UNUR_ERR_DISTR_SET,"CDF values at boundary points too close");
       return UNUR_ERR_DISTR_SET;
@@ -1183,7 +1183,7 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
   if (GEN->table_on) {
 
     /* 0 <= i <= table_size-2  */
-    if ( _unur_FP_same(GEN->CDFmin, GEN->CDFmax) ) {
+    if ( _unur_FP_cmp_same(GEN->CDFmin, GEN->CDFmax)==0 ) {
       /* CDF values in table too close, so we use median point since 
 	 there is no difference between CDF values.  */
       i = GEN->table_size/2;
@@ -1308,8 +1308,8 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
 
     /* breaking condition */
     if ( f2 == 0.                                     /* exact hit */ 
-	 || _unur_FP_same(fa, f2)                     /* flat region  */
-         || lengthabs <= GEN->rel_x_resolution * x2abs /* relative x precision reached */
+	 || _unur_FP_cmp_same(fa, f2)==0               /* flat region  */
+	 || lengthabs <= GEN->rel_x_resolution * x2abs /* relative x precision reached */
 	 || lengthabs <= GEN->rel_x_resolution * GEN->rel_x_resolution
 	                                              /* absolute x precision eps^2 close to 0 */
        	 || fabs(f2) <= rel_u_resolution ) {          /* relative u precision*/ 
@@ -1327,7 +1327,7 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
       break;
   
     /* secant or bisection step   */
-    dx = ( _unur_FP_same(f1,f2) ) ? length/2. : f2*(x2-x1)/(f2-f1) ;  
+    dx = ( _unur_FP_cmp_same(f1,f2)==0 ) ? length/2. : f2*(x2-x1)/(f2-f1) ;  
     
     /* minimal step */
     if ( fabs(dx) < GEN->rel_x_resolution * x2abs ){
@@ -1411,7 +1411,7 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
   if (GEN->table_on) {
 
     /* 0 <= i <= table_size-2  */
-    if ( _unur_FP_same(GEN->CDFmin,GEN->CDFmax) ) {
+    if ( _unur_FP_cmp_same(GEN->CDFmin,GEN->CDFmax)==0 ) {
       /* CDF values in table too close, so we use median point since 
 	 there is no difference between CDF values.  */
       i = GEN->table_size/2;
@@ -1677,7 +1677,7 @@ _unur_ninv_compute_start( struct unur_gen *gen )
     /* we have a table --> nothing to do */
     return UNUR_SUCCESS;
 
-  if( !_unur_FP_same(GEN->s[0],GEN->s[1])) {
+  if( _unur_FP_cmp_same(GEN->s[0],GEN->s[1])!=0) {
     /* use given starting points (indicated by s[0] != s[1]) --> nothing to do */
     GEN->CDFs[0] = CDF(GEN->s[0]);
     GEN->CDFs[1] = CDF(GEN->s[1]);

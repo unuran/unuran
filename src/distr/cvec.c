@@ -1064,7 +1064,7 @@ unur_distr_cvec_set_covar( struct unur_distr *distr, const double *covar )
     /* check for symmetry */
     for (i=0; i<dim; i++)
       for (j=i+1; j<dim; j++)
-	if (!_unur_FP_same(covar[i*dim+j],covar[j*dim+i])) {
+	if (_unur_FP_cmp_same(covar[i*dim+j],covar[j*dim+i])!=0) {
 	  _unur_error(distr->name ,UNUR_ERR_DISTR_DOMAIN,
 	              "covariance matrix not symmetric");
 	  return UNUR_ERR_DISTR_DOMAIN;
@@ -1144,7 +1144,7 @@ unur_distr_cvec_set_covar_inv( struct unur_distr *distr, const double *covar_inv
     /* check for symmetry */
     for (i=0; i<dim; i++)
       for (j=i+1; j<dim; j++)
-	if (!_unur_FP_same(covar_inv[i*dim+j],covar_inv[j*dim+i])) {
+	if (_unur_FP_cmp_same(covar_inv[i*dim+j],covar_inv[j*dim+i])!=0) {
 	  _unur_error(distr->name ,UNUR_ERR_DISTR_DOMAIN,
 	              "inverse of covariance matrix not symmetric");
 	  return UNUR_ERR_DISTR_DOMAIN;
@@ -1325,7 +1325,7 @@ unur_distr_cvec_set_rankcorr( struct unur_distr *distr, const double *rankcorr )
     
     /* check rankcorriance matrix: diagonal entries == 1 */
     for (i=0; i<dim*dim; i+= dim+1) {
-      if (!_unur_FP_same(rankcorr[i],1.)) {
+      if (_unur_FP_cmp_same(rankcorr[i],1.)!=0) {
 	_unur_error(distr->name ,UNUR_ERR_DISTR_DOMAIN,"diagonals != 1");
 	return UNUR_ERR_DISTR_DOMAIN;
       }
@@ -1334,7 +1334,7 @@ unur_distr_cvec_set_rankcorr( struct unur_distr *distr, const double *rankcorr )
     /* check for symmetry */
     for (i=0; i<dim; i++)
       for (j=i+1; j<dim; j++)
-	if (!_unur_FP_same(rankcorr[i*dim+j],rankcorr[j*dim+i])) {
+	if (_unur_FP_cmp_same(rankcorr[i*dim+j],rankcorr[j*dim+i])!=0) {
 	  _unur_error(distr->name ,UNUR_ERR_DISTR_DOMAIN,
 	              "rank-correlation matrix not symmetric");
 	  return UNUR_ERR_DISTR_DOMAIN;

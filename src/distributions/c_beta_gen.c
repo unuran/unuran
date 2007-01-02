@@ -237,7 +237,7 @@ _unur_stdgen_sample_beta_bc(  struct unur_gen *gen )
       if (v > 80.0) {
 	if (alnam < log(z))
 	  continue;
-	X = (_unur_FP_same(am,p)) ? 1.0 : 0.0;
+	X = (_unur_FP_cmp_same(am,p)==0) ? 1.0 : 0.0;
 	break;
       }
       else {
@@ -246,7 +246,7 @@ _unur_stdgen_sample_beta_bc(  struct unur_gen *gen )
 	  continue;  /* goto 1 */
 
 	/* Step 6_a */
-	X = (!_unur_FP_same(am,p)) ? bm / (bm + w) : w / (bm + w);
+	X = (_unur_FP_cmp_same(am,p)!=0) ? bm / (bm + w) : w / (bm + w);
 	break;
       }
     }
@@ -258,12 +258,12 @@ _unur_stdgen_sample_beta_bc(  struct unur_gen *gen )
 	/* Step 5 */
 	v = be * log(u1 / (1.0 - u1));
 	if (v > 80.0) {
-	  X = (_unur_FP_same(am,p)) ? 1.0 : 0.0;
+	  X = (_unur_FP_cmp_same(am,p)==0) ? 1.0 : 0.0;
 	  break;
 	}
 
 	w = am * exp(v);
-	X = (!_unur_FP_same(am,p)) ? bm / (bm + w) : w / (bm + w);
+	X = (_unur_FP_cmp_same(am,p)!=0) ? bm / (bm + w) : w / (bm + w);
 	break;
       }
       else {
@@ -273,7 +273,7 @@ _unur_stdgen_sample_beta_bc(  struct unur_gen *gen )
 	if ( v > 80.0) {
 	  if (alnam < log(z))
 	    continue;
-	  X = (_unur_FP_same(am,p)) ? 1.0 : 0.0;
+	  X = (_unur_FP_cmp_same(am,p)==0) ? 1.0 : 0.0;
 	  break;
 	}
 	w = am * exp(v);
@@ -281,7 +281,7 @@ _unur_stdgen_sample_beta_bc(  struct unur_gen *gen )
 	  continue;  /* goto 1 */
 
 	/* Step 6_b */
-	X = (!_unur_FP_same(am,p))? bm / (bm + w) : w / (bm + w);
+	X = (_unur_FP_cmp_same(am,p)!=0)? bm / (bm + w) : w / (bm + w);
 	break;
       }
     }
@@ -353,7 +353,7 @@ _unur_stdgen_sample_beta_bb(  struct unur_gen *gen )
     }
 
     /* Step 5 */
-    X = _unur_FP_same(am,p) ? w / (bm + w) : bm / (bm + w);
+    X = (_unur_FP_cmp_same(am,p)==0) ? w / (bm + w) : bm / (bm + w);
     break;
   }
   /* -X- end of generator code -X- */

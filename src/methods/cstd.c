@@ -363,7 +363,7 @@ unur_cstd_chg_truncated( struct unur_gen *gen, double left, double right )
   if (_unur_FP_equal(Umin,Umax)) {
     /* CDF values very close */
     _unur_warning(gen->genid,UNUR_ERR_DISTR_SET,"CDF values very close");
-    if (Umin == 0. || _unur_FP_same(Umax,1.)) {
+    if (Umin == 0. || _unur_FP_cmp_same(Umax,1.)==0) {
       /* this is very bad */
       _unur_warning(gen->genid,UNUR_ERR_DISTR_SET,"CDF values at boundary points too close");
       return UNUR_ERR_DISTR_SET;

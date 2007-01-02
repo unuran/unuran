@@ -171,17 +171,17 @@ _unur_util_find_max( struct unur_funct_generic fs, /* function structure */
   /* search on the left side */
   step = pow(x[1]-max_l, 1.0/MAX_SRCH);
   i = 0;  
-  while (i <= MAX_SRCH && _unur_FP_same(0.0, fx[1]) ){
+  while (i <= MAX_SRCH && _unur_FP_cmp_same(0.0, fx[1])==0 ){
     x[1]  = max - pow(step, (double)i);
     fx[1] = fs.f(x[1], fs.params);
     i++;
   }
 	 
   /* search on the right side */
-  if( _unur_FP_same(0.0, fx[1]) ){
+  if( _unur_FP_cmp_same(0.0, fx[1])==0 ){
     step = pow(max_u-x[1], 1.0/MAX_SRCH);
     i = 0;
-    while (i <= MAX_SRCH && _unur_FP_same(0.0, fx[1]) ){
+    while (i <= MAX_SRCH && _unur_FP_cmp_same(0.0, fx[1])==0 ){
       x[1]  = max + pow(step, (double)i);
       fx[1] = fs.f(x[1], fs.params);
       i++;
@@ -189,7 +189,7 @@ _unur_util_find_max( struct unur_funct_generic fs, /* function structure */
   }
   
   /* no success -- exit routine  */   
-  if( _unur_FP_same(fx[1], 0.0) )
+  if( _unur_FP_cmp_same(fx[1], 0.0)==0 )
      return INFINITY; /* can't find max in flat region  */
 
   /* x[1] has f > 0 or routines already terminated */ 
@@ -217,8 +217,8 @@ _unur_util_find_max( struct unur_funct_generic fs, /* function structure */
     x[0] = interval_min;  fx[0] = fs.f(x[0], fs.params);
     x[2] = interval_max;  fx[2] = fs.f(x[2], fs.params);
 
-    if ( _unur_FP_same(x[1], interval_min)  ||
-         _unur_FP_same(x[1], interval_max) ){
+    if ( _unur_FP_cmp_same(x[1], interval_min)==0  ||
+         _unur_FP_cmp_same(x[1], interval_max)==0 ){
       x[1]  = interval_min/2.0 + interval_max/2.0; 
       fx[1] = fs.f(x[1], fs.params);
     }
@@ -226,9 +226,7 @@ _unur_util_find_max( struct unur_funct_generic fs, /* function structure */
   }
   /* points x[i] with their function values determined */
 
-
   /* find interval containing the max */
-
 
   step = 1.0;
   if ( unbound_right ){

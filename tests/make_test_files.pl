@@ -64,15 +64,18 @@ usage and die "$src_dir: No such directory" unless -d $src_dir;
 # unuran header file
 my $unuran_h_file = "$src_dir/src/unuran.h";
 
-# seed for uniform random number generator.
-my $seed = int(rand 1000000) + 1;
-
 # program name 
 my $name_program = $0;
 $name_program =~ s#^.*/##g;
 
 # ---------------------------------------------------------------------------
-# Global variable
+# seed for uniform random number generator.
+
+my $seed = $ENV{SEED} + 0.;
+unless ($seed) { $seed = int(rand 1000000) + 1; }
+
+# ---------------------------------------------------------------------------
+# Global variables
 
 my %DATA;     # store all data in config file
 

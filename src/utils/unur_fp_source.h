@@ -39,6 +39,21 @@
 /*---------------------------------------------------------------------------*/
 /* Comparisons                                                               */
 
+int _unur_FP_cmp( double x1, double x2, double eps);
+/* compare two floats:                                                       */
+/*   x1 eq x2 iff |x1-x2| <= min(|x1|,|x2) * eps                             */
+/* return:                                                                   */
+/*   -1 if x1 < x2                                                           */
+/*    0 if x1 eq x2                                                          */
+/*   +1 if x1 > x2                                                           */
+
+/* macros for different levels of accuracy                                   */
+#define _unur_FP_cmp_same(a,b) (_unur_FP_cmp(a,b,DBL_EPSILON))
+#define _unur_FP_cmp_equal(a,b) (_unur_FP_cmp(a,b,UNUR_EPSILON))
+#define _unur_FP_cmp_approx(a,b) (_unur_FP_cmp(a,b,UNUR_SQRT_DBL_EPSILON))
+
+
+
 /* a == b (except precision bit) */
 #define _unur_FP_same(a,b) \
  ((a)==(b) || \

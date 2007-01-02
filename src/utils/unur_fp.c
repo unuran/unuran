@@ -37,6 +37,47 @@
 /*---------------------------------------------------------------------------*/
 
 int
+_unur_FP_cmp( double x1, double x2, double eps)
+     /*----------------------------------------------------------------------*/
+     /* Compare two floats:                                                  */
+     /*   x1 eq x2 iff |x1-x2| <= min(|x1|,|x2) * eps                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   x1  ... double                                                     */
+     /*   x2  ... double                                                     */
+     /*   eps ... maximal relative deviation                                 */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   -1 if x1 < x2                                                      */
+     /*    0 if x1 eq x2                                                     */
+     /*   +1 if x1 > x2                                                      */
+     /*                                                                      */
+     /* remark:                                                              */
+     /*   This is similar to Knuth's algorithm. However, we use              */
+     /*   instead of max(|x1|,|x2).                                          */
+     /*   (For an implementation of Knuth's algorithm see                    */
+     /*    fcmp 1.2.2 Copyright (c) 1998-2000 Theodore C. Belding            */
+     /*    University of Michigan Center for the Study of Complex Systems    */
+     /*    Ted.Belding@umich.edu)                                            */
+     /*----------------------------------------------------------------------*/
+{
+  double fx1 = (x1>=0.) ? x1 : -x1;
+  double fx2 = (x2>=0.) ? x2 : -x2;
+  double delta = eps * _unur_min(fx1,fx2);
+  double difference = x1 - x2;
+
+  if (difference > delta)       /* x1 > x2 */
+    return +1;
+  else if (difference < -delta) /* x1 < x2 */
+    return -1;
+  else                          /* -delta <= difference <= delta */
+    return 0;                   /* x1 ~=~ x2 */
+
+} /* end of _unur_FP_cmp() */
+
+/*---------------------------------------------------------------------------*/
+
+int
 _unur_isfinite (const double x)
      /*----------------------------------------------------------------------*/
      /* Check whether x is a finite number.                                  */

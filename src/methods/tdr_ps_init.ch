@@ -369,7 +369,7 @@ _unur_tdr_ps_dars( struct unur_gen *gen )
 	  
 	  if ( _unur_FP_is_minus_infinity(x0) ||
 	       _unur_FP_is_infinity(x1) ||
-	       _unur_FP_cmp_approx(x0,x1)==0 )
+	       _unur_FP_approx(x0,x1) )
 	    /* we do not use the expected value in case of unbounded intervals */
 	    continue;  /* try next rule */
 
@@ -548,7 +548,7 @@ _unur_tdr_ps_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval 
   hxl = _unur_tdr_eval_intervalhat(gen,iv,iv->ip);
   if (_unur_FP_greater(iv->fip, hxl) ) {
     /* PDF(x) > hat(x); this should not happen */
-    if ( (iv->fip < 1.e-50) || _unur_FP_cmp_approx(iv->fip, hxl)==0) {
+    if ( (iv->fip < 1.e-50) || _unur_FP_approx(iv->fip, hxl)) {
       /* hat(x) and PDF(x) are approximatly the same, or extremely small.
 	 assume round-off error */
       _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"hat(x) might be < PDF(x)");
@@ -565,7 +565,7 @@ _unur_tdr_ps_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval 
   hxr = _unur_tdr_eval_intervalhat(gen,iv,iv->next->ip);
   if (_unur_FP_greater(iv->next->fip, hxr)) {
     /* PDF(x) > hat(x); this should not happen */
-    if ((iv->next->fip < 1.e-50) || _unur_FP_cmp_approx(iv->next->fip, hxr)==0) {
+    if ((iv->next->fip < 1.e-50) || _unur_FP_approx(iv->next->fip, hxr)) {
       /* hat(x) and PDF(x) are approximatly the same, or extremely small.
 	 assume round-off error */
       _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"hat(x) might be < PDF(x)");

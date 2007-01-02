@@ -67,16 +67,11 @@ int _unur_FP_cmp( double x1, double x2, double eps);
 /* a is approximately equal to b */
 #define _unur_FP_approx(a,b) (_unur_FP_cmp((a),(b),UNUR_SQRT_DBL_EPSILON)==0)
 
-
-
-
 /* a < b */
-#define _unur_FP_less(a,b) \
- (!_unur_FP_equal((a),(b)) && ((a) < (b)))
+#define _unur_FP_less(a,b) ((_unur_FP_cmp(a,b,UNUR_EPSILON)<0) ? TRUE : FALSE)
 
 /* a > b */
-#define _unur_FP_greater(a,b) \
- (!_unur_FP_equal((a),(b)) && ((a) > (b)))
+#define _unur_FP_greater(a,b) ((_unur_FP_cmp(a,b,UNUR_EPSILON)>0) ? TRUE : FALSE)
 
 /*---------------------------------------------------------------------------*/
 /* Infinity and NaN (Not a Number)                                           */

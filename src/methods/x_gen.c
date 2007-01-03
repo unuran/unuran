@@ -412,7 +412,7 @@ _unur_generic_create( struct unur_par *par, size_t s )
   if (gen->distr_is_privatecopy) 
     gen->distr = (par->distr) ? _unur_distr_clone(par->distr) : NULL;
   else
-    gen->distr = (const struct unur_distr *) par->distr;
+    gen->distr = (struct unur_distr *) par->distr;
 
   /* initialize function pointers */
   gen->destroy = NULL;              /* destructor      */ 

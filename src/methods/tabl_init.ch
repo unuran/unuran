@@ -633,7 +633,7 @@ _unur_tabl_compute_intervals( struct unur_par *par, struct unur_gen *gen )
       /* we make several tries */
       
       /* run DARS */
-      if (_unur_tabl_run_dars(par,gen)!=UNUR_SUCCESS)
+      if (_unur_tabl_run_dars(gen)!=UNUR_SUCCESS)
 	return UNUR_ERR_GEN_DATA;
 
       /* check if DARS was completed */
@@ -745,12 +745,11 @@ _unur_tabl_run_equalarearule( struct unur_par *par, struct unur_gen *gen,
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_tabl_run_dars( struct unur_par *par, struct unur_gen *gen )
+_unur_tabl_run_dars( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* run derandomized adaptive rejection sampling.                         */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   par          ... pointer to parameter list                         */
      /*   gen          ... pointer to generator object                       */
      /*                                                                      */
      /* return:                                                              */
@@ -764,7 +763,6 @@ _unur_tabl_run_dars( struct unur_par *par, struct unur_gen *gen )
   int n_splitted = 1;          /* count splitted intervals */
   
   /* check arguments */
-  CHECK_NULL(par,UNUR_ERR_NULL);  COOKIE_CHECK(par,CK_TABL_PAR,UNUR_ERR_COOKIE);
   CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_TABL_GEN,UNUR_ERR_COOKIE);
 
   /* there is no need to run DARS when the DARS factor is INFINITY */

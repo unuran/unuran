@@ -198,7 +198,7 @@ _unur_tabl_run_equalarearule( struct unur_par *par, struct unur_gen *gen, struct
 /* SPLIT A (equal areas rule)                                                */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_tabl_run_dars( struct unur_par *par, struct unur_gen *gen );
+static int _unur_tabl_run_dars( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* run derandomized adaptive rejection sampling.                             */
 /* (split starting intervals according to [1] SPLIT B,                       */

@@ -396,7 +396,7 @@ double unur_test_timing_total_run( const struct unur_par *par, int samplesize, i
   }
 
   /* compute median */
-  qsort( time, n_repeat, sizeof(double), compare_doubles);
+  qsort( time, (size_t)n_repeat, sizeof(double), compare_doubles);
   time_total = time[n_repeat/2];
 
   /* free memory */

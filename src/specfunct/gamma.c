@@ -40,7 +40,8 @@
  * Error for arguments outside the test range will be larger
  * owing to error amplification by the exponential function.
  *
- */
+ */
+
 /*							lgam()
  *
  *	Natural logarithm of gamma function
@@ -103,10 +104,15 @@ Cephes Math Library Release 2.8:  June, 2000
 Copyright 1984, 1987, 1989, 1992, 2000 by Stephen L. Moshier
 */
 
+/* 
+   Wed Jan  3, Josef Leydold:
+   made ANSI compliant declaration
+*/
 
 #include "mconf_source.h"
 
-#ifdef UNK
+/*---------------------------------------------------------------------------*/
+
 static double P[] = {
   1.60119522476751861407E-4,
   1.19135147006586384913E-3,
@@ -128,10 +134,8 @@ static double Q[] = {
 };
 
 #define LOGPI   M_LNPI            /* log(Pi) */
-#endif
 
 /* Stirling's formula for the gamma function */
-#if UNK
 static double STIR[5] = {
  7.87311395793093628397E-4,
 -2.29549961613378126380E-4,
@@ -141,31 +145,14 @@ static double STIR[5] = {
 };
 
 #define SQTPI   M_SQRT2PI        /* sqrt(2*pi) */
-#endif
 
 int sgngam = 0;
-extern int sgngam;
-/*extern double MAXLOG, MAXNUM, PI;
-  this was changed to defines*/
-#ifdef ANSIPROT
-extern double pow ( double, double );
-extern double log ( double );
-extern double exp ( double );
-extern double sin ( double );
-extern double polevl ( double, void *, int );
-extern double p1evl ( double, void *, int );
-extern double floor ( double );
-extern double fabs ( double );
+
 extern int isnan ( double );
 extern int isfinite ( double );
+
 static double stirf ( double );
-double lgam ( double );
-#else
-double pow(), log(), exp(), sin(), polevl(), p1evl(), floor(), fabs();
-int isnan(), isfinite();
-static double stirf();
-double lgam();
-#endif
+
 #ifdef INFINITIES
 extern double INFINITY;
 #endif
@@ -173,11 +160,12 @@ extern double INFINITY;
 extern double NAN;
 #endif
 
+/*---------------------------------------------------------------------------*/
+
 /* Gamma function computed by Stirling's formula.
  * The polynomial STIR is valid for 33 <= x <= 172.
  */
-static double stirf(x)
-double x;
+static double stirf( double x)
 {
 double y, w, v;
 
@@ -185,9 +173,6 @@ w = 1.0/x;
 w = 1.0 + w * polevl( w, STIR, 4 );
 y = exp(x);
 
-/* #define MAXSTIR 143.01608 ... old definition             */
-/* the maximal number that pow(x,x-0.5) has no overflow.    */
-/* replaced by very conservative portable bound:            */
 /*   #define MAXSTIR MAXLOG/log(MAXLOG)                     */
 
 if( x > MAXSTIR )
@@ -203,10 +188,9 @@ y = SQTPI * y * w;
 return( y );
 }
 
+/*---------------------------------------------------------------------------*/
 
-
-double gamma(x)
-double x;
+double gamma( double x )
 {
 double p, q, z;
 int i;
@@ -323,12 +307,12 @@ else
 	return( z/((1.0 + 0.5772156649015329 * x) * x) );
 }
 
-
+/*---------------------------------------------------------------------------*/
 
 /* A[]: Stirling's formula expansion of log gamma
  * B[], C[]: log gamma function between 2 and 3
  */
-#ifdef UNK
+
 static double A[] = {
  8.11614167470508450300E-4,
 -5.95061904284301438324E-4,
@@ -358,15 +342,12 @@ static double C[] = {
 static double LS2PI  =  0.91893853320467274178;
 
 #define MAXLGM 2.556348e305
-#endif
 
-
+/*---------------------------------------------------------------------------*/
 
 /* Logarithm of gamma function */
 
-
-double lgam(x)
-double x;
+double lgam( double x )
 {
 double p, q, u, w, z;
 int i;
@@ -474,3 +455,5 @@ else
 	q += polevl( p, A, 4 ) / x;
 return( q );
 }
+
+/*---------------------------------------------------------------------------*/

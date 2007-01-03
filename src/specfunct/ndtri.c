@@ -51,20 +51,18 @@ Cephes Math Library Release 2.8:  June, 2000
 Copyright 1984, 1987, 1989, 2000 by Stephen L. Moshier
 */
 
+/* 
+   Wed Jan  3, Josef Leydold:
+   made ANSI compliant declaration
+*/
+
 #include "mconf_source.h"
 
-/*
-extern double MAXNUM;
-  this was changed to defines*/
+/*---------------------------------------------------------------------------*/
 
-#ifdef UNK
-/* sqrt(2pi) */
-#define s2pi   M_SQRT2PI
-#endif
-
+#define s2pi   M_SQRT2PI    /* sqrt(2pi) */
 
 /* approximation for 0 <= |y - 0.5| <= 3/8 */
-#ifdef UNK
 static double P0[5] = {
 -5.99633501014107895267E1,
  9.80010754185999661536E1,
@@ -83,13 +81,11 @@ static double Q0[8] = {
  1.59056225126211695515E1,
 -1.18331621121330003142E0,
 };
-#endif
 
 
 /* Approximation for interval z = sqrt(-2 log y ) between 2 and 8
  * i.e., y between exp(-2) = .135 and exp(-32) = 1.27e-14.
  */
-#ifdef UNK
 static double P1[9] = {
  4.05544892305962419923E0,
  3.15251094599893866154E1,
@@ -112,13 +108,12 @@ static double Q1[8] = {
 -3.80806407691578277194E-2,
 -9.33259480895457427372E-4,
 };
-#endif
+
 
 /* Approximation for interval z = sqrt(-2 log y ) between 8 and 64
  * i.e., y between exp(-32) = 1.27e-14 and exp(-2048) = 3.67e-890.
  */
 
-#ifdef UNK
 static double P2[9] = {
   3.23774891776946035970E0,
   6.91522889068984211695E0,
@@ -141,19 +136,10 @@ static double Q2[8] = {
   2.89247864745380683936E-6,
   6.79019408009981274425E-9,
 };
-#endif
 
-#ifdef ANSIPROT
-extern double polevl ( double, void *, int );
-extern double p1evl ( double, void *, int );
-extern double log ( double );
-extern double sqrt ( double );
-#else
-double polevl(), p1evl(), log(), sqrt();
-#endif
+/*---------------------------------------------------------------------------*/
 
-double ndtri(y0)
-double y0;
+double ndtri( double y0 )
 {
 double x, y, z, y2, x0, x1;
 int code;
@@ -198,3 +184,5 @@ if( code != 0 )
 	x = -x;
 return( x );
 }
+
+/*---------------------------------------------------------------------------*/

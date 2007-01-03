@@ -50,10 +50,13 @@ Copyright 1984, 1987 by Stephen L. Moshier
 Direct inquiries to 30 Frost Street, Cambridge, MA 02140
 */
 
+/* 
+   Wed Jan  3, Josef Leydold:
+   made ANSI compliant declaration
+*/
+
 #include <stdio.h>
 #include "mconf_source.h"
-
-int merror = 0;
 
 #ifdef DEBUG
 
@@ -73,9 +76,7 @@ static char *ermsg[7] = {
 
 #endif
 
-int mtherr( name, code )
-char *name;
-int code;
+int mtherr( const char *name, int code )
 {
 
 #ifdef DEBUG
@@ -86,8 +87,8 @@ int code;
  */
 printf( "\n%s ", name );
 
-/* Set global error message word */
-merror = code;
+/* Set global error message word [ disabled ] */
+/* merror = code; */
 
 /* Display error message defined
  * by the code argument.

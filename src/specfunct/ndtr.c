@@ -143,15 +143,15 @@ Cephes Math Library Release 2.8:  June, 2000
 Copyright 1984, 1987, 1988, 1992, 2000 by Stephen L. Moshier
 */
 
+/* 
+   Wed Jan  3, Josef Leydold:
+   made ANSI compliant declaration
+*/
 
 #include "mconf_source.h"
 
-/*
-extern double SQRTH;
-extern double MAXLOG;
-  this was changed to defines*/
+/*---------------------------------------------------------------------------*/
 
-#ifdef UNK
 static double P[] = {
  2.46196981473530512524E-10,
  5.64189564831068821977E-1,
@@ -207,24 +207,9 @@ static double U[] = {
  4.92673942608635921086E4
 };
 
-#endif
+/*---------------------------------------------------------------------------*/
 
-
-#ifdef ANSIPROT
-extern double polevl ( double, void *, int );
-extern double p1evl ( double, void *, int );
-extern double exp ( double );
-extern double log ( double );
-extern double fabs ( double );
-double erf ( double );
-double erfc ( double );
-#else
-double polevl(), p1evl(), exp(), log(), fabs();
-double erf(), erfc();
-#endif
-
-double ndtr(a)
-double a;
+double ndtr( double a )
 {
 double x, y, z;
 
@@ -245,9 +230,9 @@ else
 return(y);
 }
 
+/*---------------------------------------------------------------------------*/
 
-double erfc(a)
-double a;
+double erfc( double a )
 {
 double p,q,x,y,z;
 
@@ -295,10 +280,9 @@ if( y == 0.0 )
 return(y);
 }
 
+/*---------------------------------------------------------------------------*/
 
-
-double erf(x)
-double x;
+double erf( double x)
 {
 double y, z;
 
@@ -310,6 +294,7 @@ return( y );
 
 }
 
+/*---------------------------------------------------------------------------*/
 
 
 

@@ -109,6 +109,7 @@ Copyright 1984, 1987, 1989, 1995 by Stephen L. Moshier
 /* Include constants used in UNURAN.                                         */
 
 #include <float.h>
+#include <math.h>
 #include <utils/unur_math_source.h>
 #include <utils/unur_fp_const_source.h>
 
@@ -116,13 +117,7 @@ Copyright 1984, 1987, 1989, 1995 by Stephen L. Moshier
 /* We do not make use of floating point formats of various hardware.         */
 /* Thus we only use the "UNKnown arithmetic" flag of the CEPHES library.     */
 /* (We have remove all other types.)                                         */
-
-#define UNK 1
-
-/*---------------------------------------------------------------------------*/
-/* Use ANSI function prototypes.                                             */
-
-#define ANSIPROT 1
+/* [ obsolete: #define UNK 1 ]                                               */
 
 /*---------------------------------------------------------------------------*/
 /* Error messages.                                                           */
@@ -135,19 +130,17 @@ Copyright 1984, 1987, 1989, 1995 by Stephen L. Moshier
 
 /* Constant definitions for math error conditions                            */
 
-#define DOMAIN		1	/* argument domain error */
-#define SING		2	/* argument singularity */
-#define OVERFLOW	3	/* overflow range error */
-#define UNDERFLOW	4	/* underflow range error */
+#define DOMAIN       1     /* argument domain error */
+#define SING         2     /* argument singularity */
+#define OVERFLOW     3     /* overflow range error */
+#define UNDERFLOW    4     /* underflow range error */
 
 /* Function for reporting error messages.                                    */
-int mtherr ( char *, int );
-
-/* Variable for error reporting.  See mtherr.c.  */
-extern int merror;
+/* int mtherr ( char *, int ); */
 
 /*---------------------------------------------------------------------------*/
 /* Define mathematical constants (see x_math_source.h).                      */
+
 #define PI      M_PI              /* Pi                                      */
 #define SQRTH   M_SQRTH           /* sqrt(1/2)                               */
 
@@ -155,6 +148,37 @@ extern int merror;
 /* Define constant for floating point arithmetic.                            */
 
 #define MAXNUM  DBL_MAX           /* largest number represented              */
+
+/*---------------------------------------------------------------------------*/
+/* Prototypes for functions from Cephes library                              */
+
+/* mterr.c */
+int mtherr( const char *name, int code );
+
+/* gamma.c */
+double gamma( double x );
+double lgam( double x );
+
+/* igam.c */
+double igamc( double a, double x );
+double igam( double a, double x );
+
+/* incbet.c */
+double incbet( double aa, double bb, double xx );
+
+/* ndtr.c */
+double ndtr( double a );
+double erfc( double a );
+double erf( double x );
+
+/* ndtri.c */
+double ndtri( double y0 );
+
+/* polevl.c */
+double polevl( double x, double coef[], int N );
+double p1evl( double x, double coef[], int N );
+
+
 
 /*---------------------------------------------------------------------------*/
 /* Warning: we did not test the library with any of the below compiler       */

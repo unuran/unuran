@@ -82,26 +82,21 @@ Cephes Math Library Release 2.8:  June, 2000
 Copyright 1985, 1987, 2000 by Stephen L. Moshier
 */
 
+/* 
+   Wed Jan  3, Josef Leydold:
+   made ANSI compliant declaration
+*/
+
 #include "mconf_source.h"
 
-#ifdef ANSIPROT
-extern double lgam ( double );
-extern double exp ( double );
-extern double log ( double );
-extern double fabs ( double );
-extern double igam ( double, double );
-extern double igamc ( double, double );
-#else
-double lgam(), exp(), log(), fabs(), igam(), igamc();
-#endif
+/*---------------------------------------------------------------------------*/
 
-/*extern double MACHEP, MAXLOG;
-  this was changed to defines*/
 static double big = 4.503599627370496e15;
 static double biginv =  2.22044604925031308085e-16;
 
-double igamc( a, x )
-double a, x;
+/*---------------------------------------------------------------------------*/
+
+double igamc( double a, double x )
 {
 double ans, ax, c, yc, r, t, y, z;
 double pk, pkm1, pkm2, qk, qkm1, qkm2;
@@ -163,7 +158,7 @@ while( t > MACHEP );
 return( ans * ax );
 }
 
-
+/*---------------------------------------------------------------------------*/
 
 /* left tail of incomplete gamma function:
  *
@@ -175,8 +170,7 @@ return( ans * ax );
  *
  */
 
-double igam( a, x )
-double a, x;
+double igam( double a, double x )
 {
 double ans, ax, c, r;
 
@@ -210,3 +204,5 @@ while( c/ans > MACHEP );
 
 return( ans * ax/a );
 }
+
+/*---------------------------------------------------------------------------*/

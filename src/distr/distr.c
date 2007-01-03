@@ -129,7 +129,7 @@ unur_distr_set_name( struct unur_distr *distr, const char *name )
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
-  int len;
+  size_t len;
   char *name_str;
 
   /* check arguments */

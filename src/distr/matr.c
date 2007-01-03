@@ -135,7 +135,6 @@ _unur_distr_matr_clone( const struct unur_distr *distr )
 #define CLONE clone->data.matr
 
   struct unur_distr *clone;
-  int len;
 
   /* check arguments */
   _unur_check_NULL( NULL, distr, NULL );
@@ -151,7 +150,7 @@ _unur_distr_matr_clone( const struct unur_distr *distr )
 
   /* copy user name for distribution */
   if (distr->name_str) {
-    len = strlen(distr->name_str) + 1;
+    size_t len = strlen(distr->name_str) + 1;
     clone->name_str = _unur_xmalloc(len);
     memcpy( clone->name_str, distr->name_str, len );
     clone->name = clone->name_str;

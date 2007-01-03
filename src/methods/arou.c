@@ -186,8 +186,8 @@ static void _unur_arou_free( struct unur_gen *gen);
 /* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
-double _unur_arou_sample( struct unur_gen *gen );
-double _unur_arou_sample_check( struct unur_gen *gen );
+static double _unur_arou_sample( struct unur_gen *gen );
+static double _unur_arou_sample_check( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/
@@ -971,7 +971,7 @@ _unur_arou_init( struct unur_par *par )
 
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *
+struct unur_gen *
 _unur_arou_create( struct unur_par *par )
      /*----------------------------------------------------------------------*/
      /* allocate memory for generator                                        */
@@ -1391,7 +1391,7 @@ _unur_arou_sample_check( struct unur_gen *gen )
 /**  Auxilliary Routines                                                    **/
 /*****************************************************************************/
 
-static int
+int
 _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* list of construction points for starting segments.                   */
@@ -1562,7 +1562,7 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
 
 /*****************************************************************************/
 
-static int
+int
 _unur_arou_get_starting_segments( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* compute segments for starting points                                 */
@@ -1669,7 +1669,7 @@ _unur_arou_get_starting_segments( struct unur_gen *gen )
 
 /*****************************************************************************/
 
-static struct unur_arou_segment *
+struct unur_arou_segment *
 _unur_arou_segment_new( struct unur_gen *gen, double x, double fx )
      /*----------------------------------------------------------------------*/
      /* get new segment and compute left construction point at x.            */
@@ -1773,7 +1773,7 @@ _unur_arou_segment_new( struct unur_gen *gen, double x, double fx )
 
 /*---------------------------------------------------------------------------*/
 
-static int
+int
 _unur_arou_segment_parameter( struct unur_gen *gen, struct unur_arou_segment *seg )
      /*----------------------------------------------------------------------*/
      /* compute all parameters for a segment.                                */
@@ -2273,7 +2273,7 @@ _unur_arou_run_dars( struct unur_gen *gen )
 
 /*****************************************************************************/
 
-static int
+int
 _unur_arou_make_guide_table( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* make a guide table for indexed search                                */
@@ -2344,7 +2344,7 @@ _unur_arou_make_guide_table( struct unur_gen *gen )
 
 /*****************************************************************************/
 
-static double
+double
 _unur_arou_segment_arcmean( struct unur_arou_segment *seg )
      /*----------------------------------------------------------------------*/
      /* compute "arctan mean" of two numbers expressed as v/u, u>=0          */

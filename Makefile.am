@@ -74,7 +74,7 @@ setgccWflags:
 	./configure --enable-maintainer-mode
 
 setgccWflags-ansi:
-	export CFLAGS="-ansi `cat $(top_srcdir)/scripts/gccWflags`"; \
+	export CFLAGS="-ansi -pedantic `cat $(top_srcdir)/scripts/gccWflags`"; \
 	./configure --enable-maintainer-mode
 endif
 

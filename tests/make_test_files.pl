@@ -593,7 +593,7 @@ sub scan_validate {
 
     ## end ##
 
-    print "#if WITH_DMALLOC\n";
+    print "#ifdef WITH_DMALLOC\n";
     print "\tdmalloc_vmessage(\"section = $section  ================================\\n\",\"\");\n";
     print "\tdmalloc_log_unfreed();\n";
     print "#endif\n\n";
@@ -676,7 +676,7 @@ EOM
 	test_ok &= (FAILED) ? 0 : 1;
 	(FAILED) ? printf(" ==> failed] ") : printf(" ==> ok] ");
 
-#if WITH_DMALLOC
+#ifdef WITH_DMALLOC
 	dmalloc_vmessage("section = $section  ================================\\n",NULL);
 	dmalloc_log_unfreed();
 #endif
@@ -811,7 +811,7 @@ EOM
 	test_ok &= (n_tests_failed) ? 0 : 1;
 	(n_tests_failed) ? printf(" ==> failed] ") : printf(" ==> ok] ");
 
-#if WITH_DMALLOC
+#ifdef WITH_DMALLOC
 	dmalloc_vmessage("section = $section  ================================\\n",NULL);
 	dmalloc_log_unfreed();
 #endif

@@ -1,3 +1,7 @@
+/* Wed Jan  3, Josef Leydold:
+   Remark: the global (extern) variable sgngam has been removed
+*/
+
 /*							gamma.c
  *
  *	Gamma function
@@ -148,8 +152,6 @@ static double STIR[5] = {
 
 #define SQTPI   M_SQRT2PI        /* sqrt(2*pi) */
 
-int sgngam = 0;
-
 static double stirf ( double );
 
 /*---------------------------------------------------------------------------*/
@@ -187,7 +189,7 @@ double gamma( double x )
 double p, q, z;
 int i;
 
-sgngam = 1;
+int sgngam = 1;
 
 if (!_unur_isfinite(x))
 	return(x);
@@ -312,7 +314,7 @@ double lgam( double x )
 double p, q, u, w, z;
 int i;
 
-sgngam = 1;
+int sgngam = 1;
 
 if (!_unur_isfinite(x))
 	return(INFINITY);

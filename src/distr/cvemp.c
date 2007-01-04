@@ -302,7 +302,7 @@ unur_distr_cvemp_get_data( const struct unur_distr *distr, const double **sample
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_distr_cvemp_debug( const struct unur_distr *distr, const char *genid, int printvector )
+_unur_distr_cvemp_debug( const struct unur_distr *distr, const char *genid, unsigned printvector )
      /*----------------------------------------------------------------------*/
      /* write info about distribution into logfile                           */
      /*                                                                      */

@@ -370,7 +370,7 @@ static int _unur_fstr_next_symbol (struct parser_data *pdata, char *symb);
 /* Get next symbol in function string.                                       */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_fstr_find_symbol (char *symb, int start, int end);
+static int _unur_fstr_find_symbol (const char *symb, int start, int end);
 /*---------------------------------------------------------------------------*/
 /* Find symbol in table between position (start+1) and (end-1).              */
 /*---------------------------------------------------------------------------*/
@@ -496,7 +496,7 @@ static struct ftreenode *_unur_ActualParameterlist (struct parser_data *pdata, i
 /* Simplify tree.                                                            */
 /*---------------------------------------------------------------------------*/
 
-static struct ftreenode *_unur_fstr_simplification (char *symb, int token,
+static struct ftreenode *_unur_fstr_simplification (const char *symb, int token,
 						    struct ftreenode *left,
 						    struct ftreenode *right);
 /*---------------------------------------------------------------------------*/
@@ -517,7 +517,7 @@ static int _unur_fstr_next_token (struct parser_data *pdata, int *token, char **
 /* Get next token from list.                                                 */
 /*---------------------------------------------------------------------------*/
 
-static struct ftreenode *_unur_fstr_create_node (char *symb, double val, int token,
+static struct ftreenode *_unur_fstr_create_node (const char *symb, double val, int token,
 						 struct ftreenode *left,
 						 struct ftreenode *right);
 /*---------------------------------------------------------------------------*/

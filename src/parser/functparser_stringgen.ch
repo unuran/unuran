@@ -115,7 +115,7 @@ _unur_fstr_node2string ( struct unur_string *output, const struct ftreenode *nod
 
   if (type == S_SFUNCT || type == S_UFUNCT) {
     /* node '(' left ',' right ')' */
-    _unur_fstr_print( output, symb, 0 );
+    _unur_fstr_print( output, symb, 0. );
     _unur_fstr_print( output, "(", 0. );
     if (left) {
       _unur_fstr_node2string(output,left,variable,function,spaces);

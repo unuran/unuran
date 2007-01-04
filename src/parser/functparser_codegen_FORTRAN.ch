@@ -166,7 +166,7 @@ F_var ( struct unur_string *output, const struct ftreenode *node, const char *va
      /* string for variable                                                  */
      /*----------------------------------------------------------------------*/
 {
-  _unur_fstr_print_F( output, variable, 0 );
+  _unur_fstr_print_F( output, variable, 0. );
   return 0u;
 } /* end of F_var() */
 
@@ -185,18 +185,18 @@ F_prefix_generic ( struct unur_string *output, const struct ftreenode *node,
   struct ftreenode *right = node->right;   /* right branch of node           */
 
   /* node '(' left ',' right ')' */
-  _unur_fstr_print_F( output, symb, 0 );
-  _unur_fstr_print_F( output, "(", 0 );
+  _unur_fstr_print_F( output, symb, 0. );
+  _unur_fstr_print_F( output, "(", 0. );
 
   if (left) {
     rcode |= symbol[left->token].node2F (output,left,variable);
-    _unur_fstr_print_F( output, ",", 0 );
+    _unur_fstr_print_F( output, ",", 0. );
   }
   if (right) {
     rcode |= symbol[right->token].node2F (output,right,variable);
   }
 
-  _unur_fstr_print_F( output, ")", 0 );
+  _unur_fstr_print_F( output, ")", 0. );
 
   return rcode;
 } /* end of F_prefix_generic() */
@@ -319,11 +319,11 @@ F_infix_generic ( struct unur_string *output, const struct ftreenode *node,
     return F_FUNCT_ERROR;
 
   /* '(' left node right ')' */
-  _unur_fstr_print_F( output, "(", 0 );
+  _unur_fstr_print_F( output, "(", 0. );
   rcode |= symbol[left->token].node2F (output,left,variable);
-  _unur_fstr_print_F( output, symb, 0 );
+  _unur_fstr_print_F( output, symb, 0. );
   rcode |= symbol[right->token].node2F (output,right,variable);
-  _unur_fstr_print_F( output, ")", 0 );
+  _unur_fstr_print_F( output, ")", 0. );
 
   return rcode;
 
@@ -342,25 +342,25 @@ F_infix ( struct unur_string *output, const struct ftreenode *node, const char *
 
 /*---------------------------------------------------------------------------*/
 
-unsigned
-F_equal ( struct unur_string *output, const struct ftreenode *node, const char *variable )
-     /*----------------------------------------------------------------------*/
-     /* string for equality operator                                         */
-     /*----------------------------------------------------------------------*/
-{
-  return F_infix_generic(output,node,variable,"==");
-} /* end of F_equal() */
+/* unsigned */
+/* F_equal ( struct unur_string *output, const struct ftreenode *node, const char *variable ) */
+/*      /\*----------------------------------------------------------------------*\/ */
+/*      /\* string for equality operator                                         *\/ */
+/*      /\*----------------------------------------------------------------------*\/ */
+/* { */
+/*   return F_infix_generic(output,node,variable,"=="); */
+/* } /\* end of F_equal() *\/ */
 
 /*---------------------------------------------------------------------------*/
 
-unsigned
-F_unequal ( struct unur_string *output, const struct ftreenode *node, const char *variable )
-     /*----------------------------------------------------------------------*/
-     /* string for inequality operator                                       */
-     /*----------------------------------------------------------------------*/
-{
-  return F_infix_generic(output,node,variable,"!=");
-} /* end of F_unequal() */
+/* unsigned */
+/* F_unequal ( struct unur_string *output, const struct ftreenode *node, const char *variable ) */
+/*      /\*----------------------------------------------------------------------*\/ */
+/*      /\* string for inequality operator                                       *\/ */
+/*      /\*----------------------------------------------------------------------*\/ */
+/* { */
+/*   return F_infix_generic(output,node,variable,"!="); */
+/* } /\* end of F_unequal() *\/ */
 
 /*---------------------------------------------------------------------------*/
 
@@ -380,13 +380,13 @@ F_minus ( struct unur_string *output, const struct ftreenode *node, const char *
     return F_FUNCT_ERROR;
 
   /* '(' [left] '-' right ')' */
-  _unur_fstr_print_F( output, "(", 0 );
+  _unur_fstr_print_F( output, "(", 0. );
   if (!(left->type == S_UCONST && left->val == 0.))
     /* there is no need to print "0 - ..." */
     rcode |= symbol[left->token].node2F (output,left,variable);
-  _unur_fstr_print_F( output, "-", 0 );
+  _unur_fstr_print_F( output, "-", 0. );
   rcode |= symbol[right->token].node2F (output,right,variable);
-  _unur_fstr_print_F( output, ")", 0 );
+  _unur_fstr_print_F( output, ")", 0. );
 
   return rcode;
 } /* end of F_minus() */

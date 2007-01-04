@@ -143,7 +143,7 @@ C_var ( struct unur_string *output, const struct ftreenode *node, const char *va
      /* string for variable                                                  */
      /*----------------------------------------------------------------------*/
 {
-  _unur_fstr_print_C( output, variable, 0 );
+  _unur_fstr_print_C( output, variable, 0. );
   return 0u;
 } /* end of C_var() */
 
@@ -162,18 +162,18 @@ C_prefix_generic ( struct unur_string *output, const struct ftreenode *node,
   struct ftreenode *right = node->right;   /* right branch of node           */
 
   /* node '(' left ',' right ')' */
-  _unur_fstr_print_C( output, symb, 0 );
-  _unur_fstr_print_C( output, "(", 0 );
+  _unur_fstr_print_C( output, symb, 0. );
+  _unur_fstr_print_C( output, "(", 0. );
 
   if (left) {
     rcode |= symbol[left->token].node2C (output,left,variable);
-    _unur_fstr_print_C( output, ",", 0 );
+    _unur_fstr_print_C( output, ",", 0. );
   }
   if (right) {
     rcode |= symbol[right->token].node2C (output,right,variable);
   }
 
-  _unur_fstr_print_C( output, ")", 0 );
+  _unur_fstr_print_C( output, ")", 0. );
 
   return rcode;
 } /* end of C_prefix_generic() */
@@ -252,11 +252,11 @@ C_infix_generic ( struct unur_string *output, const struct ftreenode *node,
     return C_FUNCT_ERROR;
 
   /* '(' left node right ')' */
-  _unur_fstr_print_C( output, "(", 0 );
+  _unur_fstr_print_C( output, "(", 0. );
   rcode |= symbol[left->token].node2C (output,left,variable);
-  _unur_fstr_print_C( output, symb, 0 );
+  _unur_fstr_print_C( output, symb, 0. );
   rcode |= symbol[right->token].node2C (output,right,variable);
-  _unur_fstr_print_C( output, ")", 0 );
+  _unur_fstr_print_C( output, ")", 0. );
 
   return rcode;
 
@@ -313,13 +313,13 @@ C_minus ( struct unur_string *output, const struct ftreenode *node, const char *
     return C_FUNCT_ERROR;
 
   /* '(' [left] '-' right ')' */
-  _unur_fstr_print_C( output, "(", 0 );
+  _unur_fstr_print_C( output, "(", 0. );
   if (!(left->type == S_UCONST && left->val == 0.))
     /* there is no need to print "0 - ..." */
     rcode |= symbol[left->token].node2C (output,left,variable);
-  _unur_fstr_print_C( output, "-", 0 );
+  _unur_fstr_print_C( output, "-", 0. );
   rcode |= symbol[right->token].node2C (output,right,variable);
-  _unur_fstr_print_C( output, ")", 0 );
+  _unur_fstr_print_C( output, ")", 0. );
 
   return rcode;
 } /* end of C_minus() */

@@ -159,6 +159,9 @@ static unsigned F_infix  ( struct unur_string *output, const struct ftreenode *n
 static unsigned F_minus  ( struct unur_string *output, const struct ftreenode *node, const char *variable );
 static unsigned F_power  ( struct unur_string *output, const struct ftreenode *node, const char *variable );
 
+/* static unsigned F_equal  ( struct unur_string *output, const struct ftreenode *node, const char *variable ); */
+/* static unsigned F_unequal( struct unur_string *output, const struct ftreenode *node, const char *variable ); */
+
 /*****************************************************************************/
 /** Routines for printing JAVA code                                         **/
 /*****************************************************************************/

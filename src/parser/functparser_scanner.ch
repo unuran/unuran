@@ -87,9 +87,9 @@ _unur_fstr_parser_init ( const char *fstr )
 
   /* initialize arrays */
   pdata->n_tokens = 0;
-  memset(pdata->token,0,pdata->len_fstr);
-  memset(pdata->tpos,0,pdata->len_fstr);
-  memset(pdata->tstr,'\0',pdata->len_fstr);
+  memset(pdata->token,0  ,(size_t)pdata->len_fstr);
+  memset(pdata->tpos, 0  ,(size_t)pdata->len_fstr);
+  memset(pdata->tstr,'\0',(size_t)pdata->len_fstr);
 
   /* initialize for scanning */
   pdata->scanpos = 0;     /* scan position at beginning */
@@ -305,7 +305,7 @@ _unur_fstr_next_symbol (struct parser_data *pdata, char *symb)
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_fstr_find_symbol (char *symb, int start, int end)
+_unur_fstr_find_symbol (const char *symb, int start, int end)
      /*----------------------------------------------------------------------*/
      /* find symbol in table between position (start+1) and (end-1)          */
      /*                                                                      */

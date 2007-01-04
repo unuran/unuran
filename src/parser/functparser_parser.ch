@@ -658,7 +658,7 @@ _unur_ActualParameterlist (struct parser_data *pdata, int n_params)
 /*---------------------------------------------------------------------------*/
 
 struct ftreenode *
-_unur_fstr_simplification (char *symb, int token,
+_unur_fstr_simplification (const char *symb, int token,
 			   struct ftreenode *left, struct ftreenode *right) 
      /*----------------------------------------------------------------------*/
      /* Try to simpify nodes                                                 */
@@ -988,7 +988,7 @@ _unur_fstr_next_token (struct parser_data *pdata, int *token, char **symbol)
 /*---------------------------------------------------------------------------*/
 
 struct ftreenode *
-_unur_fstr_create_node (char *symb, double val, int token, 
+_unur_fstr_create_node (const char *symb, double val, int token, 
 			struct ftreenode *left, struct ftreenode *right) 
      /*----------------------------------------------------------------------*/
      /* Create new node.                                                     */

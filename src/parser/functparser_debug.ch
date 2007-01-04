@@ -126,7 +126,7 @@ _unur_fstr_debug_show_tree(const struct parser_data *pdata,
      /*----------------------------------------------------------------------*/
 { 
   FILE *log = unur_get_stream();
-  char *name;
+  const char *name;
   int i, mask; 
 
   /* check arguments */

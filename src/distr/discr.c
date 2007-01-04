@@ -1282,13 +1282,14 @@ unur_distr_discr_get_pmfsum( struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_distr_discr_debug( const struct unur_distr *distr, const char *genid, int printvector )
+_unur_distr_discr_debug( const struct unur_distr *distr, const char *genid, unsigned printvector )
      /*----------------------------------------------------------------------*/
      /* write info about distribution into logfile                           */
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr ... pointer to distribution object                           */
      /*   genid ... pointer to generator id                                  */
+     /*   printvector ... whether the probability vector (if given)          */
      /*----------------------------------------------------------------------*/
 {
   FILE *log;

@@ -157,7 +157,7 @@ J_var ( struct unur_string *output, const struct ftreenode *node, const char *va
      /* string for variable                                                  */
      /*----------------------------------------------------------------------*/
 {
-  _unur_fstr_print_J( output, variable, 0 );
+  _unur_fstr_print_J( output, variable, 0. );
   return 0u;
 } /* end of J_var() */
 
@@ -176,18 +176,18 @@ J_prefix_generic ( struct unur_string *output, const struct ftreenode *node,
   struct ftreenode *right = node->right;   /* right branch of node           */
 
   /* node '(' left ',' right ')' */
-  _unur_fstr_print_J( output, symb, 0 );
-  _unur_fstr_print_J( output, "(", 0 );
+  _unur_fstr_print_J( output, symb, 0. );
+  _unur_fstr_print_J( output, "(", 0. );
 
   if (left) {
     rcode |= symbol[left->token].node2J (output,left,variable);
-    _unur_fstr_print_J( output, ",", 0 );
+    _unur_fstr_print_J( output, ",", 0. );
   }
   if (right) {
     rcode |= symbol[right->token].node2J (output,right,variable);
   }
 
-  _unur_fstr_print_J( output, ")", 0 );
+  _unur_fstr_print_J( output, ")", 0. );
 
   return rcode;
 } /* end of J_prefix_generic() */
@@ -200,7 +200,7 @@ J_prefix ( struct unur_string *output, const struct ftreenode *node, const char 
      /* string for prefix operator (function)                                */
      /*----------------------------------------------------------------------*/
 {
-  _unur_fstr_print_J( output, "Math.", 0 );
+  _unur_fstr_print_J( output, "Math.", 0. );
   return J_prefix_generic(output,node,variable,symbol[node->token].name);
 } /* end of J_prefix() */
 
@@ -322,11 +322,11 @@ J_infix_generic ( struct unur_string *output, const struct ftreenode *node,
     return J_FUNCT_ERROR;
 
   /* '(' left node right ')' */
-  _unur_fstr_print_J( output, "(", 0 );
+  _unur_fstr_print_J( output, "(", 0. );
   rcode |= symbol[left->token].node2J (output,left,variable);
-  _unur_fstr_print_J( output, symb, 0 );
+  _unur_fstr_print_J( output, symb, 0. );
   rcode |= symbol[right->token].node2J (output,right,variable);
-  _unur_fstr_print_J( output, ")", 0 );
+  _unur_fstr_print_J( output, ")", 0. );
 
   return rcode;
 
@@ -361,13 +361,13 @@ J_minus ( struct unur_string *output, const struct ftreenode *node, const char *
     return J_FUNCT_ERROR;
 
   /* '(' [left] '-' right ')' */
-  _unur_fstr_print_J( output, "(", 0 );
+  _unur_fstr_print_J( output, "(", 0. );
   if (!(left->type == S_UCONST && left->val == 0.))
     /* there is no need to print "0 - ..." */
     rcode |= symbol[left->token].node2J (output,left,variable);
-  _unur_fstr_print_J( output, "-", 0 );
+  _unur_fstr_print_J( output, "-", 0. );
   rcode |= symbol[right->token].node2J (output,right,variable);
-  _unur_fstr_print_J( output, ")", 0 );
+  _unur_fstr_print_J( output, ")", 0. );
 
   return rcode;
 } /* end of J_minus() */

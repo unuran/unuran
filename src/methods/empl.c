@@ -252,7 +252,7 @@ _unur_empl_init( struct unur_par *par )
   /* the observed data */
 
   /* sort entries */
-  qsort( GEN->observ, GEN->n_observ, sizeof(double), compare_doubles);
+  qsort( GEN->observ, (size_t)GEN->n_observ, sizeof(double), compare_doubles);
 
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */

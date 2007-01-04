@@ -144,7 +144,7 @@ void _unur_distr_corder_debug( const UNUR_DISTR *order_statistics, const char *g
 void _unur_distr_cxtrans_debug( const UNUR_DISTR *cxtrans, const char *genid );
 /* write info about distribution into logfile                                */
 
-void _unur_distr_cemp_debug( const UNUR_DISTR *distribution, const char *genid, int printvector );
+void _unur_distr_cemp_debug( const UNUR_DISTR *distribution, const char *genid, unsigned printvector );
 /* write info about distribution into logfile                                */
 
 void _unur_distr_matr_debug( const UNUR_DISTR *distribution, const char *genid );
@@ -156,10 +156,10 @@ void _unur_distr_cvec_debug( const UNUR_DISTR *distribution, const char *genid )
 void _unur_distr_condi_debug( const UNUR_DISTR *distribution, const char *genid );
 /* write info about distribution into logfile                                */
 
-void _unur_distr_cvemp_debug( const UNUR_DISTR *distribution, const char *genid, int printvector );
+void _unur_distr_cvemp_debug( const UNUR_DISTR *distribution, const char *genid, unsigned printvector );
 /* write info about distribution into logfile                                */
 
-void _unur_distr_discr_debug( const UNUR_DISTR *distribution, const char *genid, int printvector );
+void _unur_distr_discr_debug( const UNUR_DISTR *distribution, const char *genid, unsigned printvector );
 /* write info about distribution into logfile                                */
 
 /*---------------------------------------------------------------------------*/

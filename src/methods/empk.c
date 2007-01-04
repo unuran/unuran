@@ -817,7 +817,7 @@ _unur_empk_init( struct unur_par *par )
   /* sort entries */
   /** TODO: this sort can be removed after we have implemented a new 
       version of the function iqrtrange, that does not depend on sorting **/
-  qsort( GEN->observ, GEN->n_observ, sizeof(double), compare_doubles);
+  qsort( GEN->observ, (size_t)GEN->n_observ, sizeof(double), compare_doubles);
 
   /* compute mean and standard deviation of observed sample */
   _unur_empk_comp_stddev( GEN->observ, GEN->n_observ, &(GEN->mean_observ), &(GEN->stddev_observ) );

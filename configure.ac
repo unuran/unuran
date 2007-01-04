@@ -131,7 +131,7 @@ dnl default is disabled.
 
 AC_ARG_ENABLE(deprecated,
 	[AS_HELP_STRING([--enable-deprecated],
-		[enable support for deprecated routines @<:@default=use both@:>@])],
+		[enable support for deprecated UNURAN routines @<:@default=no@:>@])],
 	[],
 	[enable_deprecated=no])
 AM_CONDITIONAL(ENABLE_DEPRECATED, test x$enable_deprecated = xyes)
@@ -160,10 +160,28 @@ dnl (Valgrind is a GPL'd system for debugging and profiling x86-Linux programs)
 AC_CHECK_PROG(have_valgrind,valgrind,true,false) 
 AM_CONDITIONAL(HAVE_VALGRIND, test x$have_valgrind = xtrue)
 
+dnl Set flags for 
+
 dnl Set flags for compiler
+CC_FLAGS=
 if test X"$GCC" = Xyes ; then
-	AC_SUBST(AM_CFLAGS,-Wall)
+   CC_FLAGS+=" -Wall"
 fi
+
+case "${host_os}" in
+linux*)
+	case  "${CC}" in
+	## Intel compiler
+	*icc)
+		## -mp is the preferred form of -mieee-fp
+		CC_FLAGS+=" -mp"
+		;;
+	esac
+	;;
+esac
+
+AC_SUBST(AM_CFLAGS,[$CC_FLAGS])
+
 
 dnl create Makefiles for source
 AC_CONFIG_FILES([\

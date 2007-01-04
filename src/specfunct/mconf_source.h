@@ -178,34 +178,4 @@ double ndtri( double y0 );
 double polevl( double x, double coef[], int N );
 double p1evl( double x, double coef[], int N );
 
-
-
-/*---------------------------------------------------------------------------*/
-/* Warning: we did not test the library with any of the below compiler       */
-/* switches turned on.                                                       */
-
-/* Define to ask for infinity support, else undefine.                        */
-#undef INFINITIES 
-
-/* Define to ask for support of numbers that are Not-a-Number,               */
-/* else undefine.  This may automatically define INFINITIES in some files.   */
-#undef NANS 
-
-/* We use or own definition of INFINITY in UNURAN.                           */
-
-#if 0
-
-#ifdef INFINITIES
-double INFINITY = 1.0/0.0;  /* 99e999; */
-#else
-double INFINITY =  1.79769313486231570815E308;    /* 2**1024*(1-MACHEP) */
-#endif
-#ifdef NANS
-double NAN = 1.0/0.0 - 1.0/0.0;
-#else
-double NAN = 0.0;
-#endif
-
-#endif
-
 /*---------------------------------------------------------------------------*/

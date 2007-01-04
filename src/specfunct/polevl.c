@@ -54,7 +54,7 @@ Direct inquiries to 30 Frost Street, Cambridge, MA 02140
    made ANSI compliant declaration
 */
 
-#include "mconf_source.h"
+#include "cephes_source.h"
 
 /*---------------------------------------------------------------------------*/
 

@@ -6,16 +6,23 @@ AM_CPPFLAGS = \
 
 noinst_LTLIBRARIES = libspecfunct.la
 
-libspecfunct_la_SOURCES = \
- mconf_source.h \
+# routines taken and slightly modified from 
+# Cephes Math Library Release 2.3:  June, 1995
+# by Stephen L. Moshier
+CEPHES = \
+ cephes_source.h \
  mtherr.c \
  gamma.c \
  igam.c \
  incbet.c \
- log1p.c \
  ndtr.c \
  ndtri.c \
  polevl.c
+
+OTHER = \
+ log1p.c
+
+libspecfunct_la_SOURCES = $(CEPHES) $(OTHER)
 
 noinst_HEADERS = \
  unur_specfunct_source.h

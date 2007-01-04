@@ -2,7 +2,7 @@
 
    This file was considerably changed for UNURAN.
    As a consequence it has been renamed from "mconf.h" to
-   "source_mconf.h" to avoid confusion.
+   "cephes_source.h" to avoid confusion.
    
    We were only interested in the files:
       gamma.c

@@ -64,7 +64,7 @@ Copyright 1984, 1995, 2000 by Stephen L. Moshier
    made ANSI compliant declaration
 */
 
-#include "mconf_source.h"
+#include "cephes_source.h"
 
 /*---------------------------------------------------------------------------*/
 

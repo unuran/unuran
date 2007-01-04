@@ -209,7 +209,7 @@ static double U[] = {
 
 /*---------------------------------------------------------------------------*/
 
-double ndtr( double a )
+double _unur_cephes_ndtr( double a )
 {
 double x, y, z;
 
@@ -217,11 +217,11 @@ x = a * SQRTH;
 z = fabs(x);
 
 if( z < SQRTH )
-	y = 0.5 + 0.5 * erf(x);
+	y = 0.5 + 0.5 * _unur_cephes_erf(x);
 
 else
 	{
-	y = 0.5 * erfc(z);
+	y = 0.5 * _unur_cephes_erfc(z);
 
 	if( x > 0 )
 		y = 1.0 - y;
@@ -232,7 +232,7 @@ return(y);
 
 /*---------------------------------------------------------------------------*/
 
-double erfc( double a )
+double _unur_cephes_erfc( double a )
 {
 double p,q,x,y,z;
 
@@ -243,14 +243,13 @@ else
 	x = a;
 
 if( x < 1.0 )
-	return( 1.0 - erf(a) );
+	return( 1.0 - _unur_cephes_erf(a) );
 
 z = -a * a;
 
 if( z < -MAXLOG )
 	{
 under:
-	mtherr( "erfc", UNDERFLOW );
 	if( a < 0 )
 		return( 2.0 );
 	else
@@ -261,13 +260,13 @@ z = exp(z);
 
 if( x < 8.0 )
 	{
-	p = polevl( x, P, 8 );
-	q = p1evl( x, Q, 8 );
+	p = _unur_cephes_polevl( x, P, 8 );
+	q = _unur_cephes_p1evl( x, Q, 8 );
 	}
 else
 	{
-	p = polevl( x, R, 5 );
-	q = p1evl( x, S, 6 );
+	p = _unur_cephes_polevl( x, R, 5 );
+	q = _unur_cephes_p1evl( x, S, 6 );
 	}
 y = (z * p)/q;
 
@@ -282,14 +281,14 @@ return(y);
 
 /*---------------------------------------------------------------------------*/
 
-double erf( double x)
+double _unur_cephes_erf( double x)
 {
 double y, z;
 
 if( fabs(x) > 1.0 )
-	return( 1.0 - erfc(x) );
+	return( 1.0 - _unur_cephes_erfc(x) );
 z = x * x;
-y = x * polevl( z, T, 4 ) / p1evl( z, U, 5 );
+y = x * _unur_cephes_polevl( z, T, 4 ) / _unur_cephes_p1evl( z, U, 5 );
 return( y );
 
 }

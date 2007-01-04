@@ -139,21 +139,16 @@ static double Q2[8] = {
 
 /*---------------------------------------------------------------------------*/
 
-double ndtri( double y0 )
+double _unur_cephes_ndtri( double y0 )
 {
 double x, y, z, y2, x0, x1;
 int code;
 
 if( y0 <= 0.0 )
-	{
-	mtherr( "ndtri", DOMAIN );
 	return( -MAXNUM );
-	}
 if( y0 >= 1.0 )
-	{
-	mtherr( "ndtri", DOMAIN );
 	return( MAXNUM );
-	}
+
 code = 1;
 y = y0;
 if( y > (1.0 - 0.13533528323661269189) ) /* 0.135... = exp(-2) */
@@ -166,7 +161,7 @@ if( y > 0.13533528323661269189 )
 	{
 	y = y - 0.5;
 	y2 = y * y;
-	x = y + y * (y2 * polevl( y2, P0, 4)/p1evl( y2, Q0, 8 ));
+	x = y + y * (y2 * _unur_cephes_polevl( y2, P0, 4)/_unur_cephes_p1evl( y2, Q0, 8 ));
 	x = x * s2pi; 
 	return(x);
 	}
@@ -176,9 +171,9 @@ x0 = x - log(x)/x;
 
 z = 1.0/x;
 if( x < 8.0 ) /* y > exp(-32) = 1.2664165549e-14 */
-	x1 = z * polevl( z, P1, 8 )/p1evl( z, Q1, 8 );
+	x1 = z * _unur_cephes_polevl( z, P1, 8 )/_unur_cephes_p1evl( z, Q1, 8 );
 else
-	x1 = z * polevl( z, P2, 8 )/p1evl( z, Q2, 8 );
+	x1 = z * _unur_cephes_polevl( z, P2, 8 )/_unur_cephes_p1evl( z, Q2, 8 );
 x = x0 - x1;
 if( code != 0 )
 	x = -x;

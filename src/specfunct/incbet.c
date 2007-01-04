@@ -79,13 +79,13 @@ static double biginv =  2.22044604925031308085e-16;
 
 /*---------------------------------------------------------------------------*/
 
-double incbet( double aa, double bb, double xx )
+double _unur_cephes_incbet( double aa, double bb, double xx )
 {
 double a, b, t, x, xc, w, y;
 int flag;
 
 if( aa <= 0.0 || bb <= 0.0 )
-	goto domerr;
+	return( 0.0 );
 
 if( (xx <= 0.0) || ( xx >= 1.0) )
 	{
@@ -93,8 +93,6 @@ if( (xx <= 0.0) || ( xx >= 1.0) )
 		return(0.0);
 	if( xx == 1.0 )
 		return( 1.0 );
-domerr:
-	mtherr( "incbet", DOMAIN );
 	return( 0.0 );
 	}
 
@@ -149,11 +147,11 @@ if( (a+b) < MAXGAM && fabs(y) < MAXLOG && fabs(t) < MAXLOG )
 	t *= pow(x,a);
 	t /= a;
 	t *= w;
-	t *= gamma(a+b) / (gamma(a) * gamma(b));
+	t *= _unur_cephes_gamma(a+b) / (_unur_cephes_gamma(a) * _unur_cephes_gamma(b));
 	goto done;
 	}
 /* Resort to logarithms.  */
-y += t + lgam(a+b) - lgam(a) - lgam(b);
+y += t + _unur_cephes_lgam(a+b) - _unur_cephes_lgam(a) - _unur_cephes_lgam(b);
 y += log(w/a);
 if( y < MINLOG )
 	t = 0.0;
@@ -391,12 +389,12 @@ s += ai;
 u = a * log(x);
 if( (a+b) < MAXGAM && fabs(u) < MAXLOG )
 	{
-	t = gamma(a+b)/(gamma(a)*gamma(b));
+	t = _unur_cephes_gamma(a+b)/(_unur_cephes_gamma(a)*_unur_cephes_gamma(b));
 	s = s * t * pow(x,a);
 	}
 else
 	{
-	t = lgam(a+b) - lgam(a) - lgam(b) + u + log(s);
+	t = _unur_cephes_lgam(a+b) - _unur_cephes_lgam(a) - _unur_cephes_lgam(b) + u + log(s);
 	if( t < MINLOG )
 		s = 0.0;
 	else

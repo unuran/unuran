@@ -6,12 +6,12 @@ AM_CPPFLAGS = \
 
 noinst_LTLIBRARIES = libspecfunct.la
 
-# routines taken and slightly modified from 
+# Routines taken from
 # Cephes Math Library Release 2.3:  June, 1995
-# by Stephen L. Moshier
+# by Stephen L. Moshier:
+# [ See also README.cephes ]
 CEPHES = \
  cephes_source.h \
- mtherr.c \
  gamma.c \
  igam.c \
  incbet.c \

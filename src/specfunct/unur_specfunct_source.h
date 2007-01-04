@@ -55,31 +55,31 @@
 /** functions related to beta distribution **/
 
 /* incomplete beta integral */
-double incbet(double a, double b, double x);
-#define _unur_sf_incomplete_beta(x,a,b)   incbet((a),(b),(x))
+double _unur_cephes_incbet(double a, double b, double x);
+#define _unur_sf_incomplete_beta(x,a,b)   _unur_cephes_incbet((a),(b),(x))
 
 /** functions related to gamma distribution **/
 
 /* logarithm of gamma function */
-double lgam(double x);
-#define _unur_sf_ln_gamma(x)   lgam(x)
+double _unur_cephes_lgam(double x);
+#define _unur_sf_ln_gamma(x)   _unur_cephes_lgam(x)
 
 /* logarithm of factorial */
 #define _unur_sf_ln_factorial(x)   _unur_sf_ln_gamma((x)+1.)
 
 /* incomplete gamma function */
-double igam(double a, double x);
-#define _unur_sf_incomplete_gamma(x,a)  igam((a),(x))
+double _unur_cephes_igam(double a, double x);
+#define _unur_sf_incomplete_gamma(x,a)  _unur_cephes_igam((a),(x))
 
 /** functions related to normal distribution **/
 
 /* normal distribution function */
-double ndtr(double x);
-#define _unur_sf_cdfnormal(x)   ndtr(x)
+double _unur_cephes_ndtr(double x);
+#define _unur_sf_cdfnormal(x)   _unur_cephes_ndtr(x)
 
 /* inverse of normal distribution function */
-double ndtri(double x);
-#define _unur_sf_inv_cdfnormal(x)   ndtri(x)
+double _unur_cephes_ndtri(double x);
+#define _unur_sf_inv_cdfnormal(x)   _unur_cephes_ndtri(x)
 
 /*---------------------------------------------------------------------------*/
 /* end: CEPHES library                                                       */

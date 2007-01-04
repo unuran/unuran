@@ -96,7 +96,7 @@ static double biginv =  2.22044604925031308085e-16;
 
 /*---------------------------------------------------------------------------*/
 
-double igamc( double a, double x )
+double _unur_cephes_igamc( double a, double x )
 {
 double ans, ax, c, yc, r, t, y, z;
 double pk, pkm1, pkm2, qk, qkm1, qkm2;
@@ -105,14 +105,12 @@ if( (x <= 0) || ( a <= 0) )
 	return( 1.0 );
 
 if( (x < 1.0) || (x < a) )
-	return( 1.0 - igam(a,x) );
+	return( 1.0 - _unur_cephes_igam(a,x) );
 
-ax = a * log(x) - x - lgam(a);
+ax = a * log(x) - x - _unur_cephes_lgam(a);
 if( ax < -MAXLOG )
-	{
-	mtherr( "igamc", UNDERFLOW );
 	return( 0.0 );
-	}
+
 ax = exp(ax);
 
 /* continued fraction */
@@ -170,7 +168,7 @@ return( ans * ax );
  *
  */
 
-double igam( double a, double x )
+double _unur_cephes_igam( double a, double x )
 {
 double ans, ax, c, r;
 
@@ -178,15 +176,13 @@ if( (x <= 0) || ( a <= 0) )
 	return( 0.0 );
 
 if( (x > 1.0) && (x > a ) )
-	return( 1.0 - igamc(a,x) );
+	return( 1.0 - _unur_cephes_igamc(a,x) );
 
 /* Compute  x**a * exp(-x) / gamma(a)  */
-ax = a * log(x) - x - lgam(a);
+ax = a * log(x) - x - _unur_cephes_lgam(a);
 if( ax < -MAXLOG )
-	{
-	mtherr( "igam", UNDERFLOW );
 	return( 0.0 );
-	}
+
 ax = exp(ax);
 
 /* power series */

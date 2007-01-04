@@ -164,7 +164,7 @@ static double stirf( double x)
 double y, w, v;
 
 w = 1.0/x;
-w = 1.0 + w * polevl( w, STIR, 4 );
+w = 1.0 + w * _unur_cephes_polevl( w, STIR, 4 );
 y = exp(x);
 
 /*   #define MAXSTIR MAXLOG/log(MAXLOG)                     */
@@ -184,7 +184,7 @@ return( y );
 
 /*---------------------------------------------------------------------------*/
 
-double gamma( double x )
+double _unur_cephes_gamma( double x )
 {
 double p, q, z;
 int i;
@@ -256,15 +256,13 @@ if( x == 2.0 )
 	return(z);
 
 x -= 2.0;
-p = polevl( x, P, 6 );
-q = polevl( x, Q, 7 );
+p = _unur_cephes_polevl( x, P, 6 );
+q = _unur_cephes_polevl( x, Q, 7 );
 return( z * p / q );
 
 small:
 if( x == 0.0 )
-	{
-	  return( INFINITY );
-	}
+	return( INFINITY );
 else
 	return( z/((1.0 + 0.5772156649015329 * x) * x) );
 }
@@ -309,7 +307,7 @@ static double LS2PI  =  0.91893853320467274178;
 
 /* Logarithm of gamma function */
 
-double lgam( double x )
+double _unur_cephes_lgam( double x )
 {
 double p, q, u, w, z;
 int i;
@@ -322,14 +320,10 @@ if (!_unur_isfinite(x))
 if( x < -34.0 )
 	{
 	q = -x;
-	w = lgam(q); /* note this modifies sgngam! */
+	w = _unur_cephes_lgam(q); 
 	p = floor(q);
 	if( p == q )
-		{
-lgsing:
-		mtherr( "lgam", SING );
 		return (INFINITY);
-		}
 	i = p;
 	if( (i & 1) == 0 )
 		sgngam = -1;
@@ -343,7 +337,7 @@ lgsing:
 		}
 	z = q * sin( PI * z );
 	if( z == 0.0 )
-		goto lgsing;
+		return (INFINITY);
 /*	z = log(PI) - log( z ) - w;*/
 	z = LOGPI - log( z ) - w;
 	return( z );
@@ -363,7 +357,7 @@ if( x < 13.0 )
 	while( u < 2.0 )
 		{
 		if( u == 0.0 )
-			goto lgsing;
+		       return (INFINITY);
 		z /= u;
 		p += 1.0;
 		u = x + p;
@@ -379,14 +373,12 @@ if( x < 13.0 )
 		return( log(z) );
 	p -= 2.0;
 	x = x + p;
-	p = x * polevl( x, B, 5 ) / p1evl( x, C, 6);
+	p = x * _unur_cephes_polevl( x, B, 5 ) / _unur_cephes_p1evl( x, C, 6);
 	return( log(z) + p );
 	}
 
 if( x > MAXLGM )
-	{
 	return( sgngam * INFINITY );
-	}
 
 q = ( x - 0.5 ) * log(x) - x + LS2PI;
 if( x > 1.0e8 )
@@ -398,7 +390,7 @@ if( x >= 1000.0 )
 		- 2.7777777777777777777778e-3) *p
 		+ 0.0833333333333333333333) / x;
 else
-	q += polevl( p, A, 4 ) / x;
+	q += _unur_cephes_polevl( p, A, 4 ) / x;
 return( q );
 }
 

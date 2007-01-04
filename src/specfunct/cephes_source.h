@@ -114,31 +114,6 @@ Copyright 1984, 1987, 1989, 1995 by Stephen L. Moshier
 #include <utils/unur_fp_const_source.h>
 
 /*---------------------------------------------------------------------------*/
-/* We do not make use of floating point formats of various hardware.         */
-/* Thus we only use the "UNKnown arithmetic" flag of the CEPHES library.     */
-/* (We have remove all other types.)                                         */
-/* [ obsolete: #define UNK 1 ]                                               */
-
-/*---------------------------------------------------------------------------*/
-/* Error messages.                                                           */
-
-/* We have changed mtherr.c to suppress error messages, since these          */
-/* are not useful for UNURAN. However they can be enabled again by           */
-/* defining DEBUG.                                                           */
-
-/* #define DEBUG */
-
-/* Constant definitions for math error conditions                            */
-
-#define DOMAIN       1     /* argument domain error */
-#define SING         2     /* argument singularity */
-#define OVERFLOW     3     /* overflow range error */
-#define UNDERFLOW    4     /* underflow range error */
-
-/* Function for reporting error messages.                                    */
-/* int mtherr ( char *, int ); */
-
-/*---------------------------------------------------------------------------*/
 /* Define mathematical constants (see x_math_source.h).                      */
 
 #define PI      M_PI              /* Pi                                      */
@@ -152,30 +127,27 @@ Copyright 1984, 1987, 1989, 1995 by Stephen L. Moshier
 /*---------------------------------------------------------------------------*/
 /* Prototypes for functions from Cephes library                              */
 
-/* mterr.c */
-int mtherr( const char *name, int code );
-
 /* gamma.c */
-double gamma( double x );
-double lgam( double x );
+double _unur_cephes_gamma( double x );
+double _unur_cephes_lgam( double x );
 
 /* igam.c */
-double igamc( double a, double x );
-double igam( double a, double x );
+double _unur_cephes_igamc( double a, double x );
+double _unur_cephes_igam( double a, double x );
 
 /* incbet.c */
-double incbet( double aa, double bb, double xx );
+double _unur_cephes_incbet( double aa, double bb, double xx );
 
 /* ndtr.c */
-double ndtr( double a );
-double erfc( double a );
-double erf( double x );
+double _unur_cephes_ndtr( double a );
+double _unur_cephes_erfc( double a );
+double _unur_cephes_erf( double x );
 
 /* ndtri.c */
-double ndtri( double y0 );
+double _unur_cephes_ndtri( double y0 );
 
 /* polevl.c */
-double polevl( double x, double coef[], int N );
-double p1evl( double x, double coef[], int N );
+double _unur_cephes_polevl( double x, double coef[], int N );
+double _unur_cephes_p1evl( double x, double coef[], int N );
 
 /*---------------------------------------------------------------------------*/

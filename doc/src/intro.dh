@@ -85,9 +85,32 @@
 	 When omitted @file{/usr/local} is used.
 
 	 Use @code{configure --help} to get a list of other options.
-	 In particular it shows the flags for compiling the wrapper
-	 functions for various external sources of uniform random
-	 number generators. All these are of the form @code{--with-urng-*}.
+	 In particular the following flags are important:
+	 @table @code
+	 @item --enable-deprecated
+		enable support for deprecated UNU.RAN routines
+		[default=@code{no}] 
+        @end table
+
+	 The following flags enable support for some external sources
+	 of uniform random number generators 
+	 (@pxref{URNG,,Using uniform random number generators}).
+
+	 @table @code
+	 @item --with-urng-rngstream
+		use Pierre L'Ecuyer's RNGSTREAM library
+		[default=@code{no}]
+	 @item --with-urng-prng
+		use Otmar Lendl's PRNG library
+		[default=@code{no}]
+	 @item --with-urng-gsl
+		use random number generators from GNU Scientific Library
+		[default=@code{no}]
+	 @item --with-urng-default
+		global default URNG (@code{builtin}|@code{rngstream})
+		[default=@code{builtin}]
+        @end table
+
 	 We strongly recommend to use RngStreams library:
 	 @smallexample
 	    sh ./configure --with-urng-rngstream --with-urng-default=rngstream
@@ -103,7 +126,8 @@
 	 cause a floating point exception. 
 	 For allmost all modern compting architecture this is implemented
 	 in hardware. For others there should be a special compiler flag
-	 to get this feature (e.g. @code{-MIEEE} on DEC alpha).
+	 to get this feature (e.g., @code{-MIEEE} on DEC alpha or
+	 @code{-mp} for the Intel C complier).
 
    @item Compile and install the libray:
 	 @smallexample

@@ -44,15 +44,34 @@ Installing UNURAN
      where `<prefix>' is the root of the installation tree.  When
      omitted `/usr/local' is used.
 
-     Use configure --help to get a list of other options. In
-     particular it shows the flags for compiling the wrapper functions
-     for various external sources of uniform random number
-     generators. All these are of the form --with-urng-*. We strongly
-     recommend to use RngStreams library: 
+     Use configure --help to get a list of other options.
+     In particular the following flags are important:
+
+        --enable-deprecated
+            enable support for deprecated UNU.RAN routines
+              [default=@code{no}] 
+
+     The following flags enable support for some external sources
+     of uniform random number generators:
+
+        --with-urng-rngstream
+	     use Pierre L'Ecuyer's RNGSTREAM library
+              [default=no]
+        --with-urng-prng
+            use Otmar Lendl's PRNG library
+              [default=no]
+	 --with-urng-gsl
+            use random number generators from GNU Scientific Library
+              [default=no]
+
+        --with-urng-default
+              global default URNG (builtin|rngstream)
+		[default=builtin]
+
+     We strongly recommend to use RngStreams library: 
 
           sh ./configure --with-urng-rngstream --with-urng-default=rngstream
      
-
      Important: You must install PRNG or RngStreams before ./configure
      is executed.
 
@@ -67,7 +86,8 @@ Installing UNURAN
      respectively, and must not cause a floating point exception.
      For allmost all modern compting architecture this is implemented
      in hardware. For others there should be a special compiler flag
-     to get this feature (e.g. -MIEEE on DEC alpha).
+     to get this feature (e.g. -MIEEE on DEC alpha or -mp for the Intel
+     C compiler).
 
 
   4. Compile and install the libray:

@@ -86,7 +86,7 @@ ExtremeValueIIDistribution/: Random[ExtremeValueIIDistribution[k_,zeta_,theta_]]
 
 (* --- Laplace Distribution ------------------------------------------------ *)
 
-(* Mathematica's implementation of the Laplace Distribution is wrong!!       *)
+(* Mathematica.s implementation of the Laplace Distribution is wrong!!       *)
 (* We have to fix it!                                                        *)
 
 Unprotect[LaplaceDistribution];
@@ -188,7 +188,7 @@ UnurTestDistrResultLine[stream_, distr_, dtype_, fparams__, x_] := Module [
 	(*   	distr   ... distribution                                     *)
 	(*	dtype   ... type of distribution (CONT|DISCR|...)            *)
 	(*	fparams ... parameters for distribution                      *)
-	(*	x       ... argument where `distr' should be evaluated       *)
+	(*	x       ... argument where 'distr' should be evaluated       *)
 
 	(* local variables *)
 	{i,Fx},
@@ -324,7 +324,6 @@ fparams = {{1/100,100}};
 ed[mu_] = ExponentialDistribution[1/mu];
 UnurTestDistrResultFile["exponential", isCONT, datafile, fparams, RunSampleSize, ed];
 
-(*  --->
 (* ExtremeValue I *)
 fparams = {{-100,100},{1/100,100}};
 UnurTestDistrResultFile["extremeI",isCONT, datafile, fparams, RunSampleSize, ExtremeValueDistribution];
@@ -332,7 +331,13 @@ UnurTestDistrResultFile["extremeI",isCONT, datafile, fparams, RunSampleSize, Ext
 (* ExtremeValue II *)
 fparams = {{1/100,100}, {-100,100}, {1/100,100}};
 UnurTestDistrResultFile["extremeII",isCONT, datafile, fparams, RunSampleSize, ExtremeValueIIDistribution];
+
+(*  --->
+(* F *)
+fparams = {{1/100,10}, {1/100,10}};
+UnurTestDistrResultFile["F", isCONT, datafile, fparams, RunSampleSize, FRatioDistribution];
 *)
+
 
 (* Gamma *)
 fparams = {{1/2,10}, {1/100,100}};

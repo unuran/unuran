@@ -206,8 +206,8 @@ UNUR_DISTR *unur_distr_extremeII(const double *params, int n_params);
    =DISTR    F  F-distribution
    =UP       Stddist_CONT
    =REF      [JKBc95: Ch.27, p.322]
-   =PDF      \frac{x^{{nu_1}/2-1}}{(1+nu_1/nu_2 x)^{(nu_1+nu_2)/2}}
-   =CONST    \frac{(nu_1/nu_2)^{{nu_1}/2}/B({nu_1}/2,{nu_2}/2)
+   =PDF      (x^{nu_1/2-1}) / (1+nu_1/nu_2 x)^{(nu_1+nu_2)/2}
+   =CONST    (nu_1/nu_2)^{nu_1/2} / Beta(nu_1/2,nu_2/2)
    =DOMAIN   0 < x < infinity
    =FPARAM    0 : nu_1 : > 0 : : scale :
                  1 : nu_2 : > 0 : : scale :

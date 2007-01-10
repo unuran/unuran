@@ -36,15 +36,15 @@ int main()
   UNUR_DISTR *distr;
   UNUR_PAR *par;
 /*   UNUR_GEN *gen; */
-/*   double fpar[4] = {0.5, 1., 1.}; */
+  double fpar[2] = {1., 5.};
 /*   double fpar[4] = {3.,0.5, -1., 0.}; */
  
   unur_set_default_debug(~0U);
 
   /* standard normal */
-  distr = unur_distr_cauchy_wo_logpdf(NULL,0);
-/*   distr = unur_distr_cauchy(NULL,0); */
-  unur_distr_cont_set_domain(distr,1.,4.);
+/*   distr = unur_distr_cauchy_wo_logpdf(NULL,0); */
+  distr = unur_distr_F(fpar,2);
+/*   unur_distr_cont_set_domain(distr,1.,4.); */
 
 /*   distr = unur_distr_beta(fpar,4); */
 /*   distr = unur_distr_gamma(fpar,3); */

@@ -136,7 +136,6 @@ _unur_logpdf_F(double x, const UNUR_DISTR *distr)
 
 /*---------------------------------------------------------------------------*/
 
-
 double
 _unur_dpdf_F(double x, const UNUR_DISTR *distr)
 { 
@@ -313,7 +312,7 @@ unur_distr_F( const double *params, int n_params )
   DISTR.pdf     = _unur_pdf_F;           /* pointer to PDF                  */
   DISTR.logpdf  = _unur_logpdf_F;        /* pointer to logPDF               */
   DISTR.dpdf    = _unur_dpdf_F;          /* pointer to derivative of PDF    */
-  DISTR.dlogpdf = _unur_dpdf_F;          /* pointer to derivative of logPDF */
+  DISTR.dlogpdf = _unur_dlogpdf_F;       /* pointer to derivative of logPDF */
   DISTR.cdf     = _unur_cdf_F;           /* pointer to CDF                  */
 
   /* indicate which parameters are set */

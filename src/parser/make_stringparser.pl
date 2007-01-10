@@ -270,7 +270,8 @@ sub make_list_of_distributions {
     my $last_char;
 
     # Make list of all distributions
-    foreach my $distr (sort keys %{$DISTR}) {
+    sub caseinsensitive { ("\L$a" cmp "\L$b") };
+    foreach my $distr (sort caseinsensitive keys %{$DISTR}) {
 
 	# check whether command should be ignored
 	if ($IGNORED_DISTRIBUTIONS{$distr}) {
@@ -281,7 +282,7 @@ sub make_list_of_distributions {
 
 	print STDERR $distr,"  ";
 
-	my $char = substr $distr,0,1;
+	my $char = lc substr $distr,0,1;
 
 	if ($char ne $last_char) {
 	    $code .= "\t\t break;\n" if $last_char;

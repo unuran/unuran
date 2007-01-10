@@ -15,6 +15,7 @@ libdistributions_la_SOURCES = \
  c_exponential.c c_exponential_gen.c \
  c_extremeI.c    c_extremeI_gen.c \
  c_extremeII.c   c_extremeII_gen.c \
+ c_F.c \
  c_gamma.c       c_gamma_gen.c \
  c_gig.c         c_gig_gen.c \
  c_laplace.c     c_laplace_gen.c \

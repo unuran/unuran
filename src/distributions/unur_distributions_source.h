@@ -194,6 +194,10 @@ double _unur_stdgen_sample_extremeII_inv( UNUR_GEN *generator );
 
 
 /*---------------------------------------------------------------------------*/
+/* F distribution  [3; ch.27, p.332]                                         */
+
+
+/*---------------------------------------------------------------------------*/
 /*  Gamma distribution  [2; ch.17, p.337]                                    */
 
 /* initialize special generator                                              */

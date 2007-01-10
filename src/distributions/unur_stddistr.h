@@ -55,6 +55,7 @@ enum {
   UNUR_DISTR_EXPONENTIAL,         /*    X     X     X     X     X     .      */
   UNUR_DISTR_EXTREME_I,           /*    X     X     X     X     X     .      */
   UNUR_DISTR_EXTREME_II,          /*    X     X     X     X     X     .      */
+  UNUR_DISTR_F,                   /*    X     X     X     X     X     .      */
   UNUR_DISTR_GAMMA,               /*    X     X     X     X     X     .      */
   UNUR_DISTR_GIG,                 /*    X     X     .     .     X     .      */
   UNUR_DISTR_LAPLACE,             /*    X     X     X     X     X     .      */

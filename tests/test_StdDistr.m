@@ -45,7 +45,7 @@ SrcFileName = "t_StdDistr.c";
 DataFileName = "t_StdDistr.data";
 
 (* sample size for tests *)
-RunSampleSize = 100;
+RunSampleSize = 10000;
 
 (* constants *)
 isCONT = 1;
@@ -332,12 +332,9 @@ UnurTestDistrResultFile["extremeI",isCONT, datafile, fparams, RunSampleSize, Ext
 fparams = {{1/100,100}, {-100,100}, {1/100,100}};
 UnurTestDistrResultFile["extremeII",isCONT, datafile, fparams, RunSampleSize, ExtremeValueIIDistribution];
 
-(*  --->
 (* F *)
 fparams = {{1/100,10}, {1/100,10}};
 UnurTestDistrResultFile["F", isCONT, datafile, fparams, RunSampleSize, FRatioDistribution];
-*)
-
 
 (* Gamma *)
 fparams = {{1/2,10}, {1/100,100}};

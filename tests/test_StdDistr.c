@@ -33,7 +33,7 @@
 
 /*---------------------------------------------------------------------------*/
 
-/*  #define DEBUG 1 */
+/* #define DEBUG 1 */
 
 /*---------------------------------------------------------------------------*/
 #include <ctype.h>
@@ -415,7 +415,7 @@ test_cdf_pdf( UNUR_DISTR *distr, char *distrAPI )
   }
 
   if (have_PDF) {
-    fprintf(TESTLOG,"%s: \t\tPDF  = %g ... ", dname,PDF_md);
+    fprintf(TESTLOG,"%s: \t\tPDF  = %g (rel = %g) ... ", dname,PDF_md,PDF_md/PDF_me);
     if (PDF_md > MAX_REL_DIFF * PDF_me) {
       fprintf(TESTLOG, "failed!!\n");
       ++n_failed;
@@ -425,7 +425,7 @@ test_cdf_pdf( UNUR_DISTR *distr, char *distrAPI )
   }
 
   if (have_dPDF) {
-    fprintf(TESTLOG,"%s: \t\tdPDF = %g ... ", dname,dPDF_md);
+    fprintf(TESTLOG,"%s: \t\tdPDF = %g (rel = %g) ... ", dname,dPDF_md,dPDF_md/dPDF_me);
     if (dPDF_md > MAX_REL_DIFF * dPDF_me) {
       fprintf(TESTLOG, "failed!!\n");
       ++n_failed;

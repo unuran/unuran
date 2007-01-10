@@ -44,17 +44,12 @@ valgrind: $(check_PROGRAMS)
 	@list='$(check_PROGRAMS)'; for p in $$list; do \
 		$(top_srcdir)/scripts/run_valgrind.sh ./$$p; \
 	done
-
-valgrind-cluster: 
-	qsub -b y -N "unuran-valgrind-examples" "make valgrind"
-
 endif
 
 # clean log files and backup files
 CLEANFILES = \
  unuran.log \
  valgrind-* \
- unuran-valgrind-* \
  *~
 
 # clean generated files

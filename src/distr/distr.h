@@ -298,7 +298,7 @@ int unur_distr_set_extobj( UNUR_DISTR *distribution, const void *extobj );
    object might effect the generator object.
    
    @strong{Warning:} 
-   External objects must be used with care. One the generator object has been 
+   External objects must be used with care. Once the generator object has been 
    created or the distribution object has been copied you @emph{must not}
    destroy this external object.
 */

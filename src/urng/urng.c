@@ -66,6 +66,27 @@ unur_urng_sample (UNUR_URNG *urng)
 
 /*---------------------------------------------------------------------------*/
 
+double
+unur_sample_urng (UNUR_GEN *gen)
+     /*----------------------------------------------------------------------*/
+     /* Sample from underlying URNG object.                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   uniform random number                                              */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return INFINITY                                                    */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_urng *urng = (gen) ? gen->urng : unur_get_default_urng(); 
+  return _unur_call_urng(urng);
+} /* end of unur_sample_urng() */
+
+/*---------------------------------------------------------------------------*/
+
 int
 unur_urng_sample_array (UNUR_URNG *urng, double *X, int dim)
      /*----------------------------------------------------------------------*/

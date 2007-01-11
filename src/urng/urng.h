@@ -333,6 +333,14 @@ double unur_urng_sample (UNUR_URNG *urng);
    used. 
 */
 
+double unur_sample_urng (UNUR_GEN *gen);
+/* 
+   Get a uniform random number from the underlying uniform
+   random number generator of generator @var{gen}.
+   If the NULL pointer is given, the default uniform generator is
+   used. 
+*/
+
 int unur_urng_sample_array (UNUR_URNG *urng, double *X, int dim);
 /*
    Set array @var{X} of length @var{dim} with uniform random numbers 

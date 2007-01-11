@@ -40,6 +40,7 @@
 
 #include <unur_source.h>
 #include <distr/distr_source.h>
+#include <distr/distr.h>
 #include <distr/cont.h>
 #include <urng/urng.h>
 #include "unur_methods_source.h"
@@ -143,6 +144,13 @@ unur_cext_new( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
 {
   struct unur_par *par;
+
+  /* check distribution */
+  if (distr != NULL) {
+    if (distr->type != UNUR_DISTR_CONT) {
+      _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,""); return NULL; }
+    COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
+  }
 
   /* allocate structure */
   par = _unur_par_new( sizeof(struct unur_cext_par) );
@@ -253,7 +261,7 @@ unur_cext_set_params( struct unur_gen *gen, void *param, size_t size_param)
   /* check arguments */
   _unur_check_NULL( gen->genid, param, UNUR_ERR_NULL );
   if (size_param <= 0) {
-    _unur_warning(gen->genid,UNUR_ERR_PAR_SET,"size < 0");
+    _unur_warning(gen->genid,UNUR_ERR_PAR_SET,"size <= 0");
     return UNUR_ERR_PAR_SET;
   }
 
@@ -425,8 +433,8 @@ _unur_cext_create( struct unur_par *par )
   gen->reinit = _unur_cext_reinit;
 
   /* copy data */
-  GEN->init = GEN->init;
-  GEN->sample = GEN->sample;
+  GEN->init = PAR->init;
+  GEN->sample = PAR->sample;
 
   /* defaults */
   GEN->param    = NULL;   /* parameters for the generator                    */

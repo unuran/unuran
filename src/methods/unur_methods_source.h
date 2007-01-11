@@ -100,11 +100,14 @@
 #define UNUR_METH_MCORR    0x10010000u
 
 /* generators for standard distributions */
-#define UNUR_METH_CSTD     0x0200f100u   /* is of type UNUR_METH_CONT !!  */
-#define UNUR_METH_DSTD     0x0100f200u   /* is of type UNUR_METH_DISCR !! */
+#define UNUR_METH_CSTD     0x0200f100u   /* is of type UNUR_METH_CONT !!     */
+#define UNUR_METH_DSTD     0x0100f200u   /* is of type UNUR_METH_DISCR !!    */
+
+/* wrapper for external generators */
+#define UNUR_METH_CEXT     0x0200f400u   /* is of type UNUR_METH_CONT !!     */
 
 /* automatically selected generator */
-#define UNUR_METH_AUTO     0x00a00000u   /* can be any type of distribution */
+#define UNUR_METH_AUTO     0x00a00000u   /* can be any type of distribution  */
 
 /* to indicate unkown type */
 #define UNUR_METH_UNKNOWN  0xff000000u

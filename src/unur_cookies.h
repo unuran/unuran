@@ -133,6 +133,9 @@
 #define CK_DSTD_PAR      0x10000020u
 #define CK_DSTD_GEN      0x10000021u
 
+#define CK_CEXT_PAR      0x10000040u
+#define CK_CEXT_GEN      0x10000041u
+
 #define CK_MBLOCK        0xf0000001u
 
 /* misc methods */

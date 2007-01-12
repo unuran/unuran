@@ -80,20 +80,19 @@ int unur_cext_set_sample( UNUR_PAR *parameters, double (*sample)(UNUR_GEN *gen) 
    Set sampling routine for external generator.
 */
 
-int unur_cext_set_params( UNUR_GEN *generator, void *param, size_t size_param);
+void *unur_cext_get_params( UNUR_GEN *generator, size_t size );
 /*
-   Store pointer to parameters of external generator.
-   It should be used when the external initialization routines has to
-   compute and store some parameters.
-   
-   @strong{Important:} The pointer @var{param} must be allocated and is freed 
-   automatically when the generator object is destroyed.
-*/
+   Get pointer to memory block for storing parameters of external
+   generator. A memory block of size @var{size} is automatically (re-)
+   allocated if necessary and the pointer to this block is stored in
+   the @var{generator} object. If one only needs the pointer to this
+   memory block set @var{size} to @code{0}.
 
-void *unur_cext_get_params( UNUR_GEN *generator );
-/*
-   Get pointer that stores parameters of external generator.
-   It should be used in the sampling routine of the external generator.
+   Notice, that @var{size} is the size of the memory block and not the
+   length of an array.
+
+   This rountine should only be used in the initialization and
+   sampling routine of the external generator. 
 */
 
 /*...........................................................................*/

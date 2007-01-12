@@ -239,49 +239,17 @@ unur_cext_set_sample( struct unur_par *par, double (*sample)(struct unur_gen *ge
 
 /*---------------------------------------------------------------------------*/
 
-int
-unur_cext_set_params( struct unur_gen *gen, void *param, size_t size_param)
-     /*----------------------------------------------------------------------*/
-     /* Store pointer to parameters of external generator.                   */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen        ... pointer to generator object                         */
-     /*   param      ... pointer to memory block that contains parameters    */
-     /*   size_param ... size of memory block                                */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   UNUR_SUCCESS ... on success                                        */
-     /*   error code   ... on error                                          */
-     /*----------------------------------------------------------------------*/
-{
-  /* check input */
-  _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
-  _unur_check_gen_object( gen, CEXT, UNUR_ERR_GEN_INVALID );
-
-  /* check arguments */
-  _unur_check_NULL( gen->genid, param, UNUR_ERR_NULL );
-  if (size_param <= 0) {
-    _unur_warning(gen->genid,UNUR_ERR_PAR_SET,"size <= 0");
-    return UNUR_ERR_PAR_SET;
-  }
-
-  /* store data */
-  GEN->param = param; 
-  GEN->size_param = size_param; 
-
-  return UNUR_SUCCESS;
-
-} /* end of unur_cext_set_params */
-
-/*---------------------------------------------------------------------------*/
-
 void *
-unur_cext_get_params( struct unur_gen *gen )
+unur_cext_get_params( struct unur_gen *gen, size_t size )
      /*----------------------------------------------------------------------*/
-     /* Get pointer to parameters of external generator.                     */
+     /* Get pointer to memory block for storing parameters of external       */
+     /* generator. The memory block is (re-) allocated if necessary.         */
+     /* If size is set 0, then only the pointer stored in the generator      */
+     /* object is returned.                                                  */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   gen     ... pointer to generator object                            */
+     /*   gen  ... pointer to generator object                               */
+     /*   size ... size if the memory block                                  */
      /*                                                                      */
      /* return:                                                              */
      /*   pointer to memory block that contains parameters                   */
@@ -295,6 +263,12 @@ unur_cext_get_params( struct unur_gen *gen )
   if ( gen->method != UNUR_METH_CEXT ) { 
     _unur_error((gen)->genid,UNUR_ERR_GEN_INVALID,"");
     return NULL; 
+  }
+
+  if (size && size != GEN->size_param) {
+    /* allocate memory block */
+    GEN->param = _unur_xrealloc(GEN->param, size);
+    GEN->size_param = size;
   }
 
   return GEN->param;

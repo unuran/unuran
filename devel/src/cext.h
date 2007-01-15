@@ -73,6 +73,10 @@ UNUR_PAR *unur_cext_new( const UNUR_DISTR *distribution );
 int unur_cext_set_init( UNUR_PAR *parameters, int (*init)(UNUR_GEN *gen) );
 /*
    Set initialization routine for external generator.
+   
+   @emph{Important:} The routine @var{init} must return
+   @code{UNUR_SUCCESS} when the generator was initialized successfully
+   and @code{UNUR_FAILURE} otherwise.
 */
 
 int unur_cext_set_sample( UNUR_PAR *parameters, double (*sample)(UNUR_GEN *gen) );
@@ -91,8 +95,20 @@ void *unur_cext_get_params( UNUR_GEN *generator, size_t size );
    Notice, that @var{size} is the size of the memory block and not the
    length of an array.
 
-   This rountine should only be used in the initialization and
-   sampling routine of the external generator. 
+   @emph{Important:} This rountine should only be used in the
+   initialization and sampling routine of the external generator. 
+*/
+
+double *unur_cext_get_distrparams( UNUR_GEN *generator );
+/* */
+
+int unur_cext_get_ndistrparams( UNUR_GEN *generator );
+/*
+   Get size of and pointer to array of parameters of underlying
+   distribution in @var{generator} object.
+
+   @emph{Important:} This rountine should only be used in the
+   initialization and sampling routine of the external generator. 
 */
 
 /*...........................................................................*/

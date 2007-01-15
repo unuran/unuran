@@ -259,11 +259,14 @@ unur_cext_get_params( struct unur_gen *gen, size_t size )
      /*----------------------------------------------------------------------*/
 {
   /* check input */
-  _unur_check_NULL( GENTYPE, gen, NULL );
-  if ( gen->method != UNUR_METH_CEXT ) { 
-    _unur_error((gen)->genid,UNUR_ERR_GEN_INVALID,"");
-    return NULL; 
-  }
+  CHECK_NULL(gen, NULL);
+  COOKIE_CHECK(gen, CK_CEXT_GEN, NULL);
+
+  /* Is it really necessary to check the method? No! */
+  /*   if ( gen->method != UNUR_METH_CEXT ) {  */
+  /*     _unur_error((gen)->genid,UNUR_ERR_GEN_INVALID,""); */
+  /*     return NULL;  */
+  /*   } */
 
   if (size && size != GEN->size_param) {
     /* allocate memory block */
@@ -273,6 +276,57 @@ unur_cext_get_params( struct unur_gen *gen, size_t size )
 
   return GEN->param;
 } /* end of unur_cext_get_params() */
+
+
+/*---------------------------------------------------------------------------*/
+
+double  *
+unur_cext_get_distrparams( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* Get pointer to array of parameters of underlying distribution        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to double array                                            */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  /* check input */
+  CHECK_NULL(gen, NULL);
+  COOKIE_CHECK(gen, CK_CEXT_GEN, NULL);
+
+  return DISTR.params;
+} /* end of unur_cext_get_distrparams() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_cext_get_ndistrparams( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* Get size of array of parameters of underlying distribution           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   length of double array                                             */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0                                                           */
+     /*----------------------------------------------------------------------*/
+{
+  /* check input */
+  CHECK_NULL(gen, 0);
+  COOKIE_CHECK(gen, CK_CEXT_GEN, 0);
+
+  return DISTR.n_params;
+} /* end of unur_cext_get_ndistrparams() */
+
+/*---------------------------------------------------------------------------*/
 
 
 /*****************************************************************************/

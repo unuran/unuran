@@ -102,6 +102,13 @@
       chosen distribution and run unur_reinit() to reinitialize the
       generator object. The @var{init} routine is then called again.
 
+      Here is a short example that demonstrates the application of
+      this method by means of the exponential distribution:
+
+      @smallexample
+      @include ref_example_cext.texi
+      @end smallexample
+
    =END
 */
 

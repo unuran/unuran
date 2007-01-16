@@ -90,6 +90,11 @@ my %SUBST_COMMANDS =
       'unur_distr_discr_set_cdfstr'   => 'cdf'
     );
 
+# Methods ignored by string parser
+my %IGNORED_METHODS =
+    ( 'cext' => 1
+      );
+
 # Commands ignored by string parser
 my %IGNORED_COMMANDS =
     ( 'unur_distr_set_extobj'       => 1,
@@ -166,6 +171,7 @@ print STDERR "\n";
 my $msg_unsupported;
 my $msg_substituted;
 my $msg_ignored;
+my $msg_ignored_methods;
 
 ##############################################################################
 # Read template C file from STDIN and insert C code for string interpreter 
@@ -205,6 +211,11 @@ if ($msg_substituted) {
 if ($msg_ignored) {
     print STDERR "Ignored set commands:\n";
     print STDERR "$msg_ignored\n";
+}
+
+if ($msg_ignored_methods) {
+    print STDERR "Ignored methods:\n";
+    print STDERR "$msg_ignored_methods\n";
 }
 
 if ($msg_unsupported) {
@@ -715,6 +726,13 @@ sub make_list_of_methods {
 
     foreach my $method (@method_list) {
 
+	# check whether method should be ignored
+	if ($IGNORED_METHODS{$method}) {
+	    # ignore this method
+	    $msg_ignored_methods .= "  unur_$method\_new()\n";
+	    next;
+	}
+
 	my $char = substr $method,0,1;
 
 	if ($char ne $last_char) {
@@ -849,6 +867,14 @@ sub make_list_of_par_sets {
 		$code_ignored .= "\t /* $l\n\t\t n = $n_args; type = $type_args\t */\n";
 		$msg_ignored .= "  $command_name()\n";
 		next;
+	    }
+	    # check whether method should be ignored
+	    for my $m (keys %IGNORED_METHODS) {
+		if ($command_name =~ /^unur_$m/) {
+		    # ignore this method
+		    $msg_ignored .= "  $command_name()\n";
+		    next;
+		}
 	    }
 
 	    # make set calls

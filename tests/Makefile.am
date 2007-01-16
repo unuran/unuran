@@ -44,6 +44,7 @@ check_PROGRAMS = \
  t_cstd \
  t_dari \
  t_dau \
+ t_dext \
  t_dgt \
  t_dsrou \
  t_dss \
@@ -111,6 +112,7 @@ EXTRA_DIST = \
  t_cstd.conf \
  t_dari.conf \
  t_dau.conf \
+ t_dext.conf \
  t_dgt.conf \
  t_dsrou.conf \
  t_dss.conf \

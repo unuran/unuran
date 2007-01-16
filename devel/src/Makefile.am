@@ -12,8 +12,6 @@ libunurexperimental_la_SOURCES = \
  mvtdr.c   mvtdr.h   mvtdr_struct.h \
    mvtdr_newset.ch mvtdr_init.ch mvtdr_sample.ch mvtdr_debug.ch
 
-##  cext.c    cext.h    cext_struct.h \
-
 #libunurexperimental_la_SOURCES = \
 # ball.c    ball.h    ball_struct.h \
 # varou.c   varou.h   varou_struct.h \

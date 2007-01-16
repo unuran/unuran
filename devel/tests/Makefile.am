@@ -18,9 +18,6 @@ LDADD = \
 check_PROGRAMS = \
  t_mvtdr
 
-## t_cext \
-
-
 TESTS = $(check_PROGRAMS)
 
 # These tests fail until we fix some bugs

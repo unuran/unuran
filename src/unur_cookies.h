@@ -135,6 +135,8 @@
 
 #define CK_CEXT_PAR      0x10000040u
 #define CK_CEXT_GEN      0x10000041u
+#define CK_DEXT_PAR      0x10000080u
+#define CK_DEXT_GEN      0x10000081u
 
 #define CK_MBLOCK        0xf0000001u
 

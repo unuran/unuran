@@ -92,7 +92,8 @@ my %SUBST_COMMANDS =
 
 # Methods ignored by string parser
 my %IGNORED_METHODS =
-    ( 'cext' => 1
+    ( 'cext' => 1,
+      'dext' => 1
       );
 
 # Commands ignored by string parser

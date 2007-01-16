@@ -25,6 +25,7 @@ libmethods_la_SOURCES = \
  cstd.c   cstd.h   cstd_struct.h \
  dari.c   dari.h   dari_struct.h \
  dau.c    dau.h    dau_struct.h \
+ dext.c   dext.h   dext_struct.h \
  dgt.c    dgt.h    dgt_struct.h \
  dsrou.c  dsrou.h  dsrou_struct.h \
  dss.c    dss.h    dss_struct.h \

@@ -1,5 +1,7 @@
 Version 1.0.0: ???? 2007
 
+	* new method DEXT (wrapper for external generators)
+
 	* new method CEXT (wrapper for external generators)
 
 	* Added F-distribution.

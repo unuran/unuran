@@ -105,6 +105,7 @@
 
 /* wrapper for external generators */
 #define UNUR_METH_CEXT     0x0200f400u   /* is of type UNUR_METH_CONT !!     */
+#define UNUR_METH_DEXT     0x0100f800u   /* is of type UNUR_METH_DISCR !!    */
 
 /* automatically selected generator */
 #define UNUR_METH_AUTO     0x00a00000u   /* can be any type of distribution  */

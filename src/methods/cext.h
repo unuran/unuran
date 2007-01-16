@@ -59,7 +59,7 @@
       @item
       Make an empty generator object using a unur_cext_new() call.
       The argument @var{distribution} is optional and can be replaced
-      by NULL. However, it is required if you want to pass pass
+      by NULL. However, it is required if you want to pass
       parameters of the generated distribution to the external
       generator or for running some validation tests provided by
       UNURAN.
@@ -74,7 +74,7 @@
       of parameters of the underlying distribution object by the
       respective calls unur_cext_get_ndistrparams() and
       unur_cext_get_distrparams().
-      Parameter for the external generator that are computed in the 
+      Parameters for the external generator that are computed in the 
       @var{init} routine can be stored in a single array or structure
       which is available by the unur_cext_get_params() call.
 
@@ -91,7 +91,7 @@
       number generator we recommend to use the UNURAN interface (see
       @pxref{URNG,,Using uniform random number generators}). 
 
-      The array of structure that contains parameters for the external
+      The array or structure that contains parameters for the external
       generator that are computed in the @var{init} routine are
       available using the unur_cext_get_params() call.
 

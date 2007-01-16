@@ -21,6 +21,7 @@ libmethods_la_SOURCES = \
 \
  auto.c   auto.h   auto_struct.h \
  arou.c   arou.h   arou_struct.h \
+ cext.c   cext.h   cext_struct.h \
  cstd.c   cstd.h   cstd_struct.h \
  dari.c   dari.h   dari_struct.h \
  dau.c    dau.h    dau_struct.h \

@@ -40,6 +40,7 @@ check_PROGRAMS = \
  t_distr_matr \
  t_auto \
  t_arou \
+ t_cext \
  t_cstd \
  t_dari \
  t_dau \
@@ -106,6 +107,7 @@ EXTRA_DIST = \
  t_distr_matr.conf \
  t_auto.conf \
  t_arou.conf \
+ t_cext.conf \
  t_cstd.conf \
  t_dari.conf \
  t_dau.conf \

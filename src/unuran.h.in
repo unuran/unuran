@@ -130,6 +130,9 @@
 #include <methods/cstd.h>     /* continuous */
 #include <methods/dstd.h>     /* discrete   */
 
+/* wrapper for external random variate generators */
+#include <methods/cext.h>     /* continuous */
+
 /* wrapper for uniform random number generator */
 #include <methods/unif.h>
 

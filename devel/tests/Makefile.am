@@ -16,8 +16,10 @@ LDADD = \
  $(unuran_builddir)/src/libunuran.la
 
 check_PROGRAMS = \
- t_cext \
  t_mvtdr
+
+## t_cext \
+
 
 TESTS = $(check_PROGRAMS)
 

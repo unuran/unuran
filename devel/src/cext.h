@@ -36,24 +36,71 @@
  *****************************************************************************/
 
 /* 
-   =expMETHOD  CEXT   wrapper for Continuous EXTernal generators
+   =METHOD  CEXT   wrapper for Continuous EXTernal generators
 
    =UP  Methods_for_CONT
 
-   =REQUIRED 
+   =REQUIRED routine for sampling continuous random variates
 
    =SPEED depends on external generator
 
    =REINIT supported
 
    =DESCRIPTION
-      CEXT is a wrapper for external generators for continuous
+      Method CEXT is a wrapper for external generators for continuous
       univariate distributions. It allows the usage of external
       random variate generators within the UNURAN framework.
 
    =HOWTOUSE
-      It is possible to change the parameters and the domain of the chosen 
-      distribution and run unur_reinit() to reinitialize the generator object.
+      The following steps are required to use some external generator
+      within the UNURAN framework (some of these are optional):
+
+      @enumerate
+      @item
+      Make an empty generator object using a unur_cext_new() call.
+      The argument @var{distribution} is optional and can be replaced
+      by NULL. However, it is required if you want to pass pass
+      parameters of the generated distribution to the external
+      generator or for running some validation tests provided by
+      UNURAN.
+
+      @item
+      Create an initialization routine of type 
+      @code{int (*init)(UNUR_GEN *gen)} and plug it into the generator
+      object using the unur_cext_set_init() call. Notice that the
+      @var{init} routine must return @code{UNUR_SUCCESS} when it has
+      been executed successfully and @code{UNUR_FAILURE} otherwise.
+      It is possible to get the size of and the pointer to the array
+      of parameters of the underlying distribution object by the
+      respective calls unur_cext_get_ndistrparams() and
+      unur_cext_get_distrparams().
+      Parameter for the external generator that are computed in the 
+      @var{init} routine can be stored in a single array or structure
+      which is available by the unur_cext_get_params() call.
+
+      Using an @var{init} routine is optional and can be omitted.
+
+      @item
+      Create a sampling routine of type 
+      @code{double (*sample)(UNUR_GEN *gen)} and plug it into the
+      generator object using the unur_cext_set_sample() call.
+
+      Uniform random numbers are provided by the unur_sample_urng()
+      call. Do not use your own implementation of a uniform random
+      number generator directly. If you want to use your own random
+      number generator we recommend to use the UNURAN interface (see
+      @pxref{URNG,,Using uniform random number generators}). 
+
+      The array of structure that contains parameters for the external
+      generator that are computed in the @var{init} routine are
+      available using the unur_cext_get_params() call.
+
+      Using a @var{sample} routine is of course obligatory.
+      @end enumerate
+
+      It is possible to change the parameters and the domain of the
+      chosen distribution and run unur_reinit() to reinitialize the
+      generator object. The @var{init} routine is then called again.
 
    =END
 */
@@ -72,16 +119,29 @@ UNUR_PAR *unur_cext_new( const UNUR_DISTR *distribution );
 
 int unur_cext_set_init( UNUR_PAR *parameters, int (*init)(UNUR_GEN *gen) );
 /*
-   Set initialization routine for external generator.
-   
+   Set initialization routine for external generator. Inside the
+
    @emph{Important:} The routine @var{init} must return
    @code{UNUR_SUCCESS} when the generator was initialized successfully
    and @code{UNUR_FAILURE} otherwise.
+
+   Parameters that are computed in the @var{init} routine can be
+   stored in an array or structure that is avaiable by means of the 
+   unur_cext_get_params() call. Parameters of the underlying
+   distribution object can be obtained by the
+   unur_cext_get_distrparams() call.
 */
 
 int unur_cext_set_sample( UNUR_PAR *parameters, double (*sample)(UNUR_GEN *gen) );
 /*
    Set sampling routine for external generator.
+
+   @emph{Important:}
+   Use @code{unur_sample_urng(gen)} to get a uniform random number.
+   The pointer to the array or structure that contains the parameters
+   that are precomputed in the @var{init} routine are available by
+   @code{unur_cext_get_params(gen,0)}.
+   Additionally one can use the unur_cext_get_distrparams() call.
 */
 
 void *unur_cext_get_params( UNUR_GEN *generator, size_t size );
@@ -107,7 +167,7 @@ int unur_cext_get_ndistrparams( UNUR_GEN *generator );
    Get size of and pointer to array of parameters of underlying
    distribution in @var{generator} object.
 
-   @emph{Important:} This rountine should only be used in the
+   @emph{Important:} These rountines should only be used in the
    initialization and sampling routine of the external generator. 
 */
 

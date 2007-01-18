@@ -190,6 +190,10 @@ _unur_print_method( struct unur_par *par )
     COOKIE_CHECK(par,CK_DSTD_PAR,UNUR_ERR_COOKIE);
     printf("METHOD:\t\tspecial (DSTD)\n");
     break;
+  case UNUR_METH_DEXT:
+    COOKIE_CHECK(par,CK_DEXT_PAR,UNUR_ERR_COOKIE);
+    printf("METHOD:\t\texternal generator (DEXT)\n");
+    break;
 
     /* continuous, univariate */
   case UNUR_METH_AROU:
@@ -236,6 +240,11 @@ _unur_print_method( struct unur_par *par )
     COOKIE_CHECK(par,CK_CSTD_PAR,UNUR_ERR_COOKIE);
     printf("METHOD:\t\tspecial (CSTD)\n");
     break;
+  case UNUR_METH_CEXT:
+    COOKIE_CHECK(par,CK_CEXT_PAR,UNUR_ERR_COOKIE);
+    printf("METHOD:\t\texternal generator (CEXT)\n");
+    break;
+
 
     /* continuous, empirical */
   case UNUR_METH_EMPK:

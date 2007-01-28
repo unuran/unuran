@@ -88,6 +88,12 @@
       It is possible to change the parameters and the domain of the chosen 
       distribution and run unur_reinit() to reinitialize the generator object.
 
+      The method can also be used with multivariate distribution with
+      a truncated domain, i.e., where the domain has been set by a 
+      unur_distr_cvec_set_domain_rect() call. However, it then uses a
+      simple rejection method that can have extremely poor rejection
+      constant especially when dimension is (even moderately) high.
+
       There are no optional parameters for this method.
 
    =END

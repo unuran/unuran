@@ -430,27 +430,33 @@ _unur_vmt_sample_cvec( struct unur_gen *gen, double *vec )
   CHECK_NULL(gen,UNUR_ERR_NULL);
   COOKIE_CHECK(gen,CK_VMT_GEN,UNUR_ERR_COOKIE);
 
-  /* generate random vector with independent components */
-  for (j=0; j<GEN->dim; j++)
-    vec[j] = unur_sample_cont(GEN->marginalgen_list[j]);
+  while (1) {
 
-  /* 
-     transform to desired covariance structure: 
-     X = L.Y + mu 
-     where
-     L  ... cholesky factor of the covariance matrix
-     Y  ... vector with indenpent components (generated above)
-     mu ... mean vector
-     (notice that L is a lower triangular matrix)
-  */
-  for (k=GEN->dim-1; k>=0; k--) {
-    vec[k] *= GEN->cholesky[idx(k,k)];
-    for (j=k-1; j>=0; j--)
-      vec[k] += vec[j] * GEN->cholesky[idx(k,j)];
-    vec[k] += DISTR.mean[k];
+    /* generate random vector with independent components */
+    for (j=0; j<GEN->dim; j++)
+      vec[j] = unur_sample_cont(GEN->marginalgen_list[j]);
+    
+    /* 
+       transform to desired covariance structure: 
+       X = L.Y + mu 
+       where
+       L  ... cholesky factor of the covariance matrix
+       Y  ... vector with indenpent components (generated above)
+       mu ... mean vector
+       (notice that L is a lower triangular matrix)
+    */
+    for (k=GEN->dim-1; k>=0; k--) {
+      vec[k] *= GEN->cholesky[idx(k,k)];
+      for (j=k-1; j>=0; j--)
+	vec[k] += vec[j] * GEN->cholesky[idx(k,j)];
+      vec[k] += DISTR.mean[k];
+    }
+
+    if ( !(gen->distr->set & UNUR_DISTR_SET_DOMAINBOUNDED) || 
+	 _unur_distr_cvec_is_indomain( vec, gen->distr) )
+      return UNUR_SUCCESS;
   }
 
-  return UNUR_SUCCESS;
 #undef idx
 } /* end of _unur_vmt_sample_cvec() */
 

@@ -125,6 +125,7 @@ unur_distr_cvec_new( int dim )
   DISTR.logpdf    = NULL;   /* pointer to logPDF                             */
   DISTR.dlogpdf   = NULL;   /* pointer to gradient of logPDF                 */
   DISTR.pdlogpdf  = NULL;   /* pointer to partial derivative of logPDF       */
+  DISTR.domainrect = NULL;  /* (rectangular) domain of distribution  [default: unbounded     */
   DISTR.init      = NULL;   /* pointer to special init routine       [default: none]         */
   DISTR.mean      = NULL;   /* mean vector                           [default: not known]    */
   DISTR.covar     = NULL;   /* covariance matrix                     [default: not known]    */
@@ -192,6 +193,11 @@ _unur_distr_cvec_clone( const struct unur_distr *distr )
   memcpy( clone, distr, sizeof( struct unur_distr ) );
 
   /* copy data about distribution */
+  if (DISTR.domainrect) {
+    CLONE.domainrect = _unur_xmalloc( 2 * distr->dim * sizeof(double) );
+    memcpy( CLONE.domainrect, DISTR.domainrect, 2 * distr->dim * sizeof(double) );
+  }
+
   if (DISTR.mean) {
     CLONE.mean = _unur_xmalloc( distr->dim * sizeof(double) );
     memcpy( CLONE.mean, DISTR.mean, distr->dim * sizeof(double) );
@@ -288,6 +294,7 @@ _unur_distr_cvec_free( struct unur_distr *distr )
   for (i=0; i<UNUR_DISTR_MAXPARAMS; i++)
     if (DISTR.param_vecs[i]) free( DISTR.param_vecs[i] );
 
+  if (DISTR.domainrect)  free(DISTR.domainrect); 
   if (DISTR.mean)        free(DISTR.mean); 
   if (DISTR.covar)       free(DISTR.covar);
   if (DISTR.covar_inv)   free(DISTR.covar_inv);
@@ -935,6 +942,117 @@ unur_distr_cvec_eval_pdlogpdf( const double *x, int coord, struct unur_distr *di
 /*---------------------------------------------------------------------------*/
 
 int
+unur_distr_cvec_set_domain_rect( struct unur_distr *distr, const double *lowerleft, const double *upperright )
+     /*----------------------------------------------------------------------*/
+     /* Set rectangular domain                                               */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr      ... pointer to distribution object                      */
+     /*   lowerleft  ... lower left vertex of rectanlge                      */
+     /*   upperright ... upper right vertex of rectanlge                     */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  int i;
+
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CVEC, UNUR_ERR_DISTR_INVALID );
+  _unur_check_NULL( distr->name, lowerleft, UNUR_ERR_NULL );
+  _unur_check_NULL( distr->name, upperright, UNUR_ERR_NULL );
+
+  /* check new parameter for distribution */
+  for (i=0; i<distr->dim; i++) {
+    if (!(lowerleft[i] < upperright[i] * (1.-UNUR_SQRT_DBL_EPSILON))) {
+      _unur_error(distr->name,UNUR_ERR_DISTR_SET,"domain, left >= right");
+      return UNUR_ERR_DISTR_SET;
+    }
+  }
+
+  /* store data */
+  DISTR.domainrect = _unur_xrealloc(DISTR.domainrect, 2 * distr->dim * sizeof(double));
+  for (i=0; i<distr->dim; i++) {
+    DISTR.domainrect[2*i] = lowerleft[i];
+    DISTR.domainrect[2*i+1] = upperright[i];
+  }
+
+  /* changelog */
+  distr->set |= UNUR_DISTR_SET_DOMAIN | UNUR_DISTR_SET_DOMAINBOUNDED;
+  /* we silently assume here that at least one of the given coordinates */
+  /* is finite.                                                         */                                                    
+
+  /* we have to mark all derived parameters as unknown */
+  distr->set &= ~(UNUR_DISTR_SET_STDDOMAIN |
+		  UNUR_DISTR_SET_MASK_DERIVED );
+
+  if (distr->base) {
+    /* for derived distributions (e.g. order statistics)
+       we also have to mark derived parameters as unknown */
+    distr->base->set &= ~(UNUR_DISTR_SET_STDDOMAIN |
+			  UNUR_DISTR_SET_MASK_DERIVED );
+    /* We only can set the domain of the base distribution if it    */
+    /* is of the same type as distr                                 */
+    if ( distr->base->type == UNUR_DISTR_CVEC ) {
+      if (unur_distr_cvec_set_domain_rect(distr->base, lowerleft, upperright)!=UNUR_SUCCESS)
+	return UNUR_ERR_DISTR_SET;
+    }
+  }
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+} /* end unur_distr_cvec_set_domain_rect() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_distr_cvec_is_indomain( const double *x, const struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* Check whether x falls into domain                                    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   x     ... pointer to point                                         */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   TRUE  ... if x in domain                                           */
+     /*   FALSE ... otherwise or in case of an error                         */
+     /*----------------------------------------------------------------------*/
+{
+  int i;
+  double *domain = DISTR.domainrect;
+
+  /* check arguments */
+  CHECK_NULL( distr, FALSE );
+  COOKIE_CHECK(distr,CK_DISTR_CVEC,FALSE);
+
+  if (domain==NULL) 
+    /* unbounded domain */
+    return TRUE;
+
+  for (i=0; i<distr->dim; i++) {
+    if (x[i] < domain[2*i] || x[i] > domain[2*i+1]) 
+      return FALSE;
+  }
+
+  return TRUE;
+} /* end of _unur_distr_cvec_is_indomain() */
+
+int
+unur_distr_cvec_is_indomain( const double *x, const struct unur_distr *distr )
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, FALSE );
+  _unur_check_distr_object( distr, CVEC, FALSE );
+
+  return _unur_distr_cvec_is_indomain(x, distr);
+} /* end of unur_distr_cvec_is_indomain() */ 
+
+/*---------------------------------------------------------------------------*/
+
+int
 unur_distr_cvec_set_mean( struct unur_distr *distr, const double *mean )
      /*----------------------------------------------------------------------*/
      /* set mean vector of distribution                                      */
@@ -1033,7 +1151,10 @@ unur_distr_cvec_set_covar( struct unur_distr *distr, const double *covar )
   dim = distr->dim;
 
   /* mark as unknown */
-  distr->set &= ~(UNUR_DISTR_SET_COVAR | UNUR_DISTR_SET_CHOLESKY | UNUR_DISTR_SET_COVAR_INV);
+  distr->set &= ~( UNUR_DISTR_SET_COVAR 
+		   | UNUR_DISTR_SET_COVAR_IDENT
+		   | UNUR_DISTR_SET_CHOLESKY
+		   | UNUR_DISTR_SET_COVAR_INV );
 
   /* we have to allocate memory first */
   if (DISTR.covar == NULL)
@@ -1049,6 +1170,7 @@ unur_distr_cvec_set_covar( struct unur_distr *distr, const double *covar )
          DISTR.cholesky[idx(i,j)] = (i==j) ? 1. : 0.;
       } 
     } 
+    distr->set |= UNUR_DISTR_SET_COVAR_IDENT;
   } 
 
   /* covariance matrix given --> copy data */
@@ -1771,7 +1893,7 @@ unur_distr_cvec_get_marginal( const struct unur_distr *distr, int n )
   _unur_check_distr_object( distr, CVEC, NULL );
 
   if (n<=0 || n > distr->dim) {
-    _unur_error(NULL,UNUR_ERR_DISTR_GET,"n not in 1 .. dim");
+    _unur_error(distr->name,UNUR_ERR_DISTR_GET,"n not in 1 .. dim");
     return NULL;
   }
 
@@ -1808,7 +1930,7 @@ unur_distr_cvec_get_stdmarginal( const struct unur_distr *distr, int n )
   _unur_check_distr_object( distr, CVEC, NULL );
 
   if (n<=0 || n > distr->dim) {
-    _unur_error(NULL,UNUR_ERR_DISTR_GET,"n not in 1 .. dim");
+    _unur_error(distr->name,UNUR_ERR_DISTR_GET,"n not in 1 .. dim");
     return NULL;
   }
 
@@ -1949,7 +2071,7 @@ unur_distr_cvec_set_pdfparams( struct unur_distr *distr, const double *params, i
 
   /* check number of new parameter for the distribution */
   if (n_params < 0 || n_params > UNUR_DISTR_MAXPARAMS ) {
-    _unur_error(NULL,UNUR_ERR_DISTR_NPARAMS,"");
+    _unur_error(distr->name,UNUR_ERR_DISTR_NPARAMS,"");
     return UNUR_ERR_DISTR_NPARAMS;
   }
 
@@ -2017,7 +2139,7 @@ unur_distr_cvec_set_pdfparams_vec( struct unur_distr *distr, int par, const doub
 
   /* check new parameter for distribution */
   if (par < 0 || par >= UNUR_DISTR_MAXPARAMS ) {
-    _unur_error(NULL,UNUR_ERR_DISTR_NPARAMS,"");
+    _unur_error(distr->name,UNUR_ERR_DISTR_NPARAMS,"");
     return UNUR_ERR_DISTR_NPARAMS;
   }
 
@@ -2069,7 +2191,7 @@ unur_distr_cvec_get_pdfparams_vec( const struct unur_distr *distr, int par, cons
 
   /* check new parameter for distribution */
   if (par < 0 || par >= UNUR_DISTR_MAXPARAMS ) {
-    _unur_error(NULL,UNUR_ERR_DISTR_NPARAMS,"");
+    _unur_error(distr->name,UNUR_ERR_DISTR_NPARAMS,"");
     *param_vecs = NULL;
     return 0;
   }
@@ -2304,7 +2426,7 @@ unur_distr_cvec_set_pdfvol( struct unur_distr *distr, double volume )
 
   /* check new parameter for distribution */
   if (volume <= 0.) {
-    _unur_error(NULL,UNUR_ERR_DISTR_SET,"PDF volume <= 0");
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"PDF volume <= 0");
     return UNUR_ERR_DISTR_SET;
   }
 
@@ -2433,6 +2555,23 @@ _unur_distr_cvec_debug( const struct unur_distr *distr, const char *genid )
   if (DISTR.pdpdf) fprintf(log,"pdPDF ");
   if (DISTR.pdlogpdf) fprintf(log,"pdlogPDF ");
   fprintf(log,"\n%s:\n",genid);
+  
+  /* domain */
+  fprintf(log,"%s:\tdomain = ",genid);
+  if (!(distr->set & UNUR_DISTR_SET_DOMAINBOUNDED)) {
+    fprintf(log,"unbounded\n");
+  }
+  else {
+    if (DISTR.domainrect) {
+      fprintf(log,"rectangular\n");
+      double *domain = DISTR.domainrect;
+      int i;
+      for (i=0; i<distr->dim; i++)
+	fprintf(log,"%s:\t %c ( %g, %g)\n",genid, i?'x':' ', 
+		domain[2*i], domain[2*i+1]);
+    }
+  }
+  fprintf(log,"%s:\n",genid);
 
   /* mode */
   mat = ((distr->set & UNUR_DISTR_SET_MODE) && DISTR.mode) ? DISTR.mode : NULL;

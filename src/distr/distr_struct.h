@@ -113,6 +113,10 @@ struct unur_distr_cvec {
   double *mode;                 /* location of mode                          */
   double *center;               /* location of center                        */
   double volume;                /* volume below PDF                          */
+  double *domainrect;           /* (rectangular) domain of domain:            
+				   the lower left and the upper right vertices
+				   are stored componentwise, i.e.
+				   l[0], r[0], l[1], r[1], l[2], r[2], ...   */
 
   int (*upd_mode)(struct unur_distr *distr);
                                 /* function for computing mode               */

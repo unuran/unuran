@@ -47,8 +47,9 @@
 #define UNUR_DISTR_SET_MASK_ESSENTIAL 0xffff0000u
 
 #define UNUR_DISTR_SET_DOMAIN         0x00010000u
-#define UNUR_DISTR_SET_STDDOMAIN      0x00020000u /* domain not truncated (for standard distributions) */
-#define UNUR_DISTR_SET_TRUNCATED      0x00040000u /* truncated distribution, i.e.
+#define UNUR_DISTR_SET_DOMAINBOUNDED  0x00020000u /* domain is bounded */
+#define UNUR_DISTR_SET_STDDOMAIN      0x00040000u /* domain not truncated (for standard distributions) */
+#define UNUR_DISTR_SET_TRUNCATED      0x00080000u /* truncated distribution, i.e.
 						    the domain of the distribution has been
 						    restricted AFTER initializing
 						    the generator object */
@@ -56,6 +57,7 @@
 #define UNUR_DISTR_SET_MEAN           0x01000000u /* mean (vector for multivariate distr.) */
 #define UNUR_DISTR_SET_COVAR          0x02000000u /* covariance matrix (for multivar. distr.) */
 #define UNUR_DISTR_SET_COVAR_INV      0x04000000u /* inverse of covariance matrix (for multivar. distr.) */
+#define UNUR_DISTR_SET_COVAR_IDENT    0x40000000u /* covariance matrix is identity matrix */
 #define UNUR_DISTR_SET_CHOLESKY       0x08000000u /* cholesky factor of covariance matrix (for multivar. distr.) */
 #define UNUR_DISTR_SET_RANKCORR       0x10000000u /* rank-correlation (for multivar. distr.) */
 #define UNUR_DISTR_SET_RK_CHOLESKY    0x20000000u /* cholesky factor of covariance matrix (for multivar. distr.) */

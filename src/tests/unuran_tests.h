@@ -223,7 +223,12 @@ double unur_test_chi2( UNUR_GEN *generator, int intervals, int samplesize, int c
 
    @emph{Notice}, for multivariate distributions also tests on the
    marginal distributions are performed. Then the minimal p-value 
-   of all these tests is returned.
+   of all these tests is returned. 
+   However, the test cannot be performed if the domain of the
+   underlying distribution is truncated by a
+   unur_distr_cvec_set_domain_rect() call and the components of the
+   distribution are correlated (i.e. unur_distr_cvec_set_covar() is 
+   called with the non-NULL argument).
 */
 
 int unur_test_moments( UNUR_GEN *generator, double *moments, int n_moments, int samplesize,

@@ -547,24 +547,27 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
 
   int dim;         /* dimension of multivariate distribution */
   int ntests;      /* number of tests performed              */
-  UNUR_DISTR **marginals;  /* pointer to marginal distributions */
-  UNUR_FUNCT_CONT **marginal_cdf;  /* pointer to CDFs of marginal distributions */
+  double *Fl = NULL;  /* value of CDF at left and right boundary point */
+  double *Fr = NULL;
+  double *Fdelta = NULL;
+  UNUR_DISTR **marginals = NULL;  /* pointer to marginal distributions */
+  UNUR_FUNCT_CONT **marginal_cdf = NULL;  /* pointer to CDFs of marginal distributions */
 
-  int *n_intervals_marginal; /* number of intervals for each dimension */
+  int *n_intervals_marginal = NULL; /* number of intervals for each dimension */
   int n_intervals_total;  /* product of all dimintervals[] */
 
-  const double *L;       /* pointer to Cholesky factor */
-  double *Linv;          /* pointer to inverse Cholesky factor */
+  const double *L = NULL;       /* pointer to Cholesky factor */
+  double *Linv = NULL;          /* pointer to inverse Cholesky factor */
   double Linv_det;       /* determinant of Linv */
-  const double *mean;    /* pointer to mean vector */
+  const double *mean = NULL;    /* pointer to mean vector */
 
-  double *X;             /* sampling vector */
-  double *U;             /* X transformed to uniform */
+  double *X = NULL;             /* sampling vector */
+  double *U = NULL;             /* X transformed to uniform */
 
   double pval, pval_min; /* p-value */
 
-  int *bm;         /* array for counting bins for marginals */
-  int *b;          /* array for counting bins */
+  int *bm = NULL;         /* array for counting bins for marginals */
+  int *b = NULL;          /* array for counting bins */
   int prodintervals, offset;
 
   int i, j, k, itmp;     /* auxiliary variables */
@@ -587,6 +590,14 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
     _unur_error(test_name,UNUR_ERR_GENERIC,"distribution dimension < 1 ?");
     return -1.;
   }
+  /* we cannot run the test if the domain is changed by a      */         
+  /* unur_distr_cvec_set_domain_...() call when the covariance */
+  /* matrix is not the identity matrix.                        */
+  if ((gen->distr->set & UNUR_DISTR_SET_DOMAINBOUNDED) &&
+      !(gen->distr->set & UNUR_DISTR_SET_COVAR_IDENT) ) {
+    _unur_error(test_name,UNUR_ERR_GENERIC,"correlated and domain truncated");
+    return -1.;
+  }
 
   ntests = dim; /* number of marginal tests */
   /* this number is increased below when making more tests */
@@ -604,7 +615,9 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
   /* we need all standardized marginal distributions */
   if (DISTR.stdmarginals==NULL) {
     _unur_error(gen->distr->name,UNUR_ERR_DISTR_REQUIRED,"standardized marginals");
-    return -2.; }
+    return -2.; 
+  }
+
   marginals = _unur_xmalloc(dim * sizeof(UNUR_DISTR *));
   marginal_cdf = _unur_xmalloc(dim * sizeof(UNUR_FUNCT_CONT *));
   for (i=0; i<dim; i++) {
@@ -612,8 +625,32 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
     marginal_cdf[i] = unur_distr_cont_get_cdf(DISTR.stdmarginals[i]);
     if (marginals[i]==NULL || marginal_cdf[i]==NULL) {
       _unur_error(gen->distr->name,UNUR_ERR_DISTR_REQUIRED,"CDF of continuous standardized marginal");
-      free (marginals);  free (marginal_cdf);
-      return -2.; }
+      pval_min = -2.; goto free_memory;
+    }
+  }
+
+  /* compute Fl and Fr */
+  Fl  = _unur_xmalloc(dim * sizeof(double));
+  Fr  = _unur_xmalloc(dim * sizeof(double));
+  Fdelta = _unur_xmalloc(dim * sizeof(double));
+  if (gen->distr->set & UNUR_DISTR_SET_DOMAINBOUNDED) {
+    for (i=0; i<dim; i++) {
+      Fl[i] = marginal_cdf[i](DISTR.domainrect[2*i],marginals[i]);
+      Fr[i] = marginal_cdf[i](DISTR.domainrect[2*i+1],marginals[i]);
+      Fdelta[i] = Fr[i] - Fl[i];
+      /* Fr - Fl <= 0. is a fatal error */
+      if (Fdelta[i] <= 0.) {
+	_unur_error(gen->genid,UNUR_ERR_GENERIC,"Fdelta <= 0.");
+	pval_min = -1.; goto free_memory;
+      }
+    }
+  }
+  else {
+    for (i=0; i<dim; i++) {
+      Fl[i] = 0.;
+      Fr[i] = 1.;
+      Fdelta[i] = 1.;
+    }
   }
 
   /* setup of intervals for each dimension */
@@ -668,7 +705,7 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
       for (k=0; k<=j; k++) {
         Z += Linv[idx(j,k)] * (X[k]-mean[k]);
       }
-      U[j] = marginal_cdf[j](Z,marginals[j]);
+      U[j] = (marginal_cdf[j](Z,marginals[j]) - Fl[j]) / Fdelta[j];
     }
 
     /* increase bins for tests for marginal distributions */
@@ -738,6 +775,9 @@ free_memory:
   if (n_intervals_marginal)  free(n_intervals_marginal);
   if (marginals)  free (marginals);
   if (marginal_cdf)  free (marginal_cdf);
+  if (Fl)   free(Fl);
+  if (Fr)   free(Fr);
+  if (Fdelta)   free(Fdelta);
 
   /* return result of test */
   return pval_min*ntests;
@@ -785,15 +825,15 @@ unur_test_chi2_marginal( struct unur_gen *gen,
 
   int dim;         /* dimension of multivariate distribution */
 
-  UNUR_DISTR **marginals;  /* pointer to marginal distributions */
-  UNUR_FUNCT_CONT **marginal_cdf;  /* pointer to CDFs of marginal distributions */
+  UNUR_DISTR **marginals = NULL;  /* pointer to marginal distributions */
+  UNUR_FUNCT_CONT **marginal_cdf = NULL;  /* pointer to CDFs of marginal distributions */
 
-  double *X;             /* sampling vector */
-  double *U;             /* X transformed to uniform */
+  double *X = NULL;             /* sampling vector */
+  double *U = NULL;             /* X transformed to uniform */
 
   double pval, pval_min; /* p-value */
 
-  int *bm;         /* array for counting bins for marginals */
+  int *bm = NULL;         /* array for counting bins for marginals */
 
   int i, j;     /* auxiliary variables */
 

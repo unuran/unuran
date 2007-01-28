@@ -104,6 +104,8 @@
 
       @item Deal with @command{marginal} distributions.
 
+      @item Set domain of the distribution.
+
    @end itemize
 
    =END
@@ -618,6 +620,37 @@ int unur_distr_cvec_get_pdfparams_vec( const UNUR_DISTR *distribution, int par, 
    @emph{Important:} Do @strong{not} change the entries in @var{param_vecs}!
 */
 
+int unur_distr_cvec_set_domain_rect( UNUR_DISTR *distribution, const double *lowerleft, const double *upperright );
+/* 
+   Set rectangular domain for @var{distribution} with @var{lowerleft}
+   and @var{upperright} vertices. Both must be pointer to an 
+   array of the size returned by unur_distr_get_dim().
+   A NULL pointer is interpreted as the zero vector (0,@dots{},0).
+   For setting a coordinate of the boundary to @unurmath{\pm\infty}
+   use @code{+/- UNUR_INFINITY}.
+   The @var{lowerleft} vertex must be strictly smaller than
+   @var{upperright} in each component. Otherwise no domain
+   is set and @code{unur_errno} is set to @code{UNUR_ERR_DISTR_SET}.
+
+   By default the domain of a distribution is unbounded. Thus one can
+   use this call to truncate an existing distribution.
+
+   @emph{Important:} Changing the domain of @var{distribution} has no
+   effect on the given of mode or center. It also does not change the
+   return value of calls to the PDF or similar functions, i.e.,
+   calling the PDF with a point out of the domain does not necessarily
+   return @code{0.} Thus one has to take care
+   that the mode or center falls into the domain.
+   This is particular necessary for predefined distributions.
+*/
+
+int unur_distr_cvec_is_indomain( const double *x, const UNUR_DISTR *distribution );
+/* 
+   Check whether @var{x} falls into the domain of @var{distribution}.
+*/
+
+/*---------------------------------------------------------------------------*/
+
 /* ==DOC
    @subsubheading Derived parameters
 
@@ -709,10 +742,12 @@ double unur_distr_cvec_get_pdfvol( UNUR_DISTR *distribution );
    @code{unur_errno} is set to @code{UNUR_ERR_DISTR_GET}.
 */
 
-
-
 /* =END */
 
 /*---------------------------------------------------------------------------*/
 
-
+/* Not exported */
+int _unur_distr_cvec_is_indomain( const double *x, const UNUR_DISTR *distribution);
+/* 
+   Same as unur_distr_cvec_is_indomain() but does not check parameters.
+*/

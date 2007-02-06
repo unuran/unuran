@@ -353,7 +353,7 @@ unur_urng_seed (UNUR_URNG *urng, unsigned long seed)
     return UNUR_ERR_URNG_MISS;
   }
 
-  /* set flag */
+  /* set seed */
   urng->setseed (urng->state,seed);
 
   /* store seed */

@@ -620,6 +620,22 @@ unur_hinv_chg_truncated( struct unur_gen *gen, double left, double right )
   _unur_check_NULL( GENTYPE, gen, UNUR_ERR_NULL );
   _unur_check_gen_object(gen, HINV, UNUR_ERR_GEN_INVALID);
 
+  /* the truncated domain must be a subset of (computational) domain */
+  if (left < GEN->bleft) {
+    _unur_warning(gen->genid,UNUR_ERR_DISTR_SET,"domain, increase left boundary");
+    left = GEN->bleft;
+  }
+  if (right > GEN->bright) {
+    _unur_warning(gen->genid,UNUR_ERR_DISTR_SET,"domain, decrease right boundary");
+    right = GEN->bright;
+  }
+
+  /* the truncated domain must have non-empty intersection */
+  if (!_unur_FP_less(left,right)) {
+    _unur_error(gen->genid,UNUR_ERR_DISTR_SET,"domain, left >= right");
+    return UNUR_ERR_DISTR_SET;
+  }
+
   /* compute Uminbound and Umaxbound using the u-value of the first and 
      the last design point. */
   /* this setting of Uminbound and Umaxbound guarantees that in the 
@@ -628,22 +644,6 @@ unur_hinv_chg_truncated( struct unur_gen *gen, double left, double right )
      So this is a safe guard against segfault for U=0. or U=1. */ 
   Uminbound = _unur_max(0.,GEN->intervals[0]);
   Umaxbound = _unur_min(1.,GEN->intervals[(GEN->N-1)*(GEN->order+2)]);
-
-  /* check new parameter for generator */
-  /* (the truncated domain must be a subset of the domain) */
-  if (left < DISTR.domain[0]) {
-    _unur_warning(NULL,UNUR_ERR_DISTR_SET,"truncated domain too large");
-    left = DISTR.domain[0];
-  }
-  if (right > DISTR.domain[1]) {
-    _unur_warning(NULL,UNUR_ERR_DISTR_SET,"truncated domain too large");
-    right = DISTR.domain[1];
-  }
-
-  if (left >= right) {
-    _unur_warning(NULL,UNUR_ERR_DISTR_SET,"domain, left >= right");
-    return UNUR_ERR_DISTR_SET;
-  }
 
   /* set bounds of U -- in respect to given bounds */
   Umin = (left > -INFINITY) ? CDF(left)  : 0.;
@@ -661,7 +661,7 @@ unur_hinv_chg_truncated( struct unur_gen *gen, double left, double right )
     _unur_warning(gen->genid,UNUR_ERR_DISTR_SET,"CDF values very close");
     if (Umin == 0. || _unur_FP_same(Umax,1.)) {
       /* this is very bad */
-      _unur_warning(gen->genid,UNUR_ERR_DISTR_SET,"CDF values at boundary points too close");
+      _unur_error(gen->genid,UNUR_ERR_DISTR_SET,"CDF values at boundary points too close");
       return UNUR_ERR_DISTR_SET;
     }
   }

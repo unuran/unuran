@@ -4,6 +4,12 @@ Version 1.0.0: ???? 2007
 
 	* new method CEXT (wrapper for external generators)
 
+	* method HINV: fixed problem with truncated domains
+
+	* unur_urng_fvoid_new() has been changed:
+	  first argument must be pointer to function of prototype
+	  double (*random)(void *state)
+
 	* Added F-distribution.
 
 

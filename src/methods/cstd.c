@@ -39,7 +39,7 @@
  *                                                                           *
  * It calls the initialzation routine provided by the distribution object.   *
  * This routine has to do all setup steps for the special generator.         *
- * if no such routine is given, i.e. distr->init==NULL, then unur_cstd_new() *
+ * If no such routine is given, i.e. distr->init==NULL, then unur_cstd_new() *
  * does not work and the NULL pointer is returned instead of the pointer to  *
  * a parameter object.                                                       *
  *                                                                           *
@@ -62,15 +62,6 @@
  *                                                                           *
  * unur_cstd_set_variant() return 0 if a variant is not implemented, and 1   *
  * otherwise. In the first case the selected variant is not changed.         *
- *                                                                           *
- * It is possible to change the parameters of the chosen distribution        *
- * without building a new generator object by means of the                   *
- * unur_cstd_chg_pdfparams() call.                                           *
- * Notice that it is not possible to change the number of parameters.        *
- * This function only copies the given arguments into the array of           *
- * parameters.                                                               *
- * IMPORTANT: The given parameters are not checked against domain errors     *
- * (as the unur_<distr>_new() calls do).                                     *
  *                                                                           *
  * The domain of a (truncated) distribution can be changed without building  *
  * a new generator object by means of the unur_cstd_chg_truncated() call.    *
@@ -238,7 +229,7 @@ unur_cstd_new( const struct unur_distr *distr )
   /* set default values */
   par->method   = UNUR_METH_CSTD;   /* method                                */
   par->variant  = 0u;               /* default variant                       */
-  par->set      = 0u;               /* inidicate default parameters          */    
+  par->set      = 0u;               /* indicate default parameters           */
   par->urng     = unur_get_default_urng(); /* use default urng               */
   par->urng_aux = NULL;                    /* no auxilliary URNG required    */
 
@@ -728,7 +719,7 @@ _unur_cstd_debug_init( struct unur_gen *gen )
     fprintf(log,"%s:\n",gen->genid);
   }
 
-} /* end of _unur_cstd_info_init() */
+} /* end of _unur_cstd_debug_init() */
 
 /*---------------------------------------------------------------------------*/
 

@@ -41,7 +41,7 @@
 /*---------------------------------------------------------------------------*/
 
 UNUR_URNG *
-unur_urng_fvoid_new( double (*random)(void), int (*reset)(void) )
+unur_urng_fvoid_new( double (*random)(void *state), void (*reset)(void *state) )
      /*----------------------------------------------------------------------*/
      /* get new URNG object of type FVOID                                    */
      /*                                                                      */
@@ -50,8 +50,8 @@ unur_urng_fvoid_new( double (*random)(void), int (*reset)(void) )
      /*   reset   ... pointer to reset function for URNG                     */
      /*----------------------------------------------------------------------*/
 {
-  UNUR_URNG *urng = unur_urng_new( (double(*)(void*)) random, NULL );
-  unur_urng_set_reset( urng, (void(*)(void*)) reset );
+  UNUR_URNG *urng = unur_urng_new( random, NULL );
+  unur_urng_set_reset( urng, reset );
   return urng;
 } /* end of unur_urng_fvoid_new() */
 

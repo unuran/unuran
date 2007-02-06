@@ -82,7 +82,7 @@ static unsigned long x22_start = SEED22;
 /*---------------------------------------------------------------------------*/
 
 double
-unur_urng_MRG31k3p (void)
+unur_urng_MRG31k3p (void *dummy)
      /* Combined multiple recursive generator.                               */
      /* Copyright (c) 2002 Renee Touzin.                                     */
 {
@@ -126,12 +126,12 @@ unur_urng_MRG31k3p (void)
  
 /*---------------------------------------------------------------------------*/
 
-int
-unur_urng_MRG31k3p_seed (long seed)
+void
+unur_urng_MRG31k3p_seed (void *dummy, unsigned long seed)
 {
   if (seed==0) {
-    _unur_error("URNG.fish",UNUR_ERR_GENERIC,"seed = 0");
-    return UNUR_ERR_GENERIC;
+    _unur_error("URNG.mrg31k3p",UNUR_ERR_GENERIC,"seed = 0");
+    return;
   }
   
   /* the following is not really optimal */
@@ -141,14 +141,12 @@ unur_urng_MRG31k3p_seed (long seed)
   x20 = x20_start = seed; 
   x21 = x21_start = seed; 
   x22 = x22_start = seed; 
-
-  return UNUR_SUCCESS;
 } /* end of unur_urng_MRG31k3p_seed() */
 
 /*---------------------------------------------------------------------------*/
 
-int 
-unur_urng_MRG31k3p_reset (void)
+void
+unur_urng_MRG31k3p_reset (void *dummy)
 {
   x10 = x10_start;
   x11 = x11_start;
@@ -156,8 +154,6 @@ unur_urng_MRG31k3p_reset (void)
   x20 = x20_start;
   x21 = x21_start;
   x22 = x22_start;
-
-  return UNUR_SUCCESS;
 } /* end of unur_urng_MRG31k3p_reset() */
 
 /*---------------------------------------------------------------------------*/

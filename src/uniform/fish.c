@@ -63,7 +63,7 @@ static unsigned long x_start = SEED; /* seed of last stream */
 /*---------------------------------------------------------------------------*/
 
 double
-unur_urng_fish (void)
+unur_urng_fish (void *dummy)
 {
   
 # define A   742938285
@@ -86,27 +86,25 @@ unur_urng_fish (void)
 
 /*---------------------------------------------------------------------------*/
 
-int
-unur_urng_fish_seed (long seed)
+void
+unur_urng_fish_seed (void *dummy, unsigned long seed)
 {
   if (seed==0) {
     _unur_error("URNG.fish",UNUR_ERR_GENERIC,"seed = 0");
-    return UNUR_ERR_GENERIC;
+    return;
   }
   
   x_start = seed;
   x = seed;
 
-  return UNUR_SUCCESS;
 } /* end of unur_urng_fish_seed() */
 
 /*---------------------------------------------------------------------------*/
 
-int 
-unur_urng_fish_reset (void)
+void
+unur_urng_fish_reset (void *dummy)
 {
   x = x_start;
-  return UNUR_SUCCESS;
 } /* end of unur_urng_fish_reset() */
 
 /*---------------------------------------------------------------------------*/

@@ -46,12 +46,8 @@
    =UP URNG [10]
 
    =DESCRIPTION
-      Simple interface for URNGs of type @code{double uniform(void)},
-      i.e., routines without an argment.
+      Simple interface for URNGs of type @code{double uniform(void *state)}.
 
-      If independent versions of the same URNG should be used, a copy of
-      the subroutine has to be implement in the program code (with
-      different names, of course).
       UNURAN contains some build-in URNGs of this type:
       @table @code
       @item unur_urng_MRG31k3p
@@ -96,14 +92,10 @@
 
 /* =ROUTINES */
 
-UNUR_URNG *unur_urng_fvoid_new( double (*random)(void), int (*reset)(void) );
+UNUR_URNG *unur_urng_fvoid_new( double (*random)(void *state), void (*reset)(void *state) );
 /*
    Make a URNG object for a genertor that consists of a single
-   function call with a global state variable.
-
-   @emph{Notice:} If independent versions of the same URNG should be
-   used, copies of the subroutine with different names has to be
-   implement in the program code.
+   function call.
 
    If there is no reset function use NULL for the second argument.
 */

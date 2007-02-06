@@ -46,7 +46,7 @@ UNUR_URNG *unur_urng_builtin( void )
 {
   UNUR_URNG *urng;
   urng = unur_urng_fvoid_new(unur_urng_MRG31k3p, unur_urng_MRG31k3p_reset);
-  unur_urng_set_seed(urng, (void(*)(void*,unsigned long)) unur_urng_MRG31k3p_seed);
+  unur_urng_set_seed(urng, unur_urng_MRG31k3p_seed);
   return urng;
 } /* unur_urng_builtin() */
 
@@ -61,7 +61,7 @@ UNUR_URNG *unur_urng_builtin_aux( void )
 {
   UNUR_URNG *urng;
   urng = unur_urng_fvoid_new(unur_urng_fish, unur_urng_fish_reset);
-  unur_urng_set_seed(urng, (void(*)(void*,unsigned long)) unur_urng_fish_seed);
+  unur_urng_set_seed(urng, unur_urng_fish_seed);
   return urng;
 } /* end of unur_urng_builtin_aux() */
 

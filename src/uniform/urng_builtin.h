@@ -39,23 +39,23 @@
 /* Combined multiple recursive generator by Pierre L'Ecuyer and Renee Touzin */
 /* Copyright (c) 2002 Renee Touzin.                                          */
 
-double unur_urng_MRG31k3p (void);
-int unur_urng_MRG31k3p_seed (long seed);
-int unur_urng_MRG31k3p_reset (void);
+double unur_urng_MRG31k3p (void *dummy);
+void unur_urng_MRG31k3p_seed (void *dummy, unsigned long seed);
+void unur_urng_MRG31k3p_reset (void *dummy);
 
 /* Linear congruential generator by Fishman and Moore                        */
 /* m = 2^31-1, a = 742938285, c = 0.                                         */
 
-double unur_urng_fish (void);
-int unur_urng_fish_seed (long seed);
-int unur_urng_fish_reset (void);
+double unur_urng_fish (void *dummy);
+void unur_urng_fish_seed (void *dummy, unsigned long seed);
+void unur_urng_fish_reset (void *dummy);
 
 /* Linear congruential generator "Minimal Standard"                          */
 /* m = 2^31-1, a = 16807, c = 0.                                             */
 
-double unur_urng_mstd (void);
-int unur_urng_mstd_seed (long seed);
-int unur_urng_mstd_reset (void);
+double unur_urng_mstd (void *dummy);
+void unur_urng_mstd_seed (void *dummy, unsigned long seed);
+void unur_urng_mstd_reset (void *dummy);
 
 /*---------------------------------------------------------------------------*/
 

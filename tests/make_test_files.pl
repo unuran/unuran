@@ -1045,9 +1045,9 @@ int main(void)
 #endif
 
        /* seed build-in uniform generators */
-       unur_urng_MRG31k3p_seed(seed);
-	unur_urng_fish_seed(seed);
-	unur_urng_mstd_seed(seed);
+       unur_urng_MRG31k3p_seed(NULL,seed);
+	unur_urng_fish_seed(NULL,seed);
+	unur_urng_mstd_seed(NULL,seed);
 
 	/* seed uniform random number generator */
 #ifdef UNUR_URNG_UNURAN

@@ -42,8 +42,8 @@ libdistributions_la_SOURCES = \
  vc_copula.c \
  vc_multicauchy.c \
  vc_multiexponential.c \
- vc_multistudent.c \
- vc_multinormal.c
+ vc_multinormal.c   vc_multinormal_gen.c \
+ vc_multistudent.c
 
 noinst_HEADERS = \
  unur_distributions.h \

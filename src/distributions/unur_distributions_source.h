@@ -394,6 +394,12 @@ double _unur_stdgen_sample_weibull_inv( UNUR_GEN *generator );
 /*---------------------------------------------------------------------------*/
 /* Multinormal distribution  [5; ch.45, p.107]                               */
 
+/* initialize special generator                                              */
+int _unur_stdgen_multinormal_init( UNUR_GEN *generator );
+
+/* Cholesky decomposition of covariance matrix                               */
+int _unur_stdgen_sample_multinormal_cholesky( UNUR_GEN *generator, double *X );
+
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/

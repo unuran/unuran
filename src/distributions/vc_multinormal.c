@@ -298,7 +298,7 @@ unur_distr_multinormal( int dim, const double *mean, const double *covar )
   distr->name = distr_name;
 
   /* how to get special generators */
-  DISTR.init = NULL;
+  DISTR.init = _unur_stdgen_multinormal_init;
 
   /* copy (and check) parameters */
   if ((unur_distr_cvec_set_mean(distr,mean)!=UNUR_SUCCESS) ||

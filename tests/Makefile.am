@@ -59,6 +59,7 @@ check_PROGRAMS = \
  t_hri \
  t_itdr \
  t_mcorr \
+ t_mvstd \
  t_ninv \
  t_norta \
  t_nrou \
@@ -127,6 +128,7 @@ EXTRA_DIST = \
  t_hri.conf \
  t_itdr.conf \
  t_mcorr.conf \
+ t_mvstd.conf \
  t_ninv.conf \
  t_norta.conf \
  t_nrou.conf \

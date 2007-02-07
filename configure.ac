@@ -128,13 +128,16 @@ dnl Some routines are deprecated.
 dnl Compiling and linking these into the library can be controlled
 dnl by a configure flag. 
 dnl default is disabled.
-
 AC_ARG_ENABLE(deprecated,
 	[AS_HELP_STRING([--enable-deprecated],
 		[enable support for deprecated UNURAN routines @<:@default=no@:>@])],
 	[],
 	[enable_deprecated=no])
 AM_CONDITIONAL(ENABLE_DEPRECATED, test x$enable_deprecated = xyes)
+AS_IF([test "x$enable_deprecated" = xyes],
+	[AC_DEFINE([USE_DEPRECATED_CODE], [1], 
+	           [Define to 1 if you want to use deprecated code.])], 
+       [])
 
 dnl Some tests compare the return values of PDFs, CDFs and of
 dnl the function parser with the output of corresponding

@@ -306,7 +306,6 @@ unur_distr_multicauchy( int dim, const double *mean, const double *covar )
 */
 {
   struct unur_distr *distr;
-  struct unur_distr *stdmarginal;
   double det_covar; /* determinant of covariance matrix */
   
   /* get new (empty) distribution object */
@@ -342,10 +341,14 @@ unur_distr_multicauchy( int dim, const double *mean, const double *covar )
   DISTR.pdpdf    = _unur_distr_cvec_eval_pdpdf_from_pdlogpdf;  /* pointer to part. deriv. of PDF */
   DISTR.pdlogpdf = _unur_pdlogpdf_multicauchy;  /* pointer to partial derivative of logPDF */
 
+#ifdef USE_DEPRECATED_CODE
   /* set standardized marginal distributions */
-  stdmarginal = unur_distr_cauchy(NULL,0);
-  unur_distr_cvec_set_stdmarginals(distr,stdmarginal);
-  unur_distr_free(stdmarginal);
+  {
+    struct unur_distr *stdmarginal = unur_distr_cauchy(NULL,0);
+    unur_distr_cvec_set_stdmarginals(distr,stdmarginal);
+    unur_distr_free(stdmarginal);
+  }
+#endif
 
   /* copy other parameters of distribution */
   /* none */

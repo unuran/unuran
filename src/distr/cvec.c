@@ -2610,7 +2610,7 @@ _unur_distr_cvec_debug( const struct unur_distr *distr, const char *genid )
   _unur_matrix_print_matrix( distr->dim, mat, "\tcholesky factor of rank correlation matrix =", log, genid, "\t   ");
 
   /* marginal distributions */
-  fprintf(log,"%s:\tmarginal distributions:   [see also standardized marginal distributions]\n",genid);
+  fprintf(log,"%s:\tmarginal distributions:\n",genid);
   if (distr->set & UNUR_DISTR_SET_MARGINAL) {
     if (_unur_distr_cvec_marginals_are_equal(DISTR.marginals, distr->dim)) {
       fprintf(log,"%s: all mariginals [1-%d]:\n",genid,distr->dim);
@@ -2629,6 +2629,7 @@ _unur_distr_cvec_debug( const struct unur_distr *distr, const char *genid )
   }
   fprintf(log,"%s:\n",genid);
 
+#ifdef USE_DEPRECATED_CODE
   /* standardized marginal distributions */
   fprintf(log,"%s:\tstandardized marginal distributions:   [see also marginal distributions]\n",genid);
   if (distr->set & UNUR_DISTR_SET_STDMARGINAL) {
@@ -2648,6 +2649,7 @@ _unur_distr_cvec_debug( const struct unur_distr *distr, const char *genid )
     fprintf(log,"%s:\t   [unknown]\n",genid);
   }
   fprintf(log,"%s:\n",genid);
+#endif
 
 } /* end of _unur_distr_cvec_debug() */
 

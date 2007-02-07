@@ -279,7 +279,6 @@ unur_distr_multinormal( int dim, const double *mean, const double *covar )
 
 {
   struct unur_distr *distr;
-  struct unur_distr *stdmarginal;
   double det_covar; /* determinant of covariance matrix */
 
   /* get new (empty) distribution object */
@@ -315,10 +314,14 @@ unur_distr_multinormal( int dim, const double *mean, const double *covar )
   DISTR.pdpdf    = _unur_distr_cvec_eval_pdpdf_from_pdlogpdf;  /* pointer to part. deriv. of PDF */
   DISTR.pdlogpdf = _unur_pdlogpdf_multinormal;  /* pointer to partial derivative of logPDF */
 
-  /* set standardized marginal distributions */
-  stdmarginal = unur_distr_normal(NULL,0);
-  unur_distr_cvec_set_stdmarginals(distr,stdmarginal);
-  unur_distr_free(stdmarginal);
+#ifdef USE_DEPRECATED_CODE
+  {
+    /* set standardized marginal distributions */
+    struct unur_distr *stdmarginal = unur_distr_normal(NULL,0);
+    unur_distr_cvec_set_stdmarginals(distr,stdmarginal);
+    unur_distr_free(stdmarginal);
+  }
+#endif
 
   /* copy other parameters of distribution */
   /* none */

@@ -331,7 +331,6 @@ unur_distr_multistudent( int dim, double df, const double *mean, const double *c
 */   
 {
   struct unur_distr *distr;
-  struct unur_distr *stdmarginal;
   double det_covar; /* determinant of covariance matrix */
   
   /* get new (empty) distribution object */
@@ -367,10 +366,14 @@ unur_distr_multistudent( int dim, double df, const double *mean, const double *c
   DISTR.pdpdf    = _unur_distr_cvec_eval_pdpdf_from_pdlogpdf;  /* pointer to part. deriv. of PDF */
   DISTR.pdlogpdf = _unur_pdlogpdf_multistudent;  /* pointer to partial derivative of logPDF */
 
+#ifdef USE_DEPRECATED_CODE
   /* set standardized marginal distributions */
-  stdmarginal = unur_distr_student(&df,1);
-  unur_distr_cvec_set_stdmarginals(distr,stdmarginal);
-  unur_distr_free(stdmarginal);
+  {
+    struct unur_distr *stdmarginal = unur_distr_student(&df,1);
+    unur_distr_cvec_set_stdmarginals(distr,stdmarginal);
+    unur_distr_free(stdmarginal);
+  }
+#endif
 
   /* set parameters for distribution */
   if (_unur_set_params_multistudent(distr, &df, 1)!=UNUR_SUCCESS) {

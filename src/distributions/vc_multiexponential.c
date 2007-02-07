@@ -296,7 +296,7 @@ unur_distr_multiexponential( int dim, const double *sigma, const double *theta )
 */   
 {
   struct unur_distr *distr;
-  struct unur_distr **stdmarginal;
+  struct unur_distr **marginal;
   
   int i;
   double sumsigma; /* used in the calculation of LOGNORMCONSTANT */
@@ -325,28 +325,25 @@ unur_distr_multiexponential( int dim, const double *sigma, const double *theta )
   DISTR.logpdf  = _unur_logpdf_multiexponential;    /* pointer to logPDF */
   DISTR.dpdf    = _unur_distr_cvec_eval_dpdf_from_dlogpdf;  /* pointer to gradient of PDF */
   DISTR.dlogpdf = _unur_dlogpdf_multiexponential;    /* pointer to gradient of logPDF */
-  DISTR.pdpdf    = _unur_distr_cvec_eval_pdpdf_from_pdlogpdf;  /* pointer to part. deriv. of PDF */
+  DISTR.pdpdf   = _unur_distr_cvec_eval_pdpdf_from_pdlogpdf;  /* pointer to part. deriv. of PDF */
   /*DISTR.pdlogpdf = _unur_pdlogpdf_multiexponential;*/  /* pointer to partial derivative of logPDF */
 
   /* set standardized marginal distributions */ 
-  stdmarginal = malloc(distr->dim * sizeof(long)); /* array pointers */
+  marginal = malloc(distr->dim * sizeof(struct unur_distr*));
   for (i=0; i<distr->dim; i++) {  
     alpha = i+1.; /* shape parameter */
-    stdmarginal[i] = unur_distr_gamma(&alpha, 1);
+    marginal[i] = unur_distr_gamma(&alpha, 1);
   }
-    
-  unur_distr_cvec_set_marginal_array(distr, stdmarginal);
+  unur_distr_cvec_set_marginal_array(distr, marginal);
   
-  /* free memory allocated to the stdmarginal-array */
-  for (i=0; i<distr->dim; i++) {
-    if (stdmarginal[i]) unur_distr_free(stdmarginal[i]);
-  } 
-  if (stdmarginal) free(stdmarginal);
+  /* free memory allocated to the marginal array */
+  for (i=0; i<distr->dim; i++)
+    if (marginal[i]) _unur_distr_free(marginal[i]);
+  if (marginal) free(marginal);
   
   /* set parameters for distribution */
   if (_unur_set_params_multiexponential(distr, sigma, theta)!=UNUR_SUCCESS) {
-    free(distr);
-    return NULL;
+    _unur_distr_free(distr); return NULL;
   }
   
   /* domain */

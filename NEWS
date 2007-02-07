@@ -1,5 +1,8 @@
 Version 1.0.0: ???? 2007
 
+	* new method MVSTD (wrapper for multivariate
+	  continuous distributions)
+
 	* new method DEXT (wrapper for external generators)
 
 	* new method CEXT (wrapper for external generators)
@@ -11,6 +14,9 @@ Version 1.0.0: ???? 2007
 	  double (*random)(void *state)
 
 	* Added F-distribution.
+
+	* added support for rectangular distributions for multivariate
+	  continuous distributions.
 
 
 Version 0.9.0: January 2007

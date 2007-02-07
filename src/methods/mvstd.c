@@ -395,12 +395,6 @@ _unur_mvstd_clone( const struct unur_gen *gen )
   /* create generic clone */
   clone = _unur_generic_clone( gen, GENTYPE );
 
-/*   /\* copy parameters for special generators *\/ */
-/*   if (GEN->gen_param) { */
-/*     CLONE->gen_param = _unur_xmalloc( GEN->n_gen_param * sizeof(double) ); */
-/*     memcpy( CLONE->gen_param, GEN->gen_param, GEN->n_gen_param * sizeof(double) ); */
-/*   } */
-
   return clone;
 
 #undef CLONE
@@ -422,21 +416,19 @@ _unur_mvstd_free( struct unur_gen *gen )
   if( !gen ) /* nothing to do */
     return;
 
-/*   /\* magic cookies *\/ */
-/*   COOKIE_CHECK(gen,CK_MVSTD_GEN,RETURN_VOID); */
+  /* magic cookies */
+  COOKIE_CHECK(gen,CK_MVSTD_GEN,RETURN_VOID);
 
-/*   /\* check input *\/ */
-/*   if ( gen->method != UNUR_METH_MVSTD ) { */
-/*     _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,""); */
-/*     return; */
-/*   } */
+  /* check input */
+  if ( gen->method != UNUR_METH_MVSTD ) {
+    _unur_warning(gen->genid,UNUR_ERR_GEN_INVALID,"");
+    return;
+  }
 
-/*   /\* we cannot use this generator object any more *\/ */
-/*   SAMPLE = NULL;   /\* make sure to show up a programming error *\/ */
+  /* we cannot use this generator object any more */
+  SAMPLE = NULL;   /* make sure to show up a programming error */
 
-/*   /\* free memory *\/ */
-/*   if (GEN->gen_param)  free(GEN->gen_param); */
-
+  /* free memory */
   _unur_generic_free(gen);
 
 } /* end of _unur_mvstd_free() */
@@ -484,7 +476,7 @@ _unur_mvstd_debug_init( struct unur_gen *gen )
   fprintf(log,"%s:\n",gen->genid);
 
   /* distribution */
-  _unur_distr_cont_debug( gen->distr, gen->genid );
+  _unur_distr_cvec_debug( gen->distr, gen->genid );
 
   /* sampling routine */
   fprintf(log,"%s: sampling routine = ",gen->genid);

@@ -221,9 +221,16 @@ double unur_test_chi2( UNUR_GEN *generator, int intervals, int samplesize, int c
    If it is set to @code{3} then all generated numbers are printed.
    There is no output when it is set to @code{0}.
 
-   @emph{Notice}, for multivariate distributions also tests on the
-   marginal distributions are performed. Then the minimal p-value 
-   of all these tests is returned. 
+   @emph{Notice:} For multivariate distributions the generated points
+   are transformed by the inverse of the Cholesky factor of the
+   covariance matrix and the mean vectors (if given for the underlying
+   distribution). The marginal distributions of the transformed
+   vectors are then tested against the marginal distribution given by
+   a unur_distr_cvec_set_marginals() or
+   unur_distr_cvec_set_marginal_array() call.
+   (Notice that these marginal distributions are never set by default
+   for any of the distributions provided by UNURAN.)
+   Then the minimal p-value of all these tests is returned. 
    However, the test cannot be performed if the domain of the
    underlying distribution is truncated by a
    unur_distr_cvec_set_domain_rect() call and the components of the

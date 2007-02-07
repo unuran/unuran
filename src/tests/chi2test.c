@@ -612,17 +612,17 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
     _unur_error(gen->distr->name,UNUR_ERR_DISTR_REQUIRED,"covariance matrix");
     return -2.; }
 
-  /* we need all standardized marginal distributions */
-  if (DISTR.stdmarginals==NULL) {
-    _unur_error(gen->distr->name,UNUR_ERR_DISTR_REQUIRED,"standardized marginals");
+  /* we need all marginal distributions */
+  if (DISTR.marginals==NULL) {
+    _unur_error(gen->distr->name,UNUR_ERR_DISTR_REQUIRED,"marginals");
     return -2.; 
   }
 
   marginals = _unur_xmalloc(dim * sizeof(UNUR_DISTR *));
   marginal_cdf = _unur_xmalloc(dim * sizeof(UNUR_FUNCT_CONT *));
   for (i=0; i<dim; i++) {
-    marginals[i] = DISTR.stdmarginals[i];
-    marginal_cdf[i] = unur_distr_cont_get_cdf(DISTR.stdmarginals[i]);
+    marginals[i] = DISTR.marginals[i];
+    marginal_cdf[i] = unur_distr_cont_get_cdf(DISTR.marginals[i]);
     if (marginals[i]==NULL || marginal_cdf[i]==NULL) {
       _unur_error(gen->distr->name,UNUR_ERR_DISTR_REQUIRED,"CDF of continuous standardized marginal");
       pval_min = -2.; goto free_memory;

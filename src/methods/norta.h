@@ -55,11 +55,11 @@
 
       @strong{Important:} Notice that marginal distribution and (rank)
       correlation structure do not uniquely define a multivariate
-      distribution. Thus the are many other (more or less sensible)
+      distribution. Thus there are many other (more or less sensible)
       models.
 
       In the NORTA model multinormal random variates with the given
-      rank (Spearman's) correlations are generated. 
+      (Spearman's) rank correlations are generated. 
       In a second step the (standard normal distributed) marginal variates
       are transformed by means of the CDF of the normal distribution to get
       uniform marginals. The resulting random vectors have uniform
@@ -79,15 +79,15 @@
       It can happen that the desired rank correlation matrix is not
       feasible, i.e., it cannot occur as rank correlation matrix of a
       multinormal distribution. The resulting "covariance" matrix is
-      not positive definite. In this an eigenvector correction
+      not positive definite. In this case an eigenvector correction
       method is used. Then all non-positive eigenvalues are set to a
       small positive value and hence the rank correlation matrix of the
       generated random vectors is "close" to the desired matrix.
       
    =HOWTOUSE
       Create a multivariate generator object and set marginal 
-      distributions using unur_distr_cvec_set_marginals() , 
-      unur_distr_cvec_set_marginal_array() , or 
+      distributions using unur_distr_cvec_set_marginals(), 
+      unur_distr_cvec_set_marginal_array(), or 
       unur_distr_cvec_set_marginal_list().
       (Do not use the corresponding calls for the standard
       marginal distributions).

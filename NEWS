@@ -13,6 +13,9 @@ Version 1.0.0: ???? 2007
          is sampling from a multinormal distribution.
          Use new method MVSTD for this purpose instead.
 
+	* Using standardized marginal distributions is now
+	  deprecated.
+
 	* unur_urng_fvoid_new() has been changed:
 	  first argument must be pointer to function of prototype
 	  double (*random)(void *state)

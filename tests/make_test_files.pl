@@ -338,7 +338,6 @@ sub scan_validate {
     my @generators;
     my @distributions;
     my $chi2;
-    my $chi2type;
     my $verifyhat;
 
     # scan subsection 
@@ -363,11 +362,6 @@ sub scan_validate {
 
 	  if ($title eq "test chi2") {
 	      $chi2 = $body;
-	      $chi2type = 0;
-	      last VALIDATESUBS; }
-	  if ($title eq "test chi2 marginal") {
-	      $chi2 = $body;
-	      $chi2type = 1;
 	      last VALIDATESUBS; }
 	  if ($title eq "verify hat") {
 	      $verifyhat = $body;
@@ -485,7 +479,7 @@ sub scan_validate {
 		else {
 		    print "\tgen = unur_init(par);\n";
 		}
-		print "\trcode = run_validate_chi2(TESTLOG,0,gen,distr[$n_distr],$chi2type,'$todo');\n";
+		print "\trcode = run_validate_chi2(TESTLOG,0,gen,distr[$n_distr],'$todo');\n";
 		print "\tn_tests_failed += (rcode==UNUR_SUCCESS)?0:1;\n";
 		print "\tn_tests_failed += (rcode==UNUR_FAILURE)?1000:0;\n";
 		print "\tunur_free(gen);\n";

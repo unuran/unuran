@@ -942,7 +942,7 @@ int print_pval( FILE *LOG, UNUR_GEN *gen, const UNUR_DISTR *distr, double pval, 
 /*---------------------------------------------------------------------------*/
 /* run chi2 test */
 
-int run_validate_chi2( FILE *LOG, int line, UNUR_GEN *gen, const UNUR_DISTR *distr, int testtype, char todo )
+int run_validate_chi2( FILE *LOG, int line, UNUR_GEN *gen, const UNUR_DISTR *distr, char todo )
      /*   UNUR_SUCCESS    ... on success                                        */
      /*   UNUR_ERR_SILENT ... test failed only once                             */
      /*   UNUR_FAILURE    ... serious failure                                   */
@@ -1019,14 +1019,7 @@ int run_validate_chi2( FILE *LOG, int line, UNUR_GEN *gen, const UNUR_DISTR *dis
       pval = unur_test_chi2( gen, CHI_TEST_INTERVALS, 0, 20, CHI_TEST_VERBOSITY, LOG);
       break;
     case UNUR_DISTR_CVEC:
-      switch (testtype) {
-      case 1:
-	pval = unur_test_chi2_marginal( gen, CHI_TEST_INTERVALS, 0, 20, CHI_TEST_VERBOSITY, LOG);
-	break;
-      default:
-	pval = unur_test_chi2( gen, CHI_TEST_INTERVALS, 0, 20, CHI_TEST_VERBOSITY, LOG);
-	break;
-      }
+      pval = unur_test_chi2( gen, CHI_TEST_INTERVALS, 0, 20, CHI_TEST_VERBOSITY, LOG);
       break;
     default:
       fprintf(stderr, "\n%s:%d: run_validate_chi2: this should not happen\n", __FILE__, __LINE__);

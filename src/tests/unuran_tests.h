@@ -296,9 +296,6 @@ int unur_test_quartiles( UNUR_GEN *generator,
 
 /*---------------------------------------------------------------------------*/
 
-double unur_test_chi2_marginal( UNUR_GEN *generator, int intervals, int samplesize, int classmin,
-				int verbosity, FILE *out );
-
 int unur_test_cvec_rankcorr( double *rc, UNUR_GEN *gen, int samplesize, int verbose, FILE *out );
 
 /*---------------------------------------------------------------------------*/

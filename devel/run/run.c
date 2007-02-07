@@ -35,28 +35,45 @@ int main()
 {
   UNUR_DISTR *distr;
   UNUR_PAR *par;
-/*   UNUR_GEN *gen; */
-  double fpar[2] = {1., 5.};
+  UNUR_GEN *gen;
+  double fpar[2] = {0.002, 5.};
 /*   double fpar[4] = {3.,0.5, -1., 0.}; */
- 
+
+  int i;
+
   unur_set_default_debug(~0U);
 
   /* standard normal */
 /*   distr = unur_distr_cauchy_wo_logpdf(NULL,0); */
-  distr = unur_distr_F(fpar,2);
+/*   distr = unur_distr_F(fpar,2); */
+/*   distr = unur_distr_gamma(fpar,1); */
 /*   unur_distr_cont_set_domain(distr,1.,4.); */
+
+  distr = unur_distr_laplace(NULL,0);
+
 
 /*   distr = unur_distr_beta(fpar,4); */
 /*   distr = unur_distr_gamma(fpar,3); */
 /*   unur_distr_cont_set_domain(distr,fpar[2],1.1); */
-  par = unur_itdr_new(distr);
+/*   par = unur_itdr_new(distr); */
+  par = unur_hinv_new(distr);
 
-/*   gen = unur_init(par); */
+  gen = unur_init(par);
 
-  unur_run_tests(par,~0u);
-/*   unur_run_tests(par,UNUR_TEST_SAMPLE); */
+  unur_hinv_chg_truncated(gen, 30., 10000.);
+
+  unur_test_printsample(gen, 10, 10, stdout);
+
+/*   { */
+/*     double max_error, MAE; */
+/*     unur_hinv_estimate_error(gen, 10000, &max_error, &MAE); */
+/*     printf("max error = %g\n",max_error); */
+/*     printf("MAE       = %g\n",MAE); */
+/*   } */
+
+  /*   unur_run_tests(par,RUN_TESTS); */
   
-/*   unur_free(gen); */
+  unur_free(gen);
   unur_distr_free(distr);
 
   return 0;

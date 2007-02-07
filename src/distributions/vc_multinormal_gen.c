@@ -35,7 +35,7 @@
 #include <unur_source.h>
 #include <distr/distr_source.h>
 #include <methods/x_gen.h>
-#include <methods/arou.h>
+#include <methods/cstd.h>
 #include <methods/mvstd.h>
 #include <methods/mvstd_struct.h>
 #include "unur_distributions.h"

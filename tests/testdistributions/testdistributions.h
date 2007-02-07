@@ -98,6 +98,18 @@ UNUR_DISTR *unur_distr_normal_w_pdf_from_logpdf(const double *params, int n_para
 UNUR_DISTR *unur_distr_powerexponential_w_pdf_from_logpdf(const double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
+/* Continuous multivariate distributions with marginal distributions         */
+
+/* Multicauchy distribution  [5; ch.45, p.219]                               */
+UNUR_DISTR *unur_distr_multicauchy_w_marginals(int dim, const double *mean, const double *covar);
+
+/* Multinormal distribution  [5; ch.45, p.105]                               */
+UNUR_DISTR *unur_distr_multinormal_w_marginals(int dim, const double *mean, const double *covar);
+
+/* Multistudent distribution                                                 */
+UNUR_DISTR *unur_distr_multistudent_w_marginals(int dim, double df, const double *mean, const double *covar);
+
+/*---------------------------------------------------------------------------*/
 /* Continuous multivariate distributions without logPDF                      */
 
 /* Multinormal distribution  [5; ch.45, p.105]                               */

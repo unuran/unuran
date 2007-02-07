@@ -170,7 +170,7 @@ unur_distr_multinormal_constantrho(int dim, const double *mean, double rho)
     return NULL;
 
   /* get distribution object for multinormal distribution */
-  distr = unur_distr_multinormal( dim, mean, NULL );
+  distr = unur_distr_multinormal_w_marginals( dim, mean, NULL );
 
   /* set the name of distribution */
   unur_distr_set_name(distr, "multinormal_constantrho");
@@ -206,7 +206,7 @@ unur_distr_multicauchy_constantrho(int dim, const double *mean, double rho)
     return NULL;
 
   /* get distribution object for multicauchy distribution */
-  distr = unur_distr_multicauchy( dim, mean, NULL );
+  distr = unur_distr_multicauchy_w_marginals( dim, mean, NULL );
 
   /* set the name of distribution */
   unur_distr_set_name(distr, "multicauchy_constantrho");
@@ -243,7 +243,7 @@ unur_distr_multistudent_constantrho(int dim, double df, const double *mean, doub
     return NULL;
 
   /* get distribution object for multistudent distribution */
-  distr = unur_distr_multistudent( dim, df, mean, NULL );
+  distr = unur_distr_multistudent_w_marginals( dim, df, mean, NULL );
 
   /* set the name of distribution */
   unur_distr_set_name(distr, "multistudent_constantrho");

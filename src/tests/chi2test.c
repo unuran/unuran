@@ -70,9 +70,6 @@
 #define CHI2_MAX_TOTALINTERVALS 1000000
 /* maximal product of intervals used in chi2vec test */
 
-#define CHI2_TEST_ADDITIONAL 0
-/* wheather we should perform additional global test for multivariate distribution */
-
 /*---------------------------------------------------------------------------*/
 static char test_name[] = "Chi^2-Test";
 /*---------------------------------------------------------------------------*/
@@ -553,8 +550,7 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
   UNUR_DISTR **marginals = NULL;  /* pointer to marginal distributions */
   UNUR_FUNCT_CONT **marginal_cdf = NULL;  /* pointer to CDFs of marginal distributions */
 
-  int *n_intervals_marginal = NULL; /* number of intervals for each dimension */
-  int n_intervals_total;  /* product of all dimintervals[] */
+/*   int *n_intervals_marginal = NULL; /\* number of intervals for each dimension *\/ */
 
   const double *L = NULL;       /* pointer to Cholesky factor */
   double *Linv = NULL;          /* pointer to inverse Cholesky factor */
@@ -567,10 +563,8 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
   double pval, pval_min; /* p-value */
 
   int *bm = NULL;         /* array for counting bins for marginals */
-  int *b = NULL;          /* array for counting bins */
-  int prodintervals, offset;
 
-  int i, j, k, itmp;     /* auxiliary variables */
+  int i, j, k;     /* auxiliary variables */
 
   /* check arguments */
   CHECK_NULL(gen,-1.);
@@ -653,37 +647,19 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
     }
   }
 
-  /* setup of intervals for each dimension */
-  n_intervals_marginal = _unur_xmalloc(dim * sizeof(int));
-  n_intervals_total = 1;
-  itmp = n_intervals;
-  for (i=0; i<dim; i++) {
-    n_intervals_marginal[i] = itmp;
-    n_intervals_total *= itmp;
-    itmp = n_intervals/(i+1);
-    if (itmp < 1)
-      itmp = 2;
-    if (itmp > CHI2_MAX_TOTALINTERVALS / n_intervals_total) {
-      itmp = CHI2_MAX_TOTALINTERVALS/n_intervals_total;
-      if (itmp < 1) itmp = 1;
-    }
-  }
-
   /* allocate working space memory */
   X   = _unur_xmalloc( dim * sizeof(double));
   U   = _unur_xmalloc( dim * sizeof(double));
   Linv  = _unur_xmalloc( dim * dim * sizeof(double));
   bm  = _unur_xmalloc( dim * n_intervals * sizeof(int)); /* bins for marginal tests */
-  b  = _unur_xmalloc( n_intervals_total * sizeof(int)); /* bins for chi2 test */
 
   /* check if memory could be allocated */
-  if ( !(n_intervals_marginal && X && U && bm && Linv && b) )  {
+  if ( !(X && U && bm && Linv) )  {
     _unur_error(test_name,UNUR_ERR_MALLOC,"cannot run chi2 test");
     pval_min = -1.; goto free_memory;
   }
 
   /* clear arrays */
-  memset(b ,  0, n_intervals_total  * sizeof(int));
   memset(bm , 0, dim * n_intervals  * sizeof(int));
 
   /* calculation of inverse Cholesky factor */
@@ -716,20 +692,6 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
       if (iv < 0) iv = 0;
       bm[j*n_intervals + iv] += 1;
     }
-
-    /* increase bins for total chi^2 test */
-    offset=0;
-    prodintervals=1; /* cumulative products of n_intervals_marginal[] */
-    for (j=0; j<dim; j++) {
-      int iv;
-      iv = (int)( n_intervals_marginal[j] * U[j] );
-      if (iv==n_intervals_marginal[j]) iv = n_intervals_marginal[j]-1;
-      if (iv < 0) iv = 0;
-
-      offset += prodintervals * iv;
-      prodintervals *= n_intervals_marginal[j];
-    }
-    b[offset] += 1;
   }
 
   /* ----------------------------------------------------------------------------*/
@@ -745,34 +707,19 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
     pval_min = _unur_min(pval_min,pval);
   }
   
-  /* ----------------------------------------------------------------------------*/
-#if CHI2_TEST_ADDITIONAL
-  if (dim>1) {
-    /* make chi^2 test */
-    if (verbose >= 1) {
-      fprintf(out,"\nChi^2-Test for multivariate continuous distribution\n");
-    }
-
-    pval = _unur_test_chi2test(NULL, b, n_intervals_total, classmin, verbose, out );
-    pval_min = min(pval_min,pval);
-    ntests ++;
-  }
-#endif  
-  /* ----------------------------------------------------------------------------*/
-
   if (verbose >= 1) {
     fprintf(out,"\nSummary:\n");
     fprintf(out,"  Minimal p-value * number_of_tests = %g:\n\n",pval_min*ntests);
   }
 
+  /* ----------------------------------------------------------------------------*/
+
 free_memory:
   /* free memory */
   if (X)    free(X);
   if (U)    free(U);
-  if (b)    free(b);
   if (bm)   free(bm);
   if (Linv) free(Linv);
-  if (n_intervals_marginal)  free(n_intervals_marginal);
   if (marginals)  free (marginals);
   if (marginal_cdf)  free (marginal_cdf);
   if (Fl)   free(Fl);

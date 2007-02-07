@@ -230,7 +230,7 @@ double unur_test_chi2( UNUR_GEN *generator, int intervals, int samplesize, int c
    unur_distr_cvec_set_marginal_array() call.
    (Notice that these marginal distributions are never set by default
    for any of the distributions provided by UNURAN.)
-   Then the minimal p-value of all these tests is returned. 
+   Then the Bonferroni corrected p-value of all these tests is returned. 
    However, the test cannot be performed if the domain of the
    underlying distribution is truncated by a
    unur_distr_cvec_set_domain_rect() call and the components of the

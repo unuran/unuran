@@ -36,7 +36,7 @@
  *****************************************************************************/
 
 /* 
-   =METHOD  VMT   Vector Matrix Transformation
+   =deprecatedMETHOD  VMT   Vector Matrix Transformation
 
    =UP  Methods_for_CVEC
 

@@ -125,7 +125,7 @@
 #include "unur_methods_source.h"
 #include "x_gen.h"
 #include "x_gen_source.h"
-#include "vmt.h"
+#include "mvstd.h"
 #include "vempk.h"
 #include "vempk_struct.h"
 
@@ -469,7 +469,7 @@ _unur_vempk_init( struct unur_par *par )
   kernel_distr = unur_distr_multinormal( GEN->dim, NULL, S );
 
   /* create kernel generator */
-  GEN->kerngen = unur_init( unur_vmt_new( kernel_distr ) );
+  GEN->kerngen = unur_init( unur_mvstd_new( kernel_distr ) );
   if (GEN->kerngen==NULL) {
     _unur_error(GENTYPE,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
     _unur_par_free (par); free (S); _unur_vempk_free(gen);

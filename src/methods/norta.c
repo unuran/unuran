@@ -89,7 +89,7 @@
 #include "cstd.h"
 #include "hinv.h"
 #include "ninv.h"
-#include "vmt.h"
+#include "mvstd.h"
 #include "norta.h"
 #include "norta_struct.h"
 
@@ -665,7 +665,7 @@ _unur_norta_nortu_setup( struct unur_gen *gen )
   mn_distr = unur_distr_multinormal(dim, NULL, sigma_y);
   mn_gen = NULL;
   if (mn_distr) {
-    mn_gen = unur_init(unur_vmt_new(mn_distr));
+    mn_gen = unur_init(unur_mvstd_new(mn_distr));
     _unur_distr_free(mn_distr);
   }
   if (mn_gen == NULL) {

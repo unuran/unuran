@@ -24,6 +24,12 @@ else
 MATHEMATICA_PROGS = 
 endif
 
+# Files that contain deprecated routines
+if ENABLE_DEPRECATED
+DEPRECATED_TESTS = t_vmt
+else
+DEPRECATED_TESTS = 
+endif
 
 check_PROGRAMS = \
  t_unur_tests \
@@ -71,10 +77,10 @@ check_PROGRAMS = \
  t_unif \
  t_utdr \
  t_vempk \
- t_vmt \
  t_vnrou \
  t_stringparser \
  test_special_matrix \
+ $(DEPRECATED_TESTS) \
  $(MATHEMATICA_PROGS)
 
 ## Troubles with dmalloc:

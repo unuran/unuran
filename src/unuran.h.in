@@ -118,7 +118,6 @@
 
 /* methods for continuous multivariate distributions */
 #include <methods/norta.h>
-#include <methods/vmt.h>
 #include <methods/vempk.h>
 #include <methods/vnrou.h>
 
@@ -140,6 +139,7 @@
 
 /* deprecated routines */
 #include <methods/deprecated.h>
+#include <methods/vmt.h>
 
 /*****************************************************************************/
 /**  String parser                                                          **/

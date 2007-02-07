@@ -301,16 +301,19 @@ _unur_init_cvec( struct unur_par *par_auto )
      /*   return NULL                                                        */
      /*----------------------------------------------------------------------*/
 {
-  struct unur_par *par;
-  struct unur_gen *gen;
+/*   struct unur_par *par; */
+/*   struct unur_gen *gen; */
   
-  /* Choose a method: VMT */
-  par = unur_vmt_new(par_auto->distr);
+/*   /\* Choose a method: VMT *\/ */
+/*   par = unur_vmt_new(par_auto->distr); */
      
-  /* Create generator object */
-  gen = unur_init(par);
-     
-  return gen;
+/*   /\* Create generator object *\/ */
+/*   gen = unur_init(par); */
+
+/*   return gen; */
+
+  /* currently there is no method for distribution type CVEC */
+  return NULL;
 } /* end of _unur_init_cvec() */
   
 /*---------------------------------------------------------------------------*/

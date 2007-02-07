@@ -8,7 +8,9 @@ noinst_LTLIBRARIES = libmethods.la
 
 # Files that contain deprecated routines
 if ENABLE_DEPRECATED
-DEPRECATED_FILES = deprecated.c deprecated.h
+DEPRECATED_FILES = \
+ deprecated.c deprecated.h \
+ vmt.c  vmt.h  vmt_struct.h
 else
 DEPRECATED_FILES = 
 endif
@@ -56,7 +58,6 @@ libmethods_la_SOURCES = \
  unif.c   unif.h   unif_struct.h \
  utdr.c   utdr.h   utdr_struct.h \
  vempk.c  vempk.h  vempk_struct.h \
- vmt.c    vmt.h    vmt_struct.h \
  vnrou.c  vnrou.h  vnrou_struct.h 
 
 noinst_HEADERS = \

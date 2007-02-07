@@ -56,11 +56,8 @@
       stored in the mean vector and the covariance matrix, respectively. 
       
       We also have to mention that some methods might abuse some of the
-      parameters. For example, method VMT (@pxref{VMT}) uses standard
-      marginal distributions. However, the marginal distribution of the
-      generated vectors might be transformed and thus differ from the
-      given marginal distributions. Please read the discription
-      of the chosen sampling method carfully.
+      parameters. Please read the discription of the chosen sampling
+      method carfully.
       
       The following kind of calls exists:
       

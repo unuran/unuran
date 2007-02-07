@@ -156,7 +156,7 @@ unur_test_chi2( struct unur_gen *gen,
 
 /*---------------------------------------------------------------------------*/
 
-static double
+double
 _unur_test_chi2_discr( struct unur_gen *gen,
            int samplesize,
            int classmin,
@@ -271,7 +271,7 @@ _unur_test_chi2_discr( struct unur_gen *gen,
 
 /*---------------------------------------------------------------------------*/
 
-static double
+double
 _unur_test_chi2_cont( struct unur_gen *gen,
           int intervals,
           int samplesize,
@@ -400,7 +400,7 @@ _unur_test_chi2_cont( struct unur_gen *gen,
 
 /*---------------------------------------------------------------------------*/
 
-static double
+double
 _unur_test_chi2_cemp( struct unur_gen *gen,
           int intervals,
           int samplesize,
@@ -500,7 +500,7 @@ _unur_test_chi2_cemp( struct unur_gen *gen,
 
 /*---------------------------------------------------------------------------*/
 
-static double
+double
 _unur_test_chi2_vec ( struct unur_gen *gen,
           int n_intervals,
           int samplesize,
@@ -539,36 +539,48 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
      /*   -1. ... other errors                                               */
      /*----------------------------------------------------------------------*/
 {
-#define DISTR   gen->distr->data.cvec
-#define idx(i,j) ((i)*dim+j)
+#define DISTR     gen->distr->data.cvec
+#define idx(i,j)  ((i)*dim+(j))
 
-  int dim;         /* dimension of multivariate distribution */
-  int ntests;      /* number of tests performed              */
-  double *Fl = NULL;  /* value of CDF at left and right boundary point */
+  int dim;                       /* dimension of multivariate distribution */
+  double *Fl = NULL;             /* value of CDF at left and right boundary point */
   double *Fr = NULL;
   double *Fdelta = NULL;
-  UNUR_DISTR **marginals = NULL;  /* pointer to marginal distributions */
+
+  UNUR_DISTR **marginals = NULL; /* pointer to marginal distributions */
   UNUR_FUNCT_CONT **marginal_cdf = NULL;  /* pointer to CDFs of marginal distributions */
 
-/*   int *n_intervals_marginal = NULL; /\* number of intervals for each dimension *\/ */
+  const double *mean = NULL;     /* pointer to mean vector */
+  const double *L = NULL;        /* pointer to Cholesky factor */
+  double *Linv = NULL;           /* pointer to inverse Cholesky factor */
+  double Linv_det;               /* determinant of Linv */
 
-  const double *L = NULL;       /* pointer to Cholesky factor */
-  double *Linv = NULL;          /* pointer to inverse Cholesky factor */
-  double Linv_det;       /* determinant of Linv */
-  const double *mean = NULL;    /* pointer to mean vector */
+  double *X = NULL;              /* sampling vector */
+  double *U = NULL;              /* X transformed to uniform */
 
-  double *X = NULL;             /* sampling vector */
-  double *U = NULL;             /* X transformed to uniform */
+  int *bm = NULL;                /* array for counting bins for marginals */
+  double pval, pval_min;         /* p-value */
 
-  double pval, pval_min; /* p-value */
-
-  int *bm = NULL;         /* array for counting bins for marginals */
-
-  int i, j, k;     /* auxiliary variables */
+  int i, j, k;                   /* auxiliary variables */
 
   /* check arguments */
   CHECK_NULL(gen,-1.);
   /* we do not check magic cookies here */
+
+  /* we need all marginal distributions */
+  if (DISTR.marginals==NULL) {
+    _unur_error(gen->distr->name,UNUR_ERR_DISTR_REQUIRED,"marginals");
+    return -2.; 
+  }
+
+  /* we cannot run the test if the domain is changed by a      */         
+  /* unur_distr_cvec_set_domain_...() call when the covariance */
+  /* matrix is not the identity matrix.                        */
+  if ((gen->distr->set & UNUR_DISTR_SET_DOMAINBOUNDED) &&
+      !(gen->distr->set & UNUR_DISTR_SET_COVAR_IDENT) ) {
+    _unur_error(test_name,UNUR_ERR_GENERIC,"correlated and domain truncated");
+    return -1.;
+  }
 
   /* check given number of intervals */
   if (n_intervals <= 2)
@@ -584,34 +596,13 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
     _unur_error(test_name,UNUR_ERR_GENERIC,"distribution dimension < 1 ?");
     return -1.;
   }
-  /* we cannot run the test if the domain is changed by a      */         
-  /* unur_distr_cvec_set_domain_...() call when the covariance */
-  /* matrix is not the identity matrix.                        */
-  if ((gen->distr->set & UNUR_DISTR_SET_DOMAINBOUNDED) &&
-      !(gen->distr->set & UNUR_DISTR_SET_COVAR_IDENT) ) {
-    _unur_error(test_name,UNUR_ERR_GENERIC,"correlated and domain truncated");
-    return -1.;
-  }
 
-  ntests = dim; /* number of marginal tests */
-  /* this number is increased below when making more tests */
-  
   /* we need mean vector and covariance matrix */
   mean = unur_distr_cvec_get_mean(gen->distr);
-  if (mean==NULL) {
-    _unur_error(gen->distr->name,UNUR_ERR_DISTR_REQUIRED,"mean vector");
-    return -2.; }
   L = unur_distr_cvec_get_cholesky(gen->distr);
-  if (L==NULL) {
-    _unur_error(gen->distr->name,UNUR_ERR_DISTR_REQUIRED,"covariance matrix");
-    return -2.; }
+  /* remark: mean or L might be NULL */
 
-  /* we need all marginal distributions */
-  if (DISTR.marginals==NULL) {
-    _unur_error(gen->distr->name,UNUR_ERR_DISTR_REQUIRED,"marginals");
-    return -2.; 
-  }
-
+  /* get marginal distributions and their CDFs */
   marginals = _unur_xmalloc(dim * sizeof(UNUR_DISTR *));
   marginal_cdf = _unur_xmalloc(dim * sizeof(UNUR_FUNCT_CONT *));
   for (i=0; i<dim; i++) {
@@ -650,22 +641,16 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
   /* allocate working space memory */
   X   = _unur_xmalloc( dim * sizeof(double));
   U   = _unur_xmalloc( dim * sizeof(double));
-  Linv  = _unur_xmalloc( dim * dim * sizeof(double));
   bm  = _unur_xmalloc( dim * n_intervals * sizeof(int)); /* bins for marginal tests */
-
-  /* check if memory could be allocated */
-  if ( !(X && U && bm && Linv) )  {
-    _unur_error(test_name,UNUR_ERR_MALLOC,"cannot run chi2 test");
-    pval_min = -1.; goto free_memory;
-  }
-
-  /* clear arrays */
   memset(bm , 0, dim * n_intervals  * sizeof(int));
 
-  /* calculation of inverse Cholesky factor */
-  if (_unur_matrix_invert_matrix (dim, L, Linv, &Linv_det) != UNUR_SUCCESS) {
-    _unur_error(test_name,UNUR_ERR_DISTR_DATA,"cannot compute inverse of Cholesky factor");
-    pval_min = -2.; goto free_memory;
+  /* calculate inverse Cholesky factor */
+  if (L != NULL) {
+    Linv  = _unur_xmalloc( dim * dim * sizeof(double));
+    if (_unur_matrix_invert_matrix (dim, L, Linv, &Linv_det) != UNUR_SUCCESS) {
+      _unur_error(test_name,UNUR_ERR_DISTR_DATA,"cannot compute inverse of Cholesky factor");
+      pval_min = -2.; goto free_memory;
+    }
   }
 
   /* now run generator */
@@ -676,11 +661,13 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
 
     /* standardize vector: Z = L^{-1} (X - mean) */
     /* and transform to uniform U                */
+    if (mean) { for (j=0; j<dim; j++)  X[j] -= mean[j]; }
     for (j=0; j<dim; j++) {
       double Z=0;
-      for (k=0; k<=j; k++) {
-        Z += Linv[idx(j,k)] * (X[k]-mean[k]);
-      }
+      if (Linv)
+	for (k=0; k<=j; k++)  Z += Linv[idx(j,k)] * X[k]; 
+      else
+	Z = X[j];
       U[j] = (marginal_cdf[j](Z,marginals[j]) - Fl[j]) / Fdelta[j];
     }
 
@@ -709,7 +696,7 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
   
   if (verbose >= 1) {
     fprintf(out,"\nSummary:\n");
-    fprintf(out,"  Minimal p-value * number_of_tests = %g:\n\n",pval_min*ntests);
+    fprintf(out,"  Minimal p-value * number_of_tests = %g:\n\n",pval_min * dim);
   }
 
   /* ----------------------------------------------------------------------------*/
@@ -727,7 +714,7 @@ free_memory:
   if (Fdelta)   free(Fdelta);
 
   /* return result of test */
-  return pval_min*ntests;
+  return pval_min * dim;
 
 #undef idx
 #undef DISTR

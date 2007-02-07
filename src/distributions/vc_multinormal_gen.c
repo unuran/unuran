@@ -127,7 +127,7 @@ _unur_stdgen_init_multinormal_cholesky( struct unur_gen *gen )
   if (NORMAL==NULL) {
     /* make generator object */
     struct unur_distr *distr = unur_distr_normal(NULL,0);
-    NORMAL = unur_init( unur_arou_new( distr ) );
+    NORMAL = unur_init( unur_cstd_new( distr ) );
     _unur_check_NULL( gen->genid, NORMAL, UNUR_ERR_NULL );
     /* use same uniform random number generator */
     NORMAL->urng = gen->urng;

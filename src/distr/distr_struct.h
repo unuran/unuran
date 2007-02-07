@@ -123,7 +123,7 @@ struct unur_distr_cvec {
   int (*upd_volume)(struct unur_distr *distr);
                                 /* function for computing volume             */
 
-  int  (*init)(struct unur_par *par,struct unur_gen *gen);
+  int (*init)(struct unur_gen *gen);
                                 /* pointer to special init routine           */
 };
 

@@ -132,11 +132,13 @@
 #define CK_CSTD_GEN      0x10000011u
 #define CK_DSTD_PAR      0x10000020u
 #define CK_DSTD_GEN      0x10000021u
+#define CK_MVSTD_PAR     0x10000040u
+#define CK_MVSTD_GEN     0x10000041u
 
-#define CK_CEXT_PAR      0x10000040u
-#define CK_CEXT_GEN      0x10000041u
-#define CK_DEXT_PAR      0x10000080u
-#define CK_DEXT_GEN      0x10000081u
+#define CK_CEXT_PAR      0x10000110u
+#define CK_CEXT_GEN      0x10000111u
+#define CK_DEXT_PAR      0x10000120u
+#define CK_DEXT_GEN      0x10000121u
 
 #define CK_MBLOCK        0xf0000001u
 

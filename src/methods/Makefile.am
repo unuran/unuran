@@ -40,6 +40,7 @@ libmethods_la_SOURCES = \
  hri.c    hri.h    hri_struct.h \
  itdr.c   itdr.h   itdr_struct.h \
  mcorr.c  mcorr.h  mcorr_struct.h \
+ mvstd.c  mvstd.h  mvstd_struct.h \
  ninv.c   ninv.h   ninv_struct.h \
  norta.c  norta.h  norta_struct.h \
  nrou.c   nrou.h   nrou_struct.h \

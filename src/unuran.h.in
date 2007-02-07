@@ -129,6 +129,7 @@
 /* wrapper for special generators for standard distributions */
 #include <methods/cstd.h>     /* continuous */
 #include <methods/dstd.h>     /* discrete   */
+#include <methods/mvstd.h>    /* multivariate continuous */
 
 /* wrapper for external random variate generators */
 #include <methods/cext.h>     /* continuous */

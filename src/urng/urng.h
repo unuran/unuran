@@ -95,10 +95,10 @@
       @item
       @code{FVOID}
       
-      URNGs of type @code{double uniform(void)}.
-      If independent versions of the same URNG should be used, a copy of
-      the subroutine has to be implement in the program code (with
-      different names, of course).
+      URNGs of type @code{double uniform(void *state)}.
+      The argument @var{state} can be simply ignored in the
+      implementation of @code{uniform} when a global state variable is
+      used.
       UNURAN contains some build-in URNGs of this type in directory
       @file{src/uniform/}.
       

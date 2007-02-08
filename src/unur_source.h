@@ -50,6 +50,15 @@
 #include <unuran_config.h>
 
 /*---------------------------------------------------------------------------*/
+/* define macros for GCC attributes                                          */
+
+#ifdef __GNUC__
+#  define ATTRIBUTE__FORMAT(a,b)   __attribute__ (( __format__ (printf, (a), (b)) ))
+#else
+#  define ATTRIBUTE__FORMAT(a,b)
+#endif
+
+/*---------------------------------------------------------------------------*/
 /* include standard header files                                             */
 
 #include <float.h>

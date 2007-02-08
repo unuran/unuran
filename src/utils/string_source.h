@@ -39,7 +39,8 @@ struct unur_string * _unur_string_new ( void );
 
 /* Append to string                                                          */
 /* Important: The generated string must not be longer than 1023 characters!  */
-int _unur_string_append ( struct unur_string *string, const char *format, ... );
+int _unur_string_append ( struct unur_string *string, const char *format, ... )
+     ATTRIBUTE__FORMAT(2,3);
 
 /* Append text to string                                                     */
 int _unur_string_appendtext ( struct unur_string *string, const char *text );

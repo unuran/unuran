@@ -26,7 +26,7 @@ endif
 
 # Files that contain deprecated routines
 if ENABLE_DEPRECATED
-DEPRECATED_TESTS = t_vmt
+DEPRECATED_TESTS = t_deprecated_vmt
 else
 DEPRECATED_TESTS = 
 endif
@@ -146,8 +146,9 @@ EXTRA_DIST = \
  t_unif.conf \
  t_utdr.conf \
  t_vempk.conf \
- t_vmt.conf \
- t_vnrou.conf
+ t_vnrou.conf \
+\
+ t_deprecated_vmt.conf
 
 
 if HAVE_MATHEMATICA

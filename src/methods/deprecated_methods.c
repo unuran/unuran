@@ -4,13 +4,13 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: deprecated.c                                                      *
+ *   FILE: deprecated_methods.c                                              *
  *                                                                           *
  *   Deprecated routines                                                     *
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   THESE ROUTINE SHOULD NOT BE USED ANY MORE!                              *
+ *   THESE ROUTINES SHOULD NOT BE USED ANY MORE!                             *
  *                                                                           *
  *****************************************************************************
  *                                                                           *
@@ -43,7 +43,7 @@
 #include "unur_methods_source.h"
 #include "utdr_struct.h"
 #include "x_gen.h"
-#include "deprecated.h"
+#include "deprecated_methods.h"
 
 /*---------------------------------------------------------------------------*/
 

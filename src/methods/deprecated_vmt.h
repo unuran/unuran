@@ -4,7 +4,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: vmt.h                                                             *
+ *   FILE: deprecated_vmt.h                                                  *
  *                                                                           *
  *   PURPOSE:                                                                *
  *         function prototypes for method VMT                                *
@@ -12,6 +12,10 @@
  *                                                                           *
  *   USAGE:                                                                  *
  *         only included in unuran.h                                         *
+ *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ *  THIS METHOD AND THE CORRESPONDING ROUTINES SHOULD NOT BE USED ANY MORE!  *
  *                                                                           *
  *****************************************************************************
  *                                                                           *

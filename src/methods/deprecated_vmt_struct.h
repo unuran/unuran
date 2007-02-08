@@ -4,11 +4,15 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: vmt_struct.h                                                      *
+ *   FILE: deprecated_vmt_struct.h                                           *
  *                                                                           *
  *   PURPOSE:                                                                *
  *         declares structures for method VMT                                *
  *         (Vector Matrix Transformation)                                    *
+ *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ *  THIS METHOD AND THE CORRESPONDING ROUTINES SHOULD NOT BE USED ANY MORE!  *
  *                                                                           *
  *****************************************************************************
  *                                                                           *

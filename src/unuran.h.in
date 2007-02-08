@@ -138,8 +138,8 @@
 #include <methods/unif.h>
 
 /* deprecated routines */
-#include <methods/deprecated.h>
-#include <methods/vmt.h>
+#include <methods/deprecated_methods.h>
+#include <methods/deprecated_vmt.h>
 
 /*****************************************************************************/
 /**  String parser                                                          **/

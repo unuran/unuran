@@ -9,8 +9,8 @@ noinst_LTLIBRARIES = libmethods.la
 # Files that contain deprecated routines
 if ENABLE_DEPRECATED
 DEPRECATED_FILES = \
- deprecated.c deprecated.h \
- vmt.c  vmt.h  vmt_struct.h
+ deprecated_methods.c deprecated_methods.h \
+ deprecated_vmt.c  deprecated_vmt.h  deprecated_vmt_struct.h
 else
 DEPRECATED_FILES = 
 endif

@@ -4,14 +4,14 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: deprecated.h                                                      *
+ *   FILE: deprecated_methods.h                                              *
  *                                                                           *
  *   PURPOSE:                                                                *
  *         function prototypes and macros for deprecated routines            *
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   THESE ROUTINE SHOULD NOT BE USED ANY MORE!                              *
+ *   THESE ROUTINES SHOULD NOT BE USED ANY MORE!                             *
  *                                                                           *
  *****************************************************************************
  *                                                                           *

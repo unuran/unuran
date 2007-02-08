@@ -4,7 +4,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE:      vmt.h                                                        *
+ *   FILE:      deprecated_vmt.h                                             *
  *                                                                           *
  *   TYPE:      continuous multivariate random variate                       *
  *   METHOD:    generated random vector with independent components with     *
@@ -14,6 +14,10 @@
  *   DESCRIPTION:                                                            *
  *      multivariate distribution with given mean vector and                 *
  *      covariance matrix.                                                   *
+ *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ *  THIS METHOD AND THE CORRESPONDING ROUTINES SHOULD NOT BE USED ANY MORE!  *
  *                                                                           *
  *****************************************************************************
  *                                                                           *
@@ -67,8 +71,8 @@
 #include "x_gen.h"
 #include "x_gen_source.h"
 #include "auto.h"
-#include "vmt.h"
-#include "vmt_struct.h"
+#include "deprecated_vmt.h"
+#include "deprecated_vmt_struct.h"
 
 /*---------------------------------------------------------------------------*/
 /* Variants                                                                  */

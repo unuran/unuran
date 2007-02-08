@@ -444,11 +444,11 @@ _unur_util_brent(            /* An estimate to the min or max location */
 	else
 	  b = t;
       
-        if( ft <= fw || w==x ) {
+        if( ft <= fw || _unur_FP_same(w,x) ) {
 	  v = w;  w = t;
 	  fv=fw;  fw=ft;
         }
-        else if( ft<=fv || v==x || v==w ) {
+        else if( ft<=fv || _unur_FP_same(v,x) || _unur_FP_same(v,w) ) {
 	  v = t;
 	  fv=ft;
         }

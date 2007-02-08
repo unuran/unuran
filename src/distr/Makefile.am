@@ -6,7 +6,16 @@ AM_CPPFLAGS = \
 
 noinst_LTLIBRARIES = libdistr.la
 
+# Files that contain deprecated routines
+if ENABLE_DEPRECATED
+DEPRECATED_FILES = deprecated_distr.c deprecated_distr.h 
+else
+DEPRECATED_FILES = 
+endif
+
 libdistr_la_SOURCES = \
+ $(DEPRECATED_FILES) \
+\
  distr.c   distr.h  distr_struct.h distr_source.h \
  cont.c    cont.h \
  corder.c  corder.h \

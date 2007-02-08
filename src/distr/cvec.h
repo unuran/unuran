@@ -461,29 +461,17 @@ const double *unur_distr_cvec_get_rk_cholesky( const UNUR_DISTR *distribution );
 */
 
 int unur_distr_cvec_set_marginals( UNUR_DISTR *distribution, UNUR_DISTR *marginal );
-/* */
-
-int unur_distr_cvec_set_stdmarginals( UNUR_DISTR *distribution, UNUR_DISTR *marginal );
 /* 
-   Sets marginal distribution and standardized marginal distributions
-   of the given @var{distribution} to the same @var{marginal}
-   distribution object. The @var{marginal} distribution must be an
-   instance of a continuous univariate distribution object.
-   In conjunction with unur_distr_cvec_set_covar()
-   and unur_distr_cvec_set_mean() the standardized marginals must be
-   used, i.e., they should have mean 0 and standard deviation 1 
-   (if both exist for the given marginal distribution).
-   Notice that the marginal distribution is copied into the
-   @var{distribution} object.
+   Sets marginal distributions of the given @var{distribution} to the
+   same @var{marginal} distribution object. The @var{marginal}
+   distribution must be an instance of a continuous univariate
+   distribution object. Notice that the marginal distribution is
+   copied into the @var{distribution} object.
 */
 
 int unur_distr_cvec_set_marginal_array( UNUR_DISTR *distribution, UNUR_DISTR **marginals );
-/* */
-
-int unur_distr_cvec_set_stdmarginal_array( UNUR_DISTR *distribution, UNUR_DISTR **marginals );
 /* 
-   Analogously to the above unur_distr_cvec_set_marginals() and
-   unur_distr_cvec_set_stdmarginals() calls.
+   Analogously to the above unur_distr_cvec_set_marginals() call.
    However, now an array @var{marginals} of the pointers to each of
    the marginal distributions must be given. It @strong{must} be an
    array of size @code{dim}, where @code{dim} is the dimension
@@ -496,12 +484,8 @@ int unur_distr_cvec_set_stdmarginal_array( UNUR_DISTR *distribution, UNUR_DISTR 
 */
 
 int unur_distr_cvec_set_marginal_list( UNUR_DISTR *distribution, ... );
-/* */
-
-int unur_distr_cvec_set_stdmarginal_list( UNUR_DISTR *distribution, ... );
 /* 
-   Similar to the above unur_distr_cvec_set_marginal_array() and
-   unur_distr_cvec_set_stdmarginal_array() calls.
+   Similar to the above unur_distr_cvec_set_marginal_array() call.
    However, now the pointers to the particular marginal distributions
    can be given as parameter and does not require an array of
    pointers. Additionally the given distribution objects are
@@ -510,6 +494,10 @@ int unur_distr_cvec_set_stdmarginal_list( UNUR_DISTR *distribution, ... );
    (With unur_distr_cvec_set_marginal_array() the result of such call
    has to be stored in a pointer since it has to be freed afterwarts
    to avoid memory leaks!)
+
+   The number of pointers to in the list of function arguments 
+   @strong{must} be equal to the dimension of the @var{distribution},
+   i.e. the dimension returned by unur_distr_get_dim(). 
 
    If one of the given pointer to marginal distributions is the NULL
    pointer then the marginal distributions of @var{distribution} are
@@ -521,11 +509,8 @@ int unur_distr_cvec_set_stdmarginal_list( UNUR_DISTR *distribution, ... );
 */
 
 const UNUR_DISTR *unur_distr_cvec_get_marginal( const UNUR_DISTR *distribution, int n );
-/* */
-
-const UNUR_DISTR *unur_distr_cvec_get_stdmarginal( const UNUR_DISTR *distribution, int n );
 /* 
-   Get pointer to the @var{n}-th (standardized) marginal distribution
+   Get pointer to the @var{n}-th marginal distribution
    object from the given multivariate @var{distribution}. 
    If this does not exist, NULL is returned. 
    The marginal distributions are enumerated from @code{1}

@@ -36,8 +36,8 @@
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifndef UNUR_DEPRECATED_H_SEEN
-#define UNUR_DEPRECATED_H_SEEN
+#ifndef UNUR_DEPRECATED_METHODS_H_SEEN
+#define UNUR_DEPRECATED_METHODS_H_SEEN
 /*---------------------------------------------------------------------------*/
 
 int unur_cstd_chg_pdfparams( UNUR_GEN *generator, double *params, int n_params );
@@ -505,5 +505,5 @@ int unur_utdr_upd_pdfarea( UNUR_GEN *generator );
 */
 
 /*---------------------------------------------------------------------------*/
-#endif  /* UNUR_DEPRECATED_H_SEEN */
+#endif  /* UNUR_DEPRECATED_METHODS_H_SEEN */
 /*---------------------------------------------------------------------------*/

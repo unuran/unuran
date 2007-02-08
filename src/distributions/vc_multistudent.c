@@ -67,6 +67,10 @@
 #include "unur_distributions_source.h"
 #include "unur_stddistr.h"
 
+#ifdef USE_DEPRECATED_CODE
+#  include <distr/deprecated_distr.h>
+#endif
+
 /*---------------------------------------------------------------------------*/
 
 static const char distr_name[] = "multistudent";

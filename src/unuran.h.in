@@ -137,7 +137,11 @@
 /* wrapper for uniform random number generator */
 #include <methods/unif.h>
 
-/* deprecated routines */
+/*****************************************************************************/
+/**  Deprecated routines                                                    **/
+/*****************************************************************************/
+
+#include <distr/deprecated_distr.h>
 #include <methods/deprecated_methods.h>
 #include <methods/deprecated_vmt.h>
 

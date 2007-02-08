@@ -14,7 +14,12 @@ Version 1.0.0: ???? 2007
          Use new method MVSTD for this purpose instead.
 
 	* Using standardized marginal distributions is now
-	  deprecated.
+	  deprecated:
+
+		unur_distr_cvec_set_stdmarginals()
+		unur_distr_cvec_set_stdmarginal_array()
+		unur_distr_cvec_set_stdmarginal_list()
+		unur_distr_cvec_get_stdmarginal()
 
 	* unur_urng_fvoid_new() has been changed:
 	  first argument must be pointer to function of prototype

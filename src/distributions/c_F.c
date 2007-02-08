@@ -244,7 +244,7 @@ _unur_upd_area_F( UNUR_DISTR *distr )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_lognormconstant_F(const double *params, int n_params)
+_unur_lognormconstant_F(const double *params, int n_params ATTRIBUTE__UNUSED)
 { 
   /* log( Beta(nu1/2, nu2/2) ) - (nu1/2) * log(nu1 / nu2) */
   return ((_unur_sf_ln_gamma(nua/2.) + _unur_sf_ln_gamma(nub/2.) - _unur_sf_ln_gamma((nua+nub)/2.))

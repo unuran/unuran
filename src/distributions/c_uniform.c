@@ -110,7 +110,7 @@ _unur_logpdf_uniform( double x, const UNUR_DISTR *distr )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_dpdf_uniform( double x, const UNUR_DISTR *distr )
+_unur_dpdf_uniform( double x ATTRIBUTE__UNUSED, const UNUR_DISTR *distr ATTRIBUTE__UNUSED )
 { 
   return 0.;
 } /* end of _unur_dpdf_uniform() */
@@ -118,7 +118,7 @@ _unur_dpdf_uniform( double x, const UNUR_DISTR *distr )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_dlogpdf_uniform( double x, const UNUR_DISTR *distr )
+_unur_dlogpdf_uniform( double x ATTRIBUTE__UNUSED, const UNUR_DISTR *distr ATTRIBUTE__UNUSED )
 { 
   return 0.;
 } /* end of _unur_dpdf_uniform() */

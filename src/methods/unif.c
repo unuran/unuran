@@ -103,7 +103,7 @@ static double _unur_unif_sample( struct unur_gen *gen );
 /*****************************************************************************/
 
 struct unur_par *
-unur_unif_new( const struct unur_distr *dummy )
+unur_unif_new( const struct unur_distr *dummy ATTRIBUTE__UNUSED )
      /*----------------------------------------------------------------------*/
      /* get default parameters                                               */
      /*                                                                      */

@@ -87,7 +87,7 @@ _unur_pdf_slash(double x, const UNUR_DISTR *distr)
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_dpdf_slash(double x, const UNUR_DISTR *distr)
+_unur_dpdf_slash(double x, const UNUR_DISTR *distr ATTRIBUTE__UNUSED)
 { 
   register double xsq = x * x;
 
@@ -103,7 +103,7 @@ _unur_dpdf_slash(double x, const UNUR_DISTR *distr)
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_set_params_slash( UNUR_DISTR *distr, const double *params, int n_params )
+_unur_set_params_slash( UNUR_DISTR *distr, const double *params ATTRIBUTE__UNUSED, int n_params )
 {
   /* check number of parameters for distribution */
   if (n_params > 0)

@@ -61,7 +61,7 @@ static int _unur_upd_area_sawtooth_discpdf( UNUR_DISTR *distr );
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_pdf_sawtooth_discpdf( double x, const UNUR_DISTR *distr )
+_unur_pdf_sawtooth_discpdf( double x, const UNUR_DISTR *distr ATTRIBUTE__UNUSED )
 {
   double pdf;
 
@@ -77,7 +77,7 @@ _unur_pdf_sawtooth_discpdf( double x, const UNUR_DISTR *distr )
 /*---------------------------------------------------------------------------*/
   
 double
-_unur_dpdf_sawtooth_discpdf( double x, const UNUR_DISTR *distr )
+_unur_dpdf_sawtooth_discpdf( double x, const UNUR_DISTR *distr ATTRIBUTE__UNUSED )
 {
   return (x<0.) ? -1. : 1.;
 } /* end of _unur_dpdf_sawtooth_discpdf() */

@@ -61,7 +61,7 @@ static unsigned long x_start = SEED; /* seed of last stream */
 /*---------------------------------------------------------------------------*/
 
 double
-unur_urng_mstd (void *dummy)
+unur_urng_mstd (void *dummy ATTRIBUTE__UNUSED)
 {
 
 # define a 16807       /* multiplicator */
@@ -82,7 +82,7 @@ unur_urng_mstd (void *dummy)
 /*---------------------------------------------------------------------------*/
 
 void
-unur_urng_mstd_seed (void *dummy, unsigned long seed)
+unur_urng_mstd_seed (void *dummy ATTRIBUTE__UNUSED, unsigned long seed)
 {
   if (seed==0) {
     _unur_error("URNG.mstd",UNUR_ERR_GENERIC,"seed = 0");
@@ -96,7 +96,7 @@ unur_urng_mstd_seed (void *dummy, unsigned long seed)
 /*---------------------------------------------------------------------------*/
 
 void
-unur_urng_mstd_reset (void *dummy)
+unur_urng_mstd_reset (void *dummy ATTRIBUTE__UNUSED)
 {
   x = x_start;
 } /* end of unur_urng_mstd_reset() */

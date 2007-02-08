@@ -150,7 +150,7 @@ _unur_upd_area_student( UNUR_DISTR *distr )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_normconstant_student( const double *params, int n_params )
+_unur_normconstant_student( const double *params, int n_params ATTRIBUTE__UNUSED )
 {
   return( sqrt(M_PI * nu) * exp(_unur_sf_ln_gamma(0.5*nu) - _unur_sf_ln_gamma(0.5*(nu+1.))) );
 } /* end of _unur_normconstant_student() */

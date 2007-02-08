@@ -1787,7 +1787,8 @@ _unur_str_par_set( UNUR_PAR *par, const char *key, char *value, struct unur_slis
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_str_par_set_void (UNUR_PAR *par, const char *key, char *type_args, char **args, par_set_void set)
+_unur_str_par_set_void (UNUR_PAR *par, const char *key, 
+			char *type_args, char **args ATTRIBUTE__UNUSED, par_set_void set)
      /*----------------------------------------------------------------------*/
      /* Set parameter in given parameter object.                             */
      /* The list of arguments and their types are given as string.           */

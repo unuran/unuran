@@ -2188,7 +2188,8 @@ _unur_tdrgw_tangent_intersection_point( struct unur_gen *gen, struct unur_tdrgw_
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_tdrgw_interval_logarea( struct unur_gen *gen, struct unur_tdrgw_interval *iv, double slope, double x )
+_unur_tdrgw_interval_logarea( struct unur_gen *gen ATTRIBUTE__UNUSED, 
+			      struct unur_tdrgw_interval *iv, double slope, double x )
      /*---------------------------------------------------------------------------*/
      /* compute log of area below piece of hat or squeeze in                      */
      /* interval [iv->x,x] or [x,iv->x]                                           */
@@ -2219,7 +2220,6 @@ _unur_tdrgw_interval_logarea( struct unur_gen *gen, struct unur_tdrgw_interval *
   double t, logt;
 
   /* check arguments */
-  CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_TDRGW_GEN,INFINITY);
   CHECK_NULL(iv,INFINITY);   COOKIE_CHECK(iv,CK_TDRGW_IV,INFINITY); 
 
   /* length of interval > 0 ? */

@@ -150,7 +150,7 @@ _unur_matrix_swap_rows (int dim, double *A, int i, int j)
 /*---------------------------------------------------------------------------*/
 
 int 
-_unur_matrix_permutation_swap (int dim, int *p, int i, int j)
+_unur_matrix_permutation_swap (int dim ATTRIBUTE__UNUSED, int *p, int i, int j)
      /*----------------------------------------------------------------------*/
      /* Swap entries i and j of the integer array p.                         */
      /*                                                                      */

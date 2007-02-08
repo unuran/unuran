@@ -82,7 +82,7 @@ static unsigned long x22_start = SEED22;
 /*---------------------------------------------------------------------------*/
 
 double
-unur_urng_MRG31k3p (void *dummy)
+unur_urng_MRG31k3p (void *dummy ATTRIBUTE__UNUSED)
      /* Combined multiple recursive generator.                               */
      /* Copyright (c) 2002 Renee Touzin.                                     */
 {
@@ -127,7 +127,7 @@ unur_urng_MRG31k3p (void *dummy)
 /*---------------------------------------------------------------------------*/
 
 void
-unur_urng_MRG31k3p_seed (void *dummy, unsigned long seed)
+unur_urng_MRG31k3p_seed (void *dummy ATTRIBUTE__UNUSED, unsigned long seed)
 {
   if (seed==0) {
     _unur_error("URNG.mrg31k3p",UNUR_ERR_GENERIC,"seed = 0");
@@ -146,7 +146,7 @@ unur_urng_MRG31k3p_seed (void *dummy, unsigned long seed)
 /*---------------------------------------------------------------------------*/
 
 void
-unur_urng_MRG31k3p_reset (void *dummy)
+unur_urng_MRG31k3p_reset (void *dummy ATTRIBUTE__UNUSED)
 {
   x10 = x10_start;
   x11 = x11_start;

@@ -127,14 +127,14 @@ unur_sample_matr( struct unur_gen *gen, double *matrix )
 /* aux routines when no sampling routine is available                         */
 
 int
-_unur_sample_discr_error( struct unur_gen *gen )
+_unur_sample_discr_error( struct unur_gen *gen ATTRIBUTE__UNUSED )
 {
   unur_errno = UNUR_ERR_GEN_CONDITION;
   return 0;
 } /* end of _unur_sample_discr_error() */
 
 double
-_unur_sample_cont_error( struct unur_gen *gen )
+_unur_sample_cont_error( struct unur_gen *gen ATTRIBUTE__UNUSED )
 {
   unur_errno = UNUR_ERR_GEN_CONDITION;
   return INFINITY;

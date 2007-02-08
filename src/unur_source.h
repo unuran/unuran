@@ -54,8 +54,10 @@
 
 #ifdef __GNUC__
 #  define ATTRIBUTE__FORMAT(a,b)   __attribute__ (( __format__ (printf, (a), (b)) ))
+#  define ATTRIBUTE__UNUSED        __attribute__ ((unused))
 #else
 #  define ATTRIBUTE__FORMAT(a,b)
+#  define ATTRIBUTE__UNUSED
 #endif
 
 /*---------------------------------------------------------------------------*/

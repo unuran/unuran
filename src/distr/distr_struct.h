@@ -100,7 +100,6 @@ struct unur_distr_cvec {
   double *rk_cholesky;          /* cholesky factor of rank corr. matrix      */
 
   struct unur_distr **marginals; /* array of pointers to marginal distributions */
-  struct unur_distr **stdmarginals; /* array of pointers to standardized marginal distributions */
 
   double params[UNUR_DISTR_MAXPARAMS];  /* parameters of the PDF             */
   int    n_params;              /* number of parameters of the PDF           */
@@ -117,6 +116,10 @@ struct unur_distr_cvec {
 				   the lower left and the upper right vertices
 				   are stored componentwise, i.e.
 				   l[0], r[0], l[1], r[1], l[2], r[2], ...   */
+
+#ifdef USE_DEPRECATED_CODE
+  struct unur_distr **stdmarginals; /* array of pointers to standardized marginal distributions */
+#endif
 
   int (*upd_mode)(struct unur_distr *distr);
                                 /* function for computing mode               */

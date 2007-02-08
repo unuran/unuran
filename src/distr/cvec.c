@@ -132,10 +132,12 @@ unur_distr_cvec_new( int dim )
   DISTR.rankcorr  = NULL;   /* rank correlation                      [default: not known]    */
   DISTR.rk_cholesky = NULL; /* cholesky factor of rank correlation   [default: not computed] */
   DISTR.marginals = NULL;   /* array of pointers to marginal distributions   */
-  DISTR.stdmarginals = NULL;  /* array of pointers to standardized marginal distributions */
-
   DISTR.upd_mode  = NULL;   /* funct for computing mode                      */
   DISTR.upd_volume = NULL;  /* funct for computing volume                    */
+
+#ifdef USE_DEPRECATED_CODE
+  DISTR.stdmarginals = NULL;  /* array of pointers to standardized marginal distributions */
+#endif
 
   /* initialize parameters of the p.d.f.                                     */
   DISTR.n_params  = 0;             /* number of parameters of the pdf        */
@@ -239,8 +241,10 @@ _unur_distr_cvec_clone( const struct unur_distr *distr )
   if (DISTR.marginals)
     CLONE.marginals = _unur_distr_cvec_marginals_clone( DISTR.marginals, distr->dim );
 
+#ifdef USE_DEPRECATED_CODE
   if (DISTR.stdmarginals)
     CLONE.stdmarginals = _unur_distr_cvec_marginals_clone( DISTR.stdmarginals, distr->dim );
+#endif
   
   /* clone of scalar parameters */
   CLONE.n_params = DISTR.n_params;  
@@ -306,8 +310,10 @@ _unur_distr_cvec_free( struct unur_distr *distr )
   if (DISTR.marginals)
     _unur_distr_cvec_marginals_free(DISTR.marginals, distr->dim);
 
+#ifdef USE_DEPRECATED_CODE
   if (DISTR.stdmarginals)
     _unur_distr_cvec_marginals_free(DISTR.stdmarginals, distr->dim);
+#endif
 
   /* user name for distribution */
   if (distr->name_str) free(distr->name_str);
@@ -1732,7 +1738,7 @@ unur_distr_cvec_get_marginal( const struct unur_distr *distr, int n )
 
   /* mean vector known ? */
   if ( !(distr->set & UNUR_DISTR_SET_MARGINAL) ) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_GET,"std marginals");
+    _unur_warning(distr->name,UNUR_ERR_DISTR_GET,"marginals");
     return NULL;
   }
 

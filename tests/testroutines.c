@@ -855,9 +855,8 @@ int print_pval( FILE *LOG, UNUR_GEN *gen, const UNUR_DISTR *distr, double pval, 
     fflush(stdout);
     fflush(LOG);
 
-    /* test does not count as failed */
-    return UNUR_SUCCESS; 
-    
+    /* test failed */
+    return UNUR_FAILURE;
   }
 
   if (pval < 0.) {

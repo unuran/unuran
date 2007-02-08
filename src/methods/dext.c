@@ -259,7 +259,7 @@ unur_dext_get_params( struct unur_gen *gen, size_t size )
      /*----------------------------------------------------------------------*/
 {
   /* check input */
-  CHECK_NULL(gen, NULL);
+  _unur_check_NULL( GENTYPE, gen, NULL );
   COOKIE_CHECK(gen, CK_DEXT_GEN, NULL);
 
   /* Is it really necessary to check the method? No! */

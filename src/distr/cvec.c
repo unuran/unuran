@@ -2365,9 +2365,9 @@ _unur_distr_cvec_debug( const struct unur_distr *distr, const char *genid )
   }
   else {
     if (DISTR.domainrect) {
-      fprintf(log,"rectangular\n");
       double *domain = DISTR.domainrect;
       int i;
+      fprintf(log,"rectangular\n");
       for (i=0; i<distr->dim; i++)
 	fprintf(log,"%s:\t %c ( %g, %g)\n",genid, i?'x':' ', 
 		domain[2*i], domain[2*i+1]);

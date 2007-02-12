@@ -55,9 +55,11 @@
 #ifdef __GNUC__
 #  define ATTRIBUTE__FORMAT(a,b)   __attribute__ (( __format__ (printf, (a), (b)) ))
 #  define ATTRIBUTE__UNUSED        __attribute__ ((unused))
+#  define ATTRIBUTE__MALLOC        __attribute__ ((malloc))
 #else
 #  define ATTRIBUTE__FORMAT(a,b)
 #  define ATTRIBUTE__UNUSED
+#  define ATTRIBUTE__MALLOC
 #endif
 
 /*---------------------------------------------------------------------------*/

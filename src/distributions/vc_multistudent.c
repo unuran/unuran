@@ -92,7 +92,7 @@ static double _unur_logpdf_multistudent( const double *x, UNUR_DISTR *distr );
 static int _unur_dlogpdf_multistudent( double *result, const double *x, UNUR_DISTR *distr );
 static double _unur_pdlogpdf_multistudent( const double *x, int coord, UNUR_DISTR *distr );
 
-static int _unur_set_params_multistudent( UNUR_DISTR *distr, const double *params, int n_params );
+static int _unur_set_params_multistudent( UNUR_DISTR *distr, double df );
 static int _unur_upd_mode_multistudent( UNUR_DISTR *distr );
 static int _unur_upd_volume_multistudent( UNUR_DISTR *distr );
 
@@ -249,27 +249,19 @@ _unur_pdlogpdf_multistudent( const double *x, int coord, UNUR_DISTR *distr )
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_set_params_multistudent( UNUR_DISTR *distr, const double *params, int n_params )
+_unur_set_params_multistudent( UNUR_DISTR *distr, double df )
 {
-  /* check number of parameters for distribution */
-  if (n_params < 1) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few"); return UNUR_ERR_DISTR_NPARAMS; }
-  if (n_params > 1) {
-    _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
-    n_params = 1; }
-  CHECK_NULL(params,UNUR_ERR_NULL);
-
   /* check parameter m (degrees of freedom) */
-  if ( nu <= 0 ) {
+  if ( df <= 0. ) {
     _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"nu <= 0");
     return UNUR_ERR_DISTR_DOMAIN;
   }
 
   /* copy parameters for standard form */
-  DISTR.nu = nu; 
+  DISTR.nu = df; 
 
   /* store number of parameters */
-  DISTR.n_params = n_params;
+  DISTR.n_params = 1;
 
   return UNUR_SUCCESS;
 } /* end of _unur_set_params_multistudent() */
@@ -356,8 +348,9 @@ unur_distr_multistudent( int dim, double df, const double *mean, const double *c
   DISTR.init = NULL;
 
   /* copy (and check) parameters */
-  if ((unur_distr_cvec_set_mean(distr,mean)!=UNUR_SUCCESS) ||
-      (unur_distr_cvec_set_covar(distr,covar)!=UNUR_SUCCESS) ) {
+  if ( (_unur_set_params_multistudent(distr, df)!=UNUR_SUCCESS) ||
+       (unur_distr_cvec_set_mean(distr,mean)!=UNUR_SUCCESS) ||
+       (unur_distr_cvec_set_covar(distr,covar)!=UNUR_SUCCESS) ) {
     unur_distr_free( distr );
     return NULL;
   }
@@ -379,12 +372,6 @@ unur_distr_multistudent( int dim, double df, const double *mean, const double *c
   }
 #endif
 
-  /* set parameters for distribution */
-  if (_unur_set_params_multistudent(distr, &df, 1)!=UNUR_SUCCESS) {
-    free(distr);
-    return NULL;
-  }
-  
   /* domain */
 
   /* log of normalization constant */

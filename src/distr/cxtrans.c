@@ -228,7 +228,7 @@ unur_distr_cxtrans_set_alpha( struct unur_distr *cxt, double alpha )
     return UNUR_ERR_DISTR_SET;
   }
 
-  if (alpha == 0. && cxt->base->data.cont.BD_LEFT < 0. ) {
+  if (_unur_iszero(alpha) && cxt->base->data.cont.BD_LEFT < 0. ) {
     /* logarithmic transformation */
     _unur_error(distr_name,UNUR_ERR_DISTR_SET,"invalid domain");
     return UNUR_ERR_DISTR_SET;
@@ -507,7 +507,7 @@ int _unur_distr_cxtrans_compute_domain( struct unur_distr *cxt )
   }
 
   /* logarithmic transformation */
-  else if (alpha == 0.) {
+  else if (_unur_iszero(alpha)) {
     if (left < 0. ) {
       _unur_error(distr_name,UNUR_ERR_DISTR_SET,"invalid domain");
       return UNUR_ERR_DISTR_SET;
@@ -598,7 +598,7 @@ _unur_cdf_cxtrans( double x, const struct unur_distr *cxt )
   }
 
   /* logarithmic transformation */
-  if (alpha == 0.) {
+  if (_unur_iszero(alpha)) {
     return CDF(s*exp(x)+mu);
   }
 
@@ -647,7 +647,7 @@ _unur_pdf_cxtrans( double x, const struct unur_distr *cxt )
   }
 
   /* logarithmic transformation */
-  if (alpha == 0.) {
+  if (_unur_iszero(alpha)) {
     /* PDF(exp(x)) * exp(x) */
     double ex = s * exp(x) + mu;
     if (! _unur_isfinite(ex)) {
@@ -676,7 +676,7 @@ _unur_pdf_cxtrans( double x, const struct unur_distr *cxt )
     }
     else {
       double fx = PDF(phix);
-      if (_unur_isfinite(fx) && (x!=0. || alpha < 1.)) {
+      if (_unur_isfinite(fx) && (!_unur_iszero(x) || alpha < 1.)) {
 	double fcx =  fx * s * dPOW(x);
 	/* if f(phix) is finite but fx*dPOW(x) is not,                 */
 	/* we assume that the PDF of the transformed variable is zero. */
@@ -732,7 +732,7 @@ _unur_logpdf_cxtrans( double x, const struct unur_distr *cxt )
   }
 
   /* logarithmic transformation */
-  if (alpha == 0.) {
+  if (_unur_iszero(alpha)) {
     /* logPDF(exp(x)) + x */
     double ex = s * exp(x) + mu;
     if (! _unur_isfinite(ex)) {
@@ -761,7 +761,7 @@ _unur_logpdf_cxtrans( double x, const struct unur_distr *cxt )
     }
     else {
       double logfx = logPDF(phix);
-      if (_unur_isfinite(logfx) && (x!=0. || alpha < 1.)) {
+      if (_unur_isfinite(logfx) && (!_unur_iszero(x) || alpha < 1.)) {
 	double logfcx =  logfx + logs + dlogPOW(x);
 	/* if logf(phix) is finite but logfx+dlogPOW(x) is not,        */
 	/* we assume that the PDF of the transformed variable is zero. */
@@ -819,7 +819,7 @@ _unur_dpdf_cxtrans( double x, const struct unur_distr *cxt )
   }
 
   /* logarithmic transformation */
-  if (alpha == 0.) {
+  if (_unur_iszero(alpha)) {
     /* dPDF(exp(x)) * exp(2*x) + PDF(exp(x)) * exp(x) */
     double ex = s*exp(x)+mu;
     if (! _unur_isfinite(ex)) {
@@ -858,7 +858,7 @@ _unur_dpdf_cxtrans( double x, const struct unur_distr *cxt )
       double dfx = dPDF(phix);
       double dphix = dPOW(x);
       double ddphix = ddPOW(x);
-      if (_unur_isfinite(fx) && (x!=0. || alpha <= 0.5)) {
+      if (_unur_isfinite(fx) && (!_unur_iszero(x) || alpha <= 0.5)) {
 	double dfcx = s*(dfx * s*dphix*dphix + fx * s*ddphix);
 	/* if f(phix) is finite but dfcx is not, we assume that dPDF */
 	/* of the transformed variable is zero.                      */
@@ -919,7 +919,7 @@ _unur_dlogpdf_cxtrans( double x, const struct unur_distr *cxt )
   }
 
   /* logarithmic transformation */
-  if (alpha == 0.) {
+  if (_unur_iszero(alpha)) {
     /* dlogPDF(exp(x))*exp(x) + 1 */
     double ex = s*exp(x)+mu;
     if (! _unur_isfinite(ex)) {
@@ -948,7 +948,7 @@ _unur_dlogpdf_cxtrans( double x, const struct unur_distr *cxt )
     }
     else {
       double logfx = logPDF(phix);
-      if (_unur_isfinite(logfx) && (x!=0. || alpha <= 1.)) {
+      if (_unur_isfinite(logfx) && (!_unur_iszero(x) || alpha <= 1.)) {
 	double dlogfcx = ((x>=0.)?1.:-1.) * (dlogPDF(phix) * s*dPOW(x) + (1./alpha-1.)/x);
 	if (! _unur_isfinite(dlogfcx)) {
 	  /* if logf(phix) is finite but dlogfcx is not, we assume that dPDF */
@@ -1031,7 +1031,7 @@ _unur_distr_cxtrans_debug( const struct unur_distr *cxt, const char *genid )
   fprintf(log,"%s:\talpha = %g\t",genid,CXT.ALPHA);
   if (_unur_isinf(CXT.ALPHA)==1)
     fprintf(log,"[ exponential transformation: Y = exp(Z) ]\n"); 
-  else if (CXT.ALPHA == 0.)
+  else if (_unur_iszero(CXT.ALPHA))
     fprintf(log,"[ logarithmic transformation: Y = log(Z) ]\n"); 
   else
     fprintf(log,"[ power transformation: Y = Z^alpha ]\n"); 

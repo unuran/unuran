@@ -131,7 +131,7 @@ do
 	yc = y * c;
 	pk = pkm1 * z  -  pkm2 * yc;
 	qk = qkm1 * z  -  qkm2 * yc;
-	if( qk != 0 )
+	if( !_unur_iszero(qk) )
 		{
 		r = pk/qk;
 		t = fabs( (ans - r)/r );

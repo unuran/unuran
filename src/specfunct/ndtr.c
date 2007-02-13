@@ -273,7 +273,7 @@ y = (z * p)/q;
 if( a < 0 )
 	y = 2.0 - y;
 
-if( y == 0.0 )
+if( _unur_iszero(y) )
 	goto under;
 
 return(y);

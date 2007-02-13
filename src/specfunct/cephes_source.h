@@ -111,6 +111,7 @@ Copyright 1984, 1987, 1989, 1995 by Stephen L. Moshier
 #include <float.h>
 #include <math.h>
 #include <utils/unur_math_source.h>
+#include <utils/unur_fp_source.h>
 #include <utils/unur_fp_const_source.h>
 
 /*---------------------------------------------------------------------------*/

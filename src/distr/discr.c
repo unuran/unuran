@@ -1424,15 +1424,15 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
 
 
     /* at least one of the x[i] should have a positive function value  */
-    if (fx[0] == 0.0 && fx[1] == 0.0 ){
+    if (_unur_iszero(fx[0]) && _unur_iszero(fx[1])){
       int i=1;
-      while (fx[2] == 0. && i < 100){
+      while (_unur_iszero(fx[2]) && i < 100){
 	x[2]  = (x[1]/100)*i + (x[0]/100)*(100-i); /* integers !!! */
         fx[2] = unur_distr_discr_eval_pv(x[2], distr);
         i++;
       } 
     }
-    if (fx[2] == 0.){  /* no success */
+    if (_unur_iszero(fx[2])){  /* no success */
       _unur_error(distr->name,UNUR_ERR_DISTR_DATA,
          "In find_mode(): no positive entry in PV found during 100 trials");
       return UNUR_ERR_DISTR_DATA;  

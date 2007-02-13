@@ -201,7 +201,7 @@ if( q > 33.0 )
 	if( x < 0.0 )
 		{
 		p = floor(q);
-		if( p == q )
+		if( _unur_FP_same(p,q) )
 			{
 			return( sgngam * INFINITY);
 			}
@@ -215,7 +215,7 @@ if( q > 33.0 )
 			z = q - p;
 			}
 		z = q * sin( PI * z );
-		if( z == 0.0 )
+		if( _unur_iszero(z) )
 			{
 			return( sgngam * INFINITY);
 			}
@@ -261,7 +261,7 @@ q = _unur_cephes_polevl( x, Q, 7 );
 return( z * p / q );
 
 small:
-if( x == 0.0 )
+if( _unur_iszero(x) )
 	return( INFINITY );
 else
 	return( z/((1.0 + 0.5772156649015329 * x) * x) );
@@ -322,7 +322,7 @@ if( x < -34.0 )
 	q = -x;
 	w = _unur_cephes_lgam(q); 
 	p = floor(q);
-	if( p == q )
+	if( _unur_FP_same(p,q) )
 		return (INFINITY);
 	i = p;
 	if( (i & 1) == 0 )
@@ -336,7 +336,7 @@ if( x < -34.0 )
 		z = p - q;
 		}
 	z = q * sin( PI * z );
-	if( z == 0.0 )
+	if( _unur_iszero(z) )
 		return (INFINITY);
 /*	z = log(PI) - log( z ) - w;*/
 	z = LOGPI - log( z ) - w;
@@ -356,7 +356,7 @@ if( x < 13.0 )
 		}
 	while( u < 2.0 )
 		{
-		if( u == 0.0 )
+		if( _unur_iszero(u) )
 		       return (INFINITY);
 		z /= u;
 		p += 1.0;

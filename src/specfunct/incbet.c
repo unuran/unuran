@@ -220,9 +220,9 @@ do
 	qkm2 = qkm1;
 	qkm1 = qk;
 
-	if( qk != 0 )
+	if( !_unur_iszero(qk) )
 		r = pk/qk;
-	if( r != 0 )
+	if( !_unur_iszero(r) )
 		{
 		t = fabs( (ans - r)/r );
 		ans = r;
@@ -315,9 +315,9 @@ do
 	qkm2 = qkm1;
 	qkm1 = qk;
 
-	if( qk != 0 )
+	if( !_unur_iszero(qk) )
 		r = pk/qk;
-	if( r != 0 )
+	if( !_unur_iszero(r) )
 		{
 		t = fabs( (ans - r)/r );
 		ans = r;

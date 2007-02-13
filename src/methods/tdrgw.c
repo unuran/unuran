@@ -1235,7 +1235,7 @@ _unur_tdrgw_sample( struct unur_gen *gen )
     fx0 = exp(rescaled_logf(logfx0));
 
     /* random variate */
-    if (dlogfx0 == 0.)
+    if (_unur_iszero(dlogfx0))
       X = x0 + U / fx0;
     else {
       double t = dlogfx0 * U / fx0;
@@ -1355,7 +1355,7 @@ _unur_tdrgw_sample_check( struct unur_gen *gen )
     fx0 = exp(rescaled_logf(logfx0));
 
     /* random variate */
-    if (dlogfx0 == 0.)
+    if (_unur_iszero(dlogfx0))
       X = x0 + U / fx0;
     else {
       double t = dlogfx0 * U / fx0;
@@ -1490,7 +1490,7 @@ unur_tdrgw_eval_invcdfhat( const struct unur_gen *gen, double U )
   fx0 = exp(rescaled_logf(logfx0));
   
   /* X = H^{-1}(U) in interval*/
-  if (dlogfx0 == 0.)
+  if (_unur_iszero(dlogfx0))
     X = x0 + U / fx0;
   else {
     double t = dlogfx0 * U / fx0;
@@ -2245,7 +2245,7 @@ _unur_tdrgw_interval_logarea( struct unur_gen *gen ATTRIBUTE__UNUSED,
   logxdiff = log(fabs(x - x0));
 
   /* case: hat/squeeze constant --> area = f(x0) * |x - x0| */
-  if (slope == 0.)
+  if (_unur_iszero(slope))
     return (_unur_isfinite(x) ? logfx0 + logxdiff : INFINITY);
 
   /* case: domain unbounded --> area = f(x0) / |slope| */

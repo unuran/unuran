@@ -1166,11 +1166,11 @@ _unur_utdr_hat( struct unur_gen *gen )
       GEN->volcompl = GEN->vollc + volr;
       if (volc>0.) 
         GEN->brblvolc = (GEN->br - GEN->bl)/volc;
-      if (GEN->ar!=0.) {
+      if (!_unur_iszero(GEN->ar)) {
         GEN->drar = dr/GEN->ar;
         GEN->ooar2 = 1./(GEN->ar*GEN->ar);
       }
-      if (GEN->al!=0.) {
+      if (!_unur_iszero(GEN->al)) {
         GEN->dlal = dl/GEN->al;
         GEN->ooal2 = 1./(GEN->al*GEN->al);
       }

@@ -1413,7 +1413,7 @@ _unur_hitro_vu_to_x( const struct unur_gen *gen, const double *vu, double *x )
     return;
   }
     
-  if (GEN->r==1)
+  if (GEN->r==1.)
     for (d=0; d<GEN->dim; d++)  x[d] = u[d]/v + GEN->center[d];
   else
     for (d=0; d<GEN->dim; d++)  x[d] = u[d]/pow(v,GEN->r) + GEN->center[d];

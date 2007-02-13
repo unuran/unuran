@@ -344,7 +344,7 @@ unur_srou_set_r( struct unur_par *par, double r )
     return UNUR_ERR_PAR_SET;
   }
   
-  if (r == 1 ) {
+  if (r == 1.) {
     /* simple version, same as R is not set */ 
     PAR->r = r;
     par->set &= ~SROU_SET_R;
@@ -955,7 +955,7 @@ _unur_srou_sample( struct unur_gen *gen )
 
   while (1) {
     /* generate point uniformly on rectangle */
-    while ( (U = _unur_call_urng(gen->urng)) == 0.);
+    while ( _unur_iszero(U = _unur_call_urng(gen->urng)) );
     U *= GEN->um;
     V = GEN->vl + _unur_call_urng(gen->urng) * (GEN->vr - GEN->vl);
 
@@ -1010,7 +1010,7 @@ _unur_srou_sample_mirror( struct unur_gen *gen )
 
   while (1) {
     /* generate point uniformly on rectangle */
-    while ( (U = _unur_call_urng(gen->urng)) == 0.);
+    while ( _unur_iszero(U = _unur_call_urng(gen->urng)) );
     U *= GEN->um * SQRT2;
     V = 2. * (_unur_call_urng(gen->urng) - 0.5) * GEN->vr;
     /* vr = vm when the CDF at the mode is not known */
@@ -1063,7 +1063,7 @@ _unur_srou_sample_check( struct unur_gen *gen )
 
     while (1) {
       /* generate point uniformly on rectangle */
-      while ( (U = _unur_call_urng(gen->urng)) == 0.);
+      while ( _unur_iszero(U = _unur_call_urng(gen->urng)) );
       U *= GEN->um * SQRT2;
       V = 2. * (_unur_call_urng(gen->urng) - 0.5) * GEN->vr;
       /* vr = vm when the CDF at the mode is not known */	
@@ -1105,7 +1105,7 @@ _unur_srou_sample_check( struct unur_gen *gen )
 
     while (1) {
       /* generate point uniformly on rectangle */
-      while ( (U = _unur_call_urng(gen->urng)) == 0.);
+      while ( _unur_iszero(U = _unur_call_urng(gen->urng)) );
       U *= GEN->um;
       V = GEN->vl + _unur_call_urng(gen->urng) * (GEN->vr - GEN->vl);
 

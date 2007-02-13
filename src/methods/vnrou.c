@@ -737,7 +737,7 @@ _unur_vnrou_sample_cvec( struct unur_gen *gen, double *vec )
   while (1) {
 
     /* generate point uniformly on rectangle */
-    while ( (V = _unur_call_urng(gen->urng)) == 0.);
+    while ( _unur_iszero(V = _unur_call_urng(gen->urng)) );
     V *= GEN->vmax;
     for (d=0; d<dim; d++) {
       U = GEN->umin[d] + _unur_call_urng(gen->urng) * (GEN->umax[d] - GEN->umin[d]);
@@ -779,7 +779,7 @@ _unur_vnrou_sample_check( struct unur_gen *gen, double *vec )
  
   while (1) {
     /* generate point uniformly on rectangle */
-    while ( (V = _unur_call_urng(gen->urng)) == 0.);
+    while ( _unur_iszero(V = _unur_call_urng(gen->urng)) );
     V *= GEN->vmax;
     for (d=0; d<dim; d++) {
       U = GEN->umin[d] + _unur_call_urng(gen->urng) * (GEN->umax[d] - GEN->umin[d]);

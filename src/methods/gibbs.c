@@ -353,7 +353,7 @@ unur_gibbs_set_c( struct unur_par *par, double c )
     _unur_error(GENTYPE,UNUR_ERR_PAR_SET,"c < -0.5 not implemented yet");
     return UNUR_ERR_PAR_SET;
   }
-  if (c != 0 && c > -0.5) {
+  if (!_unur_iszero(c) && c > -0.5) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"-0.5 < c < 0 not recommended. using c = -0.5 instead.");
     c = -0.5;
   }
@@ -791,7 +791,7 @@ _unur_gibbs_create( struct unur_par *par )
   gen->genid = _unur_set_genid(GENTYPE);
 
   /* which transformation for conditional distributions */
-  if (PAR->c_T == 0.)
+  if ( _unur_iszero(PAR->c_T) )
     par->variant = (par->variant & (~GIBBS_VARMASK_T)) | GIBBS_VAR_T_LOG;
   else if (_unur_FP_same(PAR->c_T, -0.5))
     par->variant = (par->variant & (~GIBBS_VARMASK_T)) | GIBBS_VAR_T_SQRT;

@@ -217,7 +217,7 @@ _unur_tdr_create( struct unur_par *par )
   gen->genid = _unur_set_genid(GENTYPE);
 
   /* which transformation */
-  if (PAR->c_T == 0.)
+  if (_unur_iszero(PAR->c_T))
     gen->variant = (gen->variant & (~TDR_VARMASK_T)) | TDR_VAR_T_LOG;
   else if (_unur_FP_same(PAR->c_T, -0.5))
     gen->variant = (gen->variant & (~TDR_VARMASK_T)) | TDR_VAR_T_SQRT;
@@ -897,7 +897,7 @@ _unur_tdr_interval_new( struct unur_gen *gen, double x, double fx, int is_mode )
     }
     else {
       dfx = dPDF(x);
-      if (dfx==0.)
+      if (_unur_iszero(dfx))
 	iv->dTfx = 0.;
       else
 	iv->dTfx = (1./fx * dfx);   /* possible overflow ? */
@@ -917,7 +917,7 @@ _unur_tdr_interval_new( struct unur_gen *gen, double x, double fx, int is_mode )
     }
     else {
       dfx = dPDF(x);
-      if (dfx==0.)
+      if (_unur_iszero(dfx))
 	iv->dTfx = 0.;
       else
 	iv->dTfx = (dfx<0.) ? -exp( -M_LN2 - 1.5*log(fx) + log(-dfx))
@@ -1098,7 +1098,7 @@ _unur_tdr_interval_area( struct unur_gen *gen, struct unur_tdr_interval *iv, dou
 
   case TDR_VAR_T_LOG:   /* T(x) = log(x) */
 
-    if (slope != 0.) {                         
+    if (!_unur_iszero(slope)) {                         
       if (_unur_FP_is_infinity(x) || _unur_FP_is_minus_infinity(x))
 	area = iv->fx / slope;
       else {
@@ -1129,7 +1129,7 @@ _unur_tdr_interval_area( struct unur_gen *gen, struct unur_tdr_interval *iv, dou
 
   case TDR_VAR_T_SQRT:   /* T(x) = -1./sqrt(x) */
 
-    if (slope != 0.) {
+    if (!_unur_iszero(slope)) {
       if (_unur_FP_is_infinity(x) || _unur_FP_is_minus_infinity(x))
 	area = 1. / ( iv->Tfx * slope );
       else {

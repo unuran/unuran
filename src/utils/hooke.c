@@ -222,8 +222,7 @@ int _unur_hooke(struct unur_funct_vgeneric faux,
 	   for (i = 0; i < dim; i++) {
 		   newx[i] = xbefore[i] = startpt[i];
 		   delta[i] = fabs(startpt[i] * rho);
-		   if (delta[i] == 0.0)
-			   delta[i] = rho;
+		   if (_unur_iszero(delta[i])) delta[i] = rho;
 	   }
 
 	   steplength = rho;

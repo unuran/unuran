@@ -68,6 +68,14 @@ int _unur_FP_cmp( double x1, double x2, double eps);
 #define _unur_FP_greater(a,b) ((_unur_FP_cmp(a,b,UNUR_EPSILON)>0) ? TRUE : FALSE)
 
 /*---------------------------------------------------------------------------*/
+/* check whether a float is zero (0.) */
+#define _unur_iszero(x)  ((x)==0.)     /* macro ... */
+
+#ifndef _unur_iszero
+int _unur_iszero (const double x);     /* ... or function */
+#endif
+
+/*---------------------------------------------------------------------------*/
 /* Infinity and NaN (Not a Number)                                           */
 
 /* wrapper / replacement for corresponding C99 functions */

@@ -597,8 +597,8 @@ _unur_norta_nortu_setup( struct unur_gen *gen )
   double *sigma_y;      /* correlation matrix for corresponding normal distr. */
   double *eigenvalues;  /* eigenvalues of sigma_y */
   double *eigenvectors; /* eigenvectors of sigma_y */
-  double eigenvalues_positive; /* boolean indicating whether all eigenvalues are 
-				  strictly positive */
+  int eigenvalues_positive; /* boolean indicating whether all eigenvalues are 
+			       strictly positive */
   struct unur_distr *mn_distr; /* multinormal distribution */ 
   struct unur_gen   *mn_gen;   /* generator for multinormal distribution */ 
   int i,j;
@@ -646,6 +646,7 @@ _unur_norta_nortu_setup( struct unur_gen *gen )
     }
 
   /* make corrected correlation matrix */
+
   if (!eigenvalues_positive) {
     _unur_matrix_transform_diagonal(dim,eigenvectors,eigenvalues,sigma_y);
     _unur_norta_make_correlationmatrix(dim,sigma_y);

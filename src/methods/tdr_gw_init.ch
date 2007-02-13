@@ -378,7 +378,7 @@ _unur_tdr_gw_interval_parameter( struct unur_gen *gen, struct unur_tdr_interval 
 	 Then round-off errors may cancel out all significant figures and
 	 0 remains. Thus we simply ignore all violations when the 
 	 slope of the squeeze or tangent is 0.  */
-      if ( iv->sq != 0. && iv->dTfx != 0. && iv->next->dTfx != 0. ) {
+      if ( !_unur_iszero(iv->sq) && !_unur_iszero(iv->dTfx) && !_unur_iszero(iv->next->dTfx) ) {
       	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"Squeeze too steep/flat. PDF not T-concave!");
       	return UNUR_ERR_GEN_CONDITION;
       }

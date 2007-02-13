@@ -1716,7 +1716,7 @@ _unur_arou_segment_new( struct unur_gen *gen, double x, double fx )
   /* make left construction point in segment */
 
   /* case: x out of support */
-  if (fx == 0. ) {
+  if ( _unur_iszero(fx) ) {
     seg->ltp[0] = 0.;   /* vertex == origin */
     seg->ltp[1] = 0.;
     if (x <= -INFINITY || x >= INFINITY ) {
@@ -1850,7 +1850,7 @@ _unur_arou_segment_parameter( struct unur_gen *gen, struct unur_arou_segment *se
   }
 
   /* case: intersection point exists and is unique */
-  if (coeff_det != 0.) {
+  if (!_unur_iszero(coeff_det)) {
 
     /* compute intersection point */
     seg->mid[0] = cramer_det[0] / coeff_det;
@@ -1900,7 +1900,7 @@ _unur_arou_segment_parameter( struct unur_gen *gen, struct unur_arou_segment *se
        (2) small roundoff errors.
     */
 
-    if (seg->ltp[1] != 0. && seg->rtp[1] != 0.) {
+    if ( !_unur_iszero(seg->ltp[1]) && !_unur_iszero(seg->rtp[1]) ) {
       tmp_a = seg->ltp[0] * seg->rtp[1];
       tmp_b = seg->rtp[0] * seg->ltp[1];
       if ( _unur_FP_equal(tmp_a, tmp_b) ) {
@@ -2119,9 +2119,9 @@ _unur_arou_compute_x( double v, double u )
      /*   if (v,u)=(0,0) then x is set to INFINITY                           */
      /*----------------------------------------------------------------------*/
 {
-  if (u!=0.)     return v/u;
-  else if (v<0.) return -INFINITY;
-  else           return INFINITY;
+  if (!_unur_iszero(u)) return v/u;
+  else if (v<0.)        return -INFINITY;
+  else                  return INFINITY;
 } /* end of _unur_arou_compute_x() */
 
 /*---------------------------------------------------------------------------*/
@@ -2205,12 +2205,12 @@ _unur_arou_run_dars( struct unur_gen *gen )
 
       /* However ... */
       if ( _unur_FP_is_minus_infinity(xl)
-	   && seg->dltp[0] == -1. && seg->dltp[2] == 0. )
+	   && _unur_FP_same(seg->dltp[0],-1.) && _unur_iszero(seg->dltp[2]) )
   	/* boundary of domain given by tangent */
 	xl = seg->dltp[1];
 
       if ( _unur_FP_is_infinity(xr)
-	   && seg->drtp[0] == -1. && seg->drtp[2] == 0. )
+	   && _unur_FP_same(seg->drtp[0],-1.) && _unur_iszero(seg->drtp[2]) )
   	/* boundary of domain given by tangent */
 	xr = seg->drtp[1];
 
@@ -2319,7 +2319,7 @@ _unur_arou_make_guide_table( struct unur_gen *gen )
   /* we do not vary the relative size of the guide table,
      since it has very little influence on speed */
 
-  /* make table (use variant 2; see dis.c) */
+  /* make table (use variant 2; see dgt.c) */
   Astep = GEN->Atotal / GEN->guide_size;
   Acum=0.;
   for( j=0, seg=GEN->seg; j < GEN->guide_size; j++ ) {
@@ -2373,10 +2373,10 @@ _unur_arou_segment_arcmean( struct unur_arou_segment *seg )
   /* if u != 0 ... x is stored in tp (= v/u)   */
   /* else      ... x is stored in tangent dltp */
   xl = (seg->ltp[1] > 0.) ? (seg->ltp[0] / seg->ltp[1]) :
-    ( (seg->dltp[0] == 0.) ? -INFINITY : (seg->dltp[1]) );
+    ( _unur_iszero(seg->dltp[0]) ? -INFINITY : (seg->dltp[1]) );
 
   xr = (seg->rtp[1] > 0.) ? (seg->rtp[0] / seg->rtp[1]) :
-    ( (seg->drtp[0] == 0.) ? INFINITY : (seg->drtp[1]) );
+    ( _unur_iszero(seg->drtp[0]) ? INFINITY : (seg->drtp[1]) );
 
   return _unur_arcmean(xl,xr);
 

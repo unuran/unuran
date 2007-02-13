@@ -250,7 +250,7 @@ _unur_matrix_LU_decomp (int dim, double *A, int *p, int *signum)
 
     ajj = A[idx(j,j)];
 
-    if (ajj != 0.0){
+    if ( !_unur_iszero(ajj) ){
       for (i = j + 1; i < dim; i++){
 	double aij = A[idx(i,j)] / ajj;
 	A[idx(i,j)] = aij;

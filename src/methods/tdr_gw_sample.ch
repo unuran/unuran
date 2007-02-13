@@ -144,7 +144,7 @@ _unur_tdr_gw_sample( struct unur_gen *gen )
 
     case TDR_VAR_T_LOG:
       /* random variate */
-      if (pt->dTfx == 0.)
+      if (_unur_iszero(pt->dTfx))
 	X = pt->x + U / pt->fx;
       else
 	{
@@ -176,7 +176,7 @@ _unur_tdr_gw_sample( struct unur_gen *gen )
 
     case TDR_VAR_T_SQRT:
       /* random variate */
-      if (pt->dTfx == 0.)
+      if (_unur_iszero(pt->dTfx))
 	X = pt->x + U /pt->fx;
       else {
 	/* it would be less expensive to use:
@@ -396,7 +396,7 @@ _unur_tdr_gw_eval_invcdfhat( const struct unur_gen *gen, double U,
     
   case TDR_VAR_T_LOG:
     /* inverse of CDF (random variate) */
-    if (pt->dTfx == 0.)
+    if (_unur_iszero(pt->dTfx))
       X = pt->x + U / pt->fx;
     else {
       t = pt->dTfx * U / pt->fx;
@@ -413,7 +413,7 @@ _unur_tdr_gw_eval_invcdfhat( const struct unur_gen *gen, double U,
 
   case TDR_VAR_T_SQRT:
     /* inverse of CDF (random variate) */
-    if (pt->dTfx == 0.)
+    if (_unur_iszero(pt->dTfx))
       X = pt->x + U / (pt->fx);
     else {
       /* it would be less expensive to use:

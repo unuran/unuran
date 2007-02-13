@@ -121,7 +121,7 @@ _unur_tdr_ps_sample( struct unur_gen *gen )
     switch (gen->variant & TDR_VARMASK_T) {
 
     case TDR_VAR_T_LOG:
-      if (iv->dTfx == 0.)
+      if (_unur_iszero(iv->dTfx))
 	X = iv->x + U / iv->fx;
       else {
 	double t = iv->dTfx * U / iv->fx;
@@ -137,7 +137,7 @@ _unur_tdr_ps_sample( struct unur_gen *gen )
       break;
 
     case TDR_VAR_T_SQRT:
-      if (iv->dTfx == 0.)
+      if (_unur_iszero(iv->dTfx))
 	X = iv->x + U / iv->fx;
       else {
 	/* it would be less expensive to use:
@@ -349,7 +349,7 @@ _unur_tdr_ps_eval_invcdfhat( const struct unur_gen *gen, double U,
   switch (gen->variant & TDR_VARMASK_T) {
 
   case TDR_VAR_T_LOG:
-    if (iv->dTfx == 0.)
+    if (_unur_iszero(iv->dTfx))
       X = iv->x + U / iv->fx;
     else {
       t = iv->dTfx * U / iv->fx;
@@ -365,7 +365,7 @@ _unur_tdr_ps_eval_invcdfhat( const struct unur_gen *gen, double U,
     break;
 
   case TDR_VAR_T_SQRT:
-    if (iv->dTfx == 0.)
+    if (_unur_iszero(iv->dTfx))
       X = iv->x + U / iv->fx;
     else {
       /* it would be less expensive to use:

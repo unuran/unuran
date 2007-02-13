@@ -659,7 +659,7 @@ unur_hinv_chg_truncated( struct unur_gen *gen, double left, double right )
   if (_unur_FP_equal(Umin,Umax)) {
     /* CDF values very close */
     _unur_warning(gen->genid,UNUR_ERR_DISTR_SET,"CDF values very close");
-    if (Umin == 0. || _unur_FP_same(Umax,1.)) {
+    if (_unur_iszero(Umin) || _unur_FP_same(Umax,1.)) {
       /* this is very bad */
       _unur_error(gen->genid,UNUR_ERR_DISTR_SET,"CDF values at boundary points too close");
       return UNUR_ERR_DISTR_SET;
@@ -1481,7 +1481,7 @@ _unur_hinv_interval_is_monotone( struct unur_gen *gen, struct unur_hinv_interval
        as approximation we use the same check for order 5*/
   case 3:
     /* we skip the test if computing the bound has too many round-off errors */
-    if (iv->u==0. || _unur_FP_approx(iv->u,iv->next->u))
+    if (_unur_iszero(iv->u) || _unur_FP_approx(iv->u,iv->next->u))
       return TRUE;
     /* difference quotient */
     bound = 3.*(iv->next->p - iv->p)/(iv->next->u - iv->u);

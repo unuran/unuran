@@ -836,7 +836,7 @@ unur_tdr_set_c( struct unur_par *par, double c )
     _unur_error(GENTYPE,UNUR_ERR_PAR_SET,"c < -0.5 not implemented yet");
     return UNUR_ERR_PAR_SET;
   }
-  if (c != 0 && c > -0.5) {
+  if (!_unur_iszero(c) && c > -0.5) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"-0.5 < c < 0 not recommended. using c = -0.5 instead.");
     c = -0.5;
   }
@@ -1030,7 +1030,7 @@ unur_tdr_chg_truncated( struct unur_gen *gen, double left, double right )
   if (_unur_FP_equal(Umin,Umax)) {
     /* CDF values very close */
     _unur_warning(gen->genid,UNUR_ERR_DISTR_SET,"CDF values very close");
-    if (Umin == 0. || _unur_FP_same(Umax,1.)) {
+    if (_unur_iszero(Umin) || _unur_FP_same(Umax,1.)) {
       /* this is very bad */
       _unur_warning(gen->genid,UNUR_ERR_DISTR_SET,"CDF values at boundary points too close");
       return UNUR_ERR_DISTR_SET;

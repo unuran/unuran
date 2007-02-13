@@ -185,7 +185,7 @@ _unur_eigensystem_house(int dim, double *A, double *d, double *e, double *e2)
         s += A[idx1(i,k)]*A[idx1(i,k)];
       }
       e2[k-1]=s;
-      if (s == 0.) e[k-1]=0.;
+      if (_unur_iszero(s)) e[k-1]=0.;
       else {
         f = A[idx1(k1,k)];
         ek = sqrt(s) * ((f <= 0.) ? 1. : -1.);
@@ -221,30 +221,31 @@ _unur_eigensystem_house(int dim, double *A, double *d, double *e, double *e2)
 #undef idx1
 } /* end of _unur_eigensystem_house() */
 
-/* ---------------------------------------------------------------------------- */
+/*---------------------------------------------------------------------------*/
 
 int _unur_eigensystem_newqr(int dim, double *a, double *b, double *b2, double *g)
-	/*----------------------------------------------------------------------*/
-	/* Computes the eigenvalues of a real symmetric tridiagonal matrix 	*/
-	/* using newton iteration and the secant-QR method			*/
-	/*									*/
-	/* See also G. Derflinger : The NEWQL Algorithm for Obtaining Eigen-	*/
-	/* values of Symmetric Tridiagonal matrices. Statistik, Informatik und  */
-	/* Ökonomie (hrsg. W. Janko), Springer 1988, p22-33			*/
-	/*									*/
-	/* Parameters								*/
-	/*      dim : dimension							*/
-	/*	a   : diagonal of trigonal matrix in a[0]..a[dim-1]		*/
-	/*	b   : co-diagonal in b[0]..b[dim-2]				*/
-	/*      b2  : squares of b 						*/
-	/*      g   : resultant eigenvalues in ascending order			*/
-	/*									*/
-	/* Note : the values of a[], b2[] and b[dim-1] are overwritten		*/
-	/*									*/
-	/* Return value								*/
-	/*      UNUR_SUCCESS : normal case 					*/
-	/*      UNUR_FAILURE : qr algorithm did not converge within MAXIT steps	*/
-	/*----------------------------------------------------------------------*/
+     /*----------------------------------------------------------------------*/
+     /* Computes the eigenvalues of a real symmetric tridiagonal matrix      */
+     /* using newton iteration and the secant-QR method                      */
+     /*                                                                      */
+     /* See also G. Derflinger : The NEWQL Algorithm for Obtaining           */
+     /*    Eigenvalues of Symmetric Tridiagonal matrices.                    */
+     /*    Statistik, Informatik und Oekonomie (hrsg. W. Janko),             */
+     /*    Springer 1988, p. 22-33                                           */
+     /*                                                                      */
+     /* Parameters:                                                          */
+     /*   dim ... dimension                                                  */
+     /*   a   ... diagonal of trigonal matrix in a[0]..a[dim-1]              */
+     /*   b   ... co-diagonal in b[0]..b[dim-2]                              */
+     /*   b2  ... squares of b                                               */
+     /*   g   ... resultant eigenvalues in ascending order                   */
+     /*                                                                      */
+     /* Note : the values of a[], b2[] and b[dim-1] are overwritten          */
+     /*                                                                      */
+     /* Return value:                                                        */
+     /*      UNUR_SUCCESS : normal case                                      */
+     /*      UNUR_FAILURE : qr algorithm did not converge within MAXIT steps */
+     /*----------------------------------------------------------------------*/
 {
 #define ZERO 0.
 #define ONE  1.
@@ -277,13 +278,13 @@ int _unur_eigensystem_newqr(int dim, double *a, double *b, double *b2, double *g
     do {
       oldw = w;
       d=a[0]-shift;
-      if (d == ZERO) goto label_9; 
+      if ( _unur_iszero(d) ) goto label_9; 
       u = ONE / d;
       w = u;
       for (i=2; i<=l; i++) {
         s = b2[i-2]/d;
 	d = a[i-1]-shift-s;
-        if (d == ZERO) goto label_9;
+        if ( _unur_iszero(d) ) goto label_9;
         u = (u*s+ONE)/d;
 	w += u;
       }
@@ -302,7 +303,7 @@ label_9:
 	k=1;
 	for (i=1; i<l; i++) {
 	  oldgam = gamma;
-	  if (p != ZERO) {
+	  if ( ! _unur_iszero(p) ) {
             aa = a[i] - shift;
 	    tan = b2[i-1] / p;
 	    sec = tan + ONE;
@@ -322,7 +323,7 @@ label_9:
 	  else {
             gamma = -oldgam;
 	    if (i==1) sec = ONE;
-	    if (sec != ZERO) p = b2[i-1] / sec;
+	    if ( ! _unur_iszero(sec) ) p = b2[i-1] / sec;
 	    sec = ZERO;
 	    b2[i-1] = p + b2[i];
 	  }
@@ -429,7 +430,7 @@ _unur_eigensystem_trinv(int dim, double *a, double *b, double *g, double *c,
 
     for (j=1; j<dim; j++) {
       if(fabs(r[j-1]) >= fabs(b[j-1])) {
-        if (r[j-1]==0.) r[j-1]=EPS2;
+        if ( _unur_iszero(r[j-1]) ) r[j-1]=EPS2;
         in[j-1]=0;
         f=b[j-1]/r[j-1];
       }
@@ -446,9 +447,9 @@ _unur_eigensystem_trinv(int dim, double *a, double *b, double *g, double *c,
       w[j-1]=f;
       q[j] -= f*p[j-1];
       r[j] -= f*q[j-1];
-      if (r[j-1]==0.) r[j-1]=EPS2;
+      if ( _unur_iszero(r[j-1]) ) r[j-1]=EPS2;
     }
-    if (r[dim-1]==0.) r[dim-1]=EPS2;
+    if ( _unur_iszero(r[dim-1]) ) r[dim-1]=EPS2;
 
     /* two iterations */ 
     for (j=dim; j>=1; j--) {
@@ -516,7 +517,7 @@ int _unur_eigensystem_back(int dim, double *a, double *e, double *c)
   double h, s, s2;
 
   for (k=dim-2; k>=1; k--) {
-    if(e[k-1] != 0.) {
+    if( ! _unur_iszero(e[k-1]) ) {
       k1=k+1;
       h=-e[k-1]*a[idx1(k1,k)];
       for (j=1; j<=dim; j++) {

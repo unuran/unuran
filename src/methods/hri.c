@@ -608,7 +608,7 @@ _unur_hri_sample( struct unur_gen *gen )
 
   for(;;) {
     /* sample from U(0,1) */
-    while ( (U = 1.-_unur_call_urng(gen->urng)) == 0.);
+    while ( _unur_iszero(U = 1.-_unur_call_urng(gen->urng)) );
 
     /* sample from exponential distribution with scale parameter lambda */
     E = -log(U) / lambda0;
@@ -657,7 +657,7 @@ _unur_hri_sample( struct unur_gen *gen )
 
   for(;;) {
     /* sample from U(0,1) */
-    while ( (U = 1.-_unur_call_urng(gen->urng)) == 0.);
+    while ( _unur_iszero(U = 1.-_unur_call_urng(gen->urng)) );
 
     /* sample from exponential distribution with scale parameter lambda */
     E = -log(U) / lambda1;
@@ -721,7 +721,7 @@ _unur_hri_sample_check( struct unur_gen *gen )
 
   for(i0=1;;i0++) {
     /* sample from U(0,1) */
-    while ( (U = 1.-_unur_call_urng(gen->urng)) == 0.);
+    while ( _unur_iszero(U = 1.-_unur_call_urng(gen->urng)) );
 
     /* sample from exponential distribution with scale parameter lambda */
     E = -log(U) / lambda0;
@@ -787,7 +787,7 @@ _unur_hri_sample_check( struct unur_gen *gen )
 
   for(i1=1;;i1++) {
     /* sample from U(0,1) */
-    while ( (U = 1.-_unur_call_urng(gen->urng)) == 0.);
+    while ( _unur_iszero(U = 1.-_unur_call_urng(gen->urng)) );
 
     /* sample from exponential distribution with scale parameter lambda */
     E = -log(U) / lambda1;

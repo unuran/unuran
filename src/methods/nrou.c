@@ -730,7 +730,7 @@ _unur_nrou_sample( struct unur_gen *gen )
 
   while (1) {
     /* generate point uniformly on rectangle */
-    while ( (V = _unur_call_urng(gen->urng)) == 0.);
+    while ( _unur_iszero(V = _unur_call_urng(gen->urng)) );
     V *= GEN->vmax;
     U = GEN->umin + _unur_call_urng(gen->urng) * (GEN->umax - GEN->umin);
 
@@ -743,7 +743,7 @@ _unur_nrou_sample( struct unur_gen *gen )
       continue;
 
     /* accept or reject */
-    if (GEN->r ==1) {
+    if (GEN->r == 1.) {
       /* normal rou-method with square-root */
       if (V*V <= PDF(X)) 
         return X;
@@ -781,7 +781,7 @@ _unur_nrou_sample_check( struct unur_gen *gen )
 
   while (1) {
     /* generate point uniformly on rectangle */
-    while ( (V = _unur_call_urng(gen->urng)) == 0.);
+    while ( _unur_iszero(V = _unur_call_urng(gen->urng)) );
     V *= GEN->vmax;
     U = GEN->umin + _unur_call_urng(gen->urng) * (GEN->umax - GEN->umin);
     
@@ -816,7 +816,7 @@ _unur_nrou_sample_check( struct unur_gen *gen )
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF(x) > hat(x)");
     
     /* accept or reject */
-    if (GEN->r ==1) {
+    if (GEN->r == 1.) {
       /* normal rou-method with square-root */
       if (V*V <= PDF(X))
         return X;

@@ -785,7 +785,7 @@ _unur_ssr_sample( struct unur_gen *gen )
 
   while (1) {
     /* uniform ~U(0,1) */
-    while ( (U = GEN->Aleft + _unur_call_urng(gen->urng) * GEN->Ain) == 0. );
+    while ( _unur_iszero(U = GEN->Aleft + _unur_call_urng(gen->urng) * GEN->Ain) );
 
     if (U < GEN->al) {        /* first part */
       X = - GEN->vl * GEN->vl / U;
@@ -847,7 +847,7 @@ _unur_ssr_sample_check( struct unur_gen *gen )
 
   while (1) {
     /* uniform ~U(0,1) */
-    while ( (U = GEN->Aleft + _unur_call_urng(gen->urng) * GEN->Ain) == 0. );
+    while ( _unur_iszero(U = GEN->Aleft + _unur_call_urng(gen->urng) * GEN->Ain) );
 
     if (U < GEN->al) {        /* first part */
       X = - GEN->vl * GEN->vl / U;

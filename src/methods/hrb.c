@@ -586,7 +586,7 @@ _unur_hrb_sample( struct unur_gen *gen )
 
   for(;;) {
     /* sample from U(0,1) */
-    while ( (U = 1.-_unur_call_urng(gen->urng)) == 0.);
+    while ( _unur_iszero(U = 1.-_unur_call_urng(gen->urng)) );
 
     /* sample from exponential distribution with scale parameter lambda */
     E = -log(U) / lambda;
@@ -636,7 +636,7 @@ _unur_hrb_sample_check( struct unur_gen *gen )
 
   for(i=1;;i++) {
     /* sample from U(0,1) */
-    while ( (U = 1.-_unur_call_urng(gen->urng)) == 0.);
+    while ( _unur_iszero(U = 1.-_unur_call_urng(gen->urng)) );
 
     /* sample from exponential distribution with scale parameter lambda */
     E = -log(U) / lambda;

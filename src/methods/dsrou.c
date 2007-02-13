@@ -697,7 +697,7 @@ _unur_dsrou_sample( struct unur_gen *gen )
     V = GEN->al + _unur_call_urng(gen->urng) * (GEN->ar - GEN->al);
     V /= (V<0.) ? GEN->ul : GEN->ur;    /* if ul==0. then al==0. and thus V>=0. */
 
-    while ( (U = _unur_call_urng(gen->urng)) == 0.);
+    while ( _unur_iszero(U = _unur_call_urng(gen->urng)));
     U *= (V<0.) ? GEN->ul : GEN->ur;
 
     /* ratio */
@@ -742,7 +742,7 @@ _unur_dsrou_sample_check( struct unur_gen *gen )
     V = GEN->al + _unur_call_urng(gen->urng) * (GEN->ar - GEN->al);
     V /= (V<0.) ? GEN->ul : GEN->ur;
 
-    while ( (U = _unur_call_urng(gen->urng)) == 0.);
+    while ( _unur_iszero(U = _unur_call_urng(gen->urng)));
     U *= (V<0.) ? GEN->ul : GEN->ur;
 
     /* ratios */
@@ -813,7 +813,7 @@ _unur_dsrou_rectangle( struct unur_gen *gen )
   GEN->ur = sqrt(pm);
 
   /* areas of rectangle */
-  if (GEN->ul == 0.) {
+  if (_unur_iszero(GEN->ul)) {
     /* PMF monotonically decreasing */
     GEN->al = 0.;
     GEN->ar = DISTR.sum;

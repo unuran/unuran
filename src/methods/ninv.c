@@ -744,7 +744,7 @@ unur_ninv_chg_truncated( struct unur_gen *gen, double left, double right )
   if (_unur_FP_equal(Umin,Umax)) {
     /* CDF values very close */
     _unur_warning(gen->genid,UNUR_ERR_DISTR_SET,"CDF values very close");
-    if (Umin == 0. || _unur_FP_same(Umax,1.)) {
+    if (_unur_iszero(Umin) || _unur_FP_same(Umax,1.)) {
       /* this is very bad */
       _unur_warning(gen->genid,UNUR_ERR_DISTR_SET,"CDF values at boundary points too close");
       return UNUR_ERR_DISTR_SET;
@@ -1307,7 +1307,7 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
     lengthsgn = (length < 0.) ? -1. : 1.;
 
     /* breaking condition */
-    if ( f2 == 0.                                     /* exact hit */ 
+    if ( _unur_iszero(f2)                             /* exact hit */ 
 	 || _unur_FP_same(fa, f2)                      /* flat region  */
 	 || lengthabs <= GEN->rel_x_resolution * x2abs /* relative x precision reached */
 	 || lengthabs <= GEN->rel_x_resolution * GEN->rel_x_resolution
@@ -1332,7 +1332,7 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
     /* minimal step */
     if ( fabs(dx) < GEN->rel_x_resolution * x2abs ){
       dx = lengthsgn * 0.99 * GEN->rel_x_resolution * x2abs;
-      while (x2 == x2 - dx){ /* dx too small  */
+      while ( x2 == x2 - dx ){ /* dx too small  */
 	if ( dx != 2.*dx)    /* near limit of calculations */
 	  dx = 2.*dx;
         else
@@ -1462,10 +1462,10 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
   for (i=0; i < GEN->max_iter; i++) {
 
     flat_count = 0;
-    while (dfx == 0.) {   /* function flat at x */
+    while (_unur_iszero(dfx)) {   /* function flat at x */
       /* printf("step: %g, x: %g, fx: %g, dfx: %g\n",step, x, fx, dfx); */
 
-      if (fx == 0.)  /* exact hit -> leave while-loop */
+      if (_unur_iszero(fx))  /* exact hit -> leave while-loop */
 	break; 
 
       if (fx > 0.) {         /* try another x */
@@ -1511,7 +1511,7 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
     
     step = 1.;   /* set back stepsize */
 
-    if (fx == 0.)  /* exact hit -> finished */
+    if (_unur_iszero(fx))  /* exact hit -> finished */
       break;
 
 

@@ -9,7 +9,8 @@ sample with @command{unur_sample_discr}
 @item DAU   @tab [x] @tab  x  @tab      @tab     @tab 
 @item DGT   @tab [x] @tab  x  @tab      @tab     @tab 
 @item DSROU @tab  x  @tab     @tab  x   @tab  x  @tab T-concave
-@item DSTD  @tab     @tab     @tab      @tab     @tab build-in standard distribution
 @item DSS   @tab [x] @tab  x  @tab      @tab  x  @tab 
+@item DSTD  @tab     @tab     @tab      @tab     @tab build-in standard distribution
+@item CEXT  @tab     @tab     @tab      @tab     @tab wrapper for external generator
 @end multitable
 @end cartouche

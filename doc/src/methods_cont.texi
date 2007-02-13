@@ -6,7 +6,6 @@ sample with @command{unur_sample_cont}
 @multitable {method} {PDF} {dPDF} {CDF} {mode} {area} {build-in standard distributionxx}
 @item method @tab PDF @tab dPDF @tab CDF  @tab mode @tab area @tab other
 @item AROU   @tab  x  @tab  x   @tab      @tab  [x] @tab      @tab T-concave
-@item CSTD   @tab     @tab      @tab      @tab      @tab      @tab build-in standard distribution
 @item HINV   @tab [x] @tab [x]  @tab  x   @tab      @tab      @tab
 @item HRB    @tab     @tab      @tab      @tab      @tab      @tab bounded hazard rate
 @item HRD    @tab     @tab      @tab      @tab      @tab      @tab decreasing hazard rate
@@ -20,5 +19,7 @@ sample with @command{unur_sample_cont}
 @item TDR    @tab  x  @tab  x   @tab      @tab      @tab      @tab T-concave
 @item TDRGW  @tab  x  @tab  x   @tab      @tab      @tab      @tab T-concave
 @item UTDR   @tab  x  @tab      @tab      @tab   x  @tab   ~  @tab T-concave
+@item CSTD   @tab     @tab      @tab      @tab      @tab      @tab build-in standard distribution
+@item CEXT   @tab     @tab      @tab      @tab      @tab      @tab wrapper for external generator
 @end multitable
 @end cartouche

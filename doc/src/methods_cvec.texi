@@ -5,6 +5,5 @@ sample with @command{unur_sample_vec}
 @sp 1
 @noindent
 NORTA: Requires rank correlation matrix and marginal distributions. @*
-VMT: Requires the mean vector and the covariance matrix. @*
 VNROU: Requires the PDF.
 @end cartouche

@@ -35,11 +35,6 @@
 #include "testunuran.h"
 
 /*---------------------------------------------------------------------------*/
-/* function prototypes for internal UNURAN functions                         */
-
-int _unur_isnan (const double x);
-
-/*---------------------------------------------------------------------------*/
 /* check whether unur_urng_reset() works                                     */
 
 static int 
@@ -330,7 +325,7 @@ int compare_double_sequence_par( FILE *LOG, int line, UNUR_PAR *par, int sample_
   /* compare sequence */
   for (i=0; i<sample_size; i++) {
     x = unur_sample_cont(gen);	
-    if ( !_unur_FP_equal(double_sequence_A[i], x)) {
+    if ( !_unur_FP_approx(double_sequence_A[i], x)) {
       ok = FALSE;
       break;
     }
@@ -407,7 +402,7 @@ int compare_double_sequence_gen( FILE *LOG, int line, UNUR_GEN *gen, int sample_
   /* compare sequence */
   for (i=0; i<sample_size; i++) {
     x = unur_sample_cont(gen);	
-    if ( !_unur_FP_equal(double_sequence_A[i], x)) {
+    if ( !_unur_FP_approx(double_sequence_A[i], x)) {
       ok = FALSE;
       break;
     }
@@ -638,7 +633,7 @@ int compare_cvec_sequence_gen( FILE *LOG, int line, UNUR_GEN *gen, int sample_si
   for (i=0; i<sample_size; i++) {
     unur_sample_vec( gen, x );
     for (k=0; k<dim; k++) {
-      if ( !_unur_FP_equal(cvec_sequence_A[i*dim+k], x[k])) {
+      if ( !_unur_FP_approx(cvec_sequence_A[i*dim+k], x[k])) {
 	ok = FALSE;
 	break;
       }
@@ -745,7 +740,7 @@ int compare_matr_sequence_gen( FILE *LOG, int line, UNUR_GEN *gen, int sample_si
   for (i=0; i<sample_size; i++) {
     unur_sample_matr( gen, x );
     for (k=0; k<dim; k++) {
-      if ( !_unur_FP_equal(matr_sequence_A[i*dim+k], x[k])) {
+      if ( !_unur_FP_approx(matr_sequence_A[i*dim+k], x[k])) {
 	ok = FALSE;
 	break;
       }

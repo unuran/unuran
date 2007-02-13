@@ -44,6 +44,10 @@
 #include <unuran_tests.h>
 #include "testdistributions/testdistributions.h"
 
+/* macros and functions for handling floats */
+#include <src/utils/unur_fp_source.h>
+#include <src/utils/unur_fp_const_source.h>
+
 #ifdef WITH_DMALLOC
 #  include <dmalloc.h>
 #endif
@@ -74,15 +78,6 @@
 #ifndef M_LN10
 #define M_LN10  2.302585092994046
 #endif
-
-/*---------------------------------------------------------------------------*/
-/* compare two floating point numbers                                        */
-/* (this is copied from ./src/utils/unur_fp_source.h)                        */
-
-#define _unur_FP_equal(a,b) \
- ((a)==(b) || \
-  fabs((a)-(b)) <= ((fabs(a)<fabs(b))?fabs(a):fabs(b)) * 100. * FLT_EPSILON)
-
 
 /*---------------------------------------------------------------------------*/
 /* check for invalid NULL pointer, that should not happen in this program */

@@ -111,8 +111,8 @@ _unur_dpdf_powerexponential( double x, const UNUR_DISTR *distr )
   register const double *params = DISTR.params;
   register double tmp;
 
-  if (x == 0.)    /* derivative may not be defined, but ...    */
-    return 0.;    /* a tangent parallel to x-axis is possible. */
+  if (_unur_iszero(x))    /* derivative may not be defined, but ...    */
+    return 0.;            /* a tangent parallel to x-axis is possible. */
 
   tmp = exp( -pow(fabs(x),tau) - LOGNORMCONSTANT + (tau-1.)*log(fabs(x)) ) * tau;
 
@@ -127,8 +127,8 @@ _unur_dlogpdf_powerexponential( double x, const UNUR_DISTR *distr )
 {
   register const double *params = DISTR.params;
 
-  if (x == 0.)    /* derivative may not be defined, but ...    */
-    return 0.;    /* a tangent parallel to x-axis is possible. */
+  if (_unur_iszero(x))    /* derivative may not be defined, but ...    */
+    return 0.;            /* a tangent parallel to x-axis is possible. */
 
   /* sign ! */
   return (x<0. ? 1. : -1.) * (tau-1.)* pow(fabs(x), tau-1.);

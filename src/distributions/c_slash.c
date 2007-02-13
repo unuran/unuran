@@ -78,7 +78,7 @@ static int _unur_set_params_slash( UNUR_DISTR *distr, const double *params, int 
 double
 _unur_pdf_slash(double x, const UNUR_DISTR *distr)
 {
-  if (x == 0.)
+  if (_unur_iszero(x))
     return (0.5 * NORMCONSTANT);
   else
     return ((1. - exp(-x*x/2.)) / (x*x) * NORMCONSTANT);
@@ -91,7 +91,7 @@ _unur_dpdf_slash(double x, const UNUR_DISTR *distr ATTRIBUTE__UNUSED)
 { 
   register double xsq = x * x;
 
-  if (x == 0.)
+  if (_unur_iszero(x))
     return 0.;
   else
     return ((-2. + exp(-xsq/2.) * (2. + xsq)) / (xsq * x));

@@ -95,10 +95,10 @@ _unur_pdf_F(double x, const UNUR_DISTR *distr)
     /* out of support */
     return 0.;
 
-  else if (x==0.) {
+  else if (_unur_iszero(x)) {
     if (nua < 2.)
       return INFINITY;
-    else if (nua == 2.)
+    else if (_unur_isfsame(nua,2.))
       return exp(-LOGNORMCONSTANT);
     else
       return 0.;
@@ -120,10 +120,10 @@ _unur_logpdf_F(double x, const UNUR_DISTR *distr)
     /* out of support */
     return -INFINITY;
 
-  else if (x==0.) {
+  else if (_unur_iszero(x)) {
     if (nua < 2.)
       return INFINITY;
-    else if (nub == 2.)
+    else if (_unur_isfsame(nub,2.))
       return -LOGNORMCONSTANT;
     else
       return -INFINITY;
@@ -145,10 +145,10 @@ _unur_dpdf_F(double x, const UNUR_DISTR *distr)
     /* out of support */
     return 0.;
 
-  else if (x==0.) {
+  else if (_unur_iszero(x)) {
     if (nua < 2.)
       return -INFINITY;
-    else if (nub == 2.)
+    else if (_unur_isfsame(nub,2.))
       return -(2.+nub)/nub * exp(-LOGNORMCONSTANT);
     else
       return 0.;
@@ -170,10 +170,10 @@ _unur_dlogpdf_F(double x, const UNUR_DISTR *distr)
     /* out of support */
     return 0.;
 
-  else if (x==0.) {
+  else if (_unur_iszero(x)) {
     if (nua < 2.)
       return -INFINITY;
-    else if (nub == 2.)
+    else if (_unur_isfsame(nub,2.))
       return -(2.+nub)/nub;
     else
       return INFINITY;

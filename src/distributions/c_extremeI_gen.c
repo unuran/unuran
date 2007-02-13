@@ -116,7 +116,7 @@ double _unur_stdgen_sample_extremeI_inv( struct unur_gen *gen )
   COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
 
   /* sample from uniform random number generator */
-  while ((U = GEN->umin + uniform() * (GEN->umax-GEN->umin)) == 0.);
+  while (_unur_iszero(U = GEN->umin + uniform() * (GEN->umax-GEN->umin)));
 
   /* transform to random variate */
   X = -log( -log(U) );

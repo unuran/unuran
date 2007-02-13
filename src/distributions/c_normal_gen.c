@@ -165,8 +165,7 @@ double _unur_stdgen_sample_normal_inv( struct unur_gen *gen )
   COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
 
   /* sample from uniform random number generator */
-  while ((U = GEN->umin + uniform() * (GEN->umax-GEN->umin)) == 0)
-    ;
+  while (_unur_iszero(U = GEN->umin + uniform() * (GEN->umax-GEN->umin)));
 
   /* transform to random variate */
   X = _unur_sf_inv_cdfnormal(U);
@@ -368,7 +367,7 @@ _unur_stdgen_sample_normal_nquo( struct unur_gen *gen )
 
   while (1) {
     u = uniform();
-    if (u==0.) u = 1.;
+    if (_unur_iszero(u)) u = 1.;
     v = (uniform() - 0.5) * 0.857763885 * 2;
     X = v/u;
     if (X*X <= -4. * log(u)) 
@@ -534,7 +533,7 @@ _unur_stdgen_sample_normal_kr( struct unur_gen *gen )
     do {
       V = uniform();
       W = uniform();
-      if (W==0.) { t=0.; continue; }
+      if (_unur_iszero(W)) { t=0.; continue; }
       t = XI * XI/2. - log(W);
     } while ( (V*V*t) > (XI*XI/2.) );
     X = (U < 0.986655477086949) ? pow(2*t,0.5) : -pow(2*t,0.5);

@@ -444,7 +444,7 @@ beta_b00_init( struct unur_gen *gen )
   p_ = p - 1.;
   q_ = q - 1.;
   c = (q * q_) / (p * p_);                            /* q(1-q) / p(1-p) */
-  t = (c == 1.) ? 0.5 : (1. - sqrt(c))/(1. - c);   /* t = t_opt       */
+  t = _unur_FP_same(c,1.) ? 0.5 : (1. - sqrt(c))/(1. - c);   /* t = t_opt       */
   fp = exp(p_ * log(t));
   fq = exp(q_ * log(1. - t));                        /* f(t) = fa * fb  */
   

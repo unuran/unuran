@@ -90,7 +90,7 @@ _unur_pdf_chisquare(double x, const UNUR_DISTR *distr)
     /* out of support */
     return 0.;
 
-  if (nu == 2.)
+  if (_unur_isfsame(nu,2.))
     return exp(-x/2. - LOGNORMCONSTANT);
 
   return exp( log(x) * (nu/2. - 1.) - x/2. - LOGNORMCONSTANT );
@@ -108,7 +108,7 @@ _unur_dpdf_chisquare(double x, const UNUR_DISTR *distr)
     /* out of support */
     return 0.;
 
-  if (nu == 2.)
+  if (_unur_isfsame(nu,2.))
     return ( -exp(-x/2. - LOGNORMCONSTANT) / 2. );
 
   return ( exp( log(x) * (nu/2. - 2.) - x/2. - LOGNORMCONSTANT) * (nu - 2. - x)/2. );

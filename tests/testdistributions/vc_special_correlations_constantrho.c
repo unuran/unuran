@@ -67,6 +67,7 @@
 #include <unuran_config.h>
 #include <distr/distr_struct.h> 
 #include <utils/matrix_source.h> 
+#include <utils/unur_fp_source.h>
 #include <utils/unur_math_source.h>
 #include <specfunct/unur_specfunct_source.h>
 #include <float.h>
@@ -108,7 +109,7 @@ _unur_vc_set_corrmatrix_constantrho( UNUR_DISTR *distr, int dim, double rho )
   int error = UNUR_FAILURE;
   
   /* checking parameters */ 
-  if (rho == 0.) /* nothing to do */
+  if (_unur_iszero(rho)) /* nothing to do */
     return UNUR_SUCCESS;
 
   if ( rho<0. || rho>=1. || dim<1)

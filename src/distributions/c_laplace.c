@@ -129,8 +129,8 @@ _unur_dpdf_laplace( double x, const UNUR_DISTR *distr )
 
   z = (x>theta) ? (x-theta)/phi : (theta-x)/phi;
 
-  if (z == 0.)   /* derivative is not defined, but ...                      */
-    return 0.;   /* a tangent parallel to x-axis is possible.               */
+  if (_unur_iszero(z))   /* derivative is not defined, but ...              */
+    return 0.;           /* a tangent parallel to x-axis is possible.       */
 
   return ( ((x>theta) ? -exp(-z)/phi : exp(-z)/phi) / (2.*phi) );
 } /* end of unur_dpdf_laplace() */

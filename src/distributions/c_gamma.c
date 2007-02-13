@@ -113,14 +113,14 @@ _unur_pdf_gamma( double x, const UNUR_DISTR *distr )
 
   /* standard form */
 
-  if (alpha == 1. && x >= 0.)
+  if (_unur_isone(alpha) && x >= 0.)
     return exp( -x - LOGNORMCONSTANT);
 
   if (x > 0.)
     /* pow(x,alpha-1.) * exp(-x) */
     return exp( (alpha-1.)*log(x) - x - LOGNORMCONSTANT);
 
-  if (x == 0.)
+  if (_unur_iszero(x))
     return (alpha>1. ? 0. : INFINITY);
 
   /* out of domain */
@@ -141,13 +141,13 @@ _unur_logpdf_gamma( double x, const UNUR_DISTR *distr )
 
   /* standard form */
 
-  if (alpha == 1. && x >= 0.)
+  if (_unur_isone(alpha) && x >= 0.)
     return ( -x - LOGNORMCONSTANT);
 
   if (x > 0.)
     return ( (alpha-1.)*log(x) - x - LOGNORMCONSTANT);
 
-  if (x == 0.)
+  if (_unur_iszero(x))
     return (alpha>1. ? -INFINITY : INFINITY);
 
   /* out of domain */
@@ -168,13 +168,13 @@ _unur_dpdf_gamma( double x, const UNUR_DISTR *distr )
 
   /* standard form */
   
-  if (alpha == 1. && x>=0)
+  if (_unur_isone(alpha) && x>=0)
     return( -exp(-x - LOGNORMCONSTANT) / beta );
   
   if (x > 0.)
     return ( exp( log(x) * (alpha-2.) - x - LOGNORMCONSTANT) *  ((alpha-1.) -x) / beta ); 
 
-  if (x==0. && alpha < 2.)
+  if (_unur_iszero(x) && alpha < 2.)
     return (alpha>1. ? INFINITY : -INFINITY);
 
   /* out of domain */
@@ -195,13 +195,13 @@ _unur_dlogpdf_gamma( double x, const UNUR_DISTR *distr )
 
   /* standard form */
 
-  if (alpha == 1. && x >= 0.)
+  if (_unur_isone(alpha) && x >= 0.)
     return -1./beta;
 
   if (x > 0.)
     return ((alpha-1.)/x - 1)/beta;
 
-  if (x == 0.)
+  if (_unur_iszero(x))
     return (alpha>1. ? INFINITY : -INFINITY);
 
   /* out of domain */

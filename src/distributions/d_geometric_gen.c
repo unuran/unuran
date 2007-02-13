@@ -145,7 +145,7 @@ _unur_stdgen_sample_geometric_inv( struct unur_gen *gen )
 
   /* sample from uniform random number generator */
 /*    while ((U = GEN->umin + uniform() * (GEN->umax-GEN->umin)) == 0.); */
-  while ((U = uniform()) == 0.);
+  while (_unur_iszero(U = uniform()));
 
   /* transform to random variate */
   K = (int) (log(U) / log(1.-p));

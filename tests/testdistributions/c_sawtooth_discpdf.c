@@ -40,6 +40,7 @@
 #include <distr/distr_source.h>
 #include <distr/cont.h>
 #include <distributions/unur_stddistr.h>
+#include <utils/unur_fp_source.h>
 #include "testdistributions.h"
 
 /*---------------------------------------------------------------------------*/
@@ -65,13 +66,13 @@ _unur_pdf_sawtooth_discpdf( double x, const UNUR_DISTR *distr ATTRIBUTE__UNUSED 
 {
   double pdf;
 
-  if (x==0.) 
+  if (_unur_iszero(x)) 
     return 0.;
 
   /* else */
   x = fabs(x);
   pdf = x - floor(x);
-  return (pdf==0.) ? 1. : pdf;
+  return _unur_iszero(pdf) ? 1. : pdf;
 } /* end of _unur_pdf_sawtooth_discpdf() */
 
 /*---------------------------------------------------------------------------*/

@@ -120,10 +120,11 @@ _unur_pdf_beta(double x, const UNUR_DISTR *distr)
   if (x > 0. && x < 1.)
     return exp((p-1.)*log(x) + (q-1.)*log(1.-x) - LOGNORMCONSTANT);
 
-  if ((x==0. && p==1.) || (x==1. && q==1.))
+  if ((_unur_iszero(x) && _unur_isone(p)) 
+      || (_unur_isone(x) && _unur_isone(q)))
     return exp(-LOGNORMCONSTANT);
 
-  if ((x==0. && p<1.) || (x==1. && q<1.))
+  if ((_unur_iszero(x) && p<1.) || (_unur_isone(x) && q<1.))
     return INFINITY;
 
   /* out of support */
@@ -147,10 +148,11 @@ _unur_logpdf_beta(double x, const UNUR_DISTR *distr)
   if (x > 0. && x < 1.)
     return ((p-1.)*log(x) + (q-1.)*log(1.-x) - LOGNORMCONSTANT);
 
-  if ((x==0. && p==1.) || (x==1. && q==1.))
+  if ((_unur_iszero(x) && _unur_isone(p)) 
+      || (_unur_isone(x) && _unur_isone(q)))
     return (-LOGNORMCONSTANT);
 
-  if ((x==0. && p<1.) || (x==1. && q<1.))
+  if ((_unur_iszero(x) && p<1.) || (_unur_isone(x) && q<1.))
     return INFINITY;
 
   /* out of support */
@@ -175,28 +177,28 @@ _unur_dpdf_beta(double x, const UNUR_DISTR *distr)
   if (x > 0. && x < 1.)
     return (exp((p-2.)*log(x) + (q-2.)*log(1.-x) - LOGNORMCONSTANT) * ( (p-1.)*(1.-x) - (q-1.)*x ) / (b-a) );
 
-  if (x==0. && p==1.)
+  if (_unur_iszero(x) && _unur_isone(p))
     return (1.-q)*exp(-LOGNORMCONSTANT)/(b-a);
 
-  if (x==0. && p==2.)
+  if (_unur_iszero(x) && _unur_isfsame(p,2.))
     return exp(-LOGNORMCONSTANT)/(b-a);
 
-  if (x==0. && p<2.)
+  if (_unur_iszero(x) && p<2.)
     return (p>1. ? INFINITY : -INFINITY);
 
-  /*   if (x==0. && p>2.) */
+  /*   if (_unur_iszero(x) && p>2.) */
   /*     return 0.; */
 
-  if (x==1. && q==1.)
+  if (_unur_isone(x) && _unur_isone(q))
     return (p-1.)*exp(-LOGNORMCONSTANT)/(b-a);
 
-  if (x==1. && q==2.)
+  if (_unur_isone(x) && _unur_isfsame(q,2.))
     return -exp(-LOGNORMCONSTANT)/(b-a);
 
-  if (x==1. && q<2.)
+  if (_unur_isone(x) && q<2.)
     return (q>1. ? -INFINITY : INFINITY);
 
-  /*   if (x==1. && q>2.) */
+  /*   if (_unur_isone(x) && q>2.) */
   /*     return 0.; */
 
   /* out of support */
@@ -221,22 +223,22 @@ _unur_dlogpdf_beta(double x, const UNUR_DISTR *distr)
   if (x > 0. && x < 1.)
     return (((p-1.)/x - (q-1.)/(1.-x)) / (b-a));
 
-  if (x==0. && p<1.)
+  if (_unur_iszero(x) && p<1.)
     return -INFINITY;
 
-  if (x==0. && p==1.)
+  if (_unur_iszero(x) && _unur_isone(p))
     return (-(q-1.)/((1.-x)*(b-a)));
 
-  if (x==0. && p>1.)
+  if (_unur_iszero(x) && p>1.)
     return INFINITY;
 
-  if (x==1. && q<1.)
+  if (_unur_isone(x) && q<1.)
     return INFINITY;
 
-  if (x==1. && q==1.)
+  if (_unur_isone(x) && _unur_isone(q))
     return ((p-1.)/(b-a));
 
-  if (x==1. && q>1.)
+  if (_unur_isone(x) && q>1.)
     return -INFINITY;
 
   /* out of support */

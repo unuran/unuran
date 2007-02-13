@@ -109,10 +109,10 @@ _unur_pdf_weibull( double x, const UNUR_DISTR *distr )
   if (x < 0.)
     return 0.;
 
-  if (x==0. && c==1.)
+  if (_unur_iszero(x) && _unur_isone(c))
     return NORMCONSTANT;
 
-  if (x==0. && c!=1.)
+  if (_unur_iszero(x) && !_unur_isone(c))
     return 0.;
 
   /* else */
@@ -140,7 +140,7 @@ _unur_dpdf_weibull( double x, const UNUR_DISTR *distr )
   if (x < 0.)
     return 0.;
   
-  if (x==0. && c==1.)
+  if (_unur_iszero(x) && _unur_isone(c))
     return 0.; 
 
   /* else */

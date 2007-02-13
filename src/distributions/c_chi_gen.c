@@ -159,7 +159,7 @@ chi_chru_init( struct unur_gen *gen )
     return UNUR_ERR_GEN_CONDITION;
   }
 
-  if (nu == 1.)
+  if (_unur_isone(nu))
     /* no setup step required */
     return UNUR_SUCCESS;
 
@@ -188,7 +188,7 @@ _unur_stdgen_sample_chi_chru( struct unur_gen *gen )
   CHECK_NULL(gen,INFINITY);
   COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
 
-  if (nu == 1.) {
+  if (_unur_isone(nu)) {
     while (1) {
       u = uniform();
       v = uniform() * 0.857763884960707;

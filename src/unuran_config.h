@@ -42,11 +42,12 @@
 /*---------------------------------------------------------------------------*/
 /* Default name of log file.                                                 */
 /*                                                                           */
-/* Use "stdout" to write all infos to stdout.                                */
-/* If no log file should be used, #undef the macro UNUR_ENABLE_LOGGING below.*/
+/* If this macro is not defined all infos are written on 'stdout'.           */
+/*                                                                           */
+/* Remark: If no log file should be used,                                    */
+/*         #undef the macro UNUR_ENABLE_LOGGING below.                       */
 
 #define UNUR_LOG_FILE "unuran.log"
-/*  #define UNUR_LOG_FILE "stdout" */
 
 /*---------------------------------------------------------------------------*/
 /* Define this macro to switch on writing information about the              */
@@ -92,7 +93,8 @@
 
 /* Write warnings and error messages to stderr.                              */
 /* #undef this macro to suppress output on stderr.                           */
-/*  #define UNUR_ENABLE_STDERR  1 */
+
+/* #define UNUR_ENABLE_STDERR  1 */
 
 /* Notice that if neither UNUR_ENABLE_LOGFILE nor UNUR_ENABLE_STDERR is      */
 /* defined, then there are no warnings and error messages at all.            */

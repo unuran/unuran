@@ -40,7 +40,7 @@
 
 /*---------------------------------------------------------------------------*/
 
-static FILE *_unur_logfile_open( const char *filename );  
+static FILE *_unur_logfile_open( void );  
 
 /*---------------------------------------------------------------------------*/
 
@@ -165,7 +165,7 @@ unur_get_stream( void )
      /*----------------------------------------------------------------------*/
 {
   if (unur_stream == NULL) {
-    unur_stream = _unur_logfile_open(UNUR_LOG_FILE);
+    unur_stream = _unur_logfile_open();
   }
 
   return unur_stream;
@@ -174,12 +174,9 @@ unur_get_stream( void )
 /*---------------------------------------------------------------------------*/
 
 static FILE *
-_unur_logfile_open( const char *logfilename )
+_unur_logfile_open( void )
      /*----------------------------------------------------------------------*/
      /* open log file                                                        */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   logfilename ... name of log file                                   */
      /*----------------------------------------------------------------------*/
 {
   static FILE* LOG = NULL;
@@ -187,11 +184,13 @@ _unur_logfile_open( const char *logfilename )
 
   if (LOG) return LOG;  /* log file already open */
 
+#ifdef UNUR_LOG_FILE 
   /* open log file */
-  if (strcmp("stdout",logfilename))
-    LOG = fopen(logfilename,"w");
-  else /* use stdout instead of a log file */
-    LOG = stdout;
+  LOG = fopen(UNUR_LOG_FILE,"w");
+#else
+  /* use stdout instead of a log file */
+  LOG = stdout;
+#endif
 
 #ifdef UNUR_ENABLE_STDERR
   if (!LOG) fprintf(stderr,"warning: cannot open logfile %s\n",logfilename);

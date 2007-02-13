@@ -149,9 +149,6 @@ unur_test_chi2( struct unur_gen *gen,
     _unur_error(test_name,UNUR_ERR_GENERIC,"Not implemented for such distributions!");
     return -1.;
   }
-
-  /* this statement should be reached */
-  return -1.;
 } /* end of unur_test_chi2() */
 
 /*---------------------------------------------------------------------------*/
@@ -197,12 +194,6 @@ _unur_test_chi2_discr( struct unur_gen *gen,
 
   /* check arguments */
   CHECK_NULL(gen,-1.);
-
-  /* check distribution: discrete univariate */
-  if ( (gen->method & UNUR_MASK_TYPE) != UNUR_METH_DISCR ) {
-    _unur_error(test_name,UNUR_ERR_GENERIC,"wrong distribution type");
-    return -1.;
-  }
 
   /* probability vector */
   if (DISTR.pv == NULL) {

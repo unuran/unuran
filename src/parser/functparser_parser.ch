@@ -677,10 +677,10 @@ _unur_fstr_simplification (const char *symb, int token,
   /* some booleans */
   int l_const = left  && (left->type  == S_SCONST || left->type  == S_UCONST); 
   int r_const = right && (right->type == S_SCONST || right->type == S_UCONST); 
-  int l_0     = (l_const && left->val == 0.);
-  int l_1     = (l_const && left->val == 1.);
-  int r_0     = (r_const && right->val == 0.);
-  int r_1     = (r_const && right->val == 1.);
+  int l_0     = (l_const && _unur_iszero(left->val));
+  int l_1     = (l_const && _unur_isone(left->val));
+  int r_0     = (r_const && _unur_iszero(right->val));
+  int r_1     = (r_const && _unur_isone(right->val));
   int and;
 
   char s = symb[0];
@@ -849,8 +849,8 @@ _unur_fstr_reorganize (struct ftreenode *node)
   /* some booleans */
   l_const = left  && (left->type  == S_SCONST || left->type  == S_UCONST); 
   r_const = right && (right->type == S_SCONST || right->type == S_UCONST); 
-  rl_0 = (right && right->left && right->left->type == S_UCONST && right->left->val == 0.);
-  ll_0 = (left  && left->left  && left->left->type  == S_UCONST && left->left->val  == 0.);
+  rl_0 = (right && right->left && right->left->type == S_UCONST && _unur_iszero(right->left->val));
+  ll_0 = (left  && left->left  && left->left->type  == S_UCONST && _unur_iszero(left->left->val));
 
   /*          Operator            Operator
    *            /   \      or      /   \        ==>     Const (result of computation)

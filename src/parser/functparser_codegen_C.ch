@@ -114,7 +114,9 @@ _unur_fstr_tree2C ( FILE *out, const struct ftreenode *root,
 /*---------------------------------------------------------------------------*/
 
 unsigned
-C_error ( struct unur_string *output, const struct ftreenode *node, const char *variable )
+C_error ( struct unur_string *output ATTRIBUTE__UNUSED, 
+	  const struct ftreenode *node  ATTRIBUTE__UNUSED,
+	  const char *variable ATTRIBUTE__UNUSED )
      /*----------------------------------------------------------------------*/
      /* Error (This should not happen).                                      */
      /*----------------------------------------------------------------------*/
@@ -126,7 +128,8 @@ C_error ( struct unur_string *output, const struct ftreenode *node, const char *
 /*---------------------------------------------------------------------------*/
 
 unsigned
-C_const ( struct unur_string *output, const struct ftreenode *node, const char *variable )
+C_const ( struct unur_string *output, const struct ftreenode *node, 
+	  const char *variable ATTRIBUTE__UNUSED )
      /*----------------------------------------------------------------------*/
      /* string for constant                                                  */
      /*----------------------------------------------------------------------*/
@@ -138,7 +141,8 @@ C_const ( struct unur_string *output, const struct ftreenode *node, const char *
 /*---------------------------------------------------------------------------*/
 
 unsigned
-C_var ( struct unur_string *output, const struct ftreenode *node, const char *variable )
+C_var ( struct unur_string *output,
+	const struct ftreenode *node ATTRIBUTE__UNUSED, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for variable                                                  */
      /*----------------------------------------------------------------------*/
@@ -314,7 +318,7 @@ C_minus ( struct unur_string *output, const struct ftreenode *node, const char *
 
   /* '(' [left] '-' right ')' */
   _unur_fstr_print_C( output, "(", 0. );
-  if (!(left->type == S_UCONST && left->val == 0.))
+  if (!(left->type == S_UCONST && _unur_iszero(left->val)))
     /* there is no need to print "0 - ..." */
     rcode |= symbol[left->token].node2C (output,left,variable);
   _unur_fstr_print_C( output, "-", 0. );

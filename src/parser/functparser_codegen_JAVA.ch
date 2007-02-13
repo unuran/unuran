@@ -128,7 +128,9 @@ _unur_fstr_tree2JAVA ( FILE *out, const struct ftreenode *root,
 /*---------------------------------------------------------------------------*/
 
 unsigned
-J_error ( struct unur_string *output, const struct ftreenode *node, const char *variable )
+J_error ( struct unur_string *output ATTRIBUTE__UNUSED,
+	  const struct ftreenode *node ATTRIBUTE__UNUSED,
+	  const char *variable ATTRIBUTE__UNUSED )
      /*----------------------------------------------------------------------*/
      /* Error (This should not happen).                                      */
      /*----------------------------------------------------------------------*/
@@ -140,7 +142,8 @@ J_error ( struct unur_string *output, const struct ftreenode *node, const char *
 /*---------------------------------------------------------------------------*/
 
 unsigned
-J_const ( struct unur_string *output, const struct ftreenode *node, const char *variable )
+J_const ( struct unur_string *output, 
+	  const struct ftreenode *node, const char *variable ATTRIBUTE__UNUSED )
      /*----------------------------------------------------------------------*/
      /* string for constant                                                  */
      /*----------------------------------------------------------------------*/
@@ -152,7 +155,8 @@ J_const ( struct unur_string *output, const struct ftreenode *node, const char *
 /*---------------------------------------------------------------------------*/
 
 unsigned
-J_var ( struct unur_string *output, const struct ftreenode *node, const char *variable )
+J_var ( struct unur_string *output, 
+	const struct ftreenode *node ATTRIBUTE__UNUSED, const char *variable )
      /*----------------------------------------------------------------------*/
      /* string for variable                                                  */
      /*----------------------------------------------------------------------*/
@@ -362,7 +366,7 @@ J_minus ( struct unur_string *output, const struct ftreenode *node, const char *
 
   /* '(' [left] '-' right ')' */
   _unur_fstr_print_J( output, "(", 0. );
-  if (!(left->type == S_UCONST && left->val == 0.))
+  if (!(left->type == S_UCONST && _unur_iszero(left->val)))
     /* there is no need to print "0 - ..." */
     rcode |= symbol[left->token].node2J (output,left,variable);
   _unur_fstr_print_J( output, "-", 0. );

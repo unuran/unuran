@@ -156,7 +156,7 @@ _unur_fstr_node2string ( struct unur_string *output, const struct ftreenode *nod
 	parenthesis = 0;
       if (parenthesis) _unur_fstr_print( output, "(", 0. );
 
-      if (left->type == S_UCONST && left->val == 0. && node->symbol[0] == '-')
+      if (left->type == S_UCONST && _unur_iszero(left->val) && node->symbol[0] == '-')
 	/* there is no need to print "0 - ..." */ ;
       else
 	_unur_fstr_node2string(output,left,variable,function,spaces);

@@ -100,7 +100,7 @@ d_error (const struct ftreenode *node, int *error)
 /*---------------------------------------------------------------------------*/
 
 struct ftreenode *
-d_const (const struct ftreenode *node, int *error)
+d_const (const struct ftreenode *node ATTRIBUTE__UNUSED, int *error ATTRIBUTE__UNUSED)
      /* (const)' = 0                                                         */
      /*                                                                      */
      /*       Const                   0.                                     */
@@ -116,7 +116,7 @@ d_const (const struct ftreenode *node, int *error)
 /*---------------------------------------------------------------------------*/
 
 struct ftreenode *
-d_var (const struct ftreenode *node, int *error)
+d_var (const struct ftreenode *node ATTRIBUTE__UNUSED, int *error ATTRIBUTE__UNUSED)
      /* x' = 1                                                               */
      /*                                                                      */
      /*       Var                   1.                                       */

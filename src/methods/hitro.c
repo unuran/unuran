@@ -1381,7 +1381,7 @@ _unur_hitro_xy_to_vu( const struct unur_gen *gen, const double *x, double y, dou
    
   vu[0] = v = pow(y, 1./(GEN->r * GEN->dim + 1.));
 
-  if (GEN->r==1.) 
+  if (_unur_isone(GEN->r)) 
     for (d=0; d<GEN->dim; d++)  u[d] = (x[d] - GEN->center[d]) * v;
   else
     for (d=0; d<GEN->dim; d++)  u[d] = (x[d] - GEN->center[d]) * pow(v,GEN->r) ;
@@ -1413,7 +1413,7 @@ _unur_hitro_vu_to_x( const struct unur_gen *gen, const double *vu, double *x )
     return;
   }
     
-  if (GEN->r==1.)
+  if (_unur_isone(GEN->r))
     for (d=0; d<GEN->dim; d++)  x[d] = u[d]/v + GEN->center[d];
   else
     for (d=0; d<GEN->dim; d++)  x[d] = u[d]/pow(v,GEN->r) + GEN->center[d];

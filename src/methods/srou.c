@@ -344,7 +344,7 @@ unur_srou_set_r( struct unur_par *par, double r )
     return UNUR_ERR_PAR_SET;
   }
   
-  if (r == 1.) {
+  if (_unur_isone(r)) {
     /* simple version, same as R is not set */ 
     PAR->r = r;
     par->set &= ~SROU_SET_R;

@@ -89,9 +89,9 @@ if( aa <= 0.0 || bb <= 0.0 )
 
 if( (xx <= 0.0) || ( xx >= 1.0) )
 	{
-	if( xx == 0.0 )
+	if( _unur_iszero(xx) )
 		return(0.0);
-	if( xx == 1.0 )
+	if( _unur_isone(xx) )
 		return( 1.0 );
 	return( 0.0 );
 	}

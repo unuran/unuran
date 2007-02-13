@@ -80,18 +80,58 @@ _unur_FP_cmp( double x1, double x2, double eps)
 #ifndef _unur_iszero
 int _unur_iszero (const double x)
      /*----------------------------------------------------------------------*/
-     /* Check whether x is zero.                                             */
+     /* Check whether x is equal to 0.0                                      */
      /*                                                                      */
      /* parameters:                                                          */
      /*   x ... floating-point number                                        */
      /*                                                                      */
      /* return:                                                              */
-     /*   TRUE   if x is zero                                                */
+     /*   TRUE   if x == 0                                                   */
      /*   FALSE  otherwise                                                   */
      /*----------------------------------------------------------------------*/
 {
   return (x==0.);
 } /* end of _unur_iszero() */
+#endif
+
+/*---------------------------------------------------------------------------*/
+
+#ifndef _unur_isone
+int _unur_isone (const double x)
+     /*----------------------------------------------------------------------*/
+     /* Check whether x is equal to 1.0                                      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   x ... floating-point number                                        */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   TRUE   if x == 1                                                   */
+     /*   FALSE  otherwise                                                   */
+     /*----------------------------------------------------------------------*/
+{
+  return (x==1.);
+} /* end of _unur_isone() */
+#endif
+
+/*---------------------------------------------------------------------------*/
+
+#ifndef _unur_isfsame
+int _unur_isfsame (const double x, const double y)
+     /*----------------------------------------------------------------------*/
+     /* Check whether x == y                                                 */
+     /* (Unsafe version that should only be used for powers of 2)            */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   x ... floating-point number                                        */
+     /*   y ... floating-point number                                        */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   TRUE   if x == y                                                   */
+     /*   FALSE  otherwise                                                   */
+     /*----------------------------------------------------------------------*/
+{
+  return (x==y);
+} /* end of _unur_isfsame() */
 #endif
 
 /*---------------------------------------------------------------------------*/

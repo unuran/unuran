@@ -252,7 +252,7 @@ while( x < 2.0 )
 	x += 1.0;
 	}
 
-if( x == 2.0 )
+if( _unur_isfsame(x, 2.0) )
 	return(z);
 
 x -= 2.0;
@@ -369,7 +369,7 @@ if( x < 13.0 )
 		}
 	else
 		sgngam = 1;
-	if( u == 2.0 )
+	if( _unur_isfsame(u, 2.0) )
 		return( log(z) );
 	p -= 2.0;
 	x = x + p;

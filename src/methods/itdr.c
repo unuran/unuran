@@ -892,7 +892,7 @@ _unur_itdr_sample( struct unur_gen *gen )
     if (U < GEN->Ap) {
       /* upper pole region */
       V = _unur_call_urng(gen->urng) * GEN->Ap;
-      if (GEN->cp == -0.5) {
+      if (_unur_isfsame(GEN->cp, -0.5)) {
 	/* square root transformation */
 	Y = ( FTsI(GEN->cp, GEN->betap*V + FTs(GEN->cp,GEN->alphap+GEN->betap*GEN->by))
 	      - GEN->alphap ) / GEN->betap;
@@ -918,7 +918,7 @@ _unur_itdr_sample( struct unur_gen *gen )
     else {
       /* tail region */
       U -= GEN->Ac;
-      if (GEN->ct == -0.5) {
+      if (_unur_isfsame(GEN->ct, -0.5)) {
 	/* square root transformation */
 	X = GEN->xt + (FTsI(GEN->ct,
 			   GEN->dTfxt*U
@@ -987,7 +987,7 @@ _unur_itdr_sample_check( struct unur_gen *gen )
     if (U < GEN->Ap) {
       /* upper pole region */
       V = _unur_call_urng(gen->urng) * GEN->Ap;
-      if (GEN->cp == -0.5) {
+      if (_unur_isfsame(GEN->cp, -0.5)) {
 	/* square root transformation */
 	Y = ( FTsI(GEN->cp, GEN->betap*V + FTs(GEN->cp,GEN->alphap+GEN->betap*GEN->by))
 	      - GEN->alphap ) / GEN->betap;
@@ -1016,7 +1016,7 @@ _unur_itdr_sample_check( struct unur_gen *gen )
     else {
       /* tail region */
       U -= GEN->Ac;
-      if (GEN->ct == -0.5) {
+      if (_unur_isfsame(GEN->ct, -0.5)) {
 	/* square root transformation */
 	X = GEN->xt + (FTsI(GEN->ct,
 			   GEN->dTfxt*U
@@ -1482,7 +1482,7 @@ _unur_itdr_find_xt( struct unur_gen *gen, double b )
   /* find appropriate starting value */
   xl = b + _unur_max(1., (fabs(GEN->pole)+b)*UNUR_SQRT_DBL_EPSILON);
   if (xl > GEN->bd_right) xl = GEN->bd_right;
-  while (!_unur_isfinite(FKT(xl)) || PDF(xl) == 0. ) {
+  while (!_unur_isfinite(FKT(xl)) || _unur_iszero(PDF(xl)) ) {
     xl = 0.5*(xl + b);
     if (!_unur_isfinite(xl) || _unur_FP_same(xl,b)) return INFINITY;
   }

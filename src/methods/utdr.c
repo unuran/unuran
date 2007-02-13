@@ -1181,7 +1181,7 @@ _unur_utdr_hat( struct unur_gen *gen )
     if (gen->debug) _unur_utdr_debug_init(gen,ttly,ttlys,ttry,ttrys,cfac,setupok,c);
 #endif
 
-    if (cfac!=2.) {
+    if (!_unur_isfsame(cfac,2.)) {
       if(setupok)
         if (GEN->volcompl > 4. * DISTR.area || GEN->volcompl < 0.5 * DISTR.area)
         setupok=0;

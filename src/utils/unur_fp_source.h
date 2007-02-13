@@ -68,11 +68,29 @@ int _unur_FP_cmp( double x1, double x2, double eps);
 #define _unur_FP_greater(a,b) ((_unur_FP_cmp(a,b,UNUR_EPSILON)>0) ? TRUE : FALSE)
 
 /*---------------------------------------------------------------------------*/
-/* check whether a float is zero (0.) */
-#define _unur_iszero(x)  ((x)==0.)     /* macro ... */
+/* Comparing floating point with == or != is unsafe.                         */
+/* However, we assume that comparing with 0.0 and powers of 2.0 to be safe.  */
+/* Thus we use the followig functions to mark these "safe" comparisons in    */
+/* the code and thus we can use the GCC to detect all other comparisons.     */
+/* For the latter _unur_FP_cmp_same() must be used.                          */
 
+/* defined as macros */
+#define _unur_iszero(x)     ((x)==0.0)
+#define _unur_isone(x)      ((x)==1.0)
+#define _unur_isfsame(x,y)  ((x)==(y))
+
+/* defined as functions: only used for debugging.                            */
+/* (it switches off GCC warnings)                                            */
 #ifndef _unur_iszero
-int _unur_iszero (const double x);     /* ... or function */
+int _unur_iszero (const double x);
+#endif
+
+#ifndef _unur_isone
+int _unur_isone (const double x);
+#endif
+
+#ifndef _unur_isfsame
+int _unur_isfsame (const double x, const double y);
 #endif
 
 /*---------------------------------------------------------------------------*/

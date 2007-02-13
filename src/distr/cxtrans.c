@@ -564,7 +564,7 @@ int _unur_distr_cxtrans_compute_domain( struct unur_distr *cxt )
 #define POW(x)      ((x>=0.) ? pow(x,1./alpha) : -pow(-x,1./alpha))
 #define dPOW(x)     ( pow(fabs(x), 1./alpha-1.) / alpha )          /* alpha != 1. */
 #define dlogPOW(x)  ( (1./alpha-1.)*log(fabs(x)) - log(alpha) )
-#define ddPOW(x)    ( ((x>=0.)?(1.-alpha):(alpha-1.)) * ((alpha!=0.5)?pow(fabs(x),1./alpha-2.):1.) / (alpha*alpha) )
+#define ddPOW(x)    ( ((x>=0.)?(1.-alpha):(alpha-1.)) * (_unur_isfsame(alpha,0.5)?1.0:pow(fabs(x),1./alpha-2.)) / (alpha*alpha) )
 
 /* rescale */
 #define rescale(x)  (CXT.SIGMA * (x) + CXT.MU)
@@ -662,7 +662,7 @@ _unur_pdf_cxtrans( double x, const struct unur_distr *cxt )
   }
 
   /* identical transformation */
-  if (alpha == 1.) {
+  if (_unur_isone(alpha)) {
     double fx = PDF(s*x+mu);
     return (_unur_isfinite(fx) ? s*fx :  _unur_pdf_at_pole(cxt));
   }
@@ -747,7 +747,7 @@ _unur_logpdf_cxtrans( double x, const struct unur_distr *cxt )
   }
 
   /* identical transformation */
-  if (alpha == 1.) {
+  if (_unur_isone(alpha)) {
     double logfx = logPDF(s*x+mu);
     return (_unur_isfinite(logfx) ? (logfx + logs) : CXT.logPDFPOLE);
   }
@@ -840,7 +840,7 @@ _unur_dpdf_cxtrans( double x, const struct unur_distr *cxt )
   }
 
   /* identical transformation */
-  if (alpha == 1.) {
+  if (_unur_isone(alpha)) {
     double fx = PDF(s*x+mu);
     double dfx = dPDF(s*x+mu);
     return (_unur_isfinite(fx) ? s*dfx : _unur_dpdf_at_pole(cxt));
@@ -934,7 +934,7 @@ _unur_dlogpdf_cxtrans( double x, const struct unur_distr *cxt )
   }
 
   /* identical transformation */
-  if (alpha == 1.) {
+  if (_unur_isone(alpha)) {
     double logfx = logPDF(x);
     return (_unur_isfinite(logfx) ? s*dlogPDF(x) : CXT.dlogPDFPOLE);
   }

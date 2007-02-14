@@ -44,6 +44,10 @@
 #include <config.h>
 #include <unuran.h>
 
+/* macros and functions for handling floats */
+#include <src/utils/unur_fp_source.h>
+#include <src/utils/unur_fp_const_source.h>
+
 #ifdef WITH_DMALLOC
 #  include <dmalloc.h>
 #endif
@@ -66,14 +70,7 @@ static int _unur_test_function (void);
 
 /*---------------------------------------------------------------------------*/
 
-/* a is approximately equal to b */
-#define _unur_FP_approx(a,b) \
- ((a)==(b) || \
- fabs((a)-(b)) <= ((fabs(a)<fabs(b))?fabs(a):fabs(b)) * 1.e-8)
-
-/*---------------------------------------------------------------------------*/
-                                                                               
-int main()                                                                     
+int main(void)                                                                     
 {                                                                              
   /* open log file for unuran and set output stream for unuran messages */    
   if ( (UNURANLOG = fopen( "t_functionparser_unuran.log","w" )) == NULL )

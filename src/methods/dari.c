@@ -981,8 +981,8 @@ _unur_dari_hat( struct unur_gen *gen )
   int b[2], d, i, j;
   double v[2], at[2];
   double t0 = 1.;
-  char setup = 1;
-  char rep = 1;
+  int setup = 1;
+  int rep = 1;
   
   /* check arguments */
   CHECK_NULL( gen, UNUR_ERR_NULL );

@@ -256,8 +256,6 @@ unur_distr_condi_get_condition( struct unur_distr *condi, const double **pos, co
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
-  int dim;
-
   /* check arguments */
   _unur_check_NULL( distr_name, condi, UNUR_ERR_NULL );
   _unur_check_distr_object( condi, CONT, UNUR_ERR_DISTR_INVALID );
@@ -267,9 +265,6 @@ unur_distr_condi_get_condition( struct unur_distr *condi, const double **pos, co
     _unur_error(distr_name,UNUR_ERR_DISTR_INVALID,""); 
     return UNUR_ERR_DISTR_INVALID; }
   COOKIE_CHECK(condi,CK_DISTR_CONT,UNUR_ERR_COOKIE);
-
-  /* dimension of underlying distribution */
-  dim = condi->base->dim;
 
   /* position in vector */
   *k = (int) K;

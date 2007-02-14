@@ -761,7 +761,7 @@ _unur_dgt_debug_init( struct unur_gen *gen )
   fprintf(log,"%s: type    = discrete univariate random variates\n",gen->genid);
   fprintf(log,"%s: method  = indexed search (guide table)\n",gen->genid);
 
-  fprintf(log,"%s: variant = %d ",gen->genid,gen->variant);
+  fprintf(log,"%s: variant = %u ",gen->genid,gen->variant);
   _unur_print_if_default(gen,DGT_SET_VARIANT);
   fprintf(log,"\n%s:\n",gen->genid);
 

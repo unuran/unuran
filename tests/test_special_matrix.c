@@ -33,14 +33,19 @@
 #include <unur_source.h>
 #include <time.h>
 #include "../src/utils/matrix_source.h"
+
+/*-------------------------------------------------------------------------*/
+
+/* function prototypes */
 void _unur_test_set_matrix_1(int dim, double *M);
 void _unur_test_set_matrix_2(int dim, double *M);
+void _unur_test_matrix(void);
 
 /* dimension of test matrix */
-const static int dim = 50;
+static const int dim = 50;
 
 /* max tolerable absolute error */
-const static double error_absolute_max = 1.e-12;
+static const double error_absolute_max = 1.e-12;
 
 /* number of failed tests */
 static int n_failed = 0;
@@ -90,7 +95,7 @@ void _unur_test_set_matrix_2(int dim, double *M) {
 
 /*-------------------------------------------------------------------------*/
 
-void _unur_test_matrix() {
+void _unur_test_matrix(void) {
 #define idx1(a,b) ((a-1)*dim+(b-1))
 
   int i, ret;
@@ -158,7 +163,7 @@ void _unur_test_matrix() {
 
 /*-------------------------------------------------------------------------*/
 
-int main()
+int main(void)
 {
 
   /* open log file for testing */

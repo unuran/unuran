@@ -61,7 +61,7 @@ static struct timeval tv;
 static char test_name[] = "Timing";
 /*---------------------------------------------------------------------------*/
 
-double unur_test_timing_total_run( const struct unur_par *par, int samplesize, int repeat );
+static double unur_test_timing_total_run( const struct unur_par *par, int samplesize, int repeat );
 /*---------------------------------------------------------------------------*/
 /*  estimate average time (in micro seconds) for sampling 1 random variate   */
 /*---------------------------------------------------------------------------*/

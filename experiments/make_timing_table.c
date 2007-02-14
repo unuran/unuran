@@ -62,38 +62,39 @@ extern char *_unur_parser_prepare_string( const char *str );
 /*---------------------------------------------------------------------------*/
 
 /* print help */
-void print_usage(void);
+static void print_usage(void);
 
 /* get unit for relative timing */
-double get_timing_unit(void);
+static double get_timing_unit(void);
 
 /* read config file */
-int read_config_file ( const char *filename, 
-		       struct unur_slist *distr_str_list, struct unur_slist *meth_str_list ); 
+static int read_config_file ( const char *filename, 
+			      struct unur_slist *distr_str_list,
+			      struct unur_slist *meth_str_list ); 
 
 /* make distribution objects */
-struct unur_slist *make_distr_list ( struct unur_slist *distr_str_list );
+static struct unur_slist *make_distr_list ( struct unur_slist *distr_str_list );
 
 /* print legend for distributions and methods */
-int print_legend ( struct unur_slist *distr_str_list, struct unur_slist *meth_str_list ); 
+static int print_legend ( struct unur_slist *distr_str_list, struct unur_slist *meth_str_list ); 
 
 /* print legend for timings results */
-int print_timing_legend ( int samplesize, double unit, int is_default );
+static int print_timing_legend ( int samplesize, double unit, int is_default );
 
 /* print label for distribution and methods with index n*/
-int print_label ( int n, char ltype );
+static int print_label ( int n, char ltype );
 
 #define LABEL_DISTR 'A'  /* label used for distributions */
 #define LABEL_METH  '1'  /* label used for methods */
 
 /* compute timings table */
-double *compute_timings ( struct unur_slist *distr_str_list, struct unur_slist *meth_str_list,
-			  int samplesize, double duration, double unit ); 
+static double *compute_timings ( struct unur_slist *distr_str_list, struct unur_slist *meth_str_list,
+				 int samplesize, double duration, double unit ); 
 
 /* print timings table */
-int print_timings ( double *timings,
-		    struct unur_slist *distr_str_list, struct unur_slist *meth_str_list,
-		    int rowentry );
+static int print_timings ( double *timings,
+			   struct unur_slist *distr_str_list, struct unur_slist *meth_str_list,
+			   int rowentry );
 
 #define ROW_DISTRIBUTION   1  /* print distributions on row, methods in columns */
 #define ROW_METHOD         2  /* print distributions on columns, methods in rows*/

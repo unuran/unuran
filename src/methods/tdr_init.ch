@@ -573,7 +573,7 @@ _unur_tdr_starting_cpoints( struct unur_gen *gen )
 {
   struct unur_tdr_interval *iv;
   double left_angle, right_angle, diff_angle, angle;
-  double x, x_last, fx, fx_last;
+  double x, fx, fx_last;
   int use_center, use_mode, is_mode, was_mode;
   int i, is_increasing;
   double extra_cpoint;
@@ -609,7 +609,7 @@ _unur_tdr_starting_cpoints( struct unur_gen *gen )
     diff_angle = angle = 0.;   /* we do not need these variables in this case */
 
   /* the left boundary point */
-  x = x_last = DISTR.BD_LEFT;
+  x = DISTR.BD_LEFT;
   if (use_mode && DISTR.mode <= x) {
     /* this is the mode of the distribution */
     is_mode = TRUE;
@@ -704,7 +704,6 @@ _unur_tdr_starting_cpoints( struct unur_gen *gen )
 	     otherwise the PDF is constant 0 on all construction points.
 	     then we need both boundary points. */
 	  iv->x = x;  /* we only have to change x, everything else remains unchanged */
-	  x_last = x;
 	  continue;   /* next construction point */
 	}
       }
@@ -726,7 +725,6 @@ _unur_tdr_starting_cpoints( struct unur_gen *gen )
       is_increasing = 0;
 
     /* store last computed values */
-    x_last = x;
     fx_last = fx;
 
   }

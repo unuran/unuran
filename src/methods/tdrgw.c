@@ -1310,8 +1310,6 @@ _unur_tdrgw_sample_check( struct unur_gen *gen )
   double logfx, logsqx, loghx;      /* log of density, squeeze, and hat at X */
   double x0, logfx0, dlogfx0, fx0;  /* construction point and logPDF at x0   */
 
-  int error = 0;                    /* indicates error                       */
-
   /* check arguments */
   CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_TDRGW_GEN,INFINITY);
 
@@ -1381,15 +1379,12 @@ _unur_tdrgw_sample_check( struct unur_gen *gen )
     /* check result */
     if (X < DISTR.BD_LEFT || X > DISTR.BD_RIGHT) {
       _unur_warning(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"generated point out of domain");
-      error = 1;
     }
     if (_unur_FP_greater(rescaled_logf(logfx), loghx)) {
       _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF > hat. Not log-concave!");
-      error = 1;
     }
     if (_unur_FP_less(rescaled_logf(logfx), logsqx)) {
       _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF < squeeze. Not log-concave!");
-      error = 1;
     }
 
     /* log of a random point between 0 and hat at x */
@@ -1570,7 +1565,7 @@ _unur_tdrgw_starting_cpoints( struct unur_gen *gen )
 {
   struct unur_tdrgw_interval *iv;
   double left_angle, right_angle, diff_angle, angle;
-  double x, x_last, logfx, logfx_last;
+  double x, logfx, logfx_last;
   int is_increasing;
   int i;
   
@@ -1594,7 +1589,7 @@ _unur_tdrgw_starting_cpoints( struct unur_gen *gen )
     diff_angle = angle = 0.;   /* we do not need these variables in this case */
 
   /* the left boundary point */
-  x = x_last = DISTR.BD_LEFT;
+  x = DISTR.BD_LEFT;
   is_increasing = TRUE;
     
   logfx = logfx_last = _unur_isfinite(x) ? logPDF(x) : -INFINITY;
@@ -1649,7 +1644,6 @@ _unur_tdrgw_starting_cpoints( struct unur_gen *gen )
 	     otherwise the PDF is constant 0 on all construction points.
 	     then we need both boundary points. */
 	  iv->x = x;  /* we only have to change x, everything else remains unchanged */
-	  x_last = x;
 	  continue;   /* next construction point */
 	}
       }
@@ -1670,7 +1664,6 @@ _unur_tdrgw_starting_cpoints( struct unur_gen *gen )
       is_increasing = FALSE;
 
     /* store last computed values */
-    x_last = x;
     logfx_last = logfx;
 
   }

@@ -763,9 +763,10 @@ unur_distr_discr_set_cdfstr( struct unur_distr *distr, const char *cdfstr )
   /* derived parameters like mode, area, etc. might be wrong now! */
 
   /* parse string */
-  if ( (DISTR.cdftree = _unur_fstr2tree(cdfstr)) == NULL )
+  if ( (DISTR.cdftree = _unur_fstr2tree(cdfstr)) == NULL ) {
     _unur_error(distr->name,UNUR_ERR_DISTR_SET,"Syntax error in function string");
     return UNUR_ERR_DISTR_SET;
+  }
 
   /* set evaluation function */
   DISTR.cdf  = _unur_distr_discr_eval_cdf_tree;

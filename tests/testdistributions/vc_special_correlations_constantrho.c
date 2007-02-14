@@ -81,7 +81,7 @@
 /*---------------------------------------------------------------------------*/
 
 /* Set correlation matrix with constant off-diagonal elements and its inverse */
-int _unur_vc_set_corrmatrix_constantrho( UNUR_DISTR *distr, int dim, double rho ); 
+static int _unur_vc_set_corrmatrix_constantrho( UNUR_DISTR *distr, int dim, double rho ); 
 
 /*---------------------------------------------------------------------------*/
 

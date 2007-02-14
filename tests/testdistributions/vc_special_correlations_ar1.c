@@ -81,7 +81,7 @@
 
 /*---------------------------------------------------------------------------*/
 /* Set correlation matrix and its inverse of AR(1) process */
-int _unur_vc_set_corrmatrix_ar1( UNUR_DISTR *distr, int dim, double rho ); 
+static int _unur_vc_set_corrmatrix_ar1( UNUR_DISTR *distr, int dim, double rho ); 
 
 /*---------------------------------------------------------------------------*/
 

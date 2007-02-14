@@ -1165,7 +1165,7 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
   double f1, f2,fa, ftmp;/* function values at x1, x2, xtmp                 */
   double length;         /* oriented length of the interval with sign change*/
   double lengthabs;      /* absolute length of interval                     */
-  int  lengthsgn;        /* orientation of the Intervalls                   */
+  double lengthsgn;      /* orientation of the Intervalls                   */
   double step;           /* enlarges interval til sign change found         */
   double dx;             /* RF-stepsize                                     */
   int count = 0;         /* counter for  "no sign change"                   */
@@ -1394,7 +1394,8 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
   double dfx;         /* pdf at x                                     */
   double fxabs;       /* absolute valuo of fx                         */
   double xtmp, fxtmp; /* temprary variables for x and fx              */
-  double xold, fxold; /* remember last values for stopping criterion  */
+  double xold;        /* remember last values for stopping criterion  */
+  /* double fxold;    /\* remember last values for stopping criterion  *\/ */
   double fxtmpabs;    /* fabs of fxtmp                                */
   double damp;        /* damping factor                               */
   double step;        /* helps to escape from flat regions of the cdf */
@@ -1453,7 +1454,7 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
   dfx   = PDF(x);
   fxabs = fabs(fx);
   xold  = x;    /* there is no old value yet */
-  fxold = fx;   /* there is no old value yet */ 
+  /* fxold = fx;   /\* there is no old value yet *\/  */
 
   damp = 2.;        /* to be halved at least once */  
   step = 1.;
@@ -1536,7 +1537,7 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
     /* updation variables according to newton-step      */
     damp  = 2.;       /* set back factor for damping    */
     xold  = x;        /* remember last value of x       */
-    fxold = fx;       /* remember last value of fx      */
+    /* fxold = fx;       /\* remember last value of fx      *\/ */
     x     = xtmp;     /* update x                       */
     fx    = fxtmp;    /* update function value at x     */
     dfx   = PDF(x);   /* update derivative sof fx at x  */

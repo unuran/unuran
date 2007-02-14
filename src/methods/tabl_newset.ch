@@ -619,7 +619,7 @@ unur_tabl_set_slopes( struct unur_par *par, const double *slopes, int n_slopes )
      /*----------------------------------------------------------------------*/
 {
   int i;
-  double lmin,lmax,rmin,rmax;
+  double lmax,rmin,rmax;
 
   /* check arguments */
   _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
@@ -632,7 +632,6 @@ unur_tabl_set_slopes( struct unur_par *par, const double *slopes, int n_slopes )
   }
 
   /* check slopes */
-  lmin = -INFINITY;
   lmax = -INFINITY;
   for( i=0; i<n_slopes; i++ ) {
     rmin = _unur_min(slopes[2*i],slopes[2*i+1]);
@@ -641,7 +640,6 @@ unur_tabl_set_slopes( struct unur_par *par, const double *slopes, int n_slopes )
       _unur_error(GENTYPE,UNUR_ERR_PAR_SET,"slopes (overlapping or not in ascending order)");
       return UNUR_ERR_PAR_SET;
     }
-    lmin = rmin;
     lmax = rmax;
   }
 

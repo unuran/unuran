@@ -72,7 +72,7 @@ static double _unur_distr_cont_eval_hr_tree( double x, const struct unur_distr *
 /* evaluate function tree for HR.                                            */
 /*---------------------------------------------------------------------------*/
 
-void _unur_distr_cont_free( struct unur_distr *distr );
+static void _unur_distr_cont_free( struct unur_distr *distr );
 /*---------------------------------------------------------------------------*/
 /* destroy distribution object.                                              */
 /*---------------------------------------------------------------------------*/

@@ -67,7 +67,7 @@ static const char distr_name[] = "transformed RV";
 /*---------------------------------------------------------------------------*/
 /* function prototypes                                                       */
 
-int _unur_distr_cxtrans_compute_domain( struct unur_distr *cxt );
+static int _unur_distr_cxtrans_compute_domain( struct unur_distr *cxt );
 /*---------------------------------------------------------------------------*/
 /* compute domain for transformed RV                                         */
 /*---------------------------------------------------------------------------*/

@@ -889,29 +889,21 @@ sub print_test_command {
 	  print "n_tests_failed += (check_$test_command\(TESTLOG,$lineno,($last_C_line))==UNUR_SUCCESS)?0:1\;\n";
 	  last SWITCH;
       }
-      if ($test_command =~ /^\s*compare_double_sequence_par\s*$/ or
-	  $test_command =~ /^\s*compare_double_sequence_par_start\s*$/ or
-	  $test_command =~ /^\s*compare_int_sequence_par\s*$/ or
-	  $test_command =~ /^\s*compare_int_sequence_par_start\s*$/ ) {
-	  $test_command =~ s/\s+//g;
-	  print "$last_C_line\;\n";
-	  print "n_tests_failed += ($test_command\(TESTLOG,$lineno,par,COMPARE_SAMPLE_SIZE)==UNUR_SUCCESS)?0:1;\n";
-	  last SWITCH;
-      }
-      if ($test_command =~ /^\s*compare_double_sequence_gen\s*$/ or
-	  $test_command =~ /^\s*compare_double_sequence_gen_start\s*$/ or
-	  $test_command =~ /^\s*compare_int_sequence_gen\s*$/ or
-	  $test_command =~ /^\s*compare_int_sequence_gen_start\s*$/ or
-	  $test_command =~ /^\s*compare_cvec_sequence_gen\s*$/ or
-	  $test_command =~ /^\s*compare_cvec_sequence_gen_start\s*$/ or
-	  $test_command =~ /^\s*compare_matr_sequence_gen\s*$/ or
-	  $test_command =~ /^\s*compare_matr_sequence_gen_start\s*$/ ) {
+      if ($test_command =~ /^\s*compare_sequence_gen\s*$/ or
+	  $test_command =~ /^\s*compare_sequence_gen_start\s*$/ ) {
 	  $test_command =~ s/\s+//g;
 	  print "$last_C_line\;\n";
 	  print "n_tests_failed += ($test_command\(TESTLOG,$lineno,gen,COMPARE_SAMPLE_SIZE)==UNUR_SUCCESS)?0:1;\n";
 	  last SWITCH;
       }
-      if ($test_command =~ /^\s*compare_double_sequence_urng_start\s*$/ ) {
+      if ($test_command =~ /^\s*compare_sequence_par\s*$/ or
+	  $test_command =~ /^\s*compare_sequence_par_start\s*$/ ) {
+	  $test_command =~ s/\s+//g;
+	  print "$last_C_line\;\n";
+	  print "n_tests_failed += ($test_command\(TESTLOG,$lineno,par,COMPARE_SAMPLE_SIZE)==UNUR_SUCCESS)?0:1;\n";
+	  last SWITCH;
+      }
+      if ($test_command =~ /^\s*compare_sequence_urng_start\s*$/ ) {
 	  $test_command =~ s/\s+//g;
 	  print "$last_C_line\;\n";
 	  print "$test_command\(TESTLOG,$lineno,COMPARE_SAMPLE_SIZE);\n";

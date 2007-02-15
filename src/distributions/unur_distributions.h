@@ -475,6 +475,7 @@ UNUR_DISTR *unur_distr_multinormal(int dim, const double *mean, const double *co
    =DOMAIN   -infinity^{dim} < x < infinity^{dim} 
    =FPARAM    [0]   : mu     :    : (0,@dots{},0)  : location  :
               [1]   : Sigma : Symm, Pos. def. : I : shape     :
+   =STDGEN   DEF  Cholesky factor
    =EON
 */
 UNUR_DISTR *unur_distr_multicauchy(int dim, const double *mean, const double *covar);

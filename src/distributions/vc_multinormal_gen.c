@@ -76,6 +76,13 @@ _unur_stdgen_multinormal_init( struct unur_gen *gen )
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
+  /* check parameters */
+  /* the generator does not work correctly when the domain has been truncated*/
+  if ( gen->distr->set & UNUR_DISTR_SET_DOMAINBOUNDED ) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"truncated domain not allowed");
+    return UNUR_FAILURE;
+  }
+
   /* set sampling routine */
   gen->sample.cvec = _unur_stdgen_sample_multinormal_cholesky;
 

@@ -1736,7 +1736,7 @@ unur_distr_cvec_get_marginal( const struct unur_distr *distr, int n )
     return NULL;
   }
 
-  /* mean vector known ? */
+  /* marginal distributions known ? */
   if ( !(distr->set & UNUR_DISTR_SET_MARGINAL) ) {
     _unur_warning(distr->name,UNUR_ERR_DISTR_GET,"marginals");
     return NULL;
@@ -1744,7 +1744,7 @@ unur_distr_cvec_get_marginal( const struct unur_distr *distr, int n )
 
   _unur_check_NULL( distr->name, DISTR.marginals, NULL );
 
-  /* return standarized marginal distribution object */
+  /* return marginal distribution object */
   return (DISTR.marginals[n-1]);
 } /* end of unur_distr_cvec_get_marginal() */
 
@@ -1829,6 +1829,7 @@ _unur_distr_cvec_marginals_are_equal( struct unur_distr **marginals, int dim )
      /*                                                                      */
      /* parameters:                                                          */
      /*   marginals ... pointer to list of marginal distribution objects     */
+     /*   dim       ... dimension of distribution (= number of marginals)    */
      /*                                                                      */
      /* return:                                                              */
      /*   TRUE  ... if equal (or dim == 1)                                   */
@@ -1847,6 +1848,54 @@ _unur_distr_cvec_marginals_are_equal( struct unur_distr **marginals, int dim )
   */
   return (dim <= 1 || marginals[0] == marginals[1]) ? TRUE : FALSE;
 } /* end of _unur_distr_cvec_marginals_are_equal() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_distr_cvec_duplicate_firstmarginal( struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* Duplicate first marginal distribution in array of marginal           */
+     /* distributions into all other slots of this array                     */
+     /* This is only executed when all entries in this array point to the    */
+     /* same distribution object, i.e. when all marginal distributions       */
+     /* are equal.                                                           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_distr *marginal;
+  int i;
+
+  /* check arguments */
+  CHECK_NULL( distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CVEC, UNUR_ERR_DISTR_INVALID );
+
+  marginal = DISTR.marginals[0];
+
+  /* marginal distributions known ? */
+  if ( !(distr->set & UNUR_DISTR_SET_MARGINAL) || marginal==NULL ) {
+    _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"marginals");
+    return UNUR_ERR_DISTR_DATA;
+  }
+
+  /* marginal distribution are equal ? */
+  if (!_unur_distr_cvec_marginals_are_equal(DISTR.marginals,distr->dim)) {
+    /* nothing to do */
+    _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"marginals not equal");
+    return UNUR_ERR_DISTR_DATA;
+  }
+
+  /* make copy of marginal distribution objects */
+  for (i=1; i<distr->dim; i++) 
+    DISTR.marginals[i] = _unur_distr_clone( marginal );
+
+  return UNUR_SUCCESS;
+} /* end of _unur_distr_cvec_duplicate_firstmarginal() */
 
 /*---------------------------------------------------------------------------*/
 

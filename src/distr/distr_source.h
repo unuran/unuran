@@ -172,6 +172,16 @@ void _unur_distr_discr_debug( const UNUR_DISTR *distribution, const char *genid,
 /* WARNING: There is no checking of arguments in this function!              */
 int _unur_distr_cvec_marginals_are_equal( struct unur_distr **marginals, int dim );
 
+/* Duplicate first marginal distribution in array of marginal                */
+/* distributions into all other slots of this array                          */
+/* This is only executed when all entries in this array point to the         */
+/* same distribution object, i.e. when all marginal distributions            */
+/* are equal.                                                                */
+int _unur_distr_cvec_duplicate_firstmarginal( struct unur_distr *distribution );
+
+/* test whether 'x' is the in domain of 'distribution'                       */
+int _unur_distr_cvec_is_indomain( const double *x, const struct unur_distr *distribution);
+
 /*---------------------------------------------------------------------------*/
 /* check if parameter object is of correct type, return 0 otherwise       */
 

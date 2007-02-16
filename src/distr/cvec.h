@@ -728,8 +728,3 @@ double unur_distr_cvec_get_pdfvol( UNUR_DISTR *distribution );
 
 /*---------------------------------------------------------------------------*/
 
-/* Not exported */
-int _unur_distr_cvec_is_indomain( const double *x, const UNUR_DISTR *distribution);
-/* 
-   Same as unur_distr_cvec_is_indomain() but does not check parameters.
-*/

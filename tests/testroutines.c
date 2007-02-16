@@ -613,7 +613,7 @@ int compare_cvec_sequence_gen( FILE *LOG, int line, UNUR_GEN *gen, int sample_si
   for (i=0; i<sample_size; i++) {
     unur_sample_vec( gen, x );
     for (k=0; k<dim; k++) {
-      if ( !_unur_FP_cmp(cvec_sequence_A[i*dim+k], x[k], 100.*UNUR_SQRT_DBL_EPSILON) ) {
+      if ( _unur_FP_cmp(cvec_sequence_A[i*dim+k], x[k], 100.*UNUR_SQRT_DBL_EPSILON) !=0 ) {
 	/* multivariate random variates are more sensible against rounding effects */
 	ok = FALSE;
 	break;

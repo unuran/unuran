@@ -44,7 +44,7 @@
 
 /*---------------------------------------------------------------------------*/
 
-extern void _unur_distr_cvec_marginals_free ( struct unur_distr **marginals, int dim );
+static void _unur_distr_cvec_marginals_free ( struct unur_distr **marginals, int dim );
 
 /*---------------------------------------------------------------------------*/
 
@@ -255,6 +255,35 @@ unur_distr_cvec_get_stdmarginal( const struct unur_distr *distr, int n )
   /* return standarized marginal distribution object */
   return (DISTR.stdmarginals[n-1]);
 } /* end of unur_distr_cvec_get_stdmarginal() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_distr_cvec_marginals_free ( struct unur_distr **marginals, int dim )
+     /*----------------------------------------------------------------------*/
+     /* free list of marginal distribution objects                           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   marginals ... pointer to list of marginal distribution objects     */
+     /*   dim       ... number of marginal distributions                     */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to clone of list of marginal distribution objects          */
+     /*----------------------------------------------------------------------*/
+{
+  int i;
+
+  if (_unur_distr_cvec_marginals_are_equal(marginals,dim)) {
+    _unur_distr_free(marginals[0]);
+  }
+
+  else {
+    for (i=0; i<dim; i++) 
+      if (marginals[i]) _unur_distr_free(marginals[i]);
+  }
+
+  free (marginals);
+} /* end of _unur_distr_cvec_marginals_free() */
 
 /*---------------------------------------------------------------------------*/
 #undef DISTR

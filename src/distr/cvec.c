@@ -48,7 +48,7 @@
 /* copy and free marginal distributions                                      */
 
 static struct unur_distr **_unur_distr_cvec_marginals_clone ( struct unur_distr **marginals, int dim );
-void _unur_distr_cvec_marginals_free ( struct unur_distr **marginals, int dim );
+static void _unur_distr_cvec_marginals_free ( struct unur_distr **marginals, int dim );
 
 static void _unur_distr_cvec_free( struct unur_distr *distr );
 

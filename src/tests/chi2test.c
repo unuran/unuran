@@ -609,8 +609,10 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
   Fdelta = _unur_xmalloc(dim * sizeof(double));
   if (gen->distr->set & UNUR_DISTR_SET_DOMAINBOUNDED) {
     for (i=0; i<dim; i++) {
-      Fl[i] = marginal_cdf[i](DISTR.domainrect[2*i],marginals[i]);
-      Fr[i] = marginal_cdf[i](DISTR.domainrect[2*i+1],marginals[i]);
+      Fl[i] = ( (!_unur_isfinite(DISTR.domainrect[2*i])) ? 0. 
+		: marginal_cdf[i](DISTR.domainrect[2*i],marginals[i]) );
+      Fr[i] = ( (!_unur_isfinite(DISTR.domainrect[2*i+1])) ? 1. 
+		: marginal_cdf[i](DISTR.domainrect[2*i+1],marginals[i]) );
       Fdelta[i] = Fr[i] - Fl[i];
       /* Fr - Fl <= 0. is a fatal error */
       if (Fdelta[i] <= 0.) {

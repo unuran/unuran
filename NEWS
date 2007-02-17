@@ -28,7 +28,8 @@ Version 1.0.0: ???? 2007
 	* Added F-distribution.
 
 	* added support for rectangular distributions for multivariate
-	  continuous distributions.
+	  continuous distributions:
+	  unur_distr_cvec_set_domain_rect()
 
 	* when info shoul be written on 'stdout' comment out the 
 	  defintion of 'UNUR_LOG_FILE'.

@@ -231,11 +231,11 @@ double unur_test_chi2( UNUR_GEN *generator, int intervals, int samplesize, int c
    (Notice that these marginal distributions are never set by default
    for any of the distributions provided by UNURAN.)
    Then the Bonferroni corrected p-value of all these tests is returned. 
-   However, the test cannot be performed if the domain of the
+   However, the test may not be performed correctly if the domain of the 
    underlying distribution is truncated by a
    unur_distr_cvec_set_domain_rect() call and the components of the
    distribution are correlated (i.e. unur_distr_cvec_set_covar() is 
-   called with the non-NULL argument).
+   called with the non-NULL argument). Then it almost surely will fail.
 */
 
 int unur_test_moments( UNUR_GEN *generator, double *moments, int n_moments, int samplesize,

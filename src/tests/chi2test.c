@@ -564,14 +564,12 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
     return -2.; 
   }
 
-  /* we cannot run the test if the domain is changed by a      */         
-  /* unur_distr_cvec_set_domain_...() call when the covariance */
-  /* matrix is not the identity matrix.                        */
+  /* when the domain has been changed by a unur_distr_cvec_set_domain_...() */
+  /* call and the covariance matrix is not the identity matrix then         */
+  /* the test may fail anyway.                                              */
   if ((gen->distr->set & UNUR_DISTR_SET_DOMAINBOUNDED) &&
-      !(gen->distr->set & UNUR_DISTR_SET_COVAR_IDENT) ) {
-    _unur_error(test_name,UNUR_ERR_GENERIC,"correlated and domain truncated");
-    return -1.;
-  }
+      !(gen->distr->set & UNUR_DISTR_SET_COVAR_IDENT) )
+    _unur_warning(test_name,UNUR_ERR_GENERIC,"correlated and domain truncated --> test might fail");
 
   /* check given number of intervals */
   if (n_intervals <= 2)

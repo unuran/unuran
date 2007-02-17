@@ -320,6 +320,23 @@ _unur_norta_init( struct unur_par *par )
   _unur_par_free(par);
   if (!gen) return NULL;
 
+  /* check for truncated domain */
+  if ( gen->distr->set & UNUR_DISTR_SET_DOMAINBOUNDED ) {
+    if ( DISTR.domainrect == NULL ) {
+      /* cannot handle non-rectangular domain */
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"cannot handle non-rectangular domain");
+      _unur_norta_free(gen); return NULL;
+    }
+    else { /* rectangular domain */
+      if (_unur_distr_cvec_marginals_are_equal(DISTR.marginals, GEN->dim)) {
+	/* we have to handle these equal marginal distributions independently */
+	if ( _unur_distr_cvec_duplicate_firstmarginal(gen->distr) != UNUR_SUCCESS ) {
+	  _unur_norta_free(gen); return NULL;
+	}
+      }
+    }
+  }
+
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
   if (gen->debug) _unur_norta_debug_init(gen);
@@ -351,12 +368,28 @@ _unur_norta_init( struct unur_par *par )
       int i,j;
       int failed = FALSE;
       struct unur_gen **marginalgens = _unur_xmalloc( GEN->dim * sizeof(struct unur_gen*) );
-      for (i=0; i<GEN->dim; i++) {
+
+      /* check for truncated domain */
+      if ( gen->distr->set & UNUR_DISTR_SET_DOMAINBOUNDED ) {
+	/* set domains for each marginal distribution */
+	for (i=0; i<GEN->dim && !failed; i++) {
+	  if ( (unur_distr_cont_set_domain(DISTR.marginals[i],
+					   DISTR.domainrect[2*i], DISTR.domainrect[2*i+1]))
+	       != UNUR_SUCCESS) {
+	    failed = TRUE; break;
+	  }
+	}
+      }
+      
+      /* create generator for each marginal distribution */
+      for (i=0; i<GEN->dim && !failed; i++) {
 	marginalgens[i] = _unur_norta_make_marginalgen( gen, DISTR.marginals[i] );
 	if (marginalgens[i]==NULL) {
 	  failed=TRUE; break;
 	}
       }
+
+      /* check creating of generators */
       if (failed) {
 	for (j=0; j<i; j++) _unur_free(marginalgens[j]);
 	free (marginalgens);

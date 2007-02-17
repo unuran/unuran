@@ -91,6 +91,11 @@
       unur_distr_cvec_set_marginal_list().
       (Do not use the corresponding calls for the standard
       marginal distributions).
+
+      When the domain of the multivariate distribution is set by of a
+      unur_distr_cvec_set_domain_rect() call then the domain of each
+      of the marginal distributions is truncated by the respective
+      coordinates of the given rectangle.
       
       If copulae are required (i.e. multivariate distributions with
       uniform marginals) such a generator object can be created by

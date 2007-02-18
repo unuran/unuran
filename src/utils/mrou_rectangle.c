@@ -216,7 +216,7 @@ _unur_mrou_rectangle_compute( struct MROU_RECTANGLE *rr )
 
   /* --- compute vmax --- */
 
-  if (rr->distr->data.cvec.mode != NULL) { 
+  if ( (rr->distr->set & UNUR_DISTR_SET_MODE) && (rr->distr->data.cvec.mode != NULL)) { 
     /* position of mode is known ... vmax = f(mode)^(1/r*dim+1)) */
     faux.f = (UNUR_FUNCT_VGENERIC*) _unur_mrou_rectangle_aux_vmax;
     faux.params = rr;
@@ -352,6 +352,12 @@ _unur_mrou_rectangle_compute( struct MROU_RECTANGLE *rr )
   
   /* free working arrays */
   free(xstart); free(xend); free(xumin); free(xumax);
+
+  if (rr->vmax <= 0.) {
+    /* vmax must be strictly positive! */
+    _unur_error("RoU",UNUR_ERR_DISTR_DATA,"cannot find bounding rectangle");
+    return UNUR_ERR_DISTR_DATA;
+  }
   
   /* return status of computation */
   return (flag_finite ? UNUR_SUCCESS : UNUR_ERR_INF);

@@ -529,8 +529,7 @@ int unur_distr_cvec_set_pdfparams( UNUR_DISTR *distribution, const double *param
    @code{UNUR_ERR_DISTR_NPARAMS}.
 
    For standard distributions from the UNURAN library the parameters 
-   are checked. Moreover, the domain is updated automatically unless it
-   has been changed before by a unur_distr_cont_set_domain() call.
+   are checked. Moreover, the domain is updated automatically.
    If the given parameters are invalid for the standard distribution,
    then no parameters are set and an error code is returned.
    Notice that the given parameter list for such a distribution is
@@ -617,13 +616,13 @@ int unur_distr_cvec_set_domain_rect( UNUR_DISTR *distribution, const double *low
    By default the domain of a distribution is unbounded. Thus one can
    use this call to truncate an existing distribution.
 
-   @emph{Important:} Changing the domain of @var{distribution} has no
-   effect on the given of mode or center. It also does not change the
-   return value of calls to the PDF or similar functions, i.e.,
-   calling the PDF with a point out of the domain does not necessarily
-   return @code{0.} Thus one has to take care
-   that the mode or center falls into the domain.
-   This is particular necessary for predefined distributions.
+   @emph{Important:} Changing the domain of @var{distribution} 
+   marks derived parameters like the mode or the center as unknown and
+   must be set @emph{after} changing the domain. This is important for
+   the already set (or default) value for the center does not 
+   fall into the given domain.
+   Notice that calls of the PDF and derived functions return @code{0.}
+   when the parameter is not contained in the domain.
 */
 
 int unur_distr_cvec_is_indomain( const double *x, const UNUR_DISTR *distribution );
@@ -681,6 +680,10 @@ int unur_distr_cvec_set_center( UNUR_DISTR *distribution, const double *center )
    The center is used by some methods to shift the distribution in
    order to decrease numerical round-off error.
    If not given explicitly a default is used.
+   Moreover, it is used as starting point for several numerical search
+   algorithm (e.g. for the mode). Then @var{center} must be a pointer
+   where the call to the PDF returns a non-zero value.
+   In particular @var{center} must contained in the domain of the distribution.
 
    Default: The mode, if given by a unur_distr_cvec_set_mode() call;
    else the mean, if given by a unur_distr_cvec_set_mean() call;

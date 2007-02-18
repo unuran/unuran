@@ -2368,6 +2368,70 @@ unur_distr_cvec_get_pdfvol( struct unur_distr *distr )
 } /* end of unur_distr_cvec_get_pdfvol() */
 
 /*****************************************************************************/
+/* call PDFs and their derivatives                                           */
+/* (internal functions. no checking for NULL pointer)                        */
+
+double
+_unur_cvec_PDF(const double *x, struct unur_distr *distr)
+{
+  if ( (distr->set & UNUR_DISTR_SET_DOMAINBOUNDED) &&
+       !_unur_distr_cvec_is_indomain(x, distr) )
+    return 0.;
+
+  return (*(distr->data.cvec.pdf)) (x,distr);
+}
+
+int
+_unur_cvec_dPDF(double *result, const double *x, struct unur_distr *distr)
+{
+  if ( (distr->set & UNUR_DISTR_SET_DOMAINBOUNDED) &&
+       !_unur_distr_cvec_is_indomain(x, distr) )
+    return 0.;
+
+  return (*(distr->data.cvec.dpdf)) (result,x,distr);
+}
+
+double
+_unur_cvec_pdPDF(const double *x, int coord, struct unur_distr *distr)
+{
+  if ( (distr->set & UNUR_DISTR_SET_DOMAINBOUNDED) &&
+       !_unur_distr_cvec_is_indomain(x, distr) )
+    return 0.;
+
+  return (*(distr->data.cvec.pdpdf)) (x,coord,distr);
+}
+
+double
+_unur_cvec_logPDF(const double *x, struct unur_distr *distr)
+{
+  if ( (distr->set & UNUR_DISTR_SET_DOMAINBOUNDED) &&
+       !_unur_distr_cvec_is_indomain(x, distr) )
+    return -INFINITY;
+
+  return (*(distr->data.cvec.logpdf)) (x,distr);
+}
+
+int
+_unur_cvec_dlogPDF(double *result, const double *x, struct unur_distr *distr)
+{
+  if ( (distr->set & UNUR_DISTR_SET_DOMAINBOUNDED) &&
+       !_unur_distr_cvec_is_indomain(x, distr) )
+    return 0.;
+
+  return (*(distr->data.cvec.dlogpdf)) (result,x,distr);
+}
+
+double
+_unur_cvec_pdlogPDF(const double *x, int coord, struct unur_distr *distr)
+{
+  if ( (distr->set & UNUR_DISTR_SET_DOMAINBOUNDED) &&
+       !_unur_distr_cvec_is_indomain(x, distr) )
+    return 0.;
+
+  return (*(distr->data.cvec.pdlogpdf)) (x,coord,distr);
+}
+
+/*****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
 #ifdef UNUR_ENABLE_LOGGING

@@ -77,7 +77,7 @@
 #define UNUR_DISTR_SET_PDFVOLUME      0x00000010u
 
 /*---------------------------------------------------------------------------*/
-/* call pdf's and cdf's                                                      */
+/* call PDFs and CDFs                                                        */
 /* (no checking for NULL pointer !)                                          */
 
 #define _unur_cont_PDF(x,distr)     ((*((distr)->data.cont.pdf)) ((x),(distr)))
@@ -90,12 +90,19 @@
 #define _unur_discr_PMF(x,distr)    ((*((distr)->data.discr.pmf))((x),(distr)))
 #define _unur_discr_CDF(x,distr)    ((*((distr)->data.discr.cdf))((x),(distr)))
 
-#define _unur_cvec_PDF(x,distr)        ((*((distr)->data.cvec.pdf)) ((x),(distr)))
-#define _unur_cvec_dPDF(r,x,distr)     ((*((distr)->data.cvec.dpdf)) ((r),(x),(distr)))
-#define _unur_cvec_pdPDF(x,c,distr)    ((*((distr)->data.cvec.pdpdf)) ((x),(c),(distr)))
-#define _unur_cvec_logPDF(x,distr)     ((*((distr)->data.cvec.logpdf)) ((x),(distr)))
-#define _unur_cvec_dlogPDF(r,x,distr)  ((*((distr)->data.cvec.dlogpdf)) ((r),(x),(distr)))
-#define _unur_cvec_pdlogPDF(x,c,distr) ((*((distr)->data.cvec.pdlogpdf)) ((x),(c),(distr)))
+/* #define _unur_cvec_PDF(x,distr)        ((*((distr)->data.cvec.pdf)) ((x),(distr))) */
+/* #define _unur_cvec_dPDF(r,x,distr)     ((*((distr)->data.cvec.dpdf)) ((r),(x),(distr))) */
+/* #define _unur_cvec_pdPDF(x,c,distr)    ((*((distr)->data.cvec.pdpdf)) ((x),(c),(distr))) */
+/* #define _unur_cvec_logPDF(x,distr)     ((*((distr)->data.cvec.logpdf)) ((x),(distr))) */
+/* #define _unur_cvec_dlogPDF(r,x,distr)  ((*((distr)->data.cvec.dlogpdf)) ((r),(x),(distr))) */
+/* #define _unur_cvec_pdlogPDF(x,c,distr) ((*((distr)->data.cvec.pdlogpdf)) ((x),(c),(distr))) */
+
+double _unur_cvec_PDF(const double *x, struct unur_distr *distr);
+int _unur_cvec_dPDF(double *result, const double *x, struct unur_distr *distr);
+double _unur_cvec_pdPDF(const double *x, int coord, struct unur_distr *distr);
+double _unur_cvec_logPDF(const double *x, struct unur_distr *distr);
+int _unur_cvec_dlogPDF(double *result, const double *x, struct unur_distr *distr);
+double _unur_cvec_pdlogPDF(const double *x, int coord, struct unur_distr *distr);
 
 /*---------------------------------------------------------------------------*/
 /* check for existance of function pointers                                  */

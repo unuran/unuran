@@ -263,6 +263,12 @@ int unur_hitro_set_use_adaptiveline( UNUR_PAR *parameters, int adaptive );
    the entire bounding rectangle must be used since otherwise the
    sampling time can be arbitrarily slow.
 
+   @emph{Warning:} When adaptive line sampling is switched off,
+   sampling can be arbitrarily slow. In particular this happens
+   when random direction sampling is used for distributions with
+   rectangular domains. Then the algorithm can be trapped into 
+   a vertex (or even edge).
+
    Default is TRUE.
 */
 

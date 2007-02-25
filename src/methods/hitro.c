@@ -1573,10 +1573,10 @@ _unur_hitro_debug_init_start( const struct unur_gen *gen )
 
   switch (gen->variant & HITRO_VARMASK_VARIANT) {
   case HITRO_VARIANT_COORD:
-    fprintf(log,"%s: sampling routine = _unur_hitro_coord_sample()\n",gen->genid);
+    fprintf(log,"%s: sampling routine = _unur_hitro_coord_sample_cvec()\n",gen->genid);
     break;
   case HITRO_VARIANT_RANDOMDIR:
-    fprintf(log,"%s: sampling routine = _unur_hitro_randomdir_sample()\n",gen->genid);
+    fprintf(log,"%s: sampling routine = _unur_hitro_randomdir_sample_cvec()\n",gen->genid);
     break;
   }
 

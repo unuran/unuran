@@ -67,8 +67,14 @@
 /*---------------------------------------------------------------------------*/
 /* Constants                                                                 */
 
+/* minimum value for multiplier (same number also appears in error message)  */
+#define HITRO_MIN_MULTIPLIER  (1.0001)
+
+/* starting value for u and v bounds when not provided by user */
+#define HITRO_START_UVMIN  (1.e-3)
+
 /* increase size of adaptive bounding rectangle by this factor */
-#define HITRO_DEFAULT_ADAPTIVE_MULTIPLIER  1.1
+#define HITRO_DEFAULT_ADAPTIVE_MULTIPLIER  (1.1)
 
 /*---------------------------------------------------------------------------*/
 /* Variants                                                                  */
@@ -271,7 +277,7 @@ unur_hitro_new( const struct unur_distr *distr )
   PAR->x0       = NULL;             /* starting point of chain, default is 0 */
   PAR->adaptive_mult = HITRO_DEFAULT_ADAPTIVE_MULTIPLIER; /* multiplier for adaptive rectangles  */
 
-  PAR->vmax     = 1.e-3;      /* v-boundary of bounding rectangle (unknown)  */
+  PAR->vmax     = -1.;        /* v-boundary of bounding rectangle (unknown)  */
   PAR->umin     = NULL;       /* u-boundary of bounding rectangle (unknown)  */
   PAR->umax     = NULL;       /* u-boundary of bounding rectangle (unknown)  */
 
@@ -578,7 +584,7 @@ unur_hitro_set_adaptive_multiplier( struct unur_par *par, double factor )
   _unur_check_par_object( par, HITRO );
 
   /* check new parameter for generator */
-  if (factor < 1.0001) {
+  if (factor < HITRO_MIN_MULTIPLIER) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"multiplier too small (<= 1.0001)");
     return UNUR_ERR_PAR_SET;
   }
@@ -965,7 +971,7 @@ _unur_hitro_create( struct unur_par *par )
   GEN->vumax = _unur_xmalloc( (GEN->dim+1) * sizeof(double) );
   /* bounding rectangle v-coordinate */
   GEN->vumin[0] = 0.;
-  GEN->vumax[0] = PAR->vmax;  
+  GEN->vumax[0] = (PAR->vmax > 0.) ? PAR->vmax : HITRO_START_UVMIN;  
   /* lower left and upper right vertex of bounding rectangle in u-hyperplane */
   if (gen->variant & HITRO_VARFLAG_BOUNDRECT) {
     if (PAR->umin && PAR->umax) {
@@ -973,8 +979,8 @@ _unur_hitro_create( struct unur_par *par )
       memcpy (GEN->vumax+1, PAR->umax, GEN->dim * sizeof(double) );
     }
     else {
-      for (i=1; i<GEN->dim+1; i++) GEN->vumin[i] = -1.e-3;
-      for (i=1; i<GEN->dim+1; i++) GEN->vumax[i] = +1.e-3;
+      for (i=1; i<GEN->dim+1; i++) GEN->vumin[i] = -HITRO_START_UVMIN;
+      for (i=1; i<GEN->dim+1; i++) GEN->vumax[i] =  HITRO_START_UVMIN;
     }
   }
   /* else: we do not need the u-bounds */

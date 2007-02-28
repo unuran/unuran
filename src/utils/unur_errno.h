@@ -385,20 +385,17 @@ extern int unur_errno;
       In addition to reporting error via the @code{unur_errno} mechanism
       the library also provides an (optional) error handler. The error
       handler is called by the library functions when they are about to
-      report an error. Then a short error diagnostics is written via two
-      output streams. Both can be switched on/off by compiler flag
+      report an error. Then a short error diagnostics is written via an
+      output stream which can be switched on/off by compiler flag
       @code{UNUR_WARNINGS_ON} in @file{unuran_config.h}.
       
-      The first stream is @code{stderr}. It can be enabled by defining 
-      the macro @code{UNUR_ENABLE_STDERR} in @file{unuran_config.h}.
-      
-      The second stream can be set abritrarily by the unur_set_stream()
+      The stream can be set abritrarily by the unur_set_stream()
       call. If no such stream is given by the user a default stream is
       used by the library: all warnings and error messages are written
-      into the file unuran.log in the current working directory.
+      into the file @file{unuran.log} in the current working directory.
       The name of this file defined by the macro @code{UNUR_LOG_FILE} in
-      @file{unuran_config.h}. If the stdout should be used, define 
-      this macro by @code{"stdout"}.
+      @file{unuran_config.h}. If the @file{stdout} should be used, 
+      undef this macro.
       
       This output stream is also used to log descriptions of build generator
       objects and for writing debugging information.

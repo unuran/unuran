@@ -71,14 +71,6 @@ _unur_stream_printf( const char *genid,
 
   va_start(ap, format);
 
-#ifdef UNUR_ENABLE_STDERR
-  /* write on stderr */
-  fprintf(stderr,"%s: %s:%d: ",genid,filename,line);
-  vfprintf(stderr,format,ap);
-  fprintf(stderr,"\n");
-  fflush(stderr);   /* in case of a segmentation fault */
-#endif
-
 #ifdef UNUR_ENABLE_LOGFILE
   /* write onto output stream */
   if (!unur_stream) unur_get_stream();
@@ -109,12 +101,6 @@ _unur_stream_printf_simple( const char *format, ... )
   va_list ap;
 
   va_start(ap, format);
-
-#ifdef UNUR_ENABLE_STDERR
-  /* write on stderr */
-  vfprintf(stderr,format,ap);
-  fflush(stderr);   /* in case of a segmentation fault */
-#endif
 
 #ifdef UNUR_ENABLE_LOGFILE
   /* write onto output stream */
@@ -190,11 +176,6 @@ _unur_logfile_open( void )
 #else
   /* use stdout instead of a log file */
   LOG = stdout;
-#endif
-
-#ifdef UNUR_ENABLE_STDERR
-  if (!LOG) fprintf(stderr,"warning: cannot open logfile %s\n",logfilename);
-  fflush(stderr);   /* in case of a segmentation fault */
 #endif
 
   /* write header into log file */

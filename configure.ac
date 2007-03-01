@@ -168,7 +168,7 @@ dnl Set flags for
 dnl Set flags for compiler
 CC_FLAGS=
 if test X"$GCC" = Xyes ; then
-   CC_FLAGS+=" -Wall"
+   CC_FLAGS="$CC_FLAGS -Wall"
 fi
 
 case "${host_os}" in
@@ -177,7 +177,7 @@ linux*)
 	## Intel compiler
 	*icc)
 		## -mp is the preferred form of -mieee-fp
-		CC_FLAGS+=" -mp"
+		CC_FLAGS="$CC_FLAGS -mp"
 		;;
 	esac
 	;;

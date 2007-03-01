@@ -36,6 +36,7 @@ libmethods_la_SOURCES = \
  empl.c   empl.h   empl_struct.h \
  gibbs.c  gibbs.h  gibbs_struct.h \
  hinv.c   hinv.h   hinv_struct.h \
+ hist.c   hist.h   hist_struct.h \
  hitro.c  hitro.h  hitro_struct.h \
  hrb.c    hrb.h    hrb_struct.h \
  hrd.c    hrd.h    hrd_struct.h \

@@ -99,6 +99,8 @@
 #define CK_EMPK_GEN      0x00100101u
 #define CK_EMPL_PAR      0x00100110u
 #define CK_EMPL_GEN      0x00100111u
+#define CK_HIST_PAR      0x00100120u
+#define CK_HIST_GEN      0x00100121u
 
 /* generators multivariate continuous distributions */
 #define CK_MVTDR_PAR     0x00200010u

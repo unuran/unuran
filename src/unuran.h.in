@@ -115,6 +115,7 @@
 #include <methods/utdr.h>
 #include <methods/empk.h>
 #include <methods/empl.h>
+#include <methods/hist.h>
 
 /* methods for continuous multivariate distributions */
 #include <methods/norta.h>

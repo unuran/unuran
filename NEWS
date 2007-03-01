@@ -1,5 +1,7 @@
 Version 1.0.0: ???? 2007
 
+	* new method HIST for sampling from histograms
+
 	* new method MVSTD (wrapper for multivariate
 	  continuous distributions)
 
@@ -26,6 +28,8 @@ Version 1.0.0: ???? 2007
 	  double (*random)(void *state)
 
 	* Added F-distribution.
+
+	* added histogram to empirical distributions of type CEMP
 
 	* added support for rectangular distributions for multivariate
 	  continuous distributions:

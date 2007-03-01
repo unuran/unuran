@@ -13,7 +13,7 @@ FILE=run/run.c          # a file that should exist in the source dir
 # export WANT_AUTOMAKE=1.10
 
 # Check for required programs
-(libtool --version) < /dev/null > /dev/null 2>&1 || {
+(libtoolize --version) < /dev/null > /dev/null 2>&1 || {
 	echo
 	echo "You must have libtool installed to compile $PROJECT."
 	exit 1

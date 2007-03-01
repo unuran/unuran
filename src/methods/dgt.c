@@ -166,7 +166,7 @@ static int _unur_dgt_create_tables( struct unur_gen *gen );
 
 static int _unur_dgt_make_guidetable( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* create table for alias method                                             */
+/* create table for indexed search                                           */
 /*---------------------------------------------------------------------------*/
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -675,7 +675,7 @@ _unur_dgt_make_guidetable( struct unur_gen *gen )
 { 
   double *pv;                   /* pointer to probability vector */
   int n_pv;                     /* length of probability vector */
-  double pvh;                   /* aux variable for computing cummalate sums */
+  double pvh;                   /* aux variable for computing cumulated sums */
   double gstep;                 /* step size when computing guide table */
   int i,j;
   
@@ -730,7 +730,7 @@ _unur_dgt_make_guidetable( struct unur_gen *gen )
   /* o.k. */
   return UNUR_SUCCESS;
 
-} /* end of _unur_dgt_make_urntable() */
+} /* end of _unur_dgt_make_guidetable() */
 
 
 /*****************************************************************************/

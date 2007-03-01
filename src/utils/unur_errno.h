@@ -382,23 +382,18 @@ extern int unur_errno;
       @cindex Error handlers
       @cindex Output streams
 
-      In addition to reporting error via the @code{unur_errno} mechanism
-      the library also provides an (optional) error handler. The error
-      handler is called by the library functions when they are about to
-      report an error. Then a short error diagnostics is written via an
-      output stream which can be switched on/off by compiler flag
-      @code{UNUR_WARNINGS_ON} in @file{unuran_config.h}.
+      In addition to reporting error via the @code{unur_errno}
+      mechanism UNURAN writes a short error diagnostics to an output
+      stream, usually an open file handler. This stream can be set at
+      runtime by the unur_set_stream() call. If no such stream is
+      given by the user a default stream is used by the library: all
+      warnings and error messages are written into the file
+      @file{unuran.log} in the current working directory. The name of
+      this log file is defined by the macro @code{UNUR_LOG_FILE} in 
+      @file{unuran_config.h}. 
       
-      The stream can be set abritrarily by the unur_set_stream()
-      call. If no such stream is given by the user a default stream is
-      used by the library: all warnings and error messages are written
-      into the file @file{unuran.log} in the current working directory.
-      The name of this file defined by the macro @code{UNUR_LOG_FILE} in
-      @file{unuran_config.h}. If the @file{stdout} should be used, 
-      undef this macro.
-      
-      This output stream is also used to log descriptions of build generator
-      objects and for writing debugging information.
+      This output stream is also used to log descriptions of built
+      generator objects and for writing debugging information.
       If you want to use this output stream for your own programs use 
       unur_get_stream() to get its file handler.
       This stream is enabled by the compiler switch
@@ -419,6 +414,7 @@ extern int unur_errno;
 /* warnings and error messages for given error number                        */
 
 /* =ROUTINES */
+
 
 const char *unur_get_strerror ( const int unur_errno );
 /*

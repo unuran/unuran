@@ -106,12 +106,12 @@ int unur_distr_cemp_get_data( const UNUR_DISTR *distribution, const double **sam
 int unur_distr_cemp_set_hist( UNUR_DISTR *distribution, const double *prob, int n_hist, double xmin, double xmax );
 /* 
    Set a histogram with bins of equal length. @var{prob} is an array
-   of length @var{n_hist} that contains the probability for the bins
+   of length @var{n_hist} that contains the probabilities for the bins
    (in ascending order). @var{xmin} and @var{xmax} give the lower and
    upper bound of the histogram, respectively. The bins are assumed to
    have equal length.
 
-   @emph{Notice:} All sampling method either raw data or histogram.
+   @emph{Notice:} All sampling methods either use raw data or histogram.
    It is possible to set both types of data; however, it is not
    checked whether the given histogran corresponds to possibly given
    raw data.

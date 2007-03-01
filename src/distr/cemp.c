@@ -111,6 +111,13 @@ unur_distr_cemp_new( void )
   DISTR.sample    = NULL;   /* sample      */
   DISTR.n_sample  = 0;      /* sample size */
 
+  /* histogram */
+  DISTR.n_hist    = 0;          /* number of bins          */
+  DISTR.hist_prob = NULL;       /* probabilities for bins  */
+  DISTR.hmin      = -INFINITY;  /* lower ...               */
+  DISTR.hmax      = INFINITY;   /* ... and upper bound     */       
+  DISTR.hist_bins = NULL;       /* boundary between bins   */
+
   /* return pointer to object */
   return distr;
 
@@ -150,6 +157,12 @@ _unur_distr_cemp_clone( const struct unur_distr *distr )
     memcpy( CLONE.sample, DISTR.sample, DISTR.n_sample * sizeof(double) );
   }
 
+  /* copy histogram into generator object (when there is one) */
+  if (DISTR.hist_prob) {
+    CLONE.hist_prob = _unur_xmalloc( DISTR.n_hist * sizeof(double) );
+    memcpy( CLONE.hist_prob, DISTR.hist_prob, DISTR.n_hist * sizeof(double) );
+  }
+
   /* copy user name for distribution */
   if (distr->name_str) {
     size_t len = strlen(distr->name_str) + 1;
@@ -180,7 +193,8 @@ _unur_distr_cemp_free( struct unur_distr *distr )
 
   COOKIE_CHECK(distr,CK_DISTR_CEMP,RETURN_VOID);
 
-  if (DISTR.sample) free( DISTR.sample );
+  if (DISTR.sample)    free( DISTR.sample );
+  if (DISTR.hist_prob) free( DISTR.hist_prob );
   if (distr->name_str) free(distr->name_str);
 
   COOKIE_CLEAR(distr);
@@ -286,6 +300,58 @@ unur_distr_cemp_get_data( const struct unur_distr *distr, const double **sample 
 
 /*---------------------------------------------------------------------------*/
 
+int
+unur_distr_cemp_set_hist( struct unur_distr *distr, const double *prob, 
+			  int n_hist, double xmin, double xmax )
+     /*----------------------------------------------------------------------*/
+     /* set histogram with bins of equal length for distribution             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr    ... pointer to distribution object                        */
+     /*   prob     ... pointer to array of distributions                     */
+     /*   n_hist   ... number of bins                                        */
+     /*   xmin     ... lower bound of histogram                              */
+     /*   xmax     ... upper bound of histogram                              */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CEMP, UNUR_ERR_DISTR_INVALID );
+  _unur_check_NULL( distr->name, prob, UNUR_ERR_NULL );
+
+  /* check new parameter for generator */
+  if (n_hist <= 0) {
+    _unur_error(NULL,UNUR_ERR_DISTR_SET,"histogram size");
+    return UNUR_ERR_DISTR_SET;
+  }
+  if (xmin >= xmax) {
+    _unur_error(NULL,UNUR_ERR_DISTR_SET,"histogram, min >= max");
+    return UNUR_ERR_DISTR_SET;
+  }
+
+  /* allocate memory for hist */
+  DISTR.hist_prob = _unur_xmalloc( n_hist * sizeof(double) );
+  if (!DISTR.hist_prob) return UNUR_ERR_MALLOC;
+
+  /* copy probabilities */
+  memcpy( DISTR.hist_prob, prob, n_hist * sizeof(double) );
+  DISTR.n_hist = n_hist;
+
+  /* store boundaries of histogram */
+  DISTR.hmin = xmin;
+  DISTR.hmax = xmax;
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+
+} /* end of unur_distr_cemp_set_hist() */
+
+/*---------------------------------------------------------------------------*/
+
 /*****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
@@ -324,6 +390,22 @@ _unur_distr_cemp_debug( const struct unur_distr *distr, const char *genid, unsig
 	if (i%10 == 0)
 	  fprintf(log,"\n%s:\t",genid);
 	fprintf(log,"  %.5f",DISTR.sample[i]);
+      }
+    }
+    fprintf(log,"\n%s:\n",genid);
+  }
+
+  if (DISTR.n_hist>0) {
+    /* histogram */
+    fprintf(log,"%s:\thistogram: #bins = %d, ",genid,DISTR.n_hist);
+    fprintf(log,"min = %g, max = %g, length = %g\n",
+	    DISTR.hmin, DISTR.hmax, (DISTR.hmax-DISTR.hmin)/DISTR.n_hist);
+    if (printvector) {
+      fprintf(log,"%s:\t> bin probabilities = ",genid);
+      for (i=0; i<DISTR.n_hist; i++) {
+	if (i%10 == 0)
+	  fprintf(log,"\n%s:\t",genid);
+	fprintf(log,"  %.5f",DISTR.hist_prob[i]);
       }
     }
     fprintf(log,"\n%s:\n",genid);

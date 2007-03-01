@@ -43,8 +43,16 @@
    =UP Distribution_objects [20]
 
    =DESCRIPTION
-      Empirical univariate distributions are just lists of numbers.
-      Thus there are only calls to insert these data.
+      Empirical univariate distributions are derived from observed data.
+      There are two ways to create such a generator object:
+      @enumerate
+      @item
+         By a list of @emph{raw data} by means of a
+         unur_distr_cemp_set_data() call.
+      @item
+         By a @emph{histogram} (i.e. preprocessed data) by means of a
+	 unur_distr_cemp_set_hist() call.
+      @end enumerate
       How these data are used to sample from the empirical distribution
       depends from the chosen generation method.  
 
@@ -93,6 +101,20 @@ int unur_distr_cemp_get_data( const UNUR_DISTR *distribution, const double **sam
    is returned and @code{sample} is set to NULL.
 
    @emph{Important:} Do @strong{not} change the entries in @var{sample}!
+*/
+
+int unur_distr_cemp_set_hist( UNUR_DISTR *distribution, const double *prob, int n_hist, double xmin, double xmax );
+/* 
+   Set a histogram with bins of equal length. @var{prob} is an array
+   of length @var{n_hist} that contains the probability for the bins
+   (in ascending order). @var{xmin} and @var{xmax} give the lower and
+   upper bound of the histogram, respectively. The bins are assumed to
+   have equal length.
+
+   @emph{Notice:} All sampling method either raw data or histogram.
+   It is possible to set both types of data; however, it is not
+   checked whether the given histogran corresponds to possibly given
+   raw data.
 */
 
 /* =END */

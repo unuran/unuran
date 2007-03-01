@@ -173,8 +173,15 @@ struct unur_distr_discr {
 /* (given by empirical sample)                                               */
 
 struct unur_distr_cemp {
-  double *sample;               /* pointer to sample                         */
+  /* raw data */
   int     n_sample;             /* length of sample probability vector       */
+  double *sample;               /* pointer to sample                         */
+  /* histogram */
+  int     n_hist;               /* number of bins in histogram               */
+  double *hist_prob;            /* probabilities for bins                    */
+  double  hmin, hmax;           /* lower and upper bound for histograms with
+				   bins of equal length                      */
+  double *hist_bins;            /* boundary between bins (of different length) */
 };
 
 /*---------------------------------------------------------------------------*/

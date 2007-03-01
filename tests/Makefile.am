@@ -59,6 +59,7 @@ check_PROGRAMS = \
  t_empl \
  t_gibbs \
  t_hinv \
+ t_hist \
  t_hitro \
  t_hrb \
  t_hrd \
@@ -128,7 +129,8 @@ EXTRA_DIST = \
  t_empl.conf \
  t_gibbs \
  t_hinv.conf \
- t_hitro.conf \
+ t_hinv.conf \
+ t_hist.conf \
  t_hrb.conf \
  t_hrd.conf \
  t_hri.conf \

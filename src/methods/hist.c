@@ -388,7 +388,6 @@ _unur_hist_sample( struct unur_gen *gen )
      /*   return INFINITY                                                    */
      /*----------------------------------------------------------------------*/
 { 
-  double xmin, xmax;
   double U,X;
   int J;
 

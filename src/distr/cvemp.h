@@ -80,7 +80,9 @@ int unur_distr_cvemp_set_data( UNUR_DISTR *distribution, const double *sample, i
    @code{dim} x @var{n_sample}, where
    @code{dim} is the dimension of the @var{distribution} returned by
    unur_distr_get_dim(). 
-   The data points must be stored consecutively in @var{sample}.
+   The data points must be stored consecutively in @var{sample}, i.e.,
+   data points (x1, y1), (x2, y2), @dots{} are given as an array
+   @{x1, y1, x2, y2, @dots{}@}.
 */
 
 int unur_distr_cvemp_read_data( UNUR_DISTR *distribution, const char *filename );

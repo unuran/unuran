@@ -1557,7 +1557,8 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
 	bisect = X2_BORDER;
       }
       else {
-       _unur_error(distr->name, UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+       _unur_error(distr->name, UNUR_ERR_NAN,"given PMF returns NaN");
+	return UNUR_ERR_NAN;
       }
       
       switch ( bisect ) {

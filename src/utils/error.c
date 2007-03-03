@@ -103,6 +103,9 @@ unur_get_strerror ( const int unur_errno )
     return "(generator) sampling error";
   case UNUR_ERR_NO_REINIT:
     return "(generator) reinit missing";
+  case UNUR_ERR_GEN:
+    return "(generator)";
+
 
     /** uniform random number generator (URNG) object **/
   case UNUR_ERR_URNG:
@@ -135,8 +138,14 @@ unur_get_strerror ( const int unur_errno )
     return "invalid NULL pointer";
   case UNUR_ERR_COOKIE:
     return "invalid cookie";
+  case UNUR_ERR_SILENT:
+    return "(silent error)";
   case UNUR_ERR_GENERIC:
-    return "";
+    return "(generic error)";
+  case UNUR_ERR_INF:
+    return "invalid infinity occured";
+  case UNUR_ERR_NAN:
+    return "NaN occured";
 
     /** compilation switches **/
   case UNUR_ERR_COMPILE:

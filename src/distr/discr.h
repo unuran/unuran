@@ -338,7 +338,8 @@ int unur_distr_discr_upd_mode( UNUR_DISTR *distribution );
    for distribution objects from the 
    UNURAN library of standard distributions 
    when the corresponding function is available.
-   Otherwise a (slow) numerical mode finder is used. If it failes
+   Otherwise a (slow) numerical mode finder is used. It only works properly
+   for unimodal probability mass functions. If it failes
    @code{unur_errno} is set to @code{UNUR_ERR_DISTR_DATA}.
 */
 

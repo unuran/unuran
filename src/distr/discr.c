@@ -1209,7 +1209,7 @@ unur_distr_discr_upd_pmfsum( struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
 {
   double sum = 0.;
-  int k, left, right;
+  int k, left, right, length;
 
   /* check arguments */
   _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
@@ -1227,7 +1227,10 @@ unur_distr_discr_upd_pmfsum( struct unur_distr *distr )
   /* no function to compute sum available */
   left  = DISTR.domain[0];
   right = DISTR.domain[1];
- 
+  length = right - left;
+  /* remark: length < 0 if right-left overflows */
+
+
   if (DISTR.cdf != NULL) {
     /* use CDF */
     if (left > INT_MIN) left -= 1;
@@ -1236,14 +1239,14 @@ unur_distr_discr_upd_pmfsum( struct unur_distr *distr )
   }
 
   if (DISTR.pv != NULL) {
-    for (k = 0; k<= right-left; k++)
+    for (k = 0; k<= length; k++)
       /* use probability vector */
       sum += DISTR.pv[k];
     DISTR.sum = sum;
     return UNUR_SUCCESS;
   }
 
-  if (DISTR.pmf != NULL && (right-left) <= MAX_PMF_DOMAIN_FOR_UPD_PMFSUM) {
+  if (DISTR.pmf != NULL && length > 0 && length <= MAX_PMF_DOMAIN_FOR_UPD_PMFSUM) {
     /* use PMF */
     for (k = left; k<= right; k++)
       sum += _unur_discr_PMF(k,distr);

@@ -66,6 +66,9 @@ static double _unur_distr_discr_eval_cdf_tree( int k, const struct unur_distr *d
 /*---------------------------------------------------------------------------*/
 
 static void _unur_distr_discr_free( struct unur_distr *distr );
+/*---------------------------------------------------------------------------*/
+/* destroy distribution object.                                              */
+/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 
@@ -73,7 +76,6 @@ static int _unur_distr_discr_find_mode( struct unur_distr *distr );
 /*---------------------------------------------------------------------------*/
 /* find mode of unimodal probability vector numerically by bisection.        */
 /*---------------------------------------------------------------------------*/
-
 
 /*****************************************************************************/
 /**                                                                         **/
@@ -485,13 +487,24 @@ unur_distr_discr_eval_pv( int k, const struct unur_distr *distr )
   _unur_check_NULL( NULL, distr, INFINITY );
   _unur_check_distr_object( distr, DISCR, INFINITY );
 
-  if (DISTR.pv != NULL)
+  if (DISTR.pv != NULL) {
     /* use probability vector */
-    return (DISTR.pv[k-DISTR.domain[0]]);
+    if (k < DISTR.domain[0] || k > DISTR.domain[1])
+      return 0.;
+    else
+      return (DISTR.pv[k-DISTR.domain[0]]);
+  }
 
-  if (DISTR.pmf != NULL)
+  if (DISTR.pmf != NULL) {
     /* use PMF */
-    return _unur_discr_PMF(k,distr);
+    double px = _unur_discr_PMF(k,distr);
+    if (_unur_isnan(px)) {
+      _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"PMF returns NaN");
+      return 0.;
+    }
+    else
+      return px;
+  }
 
   /* else: data missing */
   _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"");
@@ -1365,237 +1378,179 @@ _unur_distr_discr_debug( const struct unur_distr *distr, const char *genid, unsi
 int 
 _unur_distr_discr_find_mode(struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
-     /*  find mode of a probability vector by bisection                      */
+     /* find mode of a probability vector by bisection.                      */
      /*                                                                      */
-     /*  Any two of the three points x[i] must always differ at least by one */
-     /*  If no further point xnew can be fitted between, the mode is found   */
+     /* Assumptions: PMF is unimodal, no "inflexion" ("saddle") points.      */
      /*                                                                      */
      /* return:                                                              */
      /*   UNUR_SUCCESS ... on success                                        */
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
-#define sgn(a)  ( (a) >= (0) ? ( (a==0)?(0):(1) ) : (-1) )
-#define max_pos3(a,b,c) ( (a) >= (b) ? ( ((a) >= (c)) ? (0) : (2) ) :\
-                                     ( ((b) >= (c)) ? (1) : (2) ) )
+#define N_TRIALS  (100)
 
-#define INT1         (1) 
-#define INT2         (2) 
-#define INT3         (3)
-#define UNDEFINED    (0)               
-#define X2_BORDER    (1)              
-#define XNEW_BORDER  (2)             
+  int x[3];                       /* bracket for mode x[0] < x[1] < x[2]     */
+  double fx[3];                   /* PMF values at bracket points            */
+  int xnew;                       /* new point in iteration                  */
+  double fxnew;                   /* PMF value at new point                  */
+  int step;                       /* auxiliary variable for searching point  */
+  int this, other;                /* side of bracket under consideration     */
+  int cutthis;                    /* which side of bracket should be cut     */
 
-  int bisect;                     /* for choosing an interval               */
-  int interval;                   /* interval containing xnew               */
-  int mode;                       /* mode                                   */
-  int x[3], xnew;                 /* mode between x[0] and x[1]             */
-  double fx[3], fxnew;            /* ... and the respective function values */
-  int xtmp = INT_MAX;
-  double fxtmp = FLT_MAX;    /** TODO: FLT_MAX must be much smaller than DBL_MAX **/
-
-  const double r = (3.-sqrt(5.))/2.;       /* sectio aurea                  */
-
+  const double r = (sqrt(5.)-1.)/2.;     /* sectio aurea                     */
 
   /* check arguments */
   CHECK_NULL( distr, UNUR_ERR_NULL );
   _unur_check_distr_object( distr, DISCR, UNUR_ERR_DISTR_INVALID );
- 
-  /* derive three distinct points */
+
+  /* left and right boundary point of bracket */
   x[0] = DISTR.domain[0];
-  x[1] =DISTR.domain[1];
+  x[2] = DISTR.domain[1];
   fx[0] = unur_distr_discr_eval_pv(x[0], distr);
-  fx[1] = unur_distr_discr_eval_pv(x[1], distr);
+  fx[2] = unur_distr_discr_eval_pv(x[2], distr);
 
-
-  if ( x[0] == x[1] ){            /* domain contains only one point         */
-    mode = x[0];
+  /* we assume for our algorithm that there are at least three points */
+  if (x[2] <= x[0] + 1) {
+    /* we have one or two points only */
+    DISTR.mode = (fx[0] <= fx[2]) ? x[2] : x[0];
+    distr->set |= UNUR_DISTR_SET_MODE;
+    return UNUR_SUCCESS;
   }
-  else if ( x[1] == x[0] + 1 ){   /* domain contains only two points        */
-    mode = (fx[0] >= fx[1]) ? x[0] : x[1];
+
+  /* --- middle point of bracket ------------------------------------------- */
+  /* we have to find a point where the PMF is non-zero */
+
+  /* first trial: mean of boundary points */
+  x[1]  = (x[0] + x[2])/2;
+  fx[1] = unur_distr_discr_eval_pv(x[1], distr); 
+
+  /* second trial: start search from left boundary */
+  if ( !(fx[1]>0.)) {
+    xnew = (DISTR.domain[0]!=INT_MIN) ? DISTR.domain[0] : 0;
+    for (step = 1; step < N_TRIALS; step++) {
+      xnew += step;
+      if (xnew >= DISTR.domain[1]) break;
+      if ((fxnew = unur_distr_discr_eval_pv(xnew,distr)) > 0.) {
+	x[1] = xnew; fx[1] = fxnew; break;
+      }
+    }
   }
-  else{                           /* domain contains at least three points  */
 
-    x[2]  = (int) (r*x[0] + (1-r)*x[1]);
-    if ( x[2] == x[0] )
-      x[2]++;
-    if ( x[2] == x[1] )
-      x[2]--;
-    fx[2] = unur_distr_discr_eval_pv(x[2], distr);
-
-
-    /* at least one of the x[i] should have a positive function value  */
-    if (_unur_iszero(fx[0]) && _unur_iszero(fx[1])){
-      int i=1;
-      while (_unur_iszero(fx[2]) && i < 100){
-	x[2]  = (x[1]/100)*i + (x[0]/100)*(100-i); /* integers !!! */
-        fx[2] = unur_distr_discr_eval_pv(x[2], distr);
-        i++;
-      } 
+  /* third trial: start search from 0 */
+  if ( !(fx[1]>0.) && DISTR.domain[0]!=0) {
+    xnew = 0;
+    for (step = 1; step < N_TRIALS; step++) {
+      xnew += step;
+      if (xnew >= DISTR.domain[1]) break;
+      if ((fxnew = unur_distr_discr_eval_pv(xnew,distr)) > 0.) {
+	x[1] = xnew; fx[1] = fxnew; break;
+      }
     }
-    if (_unur_iszero(fx[2])){  /* no success */
-      _unur_error(distr->name,UNUR_ERR_DISTR_DATA,
-         "In find_mode(): no positive entry in PV found during 100 trials");
-      return UNUR_ERR_DISTR_DATA;  
+  }
+
+  /* forth trial: start search from right boundary */
+  if ( !(fx[1]>0.) && DISTR.domain[1]!=INT_MAX) {
+    xnew = DISTR.domain[1];
+    for (step = 1; step < N_TRIALS; step++) {
+      xnew -= step;
+      if (xnew <= DISTR.domain[0]) break;
+      if ((fxnew = unur_distr_discr_eval_pv(xnew,distr)) > 0.) {
+	x[1] = xnew; fx[1] = fxnew; break;
+      }
     }
+  }
 
-    /* x[i] are now initialized -- at least one entry is > 0  
-       and no two of the x[i] are identical                  */ 
+  if ( !(fx[1]>0.)) {
+    _unur_error(distr->name,UNUR_ERR_DISTR_DATA,
+		"find_mode(): no positive entry in PV found");
+    return UNUR_ERR_DISTR_DATA;
+  }
+  if (fx[1]<fx[0] && fx[1]<fx[2]) {
+    _unur_error(distr->name,UNUR_ERR_DISTR_DATA, "find_mode(): PV not unimodal");
+    return UNUR_ERR_DISTR_DATA;
+  }
 
+  /* --- middle point of bracket found ------------------------------------- */
 
-    while (1) {
+  /* --- interate until maximum is found ----------------------------------- */
 
-      /* terminating the program legally */
-      if ( (x[2]-x[0]) == sgn(x[2]-x[0]) &&
-	   (x[1]-x[2]) == sgn(x[1]-x[2])    ){
-	mode = x[ max_pos3(fx[0], fx[1], fx[2]) ];
-	break;   /* mode found */
+  while (1) {
+
+    /* fprintf(stderr,"x = %d, %d, %d\n",x[0],x[1],x[2]); */
+    /* fprintf(stderr,"fx = %g, %g, %g\n",fx[0],fx[1],fx[2]); */
+
+    /* terminate */
+    if (x[0]+1 >= x[1] && x[1] >= x[2]-1) {
+      DISTR.mode = (fx[0]>fx[2]) ? x[0] : x[2];
+      if (fx[1]>DISTR.mode) DISTR.mode = x[1];
+      distr->set |= UNUR_DISTR_SET_MODE;
+      return UNUR_SUCCESS;
+    } 
+
+    /* new point */
+    xnew  = (int) (r*x[0] + (1.-r)*x[2]);
+    if (xnew == x[0])  ++xnew;
+    if (xnew == x[2])  --xnew;
+    if (xnew == x[1])  xnew += (x[1]-1==x[0]) ? 1 : -1;
+
+    /* side of bracket */
+    if (xnew < x[1]) {
+      this = 0; other = 2; } /* l.h.s. of bracket */
+    else {
+      this = 2; other = 0; } /* r.h.s. of bracket */
+
+    /* value at new point */
+    fxnew = unur_distr_discr_eval_pv(xnew,distr);
+    if ( fxnew < fx[0] && fxnew < fx[2] ) {
+      _unur_error(distr->name,UNUR_ERR_DISTR_DATA, "find_mode(): PV not unimodal");
+      return UNUR_ERR_DISTR_DATA;
+    }
+    
+    do {
+
+      if (!_unur_FP_same(fxnew,fx[1])) {
+	cutthis = (fxnew > fx[1]) ? FALSE : TRUE;
+	break;
       }
 
+      /* else: fxnew == fx[1] */
 
-      /* find xnew not identical with any of the x[i] */ 
-      xnew  = (int) (r*x[0] + (1-r)*x[2]);
+      if (fx[this]  > fx[1]) { cutthis = FALSE; break; }
+      if (fx[other] > fx[1]) { cutthis = TRUE;  break; }
 
-      if ( xnew == x[0] ){
-	  xnew += sgn(x[2]-x[0]);
-	  if (xnew == x[2]){
-	    xnew = x[2];
-	    x[2] += sgn(x[2]-x[0]);  /* cant be = x[1] */
-	    fx[2] = unur_distr_discr_eval_pv(x[2], distr);
-	  }
-      }
-      if ( xnew == x[2] ){
-	  xnew -= sgn(x[2]-x[0]);
-	  if (xnew == x[0]){
-	    xnew = x[2];
-	    x[2] += sgn(x[2]-x[0]);  /* cant be = x[1] */
-	    fx[2] = unur_distr_discr_eval_pv(x[2], distr);
-	  }
-      }
+      /* else: fx[0] < fxnew && fx[1] == fxnew && fx[2] < fxnew */
 
-      fxnew = unur_distr_discr_eval_pv(xnew, distr);
-
-      /* Information of point xnew isn't enough to
-         refine interval containig the mode -- determine new xnew    */
-      if ( _unur_FP_same(fx[2], fxnew) &&
-           (! x[0] > x[2]) && (! x[1] > x[2]) ){
-
-	interval = -1;  /* should be impossible when entering switch */
-	if ( abs(x[1]-x[2]) > 1 ){
-	  xtmp = x[1]/2 + x[2]/2;
-	  fxtmp = unur_distr_discr_eval_pv(xtmp, distr);
-	  interval = UNDEFINED;
-          if ( !_unur_FP_same(fxtmp, fx[2]) )
-	    interval = INT3;
+      for (step = 1; step < N_TRIALS && xnew >= x[0]  && xnew <= x[2]; step++) {
+	xnew += (this==0) ? -1 : 1;
+	fxnew = unur_distr_discr_eval_pv(xnew,distr);
+	if (_unur_FP_less(fxnew,fx[1])) {
+	  DISTR.mode = x[1];
+	  distr->set |= UNUR_DISTR_SET_MODE;
+	  return UNUR_SUCCESS;
 	}
-	if ( abs(xnew-x[0]) > 1 ){
-	  xtmp = xnew/2 + x[0]/2;
-	  fxtmp = unur_distr_discr_eval_pv(xtmp, distr);
-	  interval = UNDEFINED;
-          if ( !_unur_FP_same(fxtmp, fx[2]) )
-	    interval = INT1;
-        }
-	if ( abs(x[2]-xnew) > 1 ){
-	  xtmp = x[2]/2 + xnew/2;
-	  fxtmp = unur_distr_discr_eval_pv(xtmp, distr);
-	  interval = UNDEFINED;
-          if ( !_unur_FP_same(fxtmp, fx[2]) )
-	    interval = INT2;
-	}
+      }
 
-	switch ( interval ){
-	case INT1:
-	  xnew = xtmp; fxnew = fxtmp;
-	  break;
-	case INT2:
-	  xnew = xtmp; fxnew = fxtmp;
-	  break;
-	case INT3:
-	  xnew = x[2]; fxnew = fx[2];
-	  x[2] = xtmp; fx[2] = fxtmp;
-	  break;
-	case UNDEFINED:
-	  return UNUR_ERR_DISTR_DATA;  /* mode not found -- exit */
-	default:
-	  _unur_error(distr->name, UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-	  return UNUR_ERR_SHOULD_NOT_HAPPEN;
-	} /* end of switch (interval) */ 
-
-      }   /* flat region left */
-
-
-      /* regular bisection */
-      bisect = -1; /* should be impossibe lwhen entering switch */
-      if (      fxnew > fx[0] && fxnew > fx[2] ){
-	bisect = X2_BORDER;
-      }
-      else if ( fxnew > fx[1] && fxnew > fx[2] ){
-	bisect = X2_BORDER;
-      }
-      else if ( fx[2] > fxnew && fx[2] > fx[1] ){
-	bisect = XNEW_BORDER;
-      }
-      else if ( fx[2] > fxnew && fx[2] > fx[0] ){
-	bisect = XNEW_BORDER;
-      }
-      else if ( fx[0] > fxnew ){
-	bisect = X2_BORDER;
-      }
-      else if ( fx[1] > fx[2] ){
-	bisect = XNEW_BORDER;
-      }
-      else if ( _unur_FP_same(fx[0], fxnew) && fxnew < fx[2] ){
-	bisect = XNEW_BORDER;
-      }
-      else if ( _unur_FP_same(fx[0], fxnew) && fxnew > fx[2] ){
-	bisect = X2_BORDER;
-      }
-      else if ( _unur_FP_same(fx[2], fx[1]) && fxnew < fx[2] ){
-	bisect = XNEW_BORDER;
-      }
-      else if ( _unur_FP_same(fx[2], fx[1]) && fxnew < fx[2] ){
-	bisect = X2_BORDER;
-      }
-      else {
-       _unur_error(distr->name, UNUR_ERR_NAN,"given PMF returns NaN");
-	return UNUR_ERR_NAN;
-      }
+      _unur_error(distr->name,UNUR_ERR_DISTR_DATA, "find_mode(): PV not unimodal");
+      return UNUR_ERR_DISTR_DATA;
       
-      switch ( bisect ) {
-      case XNEW_BORDER:
-	x[0] = x[1];  fx[0] = fx[1];
-	x[1] = xnew;  fx[1] = fxnew;
-	break;
-      case X2_BORDER:
-	x[1] = x[2];  fx[1] = fx[2];
-	x[2] = xnew;  fx[2] = fxnew;
-	break;
-      default:
-	_unur_error(distr->name, UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-	return UNUR_ERR_SHOULD_NOT_HAPPEN;
-      } /* end of switch (bisect) */
+    } while (0);
 
+    if (cutthis) {
+      x[this] = xnew; fx[this] = fxnew;
+    }
+    else {
+      x[other] = x[1]; fx[other] = fx[1];
+      x[1] = xnew; fx[1] = fxnew;
+    }
 
-    } /* while (1) end */
+  }   /* --- end while(1) --- */
 
-  }  /* else (at least 3 points) end */
-  
-  /* mode successfully computed */
-  DISTR.mode = mode;
   /* changelog */
-  distr->set |= UNUR_DISTR_SET_MODE; 
-  
+  distr->set |= UNUR_DISTR_SET_MODE;
+
   /* o.k. */
   return UNUR_SUCCESS;
-  
-#undef sgn
-#undef max_pos3
-#undef INT1
-#undef INT2
-#undef INT3
-#undef UNDEFINED
-#undef X2_BORDER
-#undef XNEW_BORDER
+
 } /* end of _unur_distr_discr_find_mode() */
 
 /*---------------------------------------------------------------------------*/

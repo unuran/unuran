@@ -1,0 +1,48 @@
+
+# Where to find source files
+TOP_SRCDIR := .
+UNURAN_SRC := $(wildcard $(TOP_SRCDIR)/src/*/*.c)
+UNURAN_OBJ := $(UNURAN_SRC:.c=.obj)
+
+
+
+CFLAGS=-O2 -nologo -DHAVE_CONFIG_H -I./ -I./src/ -MD -W3
+
+
+# Some special files
+FPCONST_H = $(TOP_SRCDIR)/src/utils/unur_fp_const_source.h
+
+
+all:	$(FPCONST_H) $(UNURAN_OBJ)
+	echo "start ..."
+
+$(FPCONST_H): scripts/compute_machine_constants.exe
+	./scripts/compute_machine_constants.exe > $(FPCONST_H)
+
+scripts/compute_machine_constants.exe: scripts/compute_machine_constants.obj 
+	(cd scripts; \
+	$(CC) -Fecompute_machine_constants.exe compute_machine_constants.obj )
+
+
+%.obj: %.c
+	$(CC) $(CFLAGS) -Fo$@ -c $<
+
+
+
+#$(UNURANLIB):   $(UNRCFG) $(UNRO) $(UNURANO) $(UNURANDO) $(ORDER_) $(MAINLIBS)
+#		@$(MAKELIB) $(PLATFORM) $(LD) "$(LDFLAGS)"  \
+#		   "$(SOFLAGS)" libUnuran.$(SOEXT) $@     \
+#		   "$(UNURANO) $(UNURANDO)"             \
+#		   "$(UNURANLIBEXTRA) $(UNRO)"
+#
+#map-unuran:     $(RLIBMAP)
+#		$(RLIBMAP) -r $(ROOTMAP) -l $(UNURANLIB) \
+#		   -d $(UNURANLIBDEP) -c $(UNURANL) $(UNURANLINC)
+#
+#clean-unuran:
+#		@rm -f $(UNURANO) $(UNURANDO)
+#		-@(if [ -d $(UNRDIRS) ]; then \
+#			cd $(UNRDIRS); \
+#			$(MAKE) clean; \
+#		fi)
+#

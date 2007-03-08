@@ -45,8 +45,8 @@
 #include "testdistributions/testdistributions.h"
 
 /* macros and functions for handling floats */
-#include <src/utils/unur_fp_source.h>
-#include <src/utils/unur_fp_const_source.h>
+#include <utils/unur_fp_source.h>
+#include <utils/unur_fp_const_source.h>
 
 #ifdef WITH_DMALLOC
 #  include <dmalloc.h>

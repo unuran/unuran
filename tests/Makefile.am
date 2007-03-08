@@ -127,7 +127,7 @@ EXTRA_DIST = \
  t_dstd.conf \
  t_empk.conf \
  t_empl.conf \
- t_gibbs \
+ t_gibbs.conf \
  t_hinv.conf \
  t_hinv.conf \
  t_hist.conf \

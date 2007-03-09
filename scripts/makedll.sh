@@ -27,7 +27,10 @@ export LIB="${VCUNIX}/PlatformSDK/Lib;${VCWIN}\PlatformSDK\Lib;${LIB}"
 #echo ${INCLUDE}
 
 #./autogen.sh --disable-shared --enable-static
-#./hmake
+
+test -d win || mkdir win
+test -f src/unuran.h || (cd src; ../hmake unuran.h)
+cp -v src/unuran.h win
 
 ./hmake -f scripts/Makefile.win32
 

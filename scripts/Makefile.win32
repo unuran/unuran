@@ -27,6 +27,8 @@ scripts/compute_machine_constants.exe: scripts/compute_machine_constants.obj
 %.obj: %.c
 	$(CC) $(CFLAGS) -Fo$@ -c $<
 
+clean:
+	rm -f $(UNURAN_OBJ)
 
 
 #$(UNURANLIB):   $(UNRCFG) $(UNRO) $(UNURANO) $(UNURANDO) $(ORDER_) $(MAINLIBS)

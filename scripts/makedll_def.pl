@@ -5,7 +5,7 @@
 #                                                                            #
 ##############################################################################
 #                                                                            #
-#   FILE:    makeDLLdef.pl                                                   #
+#   FILE:    makedll_def.pl                                                  #
 #                                                                            #
 #   Read all UNURAN header files and create .def file for .dll               #
 #                                                                            #
@@ -54,7 +54,7 @@ rooted at current working directory.
 Other header files and those with names containing "config" 
 are ignored.
 The function declaration and global variables are extracted
-and .def file is creaated.
+and .def file is created.
 The output is written on stdout.
 
 EOM
@@ -78,6 +78,18 @@ sub def_file_header {
 ############################################################
 
 use FileHandle;
+
+############################################################
+# global variables
+
+# DATA section (to be set manually!!)
+my $DATA = "DATA:\n".
+    "\tunur_errno\n".
+    "\tINFINITY\n";
+
+# EXPORT section (functions; set automatically)
+my $EXPORT = "EXPORT:\n";
+my @EXPORT;
 
 ############################################################
 
@@ -111,10 +123,15 @@ scan_file ($master_file,0);
 # insert bottom of file
 #h_file_bottom;
 
+# write file
+print $DATA;
+foreach my $e (sort @EXPORT) { $EXPORT .= "\t$e\n"; }
+print $EXPORT;
+
 # write dependencies
-open DEP, ">$DEP_file" or die "Cannot open file for writing: $DEP_file";
-print DEP "$DEP\n";
-close DEP;
+#open DEP, ">$DEP_file" or die "Cannot open file for writing: $DEP_file";
+#print DEP "$DEP\n";
+#close DEP;
 
 exit 0;
 
@@ -147,7 +164,18 @@ sub scan_file {
 
     foreach my $line (@lines) {
 	unless ($line =~ /^\#include\s+[<\"](.*)[>\"]/) {
-	    print "$line\n";
+	    # remove all blank lines 
+	    next if $line !~ /\w/;
+	    # remove all (other) preprocessor directives
+	    next if $line =~ /^\s*\#/;
+	    # find all non-functions
+	    next if $line !~ /\(.+/;
+	    next if $line =~ /^\s*typedef\s+/;
+	    # internal functions
+	    next if $line =~ /[\s\*]_unur/;
+	    # exported functions
+	    $line =~ /.*?[\s\*]+(\w+)\s*\(/;
+	    push @EXPORT, $1;
 	    next;
 	}
 
@@ -159,7 +187,6 @@ sub scan_file {
 	# we do not include header files out of the subtree ...
 	unless (defined( $header_files{$include_file} ) ) {
 	    print STDERR "file not found in subtree ... #include\n" if $DEBUG;
-	    print "\n$line\n\n";
 	    next;
 	}
 	    

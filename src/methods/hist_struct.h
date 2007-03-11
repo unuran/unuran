@@ -46,8 +46,9 @@ struct unur_hist_par {
 struct unur_hist_gen {
   int     n_hist;       /* number of bins in histogram                       */
   double *prob;         /* probabilities for bins                            */
+  double *bins;         /* location of bins (when different width)           */
   double  hmin, hmax;   /* lower and upper bound for histogram               */
-  double  hlength;      /* length of bins                                    */     
+  double  hwidth;       /* width of bins (when equal width)                  */
   double  sum;          /* sum of all probabilities = cumpv[len-1]           */
   double *cumpv;        /* pointer to the vector of cumulated probabilities  */
   int    *guide_table;  /* pointer to guide table                            */

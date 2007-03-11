@@ -103,19 +103,63 @@ int unur_distr_cemp_get_data( const UNUR_DISTR *distribution, const double **sam
    @emph{Important:} Do @strong{not} change the entries in @var{sample}!
 */
 
-int unur_distr_cemp_set_hist( UNUR_DISTR *distribution, const double *prob, int n_hist, double xmin, double xmax );
+int unur_distr_cemp_set_hist( UNUR_DISTR *distribution, const double *prob, int n_prob, double xmin, double xmax );
 /* 
-   Set a histogram with bins of equal length. @var{prob} is an array
-   of length @var{n_hist} that contains the probabilities for the bins
+   Set a histogram with bins of equal width. @var{prob} is an array
+   of length @var{n_prob} that contains the probabilities for the bins
    (in ascending order). @var{xmin} and @var{xmax} give the lower and
    upper bound of the histogram, respectively. The bins are assumed to
-   have equal length.
+   have equal width.
+
+   @emph{Remark:} This is shortcut for calling
+   unur_distr_cemp_set_hist_prob() and
+   unur_distr_cemp_set_hist_domain().
 
    @emph{Notice:} All sampling methods either use raw data or histogram.
    It is possible to set both types of data; however, it is not
    checked whether the given histogran corresponds to possibly given
    raw data.
 */
+
+int unur_distr_cemp_set_hist_prob( UNUR_DISTR *distribution, const double *prob, int n_prob );
+/* 
+   Set probabilities of a histogram with @var{n_prob} bins.
+   Hence @var{prob} must be an array of length @var{n_prob} that
+   contains the probabilities for the bins in ascending order.
+   It is important also to set the location of the bins either
+   with a unur_distr_cemp_set_hist_domain() for bins of equal
+   width or unur_distr_cemp_set_hist_bins() when the bins have
+   different width.
+
+   @emph{Notice:} All sampling methods either use raw data or histogram.
+   It is possible to set both types of data; however, it is not
+   checked whether the given histogram corresponds to possibly given
+   raw data.
+*/
+
+int unur_distr_cemp_set_hist_domain( UNUR_DISTR *distribution, double xmin, double xmax );
+/* 
+   Set a domain of a histogram with bins of equal width.
+   @var{xmin} and @var{xmax} give the lower and upper bound of the
+   histogram, respectively.
+*/
+
+int unur_distr_cemp_set_hist_bins( UNUR_DISTR *distribution, const double *bins, int n_bins );
+/* 
+   Set location of bins of a histogram with @var{n_bins} bins.
+   Hence @var{bins} must be an array of length @var{n_bins}.
+   The domain of the @var{distribution} is automatically set by 
+   this call and overrides any calls to
+   unur_distr_cemp_set_hist_domain().
+
+   @emph{Important:}
+   The probabilities of the bins of the @var{distribution} must be
+   already be set by a unur_distr_cemp_set_hist_prob() 
+   (or a unur_distr_cemp_set_hist() call) and the value of 
+   @var{n_bins} must equal @var{n_prob}@code{+1} from the
+   corresponding value of the respective call.
+*/
+
 
 /* =END */
 

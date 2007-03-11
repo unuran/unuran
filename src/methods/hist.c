@@ -166,7 +166,7 @@ unur_hist_new( const struct unur_distr *distr )
     _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,""); return NULL; }
   COOKIE_CHECK(distr,CK_DISTR_CEMP,NULL);
 
-  if (DISTR_IN.hist_prob == NULL) {
+  if (DISTR_IN.hist_prob == NULL || !(distr->set & UNUR_DISTR_SET_DOMAIN)) {
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"histogram"); return NULL; }
 
   /* allocate structure */
@@ -279,12 +279,19 @@ _unur_hist_create( struct unur_par *par )
   gen->destroy = _unur_hist_free;
   gen->clone = _unur_hist_clone;
 
+  /* make sure that the domain coincides with bin data      */
+  if (DISTR.hist_bins) {
+    DISTR.hmin = DISTR.hist_bins[0];
+    DISTR.hmax = DISTR.hist_bins[DISTR.n_hist];
+  }
+
   /* copy observed data into generator object */
   GEN->n_hist = DISTR.n_hist;      /* size of histogram     */
   GEN->prob   = DISTR.hist_prob;   /* probabilities of bins */
   GEN->hmin   = DISTR.hmin;        /* lower ...             */
   GEN->hmax   = DISTR.hmax;        /* ... and upper bound   */
-  GEN->hlength= (DISTR.hmax - DISTR.hmin) / DISTR.n_hist;
+  GEN->hwidth = (DISTR.hmax - DISTR.hmin) / DISTR.n_hist;
+  GEN->bins   = (DISTR.hist_bins) ? DISTR.hist_bins : NULL;
 
   /* set all pointers to NULL */
   GEN->sum = 0.;
@@ -325,6 +332,7 @@ _unur_hist_clone( const struct unur_gen *gen )
 
   /* copy histrogram into generator object */
   CLONE->prob = clone->distr->data.cemp.hist_prob;   /* probabilities of bins */
+  CLONE->bins = clone->distr->data.cemp.hist_bins;   /* location of bins */
 
   /* copy data for distribution */
   CLONE->cumpv = _unur_xmalloc( GEN->n_hist * sizeof(double) );
@@ -388,7 +396,7 @@ _unur_hist_sample( struct unur_gen *gen )
      /*   return INFINITY                                                    */
      /*----------------------------------------------------------------------*/
 { 
-  double U,X;
+  double U;
   int J;
 
   /* check arguments */
@@ -407,9 +415,11 @@ _unur_hist_sample( struct unur_gen *gen )
   U = (U - (J ? GEN->cumpv[J-1] : 0.)) / GEN->prob[J];
 
   /* sample uniformly from bin */
-  X = GEN->hmin + (U+J)*GEN->hlength;
+  if (GEN->bins) 
+    return (U * GEN->bins[J+1] + (1.-U) * GEN->bins[J]);
+  else
+    return (GEN->hmin + (U+J)*GEN->hwidth);
 
-  return X;
 } /* end of _unur_hist_sample() */
 
 

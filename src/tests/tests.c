@@ -271,7 +271,7 @@ _unur_print_method( struct unur_par *par )
     break;
     
   case UNUR_METH_MVSTD:
-    COOKIE_CHECK(par,CK_MVTDR_PAR,UNUR_ERR_COOKIE);
+    COOKIE_CHECK(par,CK_MVSTD_PAR,UNUR_ERR_COOKIE);
     fprintf(stdout,"METHOD:\t\tspecial (MVSTD)\n");
     break;
 

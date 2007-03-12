@@ -486,6 +486,8 @@ _unur_mvstd_debug_init( struct unur_gen *gen )
     fprintf(log,"(Unknown)\n");
   fprintf(log,"%s:\n",gen->genid);
 
+  fflush(log);
+
 } /* end of _unur_mvstd_debug_init() */
 
 /*---------------------------------------------------------------------------*/

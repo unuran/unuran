@@ -535,8 +535,22 @@ _unur_distr_cemp_debug( const struct unur_distr *distr, const char *genid, unsig
   if (DISTR.n_hist>0) {
     /* histogram */
     fprintf(log,"%s:\thistogram: #bins = %d, ",genid,DISTR.n_hist);
-    fprintf(log,"min = %g, max = %g, width = %g\n",
-	    DISTR.hmin, DISTR.hmax, (DISTR.hmax-DISTR.hmin)/DISTR.n_hist);
+    fprintf(log,"min = %g, max = %g", DISTR.hmin, DISTR.hmax);
+    if (DISTR.hist_bins) {
+      fprintf(log," (bins with different width)\n");
+      if (printvector) {
+	fprintf(log,"%s:\t> bins (breaks) = ",genid);
+	for (i=0; i<=DISTR.n_hist; i++) {
+	  if (i%10 == 0)
+	    fprintf(log,"\n%s:\t",genid);
+	  fprintf(log,"  %.5f",DISTR.hist_bins[i]);
+	}
+	fprintf(log,"\n%s:\n",genid);
+      }
+    }
+    else {
+      fprintf(log,", width = %g (equally spaced)\n", (DISTR.hmax-DISTR.hmin)/DISTR.n_hist);
+    }
     if (printvector) {
       fprintf(log,"%s:\t> bin probabilities = ",genid);
       for (i=0; i<DISTR.n_hist; i++) {
@@ -544,8 +558,8 @@ _unur_distr_cemp_debug( const struct unur_distr *distr, const char *genid, unsig
 	  fprintf(log,"\n%s:\t",genid);
 	fprintf(log,"  %.5f",DISTR.hist_prob[i]);
       }
+      fprintf(log,"\n%s:\n",genid);
     }
-    fprintf(log,"\n%s:\n",genid);
   }
 } /* end of _unur_distr_cemp_debug() */
 

@@ -33,6 +33,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include <unur_source.h>
+#include <distr/distr.h>
 #include <methods/unur_methods_source.h>
 #include <methods/x_gen_source.h>
 #include "unuran_tests.h"
@@ -148,26 +149,32 @@ _unur_print_method( struct unur_par *par )
      /*----------------------------------------------------------------------*/
 {
   /* first print type */
-  switch (par->method & UNUR_MASK_TYPE) {
-  case UNUR_METH_DISCR:
+  switch (par->distr->type) {
+  case UNUR_DISTR_DISCR:
     fprintf(stdout,"\nTYPE:\t\tdiscrete univariate distribution\n");
     break;
-  case UNUR_METH_CONT:
+  case UNUR_DISTR_CONT:
     fprintf(stdout,"\nTYPE:\t\tcontinuous univariate distribution\n");
     break;
-  case UNUR_METH_CEMP:
+  case UNUR_DISTR_CEMP:
     fprintf(stdout,"\nTYPE:\t\tcontinuous univariate empirical distribution\n");
     break;
-  case UNUR_METH_VEC:
+  case UNUR_DISTR_CVEC:
     fprintf(stdout,"\nTYPE:\t\tcontinuous multivariate distribution\n");
     break;
   default: /* unknown ! */
-    _unur_warning("Tests",UNUR_ERR_GENERIC,"type of method unknown!");
+    _unur_error("Tests",UNUR_ERR_GENERIC,"type of method unknown!");
     return UNUR_ERR_GENERIC;
   }
 
   /* print method description */
   switch (par->method) {
+
+    /* automatic method */
+  case UNUR_METH_AUTO:
+    COOKIE_CHECK(par,CK_AUTO_PAR,UNUR_ERR_COOKIE);
+    fprintf(stdout,"METHOD:\t\tautomatic selection (AUTO)\n");
+    break;
 
     /* discrete, univariate */
   case UNUR_METH_DAU:
@@ -263,6 +270,11 @@ _unur_print_method( struct unur_par *par )
     fprintf(stdout,"METHOD:\t\thit&run ratio-of-uniforms (HITRO)\n");
     break;
     
+  case UNUR_METH_MVSTD:
+    COOKIE_CHECK(par,CK_MVTDR_PAR,UNUR_ERR_COOKIE);
+    fprintf(stdout,"METHOD:\t\tspecial (MVSTD)\n");
+    break;
+
   case UNUR_METH_MVTDR:
     COOKIE_CHECK(par,CK_MVTDR_PAR,UNUR_ERR_COOKIE);
     fprintf(stdout,"METHOD:\t\tmultivariate transformed density rejection (MVTDR)\n");

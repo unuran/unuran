@@ -374,11 +374,18 @@ _unur_init_cemp( struct unur_par *par_auto )
   struct unur_par *par;
   struct unur_gen *gen;
   
-  /* Choose a method: EMPK */
-  par = unur_empk_new(par_auto->distr);
-     
-  /* Create generator object */
-  gen = unur_init(par);
+  do {
+    /* 1st choice: EMPK  [requires raw data] */
+    par = unur_empk_new(par_auto->distr);
+    gen = unur_init(par);
+    if (gen) break;
+
+    /* 2nd choice: HIST  [requires histogram] */
+    par = unur_hist_new(par_auto->distr);
+    gen = unur_init(par);
+    if (gen) break;
+
+  } while(0);
      
   return gen;
 } /* end of _unur_init_cemp() */

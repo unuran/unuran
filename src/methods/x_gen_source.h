@@ -49,9 +49,9 @@
 /*---------------------------------------------------------------------------*/
 /* get type of transformation method                                         */
 
-#define _unur_gen_is_discr(gen) ( (((gen)->method & UNUR_MASK_TYPE) == UNUR_METH_DISCR) ? 1 : 0 )
-#define _unur_gen_is_cont(gen)  ( (((gen)->method & UNUR_MASK_TYPE) == UNUR_METH_CONT)  ? 1 : 0 )
-#define _unur_gen_is_vec(gen)   ( (((gen)->method & UNUR_MASK_TYPE) == UNUR_METH_VEC)   ? 1 : 0 )
+#define _unur_gen_is_discr(gen) ( ((gen)->distr->type == UNUR_DISTR_DISCR) ? 1 : 0 )
+#define _unur_gen_is_cont(gen)  ( ((gen)->distr->type == UNUR_DISTR_CONT)  ? 1 : 0 )
+#define _unur_gen_is_vec(gen)   ( ((gen)->distr->type == UNUR_DISTR_CVEC)  ? 1 : 0 )
 
 /*---------------------------------------------------------------------------*/
 /* aux routine when no sampling routine is available                         */

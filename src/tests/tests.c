@@ -150,16 +150,16 @@ _unur_print_method( struct unur_par *par )
   /* first print type */
   switch (par->method & UNUR_MASK_TYPE) {
   case UNUR_METH_DISCR:
-    printf("\nTYPE:\t\tdiscrete univariate distribution\n");
+    fprintf(stdout,"\nTYPE:\t\tdiscrete univariate distribution\n");
     break;
   case UNUR_METH_CONT:
-    printf("\nTYPE:\t\tcontinuous univariate distribution\n");
+    fprintf(stdout,"\nTYPE:\t\tcontinuous univariate distribution\n");
     break;
   case UNUR_METH_CEMP:
-    printf("\nTYPE:\t\tcontinuous univariate empirical distribution\n");
+    fprintf(stdout,"\nTYPE:\t\tcontinuous univariate empirical distribution\n");
     break;
   case UNUR_METH_VEC:
-    printf("\nTYPE:\t\tcontinuous multivariate distribution\n");
+    fprintf(stdout,"\nTYPE:\t\tcontinuous multivariate distribution\n");
     break;
   default: /* unknown ! */
     _unur_warning("Tests",UNUR_ERR_GENERIC,"type of method unknown!");
@@ -172,121 +172,121 @@ _unur_print_method( struct unur_par *par )
     /* discrete, univariate */
   case UNUR_METH_DAU:
     COOKIE_CHECK(par,CK_DAU_PAR,UNUR_ERR_COOKIE);
-    printf("METHOD:\t\talias and alias-urn method (DAU)\n");
+    fprintf(stdout,"METHOD:\t\talias and alias-urn method (DAU)\n");
     break;
   case UNUR_METH_DGT:
     COOKIE_CHECK(par,CK_DGT_PAR,UNUR_ERR_COOKIE);
-    printf("METHOD:\t\tindexed search -- guide table (DGT)\n");
+    fprintf(stdout,"METHOD:\t\tindexed search -- guide table (DGT)\n");
     break;
   case UNUR_METH_DSROU:
     COOKIE_CHECK(par,CK_DSROU_PAR,UNUR_ERR_COOKIE);
-    printf("METHOD:\t\tdiscrete simple universal ratio-of-uniforms search (DSROU)\n");
+    fprintf(stdout,"METHOD:\t\tdiscrete simple universal ratio-of-uniforms search (DSROU)\n");
     break;
   case UNUR_METH_DSS:
     COOKIE_CHECK(par,CK_DSS_PAR,UNUR_ERR_COOKIE);
-    printf("METHOD:\t\tsequential search (DSS)\n");
+    fprintf(stdout,"METHOD:\t\tsequential search (DSS)\n");
     break;
   case UNUR_METH_DSTD:
     COOKIE_CHECK(par,CK_DSTD_PAR,UNUR_ERR_COOKIE);
-    printf("METHOD:\t\tspecial (DSTD)\n");
+    fprintf(stdout,"METHOD:\t\tspecial (DSTD)\n");
     break;
   case UNUR_METH_DEXT:
     COOKIE_CHECK(par,CK_DEXT_PAR,UNUR_ERR_COOKIE);
-    printf("METHOD:\t\texternal generator (DEXT)\n");
+    fprintf(stdout,"METHOD:\t\texternal generator (DEXT)\n");
     break;
 
     /* continuous, univariate */
   case UNUR_METH_AROU:
     COOKIE_CHECK(par,CK_AROU_PAR,UNUR_ERR_COOKIE);
-    printf("METHOD:\t\tautomatic ratio-of-uniforms method (NINV)\n");
+    fprintf(stdout,"METHOD:\t\tautomatic ratio-of-uniforms method (NINV)\n");
     break;
   case UNUR_METH_HINV:
     COOKIE_CHECK(par,CK_HINV_PAR,UNUR_ERR_COOKIE);
-    printf("METHOD:\t\tnumerical inversion of CDF by Hermite Interpolation (HINV)\n");
+    fprintf(stdout,"METHOD:\t\tnumerical inversion of CDF by Hermite Interpolation (HINV)\n");
     break;
   case UNUR_METH_ITDR:
     COOKIE_CHECK(par,CK_ITDR_PAR,UNUR_ERR_COOKIE);
-    printf("METHOD:\t\tinverse transformed density rejection (ITDR)\n");
+    fprintf(stdout,"METHOD:\t\tinverse transformed density rejection (ITDR)\n");
     break;
   case UNUR_METH_NINV:
     COOKIE_CHECK(par,CK_NINV_PAR,UNUR_ERR_COOKIE);
-    printf("METHOD:\t\tnumerical inversion of CDF (NINV)\n");
+    fprintf(stdout,"METHOD:\t\tnumerical inversion of CDF (NINV)\n");
     break;
   case UNUR_METH_SROU:
     COOKIE_CHECK(par,CK_SROU_PAR,UNUR_ERR_COOKIE);
-    printf("METHOD:\t\tsimple universal ratio-of-uniforms method (SROU)\n");
+    fprintf(stdout,"METHOD:\t\tsimple universal ratio-of-uniforms method (SROU)\n");
     break;
   case UNUR_METH_NROU:
     COOKIE_CHECK(par,CK_NROU_PAR,UNUR_ERR_COOKIE);
-    printf("METHOD:\t\tnaive universal ratio-of-uniforms method (NROU)\n");
+    fprintf(stdout,"METHOD:\t\tnaive universal ratio-of-uniforms method (NROU)\n");
     break;
   case UNUR_METH_SSR:
     COOKIE_CHECK(par,CK_SSR_PAR,UNUR_ERR_COOKIE);
-    printf("METHOD:\t\tsimple transformed density rejection with universal bounds (SSR)\n");
+    fprintf(stdout,"METHOD:\t\tsimple transformed density rejection with universal bounds (SSR)\n");
     break;
   case UNUR_METH_TABL:
     COOKIE_CHECK(par,CK_TABL_PAR,UNUR_ERR_COOKIE);
-    printf("METHOD:\t\trejection from piecewise constant hat (TABL)\n");
+    fprintf(stdout,"METHOD:\t\trejection from piecewise constant hat (TABL)\n");
     break;
   case UNUR_METH_TDR:
     COOKIE_CHECK(par,CK_TDR_PAR,UNUR_ERR_COOKIE);
-    printf("METHOD:\t\ttransformed density rejection (TDR)\n");
+    fprintf(stdout,"METHOD:\t\ttransformed density rejection (TDR)\n");
     break;
   case UNUR_METH_UTDR:
     COOKIE_CHECK(par,CK_UTDR_PAR,UNUR_ERR_COOKIE);
-    printf("METHOD:\t\ttransformed density rejection, 3-point method (UTDR)\n");
+    fprintf(stdout,"METHOD:\t\ttransformed density rejection, 3-point method (UTDR)\n");
     break;
   case UNUR_METH_CSTD:
     COOKIE_CHECK(par,CK_CSTD_PAR,UNUR_ERR_COOKIE);
-    printf("METHOD:\t\tspecial (CSTD)\n");
+    fprintf(stdout,"METHOD:\t\tspecial (CSTD)\n");
     break;
   case UNUR_METH_CEXT:
     COOKIE_CHECK(par,CK_CEXT_PAR,UNUR_ERR_COOKIE);
-    printf("METHOD:\t\texternal generator (CEXT)\n");
+    fprintf(stdout,"METHOD:\t\texternal generator (CEXT)\n");
     break;
 
 
     /* continuous, empirical */
   case UNUR_METH_EMPK:
     COOKIE_CHECK(par,CK_EMPK_PAR,UNUR_ERR_COOKIE);
-    printf("METHOD:\t\tempirical distribution with kernel smoothing (EMPK)\n");
+    fprintf(stdout,"METHOD:\t\tempirical distribution with kernel smoothing (EMPK)\n");
     break;
 
     /* continuous, multivariate (random vector) */
   case UNUR_METH_GIBBS:
     COOKIE_CHECK(par,CK_GIBBS_PAR,UNUR_ERR_COOKIE);
-    printf("METHOD:\t\tMarkov Chain - GIBBS sampler (GIBBS)\n");
+    fprintf(stdout,"METHOD:\t\tMarkov Chain - GIBBS sampler (GIBBS)\n");
     break;
 
   case UNUR_METH_HITRO:
     COOKIE_CHECK(par,CK_HITRO_PAR,UNUR_ERR_COOKIE);
-    printf("METHOD:\t\thit&run ratio-of-uniforms (HITRO)\n");
+    fprintf(stdout,"METHOD:\t\thit&run ratio-of-uniforms (HITRO)\n");
     break;
     
   case UNUR_METH_MVTDR:
     COOKIE_CHECK(par,CK_MVTDR_PAR,UNUR_ERR_COOKIE);
-    printf("METHOD:\t\tmultivariate transformed density rejection (MVTDR)\n");
+    fprintf(stdout,"METHOD:\t\tmultivariate transformed density rejection (MVTDR)\n");
     break;
 
   case UNUR_METH_NORTA:
     COOKIE_CHECK(par,CK_NORTA_PAR,UNUR_ERR_COOKIE);
-    printf("METHOD:\t\tnormal to anything (NORTA)\n");
+    fprintf(stdout,"METHOD:\t\tnormal to anything (NORTA)\n");
     break;
 
   case UNUR_METH_VMT:
     COOKIE_CHECK(par,CK_VMT_PAR,UNUR_ERR_COOKIE);
-    printf("METHOD:\t\tvector matrix transformation (VMT)\n");
+    fprintf(stdout,"METHOD:\t\tvector matrix transformation (VMT)\n");
     break;
 
   case UNUR_METH_VNROU:
     COOKIE_CHECK(par,CK_VNROU_PAR,UNUR_ERR_COOKIE);
-    printf("METHOD:\t\tvector naive ratio-of-uniforms (VNROU)\n");
+    fprintf(stdout,"METHOD:\t\tvector naive ratio-of-uniforms (VNROU)\n");
     break;
 
     /* misc */
   case UNUR_METH_UNIF:
     COOKIE_CHECK(par,CK_UNIF_PAR,UNUR_ERR_COOKIE);
-    printf("METHOD:\t\twrapper for uniform (UNIF)\n");
+    fprintf(stdout,"METHOD:\t\twrapper for uniform (UNIF)\n");
     break;
 
   default: /* unknown ! */

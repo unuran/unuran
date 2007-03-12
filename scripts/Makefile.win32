@@ -14,6 +14,8 @@ FPCONST_H = $(TOP_SRCDIR)/src/utils/unur_fp_const_source.h
 
 
 all:	$(FPCONST_H) $(UNURAN_OBJ)
+	lib -nologo -MACHINE:IX86 -out:win/unuran.lib $(UNURAN_OBJ) -def:win/unuran.def
+	link -nologo -DLL -incremental:no -out:win/unuran.dll $(UNURAN_OBJ) -def:win/unuran.def
 	echo "start ..."
 
 $(FPCONST_H): scripts/compute_machine_constants.exe

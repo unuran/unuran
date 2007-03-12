@@ -69,27 +69,25 @@ my $DEP = "unuran.def: ";
 
 ############################################################
 
-sub def_file_header {
-    print 
-	"LIBRARY \"libunuran\"\n".
-	"EXPORTS\n";
-} # end of def_file_header()
-
-############################################################
-
 use FileHandle;
 
 ############################################################
 # global variables
+	
+# name of library
+my $LIBRARY = "LIBRARY \"unuran\"\n";
 
 # DATA section (to be set manually!!)
-my $DATA = "DATA:\n".
-    "\tunur_errno\n".
-    "\tINFINITY\n";
+my $DATA = 
+    "\tunur_errno\tDATA\n";
 
-# EXPORT section (functions; set automatically)
-my $EXPORT = "EXPORT:\n";
-my @EXPORT;
+
+#    "\tunur_errno\tDATA\n".
+#    "\tINFINITY\tDATA\n";
+
+# EXPORTS section (functions; set automatically)
+my $EXPORTS;
+my @EXPORTS;
 
 ############################################################
 
@@ -124,9 +122,11 @@ scan_file ($master_file,0);
 #h_file_bottom;
 
 # write file
+print $LIBRARY;
+print "EXPORTS\n";
 print $DATA;
-foreach my $e (sort @EXPORT) { $EXPORT .= "\t$e\n"; }
-print $EXPORT;
+foreach my $e (sort @EXPORTS) { $EXPORTS .= "\t$e\n"; }
+print $EXPORTS;
 
 # write dependencies
 #open DEP, ">$DEP_file" or die "Cannot open file for writing: $DEP_file";
@@ -143,7 +143,7 @@ sub scan_file {
     my $level = $_[1]+1;
     my $handle = new FileHandle;
 
-    print STDERR "$file\n";
+    print STDERR "$file\n" if $DEBUG;
     
     # open file ...
     open  $handle, $file or die "cannot find file $file\n";
@@ -175,7 +175,7 @@ sub scan_file {
 	    next if $line =~ /[\s\*]_unur/;
 	    # exported functions
 	    $line =~ /.*?[\s\*]+(\w+)\s*\(/;
-	    push @EXPORT, $1;
+	    push @EXPORTS, $1;
 	    next;
 	}
 

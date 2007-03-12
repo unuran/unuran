@@ -1,5 +1,7 @@
 #! sh
 
+# --- Setup environment -----------------------------------------------------
+
 # Where to find MS Visual Studio 2005 compilers
 export VSCYG='/cygdrive/c/Programme/Microsoft Visual Studio 8'
 export VCUNIX='c:/Programme/Microsoft Visual Studio 8/VC'
@@ -24,15 +26,23 @@ export INCLUDE="${VCUNIX}/PlatformSDK/Include;${VCWIN}\PlatformSDK\Include;${INC
 export LIB="${VCUNIX}/lib;${VCWIN}\lib;${LIB}"
 export LIB="${VCUNIX}/PlatformSDK/Lib;${VCWIN}\PlatformSDK\Lib;${LIB}"
 
-#echo ${INCLUDE}
+# --- Prepare UNU.RAN -------------------------------------------------------
 
-#./autogen.sh --disable-shared --enable-static
+#./autogen.sh 
+test -d win && rm -rf win
+mkdir win
 
-test -d win || mkdir win
-test -f src/unuran.h || (cd src; ../hmake unuran.h)
-cp -v src/unuran.h win
+(cd src/parser; ../../hmake stringparser.c)
+(cd src; ../hmake unuran.h; cp -v unuran.h ../win)
+(cd doc; ../hmake unuran.pdf; cp -v unuran.pdf ../win)
 
+export UNURAN_VERSION=`grep PACKAGE_VERSION config.h | sed -e 's/.*_VERSION\s*\"\(.*\)\..*\"/\1/'`
+
+echo "Version: ${UNURAN_VERSION}"
+
+# --- Create DLL ------------------------------------------------------------
+
+./scripts/makedll_def.pl src/unuran.h.in > win/unuran.def
 ./hmake -f scripts/Makefile.win32
-
 
 

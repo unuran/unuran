@@ -91,8 +91,13 @@
 
 #define UNUR_ENABLE_LOGFILE  1
 
-/* Notice that if UNUR_ENABLE_LOGFILE is not defined, then there are         */
-/* no warnings and error messages.                                           */
+/* Write warnings and error messages to stderr.                              */
+/* #undef this macro to suppress output on stderr.                           */
+
+/* #define UNUR_ENABLE_STDERR  1 */
+
+/* Notice that if neither UNUR_ENABLE_LOGFILE nor UNUR_ENABLE_STDERR is      */
+/* defined, then there are no warnings and error messages at all.            */
 /* However, then it is recommend _not_ to define UNUR_WARNINGS_ON, either.   */
 
 /*---------------------------------------------------------------------------*/

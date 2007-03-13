@@ -32,6 +32,7 @@
 ##############################################################################
 
 use strict;
+use Getopt::Std;
 
 my $DEBUG = 0;
 
@@ -47,7 +48,7 @@ sub usage {
     $progname =~ s#^.*/##g;
         
     print STDERR <<EOM;
-usage: $progname <file.h> 
+usage: $progname [-V <version>] [-L <libraryname>] <file.h> 
       
 Scans <file.h> and inserts all header files found in subtree 
 rooted at current working directory.
@@ -55,6 +56,12 @@ Other header files and those with names containing "config"
 are ignored.
 The function declaration and global variables are extracted
 and .def file is created.
+
+Option '-V' can be used to set a library version number using
+the format 'major.minor'.
+
+Option '-L' can be used to set a library name.
+
 The output is written on stdout.
 
 EOM
@@ -74,15 +81,12 @@ use FileHandle;
 ############################################################
 # global variables
 	
-# name of library
-my $LIBRARY = "LIBRARY \"unuran\"\n";
+# default name of library
+my $Library = "unuran";
 
 # DATA section (to be set manually!!)
 my $DATA = 
     "\tunur_errno\tDATA\n";
-
-
-#    "\tunur_errno\tDATA\n".
 #    "\tINFINITY\tDATA\n";
 
 # EXPORTS section (functions; set automatically)
@@ -90,6 +94,12 @@ my $EXPORTS;
 my @EXPORTS;
 
 ############################################################
+
+# read options
+my %opts;
+getopts('V:L:', \%opts) or usage();
+my $Version = $opts{'V'};
+$Library = $opts{'L'} if $opts{'L'};
 
 # read master file name from argument list ...
 my $master_file = shift;
@@ -122,7 +132,8 @@ scan_file ($master_file,0);
 #h_file_bottom;
 
 # write file
-print $LIBRARY;
+print "LIBRARY \"$Library\"\n";
+print "VERISON $Version\n" if $Version;
 print "EXPORTS\n";
 print $DATA;
 foreach my $e (sort @EXPORTS) { $EXPORTS .= "\t$e\n"; }

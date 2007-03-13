@@ -1,37 +1,86 @@
 
+# --- Definitions -----------------------------------------------------------
+
+# Where to put win32 files
+WIN_DIR=win
+
 # Where to find source files
 TOP_SRCDIR := .
 UNURAN_SRC := $(wildcard $(TOP_SRCDIR)/src/*/*.c)
 UNURAN_OBJ := $(UNURAN_SRC:.c=.obj)
 
+EXAMPLES_SRC := $(wildcard $(TOP_SRCDIR)/examples/*.c)
+EXAMPLES_OBJ := $(EXAMPLES_SRC:.c=.obj)
+EXAMPLES_EXE := $(EXAMPLES_SRC:.c=.exe)
+
+TESTS_SRC := $(wildcard $(TOP_SRCDIR)/tests/*.c)
+TESTS_OBJ := $(TESTS_SRC:.c=.obj)
+TESTS_EXE := $(TESTS_SRC:.c=.exe)
 
 
-CFLAGS=-O2 -nologo -DHAVE_CONFIG_H -I./ -I./src/ -MD -W3
+# Compiling flags
+CFLAGS=-O2 -nologo -DHAVE_CONFIG_H -I./ -I./src/ -LD -W3
 
+# UNURAN version: major.minor
+UNURAN_VERSION=$(shell \
+	grep PACKAGE_VERSION $(TOP_SRCDIR)/config.h | \
+	sed -e 's/.*_VERSION\s*\"\(.*\)\..*\"/\1/')
 
-# Some special files
+# UNURAN library name
+UNURAN_LIBNAME=libunuran$(shell echo $(UNURAN_VERSION) | sed 's/\.//')
+
+# Some special files:
+#    header file with constants for floating point arithmetic 
 FPCONST_H = $(TOP_SRCDIR)/src/utils/unur_fp_const_source.h
 
+# DLL files
+UNURAN_DEF=$(WIN_DIR)/$(UNURAN_LIBNAME).def
+UNURAN_LIB=$(WIN_DIR)/$(UNURAN_LIBNAME).lib
+UNURAN_DLL=$(WIN_DIR)/$(UNURAN_LIBNAME).dll
 
-all:	$(FPCONST_H) $(UNURAN_OBJ)
-	lib -nologo -MACHINE:IX86 -out:win/unuran.lib $(UNURAN_OBJ) -def:win/unuran.def
-	link -nologo -DLL -incremental:no -out:win/unuran.dll $(UNURAN_OBJ) -def:win/unuran.def
-	echo "start ..."
+
+# --- Make DLL --------------------------------------------------------------
+
+all:	$(FPCONST_H) $(UNURAN_OBJ) $(UNURAN_DEF)
+	lib -nologo -machine:IX86 -out:$(UNURAN_LIB) \
+		$(UNURAN_OBJ) -def:$(UNURAN_DEF)
+	link -nologo -manifest:no -DLL -incremental:no -out:$(UNURAN_DLL) \
+		$(UNURAN_OBJ) -def:$(UNURAN_DEF)
+
+
+$(UNURAN_DEF): src/unuran.h.in
+	./scripts/makedll_def.pl -V $(UNURAN_VERSION) -L $(UNURAN_LIBNAME) \
+		src/unuran.h.in > $(UNURAN_DEF)
+
 
 $(FPCONST_H): scripts/compute_machine_constants.exe
 	./scripts/compute_machine_constants.exe > $(FPCONST_H)
 
+
 scripts/compute_machine_constants.exe: scripts/compute_machine_constants.obj 
-	(cd scripts; \
-	$(CC) -Fecompute_machine_constants.exe compute_machine_constants.obj )
+	$(CC) -manifest:no -Fescripts/compute_machine_constants.exe \
+		scripts/compute_machine_constants.obj
+
+
+check: $(EXAMPLES_EXE)
+	@for f in $(EXAMPLES_EXE); do \
+		echo "running $$f ..."; \
+		$$f; \
+	done
+
+$(EXAMPLES_EXE): $(EXAMPLES_OBJ) 
+	link -nologo -manifest:no -machine:IX86 -out:$@ $< $(UNURAN_LIB) 
 
 
 %.obj: %.c
 	$(CC) $(CFLAGS) -Fo$@ -c $<
 
+
 clean:
 	rm -f $(UNURAN_OBJ)
 
+
+.PHONY: check clean
 
 #$(UNURANLIB):   $(UNRCFG) $(UNRO) $(UNURANO) $(UNURANDO) $(ORDER_) $(MAINLIBS)
 #		@$(MAKELIB) $(PLATFORM) $(LD) "$(LDFLAGS)"  \

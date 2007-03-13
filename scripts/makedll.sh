@@ -36,13 +36,9 @@ mkdir win
 (cd src; ../hmake unuran.h; cp -v unuran.h ../win)
 (cd doc; ../hmake unuran.pdf; cp -v unuran.pdf ../win)
 
-export UNURAN_VERSION=`grep PACKAGE_VERSION config.h | sed -e 's/.*_VERSION\s*\"\(.*\)\..*\"/\1/'`
-
-echo "Version: ${UNURAN_VERSION}"
 
 # --- Create DLL ------------------------------------------------------------
 
-./scripts/makedll_def.pl src/unuran.h.in > win/unuran.def
 ./hmake -f scripts/Makefile.win32
 
 

@@ -133,7 +133,7 @@ scan_file ($master_file,0);
 
 # write file
 print "LIBRARY \"$Library\"\n";
-print "VERISON $Version\n" if $Version;
+print "VERSION $Version\n" if $Version;
 print "EXPORTS\n";
 print $DATA;
 foreach my $e (sort @EXPORTS) { $EXPORTS .= "\t$e\n"; }

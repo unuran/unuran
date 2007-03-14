@@ -48,7 +48,7 @@ sub usage {
     $progname =~ s#^.*/##g;
         
     print STDERR <<EOM;
-usage: $progname [-V <version>] [-L <libraryname>] <file.h> 
+usage: $progname [-V <version>] [-L <libraryname>] <file1.h> [ <file2.h> ... ]
       
 Scans <file.h> and inserts all header files found in subtree 
 rooted at current working directory.
@@ -102,8 +102,9 @@ my $Version = $opts{'V'};
 $Library = $opts{'L'} if $opts{'L'};
 
 # read master file name from argument list ...
-my $master_file = shift;
-(usage and die) unless $master_file;
+my @master_files;
+while ($_ = shift) { push @master_files, $_; }
+(usage and die) unless @master_files;
 
 # header files in sub tree (except those containing "config") ...
 # (files are stored in an associate array with key=filename and
@@ -122,17 +123,11 @@ while (<FILES>) {
 }
 close FILES;
 
-# insert file header ...
-#h_file_header;
-
-# scan master file ...
-scan_file ($master_file,0);
-
-# insert bottom of file
-#h_file_bottom;
+# scan master file(s) ...
+foreach my $m (@master_files) { scan_file ($m); }
 
 # write file
-print "LIBRARY \"$Library\"\n";
+print "LIBRARY $Library\n";
 print "VERSION $Version\n" if $Version;
 print "EXPORTS\n";
 print $DATA;
@@ -151,7 +146,6 @@ exit 0;
 # scan given file ...
 sub scan_file {
     my $file = $_[0];
-    my $level = $_[1]+1;
     my $handle = new FileHandle;
 
     print STDERR "$file\n" if $DEBUG;
@@ -216,7 +210,7 @@ sub scan_file {
         $DEP .= "$header_files{$include_file} ";
 
 	# scan header file ...
-	scan_file ($header_files{$include_file},$level);
+	scan_file ($header_files{$include_file});
 
     }
 

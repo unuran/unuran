@@ -1,9 +1,6 @@
 
 # --- Definitions -----------------------------------------------------------
 
-# Where to put win32 files
-WIN_DIR=win
-
 # Where to find source files
 TOP_SRCDIR := .
 UNURAN_SRC := $(wildcard $(TOP_SRCDIR)/src/*/*.c)
@@ -19,7 +16,7 @@ TESTS_EXE := $(TESTS_SRC:.c=.exe)
 
 
 # Compiling flags
-CFLAGS=-O2 -nologo -DHAVE_CONFIG_H -I./ -I./src/ -LD -W3
+CFLAGS=-O2 -nologo -machine:IX86 -DHAVE_CONFIG_H -I./ -I./src/ -LD -W3
 
 # UNURAN version: major.minor
 UNURAN_VERSION=$(shell \
@@ -83,20 +80,3 @@ clean:
 
 .PHONY: check clean
 
-#$(UNURANLIB):   $(UNRCFG) $(UNRO) $(UNURANO) $(UNURANDO) $(ORDER_) $(MAINLIBS)
-#		@$(MAKELIB) $(PLATFORM) $(LD) "$(LDFLAGS)"  \
-#		   "$(SOFLAGS)" libUnuran.$(SOEXT) $@     \
-#		   "$(UNURANO) $(UNURANDO)"             \
-#		   "$(UNURANLIBEXTRA) $(UNRO)"
-#
-#map-unuran:     $(RLIBMAP)
-#		$(RLIBMAP) -r $(ROOTMAP) -l $(UNURANLIB) \
-#		   -d $(UNURANLIBDEP) -c $(UNURANL) $(UNURANLINC)
-#
-#clean-unuran:
-#		@rm -f $(UNURANO) $(UNURANDO)
-#		-@(if [ -d $(UNRDIRS) ]; then \
-#			cd $(UNRDIRS); \
-#			$(MAKE) clean; \
-#		fi)
-#

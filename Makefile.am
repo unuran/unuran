@@ -99,6 +99,6 @@ MAINTAINERCLEANFILES = \
 
 # auxiliary directories
 maintainer-clean-local:
-	rm -rf win
+	rm -rf win32
 	@$(remove_rootdir)
 

@@ -1,6 +1,15 @@
 #!/bin/bash
 # ---------------------------------------------------------------------------
-# $id$
+# file for makeing shared libraries using GCC
+# ---------------------------------------------------------------------------
+# I don't whether it works correctly.
+# I have a new script scripts/win32/build.sh that uses CYGWIN and 
+# MS Visual Studio that works.
+# Thus this script is disabled.
+
+echo "Please use scripts/win32/build.sh"
+exit 1
+
 # ---------------------------------------------------------------------------
 
 # mingw 

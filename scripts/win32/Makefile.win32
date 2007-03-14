@@ -49,8 +49,8 @@ all:	$(FPCONST_H) $(UNURAN_OBJ) $(UNURAN_DEF)
 
 
 $(UNURAN_DEF): src/unuran.h.in
-	./scripts/makedll_def.pl -V $(UNURAN_VERSION) -L $(UNURAN_LIBNAME) \
-		src/unuran.h.in > $(UNURAN_DEF)
+	./scripts/win32/make_dll_def.pl -V $(UNURAN_VERSION) \
+		-L $(UNURAN_LIBNAME) src/unuran.h.in > $(UNURAN_DEF)
 
 
 $(FPCONST_H): scripts/compute_machine_constants.exe
@@ -77,7 +77,8 @@ $(EXAMPLES_EXE): $(EXAMPLES_OBJ)
 
 
 clean:
-	rm -f $(UNURAN_OBJ)
+	rm -f $(UNURAN_OBJ) $(EXAMPLES_OBJ)
+	rm -f $(EXAMPLES_EXE)
 
 
 .PHONY: check clean

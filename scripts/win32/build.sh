@@ -39,6 +39,6 @@ mkdir win
 
 # --- Create DLL ------------------------------------------------------------
 
-./hmake -f scripts/Makefile.win32
+./hmake -f scripts/win32/Makefile.win32
 
 

@@ -1,23 +1,20 @@
 
+# --- Compiler and linker options -------------------------------------------
+
+# Compiler flags
+CFLAGS=-O2 -W3 -nologo -DHAVE_CONFIG_H -I./ -I./src/ -I./src/tests -LD
+
+# Linker flags
+LDFLAGS=-nologo -manifest:no -incremental:no -machine:IX86 
+
+
 # --- Definitions -----------------------------------------------------------
 
 # Where to find source files
 TOP_SRCDIR := .
+SCRIPTS_DIR=$(TOP_SRCDIR)/scripts
+TESTS_DIR=$(TOP_SRCDIR)/tests
 
-UNURAN_SRC := $(wildcard $(TOP_SRCDIR)/src/*/*.c)
-UNURAN_OBJ := $(UNURAN_SRC:.c=.obj)
-
-EXAMPLES_SRC := $(wildcard $(TOP_SRCDIR)/examples/*.c) 
-EXAMPLES_OBJ := $(EXAMPLES_SRC:.c=.obj)
-EXAMPLES_EXE := $(EXAMPLES_SRC:.c=.exe)
-
-TESTS_SRC := $(wildcard $(TOP_SRCDIR)/tests/*.c)
-TESTS_OBJ := $(TESTS_SRC:.c=.obj)
-TESTS_EXE := $(TESTS_SRC:.c=.exe)
-
-
-# Compiling flags
-CFLAGS=-O2 -W3 -nologo -DHAVE_CONFIG_H -I./ -I./src/ -I./src/tests -LD
 
 # UNURAN version: major.minor
 UNURAN_VERSION=$(shell \
@@ -27,49 +24,98 @@ UNURAN_VERSION=$(shell \
 # UNURAN library name
 UNURAN_LIBNAME=libunuran$(shell echo $(UNURAN_VERSION) | sed 's/\.//')
 
-# Some special files:
-#    header file with constants for floating point arithmetic 
-FPCONST_H = $(TOP_SRCDIR)/src/utils/unur_fp_const_source.h
+# libUNURAN 
+
+UNURAN_SRC := $(wildcard $(TOP_SRCDIR)/src/*/*.c)
+UNURAN_OBJ := $(UNURAN_SRC:.c=.obj)
+
+EXAMPLES_SRC := $(wildcard $(TOP_SRCDIR)/examples/*.c) 
+EXAMPLES_OBJ := $(EXAMPLES_SRC:.c=.obj)
+EXAMPLES_EXE := $(EXAMPLES_SRC:.c=.exe)
+
+#TESTS_SRC := $(wildcard $(TOP_SRCDIR)/tests/*.c)
+#TESTS_OBJ := $(TESTS_SRC:.c=.obj)
+#TESTS_EXE := $(TESTS_SRC:.c=.exe)
 
 # DLL files
 UNURAN_DEF=$(WIN_DIR)/$(UNURAN_LIBNAME).def
 UNURAN_LIB=$(WIN_DIR)/$(UNURAN_LIBNAME).lib
 UNURAN_DLL=$(WIN_DIR)/$(UNURAN_LIBNAME).dll
 
+# Some special files:
+#    header file with constants for floating point arithmetic 
+FPCONST_H = $(TOP_SRCDIR)/src/utils/unur_fp_const_source.h
+
+
+UNURANTEST_SRC := $(wildcard $(TESTS_DIR)/testdistributions/*.c) \
+		  $(TESTS_DIR)/testroutines.c
+UNURANTEST_OBJ := $(UNURANTEST_SRC:.c=.obj)
+
+TESTS_CONF := $(filter-out $(TESTS_DIR)/README.conf \
+                           $(TESTS_DIR)/t_deprecated%, \
+                $(wildcard $(TESTS_DIR)/*.conf))
+TESTS_SRC := $(TESTS_CONF:.conf=.c)
+TESTS_OBJ := $(TESTS_SRC:.c=.obj)
+TESTS_EXE := $(TESTS_SRC:.c=.exe)
+
+
+SOURCE_H := $(wildcard $(TOP_SRCDIR)/src/*/*_source.h)
+
+DEF_H:=$(shell test -z ${check} || echo "$(SOURCE_H)") \
+	$(TOP_SRCDIR)/src/unuran.h.in $(TOP_SRCDIR)/src/tests/unuran_tests.h
+
+INT=$(shell test -z ${check} || echo "-I")
+
 
 # --- Make DLL --------------------------------------------------------------
 
-all:	$(FPCONST_H) $(UNURAN_OBJ) $(UNURAN_DEF)
-	lib -nologo -machine:IX86 -out:$(UNURAN_LIB) \
+all: $(UNURAN_DLL)
+
+
+$(UNURAN_DLL):	$(FPCONST_H) $(UNURAN_OBJ) $(UNURAN_DEF)
+	link $(LDFLAGS) -DLL -out:$(UNURAN_DLL) \
 		$(UNURAN_OBJ) -def:$(UNURAN_DEF)
-	link -nologo -manifest:no -DLL -incremental:no -out:$(UNURAN_DLL) \
-		$(UNURAN_OBJ) -def:$(UNURAN_DEF)
+	echo $(DEF_H)
 
 
-$(UNURAN_DEF): src/unuran.h.in
-	./scripts/win32/make_dll_def.pl -V $(UNURAN_VERSION) \
-		-L $(UNURAN_LIBNAME) src/unuran.h.in src/tests/unuran_tests.h \
-		> $(UNURAN_DEF)
+$(UNURAN_DEF): $(DEF_H)
+	$(SCRIPTS_DIR)/win32/make_dll_def.pl -V $(UNURAN_VERSION) $(INT) \
+		-L $(UNURAN_LIBNAME) $(DEF_H) > $(UNURAN_DEF)
 
 
-$(FPCONST_H): scripts/compute_machine_constants.exe
-	./scripts/compute_machine_constants.exe > $(FPCONST_H)
+$(FPCONST_H): $(SCRIPTS_DIR)/compute_machine_constants.exe
+	$(SCRIPTS_DIR)/compute_machine_constants.exe > $(FPCONST_H)
 
 
-scripts/compute_machine_constants.exe: scripts/compute_machine_constants.obj 
-	$(CC) -manifest:no -Fescripts/compute_machine_constants.exe \
-		scripts/compute_machine_constants.obj
+$(SCRIPTS_DIR)/compute_machine_constants.exe: $(SCRIPTS_DIR)/compute_machine_constants.obj 
+	$(CC) -manifest:no -Fe$(SCRIPTS_DIR)/compute_machine_constants.exe \
+		$(SCRIPTS_DIR)/compute_machine_constants.obj
 
 
 check: $(EXAMPLES_EXE)
-	@for f in $(EXAMPLES_EXE); do \
+	for f in $(EXAMPLES_EXE); do \
 		echo "running $$f ..."; \
-		$$f; \
+		eval $$f; \
 	done
- 
-
+	
 $(EXAMPLES_EXE): $(EXAMPLES_OBJ)
-	link -nologo -manifest:no -machine:IX86 -out:$@ $< $(UNURAN_LIB) 
+	link $(LDFLAGS) -out:$@ $(@:.exe=.obj) $(UNURAN_LIB) 
+
+
+nix: $(UNURANTEST_OBJ) $(TESTS_EXE)
+	@for f in $(TESTS_EXE); do \
+		echo "running $$f ..."; \
+		eval $$f; \
+	done
+
+$(TESTS_SRC): $(TESTS_CONF)
+	$(TESTS_DIR)/make_test_files.pl $(TOP_SRCDIR) $< > $@ 
+
+
+$(TESTS_EXE): $(TESTS_OBJ) $(UNURANTEST_OBJ) 
+	link $(LDFLAGS) -out:$@ $(@:.exe=.obj) $(UNURANTEST_OBJ) $(UNURAN_LIB) 
+
+#	link $(LDFLAGS) -out:$@ $< $(UNURANTEST_OBJ) $(UNURAN_LIB) 
 
 
 %.obj: %.c
@@ -79,6 +125,7 @@ $(EXAMPLES_EXE): $(EXAMPLES_OBJ)
 clean:
 	rm -f $(UNURAN_OBJ) $(EXAMPLES_OBJ) $(EXPERIMENTS_OBJ)
 	rm -f $(EXAMPLES_EXE) $(EXPERIMENTS_EXE)
+	rm -f $(TESTS_SRC) $(TESTS_OBJ) $(TESTS_EXE)
 
 
 .PHONY: check clean

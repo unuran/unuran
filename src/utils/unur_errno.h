@@ -361,7 +361,7 @@ enum {
 /*---------------------------------------------------------------------------*/
 /* global variable used to record errors                                     */
 
-extern int unur_errno;
+int unur_errno;
 /*
   Global variable for reporting diagnostics of error.
 */

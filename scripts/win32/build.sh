@@ -40,7 +40,9 @@ for arg in "$@"; do
 	--all)		# create manual
 		doc=true;;
 	--check)	# Compile and link all examples and tests
-		check=true;;
+		export check=true;;
+	--nix)
+		nix=true;;
 	*)
 		echo "Invalid argment '${arg}'"
 		exit 1;;
@@ -93,7 +95,19 @@ fi
 
 # --- Compile, link and run all examples and test files
 
-./hmake -f scripts/win32/Makefile.win32 check
+if [[ "${check}" ]]; then
+	./hmake -f scripts/win32/Makefile.win32 check;
+fi
+
+
+
+if [[ ${nix} ]]; then
+	./hmake -f scripts/win32/Makefile.win32 nix;
+fi
+
+
+
+
 
 # --- Done ------------------------------------------------------------------
 

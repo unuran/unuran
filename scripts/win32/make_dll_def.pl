@@ -48,7 +48,7 @@ sub usage {
     $progname =~ s#^.*/##g;
         
     print STDERR <<EOM;
-usage: $progname [-V <version>] [-L <libraryname>] <file1.h> [ <file2.h> ... ]
+usage: $progname [-V <version>] [-L <libraryname>] [-I] <file1.h> [ <file2.h> ... ]
       
 Scans <file.h> and inserts all header files found in subtree 
 rooted at current working directory.
@@ -61,6 +61,8 @@ Option '-V' can be used to set a library version number using
 the format 'major.minor'.
 
 Option '-L' can be used to set a library name.
+
+Use option '-I' when also (some) internal functions should be exported.
 
 The output is written on stdout.
 
@@ -97,9 +99,10 @@ my @EXPORTS;
 
 # read options
 my %opts;
-getopts('V:L:', \%opts) or usage();
+getopts('V:L:I', \%opts) or usage();
 my $Version = $opts{'V'};
 $Library = $opts{'L'} if $opts{'L'};
+my $INTERNAL = $opts{'I'};
 
 # read master file name from argument list ...
 my @master_files;
@@ -167,7 +170,15 @@ sub scan_file {
     # split into lines ...
     my @lines = split /\n/, $content;
 
-    foreach my $line (@lines) {
+    my $line;
+    foreach my $l (@lines) {
+	chomp($l);
+	if ($line =~ /^.*\\\s*$/) { 
+	    $line =~ s/\\\s*$//;
+	    $line .= $l;
+	    next;
+	}
+	$line = $l;
 	unless ($line =~ /^\#include\s+[<\"](.*)[>\"]/) {
 	    # remove all blank lines 
 	    next if $line !~ /\w/;
@@ -177,7 +188,13 @@ sub scan_file {
 	    next if $line !~ /\(.+/;
 	    next if $line =~ /^\s*typedef\s+/;
 	    # internal functions
-	    next if $line =~ /[\s\*]_unur/;
+	    unless ($INTERNAL) {
+	    	next if $line =~ /[\s\*]_unur/;
+	    }
+	    # line with isolated attribute statement
+	    next if $line =~ /^\s*ATTRIBUTE__/;
+	    # remove special symbols
+	    next if $line =~ /_unur_is(zero|one|fsame)/;
 	    # exported functions
 	    $line =~ /.*?[\s\*]+(\w+)\s*\(/;
 	    push @EXPORTS, $1;

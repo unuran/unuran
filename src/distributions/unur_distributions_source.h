@@ -113,7 +113,7 @@
 int _unur_stdgen_beta_init( UNUR_PAR *parameters, UNUR_GEN *generator );
 
 /* Inversion method                                                          */
-double _unur_stdgen_sample_beta_inv( UNUR_GEN *generator );
+/* double _unur_stdgen_sample_beta_inv( UNUR_GEN *generator ); */
 
 /* Acceptance/Rejection from log-logistic hats                               */
 double _unur_stdgen_sample_beta_bb( UNUR_GEN *generator );
@@ -204,7 +204,7 @@ double _unur_stdgen_sample_extremeII_inv( UNUR_GEN *generator );
 int _unur_stdgen_gamma_init( UNUR_PAR *parameters, UNUR_GEN *generator );
 
 /* Inversion method                                                          */
-double _unur_stdgen_sample_gamma_inv( UNUR_GEN *generator );
+/* double _unur_stdgen_sample_gamma_inv( UNUR_GEN *generator ); */
 
 /* Rejection with log-logistic envelopes                                     */
 double _unur_stdgen_sample_gamma_gll( UNUR_GEN *generator );
@@ -459,10 +459,10 @@ int _unur_stdgen_sample_logarithmic_lsk( UNUR_GEN *generator );
 /* Negative Binomial distribution  [1; ch.5.1, p.200]                        */
 
 /* initialize special generator                                              */
-int _unur_stdgen_negativebinomial_init( UNUR_PAR *parameters, UNUR_GEN *generator );
+/* int _unur_stdgen_negativebinomial_init( UNUR_PAR *parameters, UNUR_GEN *generator ); */
 
 /* Compound method                                                           */
-int _unur_stdgen_sample_negativebinomial_nbp( UNUR_GEN *generator );
+/* int _unur_stdgen_sample_negativebinomial_nbp( UNUR_GEN *generator ); */
 
 
 /*---------------------------------------------------------------------------*/

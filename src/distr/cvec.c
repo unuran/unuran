@@ -1012,6 +1012,40 @@ unur_distr_cvec_set_domain_rect( struct unur_distr *distr, const double *lowerle
 /*---------------------------------------------------------------------------*/
 
 int
+_unur_distr_cvec_has_boundeddomain( const struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* Check whether distr has a bounded domain                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   TRUE  ... if domain is bounded                                     */
+     /*   FALSE ... otherwise or in case of an error                         */
+     /*----------------------------------------------------------------------*/
+{
+  int i;
+  double *domain;
+
+  /* check arguments */
+  CHECK_NULL( distr, FALSE );
+  COOKIE_CHECK(distr,CK_DISTR_CVEC,FALSE);
+
+  if (! (distr->set & UNUR_DISTR_SET_DOMAINBOUNDED && 
+	 DISTR.domainrect))
+    return FALSE;
+
+  domain = DISTR.domainrect;
+  for (i=0; i < 2*distr->dim; i++) 
+    if (!_unur_isfinite(domain[i]))
+      return FALSE;
+
+  return TRUE;
+} /* end of _unur_distr_cvec_has_boundeddomain() */
+
+/*---------------------------------------------------------------------------*/
+
+int
 _unur_distr_cvec_is_indomain( const double *x, const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* Check whether x falls into domain                                    */
@@ -1026,12 +1060,13 @@ _unur_distr_cvec_is_indomain( const double *x, const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
 {
   int i;
-  double *domain = DISTR.domainrect;
+  double *domain;
 
   /* check arguments */
   CHECK_NULL( distr, FALSE );
   COOKIE_CHECK(distr,CK_DISTR_CVEC,FALSE);
 
+  domain = DISTR.domainrect;
   if (domain==NULL) 
     /* unbounded domain */
     return TRUE;

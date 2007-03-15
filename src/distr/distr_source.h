@@ -189,6 +189,10 @@ int _unur_distr_cvec_duplicate_firstmarginal( struct unur_distr *distribution );
 /* test whether 'x' is the in domain of 'distribution'                       */
 int _unur_distr_cvec_is_indomain( const double *x, const struct unur_distr *distribution);
 
+/* check whether @var{distribution} has a bounded domain                     */
+int _unur_distr_cvec_has_boundeddomain( const struct unur_distr *distribution );
+
+
 /*---------------------------------------------------------------------------*/
 /* check if parameter object is of correct type, return 0 otherwise       */
 

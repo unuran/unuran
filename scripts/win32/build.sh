@@ -39,9 +39,10 @@ for arg in "$@"; do
 	case "${arg}" in
 	--all)		# create manual
 		doc=true;;
-	--check)	# Compile and link all examples and tests
-		export check=true;;
+	--examples)	# Compile and link all examples and tests
+		examples=true;;
 	--nix)
+		export check=true;
 		nix=true;;
 	*)
 		echo "Invalid argment '${arg}'"
@@ -95,8 +96,8 @@ fi
 
 # --- Compile, link and run all examples and test files
 
-if [[ "${check}" ]]; then
-	./hmake -f scripts/win32/Makefile.win32 check;
+if [[ "${examples}" ]]; then
+	./hmake -f scripts/win32/Makefile.win32 examples;
 fi
 
 

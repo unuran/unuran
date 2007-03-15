@@ -3,6 +3,7 @@
 
 # Compiler flags
 CFLAGS=-O2 -W3 -nologo -DHAVE_CONFIG_H -I./ -I./src/ -I./src/tests -LD
+CTESTFLAGS=-O2 -W3 -nologo -I./ -I./src/ -I./src/tests
 
 # Linker flags
 LDFLAGS=-nologo -manifest:no -incremental:no -machine:IX86 
@@ -72,11 +73,9 @@ INT=$(shell test -z ${check} || echo "-I")
 all: $(UNURAN_DLL)
 
 
-$(UNURAN_DLL):	$(FPCONST_H) $(UNURAN_OBJ) $(UNURAN_DEF)
+$(UNURAN_DLL): $(FPCONST_H) $(UNURAN_OBJ) $(UNURAN_DEF)
 	link $(LDFLAGS) -DLL -out:$(UNURAN_DLL) \
 		$(UNURAN_OBJ) -def:$(UNURAN_DEF)
-	echo $(DEF_H)
-
 
 $(UNURAN_DEF): $(DEF_H)
 	$(SCRIPTS_DIR)/win32/make_dll_def.pl -V $(UNURAN_VERSION) $(INT) \
@@ -92,7 +91,7 @@ $(SCRIPTS_DIR)/compute_machine_constants.exe: $(SCRIPTS_DIR)/compute_machine_con
 		$(SCRIPTS_DIR)/compute_machine_constants.obj
 
 
-check: $(EXAMPLES_EXE)
+examples: $(EXAMPLES_EXE)
 	for f in $(EXAMPLES_EXE); do \
 		echo "running $$f ..."; \
 		eval $$f; \
@@ -101,21 +100,26 @@ check: $(EXAMPLES_EXE)
 $(EXAMPLES_EXE): $(EXAMPLES_OBJ)
 	link $(LDFLAGS) -out:$@ $(@:.exe=.obj) $(UNURAN_LIB) 
 
+$(EXAMPLES_OBJ): $(EXAMPLES_SRC)
+	$(CC) $(CTESTFLAGS) -Fo$@ -c $(@:.obj=.c) 
 
-nix: $(UNURANTEST_OBJ) $(TESTS_EXE)
+
+nix: $(UNURANTEST_OBJ) $(TESTS_EXE) 
 	@for f in $(TESTS_EXE); do \
 		echo "running $$f ..."; \
 		eval $$f; \
 	done
 
 $(TESTS_SRC): $(TESTS_CONF)
-	$(TESTS_DIR)/make_test_files.pl $(TOP_SRCDIR) $< > $@ 
+	$(TESTS_DIR)/make_test_files.pl $(TOP_SRCDIR) $(@:.c=.conf) > $@ 
 
 
 $(TESTS_EXE): $(TESTS_OBJ) $(UNURANTEST_OBJ) 
 	link $(LDFLAGS) -out:$@ $(@:.exe=.obj) $(UNURANTEST_OBJ) $(UNURAN_LIB) 
 
-#	link $(LDFLAGS) -out:$@ $< $(UNURANTEST_OBJ) $(UNURAN_LIB) 
+$(TESTS_OBJ): $(TESTS_SRC)
+	$(CC) $(CTESTFLAGS) -Fo$@ -c $(@:.obj=.c) 
+
 
 
 %.obj: %.c
@@ -128,5 +132,5 @@ clean:
 	rm -f $(TESTS_SRC) $(TESTS_OBJ) $(TESTS_EXE)
 
 
-.PHONY: check clean
+.PHONY: check clean examples
 

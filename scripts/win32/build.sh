@@ -37,16 +37,20 @@ export PATH=`pwd`/${WIN_DIR}:${PATH}
 
 for arg in "$@"; do
 	case "${arg}" in
-	--all)		# create manual
-		doc=true;;
-	--examples)	# Compile and link all examples and tests
-		examples=true;;
-	--nix)
-		export check=true;
-		nix=true;;
+	all)		# create manual
+		doc=true
+		;;
+	examples)	# Compile and link all examples and tests
+		examples=true
+		;;
+	check)
+		check=true;
+		export privatefunctions=true
+		;;
 	*)
 		echo "Invalid argment '${arg}'"
-		exit 1;;
+		exit 1
+		;;
 	esac
 done
 
@@ -100,15 +104,9 @@ if [[ "${examples}" ]]; then
 	./hmake -f scripts/win32/Makefile.win32 examples;
 fi
 
-
-
-if [[ ${nix} ]]; then
-	./hmake -f scripts/win32/Makefile.win32 nix;
+if [[ ${check} ]]; then
+	./hmake -f scripts/win32/Makefile.win32 check;
 fi
-
-
-
-
 
 # --- Done ------------------------------------------------------------------
 

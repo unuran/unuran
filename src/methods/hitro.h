@@ -150,16 +150,16 @@
       unur_hitro_set_variant_random_direction().
       @end table
 
-      Notice that each iteration of coordinate direction sampling is
-      cheaper than an iteration of random direction sampling.
+      Notice that each iteration of the coordinate direction sampler is
+      cheaper than an iteration of the random direction sampler.
 
       Sampling uniformly from the line segment can be adjusted in
       several ways:
 
       @table @emph 
       @item Adaptive line sampling vs. simple rejection.
-      When adaptive line sampling is switched on the covering line is
-      shortend whenever a point is rejected. However, when the region
+      When adaptive line sampling is switched on, the covering line is
+      shortened whenever a point is rejected. However, when the region
       of acceptance is not convex the line segment from which we have
       to sample might not be connected. We found that the algorithm
       still works but at the time being there is no formal proof that
@@ -178,8 +178,8 @@
       sampling is used the total generation time for the entire chain
       is shorter when only the "covering plate" is used.
 
-      @emph{Notice:} When coordinate sampling is used the entire
-      bounding rectangle has is used.
+--->      @emph{Notice:} When coordinate sampling is used the entire
+      bounding rectangle is used.
 
       Using the entire bounding hyper-rectangle can be switched on/off
       by means of the unur_hitro_set_use_boundingrectangle() call.
@@ -190,19 +190,20 @@
       Otherwise, the minimal bounding rectangle is computed
       automatically during the setup by means of a numerical
       algorithm. However, this is (very) slow especially in higher
-      dimensions. 
+      dimensions and it might happen that this algorithm (like
+      any other numerical algorithm) does not return a correct result.
 
-      Alternatively the bounding rectangle rectangle can be computed
+      Alternatively the bounding rectangle can be computed
       adaptively. In the latter case unur_vnrou_set_u() and
       unur_vnrou_set_v() can be used to provide a starting rectangle
       which must be sufficiently small. 
-      Then both endpoints are the covering line segment are always
+      Then both endpoints of the covering line segment are always
       check whether they are outside the acceptance region of the
-      Ratio-of-Uniforms method. If they are not then then line segment
+      Ratio-of-Uniforms method. If they are not, then the line segment
       and the ("bounding") rectangle are enlarged using a factor that
-      can be given using the unur_hitro_set_adaptive_multiplier() call
-      (default is the golden ratio).
-      Notice, that this running the method in the adaptive rectangle
+      can be given using the unur_hitro_set_adaptive_multiplier() call.
+
+      Notice, that running this method in the adaptive rectangle
       mode requires that the region of acceptance is convex when random
       directions are used, or the given PDF is unimodal when
       coordinate direction sampling is used.
@@ -213,6 +214,14 @@
       by means of the unur_hitro_set_use_adaptiverectangle() call.
 
       @end table
+
+      The algorithm takes of a bounded rectangular domain given by a
+      unur_distr_cvec_set_domain_rect() call, i.e. the PDF is set to
+      zero for every @i{x} outside the given domain.
+      However, it is only the coordinate direction sampler where the
+      boundary values are directly used to get the endpoins of the
+      coverline line for the line sampling step.
+
 
       @emph{Important:} The bounding rectangle has to be
       provided for the function @unurmath{PDF(x-center)!}

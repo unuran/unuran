@@ -79,13 +79,14 @@
 /*---------------------------------------------------------------------------*/
 /* Variants                                                                  */
 
-#define HITRO_VARMASK_VARIANT     0x000fu    /* indicates variant            */
-#define HITRO_VARIANT_COORD       0x0001u    /* coordinate sampler           */
-#define HITRO_VARIANT_RANDOMDIR   0x0002u    /* random direction sampler     */
+#define HITRO_VARMASK_VARIANT     0x000fu   /* indicates variant             */
+#define HITRO_VARIANT_COORD       0x0001u   /* coordinate sampler            */
+#define HITRO_VARIANT_RANDOMDIR   0x0002u   /* random direction sampler      */
 
-#define HITRO_VARFLAG_ADAPTLINE   0x0010u    /* use adaptive line sampling   */
-#define HITRO_VARFLAG_ADAPTRECT   0x0020u    /* use adaptive bounding rectangle */
-#define HITRO_VARFLAG_BOUNDRECT   0x0040u    /* use entire bounding rectangle */
+#define HITRO_VARFLAG_ADAPTLINE   0x0010u   /* use adaptive line sampling    */
+#define HITRO_VARFLAG_ADAPTRECT   0x0020u   /* use adaptive bounding rectangle */
+#define HITRO_VARFLAG_BOUNDRECT   0x0040u   /* use entire bounding rectangle */
+#define HITRO_VARFLAG_BOUNDDOMAIN 0x0080u   /* use bounded domain (if given) */
 
 /*---------------------------------------------------------------------------*/
 /* Debugging flags                                                           */
@@ -151,6 +152,12 @@ static void _unur_hitro_vu_to_x( const struct unur_gen *gen, const double *vu, d
 /*---------------------------------------------------------------------------*/
 /* transforming between coordinates xy in original scale and                 */
 /* coordinates vu in Ratio-of-Unforms scale.                                 */
+/*---------------------------------------------------------------------------*/
+
+static double _unur_hitro_xv_to_u( const struct unur_gen *gen, double x, double v, int k );
+/*---------------------------------------------------------------------------*/
+/* transform point where we are given the v-coordinate (in RoU scale)        */
+/* and the k-th x-coordinate (in xy scale).                                  */
 /*---------------------------------------------------------------------------*/
 
 static int _unur_hitro_vu_is_inside_region( const struct unur_gen *gen, const double *vu );
@@ -831,7 +838,16 @@ _unur_hitro_init( struct unur_par *par )
      are set to 0 in unur_hitro_new() 
   */
   if ( par->variant & HITRO_VARIANT_COORD ) {
-    par->variant |= HITRO_VARFLAG_BOUNDRECT;
+    /* coordinate direction sampling; not all variants are allowed */
+
+    if (_unur_distr_cvec_has_boundeddomain(par->distr))
+      /* we must have a bounded rectangular domain ... */
+      par->variant |= HITRO_VARFLAG_BOUNDDOMAIN;
+    else
+      /* ... or a bounding rectangle for acceptance region */
+      par->variant |= HITRO_VARFLAG_BOUNDRECT;
+
+    /* we do not override the flag set by user for adaptive rectangle */
     if (!(par->set & HITRO_SET_ADAPTRECT) )
       par->variant |= HITRO_VARFLAG_ADAPTRECT;
   }
@@ -1143,9 +1159,24 @@ _unur_hitro_coord_sample_cvec( struct unur_gen *gen, double *vec )
     /* update coordinate direction */
     coord = GEN->coord = (GEN->coord + 1) % (GEN->dim + 1);
 
-    /* l.h.s. and r.h.s. endpoint of line segment */
-    lmin = GEN->vumin[coord];
-    lmax = GEN->vumax[coord];
+    /* --- l.h.s. and r.h.s. endpoints of line segment --- */
+    if (! (gen->variant & HITRO_VARFLAG_BOUNDDOMAIN) || coord == 0) {
+      /* no bounded domain or v coordinate */
+      lmin = GEN->vumin[coord];
+      lmax = GEN->vumax[coord];
+    }
+    else {
+      /* bounded domain; we look at one of the u-coordinates */
+      int k = coord-1;
+      double *domain = DISTR.domainrect;
+      lmin = _unur_hitro_xv_to_u(gen, domain[2*k], vuaux[0], k );
+      lmax = _unur_hitro_xv_to_u(gen, domain[2*k+1], vuaux[0], k );
+      if (gen->variant & HITRO_VARFLAG_BOUNDRECT) {
+	/* we also have a bounded domain; look whether this leads to shorter intervals */
+	lmin = _unur_max(lmin,GEN->vumin[coord]);
+	lmax = _unur_min(lmax,GEN->vumax[coord]);
+      }
+    }
 
     /* --- adaptive bounding rectangle --- */
     if ( gen->variant & HITRO_VARFLAG_ADAPTRECT ) {
@@ -1368,6 +1399,27 @@ _unur_hitro_rectangle( struct unur_gen *gen )
 
 /*---------------------------------------------------------------------------*/
 
+double
+_unur_hitro_xv_to_u( const struct unur_gen *gen, double x, double v, int k )
+     /*----------------------------------------------------------------------*/
+     /* transform point where we are given the v-coordinate (in RoU scale)   */
+     /* and the k-th x-coordinate (in xy scale)                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen   ... pointer to generator object                              */
+     /*   x     ... x coordinates of point (in original scale)               */
+     /*   v     ... v coordinate of point (in RoU scale)                     */
+     /*   k     ... index of coordinate                                      */ 
+     /*----------------------------------------------------------------------*/
+{
+  if (_unur_isone(GEN->r)) 
+    return (x - GEN->center[k]) * v;
+  else
+    return (x - GEN->center[k]) * pow(v,GEN->r) ;
+} /* end of _unur_hitro_x_to_u() */
+
+/*---------------------------------------------------------------------------*/
+
 void 
 _unur_hitro_xy_to_vu( const struct unur_gen *gen, const double *x, double y, double *vu )
      /*----------------------------------------------------------------------*/
@@ -1567,7 +1619,9 @@ _unur_hitro_debug_init_start( const struct unur_gen *gen )
     fprintf(log,"\n%s:\tmultiplier = %g",gen->genid,GEN->adaptive_mult);
     _unur_print_if_default(gen,HITRO_SET_ADAPTMULT);
   }
-  fprintf(log,"\n%s:\n",gen->genid);
+  fprintf(log,"\n%s: use domain of distribution: %s\n",gen->genid,
+	  (gen->variant&HITRO_VARFLAG_BOUNDDOMAIN)?"on":"off");
+  fprintf(log,"%s:\n",gen->genid);
 
   _unur_distr_cvec_debug( gen->distr, gen->genid );
 

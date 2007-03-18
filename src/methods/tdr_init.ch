@@ -86,7 +86,7 @@ _unur_tdr_init( struct unur_par *par )
   }
 
   /* is there any hat at all ? */
-  if (GEN->Atotal <= 0.) {
+  if (GEN->Atotal <= 0. || !_unur_isfinite(GEN->Atotal)) {
     _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"bad construction points.");
     _unur_tdr_free(gen);
     return NULL;
@@ -305,9 +305,6 @@ _unur_tdr_create( struct unur_par *par )
     /* no starting points given by user
        --> enable derandomized ARS      */
     gen->variant |= TDR_VARFLAG_USEDARS;
-
-  /* copy variant */
-/*   gen->variant = par->variant; */
 
   /* return pointer to (almost empty) generator object */
   return gen;

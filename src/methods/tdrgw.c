@@ -812,7 +812,7 @@ _unur_tdrgw_init( struct unur_par *par )
   _unur_tdrgw_make_area_table(gen);
 
   /* is there any hat at all ? */
-  if (GEN->Atotal <= 0.) {
+  if (GEN->Atotal <= 0. || !_unur_isfinite(GEN->Atotal)) {
     _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"bad construction points.");
     _unur_tdrgw_free(gen);
     return NULL;

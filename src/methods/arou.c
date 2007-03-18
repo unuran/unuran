@@ -958,7 +958,7 @@ _unur_arou_init( struct unur_par *par )
   _unur_par_free(par);
 
   /* is there any envelope at all ? */
-  if (GEN->Atotal <= 0.) {
+  if (GEN->Atotal <= 0. || !_unur_isfinite(GEN->Atotal)) {
     _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"bad construction points");
     _unur_arou_free(gen);
     return NULL;

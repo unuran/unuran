@@ -78,7 +78,7 @@ fi
 
 # create 'config.h' and Makefiles using autotools
 if [[ !( -f ./config.h && -f ./Makefile) ]]; then
-	./autogen.sh;
+	./autogen.sh --disable-deprecated;
 fi
 
 # create directory for windows files

@@ -3,7 +3,7 @@
 
 # Compiler flags
 CFLAGS=-O2 -W3 -nologo -DHAVE_CONFIG_H -I./ -I./src/ -I./src/tests -LD
-CTESTFLAGS=-O2 -W3 -nologo -I./ -I./src/ -I./src/tests
+CTESTFLAGS=-O2 -W3 -nologo -I./ -I./src/ -I./src/tests 
 
 # Linker flags
 LDFLAGS=-nologo -manifest:no -incremental:no -machine:IX86 

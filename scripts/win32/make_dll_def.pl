@@ -151,7 +151,7 @@ sub scan_file {
     my $file = $_[0];
     my $handle = new FileHandle;
 
-    print STDERR "$file\n" if $DEBUG;
+    ##    print STDERR "$file\n" if $DEBUG;
     
     # open file ...
     open  $handle, $file or die "cannot find file $file\n";
@@ -208,7 +208,13 @@ sub scan_file {
 
 	# we do not include header files out of the subtree ...
 	unless (defined( $header_files{$include_file} ) ) {
-	    print STDERR "file not found in subtree ... #include\n" if $DEBUG;
+	    print STDERR "file not found in subtree ... skip\n" if $DEBUG;
+	    next;
+	}
+
+	# we do not include header files for deprecated calls
+        if ( $include_file =~ /deprecated/ ) {
+	    print STDERR "deprecated ... skip\n" if $DEBUG;
 	    next;
 	}
 	    

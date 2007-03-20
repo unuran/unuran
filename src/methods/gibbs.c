@@ -674,59 +674,74 @@ _unur_gibbs_coord_init( struct unur_gen *gen )
   struct unur_par *par_condi;
   struct unur_gen *gen_condi;
   int i;
+  int errorcode = UNUR_SUCCESS;
 
   /* conditional distribution object */
   GEN->distr_condi = unur_distr_condi_new( gen->distr, GEN->state, NULL, 0);
 
-  /* make parameter object */
-  switch( gen->variant & GIBBS_VARMASK_T ) {
-  case GIBBS_VAR_T_LOG:
-    /* use more robust method TDRGW for T = log */
-    par_condi = unur_tdrgw_new(GEN->distr_condi);
-    unur_tdrgw_set_reinit_percentiles(par_condi,2,NULL);
-    break;
+  for (i=0; i<GEN->dim; i++) {
 
-  case GIBBS_VAR_T_SQRT:
-    /* we only have method TDR for T = -1/sqrt */
-    par_condi = unur_tdr_new(GEN->distr_condi);
-    unur_tdr_set_reinit_percentiles(par_condi,2,NULL);
-    unur_tdr_set_c(par_condi,-0.5);
-    unur_tdr_set_usedars(par_condi,FALSE);
-    break;
+    if ( (errorcode=unur_distr_condi_set_condition(GEN->distr_condi,GEN->state,NULL,i))
+	 != UNUR_SUCCESS )
+      break;
 
-  case GIBBS_VAR_T_POW:
-  default:
-    _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    return UNUR_ERR_SHOULD_NOT_HAPPEN;
-  }
+    /* make parameter object */
+    switch( gen->variant & GIBBS_VARMASK_T ) {
+    case GIBBS_VAR_T_LOG:
+      /* use more robust method TDRGW for T = log */
+      par_condi = unur_tdrgw_new(GEN->distr_condi);
+      unur_tdrgw_set_reinit_percentiles(par_condi,2,NULL);
+      break;
+      
+    case GIBBS_VAR_T_SQRT:
+      /* we only have method TDR for T = -1/sqrt */
+      par_condi = unur_tdr_new(GEN->distr_condi);
+      unur_tdr_set_reinit_percentiles(par_condi,2,NULL);
+      unur_tdr_set_c(par_condi,-0.5);
+      unur_tdr_set_usedars(par_condi,FALSE);
+      break;
+      
+    case GIBBS_VAR_T_POW:
+    default:
+      _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+      return UNUR_ERR_SHOULD_NOT_HAPPEN;
+    }
+    
+    /* we do not need a private copy since otherwise we cannot update the generator object */
+    unur_set_use_distr_privatecopy( par_condi, FALSE );
+    /* debugging messages from the conditional generator should be rare */
+    /* otherwise the size if the log file explodes                      */
+    unur_set_debug( par_condi, (gen->debug&GIBBS_DEBUG_CONDI)?gen->debug:(gen->debug?1u:0u));
   
-  /* we do not need a private copy since otherwise we cannot update the generator object */
-  unur_set_use_distr_privatecopy( par_condi, FALSE );
-  /* debugging messages from the conditional generator should be rare */
-  /* otherwise the size if the log file explodes                      */
-  unur_set_debug( par_condi, (gen->debug&GIBBS_DEBUG_CONDI)?gen->debug:1u);
+    /* we use the same URNG for all auxiliary generators */
+    unur_set_urng( par_condi, gen->urng );
   
-  /* we use the same URNG for all auxiliary generators */
-  unur_set_urng( par_condi, gen->urng );
+    /* init generator object for sampling from conditional distributions */
+    gen_condi = unur_init(par_condi);
   
-  /* init generator object for sampling from conditional distributions */
-  gen_condi = unur_init(par_condi);
-  
-  if (gen_condi == NULL) {
-    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,
-		"Cannot create generator for conditional distributions");
+    if (gen_condi == NULL) {
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,
+		  "Cannot create generator for conditional distributions");
 #ifdef UNUR_ENABLE_LOGGING
-    if (gen->debug) _unur_gibbs_debug_init_finished(gen,FALSE);
+      if (gen->debug) _unur_gibbs_debug_init_finished(gen,FALSE);
 #endif
-    return UNUR_ERR_GEN_CONDITION;
+      errorcode = UNUR_ERR_GEN_CONDITION;
+      break;
+    }
+    
+    /* store pointer to generator of conditional distribution */
+    GEN_CONDI[i] = gen_condi;
+
+    if (i==0 && DISTR.domainrect==NULL) {
+      /* when the domain is not bounded by a rectangle we only  */
+      /* need a clone for each dimension (except the first one) */
+      for (i=1; i<GEN->dim; i++)
+	GEN_CONDI[i] = unur_gen_clone(gen_condi);
+      break;
+    }
   }
 
-  /* we need a clone for each dimension (except the first one) */
-  GEN_CONDI[0] = gen_condi;
-  for (i=1; i<GEN->dim; i++)
-    GEN_CONDI[i] = unur_gen_clone(gen_condi);
-
-  return UNUR_SUCCESS;
+  return errorcode;
 } /* end of _unur_gibbs_coord_init() */
 
 /*---------------------------------------------------------------------------*/
@@ -781,7 +796,7 @@ _unur_gibbs_randomdir_init( struct unur_gen *gen )
   unur_set_use_distr_privatecopy( par_condi, FALSE );
   /* debugging messages from the conditional generator should be rare */
   /* otherwise the size if the log file explodes                      */
-  unur_set_debug( par_condi, (gen->debug&GIBBS_DEBUG_CONDI)?gen->debug:1u);
+  unur_set_debug( par_condi, (gen->debug&GIBBS_DEBUG_CONDI)?gen->debug:(gen->debug?1u:0u));
   
   /* we use the same URNG for all auxiliary generators */
   unur_set_urng( par_condi, gen->urng );

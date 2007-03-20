@@ -142,14 +142,9 @@ unur_distr_condi_new( const struct unur_distr *distr, const double *pos, const d
 
   /* set parameters for conditional distribution */
   CONDI.n_params = 1;                 /* one parameters: k */
-  K = (double) k;
-  if ( unur_distr_cont_set_pdfparams_vec( condi, iPOSITION, pos, distr->dim ) != UNUR_SUCCESS ) {
+  if ( unur_distr_condi_set_condition( condi, pos, dir, k ) != UNUR_SUCCESS ) {
     _unur_distr_free(condi); return NULL; 
   }
-  if ( dir != NULL )
-    if (unur_distr_cont_set_pdfparams_vec( condi, iDIRECTION, dir, distr->dim ) != UNUR_SUCCESS ) {
-      _unur_distr_free(condi); return NULL; 
-    }
 
   /* we need two working arrays for computing PDF and dPDF */
   /* we abuse parameter vectors for this purpose */
@@ -200,6 +195,7 @@ unur_distr_condi_set_condition( struct unur_distr *condi, const double *pos, con
      /*----------------------------------------------------------------------*/
 {
   int dim;
+  double *domain;
 
   /* check arguments */
   _unur_check_NULL( distr_name, condi, UNUR_ERR_NULL );
@@ -227,8 +223,21 @@ unur_distr_condi_set_condition( struct unur_distr *condi, const double *pos, con
     return UNUR_ERR_DISTR_INVALID;
   }
 
-  if (unur_distr_cont_set_pdfparams_vec( condi, iDIRECTION, dir, dim ) != UNUR_SUCCESS ) {
+  if ( unur_distr_cont_set_pdfparams_vec( condi, iDIRECTION, dir, dim ) != UNUR_SUCCESS ) {
     return UNUR_ERR_DISTR_INVALID;
+  }
+
+  /* set domain of conditional distribution */
+  if ( (domain = condi->base->data.cvec.domainrect) != NULL ) {
+    if (dir == NULL) {
+      CONDI.trunc[0] = CONDI.domain[0] = domain[2*k];
+      CONDI.trunc[1] = CONDI.domain[1] = domain[2*k+1];
+    }
+    else {
+      /* arbitrary direction: we ignore given domain */
+      CONDI.trunc[0] = CONDI.domain[0] = -INFINITY;
+      CONDI.trunc[1] = CONDI.domain[1] = INFINITY;
+    }
   }
 
   /* changelog */
@@ -514,6 +523,10 @@ _unur_distr_condi_debug( const struct unur_distr *condi, const char *genid )
     _unur_matrix_print_vector( condi->base->dim, DIRECTION, "\tdirection =", log, genid, "\t   ");
     _unur_matrix_print_vector( condi->base->dim, POSITION, "\tpoint =", log, genid, "\t   ");
   }
+  fprintf(log,"%s:\n",genid);
+
+  /* domain */
+  fprintf(log,"%s:\tdomain = (%g, %g)\n",genid,CONDI.domain[0],CONDI.domain[1]);
   fprintf(log,"%s:\n",genid);
 
   /* print data about underlying distribution */

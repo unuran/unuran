@@ -101,6 +101,8 @@
 /*---------------------------------------------------------------------------*/
 
 static struct unur_gen *_unur_gibbs_init( struct unur_par *par );
+static int _unur_gibbs_coord_init( struct unur_gen *gen );
+static int _unur_gibbs_randomdir_init( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* Initialize new generator.                                                 */
 /*---------------------------------------------------------------------------*/
@@ -573,9 +575,6 @@ _unur_gibbs_init( struct unur_par *par )
      /*----------------------------------------------------------------------*/
 {
   struct unur_gen *gen;
-  struct unur_par *par_condi;
-  struct unur_gen *gen_condi;
-  int i;
 
   /* check arguments */
   _unur_check_NULL( GENTYPE,par,NULL );
@@ -598,117 +597,19 @@ _unur_gibbs_init( struct unur_par *par )
 
   /* make generators for conditional distributions */
   switch (gen->variant & GIBBS_VARMASK_VARIANT) {
-  case GIBBS_VARIANT_COORD:
-    /* conditional distribution object */
-    GEN->distr_condi = unur_distr_condi_new( gen->distr, GEN->state, NULL, 0);
-
-    /* make parameter object */
-    switch( gen->variant & GIBBS_VARMASK_T ) {
-    case GIBBS_VAR_T_LOG:
-      /* use more robust method TDRGW for T = log */
-      par_condi = unur_tdrgw_new(GEN->distr_condi);
-      unur_tdrgw_set_reinit_percentiles(par_condi,2,NULL);
-      break;
-    case GIBBS_VAR_T_SQRT:
-      /* we only have method TDR for T = -1/sqrt */
-      par_condi = unur_tdr_new(GEN->distr_condi);
-      unur_tdr_set_reinit_percentiles(par_condi,2,NULL);
-      unur_tdr_set_c(par_condi,-0.5);
-      unur_tdr_set_usedars(par_condi,FALSE);
-      break;
-    case GIBBS_VAR_T_POW:
-    default:
-      _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    _unur_free(gen); return NULL;
-    }
-
-    /* we do not need a private copy since otherwise we cannot update the generator object */
-    unur_set_use_distr_privatecopy( par_condi, FALSE );
-    /* debugging messages from the conditional generator should be rare */
-    /* otherwise the size if the log file explodes                      */
-    unur_set_debug( par_condi, (gen->debug&GIBBS_DEBUG_CONDI)?gen->debug:1u);
-
-    /* we use the same URNG for all auxiliary generators */
-    unur_set_urng( par_condi, gen->urng );
-
-    /* init generator object for sampling from conditional distributions */
-    gen_condi = unur_init(par_condi);
-
-    if (gen_condi == NULL) {
-      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"Cannot create generator for conditional distributions");
-#ifdef UNUR_ENABLE_LOGGING
-      if (gen->debug) _unur_gibbs_debug_init_finished(gen,FALSE);
-#endif
-      _unur_free(gen); return NULL;
-    }
-
-    /* we need a clone for each dimension (except the first one) */
-    GEN_CONDI[0] = gen_condi;
-    for (i=1; i<GEN->dim; i++)
-      GEN_CONDI[i] = unur_gen_clone(gen_condi);
-
-    break;
-
-  case GIBBS_VARIANT_RANDOMDIR:
-    /* we need an auxiliary generator for normal random variates */
-    GEN_NORMAL = _unur_gibbs_normalgen( gen );
-    if ( GEN_NORMAL == NULL ) {
+  case GIBBS_VARIANT_COORD:  /* --- coordinate direction sampling --- */
+    if (_unur_gibbs_coord_init(gen)!=UNUR_SUCCESS) {
       _unur_gibbs_free(gen); return NULL;
     }
-
-    /* conditional distribution object */
-    _unur_gibbs_random_unitvector( gen, GEN->direction );
-    GEN->distr_condi = unur_distr_condi_new( gen->distr, GEN->state, GEN->direction, 0);
-
-    /* make parameter object */
-    switch( gen->variant & GIBBS_VARMASK_T ) {
-    case GIBBS_VAR_T_LOG:
-      /* use more robust method TDRGW for T = log */
-      par_condi = unur_tdrgw_new(GEN->distr_condi);
-      unur_tdrgw_set_reinit_percentiles(par_condi,2,NULL);
-      break;
-    case GIBBS_VAR_T_SQRT:
-      /* we only have method TDR for T = -1/sqrt */
-      par_condi = unur_tdr_new(GEN->distr_condi);
-      unur_tdr_set_reinit_percentiles(par_condi,2,NULL);
-      unur_tdr_set_c(par_condi,-0.5);
-      unur_tdr_set_usedars(par_condi,FALSE);
-      break;
-    case GIBBS_VAR_T_POW:
-    default:
-      _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    _unur_free(gen); return NULL;
-    }
-
-    /* we do not need a private copy since otherwise we cannot update the generator object */
-    unur_set_use_distr_privatecopy( par_condi, FALSE );
-    /* debugging messages from the conditional generator should be rare */
-    /* otherwise the size if the log file explodes                      */
-    unur_set_debug( par_condi, (gen->debug&GIBBS_DEBUG_CONDI)?gen->debug:1u);
-
-    /* we use the same URNG for all auxiliary generators */
-    unur_set_urng( par_condi, gen->urng );
-
-    /* init generator object for sampling from conditional distributions */
-    gen_condi = unur_init(par_condi);
-
-    if (gen_condi == NULL) {
-      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"Cannot create generator for conditional distributions");
-#ifdef UNUR_ENABLE_LOGGING
-      if (gen->debug) _unur_gibbs_debug_init_finished(gen,FALSE);
-#endif
-      _unur_free(gen); return NULL;
-    }
-
-    /* store generator in structure. we only need one such generator */
-    *GEN_CONDI = gen_condi;
-    
     break;
-
+  case GIBBS_VARIANT_RANDOMDIR:  /* --- random direction sampling --- */
+    if (_unur_gibbs_randomdir_init(gen)!=UNUR_SUCCESS) {
+      _unur_gibbs_free(gen); return NULL;
+    }
+    break;
   default:
     _unur_error(GENTYPE,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    _unur_gibbs_free(gen);
-    return NULL;
+    _unur_gibbs_free(gen); return NULL;
   }
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -735,7 +636,7 @@ _unur_gibbs_init( struct unur_par *par )
 	_unur_gibbs_debug_burnin_failed(gen);
 	if (gen->debug) _unur_gibbs_debug_init_finished(gen,FALSE);
 #endif
-	_unur_free(gen); free (X); return NULL;
+	_unur_gibbs_free(gen); free (X); return NULL;
       }
     }
 
@@ -757,7 +658,155 @@ _unur_gibbs_init( struct unur_par *par )
 
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *
+int
+_unur_gibbs_coord_init( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* initialize new generator for coordinate sampler                      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_par *par_condi;
+  struct unur_gen *gen_condi;
+  int i;
+
+  /* conditional distribution object */
+  GEN->distr_condi = unur_distr_condi_new( gen->distr, GEN->state, NULL, 0);
+
+  /* make parameter object */
+  switch( gen->variant & GIBBS_VARMASK_T ) {
+  case GIBBS_VAR_T_LOG:
+    /* use more robust method TDRGW for T = log */
+    par_condi = unur_tdrgw_new(GEN->distr_condi);
+    unur_tdrgw_set_reinit_percentiles(par_condi,2,NULL);
+    break;
+
+  case GIBBS_VAR_T_SQRT:
+    /* we only have method TDR for T = -1/sqrt */
+    par_condi = unur_tdr_new(GEN->distr_condi);
+    unur_tdr_set_reinit_percentiles(par_condi,2,NULL);
+    unur_tdr_set_c(par_condi,-0.5);
+    unur_tdr_set_usedars(par_condi,FALSE);
+    break;
+
+  case GIBBS_VAR_T_POW:
+  default:
+    _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+    return UNUR_ERR_SHOULD_NOT_HAPPEN;
+  }
+  
+  /* we do not need a private copy since otherwise we cannot update the generator object */
+  unur_set_use_distr_privatecopy( par_condi, FALSE );
+  /* debugging messages from the conditional generator should be rare */
+  /* otherwise the size if the log file explodes                      */
+  unur_set_debug( par_condi, (gen->debug&GIBBS_DEBUG_CONDI)?gen->debug:1u);
+  
+  /* we use the same URNG for all auxiliary generators */
+  unur_set_urng( par_condi, gen->urng );
+  
+  /* init generator object for sampling from conditional distributions */
+  gen_condi = unur_init(par_condi);
+  
+  if (gen_condi == NULL) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,
+		"Cannot create generator for conditional distributions");
+#ifdef UNUR_ENABLE_LOGGING
+    if (gen->debug) _unur_gibbs_debug_init_finished(gen,FALSE);
+#endif
+    return UNUR_ERR_GEN_CONDITION;
+  }
+
+  /* we need a clone for each dimension (except the first one) */
+  GEN_CONDI[0] = gen_condi;
+  for (i=1; i<GEN->dim; i++)
+    GEN_CONDI[i] = unur_gen_clone(gen_condi);
+
+  return UNUR_SUCCESS;
+} /* end of _unur_gibbs_coord_init() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_gibbs_randomdir_init( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* initialize new generator for random direction sampler                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_par *par_condi;
+  struct unur_gen *gen_condi;
+
+  /* we need an auxiliary generator for normal random variates */
+  GEN_NORMAL = _unur_gibbs_normalgen( gen );
+  if ( GEN_NORMAL == NULL ) return UNUR_FAILURE;
+  
+  /* conditional distribution object */
+  _unur_gibbs_random_unitvector( gen, GEN->direction );
+  GEN->distr_condi = unur_distr_condi_new( gen->distr, GEN->state, GEN->direction, 0);
+  
+  /* make parameter object */
+  switch( gen->variant & GIBBS_VARMASK_T ) {
+  case GIBBS_VAR_T_LOG:
+    /* use more robust method TDRGW for T = log */
+    par_condi = unur_tdrgw_new(GEN->distr_condi);
+    unur_tdrgw_set_reinit_percentiles(par_condi,2,NULL);
+    break;
+
+  case GIBBS_VAR_T_SQRT:
+    /* we only have method TDR for T = -1/sqrt */
+    par_condi = unur_tdr_new(GEN->distr_condi);
+    unur_tdr_set_reinit_percentiles(par_condi,2,NULL);
+    unur_tdr_set_c(par_condi,-0.5);
+    unur_tdr_set_usedars(par_condi,FALSE);
+    break;
+
+  case GIBBS_VAR_T_POW:
+  default:
+    _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+    return UNUR_ERR_SHOULD_NOT_HAPPEN;
+  }
+
+  /* we do not need a private copy since otherwise we cannot update the generator object */
+  unur_set_use_distr_privatecopy( par_condi, FALSE );
+  /* debugging messages from the conditional generator should be rare */
+  /* otherwise the size if the log file explodes                      */
+  unur_set_debug( par_condi, (gen->debug&GIBBS_DEBUG_CONDI)?gen->debug:1u);
+  
+  /* we use the same URNG for all auxiliary generators */
+  unur_set_urng( par_condi, gen->urng );
+  
+  /* init generator object for sampling from conditional distributions */
+  gen_condi = unur_init(par_condi);
+  
+  if (gen_condi == NULL) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,
+		"Cannot create generator for conditional distributions");
+#ifdef UNUR_ENABLE_LOGGING
+    if (gen->debug) _unur_gibbs_debug_init_finished(gen,FALSE);
+#endif
+    return UNUR_ERR_GEN_CONDITION;
+  }
+
+  /* store generator in structure. we only need one such generator */
+  *GEN_CONDI = gen_condi;
+    
+  return UNUR_SUCCESS;
+} /* end of _unur_gibbs_randomdir_init() */
+
+/*---------------------------------------------------------------------------*/
+
+struct unur_gen *
 _unur_gibbs_create( struct unur_par *par )
      /*----------------------------------------------------------------------*/
      /* allocate memory for generator                                        */

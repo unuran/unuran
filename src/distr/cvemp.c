@@ -327,6 +327,8 @@ _unur_distr_cvemp_debug( const struct unur_distr *distr, const char *genid, unsi
   fprintf(log,"%s:\ttype = continuous multivariate distribution (ie. a sample)\n",genid);
   fprintf(log,"%s:\tname = %s\n",genid,distr->name);
 
+  fprintf(log,"%s:\tdimension = %d\n",genid,distr->dim);
+
   if (DISTR.n_sample>0) {
     /* observed samples */
     fprintf(log,"%s:\tsample size = %d\n",genid,DISTR.n_sample);

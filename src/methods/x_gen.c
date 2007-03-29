@@ -81,6 +81,7 @@ int unur_reinit( struct unur_gen *gen )
     gen->sample.cont = _unur_sample_cont_error;
     break;
   case UNUR_METH_VEC:
+  case UNUR_METH_CVEMP:
     gen->sample.cvec = _unur_sample_cvec_error;
     break;
   case UNUR_METH_MAT:

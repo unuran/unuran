@@ -85,20 +85,24 @@
 
 #define UNUR_METH_MVTDR    0x08010000u
 #define UNUR_METH_VMT      0x08020000u
-#define UNUR_METH_VEMPK    0x08030000u
-#define UNUR_METH_VNROU    0x08040000u
-#define UNUR_METH_VAROU    0x08050000u
-#define UNUR_METH_NORTA    0x08060000u
+#define UNUR_METH_VNROU    0x08030000u
+#define UNUR_METH_VAROU    0x08040000u
+#define UNUR_METH_NORTA    0x08050000u
 
-#define UNUR_METH_GIBBS    0x08070000u
-#define UNUR_METH_HITRO    0x08080000u
-#define UNUR_METH_BALL     0x08090000u
-#define UNUR_METH_WALK     0x080a0000u
+#define UNUR_METH_GIBBS    0x08060000u
+#define UNUR_METH_HITRO    0x08070000u
+#define UNUR_METH_BALL     0x08080000u
+#define UNUR_METH_WALK     0x08090000u
+
+/* multivariate continuous empirical distributions */
+#define UNUR_METH_CVEMP    0x10000000u
+
+#define UNUR_METH_VEMPK    0x10010000u
 
 /* random matrices */
-#define UNUR_METH_MAT      0x10000000u
+#define UNUR_METH_MAT      0x20000000u
 
-#define UNUR_METH_MCORR    0x10010000u
+#define UNUR_METH_MCORR    0x20010000u
 
 /* generators for standard distributions */
 #define UNUR_METH_CSTD     0x0200f100u   /* is of type UNUR_METH_CONT !!     */

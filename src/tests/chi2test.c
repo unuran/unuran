@@ -831,9 +831,10 @@ _unur_test_chi2_cvemp ( struct unur_gen *gen,
   }
 
   /* free memory */
-  if (X)    free(X);
-  if (U)    free(U);
-  if (bm)   free(bm);
+  _unur_distr_free(distr_normal);
+  if (X)  free(X);
+  if (U)  free(U);
+  if (bm) free(bm);
 
   /* return result of test */
   return pval_min * dim;

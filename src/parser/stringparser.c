@@ -4,7 +4,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE:      stringparser.c.in / stringparser.c                           *
+ *   FILE:      stringparser.c.                                              *
  *                                                                           *
  *                                                                           *
  *   DESCRIPTION:                                                            *
@@ -98,19 +98,6 @@
  *                by the size of the array.                                  *
  *   Important: there is no support for 'infinity' in lists!                 * 
  *   (See also the source below for more details.)                           *
- *                                                                           *
- *****************************************************************************
- *                                                                           *
- *   REMARK:                                                                 *
- *   This file stringpars.c.in contains the main part of the stringparser.   *
- *   The perl script make_stringparser.pl replaces the                       *
- *        =INPUT keyword                                                     *
- *   tags with search lists created from the information found within the    *
- *   header files of the source code.                                        *
- *   These lists (implemented via 'if' rules together with switch lists to   *
- *   with the first letter of the set calls as simple hash function) are     *
- *   used to call the corresponding ..._set and ..._new calls for the        *
- *   the keywords found in the string.                                       *
  *                                                                           *
  *****************************************************************************
  *                                                                           *
@@ -414,6 +401,12 @@ static void _unur_str_debug_set( int level, const char *key, const char *type, .
 /* maximal number of arguments for set calls (must be at least 2) */
 
 /*---------------------------------------------------------------------------*/
+
+/*****************************************************************************/
+/**  Load lists of ..._new and ..._set calls                                **/
+/*****************************************************************************/
+
+#include "stringparser_lists.ch"
 
 /*****************************************************************************/
 /**  User Interface                                                         **/
@@ -932,75 +925,6 @@ _unur_str_distr( char *str_distr )
 /*---------------------------------------------------------------------------*/
 
 struct unur_distr *
-_unur_str_distr_new( char *distribution )
-     /*----------------------------------------------------------------------*/
-     /* get new distribution object                                          */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   distribution ... string that contains distribution name            */
-     /*   params       ... string that contains list of parameters           */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   distribution object (pointer to structure)                         */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return NULL                                                        */
-     /*----------------------------------------------------------------------*/
-{
-  struct unur_distr *distr = NULL;    /* pointer to distribution object      */
-  char distr_unknown;
-
-  char *name;                         /* pointer to name of distribution     */
-  char *params;                       /* pointer to parameter list of distr  */
-
-  double *darray = NULL;              /* array of arguments for distribution */
-  int n_darray = 0;                   /* size of array of parameters         */
-
-  /* name of distribution */
-  name = distribution;
-
-  /* get parameter list */
-  params = strchr(distribution,'(');
-  if (params != NULL) {
-    *params = '\0';                   /* terminate key string        */
-    ++params;                         /* set pointer to value string */
-  }
-
-  /* get parameter list */
-  n_darray = _unur_parse_dlist(params, &darray );
-
-#ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
-  if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
-    _unur_str_debug_distr(1,name,darray,n_darray);
-#endif
-
-  /* mark distribution as unknown (this is a very ugly hack) */
-  distr = (struct unur_distr *) &distr_unknown;
-
-=INPUT list_of_distributions
-
-   if (distr == (struct unur_distr *) &distr_unknown) {
-     /* unknown method */
-     _unur_error_unknown(distribution,"distribution");
-     distr = NULL;
-   }
-   else if (distr == NULL) {
-     /* invalid data for chosen method */
-     _unur_error_invalid(distribution,"distribution");
-   }
-
-   /* clear memory */
-   if (darray) free(darray);
-
-   /* return result */
-   return distr;
-
-} /* end of _unur_str_distr_new() */
-
-/*---------------------------------------------------------------------------*/
-
-static struct unur_distr *
 _unur_str_distr_make_os (UNUR_DISTR *distr, const char *key, char *type_args, char **args)
      /*----------------------------------------------------------------------*/
      /* Make distribution object for order statistics of given distribution. */
@@ -1082,76 +1006,6 @@ _unur_str_distr_make_os (UNUR_DISTR *distr, const char *key, char *type_args, ch
   return os;
 
 } /* end of _unur_str_distr_make_os() */
-
-/*---------------------------------------------------------------------------*/
-
-int
-_unur_str_distr_set( UNUR_DISTR **ptr_distr, const char *key, char *value )
-     /*----------------------------------------------------------------------*/
-     /* set parameters for distribution                                      */
-     /*                                                                      */
-     /* it also makes a distribution object for an order statistics for      */
-     /* the given distribution when the key word "orderstatistics" occurs.   */
-     /* Thus the distribution object itself might be changed.                */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   ptr_distr ... holds pointer to distribution object                 */
-     /*   key       ... string that contains key for parameter               */
-     /*   value     ... string that contains list of arguments for parameter */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   UNUR_SUCCESS ... on success                                        */
-     /*   error code   ... on error                                          */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return error code                                                  */
-     /*----------------------------------------------------------------------*/
-{
-  int result;      /* result of UNURAN set call */
-
-  /* derefence pointer to distribution object */
-  struct unur_distr *distr = *ptr_distr;
-
-  /* storing arguments of set calls: */
-  char type_args[MAX_SET_ARGS+1];  /* array containing info about arguments */
-  char *args[MAX_SET_ARGS+1];      /* pointers to argument strings */
-
-  /* tokenize argument string */
-  if (_unur_str_set_args( value, type_args, args, MAX_SET_ARGS ) < 0) {
-    /* error */
-    return UNUR_ERR_STR_SYNTAX;
-  }
-
-  /* set result indicator to unknown */
-  result = UNUR_ERR_STR_UNKNOWN;
-
-  /* find and execute set call */
-=INPUT list_of_distr_sets
-
-   /* special keyword */
-   if (result == UNUR_ERR_STR_UNKNOWN)
-     if (distr->type == UNUR_DISTR_CONT) {
-       if ( !strcmp(key, "orderstatistics") ) {
-	 /* make order statistics and replace distribution object */
-	 *ptr_distr = _unur_str_distr_make_os (distr, key, type_args, args);
-	 result = (*ptr_distr == NULL) ? UNUR_ERR_STR_SYNTAX : UNUR_SUCCESS;
-       }
-     }
-  
-  if (result == UNUR_ERR_STR_UNKNOWN) {
-    /* unknown parameter */
-    _unur_error_unknown(key,"parameter for given distribution");
-    return UNUR_ERR_STR_UNKNOWN;
-  }
-  else if (result != UNUR_SUCCESS) {
-    /* invalid data for parameter */
-    _unur_error_invalid(key,"set call");
-    return UNUR_ERR_STR_SYNTAX;
-  }
-  
-  return UNUR_SUCCESS;
-  
-} /* end of _unur_str_distr_set() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -1677,112 +1531,6 @@ _unur_str_par( char *str_method, const UNUR_DISTR *distr, struct unur_slist *mli
   return par;
 
 } /* end of _unur_str_par() */
-
-/*---------------------------------------------------------------------------*/
-
-struct unur_par *
-_unur_str_par_new( const char *method, const UNUR_DISTR *distr )
-     /*----------------------------------------------------------------------*/
-     /* get new parameter object for method                                  */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   method ... string that contains method name                        */
-     /*   distr  ... pointer to distribution object                          */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   default parameters (pointer to structure)                          */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return NULL                                                        */
-     /*----------------------------------------------------------------------*/
-{
-  struct unur_par *par = NULL;
-  char method_unknown;
-  
-#ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
-  if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
-    _unur_str_debug_string(1,"method",method);
-#endif
-
-  /* mark method as unknown (this is a very ugly hack) */
-  par = (struct unur_par *) &method_unknown;
-
-=INPUT list_of_methods
-
-   if (par == (struct unur_par *) &method_unknown) {
-     /* unknown method */
-     _unur_error_unknown(method,"method");
-     par = NULL;
-   }
-   else if (par == NULL) {
-     /* invalid data for chosen method */
-     _unur_error_invalid(method,"method");
-   }
-
-   return par;
-} /* end of _unur_str_par_new() */
-
-/*---------------------------------------------------------------------------*/
-
-int
-_unur_str_par_set( UNUR_PAR *par, const char *key, char *value, struct unur_slist *mlist )
-     /*----------------------------------------------------------------------*/
-     /* set parameters for method                                            */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   par   ... pointer to parameter for building generator object       */
-     /*   key   ... string that contains key for parameter                   */
-     /*   value ... string that contains list of arguments for parameter     */
-     /*   mlist ... list of allocated memory blocks                          */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   UNUR_SUCCESS ... on success                                        */
-     /*   error code   ... on error                                          */
-     /*----------------------------------------------------------------------*/
-{
-  int result = 0;                  /* result of UNURAN set call (0 or 1) */
-
-  /* storing arguments of set calls: */
-  char type_args[MAX_SET_ARGS+1];  /* array containing info about arguments */
-  char *args[MAX_SET_ARGS+1];      /* pointers to argument strings */
-
-  /* tokenize argument string */
-  if (_unur_str_set_args( value, type_args, args, MAX_SET_ARGS ) < 0) {
-    /* error */
-    return UNUR_ERR_STR_SYNTAX;
-  }
-
-  /* set result indicator to unknown */
-  result = UNUR_ERR_STR_UNKNOWN;
-
-  /* find and execute set call */
-=INPUT list_of_par_sets
-
-   if (result == UNUR_ERR_STR_UNKNOWN) {
-     /* no valid parameter found */
-     /* try extra keywords */
-     if ( !strcmp(key, "debug") ) {
-       /* n = 1; type = u:  UNUR_PAR *parameters, unsigned DEBUG */
-       result = _unur_str_par_set_u(par,key,type_args,args,unur_set_debug);
-     }
-   }
-  
-  /* check result */
-  if (result == UNUR_ERR_STR_UNKNOWN) {
-    /* unknown parameter */
-    _unur_error_unknown(key,"parameter for given method");
-    return UNUR_ERR_STR_UNKNOWN;
-  }
-  else if (result != UNUR_SUCCESS) {
-    /* invalid data for parameter */
-    _unur_error_invalid(key,"set call");
-    return UNUR_ERR_STR_SYNTAX;
-  }
-  
-  return UNUR_SUCCESS;
-
-} /* end of _unur_str_par_set() */
 
 /*---------------------------------------------------------------------------*/
 

@@ -48,10 +48,6 @@
 #include <utils/unur_fp_source.h>
 #include <utils/unur_fp_const_source.h>
 
-#ifdef WITH_DMALLOC
-#  include <dmalloc.h>
-#endif
-
 /*---------------------------------------------------------------------------*/
 
 #define CHI_TEST_INTERVALS 100  /* number of intervals for chi^2 test        */

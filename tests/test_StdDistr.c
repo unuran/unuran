@@ -45,9 +45,6 @@
 #include <config.h>
 #include <unuran.h>
 
-#ifdef WITH_DMALLOC
-#  include <dmalloc.h>
-#endif
 /*---------------------------------------------------------------------------*/
 
 /* PDF test: maximal difference allowed (relative to maximal value) */

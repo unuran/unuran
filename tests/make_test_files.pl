@@ -587,11 +587,6 @@ sub scan_validate {
 
     ## end ##
 
-    print "#ifdef WITH_DMALLOC\n";
-    print "\tdmalloc_vmessage(\"section = $section  ================================\\n\",\"\");\n";
-    print "\tdmalloc_log_unfreed();\n";
-    print "#endif\n\n";
-
     print "\n\t/* test finished */\n";
     print "\ttest_ok &= (n_tests_failed>CHI2_FAILURES_TOLERATED) ? 0 : 1;\n";
     print "\t/* we accept CHI2_FAILURES_TOLERATED failures */\n";
@@ -669,11 +664,6 @@ EOM
 	/* test finished */
 	test_ok &= (FAILED) ? 0 : 1;
 	(FAILED) ? printf(" ==> failed] ") : printf(" ==> ok] ");
-
-#ifdef WITH_DMALLOC
-	dmalloc_vmessage("section = $section  ================================\\n",NULL);
-	dmalloc_log_unfreed();
-#endif
 
 } /* end of test_$section() */
 
@@ -804,11 +794,6 @@ EOM
 	/* test finished */
 	test_ok &= (n_tests_failed) ? 0 : 1;
 	(n_tests_failed) ? printf(" ==> failed] ") : printf(" ==> ok] ");
-
-#ifdef WITH_DMALLOC
-	dmalloc_vmessage("section = $section  ================================\\n",NULL);
-	dmalloc_log_unfreed();
-#endif
 
 } /* end of test_$section() */
 

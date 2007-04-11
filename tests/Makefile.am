@@ -85,10 +85,6 @@ check_PROGRAMS = \
  $(DEPRECATED_TESTS) \
  $(MATHEMATICA_PROGS)
 
-## Troubles with dmalloc:
-##   t_dstd
-##   t_hinv
-
 TESTS = $(check_PROGRAMS)
 
 # These tests fail until we fix some bugs

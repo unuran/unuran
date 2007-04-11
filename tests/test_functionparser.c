@@ -48,9 +48,6 @@
 #include <src/utils/unur_fp_source.h>
 #include <src/utils/unur_fp_const_source.h>
 
-#ifdef WITH_DMALLOC
-#  include <dmalloc.h>
-#endif
 /*---------------------------------------------------------------------------*/
 
 /* name of data file */

@@ -176,7 +176,7 @@ _unur_test_chi2_discr( struct unur_gen *gen,
      /*   classmin   ... minimum number of expected occurrences for each class */
      /*                  (if <= 0, a default value is used.)                 */
      /*   verbose    ... verbosity level                                     */
-     /*                  0 = no output on stdout                             */
+     /*                  0 = no output                                       */
      /*                  1 = print summary                                   */
      /*                  2 = print classes and summary                       */
      /*   out        ... output stream                                       */
@@ -286,7 +286,7 @@ _unur_test_chi2_cont( struct unur_gen *gen,
      /*   classmin   ... minimum number of expected occurrences for each class */
      /*                  (if <= 0, a default value is used.)                 */
      /*   verbose    ... verbosity level                                     */
-     /*                  0 = no output on stdout                             */
+     /*                  0 = no output                                       */
      /*                  1 = print summary                                   */
      /*                  2 = print classes and summary                       */
      /*   out        ... output stream                                       */
@@ -416,7 +416,7 @@ _unur_test_chi2_cemp( struct unur_gen *gen,
      /*   classmin   ... minimum number of expected occurrences for each class */
      /*                  (if <= 0, a default value is used.)                 */
      /*   verbose    ... verbosity level                                     */
-     /*                  0 = no output on stdout                             */
+     /*                  0 = no output                                       */
      /*                  1 = print summary                                   */
      /*                  2 = print classes and summary                       */
      /*   out        ... output stream                                       */
@@ -523,7 +523,7 @@ _unur_test_chi2_vec ( struct unur_gen *gen,
      /*   classmin   ... minimum number of expected occurrences for each class */
      /*                  (if <= 0, a default value is used.)                 */
      /*   verbose    ... verbosity level                                     */
-     /*                  0 = no output on stdout                             */
+     /*                  0 = no output                                       */
      /*                  1 = print summary                                   */
      /*                  2 = print classes and summary                       */
      /*   out        ... output stream                                       */
@@ -738,7 +738,7 @@ _unur_test_chi2_cvemp ( struct unur_gen *gen,
      /*   classmin   ... minimum number of expected occurrences for each class */
      /*                  (if <= 0, a default value is used.)                 */
      /*   verbose    ... verbosity level                                     */
-     /*                  0 = no output on stdout                             */
+     /*                  0 = no output                                       */
      /*                  1 = print summary                                   */
      /*                  2 = print classes and summary                       */
      /*   out        ... output stream                                       */
@@ -863,7 +863,7 @@ _unur_test_chi2test( double *prob,
      /*   classmin ... minimum number of expected occurrences for each class */
      /*                  (if <= 0, a default value is used.)                 */
      /*   verbose  ... verbosity level                                       */
-     /*                  0 = no output on stdout                             */
+     /*                  0 = no output                                       */
      /*                  1 = print summary                                   */
      /*                  2 = print classes and summary                       */
      /*   out      ... output stream                                         */

@@ -64,7 +64,7 @@
 
 /*---------------------------------------------------------------------------*/
 
-void unur_run_tests( UNUR_PAR *parameters, unsigned tests);
+void unur_run_tests( UNUR_PAR *parameters, unsigned tests, FILE *out );
 /* 
    Run a battery of tests.
    The following tests are available (use @code{|} to combine these
@@ -106,7 +106,7 @@ UNUR_GEN *unur_test_timing( UNUR_PAR *parameters, int log_samplesize,
    sample size that is used for timing. 
 
    If @var{verbosity} is TRUE then a small table is printed to
-   the @code{stdout} with setup time, marginal generation time and
+   output stream @var{out} with setup time, marginal generation time and
    average generation times for generating 10, 100, @dots{} random
    variates. All times are given in micro seconds and relative to 
    the generation times for the underlying uniform random number

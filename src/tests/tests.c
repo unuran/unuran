@@ -53,7 +53,7 @@
 
 /*---------------------------------------------------------------------------*/
 /* some tools                                                                */
-static int _unur_print_method( struct unur_par *par );
+static int _unur_print_method( struct unur_par *par, FILE *out );
 
 /*---------------------------------------------------------------------------*/
 
@@ -66,13 +66,14 @@ static int _unur_print_method( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 
 void 
-unur_run_tests( struct unur_par *par, unsigned tests)
+unur_run_tests( struct unur_par *par, unsigned tests, FILE *out )
      /*----------------------------------------------------------------------*/
      /* test generator                                                       */
      /*                                                                      */
      /* parameters:                                                          */
      /*   par   ... pointer to paramters for building generator object       */
      /*   tests ... list of tests (stored as bit array)                      */
+     /*   out   ... output stream                                            */
      /*----------------------------------------------------------------------*/
 {
   struct unur_gen *gen = NULL;
@@ -82,8 +83,10 @@ unur_run_tests( struct unur_par *par, unsigned tests)
   /* check arguments */
   _unur_check_NULL("Tests",par,RETURN_VOID);
 
+  if (!out) out = stdout;
+
   /* print info about method */
-  if (_unur_print_method(par)!=UNUR_SUCCESS)
+  if (_unur_print_method(par,out)!=UNUR_SUCCESS)
     return;  /* unknown method */
 
   /* make a clone of the parameter object which will be needed for counting PDF calls */
@@ -92,7 +95,7 @@ unur_run_tests( struct unur_par *par, unsigned tests)
   /* init generator object */
   if (tests & UNUR_TEST_TIME)
     /* evaluate setup time and generation time */
-    gen = unur_test_timing(par,TEST_TIMING_LOG_SAMPLESIZE, &time_setup, &time_sample, TRUE, stdout);
+    gen = unur_test_timing(par,TEST_TIMING_LOG_SAMPLESIZE, &time_setup, &time_sample, TRUE, out);
   else
     gen = _unur_init(par);
 
@@ -101,19 +104,19 @@ unur_run_tests( struct unur_par *par, unsigned tests)
 
   /* count number of uniform random numbers */
   if (tests & UNUR_TEST_N_URNG )
-    unur_test_count_urn(gen,TEST_COUNTER_SAMPLESIZE, TRUE, stdout);
+    unur_test_count_urn(gen,TEST_COUNTER_SAMPLESIZE, TRUE, out);
 
   /* count PDF calls */
   if (tests & UNUR_TEST_N_PDF )
-    unur_test_par_count_pdf(par_clone,TEST_COUNTER_SAMPLESIZE, TRUE, stdout);
+    unur_test_par_count_pdf(par_clone,TEST_COUNTER_SAMPLESIZE, TRUE, out);
 
   /* print a sample */
   if (tests & UNUR_TEST_SAMPLE )
-    unur_test_printsample(gen,TEST_SAMPLE_ROWS,TEST_SAMPLE_COLS, stdout);
+    unur_test_printsample(gen,TEST_SAMPLE_ROWS,TEST_SAMPLE_COLS, out);
 
   /* run chi2-test*/
   if (tests & UNUR_TEST_CHI2)
-    unur_test_chi2(gen,TEST_CHI2_INTERVALS,0,0,TEST_CHI2_VERBOSE,stdout);
+    unur_test_chi2(gen,TEST_CHI2_INTERVALS,0,0,TEST_CHI2_VERBOSE, out);
 
   /* free generator */
   _unur_free(gen);
@@ -135,13 +138,14 @@ unur_run_tests( struct unur_par *par, unsigned tests)
 
 /*---------------------------------------------------------------------------*/
 
-static int 
-_unur_print_method( struct unur_par *par )
+int 
+_unur_print_method( struct unur_par *par, FILE *out )
      /*----------------------------------------------------------------------*/
      /* print name of method                                                 */
      /*                                                                      */
      /* parameters:                                                          */
      /*   par ... pointer to paramters for building generator object         */
+     /*   out ... output stream                                              */
      /*                                                                      */
      /* return:                                                              */
      /*   UNUR_SUCCESS ... on success                                        */
@@ -151,16 +155,16 @@ _unur_print_method( struct unur_par *par )
   /* first print type */
   switch (par->distr->type) {
   case UNUR_DISTR_DISCR:
-    fprintf(stdout,"\nTYPE:\t\tdiscrete univariate distribution\n");
+    fprintf(out,"\nTYPE:\t\tdiscrete univariate distribution\n");
     break;
   case UNUR_DISTR_CONT:
-    fprintf(stdout,"\nTYPE:\t\tcontinuous univariate distribution\n");
+    fprintf(out,"\nTYPE:\t\tcontinuous univariate distribution\n");
     break;
   case UNUR_DISTR_CEMP:
-    fprintf(stdout,"\nTYPE:\t\tcontinuous univariate empirical distribution\n");
+    fprintf(out,"\nTYPE:\t\tcontinuous univariate empirical distribution\n");
     break;
   case UNUR_DISTR_CVEC:
-    fprintf(stdout,"\nTYPE:\t\tcontinuous multivariate distribution\n");
+    fprintf(out,"\nTYPE:\t\tcontinuous multivariate distribution\n");
     break;
   default: /* unknown ! */
     _unur_error("Tests",UNUR_ERR_GENERIC,"type of method unknown!");
@@ -173,132 +177,132 @@ _unur_print_method( struct unur_par *par )
     /* automatic method */
   case UNUR_METH_AUTO:
     COOKIE_CHECK(par,CK_AUTO_PAR,UNUR_ERR_COOKIE);
-    fprintf(stdout,"METHOD:\t\tautomatic selection (AUTO)\n");
+    fprintf(out,"METHOD:\t\tautomatic selection (AUTO)\n");
     break;
 
     /* discrete, univariate */
   case UNUR_METH_DAU:
     COOKIE_CHECK(par,CK_DAU_PAR,UNUR_ERR_COOKIE);
-    fprintf(stdout,"METHOD:\t\talias and alias-urn method (DAU)\n");
+    fprintf(out,"METHOD:\t\talias and alias-urn method (DAU)\n");
     break;
   case UNUR_METH_DGT:
     COOKIE_CHECK(par,CK_DGT_PAR,UNUR_ERR_COOKIE);
-    fprintf(stdout,"METHOD:\t\tindexed search -- guide table (DGT)\n");
+    fprintf(out,"METHOD:\t\tindexed search -- guide table (DGT)\n");
     break;
   case UNUR_METH_DSROU:
     COOKIE_CHECK(par,CK_DSROU_PAR,UNUR_ERR_COOKIE);
-    fprintf(stdout,"METHOD:\t\tdiscrete simple universal ratio-of-uniforms search (DSROU)\n");
+    fprintf(out,"METHOD:\t\tdiscrete simple universal ratio-of-uniforms search (DSROU)\n");
     break;
   case UNUR_METH_DSS:
     COOKIE_CHECK(par,CK_DSS_PAR,UNUR_ERR_COOKIE);
-    fprintf(stdout,"METHOD:\t\tsequential search (DSS)\n");
+    fprintf(out,"METHOD:\t\tsequential search (DSS)\n");
     break;
   case UNUR_METH_DSTD:
     COOKIE_CHECK(par,CK_DSTD_PAR,UNUR_ERR_COOKIE);
-    fprintf(stdout,"METHOD:\t\tspecial (DSTD)\n");
+    fprintf(out,"METHOD:\t\tspecial (DSTD)\n");
     break;
   case UNUR_METH_DEXT:
     COOKIE_CHECK(par,CK_DEXT_PAR,UNUR_ERR_COOKIE);
-    fprintf(stdout,"METHOD:\t\texternal generator (DEXT)\n");
+    fprintf(out,"METHOD:\t\texternal generator (DEXT)\n");
     break;
 
     /* continuous, univariate */
   case UNUR_METH_AROU:
     COOKIE_CHECK(par,CK_AROU_PAR,UNUR_ERR_COOKIE);
-    fprintf(stdout,"METHOD:\t\tautomatic ratio-of-uniforms method (NINV)\n");
+    fprintf(out,"METHOD:\t\tautomatic ratio-of-uniforms method (NINV)\n");
     break;
   case UNUR_METH_HINV:
     COOKIE_CHECK(par,CK_HINV_PAR,UNUR_ERR_COOKIE);
-    fprintf(stdout,"METHOD:\t\tnumerical inversion of CDF by Hermite Interpolation (HINV)\n");
+    fprintf(out,"METHOD:\t\tnumerical inversion of CDF by Hermite Interpolation (HINV)\n");
     break;
   case UNUR_METH_ITDR:
     COOKIE_CHECK(par,CK_ITDR_PAR,UNUR_ERR_COOKIE);
-    fprintf(stdout,"METHOD:\t\tinverse transformed density rejection (ITDR)\n");
+    fprintf(out,"METHOD:\t\tinverse transformed density rejection (ITDR)\n");
     break;
   case UNUR_METH_NINV:
     COOKIE_CHECK(par,CK_NINV_PAR,UNUR_ERR_COOKIE);
-    fprintf(stdout,"METHOD:\t\tnumerical inversion of CDF (NINV)\n");
+    fprintf(out,"METHOD:\t\tnumerical inversion of CDF (NINV)\n");
     break;
   case UNUR_METH_SROU:
     COOKIE_CHECK(par,CK_SROU_PAR,UNUR_ERR_COOKIE);
-    fprintf(stdout,"METHOD:\t\tsimple universal ratio-of-uniforms method (SROU)\n");
+    fprintf(out,"METHOD:\t\tsimple universal ratio-of-uniforms method (SROU)\n");
     break;
   case UNUR_METH_NROU:
     COOKIE_CHECK(par,CK_NROU_PAR,UNUR_ERR_COOKIE);
-    fprintf(stdout,"METHOD:\t\tnaive universal ratio-of-uniforms method (NROU)\n");
+    fprintf(out,"METHOD:\t\tnaive universal ratio-of-uniforms method (NROU)\n");
     break;
   case UNUR_METH_SSR:
     COOKIE_CHECK(par,CK_SSR_PAR,UNUR_ERR_COOKIE);
-    fprintf(stdout,"METHOD:\t\tsimple transformed density rejection with universal bounds (SSR)\n");
+    fprintf(out,"METHOD:\t\tsimple transformed density rejection with universal bounds (SSR)\n");
     break;
   case UNUR_METH_TABL:
     COOKIE_CHECK(par,CK_TABL_PAR,UNUR_ERR_COOKIE);
-    fprintf(stdout,"METHOD:\t\trejection from piecewise constant hat (TABL)\n");
+    fprintf(out,"METHOD:\t\trejection from piecewise constant hat (TABL)\n");
     break;
   case UNUR_METH_TDR:
     COOKIE_CHECK(par,CK_TDR_PAR,UNUR_ERR_COOKIE);
-    fprintf(stdout,"METHOD:\t\ttransformed density rejection (TDR)\n");
+    fprintf(out,"METHOD:\t\ttransformed density rejection (TDR)\n");
     break;
   case UNUR_METH_UTDR:
     COOKIE_CHECK(par,CK_UTDR_PAR,UNUR_ERR_COOKIE);
-    fprintf(stdout,"METHOD:\t\ttransformed density rejection, 3-point method (UTDR)\n");
+    fprintf(out,"METHOD:\t\ttransformed density rejection, 3-point method (UTDR)\n");
     break;
   case UNUR_METH_CSTD:
     COOKIE_CHECK(par,CK_CSTD_PAR,UNUR_ERR_COOKIE);
-    fprintf(stdout,"METHOD:\t\tspecial (CSTD)\n");
+    fprintf(out,"METHOD:\t\tspecial (CSTD)\n");
     break;
   case UNUR_METH_CEXT:
     COOKIE_CHECK(par,CK_CEXT_PAR,UNUR_ERR_COOKIE);
-    fprintf(stdout,"METHOD:\t\texternal generator (CEXT)\n");
+    fprintf(out,"METHOD:\t\texternal generator (CEXT)\n");
     break;
 
 
     /* continuous, empirical */
   case UNUR_METH_EMPK:
     COOKIE_CHECK(par,CK_EMPK_PAR,UNUR_ERR_COOKIE);
-    fprintf(stdout,"METHOD:\t\tempirical distribution with kernel smoothing (EMPK)\n");
+    fprintf(out,"METHOD:\t\tempirical distribution with kernel smoothing (EMPK)\n");
     break;
 
     /* continuous, multivariate (random vector) */
   case UNUR_METH_GIBBS:
     COOKIE_CHECK(par,CK_GIBBS_PAR,UNUR_ERR_COOKIE);
-    fprintf(stdout,"METHOD:\t\tMarkov Chain - GIBBS sampler (GIBBS)\n");
+    fprintf(out,"METHOD:\t\tMarkov Chain - GIBBS sampler (GIBBS)\n");
     break;
 
   case UNUR_METH_HITRO:
     COOKIE_CHECK(par,CK_HITRO_PAR,UNUR_ERR_COOKIE);
-    fprintf(stdout,"METHOD:\t\thit&run ratio-of-uniforms (HITRO)\n");
+    fprintf(out,"METHOD:\t\thit&run ratio-of-uniforms (HITRO)\n");
     break;
     
   case UNUR_METH_MVSTD:
     COOKIE_CHECK(par,CK_MVSTD_PAR,UNUR_ERR_COOKIE);
-    fprintf(stdout,"METHOD:\t\tspecial (MVSTD)\n");
+    fprintf(out,"METHOD:\t\tspecial (MVSTD)\n");
     break;
 
   case UNUR_METH_MVTDR:
     COOKIE_CHECK(par,CK_MVTDR_PAR,UNUR_ERR_COOKIE);
-    fprintf(stdout,"METHOD:\t\tmultivariate transformed density rejection (MVTDR)\n");
+    fprintf(out,"METHOD:\t\tmultivariate transformed density rejection (MVTDR)\n");
     break;
 
   case UNUR_METH_NORTA:
     COOKIE_CHECK(par,CK_NORTA_PAR,UNUR_ERR_COOKIE);
-    fprintf(stdout,"METHOD:\t\tnormal to anything (NORTA)\n");
+    fprintf(out,"METHOD:\t\tnormal to anything (NORTA)\n");
     break;
 
   case UNUR_METH_VMT:
     COOKIE_CHECK(par,CK_VMT_PAR,UNUR_ERR_COOKIE);
-    fprintf(stdout,"METHOD:\t\tvector matrix transformation (VMT)\n");
+    fprintf(out,"METHOD:\t\tvector matrix transformation (VMT)\n");
     break;
 
   case UNUR_METH_VNROU:
     COOKIE_CHECK(par,CK_VNROU_PAR,UNUR_ERR_COOKIE);
-    fprintf(stdout,"METHOD:\t\tvector naive ratio-of-uniforms (VNROU)\n");
+    fprintf(out,"METHOD:\t\tvector naive ratio-of-uniforms (VNROU)\n");
     break;
 
     /* misc */
   case UNUR_METH_UNIF:
     COOKIE_CHECK(par,CK_UNIF_PAR,UNUR_ERR_COOKIE);
-    fprintf(stdout,"METHOD:\t\twrapper for uniform (UNIF)\n");
+    fprintf(out,"METHOD:\t\twrapper for uniform (UNIF)\n");
     break;
 
   default: /* unknown ! */
@@ -312,5 +316,3 @@ _unur_print_method( struct unur_par *par )
 } /* end of _unur_print_method() */
 
 /*---------------------------------------------------------------------------*/
-
-

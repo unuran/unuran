@@ -878,14 +878,6 @@ sub print_test_command {
 	  print "$last_C_line\;\n";
 	  last SWITCH;
       }
-      if ($test_command =~ /^\s*redirect\s*/ ) {
-	  $test_command =~ s/\s+//g;
-	  print "{ FILE *store_stdout = stdout;\n";
-	  print "stdout = TESTLOG;\n";
-	  print "$last_C_line\;\n";
-	  print "stdout = store_stdout; }\n";
-	  last SWITCH;
-      }
       if ($test_command =~ /^\s*expected_NULL\s*/ or 
 	  $test_command =~ /^\s*expected_setfailed\s*/ or 
 	  $test_command =~ /^\s*expected_zero\s*/ or 

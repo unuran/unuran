@@ -130,6 +130,7 @@ clean:
 	rm -f $(SCRIPTS_DIR)/compute_machine_constants.obj
 	rm -f $(EXAMPLES_OBJ) $(EXAMPLES_EXE)
 	rm -f $(TESTS_SRC) $(TESTS_OBJ) $(TESTS_EXE)
+	rm -f t_*.log unuran.log
 	find . -type f -name "*.manifest" -exec rm -v '{}' \;
 
 

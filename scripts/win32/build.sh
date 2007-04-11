@@ -47,6 +47,9 @@ for arg in "$@"; do
 		check=true;
 		export privatefunctions=true
 		;;
+	clean)
+		clean=true;
+		;;
 	*)
 		echo "Invalid argment '${arg}'"
 		exit 1
@@ -72,6 +75,14 @@ fi
 if [[ -f ./config.h && -f ./Makefile && -z `grep "CC = cl" ./Makefile` ]]; then
 	echo "config.h created with wrong CC; deleting ..."
 	./hmake maintainer-clean
+fi
+
+# --- Clear working directory -----------------------------------------------
+
+if [[ "${clean}" ]]; then
+	./hmake -f scripts/win32/Makefile.win32 clean;
+	echo "working space cleared";
+	exit 0;
 fi
 
 # --- Prepare UNU.RAN -------------------------------------------------------

@@ -97,7 +97,7 @@ test -d "${WIN_DIR}" && rm -rf "${WIN_DIR}"
 mkdir "${WIN_DIR}"
 
 # create all required UNURAN header files 
-(cd src/parser; ../../hmake stringparser.c)
+(cd src/parser; ../../hmake stringparser_lists.ch)
 (cd src; ../hmake unuran.h; cp -v unuran.h ../${WIN_DIR})
 
 # create doc

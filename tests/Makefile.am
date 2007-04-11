@@ -33,6 +33,7 @@ endif
 
 check_PROGRAMS = \
  t_unur_tests \
+ t_unur_error \
  t_urng \
  t_distr \
  t_distr_cemp \
@@ -103,6 +104,7 @@ EXTRA_DIST = \
  README.conf \
  t_stringparser.conf \
  t_unur_tests.conf \
+ t_unur_error.conf \
  t_urng.conf \
  t_distr.conf \
  t_distr_cemp.conf \

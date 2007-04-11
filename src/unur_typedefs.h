@@ -79,8 +79,8 @@ struct unur_slist;         /* structure for simple list                      */
 /*---------------------------------------------------------------------------*/
 /* error handler                                                             */
 
-typedef void unur_error_handler_t( const char *objid, const char *file, int line, 
-				   const char *errortype, int unur_errno, const char *reason );
+typedef void UNUR_ERROR_HANDLER( const char *objid, const char *file, int line, 
+				 const char *errortype, int unur_errno, const char *reason );
 
 /*---------------------------------------------------------------------------*/
 #endif  /* UNUR_TYPEDEFS_H_SEEN */

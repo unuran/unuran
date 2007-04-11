@@ -459,3 +459,8 @@ FILE *unur_get_stream( void );
 /*---------------------------------------------------------------------------*/
 #endif  /* UNUR_ERRNO_H_SEEN */
 /*---------------------------------------------------------------------------*/
+
+
+UNUR_ERROR_HANDLER *unur_set_error_handler( UNUR_ERROR_HANDLER *new_handler );
+
+UNUR_ERROR_HANDLER *unur_set_error_handler_off( void );

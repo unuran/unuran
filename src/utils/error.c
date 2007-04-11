@@ -53,7 +53,7 @@ void _unur_error_handler_off( const char *objid, const char *file, int line,
 int unur_errno = UNUR_SUCCESS;
 
 /* error handler used to report errors in UNURAN */
-static unur_error_handler_t *_unur_error_handler = _unur_error_handler_default;
+static UNUR_ERROR_HANDLER *_unur_error_handler = _unur_error_handler_default;
 
 /*---------------------------------------------------------------------------*/
 
@@ -266,6 +266,43 @@ unur_get_strerror ( const int unur_errno )
   }
 
 } /* end of unur_get_strerror() */
+
+/*---------------------------------------------------------------------------*/
+
+UNUR_ERROR_HANDLER *
+unur_set_error_handler( UNUR_ERROR_HANDLER *new_handler )
+     /*----------------------------------------------------------------------*/
+     /* (re)set error handler                                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   new_handler ... new error handler                                  */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to old error handler                                       */
+     /*----------------------------------------------------------------------*/
+{
+  UNUR_ERROR_HANDLER *old_handler = _unur_error_handler;
+  _unur_error_handler = (new_handler) ? new_handler : _unur_error_handler_default;
+  return old_handler;
+} /* end of unur_set_error_handler() */
+
+/*---------------------------------------------------------------------------*/
+
+UNUR_ERROR_HANDLER *
+unur_set_error_handler_off( void )
+     /*----------------------------------------------------------------------*/
+     /* disable error messages                                               */
+     /*                                                                      */
+     /* parameters: none                                                     */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to old error handler                                       */
+     /*----------------------------------------------------------------------*/
+{
+  UNUR_ERROR_HANDLER *old_handler = _unur_error_handler;
+  _unur_error_handler = _unur_error_handler_off;
+  return old_handler;
+} /* end of unur_set_error_handler_off() */
 
 /*---------------------------------------------------------------------------*/
 

@@ -871,8 +871,8 @@ _unur_dari_sample_check( struct unur_gen *gen )
 	if (h+UNUR_EPSILON*100.<-0.5) {
 	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,
 		      "PMF(i) > hat(i) for centerpart");
-	  _unur_stream_printf(gen->genid,__FILE__,__LINE__,
-			      "i %d PMF(x) %.20e hat(x) %.20e", k,PMF(k),GEN->pm ); 
+	  _unur_log_printf(gen->genid,__FILE__,__LINE__,
+			   "i %d PMF(x) %.20e hat(x) %.20e", k,PMF(k),GEN->pm ); 
         }
 	/* end CHECKING HAT */
       }
@@ -884,8 +884,8 @@ _unur_dari_sample_check( struct unur_gen *gen )
 	if (h+UNUR_EPSILON*100.<-0.5) {
 	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,
 		      "PMF(i) > hat(i) for centerpart");
-	  _unur_stream_printf(gen->genid,__FILE__,__LINE__,
-			      "i %d PMF(x) %.20e hat(x) %.20e", k,PMF(k),GEN->pm ); 
+	  _unur_log_printf(gen->genid,__FILE__,__LINE__,
+			   "i %d PMF(x) %.20e hat(x) %.20e", k,PMF(k),GEN->pm ); 
         }
 	/* end CHECKING HAT */
       }
@@ -927,8 +927,8 @@ _unur_dari_sample_check( struct unur_gen *gen )
 	    if (GEN->hp[k-N0]+UNUR_EPSILON < hkm05) {
 	      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,
 			  "for tailpart hat too low, ie hp[k] < H(k-0.5)");
-	      _unur_stream_printf(gen->genid,__FILE__,__LINE__,
-				  "k %d hp  %.20e H(k-0.5) %.20e ", k,GEN->hp[k-N0],hkm05 ); 
+	      _unur_log_printf(gen->genid,__FILE__,__LINE__,
+			       "k %d hp  %.20e H(k-0.5) %.20e ", k,GEN->hp[k-N0],hkm05 ); 
             }
 	  }
 	  GEN->hb[k-N0] = 1;
@@ -945,8 +945,8 @@ _unur_dari_sample_check( struct unur_gen *gen )
 	  if (h+UNUR_EPSILON < hkm05) {
 	    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,
 			"PMF(i) > hat(i) for tailpart");
-	    _unur_stream_printf(gen->genid,__FILE__,__LINE__,
-				"k %d h  %.20e H(k-0.5) %.20e ", k,h,hkm05 ); 
+	    _unur_log_printf(gen->genid,__FILE__,__LINE__,
+			     "k %d h  %.20e H(k-0.5) %.20e ", k,h,hkm05 ); 
 	  }
         }
       }

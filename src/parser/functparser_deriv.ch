@@ -681,7 +681,7 @@ _unur_fstr_error_deriv (const struct ftreenode *node, int line)
 
 #ifdef UNUR_ENABLE_LOGGING
   _unur_fstr_debug_tree(NULL,node);
-  _unur_stream_printf_simple ( "%s:\n",GENTYPE );
+  _unur_log_printf_simple ( "%s:\n",GENTYPE );
 #endif  
 
 } /* end of _unur_fstr_error_deriv() */

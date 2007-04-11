@@ -33,9 +33,9 @@
 
 /*---------------------------------------------------------------------------*/
 /* Function prototypes                                                       */
-void _unur_stream_printf( const char *genid, const char *filename, int line, const char *format, ... )
+void _unur_log_printf( const char *genid, const char *filename, int line, const char *format, ... )
      ATTRIBUTE__FORMAT(4,5);
-void _unur_stream_printf_simple( const char *format, ... )
+void _unur_log_printf_simple( const char *format, ... )
      ATTRIBUTE__FORMAT(1,2);
 
 /*---------------------------------------------------------------------------*/

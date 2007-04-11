@@ -919,14 +919,14 @@ _unur_utdr_sample_check( struct unur_gen *gen )
     /* verify hat function */
     if(_unur_FP_less(linx,pdfx))
       { _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF(x) > hat(x)");
-      _unur_stream_printf(gen->genid,__FILE__,__LINE__,"x %e PDF(x) %e hat(x) %e squeeze(x) %e", \
-                          x,pdfx,linx,squeezex ); 
+      _unur_log_printf(gen->genid,__FILE__,__LINE__,"x %e PDF(x) %e hat(x) %e squeeze(x) %e", \
+		       x,pdfx,linx,squeezex ); 
       }
     /* verify squeeze function */
     if(_unur_FP_less(pdfx,squeezex))
       { _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF(x) < squeeze(x)");
-      _unur_stream_printf(gen->genid,__FILE__,__LINE__,"x %e PDF(x) %e hat(x) %e squeeze(x) %e", \
-                          x,pdfx,linx,squeezex ); 
+      _unur_log_printf(gen->genid,__FILE__,__LINE__,"x %e PDF(x) %e hat(x) %e squeeze(x) %e", \
+		       x,pdfx,linx,squeezex ); 
       }
     if (v <= PDF(x)) return x;
   }

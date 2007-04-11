@@ -50,9 +50,7 @@ static const char GENID_UNKNOWN[] = "UNURAN";
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_stream_printf( const char *genid, 
-		     const char *filename, int line,
-		     const char *format, ... )
+_unur_log_printf( const char *genid, const char *filename, int line, const char *format, ... )
      /*----------------------------------------------------------------------*/
      /* write messages on output stream(s)                                   */
      /*                                                                      */
@@ -64,6 +62,7 @@ _unur_stream_printf( const char *genid,
      /*   ...       ... (optional) arguments to be be printed                */
      /*----------------------------------------------------------------------*/
 {
+#ifdef UNUR_ENABLE_LOGGING
   va_list ap;
 
   /* generator identifier known ? */
@@ -73,19 +72,21 @@ _unur_stream_printf( const char *genid,
 
   /* write onto output stream */
   if (!unur_stream) unur_get_stream();
-  fprintf(unur_stream,"%s: %s:%d: ",genid,filename,line);
+  fprintf(unur_stream,"%s: %s:%d - ",genid,filename,line);
   vfprintf(unur_stream,format,ap);
   fprintf(unur_stream,"\n");
   fflush(unur_stream);   /* in case of a segmentation fault */
 
   va_end(ap);
-
-} /* end of unur_stream_printf() */
+#else
+  return;
+#endif
+} /* end of unur_log_printf() */
 
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_stream_printf_simple( const char *format, ... )
+_unur_log_printf_simple( const char *format, ... )
      /*----------------------------------------------------------------------*/
      /* write messages on output stream(s)                                   */
      /* (same as _unur_stream_printf() but without file and line number)     */
@@ -96,6 +97,7 @@ _unur_stream_printf_simple( const char *format, ... )
      /*   ...       ... (optional) arguments to be be printed                */
      /*----------------------------------------------------------------------*/
 {
+#ifdef UNUR_ENABLE_LOGGING
   va_list ap;
 
   va_start(ap, format);
@@ -106,8 +108,10 @@ _unur_stream_printf_simple( const char *format, ... )
   fflush(unur_stream);   /* in case of a segmentation fault */
 
   va_end(ap);
-
-} /* end of unur_stream_printf_simple() */
+#else
+  return;
+#endif
+} /* end of unur_log_printf_simple() */
 
 /*---------------------------------------------------------------------------*/
 

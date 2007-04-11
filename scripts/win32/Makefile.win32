@@ -2,11 +2,12 @@
 # --- Compiler and linker options -------------------------------------------
 
 # Compiler flags
-CFLAGS=-O2 -W3 -nologo -DHAVE_CONFIG_H -I./ -I./src/ -I./src/tests -LD
-CTESTFLAGS=-O2 -W3 -nologo -I./ -I./src/ -I./src/tests 
+CFLAGS=-O2 -W3 -nologo -DHAVE_CONFIG_H -D_CRT_SECURE_NO_DEPRECATE \
+  -I./ -I./src/ -I./src/tests -MD
+CTESTFLAGS=-O2 -W3 -nologo -I./ -I./src/ -I./src/tests -MD
 
 # Linker flags
-LDFLAGS=-nologo -manifest:no -incremental:no -machine:IX86 
+LDFLAGS=-nologo -incremental:no -machine:IX86 
 
 
 # --- Definitions -----------------------------------------------------------
@@ -86,7 +87,7 @@ $(FPCONST_H): $(SCRIPTS_DIR)/compute_machine_constants.exe
 	$(SCRIPTS_DIR)/compute_machine_constants.exe > $(FPCONST_H)
 
 $(SCRIPTS_DIR)/compute_machine_constants.exe: $(SCRIPTS_DIR)/compute_machine_constants.obj 
-	$(CC) -manifest:no -Fe$(SCRIPTS_DIR)/compute_machine_constants.exe \
+	$(CC) -Fe$(SCRIPTS_DIR)/compute_machine_constants.exe \
 		$(SCRIPTS_DIR)/compute_machine_constants.obj
 
 
@@ -98,10 +99,10 @@ examples: $(EXAMPLES_EXE)
 	done
 	
 $(EXAMPLES_EXE): $(EXAMPLES_OBJ)
-	link $(LDFLAGS) -out:$@ $(@:.exe=.obj) $(UNURAN_LIB) 
+	$(CC) -Fe$@ $(@:.exe=.obj) $(UNURAN_LIB) 
 
 $(EXAMPLES_OBJ): $(EXAMPLES_SRC)
-	$(CC) $(CTESTFLAGS) -Fo$@ -c $(@:.obj=.c) 
+	$(CC) $(CFLAGS) -Fo$@ -c $(@:.obj=.c) 
 
 
 # Run test suite
@@ -115,17 +116,21 @@ $(TESTS_SRC): $(TESTS_CONF)
 	$(TESTS_DIR)/make_test_files.pl $(TOP_SRCDIR) $(@:.c=.conf) > $@ 
 
 $(TESTS_EXE): $(TESTS_OBJ) $(UNURANTEST_OBJ) 
-	link $(LDFLAGS) -out:$@ $(@:.exe=.obj) $(UNURANTEST_OBJ) $(UNURAN_LIB) 
+	$(CC) -Fe$@ $(@:.exe=.obj) $(UNURANTEST_OBJ) $(UNURAN_LIB) 
+#	link $(LDFLAGS) -out:$@ $(@:.exe=.obj) $(UNURANTEST_OBJ) $(UNURAN_LIB) 
 
 $(TESTS_OBJ): $(TESTS_SRC)
-	$(CC) $(CTESTFLAGS) -Fo$@ -c $(@:.obj=.c) 
+	$(CC) $(CFLAGS) -Fo$@ -c $(@:.obj=.c) 
 
 
 # Remove created files
 clean:
 	rm -rf $(UNURAN_OBJ) $(WIN_DIR)
+	rm -f $(SCRIPTS_DIR)/compute_machine_constants.exe
+	rm -f $(SCRIPTS_DIR)/compute_machine_constants.obj
 	rm -f $(EXAMPLES_OBJ) $(EXAMPLES_EXE)
 	rm -f $(TESTS_SRC) $(TESTS_OBJ) $(TESTS_EXE)
+	find . -type f -name "*.manifest" -exec rm -v '{}' \;
 
 
 .PHONY: check clean examples

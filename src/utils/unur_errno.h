@@ -126,6 +126,11 @@
       to non-zero constant unsigned integer values. 
       Error codes are divided into six main groups.
 
+      Alternatively, the variable @code{unur_errno} can also read by a 
+      unur_get_errno() call and can be reset by the unur_reset_errno()
+      call (this is in particular required for the Windows version of the
+      library).
+
    =END
 */
 
@@ -364,6 +369,17 @@ enum {
 extern int unur_errno;
 /*
   Global variable for reporting diagnostics of error.
+*/
+
+int unur_get_errno ( void );
+/* 
+   Get current value of global variable @var{unur_errno}.
+*/
+
+void unur_reset_errno ( void );
+/* 
+   Reset global variable @var{unur_errno} to @code{UNUR_SUCCESS} 
+   (i.e., no errors occured).
 */
 
 /* =END */

@@ -87,8 +87,8 @@ use FileHandle;
 my $Library = "unuran";
 
 # DATA section (to be set manually!!)
-my $DATA = 
-    "\tunur_errno\tDATA\n";
+my $DATA = "";
+#    "\tunur_errno\tDATA\n";
 #    "\tINFINITY\tDATA\n";
 
 # EXPORTS section (functions; set automatically)

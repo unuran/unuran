@@ -91,13 +91,15 @@ void abort_if_NULL( FILE *LOG, int line, const void *ptr )
 /*---------------------------------------------------------------------------*/
 /* compare error code */
 
-int check_errorcode( FILE *LOG, int line, int cherrno )
+int check_errorcode( FILE *LOG, int line, int errno_exp )
 {
+  int errno_obs = unur_get_errno();
+
   fprintf(LOG,"line %4d: Error code ...\t\t",line);
 
-  if (unur_errno != cherrno) {
+  if (errno_obs != errno_exp) {
     fprintf(LOG," Failed");
-    fprintf(LOG," (observed = %#x, expected = %#x)\n",unur_errno,cherrno);
+    fprintf(LOG," (observed = %#x, expected = %#x)\n",errno_obs,errno_exp);
     fflush(LOG);
     return UNUR_FAILURE;
   }
@@ -1024,6 +1026,7 @@ int run_validate_verifyhat( FILE *LOG, int line, UNUR_GEN *gen, const UNUR_DISTR
   int failed = 0;
   int dim;
   double *x = NULL;
+  int errno_obs;
 
   /* get name of distribution */
   distr_name = unur_distr_get_name( distr );
@@ -1084,7 +1087,7 @@ int run_validate_verifyhat( FILE *LOG, int line, UNUR_GEN *gen, const UNUR_DISTR
   /* run verify hat test */
   for (i=0; i<VERIFYHAT_SAMPLESIZE; i++) {
 
-    unur_errno = 0;
+    unur_reset_errno();
     switch (type) {
     case UNUR_DISTR_DISCR:
       unur_sample_discr(gen);
@@ -1101,11 +1104,11 @@ int run_validate_verifyhat( FILE *LOG, int line, UNUR_GEN *gen, const UNUR_DISTR
       exit (EXIT_FAILURE);
     }
 
-    if (unur_errno) {
+    if ((errno_obs = unur_get_errno())) {
       /* error */
-      if (unur_errno == UNUR_ERR_GEN_CONDITION)
+      if (errno_obs == UNUR_ERR_GEN_CONDITION)
 	failed++;
-      unur_errno = 0;
+      unur_reset_errno();
     }
     
   }

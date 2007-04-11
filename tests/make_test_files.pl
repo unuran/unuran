@@ -453,7 +453,7 @@ sub scan_validate {
 		my @lines = split /\n/, $genline;
 		
 		# print lines 
-		print "\tunur_errno = 0;\n";
+		print "\tunur_reset_errno();\n";
 		print "\tdo {\n";
 		print "\tUNUR_DISTR *distr_localcopy = unur_distr_clone(distr[$n_distr]);\n";
 		
@@ -539,7 +539,7 @@ sub scan_validate {
 		my @lines = split /\n/, $genline;
 		
 		# print lines 
-		print "\tunur_errno = 0;\n";
+		print "\tunur_reset_errno();\n";
 		print "\tdo {\n";
 		print "\tUNUR_DISTR *distr_localcopy = unur_distr_clone(distr[$n_distr]);\n";
 		
@@ -779,7 +779,7 @@ EOM
 	    $last_C_line =~ s/;\s*$// if defined $last_C_line;
 	    
 	    # print ...
-	    print "\nunur_errno = 0\;\n";
+	    print "\nunur_reset_errno();\n";
 	    
 	    # C lines ...
 	    foreach my $bl (@blines) {

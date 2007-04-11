@@ -11,7 +11,7 @@ libutils_la_DEPENDENCIES = unur_fp_const_source.h
 libutils_la_SOURCES = \
  debug.c  debug.h debug_source.h \
  eigensystem.c \
- error.c  \
+ error.c          error_source.h \
  fmax.c 	  fmax_source.h \
  hooke.c 	  hooke_source.h \
  matrix.c 	  matrix_source.h \
@@ -27,7 +27,6 @@ libutils_la_SOURCES = \
 noinst_HEADERS = \
  unur_fp_source.h unur_fp_const_source.h \
  unur_errno.h \
- unur_error_source.h \
  unur_math_source.h
 
 # clean backup files

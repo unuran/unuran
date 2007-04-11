@@ -4,7 +4,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: unur_error_source.h                                               *
+ *   FILE: error_source.h                                                    *
  *                                                                           *
  *   PURPOSE:                                                                *
  *         defines macros and function prototypes error messages             *

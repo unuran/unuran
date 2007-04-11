@@ -100,9 +100,9 @@
 /* debuging, warnings and error messages */
 #include <utils/debug.h>
 #include <utils/debug_source.h>
+#include <utils/error_source.h>
 #include <utils/stream_source.h>
 #include <utils/unur_errno.h>
-#include <utils/unur_error_source.h>
 
 /* floating point arithmetic */
 #include <utils/unur_fp_source.h>

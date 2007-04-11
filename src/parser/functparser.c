@@ -417,7 +417,7 @@ static int _unur_fstr_RelationOperator (struct parser_data *pdata, char *ro);
 /*  RelationChar     ::= '<' | '=' | '>'                                     */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_fstr_error_scan (const struct parser_data *pdata, const char *symb);
+static void _unur_fstr_error_scan (const struct parser_data *pdata, const char *symb, int line);
 /*---------------------------------------------------------------------------*/
 /* Print error message when scanning function string.                        */
 /*---------------------------------------------------------------------------*/
@@ -528,7 +528,7 @@ static struct ftreenode *_unur_fstr_create_node (const char *symb, double val, i
 /* Error messages                                                            */
 /*---------------------------------------------------------------------------*/
 
-static struct ftreenode *_unur_fstr_error_parse ( struct parser_data *pdata, int perrno );
+static struct ftreenode *_unur_fstr_error_parse ( struct parser_data *pdata, int perrno, int line );
 /*---------------------------------------------------------------------------*/
 /* Print error message when parsing function string.                         */
 /*---------------------------------------------------------------------------*/
@@ -559,7 +559,7 @@ static double _unur_fstr_eval_node (const struct ftreenode *node, const double x
 /** (see also functparser_symbols.h)                                        **/
 /**-------------------------------------------------------------------------**/
 
-static void _unur_fstr_error_deriv (const struct ftreenode *node);
+static void _unur_fstr_error_deriv (const struct ftreenode *node, int line);
 /*---------------------------------------------------------------------------*/
 /* Print error message for unknown derivative.                               */
 /*---------------------------------------------------------------------------*/

@@ -77,8 +77,11 @@ typedef double UNUR_FUNCTD_CVEC(const double *x, int coord, struct unur_distr *d
 struct unur_slist;         /* structure for simple list                      */
 
 /*---------------------------------------------------------------------------*/
+/* error handler                                                             */
+
+typedef void unur_error_handler_t( const char *objid, const char *file, int line, 
+				   const char *errortype, int unur_errno, const char *reason );
+
+/*---------------------------------------------------------------------------*/
 #endif  /* UNUR_TYPEDEFS_H_SEEN */
 /*---------------------------------------------------------------------------*/
-
-
-

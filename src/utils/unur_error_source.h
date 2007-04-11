@@ -37,29 +37,40 @@
 #define UNUR_ERROR_SOURCE_H_SEEN
 /*---------------------------------------------------------------------------*/
 
+void _unur_error_x( const char *objid, const char *file, int line, 
+		    const char *errortype, int errorcode, const char *reason );
 /*---------------------------------------------------------------------------*/
-#ifdef UNUR_WARNINGS_ON    /* warnings enabled */
+/* set unur_errno and call error handler.                                    */
 /*---------------------------------------------------------------------------*/
-#define _unur_error(genid,errortype,str) \
-   do { \
-      unur_errno = (errortype); \
-      _unur_stream_printf((genid),__FILE__,__LINE__,"error: %s: %s", \
-                          unur_get_strerror(errortype), (str) ); \
-   } while (0)
 
-#define _unur_warning(genid,errortype,str) \
+/* void _unur_error_formated( const char *objid, const char *file, int line,  */
+/* 			   const char *errortype, int errorcode, const char *format, ... ); */
+/*---------------------------------------------------------------------------*/
+/* like _unur_error_x but used a template for more sophisticated messages.   */
+/*---------------------------------------------------------------------------*/
+
+
+#ifdef UNUR_COOKIES
+void _unur_error_cookies( const char *file, int line, unsigned observed, unsigned expected );
+/*---------------------------------------------------------------------------*/
+/* report invalid cookie                                                     */
+/*---------------------------------------------------------------------------*/
+#endif
+
+#define _unur_error(genid,errorcode,reason) \
    do { \
-      unur_errno = (errortype); \
-      _unur_stream_printf((genid),__FILE__,__LINE__,"warning: %s: %s", \
-                          unur_get_strerror(errortype), (str) ); \
+      _unur_error_x((genid),__FILE__,__LINE__,"error",(errorcode),(reason)); \
    } while (0)
 /*---------------------------------------------------------------------------*/
-#else   /* warnings disabled */
+/* call error handler in case of a (fatal) error.                            */
 /*---------------------------------------------------------------------------*/
-#define _unur_error(genid,errortype,str)      do { unur_errno = (errortype); } while(0)
-#define _unur_warning(genid,errortype,str)    do { unur_errno = (errortype); } while(0)
+
+#define _unur_warning(genid,errorcode,reason) \
+   do { \
+      _unur_error_x((genid),__FILE__,__LINE__,"warning",(errorcode),(reason)); \
+   } while (0)
 /*---------------------------------------------------------------------------*/
-#endif   /* end UNUR_WARNINGS_ON */
+/* call error handler in case of a warning.                                  */
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/

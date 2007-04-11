@@ -70,7 +70,7 @@ _unur_FunctDefinition (struct parser_data *pdata)
   /* next token must be "=" sign */
   if ( _unur_fstr_next_token(pdata,&token,&symb) != UNUR_SUCCESS ||
        strcmp(symb,"=") != 0 )
-    return _unur_fstr_error_parse(pdata,ERR_EXPECT_EQUAL); 
+    return _unur_fstr_error_parse(pdata,ERR_EXPECT_EQUAL,__LINE__); 
 
   /* right hand side: function term */
   right = _unur_Expression(pdata);
@@ -114,12 +114,12 @@ _unur_DefFunctDesignator (struct parser_data *pdata)
   /* get function identifier */
   if ( _unur_fstr_next_token(pdata,&funct,&fsymb) != UNUR_SUCCESS ||
        symbol[funct].type != S_UFUNCT )
-    return _unur_fstr_error_parse(pdata,ERR_EXPECT_FUNCT); 
+    return _unur_fstr_error_parse(pdata,ERR_EXPECT_FUNCT,__LINE__); 
 
   /* read opening parenthesis '(' */
   if ( _unur_fstr_next_token(pdata,&token,&symb) != UNUR_SUCCESS ||
        symb[0] != '(' )
-    return _unur_fstr_error_parse(pdata,ERR_EXPECT_OPEN_P); 
+    return _unur_fstr_error_parse(pdata,ERR_EXPECT_OPEN_P,__LINE__); 
 
   /* read the parameter list */
   params = _unur_DefParameterlist(pdata,&n_params);
@@ -128,7 +128,7 @@ _unur_DefFunctDesignator (struct parser_data *pdata)
   /* read closing parenthesis ')' */
   if ( _unur_fstr_next_token(pdata,&token,&symb) != UNUR_SUCCESS ||
        symb[0] != ')' )
-    return _unur_fstr_error_parse(pdata,ERR_EXPECT_CLOSE_P); 
+    return _unur_fstr_error_parse(pdata,ERR_EXPECT_CLOSE_P,__LINE__); 
 
   /* store function header in node */
   node = _unur_fstr_create_node(fsymb,0.,funct,NULL,params); 
@@ -169,7 +169,7 @@ _unur_DefParameterlist(struct parser_data *pdata, int *n_params)
   /* read user defined identifier, i.e. a variable */ 
   if ( _unur_fstr_next_token(pdata,&token,&symb) != UNUR_SUCCESS ||
        symbol[token].type != S_UIDENT )
-    return _unur_fstr_error_parse(pdata,ERR_EXPECT_VAR);
+    return _unur_fstr_error_parse(pdata,ERR_EXPECT_VAR,__LINE__);
 
   /* make node for first parameter of function and set */
   /* counter for parameters to 1                       */
@@ -186,7 +186,7 @@ _unur_DefParameterlist(struct parser_data *pdata, int *n_params)
     /* get next variable */
     if ( _unur_fstr_next_token(pdata,&token,&symb) != UNUR_SUCCESS ||
 	 symbol[token].type != S_UIDENT )
-      return _unur_fstr_error_parse(pdata,ERR_EXPECT_VAR);
+      return _unur_fstr_error_parse(pdata,ERR_EXPECT_VAR,__LINE__);
 
     /* make node for next variable (becomes right node) */
     /* and update counter for parameters                */
@@ -489,7 +489,7 @@ _unur_Bas_Exp (struct parser_data *pdata)
 
   /* get next token */
   if ( _unur_fstr_next_token(pdata,&token,&symb) != UNUR_SUCCESS)
-    return _unur_fstr_error_parse(pdata,7); 
+    return _unur_fstr_error_parse(pdata,7,__LINE__); 
 
   /* constant or and variable */
   if( symbol[token].type==S_UCONST ||
@@ -516,13 +516,13 @@ _unur_Bas_Exp (struct parser_data *pdata)
     /* next symbol must be closing parenthesis */
     if ( _unur_fstr_next_token(pdata,&token,&symb) != UNUR_SUCCESS ||
 	 symb[0] != ')' )
-      return _unur_fstr_error_parse(pdata,ERR_EXPECT_CLOSE_P);
+      return _unur_fstr_error_parse(pdata,ERR_EXPECT_CLOSE_P,__LINE__);
   }
   
   else {
     /* unkown symbol */
     --(pdata->tno);
-    return _unur_fstr_error_parse(pdata,ERR_UNKNOWN_SYMBOL);
+    return _unur_fstr_error_parse(pdata,ERR_UNKNOWN_SYMBOL,__LINE__);
   } 
 
   /* return pointer to base or exponent of an expression */
@@ -558,7 +558,7 @@ _unur_FunctDesignator (struct parser_data *pdata)
   /* get function identifier for system function */
   if ( _unur_fstr_next_token(pdata,&funct,&fsymb) != UNUR_SUCCESS ||
        symbol[funct].type != S_SFUNCT )
-    return _unur_fstr_error_parse(pdata,ERR_EXPECT_FUNCT);
+    return _unur_fstr_error_parse(pdata,ERR_EXPECT_FUNCT,__LINE__);
 
   /* get number of parameter for this function */
   n_params = symbol[funct].info;
@@ -566,7 +566,7 @@ _unur_FunctDesignator (struct parser_data *pdata)
   /* read opening parenthesis '(' */
   if ( _unur_fstr_next_token(pdata,&token,&symb) != UNUR_SUCCESS ||
        symb[0] != '(' )
-    return _unur_fstr_error_parse(pdata,ERR_EXPECT_OPEN_P);
+    return _unur_fstr_error_parse(pdata,ERR_EXPECT_OPEN_P,__LINE__);
 
   /* read the parameter list */
   params = _unur_ActualParameterlist(pdata,n_params);
@@ -575,7 +575,7 @@ _unur_FunctDesignator (struct parser_data *pdata)
   /* read closing parenthesis ')' */
   if ( _unur_fstr_next_token(pdata,&token,&symb) != UNUR_SUCCESS ||
        symb[0] != ')' )
-    return _unur_fstr_error_parse(pdata,ERR_EXPECT_CLOSE_P);
+    return _unur_fstr_error_parse(pdata,ERR_EXPECT_CLOSE_P,__LINE__);
   
   /* store function in new node */
   node = _unur_fstr_create_node(fsymb,0.,funct,NULL,params); 
@@ -625,7 +625,7 @@ _unur_ActualParameterlist (struct parser_data *pdata, int n_params)
     /* update counter for parameters */
     c_params++; 
     if (c_params > n_params)
-      return _unur_fstr_error_parse(pdata,ERR_INVALID_N_PARAMS);
+      return _unur_fstr_error_parse(pdata,ERR_INVALID_N_PARAMS,__LINE__);
 
     /* old node becomes left node of `,' node */
     left = node; 
@@ -643,7 +643,7 @@ _unur_ActualParameterlist (struct parser_data *pdata, int n_params)
 
   /* check number of parameters */
   if (c_params < n_params)
-    return _unur_fstr_error_parse(pdata,ERR_INVALID_N_PARAMS);
+    return _unur_fstr_error_parse(pdata,ERR_INVALID_N_PARAMS,__LINE__);
 
   /* return pointer to parameter list */
   return node; 
@@ -1048,40 +1048,42 @@ _unur_fstr_create_node (const char *symb, double val, int token,
 /*---------------------------------------------------------------------------*/
 
 struct ftreenode *
-_unur_fstr_error_parse ( struct parser_data *pdata, int perrno )
+_unur_fstr_error_parse ( struct parser_data *pdata, int perrno, int line )
      /*----------------------------------------------------------------------*/
      /* Print error message when parsing function string                     */
      /*                                                                      */
      /* parameters:                                                          */
      /*   pdata  ... pointer to parser object                                */
      /*   perrno ... error number                                            */
+     /*   line   ... line (to be inserted by __LINE__)                       */
      /*                                                                      */
      /* return:                                                              */
      /*   NULL                                                               */
      /*----------------------------------------------------------------------*/
 { 
   int i;
+  struct unur_string *reason;
 
   /* check arguments */
   CHECK_NULL(pdata,NULL);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,NULL);
 
-  /* set unuran error code */
-  unur_errno = UNUR_ERR_FSTR_SYNTAX;
-
-  _unur_stream_printf_simple ( "%s: error: %s\n",GENTYPE,_unur_fstr_error_code(perrno));
-
-  _unur_stream_printf_simple ( "%s: ",GENTYPE );
-  for (i=0; i<pdata->tno-1; i++)
-    _unur_stream_printf_simple ( "%s ",pdata->tpos[i]);
-
-  _unur_stream_printf_simple ( "\n%s:  -->   ",GENTYPE );
-  for (; i<pdata->n_tokens; i++)
-    _unur_stream_printf_simple ( "%s ",pdata->tpos[i]);
-
-  _unur_stream_printf_simple ( "\n%s:\n",GENTYPE );
-
   /* set parser error */
   if (!pdata->perrno) pdata->perrno = perrno;
+
+  /* create string for reason of error */
+  reason = _unur_string_new();
+  _unur_string_append( reason, "%s: ", _unur_fstr_error_code(perrno) );
+  for (i=0; i<pdata->tno-1; i++)
+    _unur_string_append( reason, "%s ", pdata->tpos[i]);
+  _unur_string_append( reason, " -->%s<--  ", pdata->tpos[i]);
+  for (i++; i<pdata->n_tokens; i++)
+    _unur_string_append( reason, "%s ",pdata->tpos[i]);
+  
+  /* report error */
+  _unur_error_x( GENTYPE, __FILE__, line, "error", UNUR_ERR_FSTR_SYNTAX,reason->text);
+
+  /* free working space */
+  _unur_string_free( reason );
 
   return NULL; 
 

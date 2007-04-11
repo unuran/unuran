@@ -340,6 +340,7 @@ static double _unur_atod ( const char *str );
 /* Convert string into its double value.                                     */
 /*---------------------------------------------------------------------------*/
 
+/*---------------------------------------------------------------------------*/
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 /* the following functions print debugging information on output stream,     */
@@ -357,40 +358,48 @@ static void _unur_str_debug_distr( int level, const char *name, double *params, 
 /*---------------------------------------------------------------------------*/
 
 static void _unur_str_debug_set( int level, const char *key, const char *type, ... );
+
 /*---------------------------------------------------------------------------*/
 /* write info about set command into logfile.                                */
 /*---------------------------------------------------------------------------*/
 
 #endif
+/*---------------------------------------------------------------------------*/
+
+
+static void _unur_str_error_unknown( const char *file, int line, const char *key, const char *type );
+/*---------------------------------------------------------------------------*/
+/* print error message: unknown keyword.                                     */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_str_error_invalid( const char *file, int line, const char *key, const char *type );
+/*---------------------------------------------------------------------------*/
+/* print error message: invalid data for keyword.                            */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_str_error_args( const char *file, int line, const char *key );
+/*---------------------------------------------------------------------------*/
+/* print error message: invalid argument string for set call.                */
+/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
-/* unknown keyword */
 #define _unur_error_unknown(key,what) \
    do { \
-     unur_errno = UNUR_ERR_STR_UNKNOWN; \
-     _unur_stream_printf ( GENTYPE,__FILE__,__LINE__, \
-			   "error: %s : unknown %s: %s", \
-			   unur_get_strerror(unur_errno), (what), (key) ); \
+     _unur_str_error_unknown( __FILE__,__LINE__, (key), (what) ); \
    } while (0)
 
 /* invalid data for key */
 #define _unur_error_invalid(key,what) \
    do { \
-     unur_errno = UNUR_ERR_STR_INVALID; \
-     _unur_stream_printf ( GENTYPE,__FILE__,__LINE__, \
-			   "error: %s: invalid data for %s %s", \
-			   unur_get_strerror(unur_errno), (what), (key) ); \
+     _unur_str_error_invalid( __FILE__,__LINE__, (key), (what) ); \
    } while (0)
 
 /* invalid argument string for set calls */
 #define _unur_error_args(key) \
    do { \
-     unur_errno = UNUR_ERR_STR_INVALID; \
-     _unur_stream_printf ( GENTYPE,__FILE__,__LINE__, \
-			   "error: %s: invalid argument string for %s", \
-			   unur_get_strerror(unur_errno), (key) ); \
+     _unur_str_error_args( __FILE__,__LINE__, (key) ); \
    } while (0)
 
 
@@ -2650,4 +2659,63 @@ _unur_str_debug_set( int level, const char *key, const char *type, ... )
 
 /*---------------------------------------------------------------------------*/
 #endif   /* end UNUR_ENABLE_LOGGING */
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_str_error_unknown( const char *file, int line, const char *key, const char *type )
+     /*----------------------------------------------------------------------*/
+     /* print error message: unknown keyword.                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   file ... file name (inserted by __FILE__)                          */
+     /*   line ... line number in source file (inserted by __LINE__)         */
+     /*   key  ... keyword                                                   */
+     /*   type ... type of keyword                                           */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_string *reason = _unur_string_new();
+  _unur_string_append( reason, "unknown %s: '%s'", type, key );
+  _unur_error_x( GENTYPE, file, line, "error", UNUR_ERR_STR_UNKNOWN,reason->text);
+  _unur_string_free( reason );
+} /* end of _unur_str_error_unknown() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_str_error_invalid( const char *file, int line, const char *key, const char *type )
+     /*----------------------------------------------------------------------*/
+     /* print error message: invalid data for keyword.                       */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   file ... file name (inserted by __FILE__)                          */
+     /*   line ... line number in source file (inserted by __LINE__)         */
+     /*   key  ... keyword                                                   */
+     /*   type ... type of keyword                                           */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_string *reason = _unur_string_new();
+  _unur_string_append( reason, "invalid data for %s '%s'", type, key );
+  _unur_error_x( GENTYPE, file, line, "error", UNUR_ERR_STR_INVALID,reason->text);
+  _unur_string_free( reason );
+} /* end of _unur_str_error_invalid() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_str_error_args( const char *file, int line, const char *key )
+     /*----------------------------------------------------------------------*/
+     /* print error message: invalid argument string for set call.           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   file ... file name (inserted by __FILE__)                          */
+     /*   line ... line number in source file (inserted by __LINE__)         */
+     /*   key  ... keyword                                                   */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_string *reason = _unur_string_new();
+  _unur_string_append( reason, "invalid argument string for '%s'", key );
+  _unur_error_x( GENTYPE, file, line, "error", UNUR_ERR_STR_INVALID,reason->text);
+  _unur_string_free( reason );
+} /* end of _unur_str_error_args() */
+
 /*---------------------------------------------------------------------------*/

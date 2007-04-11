@@ -295,7 +295,7 @@ _unur_fstr_next_symbol (struct parser_data *pdata, char *symb)
   pdata->perrno = errcode;
 
   if (errcode) {
-    _unur_fstr_error_scan (pdata,symb);
+    _unur_fstr_error_scan (pdata,symb,__LINE__);
   }
 
   return (errcode) ? S_NOSYMBOL : token;
@@ -569,7 +569,7 @@ _unur_fstr_RelationOperator (struct parser_data *pdata, char *ro)
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_fstr_error_scan (const struct parser_data *pdata, const char *symb)
+_unur_fstr_error_scan (const struct parser_data *pdata, const char *symb, int line)
      /*----------------------------------------------------------------------*/
      /* Print error message when scanning function string                    */
      /*                                                                      */
@@ -578,30 +578,30 @@ _unur_fstr_error_scan (const struct parser_data *pdata, const char *symb)
      /*   symb  ... pointer to unknown symbol                                */  
      /*----------------------------------------------------------------------*/
 {
-  char format[124];
-  int wsp;
+  struct unur_string *reason;
+  char *c;
   
   /* check arguments */
   CHECK_NULL(pdata,RETURN_VOID);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,RETURN_VOID);
 
-  /* set unuran error code */
-  unur_errno = UNUR_ERR_FSTR_SYNTAX;
+  /* create string for reason of error */
+  reason = _unur_string_new();
 
   /* print unknown symbol */
-  _unur_stream_printf_simple ( "%s: error: unknown symbol `%s'\n",GENTYPE,symb);
+  _unur_string_append( reason, "unknown symbol '%s': ", symb );
 
   /* print scanned part of function string to error stream */
-  sprintf( format, "%s: %%.%ds\n", GENTYPE,pdata->lastpos);
-  _unur_stream_printf_simple ( format,pdata->fstr);
+  for (c=pdata->fstr; c < pdata->fstr+pdata->lastpos; c++) 
+    _unur_string_append( reason, "%c", *c );
 
   /* print remaining part of function string including unknown symbol */
-  wsp = pdata->lastpos-3;
-  wsp = _unur_max(wsp,1);
-  sprintf( format, "%s: --> %%%d.%ds",GENTYPE,wsp,wsp);
-  _unur_stream_printf_simple ( format, "");
-  _unur_stream_printf_simple ( "%s\n",pdata->fstr + pdata->lastpos);
+  _unur_string_append( reason, "    %s", pdata->fstr + pdata->lastpos);
 
-  _unur_stream_printf_simple ( "%s:\n",GENTYPE );
+  /* report error */
+  _unur_error_x( GENTYPE, __FILE__, line, "error", UNUR_ERR_FSTR_SYNTAX,reason->text);
+
+  /* free working space */
+  _unur_string_free( reason );
 
 } /* end of _unur_fstr_error_scan() */
 

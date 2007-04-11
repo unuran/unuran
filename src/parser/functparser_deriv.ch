@@ -92,7 +92,7 @@ d_error (const struct ftreenode *node, int *error)
   /* check arguments */
   CHECK_NULL(node,NULL);  COOKIE_CHECK(node,CK_FSTR_TNODE,NULL);
 
-  _unur_fstr_error_deriv(node);
+  _unur_fstr_error_deriv(node,__LINE__);
   *error = TRUE;
   return NULL;
 } /* end of d_error() */
@@ -354,7 +354,7 @@ d_power (const struct ftreenode *node, int *error)
      /*                                             NULL      X              */
      /*                                                                      */
     /** TODO **/
-    _unur_fstr_error_deriv(node);
+    _unur_fstr_error_deriv(node,__LINE__);
     *error = TRUE;
     return NULL;
   }
@@ -656,7 +656,7 @@ d_abs (const struct ftreenode *node, int *error)
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_fstr_error_deriv (const struct ftreenode *node)
+_unur_fstr_error_deriv (const struct ftreenode *node, int line)
      /*----------------------------------------------------------------------*/
      /* Print error message for unknown derivative                           */
      /*                                                                      */
@@ -664,14 +664,22 @@ _unur_fstr_error_deriv (const struct ftreenode *node)
      /*   node ... pointer to node of function tree                          */
      /*----------------------------------------------------------------------*/
 {
+  struct unur_string *reason;
+
   /* check arguments */
   CHECK_NULL(node,RETURN_VOID);  COOKIE_CHECK(node,CK_FSTR_TNODE,RETURN_VOID);
 
-  /* set unuran error code */
-  unur_errno = UNUR_ERR_FSTR_DERIV;
+  /* create string for reason of error */
+  reason = _unur_string_new();
+  _unur_string_append( reason, "cannot derivate subtree at '%s'", node->symbol);
+
+  /* report error */
+  _unur_error_x( GENTYPE, __FILE__, line, "error", UNUR_ERR_FSTR_DERIV,reason->text);
+
+  /* free working space */
+  _unur_string_free( reason );
 
 #ifdef UNUR_ENABLE_LOGGING
-  _unur_stream_printf_simple ( "%s: error: cannot derivate subtree at `%s':\n",GENTYPE,node->symbol);
   _unur_fstr_debug_tree(NULL,node);
   _unur_stream_printf_simple ( "%s:\n",GENTYPE );
 #endif  

@@ -80,26 +80,6 @@
 /* UNURAN produces a lot of (more or less useful) warnings and error         */
 /* messages. The following three compiler switches controll their output.    */
 
-/* Enable warnings and error messages.                                       */
-/* #undef this macro to suppress warnings and error messages.                */
-
-#define UNUR_WARNINGS_ON  1
-
-/* Write warnings and error messages into log file.                          */
-/* It only works if additionally UNUR_ENABLE_LOGGING is defined (see above). */
-/* #undef this macro to suppress output into log file.                       */
-
-#define UNUR_ENABLE_LOGFILE  1
-
-/* Write warnings and error messages to stderr.                              */
-/* #undef this macro to suppress output on stderr.                           */
-
-/* #define UNUR_ENABLE_STDERR  1 */
-
-/* Notice that if neither UNUR_ENABLE_LOGFILE nor UNUR_ENABLE_STDERR is      */
-/* defined, then there are no warnings and error messages at all.            */
-/* However, then it is recommend _not_ to define UNUR_WARNINGS_ON, either.   */
-
 /*---------------------------------------------------------------------------*/
 /* Check for invalid NULL pointer.                                           */
 /*                                                                           */

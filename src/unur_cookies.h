@@ -183,10 +183,7 @@
 /* check magic cookies */
 #define COOKIE_CHECK(ptr,ck,rval) \
   if((ptr)->cookie!=(ck)) { \
-    _unur_stream_printf(NULL,__FILE__,__LINE__, \
-	"warning: %s (observed = %#x, expected = %#x)", \
-        unur_get_strerror(UNUR_ERR_COOKIE), \
-        (ptr)->cookie, (ck)); \
+    _unur_error_cookies(__FILE__,__LINE__,(ptr)->cookie, (ck)); \
     return rval; \
   }
 

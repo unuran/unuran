@@ -206,7 +206,7 @@ _unur_fstr_2_tree (const char *functstr, int withDefFunct)
 
   /* check for possible errors */
   if (pdata->tno < pdata->n_tokens && !pdata->perrno)
-    _unur_fstr_error_parse(pdata,ERR_UNFINISHED); 
+    _unur_fstr_error_parse(pdata,ERR_UNFINISHED,__LINE__); 
   if (pdata->perrno) {
     _unur_fstr_parser_free(pdata);
     _unur_fstr_free(root);

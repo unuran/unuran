@@ -71,22 +71,12 @@ _unur_stream_printf( const char *genid,
 
   va_start(ap, format);
 
-#ifdef UNUR_ENABLE_STDERR
-  /* write on stderr */
-  fprintf(stderr,"%s: %s:%d: ",genid,filename,line);
-  vfprintf(stderr,format,ap);
-  fprintf(stderr,"\n");
-  fflush(stderr);   /* in case of a segmentation fault */
-#endif
-
-#ifdef UNUR_ENABLE_LOGFILE
   /* write onto output stream */
   if (!unur_stream) unur_get_stream();
   fprintf(unur_stream,"%s: %s:%d: ",genid,filename,line);
   vfprintf(unur_stream,format,ap);
   fprintf(unur_stream,"\n");
   fflush(unur_stream);   /* in case of a segmentation fault */
-#endif
 
   va_end(ap);
 
@@ -110,18 +100,10 @@ _unur_stream_printf_simple( const char *format, ... )
 
   va_start(ap, format);
 
-#ifdef UNUR_ENABLE_STDERR
-  /* write on stderr */
-  vfprintf(stderr,format,ap);
-  fflush(stderr);   /* in case of a segmentation fault */
-#endif
-
-#ifdef UNUR_ENABLE_LOGFILE
   /* write onto output stream */
   if (!unur_stream) unur_get_stream();
   vfprintf(unur_stream,format,ap);
   fflush(unur_stream);   /* in case of a segmentation fault */
-#endif
 
   va_end(ap);
 
@@ -180,9 +162,11 @@ _unur_logfile_open( void )
      /*----------------------------------------------------------------------*/
 {
   static FILE* LOG = NULL;
-  time_t started;   
 
   if (LOG) return LOG;  /* log file already open */
+
+#ifdef UNUR_ENABLE_LOGGING
+  /* logging enabled: print error messages into log file */
 
 #ifdef UNUR_LOG_FILE 
   /* open log file */
@@ -192,20 +176,31 @@ _unur_logfile_open( void )
   LOG = stdout;
 #endif
 
-#ifdef UNUR_ENABLE_STDERR
-  if (!LOG) fprintf(stderr,"warning: cannot open logfile %s\n",logfilename);
-  fflush(stderr);   /* in case of a segmentation fault */
-#endif
+  if (!LOG) {
+    fprintf(stderr,"Warning: cannot open logfile %s !\n",UNUR_LOG_FILE);
+    fprintf(stderr,"Use STDERR instead !\n");
+    LOG = stderr;
+  }
 
   /* write header into log file */
   fprintf(LOG,"\nUNURAN - Universal Non-Uniform RANdom number generator\n\n");
   fprintf(LOG,"Version: %s\n",PACKAGE_VERSION);
 
   /* time when created */
-  if (time( &started ) != -1)
-    fprintf(LOG,"%s",ctime(&started));
+  {
+    time_t started;   
+    if (time( &started ) != -1)
+      fprintf(LOG,"%s",ctime(&started));
+  }
 
   fprintf(LOG,"\n====================================================\n\n");
+
+#else
+  /* logging disabled: print error messages into stderr */
+
+  LOG = stderr;
+
+#endif
 
   /* return file handler */
   return LOG;

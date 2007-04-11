@@ -38,9 +38,116 @@
 #include <stdarg.h>
 
 /*---------------------------------------------------------------------------*/
+/* prototypes for unuran error handlers                                      */
 
-int unur_errno = UNUR_SUCCESS;    /* global variable used to record errors   */
+void _unur_error_handler_default( const char *objid, const char *file, int line, 
+				  const char *errortype, int errorcode, const char *reason );
 
+void _unur_error_handler_off( const char *objid, const char *file, int line, 
+			      const char *errortype, int errorcode, const char *reason );
+
+/*---------------------------------------------------------------------------*/
+/* global variables                                                          */
+
+/* global variable used to record errors   */
+int unur_errno = UNUR_SUCCESS;
+
+/* error handler used to report errors in UNURAN */
+static unur_error_handler_t *_unur_error_handler = _unur_error_handler_default;
+
+/*---------------------------------------------------------------------------*/
+
+void 
+_unur_error_x( const char *objid, const char *file, int line, 
+	       const char *errortype, int errorcode, const char *reason )
+     /*----------------------------------------------------------------------*/
+     /* error handler                                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   objid     ... id/type of object                                    */
+     /*   file      ... file name (inserted by __FILE__)                     */
+     /*   line      ... line number in source file (inserted by __LINE__)    */ 
+     /*   errortype ... "warning" or "error"                                 */
+     /*   errorcode ... UNURAN error code                                    */
+     /*   reason    ... (very) short description of reason for error         */
+     /*----------------------------------------------------------------------*/
+{
+  unur_errno = errorcode;
+  _unur_error_handler(objid, file, line, errortype, errorcode, reason);
+} /* end of _unur_error_x() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_error_handler_default( const char *objid, const char *file, int line, 
+			     const char *errortype, int errorcode, const char *reason )
+     /*----------------------------------------------------------------------*/
+     /* default error handler                                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   objid     ... id/type of object                                    */
+     /*   file      ... file name (inserted by __FILE__)                     */
+     /*   line      ... line number in source file (inserted by __LINE__)    */ 
+     /*   errortype ... "warning" or "error"                                 */
+     /*   errorcode ... UNURAN error code                                    */
+     /*   reason    ... (very) short description of reason for error         */
+     /*----------------------------------------------------------------------*/
+{
+  FILE *log = unur_get_stream();
+
+  /* generator identifier known ? */
+  if (!objid) objid = "UNURAN";
+
+  fprintf(log,"%s: [%s] %s:%d - %s:\n", objid, errortype, file, line,
+	  unur_get_strerror(errorcode));
+  if (reason && strlen(reason))
+    fprintf(log,"%s: ..>  %s\n", objid, reason);
+  fflush(log);   /* in case of a segmentation fault */
+
+} /* end of _unur_error_handler_default() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_error_handler_off( const char *objid, const char *file, int line, 
+			 const char *errortype, int errorcode, const char *reason )
+     /*----------------------------------------------------------------------*/
+     /* disable error handler (except for logging)                           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   objid     ... id/type of object                                    */
+     /*   file      ... file name (inserted by __FILE__)                     */
+     /*   line      ... line number in source file (inserted by __LINE__)    */ 
+     /*   errortype ... "warning" or "error"                                 */
+     /*   errorcode ... UNURAN error code                                    */
+     /*   reason    ... (very) short description of reason for error         */
+     /*----------------------------------------------------------------------*/
+{
+  return;
+} /* end of _unur_error_handler_off() */
+
+/*---------------------------------------------------------------------------*/
+#ifdef UNUR_COOKIES
+
+void
+_unur_error_cookies( const char *file, int line, unsigned observed, unsigned expected )
+     /*----------------------------------------------------------------------*/
+     /* print error message: invalid cookie detected                         */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   file      ... file name (inserted by __FILE__)                     */
+     /*   line      ... line number in source file (inserted by __LINE__)    */
+     /*   observed  ... observed cookie                                      */
+     /*   expected  ... expected cookie                                      */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_string *reason = _unur_string_new();
+  _unur_string_append( reason, "observed = %#x, expected = %#x", observed, expected );
+  _unur_error_x( "COOKIE", file, line, "error", UNUR_ERR_COOKIE, reason->text);
+  _unur_string_free( reason );
+} /* end of _unur_error_cookies() */
+
+#endif
 /*---------------------------------------------------------------------------*/
 
 const char *

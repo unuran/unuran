@@ -369,7 +369,6 @@ extern int unur_errno;
 /* =END */
 
 /* =EON */
-  
 
 /*---------------------------------------------------------------------------*/
 
@@ -396,8 +395,6 @@ extern int unur_errno;
       generator objects and for writing debugging information.
       If you want to use this output stream for your own programs use 
       unur_get_stream() to get its file handler.
-      This stream is enabled by the compiler switch
-      @code{UNUR_ENABLE_LOGFILE} in @file{unuran_config.h}. 
       
       All warnings, error messages and all debugging information
       are written onto the same output stream.

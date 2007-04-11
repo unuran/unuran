@@ -693,7 +693,7 @@ _unur_hrd_debug_init( const struct unur_gen *gen )
 
   fprintf(log,"%s:\n",gen->genid);
 
-  fflush(stdout);
+  fflush(log);
 
 } /* end of _unur_hrd_debug_init() */
 

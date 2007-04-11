@@ -1765,7 +1765,7 @@ _unur_hinv_debug_init( const struct unur_gen *gen, int ok )
   fprintf(log,"%s: initialization %s\n",gen->genid,((ok)?"successful":"failed")); 
   fprintf(log,"%s:\n",gen->genid);
 
-  fflush(stdout);
+  fflush(log);
 
 } /* end of _unur_hinv_debug_init() */
 

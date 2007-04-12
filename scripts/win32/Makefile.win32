@@ -2,12 +2,12 @@
 # --- Compiler and linker options -------------------------------------------
 
 # Compiler flags
-CFLAGS=-O2 -W3 -nologo -DHAVE_CONFIG_H -D_CRT_SECURE_NO_DEPRECATE \
+CFLAGS=-O1 -W3 -nologo -DHAVE_CONFIG_H -D_CRT_SECURE_NO_DEPRECATE \
   -I./ -I./src/ -I./src/tests -MD
 CTESTFLAGS=-O2 -W3 -nologo -I./ -I./src/ -I./src/tests -MD
 
 # Linker flags
-LDFLAGS=-nologo -incremental:no -machine:IX86 
+LINKFLAGS=-nologo -incremental:no -machine:IX86 
 
 
 # --- Definitions -----------------------------------------------------------
@@ -73,7 +73,7 @@ all: $(UNURAN_DLL)
 
 # Create DLL
 $(UNURAN_DLL): $(FPCONST_H) $(UNURAN_OBJ) $(UNURAN_DEF)
-	link $(LDFLAGS) -DLL -out:$(UNURAN_DLL) \
+	link $(LINKFLAGS) -DLL -out:$(UNURAN_DLL) \
 		$(UNURAN_OBJ) -def:$(UNURAN_DEF)
 
 $(UNURAN_DEF): $(DEF_H)
@@ -87,7 +87,7 @@ $(FPCONST_H): $(SCRIPTS_DIR)/compute_machine_constants.exe
 	$(SCRIPTS_DIR)/compute_machine_constants.exe > $(FPCONST_H)
 
 $(SCRIPTS_DIR)/compute_machine_constants.exe: $(SCRIPTS_DIR)/compute_machine_constants.obj 
-	$(CC) -Fe$(SCRIPTS_DIR)/compute_machine_constants.exe \
+	$(LD) -nologo -Fe$(SCRIPTS_DIR)/compute_machine_constants.exe \
 		$(SCRIPTS_DIR)/compute_machine_constants.obj
 
 
@@ -99,7 +99,7 @@ examples: $(EXAMPLES_EXE)
 	done
 	
 $(EXAMPLES_EXE): $(EXAMPLES_OBJ)
-	$(CC) -Fe$@ $(@:.exe=.obj) $(UNURAN_LIB) 
+	$(LD) -nologo -O2 -W3 -Fe$@ $(@:.exe=.obj) $(UNURAN_LIB) 
 
 $(EXAMPLES_OBJ): $(EXAMPLES_SRC)
 	$(CC) $(CFLAGS) -Fo$@ -c $(@:.obj=.c) 
@@ -116,8 +116,7 @@ $(TESTS_SRC): $(TESTS_CONF)
 	$(TESTS_DIR)/make_test_files.pl $(TOP_SRCDIR) $(@:.c=.conf) > $@ 
 
 $(TESTS_EXE): $(TESTS_OBJ) $(UNURANTEST_OBJ) 
-	$(CC) -Fe$@ $(@:.exe=.obj) $(UNURANTEST_OBJ) $(UNURAN_LIB) 
-#	link $(LDFLAGS) -out:$@ $(@:.exe=.obj) $(UNURANTEST_OBJ) $(UNURAN_LIB) 
+	$(LD) -nologo -Fe$@ $(@:.exe=.obj) $(UNURANTEST_OBJ) $(UNURAN_LIB) 
 
 $(TESTS_OBJ): $(TESTS_SRC)
 	$(CC) $(CFLAGS) -Fo$@ -c $(@:.obj=.c) 
@@ -130,8 +129,9 @@ clean:
 	rm -f $(SCRIPTS_DIR)/compute_machine_constants.obj
 	rm -f $(EXAMPLES_OBJ) $(EXAMPLES_EXE)
 	rm -f $(TESTS_SRC) $(TESTS_OBJ) $(TESTS_EXE)
+	rm -f $(UNURANTEST_OBJ)
 	rm -f t_*.log unuran.log
-	find . -type f -name "*.manifest" -exec rm -v '{}' \;
+	rm -f `find . -type f -name "*.manifest"`
 
 
 .PHONY: check clean examples

@@ -41,10 +41,10 @@
 /* prototypes for unuran error handlers                                      */
 
 static void _unur_error_handler_default( const char *objid, const char *file, int line, 
-				  const char *errortype, int errorcode, const char *reason );
+					 const char *errortype, int errorcode, const char *reason );
 
 static void _unur_error_handler_off( const char *objid, const char *file, int line, 
-			      const char *errortype, int errorcode, const char *reason );
+				     const char *errortype, int errorcode, const char *reason );
 
 /*---------------------------------------------------------------------------*/
 /* global variables                                                          */
@@ -109,8 +109,12 @@ _unur_error_handler_default( const char *objid, const char *file, int line,
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_error_handler_off( const char *objid, const char *file, int line, 
-			 const char *errortype, int errorcode, const char *reason )
+_unur_error_handler_off( const char *objid ATTRIBUTE__UNUSED, 
+			 const char *file ATTRIBUTE__UNUSED,
+			 int line ATTRIBUTE__UNUSED, 
+			 const char *errortype ATTRIBUTE__UNUSED,
+			 int errorcode ATTRIBUTE__UNUSED,
+			 const char *reason ATTRIBUTE__UNUSED )
      /*----------------------------------------------------------------------*/
      /* disable error handler (except for logging)                           */
      /*                                                                      */

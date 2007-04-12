@@ -40,10 +40,10 @@
 /*---------------------------------------------------------------------------*/
 /* prototypes for unuran error handlers                                      */
 
-void _unur_error_handler_default( const char *objid, const char *file, int line, 
+static void _unur_error_handler_default( const char *objid, const char *file, int line, 
 				  const char *errortype, int errorcode, const char *reason );
 
-void _unur_error_handler_off( const char *objid, const char *file, int line, 
+static void _unur_error_handler_off( const char *objid, const char *file, int line, 
 			      const char *errortype, int errorcode, const char *reason );
 
 /*---------------------------------------------------------------------------*/

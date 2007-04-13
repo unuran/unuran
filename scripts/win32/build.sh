@@ -88,8 +88,12 @@ fi
 # --- Prepare UNU.RAN -------------------------------------------------------
 
 # create 'config.h' and Makefiles using autotools
-if [[ !( -f ./config.h && -f ./Makefile) ]]; then
+if [[ !( -f ./configure ) ]]; then
 	./autogen.sh --disable-deprecated;
+fi
+
+if [[ !( -f ./config.h && -f ./Makefile) ]]; then
+	./configure --disable-deprecated;
 fi
 
 # create directory for windows files

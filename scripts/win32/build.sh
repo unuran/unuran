@@ -74,13 +74,13 @@ fi
 # test whether config.h was created using the MSVC compiler
 if [[ -f ./config.h && -f ./Makefile && -z `grep "CC = cl" ./Makefile` ]]; then
 	echo "config.h created with wrong CC; deleting ..."
-	./hmake maintainer-clean
+	make maintainer-clean
 fi
 
 # --- Clear working directory -----------------------------------------------
 
 if [[ "${clean}" ]]; then
-	./hmake -f scripts/win32/Makefile.win32 clean;
+	make -f scripts/win32/Makefile.win32 clean;
 	echo "working space cleared";
 	exit 0;
 fi
@@ -101,26 +101,26 @@ test -d "${WIN_DIR}" && rm -rf "${WIN_DIR}"
 mkdir "${WIN_DIR}"
 
 # create all required UNURAN header files 
-(cd src/parser; ../../hmake stringparser_lists.ch)
-(cd src; ../hmake unuran.h; cp -v unuran.h ../${WIN_DIR})
+(cd src/parser; make stringparser_lists.ch)
+(cd src; make unuran.h; cp -v unuran.h ../${WIN_DIR})
 
 # create doc
 if [[ "${doc}" ]]; then
-	(cd doc; ../hmake unuran.pdf; cp -v unuran.pdf ../${WIN_DIR});
+	(cd doc; make unuran.pdf; cp -v unuran.pdf ../${WIN_DIR});
 fi
 
 # --- Create DLL ------------------------------------------------------------
 
-./hmake -f scripts/win32/Makefile.win32
+make -f scripts/win32/Makefile.win32
 
 # --- Compile, link and run all examples and test files
 
 if [[ "${examples}" ]]; then
-	./hmake -f scripts/win32/Makefile.win32 examples;
+	make -f scripts/win32/Makefile.win32 examples;
 fi
 
 if [[ ${check} ]]; then
-	./hmake -f scripts/win32/Makefile.win32 check;
+	make -f scripts/win32/Makefile.win32 check;
 fi
 
 # --- Done ------------------------------------------------------------------

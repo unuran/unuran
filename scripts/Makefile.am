@@ -8,7 +8,11 @@ EXTRA_DIST = \
  merge_h.pl \
  read_PDF.pl \
  remove_comments.pl \
- run_valgrind.sh
+ run_valgrind.sh \
+\
+ win32/Makefile.win32 \
+ win32/build.sh \
+ win32/make_dll_def.pl 
 
 noinst_HEADERS = \
   $(top_srcdir)/src/utils/unur_fp_const_source.h

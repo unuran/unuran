@@ -142,7 +142,7 @@ AS_IF([test "x$enable_deprecated" = xyes],
 dnl UNU.RAN has additional checks against invalid NULL pointers or 
 dnl pointers to wrong structures. For the latter cookies are inserted
 dnl into structures and checked whenever such structure is accessed.
-dnl Both checks can be enabled by the --enable-debug-struct flag.
+dnl Both checks can be enabled by the '--enable-debug-struct' flag.
 dnl Default is disabled.
 AC_ARG_ENABLE(debug-struct,
 	[AS_HELP_STRING([--enable-debug-struct],
@@ -154,6 +154,21 @@ AS_IF([test "x$enable_debug_struct" = xyes],
 	           [Define to 1 if you want to perform additional checks against an invalid NULL pointer])
 	 AC_DEFINE([UNUR_COOKIES], [1], 
 	           [Define to 1 if you want to use magic cookies to validate type of a pointer])], 
+	[])
+
+dnl UNU.RAN allows to write information about distribution and generator objects
+dnl into a logfile. When enabled all warnings and error messages are also 
+dnl written in this logfile instead on stderr.
+dnl The default name of the logfine is set in 'src/unuran_config.h'.
+dnl The logfile is enabled by the '--enable-logfile' flag.
+AC_ARG_ENABLE(logfile,
+	[AS_HELP_STRING([--enable-logfile],
+		[Debug: print warings, error messages and informations about generator into logfile @<:@default=no@:>@])],
+	[],
+	[enable_logfile=no])
+AS_IF([test "x$enable_logfile" = xyes],
+	[AC_DEFINE([UNUR_ENABLE_LOGGING], [1], 
+	           [Define to 1 if you want to use a logfile for warnings, error messages and information about UNU.RAN])], 
 	[])
 
 dnl Some tests compare the return values of PDFs, CDFs and of

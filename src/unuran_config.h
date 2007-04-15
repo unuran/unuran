@@ -90,7 +90,7 @@
 /* However, checking against an invalid NULL pointer can be switched on      */
 /* for each pointer that occurs by defining  UNUR_ENABLE_CHECKNULL.          */
 
-#define UNUR_ENABLE_CHECKNULL 1
+/* #define FORREMOVAL_UNUR_ENABLE_CHECKNULL 1 */
 
 /*---------------------------------------------------------------------------*/
 /* Debugging tools.                                                          */
@@ -98,7 +98,7 @@
 /* changes are made in the library.)                                         */
 
 /* use magic cookies to validate type of pointer */
-#define UNUR_COOKIES  1
+/* #define FORREMOVAL_UNUR_COOKIES  1 */
 
 
 /*****************************************************************************

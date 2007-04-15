@@ -76,7 +76,7 @@ cd $ORIGDIR
 
 # Run ./configure script
 echo; echo "Running configure ..."
-$srcdir/configure --enable-maintainer-mode --enable-deprecated "$@"
+$srcdir/configure --enable-maintainer-mode --enable-deprecated --enable-debug-struct "$@"
 
 # End
 echo 

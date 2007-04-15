@@ -65,8 +65,9 @@
 /*---------------------------------------------------------------------------*/
 
 #include <unuran.h>
+#include <config.h>
 #include <unuran_config.h>
-#include <distr/distr_struct.h> 
+#include <distr/distr_struct.h>
 #include <utils/matrix_source.h> 
 #include <utils/unur_fp_source.h>
 #include <utils/unur_math_source.h>

@@ -127,7 +127,7 @@ AX_IEEE_COMP
 dnl Some routines are deprecated.
 dnl Compiling and linking these into the library can be controlled
 dnl by a configure flag. 
-dnl default is disabled.
+dnl Default is disabled.
 AC_ARG_ENABLE(deprecated,
 	[AS_HELP_STRING([--enable-deprecated],
 		[enable support for deprecated UNURAN routines @<:@default=no@:>@])],
@@ -137,7 +137,24 @@ AM_CONDITIONAL(ENABLE_DEPRECATED, test x$enable_deprecated = xyes)
 AS_IF([test "x$enable_deprecated" = xyes],
 	[AC_DEFINE([USE_DEPRECATED_CODE], [1], 
 	           [Define to 1 if you want to use deprecated code.])], 
-       [])
+	[])
+
+dnl UNU.RAN has additional checks against invalid NULL pointers or 
+dnl pointers to wrong structures. For the latter cookies are inserted
+dnl into structures and checked whenever such structure is accessed.
+dnl Both checks can be enabled by the --enable-debug-struct flag.
+dnl Default is disabled.
+AC_ARG_ENABLE(debug-struct,
+	[AS_HELP_STRING([--enable-debug-struct],
+		[Debug: check validity of pointers to structures @<:@default=no@:>@])],
+	[],
+	[enable_debug_struct=no])
+AS_IF([test "x$enable_debug_struct" = xyes],
+	[AC_DEFINE([UNUR_ENABLE_CHECKNULL], [1], 
+	           [Define to 1 if you want to perform additional checks against an invalid NULL pointer])
+	 AC_DEFINE([UNUR_COOKIES], [1], 
+	           [Define to 1 if you want to use magic cookies to validate type of a pointer])], 
+	[])
 
 dnl Some tests compare the return values of PDFs, CDFs and of
 dnl the function parser with the output of corresponding
@@ -220,6 +237,7 @@ AC_MSG_RESULT([
 *
 *  Source directory:          ${srcdir}
 *  Installation directory:    ${prefix}
+*  C Compiler:                ${CC}
 *
 *  Use deprecated code:       ${enable_deprecated}
 *

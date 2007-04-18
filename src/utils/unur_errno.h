@@ -36,17 +36,13 @@
 #define UNUR_ERRNO_H_SEEN
 /*---------------------------------------------------------------------------*/
 
-#include <stdio.h>
-
-/*---------------------------------------------------------------------------*/
-
 /* 
    =NODE  Errno  Error handling
 
    =UP TOP [60]
 
    =DESCRIPTION
-      This chapter describes the way that UNURAN routines report
+      This chapter describes the way how UNU.RAN routines report
       errors. 
 
    =EON
@@ -58,7 +54,7 @@
    =UP Errno
 
    =DESCRIPTION
-      UNURAN routines report an error whenever they cannot perform the
+      UNU.RAN routines report an error whenever they cannot perform the
       task requested of them. 
       For example, apply transformed density rejection to a distribution
       that violates the T-concavity condition, or trying to set a
@@ -83,10 +79,7 @@
       return a NULL pointer in case of error.
       (Thus you should always check the pointer to avoid possible
       segmentation faults. Sampling routines usually do not check the
-      given pointer to the generator object. However you can switch on
-      checking for NULL pointer defining the compiler switch 
-      @code{UNUR_ENABLE_CHECKNULL} in @file{unuran_config.h} to avoid 
-      nasty segmentation faults.)
+      given pointer to the generator object.)
       
       The library distinguishes between two major classes of error:
       
@@ -112,7 +105,7 @@
       It is obvious from the example that this distinction between errors
       and warning is rather crude and sometimes arbitrary. 
       
-      UNURAN routines use the global variable @code{unur_errno} to
+      UNU.RAN routines use the global variable @code{unur_errno} to
       report errors, completely analogously to C library's
       @code{errno}. (However this approach is not thread-safe. There can 
       be only one instance of a global variable per program. Different
@@ -382,79 +375,17 @@ void unur_reset_errno ( void );
    (i.e., no errors occured).
 */
 
-/* =END */
-
-/* =EON */
-
-/*---------------------------------------------------------------------------*/
-
-/* 
-   =NODE  Output_streams Output streams
-
-   =UP Errno
-
-   =DESCRIPTION
-      @cindex Error handlers
-      @cindex Output streams
-
-      In addition to reporting error via the @code{unur_errno}
-      mechanism UNURAN writes a short error diagnostics to an output
-      stream, usually an open file handler. This stream can be set at
-      runtime by the unur_set_stream() call. If no such stream is
-      given by the user a default stream is used by the library: all
-      warnings and error messages are written into the file
-      @file{unuran.log} in the current working directory. The name of
-      this log file is defined by the macro @code{UNUR_LOG_FILE} in 
-      @file{unuran_config.h}. 
-      
-      This output stream is also used to log descriptions of built
-      generator objects and for writing debugging information.
-      If you want to use this output stream for your own programs use 
-      unur_get_stream() to get its file handler.
-      
-      All warnings, error messages and all debugging information
-      are written onto the same output stream.
-      To destinguish between the messages for different generators 
-      every generator object has its own identifier which is 
-      composed by the generator type, followed by a dot and three digits.
-      (If there are more than 999 generators then the identifiers are
-      not unique.)
-
-   =END      
-*/
-
-/*---------------------------------------------------------------------------*/
-/* warnings and error messages for given error number                        */
-
-/* =ROUTINES */
-
-
 const char *unur_get_strerror ( const int unur_errno );
 /*
   Get a short description for error code value.
 */
 
-/*---------------------------------------------------------------------------*/
-/* manipulate output stream                                                  */
-
-FILE *unur_set_stream( FILE *new_stream );
-/*
-  Set new file handle for output stream; the old file handle is
-  returned. The NULL pointer is not allowed. (If you want to disable
-  logging of debugging information use 
-  unur_set_default_debug(UNUR_DEBUG_OFF) instead.)
-
-  The output stream is used to report errors and warning, and
-  debugging information. It is also used to log descriptions of
-  build generator objects (when this feature is switched on; see also ?).
-*/
-
-FILE *unur_get_stream( void );
-/*
-  Get the file handle for the current output stream.
-*/
 
 /* =END */
+
+/* =EON */
+
+/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 #endif  /* UNUR_ERRNO_H_SEEN */

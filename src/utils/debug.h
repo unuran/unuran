@@ -42,19 +42,25 @@
    =UP TOP [70]
 
    =DESCRIPTION
-      The UNURAN library has several debugging levels which can be
-      switched on/off by debugging flags. This debugging feature can be
-      enabled by defining the macro @code{UNUR_ENABLE_LOGGING} in 
-      @file{unuran_config.h}.
-      The debugging levels range from print a short description of the build
-      generator object to a detailed description of hat functions and
-      tracing the sampling routines. The output is print onto the output
-      stream obtained by unur_get_stream() (see also ?).
-      These flags can be set or changed by the respective calls
-      unur_set_debug() and unur_chg_debug() independently for each generator. 
-      The default debugging flags are given by the macro
+      The UNU.RAN library has several debugging levels which
+      can be switched on/off by debugging flags. This debugging
+      feature must be enabled when building the library using the 
+      @code{--enable-logfile} configure flag.
+
+      The debugging levels range from print a short description of the
+      created generator object to a detailed description of hat
+      functions and tracing the sampling routines. The output is print
+      onto the debugging output stream 
+      (@pxref{Output_streams,Output streams}).
+
+      The debugging flags can be set or changed by the respective calls
+      unur_set_debug() and unur_chg_debug() independently for each
+      generator.
+
+      By default the debugging flag @code{UNUR_DEBUG_INIT} (see
+      below). This default flags is set by the macro
       @code{UNUR_DEBUGFLAG_DEFAULT} in @file{unuran_config.h}.
-      This default can be overwritten at run time by a
+      It can be overwritten at run time by a
       unur_set_default_debug() call.
       
       Off course these debugging flags
@@ -62,7 +68,6 @@
       debugging the library itself, a description of the flags are given
       in the corresponding source files of the method.
       Nevertheless, the following flags can be used with all methods.
-
 
       Common debug flags:
 
@@ -87,20 +92,20 @@
       trace sampling   
       @end ftable
 
-
       Almost all routines check a given pointer before they read from or write
       to the given address. This does not hold for time-critical routines
       like all sampling routines. Then you are responsible for checking a
       pointer that is returned from a unur_init() call.
-      However it is possible to turn on checking for invalid NULL pointers
-      even in such time-critical routines by defining
-      @code{UNUR_ENABLE_CHECKNULL} in @file{unuran_config.h}.
+
+      However, it is possible to turn on checking for invalid NULL pointers
+      even in such time-critical routines by building the library
+      using the @code{--enable-debug-struct} configure flag.
 
       Another debugging tool used in the library are magic cookies that
       validate a given pointer. It produces an error whenever a given
       pointer points to an object that is invalid in the context.
-      The usage of magic cookies can be switched on by defining
-      @code{UNUR_COOKIES} in @file{unuran_config.h}.
+      The usage of magic cookies is switched on the same 
+      @code{--enable-debug-struct} configure flag.
 
    =END
 */

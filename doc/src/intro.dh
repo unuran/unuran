@@ -10,11 +10,11 @@
 
 =DESCRIPTION
    We designed this document in a way such that one can
-   use UNURAN with reading as little as necessary.
+   use UNU.RAN with reading as little as necessary.
    Read @ref{Installation} for the instructions to
    install the library.
-   @ref{Concepts,,Concepts of UNURAN},
-   discribes the basics of UNURAN.
+   @ref{Concepts,,Concepts of UNU.RAN},
+   discribes the basics of UNU.RAN.
    It also has a short guideline for choosing an appropriate method.
    In @ref{Examples} examples are given that can be copied and modified.
    They also can be found in the directory @file{examples} in the
@@ -45,7 +45,7 @@
 =UP Intro [30]
 
 =DESCRIPTION
-   UNURAN was developed on an Intel architecture under Linux with
+   UNU.RAN was developed on an Intel architecture under Linux with
    the GNU C compiler but should compile and run on any computing
    environment. It requries an ANSI compliant C compiler.
 
@@ -54,17 +54,17 @@
 
    @subsubheading Uniform random number generator
 
-   UNURAN can be used with any uniform random number generator but (at the 
+   UNU.RAN can be used with any uniform random number generator but (at the 
    moment) some features work best with Pierre L'Ecuyer's RngStreams library
    (see @url{http://statistik.wu-wien.ac.at/software/RngStreams/} for a 
    description and downloading.
-   For details on using uniform random number in UNURAN
+   For details on using uniform random number in UNU.RAN
    see @ref{URNG,,Using uniform random number generators}.
 
    Install the requires libraries first.
 
 
-   @subsubheading UNURAN
+   @subsubheading UNU.RAN
 
    @enumerate 
 
@@ -177,7 +177,7 @@
 
    @subsubheading Upgrading
 
-   With UNURAN version 0.8.0 the interface for changing underlying
+   With UNU.RAN version 0.8.0 the interface for changing underlying
    distributions and running a reinitialization routine has been 
    simplified. The old routines can be compiled into the library using
    the following configure flag:
@@ -212,7 +212,7 @@
    working ANSI C compiler.
 
    The library does not rely on any non-ANSI extensions in the
-   interface it exports to the user.  Programs you write using UNURAN
+   interface it exports to the user.  Programs you write using UNU.RAN
    can be ANSI compliant.  Extensions which can be used in a way
    compatible with pure ANSI C are supported, however, via conditional
    compilation.	 This allows the library to take advantage of compiler
@@ -225,7 +225,7 @@
 
    @subsubheading Compiling and Linking
 
-   If you want to use the library you must include the UNURAN header
+   If you want to use the library you must include the UNU.RAN header
    file
    @smallexample
    #include <unuran.h>
@@ -256,7 +256,7 @@
    @noindent
    This results in an object file @file{app.o}.	 The default include
    path for @code{gcc} searches @file{/usr/local/include}
-   automatically so the @code{-I} option can be omitted when UNURAN is
+   automatically so the @code{-I} option can be omitted when UNU.RAN is
    installed in its default location.
 
    The library is installed as a single file, @file{libunuran.a}.  A
@@ -301,11 +301,11 @@
 
 /*---------------------------------------------------------------------------*/
 
-=NODE  Concepts Concepts of UNURAN
+=NODE  Concepts Concepts of UNU.RAN
 =UP Intro [50]
 
 =DESCRIPTION
-   UNURAN is a C library for generating non-uniformly distributed
+   UNU.RAN is a C library for generating non-uniformly distributed
    random variates. Its emphasis is on the generation of non-standard
    distribution and on streams of random variates of special purposes.
    It is designed to provide a consistent tool to 
@@ -313,7 +313,7 @@
    Since there is no universal method that fits for all situations,
    various methods for sampling are implemented.
 
-   UNURAN solves this complex task by means of an object oriented
+   UNU.RAN solves this complex task by means of an object oriented
    programming interface. Three basic objects are used:
 
    @itemize @bullet
@@ -368,7 +368,7 @@
    
    All information about a distribution are stored in objects
    (structures) of type @code{UNUR_DISTR}.
-   UNURAN has five different types of distribution objects:
+   UNU.RAN has five different types of distribution objects:
 
    @table @code
    @item cont
@@ -409,7 +409,7 @@
    This command stores a PDF named @code{mypdf} in the distribution
    object @code{distr} which must have the type @code{cont}.
 
-   Of course UNURAN provides an easier way to use standard distributions.
+   Of course UNU.RAN provides an easier way to use standard distributions.
    Instead of using @command{unur_distr_<type>_new} calls and fuctions
    @command{unur_distr_<type>_set_<@dots{}>} for setting data,
    objects for standard distribution can be created by a single call.
@@ -456,7 +456,7 @@
 
    @sp 2
 
-   Because of tremendous variety of possible problems, UNURAN provides many
+   Because of tremendous variety of possible problems, UNU.RAN provides many
    methods. All information for creating a generator object has to be
    collected in a parameter object first.
    For example, if the task is to sample from a continuous distribution
@@ -594,7 +594,7 @@
 =UP  Intro [60]
 
 =DESCRIPTION
-   If you have any problems with UNURAN, suggestions how to improve
+   If you have any problems with UNU.RAN, suggestions how to improve
    the library, or find a bug, please contact us via email
    @email{unuran@@statistik.wu-wien.ac.at}.
 

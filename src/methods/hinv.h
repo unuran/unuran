@@ -136,7 +136,7 @@
       a unur_hinv_set_cpoints() call are ignored when unur_reinit() is
       called.
       It is important to note that for a distribution from the 
-      UNURAN library of standard distributions
+      UNU.RAN library of standard distributions
       (@pxref{Stddist,,Standard distributions})
       the normalization constant has to be updated using the 
       unur_distr_cont_upd_pdfarea() call whenever its parameters have been

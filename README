@@ -1,7 +1,7 @@
 
  *****************************************************************************
  *                                                                           *
- *          UNURAN -- Universal Non-Uniform Random number generator          *
+ *          UNU.RAN -- Universal Non-Uniform Random number generator         *
  *                                                                           *
  *****************************************************************************
 
@@ -33,7 +33,7 @@ random variate generation. The sample program can then generate
 variates from the desired distribution.
 
 The main part 
-   of UNURAN are different universal algorithms (called methods).
+   of UNU.RAN are different universal algorithms (called methods).
    There are:
 
 	 7 methods for continuous univariate distributions
@@ -49,14 +49,14 @@ The main part
    fast sampling).
 
 A second important part
-   of UNURAN is the distribution module containing all necessary
+   of UNU.RAN is the distribution module containing all necessary
    functions for many continuous and discrete univariate standard
-   distributions. Thus UNURAN can be used  without extra coding to
+   distributions. Thus UNU.RAN can be used  without extra coding to
    obtain very fast generators for the best known standard
    distributions.
 
 
-UNURAN is coded in ANSI C but uses an object oriented programming
+UNU.RAN is coded in ANSI C but uses an object oriented programming
 interface. There are three objects:
 
    distribution objects
@@ -70,7 +70,7 @@ interface. There are three objects:
 
 
 Of course a uniform random number generator is necessary to use
-UNURAN. We provide an interface to use the PRNG uniform package from
+UNU.RAN. We provide an interface to use the PRNG uniform package from
 the pLab team from the University of Salzburg (Austria),
 available at http://random.mat.ac.at/ or from
 http://statistik.wu-wien.ac.at/prng/.
@@ -82,17 +82,17 @@ generator.
 ADVANTAGES OF UNUNRAN
 ---------------------------------------------------------
 
-Why can it be worth the time to download UNURAN and to understand the
+Why can it be worth the time to download UNU.RAN and to understand the
 concept of its interface? Isn't it much faster to implement a simple
 standard method for the distribution I am interested in?
 
 - The first and main advantage lies in the modelling flexibility you
-  gain for your simulation. Once you have installed UNURAN you can
+  gain for your simulation. Once you have installed UNU.RAN you can
   sample from practically all uni-modal (and other) distributions
   without coding more than the density functions. For a big number of
   standard distributions (and truncated versions of these standard
   distributions) you need not even code the densities as these are
-  already included in UNURAN.
+  already included in UNU.RAN.
 
 - It is possible to sample from non-standard distribution. In fact
   only a pointer to a function that returns e.g. the density at a

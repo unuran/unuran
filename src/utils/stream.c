@@ -159,7 +159,7 @@ unur_get_stream( void )
 
 /*---------------------------------------------------------------------------*/
 
-static FILE *
+FILE *
 _unur_logfile_open( void )
      /*----------------------------------------------------------------------*/
      /* open log file                                                        */
@@ -187,7 +187,7 @@ _unur_logfile_open( void )
   }
 
   /* write header into log file */
-  fprintf(LOG,"\nUNURAN - Universal Non-Uniform RANdom number generator\n\n");
+  fprintf(LOG,"\nUNU.RAN - Universal Non-Uniform RANdom number generator\n\n");
   fprintf(LOG,"Version: %s\n",PACKAGE_VERSION);
 
   /* time when created */
@@ -197,7 +197,7 @@ _unur_logfile_open( void )
       fprintf(LOG,"%s",ctime(&started));
   }
 
-  fprintf(LOG,"\n====================================================\n\n");
+  fprintf(LOG,"\n=======================================================\n\n");
 
 #else
   /* logging disabled: print error messages into stderr */

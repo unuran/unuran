@@ -65,7 +65,7 @@
  *            enclosed in parenthesis.                                       *
  *   The value (including the character '=') can be omitted when no argument *
  *   are required.                                                           *
- *   The key is deduced from the UNURAN set calls, such that it uses only    *
+ *   The key is deduced from the UNU.RAN set calls, such that it uses only   *
  *   the part of the set call beyond "..._set_".                             *
  *   Not all set commands are supported yet (see the output to STDERR of     *
  *   the make_stringparser.pl script).                                       *
@@ -1042,7 +1042,7 @@ _unur_str_distr_set_i (UNUR_DISTR *distr, const char *key, char *type_args, char
      /*                   't'   for single token                             */
      /*                   'L'   for a list                                   */
      /*   args      ... array of pointers to argument strings                */
-     /*   set       ... pointer to UNURAN function for set call              */
+     /*   set       ... pointer to UNU.RAN function for set call             */
      /*                                                                      */
      /* return:                                                              */
      /*   return code from set call, i.e.                                    */
@@ -1106,7 +1106,7 @@ _unur_str_distr_set_ii (UNUR_DISTR *distr, const char *key, char *type_args, cha
      /*                   't'   for single token                             */
      /*                   'L'   for a list                                   */
      /*   args      ... array of pointers to argument strings                */
-     /*   set       ... pointer to UNURAN function for set call              */
+     /*   set       ... pointer to UNU.RAN function for set call             */
      /*                                                                      */
      /* return:                                                              */
      /*   return code from set call, i.e.                                    */
@@ -1192,7 +1192,7 @@ _unur_str_distr_set_d (UNUR_DISTR *distr, const char *key, char *type_args, char
      /*                   't'   for single token                             */
      /*                   'L'   for a list                                   */
      /*   args      ... array of pointers to argument strings                */
-     /*   set       ... pointer to UNURAN function for set call              */
+     /*   set       ... pointer to UNU.RAN function for set call             */
      /*                                                                      */
      /* return:                                                              */
      /*   return code from set call, i.e.                                    */
@@ -1252,7 +1252,7 @@ _unur_str_distr_set_dd (UNUR_DISTR *distr, const char *key, char *type_args, cha
      /*                   't'   for single token                             */
      /*                   'L'   for a list                                   */
      /*   args      ... array of pointers to argument strings                */
-     /*   set       ... pointer to UNURAN function for set call              */
+     /*   set       ... pointer to UNU.RAN function for set call             */
      /*                                                                      */
      /* return:                                                              */
      /*   return code from set call, i.e.                                    */
@@ -1343,7 +1343,7 @@ _unur_str_distr_set_Di (UNUR_DISTR *distr, const char *key, char *type_args, cha
      /*                   't'   for single token                             */
      /*                   'L'   for a list                                   */
      /*   args      ... array of pointers to argument strings                */
-     /*   set       ... pointer to UNURAN function for set call              */
+     /*   set       ... pointer to UNU.RAN function for set call             */
      /*                                                                      */
      /* return:                                                              */
      /*   return code from set call, i.e.                                    */
@@ -1418,7 +1418,7 @@ _unur_str_distr_set_C (UNUR_DISTR *distr, const char *key, char *type_args, char
      /*   type_args ... contains types of arguments. Possible values:        */
      /*                   's'   for single string                            */
      /*   args      ... array of pointers to argument strings                */
-     /*   set       ... pointer to UNURAN function for set call              */
+     /*   set       ... pointer to UNU.RAN function for set call             */
      /*                                                                      */
      /* return:                                                              */
      /*   return code from set call, i.e.                                    */
@@ -1565,7 +1565,7 @@ _unur_str_par_set_void (UNUR_PAR *par, const char *key,
      /*                   't'   for single token                             */
      /*                   'L'   for a list                                   */
      /*   args      ... array of pointers to argument strings                */
-     /*   set       ... pointer to UNURAN function for set call              */
+     /*   set       ... pointer to UNU.RAN function for set call             */
      /*                                                                      */
      /* return:                                                              */
      /*   return code from set call, i.e.                                    */
@@ -1613,7 +1613,7 @@ _unur_str_par_set_i (UNUR_PAR *par, const char *key, char *type_args, char **arg
      /*                   't'   for single token                             */
      /*                   'L'   for a list                                   */
      /*   args      ... array of pointers to argument strings                */
-     /*   set       ... pointer to UNURAN function for set call              */
+     /*   set       ... pointer to UNU.RAN function for set call             */
      /*                                                                      */
      /* return:                                                              */
      /*   return code from set call, i.e.                                    */
@@ -1673,7 +1673,7 @@ _unur_str_par_set_u (UNUR_PAR *par, const char *key, char *type_args, char **arg
      /*                   't'   for single token                             */
      /*                   'L'   for a list                                   */
      /*   args      ... array of pointers to argument strings                */
-     /*   set       ... pointer to UNURAN function for set call              */
+     /*   set       ... pointer to UNU.RAN function for set call             */
      /*                                                                      */
      /* return:                                                              */
      /*   return code from set call, i.e.                                    */
@@ -1729,7 +1729,7 @@ _unur_str_par_set_d (UNUR_PAR *par, const char *key, char *type_args, char **arg
      /*                   't'   for single token                             */
      /*                   'L'   for a list                                   */
      /*   args      ... array of pointers to argument strings                */
-     /*   set       ... pointer to UNURAN function for set call              */
+     /*   set       ... pointer to UNU.RAN function for set call             */
      /*                                                                      */
      /* return:                                                              */
      /*   return code from set call, i.e.                                    */
@@ -1789,7 +1789,7 @@ _unur_str_par_set_dd (UNUR_PAR *par, const char *key, char *type_args, char **ar
      /*                   't'   for single token                             */
      /*                   'L'   for a list                                   */
      /*   args      ... array of pointers to argument strings                */
-     /*   set       ... pointer to UNURAN function for set call              */
+     /*   set       ... pointer to UNU.RAN function for set call             */
      /*                                                                      */
      /* return:                                                              */
      /*   return code from set call, i.e.                                    */
@@ -1884,7 +1884,7 @@ _unur_str_par_set_iD (UNUR_PAR *par, const char *key, char *type_args, char **ar
      /*                   't'   for single token                             */
      /*                   'L'   for a list                                   */
      /*   args      ... array of pointers to argument strings                */
-     /*   set       ... pointer to UNURAN function for set call              */
+     /*   set       ... pointer to UNU.RAN function for set call             */
      /*   mlist     ... list of allocated memory blocks                      */
      /*                                                                      */
      /* return:                                                              */
@@ -1978,7 +1978,7 @@ _unur_str_par_set_Di (UNUR_PAR *par, const char *key, char *type_args, char **ar
      /*                   't'   for single token                             */
      /*                   'L'   for a list                                   */
      /*   args      ... array of pointers to argument strings                */
-     /*   set       ... pointer to UNURAN function for set call              */
+     /*   set       ... pointer to UNU.RAN function for set call             */
      /*   mlist     ... list of allocated memory blocks                      */
      /*                                                                      */
      /* return:                                                              */
@@ -2528,7 +2528,7 @@ _unur_str_debug_string( int level, const char *key, const char *value  )
   
   log = unur_get_stream();
 
-/*    fprintf(log,"%s: String Interface for UNURAN\n",GENTYPE); */
+/*    fprintf(log,"%s: String Interface for UNU.RAN\n",GENTYPE); */
   fprintf(log,"%s: ",GENTYPE);
   for (; level>0; level--) 
     fprintf(log,"\t");

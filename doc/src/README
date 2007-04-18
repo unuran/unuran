@@ -2,7 +2,7 @@
 (*) Simple Markups and TAGs
     =======================
 
-Great parts of the UNURAN User Manual are generated automatically from
+Great parts of the UNU.RAN User Manual are generated automatically from
 the library header files by means of the make_texi.pl script.
 
 Thus all files in the unuran tree that end in .h or .dh are scanned.
@@ -131,7 +131,7 @@ The following TAGs are valid:
 
 	The last field is a short description of the parameter.
 
-=STDGEN List of special generator for (UNURAN) standard distributions.
+=STDGEN List of special generator for (UNU.RAN) standard distributions.
 	Each special generator must be given in one line.
 	The first entry is the identy for the special generator as given for
 	the unur_cstd_set_variant() and unur_dstd_set_variant() call.

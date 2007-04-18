@@ -6,7 +6,7 @@
 
    The examples in this chapter should compile cleanly and can be
    found in the directory @file{examples} of the source tree of
-   UNURAN. Assuming that UNURAN as well as the PRNG libraries 
+   UNU.RAN. Assuming that UNU.RAN as well as the PRNG libraries 
    have been installed properly (@pxref{Installation}) each
    of these can be compiled (using the GCC in this example) with
    @example
@@ -26,7 +26,7 @@
    of the unur_init() call. If it has failed the NULL pointer is
    returned and causes a segmentation fault when used for sampling.
 
-   We give all examples with the UNURAN standard API and the more
+   We give all examples with the UNU.RAN standard API and the more
    convenient string API.
 
 =EON
@@ -38,7 +38,7 @@
 
 =DESCRIPTION
 
-Select a distribution and let UNURAN do all necessary steps.
+Select a distribution and let UNU.RAN do all necessary steps.
 
 @smallexample
 @include ref_example0.texi
@@ -53,7 +53,7 @@ Select a distribution and let UNURAN do all necessary steps.
 
 =DESCRIPTION
 
-Select a distribution and let UNURAN do all necessary steps.
+Select a distribution and let UNU.RAN do all necessary steps.
 
 @smallexample
 @include ref_example0_str.texi
@@ -100,7 +100,7 @@ Select method AROU and use it with default parameters.
 =DESCRIPTION
 
 If you want to sample from a non-standard distribution,
-UNURAN might be exactly what you need. 
+UNU.RAN might be exactly what you need. 
 Depending on the information is available, a method
 must be choosen for sampling, 
 see @ref{Concepts} for an overview and 
@@ -120,7 +120,7 @@ see @ref{Concepts} for an overview and
 =DESCRIPTION
 
 If you want to sample from a non-standard distribution,
-UNURAN might be exactly what you need. 
+UNU.RAN might be exactly what you need. 
 Depending on the information is available, a method
 must be choosen for sampling, 
 see @ref{Concepts} for an overview and 

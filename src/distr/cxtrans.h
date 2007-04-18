@@ -342,7 +342,7 @@ int unur_distr_cxtrans_set_domain( UNUR_DISTR *distribution, double left, double
 /*
    Recompute the area below the PDF of the distribution. 
    It only works for order statistics for distribution objects from
-   the UNURAN library of standard distributions when the
+   the UNU.RAN library of standard distributions when the
    corresponding function is available.
    unur_distr_cont_upd_pdfarea() assumes that the PDF of the underlying
    distribution is normalized, i.e. it is the derivative of its CDF.

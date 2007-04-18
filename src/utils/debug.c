@@ -66,7 +66,7 @@ unur_set_debug( struct unur_par *par, unsigned debug )
   par->debug = debug;
   return UNUR_SUCCESS;
 #else
-  _unur_warning("DEBUG",UNUR_ERR_COMPILE,"debugging, #define UNUR_ENABLE_LOGGING");
+  _unur_warning("DEBUG",UNUR_ERR_COMPILE,"debugging not enabled");
   return UNUR_ERR_COMPILE;
 #endif
 
@@ -91,7 +91,7 @@ unur_chg_debug( struct unur_gen *gen, unsigned debug )
   gen->debug = debug;
   return UNUR_SUCCESS;
 #else
-  _unur_warning("DEBUG",UNUR_ERR_COMPILE,"debugging, #define UNUR_ENABLE_LOGGING");
+  _unur_warning("DEBUG",UNUR_ERR_COMPILE,"debugging not enabled");
   return UNUR_ERR_COMPILE;
 #endif
 

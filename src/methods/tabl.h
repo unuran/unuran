@@ -106,7 +106,7 @@
 
    =HOWTOUSE
 
-      For using the TABL method UNURAN needs a bounded interval to
+      For using the TABL method UNU.RAN needs a bounded interval to
       which the generated variates can be restricted and information
       about all local extrema of the distribution. For unimodal
       densities it is sufficient to provide the mode of the
@@ -390,7 +390,7 @@ int unur_tabl_chg_truncated(UNUR_GEN *gen, double left, double right);
 
    @emph{Important:}
    This call does not work for variant @code{IA} (immediate
-   acceptance). In this case UNURAN switches @emph{automatically} to 
+   acceptance). In this case UNU.RAN switches @emph{automatically} to 
    variant @code{RH} (use ``classical'' acceptance/rejection from hat
    distribution) and does revert to the variant originally set by the
    user.

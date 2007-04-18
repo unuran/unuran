@@ -7,7 +7,7 @@
 #                                                                            #
 #   FILE:    merge_h.pl                                                      #
 #                                                                            #
-#   Read all UNURAN header files, strip comments and create single header    #
+#   Read all UNU.RAN header files, strip comments and create single header   #
 #   file 'unuran.h'                                                          #
 #                                                                            #
 ##############################################################################
@@ -75,7 +75,7 @@ sub h_file_header {
 
 /*****************************************************************************
  *                                                                           *
- *          UNURAN -- Universal Non-Uniform Random number generator          *
+ *          UNU.RAN -- Universal Non-Uniform Random number generator         *
  *                                                                           *
  *****************************************************************************
  *                                                                           *

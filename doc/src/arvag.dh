@@ -80,7 +80,7 @@
    Then numerical methods for inverting the CDF are necessary, e.g.
    Newton's method. Such procedures, however, have the disadvantage
    that they may be slow or not exact, i.e. they compute approximate
-   values. The methods NINV (@pxref{NINV}) and HINV (@pxref{HINV}) of UNURAN are 
+   values. The methods NINV (@pxref{NINV}) and HINV (@pxref{HINV}) of UNU.RAN are 
    numerical inversion methods. Both require the CDF of the desired
    distribution. As the CDF is quite complicated and slow for many
    distributions this implies either that the generation is very slow
@@ -184,7 +184,7 @@
    to apply the rejection algorithm is the search for a good fitting
    hat function and for squeezes. We do not discuss these topics here
    as they are the heart of the different automatic algorithms
-   implemented in UNURAN. Information about the construction of hat
+   implemented in UNU.RAN. Information about the construction of hat
    and squeeze can therefore be found in the descriptions of the
    methods. 
    
@@ -203,7 +203,7 @@
    between the area between hat and squeeze and the area below the hat.
    @item
    The @code{sqhratio} (i.e., the ratio between the area below the
-   squeeze and the area below the hat) used in some of the UNURAN
+   squeeze and the area below the hat) used in some of the UNU.RAN
    methods is easy to compute. It is useful as its reciprocal is an
    upper bound for the expected number of trials of the rejection
    algoritm. The expected number of evaluations of the density is

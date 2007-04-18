@@ -52,7 +52,7 @@
    =DESCRIPTION
       URNGs from Otmar Lendl's @code{prng} library. It provides a very
       flexible way to sample form arbitrary URNGs by means of an object
-      oriented programing paradigma. Similarly to the UNURAN library
+      oriented programing paradigma. Similarly to the UNU.RAN library
       independent generator objects can be build and used.
       
       This library has been developed by the pLab group at the university
@@ -62,7 +62,7 @@
       or from the pLab site at
       @uref{http://random.mat.sbg.ac.at/}.
 
-      The interface to the PRNG library must be compiled into UNURAN using the
+      The interface to the PRNG library must be compiled into UNU.RAN using the
       configure flag @code{--with-urng-prng}.
       Notice that the PRNG library has to be installed before running
       @code{./configure}.
@@ -106,7 +106,7 @@ UNUR_URNG *unur_urng_prng_new( const char *prngstr );
 
    The @file{prng} library provides a very flexible way to sample form
    arbitrary URNGs by means of an object oriented programing
-   paradigma. Similarly to the UNURAN library independent generator
+   paradigma. Similarly to the UNU.RAN library independent generator
    objects can be build and used. The library has been developed
    and implemented by Otmar Lendl as member of the pLab group at the
    university of Salzburg (Austria, EU). 

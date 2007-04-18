@@ -7,7 +7,7 @@
 #                                                                            #
 #   FILE:    make_stringparser.pl                                            #
 #                                                                            #
-#   Read all UNURAN header files and create switch tables for stringparser   #
+#   Read all UNU.RAN header files and create switch tables for stringparser  #
 #   and write doc file for keywords                                          #
 #                                                                            #
 ##############################################################################
@@ -130,7 +130,7 @@ my $top_srcdir = $ENV{'srcdir'} ? $ENV{'srcdir'} : '.';
 $top_srcdir .= "/../..";
 
 # ----------------------------------------------------------------
-# Load routines for reading data about PDF from UNURAN files
+# Load routines for reading data about PDF from UNU.RAN files
   
 require "$top_srcdir/scripts/read_PDF.pl";
 
@@ -573,7 +573,7 @@ sub make_list_of_distr_sets {
 
     # print docu
     $distr_doc_string .= "List of keys that are available via the String API.\n"
-	."For description see the corresponding UNURAN set calls.\n\n";
+	."For description see the corresponding UNU.RAN set calls.\n\n";
     $distr_doc_string .= "\@itemize \@bullet\n";
 
     # first distribution type MUST be -x-all-x-
@@ -960,7 +960,7 @@ sub make_list_of_par_sets {
 
     # print docu
     $method_doc_string .= "List of methods and keys that are available via the String API.\n"
-	."For description see the corresponding UNURAN set calls.\n\n";
+	."For description see the corresponding UNU.RAN set calls.\n\n";
     $method_doc_string .= "\@itemize \@bullet\n";
 
     foreach my $m (@method_list) {

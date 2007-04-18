@@ -61,7 +61,7 @@ done
 
 # test whether the script is started from top source directory
 if [[ ! -f ./configure.ac || -z `grep unuran ./configure.ac` ]]; then
-	echo "You must run this script from UNURAN top source directory";
+	echo "You must run this script from UNU.RAN top source directory";
 	exit 1;
 fi
 
@@ -100,7 +100,7 @@ fi
 test -d "${WIN_DIR}" && rm -rf "${WIN_DIR}"
 mkdir "${WIN_DIR}"
 
-# create all required UNURAN header files 
+# create all required UNU.RAN header files 
 (cd src/parser; make stringparser_lists.ch)
 (cd src; make unuran.h; cp -v unuran.h ../${WIN_DIR})
 

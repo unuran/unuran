@@ -270,7 +270,7 @@ int unur_distr_discr_set_pmfparams( UNUR_DISTR *distribution, const double *para
    is set to @code{UNUR_ERR_DISTR_NPARAMS}. 
 
 
-   For standard distributions from the UNURAN library the parameters
+   For standard distributions from the UNU.RAN library the parameters
    are checked. Moreover, the domain is updated automatically unless it
    has been changed before by a unur_distr_discr_set_domain() call.
    If the given parameters are invalid for the standard distribution,
@@ -336,7 +336,7 @@ int unur_distr_discr_upd_mode( UNUR_DISTR *distribution );
 /* 
    Recompute the mode of the @var{distribution}. This call works properly
    for distribution objects from the 
-   UNURAN library of standard distributions 
+   UNU.RAN library of standard distributions 
    when the corresponding function is available.
    Otherwise a (slow) numerical mode finder is used. It only works properly
    for unimodal probability mass functions. If it failes
@@ -362,7 +362,7 @@ int unur_distr_discr_set_pmfsum( UNUR_DISTR *distribution, double sum );
    @code{UNUR_ERR_DISTR_SET}. 
 
    For a distribution object created by the 
-   UNURAN library of standard distributions you always should use
+   UNU.RAN library of standard distributions you always should use
    the unur_distr_discr_upd_pmfsum(). Otherwise there might be
    ambiguous side-effects.
 */
@@ -371,7 +371,7 @@ int unur_distr_discr_upd_pmfsum( UNUR_DISTR *distribution );
 /*
    Recompute the sum over the PMF of the @var{distribution}. 
    In most cases the normalization constant is recomputed and thus the
-   sum is 1. This call works for distribution objects from the UNURAN
+   sum is 1. This call works for distribution objects from the UNU.RAN
    library of standard distributions when the corresponding function
    is available. When a PV, a PMF with finite domain, or a CDF is
    given, a simple generic function which uses a naive summation loop
@@ -379,7 +379,7 @@ int unur_distr_discr_upd_pmfsum( UNUR_DISTR *distribution );
    returned and @code{unur_errno} is set to @code{UNUR_ERR_DISTR_DATA}. 
 
    The call does not work for distributions from the 
-   UNURAN library of standard distributions with truncated
+   UNU.RAN library of standard distributions with truncated
    domain when the CDF is not available.
 */
 

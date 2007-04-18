@@ -258,7 +258,7 @@ int unur_distr_corder_get_rank( const UNUR_DISTR *distribution, int *n, int *k )
 /*
    Recompute the area below the PDF of the distribution. 
    It only works for order statistics for distribution objects from
-   the UNURAN library of standard distributions when the
+   the UNU.RAN library of standard distributions when the
    corresponding function is available.
    unur_distr_cont_upd_pdfarea() assumes that the PDF of the underlying
    distribution is normalized, i.e. it is the derivative of its CDF.

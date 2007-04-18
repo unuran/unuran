@@ -42,7 +42,7 @@
    =DESCRIPTION
       Objects of type @code{UNUR_DISTR} are used for handling
       distributions. All data about a distribution are stored in this
-      object. UNURAN provides functions that return instances of such
+      object. UNU.RAN provides functions that return instances of such
       objects for standard distributions 
       (@pxref{Stddist,,Standard distributions}).
       It is then possible to change these distribution objects by
@@ -53,7 +53,7 @@
       (eg. univariate contiuous) which can be filled with the
       appropriate set calls.
 
-      UNURAN distinguishes between several types of distributions,
+      UNU.RAN distinguishes between several types of distributions,
       each of which has its own sets of possible parameters (for
       details see the corresponding sections):
       @itemize @minus
@@ -72,12 +72,12 @@
       distribution. And there exist parameters that are/can be
       derived from these, eg. the mode of the distribution or the area
       below the given PDF (which need not be normalized for many
-      methods). UNURAN keeps track of parameters which are
+      methods). UNU.RAN keeps track of parameters which are
       known. Thus if one of the essential parameters is changed all
       derived parameters are marked as unknown and must be set again
       if these are required for the chosen generation method.
       Additionally to set calls there are calls for updating derived
-      parameters for objects provided by the UNURAN library of standard
+      parameters for objects provided by the UNU.RAN library of standard
       distributions (one for each parameter to avoid computational
       overhead since not all parameters are required for all generator
       methods). 
@@ -96,7 +96,7 @@
       internal copy of the distribution object.
 
    =HOWTOUSE
-      UNURAN collects all data required for a particular generation
+      UNU.RAN collects all data required for a particular generation
       method in a @emph{distribution object}. There are two ways to
       get an instance of a distributions object: 
       @enumerate
@@ -108,7 +108,7 @@
 
       @item
       Use the corresponding @command{unur_distr_<name>_new} call
-      to get prebuild distribution from the UNURAN library of standard
+      to get prebuild distribution from the UNU.RAN library of standard
       distributions.
       Here @command{<name>} is the name of the
       standard distribution in @ref{Stddist,,Standard distributions}.
@@ -137,7 +137,7 @@
 
       Additionally @command{unur_distr_<type>_upd_<param>} calls can
       be used for updating derived parameters for objects provided by
-      the UNURAN library of standard distributions.
+      the UNU.RAN library of standard distributions.
 
       All parameters of a distribution object get be read by means of
       @command{unur_distr_<type>_get_<param>} calls.
@@ -208,7 +208,7 @@ const char *unur_distr_get_name( const UNUR_DISTR *distribution );
 /* 
    Set and get @var{name} of @var{distribution}. The @var{name} can be
    an arbitrary character string. It can be used to identify generator
-   objects for the user. It is used by UNURAN when printing
+   objects for the user. It is used by UNU.RAN when printing
    information of the distribution object into a log files.
 */
 
@@ -291,7 +291,7 @@ int unur_distr_set_extobj( UNUR_DISTR *distribution, const void *extobj );
    (e.g. pointers to some structure that holds information of the distribution).
    
    @strong{Important:} 
-   When UNURAN copies this distribution object into the generator object,
+   When UNU.RAN copies this distribution object into the generator object,
    then the address @var{extobj} that this pointer contains is simply copied.
    Thus the generator holds an address of a non-private object!
    Once the generator object has been created any change in the external 

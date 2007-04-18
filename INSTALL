@@ -1,12 +1,12 @@
 
  *****************************************************************************
  *                                                                           *
- *          UNURAN -- Universal Non-Uniform Random number generator          *
+ *          UNU.RAN -- Universal Non-Uniform Random number generator         *
  *                                                                           *
  *****************************************************************************
 
 
-               Installation instructions for the UNURAN library.
+               Installation instructions for the UNU.RAN library.
 
                               Version 0.9.x
 
@@ -18,7 +18,7 @@ adaptions might be neccessary for compiling this library.
 Uniform random number generator
 ...............................
 
-   UNURAN can be used with any uniform random number generator but (at
+   UNU.RAN can be used with any uniform random number generator but (at
 the moment) some features work best with Pierre L'Ecuyer's RngStreams
 library (see <http://statistik.wu-wien.ac.at/software/RngStreams/> for
 a description and downloading).
@@ -26,8 +26,8 @@ a description and downloading).
    Install the requires libraries first.
 
 
-Installing UNURAN
-.................
+Installing UNU.RAN
+..................
 
   1. First unzip and untar the package and change to the directory:
           tar zxvf unuran-0.9.x.tar.gz
@@ -130,8 +130,8 @@ Installing UNURAN
 instructions below.)
 
 
-Upgrading UNURAN
-................
+Upgrading UNU.RAN
+.................
 
 With UNU.RAN version 0.8.x the interface for changing underlying
 distributions and running a reinitialization routine has been 

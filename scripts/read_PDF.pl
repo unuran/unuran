@@ -8,7 +8,7 @@
 #                                                                            #
 #   Subroutine read_PDFdata():                                               #
 #                                                                            #
-#   Read all UNURAN C files and extract information about PDFs of            #
+#   Read all UNU.RAN C files and extract information about PDFs of           #
 #   distributions. The result is stored in an associate array and returned.  #
 #                                                                            #
 ##############################################################################
@@ -39,7 +39,7 @@ use File::Find;
 # ----------------------------------------------------------------
 # Global constants
 
-# Header file for UNURAN standard distributions
+# Header file for UNU.RAN standard distributions
 my $h_stddistr = "unur_distributions.h";
 
 # List of distribution types
@@ -110,7 +110,7 @@ sub read_PDFdata {
     find (\&find_files, @Startdirs);
 
 # ................................................................
-# Scan header file for UNURAN standard distributions
+# Scan header file for UNU.RAN standard distributions
 # and get a list of valid distributions
     scan_stddistr( $file_list{$h_stddistr} );
 
@@ -141,7 +141,7 @@ sub find_files
 
 
 # ----------------------------------------------------------------
-# Scan header file for UNURAN standard distributions
+# Scan header file for UNU.RAN standard distributions
 
 sub scan_stddistr
 {

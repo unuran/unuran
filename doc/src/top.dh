@@ -1,18 +1,18 @@
 
-=TOP  TOP  UNURAN -- Universal Non-Uniform RANdom number generators
+=TOP  TOP  UNU.RAN -- Universal Non-Uniform RANdom number generators
 
 =UP (dir)
 
 =DESCRIPTION
    @ifinfo
    @noindent
-   This is the online-documentation of UNURAN.@*
+   This is the online-documentation of UNU.RAN.@*
    Version: @value{VERSION}@*
    Date: @value{UPDATED}
    @end ifinfo
 
 
-   UNURAN (Universal Non-Uniform RAndom Number generator) is
+   UNU.RAN (Universal Non-Uniform RAndom Number generator) is
    a collection of algorithms for generating non-uniform
    pseudorandom variates as a library of C functions
    designed and implemented by the ARVAG (Automatic Random VAriate
@@ -35,18 +35,18 @@
    Of course it is also well suited for standard distributions. 
    However due to its more sophisticated programming interface it
    might not be as easy to use if you only look for a generator for
-   the standard normal distribution. (Although UNURAN provides
+   the standard normal distribution. (Although UNU.RAN provides
    generators that are superior in many aspects to those found in
    quite a number of other libraries.)
 
 
 
-   UNURAN implements several methods for generating random numbers.
+   UNU.RAN implements several methods for generating random numbers.
    The choice depends primary on the information about the
    distribution can be provided and -- if the user is familar with
    the different methods -- on the preferences of the user.
 
-   The design goals of UNURAN are to provide @emph{reliable},
+   The design goals of UNU.RAN are to provide @emph{reliable},
    @emph{portable} and @emph{robust} (as far as this is possible)
    functions with a consisent and easy to use interface. It is
    suitable for all situation where experiments with different

@@ -7,7 +7,7 @@
 #                                                                            #
 #   FILE:    merge_h.pl                                                      #
 #                                                                            #
-#   Read all UNURAN header files, extract manual, and create texinfo file    #
+#   Read all UNU.RAN header files, extract manual, and create texinfo file   #
 #                                                                            #
 ##############################################################################
 #                                                                            #

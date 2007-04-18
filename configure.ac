@@ -130,7 +130,7 @@ dnl by a configure flag.
 dnl Default is disabled.
 AC_ARG_ENABLE(deprecated,
 	[AS_HELP_STRING([--enable-deprecated],
-		[enable support for deprecated UNURAN routines @<:@default=no@:>@])],
+		[enable support for deprecated UNU.RAN routines @<:@default=no@:>@])],
 	[],
 	[enable_deprecated=no])
 AM_CONDITIONAL(ENABLE_DEPRECATED, test x$enable_deprecated = xyes)

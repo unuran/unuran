@@ -48,7 +48,7 @@
    =DESCRIPTION
       Simple interface for URNGs of type @code{double uniform(void *state)}.
 
-      UNURAN contains some build-in URNGs of this type:
+      UNU.RAN contains some build-in URNGs of this type:
       @table @code
       @item unur_urng_MRG31k3p
       Combined multiple recursive generator by Pierre L'Ecuyer and

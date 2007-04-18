@@ -1,6 +1,6 @@
 /* 
 
-   This file was considerably changed for UNURAN.
+   This file was considerably changed for UNU.RAN.
    As a consequence it has been renamed from "mconf.h" to
    "cephes_source.h" to avoid confusion.
    
@@ -106,7 +106,7 @@ Copyright 1984, 1987, 1989, 1995 by Stephen L. Moshier
 */
 
 /*---------------------------------------------------------------------------*/
-/* Include constants used in UNURAN.                                         */
+/* Include constants used in UNU.RAN.                                        */
 
 #include <float.h>
 #include <math.h>

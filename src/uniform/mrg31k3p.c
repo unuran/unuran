@@ -7,8 +7,8 @@
  *   FILE: mrg31k3p.c                                                        *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         uniform random number generator provided by UNURAN                *
- *         random number generators inside UNURAN.                           *
+ *         uniform random number generator provided by UNU.RAN               *
+ *         random number generators inside UNU.RAN.                           *
  *                                                                           *
  *   DESCRIPTION:                                                            *
  *         Combined multiple recursive generator.                            *

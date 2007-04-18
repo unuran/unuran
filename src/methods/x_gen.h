@@ -123,7 +123,7 @@ int    unur_sample_matr(UNUR_GEN *generator, double *matrix);
   of the generator object (discrete or continuous univariate
   distribution, multivariate distribution, or random matrix).
 
-  @emph{Notice:} UNURAN uses arrays of @code{double}s to handle
+  @emph{Notice:} UNU.RAN uses arrays of @code{double}s to handle
   matrices. There the rows of the matrix are stored consecutively.
 
   @emph{Notice:} The routines unur_sample_vec() and unur_sample_matr()
@@ -195,7 +195,7 @@ int unur_set_use_distr_privatecopy( UNUR_PAR *parameters, int use_privatecopy );
 
    By default, generator objects keep their own private copy of the
    given distribution object. Thus the generator object can be handled
-   independently from other UNURAN objects (with uniform random number
+   independently from other UNU.RAN objects (with uniform random number
    generators as the only exception). When the generator object is
    initialized the given distribution object is cloned and stored.
 

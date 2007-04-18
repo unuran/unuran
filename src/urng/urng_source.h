@@ -50,18 +50,18 @@
 #error file 'urng_source'
 #error
 /*---------------------------------------------------------------------------*/
-/* The UNURAN API to uniform random number generator should be flexible      */
+/* The UNU.RAN API to uniform random number generator should be flexible     */
 /* enough to use any source of uniform random number generators.             */
 /*                                                                           */
 /* Please, report any problem with this interface to this interface to the   */
-/* UNURAN development team.                                                  */
+/* UNU.RAN development team.                                                 */
 /*                                                                           */
-/* When the UNURAN interface to uniform random number generator must be      */
+/* When the UNU.RAN interface to uniform random number generator must be     */
 /* changed (not recommended), proceed as following:                          */
 /*                                                                           */
 /* (1) Change the typedef for 'UNUR_URNG' in file 'src/unur_typedefs.h'.     */
 /* (2) Comment out the #definition of 'UNUR_URNG_UNURAN' to remove all       */
-/*     code from the UNURAN API.                                             */
+/*     code from the UNU.RAN API.                                            */
 /* (3) Comment out the above error directives.                               */
 /* (4) Define  _unur_call_urng(urng) and _unur_call_reset(urng).             */
 /*     Here is a template:                                                   */
@@ -78,7 +78,7 @@
 /*     in file 'src/unuran_config.h'.                                        */
 /*                                                                           */
 /* Notice that some test routines (like counting URNGs) and the test suite   */
-/* do not work for a non-UNURAN interface.                                   */ 
+/* do not work for a non-UNU.RAN interface.                                  */
 /*---------------------------------------------------------------------------*/
 #endif  /* UNUR_URNG_UNURAN */
 /*---------------------------------------------------------------------------*/

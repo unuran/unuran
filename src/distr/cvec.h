@@ -297,7 +297,7 @@ int unur_distr_cvec_set_mean( UNUR_DISTR *distribution, const double *mean );
    vector (0,@dots{},0).
 
    @strong{Important:} If the parameters of a distribution from the 
-   UNURAN library of standard distributions
+   UNU.RAN library of standard distributions
    (@pxref{Stddist,,Standard distributions})
    are changed, then neither its mode nor the normalization 
    constant are updated. Please use the respective calls
@@ -352,7 +352,7 @@ int unur_distr_cvec_set_covar( UNUR_DISTR *distribution, const double *covar );
    available.
 
    @strong{Important:} If the parameters of a distribution from the 
-   UNURAN library of standard distributions
+   UNU.RAN library of standard distributions
    (@pxref{Stddist,,Standard distributions})
    are changed, then neither its mode nor the normalization 
    constant are updated. Please use the respective calls
@@ -528,7 +528,7 @@ int unur_distr_cvec_set_pdfparams( UNUR_DISTR *distribution, const double *param
    are copied into the distribution object and @code{unur_errno} is set to
    @code{UNUR_ERR_DISTR_NPARAMS}.
 
-   For standard distributions from the UNURAN library the parameters 
+   For standard distributions from the UNU.RAN library the parameters 
    are checked. Moreover, the domain is updated automatically.
    If the given parameters are invalid for the standard distribution,
    then no parameters are set and an error code is returned.
@@ -538,7 +538,7 @@ int unur_distr_cvec_set_pdfparams( UNUR_DISTR *distribution, const double *param
    the given list are (re-)set to their default values.
 
    @strong{Important:} If the parameters of a distribution from the 
-   UNURAN library of standard distributions
+   UNU.RAN library of standard distributions
    (@pxref{Stddist,,Standard distributions})
    are changed, then neither its mode nor the normalization 
    constant are updated. Please use the respective calls
@@ -580,7 +580,7 @@ int unur_distr_cvec_set_pdfparams_vec( UNUR_DISTR *distribution, int par, const 
    If @var{param_vec} is NULL then the corresponding entry is cleared.
 
    @strong{Important:} If the parameters of a distribution from the 
-   UNURAN library of standard distributions
+   UNU.RAN library of standard distributions
    (@pxref{Stddist,,Standard distributions})
    are changed, then neither its mode nor the normalization 
    constant are updated. Please use the respective calls
@@ -651,7 +651,7 @@ int unur_distr_cvec_set_mode( UNUR_DISTR *distribution, const double *mode );
 int unur_distr_cvec_upd_mode( UNUR_DISTR *distribution );
 /* 
    Recompute the mode of the @var{distribution}. This call works
-   properly for distribution objects from the UNURAN library of
+   properly for distribution objects from the UNU.RAN library of
    standard distributions when the corresponding function is
    available. If it failes @code{unur_errno} is set to
    @code{UNUR_ERR_DISTR_DATA}.
@@ -711,7 +711,7 @@ int unur_distr_cvec_upd_pdfvol( UNUR_DISTR *distribution );
 /*
    Recompute the volume below the PDF of the distribution. 
    It only works for distribution objects from the
-   UNURAN library of standard distributions when the
+   UNU.RAN library of standard distributions when the
    corresponding function is available. Otherwise @code{unur_errno} is
    set to @code{UNUR_ERR_DISTR_DATA}. 
 

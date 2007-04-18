@@ -54,7 +54,7 @@
       A GNU-style package is available from
       @uref{http://statistik.wu-wien.ac.at/software/RngStreams/}.
 
-      The interface to the RngStream library must be compiled into UNURAN using the
+      The interface to the RngStream library must be compiled into UNU.RAN using the
       configure flag @code{--with-urng-rngstream}.
       Notice that the RngStream library has to be installed before running
       @code{./configure}.

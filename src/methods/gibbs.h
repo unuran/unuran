@@ -88,7 +88,7 @@
       chain should be discarded (burn-in of the chain). 
 
    =HOWTOUSE
-      For using the GIBBS method UNURAN needs the logarithm of the
+      For using the GIBBS method UNU.RAN needs the logarithm of the
       PDF of the multivariate joint distribution and its gradient or
       partial derivatives. 
 

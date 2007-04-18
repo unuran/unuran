@@ -1,13 +1,13 @@
 
  *****************************************************************************
  *                                                                           *
- *          UNURAN -- Universal Non-Uniform Random number generator          *
+ *          UNU.RAN -- Universal Non-Uniform Random number generator         *
  *                                                                           *
  *****************************************************************************
 
 
-Upgrading UNURAN from version 0.8.x or earlier
-..............................................
+Upgrading UNU.RAN from version 0.8.x or earlier
+...............................................
 
 With UNU.RAN version 0.8.x the interface for changing underlying
 distributions and running a reinitialization routine has been 

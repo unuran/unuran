@@ -55,7 +55,7 @@
       Documentation and source code of this library is available from
       @uref{http://www.gnu.org/software/gsl/}.
 
-      The interface to the GSL must be compiled into UNURAN using the
+      The interface to the GSL must be compiled into UNU.RAN using the
       configure flag @code{--with-urng-gsl}.
       Notice that the GSL has to be installed before running
       @code{./configure}.

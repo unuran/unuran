@@ -100,10 +100,10 @@ int main()
   /* write header into log file */                                            
   {                                                                           
     time_t started;                                                          
-    fprintf(TESTLOG,"\nUNURAN - Universal Non-Uniform RANdom number generator\n\n");
+    fprintf(TESTLOG,"\nUNU.RAN - Universal Non-Uniform RANdom number generator\n\n");
     if (time( &started ) != -1)                                              
       fprintf(TESTLOG,"%s",ctime(&started));                              
-    fprintf(TESTLOG,"\n======================================================\n\n");
+    fprintf(TESTLOG,"\n=======================================================\n\n");
     fprintf(TESTLOG,"(Search for string \"distr=\" to find new section.)\n\n");
   }                                                                           
   

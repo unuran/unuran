@@ -7,7 +7,7 @@
 #                                                                            #
 #   FILE:    make_urng_header.pl                                             #
 #                                                                            #
-#   Make header file for UNURAN wrapper functions for external URNGs         #
+#   Make header file for UNU.RAN wrapper functions for external URNGs        #
 #                                                                            #
 ##############################################################################
 #                                                                            #
@@ -63,7 +63,7 @@ my $out = '';
 my $copyright =
     "/*******************************************************************\\\n".
     " *                                                                 *\n".
-    " *   UNURAN -- Universal Non-Uniform Random number generator       *\n".
+    " *   UNU.RAN -- Universal Non-Uniform Random number generator      *\n".
     " *                                                                 *\n".
     " *******************************************************************\n".
     " *   Copyright (c) 2000-$year Wolfgang Hoermann and Josef Leydold   *\n".

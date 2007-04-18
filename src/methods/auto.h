@@ -57,7 +57,7 @@
       unur_auto_set_logss() call.
 
       IMPORTANT: This is an experimental version and the method chosen
-      may change in future releases of UNURAN.
+      may change in future releases of UNU.RAN.
 
       For an example see @ref{Example_0,As short as possible,Example: As short as possible}.
 
@@ -87,7 +87,7 @@ int unur_auto_set_logss( UNUR_PAR *parameters, int logss );
 
    Default is 10.
 
-   Notice: This feature will be used in future releases of UNURAN only.
+   Notice: This feature will be used in future releases of UNU.RAN only.
 */
 
 /* =END */

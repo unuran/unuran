@@ -7,7 +7,7 @@
 #                                                                            #
 #   FILE:    makedll_def.pl                                                  #
 #                                                                            #
-#   Read all UNURAN header files and create .def file for .dll               #
+#   Read all UNU.RAN header files and create .def file for .dll              #
 #                                                                            #
 ##############################################################################
 #                                                                            #

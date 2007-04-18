@@ -115,7 +115,7 @@
       The values given by the last unur_ninv_chg_truncated() call will be 
       then changed to the values of the domain of the underlying distribution
       object. It is important to note that for a distribution from the 
-      UNURAN library of standard distributions
+      UNU.RAN library of standard distributions
       (@pxref{Stddist,,Standard distributions})
       the normalization constant has to be updated using the 
       unur_distr_cont_upd_pdfarea() call whenever its parameters have been
@@ -199,14 +199,14 @@ int unur_ninv_set_start( UNUR_PAR *parameters, double left, double right);
    @item               @tab @var{right}: @tab CDF(@var{right}) = 0.9
    @end multitable
 
-   If @var{left} == @var{right}, then  UNURAN always uses the default
+   If @var{left} == @var{right}, then  UNU.RAN always uses the default
    starting points!
 */
     
 int unur_ninv_chg_start(UNUR_GEN *gen, double left, double right);
 /* 
    Change the starting points for numerical inversion. 
-   If left==right, then UNURAN uses the default starting points 
+   If left==right, then UNU.RAN uses the default starting points 
    (see unur_ninv_set_start()).
 */
 

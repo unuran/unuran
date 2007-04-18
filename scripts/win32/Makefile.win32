@@ -18,12 +18,12 @@ SCRIPTS_DIR=$(TOP_SRCDIR)/scripts
 TESTS_DIR=$(TOP_SRCDIR)/tests
 
 
-# UNURAN version: major.minor
+# UNU.RAN version: major.minor
 UNURAN_VERSION=$(shell \
 	grep PACKAGE_VERSION $(TOP_SRCDIR)/config.h | \
 	sed -e 's/.*_VERSION\s*\"\(.*\)\..*\"/\1/')
 
-# UNURAN library name
+# UNU.RAN library name
 UNURAN_LIBNAME=libunuran$(shell echo $(UNURAN_VERSION) | sed 's/\.//')
 
 

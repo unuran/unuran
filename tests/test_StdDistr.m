@@ -229,7 +229,7 @@ UnurTestDistrResultLine[stream_, distr_, dtype_, fparams__, x_] := Module [
 (* --- make file with results for given distribution ----------------------- *)
 
 UnurTestDistrResultFile[dname_, dtype_, datafile_, fparbd__, size_, distribution___] := Module [ 
-	(*	dname   ... UNURAN name of distribution                      *)
+	(*	dname   ... UNU.RAN name of distribution                     *)
 	(*	dtype   ... type of distribution (CONT|DISCR|...)            *)
 	(*	srcfile ... output stream for C file running tests           *)
 	(*	datafile... output stream for data for running tests         *)
@@ -257,7 +257,7 @@ UnurTestDistrResultFile[dname_, dtype_, datafile_, fparbd__, size_, distribution
 	(* number of parameters for distribution *)
 	nfparams = Length[fparbd];
 
-	(* compose string for UNURAN string API *)
+	(* compose string for UNU.RAN string API *)
 	distrAPI = dname <> "(";
 	For [ i=0, i<nfparams, i++,
 		distrAPI = distrAPI <> ToString[ N[fparbd[[i+1,2]]] ];

@@ -43,7 +43,7 @@
    =UP Distribution_objects [45]
 
    =DESCRIPTION
-      Distributions for random matrices. Notice that UNURAN uses
+      Distributions for random matrices. Notice that UNU.RAN uses
       arrays of @code{double}s to handle matrices. The rows of
       the matrix are stored consecutively.
 

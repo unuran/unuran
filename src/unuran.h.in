@@ -1,6 +1,6 @@
 /*****************************************************************************
  *                                                                           *
- *          UNURAN -- Universal Non-Uniform Random number generator          *
+ *          UNU.RAN -- Universal Non-Uniform Random number generator         *
  *                                                                           *
  *****************************************************************************
  *                                                                           *
@@ -8,7 +8,7 @@
  *                                                                           *
  *   PURPOSE:                                                                *
  *         defines macros and declares structures and function prototypes    *
- *         for all UNURAN methods                                            *
+ *         for all UNU.RAN methods                                           *
  *                                                                           *
  *****************************************************************************
  *                                                                           *
@@ -168,6 +168,7 @@
 /**  Debugging and Error messages                                           **/
 /*****************************************************************************/
 
+#include <utils/stream.h>
 #include <utils/unur_errno.h>
 #include <utils/debug.h>
 

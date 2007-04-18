@@ -142,7 +142,7 @@ _unur_str_distr_set( UNUR_DISTR **ptr_distr, const char *key, char *value )
      /*   return error code                                                  */
      /*----------------------------------------------------------------------*/
 {
-  int result;      /* result of UNURAN set call */
+  int result;      /* result of UNU.RAN set call */
 
   /* derefence pointer to distribution object */
   struct unur_distr *distr = *ptr_distr;
@@ -257,7 +257,7 @@ _unur_str_par_set( UNUR_PAR *par, const char *key, char *value, struct unur_slis
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
-  int result = 0;                  /* result of UNURAN set call (0 or 1) */
+  int result = 0;                  /* result of UNU.RAN set call (0 or 1) */
 
   /* storing arguments of set calls: */
   char type_args[MAX_SET_ARGS+1];  /* array containing info about arguments */

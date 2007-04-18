@@ -1,12 +1,12 @@
 
 /*---------------------------------------------------------------------------*/
 
-=NODE  Stddist   UNURAN Library of standard distributions
+=NODE  Stddist   UNU.RAN Library of standard distributions
 =UP TOP [55]
 
 =DESCRIPTION
 Although it is not its primary target, many
-distributions are already implemented in UNURAN.
+distributions are already implemented in UNU.RAN.
 This section presents these available distributions
 and their parameters.
 
@@ -53,7 +53,7 @@ when the parameters of a distribution are in a ``reasonable'' range but
 e.g. the normal distribution N(10^15,1) won't yield the desired results.
 (In this case it would be better generating N(0,1) and @emph{then}
 transform the results.)
-@* Of course computational inaccuracy is not specific to UNURAN
+@* Of course computational inaccuracy is not specific to UNU.RAN
 and should always be kept in mind when working with computers.
 
 @emph{Important:} The routines of the standard library are included
@@ -78,7 +78,7 @@ They must be multiplied by @i{constant} to get the
 ``real'' PDF and PMF.
 
 @item CDF
-gives information whether the CDF is implemented in UNURAN.
+gives information whether the CDF is implemented in UNU.RAN.
 
 @item domain
 domain PDF and PMF, resp.
@@ -120,19 +120,19 @@ If @code{DEF} is ommited, the first entry is the default generator.
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-=NODEX  Stddist_CONT    UNURAN Library of continuous univariate distributions
+=NODEX  Stddist_CONT    UNU.RAN Library of continuous univariate distributions
 =UP Stddist [10]
 =EON
 
 /*---------------------------------------------------------------------------*/
 
-=NODEX  Stddist_CVEC    UNURAN Library of continuous multivariate distributions
+=NODEX  Stddist_CVEC    UNU.RAN Library of continuous multivariate distributions
 =UP Stddist [20]
 =EON
 
 /*---------------------------------------------------------------------------*/
 
-=NODEX  Stddist_DISCR    UNURAN Library of discrete univariate distributions
+=NODEX  Stddist_DISCR    UNU.RAN Library of discrete univariate distributions
 =UP Stddist [30]
 =DESCRIPTION
    At the moment there are no CDFs implemented for discrete distribution.
@@ -142,7 +142,7 @@ If @code{DEF} is ommited, the first entry is the default generator.
 
 /*---------------------------------------------------------------------------*/
 
-=NODEX  Stddist_MATR    UNURAN Library of random matrices
+=NODEX  Stddist_MATR    UNU.RAN Library of random matrices
 =UP Stddist [40]
 =EON
 

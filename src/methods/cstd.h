@@ -41,7 +41,7 @@
 
    =UP  Methods_for_CONT
 
-   =REQUIRED standard distribution from UNURAN library
+   =REQUIRED standard distribution from UNU.RAN library
       (@pxref{Stddist,,Standard distributions}).
 
    =SPEED Set-up: fast, Sampling: depends on distribution and generator
@@ -51,7 +51,7 @@
    =DESCRIPTION
       CSTD is a wrapper for special generators for continuous
       univariate standard distributions. It only works for
-      distributions in the UNURAN library of standard distributions
+      distributions in the UNU.RAN library of standard distributions
       (@pxref{Stddist,,Standard distributions}).
       If a distribution object is provided that is build from scratch,
       or if no special generator for the given standard distribution is
@@ -62,7 +62,7 @@
 
    =HOWTOUSE
       Create a distribution object for a standard distribution
-      from the UNURAN library (@pxref{Stddist,,Standard distributions}).
+      from the UNU.RAN library (@pxref{Stddist,,Standard distributions}).
       For some distributions more than one special generator
       (@emph{variants}) is possible. These can be choosen by a
       unur_cstd_set_variant() call. For possible variants 
@@ -109,7 +109,7 @@ UNUR_PAR *unur_cstd_new( const UNUR_DISTR *distribution );
 /* 
    Get default parameters for new generator. It requires a distribution object 
    for a continuous univariant distribution from the 
-   UNURAN library of standard distributions 
+   UNU.RAN library of standard distributions 
    (@pxref{Stddist,,Standard distributions}).
 
    Using a truncated distribution is allowed only if the inversion method

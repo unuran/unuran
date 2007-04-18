@@ -1,6 +1,6 @@
 
 The code in this directory is taken from the CEPHES library by 
-Stephen L. Moshier and modified for UNURAN. It is not covered by the
+Stephen L. Moshier and modified for UNU.RAN. It is not covered by the
 GNU Public License. The original library source can be found at 
 
 	http://www.netlib.org/cephes/
@@ -9,10 +9,10 @@ where it is indicated as public domain.
 
 We only need a few functions. Thus we have adjusted the functions
 slightly (e.g. "ANSIfied" the function declarations, removed error
-messages, that cannot be handled in UNURAN sensibly, and removed 
+messages, that cannot be handled in UNU.RAN sensibly, and removed 
 code for compiler switches we did not set.)
 
-DO NOT REUSE THE FILES IN THIS DIRECTORY OUTSIDE OF UNURAN.
+DO NOT REUSE THE FILES IN THIS DIRECTORY OUTSIDE OF UNU.RAN.
 DOWNLOAD THE ORIGINAL FILES FROM NETLIB!!!
 
 

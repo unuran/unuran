@@ -8,7 +8,7 @@
  *                                                                           *
  *   PURPOSE:                                                                *
  *         function prototypes for method UNIF                               *
- *         (passes UNIForm random numbers through UNURAN framework;          *
+ *         (passes UNIForm random numbers through UNU.RAN framework;         *
  *         for testing only)                                                 *
  *                                                                           *
  *   USAGE:                                                                  *
@@ -45,7 +45,7 @@
 
    =DESCRIPTION
       UNIF is a simple wrapper that makes it possible to use a uniform
-      random number generator as a UNURAN generator. There are no
+      random number generator as a UNU.RAN generator. There are no
       parameters for this method.
 
    =HOWTOUSE

@@ -307,7 +307,7 @@ int unur_tdr_chg_truncated(UNUR_GEN *gen, double left, double right);
 
    @emph{Important:}
    This call does not work for variant @code{IA} (immediate
-   acceptance). In this case UNURAN switches @emph{automatically} to 
+   acceptance). In this case UNU.RAN switches @emph{automatically} to 
    variant @code{PS}.
 
    @emph{Important:}

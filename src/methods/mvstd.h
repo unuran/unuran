@@ -41,7 +41,7 @@
 
    =UP  Methods_for_CVEC
 
-   =REQUIRED standard distribution from UNURAN library
+   =REQUIRED standard distribution from UNU.RAN library
       (@pxref{Stddist,,Standard distributions}).
 
    =SPEED depends on distribution and generator
@@ -51,7 +51,7 @@
    =DESCRIPTION
       MVSTD is a wrapper for special generators for multivariate
       continuous standard distributions. It only works for
-      distributions in the UNURAN library of standard distributions
+      distributions in the UNU.RAN library of standard distributions
       (@pxref{Stddist,,Standard distributions}).
       If a distribution object is provided that is build from scratch,
       or if no special generator for the given standard distribution is
@@ -59,7 +59,7 @@
 
    =HOWTOUSE
       Create a distribution object for a standard distribution
-      from the UNURAN library (@pxref{Stddist,,Standard distributions}).
+      from the UNU.RAN library (@pxref{Stddist,,Standard distributions}).
       
       Sampling from truncated distributions (which can be constructed by 
       changing the default domain of a distribution by means of
@@ -80,7 +80,7 @@ UNUR_PAR *unur_mvstd_new( const UNUR_DISTR *distribution );
 /* 
    Get default parameters for new generator. It requires a distribution object 
    for a multivariate continuous distribution from the 
-   UNURAN library of standard distributions 
+   UNU.RAN library of standard distributions 
    (@pxref{Stddist,,Standard distributions}).
    Using a truncated distribution is not possible.
 */

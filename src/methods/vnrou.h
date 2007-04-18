@@ -98,7 +98,7 @@
       to stay in an infinite loop.
 
    =HOWTOUSE
-      For using the VNROU method UNURAN needs the PDF of the
+      For using the VNROU method UNU.RAN needs the PDF of the
       distribution. Additionally, the parameter @i{r} can be set via
       a unur_vnrou_set_r() call. Notice that the acceptance
       probability decreases when @i{r} is increased. On the other

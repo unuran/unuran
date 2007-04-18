@@ -46,7 +46,7 @@
  *                                                                           *
  *  Description:                                                             *
  *                                                                           *
- *  Function parser for use with UNURAN. For list of symbols and functions   *
+ *  Function parser for use with UNU.RAN. For list of symbols and functions  *
  *  see functparser_symbols.h.                                               *
  *                                                                           *
  *  Important:                                                               *

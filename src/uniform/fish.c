@@ -7,8 +7,8 @@
  *   FILE: fish.c                                                            *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         uniform random number generator provided by UNURAN                *
- *         random number generators inside UNURAN.                           *
+ *         uniform random number generator provided by UNU.RAN               *
+ *         random number generators inside UNU.RAN.                          *
  *                                                                           *
  *   DESCRIPTION:                                                            *
  *         Linear congruential generator with                                *
@@ -16,7 +16,7 @@
  *                                                                           *
  *   WARNING:                                                                *
  *         Not state-of-the-art. SHOULD NOT BE USED ANY MORE.                *
- *         In UNURAN only as auxilliary second stream.                       *
+ *         In UNU.RAN only as auxilliary second stream.                      *
  *         Should be replaced in future releases.                            *
  *                                                                           *
  *   REFERENCE:                                                              *

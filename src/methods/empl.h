@@ -63,7 +63,7 @@
       variate. Notice that the range of the generated point set is
       always given by the range of the given sample. 
 
-      This method is provided in UNURAN for the sake of
+      This method is provided in UNU.RAN for the sake of
       completeness. We always recommend to use method EMPK
       (@pxref{EMPK,,EMPirical distribution with Kernel smoothing}).
 

@@ -154,7 +154,7 @@ int unur_distr_cont_set_cdf( UNUR_DISTR *distribution, UNUR_FUNCT_CONT *cdf );
    @item
    The given CDF must be the cumulative distribution function of
    the (non-truncated) distribution. If a distribution from the 
-   UNURAN library of standard distributions
+   UNU.RAN library of standard distributions
    (@pxref{Stddist,,Standard distributions})
    is truncated, there is no need to change the CDF.
 
@@ -162,7 +162,7 @@ int unur_distr_cont_set_cdf( UNUR_DISTR *distribution, UNUR_FUNCT_CONT *cdf );
    If both the CDF and the PDF are used (for a method or for order
    statistics), the PDF must be the derivative of the CDF.
    If a truncated distribution for one of the standard distributions
-   from the UNURAN library of standard distributions is used,
+   from the UNU.RAN library of standard distributions is used,
    there is no need to change the PDF.
 
    @item
@@ -170,7 +170,7 @@ int unur_distr_cont_set_cdf( UNUR_DISTR *distribution, UNUR_FUNCT_CONT *cdf );
    it must be given by the unur_distr_cont_set_pdfarea() call.
    For a truncated distribution this must be of course the integral of
    the PDF in the given truncated domain.
-   For distributions from the UNURAN library of standard
+   For distributions from the UNU.RAN library of standard
    distributions this is done automatically by the
    unur_distr_cont_upd_pdfarea() call.
 
@@ -291,7 +291,7 @@ int unur_distr_cont_set_pdfparams( UNUR_DISTR *distribution, const double *param
    are copied into the distribution object and @code{unur_errno} is set to
    @code{UNUR_ERR_DISTR_NPARAMS}.
 
-   For standard distributions from the UNURAN library the parameters 
+   For standard distributions from the UNU.RAN library the parameters 
    are checked. Moreover, the domain is updated automatically unless it
    has been changed before by a unur_distr_cont_set_domain() call.
    If the given parameters are invalid for the standard distribution,
@@ -302,7 +302,7 @@ int unur_distr_cont_set_pdfparams( UNUR_DISTR *distribution, const double *param
    the given list are (re-)set to their default values.
 
    @strong{Important:} If the parameters of a distribution from the 
-   UNURAN library of standard distributions
+   UNU.RAN library of standard distributions
    (@pxref{Stddist,,Standard distributions})
    are changed, then neither its mode nor the normalization 
    constant are updated. Please use the respective calls
@@ -495,7 +495,7 @@ int unur_distr_cont_set_mode( UNUR_DISTR *distribution, double mode );
 int unur_distr_cont_upd_mode( UNUR_DISTR *distribution );
 /* 
    Recompute the mode of the @var{distribution}. This call works
-   properly for distribution objects from the UNURAN library of
+   properly for distribution objects from the UNU.RAN library of
    standard distributions when the corresponding function is
    available.  Otherwise a (slow) numerical mode finder based on
    Brent's algorithm is used. If it failes @code{unur_errno} is set to
@@ -541,7 +541,7 @@ int unur_distr_cont_set_pdfarea( UNUR_DISTR *distribution, double area );
    @code{UNUR_ERR_DISTR_SET}. 
    
    For a distribution object created by the 
-   UNURAN library of standard distributions you always should use
+   UNU.RAN library of standard distributions you always should use
    the unur_distr_cont_upd_pdfarea(). Otherwise there might be
    ambiguous side-effects.
 */
@@ -550,7 +550,7 @@ int unur_distr_cont_upd_pdfarea( UNUR_DISTR *distribution );
 /*
    Recompute the area below the PDF of the distribution. 
    It only works for distribution objects from the
-   UNURAN library of standard distributions when the
+   UNU.RAN library of standard distributions when the
    corresponding function is available. Otherwise @code{unur_errno} is
    set to @code{UNUR_ERR_DISTR_DATA}. 
 
@@ -559,7 +559,7 @@ int unur_distr_cont_upd_pdfarea( UNUR_DISTR *distribution );
    However, for truncated distributions the area is smaller than 1.
 
    The call does not work for distributions from the 
-   UNURAN library of standard distributions with truncated
+   UNU.RAN library of standard distributions with truncated
    domain when the CDF is not available.
 */
 

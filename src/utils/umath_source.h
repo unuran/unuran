@@ -8,7 +8,7 @@
  *                                                                           *
  *   PURPOSE:                                                                *
  *         declares macros, constants, structures, function prototypes, etc. *
- *         for using mathematics in UNURAN.                                  *
+ *         for using mathematics in UNU.RAN.                                 *
  *                                                                           *
  *****************************************************************************
  *                                                                           *

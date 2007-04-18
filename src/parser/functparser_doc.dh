@@ -16,7 +16,7 @@ But the differences in evaluation time is small.
 When a distribution object is defined using this string interface then
 of course the same conditions on the given density or CDF must be
 satisfied for a chosen method as for the standard API.
-This string interface can be used for both within the UNURAN string
+This string interface can be used for both within the UNU.RAN string
 API using the unur_str2gen() call, and for calls that define the
 density or CDF for a particular distribution object as done with
 (e.g.) the call unur_distr_cont_set_pdfstr().

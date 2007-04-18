@@ -41,7 +41,7 @@
 =DESCRIPTION
 
    The string interface (string API) provided by the
-   unur_str2gen() call is the easiest way to use UNURAN. This
+   unur_str2gen() call is the easiest way to use UNU.RAN. This
    function takes a character string as its argument. The string is
    parsed and the information obtained is used to create a generator
    object. It returns NULL if this fails, either due to a syntax
@@ -52,11 +52,11 @@
    produces a distribution object.
 
    Notice that the string interface does not implement all features of
-   the UNURAN library. For trickier tasks it might be necessary to use
-   the UNURAN calls.
+   the UNU.RAN library. For trickier tasks it might be necessary to use
+   the UNU.RAN calls.
 
    In @ref{Examples}, all examples are given using both the 
-   UNURAN standard API and this convenient string API.
+   UNU.RAN standard API and this convenient string API.
    The corresponding programm codes are equivalent.
 
 =END
@@ -180,7 +180,7 @@ UNUR_PAR *_unur_str2par( const UNUR_DISTR *distribution, const char *string, str
    The @code{<key>=<value>} pairs that follow the first (initial) pair
    in each block are used to set parameters.
    The name of the parameter is given by the @code{<key>} string. It is
-   deduced from the UNURAN set calls by taking the part after
+   deduced from the UNU.RAN set calls by taking the part after
    @code{@dots{}_set_}.
    The @code{<value>} string holds the parameters to be
    set, separated by commata @code{,}.
@@ -348,9 +348,9 @@ UNUR_PAR *_unur_str2par( const UNUR_DISTR *distribution, const char *string, str
    @end smallexample
 
    Of course the all following keys dependend on the method choosen at
-   first. All corresponding @command{set} calls of UNURAN are available
+   first. All corresponding @command{set} calls of UNU.RAN are available
    and the key is the string after the @command{unur_<methodname>_set_}
-   part of the command. E.g., UNURAN provides the command 
+   part of the command. E.g., UNU.RAN provides the command 
    @command{unur_arou_set_max_sqhratio} to set a parameter of method AROU.
    To call this function via the string-interface, the
    key @code{max_sqhratio} can be used:
@@ -362,7 +362,7 @@ UNUR_PAR *_unur_str2par( const UNUR_DISTR *distribution, const char *string, str
    
    If this block is omitted, a suitable default method is used. Notice
    however that the default method may change in future versions of
-   UNURAN.
+   UNU.RAN.
 
 =EON
 */
@@ -387,13 +387,13 @@ UNUR_PAR *_unur_str2par( const UNUR_DISTR *distribution, const char *string, str
    However it only works when using the PRNG library is enabled, 
    see @ref{Installation} for details. There are no other keys.
 
-   IMPORTANT: UNURAN creates a new uniform random number generator for
+   IMPORTANT: UNU.RAN creates a new uniform random number generator for
    the generator object. The pointer to this uniform generator 
    has to be read and saved via a unur_get_urng() call in order to
-   clear the memory @emph{before} the UNURAN generator object is
+   clear the memory @emph{before} the UNU.RAN generator object is
    destroyed.
 
-   If this block is omitted the UNURAN default generator is used
+   If this block is omitted the UNU.RAN default generator is used
    (which @emph{must not} be destroyed). 
 
 =EON

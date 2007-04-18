@@ -49,11 +49,11 @@
    =DESCRIPTION
       Method CEXT is a wrapper for external generators for continuous
       univariate distributions. It allows the usage of external
-      random variate generators within the UNURAN framework.
+      random variate generators within the UNU.RAN framework.
 
    =HOWTOUSE
       The following steps are required to use some external generator
-      within the UNURAN framework (some of these are optional):
+      within the UNU.RAN framework (some of these are optional):
 
       @enumerate
       @item
@@ -62,7 +62,7 @@
       by NULL. However, it is required if you want to pass
       parameters of the generated distribution to the external
       generator or for running some validation tests provided by
-      UNURAN.
+      UNU.RAN.
 
       @item
       Create an initialization routine of type 
@@ -88,7 +88,7 @@
       Uniform random numbers are provided by the unur_sample_urng()
       call. Do not use your own implementation of a uniform random
       number generator directly. If you want to use your own random
-      number generator we recommend to use the UNURAN interface (see
+      number generator we recommend to use the UNU.RAN interface (see
       @pxref{URNG,,Using uniform random number generators}). 
 
       The array or structure that contains parameters for the external

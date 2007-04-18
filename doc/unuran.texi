@@ -4,7 +4,7 @@
 
 @c %**start of header
 @setfilename unuran.info
-@settitle    UNURAN User Manual
+@settitle    UNU.RAN User Manual
 @iftex
 @afourpaper
 @end iftex
@@ -19,7 +19,7 @@
 
 @dircategory Scientific software
 @direntry
-* unuran: (unuran).  UNURAN -- Universal Non-Uniform Random number generator
+* unuran: (unuran).  UNU.RAN -- Universal Non-Uniform Random number generator
 @end direntry
 
 @c Version ...
@@ -32,7 +32,7 @@
 
 @copying
 @noindent
-Copyright @copyright{} 2000--2003 Institut fuer Statistik, WU Wien.
+Copyright @copyright{} 2000--2007 Institut fuer Statistik, WU Wien.
 
 @noindent
 Permission is granted to make and distribute verbatim
@@ -52,9 +52,6 @@ this permission notice are preserved on all copies.
 
 @author Josef Leydold
 @author Wolfgang H@"ormann
-@author Erich Janka
-@author Roman Karawatzki
-@author G@"unter Tirler
 
 @page
 @vskip 0pt plus 1filll

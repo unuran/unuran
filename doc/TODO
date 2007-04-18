@@ -1,0 +1,21 @@
+(*) UNURAN 1.0 manual
+
+(*) 3 Versionen: C-standalone, ROOT, R
+
+(*) . Einleitung: (3 Versionen)   -LJ
+      Verteilungsobject + Methodenstring => Generatorobjekt
+      Sampling
+
+    . 4 Beispiele (3 Versionen)   -LJ
+
+    . Beschreibung Methoden- und Verteilungsstringsyntax  -LJ
+
+    . Verteilungslisten + Methodenlisten  -WH
+      (+ Standardverteilungen)
+
+    . Cookbook  -WH
+
+    . Appendix (Tutoral + Glossar)  -LJ
+      (siehe Expert manual)
+
+(*) AUTO methode

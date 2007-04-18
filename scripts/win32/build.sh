@@ -1,5 +1,11 @@
 #! sh
 
+# --- Default building flags ------------------------------------------------
+
+#UNURAN_CONFIGURE_FLAGS="--enable-maintainer-mode --disable-deprecated"
+
+UNURAN_CONFIGURE_FLAGS="--enable-maintainer-mode --disable-deprecated --enable-logfile --enable-debug-struct"
+
 # --- Setup environment -----------------------------------------------------
 
 # Where to find MS Visual Studio 2005 compilers
@@ -40,15 +46,18 @@ for arg in "$@"; do
 	all)		# create manual
 		doc=true
 		;;
-	examples)	# Compile and link all examples and tests
+	examples)	# Compile, link and run all examples
 		examples=true
 		;;
-	check)
+	check)		# Compile, link and run all tests
 		check=true;
 		export privatefunctions=true
 		;;
-	clean)
+	clean)		# Remove all files created by this script
 		clean=true;
+		;;
+	--*)		# ./configure option
+		UNURAN_CONFIGURE_FLAGS="${UNURAN_CONFIGURE_FLAGS} ${arg}"
 		;;
 	*)
 		echo "Invalid argment '${arg}'"
@@ -56,6 +65,7 @@ for arg in "$@"; do
 		;;
 	esac
 done
+
 
 # --- Check working directory -----------------------------------------------
 
@@ -89,11 +99,11 @@ fi
 
 # create 'config.h' and Makefiles using autotools
 if [[ !( -f ./configure ) ]]; then
-	./autogen.sh --disable-deprecated;
+	autoreconf -i
 fi
 
 if [[ !( -f ./config.h && -f ./Makefile) ]]; then
-	./configure --disable-deprecated;
+	./configure ${UNURAN_CONFIGURE_FLAGS}
 fi
 
 # create directory for windows files

@@ -191,6 +191,11 @@ sub scan_file {
 	    unless ($INTERNAL) {
 	    	next if $line =~ /[\s\*]_unur/;
 	    }
+	    else {
+		# remove internal debugging routines
+	    	next if $line =~ /[\s\*]_unur_error_cookies/;
+	    	next if $line =~ /[\s\*]_unur_distr_\w+_debug/;
+	    } 
 	    # line with isolated attribute statement
 	    next if $line =~ /^\s*ATTRIBUTE__/;
 	    # remove special symbols

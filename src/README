@@ -13,12 +13,12 @@ unuran*.h       ... header files to be installed
 ./:
 
 README          ... this file
-unuran.h        ... main header file for UNURAN
+unuran.h        ... main header file for UNU.RAN
 unuran.h.in     ... same as unuran.h but #include's are not expanded
 unuran_config.h ... configuration file for library
 unur_source.h   ... main header file for compiling library (included in all sources!)
 unur_cookies.h  ... definition of magic cookies
-unur_typedefs.h ... declaration of all objects used by UNURAN
+unur_typedefs.h ... declaration of all objects used by UNU.RAN
 
 methods/        ... sources of methods
 distr/          ... sources for generic distributions
@@ -37,9 +37,10 @@ debug_source.h
 
 error.c         ... warnings and error messages
 unur_errno.h
-unur_error_source.h
+error_source.h
 
 stream.c        ... output streams
+stream.h
 stream_source.h
 
 slist.c         ... handle simple lists

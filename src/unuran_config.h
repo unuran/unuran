@@ -1,6 +1,6 @@
 /*****************************************************************************
  *                                                                           *
- *          UNURAN -- Universal Non-Uniform Random number generator          *
+ *          UNU.RAN -- Universal Non-Uniform Random number generator         *
  *                                                                           *
  *****************************************************************************
  *                                                                           *
@@ -44,18 +44,8 @@
 /*                                                                           */
 /* If this macro is not defined all infos are written on 'stdout'.           */
 /*                                                                           */
-/* Remark: If no log file should be used,                                    */
-/*         #undef the macro UNUR_ENABLE_LOGGING below.                       */
 
 #define UNUR_LOG_FILE "unuran.log"
-
-/*---------------------------------------------------------------------------*/
-/* Define this macro to switch on writing information about the              */
-/* generator into log file.                                                  */
-/*                                                                           */
-/* If no log file should be used at all, #undef this macro.                  */
-
-/* #define FORREMOVAL_UNUR_ENABLE_LOGGING 1 */
 
 /*---------------------------------------------------------------------------*/
 /* Set default flag for debugging of generators:                             */
@@ -70,35 +60,10 @@
 /* Detailed discription of possible flags in file `./utils/debug.h'          */
 /*                                                                           */
 /* Debugging information is written into the log file.                       */
-/* It only works if additionally UNUR_ENABLE_LOGGING is defined (see above). */
+/* It only works if the library is built with the ----enable-logfile         */
+/* configure flag.                                                           */
 
 #define UNUR_DEBUGFLAG_DEFAULT   UNUR_DEBUG_INIT
-
-/*---------------------------------------------------------------------------*/
-/* Warnings and error messages.                                              */
-/*                                                                           */
-/* UNURAN produces a lot of (more or less useful) warnings and error         */
-/* messages. The following three compiler switches controll their output.    */
-
-/*---------------------------------------------------------------------------*/
-/* Check for invalid NULL pointer.                                           */
-/*                                                                           */
-/* UNURAN expects that every generator object is not a NULL pointer.         */
-/* Thus the user is responsible to check the result of each unur_init()      */
-/* call!!                                                                    */
-/*                                                                           */
-/* However, checking against an invalid NULL pointer can be switched on      */
-/* for each pointer that occurs by defining  UNUR_ENABLE_CHECKNULL.          */
-
-/* #define FORREMOVAL_UNUR_ENABLE_CHECKNULL 1 */
-
-/*---------------------------------------------------------------------------*/
-/* Debugging tools.                                                          */
-/* (for development only. there is no need to set these flags unless         */
-/* changes are made in the library.)                                         */
-
-/* use magic cookies to validate type of pointer */
-/* #define FORREMOVAL_UNUR_COOKIES  1 */
 
 
 /*****************************************************************************

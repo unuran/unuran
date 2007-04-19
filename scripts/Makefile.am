@@ -24,7 +24,8 @@ $(top_srcdir)/src/utils/unur_fp_const_source.h: compute_machine_constants
 
 # clean backup files
 CLEANFILES = \
- *~
+ *~ \
+ win32/*~
 
 # clean generated files
 MAINTAINERCLEANFILES = \

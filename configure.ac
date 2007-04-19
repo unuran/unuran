@@ -142,14 +142,14 @@ AS_IF([test "x$enable_deprecated" = xyes],
 dnl UNU.RAN has additional checks against invalid NULL pointers or 
 dnl pointers to wrong structures. For the latter cookies are inserted
 dnl into structures and checked whenever such structure is accessed.
-dnl Both checks can be enabled by the '--enable-debug-struct' flag.
+dnl Both checks can be enabled by the '--enable-check-struct' flag.
 dnl Default is disabled.
-AC_ARG_ENABLE(debug-struct,
-	[AS_HELP_STRING([--enable-debug-struct],
+AC_ARG_ENABLE(check-struct,
+	[AS_HELP_STRING([--enable-check-struct],
 		[Debug: check validity of pointers to structures @<:@default=no@:>@])],
 	[],
-	[enable_debug_struct=no])
-AS_IF([test "x$enable_debug_struct" = xyes],
+	[enable_check_struct=no])
+AS_IF([test "x$enable_check_struct" = xyes],
 	[AC_DEFINE([UNUR_ENABLE_CHECKNULL], [1], 
 	           [Define to 1 if you want to perform additional checks against an invalid NULL pointer])
 	 AC_DEFINE([UNUR_COOKIES], [1], 

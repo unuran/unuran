@@ -99,13 +99,13 @@
 
       However, it is possible to turn on checking for invalid NULL pointers
       even in such time-critical routines by building the library
-      using the @code{--enable-debug-struct} configure flag.
+      using the @code{--enable-check-struct} configure flag.
 
       Another debugging tool used in the library are magic cookies that
       validate a given pointer. It produces an error whenever a given
       pointer points to an object that is invalid in the context.
       The usage of magic cookies is switched on the same 
-      @code{--enable-debug-struct} configure flag.
+      @code{--enable-check-struct} configure flag.
 
    =END
 */

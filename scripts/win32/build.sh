@@ -2,10 +2,6 @@
 
 # --- Default building flags ------------------------------------------------
 
-#UNURAN_CONFIGURE_FLAGS="--enable-maintainer-mode --disable-deprecated"
-
-#UNURAN_CONFIGURE_FLAGS="--enable-maintainer-mode --disable-deprecated --enable-logfile --enable-debug-struct"
-
 UNURAN_CONFIGURE_FLAGS="--enable-maintainer-mode --disable-deprecated"
 
 # --- Setup environment -----------------------------------------------------

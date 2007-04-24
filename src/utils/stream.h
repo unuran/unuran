@@ -41,7 +41,7 @@
       @cindex Error handlers
       @cindex Output streams
 
-      In addition to reporting error via the @code{unur_errno}
+      In addition to reporting errors via the @code{unur_errno}
       mechanism UNU.RAN writes a short error diagnostics to an output
       stream, usually an open file handler. This stream can be set at
       runtime by the unur_set_stream() call. If no such stream is
@@ -50,6 +50,8 @@
       @file{unuran.log} in the current working directory. The name of
       this log file is defined by the macro @code{UNUR_LOG_FILE} in 
       @file{unuran_config.h}. 
+      (If UNU.RAN fails to open this file for writting, @file{stderr}
+      is used instead.)
       
       This output stream is also used to log descriptions of built
       generator objects and for writing debugging information.

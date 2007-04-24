@@ -172,13 +172,8 @@ _unur_logfile_open( void )
 #ifdef UNUR_ENABLE_LOGGING
   /* logging enabled: print error messages into log file */
 
-#ifdef UNUR_LOG_FILE 
   /* open log file */
   LOG = fopen(UNUR_LOG_FILE,"w");
-#else
-  /* use stdout instead of a log file */
-  LOG = stdout;
-#endif
 
   if (!LOG) {
     fprintf(stderr,"Warning: cannot open logfile %s !\n",UNUR_LOG_FILE);

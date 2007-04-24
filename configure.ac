@@ -156,19 +156,18 @@ AS_IF([test "x$enable_check_struct" = xyes],
 	           [Define to 1 if you want to use magic cookies to validate type of a pointer])], 
 	[])
 
-dnl UNU.RAN allows to write information about distribution and generator objects
-dnl into a logfile. When enabled all warnings and error messages are also 
-dnl written in this logfile instead on stderr.
-dnl The default name of the logfine is set in 'src/unuran_config.h'.
-dnl The logfile is enabled by the '--enable-logfile' flag.
-AC_ARG_ENABLE(logfile,
-	[AS_HELP_STRING([--enable-logfile],
-		[Debug: print warings, error messages and informations about generator into logfile @<:@default=no@:>@])],
+
+dnl UNU.RAN allows to write information about distribution and a log file.
+dnl The default name of the logfile is set in 'src/unuran_config.h'.
+dnl The logfile is enabled by the '--enable-logging' flag.
+AC_ARG_ENABLE(logging,
+	[AS_HELP_STRING([--enable-logging],
+		[Debug: print informations about generator into logfile @<:@default=no@:>@])],
 	[],
-	[enable_logfile=no])
-AS_IF([test "x$enable_logfile" = xyes],
+	[enable_logging=no])
+AS_IF([test "x$enable_logging" = xyes],
 	[AC_DEFINE([UNUR_ENABLE_LOGGING], [1], 
-	           [Define to 1 if you want to use a logfile for warnings, error messages and information about UNU.RAN])], 
+	           [Define to 1 if you want to use a logfile for logging informations about UNU.RAN objects])], 
 	[])
 
 dnl Some tests compare the return values of PDFs, CDFs and of

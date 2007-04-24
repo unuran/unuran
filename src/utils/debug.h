@@ -45,7 +45,7 @@
       The UNU.RAN library has several debugging levels which
       can be switched on/off by debugging flags. This debugging
       feature must be enabled when building the library using the 
-      @code{--enable-logfile} configure flag.
+      @code{--enable-logging} configure flag.
 
       The debugging levels range from print a short description of the
       created generator object to a detailed description of hat

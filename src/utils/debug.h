@@ -39,7 +39,7 @@
 /* 
    =NODE  Debug  Debugging
 
-   =UP TOP [70]
+   =UP Error_Debug [20] 
 
    =DESCRIPTION
       The UNU.RAN library has several debugging levels which
@@ -49,19 +49,18 @@
 
       The debugging levels range from print a short description of the
       created generator object to a detailed description of hat
-      functions and tracing the sampling routines. The output is print
+      functions and tracing the sampling routines. The output is printed
       onto the debugging output stream 
-      (@pxref{Output_streams,Output streams}).
+      (@pxref{Output_streams,,Output streams}).
 
       The debugging flags can be set or changed by the respective calls
       unur_set_debug() and unur_chg_debug() independently for each
       generator.
 
-      By default the debugging flag @code{UNUR_DEBUG_INIT} (see
-      below). This default flags is set by the macro
-      @code{UNUR_DEBUGFLAG_DEFAULT} in @file{unuran_config.h}.
-      It can be overwritten at run time by a
-      unur_set_default_debug() call.
+      By default flag @code{UNUR_DEBUG_INIT} (see
+      below) is used. This default flags is set by the macro
+      @code{UNUR_DEBUGFLAG_DEFAULT} in @file{unuran_config.h} and can
+      be changed at runtime by a unur_set_default_debug() call.
       
       Off course these debugging flags
       depend on the chosen method. Since most of these are merely for
@@ -92,11 +91,13 @@
       trace sampling   
       @end ftable
 
+      Notice that these are flags which could be combined using the
+      @code{|} operator.
+
       Almost all routines check a given pointer before they read from or write
       to the given address. This does not hold for time-critical routines
-      like all sampling routines. Then you are responsible for checking a
+      like all sampling routines. Thus you are responsible for checking a
       pointer that is returned from a unur_init() call.
-
       However, it is possible to turn on checking for invalid NULL pointers
       even in such time-critical routines by building the library
       using the @code{--enable-check-struct} configure flag.
@@ -104,7 +105,7 @@
       Another debugging tool used in the library are magic cookies that
       validate a given pointer. It produces an error whenever a given
       pointer points to an object that is invalid in the context.
-      The usage of magic cookies is switched on the same 
+      The usage of magic cookies is also switched on by the 
       @code{--enable-check-struct} configure flag.
 
    =END
@@ -136,7 +137,7 @@ int unur_chg_debug( UNUR_GEN *generator, unsigned debug );
 
 int unur_set_default_debug( unsigned debug );
 /*
-  Overwrite the default debugging flag.
+  Change default debugging flag.
 */
 
 /* =END */

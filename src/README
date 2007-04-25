@@ -36,8 +36,9 @@ debug.h
 debug_source.h
 
 error.c         ... warnings and error messages
-unur_errno.h
+error.h
 error_source.h
+unur_errno.h
 
 stream.c        ... output streams
 stream.h

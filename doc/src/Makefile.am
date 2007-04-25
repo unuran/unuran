@@ -6,6 +6,7 @@ EXTRA_DIST = \
  texinfo.tex \
  make_texi.pl \
  arvag.dh \
+ error_debug.dh \
  examples.dh \
  glossary.dh \
  index.dh \

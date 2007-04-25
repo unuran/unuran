@@ -30,7 +30,8 @@ EXAMPLES = \
  example_gsl \
  example_rngstreams \
  example_prng  example_prng_str \
- example_anti  example_anti_str
+ example_anti  example_anti_str \
+ example_errorhandler
 
 example_cpp_SOURCES = example_cpp.cpp
 

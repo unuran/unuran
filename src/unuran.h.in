@@ -169,8 +169,9 @@
 /*****************************************************************************/
 
 #include <utils/stream.h>
-#include <utils/unur_errno.h>
 #include <utils/debug.h>
+#include <utils/error.h>
+#include <utils/unur_errno.h>
 
 /*****************************************************************************/
 /**  Additional header files for further function prototypes                **/

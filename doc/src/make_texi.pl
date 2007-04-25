@@ -985,6 +985,7 @@ sub scan_ROUTINES {
 		    "UNUR_GEN",
 		    "UNUR_DISTR",
 		    "UNUR_URNG",
+                    "UNUR_ERROR_HANDLER",
 		    "UNUR_FUNCT_CONT",
 		    "UNUR_FUNCT_CVEC",
 		    "UNUR_VFUNCT_CVEC",

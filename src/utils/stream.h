@@ -35,36 +35,33 @@
 /* 
    =NODE  Output_streams Output streams
 
-   =UP Errno
+   =UP Error_Debug [10] 
 
    =DESCRIPTION
       @cindex Error handlers
       @cindex Output streams
 
-      In addition to reporting errors via the @code{unur_errno}
-      mechanism UNU.RAN writes a short error diagnostics to an output
-      stream, usually an open file handler. This stream can be set at
-      runtime by the unur_set_stream() call. If no such stream is
-      given by the user a default stream is used by the library: all
-      warnings and error messages are written into the file
+      UNU.RAN uses a logfile for writing all error messages, warnings,
+      and debugging information onto an output stream. This stream can
+      be set at runtime by the unur_set_stream() call. 
+      If no such stream is given by the user a default stream is used
+      by the library: all messages are written into the file  
       @file{unuran.log} in the current working directory. The name of
-      this log file is defined by the macro @code{UNUR_LOG_FILE} in 
+      this logfile is defined by the macro @code{UNUR_LOG_FILE} in 
       @file{unuran_config.h}. 
-      (If UNU.RAN fails to open this file for writting, @file{stderr}
+      (If UNU.RAN fails to open this file for writing, @file{stderr}
       is used instead.)
-      
-      This output stream is also used to log descriptions of built
-      generator objects and for writing debugging information.
-      If you want to use this output stream for your own programs use 
-      unur_get_stream() to get its file handler.
-      
-      All warnings, error messages and all debugging information
-      are written onto the same output stream.
-      To destinguish between the messages for different generators 
-      every generator object has its own identifier which is 
-      composed by the generator type, followed by a dot and three digits.
+
+      To destinguish between messages for different objects each of
+      these has its own identifier which is composed by the name of
+      the distribution obejct and generator type, resp., followed by a
+      dot and three digits. 
       (If there are more than 999 generators then the identifiers are
       not unique.)
+
+      @emph{Remark:} Writting debugging information must be switched
+      on at compile time using the configure flag
+      @code{--enable-logging}, see @ref{Debug,,Debugging}.
 
    =END      
 */
@@ -76,19 +73,26 @@
 
 FILE *unur_set_stream( FILE *new_stream );
 /*
-  Set new file handle for output stream; the old file handle is
-  returned. The NULL pointer is not allowed. (If you want to disable
-  logging of debugging information use 
-  unur_set_default_debug(UNUR_DEBUG_OFF) instead.)
+   This function sets a new file handler for the output stream,
+   @var{new_stream}, for the UNU.RAN library routines. The previous
+   handler is returned (so that you can restore it later). 
+   Note that the pointer to a user defined file handler is stored in a
+   static variable, so there can be only one output stream handler per
+   program. This function should be not be used in multi-threaded
+   programs except to set up a program-wide error handler from a
+   master thread.
 
-  The output stream is used to report errors and warning, and
-  debugging information. It is also used to log descriptions of
-  build generator objects (when this feature is switched on; see also ?).
+   The NULL pointer is not allowed. 
+   (If you want to disable logging of debugging information use 
+   unur_set_default_debug(UNUR_DEBUG_OFF) instead.
+   If you want to disable error messages at all use
+   unur_set_error_handler_off().)
 */
 
 FILE *unur_get_stream( void );
 /*
-  Get the file handle for the current output stream.
+  Get the file handle for the current output stream. It can be used to
+  allow applications to write additional information into the logfile.
 */
 
 /* =END */

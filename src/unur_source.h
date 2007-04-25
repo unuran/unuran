@@ -100,6 +100,7 @@
 /* debuging, warnings and error messages */
 #include <utils/debug.h>
 #include <utils/debug_source.h>
+#include <utils/error.h>
 #include <utils/error_source.h>
 #include <utils/stream.h>
 #include <utils/stream_source.h>

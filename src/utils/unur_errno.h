@@ -36,102 +36,11 @@
 #define UNUR_ERRNO_H_SEEN
 /*---------------------------------------------------------------------------*/
 
-/* 
-   =NODE  Errno  Error handling
-
-   =UP TOP [60]
-
-   =DESCRIPTION
-      This chapter describes the way how UNU.RAN routines report
-      errors. 
-
-   =EON
-*/
-
 /*
-   =NODE  Error_reporting  Error reporting
+   =NODE  Errno  Error codes
 
-   =UP Errno
+   =UP Error_Debug [40] 
 
-   =DESCRIPTION
-      UNU.RAN routines report an error whenever they cannot perform the
-      task requested of them. 
-      For example, apply transformed density rejection to a distribution
-      that violates the T-concavity condition, or trying to set a
-      parameter that is out of range.
-      It might also happen that the setup fails for transformed density
-      rejection for a T-concave distribution with some extreme density
-      function simply because of round-off errors that makes the
-      generation of a hat function numerically impossible.
-      Situations like this may happen when using black box algorithms and
-      you should check the return values of all routines.
-      
-      All @command{..._set_...}, and @command{..._chg_...} calls
-      return @code{UNUR_SUCCESS} if they could be executed
-      successfully. Otherwise some error codes are returned if it was
-      not possible to set or change the desired parameters,
-      e.g. because the given values are out of range, or simply
-      because you have changed the method but not the corresponding
-      set call and thus an invalid parameter or generator object is
-      used.
-      
-      All routines that return a pointer to the requested object will
-      return a NULL pointer in case of error.
-      (Thus you should always check the pointer to avoid possible
-      segmentation faults. Sampling routines usually do not check the
-      given pointer to the generator object.)
-      
-      The library distinguishes between two major classes of error:
-      
-      @table @emph
-
-      @item (fatal) errors:
-      The library was not able to construct the
-      requested object. 
-      
-      @item warnings:
-      Some problems encounters while constructing a generator
-      object. The routine has tried to solve the problem but the resulting
-      object might not be what you want. For example, chosing a special
-      variant of a method does not work and the initialization routine
-      might switch to another variant. Then the generator produces random
-      variates of the requested distribution but correlation induction
-      is not possible. However it also might happen that 
-      changing the domain of a distribution has failed. Then the generator
-      produced random variates with too large/too small range, i.e. their
-      distribution is not correct
-      @end table
-
-      It is obvious from the example that this distinction between errors
-      and warning is rather crude and sometimes arbitrary. 
-      
-      UNU.RAN routines use the global variable @code{unur_errno} to
-      report errors, completely analogously to C library's
-      @code{errno}. (However this approach is not thread-safe. There can 
-      be only one instance of a global variable per program. Different
-      threads of execution may overwrite @code{unur_errno}
-      simultaneously). 
-      Thus when an error occurs the caller of the routine can examine the
-      error code in @code{unur_errno} to get more details about the
-      reason why a routine failed. You get a short
-      description of the error by a unur_get_strerror() call.
-      All the error code numbers have prefix @code{UNUR_ERR_} and expand
-      to non-zero constant unsigned integer values. 
-      Error codes are divided into six main groups.
-
-      Alternatively, the variable @code{unur_errno} can also read by a 
-      unur_get_errno() call and can be reset by the unur_reset_errno()
-      call (this is in particular required for the Windows version of the
-      library).
-
-   =END
-*/
-
-/*---------------------------------------------------------------------------*/
-/* List of error codes:                                                      */
-/*---------------------------------------------------------------------------*/
-
-/* 
    =DESCRIPTION
 
       @subsubheading List of error codes
@@ -249,6 +158,7 @@
 
    =END
 
+   =EON
 */
 
 /*---------------------------------------------------------------------------*/
@@ -353,45 +263,7 @@ enum {
 };
 
 /*---------------------------------------------------------------------------*/
-
-/* =ROUTINES */
-
-/*---------------------------------------------------------------------------*/
-/* global variable used to record errors                                     */
-
-extern int unur_errno;
-/*
-  Global variable for reporting diagnostics of error.
-*/
-
-int unur_get_errno ( void );
-/* 
-   Get current value of global variable @var{unur_errno}.
-*/
-
-void unur_reset_errno ( void );
-/* 
-   Reset global variable @var{unur_errno} to @code{UNUR_SUCCESS} 
-   (i.e., no errors occured).
-*/
-
-const char *unur_get_strerror ( const int unur_errno );
-/*
-  Get a short description for error code value.
-*/
-
-
-/* =END */
-
-/* =EON */
-
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
 #endif  /* UNUR_ERRNO_H_SEEN */
 /*---------------------------------------------------------------------------*/
 
 
-UNUR_ERROR_HANDLER *unur_set_error_handler( UNUR_ERROR_HANDLER *new_handler );
-
-UNUR_ERROR_HANDLER *unur_set_error_handler_off( void );

@@ -211,6 +211,11 @@ unur_dari_new( const struct unur_distr *distr )
     return NULL;
   }
 
+  if (DISTR_IN.domain[0] < 0) {
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_PROP,"domain contains negative numbers");
+    return NULL;
+  }
+
   /* allocate structure */
   par = _unur_par_new( sizeof(struct unur_dari_par) );
   COOKIE_SET(par,CK_DARI_PAR);

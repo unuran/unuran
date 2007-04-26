@@ -72,8 +72,8 @@ _unur_error_x( const char *objid, const char *file, int line,
      /*   reason    ... (very) short description of reason for error         */
      /*----------------------------------------------------------------------*/
 {
-  unur_errno = errorcode;
   _unur_error_handler(objid, file, line, errortype, errorcode, reason);
+  unur_errno = errorcode;
 } /* end of _unur_error_x() */
 
 /*---------------------------------------------------------------------------*/

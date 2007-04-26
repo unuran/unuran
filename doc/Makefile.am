@@ -58,8 +58,6 @@ EXTRA_DIST = \
  $(unuran_examples) \
  unuran.html \
  unuran.txt \
- unuran.dvi \
- unuran.ps \
  unuran.pdf
 
 # Generated texi files ...
@@ -89,6 +87,5 @@ MAINTAINERCLEANFILES = \
  mdate-sh \
  $(unuran_examples) \
  $(unuran_src) \
- unuran.html \
  unuran.txt
 

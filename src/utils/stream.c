@@ -40,6 +40,13 @@
 
 /*---------------------------------------------------------------------------*/
 
+/* we check whether 'UNUR_LOG_FILE' is defined. use a fallback otherwise.    */
+#ifndef UNUR_LOG_FILE
+#  define UNUR_LOG_FILE "unuran.log"
+#endif
+
+/*---------------------------------------------------------------------------*/
+
 static FILE *_unur_logfile_open( void );  
 
 /*---------------------------------------------------------------------------*/

@@ -42,8 +42,6 @@
 /*---------------------------------------------------------------------------*/
 /* Default name of log file.                                                 */
 /*                                                                           */
-/* If this macro is not defined all infos are written on 'stdout'.           */
-/*                                                                           */
 
 #define UNUR_LOG_FILE "unuran.log"
 

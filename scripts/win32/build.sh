@@ -30,11 +30,11 @@ export CXXCPP="cl -E"
 export CXX="cl "
 export LD="cl "
 
-# temporary directory for windows files
-export WIN_DIR="win32"
+# directory for windows files
+export WINDIST_DIR="unuran-win32"
 
 # add path to created DLL (for testing)
-export PATH=`pwd`/${WIN_DIR}:${PATH}
+export PATH=`pwd`/${WINDIST_DIR}:${PATH}
 
 
 # --- Read command line arguments -------------------------------------------
@@ -105,16 +105,16 @@ if [[ !( -f ./config.h && -f ./Makefile) ]]; then
 fi
 
 # create directory for windows files
-test -d "${WIN_DIR}" && rm -rf "${WIN_DIR}"
-mkdir "${WIN_DIR}"
+test -d "${WINDIST_DIR}" && rm -rf "${WINDIST_DIR}"
+mkdir "${WINDIST_DIR}"
 
 # create all required UNU.RAN header files 
 (cd src/parser; make stringparser_lists.ch)
-(cd src; make unuran.h; cp -v unuran.h ../${WIN_DIR})
+(cd src; make unuran.h; cp -v unuran.h ../${WINDIST_DIR})
 
 # create doc
 if [[ "${doc}" ]]; then
-	(cd doc; make unuran.pdf; cp -v unuran.pdf ../${WIN_DIR});
+	(cd doc; make unuran.pdf; cp -v unuran.pdf ../${WINDIST_DIR});
 fi
 
 # --- Create DLL ------------------------------------------------------------

@@ -99,6 +99,6 @@ MAINTAINERCLEANFILES = \
 
 # auxiliary directories
 maintainer-clean-local:
-	rm -rf win32
+	rm -rf unuran-win32
 	@$(remove_rootdir)
 

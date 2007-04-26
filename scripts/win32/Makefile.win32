@@ -32,9 +32,9 @@ UNURAN_SRC := $(wildcard $(TOP_SRCDIR)/src/*/*.c)
 UNURAN_OBJ := $(UNURAN_SRC:.c=.obj)
 
 # DLL files
-UNURAN_DEF=$(WIN_DIR)/$(UNURAN_LIBNAME).def
-UNURAN_LIB=$(WIN_DIR)/$(UNURAN_LIBNAME).lib
-UNURAN_DLL=$(WIN_DIR)/$(UNURAN_LIBNAME).dll
+UNURAN_DEF=$(WINDIST_DIR)/$(UNURAN_LIBNAME).def
+UNURAN_LIB=$(WINDIST_DIR)/$(UNURAN_LIBNAME).lib
+UNURAN_DLL=$(WINDIST_DIR)/$(UNURAN_LIBNAME).dll
 
 # Header files for creating .DEF file
 SOURCE_H := $(wildcard $(TOP_SRCDIR)/src/*/*_source.h)
@@ -124,7 +124,8 @@ $(TESTS_OBJ): $(TESTS_SRC)
 
 # Remove created files
 clean:
-	rm -rf $(UNURAN_OBJ) $(WIN_DIR)
+	rm -rf $(WINDIST_DIR)
+	rm -f $(UNURAN_OBJ)
 	rm -f $(SCRIPTS_DIR)/compute_machine_constants.exe
 	rm -f $(SCRIPTS_DIR)/compute_machine_constants.obj
 	rm -f $(EXAMPLES_OBJ) $(EXAMPLES_EXE)

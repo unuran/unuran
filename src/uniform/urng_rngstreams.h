@@ -48,9 +48,12 @@
    =UP URNG [50]
 
    =DESCRIPTION
-      URNGs from Pierre L'Ecuyer's @code{RngStream} library for multiple 
+      URNGs from Pierre L'Ecuyer's @file{RngStream} library for multiple 
       independent streams of pseudo-random numbers. 
-      It allows to split a random stream into many substreams.
+      This library provides multiple independent streams of
+      pseudo-random numbers which itselves can be splitted into many
+      substreams. It is available from
+      @uref{http://www.iro.umontreal.ca/~lecuyer/myftp/streams00/c/}.
       A GNU-style package is available from
       @uref{http://statistik.wu-wien.ac.at/software/RngStreams/}.
 
@@ -66,8 +69,20 @@
       #include <unuran_urng_rngstream.h>
       @end smallexample
 
-      Moreover, one must not forget to link the executable against
-      @file{librngstream}.
+      Moreover, one must not forget to link the executable against the
+      @file{RngStream} library (i.e., when using the GNU-style package
+      in UNIX like environments one has to add @code{-lrngstreams}
+      when linking an executable).
+
+      Notice that the @file{rngstream} library uses a package seed,
+      that means one should seed the uniform random number generator
+      only once in an application using the routine
+      @uref{http://statmath.wu-wien.ac.at/software/RngStreams/doc/rngstreams.html#index-RngStream_005fSetPackageSeed-2,,@code{RngStream_SetPackageSeed}}:
+
+      @smallexample
+        unsigned long seed[] = @{111u, 222u, 333u, 444u, 555u, 666u@};
+        RngStream_SetPackageSeed(seed);
+      @end smallexample
 
       The following routines are supported for URNG objects of this
       type:
@@ -95,11 +110,8 @@
 UNUR_URNG *unur_urng_rngstream_new( const char *urngstr );
 /*
    Make object for URNGs from Pierre L'Ecuyer's @file{RngStream}
-   library. This library provides multiple independent streams of
-   pseudo-random numbers and is available from
-   @uref{http://www.iro.umontreal.ca/~lecuyer/myftp/streams00/c/}.
-   @var{urngstr} is an arbitrary string to label a stream. It need not
-   be unique.
+   library. @var{urngstr} is an arbitrary string to label a stream. It
+   need not be unique.
 */
 
 UNUR_URNG *unur_urng_rngstreamptr_new( RngStream rngstream );

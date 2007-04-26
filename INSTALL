@@ -1,4 +1,3 @@
-
  *****************************************************************************
  *                                                                           *
  *          UNU.RAN -- Universal Non-Uniform Random number generator         *
@@ -8,7 +7,7 @@
 
                Installation instructions for the UNU.RAN library.
 
-                              Version 0.9.x
+                              Version 1.0.x
 
 
 While the code is plain ANSI C and thus quite portable, the following
@@ -30,8 +29,8 @@ Installing UNU.RAN
 ..................
 
   1. First unzip and untar the package and change to the directory:
-          tar zxvf unuran-0.9.x.tar.gz
-          cd unuran-0.9.x
+          tar zxvf unuran-1.0.x.tar.gz
+          cd unuran-1.0.x
 
 
   2. Optional: Edit the file `src/unuran_config.h'.
@@ -44,50 +43,55 @@ Installing UNU.RAN
      where `<prefix>' is the root of the installation tree.  When
      omitted `/usr/local' is used.
 
-     Use configure --help to get a list of other options.
+     Use ./configure --help to get a list of other options.
      In particular the following flags are important:
 
-        --enable-deprecated
-            enable support for deprecated UNU.RAN routines
-              [default=@code{no}] 
+     [*] Enable support for some external sources of uniform random
+         number generators: 
 
-     The following flags enable support for some external sources
-     of uniform random number generators:
-
-        --with-urng-rngstream
-	     use Pierre L'Ecuyer's RNGSTREAM library
-              [default=no]
-        --with-urng-prng
-            use Otmar Lendl's PRNG library
-              [default=no]
+         --with-urng-rngstream
+	     URNG: use Pierre L'Ecuyer's RNGSTREAM library
+               [default=no]
+         --with-urng-prng
+             URNG: use Otmar Lendl's PRNG library
+               [default=no]
 	 --with-urng-gsl
-            use random number generators from GNU Scientific Library
-              [default=no]
+             URNG: use random number generators from GNU Scientific Library
+               [default=no]
 
-        --with-urng-default
-              global default URNG (builtin|rngstream)
-		[default=builtin]
+         --with-urng-default
+             URNG: global default URNG (builtin|rngstream)
+               [default=builtin]
 
-     We strongly recommend to use RngStreams library: 
+         We strongly recommend to use RngStreams library: 
 
-          sh ./configure --with-urng-rngstream --with-urng-default=rngstream
+         sh ./configure --with-urng-rngstream --with-urng-default=rngstream
      
-     Important: You must install PRNG or RngStreams before ./configure
-     is executed.
+         Important: You must install the respective libraries RngStreams,
+         PRNG and GSL before ./configure is executed.
 
-     If you want to make also a shared library, then making such a
-     library can be enabled using
+     [*] Also make a shared library:
 
-          sh ./configure --enable-shared
+         --enable-shared
+	     build shared libraries  [default=no]
 
-     Important: UNU.RAN now relies on some aspects of IEEE 754
-     compliant floating point arithmetic. In particular, 
-     1./0. and 0./0. must result in infinity and NaN (not a number),
-     respectively, and must not cause a floating point exception.
-     For allmost all modern compting architecture this is implemented
-     in hardware. For others there should be a special compiler flag
-     to get this feature (e.g. -MIEEE on DEC alpha or -mp for the Intel
-     C compiler).
+     [*] Enable support for deprecated UNU.RAN routines if you have
+         some problems with older application after upgrading the
+         library:
+
+         --enable-deprecated
+             enable support for deprecated UNU.RAN routines
+               [default=no] 
+
+     [*] Enable debugging tools:
+
+         --enable-check-struct
+	     Debug: check validity of pointers to structures
+               [default=no]
+
+         --enable-logging
+	     Debug: print informations about generator into logfile
+               [default=no]
 
 
   4. Compile and install the libray:
@@ -101,8 +105,6 @@ Installing UNU.RAN
           $(prefix)/include/unuran_tests.h
           $(prefix)/lib/libunuran.a
           $(prefix)/info/unuran.info
-          $(prefix)/info/unuran.info-1
-          $(prefix)/info/unuran.info-2
 
      Obviously `$(prefix)/include' and `$(prefix)/lib' must be in the search
      path of your compiler. You can use environment variables to add these
@@ -113,7 +115,7 @@ Installing UNU.RAN
           export C_INCLURE_PATH="HOMEDIRECTORY/include"
 
 
-  5. Documentation in various formats (PS, PDF, info, dvi, HTML, plain text)
+  5. Documentation in various formats (PDF, HTML, info, plain text)
      can be found in the directory `doc'.
 
 
@@ -121,10 +123,9 @@ Installing UNU.RAN
 
           make check
 
-     However this test suite requires the usage of prng.  It might happen that
-     some of the tests might fail due to roundoff errors or the mysteries of
-     floating point arithmetic, since we have used some extreme settings to
-     test the library.
+     It might happen that some of the tests might fail due to roundoff
+     errors or the mysteries of floating point arithmetic, since we
+     have used some extreme settings to test the library.
 
 (For further targets for make and more details see the GNU generic installation
 instructions below.)
@@ -133,23 +134,49 @@ instructions below.)
 Upgrading UNU.RAN
 .................
 
-With UNU.RAN version 0.8.x the interface for changing underlying
-distributions and running a reinitialization routine has been 
-simplified. The old routines can be compiled into the library using 
-the following configure flag:
+Important: 
+  UNU.RAN now relies on some aspects of IEEE 754 compliant floating
+  point arithmetic. In particular, 1./0. and 0./0. must result in
+  INFINITY and NaN (not a number), respectively, and must not cause a
+  floating point exception. For almost all modern compting
+  architecture this is implemented in hardware. For others there
+  should be a special compiler flag to get this feature (e.g. -MIEEE
+  on DEC alpha or -mp for the Intel C compiler).
+
+
+Upgrading UNU.RAN from version 0.9.x or earlier:
+
+  With UNU.RAN version 1.0.x some of the macro definitions in file
+  'src/unuran_config.h' are moved into file 'config.h' and are
+  set/controlled by the ./configure script.
+
+  Writting logging information into the logfile must now be enabled
+  when running the configure script:
+
+          sh ./configure --enable-logging
+
+
+Upgrading UNU.RAN from version 0.7.x or earlier:
+
+  With UNU.RAN version 0.8.x the interface for changing underlying
+  distributions and running a reinitialization routine has been 
+  simplified. The old routines can be compiled into the library using 
+  the following configure flag:
 
           sh ./configure --enable-deprecated
 
-Notice: Using these deprecated routines is not supported any more
-and this strong discouraged.
+  Notice: Using these deprecated routines is not supported any more
+  and this strong discouraged.
 
-Wrapper functions for external sources of uniform random numbers
-are now enabled by configure flags and not by macros defined in 
-file 'src/unuran_config.h'.
+  Wrapper functions for external sources of uniform random numbers
+  are now enabled by configure flags and not by macros defined in 
+  file 'src/unuran_config.h'.
 
-The file 'src/unuran_config.h' is not installed any more. 
-It is now only included when the library is compiled.
-It should be removed from the global include path of the compiler.
+  The file 'src/unuran_config.h' is not installed any more. 
+  It is now only included when the library is compiled.
+  It should be removed from the global include path of the compiler.
+
+
 
 
 *********************************************************************

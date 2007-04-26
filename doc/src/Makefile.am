@@ -11,6 +11,7 @@ EXTRA_DIST = \
  glossary.dh \
  index.dh \
  intro.dh \
+ installation.dh \
  methods.dh \
  misc.dh \
  references.dh \

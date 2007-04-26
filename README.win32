@@ -1,0 +1,16 @@
+You can create a MS Windows(R) DLL using Cygwin[1] and MS Visual
+Studio 2005 [2]:
+
+1. Edit path variables 'VSCYG' and 'VCWIN' in file 
+   './scripts/win32/build.sh'
+
+2. Run './scripts/win32/build.sh'
+
+3. The created files can be then found in directory 
+   'unuran-win32'.
+
+
+References:
+
+[1] http://www.cygwin.com/
+[2] http://msdn2.microsoft.com/en-us/vstudio/default.aspx

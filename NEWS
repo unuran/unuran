@@ -70,6 +70,9 @@ Version 1.0.0: April 2007
 	  the file 'config.h' which is created/controlled by
           ./configure script.
 
+	- Script for creating MS Windows(R) DLL using MS Visual Studio
+	  2005: ./scripts/win32/build.sh
+  
 
 Version 0.9.0: January 2007
 

@@ -8,7 +8,6 @@ UNURAN_CONFIGURE_FLAGS="--enable-maintainer-mode --disable-deprecated"
 
 # Where to find MS Visual Studio 2005 compilers
 export VSCYG='/cygdrive/c/Programme/Microsoft Visual Studio 8'
-export VCUNIX='c:/Programme/Microsoft Visual Studio 8/VC'
 export VCWIN='C:\Programme\Microsoft Visual Studio 8\VC'
 
 # Add path to compiler
@@ -16,12 +15,12 @@ export PATH=${VSCYG}/VC/bin:${PATH}
 export PATH=${VSCYG}/Common7/IDE:${PATH}
 
 # Add path to MSVC system header files
-export INCLUDE="${VCUNIX}/include;${VCWIN}\include;${INCLUDE}"
-export INCLUDE="${VCUNIX}/PlatformSDK/Include;${VCWIN}\PlatformSDK\Include;${INCLUDE}"
+export INCLUDE="${VCWIN}\include;${INCLUDE}"
+export INCLUDE="${VCWIN}\PlatformSDK\Include;${INCLUDE}"
 
 # Add path to MSVC libraries
-export LIB="${VCUNIX}/lib;${VCWIN}\lib;${LIB}"
-export LIB="${VCUNIX}/PlatformSDK/Lib;${VCWIN}\PlatformSDK\Lib;${LIB}"
+export LIB="${VCWIN}\lib;${LIB}"
+export LIB="${VCWIN}\PlatformSDK\Lib;${LIB}"
 
 # C prepsocessor, compiler and linker
 export CPP="cl -E"
@@ -42,10 +41,11 @@ export PATH=`pwd`/${WINDIST_DIR}:${PATH}
 for arg in "$@"; do
 	case "${arg}" in
 	all)		# create manual
-		doc=true
+		doc=true;
+		zip=true;
 		;;
 	examples)	# Compile, link and run all examples
-		examples=true
+		examples=true;
 		;;
 	check)		# Compile, link and run all tests
 		check=true;
@@ -129,6 +129,12 @@ fi
 
 if [[ ${check} ]]; then
 	make -f scripts/win32/Makefile.win32 check;
+fi
+
+# --- Create ZIP file -------------------------------------------------------
+
+if [[ ${zip} ]]; then
+	make -f scripts/win32/Makefile.win32 zip;
 fi
 
 # --- Done ------------------------------------------------------------------

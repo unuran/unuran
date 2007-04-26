@@ -91,6 +91,8 @@ $(SCRIPTS_DIR)/compute_machine_constants.exe: $(SCRIPTS_DIR)/compute_machine_con
 		$(SCRIPTS_DIR)/compute_machine_constants.obj
 
 
+# --- Run tests -------------------------------------------------------------
+
 # Compile, link and run examples
 examples: $(EXAMPLES_EXE)
 	for f in $(EXAMPLES_EXE); do \
@@ -121,6 +123,25 @@ $(TESTS_EXE): $(TESTS_OBJ) $(UNURANTEST_OBJ)
 $(TESTS_OBJ): $(TESTS_SRC)
 	$(CC) $(CFLAGS) -Fo$@ -c $(@:.obj=.c) 
 
+
+# --- Create ZIP file ------------------------------------------------------
+
+UNURANWIN_DIR=unuran-$(shell \
+	grep PACKAGE_VERSION $(TOP_SRCDIR)/config.h | \
+	sed -e 's/.*_VERSION\s*\"\(.*\)\"/\1/')-win32
+
+ZIPFILE=$(UNURANWIN_DIR).zip
+
+zip:
+	@echo "Create ZIP file '$(ZIPFILE)' ..."
+	test ! -d $(UNURANWIN_DIR) || rm -rf $(UNURANWIN_DIR)
+	test -d $(WINDIST_DIR) && \
+		mv $(WINDIST_DIR) $(UNURANWIN_DIR) && \
+		zip -r $(ZIPFILE) $(UNURANWIN_DIR) && \
+		rm -rf $(UNURANWIN_DIR)
+
+
+# --- Clear working space --------------------------------------------------
 
 # Remove created files
 clean:

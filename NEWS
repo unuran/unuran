@@ -1,23 +1,36 @@
-Version 1.0.0: ???? 2007
 
-	* new method HIST for sampling from histograms
+Version 1.0.0: April 2007
 
-	* new method MVSTD (wrapper for multivariate
-	  continuous distributions)
+	* Methods:
 
-	* new method DEXT (wrapper for external generators)
+	- New method HIST for sampling from histograms.
 
-	* new method CEXT (wrapper for external generators)
+	- New method CEXT, DEXT, and MVSTD: 
+	  wrapper for external generators for univariate contiuous,
+          discrete, and multivariate continuous distributions, resp.
 
-	* method HINV: fixed problem with truncated domains
+	- HINV: fixed problem with truncated domains.
 
-	* method VMT is now deprecated. Its only usefull application
-         is sampling from a multinormal distribution.
-         Use new method MVSTD for this purpose instead.
+	- DARI: check for positive domain.
 
-	* method DARI: check for positive domain
+	- VMT is now deprecated. Its only usefull application
+          is sampling from a multinormal distribution.
+          Use new method MVSTD for this purpose instead.
 
-	* Using standardized marginal distributions is now
+
+	* Distributions:
+
+	- Standard distributions: added F-distribution.
+
+	- CEMP (empirical distributions): added histogram.
+
+	- CVEC (Continuous multivariate distributions):
+
+	. Added support for rectangular domains:
+
+	        unur_distr_cvec_set_domain_rect()
+
+	. Using standardized marginal distributions is now
 	  deprecated:
 
 		unur_distr_cvec_set_stdmarginals()
@@ -25,24 +38,37 @@ Version 1.0.0: ???? 2007
 		unur_distr_cvec_set_stdmarginal_list()
 		unur_distr_cvec_get_stdmarginal()
 
-	* unur_urng_fvoid_new() has been changed:
+
+	* Uniform random number generators:
+
+	- unur_urng_fvoid_new() has been changed:
 	  first argument must be pointer to function of prototype
-	  double (*random)(void *state)
+	    double (*random)(void *state)
 
-	* Added F-distribution.
 
-	* added histogram to empirical distributions of type CEMP
+	* Miscellaneous:
 
-	* added support for rectangular distributions for multivariate
-	  continuous distributions:
-	  unur_distr_cvec_set_domain_rect()
+	- Protoype of unur_run_tests() has changed: 
+          it uses the output stream as additional argument 
 
-	* when info should be written on 'stdout' comment out the 
-	  defintion of 'UNUR_LOG_FILE'.
+	- The UNU.RAN error handler has been been changed:
 
-	* new error handler ....
-	
-	* unur_run_tests() now has output stream as additional argument
+	     unur_set_error_handler_off() allows to switch off
+	     error messages and warnings.
+          
+	     unur_set_error_handler() allows to replace the
+	     default error handler (i.e. print a short message into a
+	     logfile) by a customized one.
+
+	  On the other hand it is not possible any more to suppress
+	  error messages by a compiler switch.
+
+	- More flags for the ./configure script.
+
+	- The size of file 'src/unuran_config.h' has been removed:
+	  Some of the macros are either deleted at all or moved into
+	  the file 'config.h' which is created/controlled by
+          ./configure script.
 
 
 Version 0.9.0: January 2007
@@ -92,7 +118,7 @@ Version 0.8.1: November 2006
 	  to allow disribution object, generation method and 
 	  uniform random number generator as separate arguments.
 
-	- the keyword "urng" is deprecated now and will be removed
+	- The keyword "urng" is deprecated now and will be removed
 	  in the next release.
 
 	* Distributions:
@@ -356,4 +382,3 @@ Version 0.2.0: June 2002
 Version 0.1.0: March 2001
 
 	- First public release.
- 

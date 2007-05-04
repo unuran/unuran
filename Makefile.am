@@ -9,6 +9,7 @@ DIST_SUBDIRS = $(SUBDIRS)
 
 EXTRA_DIST = \
  Announcement-0.1.0 \
+ README.win32 \
  UPGRADE \
  KNOWN-PROBLEMS \
  autogen.sh

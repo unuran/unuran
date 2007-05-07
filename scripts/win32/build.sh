@@ -79,7 +79,7 @@ for arg in "$@"; do
 		;;
 	*)
 		echo "Invalid argment '${arg}'"
-		exit 1
+		usage
 		;;
 	esac
 done

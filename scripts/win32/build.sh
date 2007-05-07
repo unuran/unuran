@@ -4,6 +4,22 @@
 
 UNURAN_CONFIGURE_FLAGS="--enable-maintainer-mode --disable-deprecated"
 
+# --- Synopsis --------------------------------------------------------------
+
+function usage () {
+    echo "usage: build.sh [options] [--configure-options]"
+    echo ""
+    echo "   options:"
+    echo "      package .... create package (require RngStreams)"
+    echo "      examples ... run examples"
+    echo "      check ...... run UNU.RAN tests"
+    echo "      help ....... this message"
+    echo ""
+    echo "   --configure-options:"
+    echo "      see './configure --help'"
+    exit 1;
+}
+
 # --- Setup environment -----------------------------------------------------
 
 # Where to find MS Visual Studio 2005 compilers
@@ -40,19 +56,23 @@ export PATH=`pwd`/${WINDIST_DIR}:${PATH}
 
 for arg in "$@"; do
 	case "${arg}" in
-	all)		# create manual
-		doc=true;
-		zip=true;
+	help)           # Synopsis
+	        usage
+		;;
+ 	package)	# Create package
+##		doc=true
+##		zip=true
+		export USE_RNGSTREAM=true
 		;;
 	examples)	# Compile, link and run all examples
-		examples=true;
+		examples=true
 		;;
 	check)		# Compile, link and run all tests
-		check=true;
-		export privatefunctions=true
+		check=true
+		export USE_PRIVATE=true
 		;;
 	clean)		# Remove all files created by this script
-		clean=true;
+		clean=true
 		;;
 	--*)		# ./configure option
 		UNURAN_CONFIGURE_FLAGS="${UNURAN_CONFIGURE_FLAGS} ${arg}"

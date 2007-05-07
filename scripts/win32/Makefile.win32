@@ -38,9 +38,9 @@ UNURAN_DLL=$(WINDIST_DIR)/$(UNURAN_LIBNAME).dll
 
 # Header files for creating .DEF file
 SOURCE_H := $(wildcard $(TOP_SRCDIR)/src/*/*_source.h)
-DEF_H:=$(shell test -z ${privatefunctions} || echo "$(SOURCE_H)") \
+DEF_H:=$(shell test -z ${USE_PRIVATE} || echo "$(SOURCE_H)") \
 	$(TOP_SRCDIR)/src/unuran.h.in $(TOP_SRCDIR)/src/tests/unuran_tests.h
-INT=$(shell test -z ${privatefunctions} || echo "-I")
+INT=$(shell test -z ${USE_PRIVATE} || echo "-I")
 
 
 # Examples

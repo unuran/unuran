@@ -922,11 +922,13 @@ _unur_hinv_check_par( struct unur_gen *gen )
   }
 
   /* cut points for tails */
-  if (DISTR.domain[0] <= -INFINITY || PDF(DISTR.domain[0])<=0.) {
+  if (DISTR.domain[0] <= -INFINITY || 
+      (DISTR.pdf!=NULL && _unur_cont_PDF((DISTR.domain[0]),(gen->distr))<=0.) ) {
     GEN->tailcutoff_left = _unur_min(HINV_TAILCUTOFF, 0.1*GEN->u_resolution);
     GEN->tailcutoff_left = _unur_max(GEN->tailcutoff_left,2*DBL_EPSILON);
   }
-  if (DISTR.domain[1] >= INFINITY || PDF(DISTR.domain[1])<=0.) {
+  if (DISTR.domain[1] >= INFINITY || 
+      (DISTR.pdf!=NULL && _unur_cont_PDF((DISTR.domain[1]),(gen->distr))<=0.) ) {
     GEN->tailcutoff_right = _unur_min(HINV_TAILCUTOFF, 0.1*GEN->u_resolution);
     GEN->tailcutoff_right = _unur_max(GEN->tailcutoff_right,2*DBL_EPSILON);
     GEN->tailcutoff_right = 1. - GEN->tailcutoff_right;

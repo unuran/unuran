@@ -1,4 +1,17 @@
 
+Version 1.0.1: ??? 2007
+
+	* Methods:
+
+	- HINV: fixed problem with missing PDF.
+
+	* Distributions:
+
+	- CONT (continuous univariate distribution):
+	  compute PDF and dPDF when unur_distr_cont_set_cdfstr()
+	  is called.
+
+
 Version 1.0.0: April 2007
 
 	* Methods:

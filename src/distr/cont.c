@@ -722,9 +722,14 @@ unur_distr_cont_set_cdfstr( struct unur_distr *distr, const char *cdfstr )
     _unur_error(distr->name,UNUR_ERR_DISTR_SET,"Syntax error in function string");
     return UNUR_ERR_DISTR_SET;
   }
-
-  /* set evaluation function */
   DISTR.cdf  = _unur_distr_cont_eval_cdf_tree;
+  
+  /* make derivatives */
+  /* (we do not return an error code if it did not work!) */
+  if ( (DISTR.pdftree = _unur_fstr_make_derivative(DISTR.cdftree)) != NULL )
+    DISTR.pdf = _unur_distr_cont_eval_pdf_tree;
+  if ( (DISTR.dpdftree = _unur_fstr_make_derivative(DISTR.pdftree)) != NULL )
+    DISTR.dpdf = _unur_distr_cont_eval_dpdf_tree;
 
   return UNUR_SUCCESS;
 } /* end of unur_distr_cont_set_cdfstr() */

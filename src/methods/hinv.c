@@ -70,7 +70,7 @@
 
 #define HINV_TAILCUTOFF    (1.e-10) 
 /* For unbounded domains the tails has to be cut of. We use the given        */
-/* u-resulution for finding the cut points. (The probability of the chop     */
+/* u-resolution for finding the cut points. (The probability of the chop     */
 /* regions should be less than the 1 fifth of the u-resolution.)             */
 /* However, it should not be greater than some threshold value, given by     */
 /* HINV_TAILCUTOFF which reflects the precision of the used stream of        */
@@ -295,7 +295,7 @@ unur_hinv_new( const struct unur_distr *distr )
 
   /* set default values */
   PAR->order = (DISTR_IN.pdf) ? 3 : 1;  /* order of polynomial               */
-  PAR->u_resolution = 1.0e-8;     /* maximal error allowed in u-direction    */
+  PAR->u_resolution = 1.0e-10;    /* maximal error allowed in u-direction    */
   PAR->guide_factor = 1.;         /* size of guide table / number of intervals */
   PAR->bleft = -1.e20;            /* left border of the computational domain   */
   PAR->bright = 1.e20;            /* right border of the computational domain  */

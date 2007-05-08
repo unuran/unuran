@@ -186,7 +186,7 @@ int unur_hinv_set_u_resolution( UNUR_PAR *parameters, double u_resolution);
    simulations slighly bigger values for the maximal error are enough
    as well. 
 
-   Default is @code{10^-8}.
+   Default is @code{1.e-10}.
 */
 
 int unur_hinv_set_cpoints( UNUR_PAR *parameters, const double *stp, int n_stp );

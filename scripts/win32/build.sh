@@ -115,9 +115,17 @@ fi
 
 # --- Prepare UNU.RAN -------------------------------------------------------
 
+# Do we use Rngstreams library?
+if [[ -n "${USE_RNGSTREAM}" ]]; then
+    cp -v ../rngstreams/src/RngStream.[ch] ./src/uniform
+else
+    rm -vf cp ./src/uniform/RngStream.*
+fi
+
 # create 'config.h' and Makefiles using autotools
 if [[ !( -f ./configure ) ]]; then
 	autoreconf -i
+	./configure ${UNURAN_CONFIGURE_FLAGS}
 fi
 
 if [[ !( -f ./config.h && -f ./Makefile) ]]; then

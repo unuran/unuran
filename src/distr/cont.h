@@ -254,6 +254,7 @@ int unur_distr_cont_set_pdfstr( UNUR_DISTR *distribution, const char *pdfstr );
    derivative of the @var{distribution}.
    @var{pdfstr} is a character string that contains the formula
    for the PDF, see @ref{StringFunct,,Function String}, for details.
+   The derivative of the given PDF is computed automatically.
    See also the remarks for the unur_distr_cont_set_pdf() call.
 
    It is not possible to call this funtion twice or to call this
@@ -264,6 +265,7 @@ int unur_distr_cont_set_cdfstr( UNUR_DISTR *distribution, const char *cdfstr );
 /* 
    This function provides an alternative way to set a CDF; analogously
    to the unur_distr_cont_set_pdfstr() call.
+   The PDF and its derivative of the given CDF are computed automatically.
 */
 
 char *unur_distr_cont_get_pdfstr( const UNUR_DISTR *distribution );

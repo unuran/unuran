@@ -221,11 +221,11 @@ int unur_hinv_set_cpoints( UNUR_PAR *parameters, const double *stp, int n_stp );
 
 int unur_hinv_set_boundary( UNUR_PAR *parameters, double left, double right );
 /* 
-   Set the left and right boundary of the computation interval.
-   The approximate CDF is only constructed inside this interval. The
-   probability outside of this region must not be of
-   computational relevance.
+   Set the left and right boundary of the computational interval.
    Of course @code{+/- UNUR_INFINITY} is not allowed.
+   If the CDF at @var{left} and @var{right} is not close to the
+   respective values @code{0.} and @code{1.} then this interval is
+   increased by a (rather slow) search algorithm.
 
    @emph{Important}: This call does not change the domain of the
    given distribution itself. But it restricts the domain for the

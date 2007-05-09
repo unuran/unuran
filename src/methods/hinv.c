@@ -64,6 +64,10 @@
 /*---------------------------------------------------------------------------*/
 /* Constants                                                                 */
 
+#define HINV_MAX_ITER      (300)
+/* Maximal number of iterations for finding the boundary of the              */
+/* computational interval, i.e. where CDF(x) is close to 0 and 1, resp.      */
+
 #define HINV_MAX_U_LENGTH  (0.05)
 /* Maximal value for |u_i - u_{i-1}|. If for an interval this value is       */
 /* larger then it is splitted (independently of its u-error).                */
@@ -162,6 +166,11 @@ static double _unur_hinv_sample( struct unur_gen *gen );
 static double _unur_hinv_eval_approxinvcdf( const struct unur_gen *gen, double u );
 /*---------------------------------------------------------------------------*/
 /* evaluate Hermite interpolation of inverse CDF at u.                       */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_hinv_find_boundary( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* find boundary of computational interval                                   */
 /*---------------------------------------------------------------------------*/
 
 static int _unur_hinv_create_table( struct unur_gen *gen );
@@ -904,10 +913,6 @@ _unur_hinv_check_par( struct unur_gen *gen )
   GEN->bleft = GEN->bleft_par;
   GEN->bright = GEN->bright_par;
 
-  /* border of the computational domain must not exceed domain of distribution */
-  if (GEN->bleft  < DISTR.domain[0]) GEN->bleft  = DISTR.domain[0];
-  if (GEN->bright > DISTR.domain[1]) GEN->bright = DISTR.domain[1];
-
   /* domain not truncated at init */
   DISTR.trunc[0] = DISTR.domain[0];
   DISTR.trunc[1] = DISTR.domain[1];
@@ -1201,13 +1206,116 @@ unur_hinv_estimate_error( const UNUR_GEN *gen, int samplesize, double *max_error
 /*****************************************************************************/
 
 int
+_unur_hinv_find_boundary( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* find boundary of computational interval                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer generator object                                   */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  double x,u;
+  int i;
+
+  /* check arguments */
+  CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_HINV_GEN,UNUR_ERR_COOKIE);
+
+  /* reset counter for intervals */
+  GEN->N = 0;
+
+  /* boundary of the computational domain must not exceed domain of distribution */
+  if (GEN->bleft  < DISTR.domain[0]) GEN->bleft  = DISTR.domain[0];
+  if (GEN->bright > DISTR.domain[1]) GEN->bright = DISTR.domain[1];
+
+  /* find left boundary point */
+  for (x = GEN->bleft, i=0; i<HINV_MAX_ITER; i++) {
+    
+    /* next trial */
+    GEN->bleft = x;
+    u = CDF(GEN->bleft);
+
+    /* everything fine ? */
+    if (u <= GEN->tailcutoff_left || GEN->tailcutoff_left < 0.) 
+      break;
+
+    /* otherwise ... */
+    if (DISTR.domain[0] <= -INFINITY) {
+      /* domain not bounded from below */
+      x = (GEN->bleft > -1.) ? -1. : 10.*GEN->bleft;
+      if (! _unur_isfinite(x) )  
+	i = HINV_MAX_ITER;
+    }
+    
+    else {
+      /* domain bounded from below */
+      x = _unur_arcmean(GEN->bleft, DISTR.domain[0]);
+      if (_unur_FP_equal(x,DISTR.domain[0])) 
+	i = HINV_MAX_ITER;
+    }
+  }
+  
+  /* computation successful ? */
+  if (i >= HINV_MAX_ITER)
+    _unur_warning(gen->genid,UNUR_ERR_DISTR_PROP,"cannot find l.h.s. of domain");
+
+  /* make l.h.s. starting interval */
+  GEN->iv = _unur_hinv_interval_new(gen,GEN->bleft,u);
+  if (GEN->iv == NULL) return UNUR_ERR_GEN_DATA;
+
+
+  /* find right boundary point */
+  for (x = GEN->bright, i=0; i<HINV_MAX_ITER; i++) {
+    
+    /* next trial */
+    GEN->bright = x;
+    u = CDF(GEN->bright);
+
+    /* everything fine ? */
+    if (u >= GEN->tailcutoff_right || GEN->tailcutoff_right > 1.1) 
+      break;
+
+    /* otherwise ... */
+    if (DISTR.domain[1] >= INFINITY) {
+      /* domain not bounded from above */
+      x = (GEN->bright < 1.) ? 1. : 10.*GEN->bright;
+      if (! _unur_isfinite(x) )  
+	i = HINV_MAX_ITER;
+    }
+    
+    else {
+      /* domain bounded from below */
+      x = _unur_arcmean(GEN->bright, DISTR.domain[1]);
+      if (_unur_FP_equal(x,DISTR.domain[1])) 
+	i = HINV_MAX_ITER;
+    }
+  }
+  
+  /* computation successful ? */
+  if (i >= HINV_MAX_ITER)
+    _unur_warning(gen->genid,UNUR_ERR_DISTR_PROP,"cannot find r.h.s. of domain");
+
+  /* make r.h.s. starting intervals */
+  GEN->iv->next = _unur_hinv_interval_new(gen,GEN->bright,u);
+  if (GEN->iv->next == NULL) return UNUR_ERR_GEN_DATA;
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+
+} /* end of _unur_hinv_find_boundary() */
+
+/*---------------------------------------------------------------------------*/
+
+int
 _unur_hinv_create_table( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* create a table of splines                                            */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer generator object                                   */
-     /*   par ... pointer to parameter for building generator object         */
      /*                                                                      */
      /* return:                                                              */
      /*   UNUR_SUCCESS ... on success                                        */
@@ -1221,14 +1329,9 @@ _unur_hinv_create_table( struct unur_gen *gen )
   /* check arguments */
   CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_HINV_GEN,UNUR_ERR_COOKIE);
 
-  /* reset counter for intervals */
-  GEN->N = 0;
-
-  /* make starting intervals */
-  GEN->iv = _unur_hinv_interval_new(gen,GEN->bleft,CDF(GEN->bleft));
-  if (GEN->iv == NULL) return UNUR_ERR_GEN_DATA;
-  GEN->iv->next = _unur_hinv_interval_new(gen,GEN->bright,CDF(GEN->bright));
-  if (GEN->iv->next == NULL) return UNUR_ERR_GEN_DATA;
+  /* find boundary point of computational interval */
+  if (_unur_hinv_find_boundary(gen) != UNUR_SUCCESS)
+    return UNUR_ERR_GEN_DATA;
 
   /* use starting design points of given */
   if (GEN->stp) {
@@ -1676,10 +1779,7 @@ _unur_hinv_make_guide_table( struct unur_gen *gen )
   for( j=1; j<GEN->guide_size ;j++ ) {
     while( u(i) < (j/(double)GEN->guide_size) && i <= imax)
       i += GEN->order+2;
-    if (i > imax) {
-      _unur_warning(gen->genid,UNUR_ERR_ROUNDOFF,"guide table");
-      break;
-    }
+    if (i > imax) break;
     GEN->guide[j]=i;
   }
 

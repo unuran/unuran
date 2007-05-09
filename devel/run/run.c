@@ -36,32 +36,19 @@ int main()
   UNUR_DISTR *distr;
   UNUR_PAR *par;
   UNUR_GEN *gen;
-/*   double fpar[2] = {0.002, 5.}; */
+  double fpar[2] = {7,0.1};
 /*   double fpar[4] = {3.,0.5, -1., 0.}; */
 
   int i;
 
   unur_set_default_debug(~0U);
 
-  distr = unur_distr_cont_new();
-  unur_distr_cont_set_cdfstr(distr, "(x<=2)*(0.5-x+0.5*x*x)+(x>2)*(-3.5+3*x-0.5*x*x)");
-  unur_distr_cont_set_domain(distr,1.,3.);
-
+  distr = unur_distr_F(fpar,2);
   par = unur_hinv_new(distr);
   unur_hinv_set_order(par,3);
   unur_hinv_set_u_resolution(par,1.e-10);
-  unur_set_debug(par,1u);
-
   gen = unur_init(par);
-
   unur_test_printsample(gen, 10, 10, stdout);
-
-/*   { */
-/*     double max_error, MAE; */
-/*     unur_hinv_estimate_error(gen, 10000, &max_error, &MAE); */
-/*     printf("max error = %g\n",max_error); */
-/*     printf("MAE       = %g\n",MAE); */
-/*   } */
 
   /*   unur_run_tests(par,RUN_TESTS); */
   

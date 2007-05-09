@@ -3,8 +3,10 @@ Version 1.0.1: ??? 2007
 
 	* Methods:
 
-	- HINV: fixed problem with missing PDF;
-		change default of u-resolution from 1.e-8 to 1.e-10.
+	- HINV: 
+        . fixed problem with missing PDF.
+	. better support for heavy-tailed distributions.
+	. change default of u-resolution from 1.e-8 to 1.e-10.
 
 	* Distributions:
 

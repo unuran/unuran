@@ -36,18 +36,16 @@ int main()
   UNUR_DISTR *distr;
   UNUR_PAR *par;
   UNUR_GEN *gen;
-  double fpar[2] = {7,0.1};
+/*   double fpar[2] = {7,0.1}; */
 /*   double fpar[4] = {3.,0.5, -1., 0.}; */
 
   int i;
 
   unur_set_default_debug(~0U);
 
-  distr = unur_distr_F(fpar,2);
-  par = unur_hinv_new(distr);
-  unur_hinv_set_order(par,3);
-  unur_hinv_set_u_resolution(par,1.e-10);
-  gen = unur_init(par);
+  gen = unur_str2gen("distr=cont;cdf='(x<=3)*(0.0555555555555556 +( -0.111111111111111 )*x+( 0.0555555555555556 )*x*x)+(x> 3 )*( -0.587301587301587 +( 0.317460317460317 )*x+( -0.0158730158730159 )*x*x)'; domain=( 2 , 11 ) & method=hinv");
+
+
   unur_test_printsample(gen, 10, 10, stdout);
 
   /*   unur_run_tests(par,RUN_TESTS); */

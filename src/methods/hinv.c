@@ -883,6 +883,8 @@ _unur_hinv_create( struct unur_par *par )
   /* initialize variables */
   GEN->bleft = GEN->bleft_par;
   GEN->bright = GEN->bright_par;
+  GEN->Umin = 0.;
+  GEN->Umax = 1.;
   GEN->N = 0;
   GEN->iv = NULL;
   GEN->intervals = NULL;
@@ -1373,6 +1375,7 @@ _unur_hinv_create_table( struct unur_gen *gen )
       return UNUR_ERR_GEN_CONDITION;
     }
     iv = _unur_hinv_interval_adapt(gen,iv, &error_count_shortinterval);
+    if (iv == NULL) return UNUR_ERR_GEN_DATA;
   }
 
   /* last interval is only used to store right boundary */
@@ -1530,6 +1533,7 @@ _unur_hinv_interval_adapt( struct unur_gen *gen, struct unur_hinv_interval *iv,
        (! _unur_hinv_interval_is_monotone(gen,iv)) ) {
     /* insert new interval into linked list */
     iv_new = _unur_hinv_interval_new(gen,p_new,CDF(p_new));
+    if (iv_new == NULL) return NULL;
     iv_new->next = iv->next;
     iv->next = iv_new;
     return iv;
@@ -1551,6 +1555,7 @@ _unur_hinv_interval_adapt( struct unur_gen *gen, struct unur_hinv_interval *iv,
       iv_new = _unur_hinv_interval_new(gen,x,Fx);
     else
       iv_new = _unur_hinv_interval_new(gen,p_new,CDF(p_new));
+    if (iv_new == NULL) return NULL;
     iv_new->next = iv->next;
     iv->next = iv_new;
     return iv;
@@ -1904,9 +1909,11 @@ _unur_hinv_debug_intervals( const struct unur_gen *gen )
 	fprintf(log,"  %#12.6g  %#12.6g", GEN->intervals[i+5], GEN->intervals[i+6]);
       fprintf(log,"\n");
     }
-    i = n*(GEN->order+2);
-    fprintf(log,"%s:[%4d]: %#12.6g  %#12.6g  (right boundary)\n", gen->genid, n,
-	    GEN->intervals[i], GEN->intervals[i+1]);
+    /* the following might cause troubles when creating the tables fails. */
+    /* so we remove it.                                                   */
+    /*     i = n*(GEN->order+2); */
+    /*     fprintf(log,"%s:[%4d]: %#12.6g  %#12.6g  (right boundary)\n", gen->genid, n, */
+    /* 	    GEN->intervals[i], GEN->intervals[i+1] ); */
   }
 
   fprintf(log,"%s:\n",gen->genid);

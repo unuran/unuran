@@ -2,7 +2,7 @@ dnl Process this file with autoconf to produce a configure script.
 dnl $Id$
 
 dnl Initialize.
-AC_PREREQ(2.60)
+AC_PREREQ(2.59)
 AC_INIT([unuran],[1.0.devel],[unuran@statistik.wu-wien.ac.at])
 AC_CONFIG_AUX_DIR(autoconf)
 AM_INIT_AUTOMAKE([unuran],[1.0.devel])

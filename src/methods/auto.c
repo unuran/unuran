@@ -334,15 +334,19 @@ _unur_init_discr( struct unur_par *par_auto )
   struct unur_gen *gen;
   
   do {
-    /* 1st choice: DARI */
-    par = unur_dari_new(par_auto->distr);
-    gen = unur_init(par);
-    if (gen) break;
+    /* 1st choice: DGT */
+    if (par_auto->distr->data.discr.pv != NULL) {
+      par = unur_dgt_new(par_auto->distr);
+      gen = unur_init(par);
+      if (gen) break;
+    }
 
-    /* 2nd choice: DGT */
-    par = unur_dgt_new(par_auto->distr);
-    gen = unur_init(par);
-    if (gen) break;
+    /* 2nd choice: DARI */
+    if (par_auto->distr->data.discr.pmf != NULL) {
+      par = unur_dari_new(par_auto->distr);
+      gen = unur_init(par);
+      if (gen) break;
+    }
 
     /* 3rd choice: DSTD */
     par = unur_dstd_new(par_auto->distr);

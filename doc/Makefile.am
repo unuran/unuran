@@ -3,7 +3,7 @@
 
 SUBDIRS = src figures . 
 
-info_TEXINFOS = unuran.texi
+info_TEXINFOS = unuran.texi unuran_win32.texi
 
 # Location of same source files 
 TEXINFO_TEX = ./src/texinfo.tex

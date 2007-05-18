@@ -1,0 +1,202 @@
+\input texinfo   @c -*-texinfo-*-
+
+@c $Id: unuran.texi 3564 2007-04-18 06:32:53Z leydold $
+
+@c %**start of header
+@setfilename unuran_win32.info
+@settitle    Using UNU.RAN with Microsoft Visual C
+@iftex
+@afourpaper
+@end iftex
+@footnotestyle end
+@setchapternewpage odd
+@c %**end of header
+
+@c @novalidate
+
+@c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+@c 
+@c Some data about this software
+@c 
+
+@dircategory Scientific software
+@direntry
+* unuran_win32: (unuran_win32).  Using UNU.RAN with Microsoft Visual C
+@end direntry
+
+@c Version ...
+@include version_win32.texi
+
+@c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+@c 
+@c Copyright
+@c 
+
+@copying
+@noindent
+Copyright @copyright{} 2000--2007 Institut fuer Statistik, WU Wien.
+
+@noindent
+Permission is granted to make and distribute verbatim
+copies of this manual provided the copyright notice and
+this permission notice are preserved on all copies.
+@end copying
+
+@c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+@c 
+@c Titlepage ...
+@c 
+
+@titlepage
+@title{Using UNU.RAN with Microsoft Visual C}
+@subtitle{UNU.RAN -- Universal Non-Uniform RANdom number generators}
+@subtitle Version @value{VERSION}, @value{UPDATED}
+
+@author Josef Leydold
+@author Wolfgang H@"ormann
+@author Engin Durmaz
+
+@page
+@vskip 0pt plus 1filll
+@insertcopying
+@end titlepage
+
+@c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+@c 
+@c Table of contents 
+@c [ disabled ]
+@c 
+
+@c @contents
+
+@c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+@c 
+@c insert automatically generated documentation ...
+@c 
+
+@node TOP
+@top  Using UNU.RAN with Microsoft Visual C
+
+@menu
+* Folder:: UNU.RAN Installation Folder
+@end menu
+
+@ifinfo
+@noindent
+This is the online-documentation of UNU.RAN.@*
+Version: @value{VERSION}@*
+Date: @value{UPDATED}
+@end ifinfo
+
+This document describes how to use Microsoft Visual Studio to
+create a C or C++ project and link the target with UNU.RAN.
+
+@uref{http://statmath.wu-wien.ac.at/unuran,UNU.RAN}
+(Universal Non-Uniform RAndom Number generator) is
+a collection of algorithms for generating non-uniform
+pseudorandom variates as a library of C functions
+designed and implemented by the 
+@uref{http://statmath.wu-wien.ac.at/arvag,ARVAG}
+(Automatic Random VAriate Generation) project group in Vienna, and
+released under the GNU Public License (GPL).
+
+@c --------------------------------------------------------------------
+
+@node Folder, , TOP, TOP
+@section  UNU.RAN Installation Folder
+
+Throughout this document, the UNU.RAN installation folder is referred
+to as @file{<UNURANDIR>}. 
+For example, if UNU.RAN has been installed in the folder
+@file{C:\libunurandll}, references to @file{<UNURANDIR>/win32}
+represent @file{C:\libunurandll\win32}.
+
+
+
+@c --------------------------------------------------------------------
+@bye
+
+Using UNURAN with Microsoft Visual C++
+
+This file describes how to use Microsoft Visual Studio to:
+    . create a C or C++ project and link the target with UNURAN.
+
+UNURAN Installation Folder
+Throughout this document, the UNURAN installation folder is referred to as
+<UNURANDIR>
+For example, if UNURAN has been installed in the folder C:\libunurandll,
+references to <UNURANDIR>\win32 represent C:\libunurandll\win32.
+
+Building Your Own Project which Links with UNURAN
+Note: The information below applies to the Visual C++ .NET 2005.
+Let's assume that you want to build a target named example1.exe and have:
+    . a source file named example.c which uses the C API of the UNURAN
+      library;
+    . a folder where this file is located and which we'll refer to as
+      <MYAPPDIR>.
+
+
+One way to achieve that is to create a Solution named example.sln as
+described here.
+        1. Start Microsoft Visual Studio .NET 2005.
+        2. The first step is to build the example.sln solution.
+           From the File menu, select New->, and then Project....
+      The New Project dialog box appears.
+         . In the Project Types pane, select Visual C++ Projects.
+         . In the Templates pane, select the Win32 Project icon.
+         . Fill in the project name (example).
+         . If necessary, correct the location of the project (to
+           <MYAPPDIR>)
+         . Click OK
+      When the Win32 Application Wizard appears...
+         . Click on Application Settings.
+         . Select Console Application as Application type.
+         . Make sure that Empty project is checked in Additional Options.
+         . Click Finish.
+This creates a solution, example, with a single project, example. You can
+see the contents of the solution by selecting Solution Explorer in the View
+menu.
+        3. Now you must add your source file to the project. From the
+           Project menu, choose Add Existing Item...
+               . Move to the folder <MYAPPDIR> and select  example1.c.
+               . Click Open.
+        4. Next, you have to set some options so that the project knows
+           where to find the UNURAN include files and the UNURAN libraries.
+
+
+               . From the Project menu, choose example Properties.
+                 The example Property Pages dialog box appears.
+               . In the Configuration drop-down list, select Release.
+               . Select C/C++ in the Configuration Properties tree.
+               . Select General:
+               . In the Additional Include Directories field, add the
+                 directories:
+                    o <UNURANDIR>\win32.
+                    o Choose No for Detect 64-bit Portability Issues.
+               . Select Linker in the Configuration Properties tree.
+                    o Select General and then select Additional Library
+                      Directories.
+                    o Add the directory:  <UNURANDIR>\win32
+                    o Select Input and then select Additional Dependencies.
+                      Add the lib file: libunuran10.lib
+               . Click OK to close the example Property Pages dialog box.
+
+        5. Next, you have to set the default project configuration.
+               . From the Build menu, select Configuration Manager...
+               . Select Release in the Active Solution Configuration drop-
+                 down list.
+               . Click Close.
+        6. Next, you have to locate the libunuran10.dll file into
+           <MYAPPDIR>\example, or you have to adjust the PATH environmental
+           variable for the dll.
+        7. Finally, to build the project, from the Build menu, select Build
+           Solution
+        After completion of the compiling and linking process, the target
+      is created. The full path of the test.exe is
+      <MYAPPDIR>\example\Release\example.exe. Notice that, if you want to
+      run the example.exe by clicking on it, you need to locate the dll file
+      in the same directory.
+ 
+
+
+

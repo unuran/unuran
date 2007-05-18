@@ -197,7 +197,7 @@ _unur_fstr_node2string ( struct unur_string *output, const struct ftreenode *nod
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_fstr_print ( struct unur_string *output, const char *symb, const double number )
+_unur_fstr_print ( struct unur_string *output, const char *symb, double number )
      /*----------------------------------------------------------------------*/
      /* Print string or number into output string.                           */
      /* The number is only printed if symb is the NULL pointer.              */

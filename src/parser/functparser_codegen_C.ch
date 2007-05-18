@@ -435,7 +435,7 @@ _unur_fstr_C_sec ( FILE *out )
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_fstr_print_C ( struct unur_string *output, const char *symb, const double number )
+_unur_fstr_print_C ( struct unur_string *output, const char *symb, double number )
      /*----------------------------------------------------------------------*/
      /* Print string or number as C code into output string.                 */
      /* The number is only printed if symb is the NULL pointer.              */

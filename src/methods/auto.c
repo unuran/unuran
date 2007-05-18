@@ -346,6 +346,10 @@ _unur_init_discr( struct unur_par *par_auto )
       par = unur_dari_new(par_auto->distr);
       gen = unur_init(par);
       if (gen) break;
+      /* try again with DGT (in this case we have to compute the PV) */
+      par = unur_dgt_new(par_auto->distr);
+      gen = unur_init(par);
+      if (gen) break;
     }
 
     /* 3rd choice: DSTD */

@@ -39,7 +39,7 @@
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_fstr_eval_tree (const struct ftreenode *root, const double x)
+_unur_fstr_eval_tree (const struct ftreenode *root, double x)
      /*----------------------------------------------------------------------*/
      /* Evaluate function tree at x                                          */
      /*                                                                      */
@@ -112,7 +112,7 @@ double v_sgn    (NODE_ARGS) { CHECK_INF(r);    return ((r<0.) ? -1. : ((r>0.) ? 
 /*****************************************************************************/
 
 double
-_unur_fstr_eval_node (const struct ftreenode *node, const double x)
+_unur_fstr_eval_node (const struct ftreenode *node, double x)
      /*----------------------------------------------------------------------*/
      /* Evaluate function tree starting from `node' at x                     */
      /*                                                                      */

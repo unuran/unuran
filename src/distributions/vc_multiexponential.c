@@ -237,7 +237,7 @@ _unur_set_params_multiexponential( UNUR_DISTR *distr, const double *sigma, const
   }
 
   /* store number of parameters */
-  DISTR.n_params = 0.; /* we have only vector parameter here ... */
+  DISTR.n_params = 0; /* we have only vector parameter here ... */
 
   return UNUR_SUCCESS;
 } /* end of _unur_set_params_multiexponential() */

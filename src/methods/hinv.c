@@ -308,7 +308,7 @@ unur_hinv_new( const struct unur_distr *distr )
   PAR->guide_factor = 1.;         /* size of guide table / number of intervals */
   PAR->bleft = -1.e20;            /* left border of the computational domain   */
   PAR->bright = 1.e20;            /* right border of the computational domain  */
-  PAR->max_ivs = 1.e6;            /* maximal number of intervals             */
+  PAR->max_ivs = 1000000;         /* maximal number of intervals             */
   PAR->stp = NULL;                /* starting nodes                          */
   PAR->n_stp = 0;                 /* number of starting nodes                */
 

@@ -900,7 +900,7 @@ _unur_test_chi2test( double *prob,
   classmin = (classmin > 0) ? classmin : CHI2_CLASSMIN_DEFAULT;
 
   /* compute sample size */
-  for( samplesize=0., i=0; i<len; i++) 
+  for( samplesize=0, i=0; i<len; i++) 
     samplesize += observed[i];
 
   /* sum of probabilities (if not uniform distribution) */

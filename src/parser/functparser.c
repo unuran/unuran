@@ -546,7 +546,7 @@ static const char *_unur_fstr_error_code ( int perrno );
 /** (see also functparser_symbols.h)                                        **/
 /**-------------------------------------------------------------------------**/
 
-static double _unur_fstr_eval_node (const struct ftreenode *node, const double x);
+static double _unur_fstr_eval_node (const struct ftreenode *node, double x);
 /*---------------------------------------------------------------------------*/
 /* Evaluate function tree starting from `node' at x                          */
 /*---------------------------------------------------------------------------*/
@@ -576,7 +576,7 @@ static int _unur_fstr_node2string ( struct unur_string *output, const struct ftr
 /* Produce string from function tree.                                        */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_fstr_print ( struct unur_string *output, const char *symb, const double number );
+static int _unur_fstr_print ( struct unur_string *output, const char *symb, double number );
 /*---------------------------------------------------------------------------*/
 /* Print string or number into output string.                                */
 /* The number is only printed if symb is the NULL pointer.                   */
@@ -588,7 +588,7 @@ static int _unur_fstr_print ( struct unur_string *output, const char *symb, cons
 /**   Make C code for function given by its tree.                           **/
 /**-------------------------------------------------------------------------**/
 
-static int _unur_fstr_print_C ( struct unur_string *output, const char *symb, const double number );
+static int _unur_fstr_print_C ( struct unur_string *output, const char *symb, double number );
 /*---------------------------------------------------------------------------*/
 /* Print string or number as C code into output string.                      */
 /* The number is only printed if symb is the NULL pointer.                   */
@@ -615,7 +615,7 @@ static int _unur_fstr_C_sec ( FILE *out );
 /**   Make FORTRAN code for function given by its tree.                     **/
 /**-------------------------------------------------------------------------**/
 
-static int _unur_fstr_print_F ( struct unur_string *output, const char *symb, const double number );
+static int _unur_fstr_print_F ( struct unur_string *output, const char *symb, double number );
 /*---------------------------------------------------------------------------*/
 /* Print string or number as FORTRAN code into output string.                */
 /* The number is only printed if symb is the NULL pointer.                   */

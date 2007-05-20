@@ -16,6 +16,9 @@ AM_MAKEINFOFLAGS = \
 # Automatically created part of manual
 unuran_src = ./src/unuran_src.texi
 
+# Sources for (short) Win32 manual
+unuran_win32_TEXINFOS = unuran_win32.texi unuran_win32_libname.texi
+
 # Files with examples.
 # These example files are generated from the corresponding
 # files $(top_srcdir)/examples/example?.c
@@ -34,7 +37,7 @@ unuran_examples = \
  ./src/ref_example_emp.texi		./src/ref_example_emp_str.texi \
  ./src/ref_example_vemp.texi	./src/ref_example_FuncStr.texi
 
-# Sources of texinfo file
+# Sources for UNU.RAN manual
 unuran_TEXINFOS = \
  unuran.texi \
  ./src/methods_cont.texi \
@@ -51,14 +54,14 @@ unuran_TEXINFOS = \
  $(top_srcdir)/doc/figures/*.png \
  $(top_srcdir)/doc/figures/*.txt
 
+
 noinst_DATA = 
 
 EXTRA_DIST = \
- $(unuran_src) \
- $(unuran_examples) \
  unuran.html \
  unuran.txt \
  unuran.pdf
+
 
 # Generated texi files ...
 sinclude ./src/.dep-unuran_src_texi
@@ -77,6 +80,13 @@ unuran.txt: unuran.texi version.texi $(unuran_TEXINFOS)
 
 txt: unuran.txt
 
+# Name of Win32 libfile
+unuran_win32_libname.texi:
+	@echo -n "@set LIBUNURAN libunuran" > unuran_win32_libname.texi
+	@grep PACKAGE_VERSION $(top_srcdir)/config.h | \
+		sed 's/.*_VERSION\s*\"\(.*\)\..*\"/\1/' | sed 's/\.//' \
+	>> unuran_win32_libname.texi
+
 # Clean backup and temp files
 CLEANFILES = \
  *~
@@ -87,5 +97,6 @@ MAINTAINERCLEANFILES = \
  mdate-sh \
  $(unuran_examples) \
  $(unuran_src) \
+ unuran_win32_libname.texi \
  unuran.txt
 

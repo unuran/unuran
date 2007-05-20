@@ -12,8 +12,6 @@
 @setchapternewpage odd
 @c %**end of header
 
-@c @novalidate
-
 @c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 @c 
 @c Some data about this software
@@ -26,6 +24,7 @@
 
 @c Version ...
 @include version_win32.texi
+@include unuran_win32_libname.texi
 
 @c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 @c 
@@ -79,6 +78,7 @@ this permission notice are preserved on all copies.
 
 @menu
 * Folder:: UNU.RAN Installation Folder
+* Project:: Building Your Own Project which Links with UNU.RAN
 @end menu
 
 @ifinfo
@@ -111,92 +111,157 @@ For example, if UNU.RAN has been installed in the folder
 @file{C:\libunurandll}, references to @file{<UNURANDIR>/win32}
 represent @file{C:\libunurandll\win32}.
 
+@c --------------------------------------------------------------------
 
+@node Project, , TOP, TOP
+@section  Building Your Own Project which Links with UNU.RAN
+
+@emph{Note:} 
+The information below applies to the Visual C++ .NET 2005.
+
+@sp 1
+
+Let us assume that you want to build a target named
+@file{example.exe} and have:
+
+@itemize
+@item 
+a source file named @file{example.c} which uses the C API of the
+UNU.RAN library;
+@item
+a folder where this file is located and which we refer to as
+@file{<MYAPPDIR>}.
+@end itemize
+
+One way to build your project is to create a @emph{Solution} named
+@file{example.sln} as described here.
+
+@enumerate
+@item
+Start Microsoft Visual Studio .NET 2005.
+
+@item
+Build the @file{example.sln} solution: 
+
+@sp 1
+
+From the @file{File} menu, select @file{New->}, and then
+@file{Project}.
+
+@sp 1
+When the @file{New Project} dialog box appears then
+
+@itemize @minus
+@item
+In the @file{Project Types} pane, select @file{Visual C++ Projects}.
+@item
+In the @file{Templates pane}, select the @file{Win32 Project} icon.
+@item
+Fill in the project name (@samp{example}).
+@item
+If necessary, correct the location of the project (to
+@file{<MYAPPDIR>}).
+@item
+Click @file{OK}.
+@end itemize
+
+When the Win32 Application Wizard appears then
+
+@itemize @minus
+@item
+Click on @file{Application Settings}.
+@item
+Select @file{Console Application} as Application type.
+@item
+Make sure that @file{Empty project} is checked in @file{Additional
+Options}.
+@item
+Click @file{Finish}.
+@end itemize
+
+This creates a solution, @file{example}, with a single project,
+@file{example}. You can view the contents of the solution by selecting
+@file{Solution Explorer} in the @file{View} menu.
+
+@item
+Add your source file to the project. 
+From the @file{Project} menu, choose @file{Add Existing Item}:
+
+@itemize @minus
+@item
+Move to folder @file{<MYAPPDIR>} and select @file{example.c}.
+@item
+Click @file{Open}.
+@end itemize
+
+@item
+Set some options so that the project knows where to find the UNU.RAN
+include files and the UNU.RAN libraries.
+
+@itemize @minus
+@item
+From the @file{Project} menu, choose example @file{Properties}.
+The example @file{Property Pages} dialog box appears.
+@item
+In the @file{Configuration} drop-down list, select @file{Release}.
+@item
+Select @file{C/C++} in the @file{Configuration Properties} tree.
+@item
+Select @file{General}.
+@item
+In the @file{Additional Include Directories} field, add the
+directories
+@itemize .
+@item
+@file{<UNURANDIR>\win32}.
+@item
+Choose @file{No} for @file{Detect 64-bit Portability Issues}.
+@end itemize
+@item
+Select @file{Linker} in the @file{Configuration Properties} tree.
+@itemize .
+@item
+Select @file{General} and then select @file{Additional Library
+Directories}.
+@item
+Add directory @file{<UNURANDIR>\win32}.
+@item
+Select @file{Input} and then select @file{Additional Dependencies}.
+Add library file @file{@value{LIBUNURAN}.lib}.
+@end itemize
+@item
+Click @file{OK} to close the example @file{Property Pages} dialog box.
+@end itemize
+
+@item 
+Set the default project configuration.
+
+@itemize @minus
+@item
+From the @file{Build} menu, select @file{Configuration Manager}.
+@item
+Select @file{Release} in the @file{Active Solution Configuration}
+drop-down list.
+@item
+Click @file{Close}.
+@end itemize
+
+@item
+Next, you have to locate the @file{@value{LIBUNURAN}.dll} file into
+@file{<MYAPPDIR>\example}, or you have to adjust the @env{PATH}
+environmental variable for the dll.
+
+@item
+Finally, to build the project, from the @file{Build} menu, select
+@file{Build Solution}.
+
+@end enumerate
+
+After completion of the compiling and linking process, the target is
+created. The full path of the test.exe is
+@file{<MYAPPDIR>\example\Release\example.exe}. Notice that, if you
+want to run the @file{example.exe} by clicking on it, you need to
+locate the dll file in the same directory.
 
 @c --------------------------------------------------------------------
 @bye
-
-Using UNURAN with Microsoft Visual C++
-
-This file describes how to use Microsoft Visual Studio to:
-    . create a C or C++ project and link the target with UNURAN.
-
-UNURAN Installation Folder
-Throughout this document, the UNURAN installation folder is referred to as
-<UNURANDIR>
-For example, if UNURAN has been installed in the folder C:\libunurandll,
-references to <UNURANDIR>\win32 represent C:\libunurandll\win32.
-
-Building Your Own Project which Links with UNURAN
-Note: The information below applies to the Visual C++ .NET 2005.
-Let's assume that you want to build a target named example1.exe and have:
-    . a source file named example.c which uses the C API of the UNURAN
-      library;
-    . a folder where this file is located and which we'll refer to as
-      <MYAPPDIR>.
-
-
-One way to achieve that is to create a Solution named example.sln as
-described here.
-        1. Start Microsoft Visual Studio .NET 2005.
-        2. The first step is to build the example.sln solution.
-           From the File menu, select New->, and then Project....
-      The New Project dialog box appears.
-         . In the Project Types pane, select Visual C++ Projects.
-         . In the Templates pane, select the Win32 Project icon.
-         . Fill in the project name (example).
-         . If necessary, correct the location of the project (to
-           <MYAPPDIR>)
-         . Click OK
-      When the Win32 Application Wizard appears...
-         . Click on Application Settings.
-         . Select Console Application as Application type.
-         . Make sure that Empty project is checked in Additional Options.
-         . Click Finish.
-This creates a solution, example, with a single project, example. You can
-see the contents of the solution by selecting Solution Explorer in the View
-menu.
-        3. Now you must add your source file to the project. From the
-           Project menu, choose Add Existing Item...
-               . Move to the folder <MYAPPDIR> and select  example1.c.
-               . Click Open.
-        4. Next, you have to set some options so that the project knows
-           where to find the UNURAN include files and the UNURAN libraries.
-
-
-               . From the Project menu, choose example Properties.
-                 The example Property Pages dialog box appears.
-               . In the Configuration drop-down list, select Release.
-               . Select C/C++ in the Configuration Properties tree.
-               . Select General:
-               . In the Additional Include Directories field, add the
-                 directories:
-                    o <UNURANDIR>\win32.
-                    o Choose No for Detect 64-bit Portability Issues.
-               . Select Linker in the Configuration Properties tree.
-                    o Select General and then select Additional Library
-                      Directories.
-                    o Add the directory:  <UNURANDIR>\win32
-                    o Select Input and then select Additional Dependencies.
-                      Add the lib file: libunuran10.lib
-               . Click OK to close the example Property Pages dialog box.
-
-        5. Next, you have to set the default project configuration.
-               . From the Build menu, select Configuration Manager...
-               . Select Release in the Active Solution Configuration drop-
-                 down list.
-               . Click Close.
-        6. Next, you have to locate the libunuran10.dll file into
-           <MYAPPDIR>\example, or you have to adjust the PATH environmental
-           variable for the dll.
-        7. Finally, to build the project, from the Build menu, select Build
-           Solution
-        After completion of the compiling and linking process, the target
-      is created. The full path of the test.exe is
-      <MYAPPDIR>\example\Release\example.exe. Notice that, if you want to
-      run the example.exe by clicking on it, you need to locate the dll file
-      in the same directory.
- 
-
-
-

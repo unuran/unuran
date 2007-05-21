@@ -10,7 +10,8 @@ function usage () {
     echo "usage: build.sh [options] [--configure-options]"
     echo ""
     echo "   options:"
-    echo "      package .... create package (require RngStreams)"
+    echo "      dist ....... create distributio (zip file)"
+    echo "      rstream .... add Pierre L'Ecuyer's RngStreams package"
     echo "      examples ... run examples"
     echo "      check ...... run UNU.RAN tests"
     echo "      help ....... this message"
@@ -59,9 +60,12 @@ for arg in "$@"; do
 	help)           # Synopsis
 	        usage
 		;;
- 	package)	# Create package
-##		doc=true
-##		zip=true
+        dist)	        # Create package
+		doc=true
+		zip=true
+		export USE_RNGSTREAM=true
+		;;
+ 	rstream)	# add RngStreams package
 		export USE_RNGSTREAM=true
 		;;
 	examples)	# Compile, link and run all examples
@@ -142,7 +146,7 @@ mkdir "${WINDIST_DIR}"
 
 # create doc
 if [[ "${doc}" ]]; then
-	(cd doc; make unuran.pdf; cp -v unuran.pdf ../${WINDIST_DIR});
+	(cd doc; make pdf; cp -v *.pdf ../${WINDIST_DIR});
 fi
 
 # --- Create DLL ------------------------------------------------------------

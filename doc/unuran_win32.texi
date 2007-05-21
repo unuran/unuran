@@ -265,3 +265,14 @@ locate the dll file in the same directory.
 
 @c --------------------------------------------------------------------
 @bye
+Archive:  unuran-1.0.devel-win32.zip
+    testing: unuran/                  OK
+    testing: unuran/libunuran10.def   OK
+    testing: unuran/libunuran10.dll   OK
+    testing: unuran/libunuran10.dll.manifest   OK
+    testing: unuran/libunuran10.exp   OK
+    testing: unuran/libunuran10.lib   OK
+    testing: unuran/unuran.h          OK
+    testing: unuran/unuran.pdf        OK
+    testing: unuran/unuran_win32.pdf   OK
+No errors detected in compressed data of unuran-1.0.devel-win32.zip.

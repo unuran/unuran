@@ -145,15 +145,16 @@ $(TESTS_OBJ): $(TESTS_SRC)
 
 # --- Create ZIP file ------------------------------------------------------
 
-UNURANWIN_DIR=unuran-$(shell \
+ZIPFILE := unuran-$(shell \
 	grep PACKAGE_VERSION $(TOP_SRCDIR)/config.h | \
-	sed -e 's/.*_VERSION\s*\"\(.*\)\"/\1/')-win32
+	sed -e 's/.*_VERSION\s*\"\(.*\)\"/\1/')-win32.zip
 
-ZIPFILE=$(UNURANWIN_DIR).zip
+UNURANWIN_DIR := unuran
 
 zip:
 	@echo "Create ZIP file '$(ZIPFILE)' ..."
 	test ! -d $(UNURANWIN_DIR) || rm -rf $(UNURANWIN_DIR)
+	test ! -f $(ZIPFILE) || rm -f $(ZIPFILE)
 	test -d $(WINDIST_DIR) && \
 		mv $(WINDIST_DIR) $(UNURANWIN_DIR) && \
 		zip -r $(ZIPFILE) $(UNURANWIN_DIR) && \
@@ -165,6 +166,8 @@ zip:
 # Remove created files
 clean:
 	rm -rf $(WINDIST_DIR)
+	rm -rf $(UNURANWIN_DIR)
+	rm -f $(ZIPFILE)
 	rm -f $(UNURAN_OBJ)
 	rm -f $(SCRIPTS_DIR)/compute_machine_constants.exe
 	rm -f $(SCRIPTS_DIR)/compute_machine_constants.obj

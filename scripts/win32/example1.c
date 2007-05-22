@@ -13,7 +13,7 @@ int main(void)
   int    i;                /* loop variable                      */
   double x; int k;         /* will hold the random number        */
 
-  /* Declare the three UNURAN objects.                           */
+  /* Declare UNU.RAN objects.                                    */
   UNUR_GEN  *gen1, *gen2, *gen3; /* generator objects            */
 
   /* Declare objects for uniform random number generators.       */

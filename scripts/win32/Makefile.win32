@@ -25,7 +25,7 @@ UNURAN_RNGSTREAM_H := $(TOP_SRCDIR)/src/uniform/unuran_urng_rngstreams.h
 URNG_RNGSTREAM_H   := $(TOP_SRCDIR)/src/uniform/urng_rngstreams.h
 
 RNGSTREAM_CFLAGS := $(shell test -z ${USE_RNGSTREAM} \
-	|| echo "-I./src/uniform -DUNURAN_HAS_RNGSTREAM -DUNURAN_SUPPORTS_RNGSTREAM" )
+	|| echo "-I./src/uniform -DUNURAN_HAS_RNGSTREAM -DUNURAN_SUPPORTS_RNGSTREAM -DUNUR_URNG_DEFAULT_RNGSTREAM" )
 
 
 # UNU.RAN version: major.minor

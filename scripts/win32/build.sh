@@ -143,6 +143,8 @@ mkdir "${WINDIST_DIR}"
 # create all required UNU.RAN header files 
 (cd src/parser; make stringparser_lists.ch)
 (cd src; make unuran.h; cp -v unuran.h ../${WINDIST_DIR})
+(cd src/uniform; make unuran_urng_rngstreams.h; \
+    cp -v unuran_urng_rngstreams.h ../../${WINDIST_DIR})
 
 # create doc
 if [[ "${doc}" ]]; then

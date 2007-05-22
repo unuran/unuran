@@ -104,7 +104,7 @@ int main(void)
   {
     double probs[] = {0.5, 1.5, 1.0, 0.3};
     distr = unur_distr_discr_new();
-    unur_distr_discr_set_pv(probs,4);
+    unur_distr_discr_set_pv(distr, probs, 4);
   }
 
   /* Choose a method: 'DGT'.                                     */

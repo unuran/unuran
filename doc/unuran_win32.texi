@@ -77,8 +77,9 @@ this permission notice are preserved on all copies.
 @top  Using UNU.RAN with Microsoft Visual C
 
 @menu
-* Folder:: UNU.RAN Installation Folder
-* Project:: Building Your Own Project which Links with UNU.RAN
+* Installation:: Installation of binary distribution
+* IDE:: Building your own project in Visual Studio
+* CLI:: Building your own project on the command line
 @end menu
 
 @ifinfo
@@ -102,19 +103,72 @@ released under the GNU Public License (GPL).
 
 @c --------------------------------------------------------------------
 
-@node Folder, , TOP, TOP
-@section  UNU.RAN Installation Folder
+@node Installation, IDE, TOP, TOP
+@section  Installation of Binary Distribution
+
+@enumerate
+@item
+Download @value{ZIPFILENAME} from the UNU.RAN 
+@uref{http://statmath.wu-wien.ac.at/unuran/download.html,download}
+page.
+
+@item
+Unpack @value{ZIPFILENAME}. It creates directory @file{unuran} which
+contains the following files:
+
+@table @file
+@item unuran.h
+Header file to be included in your application source file.
+(Contains function prototypes, typedefs and macros.)
+
+@item @value{LIBUNURAN}.def
+Module-definition file.
+(Declares all functions exported the UNU.RAN library.)
+
+@item  @value{LIBUNURAN}.dll
+@itemx @value{LIBUNURAN}.dll.manifest
+DLL (Dynamic link library) and its manifest file (must always be
+located in the same directory).
+
+@item @value{LIBUNURAN}.lib
+Import library file.
+
+@item @value{LIBUNURAN}.exp
+Library export file.
+
+@item unuran.pdf
+UNU.RAN User Manual.
+
+@item unuran_win32.pdf
+Short description for building your own application using UNU.RAN with
+Microsoft Visual C.
+@end table
+
+@item
+@emph{Optional:}
+Move directory @file{unuran} into an appropriate place, e.g.
+@file{C:\unuran} (or maybe the folder where you build your
+application).
 
 Throughout this document, the UNU.RAN installation folder is referred
 to as @file{<UNURANDIR>}. 
 For example, if UNU.RAN has been installed in the folder
-@file{C:\libunurandll}, references to @file{<UNURANDIR>/win32}
-represent @file{C:\libunurandll\win32}.
+@file{C:\unuran}, references to
+@file{<UNURANDIR>\@value{LIBUNURAN}.lib} 
+represent @file{C:\unuran\@value{LIBUNURAN}.lib}. 
+
+@item
+@emph{Optional:}
+Add @file{<UNURANDIR>} to the @env{PATH} environmental variable.
+Thus your application can find the location of @value{LIBUNURAN}.dll
+when it is started.
+@end enumerate
+
 
 @c --------------------------------------------------------------------
 
-@node Project, , TOP, TOP
-@section  Building Your Own Project which Links with UNU.RAN
+@node IDE, CLI, Installation, TOP
+@section  Building your own project in Visual Studio
 
 @emph{Note:} 
 The information below applies to the Visual C++ .NET 2005.
@@ -127,7 +181,7 @@ Let us assume that you want to build a target named
 @itemize
 @item 
 a source file named @file{example.c} which uses the C API of the
-UNU.RAN library;
+UNU.RAN library (or alternatively a C++ file @file{example.cpp});
 @item
 a folder where this file is located and which we refer to as
 @file{<MYAPPDIR>}.
@@ -143,12 +197,9 @@ Start Microsoft Visual Studio .NET 2005.
 @item
 Build the @file{example.sln} solution: 
 
-@sp 1
-
-From the @file{File} menu, select @file{New->}, and then
+From the @file{File} menu, select @file{New}, and then
 @file{Project}.
 
-@sp 1
 When the @file{New Project} dialog box appears then
 
 @itemize @minus
@@ -171,10 +222,10 @@ When the Win32 Application Wizard appears then
 @item
 Click on @file{Application Settings}.
 @item
-Select @file{Console Application} as Application type.
+Select @file{Console Application} as application type.
 @item
-Make sure that @file{Empty project} is checked in @file{Additional
-Options}.
+Make sure that @file{Empty Project} is checked in 
+@file{Additional Options}.
 @item
 Click @file{Finish}.
 @end itemize
@@ -184,7 +235,7 @@ This creates a solution, @file{example}, with a single project,
 @file{Solution Explorer} in the @file{View} menu.
 
 @item
-Add your source file to the project. 
+Add your source file to the project.
 From the @file{Project} menu, choose @file{Add Existing Item}:
 
 @itemize @minus
@@ -209,13 +260,12 @@ Select @file{C/C++} in the @file{Configuration Properties} tree.
 @item
 Select @file{General}.
 @item
-In the @file{Additional Include Directories} field, add the
-directories
+In the @file{Additional Include Directories} field
 @itemize .
 @item
-@file{<UNURANDIR>\win32}.
+add directory @file{<UNURANDIR>};
 @item
-Choose @file{No} for @file{Detect 64-bit Portability Issues}.
+choose @file{No} for @file{Detect 64-bit Portability Issues}.
 @end itemize
 @item
 Select @file{Linker} in the @file{Configuration Properties} tree.
@@ -224,7 +274,7 @@ Select @file{Linker} in the @file{Configuration Properties} tree.
 Select @file{General} and then select @file{Additional Library
 Directories}.
 @item
-Add directory @file{<UNURANDIR>\win32}.
+Add directory @file{<UNURANDIR>}.
 @item
 Select @file{Input} and then select @file{Additional Dependencies}.
 Add library file @file{@value{LIBUNURAN}.lib}.
@@ -249,7 +299,8 @@ Click @file{Close}.
 @item
 Next, you have to locate the @file{@value{LIBUNURAN}.dll} file into
 @file{<MYAPPDIR>\example}, or you have to adjust the @env{PATH}
-environmental variable for the dll.
+environmental variable for the dll
+(@pxref{Installation})
 
 @item
 Finally, to build the project, from the @file{Build} menu, select
@@ -258,21 +309,22 @@ Finally, to build the project, from the @file{Build} menu, select
 @end enumerate
 
 After completion of the compiling and linking process, the target is
-created. The full path of the test.exe is
+created. The full path of the executable is
 @file{<MYAPPDIR>\example\Release\example.exe}. Notice that, if you
 want to run the @file{example.exe} by clicking on it, you need to
 locate the dll file in the same directory.
 
+
+@c --------------------------------------------------------------------
+
+@node CLI, , IDE, TOP
+@section  Building your own project on the command line  
+
+@example
+cl.exe /O2 /W3 /MD /I<UNURANDIR> /Feexample.exe example.obj @value{LIBUNURAN}.dll
+@end example
+@c	cl.exe /O2 /W3 /MD /I<UNURANDIR> /Feexample.exe example.obj @value{LIBUNURAN}.dll
+@c	cl.exe /O2 /W3 /MD /I<UNURANDIR> /Foexample.c -c example.obj
+
 @c --------------------------------------------------------------------
 @bye
-Archive:  unuran-1.0.devel-win32.zip
-    testing: unuran/                  OK
-    testing: unuran/libunuran10.def   OK
-    testing: unuran/libunuran10.dll   OK
-    testing: unuran/libunuran10.dll.manifest   OK
-    testing: unuran/libunuran10.exp   OK
-    testing: unuran/libunuran10.lib   OK
-    testing: unuran/unuran.h          OK
-    testing: unuran/unuran.pdf        OK
-    testing: unuran/unuran_win32.pdf   OK
-No errors detected in compressed data of unuran-1.0.devel-win32.zip.

@@ -86,6 +86,10 @@ unuran_win32_libname.texi:
 	@grep PACKAGE_VERSION $(top_srcdir)/config.h | \
 		sed 's/.*_VERSION\s*\"\(.*\)\..*\"/\1/' | sed 's/\.//' \
 	>> unuran_win32_libname.texi
+	@echo -n "@set ZIPFILENAME unuran-" >> unuran_win32_libname.texi
+	@grep PACKAGE_VERSION $(top_srcdir)/config.h | \
+		sed 's/.*_VERSION\s*\"\(.*\)\"/\1-win32.zip/' \
+	>> unuran_win32_libname.texi
 
 # Clean backup and temp files
 CLEANFILES = \

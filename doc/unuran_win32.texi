@@ -226,9 +226,9 @@ When the @file{New Project} dialog box appears then
 
 @itemize @minus
 @item
-In the @file{Project Types} pane, select @file{Visual C++ Projects}.
+In the @file{Project Types} pane, select @file{Visual C++ Win32 Projects}.
 @item
-In the @file{Templates pane}, select the @file{Win32 Project} icon.
+In the @file{Templates pane}, select the @file{Win32 Console Project} icon.
 @item
 Fill in the project name (@samp{example}).
 @item
@@ -264,7 +264,7 @@ From the @file{Project} menu, choose @file{Add Existing Item}:
 @item
 Move to folder @file{<MYAPPDIR>} and select @file{example.c}.
 @item
-Click @file{Open}.
+Click @file{Add}.
 @end itemize
 
 @item
@@ -273,8 +273,8 @@ include files and the UNU.RAN libraries.
 
 @itemize @minus
 @item
-From the @file{Project} menu, choose example @file{Properties}.
-The example @file{Property Pages} dialog box appears.
+From the @file{Project} menu, choose @file{example Properties}.
+The @file{example Property Pages} dialog box appears.
 @item
 In the @file{Configuration} drop-down list, select @file{Release}.
 @item
@@ -302,7 +302,7 @@ Select @file{Input} and then select @file{Additional Dependencies}.
 Add library file @file{@value{LIBUNURAN}.lib}.
 @end itemize
 @item
-Click @file{OK} to close the example @file{Property Pages} dialog box.
+Click @file{OK} to close the @file{example Property Pages} dialog box.
 @end itemize
 
 @item 
@@ -319,12 +319,6 @@ Click @file{Close}.
 @end itemize
 
 @item
-Next, you have to locate the @file{@value{LIBUNURAN}.dll} file into
-@file{<MYAPPDIR>\example}, or you have to adjust the @env{PATH}
-environment variable for the dll
-(@pxref{Installation})
-
-@item
 Finally, to build the project, from the @file{Build} menu, select
 @file{Build Solution}.
 
@@ -334,8 +328,8 @@ After completion of the compiling and linking process, the target is
 created. The full path of the executable is
 @file{<MYAPPDIR>\example\Release\example.exe}. Notice that, if you
 want to run the @file{example.exe} by clicking on it, you need to
-locate the DLL file in the same directory.
-
+locate the DLL file in the same directory or adjust the @env{PATH}
+environment variable for the DLL (@pxref{Installation}).
 
 @c --------------------------------------------------------------------
 

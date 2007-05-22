@@ -80,6 +80,7 @@ this permission notice are preserved on all copies.
 * Installation:: Installation of binary distribution
 * IDE:: Building your own project in Visual Studio
 * CLI:: Building your own project on the command line
+* Examples:: Two Small Examples
 @end menu
 
 @ifinfo
@@ -101,6 +102,19 @@ designed and implemented by the
 (Automatic Random VAriate Generation) project group in Vienna, and
 released under the GNU Public License (GPL).
 
+This binary distribution also has support for Pierre L'Ecuyers
+@uref{http://statmath.wu-wien.ac.at/software/RngStreams,RngStreams}
+library. This library is already compiled into the distributed DLL,
+the corresponding header file is included in this package.
+
+The DLL is linked against the C run-time library @file{MSVCRT.lib}.
+Thus the file @file{MSVCR80.DLL} must be available at run time for 
+applications linked with UNU.RAN and @file{MSVCRT.lib} (i.e., included
+in the envirenment variate @env{PATH}).
+For details see the 
+@uref{http://msdn2.microsoft.com/en-us/library/60k1461a(VS.80).aspx,Microsoft Visual C++}
+manual.
+
 @c --------------------------------------------------------------------
 
 @node Installation, IDE, TOP, TOP
@@ -120,6 +134,10 @@ contains the following files:
 @item unuran.h
 Header file to be included in your application source file.
 (Contains function prototypes, typedefs and macros.)
+
+@item  RngStream.h
+@itemx unuran_urng_rngstreams.h
+Header files required for using the @file{RngStream} library.
 
 @item @value{LIBUNURAN}.def
 Module-definition file.
@@ -142,6 +160,10 @@ UNU.RAN User Manual.
 @item unuran_win32.pdf
 Short description for building your own application using UNU.RAN with
 Microsoft Visual C.
+
+@item  example1.c
+@itemx example2.c
+Two example files. 
 @end table
 
 @item
@@ -159,7 +181,7 @@ represent @file{C:\unuran\@value{LIBUNURAN}.lib}.
 
 @item
 @emph{Optional:}
-Add @file{<UNURANDIR>} to the @env{PATH} environmental variable.
+Add @file{<UNURANDIR>} to the @env{PATH} environment variable.
 Thus your application can find the location of @value{LIBUNURAN}.dll
 when it is started.
 @end enumerate
@@ -168,7 +190,7 @@ when it is started.
 @c --------------------------------------------------------------------
 
 @node IDE, CLI, Installation, TOP
-@section  Building your own project in Visual Studio
+@section  Building Your Own Project in Visual Studio
 
 @emph{Note:} 
 The information below applies to the Visual C++ .NET 2005.
@@ -299,7 +321,7 @@ Click @file{Close}.
 @item
 Next, you have to locate the @file{@value{LIBUNURAN}.dll} file into
 @file{<MYAPPDIR>\example}, or you have to adjust the @env{PATH}
-environmental variable for the dll
+environment variable for the dll
 (@pxref{Installation})
 
 @item
@@ -312,19 +334,94 @@ After completion of the compiling and linking process, the target is
 created. The full path of the executable is
 @file{<MYAPPDIR>\example\Release\example.exe}. Notice that, if you
 want to run the @file{example.exe} by clicking on it, you need to
-locate the dll file in the same directory.
+locate the DLL file in the same directory.
 
 
 @c --------------------------------------------------------------------
 
-@node CLI, , IDE, TOP
-@section  Building your own project on the command line  
+@node CLI, Examples, IDE, TOP
+@section  Building Your Own Project on the Command Line  
 
-@example
-cl.exe /O2 /W3 /MD /I<UNURANDIR> /Feexample.exe example.obj @value{LIBUNURAN}.dll
+First you have to set the appropriate environment variables to enable
+32-bit command-line builds by means of the @file{vcvars32.bat} file:
+
+@enumerate
+@item
+At the command prompt, change to the @file{\bin} subdirectory of your
+Visual C++ installation.
+
+@item
+Run @file{vcvars32.bat} by typing @code{VCVARS32}.
+@end enumerate
+
+Then change to your application folder @file{<MYAPPDIR>}) that
+contains your source file(s) (C or C++).
+Assume you have one C source file @file{example.c}. Then you can
+compile and link your executable by
+
+@example 
+cl /O2 /W3 /MD /I<UNURANDIR> example.c @value{LIBUNURAN}.lib /link /LIBPATH:<UNURANDIR>
 @end example
-@c	cl.exe /O2 /W3 /MD /I<UNURANDIR> /Feexample.exe example.obj @value{LIBUNURAN}.dll
-@c	cl.exe /O2 /W3 /MD /I<UNURANDIR> /Foexample.c -c example.obj
+
+which creates the file @file{example.exe}.
+
+When you want to run @file{example} then the location of the DLL 
+@value{LIBUNURAN}.dll (and that of the C run-time library
+@file{msvcr80.dll}) have to be included in the environment variable
+@env{PATH} (or you need to locate these DLLs in the same directory).
+
+@c --------------------------------------------------------------------
+
+@c @node Examples, Example1, CLI, TOP
+@node Examples, , CLI, TOP
+@section  Two Small Examples
+
+Here we give small examples. These show
+
+@itemize
+@item
+How to seed the seed for the 
+@uref{http://statmath.wu-wien.ac.at/software/RngStreams,RngStreams}
+library.
+
+@item
+How to create an UNU.RAN generator for a given target distribution.
+For more detailed information we refer to the 
+@uref{http://statmath.wu-wien.ac.at/unuran/doc/unuran.html,UNU.RAN manual}.
+
+@item
+How to use an independent stream of uniform random numbers for one of
+these UNU.RAN generators.
+
+@item
+We demonstrate the usage of the easy to use String API.
+
+@item
+We furthermore show the same example with the more flexible C API.
+@end itemize
+
+@menu
+* Example1:: The String API
+* Example2:: The C API
+@end menu
+
+@c --------------------------------------------------------------------
+
+@node Example1, Example2, Examples, Examples
+@section  The String API
+
+@smallexample
+@include ref_example_win32_1.texi
+@end smallexample
+
+@c --------------------------------------------------------------------
+
+@node Example2, , Example1, Examples
+@section  The C API
+
+@smallexample
+@include ref_example_win32_2.texi
+@end smallexample
 
 @c --------------------------------------------------------------------
 @bye

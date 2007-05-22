@@ -13,15 +13,13 @@ AM_MAKEINFOFLAGS = \
  -I $(top_srcdir)/doc/src \
  --no-split
 
+
 # Automatically created part of manual
 unuran_src = ./src/unuran_src.texi
 
-# Sources for (short) Win32 manual
-unuran_win32_TEXINFOS = unuran_win32.texi unuran_win32_libname.texi
-
 # Files with examples.
 # These example files are generated from the corresponding
-# files $(top_srcdir)/examples/example?.c
+# files $(top_srcdir)/examples/example*.c
 unuran_examples = \
  ./src/ref_example0.texi	./src/ref_example0_str.texi \
  ./src/ref_example1.texi	./src/ref_example1_str.texi \
@@ -55,6 +53,21 @@ unuran_TEXINFOS = \
  $(top_srcdir)/doc/figures/*.txt
 
 
+# Sources for (short) Win32 manual
+
+# Files with examples.
+# These example files are generated from the corresponding
+# files $(top_srcdir)/scripts/win32/example?.c
+unuran_win32_examples = \
+ ./src/ref_example_win32_1.texi \
+ ./src/ref_example_win32_2.texi
+
+unuran_win32_TEXINFOS = \
+ unuran_win32.texi \
+ unuran_win32_libname.texi \
+ $(unuran_win32_examples)
+
+
 noinst_DATA = 
 
 EXTRA_DIST = \
@@ -71,6 +84,10 @@ $(unuran_src): $(top_srcdir)/doc/src/make_texi.pl
 # Generated texi files for examples ...
 $(unuran_examples): $(top_srcdir)/examples/example*.c
 	sed 's/{/@{/g;s/}/@}/g' < $(top_srcdir)/examples/`echo $* | sed 's/src\/ref_//'`.c > $@
+
+$(unuran_win32_examples): $(top_srcdir)/scripts/win32/example*.c
+	sed 's/{/@{/g;s/}/@}/g' < \
+		$(top_srcdir)/scripts/win32/`echo $* | sed 's/src\/ref_//' | sed 's/_win32_//'`.c > $@
 
 # Rules for creating info, html, dvi, ps, and pdf files are provided by automake.
 # Add new rules for txt.
@@ -99,8 +116,9 @@ CLEANFILES = \
 MAINTAINERCLEANFILES = \
  Makefile.in \
  mdate-sh \
- $(unuran_examples) \
  $(unuran_src) \
+ $(unuran_examples) \
+ $(unuran_win32_examples) \
  unuran_win32_libname.texi \
  unuran.txt
 

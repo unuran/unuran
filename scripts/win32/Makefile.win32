@@ -59,7 +59,8 @@ INT=$(shell test -z ${USE_PRIVATE} || echo "-I")
 
 
 # Examples
-EXAMPLES_SRC := $(wildcard $(TOP_SRCDIR)/examples/*.c) 
+EXAMPLES_SRC := $(wildcard $(TOP_SRCDIR)/examples/*.c) \
+	$(wildcard $(WINDIST_DIR)/example*.c)
 EXAMPLES_OBJ := $(EXAMPLES_SRC:.c=.obj)
 EXAMPLES_EXE := $(EXAMPLES_SRC:.c=.exe)
 

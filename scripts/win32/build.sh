@@ -119,13 +119,6 @@ fi
 
 # --- Prepare UNU.RAN -------------------------------------------------------
 
-# Do we use Rngstreams library?
-if [[ -n "${USE_RNGSTREAM}" ]]; then
-    cp -v ../rngstreams/src/RngStream.[ch] ./src/uniform
-else
-    rm -vf cp ./src/uniform/RngStream.*
-fi
-
 # create 'config.h' and Makefiles using autotools
 if [[ !( -f ./configure ) ]]; then
 	autoreconf -i
@@ -143,8 +136,17 @@ mkdir "${WINDIST_DIR}"
 # create all required UNU.RAN header files 
 (cd src/parser; make stringparser_lists.ch)
 (cd src; make unuran.h; cp -v unuran.h ../${WINDIST_DIR})
-(cd src/uniform; make unuran_urng_rngstreams.h; \
-    cp -v unuran_urng_rngstreams.h ../../${WINDIST_DIR})
+(cd src/uniform; make unuran_urng_rngstreams.h)
+
+# Do we use Rngstreams library?
+if [[ -n "${USE_RNGSTREAM}" ]]; then
+    cp -v ../rngstreams/src/RngStream.[ch] ./src/uniform
+    cp -v ../rngstreams/src/RngStream.h  ${WINDIST_DIR}
+    cp -v ./src/uniform/unuran_urng_rngstreams.h  ${WINDIST_DIR}
+    cp -v ./scripts/win32/example*.c  ${WINDIST_DIR}
+else
+    rm -vf cp ./src/uniform/RngStream.*
+fi
 
 # create doc
 if [[ "${doc}" ]]; then

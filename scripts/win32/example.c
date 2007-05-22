@@ -43,7 +43,7 @@ int main(void)
   /* Now you can use the generator object `gen1' to sample from  */
   /* the target distribution. Eg.:                               */
   for (i=0; i<10; i++) {
-    x = unur_sample_cont(gen);
+    x = unur_sample_cont(gen1);
     printf("%f\n",x);
   }
 
@@ -61,20 +61,20 @@ int main(void)
 
   /* Draw a sample.                                              */
   for (i=0; i<10; i++) {
-    x = unur_sample_cont(gen); printf("%f\n",x);
+    x = unur_sample_cont(gen2); printf("%f\n",x);
   }
 
   /* -- Example 3 ---------------------------------------------- */
   /* Discrete distribution with given probability vector.        */
   /* Use method 'DGT' (Discrete Guide Table method).             */
-  gen3 = unur_str2gen("discr; pv=(0.5,1.5,1.0,0.3) & method=DGT")
+  gen3 = unur_str2gen("discr; pv=(0.5,1.5,1.0,0.3) & method=DGT");
   if (gen3 == NULL) exit (EXIT_FAILURE);
 
   /* we use the default URNG again. So there is nothing to do.   */
 
   /* Draw a sample. Notice that we get integers!                 */
   for (i=0; i<10; i++) {
-    k = unur_sample_discr(gen); printf("%d\n",k);
+    k = unur_sample_discr(gen3); printf("%d\n",k);
   }
 
   /* -- Call destructor ---------------------------------------- */

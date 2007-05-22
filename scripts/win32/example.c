@@ -1,5 +1,5 @@
 /* ------------------------------------------------------------- */
-/* File: example.c                                               */
+/* File: example1.c                                              */
 /* ------------------------------------------------------------- */
 
 /* Include UNURAN header files.                                  */
@@ -10,82 +10,79 @@
 
 int main(void)
 {
-  int    i;          /* loop variable                            */
-  double x;          /* will hold the random number              */
+  int    i;                /* loop variable                      */
+  double x; int k;         /* will hold the random number        */
 
   /* Declare the three UNURAN objects.                           */
-  UNUR_DISTR *distr;    /* distribution object                   */
-  UNUR_PAR   *par;      /* parameter object                      */
-  UNUR_GEN   *gen;      /* generator object                      */
+  UNUR_GEN  *gen1, *gen2, *gen3; /* generator objects            */
 
   /* Declare objects for uniform random number generators.       */
-  UNUR_URNG  *urng_global;    /* uniform RN generator object     */
-  UNUR_URNG  *urng_local;     /* uniform RN generator object     */
+  UNUR_URNG  *urng2;       /* uniform RN generator object        */
 
-  /* -- Prepare for using RNGSTREAMS library ------------------- */
+  /* -- Optional: Set seed for RNGSTREAMS library -------------- */
 
   /* The RNGSTREAMS library sets a package seed.                 */
   unsigned long seed[] = {111u, 222u, 333u, 444u, 555u, 666u};
   RngStream_SetPackageSeed(seed);
 
-  /* Make a object for uniform random number generator.          */
-  /* For details see                                             */
-  /* http://statmath.wu-wien.ac.at/software/RngStreams/          */
-  urng_global = unur_urng_rngstream_new("urng-global");
-  if (urng_global == NULL) exit (EXIT_FAILURE);
-
-  /* Set default URNG.                                           */
-  unur_set_default_urng( urng_default );
-
   /* -- Example 1 ---------------------------------------------- */
+  /* Beta distribution with shape parameters 2 and 3.            */
+  /* Use method 'AUTO' (AUTOmatic).                              */
 
-  /* Create generator for the Beta distribution with shape       */
-  /* parameters 2 and 3. Use method "AUTOmatic".                 */
-  gen = unur_str2gen("beta(2,3)");
+  /* Create generator object.                                    */
+  gen1 = unur_str2gen("beta(2,3)");
 
   /* It is important to check if the creation of the generator   */
-  /* object was successful. Otherwise `gen' is the NULL pointer  */ 
+  /* object was successful. Otherwise `gen1' is the NULL pointer */ 
   /* and would cause a segmentation fault if used for sampling.  */
-  if (gen == NULL) {
+  if (gen1 == NULL) {
      fprintf(stderr, "ERROR: cannot create generator object\n");
      exit (EXIT_FAILURE);
   }
 
-  /* Now you can use the generator object `gen' to sample from   */
-  /* the distribution. Eg.:                                      */
+  /* Now you can use the generator object `gen1' to sample from  */
+  /* the target distribution. Eg.:                               */
   for (i=0; i<10; i++) {
     x = unur_sample_cont(gen);
     printf("%f\n",x);
   }
-
-  /* When you do not need the generator object any more, you     */
-  /* can destroy it.                                             */
-  unur_free(gen);
 
   /* -- Example 2 ---------------------------------------------- */
+  /* Student's t distribution with 3 degrees of freedom.         */
+  /* Use method 'TDR' (Transformed Density Rejection) with       */
+  /* "immediate acception"                                       */
+  gen2 = unur_str2gen("student(3) & method=TDR; variant_ia");
+  if (gen2 == NULL) exit (EXIT_FAILURE);
 
-  /* Create generator for the t distribution with 3 degrees of   */
-  /* freedom. Use method "TDR" (Transformed Density Rejection).  */
-  gen = unur_str2gen("student(3) & method=TDR");
-  
-  /* Now we want to switch to a different (independent) stream   */
-  /* of uniform random numbers.                                  */
-  urng_local = unur_urng_rngstream_new("urng-local");
-  if (urng2 == NULL) exit (EXIT_FAILURE);
-  unur_chg_urng( gen, urng-local );
+  /* However, this time we use a (new) independent stream of     */
+  /* uniformrandom numbers.                                      */
+  urng2 = unur_urng_rngstream_new("urng2");
+  unur_chg_urng( gen2, urng2 );
 
-  /* Draw sample ...                                             */
+  /* Draw a sample.                                              */
   for (i=0; i<10; i++) {
-    x = unur_sample_cont(gen);
-    printf("%f\n",x);
+    x = unur_sample_cont(gen); printf("%f\n",x);
   }
 
-  /* Destroy generator object (when it is not required any more) */
-  unur_free(gen);
+  /* -- Example 3 ---------------------------------------------- */
+  /* Discrete distribution with given probability vector.        */
+  /* Use method 'DGT' (Discrete Guide Table method).             */
+  gen3 = unur_str2gen("discr; pv=(0.5,1.5,1.0,0.3) & method=DGT")
+  if (gen3 == NULL) exit (EXIT_FAILURE);
 
-  /* We also should destroy the uniform random number generators.*/
-  unur_urng_free(urng-local);
-  unur_urng_free(NULL);
+  /* we use the default URNG again. So there is nothing to do.   */
+
+  /* Draw a sample. Notice that we get integers!                 */
+  for (i=0; i<10; i++) {
+    k = unur_sample_discr(gen); printf("%d\n",k);
+  }
+
+  /* -- Call destructor ---------------------------------------- */
+  /* When generators are not needed any they can be destroyed.   */
+
+  unur_free(gen1);
+  unur_free(gen2);  unur_urng_free(urng2);
+  unur_free(gen3);
 
   exit (EXIT_SUCCESS);
 } /* end of main() */

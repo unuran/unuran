@@ -11,8 +11,8 @@ Version 1.0.1: Mai 2007
 	* Distributions:
 
 	- CONT (continuous univariate distribution):
-	  compute PDF and dPDF when unur_distr_cont_set_cdfstr()
-	  is called.
+	  compute PDF and dPDF when the CDF is set by a 
+	  unur_distr_cont_set_cdfstr() call.
 
 
 Version 1.0.0: April 2007

@@ -78,9 +78,10 @@ this permission notice are preserved on all copies.
 
 @menu
 * Installation:: Installation of binary distribution
+* URNG:: Uniform random number generator
 * IDE:: Building your own project in Visual Studio
 * CLI:: Building your own project on the command line
-* Examples:: Two Small Examples
+* Examples:: Two Examples
 @end menu
 
 @ifinfo
@@ -117,7 +118,7 @@ manual.
 
 @c --------------------------------------------------------------------
 
-@node Installation, IDE, TOP, TOP
+@node Installation, URNG, TOP, TOP
 @section  Installation of Binary Distribution
 
 @enumerate
@@ -189,7 +190,37 @@ when it is started.
 
 @c --------------------------------------------------------------------
 
-@node IDE, CLI, Installation, TOP
+@node URNG, IDE, Installation, TOP
+@section  Uniform Random Number Generator
+
+This binary distribution uses Pierre L'Ecuyers
+@uref{http://statmath.wu-wien.ac.at/software/RngStreams,RngStreams}
+library as its default uniform random number generator.
+This library uses a package seed. Thus you should add the 
+following piece of code at the beginning of your application (at least
+before you call any of the UNU.RAN functions):
+
+@example
+unsigned long seed[] = @{111u, 222u, 333u, 444u, 555u, 666u@};
+RngStream_SetPackageSeed(seed);
+@end example
+
+@noindent
+where @code{111u}, @dots{}, @code{666u} should be replaced by your
+seeds. 
+
+@sp 1
+@noindent
+@emph{Remark:} 
+UNU.RAN works with any source of uniform random numbers.
+We refer to the UNU.RAN for details if you want to use your own
+uniform random number generator instead of the @file{RngStreams}
+library. 
+
+
+@c --------------------------------------------------------------------
+
+@node IDE, CLI, URNG, TOP
 @section  Building Your Own Project in Visual Studio
 
 @emph{Note:} 
@@ -331,6 +362,7 @@ want to run the @file{example.exe} by clicking on it, you need to
 locate the DLL file in the same directory or adjust the @env{PATH}
 environment variable for the DLL (@pxref{Installation}).
 
+
 @c --------------------------------------------------------------------
 
 @node CLI, Examples, IDE, TOP
@@ -364,11 +396,11 @@ When you want to run @file{example} then the location of the DLL
 @file{msvcr80.dll}) have to be included in the environment variable
 @env{PATH} (or you need to locate these DLLs in the same directory).
 
+
 @c --------------------------------------------------------------------
 
-@c @node Examples, Example1, CLI, TOP
-@node Examples, , CLI, TOP
-@section  Two Small Examples
+@node Examples, Example1, CLI, TOP
+@section  Two Examples
 
 Here we give small examples. These show
 
@@ -399,6 +431,7 @@ We furthermore show the same example with the more flexible C API.
 * Example2:: The C API
 @end menu
 
+
 @c --------------------------------------------------------------------
 
 @node Example1, Example2, Examples, Examples
@@ -407,6 +440,7 @@ We furthermore show the same example with the more flexible C API.
 @smallexample
 @include ref_example_win32_1.texi
 @end smallexample
+
 
 @c --------------------------------------------------------------------
 

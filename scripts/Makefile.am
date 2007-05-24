@@ -12,7 +12,9 @@ EXTRA_DIST = \
 \
  win32/Makefile.win32 \
  win32/build.sh \
- win32/make_dll_def.pl 
+ win32/make_dll_def.pl \
+ win32/example1.c \
+ win32/example2.c
 
 noinst_HEADERS = \
   $(top_srcdir)/src/utils/unur_fp_const_source.h

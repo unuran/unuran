@@ -63,8 +63,9 @@ static double _unur_distr_cont_eval_dlogpdf_tree( double x, const struct unur_di
 /*---------------------------------------------------------------------------*/
 
 static double _unur_distr_cont_eval_cdf_tree( double x, const struct unur_distr *distr );
+static double _unur_distr_cont_eval_logcdf_tree( double x, const struct unur_distr *distr );
 /*---------------------------------------------------------------------------*/
-/* evaluate function tree for CDF.                                           */
+/* evaluate function tree for (log) CDF.                                     */
 /*---------------------------------------------------------------------------*/
 
 static double _unur_distr_cont_eval_hr_tree( double x, const struct unur_distr *distr );
@@ -142,6 +143,7 @@ unur_distr_cont_new( void )
   DISTR.logpdf    = NULL;          /* pointer to logPDF                      */
   DISTR.dlogpdf   = NULL;          /* pointer to derivative of logPDF        */
   DISTR.cdf       = NULL;          /* pointer to CDF                         */
+  DISTR.logcdf    = NULL;          /* pointer to logCDF                      */
   DISTR.hr        = NULL;          /* pointer to HR                          */
 
   DISTR.init      = NULL;          /* pointer to special init routine        */
@@ -177,6 +179,7 @@ unur_distr_cont_new( void )
   DISTR.logpdftree = NULL;         /* pointer to function tree for logPDF    */
   DISTR.dlogpdftree = NULL;        /* pointer to function tree for dlogPDF   */
   DISTR.cdftree    = NULL;         /* pointer to function tree for CDF       */
+  DISTR.logcdftree = NULL;         /* pointer to function tree for logCDF    */
   DISTR.hrtree     = NULL;         /* pointer to function tree for HR        */
 
   /* return pointer to object */
@@ -222,6 +225,7 @@ _unur_distr_cont_clone( const struct unur_distr *distr )
   CLONE.logpdftree  = (DISTR.logpdftree)  ? _unur_fstr_dup_tree(DISTR.logpdftree)  : NULL;
   CLONE.dlogpdftree = (DISTR.dlogpdftree) ? _unur_fstr_dup_tree(DISTR.dlogpdftree) : NULL;
   CLONE.cdftree  = (DISTR.cdftree)  ? _unur_fstr_dup_tree(DISTR.cdftree)  : NULL;
+  CLONE.logcdftree  = (DISTR.logcdftree)  ? _unur_fstr_dup_tree(DISTR.logcdftree)  : NULL;
   CLONE.hrtree   = (DISTR.hrtree)   ? _unur_fstr_dup_tree(DISTR.hrtree)   : NULL;
  
   /* clone of parameter arrays */  
@@ -288,6 +292,7 @@ _unur_distr_cont_free( struct unur_distr *distr )
   if (DISTR.logpdftree)  _unur_fstr_free(DISTR.logpdftree);
   if (DISTR.dlogpdftree) _unur_fstr_free(DISTR.dlogpdftree);
   if (DISTR.cdftree)  _unur_fstr_free(DISTR.cdftree);
+  if (DISTR.logcdftree)  _unur_fstr_free(DISTR.logcdftree);
   if (DISTR.hrtree)   _unur_fstr_free(DISTR.hrtree);
 
   /* derived distribution */
@@ -529,7 +534,7 @@ unur_distr_cont_set_cdf( struct unur_distr *distr, UNUR_FUNCT_CONT *cdf )
   _unur_check_distr_object( distr, CONT, UNUR_ERR_DISTR_INVALID );
   
   /* we do not allow overwriting a cdf */
-  if (DISTR.cdf != NULL) {
+  if (DISTR.cdf != NULL || DISTR.logcdf != NULL) {
     _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of CDF not allowed");
     return UNUR_ERR_DISTR_SET;
   }
@@ -544,6 +549,71 @@ unur_distr_cont_set_cdf( struct unur_distr *distr, UNUR_FUNCT_CONT *cdf )
   DISTR.cdf = cdf;
   return UNUR_SUCCESS;
 } /* end of unur_distr_cont_set_cdf() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_distr_cont_set_logcdf( struct unur_distr *distr, UNUR_FUNCT_CONT *logcdf )
+     /*----------------------------------------------------------------------*/
+     /* set logCDF of distribution                                           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr  ... pointer to distribution object                          */
+     /*   logcdf ... pointer to logCDF                                       */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_NULL( distr->name, logcdf, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CONT, UNUR_ERR_DISTR_INVALID );
+
+  /* we do not allow overwriting a cdf */
+  if (DISTR.cdf != NULL || DISTR.logcdf != NULL) {
+    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of logCDF not allowed");
+    return UNUR_ERR_DISTR_SET;
+  }
+
+  /* for derived distributions (e.g. order statistics) not possible */
+  if (distr->base) return UNUR_ERR_DISTR_INVALID;
+
+  /* changelog */
+  distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
+  /* derived parameters like mode, area, etc. might be wrong now! */
+
+  DISTR.logcdf = logcdf;
+  DISTR.cdf = _unur_distr_cont_eval_cdf_from_logcdf;
+
+  return UNUR_SUCCESS;
+
+} /* end of unur_distr_cont_set_logcdf() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_distr_cont_eval_cdf_from_logcdf( double x, const struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* evaluate CDF of distribution at x                                    */
+     /* wrapper when only logCDF is given                                    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   x     ... argument for cdf                                         */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   CDF(x)                                                             */
+     /*----------------------------------------------------------------------*/
+{
+  if (DISTR.logcdf == NULL) {
+    _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"");
+    return INFINITY;
+  }
+
+  return exp(_unur_cont_logCDF(x,distr));
+} /* end of _unur_distr_cont_eval_cdf_from_logcdf() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -737,6 +807,54 @@ unur_distr_cont_set_cdfstr( struct unur_distr *distr, const char *cdfstr )
 /*---------------------------------------------------------------------------*/
 
 int
+unur_distr_cont_set_logcdfstr( struct unur_distr *distr, const char *logcdfstr )
+     /*----------------------------------------------------------------------*/
+     /* set logCDF and its derivative of distribution via a string interface */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr     ... pointer to distribution object                       */
+     /*   logcdfstr ... string that describes function term of logCDF        */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, CONT, UNUR_ERR_DISTR_INVALID );
+  _unur_check_NULL( NULL, logcdfstr, UNUR_ERR_NULL );
+
+  /* we do not allow overwriting a CDF */
+  if (DISTR.cdf != NULL || DISTR.logcdf != NULL) {
+    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of logCDF not allowed");
+    return UNUR_ERR_DISTR_SET;
+  }
+
+  /* for derived distributions (e.g. order statistics) not possible */
+  if (distr->base) return UNUR_ERR_DISTR_INVALID;
+
+  /* changelog */
+  distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
+  /* derived parameters like mode, area, etc. might be wrong now! */
+
+  /* parse logCDF string */
+  if ( (DISTR.logcdftree = _unur_fstr2tree(logcdfstr)) == NULL ) {
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"Syntax error in function string");
+    return UNUR_ERR_DISTR_SET;
+  }
+  DISTR.logcdf  = _unur_distr_cont_eval_logcdf_tree;
+  DISTR.cdf = _unur_distr_cont_eval_cdf_from_logcdf;
+
+  /* [ we do not make derivatives ] */
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+} /* end of unur_distr_cont_set_logcdfstr() */
+
+/*---------------------------------------------------------------------------*/
+
+int
 unur_distr_cont_set_hrstr( struct unur_distr *distr, const char *hrstr )
      /*----------------------------------------------------------------------*/
      /* set HR of distribution via a string interface                        */
@@ -870,6 +988,24 @@ _unur_distr_cont_eval_cdf_tree( double x, const struct unur_distr *distr )
 {
   return ((DISTR.cdftree) ? _unur_fstr_eval_tree(DISTR.cdftree,x) : INFINITY);
 } /* end of _unur_distr_cont_eval_cdf_tree() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_distr_cont_eval_logcdf_tree( double x, const struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* evaluate function tree for logCDF.                                   */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   x     ... argument for logCDF                                      */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   logCDF at x                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  return ((DISTR.logcdftree) ? _unur_fstr_eval_tree(DISTR.logcdftree,x) : INFINITY);
+} /* end of _unur_distr_cont_eval_logcdf_tree() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -1022,6 +1158,32 @@ unur_distr_cont_get_cdfstr( const struct unur_distr *distr )
 /*---------------------------------------------------------------------------*/
 
 char *
+unur_distr_cont_get_logcdfstr( const struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* get logCDF string that is given via the string interface             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr  ... pointer to distribution object                          */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to resulting string.                                       */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   This string should be freed when it is not used any more.          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, NULL );
+  _unur_check_distr_object( distr, CONT, NULL );
+  _unur_check_NULL( NULL, DISTR.logcdftree, NULL );
+
+  /* make and return string */
+  return _unur_fstr_tree2string(DISTR.logcdftree,"x","logCDF",TRUE);
+} /* end of unur_distr_cont_get_logcdfstr() */
+
+/*---------------------------------------------------------------------------*/
+
+char *
 unur_distr_cont_get_hrstr( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get HR string that is given via the string interface                 */
@@ -1149,6 +1311,27 @@ unur_distr_cont_get_cdf( const struct unur_distr *distr )
 
   return DISTR.cdf;
 } /* end of unur_distr_cont_get_cdf() */
+
+/*---------------------------------------------------------------------------*/
+
+UNUR_FUNCT_CONT *
+unur_distr_cont_get_logcdf( const struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* get pointer to logCDF of distribution                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to logCDF                                                  */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, NULL );
+  _unur_check_distr_object( distr, CONT, NULL );
+
+  return DISTR.logcdf;
+} /* end of unur_distr_cont_get_logcdf() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -1305,6 +1488,33 @@ unur_distr_cont_eval_cdf( double x, const struct unur_distr *distr )
 
   return _unur_cont_CDF(x,distr);
 } /* end of unur_distr_cont_eval_cdf() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+unur_distr_cont_eval_logcdf( double x, const struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* evaluate logCDF of distribution at x                                 */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   x     ... argument for logCDF                                      */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   logCDF(x)                                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, INFINITY );
+  _unur_check_distr_object( distr, CONT, INFINITY );
+
+  if (DISTR.logcdf == NULL) {
+    _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"");
+    return INFINITY;
+  }
+
+  return _unur_cont_logCDF(x,distr);
+} /* end of unur_distr_cont_eval_logcdf() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -2056,6 +2266,7 @@ _unur_distr_cont_debug( const struct unur_distr *distr, const char *genid )
 
   fprintf(log,"%s:\tfunctions: ",genid);
   if (DISTR.cdf) fprintf(log,"CDF ");
+  if (DISTR.logcdf) fprintf(log,"logCDF ");
   if (DISTR.pdf) fprintf(log,"PDF ");
   if (DISTR.logpdf) fprintf(log,"logPDF ");
   if (DISTR.dpdf) fprintf(log,"dPDF ");

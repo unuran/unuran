@@ -44,6 +44,7 @@ struct unur_distr_cont {
   UNUR_FUNCT_CONT *cdf;         /* pointer to CDF                            */
   UNUR_FUNCT_CONT *logpdf;      /* pointer to logPDF                         */
   UNUR_FUNCT_CONT *dlogpdf;     /* pointer to derivative of logPDF           */
+  UNUR_FUNCT_CONT *logcdf;      /* pointer to logCDF                         */
   UNUR_FUNCT_CONT *hr;          /* pointer to hazard rate                    */
 
   double norm_constant;         /* (log of) normalization constant for PDF   */
@@ -65,6 +66,7 @@ struct unur_distr_cont {
   struct ftreenode *logpdftree; /* pointer to function tree for logPDF       */
   struct ftreenode *dlogpdftree;/* pointer to function tree for dlogPDF      */
   struct ftreenode *cdftree;    /* pointer to function tree for CDF          */
+  struct ftreenode *logcdftree; /* pointer to function tree for logCDF       */
   struct ftreenode *hrtree;     /* pointer to function tree for hazard rate  */
 
   int (*set_params)(struct unur_distr *distr, const double *params, int n_params );

@@ -1,4 +1,12 @@
 
+Version 1.*.*: *** 2007
+
+	* Distributions:
+
+	- CONT (continuous univariate distribution):
+	  logarithm of CDF can be provided by user.
+
+
 Version 1.0.1: Mai 2007
 
 	* Methods:

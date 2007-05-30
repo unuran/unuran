@@ -233,18 +233,27 @@ int unur_distr_cont_set_logpdf( UNUR_DISTR *distribution, UNUR_FUNCT_CONT *logpd
 int unur_distr_cont_set_dlogpdf( UNUR_DISTR *distribution, UNUR_FUNCT_CONT *dlogpdf );
 /* */
 
+int unur_distr_cont_set_logcdf( UNUR_DISTR *distribution, UNUR_FUNCT_CONT *logcdf );
+/* */
+
 UNUR_FUNCT_CONT *unur_distr_cont_get_logpdf( const UNUR_DISTR *distribution );
 /* */
 
 UNUR_FUNCT_CONT *unur_distr_cont_get_dlogpdf( const UNUR_DISTR *distribution );
 /* */
 
+UNUR_FUNCT_CONT *unur_distr_cont_get_logcdf( const UNUR_DISTR *distribution );
+/* */
+
 double unur_distr_cont_eval_logpdf( double x, const UNUR_DISTR *distribution );
 /* */
 
 double unur_distr_cont_eval_dlogpdf( double x, const UNUR_DISTR *distribution );
+/* */
+
+double unur_distr_cont_eval_logcdf( double x, const UNUR_DISTR *distribution );
 /* 
-   Analogous calls for the logarithm of the density function.
+   Analogous calls for the logarithm of the density distribution functions.
 */
 
 
@@ -363,8 +372,14 @@ char *unur_distr_cont_get_logpdfstr( const UNUR_DISTR *distribution );
 /* */
 
 char *unur_distr_cont_get_dlogpdfstr( const UNUR_DISTR *distribution );
+/* */
+
+int unur_distr_cont_set_logcdfstr( UNUR_DISTR *distribution, const char *logcdfstr );
+/* */
+
+char *unur_distr_cont_get_logcdfstr( const UNUR_DISTR *distribution );
 /* 
-   Analogous calls for the logarithm of the density function.
+   Analogous calls for the logarithm of the density and distribution functions.
 */
 
 

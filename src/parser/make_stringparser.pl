@@ -85,9 +85,10 @@ my %SUBST_COMMANDS =
     ( 'unur_distr_cont_set_pdfstr'     => 'pdf',
       'unur_distr_cont_set_logpdfstr'  => 'logpdf',
       'unur_distr_cont_set_cdfstr'     => 'cdf',
+      'unur_distr_cont_set_logcdfstr'  => 'logcdf',
       'unur_distr_cont_set_hrstr'      => 'hr',
       'unur_distr_discr_set_pmfstr'    => 'pmf',
-      'unur_distr_discr_set_cdfstr'    => 'cdf',
+      'unur_distr_discr_set_cdfstr'    => 'cdf' ,
       'unur_distr_discr_set_logcdfstr' => 'logcdf'
     );
 
@@ -105,6 +106,7 @@ my %IGNORED_COMMANDS =
       'unur_distr_cont_set_logpdf'  => 1,
       'unur_distr_cont_set_dlogpdf' => 1,
       'unur_distr_cont_set_cdf'     => 1,
+      'unur_distr_cont_set_logcdf'  => 1,
       'unur_distr_cont_set_hr'      => 1,
       'unur_distr_discr_set_pmf'    => 1,
       'unur_distr_discr_set_cdf'    => 1,

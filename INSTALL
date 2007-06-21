@@ -112,7 +112,7 @@ Installing UNU.RAN
      your profile):
 
           export LIBRARY_PATH="HOMEDIRECTORY/lib"
-          export C_INCLURE_PATH="HOMEDIRECTORY/include"
+          export C_INCLUDE_PATH="HOMEDIRECTORY/include"
 
 
   5. Documentation in various formats (PDF, HTML, info, plain text)

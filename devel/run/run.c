@@ -39,14 +39,14 @@ int main()
   UNUR_GEN *gen;
   double ll[] = {-1,-1};
   double ur[] = { 1, 1};
-  double mean[] = {10.,20.};
+  double mean[] = {2.,2.};
 
   unur_set_default_debug(~0U);
 
   distr = unur_distr_multinormal(2,mean,NULL);
 /*   distr = unur_distr_multinormal(2,NULL,NULL); */
-/*   unur_distr_cvec_set_domain_rect(distr,ll,ur); */
-/*   unur_distr_cvec_set_mode(distr,NULL); */
+  unur_distr_cvec_set_domain_rect(distr,ll,ur);
+  unur_distr_cvec_set_mode(distr,mean);
 
   par = unur_mvtdr_new(distr);
   unur_run_tests(par,RUN_TESTS,stdout);

@@ -85,6 +85,12 @@ _unur_mvtdr_init( struct unur_par *par )
   if (gen->debug) _unur_mvtdr_debug_init_start(gen);
 #endif
 
+  /* check data */
+  if (!(GEN->pdfcenter > 0.)) {
+    _unur_error(gen->genid,UNUR_ERR_DISTR_DOMAIN,"center out of support of PDF");
+    _unur_mvtdr_free(gen); return NULL;
+  }
+
   /* we need an auxiliary generator for gamma random variates */
   GEN_GAMMA = _unur_mvtdr_gammagen( gen, (double)(GEN->dim) );
   if ( GEN_GAMMA == NULL ) {

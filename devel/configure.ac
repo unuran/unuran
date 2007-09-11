@@ -194,20 +194,22 @@ dnl -----------------------------------------
 AC_MSG_RESULT([
 *========================================================
 *
-* Configuration for ${PACKAGE}-${VERSION}:
+* Configuration for ${PACKAGE}-${VERSION} [devel subdirectory]:
 *
-*  Source directory:          ${srcdir}
-*  Installation directory:    ${prefix}
-*  C Compiler:                ${CC}
+*  Source directory:           ${srcdir}
+*  Installation directory:     ${prefix}
+*  C Compiler:                 ${CC}
 *
-*  Use deprecated code:       ${enable_deprecated}
+*  Use deprecated code:        ${enable_deprecated}
+*  Check structure at runtime: ${enable_check_struct}
+*  Enable logging of data:     ${enable_logging}
 *
 *  Support for external uniform random number generators
-*    Rngstream:               ${with_urng_rngstream}
-*    PRNG:                    ${with_urng_prng}
-*    GSL:                     ${with_urng_gsl}
+*    Rngstream:                ${with_urng_rngstream}
+*    PRNG:                     ${with_urng_prng}
+*    GSL:                      ${with_urng_gsl}
 *
-*  Default URNG:              ${with_urng_default}
+*  Default URNG:               ${with_urng_default}
 *
 *========================================================
 ])

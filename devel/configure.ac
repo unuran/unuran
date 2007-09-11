@@ -120,6 +120,37 @@ AC_ARG_ENABLE(deprecated,
 	[enable_deprecated=no])
 AM_CONDITIONAL(ENABLE_DEPRECATED, test x$enable_deprecated = xyes)
 
+dnl UNU.RAN has additional checks against invalid NULL pointers or 
+dnl pointers to wrong structures. For the latter cookies are inserted
+dnl into structures and checked whenever such structure is accessed.
+dnl Both checks can be enabled by the '--enable-check-struct' flag.
+dnl Default is disabled.
+AC_ARG_ENABLE(check-struct,
+	[AS_HELP_STRING([--enable-check-struct],
+		[Debug: check validity of pointers to structures @<:@default=no@:>@])],
+	[],
+	[enable_check_struct=no])
+AS_IF([test "x$enable_check_struct" = xyes],
+	[AC_DEFINE([UNUR_ENABLE_CHECKNULL], [1], 
+	           [Define to 1 if you want to perform additional checks against an invalid NULL pointer])
+	 AC_DEFINE([UNUR_COOKIES], [1], 
+	           [Define to 1 if you want to use magic cookies to validate type of a pointer])], 
+	[])
+
+
+dnl UNU.RAN allows to write information about distribution and a log file.
+dnl The default name of the logfile is set in 'src/unuran_config.h'.
+dnl The logfile is enabled by the '--enable-logging' flag.
+AC_ARG_ENABLE(logging,
+	[AS_HELP_STRING([--enable-logging],
+		[Debug: print informations about generator into logfile @<:@default=no@:>@])],
+	[],
+	[enable_logging=no])
+AS_IF([test "x$enable_logging" = xyes],
+	[AC_DEFINE([UNUR_ENABLE_LOGGING], [1], 
+	           [Define to 1 if you want to use a logfile for logging informations about UNU.RAN objects])], 
+	[])
+
 dnl Some tests compare the return values of PDFs, CDFs and of
 dnl the function parser with the output of corresponding
 dnl Mathematica(R) scripts.
@@ -160,3 +191,25 @@ AC_OUTPUT
 
 dnl -----------------------------------------
 
+AC_MSG_RESULT([
+*========================================================
+*
+* Configuration for ${PACKAGE}-${VERSION}:
+*
+*  Source directory:          ${srcdir}
+*  Installation directory:    ${prefix}
+*  C Compiler:                ${CC}
+*
+*  Use deprecated code:       ${enable_deprecated}
+*
+*  Support for external uniform random number generators
+*    Rngstream:               ${with_urng_rngstream}
+*    PRNG:                    ${with_urng_prng}
+*    GSL:                     ${with_urng_gsl}
+*
+*  Default URNG:              ${with_urng_default}
+*
+*========================================================
+])
+
+dnl -----------------------------------------

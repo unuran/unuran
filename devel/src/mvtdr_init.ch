@@ -391,6 +391,7 @@ _unur_mvtdr_gammagen( struct unur_gen *gen, double alpha )
   shape[0] = alpha;
   gammadistr = unur_distr_gamma(shape,1);
   gammapar = unur_tdr_new( gammadistr );
+  /*   unur_tdr_set_variant_ia( gammapar ); */
   gammagen = unur_init( gammapar );
   _unur_distr_free( gammadistr );
 

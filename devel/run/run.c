@@ -16,6 +16,7 @@
 #include <unuran.h>
 #include <unuran_tests.h>
 #include <testdistributions.h>
+#include <mvtdr.h>
 
 #define RUN_TESTS       (~0x0u)
 /* #define RUN_TESTS       UNUR_TEST_SAMPLE */
@@ -36,21 +37,25 @@ int main()
   UNUR_DISTR *distr;
   UNUR_PAR *par;
   UNUR_GEN *gen;
-/*   double fpar[2] = {7,0.1}; */
-/*   double fpar[4] = {3.,0.5, -1., 0.}; */
-
-  int i;
+  double ll[] = {-1,-1};
+  double ur[] = { 1, 1};
+  double mean[] = {10.,20.};
 
   unur_set_default_debug(~0U);
 
-  gen = unur_str2gen("distr=cont;cdf='(x<=3)*(0.0555555555555556 +( -0.111111111111111 )*x+( 0.0555555555555556 )*x*x)+(x> 3 )*( -0.587301587301587 +( 0.317460317460317 )*x+( -0.0158730158730159 )*x*x)'; domain=( 2 , 11 ) & method=hinv");
+  distr = unur_distr_multinormal(2,mean,NULL);
+/*   distr = unur_distr_multinormal(2,NULL,NULL); */
+/*   unur_distr_cvec_set_domain_rect(distr,ll,ur); */
+/*   unur_distr_cvec_set_mode(distr,NULL); */
+
+  par = unur_mvtdr_new(distr);
+  unur_run_tests(par,RUN_TESTS,stdout);
+
+/*   gen = unur_init(par); */
+/*   unur_test_printsample (gen, 100, 1, stdout); */
+/*   unur_test_chi2( gen, 100, 0, 20, 1, stdout); */
 
 
-  unur_test_printsample(gen, 10, 10, stdout);
-
-  /*   unur_run_tests(par,RUN_TESTS); */
-  
-  unur_free(gen);
   unur_distr_free(distr);
 
   return 0;

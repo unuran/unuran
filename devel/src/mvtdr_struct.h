@@ -107,9 +107,9 @@ struct unur_mvtdr_par {
   int steps_min;                  /* minimum number of triangulation steps */
   double bound_splitting;         /* bound for splitting cones */
 
-#if MODE == 1
-  double mode_to_boundary;        /* move mode to boundary if |mode - boundary| / length < MODE_TO_BOUNDARY */
-#endif
+/* #if MODE == 1 */
+/*   double mode_to_boundary;        /\* move mode to boundary if |mode - boundary| / length < MODE_TO_BOUNDARY *\/ */
+/* #endif */
 
 };
 

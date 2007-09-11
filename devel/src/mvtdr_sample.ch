@@ -103,8 +103,6 @@ _unur_mvtdr_sample_cvec( struct unur_gen *gen, double *rpoint )
     /*.......................................................................*/
     /** accept or reject **/
 
-    /** TODO: is point inside domain (rectangle) ? **/
-
     f = PDF(rpoint);                        /* density */
     h = T_inv( c->alpha - c->beta * gx );   /* hat */
 

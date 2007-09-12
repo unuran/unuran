@@ -178,7 +178,7 @@
       sampling is used the total generation time for the entire chain
       is shorter when only the "covering plate" is used.
 
---->      @emph{Notice:} When coordinate sampling is used the entire
+      @emph{Notice:} When coordinate sampling is used the entire
       bounding rectangle is used.
 
       Using the entire bounding hyper-rectangle can be switched on/off

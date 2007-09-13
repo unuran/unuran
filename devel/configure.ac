@@ -201,7 +201,7 @@ AC_MSG_RESULT([
 *  C Compiler:                 ${CC}
 *
 *  Use deprecated code:        ${enable_deprecated}
-*  Check structure at runtime: ${enable_check_struct}
+*  Enable runtime checks:      ${enable_check_struct}
 *  Enable logging of data:     ${enable_logging}
 *
 *  Support for external uniform random number generators

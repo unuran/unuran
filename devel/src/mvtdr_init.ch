@@ -191,6 +191,9 @@ _unur_mvtdr_create( struct unur_par *par )
   /* get center of the distribution and its PDF */
   GEN->center = unur_distr_cvec_get_center(gen->distr);
   GEN->pdfcenter = PDF(GEN->center);
+
+  /* whether we have set a domain for the distribution */
+  GEN->has_domain = (gen->distr->set & UNUR_DISTR_SET_DOMAIN) ? TRUE : FALSE;
  
   if (error == TRUE) {
     _unur_error(gen->genid,UNUR_ERR_MALLOC,"");
@@ -397,7 +400,11 @@ _unur_mvtdr_gammagen( struct unur_gen *gen, double alpha )
   shape[0] = alpha;
   gammadistr = unur_distr_gamma(shape,1);
   gammapar = unur_tdr_new( gammadistr );
-  /*   unur_tdr_set_variant_ia( gammapar ); */
+  if (! GEN->has_domain) {
+    /* we do not need a truncated gamma distribution. */
+    /* hence we can use immediate acceptance.          */
+    unur_tdr_set_variant_ia( gammapar );
+  }
   gammagen = unur_init( gammapar );
   _unur_distr_free( gammadistr );
 
@@ -415,6 +422,7 @@ _unur_mvtdr_gammagen( struct unur_gen *gen, double alpha )
   return gammagen;
 
 } /* end of _unur_mvtdr_gammagen() */
+
 
 /*****************************************************************************/
 /*                                                                           */
@@ -631,6 +639,9 @@ _unur_mvtdr_cone_new( struct unur_gen *gen )
   if (error==TRUE) {
     _unur_error(gen->genid,UNUR_ERR_MALLOC,""); return NULL; }
 
+  /* the cone is unboubed when created */
+  c->height = UNUR_INFINITY;
+
   /* mark as invalid */
   c->tp = -1.;
   c->Hi = INFINITY;
@@ -783,7 +794,7 @@ _unur_mvtdr_cone_params( struct unur_gen *gen, CONE *c )
   /* #if RECTANGLE == 1 */
   /*   /\* at last calculate height of pyramid *\/ */
   /* #if FIND_TP_FUNCTION == 1 */
-  /*   get_height(c);  /\* this is expensive for calculation for every touching point !!! *\/ */
+  _unur_mvtdr_cone_height(gen,c);  /* this is expensive for calculation for every touching point !!! */
   /*   /\* TODO: approximate gat_height with   max_{vertices of rectangle} || vertex - mode || *\/ */
   /* #endif */
   /* #endif */
@@ -946,6 +957,160 @@ _unur_mvtdr_triangulate( struct unur_gen *gen, int step, int all )
 
 } /* end of _unur_mvtdr_triangulate() */
 
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_mvtdr_cone_height( struct unur_gen *gen, CONE *c )
+     /*----------------------------------------------------------------------*/
+     /* calculate height of pyramid (cone) using simplex algorithm           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*   c    ... cone for which we compute height                          */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* working array for simplex tableau: double A[N+1][N+1]; */
+#define A(i,j)  (AA[(dim+1)*(i)+(j)])
+  double *AA;
+
+  /* coordinates of lower left and upper right vertices of domain */
+#define ll(i)   (domain[2*(i)])
+#define ur(i)   (domain[2*(i)+1])
+  double *domain;
+ 
+  int i,j,row,ipc,ipr;
+  double pc,pr,ratio;
+  double sign;
+  int bu,bl;            /* booleans */
+  int dim = GEN->dim;
+
+  /* get rectangular domain */
+  if (DISTR.domainrect == NULL) {
+    /* _unur_error(gen->genid,UNUR_ERR_DISTR_DOMAIN,"no domain given"); */
+    return UNUR_ERR_DISTR_DOMAIN;
+  }
+  domain = DISTR.domainrect;
+
+  /* allocate memory for simplex tableau */
+  AA = _unur_xmalloc( (dim+1)*(GEN->dim+1)*sizeof(double) );
+
+  /* set initial matrix for simplex algorithm */
+  for( i=0, row=0; i<dim; i++ ) {
+    /* loop over all coordinate directions */
+    
+    /* get sign of coordinates (these must be either all nonnegative or nonpositive)  */
+    for( j=0, sign=0.; j<dim; j++ ) {
+      if( (c->v[j])->coord[i] > 0. ) {
+	sign = +1.; break;
+/*         bu = 1; */
+      }
+      if( (c->v[j])->coord[i] < 0. ) {
+	sign = -1.; break;
+/*         bl = 1; */
+      }
+    }
+    /* check sign */
+    if (_unur_iszero(sign)) continue;
+
+
+/*     printf("bu=%d, bl=%d\n",bu,bl); */
+
+    /* coefficients of inequalities */
+/*     if( bu ) {    /\* upper bound *\/ */
+    for( j=0; j<dim; j++ )
+      A(row,j) = sign * (c->v[j])->coord[i];
+    A(row,dim) = (sign > 0.) ? ur(i) : -(ll(i));
+    row++;
+/*       row++; */
+/*     } */
+/*     if( bl ) {    /\* lower bound *\/ */
+/*       for( j=0; j<GEN->dim; j++ ) */
+/*         A(row,j) = -(c->v[j])->coord[i]; */
+/*       A(row,GEN->dim) = -(ll(i)); */
+/*       row++; */
+/*     } */
+  _unur_matrix_print_matrix ( GEN->dim+1, AA, "murx", stdout, "nix", "\t");
+
+  }
+
+  /* wozu 'row' ? */
+/*   printf("row=%d\n",row); */
+
+  /* objective function */
+  for( j=0; j<dim; j++ )
+    A(row,j) = -(c->gv[j]);
+  A(row,dim) = 0.;
+
+
+
+  _unur_matrix_print_matrix ( GEN->dim+1, AA, "junk", stdout, "nix", "\t");
+
+
+  /* find maximum */
+  while( 1 ) {
+
+    /* pivot column */
+    for( j=0,pc=0.,ipc=-1; j<GEN->dim; j++) {
+      if( A(row,j) < pc ) {
+        ipc = j;
+        pc = A(row,ipc);
+      }
+    }
+
+    /* stop ? */
+    if( ipc == -1 ) {   /* no pivot column found */
+      c->height = A(row,GEN->dim);
+      return UNUR_SUCCESS;
+    }
+
+    /* find pivot row */
+    for( i=0,pr=-1.,ipr=-1; i<row; i++ ) {
+      if( A(i,ipc) <= 0. ) continue;
+      ratio = A(i,GEN->dim) / A(i,ipc);
+      if( pr < 0 || pr > ratio ) {
+        ipr = i;
+        pr = ratio;
+      }
+    }
+
+    /* unbounded ? */
+    if( ipr == -1 ) {
+      /* _unur_error(gen->genid,UNUR_ERR_DISTR_DOMAIN,"unbounded pyramid"); */
+      c->height = UNUR_INFINITY;
+      free (AA);
+      return UNUR_ERR_DISTR_DOMAIN;
+    }
+
+    /* make pivot step */
+    /* the rest */
+    for( i=0; i<=row; i++ )
+      if( i!= ipr )
+        for( j=0; j<GEN->dim+1; j++ )
+          if( j!= ipc )
+            A(i,j) -= A(ipr,j) * A(i,ipc) / A(ipr,ipc);
+    /* pivot column */
+    for( i=0; i<=row; i++ )
+      if( i != ipr )
+        A(i,ipc) /= -A(ipr,ipc);
+    /* pivot row */
+    for( j=0; i<GEN->dim; i++ )
+      if( j != ipc )
+        A(ipr,j) /= A(ipr,ipc);
+    /* pivot element */
+    A(ipr,ipc) = 1./A(ipr,ipc);
+
+  }
+
+  /* free working space (simplex tableau) */
+  free (AA);
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+} /* end of _unur_mvtdr_cone_height() */
 
 /*****************************************************************************/
 /*                                                                           */

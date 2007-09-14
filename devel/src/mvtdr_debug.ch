@@ -77,6 +77,7 @@ _unur_mvtdr_debug_init_start( const struct unur_gen *gen )
   fprintf(log,"%s: maximum number of cones = %d\n",gen->genid,GEN->max_cones);
 
   fprintf(log,"%s:\n",gen->genid);
+  fflush(log);
 
 } /* end of _unur_mvtdr_debug_init_start() */
 
@@ -120,6 +121,7 @@ _unur_mvtdr_debug_init_finished( const struct unur_gen *gen )
 
   fprintf(log,"%s:\n",gen->genid);
   fprintf(log,"%s: INIT completed **********************\n",gen->genid);
+  fflush(log);
 
 } /* end of _unur_mvtdr_debug_init_finished() */
 
@@ -153,6 +155,7 @@ _unur_mvtdr_debug_vertices( const struct unur_gen *gen )
   }
 
   fprintf(log,"%s:\n",gen->genid);
+  fflush(log);
 
 } /* end of _unur_mvtdr_debug_vertices() */
 
@@ -183,14 +186,20 @@ _unur_mvtdr_debug_cones( const struct unur_gen *gen )
     for (i=1; i<GEN->dim; i++)
       fprintf(log,", %d",(c->v[i])->index);
     fprintf(log," }\n");
-    fprintf(log,"%s:\tHi    = %g\t[ %g%% ]\n", gen->genid, c->Hi, 100.*c->Hi/GEN->Htot);
-    fprintf(log,"%s:\ttp    = %g\n", gen->genid, c->tp);
-    fprintf(log,"%s:\tf(tp) = %g\n", gen->genid, exp(c->Tfp));
+    fprintf(log,"%s:\tgv     = ( %g", gen->genid, c->gv[0]);
+    for (i=1; i<GEN->dim; i++)
+      fprintf(log,", %g", c->gv[i]);
+    fprintf(log," )\n");
+    fprintf(log,"%s:\tHi     = %g\t[ %g%% ]\n", gen->genid, c->Hi, 100.*c->Hi/GEN->Htot);
+    fprintf(log,"%s:\ttp     = %g\n", gen->genid, c->tp);
+    fprintf(log,"%s:\tf(tp)  = %g\n", gen->genid, exp(c->Tfp));
+    fprintf(log,"%s:\theight = %g\n", gen->genid, c->height);
   }
 
   fprintf(log,"%s:\n",gen->genid);
+  fflush(log);
 
-} /* end of _unur_mvtdr_debug_vertices() */
+} /* end of _unur_mvtdr_debug_cones() */
 
 /*---------------------------------------------------------------------------*/
 #endif   /* end UNUR_ENABLE_LOGGING */

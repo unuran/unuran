@@ -53,6 +53,7 @@
 #include <distr/cvec.h>
 #include <distributions/unur_distributions.h>
 #include <utils/fmax_source.h>
+#include <utils/matrix_source.h>
 #include <urng/urng.h>
 #include "unur_methods_source.h"
 #include "x_gen.h"
@@ -146,12 +147,14 @@ static struct unur_gen *_unur_mvtdr_gammagen( struct unur_gen *gen, double alpha
 /* create a gamma random variate generator with shape parameter alpha.       */
 /*---------------------------------------------------------------------------*/
 
+
 /*****************************************************************************/
 /* Hat.                                                                      */
 /*****************************************************************************/
 
 static int _unur_mvtdr_create_hat( struct unur_gen *gen );
 /* compute cones and hat function */
+
 
 /*****************************************************************************/
 /* CONES.                                                                    */
@@ -175,8 +178,12 @@ static double _unur_mvtdr_cone_logH( struct unur_gen *gen, CONE *c );
 static int _unur_mvtdr_cone_split( struct unur_gen *gen, CONE *c, int step );
 /* split a cone */
 
-static int _unur_mvtdr_triangulate(struct unur_gen *gen, int step, int all);
+static int _unur_mvtdr_triangulate( struct unur_gen *gen, int step, int all);
 /* make one triangulation step */
+
+static int _unur_mvtdr_cone_height( struct unur_gen *gen, CONE *c );
+/* calculate height of pyramid (cone) */
+
 
 /*****************************************************************************/
 /* optimal distance for touching points                                      */
@@ -196,6 +203,7 @@ static int _unur_mvtdr_tp_search( struct unur_gen *gen, TP_ARG *a );
 static int _unur_mvtdr_tp_bracket( struct unur_gen *gen, TP_ARG *a );
 /* search for proper bracket of minimum of tp_f2min() */
 
+
 /*****************************************************************************/
 /* VERTICES.                                                                 */
 /*****************************************************************************/
@@ -211,6 +219,7 @@ static int _unur_mvtdr_number_vertices( struct unur_gen *gen, int level );
 
 static VERTEX *_unur_mvtdr_vertex_on_edge( struct unur_gen *gen, VERTEX **vl );
 /* compute new vertex on edge */
+
 
 /*****************************************************************************/
 /* hash table for storing EDGES.                                             */

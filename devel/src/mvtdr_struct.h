@@ -65,7 +65,7 @@ typedef struct s_cone             /* a cone */
   double Hsum;                    /* accumulated sum of volumes */
   double Tfp;                      /* value of transformed density at touching point */
 /* #if RECTANGLE == 1 */
-/*   double height;                  /\* height of pyramid *\/ */
+  double height;                  /* height of pyramid */
 /*   double tdrg_vol;                /\* volume below hat of gamma density *\/ */
 /* #endif */
 /* #if DEBUG > 1000 */
@@ -98,11 +98,6 @@ typedef struct s_tp_arg           /* argument for tp function */
 
 struct unur_mvtdr_par { 
 
-/* #if RECTANGLE == 1 */
-/*   double rl[N];                   /\* lower bounds for rectangle *\/ */
-/*   double ru[N];                   /\* upper bounds for rectangle *\/ */
-/* #endif */
-
   int max_cones;                  /* maximum number of cones (at least 2^(N+T_STEPS_MIN) */
   int steps_min;                  /* minimum number of triangulation steps */
   double bound_splitting;         /* bound for splitting cones */
@@ -118,7 +113,8 @@ struct unur_mvtdr_par {
 /* The generator object                                                      */
 
 struct unur_mvtdr_gen { 
-  int    dim;               /* dimension of distribution                     */
+  int  dim;               /* dimension of distribution                     */
+  int  has_domain;   /* whether the domain of distribution has given domain */  
 
   const double *center;          /* center of distribution */
 

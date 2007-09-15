@@ -21,6 +21,9 @@
 #define RUN_TESTS       (~0x0u)
 /* #define RUN_TESTS       UNUR_TEST_SAMPLE */
 
+#define unur_distr_multinormal  unur_distr_multinormal_w_marginals
+
+
 /*---------------------------------------------------------------------------*/
 
 /* double pdf( double x, const UNUR_DISTR *distr ) */
@@ -37,18 +40,23 @@ int main()
   UNUR_DISTR *distr;
   UNUR_PAR *par;
   UNUR_GEN *gen;
-  double ll[] = {-1,-1};
-  double ur[] = { 1, 1};
-  double mean[] = {2.,2.};
+  double ll[] = {-0.99,-0.99};
+/*   double ur[] = { 1, 1}; */
+
+/*   double ll[] = {-UNUR_INFINITY,-UNUR_INFINITY}; */
+  double ur[] = { UNUR_INFINITY, UNUR_INFINITY};
+  
+  double mean[] = {0.,0.};
 
   unur_set_default_debug(~0U);
 
-  distr = unur_distr_multinormal(2,mean,NULL);
-/*   distr = unur_distr_multinormal(2,NULL,NULL); */
+/*   distr = unur_distr_multinormal(2,mean,NULL); */
+  distr = unur_distr_multinormal(2,NULL,NULL);
   unur_distr_cvec_set_domain_rect(distr,ll,ur);
   unur_distr_cvec_set_mode(distr,mean);
 
   par = unur_mvtdr_new(distr);
+  unur_mvtdr_set_stepsmin(par, 0 );
   unur_run_tests(par,RUN_TESTS,stdout);
 
 /*   gen = unur_init(par); */

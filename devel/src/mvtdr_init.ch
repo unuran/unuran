@@ -979,8 +979,8 @@ _unur_mvtdr_cone_height( struct unur_gen *gen, CONE *c )
   int dim = GEN->dim;
 
   /* coordinates of lower left and upper right vertices of domain */
-#define ll(i)   (domain[2*(i)])
-#define ur(i)   (domain[2*(i)+1])
+#define ll(i)   (domain[2*(i)]   - GEN->center[(i)])
+#define ur(i)   (domain[2*(i)+1] - GEN->center[(i)])
   double *domain;
  
   int i,j,row,ipc,ipr;

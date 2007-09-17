@@ -639,7 +639,7 @@ _unur_mvtdr_cone_new( struct unur_gen *gen )
   if (error==TRUE) {
     _unur_error(gen->genid,UNUR_ERR_MALLOC,""); return NULL; }
 
-  /* the cone is unboubed when created */
+  /* the cone is unbounded when created */
   c->height = UNUR_INFINITY;
 
   /* mark as invalid */
@@ -987,9 +987,14 @@ _unur_mvtdr_cone_height( struct unur_gen *gen, CONE *c )
   double pc,pr,ratio;
   double sign;
 
+  /* bounded domain ? */
+  if (! GEN->has_domain)
+    /* nothing to do (c->height is set to INIFINITY at creating time) */
+    return UNUR_SUCCESS;
+
   /* get rectangular domain */
   if (DISTR.domainrect == NULL) {
-    /* _unur_error(gen->genid,UNUR_ERR_DISTR_DOMAIN,"no domain given"); */
+    _unur_error(gen->genid,UNUR_ERR_DISTR_DOMAIN,"no domain given");
     return UNUR_ERR_DISTR_DOMAIN;
   }
   domain = DISTR.domainrect;

@@ -976,6 +976,7 @@ _unur_mvtdr_cone_height( struct unur_gen *gen, CONE *c )
   /* working array for simplex tableau: double A[N+1][N+1]; */
 #define A(i,j)  (AA[(dim+1)*(i)+(j)])
   double *AA;
+  int dim = GEN->dim;
 
   /* coordinates of lower left and upper right vertices of domain */
 #define ll(i)   (domain[2*(i)])
@@ -985,8 +986,6 @@ _unur_mvtdr_cone_height( struct unur_gen *gen, CONE *c )
   int i,j,row,ipc,ipr;
   double pc,pr,ratio;
   double sign;
-  int bu,bl;            /* booleans */
-  int dim = GEN->dim;
 
   /* get rectangular domain */
   if (DISTR.domainrect == NULL) {
@@ -996,7 +995,7 @@ _unur_mvtdr_cone_height( struct unur_gen *gen, CONE *c )
   domain = DISTR.domainrect;
 
   /* allocate memory for simplex tableau */
-  AA = _unur_xmalloc( (dim+1)*(GEN->dim+1)*sizeof(double) );
+  AA = _unur_xmalloc( (dim+1)*(dim+1)*sizeof(double) );
 
   /* set initial matrix for simplex algorithm */
   for( i=0, row=0; i<dim; i++ ) {
@@ -1006,55 +1005,31 @@ _unur_mvtdr_cone_height( struct unur_gen *gen, CONE *c )
     for( j=0, sign=0.; j<dim; j++ ) {
       if( (c->v[j])->coord[i] > 0. ) {
 	sign = +1.; break;
-/*         bu = 1; */
       }
       if( (c->v[j])->coord[i] < 0. ) {
 	sign = -1.; break;
-/*         bl = 1; */
       }
     }
     /* check sign */
     if (_unur_iszero(sign)) continue;
 
-
-/*     printf("bu=%d, bl=%d\n",bu,bl); */
-
     /* coefficients of inequalities */
-/*     if( bu ) {    /\* upper bound *\/ */
     for( j=0; j<dim; j++ )
       A(row,j) = sign * (c->v[j])->coord[i];
     A(row,dim) = (sign > 0.) ? ur(i) : -(ll(i));
     row++;
-/*       row++; */
-/*     } */
-/*     if( bl ) {    /\* lower bound *\/ */
-/*       for( j=0; j<GEN->dim; j++ ) */
-/*         A(row,j) = -(c->v[j])->coord[i]; */
-/*       A(row,GEN->dim) = -(ll(i)); */
-/*       row++; */
-/*     } */
-  _unur_matrix_print_matrix ( GEN->dim+1, AA, "murx", stdout, "nix", "\t");
-
   }
-
-  /* wozu 'row' ? */
-/*   printf("row=%d\n",row); */
 
   /* objective function */
   for( j=0; j<dim; j++ )
     A(row,j) = -(c->gv[j]);
   A(row,dim) = 0.;
 
-
-
-  _unur_matrix_print_matrix ( GEN->dim+1, AA, "junk", stdout, "nix", "\t");
-
-
   /* find maximum */
   while( 1 ) {
 
     /* pivot column */
-    for( j=0,pc=0.,ipc=-1; j<GEN->dim; j++) {
+    for( j=0,pc=0.,ipc=-1; j<dim; j++) {
       if( A(row,j) < pc ) {
         ipc = j;
         pc = A(row,ipc);
@@ -1063,53 +1038,57 @@ _unur_mvtdr_cone_height( struct unur_gen *gen, CONE *c )
 
     /* stop ? */
     if( ipc == -1 ) {   /* no pivot column found */
-      c->height = A(row,GEN->dim);
-      return UNUR_SUCCESS;
+      c->height = A(row,dim);
+      break;
     }
 
     /* find pivot row */
     for( i=0,pr=-1.,ipr=-1; i<row; i++ ) {
       if( A(i,ipc) <= 0. ) continue;
-      ratio = A(i,GEN->dim) / A(i,ipc);
+      ratio = A(i,dim) / A(i,ipc);
       if( pr < 0 || pr > ratio ) {
         ipr = i;
         pr = ratio;
       }
     }
-
+    
     /* unbounded ? */
     if( ipr == -1 ) {
-      /* _unur_error(gen->genid,UNUR_ERR_DISTR_DOMAIN,"unbounded pyramid"); */
       c->height = UNUR_INFINITY;
-      free (AA);
-      return UNUR_ERR_DISTR_DOMAIN;
+      break;
     }
 
     /* make pivot step */
     /* the rest */
     for( i=0; i<=row; i++ )
       if( i!= ipr )
-        for( j=0; j<GEN->dim+1; j++ )
-          if( j!= ipc )
+        for( j=0; j<dim+1; j++ )
+          if( j!= ipc ) 
             A(i,j) -= A(ipr,j) * A(i,ipc) / A(ipr,ipc);
     /* pivot column */
     for( i=0; i<=row; i++ )
       if( i != ipr )
         A(i,ipc) /= -A(ipr,ipc);
     /* pivot row */
-    for( j=0; i<GEN->dim; i++ )
+    for( j=0; i<dim; i++ )
       if( j != ipc )
         A(ipr,j) /= A(ipr,ipc);
     /* pivot element */
     A(ipr,ipc) = 1./A(ipr,ipc);
-
   }
 
   /* free working space (simplex tableau) */
   free (AA);
 
+  /* check result */
+  if (_unur_isnan(c->height))  c->height = UNUR_INFINITY;
+
   /* o.k. */
   return UNUR_SUCCESS;
+
+#undef A
+#undef ll
+#undef ur
 } /* end of _unur_mvtdr_cone_height() */
 
 /*****************************************************************************/

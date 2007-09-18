@@ -50,7 +50,7 @@ unur_distr_multicauchy_w_marginals( int dim, const double *mean, const double *c
   distr = unur_distr_multicauchy( dim, mean, covar );
 
   /* set marginal distributions */
-  if (DISTR.marginals == NULL) {
+  if (distr != NULL && DISTR.marginals == NULL) {
     marginal = unur_distr_cauchy(NULL,0);
     unur_distr_cvec_set_marginals(distr,marginal);
     unur_distr_free(marginal);
@@ -73,7 +73,7 @@ unur_distr_multinormal_w_marginals( int dim, const double *mean, const double *c
   distr = unur_distr_multinormal( dim, mean, covar );
 
   /* set marginal distributions */
-  if (DISTR.marginals == NULL) {
+  if (distr != NULL && DISTR.marginals == NULL) {
     marginal = unur_distr_normal(NULL,0);
     unur_distr_cvec_set_marginals(distr,marginal);
     unur_distr_free(marginal);
@@ -96,7 +96,7 @@ unur_distr_multistudent_w_marginals( int dim, double df, const double *mean, con
   distr = unur_distr_multistudent( dim, df, mean, covar );
 
   /* set marginal distributions */
-  if (DISTR.marginals == NULL) {
+  if (distr != NULL && DISTR.marginals == NULL) {
     marginal = unur_distr_student(&df,1);
     unur_distr_cvec_set_marginals(distr,marginal);
     unur_distr_free(marginal);

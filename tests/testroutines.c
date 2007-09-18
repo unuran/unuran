@@ -926,6 +926,12 @@ int run_validate_chi2( FILE *LOG, int line, UNUR_GEN *gen, const UNUR_DISTR *dis
   double pval;
   int failed = 0;
 
+  /* check input */
+  if (distr == NULL) {
+    printf(" [!!no distribution!!] "); fflush(stdout);
+    return UNUR_FAILURE;
+  }
+
   /* get name of distribution */
   distr_name = unur_distr_get_name( distr );
 
@@ -1027,6 +1033,12 @@ int run_validate_verifyhat( FILE *LOG, int line, UNUR_GEN *gen, const UNUR_DISTR
   int dim;
   double *x = NULL;
   int errno_obs;
+
+  /* check input */
+  if (distr == NULL) {
+    printf(" [!!no distribution!!]" ); fflush(stdout);
+    return UNUR_FAILURE;
+  }
 
   /* get name of distribution */
   distr_name = unur_distr_get_name( distr );

@@ -215,6 +215,28 @@ unur_mvtdr_set_maxcones( struct unur_par *par, int maxcones )
 
 /*---------------------------------------------------------------------------*/
 
+double
+unur_mvtdr_get_hatvol( const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* get volume below hat                                                 */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   volume   ... on success                                            */
+     /*   INFINITY ... on error                                              */
+     /*----------------------------------------------------------------------*/
+{
+  /* check input */
+  _unur_check_NULL( GENTYPE, gen, INFINITY );
+  _unur_check_gen_object( gen, MVTDR, INFINITY );
+
+  return GEN->Htot;
+} /* end of unur_mvtdr_get_hatvol() */
+
+/*---------------------------------------------------------------------------*/
+
 int
 unur_mvtdr_set_verify( struct unur_par *par, int verify )
      /*----------------------------------------------------------------------*/

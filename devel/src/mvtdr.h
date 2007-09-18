@@ -72,7 +72,7 @@ UNUR_PAR *unur_mvtdr_new( const UNUR_DISTR *distribution );
 
 /*...........................................................................*/
 
-int unur_mvtdr_set_stepsmin( UNUR_PAR *par, int stepsmin );
+int unur_mvtdr_set_stepsmin( UNUR_PAR *parameters, int stepsmin );
 /* 
    Set minimum number of triangulation step for each starting cone.
    @var{stepsmin} must be nonnegative.
@@ -80,7 +80,7 @@ int unur_mvtdr_set_stepsmin( UNUR_PAR *par, int stepsmin );
    Default: @code{5}.
 */
 
-int unur_mvtdr_set_boundsplitting( UNUR_PAR *par, double boundsplitting );
+int unur_mvtdr_set_boundsplitting( UNUR_PAR *parameters, double boundsplitting );
 /* 
    Set bound for splitting cones. All cones are split which have a
    volume below the hat is greater than @var{bound_splitting} times
@@ -92,7 +92,7 @@ int unur_mvtdr_set_boundsplitting( UNUR_PAR *par, double boundsplitting );
    Default: @code{1.5}
 */
 
-int unur_mvtdr_set_maxcones( UNUR_PAR *par, int maxcones );
+int unur_mvtdr_set_maxcones( UNUR_PAR *parameters, int maxcones );
 /* 
    Set maximum number of cones. 
 
@@ -107,6 +107,12 @@ int unur_mvtdr_set_maxcones( UNUR_PAR *par, int maxcones );
    a very high rejection constant.
 
    Default: @code{10000}.
+*/
+
+double unur_mvtdr_get_hatvol( const UNUR_GEN *generator );
+/* 
+   Get the volume below the hat for the generator.
+   (In case of an error @code{UNUR_INFINITY} is returned.)
 */
 
 int unur_mvtdr_set_verify( UNUR_PAR *parameters, int verify );

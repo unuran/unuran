@@ -91,14 +91,14 @@ _unur_mvtdr_init( struct unur_par *par )
     _unur_mvtdr_free(gen); return NULL;
   }
 
+  /* make hat function */
+  if(_unur_mvtdr_create_hat(gen) != UNUR_SUCCESS) {
+    _unur_mvtdr_free(gen); return NULL; }
+
   /* we need an auxiliary generator for gamma random variates */
   GEN_GAMMA = _unur_mvtdr_gammagen( gen, (double)(GEN->dim) );
   if ( GEN_GAMMA == NULL ) {
       _unur_mvtdr_free(gen); return NULL; }
-
-  /* make hat function */
-  if(_unur_mvtdr_create_hat(gen) != UNUR_SUCCESS) {
-    _unur_mvtdr_free(gen); return NULL; }
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
@@ -394,12 +394,14 @@ _unur_mvtdr_gammagen( struct unur_gen *gen, double alpha )
   struct unur_distr *gammadistr;
   struct unur_par   *gammapar;
   struct unur_gen   *gammagen;
-  double shape[1];
+  double shape;
 
   /* make generator object */
-  shape[0] = alpha;
-  gammadistr = unur_distr_gamma(shape,1);
+  shape = alpha;
+  gammadistr = unur_distr_gamma(&shape,1);
   gammapar = unur_tdr_new( gammadistr );
+  unur_tdr_set_usedars( gammapar, TRUE );
+  unur_tdr_set_max_sqhratio( gammapar, 0.999);
   if (! GEN->has_domain) {
     /* we do not need a truncated gamma distribution. */
     /* hence we can use immediate acceptance.          */
@@ -729,14 +731,6 @@ _unur_mvtdr_cone_params( struct unur_gen *gen, CONE *c )
     mcoord[i] = coord[i] + GEN->center[i];
   }
 
-  /* TODO! */
-  /* #if RECTANGLE == 1 */
-  /*     /\* check if point is in domain *\/ */
-  /*     for( i=0; i<N; i++ ) */
-  /*       if( coord[i] < GEN->rl[i] || coord[i] > GEN->ru[i] ) */
-  /*     return UNUR_FAILURE; */
-  /* #endif */
-
   /* density at construction point */
   if( DISTR.logpdf != NULL ) {
     c->Tfp = Tf = logPDF(mcoord);
@@ -790,14 +784,10 @@ _unur_mvtdr_cone_params( struct unur_gen *gen, CONE *c )
       c->logai -= log(c->gv[i]);
   }
 
-  /* TODO */
-  /* #if RECTANGLE == 1 */
-  /*   /\* at last calculate height of pyramid *\/ */
-  /* #if FIND_TP_FUNCTION == 1 */
-  _unur_mvtdr_cone_height(gen,c);  /* this is expensive for calculation for every touching point !!! */
-  /*   /\* TODO: approximate gat_height with   max_{vertices of rectangle} || vertex - mode || *\/ */
-  /* #endif */
-  /* #endif */
+  /* this is expensive for calculation for every touching point !!! */
+  /* Maybe we only perform this computation when at the very end    */
+  /* and use height=INFINITY for finding construction points.       */
+  _unur_mvtdr_cone_height(gen,c);
 
   /* return error code */
   return UNUR_SUCCESS;
@@ -1244,16 +1234,13 @@ _unur_mvtdr_tp_search( struct unur_gen *gen, TP_ARG *a )
 {
   int i;      /* aux counter */
 
-  /* #if RECTANGLE == 1 */
-  /*   /\* TODO: (a+1)->t has to be set to min of  FIND_TP_START and c->height if known *\/ */
-  /* #endif */
-
   /** search from 0 --> infinity **/
 
   /* initialize boundary of intervall */
-  a[0].t = 0.;                  /* x[0] must >= 0. */
-  a[1].t = FIND_TP_START;       /* starting point for searching proper touching point */
-  a[2].t = -1.;                 /* not known. marked by setting to -1. */
+  a[0].t = 0.;    /* x[0] must >= 0. */
+  a[2].t = -1.;   /* not known. marked by setting to -1. */
+  a[1].t = _unur_min(FIND_TP_START,a[1].c->height);
+                  /* starting point for searching proper touching point */
 
   for( i=1; i <= _unur_max(1,FIND_TP_STEPS_R); i++ ) {
     /* TODO: if vol==0 for a point we need not continue */

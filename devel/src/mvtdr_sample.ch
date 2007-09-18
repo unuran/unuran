@@ -85,6 +85,9 @@ _unur_mvtdr_sample_cvec( struct unur_gen *gen, double *rpoint )
     /** get random point and distance of hyper plane **/
 
     /* get x value for marginal distribution of hat --> hyperplane */
+    if (GEN->has_domain) 
+      /* update domain of gamma distribution */
+      unur_tdr_chg_truncated(GEN_GAMMA, 0., c->beta * c->height );
     gx = unur_sample_cont(GEN_GAMMA) / (c->beta);
       
     /* nonnegative uniform random numbers with sum u_i = 1 */

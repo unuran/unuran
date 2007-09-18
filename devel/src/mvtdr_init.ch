@@ -767,7 +767,7 @@ _unur_mvtdr_cone_params( struct unur_gen *gen, CONE *c )
 
   /* parameters alpha and beta */
   c->alpha = Tf - _unur_vector_scalar_product(dim,Tgrad,coord);
-  c->beta = _unur_vector_norm(GEN->dim,Tgrad);
+  c->beta = _unur_vector_norm(dim,Tgrad);
 
   /* |Tgrad| must not be too small */
   if( c->beta < tolerance )
@@ -831,6 +831,16 @@ _unur_mvtdr_cone_logH( struct unur_gen *gen, CONE *c )
 
   /* compute log of volume below hat */
   logH = c->alpha - GEN->dim * log(c->beta) + c->logai;
+
+  if (_unur_isfinite(c->height)) {
+    /* there is a change to the paper, eq.(15):          */
+    /*   'logai' does not contain '(dim-1)!' .           */
+    /* thus we have to modify eq.(31) accordingly.       */
+    /* Remark: this is a rather expensive computation.   */
+    /* It could be omitted if 'c->beta*c->height' is     */
+    /* large (not too small).                            */
+    logH += log(_unur_sf_incomplete_gamma(c->beta*c->height,GEN->dim));
+  }
 
   /* check for numerical errors (alpha or beta too small) */
   if (_unur_isfinite(logH))

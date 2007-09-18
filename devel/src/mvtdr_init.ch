@@ -734,17 +734,19 @@ _unur_mvtdr_cone_params( struct unur_gen *gen, CONE *c )
   /* density at construction point */
   if( DISTR.logpdf != NULL ) {
     c->Tfp = Tf = logPDF(mcoord);
+    if (! _unur_isfinite(Tf))
+      return UNUR_ERR_DISTR_DOMAIN;
   }
   else {
     f = PDF(mcoord);
     /* check density */
     if( f < tolerance )
       /* assume f = 0. */
-      return UNUR_FAILURE;
+      return UNUR_ERR_DISTR_DOMAIN;
     /* transformed density */
     c->Tfp = Tf = T(f);
   }
-  
+
   /* gradient of logPDF */
   if( DISTR.dlogpdf != NULL ) {
     /* gradient of logPDF available */
@@ -752,11 +754,11 @@ _unur_mvtdr_cone_params( struct unur_gen *gen, CONE *c )
   }
   else {
     /* grad( T(f(x) ) = T'(f(x)) * grad(f(x)) */
-  dPDF(Tgrad,mcoord);
-  Tderf = T_deriv(exp(Tf));
-  for( i=0; i<dim; i++ )
-    /* grad( T(f(x) ) = T'(f(x)) * grad(f(x)) */
-    Tgrad[i] *= Tderf;
+    dPDF(Tgrad,mcoord);
+    Tderf = T_deriv(exp(Tf));
+    for( i=0; i<dim; i++ )
+      /* grad( T(f(x) ) = T'(f(x)) * grad(f(x)) */
+      Tgrad[i] *= Tderf;
   }
 
   /* parameters alpha and beta */
@@ -991,7 +993,7 @@ _unur_mvtdr_cone_height( struct unur_gen *gen, CONE *c )
   if (! GEN->has_domain)
     /* nothing to do (c->height is set to INIFINITY at creating time) */
     return UNUR_SUCCESS;
-
+  
   /* get rectangular domain */
   if (DISTR.domainrect == NULL) {
     _unur_error(gen->genid,UNUR_ERR_DISTR_DOMAIN,"no domain given");
@@ -1121,6 +1123,7 @@ _unur_mvtdr_tp_min (double t, void *p )
   (a->c)->tp = a->t = t;
   /* compute volume below hat in cone and return result */
   a->logH = _unur_mvtdr_cone_logH (a->gen, a->c);    /* max or min ?? */
+
   /* result o.k. ? */
   a->valid = (_unur_isfinite(a->logH)) ? TRUE : FALSE;
 
@@ -1237,15 +1240,13 @@ _unur_mvtdr_tp_search( struct unur_gen *gen, TP_ARG *a )
   /** search from 0 --> infinity **/
 
   /* initialize boundary of intervall */
-  a[0].t = 0.;    /* x[0] must >= 0. */
-  a[2].t = -1.;   /* not known. marked by setting to -1. */
-  a[1].t = _unur_min(FIND_TP_START,a[1].c->height);
-                  /* starting point for searching proper touching point */
-
+  a[0].t = 0.;             /* x[0] must >= 0. */
+  a[1].t = FIND_TP_START;  /* starting point for searching proper touching point */
+  a[2].t = -1.;            /* not known. marked by setting to -1. */
+                  
   for( i=1; i <= _unur_max(1,FIND_TP_STEPS_R); i++ ) {
     /* TODO: if vol==0 for a point we need not continue */
     _unur_mvtdr_tp_min(a[1].t, a+1);  /* calculate volume function */
-
     if( ! a[1].valid ) {       /* check validity of touching point */
       /* not a proper touching point */
       a[0].t = a[1].t;

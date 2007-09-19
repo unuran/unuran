@@ -194,7 +194,7 @@ dnl -----------------------------------------
 AC_MSG_RESULT([
 *========================================================
 *
-* Configuration for ${PACKAGE}-${VERSION} [devel subdirectory]:
+* Configuration for ${PACKAGE}-${VERSION} @<:@devel subdirectory@:>@:
 *
 *  Source directory:           ${srcdir}
 *  Installation directory:     ${prefix}

@@ -808,18 +808,24 @@ _unur_mvtdr_cone_logH( struct unur_gen *gen, CONE *c )
      /*   c   ... cone for which volume below hat has to be computed         */
      /*                                                                      */
      /* return:                                                              */
-     /*   logarithm of volume below hat                                      */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return INFINITY                                                    */
+     /*   success               ... logarithm of volume below hat            */
+     /*   PDF(tp)==0            ... -INFINITY                                */
+     /*   error(hat unbounded?) ... +INFINITY                                */
      /*----------------------------------------------------------------------*/
 {
   double logH;
 
   /* compute parameters for cone */
-  if( _unur_mvtdr_cone_params(gen,c) != UNUR_SUCCESS )
+  switch ( _unur_mvtdr_cone_params(gen,c) ) {
+  case UNUR_SUCCESS:
+    break;
+  case UNUR_ERR_DISTR_DOMAIN:
+    /* construction point out of support */
+    return -INFINITY;
+  default:
     /* something is wrong: beta = 0 and/or <g,v> <= 0 */
     return INFINITY;
+  }
 
   /* compute log of volume below hat */
   logH = c->alpha - GEN->dim * log(c->beta) + c->logai;
@@ -835,14 +841,8 @@ _unur_mvtdr_cone_logH( struct unur_gen *gen, CONE *c )
   }
 
   /* check for numerical errors (alpha or beta too small) */
-  if (_unur_isfinite(logH))
-    return logH;
+  return (_unur_isfinite(logH)) ? logH : INFINITY;
 
-  else {
-    /* we mark this case by setting tp = -1 */
-    c->tp = -1.;
-    return INFINITY;
-  }
 } /* end of _unur_mvtdr_cone_logH() */
 
 /*---------------------------------------------------------------------------*/
@@ -1122,18 +1122,30 @@ _unur_mvtdr_tp_min (double t, void *p )
   /* set new construction point for hat */
   (a->c)->tp = a->t = t;
   /* compute volume below hat in cone and return result */
-  a->logH = _unur_mvtdr_cone_logH (a->gen, a->c);    /* max or min ?? */
+  a->logH = _unur_mvtdr_cone_logH (a->gen, a->c);
 
-  /* result o.k. ? */
-  a->valid = (_unur_isfinite(a->logH)) ? TRUE : FALSE;
-
-  if( !(a->valid) )
+  /* status of result */
+  switch (_unur_isinf(a->logH)) {
+  case -1:
+    a->logH = INFINITY;
+    a->status = MVTDR_CONE_DOMAIN;
+    break;
+  case 1:
+    a->status = MVTDR_CONE_INVALID;
+    break;
+  case 0:
+  default:
+    a->status = MVTDR_CONE_FINITE;
+  }
+  
+  if( a->status != MVTDR_CONE_FINITE )
     /* we mark this case by setting tp = -1 */
     (a->c)->tp = -1.;
-  
+
   return a->logH;
 } /* end of _unur_mvtdr_tp_min() */
 
+/*---------------------------------------------------------------------------*/
 
 double
 _unur_mvtdr_tp_min_aux(double t, void *p)
@@ -1247,7 +1259,7 @@ _unur_mvtdr_tp_search( struct unur_gen *gen, TP_ARG *a )
   for( i=1; i <= _unur_max(1,FIND_TP_STEPS_R); i++ ) {
     /* TODO: if vol==0 for a point we need not continue */
     _unur_mvtdr_tp_min(a[1].t, a+1);  /* calculate volume function */
-    if( ! a[1].valid ) {       /* check validity of touching point */
+    if( a[1].status != MVTDR_CONE_FINITE ) {       /* check validity of touching point */
       /* not a proper touching point */
       a[0].t = a[1].t;
       a[1].t *= FIND_TP_STEP_SIZE;
@@ -1267,7 +1279,7 @@ _unur_mvtdr_tp_search( struct unur_gen *gen, TP_ARG *a )
     /* TODO: if vol==0 for a point we need not continue */
     _unur_mvtdr_tp_min(a[1].t, a+1);  /* calculate volume function */
 
-    if( ! a[1].valid ) {       /* check validity of touching point */
+    if( a[1].status != MVTDR_CONE_FINITE ) {       /* check validity of touching point */
       /* not a proper touching point */
       a[2].t = a[1].t;
       a[1].t /= FIND_TP_STEP_SIZE;
@@ -1315,7 +1327,7 @@ _unur_mvtdr_tp_bracket( struct unur_gen *gen, TP_ARG *a )
   for( i=1; i <= _unur_max(1,FIND_TP_STEPS_LB); i++ ) {
     _unur_mvtdr_tp_min(a[0].t, a);  /* volume function */
 
-    if( ! a[0].valid ) {
+    if( a[0].status != MVTDR_CONE_FINITE ) {
       /* a[0] not a proper touching point */
       tleft = a[0].t;                     /* change boundary of searching region */
       a[0].t += (a[1].t - a[0].t) / 2.;   /* try another one */
@@ -1323,8 +1335,8 @@ _unur_mvtdr_tp_bracket( struct unur_gen *gen, TP_ARG *a )
 
     else if( a[0].logH <= a[1].logH ) {
       /* a[0] is proper touching point, but ... */
-      a[2].t = a[1].t; a[2].logH = a[1].logH; a[2].valid = TRUE;
-      a[1].t = a[0].t; a[1].logH = a[0].logH; a[1].valid = TRUE;
+      a[2].t = a[1].t; a[2].logH = a[1].logH; a[2].status = MVTDR_CONE_FINITE;
+      a[1].t = a[0].t; a[1].logH = a[0].logH; a[1].status = MVTDR_CONE_FINITE;
       a[0].t = tleft + (a[0].t - tleft)*0.5;
     }
     else  /* all right: a[0].logH > a[1].logH */
@@ -1332,7 +1344,7 @@ _unur_mvtdr_tp_bracket( struct unur_gen *gen, TP_ARG *a )
   }
 
   /* search successful ? */
-  if( ! a[0].valid )
+  if( a[0].status != MVTDR_CONE_FINITE )
     /* no proper touching point on left side --> use middle point */
     return TP_MIDDLE;
   if( a[0].logH <= a[1].logH )
@@ -1350,7 +1362,7 @@ _unur_mvtdr_tp_bracket( struct unur_gen *gen, TP_ARG *a )
   /* search */
   for( i=1; i <= _unur_max(1,FIND_TP_STEPS_UB); i++ ) {
     _unur_mvtdr_tp_min(a[2].t, a+2);  /* volume function */
-    if( ! a[2].valid ) {
+    if( a[2].status != MVTDR_CONE_FINITE ) {
       /* a[2] not a proper touching point */
       tright = a[2].t;
       a[2].t = (tleft + a[2].t) * 0.5;   /* try another one */
@@ -1365,7 +1377,7 @@ _unur_mvtdr_tp_bracket( struct unur_gen *gen, TP_ARG *a )
   }
 
   /* search successful ? */
-  if( ! a[2].valid )
+  if( a[2].status != MVTDR_CONE_FINITE )
     /* no proper touching point on right side --> use middle point */
     return TP_MIDDLE; 
   if( a[2].logH <= a[1].logH )

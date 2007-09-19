@@ -93,7 +93,9 @@ _unur_mvtdr_init( struct unur_par *par )
 
   /* make hat function */
   if(_unur_mvtdr_create_hat(gen) != UNUR_SUCCESS) {
-    _unur_mvtdr_free(gen); return NULL; }
+    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"cannot create hat");
+    _unur_mvtdr_free(gen); return NULL;
+  }
 
   /* we need an auxiliary generator for gamma random variates */
   GEN_GAMMA = _unur_mvtdr_gammagen( gen, (double)(GEN->dim) );
@@ -162,8 +164,8 @@ _unur_mvtdr_create( struct unur_par *par )
   /* initialize  pointers to lists */
   GEN->cone = NULL;
   GEN->last_cone = NULL;
-  GEN->n_cone = 0;                      /* maximum number of vertices */
-  GEN->max_cones = PAR->max_cones;      /* maximum number of cones    */
+  GEN->n_cone = 0;                      /* number cones */
+  GEN->max_cones = PAR->max_cones;      /* maximum number of cones */
   GEN->bound_splitting = PAR->bound_splitting;    /* bound for splitting cones */
 
   GEN->vertex = NULL;
@@ -469,8 +471,11 @@ _unur_mvtdr_create_hat( struct unur_gen *gen )
       _unur_mvtdr_tp_find (gen,c);
 
   /* cones with invalid hats (or too large volumes) must be split */
-  while( _unur_mvtdr_triangulate(gen,step,FALSE) > 0 )
+  while( _unur_mvtdr_triangulate(gen,step,FALSE) > 0 ) {
+    if (GEN->n_cone > GEN->max_cones)
+      return UNUR_FAILURE;
     step++;
+  }
 
   /* maximum number of triangulations yet */
   GEN->n_steps = step-1;

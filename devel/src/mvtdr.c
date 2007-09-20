@@ -15,7 +15,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2007 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -70,13 +70,13 @@
 #define GUIDE_TABLE_SIZE    1
 
 /* find proper touching point using Brent's algorithm */
-#define FIND_TP_START       1.      /* starting point                        */
-#define FIND_TP_STEPS_R     10      /* max number of steps --> Infinity      */
-#define FIND_TP_STEPS_L     10      /* max number of steps --> 0             */
-#define FIND_TP_STEP_SIZE   2.      /* stepsize for searching routine        */
+/* #define FIND_TP_START       1.      /\* starting point                        *\/ */
+/* #define FIND_TP_STEPS_R     10      /\* max number of steps --> Infinity      *\/ */
+/* #define FIND_TP_STEPS_L     10      /\* max number of steps --> 0             *\/ */
+/* #define FIND_TP_STEP_SIZE   2.      /\* stepsize for searching routine        *\/ */
 /* find bracket for Brent's algorithm */
-#define FIND_TP_STEPS_LB    10      /* max steps for finding lower bound     */
-#define FIND_TP_STEPS_UB    10      /* max stepsfor finding upper bound      */
+/* #define FIND_TP_STEPS_LB    10      /\* max steps for finding lower bound     *\/ */
+/* #define FIND_TP_STEPS_UB    10      /\* max stepsfor finding upper bound      *\/ */
 /* acceptable tolerance for Brent's algorithm */
 #define FIND_TP_TOL         0.001   /* TODO !! */
 

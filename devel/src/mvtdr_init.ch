@@ -15,7 +15,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2007 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -1140,10 +1140,10 @@ _unur_mvtdr_tp_min (double t, void *p )
     break;
   case 0:
   default:
-    a->status = MVTDR_CONE_FINITE;
+    a->status = MVTDR_CONE_OK;
   }
   
-  if( a->status != MVTDR_CONE_FINITE )
+  if( a->status != MVTDR_CONE_OK )
     /* we mark this case by setting tp = -1 */
     (a->c)->tp = -1.;
 
@@ -1252,50 +1252,66 @@ _unur_mvtdr_tp_search( struct unur_gen *gen, TP_ARG *a )
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
+#define N_STEPS  (10)  /* max number of steps for finding proper touching point */
+
   int i;      /* aux counter */
 
-  /** search from 0 --> infinity **/
+  /** search from 0 --> 1 (towards infinity) **/
 
   /* initialize boundary of intervall */
-  a[0].t = 0.;             /* x[0] must >= 0. */
-  a[1].t = FIND_TP_START;  /* starting point for searching proper touching point */
-  a[2].t = -1.;            /* not known. marked by setting to -1. */
+  a[0].t = 0.;      /* x[0] must >= 0. */
+  a[1].t = 1.;      /* starting point for searching proper touching point */
+  a[2].t = -1.;     /* not known. marked by setting to -1. */
                   
-  for( i=1; i <= _unur_max(1,FIND_TP_STEPS_R); i++ ) {
-    /* TODO: if vol==0 for a point we need not continue */
+  for( i=1; i <= N_STEPS; i++ ) {
     _unur_mvtdr_tp_min(a[1].t, a+1);  /* calculate volume function */
-    if( a[1].status != MVTDR_CONE_FINITE ) {       /* check validity of touching point */
+
+    if (a[1].status == MVTDR_CONE_OK) {
+      return UNUR_SUCCESS;
+    }
+    else if (a[1].status == MVTDR_CONE_DOMAIN) {
+      /* touching point out of domain */
+      break;
+    }
+    else {
       /* not a proper touching point */
       a[0].t = a[1].t;
-      a[1].t *= FIND_TP_STEP_SIZE;
+      a[1].t *= 2.;
     }
-    else
-      return UNUR_SUCCESS;
   }
       
-  /** search from infinity --> 0 **/
+  /** search from 1 --> 0 **/
 
   /* initialize boundary of intervall */
-  a[0].t = 0.;                  /* x[0] must >= 0. */
-  a[1].t = FIND_TP_START / FIND_TP_STEP_SIZE;/* starting point for searching proper touching point */
-  a[2].t = FIND_TP_START;       /* t[2] must >= t[1]. */
+  a[0].t = 0.;       /* x[0] must >= 0. */
+  a[1].t = 1./2.;    /* starting point for searching proper touching point */
+  a[2].t = 1.;       /* t[2] must >= t[1]. */
 
-  for( i=0; i <= _unur_max(0,FIND_TP_STEPS_L); i++ ) {
-    /* TODO: if vol==0 for a point we need not continue */
+  for( i=0;; i++ ) {
     _unur_mvtdr_tp_min(a[1].t, a+1);  /* calculate volume function */
 
-    if( a[1].status != MVTDR_CONE_FINITE ) {       /* check validity of touching point */
-      /* not a proper touching point */
-      a[2].t = a[1].t;
-      a[1].t /= FIND_TP_STEP_SIZE;
-    }
-    else
+    if (a[1].status == MVTDR_CONE_OK) {
       return UNUR_SUCCESS;
+    }
+/*     else if (a[1].status == MVTDR_CONE_DOMAIN) { */
+/*       /\* touching point out of domain *\/ */
+/*       break; */
+/*     } */
+    else {
+      if (i > N_STEPS) {
+	/* no proper touching point found               */
+	/* --> giving up and split cone before next try */
+	return UNUR_FAILURE;
+      }
+      a[2].t = a[1].t;
+      a[1].t /= 2.;
+    }
   }
 
   /* no proper touching point found */
   return UNUR_FAILURE;
 
+#undef N_STEPS
 } /* end of _unur_mvtdr_tp_search() */
 
 /*-----------------------------------------------------------------*/
@@ -1319,6 +1335,8 @@ _unur_mvtdr_tp_bracket( struct unur_gen *gen, TP_ARG *a )
      /*   TP_BRACKET ... bracket found                                       */
      /*----------------------------------------------------------------------*/
 {
+#define N_STEPS  (10)  /* max number of steps for finding bracket */
+
   int i;                 /* aux variable */
   double tleft, tright;  /* left boundary of searching region */
 
@@ -1329,10 +1347,10 @@ _unur_mvtdr_tp_bracket( struct unur_gen *gen, TP_ARG *a )
   a[0].t = a[1].t / 2.;
 
   /* search */
-  for( i=1; i <= _unur_max(1,FIND_TP_STEPS_LB); i++ ) {
+  for( i=1; i <= _unur_max(1,N_STEPS); i++ ) {
     _unur_mvtdr_tp_min(a[0].t, a);  /* volume function */
 
-    if( a[0].status != MVTDR_CONE_FINITE ) {
+    if( a[0].status != MVTDR_CONE_OK ) {
       /* a[0] not a proper touching point */
       tleft = a[0].t;                     /* change boundary of searching region */
       a[0].t += (a[1].t - a[0].t) / 2.;   /* try another one */
@@ -1340,8 +1358,8 @@ _unur_mvtdr_tp_bracket( struct unur_gen *gen, TP_ARG *a )
 
     else if( a[0].logH <= a[1].logH ) {
       /* a[0] is proper touching point, but ... */
-      a[2].t = a[1].t; a[2].logH = a[1].logH; a[2].status = MVTDR_CONE_FINITE;
-      a[1].t = a[0].t; a[1].logH = a[0].logH; a[1].status = MVTDR_CONE_FINITE;
+      a[2].t = a[1].t; a[2].logH = a[1].logH; a[2].status = MVTDR_CONE_OK;
+      a[1].t = a[0].t; a[1].logH = a[0].logH; a[1].status = MVTDR_CONE_OK;
       a[0].t = tleft + (a[0].t - tleft)*0.5;
     }
     else  /* all right: a[0].logH > a[1].logH */
@@ -1349,7 +1367,7 @@ _unur_mvtdr_tp_bracket( struct unur_gen *gen, TP_ARG *a )
   }
 
   /* search successful ? */
-  if( a[0].status != MVTDR_CONE_FINITE )
+  if( a[0].status != MVTDR_CONE_OK )
     /* no proper touching point on left side --> use middle point */
     return TP_MIDDLE;
   if( a[0].logH <= a[1].logH )
@@ -1365,9 +1383,9 @@ _unur_mvtdr_tp_bracket( struct unur_gen *gen, TP_ARG *a )
   tleft = a[1].t;
 
   /* search */
-  for( i=1; i <= _unur_max(1,FIND_TP_STEPS_UB); i++ ) {
+  for( i=1; i <= _unur_max(1,N_STEPS); i++ ) {
     _unur_mvtdr_tp_min(a[2].t, a+2);  /* volume function */
-    if( a[2].status != MVTDR_CONE_FINITE ) {
+    if( a[2].status != MVTDR_CONE_OK ) {
       /* a[2] not a proper touching point */
       tright = a[2].t;
       a[2].t = (tleft + a[2].t) * 0.5;   /* try another one */
@@ -1382,7 +1400,7 @@ _unur_mvtdr_tp_bracket( struct unur_gen *gen, TP_ARG *a )
   }
 
   /* search successful ? */
-  if( a[2].status != MVTDR_CONE_FINITE )
+  if( a[2].status != MVTDR_CONE_OK )
     /* no proper touching point on right side --> use middle point */
     return TP_MIDDLE; 
   if( a[2].logH <= a[1].logH )
@@ -1392,6 +1410,7 @@ _unur_mvtdr_tp_bracket( struct unur_gen *gen, TP_ARG *a )
   /* we have found a bracket */
   return TP_BRACKET;
 
+#undef N_STEPS
 } /* end of _unur_mvtdr_tp_bracket() */
 
 /*****************************************************************************/

@@ -40,11 +40,11 @@ int main()
   UNUR_DISTR *distr;
   UNUR_PAR *par;
   UNUR_GEN *gen;
-  double ll[] = {-0.99,-0.99};
-/*   double ur[] = { 1, 1}; */
+  double ll[] = { -1e-4, -1e-4};
+  double ur[] = { 1, 1};
 
 /*   double ll[] = {-UNUR_INFINITY,-UNUR_INFINITY}; */
-  double ur[] = { UNUR_INFINITY, UNUR_INFINITY};
+/*   double ur[] = { UNUR_INFINITY, UNUR_INFINITY}; */
   
   double mean[] = {0.,0.};
 

@@ -78,13 +78,6 @@ typedef struct s_cone             /* -- a cone ----------------------------- */
   double height;                  /* height of pyramid                       */
 } CONE;
 
-enum {                            /* -- possible status of cone paramters -- */
-  MVTDR_CONE_FINITE  = 0x000,     /* cone is ready to use                    */
-  MVTDR_CONE_DOMAIN  = 0x001,     /* touching point out of support of PDF    */
-  MVTDR_CONE_INVALID = 0x002,     /* parameters invalid (Hi not finite?)     */
-};
-
-
 typedef struct s_edge_table       /* -- hash table for edges --------------- */
 {
   int  index[2];                  /* index of incident vertices              */
@@ -101,6 +94,13 @@ typedef struct s_tp_arg           /* -- argument for tp function ----------- */
   UNUR_GEN *gen;                  /* pointer to MVTDR generator object       */
   int status;                     /* status of cone parameters               */
 } TP_ARG;
+
+
+enum {                            /* -- possible status of cone paramters -- */
+  MVTDR_CONE_OK      = 0x000,     /* cone is ready to use                    */
+  MVTDR_CONE_DOMAIN  = 0x001,     /* touching point out of support of PDF    */
+  MVTDR_CONE_INVALID = 0x002,     /* parameters invalid (Hi not finite?)     */
+};
 
 /*---------------------------------------------------------------------------*/
 /* The generator object                                                      */

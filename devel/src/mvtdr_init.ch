@@ -1197,9 +1197,20 @@ _unur_mvtdr_tp_find( struct unur_gen *gen, CONE *c )
   for (i=0; i<3; i++) { a[i].c = c; a[i].gen = gen; }
 
   /* find proper touching point */
-  if( _unur_mvtdr_tp_search(gen,a) != UNUR_SUCCESS )
+  switch (_unur_mvtdr_tp_search(gen,a)) {
+  case UNUR_SUCCESS:
+    break;
+  case UNUR_ERR_DISTR_DOMAIN:
+    /* cone not in support of PDF */
+    c->tp = 0.;
+    c->Hi = 0.;
+    c->height = 0.;
+    return UNUR_SUCCESS;
+  case UNUR_FAILURE:
+  default:
     /* no proper point found */
     return UNUR_FAILURE;
+  }
 
   /* find "bracket" for Brent's algorithm */
   switch( _unur_mvtdr_tp_bracket(gen,a) ) {      /* searching for intervall that contains minimum */
@@ -1254,14 +1265,16 @@ _unur_mvtdr_tp_search( struct unur_gen *gen, TP_ARG *a )
 {
 #define N_STEPS  (10)  /* max number of steps for finding proper touching point */
 
-  int i;      /* aux counter */
+  int i;                           /* aux counter */
+  int is_unbounded_cone = FALSE;  /* boolean */
+  double start = 1.;               /* starting point for search routine */
 
   /** search from 0 --> 1 (towards infinity) **/
 
   /* initialize boundary of intervall */
-  a[0].t = 0.;      /* x[0] must >= 0. */
-  a[1].t = 1.;      /* starting point for searching proper touching point */
-  a[2].t = -1.;     /* not known. marked by setting to -1. */
+  a[0].t = 0.;     /* x[0] must >= 0. */
+  a[1].t = start;  /* starting point for searching proper touching point */
+  a[2].t = -1.;    /* not known. marked by setting to -1. */
                   
   for( i=1; i <= N_STEPS; i++ ) {
     _unur_mvtdr_tp_min(a[1].t, a+1);  /* calculate volume function */
@@ -1275,6 +1288,7 @@ _unur_mvtdr_tp_search( struct unur_gen *gen, TP_ARG *a )
     }
     else {
       /* not a proper touching point */
+      is_unbounded_cone = TRUE;
       a[0].t = a[1].t;
       a[1].t *= 2.;
     }
@@ -1283,9 +1297,9 @@ _unur_mvtdr_tp_search( struct unur_gen *gen, TP_ARG *a )
   /** search from 1 --> 0 **/
 
   /* initialize boundary of intervall */
-  a[0].t = 0.;       /* x[0] must >= 0. */
-  a[1].t = 1./2.;    /* starting point for searching proper touching point */
-  a[2].t = 1.;       /* t[2] must >= t[1]. */
+  a[0].t = 0.;        /* x[0] must >= 0. */
+  a[1].t = start/2.;  /* starting point for searching proper touching point */
+  a[2].t = 1.;        /* t[2] must >= t[1]. */
 
   for( i=0;; i++ ) {
     _unur_mvtdr_tp_min(a[1].t, a+1);  /* calculate volume function */
@@ -1293,16 +1307,22 @@ _unur_mvtdr_tp_search( struct unur_gen *gen, TP_ARG *a )
     if (a[1].status == MVTDR_CONE_OK) {
       return UNUR_SUCCESS;
     }
-/*     else if (a[1].status == MVTDR_CONE_DOMAIN) { */
-/*       /\* touching point out of domain *\/ */
-/*       break; */
-/*     } */
+    else if (a[1].status == MVTDR_CONE_DOMAIN) {
+      /* touching point out of domain */
+      if (a[1].t < 1.e-20 ) {
+	/* the bound 1.e-20 is rather arbirary */
+	return (is_unbounded_cone) ? UNUR_FAILURE : UNUR_ERR_DISTR_DOMAIN;
+      }
+      a[2].t = a[1].t;
+      a[1].t /= 10.;
+    }
     else {
       if (i > N_STEPS) {
 	/* no proper touching point found               */
 	/* --> giving up and split cone before next try */
 	return UNUR_FAILURE;
       }
+      is_unbounded_cone = TRUE;
       a[2].t = a[1].t;
       a[1].t /= 2.;
     }

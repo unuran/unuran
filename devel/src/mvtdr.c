@@ -256,7 +256,7 @@ static void _unur_mvtdr_debug_init_start( const struct unur_gen *gen );
 /* print after (almost empty generator) object has been created.             */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_mvtdr_debug_init_finished( const struct unur_gen *gen );
+static void _unur_mvtdr_debug_init_finished( const struct unur_gen *gen, int successful );
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized.                               */
 /*---------------------------------------------------------------------------*/

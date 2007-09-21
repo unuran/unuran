@@ -94,6 +94,10 @@ _unur_mvtdr_init( struct unur_par *par )
   /* make hat function */
   if(_unur_mvtdr_create_hat(gen) != UNUR_SUCCESS) {
     _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"cannot create hat");
+#ifdef UNUR_ENABLE_LOGGING
+    /* write info into log file */
+    if (gen->debug) _unur_mvtdr_debug_init_finished(gen, FALSE);
+#endif
     _unur_mvtdr_free(gen); return NULL;
   }
 
@@ -104,7 +108,7 @@ _unur_mvtdr_init( struct unur_par *par )
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
-  if (gen->debug) _unur_mvtdr_debug_init_finished(gen);
+  if (gen->debug) _unur_mvtdr_debug_init_finished(gen, TRUE);
 #endif
 
   /* o.k. */
@@ -1098,6 +1102,7 @@ _unur_mvtdr_cone_height( struct unur_gen *gen, CONE *c )
   /* check result */
   if (_unur_isnan(c->height)) {
     c->height = UNUR_INFINITY;
+    /*     return UNUR_FAILURE; */
   }
 
   /* o.k. */

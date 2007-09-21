@@ -84,12 +84,13 @@ _unur_mvtdr_debug_init_start( const struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_mvtdr_debug_init_finished( const struct unur_gen *gen )
+_unur_mvtdr_debug_init_finished( const struct unur_gen *gen, int successful )
      /*----------------------------------------------------------------------*/
      /* write info about generator into logfile                              */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
+     /*   gen        ... pointer to generator object                         */
+     /*   successful ... whether creation of was succesfull                  */
      /*----------------------------------------------------------------------*/
 {
   FILE *log;
@@ -98,6 +99,11 @@ _unur_mvtdr_debug_init_finished( const struct unur_gen *gen )
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_MVTDR_GEN,RETURN_VOID);
 
   log = unur_get_stream();
+
+  if (!successful) {
+    fprintf(log,"%s: initialization of GENERATOR failed **********************\n",gen->genid);
+    fprintf(log,"%s:\n",gen->genid);
+  }
 
   /* triangulation steps */
   fprintf(log,"%s: minimum triangulation level = %d\n",gen->genid,GEN->steps_min);

@@ -466,9 +466,9 @@ _unur_mvtdr_create_hat( struct unur_gen *gen )
       return UNUR_FAILURE;
   }
 
-  /* compute optimal distance of touching points now */
+  /* compute optimal distance of touching points and volume Hi */
   for( c = GEN->cone; c != NULL; c = c->next )
-      _unur_mvtdr_tp_find (gen,c);
+    _unur_mvtdr_tp_find (gen,c);
 
   /* cones with invalid hats (or too large volumes) must be split */
   while( _unur_mvtdr_triangulate(gen,step,FALSE) > 0 ) {
@@ -583,9 +583,9 @@ _unur_mvtdr_initial_cones( struct unur_gen *gen )
     /* The indices of the vertices must be in ascending order.         */ 
     j = 0;
     for( i=0; i < dim; i++ )
-      if (! ((k>>i)&1) * dim ) (c->v)[j++] = ivtl[i];
+      if (!((k>>i)&1))  (c->v)[j++] = ivtl[i];
     for( i=0; i < dim && j < dim; i++ )
-      if ( ((k>>i)&1) * dim ) (c->v)[j++] = ivtl[i + dim];
+      if ( ((k>>i)&1))  (c->v)[j++] = ivtl[i + dim];
 
     /* determinant and volume of triangle * ((dim-1)!) */
     c->logdetf = 0.;
@@ -774,13 +774,12 @@ _unur_mvtdr_cone_params( struct unur_gen *gen, CONE *c )
   if( c->beta < tolerance )
     return UNUR_FAILURE;
 
-  /* compute g and <g,v> for all vertices of cone */
   /* vector g = - grad(T(f)) / |grad(T(f))| */
   for( i=0; i<dim; i++ )
     g[i] = - Tgrad[i] / c->beta;
 
-  /* <g,v> for each vertex v of cone and */
-  /* parameter a1 for volume of cone */
+  /* <g,v> for each vertex v of cone and    */
+  /* parameter a1 for volume of cone        */
   c->logai = c->logdetf;
   for( i=0; i<dim; i++ ) {
     c->gv[i] = _unur_vector_scalar_product(dim,g,(c->v[i])->coord);   /* <g,v> */
@@ -794,7 +793,8 @@ _unur_mvtdr_cone_params( struct unur_gen *gen, CONE *c )
   /* this is expensive for calculation for every touching point !!! */
   /* Maybe we only perform this computation when at the very end    */
   /* and use height=INFINITY for finding construction points.       */
-  _unur_mvtdr_cone_height(gen,c);
+  if (_unur_mvtdr_cone_height(gen,c) != UNUR_SUCCESS) 
+    return UNUR_FAILURE;
 
   /* return error code */
   return UNUR_SUCCESS;
@@ -842,7 +842,10 @@ _unur_mvtdr_cone_logH( struct unur_gen *gen, CONE *c )
     /* Remark: this is a rather expensive computation.   */
     /* It could be omitted if 'c->beta*c->height' is     */
     /* large (not too small).                            */
-    logH += log(_unur_sf_incomplete_gamma(c->beta*c->height,GEN->dim));
+    if (c->height < 1.e-50) 
+      return -INFINITY;
+    else
+      logH += log(_unur_sf_incomplete_gamma(c->beta*c->height,GEN->dim));
   }
 
   /* check for numerical errors (alpha or beta too small) */
@@ -1093,7 +1096,9 @@ _unur_mvtdr_cone_height( struct unur_gen *gen, CONE *c )
   free (AA);
 
   /* check result */
-  if (_unur_isnan(c->height))  c->height = UNUR_INFINITY;
+  if (_unur_isnan(c->height)) {
+    c->height = UNUR_INFINITY;
+  }
 
   /* o.k. */
   return UNUR_SUCCESS;
@@ -1205,7 +1210,7 @@ _unur_mvtdr_tp_find( struct unur_gen *gen, CONE *c )
     c->tp = 0.;
     c->Hi = 0.;
     c->height = 0.;
-    return UNUR_SUCCESS;
+    return UNUR_ERR_DISTR_DOMAIN;
   case UNUR_FAILURE:
   default:
     /* no proper point found */
@@ -1454,10 +1459,16 @@ _unur_mvtdr_initial_vertices( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   VERTEX *vt;
-  int i,k,d;
+  int i,k;
+  double d;
+  double *domain;
+
+  /* get rectangular domain */
+  domain = ( (GEN->has_domain && DISTR.domainrect != NULL) 
+	     ? DISTR.domainrect : NULL );
 
   /* unit vectors e_k  and -e_k */
-  for ( d=1.; d > -2; d -= 2.) {
+  for ( d=1.; d > -2.; d -= 2.) {
     /* '+'-sign and '-'-sign */
     for( k=0; k<GEN->dim; k++ ) {
       vt = _unur_mvtdr_vertex_new(gen);
@@ -1469,6 +1480,13 @@ _unur_mvtdr_initial_vertices( struct unur_gen *gen )
       }
       /* all vectors have norm 1. */
       vt->norm = 1.;
+
+      /* vertices outside domain of PDF get a negative index */
+      if ( domain ) {
+	if ( (d<0 && _unur_FP_equal(GEN->center[k],domain[2*k]))   ||
+	     (d>0 && _unur_FP_equal(GEN->center[k],domain[2*k+1])) )
+	  vt->index = -vt->index -1;
+      }
     }
   }
 

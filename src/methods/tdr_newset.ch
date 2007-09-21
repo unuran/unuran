@@ -1018,7 +1018,7 @@ unur_tdr_chg_truncated( struct unur_gen *gen, double left, double right )
 
   /* compute CDF at x (with respect to given domain of distribution) */
   Umin = _unur_tdr_eval_cdfhat(gen,left);
-  Umax = _unur_tdr_eval_cdfhat(gen,right);
+  Umax = (right < DISTR.domain[1]) ? _unur_tdr_eval_cdfhat(gen,right) : 1.;
 
   /* check result */
   if (Umin > Umax) {

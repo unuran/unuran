@@ -1100,10 +1100,7 @@ _unur_mvtdr_cone_height( struct unur_gen *gen, CONE *c )
   free (AA);
 
   /* check result */
-  if (_unur_isnan(c->height)) {
-    c->height = UNUR_INFINITY;
-    /*     return UNUR_FAILURE; */
-  }
+  if (_unur_isnan(c->height))  c->height = UNUR_INFINITY;
 
   /* o.k. */
   return UNUR_SUCCESS;

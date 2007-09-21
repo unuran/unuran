@@ -560,19 +560,37 @@ _unur_mvtdr_initial_cones( struct unur_gen *gen )
   VERTEX **ivtl;   /* list of initial vertices */
   int dim = GEN->dim;
   int error = FALSE;
+  int have_negative_index = FALSE;
+  int cone_out_of_domain;
 
   /* make array of initial vertices */
   ivtl = malloc(2 * dim * sizeof(VERTEX*));
   if( ivtl==NULL ) {
-    _unur_error(gen->genid,UNUR_ERR_MALLOC,""); return UNUR_ERR_MALLOC; }
-  for (vt = GEN->vertex, i=0; i < 2*GEN->dim && vt!=NULL; vt = vt->next, i++)
-    ivtl[i] = vt;    
+    _unur_error(gen->genid,UNUR_ERR_MALLOC,""); return UNUR_ERR_MALLOC; 
+  }
+  for (vt = GEN->vertex, i=0; i < 2*GEN->dim && vt!=NULL; vt = vt->next, i++) {
+    if (vt->index<0) have_negative_index = TRUE;
+    ivtl[i] = vt;
+  }
 
   /* we have (at most) 2^dim initial cones */
   max_c = 1 << dim;
 
   /* we need vertices, index, volume for each cone */
   for( k=0; k<max_c; k++ ) {
+
+    if (have_negative_index) {
+      /* first check vertices of cone for negative index */
+      cone_out_of_domain = FALSE;
+      for( i=0; i < dim; i++ ) {
+	if ( (!((k>>i)&1) && ivtl[i]->index < 0) ||
+	     ( ((k>>i)&1) && ivtl[i+dim]->index < 0) ) {
+	  cone_out_of_domain = TRUE;  break;
+	}
+      }
+      if (cone_out_of_domain)  /* cone is not inside domain --> skip */
+	continue;
+    }
 
     /* get new (empty) cone object */
     c = _unur_mvtdr_cone_new(gen);

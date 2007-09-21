@@ -1245,7 +1245,6 @@ _unur_mvtdr_tp_find( struct unur_gen *gen, CONE *c )
     tpaux.params = a+1;
     c->tp = _unur_util_brent( tpaux, a[0].t, a[2].t, a[1].t, FIND_TP_TOL);
     c->Hi = exp(a[1].logH);
-    /* TODO: error checking !! */
     break;                         /* c->tp already set by tp_min() */
   case TP_LEFT:                    /* minimum in left point */
     c->tp = a[0].t;

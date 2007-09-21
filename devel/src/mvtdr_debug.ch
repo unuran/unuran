@@ -105,6 +105,9 @@ _unur_mvtdr_debug_init_finished( const struct unur_gen *gen, int successful )
     fprintf(log,"%s:\n",gen->genid);
   }
 
+  /* gamma variates */
+  fprintf(log,"%s: upper bound for gamma variates = %g\n",gen->genid,GEN->max_gamma);
+
   /* triangulation steps */
   fprintf(log,"%s: minimum triangulation level = %d\n",gen->genid,GEN->steps_min);
   fprintf(log,"%s: maximum triangulation level = %d\n",gen->genid,GEN->n_steps);

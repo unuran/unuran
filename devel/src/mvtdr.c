@@ -50,6 +50,7 @@
 #include <unur_source.h>
 #include <distr/distr.h>
 #include <distr/distr_source.h>
+#include <distr/cont.h>
 #include <distr/cvec.h>
 #include <distributions/unur_distributions.h>
 #include <utils/fmax_source.h>
@@ -181,6 +182,8 @@ static int _unur_mvtdr_triangulate( struct unur_gen *gen, int step, int all);
 static int _unur_mvtdr_cone_height( struct unur_gen *gen, CONE *c );
 /* calculate height of pyramid (cone) */
 
+static int _unur_mvtdr_max_gamma( struct unur_gen *gen );
+/* compute upper bound for gamma variates */
 
 /*****************************************************************************/
 /* optimal distance for touching points                                      */

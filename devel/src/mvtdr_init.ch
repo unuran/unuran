@@ -101,6 +101,9 @@ _unur_mvtdr_init( struct unur_par *par )
     _unur_mvtdr_free(gen); return NULL;
   }
 
+  /* compute upper bound for gamma variates */
+  _unur_mvtdr_max_gamma(gen);
+
   /* we need an auxiliary generator for gamma random variates */
   GEN_GAMMA = _unur_mvtdr_gammagen( gen, (double)(GEN->dim) );
   if ( GEN_GAMMA == NULL ) {
@@ -164,6 +167,7 @@ _unur_mvtdr_create( struct unur_par *par )
     /*     WARNING( "number of cones raised to 2^(dim + T_STEPS_MIN)" ); */
     PAR->max_cones = 1 << (GEN->dim + GEN->steps_min);
   }
+  GEN->max_gamma = INFINITY;            /* upper bound for gamma variaties */
 
   /* initialize  pointers to lists */
   GEN->cone = NULL;
@@ -405,6 +409,9 @@ _unur_mvtdr_gammagen( struct unur_gen *gen, double alpha )
   /* make generator object */
   shape = alpha;
   gammadistr = unur_distr_gamma(&shape,1);
+  if (_unur_isfinite(GEN->max_gamma)) {
+    unur_distr_cont_set_domain(gammadistr,0.,GEN->max_gamma);
+  }
   gammapar = unur_tdr_new( gammadistr );
   unur_tdr_set_usedars( gammapar, TRUE );
   unur_tdr_set_max_sqhratio( gammapar, MVTDR_TDR_SQH_RATIO);
@@ -559,6 +566,7 @@ _unur_mvtdr_initial_cones( struct unur_gen *gen )
   VERTEX *vt;
   VERTEX **ivtl;   /* list of initial vertices */
   int dim = GEN->dim;
+
   int error = FALSE;
   int have_negative_index = FALSE;
   int cone_out_of_domain;
@@ -1127,6 +1135,40 @@ _unur_mvtdr_cone_height( struct unur_gen *gen, CONE *c )
 #undef ll
 #undef ur
 } /* end of _unur_mvtdr_cone_height() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_mvtdr_max_gamma( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* compute upper bound for gamma variates                               */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  double max, tmp;
+  CONE *c;
+
+  if (!GEN->has_domain) {
+    GEN->max_gamma = INFINITY;
+  }
+  else {
+    max = 0.;
+    for (c = GEN->cone; c != NULL; c = c->next) {
+      tmp = c->height * c->beta;
+      max = _unur_max(max, tmp);
+    }
+    GEN->max_gamma = (max > 0.) ? max : INFINITY;
+  }
+
+  return UNUR_SUCCESS;
+} /* end of _unur_mvtdr_max_gamma() */
+
 
 /*****************************************************************************/
 /*                                                                           */

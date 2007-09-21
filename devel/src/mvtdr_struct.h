@@ -108,6 +108,7 @@ enum {                            /* -- possible status of cone paramters -- */
 struct unur_mvtdr_gen { 
   int  dim;                       /* dimension of distribution               */
   int  has_domain;                /* whether the domain of distribution has given domain */
+  double max_gamma;               /* upper bound for gamma variaties         */
 
   const double *center;           /* center of distribution                  */
 
@@ -138,11 +139,6 @@ struct unur_mvtdr_gen {
   int n_steps;                    /* (highest) number of triangulation steps */
 
   double pdfcenter;               /* PDF at center                           */
-
-/* #if RECTANGLE == 1 */
-/*   double max_gamma;               /\* maximum value for gamma variaties *\/ */
-/* #endif */
-
 };
 
 /*---------------------------------------------------------------------------*/

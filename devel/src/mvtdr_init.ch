@@ -407,7 +407,7 @@ _unur_mvtdr_gammagen( struct unur_gen *gen, double alpha )
   gammadistr = unur_distr_gamma(&shape,1);
   gammapar = unur_tdr_new( gammadistr );
   unur_tdr_set_usedars( gammapar, TRUE );
-  unur_tdr_set_max_sqhratio( gammapar, 0.999);
+  unur_tdr_set_max_sqhratio( gammapar, MVTDR_TDR_SQH_RATIO);
   if (! GEN->has_domain) {
     /* we do not need a truncated gamma distribution. */
     /* hence we can use immediate acceptance.          */

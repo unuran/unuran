@@ -69,21 +69,17 @@
 /* relative size of guide table compared to number of cones */
 #define GUIDE_TABLE_SIZE    1
 
-/* find proper touching point using Brent's algorithm */
-/* #define FIND_TP_START       1.      /\* starting point                        *\/ */
-/* #define FIND_TP_STEPS_R     10      /\* max number of steps --> Infinity      *\/ */
-/* #define FIND_TP_STEPS_L     10      /\* max number of steps --> 0             *\/ */
-/* #define FIND_TP_STEP_SIZE   2.      /\* stepsize for searching routine        *\/ */
-/* find bracket for Brent's algorithm */
-/* #define FIND_TP_STEPS_LB    10      /\* max steps for finding lower bound     *\/ */
-/* #define FIND_TP_STEPS_UB    10      /\* max stepsfor finding upper bound      *\/ */
-/* acceptable tolerance for Brent's algorithm */
-#define FIND_TP_TOL         0.001   /* TODO !! */
+/* find proper touching point using Brent's algorithm: */
+/* acceptable tolerance for Brent's algorithm          */
+#define FIND_TP_TOL         0.001   
 
 /* fine tuning of generator: */
 /* a number is considered to be zero if abs is below                         */
 /*   TOLERANCE * PDF(center) / dim                                           */                                
 #define TOLERANCE           (1.e-8)
+
+/* gamma variate generator (using method TDR) */
+#define MVTDR_TDR_SQH_RATIO (0.95)
 
 /*---------------------------------------------------------------------------*/
 /* Variants                                                                  */

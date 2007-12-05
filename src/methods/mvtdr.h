@@ -36,7 +36,7 @@
  *****************************************************************************/
 
 /* 
-   =EXPERIMENTAL-METHOD  MVTDR  Multi-Variate Transformed Density Rejection
+   =METHOD  MVTDR  Multi-Variate Transformed Density Rejection
 
    =UP  Methods_for_CVEC
 
@@ -95,7 +95,7 @@
       @item boundsplitting
       Cones where the volume below the hat is relatively large
       (i.e. larger than the average volume over all cones times
-      @code{boundsplitting) are further split.
+      @code{boundsplitting} are further split.
       This parameter can set via a unur_mvtdr_set_boundsplitting() call.
 
       @item maxcones
@@ -104,7 +104,7 @@
       rejection constant can be still prohibitive large.
       This parameter can set via a unur_mvtdr_set_maxcones() call.
 
-      @end itemize
+      @end table
 
       Setting of these parameter can be quite tricky. The default
       settings lead to hat functions where the volume below the hat is

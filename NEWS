@@ -1,6 +1,10 @@
 
 Version 1.*.*: *** 2007
 
+	* Methods:
+
+	- New method MVTDR
+
 	* Distributions:
 
 	- CONT (continuous univariate distribution):

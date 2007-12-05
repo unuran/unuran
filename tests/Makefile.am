@@ -68,6 +68,7 @@ check_PROGRAMS = \
  t_itdr \
  t_mcorr \
  t_mvstd \
+ t_mvtdr \
  t_ninv \
  t_norta \
  t_nrou \

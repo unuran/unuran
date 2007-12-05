@@ -215,6 +215,28 @@ unur_mvtdr_set_maxcones( struct unur_par *par, int maxcones )
 
 /*---------------------------------------------------------------------------*/
 
+int
+unur_mvtdr_get_ncones( const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* get number of cones                                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   number of cones ... on success                                     */
+     /*   0               ... on error                                       */
+     /*----------------------------------------------------------------------*/
+{
+  /* check input */
+  _unur_check_NULL( GENTYPE, gen, 0 );
+  _unur_check_gen_object( gen, MVTDR, 0 );
+
+  return GEN->n_cone;
+} /* end of unur_mvtdr_get_ncones() */
+
+/*---------------------------------------------------------------------------*/
+
 double
 unur_mvtdr_get_hatvol( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/

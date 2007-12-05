@@ -83,7 +83,7 @@ int unur_mvtdr_set_stepsmin( UNUR_PAR *parameters, int stepsmin );
 int unur_mvtdr_set_boundsplitting( UNUR_PAR *parameters, double boundsplitting );
 /* 
    Set bound for splitting cones. All cones are split which have a
-   volume below the hat is greater than @var{bound_splitting} times
+   volume below the hat that is greater than @var{bound_splitting} times
    the average over all volumes. However, the number given by the 
    unur_mvtdr_set_maxcones() is not exceeded.
    Notice that the later number is always reached 
@@ -109,9 +109,16 @@ int unur_mvtdr_set_maxcones( UNUR_PAR *parameters, int maxcones );
    Default: @code{10000}.
 */
 
+int unur_mvtdr_get_ncones( const UNUR_GEN *generator );
+/* 
+   Get the number of cones used for the hat function of the 
+   @var{generator}.
+   (In case of an error @code{0} is returned.)
+*/
+
 double unur_mvtdr_get_hatvol( const UNUR_GEN *generator );
 /* 
-   Get the volume below the hat for the generator.
+   Get the volume below the hat for the @var{generator}.
    (In case of an error @code{UNUR_INFINITY} is returned.)
 */
 

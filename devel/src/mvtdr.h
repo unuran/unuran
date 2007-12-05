@@ -52,10 +52,76 @@
    =REF  [HLD04: Sect.11.3.4, Alg.11.15.] [LJa98]
 
    =DESCRIPTION
-      MVTDR
+      MVTDR a multivariate version of the Transformed Density Rection
+      (@pxref{TDR}) that works for log-concave densities.
+      For this method the domain of the distribution is partitioned
+      into cones with the mode (or the center) of the distribution as
+      their (common) vertex. The hat function is then constructed as
+      tangent planes of the transformed density in each of these
+      cones. The respective construction points lie on the central
+      lines in the cones through the vertex. The point is chosen such
+      that the hat is minimal among all such points (see the given
+      references for more details).
+
+      The cones are created by starting with the orthants of the reals
+      space. These are then iteratively split when the volume below
+      the hat in such cones is too large. Thus an increasing number of
+      cones results in a better fitting hat function.
+      Notice however, that the required number of cones increases
+      exponentially with the number of dimension.
+      Moreover, due to the construction the rejection does not
+      converge to 1 and remains strictly larger than 1.
+
+      For distributions with bounded domains the cones are cut to
+      pyramids that cover the domain.
 
    =HOWTOUSE
-      Create a multivariate generator object ...
+      Create a multivariate generator object that contains the PDF and
+      its gradient. This object also should contain the mode of the
+      distribution (or a point nearby should be provided as center of
+      the distribution).  
+
+      The method has three parameter to adjust the method for the given
+      distribution:
+
+      @table @code
+      @item stepsmin
+      Minimal number of iterations for splitting cones.
+      Notice that we start with 2^dim initial cones and that we arrive
+      at 2^(dim+stepsmin) cones after these splits. So this number
+      must be set with care. It can be set by a 
+      unur_mvtdr_set_stepsmin() call.
+
+      @item boundsplitting
+      Cones where the volume below the hat is relatively large
+      (i.e. larger than the average volume over all cones times
+      @code{boundsplitting) are further split.
+      This parameter can set via a unur_mvtdr_set_boundsplitting() call.
+
+      @item maxcones
+      The maximum number of generated cones. When this number is
+      reached, the initialization routine is stopped. Notice that the
+      rejection constant can be still prohibitive large.
+      This parameter can set via a unur_mvtdr_set_maxcones() call.
+
+      @end itemize
+
+      Setting of these parameter can be quite tricky. The default
+      settings lead to hat functions where the volume below the hat is
+      similar in each cone. However, there might be some problems with
+      distributions with higher correlations, since then too few cones
+      are created. Then it might be necessary to increase the values
+      for @code{stepsmin} and @code{maxcones} and to set
+      @code{boundsplitting} to @code{0}.
+
+      The number of cones and the total volume below the hat can be
+      controlled using the respective calls unur_mvtdr_get_ncones() and
+      unur_mvtdr_get_hatvol(). Notice, that the rejection constant is
+      bounded from below by some figure (larger than 1) that depends
+      on the dimension.
+
+      Unfortunately, the algorithm cannot detect the quality of the
+      constructed hat. 
 
    =END
 */

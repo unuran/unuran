@@ -137,7 +137,6 @@ _unur_mvtdr_create( struct unur_par *par )
      /*----------------------------------------------------------------------*/
 {
   struct unur_gen *gen;
-  int error = FALSE;
   
   /* check arguments */
   CHECK_NULL(par,NULL);  COOKIE_CHECK(par,CK_MVTDR_PAR,NULL);
@@ -188,15 +187,21 @@ _unur_mvtdr_create( struct unur_par *par )
   
   /* initialize working arrays: */
   /*   point on simples */
-  (GEN->S         = malloc( GEN->dim * sizeof(double) )) || (error = TRUE);
+  GEN->S         = malloc( GEN->dim * sizeof(double) );
   /*   vector g (direction of sweeping plane) */
-  (GEN->g         = malloc( GEN->dim * sizeof(double) )) || (error = TRUE);
+  GEN->g         = malloc( GEN->dim * sizeof(double) );
   /*   coordinates of touching point of hat */
-  (GEN->tp_coord  = malloc( GEN->dim * sizeof(double) )) || (error = TRUE);
+  GEN->tp_coord  = malloc( GEN->dim * sizeof(double) );
   /*   coordinates of touching point of hat moved into center */
-  (GEN->tp_mcoord = malloc( GEN->dim * sizeof(double) )) || (error = TRUE);
+  GEN->tp_mcoord = malloc( GEN->dim * sizeof(double) );
   /*   gradient of transformed density at tp */
-  (GEN->tp_Tgrad  = malloc( GEN->dim * sizeof(double) )) || (error = TRUE);
+  GEN->tp_Tgrad  = malloc( GEN->dim * sizeof(double) );
+
+  if (GEN->S==NULL || GEN->g==NULL || GEN->tp_coord==NULL || 
+      GEN->tp_mcoord==NULL || GEN->tp_Tgrad==NULL) {
+    _unur_error(gen->genid,UNUR_ERR_MALLOC,"");
+    _unur_mvtdr_free(gen); return NULL;
+  }
 
   /* get center of the distribution and its PDF */
   GEN->center = unur_distr_cvec_get_center(gen->distr);
@@ -205,11 +210,6 @@ _unur_mvtdr_create( struct unur_par *par )
   /* whether we have set a domain for the distribution */
   GEN->has_domain = (gen->distr->set & UNUR_DISTR_SET_DOMAIN) ? TRUE : FALSE;
  
-  if (error == TRUE) {
-    _unur_error(gen->genid,UNUR_ERR_MALLOC,"");
-    _unur_mvtdr_free(gen); return NULL;
-  }
-
   /* return pointer to (almost empty) generator object */
   return gen;
   
@@ -251,13 +251,15 @@ _unur_mvtdr_clone( const struct unur_gen *gen )
 
   /* working arrays */
   size = GEN->dim * sizeof(double);
-  (CLONE->S         = malloc(size)) || (error = TRUE);
-  (CLONE->g         = malloc(size)) || (error = TRUE);
-  (CLONE->tp_coord  = malloc(size)) || (error = TRUE);
-  (CLONE->tp_mcoord = malloc(size)) || (error = TRUE);
-  (CLONE->tp_Tgrad  = malloc(size)) || (error = TRUE);
-  (vtindex = malloc(GEN->n_vertex * sizeof (VERTEX *))) || (error = TRUE);
-  if (error == TRUE) {
+  CLONE->S         = malloc(size);
+  CLONE->g         = malloc(size);
+  CLONE->tp_coord  = malloc(size);
+  CLONE->tp_mcoord = malloc(size);
+  CLONE->tp_Tgrad  = malloc(size);
+  vtindex = malloc(GEN->n_vertex * sizeof (VERTEX *));
+
+  if (CLONE->S==NULL || CLONE->g==NULL || CLONE->tp_coord==NULL || 
+      CLONE->tp_mcoord==NULL || CLONE->tp_Tgrad==NULL || vtindex==NULL) {
     _unur_error(gen->genid,UNUR_ERR_MALLOC,"");
     _unur_mvtdr_free(clone); return NULL;
   }
@@ -650,8 +652,7 @@ _unur_mvtdr_cone_new( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   CONE *c; 
-  int error = FALSE;
-
+  
   /* allocate memory */
   c = malloc(sizeof(CONE));
   if (c==NULL) {
@@ -665,15 +666,15 @@ _unur_mvtdr_cone_new( struct unur_gen *gen )
   c->next = NULL;
 
   /* list of vertices of the cone */
-  (c->v      = malloc( GEN->dim * sizeof(VERTEX *)) ) || (error = TRUE);
+  c->v      = malloc( GEN->dim * sizeof(VERTEX *));
 
   /* barycenter of cone */
-  (c->center = malloc( GEN->dim * sizeof(double)) )   || (error = TRUE);
+  c->center = malloc( GEN->dim * sizeof(double));
 
   /* <g,v> for all vertices v */
-  (c->gv     = malloc( GEN->dim * sizeof(double)) )   || (error = TRUE);
+  c->gv     = malloc( GEN->dim * sizeof(double));
 
-  if (error==TRUE) {
+  if (c->v==NULL || c->center==NULL || c->gv==NULL) {
     _unur_error(gen->genid,UNUR_ERR_MALLOC,""); return NULL; }
 
   /* the cone is unbounded when created */
@@ -1312,7 +1313,7 @@ _unur_mvtdr_tp_find( struct unur_gen *gen, CONE *c )
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_mvtdr_tp_search( struct unur_gen *gen, TP_ARG *a )
+_unur_mvtdr_tp_search( struct unur_gen *gen ATTRIBUTE__UNUSED, TP_ARG *a )
      /*----------------------------------------------------------------------*/
      /* search for proper touching point.                                    */
      /*                                                                      */
@@ -1403,7 +1404,7 @@ _unur_mvtdr_tp_search( struct unur_gen *gen, TP_ARG *a )
 /*-----------------------------------------------------------------*/
 
 int 
-_unur_mvtdr_tp_bracket( struct unur_gen *gen, TP_ARG *a )
+_unur_mvtdr_tp_bracket( struct unur_gen *gen ATTRIBUTE__UNUSED, TP_ARG *a )
      /*----------------------------------------------------------------------*/
      /* search for proper bracket for Brent's algorithm                      */
      /*                                                                      */

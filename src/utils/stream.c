@@ -57,7 +57,10 @@ static const char GENID_UNKNOWN[] = "UNURAN";
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_log_printf( const char *genid, const char *filename, int line, const char *format, ... )
+_unur_log_printf( const char *genid ATTRIBUTE__UNUSED,
+		  const char *filename ATTRIBUTE__UNUSED, 
+		  int line ATTRIBUTE__UNUSED, 
+		  const char *format ATTRIBUTE__UNUSED, ... )
      /*----------------------------------------------------------------------*/
      /* write messages on output stream(s)                                   */
      /*                                                                      */
@@ -93,7 +96,7 @@ _unur_log_printf( const char *genid, const char *filename, int line, const char 
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_log_printf_simple( const char *format, ... )
+_unur_log_printf_simple( const char *format ATTRIBUTE__UNUSED, ... )
      /*----------------------------------------------------------------------*/
      /* write messages on output stream(s)                                   */
      /* (same as _unur_stream_printf() but without file and line number)     */

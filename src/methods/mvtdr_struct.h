@@ -99,7 +99,7 @@ typedef struct s_tp_arg           /* -- argument for tp function ----------- */
 enum {                            /* -- possible status of cone paramters -- */
   MVTDR_CONE_OK      = 0x000,     /* cone is ready to use                    */
   MVTDR_CONE_DOMAIN  = 0x001,     /* touching point out of support of PDF    */
-  MVTDR_CONE_INVALID = 0x002,     /* parameters invalid (Hi not finite?)     */
+  MVTDR_CONE_INVALID = 0x002      /* parameters invalid (Hi not finite?)     */
 };
 
 /*---------------------------------------------------------------------------*/

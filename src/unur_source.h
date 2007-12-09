@@ -97,7 +97,7 @@
 /* magic cookies */
 #include <unur_cookies.h>
 
-/* debuging, warnings and error messages */
+/* debugging, warnings and error messages */
 #include <utils/debug.h>
 #include <utils/debug_source.h>
 #include <utils/error.h>

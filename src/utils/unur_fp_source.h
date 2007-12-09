@@ -69,7 +69,7 @@ int _unur_FP_cmp( double x1, double x2, double eps);
 
 /*---------------------------------------------------------------------------*/
 /* Comparing floating point with == or != is unsafe.                         */
-/* However, we assume that comparing with 0.0 and powers of 2.0 to be safe.  */
+/* However, we assume that comparing with 0.0 and powers of 2.0 is safe.     */
 /* Thus we use the followig functions to mark these "safe" comparisons in    */
 /* the code and thus we can use the GCC to detect all other comparisons.     */
 /* For the latter _unur_FP_cmp_same() must be used.                          */

@@ -189,6 +189,9 @@ static int _unur_mvtdr_max_gamma( struct unur_gen *gen );
 /* optimal distance for touching points                                      */
 /*****************************************************************************/
 
+static double _unur_mvtdr_tp_min_aux(double t, void *p);
+/* auxiliary function to be used with _unur_util_brent(). */
+
 static double _unur_mvtdr_tp_min( double t, void *p );
 /* wrapper for _unur_mvtdr_cone_hatvolume();
    sets cone->tp;
@@ -202,7 +205,6 @@ static int _unur_mvtdr_tp_search( struct unur_gen *gen, TP_ARG *a );
 
 static int _unur_mvtdr_tp_bracket( struct unur_gen *gen, TP_ARG *a );
 /* search for proper bracket of minimum of tp_f2min() */
-
 
 /*****************************************************************************/
 /* VERTICES.                                                                 */

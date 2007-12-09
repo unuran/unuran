@@ -50,7 +50,8 @@ unsigned _unur_default_debugflag = UNUR_DEBUGFLAG_DEFAULT;
 /*---------------------------------------------------------------------------*/
 
 int
-unur_set_debug( struct unur_par *par, unsigned debug )
+unur_set_debug( struct unur_par *par ATTRIBUTE__UNUSED,
+		unsigned debug ATTRIBUTE__UNUSED )
      /*----------------------------------------------------------------------*/
      /* set debugging flag for generator                                     */
      /*                                                                      */
@@ -59,10 +60,8 @@ unur_set_debug( struct unur_par *par, unsigned debug )
      /*   debug ... debugging flag                                           */
      /*----------------------------------------------------------------------*/
 {
-  /* check arguments */
-  _unur_check_NULL( NULL,par,UNUR_ERR_NULL );
-
 #ifdef UNUR_ENABLE_LOGGING
+  _unur_check_NULL( NULL,par,UNUR_ERR_NULL );
   par->debug = debug;
   return UNUR_SUCCESS;
 #else
@@ -75,7 +74,8 @@ unur_set_debug( struct unur_par *par, unsigned debug )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_chg_debug( struct unur_gen *gen, unsigned debug )
+unur_chg_debug( struct unur_gen *gen ATTRIBUTE__UNUSED,
+		unsigned debug ATTRIBUTE__UNUSED )
      /*----------------------------------------------------------------------*/
      /* change debugging flag for generator                                  */
      /*                                                                      */
@@ -84,10 +84,8 @@ unur_chg_debug( struct unur_gen *gen, unsigned debug )
      /*   debug ... debugging flag                                           */
      /*----------------------------------------------------------------------*/
 {
-  /* check arguments */
-  CHECK_NULL( gen, UNUR_ERR_NULL );
-
 #ifdef UNUR_ENABLE_LOGGING
+  CHECK_NULL( gen, UNUR_ERR_NULL );
   gen->debug = debug;
   return UNUR_SUCCESS;
 #else

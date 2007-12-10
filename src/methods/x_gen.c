@@ -282,6 +282,35 @@ unur_set_use_distr_privatecopy( struct unur_par *par, int use_privatecopy )
   return UNUR_SUCCESS;
 } /* end of unur_set_use_distr_privatecopy() */
 
+/*---------------------------------------------------------------------------*/
+
+const char *
+unur_gen_info( const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* return pointer to charactor string that contains information about   */
+     /* the given generator object.                                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to character string                                        */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL("",gen,NULL);
+
+  if (gen->info) {
+    return "-- TODO --";
+  }
+  else {
+    return "-- not implemented --";
+  }
+} /* end of unur_gen_info() */
+
 /*****************************************************************************/
 /**                                                                         **/
 /**  Copy (clone) generator object                                          **/
@@ -310,7 +339,6 @@ unur_gen_clone( const struct unur_gen *gen )
   return (gen->clone(gen));
 } /* end of unur_gen_clone() */
 
-/*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/
 /**                                                                         **/
@@ -434,6 +462,11 @@ _unur_generic_create( struct unur_par *par, size_t s )
   /* status of generator object */
   gen->status = UNUR_FAILURE;       /* not successfully created yet          */
 
+#ifdef UNUR_ENABLE_INFO
+  gen->infostr = NULL;              /* pointer to info string                */
+  gen->info = NULL;                 /* routine that return info string       */
+#endif
+
   /* return pointer to (almost empty) generator object */
   return gen;
 
@@ -467,6 +500,11 @@ _unur_generic_clone( const struct unur_gen *gen, const char *type )
 
   /* set generator identifier */
   clone->genid = _unur_set_genid(type);
+
+#ifdef UNUR_ENABLE_INFO
+  /* do not copy pointer to info string */
+  clone->infostr = NULL;
+#endif
 
   /* copy distribution object into generator object */
   clone->distr_is_privatecopy = gen->distr_is_privatecopy;
@@ -508,6 +546,11 @@ _unur_generic_free( struct unur_gen *gen )
   _unur_free_genid(gen);
   COOKIE_CLEAR(gen);
   free(gen->datap);
+
+#ifdef UNUR_ENABLE_INFO
+  if (gen->infostr) free (gen->infostr);  /* pointer to info string          */
+#endif
+
   free(gen);
 } /* end of _unur_generic_free() */
 

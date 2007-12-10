@@ -172,6 +172,19 @@ AS_IF([test "x$enable_logging" = xyes],
 	           [Define to 1 if you want to use a logfile for logging informations about UNU.RAN objects])], 
 	[])
 
+dnl UNU.RAN provides a function that returns a string with some information
+dnl about a given generator object.
+dnl This function is enabled by the '--enable-info' flag.
+AC_ARG_ENABLE(info,
+	[AS_HELP_STRING([--enable-info],
+		[Info: provide function with information about generator objects @<:@default=yes@:>@])],
+	[],
+	[enable_info=yes])
+AS_IF([test "x$enable_info" = xyes],
+	[AC_DEFINE([UNUR_ENABLE_INFO], [1], 
+	           [Define to 1 if you want to use the info routine for printing informations about UNU.RAN objects])], 
+	[])
+
 dnl Some tests compare the return values of PDFs, CDFs and of
 dnl the function parser with the output of corresponding
 dnl Mathematica(R) scripts.
@@ -258,6 +271,7 @@ AC_MSG_RESULT([
 *  Use deprecated code:        ${enable_deprecated}
 *  Enable runtime checks:      ${enable_check_struct}
 *  Enable logging of data:     ${enable_logging}
+*  Enable info routine:        ${enable_info}
 *
 *  Support for external uniform random number generators
 *    Rngstream:                ${with_urng_rngstream}

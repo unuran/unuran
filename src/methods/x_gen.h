@@ -235,6 +235,11 @@ int unur_set_use_distr_privatecopy( UNUR_PAR *parameters, int use_privatecopy );
 /* =END */
 
 /*---------------------------------------------------------------------------*/
+/* TODO */
+
+const char *unur_gen_info( const UNUR_GEN *generator );
+
+/*---------------------------------------------------------------------------*/
 
 UNUR_GEN *unur_gen_clone( const UNUR_GEN *gen );
 void unur_par_free( UNUR_PAR *par);

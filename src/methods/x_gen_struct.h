@@ -142,6 +142,11 @@ struct unur_gen {
   struct unur_gen* (*clone)(const struct unur_gen *gen ); /* clone generator */
   int (*reinit)(struct unur_gen *gen); /* pointer to reinit routine          */ 
 
+#ifdef UNUR_ENABLE_INFO
+  char *infostr;              /* pointer to info string                      */
+  char (*info)(struct unur_gen *gen); /* routine that return info string     */
+#endif
+
 #ifdef UNUR_COOKIES
   unsigned cookie;            /* magic cookie                                */
 #endif

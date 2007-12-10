@@ -16,7 +16,6 @@
 #include <unuran.h>
 #include <unuran_tests.h>
 #include <testdistributions.h>
-#include <mvtdr.h>
 
 #define RUN_TESTS       (~0x0u)
 /* #define RUN_TESTS       UNUR_TEST_SAMPLE */
@@ -41,32 +40,40 @@ int main()
   UNUR_PAR *par;
   UNUR_GEN *gen;
 /*   double ll[] = { -1e-5, -1e-5}; */
-  double ll[] = { 0, 0};
+/*   double ll[] = { 0, 0}; */
 /*   double ur[] = { 10000., 10000.}; */
 
 /*   double ll[] = {-UNUR_INFINITY,-UNUR_INFINITY}; */
-  double ur[] = { UNUR_INFINITY, UNUR_INFINITY};
+/*   double ur[] = { UNUR_INFINITY, UNUR_INFINITY}; */
   
-  double mean[] = {0.,0.};
+/*   double mean[] = {0.,0.}; */
 
-  unur_set_default_debug(0U);
+/*   unur_set_default_debug(0U); */
 
-  distr = unur_distr_multinormal(2,mean,NULL);
-/*   distr = unur_distr_multinormal(2,NULL,NULL); */
-  unur_distr_cvec_set_domain_rect(distr,ll,ur);
-  unur_distr_cvec_set_mode(distr,mean);
+/*   distr = unur_distr_multinormal(2,mean,NULL); */
+/* /\*   distr = unur_distr_multinormal(2,NULL,NULL); *\/ */
+/*   unur_distr_cvec_set_domain_rect(distr,ll,ur); */
+/*   unur_distr_cvec_set_mode(distr,mean); */
 
-  par = unur_mvtdr_new(distr);
-  unur_mvtdr_set_stepsmin(par, 0 );
-  unur_mvtdr_set_maxcones(par,1); 
-  unur_run_tests(par,RUN_TESTS,stdout);
+/*   par = unur_mvtdr_new(distr); */
+/*   unur_mvtdr_set_stepsmin(par, 0 ); */
+/*   unur_mvtdr_set_maxcones(par,1);  */
 
-/*   gen = unur_init(par); */
+  distr = unur_distr_normal(NULL,0);
+  par = unur_tdr_new(distr);
+
+/*   unur_run_tests(par,RUN_TESTS,stdout); */
+
+  gen = unur_init(par);
+
+  printf("%s\n",unur_gen_info(gen));
+
 /*   unur_test_printsample (gen, 100, 1, stdout); */
 /*   unur_test_chi2( gen, 100, 0, 20, 1, stdout); */
 
 
   unur_distr_free(distr);
+  unur_free(gen);
 
   return 0;
 }

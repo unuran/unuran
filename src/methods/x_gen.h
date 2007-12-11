@@ -143,6 +143,22 @@ void  unur_free( UNUR_GEN *generator );
 */
 
 /*---------------------------------------------------------------------------*/
+/* Get information about generator object                                    */
+
+const char *unur_gen_info( const UNUR_GEN *generator, int help );
+/* 
+   Get a string with informations about the given @var{generator}.
+   These informations allow some fine tuning of the generation method. 
+   If @var{help} is TRUE, some hints on setting parameters are given.
+
+   @emph{Notice:}
+   The function is experimental and currently it is not implemented
+   for all generation methods.
+
+   If the function is not implemented, then NULL is returned.
+*/
+
+/*---------------------------------------------------------------------------*/
 /* Get dimension of generator for (multivariate) distribution                */
 
 int unur_get_dimension( const UNUR_GEN *generator );
@@ -235,9 +251,6 @@ int unur_set_use_distr_privatecopy( UNUR_PAR *parameters, int use_privatecopy );
 /* =END */
 
 /*---------------------------------------------------------------------------*/
-/* TODO */
-
-const char *unur_gen_info( const UNUR_GEN *generator );
 
 /*---------------------------------------------------------------------------*/
 

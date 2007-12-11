@@ -179,6 +179,36 @@ unur_free( struct unur_gen *gen )
 /**                                                                         **/
 /*****************************************************************************/
 
+const char *
+unur_gen_info( const struct unur_gen *gen, int help )
+     /*----------------------------------------------------------------------*/
+     /* return pointer to charactor string that contains information about   */
+     /* the given generator object.                                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to character string                                        */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return NULL                                                        */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL("",gen,NULL);
+
+  if (gen->info) {
+    gen->info((struct unur_gen*) gen, help);
+    return "-- TODO --";
+  }
+  else {
+    return NULL;
+  }
+} /* end of unur_gen_info() */
+
+/*---------------------------------------------------------------------------*/
+
 int
 unur_get_dimension( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
@@ -281,35 +311,6 @@ unur_set_use_distr_privatecopy( struct unur_par *par, int use_privatecopy )
   par->distr_is_privatecopy = use_privatecopy;
   return UNUR_SUCCESS;
 } /* end of unur_set_use_distr_privatecopy() */
-
-/*---------------------------------------------------------------------------*/
-
-const char *
-unur_gen_info( const struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* return pointer to charactor string that contains information about   */
-     /* the given generator object.                                          */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   pointer to character string                                        */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return NULL                                                        */
-     /*----------------------------------------------------------------------*/
-{
-  /* check arguments */
-  _unur_check_NULL("",gen,NULL);
-
-  if (gen->info) {
-    return "-- TODO --";
-  }
-  else {
-    return "-- not implemented --";
-  }
-} /* end of unur_gen_info() */
 
 /*****************************************************************************/
 /**                                                                         **/

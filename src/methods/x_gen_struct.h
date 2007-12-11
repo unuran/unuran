@@ -144,7 +144,11 @@ struct unur_gen {
 
 #ifdef UNUR_ENABLE_INFO
   char *infostr;              /* pointer to info string                      */
-  char (*info)(struct unur_gen *gen); /* routine that return info string     */
+  char (*info)(struct unur_gen *gen, int help); /* routine that return info string */
+
+/*   struct unur_string *infostr; /\* pointer to info string                     *\/ */
+/*   int info(struct unur_gen *gen, int help); /\* routine creates info string   *\/ */
+
 #endif
 
 #ifdef UNUR_COOKIES

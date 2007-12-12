@@ -251,8 +251,11 @@ _unur_tdr_create( struct unur_par *par )
   GEN->darsfactor = PAR->darsfactor;  /* factor for derandomized ARS           */
   GEN->darsrule = PAR->darsrule;      /* rule for finding splitting points in DARS */
 
-  /* bounds for adding construction points  */
+  /* bounds for adding construction points */
   GEN->max_ivs = _unur_max(2*PAR->n_starting_cpoints,PAR->max_ivs);  /* maximum number of intervals */
+#ifdef UNUR_ENABLE_INFO
+  GEN->max_ivs_info = PAR->max_ivs;   /* ... for info string */
+#endif
   GEN->max_ratio = PAR->max_ratio;    /* bound for ratio  Atotal / Asqueeze    */
   GEN->bound_for_adding = PAR->bound_for_adding;
 

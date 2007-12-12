@@ -53,25 +53,27 @@ _unur_tdr_info( struct unur_gen *gen, int help )
   struct unur_distr *distr = gen->distr;
 
   /* generator ID */
-  _unur_string_append(info,"generator ID: %s\n\n",gen->genid);
+  _unur_string_append(info,"generator ID: %s\n\n", gen->genid);
 
   /* distribution */
   _unur_string_append(info,"distribution: %s\n",distr->name);
   _unur_string_append(info,"   type      = continuous univariate distribution\n");
   _unur_string_append(info,"   functions = PDF dPDF\n");
-  _unur_string_append(info,"   domain    = (%g, %g)\n",DISTR.domain[0],DISTR.domain[1]);
-  _unur_string_append(info,"   center    = %g",unur_distr_cont_get_center(distr));
+  _unur_string_append(info,"   domain    = (%g, %g)\n", DISTR.domain[0],DISTR.domain[1]);
+  _unur_string_append(info,"   center    = %g", unur_distr_cont_get_center(distr));
   if ( !(distr->set & UNUR_DISTR_SET_CENTER) ) {
     if ( distr->set & UNUR_DISTR_SET_MODE )
-      _unur_string_append(info,"  (mode)");
-    else {
-      if (help)
-	_unur_string_append(info,"\n\t[ Hint: %s\n\t\t%s ]",
-			    "You should provide the location of the mode using \"mode\" or \"center\",",
-			    "if this is not a typical point of the distribution");
-    }
+      _unur_string_append(info,"  [= mode]\n");
+    else 
+      _unur_string_append(info,"  [default]\n");
   }
-  _unur_string_append(info,"\n\n");
+  
+  if (help) {
+    if ( !(distr->set & (UNUR_DISTR_SET_CENTER | UNUR_DISTR_SET_MODE )) ) 
+      _unur_string_append(info,"\n[ Hint: %s ]\n",
+			  "You may provide a point near the mode as \"center\"."); 
+  }
+  _unur_string_append(info,"\n");
       
   /* method */
   _unur_string_append(info,"method: TDR (Transformed Density Rejection)\n");
@@ -94,41 +96,57 @@ _unur_tdr_info( struct unur_gen *gen, int help )
   case TDR_VAR_T_POW:
     _unur_string_append(info,"-x^(%g)  ... c = %g\n",GEN->c_T,GEN->c_T); break;
   }
-  /* summary hat */
-  _unur_string_append(info,"   area(hat) = %g\n",GEN->Atotal);
+  _unur_string_append(info,"\n");
+
+  /* performance */
+  _unur_string_append(info,"performance characteristics:\n");
+  _unur_string_append(info,"   area(hat) = %g\n", GEN->Atotal);
 
   _unur_string_append(info,"   rejection constant ");
   if (distr->set & UNUR_DISTR_SET_PDFAREA)
-    _unur_string_append(info,"= %g\n",GEN->Atotal/DISTR.area);
+    _unur_string_append(info,"= %g\n", GEN->Atotal/DISTR.area);
   else
-    _unur_string_append(info,"<= %g\n",GEN->Atotal/GEN->Asqueeze);
+    _unur_string_append(info,"<= %g\n", GEN->Atotal/GEN->Asqueeze);
 
   _unur_string_append(info,"   area ratio squeeze/hat = %g\n",
 		      GEN->Asqueeze/GEN->Atotal);
 
-  _unur_string_append(info,"   # intervals = %d\n",GEN->n_ivs);
-
+  _unur_string_append(info,"   # intervals = %d\n", GEN->n_ivs);
+  _unur_string_append(info,"\n");
+  
+  /* parameters */
   if (help) {
-    _unur_string_append(info,"\t[ Hint: %s\n\t\t%s ]\n",
-			"You can decrease the rejection constant by setting \"max_sqhratio\"",
-			"closer to 1" ); 
+    _unur_string_append(info,"parameters:\n");
+    switch (gen->variant & TDR_VARMASK_VARIANT) {
+    case TDR_VARIANT_GW:
+      _unur_string_append(info,"      variant_gw = on\n"); break;
+    case TDR_VARIANT_PS:
+      _unur_string_append(info,"      variant_ps = on  [default]\n"); break;
+    case TDR_VARIANT_IA:
+      _unur_string_append(info,"      variant_ia = on\n"); break;
+    }
+    _unur_string_append(info,"               c = %g  %s\n", GEN->c_T,
+			(gen->set & TDR_SET_C) ? "" : "[default]");
+    _unur_string_append(info,"    max_sqhratio = %g  %s\n", GEN->max_ratio,
+			(gen->set & TDR_SET_MAX_SQHRATIO) ? "" : "[default]");
+    _unur_string_append(info,"   max_intervals = %d  %s\n", GEN->max_ivs_info,
+			(gen->set & TDR_SET_MAX_IVS) ? "" : "[default]");
+    _unur_string_append(info,"\n");
   }
 
-
-
-/*   _unur_string_append(info,); */
-
-/*
-
-max_intervals
-max_sqhratio
-  
-  help:
-  set maximum number of intervals
-  set bound for ratio  Asqueeze / Atotal
-  set number of starting points
-
-*/
+  /* Hints */
+  if (help) {
+    if ( (gen->variant & TDR_VARMASK_VARIANT) != TDR_VARIANT_IA) 
+      _unur_string_append(info,"[ Hint: %s ]\n",
+			  "You may use \"variant_ia=on\" for faster generation times."); 
+    if ( !(gen->set & TDR_SET_MAX_SQHRATIO) )
+      _unur_string_append(info,"[ Hint: %s ]\n",
+			  "You can set \"max_sqhratio\" closer to 1 to decrease rejection constant." );
+    if (GEN->Asqueeze/GEN->Atotal < GEN->max_ratio) 
+      _unur_string_append(info,"[ Hint: %s ]\n",
+			  "You should increase \"max_intervals\" to obtain the desired rejection constant." );
+    _unur_string_append(info,"\n");
+  }
 
 } /* end of _unur_tdr_info() */
 

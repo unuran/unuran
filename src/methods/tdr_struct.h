@@ -115,6 +115,9 @@ struct unur_tdr_gen {
 
   double  darsfactor;           /* factor for derandomized ARS               */
   int     darsrule;             /* rule for finding splitting points in DARS */
+#ifdef UNUR_ENABLE_INFO
+  int     max_ivs_info;         /* maximum number of intervals (as given)    */
+#endif
 };
 
 /*---------------------------------------------------------------------------*/

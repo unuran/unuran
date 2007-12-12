@@ -306,6 +306,11 @@ _unur_tdr_create( struct unur_par *par )
        --> enable derandomized ARS      */
     gen->variant |= TDR_VARFLAG_USEDARS;
 
+#ifdef UNUR_ENABLE_INFO
+  /* set function for creating info string */
+  gen->info = _unur_tdr_info;
+#endif
+
   /* return pointer to (almost empty) generator object */
   return gen;
 

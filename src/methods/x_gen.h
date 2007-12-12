@@ -145,7 +145,7 @@ void  unur_free( UNUR_GEN *generator );
 /*---------------------------------------------------------------------------*/
 /* Get information about generator object                                    */
 
-const char *unur_gen_info( const UNUR_GEN *generator, int help );
+const char *unur_gen_info( UNUR_GEN *generator, int help );
 /* 
    Get a string with informations about the given @var{generator}.
    These informations allow some fine tuning of the generation method. 

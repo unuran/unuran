@@ -82,6 +82,7 @@ check_PROGRAMS = \
  t_vempk \
  t_vnrou \
  t_stringparser \
+ t_info \
  test_special_matrix \
  $(DEPRECATED_TESTS) \
  $(MATHEMATICA_PROGS)
@@ -99,6 +100,7 @@ EXTRA_DIST = \
  test_functionparser.m \
  make_test_files.pl \
  README.conf \
+ t_info.conf \
  t_stringparser.conf \
  t_unur_tests.conf \
  t_unur_error.conf \

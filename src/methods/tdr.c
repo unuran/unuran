@@ -614,6 +614,14 @@ static void _unur_tdr_ps_debug_split_stop( const struct unur_gen *gen,
 /*---------------------------------------------------------------------------*/
 #endif
 
+#ifdef UNUR_ENABLE_INFO
+void _unur_tdr_info( struct unur_gen *gen, int help );
+/*---------------------------------------------------------------------------*/
+/* create info string.                                                       */
+/*---------------------------------------------------------------------------*/
+#endif
+
+
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
@@ -660,5 +668,6 @@ _unur_tdr_getSAMPLE( struct unur_gen *gen )
 #include "tdr_init.ch"
 #include "tdr_sample.ch"
 #include "tdr_debug.ch"
+#include "tdr_info.ch"
 
 /*---------------------------------------------------------------------------*/

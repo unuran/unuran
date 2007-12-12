@@ -179,14 +179,18 @@ unur_free( struct unur_gen *gen )
 /**                                                                         **/
 /*****************************************************************************/
 
+/*---------------------------------------------------------------------------*/
+#ifdef UNUR_ENABLE_INFO
+
 const char *
-unur_gen_info( const struct unur_gen *gen, int help )
+unur_gen_info( struct unur_gen *gen, int help )
      /*----------------------------------------------------------------------*/
-     /* return pointer to charactor string that contains information about   */
+     /* return pointer to character string that contains information about   */
      /* the given generator object.                                          */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
+     /*   help ... whether to print additional comments                      */
      /*                                                                      */
      /* return:                                                              */
      /*   pointer to character string                                        */
@@ -199,14 +203,26 @@ unur_gen_info( const struct unur_gen *gen, int help )
   _unur_check_NULL("",gen,NULL);
 
   if (gen->info) {
+    /* prepare generator object for creating info string */
+    if (gen->infostr == NULL) 
+      /* either allocate memory block */
+      gen->infostr = _unur_string_new();
+    else 
+      /* or clear string object (i.e. reset pointer) */
+      _unur_string_clear(gen->infostr);
+
+    /* create info string */
     gen->info((struct unur_gen*) gen, help);
-    return "-- TODO --";
+
+    /* return info string */
+    return gen->infostr->text;
   }
   else {
     return NULL;
   }
 } /* end of unur_gen_info() */
 
+#endif
 /*---------------------------------------------------------------------------*/
 
 int
@@ -549,7 +565,8 @@ _unur_generic_free( struct unur_gen *gen )
   free(gen->datap);
 
 #ifdef UNUR_ENABLE_INFO
-  if (gen->infostr) free (gen->infostr);  /* pointer to info string          */
+  /* free pointer to info string */
+  if (gen->infostr) _unur_string_free(gen->infostr);  
 #endif
 
   free(gen);

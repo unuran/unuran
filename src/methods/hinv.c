@@ -237,6 +237,13 @@ static void _unur_hinv_debug_chg_truncated( const struct unur_gen *gen);
 /*---------------------------------------------------------------------------*/
 #endif
 
+#ifdef UNUR_ENABLE_INFO
+void _unur_hinv_info( struct unur_gen *gen, int help );
+/*---------------------------------------------------------------------------*/
+/* create info string.                                                       */
+/*---------------------------------------------------------------------------*/
+#endif
+
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
@@ -890,6 +897,11 @@ _unur_hinv_create( struct unur_par *par )
   GEN->intervals = NULL;
   GEN->guide_size = 0; 
   GEN->guide = NULL;
+
+#ifdef UNUR_ENABLE_INFO
+  /* set function for creating info string */
+  gen->info = _unur_hinv_info;
+#endif
 
   /* return pointer to (almost empty) generator object */
   return gen;
@@ -1830,7 +1842,7 @@ _unur_hinv_debug_init( const struct unur_gen *gen, int ok )
 
   fprintf(log,"%s:\n",gen->genid);
   fprintf(log,"%s: type    = continuous univariate random variates\n",gen->genid);
-  fprintf(log,"%s: method  = HINV (Spline approximation of INVerse CDF)\n",gen->genid);
+  fprintf(log,"%s: method  = HINV (Hermite approximation of INVerse CDF)\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
   _unur_distr_cont_debug( gen->distr, gen->genid );
@@ -1946,4 +1958,105 @@ _unur_hinv_debug_chg_truncated( const struct unur_gen *gen )
 
 /*---------------------------------------------------------------------------*/
 #endif   /* end UNUR_ENABLE_LOGGING */
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+#ifdef UNUR_ENABLE_INFO
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_hinv_info( struct unur_gen *gen, int help )
+     /*----------------------------------------------------------------------*/
+     /* create character string that contains information about the          */
+     /* given generator object.                                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*   help ... whether to print additional comments                      */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_string *info = gen->infostr;
+  struct unur_distr *distr = gen->distr;
+
+  /* generator ID */
+  _unur_string_append(info,"generator ID: %s\n\n", gen->genid);
+  
+  /* distribution */
+  _unur_string_append(info,"distribution: %s\n",distr->name);
+  _unur_string_append(info,"   type      = continuous univariate distribution\n");
+  _unur_string_append(info,"   functions = CDF");
+  if (GEN->order > 1)
+    _unur_string_append(info," PDF");
+  if (GEN->order > 3)
+    _unur_string_append(info," dPDF");
+  _unur_string_append(info,"\n");
+
+  _unur_string_append(info,"   domain    = (%g, %g)\n", DISTR.domain[0],DISTR.domain[1]);
+
+  if (distr->set & UNUR_DISTR_SET_MODE) {
+    _unur_string_append(info,"   mode      = %g\n", DISTR.mode);
+  }
+
+  if (help)
+    if (! (distr->set & UNUR_DISTR_SET_MODE) )
+      _unur_string_append(info,"\n[ Hint: %s ]\n",
+			  "You may set the \"mode\" of the distribution in case of a high peak");
+
+  _unur_string_append(info,"\n");
+      
+  /* method */
+  _unur_string_append(info,"method: HINV (Hermite approximation of INVerse CDF)\n");
+  _unur_string_append(info,"   order of polynomial = %d\n", GEN->order);
+
+  /*
+HINV.009: tail cut-off points = none, 1.-1e-11
+HINV.009: domain of computation = [0,27.1051]
+HINV.009:       U in (0,1)
+  */
+
+  _unur_string_append(info,"\n");
+
+  /* performance */
+  _unur_string_append(info,"performance characteristics:\n");
+
+  /*  run MC simulation:
+HINV.009: u-resolution = 1e-10  [default]
+  */
+
+  _unur_string_append(info,"   # intervals = %d\n", GEN->N-1);
+  _unur_string_append(info,"\n");
+  
+
+  /* parameters */
+  if (help) {
+    _unur_string_append(info,"parameters:\n");
+    _unur_string_append(info,"          order = %d  %s\n", GEN->order,
+ 			(gen->set & HINV_SET_ORDER) ? "" : "[default]");
+    _unur_string_append(info,"   u_resolution = %g  %s\n", GEN->u_resolution,
+ 			(gen->set & HINV_SET_U_RESOLUTION) ? "" : "[default]");
+    _unur_string_append(info,"\n");
+  }
+
+
+  /* Hints */
+  if (help) {
+/*     if ( (gen->variant & TDR_VARMASK_VARIANT) != TDR_VARIANT_IA)  */
+/*       _unur_string_append(info,"[ Hint: %s ]\n", */
+/* 			  "You may use \"variant_ia=on\" for faster generation times.");  */
+/*     if ( !(gen->set & TDR_SET_MAX_SQHRATIO) ) */
+/*       _unur_string_append(info,"[ Hint: %s ]\n", */
+/* 			  "You can set \"max_sqhratio\" closer to 1 to decrease rejection constant." ); */
+/*     if (GEN->Asqueeze/GEN->Atotal < GEN->max_ratio)  */
+/*       _unur_string_append(info,"[ Hint: %s ]\n", */
+/* 			  "You should increase \"max_intervals\" to obtain the desired rejection constant." ); */
+    _unur_string_append(info,"\n");
+  }
+
+/*  HINV: order u_resolution cpoints boundary guidefactor max_intervals  */
+
+
+} /* end of _unur_tdr_info() */
+
+/*---------------------------------------------------------------------------*/
+#endif   /* end UNUR_ENABLE_INFO */
 /*---------------------------------------------------------------------------*/

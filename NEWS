@@ -1,4 +1,12 @@
 
+Version 1.2.*: **** 2008
+
+	* Methods:
+
+          New cal unur_gen_info() for creating info strings
+	  in interactive programming environments
+
+
 Version 1.1.0: December 2007
 
 	* Methods:

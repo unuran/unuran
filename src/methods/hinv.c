@@ -402,9 +402,14 @@ unur_hinv_set_u_resolution( struct unur_par *par, double u_resolution )
   _unur_check_par_object( par, HINV );
 
   /* check new parameter for generator */
-  if (u_resolution < 5.*DBL_EPSILON) {
+  if (u_resolution > 1.e-2) {
+    /* this is obviously an error */
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"u-resolution");
     return UNUR_ERR_PAR_SET;
+  }
+  if (u_resolution < 5.*DBL_EPSILON ) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"u-resolution");
+    u_resolution = 5.*DBL_EPSILON;
   }
   if (u_resolution < UNUR_EPSILON) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"u-resolution so small that problems may occur");
@@ -2007,23 +2012,20 @@ _unur_hinv_info( struct unur_gen *gen, int help )
   /* method */
   _unur_string_append(info,"method: HINV (Hermite approximation of INVerse CDF)\n");
   _unur_string_append(info,"   order of polynomial = %d\n", GEN->order);
-
-  /*
-HINV.009: tail cut-off points = none, 1.-1e-11
-HINV.009: domain of computation = [0,27.1051]
-HINV.009:       U in (0,1)
-  */
-
   _unur_string_append(info,"\n");
 
   /* performance */
   _unur_string_append(info,"performance characteristics:\n");
+  _unur_string_append(info,"   truncated domain = (%g,%g)\n",GEN->bleft,GEN->bright);
+  _unur_string_append(info,"   Prob(X<domain)   = %g\n", _unur_max(0,GEN->tailcutoff_left));
+  _unur_string_append(info,"   Prob(X>domain)   = %g\n", _unur_max(0,1.-GEN->tailcutoff_right));
+  {
+    double max_error=1.; double MAE=1.;
+    unur_hinv_estimate_error( gen, 10000, &max_error, &MAE );
+    _unur_string_append(info,"   u-error         <= %g  (mean = %g)\n", max_error, MAE);
+  }
 
-  /*  run MC simulation:
-HINV.009: u-resolution = 1e-10  [default]
-  */
-
-  _unur_string_append(info,"   # intervals = %d\n", GEN->N-1);
+  _unur_string_append(info,"   # intervals      = %d\n", GEN->N-1);
   _unur_string_append(info,"\n");
   
 
@@ -2040,20 +2042,15 @@ HINV.009: u-resolution = 1e-10  [default]
 
   /* Hints */
   if (help) {
-/*     if ( (gen->variant & TDR_VARMASK_VARIANT) != TDR_VARIANT_IA)  */
-/*       _unur_string_append(info,"[ Hint: %s ]\n", */
-/* 			  "You may use \"variant_ia=on\" for faster generation times.");  */
-/*     if ( !(gen->set & TDR_SET_MAX_SQHRATIO) ) */
-/*       _unur_string_append(info,"[ Hint: %s ]\n", */
-/* 			  "You can set \"max_sqhratio\" closer to 1 to decrease rejection constant." ); */
-/*     if (GEN->Asqueeze/GEN->Atotal < GEN->max_ratio)  */
-/*       _unur_string_append(info,"[ Hint: %s ]\n", */
-/* 			  "You should increase \"max_intervals\" to obtain the desired rejection constant." ); */
+    if ( GEN->order < 5 ) 
+      _unur_string_append(info,"[ Hint: %s ]\n",
+			  "You can set \"order\" to 5 to decrease #intervals");
+    if (! (gen->set & HINV_SET_U_RESOLUTION) )
+      _unur_string_append(info,"[ Hint: %s\n\t%s ]\n",
+			  "You can decrease the u-error by decreasing \"u_resolution\".",
+			  "(it is bounded by the machine epsilon, however.)");
     _unur_string_append(info,"\n");
   }
-
-/*  HINV: order u_resolution cpoints boundary guidefactor max_intervals  */
-
 
 } /* end of _unur_tdr_info() */
 

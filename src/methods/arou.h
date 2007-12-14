@@ -108,7 +108,7 @@ int unur_arou_set_usedars( UNUR_PAR *parameters, int usedars );
    Segments are split such that the angle of the segments are halved
    (corresponds to arc-mean rule of method TDR (@pxref{TDR})).
 
-   Default is FALSE.
+   Default is TRUE.
 */
 
 int unur_arou_set_darsfactor( UNUR_PAR *parameters, double factor );

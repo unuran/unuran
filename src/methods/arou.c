@@ -287,6 +287,14 @@ static void _unur_arou_debug_split_stop( const struct unur_gen *gen,
 
 #endif
 
+#ifdef UNUR_ENABLE_INFO
+void _unur_arou_info( struct unur_gen *gen, int help );
+/*---------------------------------------------------------------------------*/
+/* create info string.                                                       */
+/*---------------------------------------------------------------------------*/
+#endif
+
+
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
@@ -368,7 +376,8 @@ unur_arou_new( const struct unur_distr *distr )
 				       ratio r_n = |P^s| / |P^e| > max_ratio */
 
   par->method   = UNUR_METH_AROU;             /* method                      */
-  par->variant  = AROU_VARFLAG_USECENTER;     /* default variant             */
+  par->variant  = ( AROU_VARFLAG_USECENTER |     /* default variant             */
+		    AROU_VARFLAG_USEDARS );
   par->set      = 0u;                      /* inidicate default parameters   */    
   par->urng     = unur_get_default_urng(); /* use default urng               */
   par->urng_aux = par->urng;               /* no special auxilliary URNG     */
@@ -1018,6 +1027,9 @@ _unur_arou_create( struct unur_par *par )
 
   /* bounds for adding construction points  */
   GEN->max_segs = PAR->max_segs;      /* maximum number of segments            */
+#ifdef UNUR_ENABLE_INFO
+  GEN->max_segs_info = PAR->max_segs;   /* ... for info string */
+#endif
   GEN->max_ratio = PAR->max_ratio;    
   GEN->darsfactor = PAR->darsfactor;
 
@@ -1035,6 +1047,11 @@ _unur_arou_create( struct unur_par *par )
     /* we cannot use the center as construction point */
     gen->variant &= ~AROU_VARFLAG_USECENTER;
   }
+
+#ifdef UNUR_ENABLE_INFO
+  /* set function for creating info string */
+  gen->info = _unur_arou_info;
+#endif
 
   /* return pointer to (almost empty) generator object */
   return(gen);
@@ -2775,4 +2792,94 @@ _unur_arou_debug_split_stop( const struct unur_gen *gen,
 
 /*---------------------------------------------------------------------------*/
 #endif    /* end UNUR_ENABLE_LOGGING */
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+#ifdef UNUR_ENABLE_INFO
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_arou_info( struct unur_gen *gen, int help )
+     /*----------------------------------------------------------------------*/
+     /* create character string that contains information about the          */
+     /* given generator object.                                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*   help ... whether to print additional comments                      */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_string *info = gen->infostr;
+  struct unur_distr *distr = gen->distr;
+
+  /* generator ID */
+  _unur_string_append(info,"generator ID: %s\n\n", gen->genid);
+  
+  /* distribution */
+  _unur_string_append(info,"distribution: %s\n",distr->name);
+  _unur_string_append(info,"   type      = continuous univariate distribution\n");
+  _unur_string_append(info,"   functions = PDF dPDF\n");
+  _unur_string_append(info,"   domain    = (%g, %g)\n", DISTR.domain[0],DISTR.domain[1]);
+  _unur_string_append(info,"   center    = %g", unur_distr_cont_get_center(distr));
+  if ( !(distr->set & UNUR_DISTR_SET_CENTER) ) {
+    if ( distr->set & UNUR_DISTR_SET_MODE )
+      _unur_string_append(info,"  [= mode]\n");
+    else 
+      _unur_string_append(info,"  [default]\n");
+  }
+  
+  if (help) {
+    if ( !(distr->set & (UNUR_DISTR_SET_CENTER | UNUR_DISTR_SET_MODE )) ) 
+      _unur_string_append(info,"\n[ Hint: %s ]\n",
+			  "You may provide a point near the mode as \"center\"."); 
+  }
+  _unur_string_append(info,"\n");
+      
+  /* method */
+  _unur_string_append(info,"method: AROU (Automatic Ratio-Of-Uniforms)\n");
+  _unur_string_append(info,"\n");
+
+  /* performance */
+  _unur_string_append(info,"performance characteristics:\n");
+  _unur_string_append(info,"   area(hat) = %g\n", GEN->Atotal);
+
+  _unur_string_append(info,"   rejection constant ");
+  if (distr->set & UNUR_DISTR_SET_PDFAREA)
+    _unur_string_append(info,"= %g\n", GEN->Atotal/(0.5*DISTR.area));
+  else
+    _unur_string_append(info,"<= %g\n", GEN->Atotal/GEN->Asqueeze);
+
+  _unur_string_append(info,"   area ratio squeeze/hat = %g\n",
+ 		      GEN->Asqueeze/GEN->Atotal);
+
+  _unur_string_append(info,"   # segments = %d\n", GEN->n_segs);
+  _unur_string_append(info,"\n");
+
+  /* parameters */
+  if (help) {
+    _unur_string_append(info,"parameters:\n");
+
+    _unur_string_append(info,"   max_sqhratio = %g  %s\n", GEN->max_ratio,
+			(gen->set & AROU_SET_MAX_SQHRATIO) ? "" : "[default]");
+    _unur_string_append(info,"   max_segments = %d  %s\n", GEN->max_segs_info,
+			(gen->set & AROU_SET_MAX_SEGS) ? "" : "[default]");
+    _unur_string_append(info,"\n");
+  }
+
+
+  /* Hints */
+  if (help) {
+    if ( !(gen->set & AROU_SET_MAX_SQHRATIO) )
+      _unur_string_append(info,"[ Hint: %s ]\n",
+			  "You can set \"max_sqhratio\" closer to 1 to decrease rejection constant." );
+    if (GEN->Asqueeze/GEN->Atotal < GEN->max_ratio) 
+      _unur_string_append(info,"[ Hint: %s ]\n",
+			  "You should increase \"max_segments\" to obtain the desired rejection constant." );
+    _unur_string_append(info,"\n");
+  }
+
+} /* end of _unur_tdr_info() */
+
+/*---------------------------------------------------------------------------*/
+#endif   /* end UNUR_ENABLE_INFO */
 /*---------------------------------------------------------------------------*/

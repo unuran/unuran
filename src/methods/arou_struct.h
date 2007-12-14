@@ -88,6 +88,9 @@ struct unur_arou_gen {
   int     max_segs;             /* maximum number of segments                */
   double  darsfactor;           /* factor for (derandomized) ARS             */
   double  center;               /* (approximate) location of mode            */
+#ifdef UNUR_ENABLE_INFO
+  int     max_segs_info;        /* maximum number of segments (as given)     */
+#endif
 };
 
 /*---------------------------------------------------------------------------*/

@@ -2044,7 +2044,7 @@ _unur_hinv_info( struct unur_gen *gen, int help )
   if (help) {
     if ( GEN->order < 5 ) 
       _unur_string_append(info,"[ Hint: %s ]\n",
-			  "You can set \"order\" to 5 to decrease #intervals");
+			  "You can set \"order=5\" to decrease #intervals");
     if (! (gen->set & HINV_SET_U_RESOLUTION) )
       _unur_string_append(info,"[ Hint: %s\n\t%s ]\n",
 			  "You can decrease the u-error by decreasing \"u_resolution\".",

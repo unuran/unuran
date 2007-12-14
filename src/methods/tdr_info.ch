@@ -138,7 +138,7 @@ _unur_tdr_info( struct unur_gen *gen, int help )
   if (help) {
     if ( (gen->variant & TDR_VARMASK_VARIANT) != TDR_VARIANT_IA) 
       _unur_string_append(info,"[ Hint: %s ]\n",
-			  "You may use \"variant_ia=on\" for faster generation times."); 
+			  "You may use \"variant_ia\" for faster generation times."); 
     if ( !(gen->set & TDR_SET_MAX_SQHRATIO) )
       _unur_string_append(info,"[ Hint: %s ]\n",
 			  "You can set \"max_sqhratio\" closer to 1 to decrease rejection constant." );

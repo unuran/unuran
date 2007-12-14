@@ -1987,7 +1987,8 @@ _unur_hinv_info( struct unur_gen *gen, int help )
   _unur_string_append(info,"generator ID: %s\n\n", gen->genid);
   
   /* distribution */
-  _unur_string_append(info,"distribution: %s\n",distr->name);
+  _unur_string_append(info,"distribution:\n");
+  _unur_string_append(info,"   name      = %s\n", distr->name);
   _unur_string_append(info,"   type      = continuous univariate distribution\n");
   _unur_string_append(info,"   functions = CDF");
   if (GEN->order > 1)

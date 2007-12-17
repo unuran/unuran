@@ -70,6 +70,22 @@ my $copyright =
     " *   Department of Statistics and Mathematics, WU Wien, Austria    *\n".
     "\\*******************************************************************/\n";
 
+my $CPP_header =
+    "#undef __BEGIN_DECLS\n".
+    "#undef __END_DECLS\n".
+    "#ifdef __cplusplus\n".
+    "#  define __BEGIN_DECLS extern \"C\" {\n".
+    "#  define __END_DECLS }\n".
+    "#else\n".
+    "#  define __BEGIN_DECLS /* empty */\n".
+    "#  define __END_DECLS /* empty */\n".
+    "#endif\n".
+    "\n".
+    "__BEGIN_DECLS\n\n";
+
+my $CPP_bottom =
+    "__END_DECLS\n";
+
 # marker
 my $marker = '';
 
@@ -105,10 +121,12 @@ while (my $file = shift) {
 }
     
 print $copyright .
+    $CPP_header .
     "\#ifndef $marker\n" .
     "\#define $marker\n" .
     $out . 
-    "\#endif  /* $marker */\n";
+    "\#endif  /* $marker */\n" .
+    $CPP_bottom;
 
 # end
 exit 0;

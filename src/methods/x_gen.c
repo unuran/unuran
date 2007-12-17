@@ -180,8 +180,6 @@ unur_free( struct unur_gen *gen )
 /*****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#ifdef UNUR_ENABLE_INFO
-
 const char *
 unur_gen_info( struct unur_gen *gen, int help )
      /*----------------------------------------------------------------------*/
@@ -199,6 +197,8 @@ unur_gen_info( struct unur_gen *gen, int help )
      /*   return NULL                                                        */
      /*----------------------------------------------------------------------*/
 {
+#ifdef UNUR_ENABLE_INFO
+
   /* check arguments */
   _unur_check_NULL("",gen,NULL);
 
@@ -220,9 +220,12 @@ unur_gen_info( struct unur_gen *gen, int help )
   else {
     return NULL;
   }
-} /* end of unur_gen_info() */
+#else
+
+  return "INFO string not enable";
 
 #endif
+} /* end of unur_gen_info() */
 /*---------------------------------------------------------------------------*/
 
 int

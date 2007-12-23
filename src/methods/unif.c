@@ -85,6 +85,13 @@ static double _unur_unif_sample( struct unur_gen *gen );
 /* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/
 
+#ifdef UNUR_ENABLE_INFO
+static void _unur_unif_info( struct unur_gen *gen, int help );
+/*---------------------------------------------------------------------------*/
+/* create info string.                                                       */
+/*---------------------------------------------------------------------------*/
+#endif
+
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
@@ -246,6 +253,11 @@ _unur_unif_create( struct unur_par *par )
   gen->clone = _unur_unif_clone;
   gen->reinit = _unur_unif_reinit;
 
+#ifdef UNUR_ENABLE_INFO
+  /* set function for creating info string */
+  gen->info = _unur_unif_info;
+#endif
+
   /* return pointer to (almost empty) generator object */
   return gen;
   
@@ -351,4 +363,42 @@ _unur_unif_sample( struct unur_gen *gen )
 
 /*---------------------------------------------------------------------------*/
 #endif   /* end UNUR_ENABLE_LOGGING */
+/*---------------------------------------------------------------------------*/
+
+
+/*---------------------------------------------------------------------------*/
+#ifdef UNUR_ENABLE_INFO
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_unif_info( struct unur_gen *gen, int help )
+     /*----------------------------------------------------------------------*/
+     /* create character string that contains information about the          */
+     /* given generator object.                                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*   help ... whether to print additional comments                      */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_string *info = gen->infostr;
+
+  /* generator ID */
+  _unur_string_append(info,"generator ID: %s\n\n", gen->genid);
+  
+  /* distribution */
+  _unur_string_append(info,"distribution: uniform (0,1)\n\n");
+      
+  /* method */
+  _unur_string_append(info,"method: UNIF (wrapper for UNIForm random number generator)\n\n");
+
+  /* Hints */
+  if (help) {
+    _unur_string_append(info,"[Remark: allows using uniform random number generator in UNU.RAN framework]\n");
+  }
+
+} /* end of _unur_unif_info() */
+
+/*---------------------------------------------------------------------------*/
+#endif   /* end UNUR_ENABLE_INFO */
 /*---------------------------------------------------------------------------*/

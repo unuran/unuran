@@ -284,16 +284,14 @@ static void _unur_arou_debug_split_stop( const struct unur_gen *gen,
 /*---------------------------------------------------------------------------*/
 /* print before and after a segment has been split (not / successfully).     */
 /*---------------------------------------------------------------------------*/
-
 #endif
 
 #ifdef UNUR_ENABLE_INFO
-void _unur_arou_info( struct unur_gen *gen, int help );
+static void _unur_arou_info( struct unur_gen *gen, int help );
 /*---------------------------------------------------------------------------*/
 /* create info string.                                                       */
 /*---------------------------------------------------------------------------*/
 #endif
-
 
 /*---------------------------------------------------------------------------*/
 /* abbreviations */

@@ -615,7 +615,7 @@ static void _unur_tdr_ps_debug_split_stop( const struct unur_gen *gen,
 #endif
 
 #ifdef UNUR_ENABLE_INFO
-void _unur_tdr_info( struct unur_gen *gen, int help );
+static void _unur_tdr_info( struct unur_gen *gen, int help );
 /*---------------------------------------------------------------------------*/
 /* create info string.                                                       */
 /*---------------------------------------------------------------------------*/

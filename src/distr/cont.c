@@ -2200,7 +2200,7 @@ _unur_distr_cont_find_mode( struct unur_distr *distr )
     /* mode successfully computed */
     DISTR.mode = mode;
     /* changelog */
-    distr->set |= UNUR_DISTR_SET_MODE; 
+    distr->set |= UNUR_DISTR_SET_MODE | UNUR_DISTR_SET_MODE_APPROX ; 
     /* o.k. */
     return UNUR_SUCCESS;
   }

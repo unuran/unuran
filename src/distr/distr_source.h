@@ -71,6 +71,7 @@
 #define UNUR_DISTR_SET_MASK_DERIVED   0x0000ffffu
 
 #define UNUR_DISTR_SET_MODE           0x00000001u
+#define UNUR_DISTR_SET_MODE_APPROX    0x00000020u /* flag for approximate computation of mode */
 #define UNUR_DISTR_SET_CENTER         0x00000002u
 #define UNUR_DISTR_SET_PDFAREA        0x00000004u
 #define UNUR_DISTR_SET_PMFSUM         0x00000008u

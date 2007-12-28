@@ -84,6 +84,10 @@
 #include "nrou.h"
 #include "nrou_struct.h"
 
+#ifdef UNUR_ENABLE_INFO
+#  include <tests/unuran_tests.h>
+#endif
+
 /*---------------------------------------------------------------------------*/
 /* Constants:                                                                */
 
@@ -184,6 +188,13 @@ static void _unur_nrou_debug_init( const struct unur_gen *gen );
 
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed.                 */
+/*---------------------------------------------------------------------------*/
+#endif
+
+#ifdef UNUR_ENABLE_INFO
+static void _unur_nrou_info( struct unur_gen *gen, int help );
+/*---------------------------------------------------------------------------*/
+/* create info string.                                                       */
 /*---------------------------------------------------------------------------*/
 #endif
 
@@ -569,7 +580,7 @@ _unur_nrou_reinit( struct unur_gen *gen )
 
   /* compute bounding rectangle */
   return _unur_nrou_rectangle(gen);
-} /* end of _unur_utdr_reinit() */
+} /* end of _unur_nrou_reinit() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -614,6 +625,11 @@ _unur_nrou_create( struct unur_par *par )
   GEN->vmax  = PAR->vmax;             /* upper v-boundary of bounding rectangle */
   GEN->center = PAR->center;          /* center of distribution */
   GEN->r = PAR->r;                    /* r-parameter of the generalized rou-method */
+
+#ifdef UNUR_ENABLE_INFO
+  /* set function for creating info string */
+  gen->info = _unur_nrou_info;
+#endif
 
   /* return pointer to (almost empty) generator object */
   return gen;
@@ -848,7 +864,7 @@ _unur_aux_bound_umax(double x, void *p)
   gen = p; /* typecast from void* to unur_gen* */
   
   if (_unur_isone(GEN->r)) 
-    return (x-GEN->center)*sqrt( _unur_cont_PDF((x),(gen->distr)) );
+    return (x-GEN->center) * sqrt( _unur_cont_PDF((x),(gen->distr)) );
 
   else
     return (x-GEN->center) * pow( _unur_cont_PDF((x),(gen->distr)),
@@ -1041,4 +1057,95 @@ _unur_nrou_debug_init( const struct unur_gen *gen )
 
 /*---------------------------------------------------------------------------*/
 #endif   /* end UNUR_ENABLE_LOGGING */
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+#ifdef UNUR_ENABLE_INFO
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_nrou_info( struct unur_gen *gen, int help )
+     /*----------------------------------------------------------------------*/
+     /* create character string that contains information about the          */
+     /* given generator object.                                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*   help ... whether to print additional comments                      */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_string *info = gen->infostr;
+  struct unur_distr *distr = gen->distr;
+  double harea;
+
+  /* generator ID */
+  _unur_string_append(info,"generator ID: %s\n\n", gen->genid);
+  
+  /* distribution */
+  _unur_string_append(info,"distribution:\n");
+  _unur_string_append(info,"   name      = %s\n", distr->name);
+  _unur_string_append(info,"   type      = continuous univariate distribution\n");
+  _unur_string_append(info,"   functions = PDF\n");
+  _unur_string_append(info,"   domain    = (%g, %g)\n", DISTR.domain[0],DISTR.domain[1]);
+  _unur_string_append(info,"   mode      = %g   %s\n", unur_distr_cont_get_center(distr),
+		      (distr->set & UNUR_DISTR_SET_MODE_APPROX) ? "[numeric.]" : "");
+
+  if (help) {
+    if ( distr->set & UNUR_DISTR_SET_MODE_APPROX ) 
+      _unur_string_append(info,"\n[ Hint: %s\n\t%s ]\n",
+			  "You may provide the \"mode\" or at least",
+			  "the \"center\" (a point near the mode)."); 
+  }
+  _unur_string_append(info,"\n");
+
+  /* method */
+  _unur_string_append(info,"method: NROU (Naive Ratio-Of-Uniforms)\n");
+  _unur_string_append(info,"   r = %g\n\n", GEN->r);
+
+  /* performance */
+  _unur_string_append(info,"performance characteristics:\n");
+  _unur_string_append(info,"   bounding rectangle = (%g,%g) x (%g,%g)\n",
+		      GEN->umin,0., GEN->umax,GEN->vmax);
+  harea = (GEN->umax - GEN->umin) * GEN->vmax;
+  _unur_string_append(info,"   area(hat) = %g\n", harea);
+  _unur_string_append(info,"   rejection constant ");
+  if (distr->set & UNUR_DISTR_SET_PDFAREA)
+    _unur_string_append(info,"= %g\n", 2. * harea / DISTR.area);
+  else {
+    int samplesize = 10000;
+    double rc = 0.01 * (unur_test_count_urn(gen,samplesize,0,NULL)/(samplesize/50));
+    _unur_string_append(info,"= %g  [approx.]\n", rc);
+  }
+  _unur_string_append(info,"\n");
+
+  /* parameters */
+  if (help) {
+    _unur_string_append(info,"parameters:\n");
+    _unur_string_append(info,"        r = %g  %s\n", GEN->r,
+			(gen->set & NROU_SET_R) ? "" : "[default]");
+    _unur_string_append(info,"   center = %g  %s\n",GEN->center,
+			(gen->set & NROU_SET_CENTER) ? "" : "[default]");
+    _unur_string_append(info,"        v = %g  %s\n", GEN->vmax,
+			(gen->set & NROU_SET_V) ? "" : "[numeric.]");
+    _unur_string_append(info,"        u = (%g, %g)  %s\n", GEN->umin,GEN->umax,
+			(gen->set & NROU_SET_U) ? "" : "[numeric.]");
+    _unur_string_append(info,"\n");
+  }
+
+
+  /* Hints */
+  if (help) {
+    if ( !(gen->set & NROU_SET_V) )
+      _unur_string_append(info,"[ Hint: %s ]\n",
+			  "You can set \"v\" to avoid numerical estimate." );
+    if ( !(gen->set & NROU_SET_U) )
+      _unur_string_append(info,"[ Hint: %s ]\n",
+			  "You can set \"u\" to avoid slow (and inexact) numerical estimates." );
+    _unur_string_append(info,"\n");
+  }
+
+} /* end of _unur_nrou_info() */
+
+/*---------------------------------------------------------------------------*/
+#endif   /* end UNUR_ENABLE_INFO */
 /*---------------------------------------------------------------------------*/

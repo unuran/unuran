@@ -125,6 +125,10 @@
 #include "srou.h"
 #include "srou_struct.h"
 
+#ifdef UNUR_ENABLE_INFO
+#  include <tests/unuran_tests.h>
+#endif
+
 /*---------------------------------------------------------------------------*/
 /* Variants:                                                                 */
 
@@ -212,10 +216,17 @@ static int _unur_gsrou_envelope( struct unur_gen *gen );
 /* the following functions print debugging information on output stream,     */
 /* i.e., into the log file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
-static void _unur_srou_debug_init( const struct unur_gen *gen, int is_reinit );
 
+static void _unur_srou_debug_init( const struct unur_gen *gen, int is_reinit );
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed.                 */
+/*---------------------------------------------------------------------------*/
+#endif
+
+#ifdef UNUR_ENABLE_INFO
+static void _unur_srou_info( struct unur_gen *gen, int help );
+/*---------------------------------------------------------------------------*/
+/* create info string.                                                       */
 /*---------------------------------------------------------------------------*/
 #endif
 
@@ -817,7 +828,10 @@ _unur_srou_create( struct unur_par *par )
   GEN->a = GEN->b = 0.;
   GEN->log_ab = 0.;
 
-  /* initialize parameters */
+#ifdef UNUR_ENABLE_INFO
+  /* set function for creating info string */
+  gen->info = _unur_srou_info;
+#endif
 
   /* return pointer to (almost empty) generator object */
   return gen;
@@ -1495,4 +1509,108 @@ _unur_srou_debug_init( const struct unur_gen *gen, int is_reinit )
 
 /*---------------------------------------------------------------------------*/
 #endif   /* end UNUR_ENABLE_LOGGING */
+/*---------------------------------------------------------------------------*/
+
+
+/*---------------------------------------------------------------------------*/
+#ifdef UNUR_ENABLE_INFO
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_srou_info( struct unur_gen *gen, int help )
+     /*----------------------------------------------------------------------*/
+     /* create character string that contains information about the          */
+     /* given generator object.                                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*   help ... whether to print additional comments                      */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_string *info = gen->infostr;
+  struct unur_distr *distr = gen->distr;
+  double h_area, rc;
+
+  /* generator ID */
+  _unur_string_append(info,"generator ID: %s\n\n", gen->genid);
+  
+  /* distribution */
+  _unur_string_append(info,"distribution:\n");
+  _unur_string_append(info,"   name      = %s\n", distr->name);
+  _unur_string_append(info,"   type      = continuous univariate distribution\n");
+  _unur_string_append(info,"   functions = PDF\n");
+  _unur_string_append(info,"   domain    = (%g, %g)\n", DISTR.domain[0],DISTR.domain[1]);
+  _unur_string_append(info,"   mode      = %g   %s\n", unur_distr_cont_get_center(distr),
+		      (distr->set & UNUR_DISTR_SET_MODE_APPROX) ? "[numeric.]" : "");
+  if (gen->set & SROU_SET_CDFMODE)
+    _unur_string_append(info,"   F(mode)   = %g\n", GEN->Fmode); 
+  else
+    _unur_string_append(info,"   F(mode)   = [unknown]\n"); 
+
+  if (help) {
+    if ( distr->set & UNUR_DISTR_SET_MODE_APPROX ) 
+      _unur_string_append(info,"\n[ Hint: %s ]\n",
+			  "You may provide the \"mode\"");
+  }
+  _unur_string_append(info,"\n");
+
+  /* method */
+  _unur_string_append(info,"method: SROU (Simple Ratio-Of-Uniforms)\n");
+  _unur_string_append(info,"   r = %g  %s\n", GEN->r,
+		      (gen->set & SROU_SET_R) ? "[generalized version]" : "");
+  if (gen->set & SROU_SET_CDFMODE)
+    _unur_string_append(info,"   use CDF at mode\n");
+  if (gen->variant & SROU_VARFLAG_SQUEEZE)
+    _unur_string_append(info,"   use squeeze\n");
+  if (gen->variant & SROU_VARFLAG_MIRROR)
+    _unur_string_append(info,"   use mirror principle\n");
+  _unur_string_append(info,"\n");
+
+  /* performance */
+  _unur_string_append(info,"performance characteristics:\n");
+  if (gen->set & SROU_SET_R) {
+    int samplesize = 10000;
+    rc = 0.01 * (unur_test_count_urn(gen,samplesize,0,NULL)/(samplesize/50));
+    _unur_string_append(info,"   enveloping region = (%g,%g) x (%g,%g)\n",
+			GEN->vl,0., GEN->vr,GEN->um);
+    _unur_string_append(info,"   rejection constant = %g  [approx.]\n", rc);
+  }
+  else {
+    _unur_string_append(info,"   bounding rectangle = (%g,%g) x (%g,%g)\n",
+			GEN->vl,0., GEN->vr,GEN->um);
+    h_area = (GEN->vr - GEN->vl) * GEN->um;
+    _unur_string_append(info,"   area(hat) = %g\n", h_area);
+    rc = (gen->set & SROU_SET_CDFMODE) ? 2. : 4.;
+    _unur_string_append(info,"   rejection constant = %g\n", rc);
+  }
+  _unur_string_append(info,"\n");
+
+  /* parameters */
+  if (help) {
+    _unur_string_append(info,"parameters:\n");
+    _unur_string_append(info,"           r = %g  %s\n", GEN->r,
+			(gen->set & SROU_SET_R) ? "" : "[default]");
+    if (gen->set & SROU_SET_CDFMODE)
+      _unur_string_append(info,"   cdfatmode = %g\n", GEN->Fmode); 
+    else
+      _unur_string_append(info,"   cdfatmode = [not set]\n"); 
+    if (gen->variant & SROU_VARFLAG_SQUEEZE)
+      _unur_string_append(info,"   usesqueeze\n");
+    if (gen->variant & SROU_VARFLAG_MIRROR)
+      _unur_string_append(info,"   usemirror\n");
+    _unur_string_append(info,"\n");
+  }
+
+  /* Hints */
+  if (help) {
+    if ( !(gen->set & SROU_SET_CDFMODE))
+      _unur_string_append(info,"[ Hint: %s ]\n",
+			  "You can set \"cdfatmode\" to reduce the rejection constant.");
+    _unur_string_append(info,"\n");
+  }
+
+} /* end of _unur_srou_info() */
+
+/*---------------------------------------------------------------------------*/
+#endif   /* end UNUR_ENABLE_INFO */
 /*---------------------------------------------------------------------------*/

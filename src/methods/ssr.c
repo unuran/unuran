@@ -1133,6 +1133,7 @@ _unur_ssr_info( struct unur_gen *gen, int help )
   _unur_string_append(info,"   domain    = (%g, %g)\n", DISTR.domain[0],DISTR.domain[1]);
   _unur_string_append(info,"   mode      = %g   %s\n", unur_distr_cont_get_center(distr),
 		      (distr->set & UNUR_DISTR_SET_MODE_APPROX) ? "[numeric.]" : "");
+  _unur_string_append(info,"   area(PDF) = %g\n", DISTR.area);
   if (gen->set & SSR_SET_CDFMODE)
     _unur_string_append(info,"   F(mode)   = %g\n", GEN->Fmode); 
   else

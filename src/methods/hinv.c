@@ -1996,8 +1996,11 @@ _unur_hinv_info( struct unur_gen *gen, int help )
   if (GEN->order > 3)
     _unur_string_append(info," dPDF");
   _unur_string_append(info,"\n");
-
-  _unur_string_append(info,"   domain    = (%g, %g)\n", DISTR.domain[0],DISTR.domain[1]);
+  _unur_string_append(info,"   domain    = (%g, %g)", DISTR.trunc[0],DISTR.trunc[1]);
+  if (gen->distr->set & UNUR_DISTR_SET_TRUNCATED) {
+    _unur_string_append(info,"   [truncated from (%g, %g)]", DISTR.domain[0],DISTR.domain[1]);
+  }
+  _unur_string_append(info,"\n");
 
   if (distr->set & UNUR_DISTR_SET_MODE) {
     _unur_string_append(info,"   mode      = %g\n", DISTR.mode);

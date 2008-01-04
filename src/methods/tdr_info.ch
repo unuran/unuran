@@ -60,7 +60,11 @@ _unur_tdr_info( struct unur_gen *gen, int help )
   _unur_string_append(info,"   name      = %s\n", distr->name);
   _unur_string_append(info,"   type      = continuous univariate distribution\n");
   _unur_string_append(info,"   functions = PDF dPDF\n");
-  _unur_string_append(info,"   domain    = (%g, %g)\n", DISTR.domain[0],DISTR.domain[1]);
+  _unur_string_append(info,"   domain    = (%g, %g)", DISTR.trunc[0],DISTR.trunc[1]);
+  if (gen->distr->set & UNUR_DISTR_SET_TRUNCATED) {
+    _unur_string_append(info,"   [truncated from (%g, %g)]", DISTR.domain[0],DISTR.domain[1]);
+  }
+  _unur_string_append(info,"\n");
   _unur_string_append(info,"   center    = %g", unur_distr_cont_get_center(distr));
   if ( !(distr->set & UNUR_DISTR_SET_CENTER) ) {
     if ( distr->set & UNUR_DISTR_SET_MODE )

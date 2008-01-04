@@ -15,9 +15,6 @@
  *      pointer to the CDF                                                   *
  *      newton's method: additional pointer to the PDF                       *
  *                                                                           *
- *   OPTIONAL:                                                               *
- *      CDF at mode                                                          *
- *                                                                           *
  *****************************************************************************
  *                                                                           *
  *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
@@ -88,6 +85,10 @@
 #include "x_gen_source.h"
 #include "ninv.h"
 #include "ninv_struct.h"
+
+#ifdef UNUR_ENABLE_INFO
+#  include <tests/unuran_tests.h>
+#endif
 
 /*---------------------------------------------------------------------------*/
 /* Constants                                                                 */
@@ -223,6 +224,13 @@ static void _unur_ninv_debug_sample_newton( const struct unur_gen *gen,
 static void _unur_ninv_debug_chg_truncated( const struct unur_gen *gen);
 /*---------------------------------------------------------------------------*/
 /* trace changes of the truncated domain.                                    */
+/*---------------------------------------------------------------------------*/
+#endif
+
+#ifdef UNUR_ENABLE_INFO
+static void _unur_ninv_info( struct unur_gen *gen, int help );
+/*---------------------------------------------------------------------------*/
+/* create info string.                                                       */
 /*---------------------------------------------------------------------------*/
 #endif
 
@@ -938,6 +946,11 @@ _unur_ninv_create( struct unur_par *par )
   /* init pointer */
   GEN->table = NULL;
   GEN->f_table = NULL;
+
+#ifdef UNUR_ENABLE_INFO
+  /* set function for creating info string */
+  gen->info = _unur_ninv_info;
+#endif
 
   /* return pointer to (almost empty) generator object */
   return gen;
@@ -1891,4 +1904,103 @@ _unur_ninv_debug_chg_truncated( const struct unur_gen *gen )
 
 /*---------------------------------------------------------------------------*/
 #endif   /* end UNUR_ENABLE_LOGGING */
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+#ifdef UNUR_ENABLE_INFO
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_ninv_info( struct unur_gen *gen, int help )
+     /*----------------------------------------------------------------------*/
+     /* create character string that contains information about the          */
+     /* given generator object.                                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*   help ... whether to print additional comments                      */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_string *info = gen->infostr;
+  struct unur_distr *distr = gen->distr;
+  double n_iter;
+  int samplesize = 10000;
+
+  int use_newton = (gen->variant==NINV_VARFLAG_NEWTON) ? TRUE : FALSE;
+
+  /* generator ID */
+  _unur_string_append(info,"generator ID: %s\n\n", gen->genid);
+  
+  /* distribution */
+  _unur_string_append(info,"distribution:\n");
+  _unur_string_append(info,"   name      = %s\n", distr->name);
+  _unur_string_append(info,"   type      = continuous univariate distribution\n");
+  _unur_string_append(info,"   functions = CDF");
+  if (use_newton) 
+    _unur_string_append(info," PDF");
+  _unur_string_append(info,"\n");
+  _unur_string_append(info,"   domain    = (%g, %g)", DISTR.trunc[0],DISTR.trunc[1]);
+  if (gen->distr->set & UNUR_DISTR_SET_TRUNCATED) {
+    _unur_string_append(info,"   [truncated from (%g, %g)]", DISTR.domain[0],DISTR.domain[1]);
+  }
+  _unur_string_append(info,"\n\n");
+      
+  /* method */
+  _unur_string_append(info,"method: NINV (Numerical INVersion)\n");
+  if (use_newton) 
+    _unur_string_append(info,"   Newton method\n");
+  else
+    _unur_string_append(info,"   Regula falsi\n");
+  _unur_string_append(info,"\n");
+
+  /* performance */
+  _unur_string_append(info,"performance characteristics:\n");
+  n_iter = 0.01 * (unur_test_count_pdf(gen,samplesize,FALSE,NULL)/(samplesize/50));
+  if (!use_newton) n_iter *= 2.;
+  _unur_string_append(info,"   average number of iterations = %g  [approx.]\n\n", n_iter);
+
+  /* parameters */
+  if (help) {
+    _unur_string_append(info,"parameters:\n");
+    if (use_newton) 
+      _unur_string_append(info,"   usenewton\n");
+    else
+      _unur_string_append(info,"   useregula  [default]\n");
+    _unur_string_append(info,"   x_resolution = %g  %s\n", GEN->rel_x_resolution,
+			(gen->set & NINV_SET_X_RESOLUTION) ? "" : "[default]");
+    _unur_string_append(info,"   max_iter = %d  %s\n", GEN->max_iter,
+			(gen->set & NINV_SET_MAX_ITER) ? "" : "[default]");
+    if (GEN->table_on) {
+      _unur_string_append(info,"   starting points = table of size %d\n", GEN->table_size);
+    }
+    else {
+      _unur_string_append(info,"   starting points = ");
+      if (use_newton) {
+	_unur_string_append(info,"%g (CDF = %g)  %s\n", GEN->s[0], GEN->CDFs[0],
+			    (gen->set & NINV_SET_START) ? "" : "[default]");
+      }
+      else {
+	_unur_string_append(info,"%g, %g  (CDF = %g, %g)   %s\n",
+			    GEN->s[0],GEN->s[1], GEN->CDFs[0],GEN->CDFs[1],
+			    (gen->set & NINV_SET_START) ? "" : "[default]");
+      }
+    }
+    _unur_string_append(info,"\n");
+  }
+
+  /* Hints */
+  if (help) {
+    if (! (gen->set & NINV_SET_X_RESOLUTION) )
+      _unur_string_append(info,"[ Hint: %s ]\n",
+			  "You can increase accuracy by decreasing \"x_resolution\".");
+    if (! (gen->set & NINV_SET_MAX_ITER) )
+      _unur_string_append(info,"[ Hint: %s ]\n",
+			  "You can increase \"max_iter\" if you encounter problems with accuracy.");
+    _unur_string_append(info,"\n");
+  }
+
+} /* end of _unur_tdr_info() */
+
+/*---------------------------------------------------------------------------*/
+#endif   /* end UNUR_ENABLE_INFO */
 /*---------------------------------------------------------------------------*/

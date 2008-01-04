@@ -1,3 +1,7 @@
+
+(*) Umbenennen: TDRGW --> ARS
+
+
 -----------------------------------------------------------------------------
 
 (*) DOCU: erklaere Phrase: ... in case of failure an error code is returned.

@@ -76,6 +76,10 @@
 #include "utdr.h"
 #include "utdr_struct.h"
 
+#ifdef UNUR_ENABLE_INFO
+#  include <tests/unuran_tests.h>
+#endif
+
 /*---------------------------------------------------------------------------*/
 /* Variants                                                                  */
 
@@ -155,6 +159,13 @@ static void _unur_utdr_debug_init( const struct unur_gen *gen,
 				   double cfac, int setupok, double c );
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed.                 */
+/*---------------------------------------------------------------------------*/
+#endif
+
+#ifdef UNUR_ENABLE_INFO
+static void _unur_utdr_info( struct unur_gen *gen, int help );
+/*---------------------------------------------------------------------------*/
+/* create info string.                                                       */
 /*---------------------------------------------------------------------------*/
 #endif
 
@@ -674,6 +685,11 @@ _unur_utdr_create( struct unur_par *par )
   GEN->ooar2 = 0.; 
   GEN->ooal2 = 0.;
   /* constants of the hat and for generation*/
+
+#ifdef UNUR_ENABLE_INFO
+  /* set function for creating info string */
+  gen->info = _unur_utdr_info;
+#endif
 
   /* return pointer to (almost empty) generator object */
   return gen;
@@ -1257,4 +1273,70 @@ _unur_utdr_debug_init( const struct unur_gen *gen,
 
 /*---------------------------------------------------------------------------*/
 #endif   /* end UNUR_ENABLE_LOGGING */
+/*---------------------------------------------------------------------------*/
+
+
+/*---------------------------------------------------------------------------*/
+#ifdef UNUR_ENABLE_INFO
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_utdr_info( struct unur_gen *gen, int help )
+     /*----------------------------------------------------------------------*/
+     /* create character string that contains information about the          */
+     /* given generator object.                                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*   help ... whether to print additional comments                      */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_string *info = gen->infostr;
+  struct unur_distr *distr = gen->distr;
+  int samplesize = 10000;
+  double rc;
+
+  /* generator ID */
+  _unur_string_append(info,"generator ID: %s\n\n", gen->genid);
+  
+  /* distribution */
+  _unur_string_append(info,"distribution:\n");
+  _unur_string_append(info,"   name      = %s\n", distr->name);
+  _unur_string_append(info,"   type      = continuous univariate distribution\n");
+  _unur_string_append(info,"   functions = PDF\n");
+  _unur_string_append(info,"   domain    = (%g, %g)\n", DISTR.domain[0],DISTR.domain[1]);
+  _unur_string_append(info,"   mode      = %g   %s\n", unur_distr_cont_get_center(distr),
+		      (distr->set & UNUR_DISTR_SET_MODE_APPROX) ? "[numeric.]" : "");
+  _unur_string_append(info,"   area(PDF) = %g\n", DISTR.area);
+  _unur_string_append(info,"\n");
+
+  /* method */
+  _unur_string_append(info,"method: UTDR (Universal Transformed Density Rejection -- 3 point method)\n");
+  _unur_string_append(info,"\n");
+
+  /* performance */
+  _unur_string_append(info,"performance characteristics:\n");
+  rc = 0.01 * (unur_test_count_urn(gen,samplesize,0,NULL)/(samplesize/50));
+  _unur_string_append(info,"   rejection constant = %g  [approx]\n", rc);
+  _unur_string_append(info,"\n");
+
+  /* parameters */
+  if (help) {
+    _unur_string_append(info,"parameters:\n");
+    _unur_string_append(info,"   deltafactor = %g  %s\n", GEN->delta_factor,
+			(gen->set & UTDR_SET_DELTA) ? "" : "[default]");
+    if (gen->set & UTDR_SET_PDFMODE)
+      _unur_string_append(info,"   pdfatmode = %g\n", GEN->fm);
+    _unur_string_append(info,"\n");
+  }
+
+  /* Hints */
+  /*   if (help) { */
+  /*     _unur_string_append(info,"\n"); */
+  /*   } */
+
+} /* end of _unur_utdr_info() */
+
+/*---------------------------------------------------------------------------*/
+#endif   /* end UNUR_ENABLE_INFO */
 /*---------------------------------------------------------------------------*/

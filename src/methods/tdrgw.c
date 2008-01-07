@@ -61,6 +61,10 @@
 #include "tdrgw.h"
 #include "tdrgw_struct.h"
 
+#ifdef UNUR_ENABLE_INFO
+#  include <tests/unuran_tests.h>
+#endif
+
 /*---------------------------------------------------------------------------*/
 /* Constants                                                                 */
 
@@ -229,6 +233,13 @@ static void _unur_tdrgw_debug_split_stop( const struct unur_gen *gen,
 					   const struct unur_tdrgw_interval *iv_right );
 /*---------------------------------------------------------------------------*/
 /* print before and after an interval has been split (not / successfully).   */
+/*---------------------------------------------------------------------------*/
+#endif
+
+#ifdef UNUR_ENABLE_INFO
+static void _unur_tdrgw_info( struct unur_gen *gen, int help );
+/*---------------------------------------------------------------------------*/
+/* create info string.                                                       */
 /*---------------------------------------------------------------------------*/
 #endif
 
@@ -1018,6 +1029,11 @@ _unur_tdrgw_create( struct unur_par *par )
 
   /* copy variant */
   gen->variant = par->variant;
+
+#ifdef UNUR_ENABLE_INFO
+  /* set function for creating info string */
+  gen->info = _unur_tdrgw_info;
+#endif
 
   /* return pointer to (almost empty) generator object */
   return gen;
@@ -2168,7 +2184,7 @@ _unur_tdrgw_tangent_intersection_point( struct unur_gen *gen, struct unur_tdrgw_
   if (_unur_FP_less(*ipt, iv->x) || _unur_FP_greater(*ipt, iv->next->x))
     /* intersection point of tangents not in interval.
        This is mostly the case for numerical reasons.
-       Thus we is the center of the interval instead.
+       Thus we use the center of the interval instead.
        if the PDF not T-concave, it will catched at a later
        point when we compare slope of tangents and squeeze. */
     *ipt = 0.5 * (iv->x + iv->next->x);
@@ -2717,4 +2733,73 @@ _unur_tdrgw_debug_split_stop( const struct unur_gen *gen,
 
 /*---------------------------------------------------------------------------*/
 #endif    /* end UNUR_ENABLE_LOGGING */
+/*---------------------------------------------------------------------------*/
+
+
+/*---------------------------------------------------------------------------*/
+#ifdef UNUR_ENABLE_INFO
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_tdrgw_info( struct unur_gen *gen, int help )
+     /*----------------------------------------------------------------------*/
+     /* create character string that contains information about the          */
+     /* given generator object.                                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*   help ... whether to print additional comments                      */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_string *info = gen->infostr;
+  struct unur_distr *distr = gen->distr;
+  int samplesize = 10000;
+  double rc;
+
+  /* generator ID */
+  _unur_string_append(info,"generator ID: %s\n\n", gen->genid);
+
+  /* distribution */
+  _unur_string_append(info,"distribution:\n");
+  _unur_string_append(info,"   name      = %s\n", distr->name);
+  _unur_string_append(info,"   type      = continuous univariate distribution\n");
+  _unur_string_append(info,"   functions = logPDF dlogPDF\n");
+  _unur_string_append(info,"   domain    = (%g, %g)\n", DISTR.domain[0],DISTR.domain[1]);
+  _unur_string_append(info,"\n");
+      
+  /* method */
+  _unur_string_append(info,"method: TDRGW (Transformed Density Rejection -- Gilks&Wild variant)\n");
+  _unur_string_append(info,"   T_c(x) = log(x)  ... c = 0\n");
+  _unur_string_append(info,"\n");
+
+  /* performance */
+  _unur_string_append(info,"performance characteristics:\n");
+  _unur_string_append(info,"   area(hat) = %g\n", GEN->Atotal);
+  _unur_string_append(info,"   rejection constant ");
+  if (distr->set & UNUR_DISTR_SET_PDFAREA)
+    _unur_string_append(info,"= %g\n", GEN->Atotal/DISTR.area);
+  else {
+    rc = 0.001 * (unur_test_count_urn(gen,samplesize,0,NULL)/(samplesize/500));
+    _unur_string_append(info,"= %g  [approx.]\n", rc);
+  }
+  _unur_string_append(info,"   # intervals = %d\n", GEN->n_ivs);
+  _unur_string_append(info,"\n");
+  
+  /* parameters */
+  if (help) {
+    _unur_string_append(info,"parameters:\n");
+    _unur_string_append(info,"   cpoints = %d  %s\n", GEN->n_starting_cpoints,
+			(gen->set & TDRGW_SET_N_CPOINTS) ? "" : "[default]");
+    _unur_string_append(info,"\n");
+  }
+
+  /* Hints */
+  /*   if (help) { */
+  /*     _unur_string_append(info,"\n"); */
+  /*   } */
+
+} /* end of _unur_tdrgw_info() */
+
+/*---------------------------------------------------------------------------*/
+#endif
 /*---------------------------------------------------------------------------*/

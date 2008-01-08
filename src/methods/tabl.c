@@ -261,6 +261,13 @@ static void _unur_tabl_debug_intervals( const struct unur_gen *gen, const char *
 /*---------------------------------------------------------------------------*/
 #endif
 
+#ifdef UNUR_ENABLE_INFO
+static void _unur_tabl_info( struct unur_gen *gen, int help );
+/*---------------------------------------------------------------------------*/
+/* create info string.                                                       */
+/*---------------------------------------------------------------------------*/
+#endif
+
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
@@ -305,6 +312,7 @@ _unur_tabl_getSAMPLE( struct unur_gen *gen )
 #include "tabl_init.ch"
 #include "tabl_sample.ch"
 #include "tabl_debug.ch"
+#include "tabl_info.ch"
 
 /* #include "tabl_fast.ch" ... not implemented (only experimental code)      */
 

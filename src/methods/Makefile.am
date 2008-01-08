@@ -52,7 +52,7 @@ libmethods_la_SOURCES = \
  srou.c   srou.h   srou_struct.h \
  ssr.c    ssr.h    ssr_struct.h \
  tabl.c   tabl.h   tabl_struct.h tabl_newset.ch \
-          tabl_init.ch tabl_sample.ch tabl_debug.ch \
+          tabl_init.ch tabl_sample.ch tabl_debug.ch tabl_info.ch \
  tdr.c    tdr.h    tdr_struct.h tdr_newset.ch \
           tdr_init.ch tdr_gw_init.ch tdr_ps_init.ch \
           tdr_sample.ch tdr_gw_sample.ch tdr_ps_sample.ch tdr_ia_sample.ch \

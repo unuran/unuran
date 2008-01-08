@@ -219,8 +219,16 @@ _unur_tabl_create( struct unur_par *par )
 
   /* bounds for adding construction points  */
   GEN->max_ivs   = PAR->max_ivs;         /* maximum number of intervals        */
+#ifdef UNUR_ENABLE_INFO
+  GEN->max_ivs_info = PAR->max_ivs;      /* ... for info string */
+#endif
   GEN->max_ratio = PAR->max_ratio;       /* bound for ratio  Atotal / Asqueeze */
   GEN->darsfactor = PAR->darsfactor;
+
+#ifdef UNUR_ENABLE_INFO
+  /* set function for creating info string */
+  gen->info = _unur_tabl_info;
+#endif
 
   /* return pointer to (almost empty) generator object */
   return gen;

@@ -98,6 +98,9 @@ struct unur_tabl_gen {
   double  max_ratio;            /* limit for ratio r_n = A(squeeze) / A(hat) */
 
   double  darsfactor;           /* factor for (derandomized) ARS             */
+#ifdef UNUR_ENABLE_INFO
+  int     max_ivs_info;         /* maximum number of intervals (as given)    */
+#endif
 };
 
 /*---------------------------------------------------------------------------*/

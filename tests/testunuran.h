@@ -49,6 +49,15 @@
 #include <utils/unur_fp_const_source.h>
 
 /*---------------------------------------------------------------------------*/
+/* define macros for GCC attributes                                          */
+
+#ifdef __GNUC__
+#  define ATTRIBUTE__UNUSED        __attribute__ ((unused))
+#else
+#  define ATTRIBUTE__UNUSED
+#endif
+
+/*---------------------------------------------------------------------------*/
 
 #define CHI_TEST_INTERVALS 100  /* number of intervals for chi^2 test        */
 #define CHI_TEST_VERBOSITY 0    /* verbosity level for chi^2 test: 0 | 1 | 2 */

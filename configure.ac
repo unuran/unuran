@@ -3,9 +3,9 @@ dnl $Id$
 
 dnl Initialize.
 AC_PREREQ(2.59)
-AC_INIT([unuran],[1.1.0],[unuran@statistik.wu-wien.ac.at])
+AC_INIT([unuran],[1.1.1],[unuran@statistik.wu-wien.ac.at])
 AC_CONFIG_AUX_DIR(autoconf)
-AM_INIT_AUTOMAKE([unuran],[1.1.0])
+AM_INIT_AUTOMAKE([unuran],[1.1.1])
 AC_CONFIG_SRCDIR([src/unuran_config.h])
 AC_CONFIG_HEADER([config.h])
 
@@ -201,7 +201,7 @@ dnl Set flags for
 dnl Set flags for compiler
 CC_FLAGS=
 if test X"$GCC" = Xyes ; then
-   CC_FLAGS="$CC_FLAGS -Wall"
+   CC_FLAGS="$CC_FLAGS -Wall -Wextra"
 fi
 
 case "${host_os}" in

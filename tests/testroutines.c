@@ -913,7 +913,8 @@ int print_pval( FILE *LOG, UNUR_GEN *gen, const UNUR_DISTR *distr, double pval, 
 /*---------------------------------------------------------------------------*/
 /* run chi2 test */
 
-int run_validate_chi2( FILE *LOG, int line, UNUR_GEN *gen, const UNUR_DISTR *distr, char todo )
+int run_validate_chi2( FILE *LOG, int line ATTRIBUTE__UNUSED, 
+		       UNUR_GEN *gen, const UNUR_DISTR *distr, char todo )
      /*   UNUR_SUCCESS    ... on success                                        */
      /*   UNUR_ERR_SILENT ... test failed only once                             */
      /*   UNUR_FAILURE    ... serious failure                                   */
@@ -1216,7 +1217,7 @@ int print_verifyhat_result( FILE *LOG, UNUR_GEN *gen, const UNUR_DISTR *distr, i
 /*---------------------------------------------------------------------------*/
 /* print result of timings */
 
-void print_timing_results( FILE *LOG, int line, const UNUR_DISTR *distr,
+void print_timing_results( FILE *LOG, int line ATTRIBUTE__UNUSED, const UNUR_DISTR *distr,
 			   double *timing_setup, double *timing_marginal, int n_results )
 {
   const char *distr_name;

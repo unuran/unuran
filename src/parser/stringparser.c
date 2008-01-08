@@ -2029,7 +2029,7 @@ _unur_str_par_set_Di (UNUR_PAR *par, const char *key, char *type_args, char **ar
 /*****************************************************************************/
 
 UNUR_URNG *
-_unur_str2urng( char *str_urng )
+_unur_str2urng( char *str_urng ATTRIBUTE__UNUSED)
      /*----------------------------------------------------------------------*/
      /* get uniform RNG                                                      */
      /*                                                                      */

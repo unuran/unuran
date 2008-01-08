@@ -123,11 +123,11 @@ Proceedings of the 2000 Winter Simulation Conference, pp. 675-682.
 @i{Continuous Random Variate Generation by Fast Numerical Inversion},
 ACM TOMACS 13(4), 347-362.
 
-@anchor{bib:HLDa06}
-@item [HLDa06]
-@sc{W. H@"ormann, J. Leydold, and G. Derflinger} (2006).
+@anchor{bib:HLDa07}
+@item [HLDa07]
+@sc{W. H@"ormann, J. Leydold, and G. Derflinger} (2007).
 @i{Automatic Random Variate Generation for Unbounded Densities},
-Department of Statistics and Mathematics, Research Report Series.
+ACM Trans. Model. Comput. Simul. 17(4), pp.18.
 
 @anchor{bib:LJa98}
 @item [LJa98]

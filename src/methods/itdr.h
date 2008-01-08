@@ -48,7 +48,7 @@
 
    =REINIT supported
 
-   =REF  [HLDa06]
+   =REF  [HLDa07]
 
    =DESCRIPTION
       ITDR is an acceptance/rejection method that works for monotone

@@ -214,7 +214,7 @@ dnl Set flags for
 dnl Set flags for compiler
 CC_FLAGS=
 if test X"$GCC" = Xyes ; then
-   CC_FLAGS="$CC_FLAGS -Wall"
+   CC_FLAGS="$CC_FLAGS -Wall -Wextra"
 fi
 
 case "${host_os}" in

@@ -186,6 +186,13 @@ static void _unur_dgt_debug_table( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 #endif
 
+#ifdef UNUR_ENABLE_INFO
+static void _unur_dgt_info( struct unur_gen *gen, int help );
+/*---------------------------------------------------------------------------*/
+/* create info string.                                                       */
+/*---------------------------------------------------------------------------*/
+#endif
+
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
@@ -478,6 +485,11 @@ _unur_dgt_create( struct unur_par *par )
   /* set all pointers to NULL */
   GEN->cumpv = NULL;
   GEN->guide_table = NULL;
+
+#ifdef UNUR_ENABLE_INFO
+  /* set function for creating info string */
+  gen->info = _unur_dgt_info;
+#endif
 
   /* return pointer to (almost empty) generator object */
   return gen;
@@ -839,4 +851,64 @@ _unur_dgt_debug_table( struct unur_gen *gen )
 
 /*---------------------------------------------------------------------------*/
 #endif   /* end UNUR_ENABLE_LOGGING */
+/*---------------------------------------------------------------------------*/
+
+
+/*---------------------------------------------------------------------------*/
+#ifdef UNUR_ENABLE_INFO
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_dgt_info( struct unur_gen *gen, int help )
+     /*----------------------------------------------------------------------*/
+     /* create character string that contains information about the          */
+     /* given generator object.                                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*   help ... whether to print additional comments                      */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_string *info = gen->infostr;
+  struct unur_distr *distr = gen->distr;
+
+  /* generator ID */
+  _unur_string_append(info,"generator ID: %s\n\n", gen->genid);
+  
+  /* distribution */
+  _unur_string_append(info,"distribution:\n");
+  _unur_string_append(info,"   name      = %s\n", distr->name);
+  _unur_string_append(info,"   type      = continuous univariate distribution\n");
+  _unur_string_append(info,"   functions = PV [lenght=%d%s]\n",
+		      DISTR.domain[1]-DISTR.domain[0]+1,
+		      (DISTR.pmf==NULL) ? "" : ", created from PMF");
+  _unur_string_append(info,"   domain    = (%d, %d)\n", DISTR.domain[0],DISTR.domain[1]);
+  _unur_string_append(info,"\n");
+
+  /* method */
+  _unur_string_append(info,"method: DGT (Guide Table)\n");
+  _unur_string_append(info,"\n");
+
+  /* performance */
+  _unur_string_append(info,"performance characteristics:\n");
+  _unur_string_append(info,"   E [#interations] = %g\n", 1+1./GEN->guide_factor);
+  _unur_string_append(info,"\n");
+
+  /* parameters */
+  if (help) {
+    _unur_string_append(info,"parameters:\n");
+    _unur_string_append(info,"   guidefactor = %g  %s\n", GEN->guide_factor,
+			(gen->set & DGT_SET_GUIDEFACTOR) ? "" : "[default]");
+    _unur_string_append(info,"\n");
+  }
+
+  /* Hints */
+  /*   if (help) { */
+  /*     _unur_string_append(info,"\n"); */
+  /*   } */
+
+} /* end of _unur_dgt_info() */
+
+/*---------------------------------------------------------------------------*/
+#endif   /* end UNUR_ENABLE_INFO */
 /*---------------------------------------------------------------------------*/

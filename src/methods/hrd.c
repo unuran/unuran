@@ -63,6 +63,10 @@
 #include "hrd.h"
 #include "hrd_struct.h"
 
+#ifdef UNUR_ENABLE_INFO
+#  include <tests/unuran_tests.h>
+#endif
+
 /*---------------------------------------------------------------------------*/
 /* Constants                                                                 */
 
@@ -141,6 +145,13 @@ static void _unur_hrd_debug_init( const struct unur_gen *gen );
 static void _unur_hrd_debug_sample( const struct unur_gen *gen, double x, int i );
 /*---------------------------------------------------------------------------*/
 /* trace sampling.                                                           */
+/*---------------------------------------------------------------------------*/
+#endif
+
+#ifdef UNUR_ENABLE_INFO
+static void _unur_hrd_info( struct unur_gen *gen, int help );
+/*---------------------------------------------------------------------------*/
+/* create info string.                                                       */
 /*---------------------------------------------------------------------------*/
 #endif
 
@@ -413,6 +424,11 @@ _unur_hrd_create( struct unur_par *par )
 
   /* initialize variables */
   GEN->left_border = 0.;             /* left border of domain                 */
+
+#ifdef UNUR_ENABLE_INFO
+  /* set function for creating info string */
+  gen->info = _unur_hrd_info;
+#endif
 
   /* return pointer to (almost empty) generator object */
   return gen;
@@ -723,4 +739,63 @@ _unur_hrd_debug_sample( const struct unur_gen *gen, double x, int i )
 
 /*---------------------------------------------------------------------------*/
 #endif   /* end UNUR_ENABLE_LOGGING */
+/*---------------------------------------------------------------------------*/
+
+
+/*---------------------------------------------------------------------------*/
+#ifdef UNUR_ENABLE_INFO
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_hrd_info( struct unur_gen *gen, int help )
+     /*----------------------------------------------------------------------*/
+     /* create character string that contains information about the          */
+     /* given generator object.                                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*   help ... whether to print additional comments                      */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_string *info = gen->infostr;
+  struct unur_distr *distr = gen->distr;
+  int samplesize = 10000;
+  double rc;
+
+  /* generator ID */
+  _unur_string_append(info,"generator ID: %s\n\n", gen->genid);
+  
+  /* distribution */
+  _unur_string_append(info,"distribution:\n");
+  _unur_string_append(info,"   name      = %s\n", distr->name);
+  _unur_string_append(info,"   type      = continuous univariate distribution\n");
+  _unur_string_append(info,"   functions = HR\n");
+  _unur_string_append(info,"   domain    = (%g, %g)\n", DISTR.domain[0],DISTR.domain[1]);
+  _unur_string_append(info,"\n");
+
+  /* method */
+  _unur_string_append(info,"method: HRD (Hazard Rate Decreasing)\n");
+  _unur_string_append(info,"\n");
+
+  /* performance */
+  _unur_string_append(info,"performance characteristics:\n");
+  rc = 0.01 * (unur_test_count_urn(gen,samplesize,0,NULL)/(samplesize/100));
+  _unur_string_append(info,"   E[#interations] = %g  [approx.]\n", rc);
+  _unur_string_append(info,"\n");
+
+  /* parameters */
+    if (help) {
+      _unur_string_append(info,"parameters: none\n");
+      _unur_string_append(info,"\n");
+    }
+
+  /* Hints */
+  /*   if (help) { */
+  /*     _unur_string_append(info,"\n"); */
+  /*   } */
+
+} /* end of _unur_hrd_info() */
+
+/*---------------------------------------------------------------------------*/
+#endif   /* end UNUR_ENABLE_INFO */
 /*---------------------------------------------------------------------------*/

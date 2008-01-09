@@ -137,6 +137,13 @@ static void _unur_dss_debug_init( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 #endif
 
+#ifdef UNUR_ENABLE_INFO
+static void _unur_dss_info( struct unur_gen *gen, int help );
+/*---------------------------------------------------------------------------*/
+/* create info string.                                                       */
+/*---------------------------------------------------------------------------*/
+#endif
+
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
@@ -335,6 +342,11 @@ _unur_dss_create( struct unur_par *par )
   gen->destroy = _unur_dss_free;
   gen->clone = _unur_dss_clone;
   gen->reinit = _unur_dss_reinit;
+
+#ifdef UNUR_ENABLE_INFO
+  /* set function for creating info string */
+  gen->info = _unur_dss_info;
+#endif
 
   /* return pointer to (almost empty) generator object */
   return gen;
@@ -558,4 +570,69 @@ _unur_dss_debug_init( struct unur_gen *gen )
 
 /*---------------------------------------------------------------------------*/
 #endif   /* end UNUR_ENABLE_LOGGING */
+/*---------------------------------------------------------------------------*/
+
+
+/*---------------------------------------------------------------------------*/
+#ifdef UNUR_ENABLE_INFO
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_dss_info( struct unur_gen *gen, int help )
+     /*----------------------------------------------------------------------*/
+     /* create character string that contains information about the          */
+     /* given generator object.                                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*   help ... whether to print additional comments                      */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_string *info = gen->infostr;
+  struct unur_distr *distr = gen->distr;
+
+  /* generator ID */
+  _unur_string_append(info,"generator ID: %s\n\n", gen->genid);
+  
+  /* distribution */
+  _unur_string_append(info,"distribution:\n");
+  _unur_string_append(info,"   name      = %s\n", distr->name);
+  _unur_string_append(info,"   type      = continuous univariate distribution\n");
+  switch(gen->variant) {
+  case DSS_VARIANT_PV:
+    _unur_string_append(info,"   functions = PV [lenght=%d]\n",DISTR.domain[1]-DISTR.domain[0]+1);
+    break;
+  case DSS_VARIANT_PMF:
+    _unur_string_append(info,"   functions = PMF\n");
+    break;
+  case DSS_VARIANT_CDF:
+    _unur_string_append(info,"   functions = CDF\n");
+    break;
+  }
+  _unur_string_append(info,"   domain    = (%d, %d)\n", DISTR.domain[0],DISTR.domain[1]);
+  _unur_string_append(info,"\n");
+
+  /* method */
+  _unur_string_append(info,"method: DSS (Simple Sequential Search)\n");
+  _unur_string_append(info,"\n");
+
+  /* performance */
+  _unur_string_append(info,"performance characteristics: slow\n");
+  _unur_string_append(info,"\n");
+
+  /* parameters */
+  if (help) {
+    _unur_string_append(info,"parameters: none\n");
+    _unur_string_append(info,"\n");
+  }
+
+  /* Hints */
+  /*   if (help) { */
+  /*     _unur_string_append(info,"\n"); */
+  /*   } */
+
+} /* end of _unur_dss_info() */
+
+/*---------------------------------------------------------------------------*/
+#endif   /* end UNUR_ENABLE_INFO */
 /*---------------------------------------------------------------------------*/

@@ -45,6 +45,9 @@
  *                                                                           *
  *   REFERENCES:                                                             *
  *                                                                           *
+ *   [1] W. Hoermann, J. Leydold, and G. Derflinger (2007):                  *
+ *       ACM Trans. Model. Comput. Simul. 17(4), pp.18.                      *
+ *                                                                           *
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
@@ -52,12 +55,17 @@
 #include <unur_source.h>
 #include <distr/distr.h>
 #include <distr/distr_source.h>
+#include <distr/cont.h>
 #include <utils/unur_fp_source.h>
 #include <urng/urng.h>
 #include "unur_methods_source.h"
 #include "x_gen_source.h"
 #include "itdr.h"
 #include "itdr_struct.h"
+
+#ifdef UNUR_ENABLE_INFO
+#  include <tests/unuran_tests.h>
+#endif
 
 /*---------------------------------------------------------------------------*/
 /* Constants:                                                                */
@@ -174,6 +182,13 @@ static void _unur_itdr_debug_init( const struct unur_gen *gen, int error );
 
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed.                 */
+/*---------------------------------------------------------------------------*/
+#endif
+
+#ifdef UNUR_ENABLE_INFO
+static void _unur_itdr_info( struct unur_gen *gen, int help );
+/*---------------------------------------------------------------------------*/
+/* create info string.                                                       */
 /*---------------------------------------------------------------------------*/
 #endif
 
@@ -747,6 +762,11 @@ _unur_itdr_create( struct unur_par *par )
   GEN->sign = 1.;          /* region: +1 .. (-oo,0], -1 .. [0,oo) */
   GEN->bd_right = INFINITY; /* right boundary of shifted domain   */
   
+#ifdef UNUR_ENABLE_INFO
+  /* set function for creating info string */
+  gen->info = _unur_itdr_info;
+#endif
+
   /* return pointer to (almost empty) generator object */
   return gen;
 
@@ -1599,3 +1619,79 @@ _unur_itdr_debug_init( const struct unur_gen *gen, int error )
 /*---------------------------------------------------------------------------*/
 #endif   /* end UNUR_ENABLE_LOGGING */
 /*---------------------------------------------------------------------------*/
+
+
+/*---------------------------------------------------------------------------*/
+#ifdef UNUR_ENABLE_INFO
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_itdr_info( struct unur_gen *gen, int help )
+     /*----------------------------------------------------------------------*/
+     /* create character string that contains information about the          */
+     /* given generator object.                                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*   help ... whether to print additional comments                      */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_string *info = gen->infostr;
+  struct unur_distr *distr = gen->distr;
+  int samplesize = 10000;
+  double rc;
+
+  /* generator ID */
+  _unur_string_append(info,"generator ID: %s\n\n", gen->genid);
+  
+  /* distribution */
+  _unur_string_append(info,"distribution:\n");
+  _unur_string_append(info,"   name       = %s\n", distr->name);
+  _unur_string_append(info,"   type       = continuous univariate distribution\n");
+  _unur_string_append(info,"   functions  = PDF dPDF\n");
+  _unur_string_append(info,"   domain     = (%g, %g)\n", DISTR.domain[0],DISTR.domain[1]);
+  _unur_string_append(info,"   pole /mode = %g\n", unur_distr_cont_get_center(distr));
+  _unur_string_append(info,"\n");
+
+  /* method */
+  _unur_string_append(info,"method: ITDR (Inverse Transformed Density Rejection -- 2 point method)\n");
+  _unur_string_append(info,"\n");
+
+  /* performance */
+  _unur_string_append(info,"performance characteristics:\n");
+  _unur_string_append(info,"   area(hat) = %g  [ = %g + %g + %g ]\n",
+		      GEN->Atot, GEN->Ap, GEN->Ac, GEN->At);
+  _unur_string_append(info,"   rejection constant = ");
+  if (distr->set & UNUR_DISTR_SET_PDFAREA) {
+    rc = GEN->Atot/DISTR.area;
+    _unur_string_append(info,"%g\n", rc);
+  }
+  else {
+    rc = 0.01 * (unur_test_count_urn(gen,samplesize,0,NULL)/(samplesize/50));
+    _unur_string_append(info,"%g  [approx. ]\n", rc);
+  }
+  _unur_string_append(info,"\n");
+
+  /* parameters */
+  if (help) {
+    _unur_string_append(info,"parameters:\n");
+    _unur_string_append(info,"   cp = %g  %s\n", GEN->cp,
+			(gen->set & ITDR_SET_CP) ? "" : " [computed]");
+    _unur_string_append(info,"   ct = %g  %s\n", GEN->cp,
+			(gen->set & ITDR_SET_CT) ? "" : " [computed]");
+    _unur_string_append(info,"   xi = %g  %s\n", GEN->xi,
+			(gen->set & ITDR_SET_XI) ? "" : " [computed]");
+    _unur_string_append(info,"\n");
+  }
+
+  /* Hints */
+  /*   if (help) { */
+  /*     _unur_string_append(info,"\n"); */
+  /*   } */
+
+} /* end of _unur_itdr_info() */
+
+/*---------------------------------------------------------------------------*/
+#endif   /* end UNUR_ENABLE_INFO */
+/*---------------------------------------------------------------------------*/
+

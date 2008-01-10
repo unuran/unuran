@@ -943,7 +943,8 @@ _unur_dsrou_info( struct unur_gen *gen, int help )
   _unur_string_append(info,"   type      = discrete univariate distribution\n");
   _unur_string_append(info,"   functions = PMF\n");
   _unur_string_append(info,"   domain    = (%d, %d)\n", DISTR.domain[0],DISTR.domain[1]);
-  _unur_string_append(info,"   mode      = %d\n", DISTR.mode);
+  _unur_string_append(info,"   mode      = %d   %s\n", DISTR.mode,
+                      (distr->set & UNUR_DISTR_SET_MODE_APPROX) ? "[numeric.]" : "");
   _unur_string_append(info,"   sum(PMF)  = %g\n", DISTR.sum);
   if (gen->set & DSROU_SET_CDFMODE)
     _unur_string_append(info,"   F(mode)   = %g\n", GEN->Fmode);

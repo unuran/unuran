@@ -1416,7 +1416,7 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
   if (x[2] <= x[0] + 1) {
     /* we have one or two points only */
     DISTR.mode = (fx[0] <= fx[2]) ? x[2] : x[0];
-    distr->set |= UNUR_DISTR_SET_MODE;
+    distr->set |= UNUR_DISTR_SET_MODE | UNUR_DISTR_SET_MODE_APPROX ; 
     return UNUR_SUCCESS;
   }
 
@@ -1486,7 +1486,7 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
     if (x[0]+1 >= x[1] && x[1] >= x[2]-1) {
       DISTR.mode = (fx[0]>fx[2]) ? x[0] : x[2];
       if (fx[1]>DISTR.mode) DISTR.mode = x[1];
-      distr->set |= UNUR_DISTR_SET_MODE;
+      distr->set |= UNUR_DISTR_SET_MODE | UNUR_DISTR_SET_MODE_APPROX ; 
       return UNUR_SUCCESS;
     } 
 
@@ -1528,7 +1528,7 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
 	fxnew = unur_distr_discr_eval_pv(xnew,distr);
 	if (_unur_FP_less(fxnew,fx[1])) {
 	  DISTR.mode = x[1];
-	  distr->set |= UNUR_DISTR_SET_MODE;
+	  distr->set |= UNUR_DISTR_SET_MODE | UNUR_DISTR_SET_MODE_APPROX ; 
 	  return UNUR_SUCCESS;
 	}
       }
@@ -1549,7 +1549,7 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
   }   /* --- end while(1) --- */
 
   /* changelog */
-  distr->set |= UNUR_DISTR_SET_MODE;
+  distr->set |= UNUR_DISTR_SET_MODE | UNUR_DISTR_SET_MODE_APPROX ; 
 
   /* o.k. */
   return UNUR_SUCCESS;

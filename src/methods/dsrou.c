@@ -950,11 +950,14 @@ _unur_dsrou_info( struct unur_gen *gen, int help )
     _unur_string_append(info,"   F(mode)   = %g\n", GEN->Fmode);
   else
     _unur_string_append(info,"   F(mode)   = [unknown]\n");
-
-  /*   if (help) { */
-  /*   } */
-
   _unur_string_append(info,"\n");
+
+  if (help) {
+    if ( distr->set & UNUR_DISTR_SET_MODE_APPROX ) 
+      _unur_string_append(info,"[ Hint: %s ]\n",
+			  "You may provide the \"mode\"");
+    _unur_string_append(info,"\n");
+  }
 
   /* method */
   _unur_string_append(info,"method: DSROU (Discrete Simple Ratio-Of-Uniforms)\n");

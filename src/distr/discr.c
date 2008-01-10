@@ -1421,10 +1421,12 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
   }
 
   /* --- middle point of bracket ------------------------------------------- */
-  /* we have to find a point where the PMF is non-zero */
+  /* we have to find a middle point where the PMF is non-zero */
 
   /* first trial: mean of boundary points */
-  x[1]  = (x[0] + x[2])/2;
+  x[1]  = (x[0]/2) + (x[2]/2);
+  if (x[1]<=x[0]) x[1]++;
+  if (x[1]>=x[2]) x[1]--;
   fx[1] = unur_distr_discr_eval_pv(x[1], distr); 
 
   /* second trial: start search from left boundary */

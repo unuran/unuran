@@ -55,7 +55,6 @@
 #include <unur_source.h>
 #include <distr/distr.h>
 #include <distr/distr_source.h>
-#include <distr/cont.h>
 #include <utils/unur_fp_source.h>
 #include <urng/urng.h>
 #include "unur_methods_source.h"
@@ -1650,7 +1649,7 @@ _unur_itdr_info( struct unur_gen *gen, int help )
   _unur_string_append(info,"   type       = continuous univariate distribution\n");
   _unur_string_append(info,"   functions  = PDF dPDF\n");
   _unur_string_append(info,"   domain     = (%g, %g)\n", DISTR.domain[0],DISTR.domain[1]);
-  _unur_string_append(info,"   pole /mode = %g\n", unur_distr_cont_get_center(distr));
+  _unur_string_append(info,"   pole /mode = %g\n", DISTR.mode);
   _unur_string_append(info,"\n");
 
   /* method */
@@ -1694,4 +1693,3 @@ _unur_itdr_info( struct unur_gen *gen, int help )
 /*---------------------------------------------------------------------------*/
 #endif   /* end UNUR_ENABLE_INFO */
 /*---------------------------------------------------------------------------*/
-

@@ -66,7 +66,7 @@ _unur_tabl_info( struct unur_gen *gen, int help )
     _unur_string_append(info,"   [truncated from (%g, %g)]", DISTR.domain[0],DISTR.domain[1]);
   }
   _unur_string_append(info,"\n");
-  _unur_string_append(info,"   mode      = %g   %s\n", unur_distr_cont_get_center(distr),
+  _unur_string_append(info,"   mode      = %g   %s\n", unur_distr_cont_get_mode(distr),
 		      (distr->set & UNUR_DISTR_SET_MODE_APPROX) ? "[numeric.]" : "");
   _unur_string_append(info,"   area(PDF) = ");
   if (gen->distr->set & UNUR_DISTR_SET_PDFAREA)

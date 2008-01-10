@@ -597,7 +597,7 @@ _unur_dss_info( struct unur_gen *gen, int help )
   /* distribution */
   _unur_string_append(info,"distribution:\n");
   _unur_string_append(info,"   name      = %s\n", distr->name);
-  _unur_string_append(info,"   type      = continuous univariate distribution\n");
+  _unur_string_append(info,"   type      = discrete univariate distribution\n");
   switch(gen->variant) {
   case DSS_VARIANT_PV:
     _unur_string_append(info,"   functions = PV [lenght=%d]\n",DISTR.domain[1]-DISTR.domain[0]+1);

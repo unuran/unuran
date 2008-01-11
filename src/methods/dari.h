@@ -36,7 +36,7 @@
  *****************************************************************************/
 
 /* 
-   =METHOD   DARI   discrete automatic rejection inversion
+   =METHOD   DARI   Discrete Automatic Rejection Inversion
 
    =UP  Methods_for_DISCR
 

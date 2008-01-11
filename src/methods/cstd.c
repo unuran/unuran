@@ -83,6 +83,10 @@
 #include "cstd.h"
 #include "cstd_struct.h"
 
+#ifdef UNUR_ENABLE_INFO
+#  include <tests/unuran_tests.h>
+#endif
+
 /*---------------------------------------------------------------------------*/
 /* Variants: none                                                            */
 
@@ -163,7 +167,13 @@ static void _unur_cstd_debug_chg_truncated( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print new (changed) domain of (truncated) distribution                    */
 /*---------------------------------------------------------------------------*/
+#endif
 
+#ifdef UNUR_ENABLE_INFO
+static void _unur_cstd_info( struct unur_gen *gen, int help );
+/*---------------------------------------------------------------------------*/
+/* create info string.                                                       */
+/*---------------------------------------------------------------------------*/
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -539,6 +549,11 @@ _unur_cstd_create( struct unur_par *par )
 
   /* GEN->is_inversion is set in _unur_cstd_init() */
 
+#ifdef UNUR_ENABLE_INFO
+  /* set function for creating info string */
+  gen->info = _unur_cstd_info;
+#endif
+
   /* return pointer to (almost empty) generator object */
   return gen;
   
@@ -776,3 +791,67 @@ _unur_cstd_debug_chg_truncated( struct unur_gen *gen )
 #endif   /* end UNUR_ENABLE_LOGGING */
 /*---------------------------------------------------------------------------*/
 
+
+/*---------------------------------------------------------------------------*/
+#ifdef UNUR_ENABLE_INFO
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_cstd_info( struct unur_gen *gen, int help )
+     /*----------------------------------------------------------------------*/
+     /* create character string that contains information about the          */
+     /* given generator object.                                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*   help ... whether to print additional comments                      */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_string *info = gen->infostr;
+  struct unur_distr *distr = gen->distr;
+  int samplesize = 10000;
+
+  /* generator ID */
+  _unur_string_append(info,"generator ID: %s\n\n", gen->genid);
+  
+  /* distribution */
+  _unur_string_append(info,"distribution:\n");
+  _unur_string_append(info,"   name      = %s\n", distr->name);
+  _unur_string_append(info,"   type      = continuous univariate distribution\n");
+  _unur_string_append(info,"   domain    = (%g, %g)\n", DISTR.domain[0],DISTR.domain[1]);
+  _unur_string_append(info,"\n");
+
+  /*   if (help) { */
+  /*     _unur_string_append(info,"\n"); */
+  /*   } */
+  
+  /* method */
+  _unur_string_append(info,"method: CSTD (special generator for Continuous STandarD distribution)\n");
+  _unur_string_append(info,"   variant = %d  %s\n", gen->variant,
+		      (GEN->is_inversion)?"[implements inversion method]" : "");
+  _unur_string_append(info,"\n");
+
+  /* performance */
+  _unur_string_append(info,"performance characteristics:\n");
+  _unur_string_append(info,"   E [#urn] = %g  [approx.]\n",
+		      0.01 * (unur_test_count_urn(gen,samplesize,0,NULL)/(samplesize/100)));
+  _unur_string_append(info,"\n");
+
+  /* parameters */
+  if (help) {
+    _unur_string_append(info,"parameters:\n");
+    _unur_string_append(info,"   variant = %d  %s\n", gen->variant,
+			(gen->set & CSTD_SET_VARIANT) ? "" : "[default]");
+    _unur_string_append(info,"\n");
+  }
+
+  /* Hints */
+  /*   if (help) { */
+  /*     _unur_string_append(info,"\n"); */
+  /*   } */
+
+} /* end of _unur_cstd_info() */
+
+/*---------------------------------------------------------------------------*/
+#endif   /* end UNUR_ENABLE_INFO */
+/*---------------------------------------------------------------------------*/

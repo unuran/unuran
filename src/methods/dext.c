@@ -48,6 +48,10 @@
 #include "dext.h"
 #include "dext_struct.h"
 
+#ifdef UNUR_ENABLE_INFO
+#  include <tests/unuran_tests.h>
+#endif
+
 /*---------------------------------------------------------------------------*/
 /* Variants: none                                                            */
 
@@ -108,7 +112,13 @@ static void _unur_dext_debug_init( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed.                 */
 /*---------------------------------------------------------------------------*/
+#endif
 
+#ifdef UNUR_ENABLE_INFO
+static void _unur_dext_info( struct unur_gen *gen, int help );
+/*---------------------------------------------------------------------------*/
+/* create info string.                                                       */
+/*---------------------------------------------------------------------------*/
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -471,6 +481,11 @@ _unur_dext_create( struct unur_par *par )
   /* clean up */
   if (distr) _unur_distr_free(distr);
 
+#ifdef UNUR_ENABLE_INFO
+  /* set function for creating info string */
+  gen->info = _unur_dext_info;
+#endif
+
   /* return pointer to (almost empty) generator object */
   return gen;
   
@@ -598,5 +613,64 @@ _unur_dext_debug_init( struct unur_gen *gen )
 
 /*---------------------------------------------------------------------------*/
 #endif   /* end UNUR_ENABLE_LOGGING */
+/*---------------------------------------------------------------------------*/
+
+
+/*---------------------------------------------------------------------------*/
+#ifdef UNUR_ENABLE_INFO
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_dext_info( struct unur_gen *gen, int help )
+     /*----------------------------------------------------------------------*/
+     /* create character string that contains information about the          */
+     /* given generator object.                                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*   help ... whether to print additional comments                      */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_string *info = gen->infostr;
+  int samplesize = 10000;
+
+  /* generator ID */
+  _unur_string_append(info,"generator ID: %s\n\n", gen->genid);
+  
+  /* distribution */
+  _unur_string_append(info,"distribution:\n");
+  _unur_distr_info_typename(gen);
+  _unur_string_append(info,"   domain    = (%d, %d)\n", DISTR.domain[0],DISTR.domain[1]);
+  _unur_string_append(info,"\n");
+
+  /*   if (help) { */
+  /*     _unur_string_append(info,"\n"); */
+  /*   } */
+  
+  /* method */
+  _unur_string_append(info,"method: DEXT (wrapper for Discrete EXTernal generators)\n");
+  _unur_string_append(info,"\n");
+
+  /* performance */
+  _unur_string_append(info,"performance characteristics:\n");
+  _unur_string_append(info,"   E [#urn] = %g  [approx.]\n",
+		      0.01 * (unur_test_count_urn(gen,samplesize,0,NULL)/(samplesize/100)));
+  _unur_string_append(info,"\n");
+
+  /* parameters */
+  if (help) {
+    _unur_string_append(info,"parameters: none\n");
+    _unur_string_append(info,"\n");
+  }
+
+  /* Hints */
+  /*   if (help) { */
+  /*     _unur_string_append(info,"\n"); */
+  /*   } */
+
+} /* end of _unur_dext_info() */
+
+/*---------------------------------------------------------------------------*/
+#endif   /* end UNUR_ENABLE_INFO */
 /*---------------------------------------------------------------------------*/
 

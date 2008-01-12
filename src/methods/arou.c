@@ -2814,8 +2814,7 @@ _unur_arou_info( struct unur_gen *gen, int help )
   
   /* distribution */
   _unur_string_append(info,"distribution:\n");
-  _unur_string_append(info,"   name      = %s\n", distr->name);
-  _unur_string_append(info,"   type      = continuous univariate distribution\n");
+  _unur_distr_info_typename(gen);
   _unur_string_append(info,"   functions = PDF dPDF\n");
   _unur_string_append(info,"   domain    = (%g, %g)\n", DISTR.domain[0],DISTR.domain[1]);
   _unur_string_append(info,"   center    = %g", unur_distr_cont_get_center(distr));

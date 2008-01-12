@@ -1988,8 +1988,7 @@ _unur_hinv_info( struct unur_gen *gen, int help )
   
   /* distribution */
   _unur_string_append(info,"distribution:\n");
-  _unur_string_append(info,"   name      = %s\n", distr->name);
-  _unur_string_append(info,"   type      = continuous univariate distribution\n");
+  _unur_distr_info_typename(gen);
   _unur_string_append(info,"   functions = CDF");
   if (GEN->order > 1)
     _unur_string_append(info," PDF");
@@ -2036,7 +2035,7 @@ _unur_hinv_info( struct unur_gen *gen, int help )
   /* parameters */
   if (help) {
     _unur_string_append(info,"parameters:\n");
-    _unur_string_append(info,"          order = %d  %s\n", GEN->order,
+    _unur_string_append(info,"   order = %d  %s\n", GEN->order,
  			(gen->set & HINV_SET_ORDER) ? "" : "[default]");
     _unur_string_append(info,"   u_resolution = %g  %s\n", GEN->u_resolution,
  			(gen->set & HINV_SET_U_RESOLUTION) ? "" : "[default]");

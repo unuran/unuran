@@ -175,6 +175,14 @@ void _unur_distr_discr_debug( const UNUR_DISTR *distribution, const char *genid,
 /* write info about distribution into logfile                                */
 
 /*---------------------------------------------------------------------------*/
+/* routines for creating info strings                                        */
+#ifdef UNUR_ENABLE_INFO
+
+void _unur_distr_info_typename( struct unur_gen *gen );
+/* write string that contains type and name of given distribution object     */
+
+#endif
+/*---------------------------------------------------------------------------*/
 /* auxiliary routines                                                        */
 
 /* test whether all marginals are equal or not  (returns TRUE or FALSE)      */

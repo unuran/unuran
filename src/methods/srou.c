@@ -1536,8 +1536,7 @@ _unur_srou_info( struct unur_gen *gen, int help )
   
   /* distribution */
   _unur_string_append(info,"distribution:\n");
-  _unur_string_append(info,"   name      = %s\n", distr->name);
-  _unur_string_append(info,"   type      = continuous univariate distribution\n");
+  _unur_distr_info_typename(gen);
   _unur_string_append(info,"   functions = PDF\n");
   _unur_string_append(info,"   domain    = (%g, %g)\n", DISTR.domain[0],DISTR.domain[1]);
   _unur_string_append(info,"   mode      = %g   %s\n", DISTR.mode,
@@ -1593,7 +1592,7 @@ _unur_srou_info( struct unur_gen *gen, int help )
   /* parameters */
   if (help) {
     _unur_string_append(info,"parameters:\n");
-    _unur_string_append(info,"           r = %g  %s\n", GEN->r,
+    _unur_string_append(info,"     r = %g  %s\n", GEN->r,
 			(gen->set & SROU_SET_R) ? "" : "[default]");
     if (gen->set & SROU_SET_CDFMODE)
       _unur_string_append(info,"   cdfatmode = %g\n", GEN->Fmode); 

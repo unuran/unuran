@@ -16,7 +16,7 @@ endif
 libdistr_la_SOURCES = \
  $(DEPRECATED_FILES) \
 \
- distr.c   distr.h  distr_struct.h distr_source.h \
+ distr.c   distr.h  distr_info.c distr_struct.h distr_source.h \
  cont.c    cont.h \
  corder.c  corder.h \
  cxtrans.c cxtrans.h \

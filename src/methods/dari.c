@@ -1196,8 +1196,7 @@ _unur_dari_info( struct unur_gen *gen, int help )
   
   /* distribution */
   _unur_string_append(info,"distribution:\n");
-  _unur_string_append(info,"   name      = %s\n", distr->name);
-  _unur_string_append(info,"   type      = discrete univariate distribution\n");
+  _unur_distr_info_typename(gen);
   _unur_string_append(info,"   functions = PMF\n");
   _unur_string_append(info,"   domain    = (%d, %d)\n", DISTR.domain[0],DISTR.domain[1]);
   _unur_string_append(info,"   mode      = %d   %s\n", DISTR.mode,

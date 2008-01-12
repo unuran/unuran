@@ -1083,8 +1083,7 @@ _unur_nrou_info( struct unur_gen *gen, int help )
   
   /* distribution */
   _unur_string_append(info,"distribution:\n");
-  _unur_string_append(info,"   name      = %s\n", distr->name);
-  _unur_string_append(info,"   type      = continuous univariate distribution\n");
+  _unur_distr_info_typename(gen);
   _unur_string_append(info,"   functions = PDF\n");
   _unur_string_append(info,"   domain    = (%g, %g)\n", DISTR.domain[0],DISTR.domain[1]);
   _unur_string_append(info,"   center    = %g", unur_distr_cont_get_center(distr));
@@ -1126,13 +1125,13 @@ _unur_nrou_info( struct unur_gen *gen, int help )
   /* parameters */
   if (help) {
     _unur_string_append(info,"parameters:\n");
-    _unur_string_append(info,"        r = %g  %s\n", GEN->r,
+    _unur_string_append(info,"   r = %g  %s\n", GEN->r,
 			(gen->set & NROU_SET_R) ? "" : "[default]");
     _unur_string_append(info,"   center = %g  %s\n",GEN->center,
 			(gen->set & NROU_SET_CENTER) ? "" : "[default]");
-    _unur_string_append(info,"        v = %g  %s\n", GEN->vmax,
+    _unur_string_append(info,"   v = %g  %s\n", GEN->vmax,
 			(gen->set & NROU_SET_V) ? "" : "[numeric.]");
-    _unur_string_append(info,"        u = (%g, %g)  %s\n", GEN->umin,GEN->umax,
+    _unur_string_append(info,"   u = (%g, %g)  %s\n", GEN->umin,GEN->umax,
 			(gen->set & NROU_SET_U) ? "" : "[numeric.]");
     _unur_string_append(info,"\n");
   }

@@ -1922,7 +1922,6 @@ _unur_ninv_info( struct unur_gen *gen, int help )
      /*----------------------------------------------------------------------*/
 {
   struct unur_string *info = gen->infostr;
-  struct unur_distr *distr = gen->distr;
   double n_iter;
   int samplesize = 10000;
 
@@ -1933,8 +1932,7 @@ _unur_ninv_info( struct unur_gen *gen, int help )
   
   /* distribution */
   _unur_string_append(info,"distribution:\n");
-  _unur_string_append(info,"   name      = %s\n", distr->name);
-  _unur_string_append(info,"   type      = continuous univariate distribution\n");
+  _unur_distr_info_typename(gen);
   _unur_string_append(info,"   functions = CDF");
   if (use_newton) 
     _unur_string_append(info," PDF");

@@ -57,8 +57,7 @@ _unur_tdr_info( struct unur_gen *gen, int help )
 
   /* distribution */
   _unur_string_append(info,"distribution:\n");
-  _unur_string_append(info,"   name      = %s\n", distr->name);
-  _unur_string_append(info,"   type      = continuous univariate distribution\n");
+  _unur_distr_info_typename(gen);
   _unur_string_append(info,"   functions = PDF dPDF\n");
   _unur_string_append(info,"   domain    = (%g, %g)", DISTR.trunc[0],DISTR.trunc[1]);
   if (gen->distr->set & UNUR_DISTR_SET_TRUNCATED) {
@@ -124,15 +123,15 @@ _unur_tdr_info( struct unur_gen *gen, int help )
     _unur_string_append(info,"parameters:\n");
     switch (gen->variant & TDR_VARMASK_VARIANT) {
     case TDR_VARIANT_GW:
-      _unur_string_append(info,"      variant_gw = on\n"); break;
+      _unur_string_append(info,"   variant_gw = on\n"); break;
     case TDR_VARIANT_PS:
-      _unur_string_append(info,"      variant_ps = on  [default]\n"); break;
+      _unur_string_append(info,"   variant_ps = on  [default]\n"); break;
     case TDR_VARIANT_IA:
-      _unur_string_append(info,"      variant_ia = on\n"); break;
+      _unur_string_append(info,"   variant_ia = on\n"); break;
     }
-    _unur_string_append(info,"               c = %g  %s\n", GEN->c_T,
+    _unur_string_append(info,"   c = %g  %s\n", GEN->c_T,
 			(gen->set & TDR_SET_C) ? "" : "[default]");
-    _unur_string_append(info,"    max_sqhratio = %g  %s\n", GEN->max_ratio,
+    _unur_string_append(info,"   max_sqhratio = %g  %s\n", GEN->max_ratio,
 			(gen->set & TDR_SET_MAX_SQHRATIO) ? "" : "[default]");
     _unur_string_append(info,"   max_intervals = %d  %s\n", GEN->max_ivs_info,
 			(gen->set & TDR_SET_MAX_IVS) ? "" : "[default]");

@@ -598,7 +598,7 @@ _unur_dss_info( struct unur_gen *gen, int help )
   _unur_distr_info_typename(gen);
   switch(gen->variant) {
   case DSS_VARIANT_PV:
-    _unur_string_append(info,"   functions = PV [lenght=%d]\n",DISTR.domain[1]-DISTR.domain[0]+1);
+    _unur_string_append(info,"   functions = PV  [length=%d]\n",DISTR.domain[1]-DISTR.domain[0]+1);
     break;
   case DSS_VARIANT_PMF:
     _unur_string_append(info,"   functions = PMF\n");

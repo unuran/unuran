@@ -64,22 +64,21 @@ _unur_distr_info_typename( struct unur_gen *gen )
     _unur_string_append(info,"continuous univariate distribution\n");
     return;
   case UNUR_DISTR_CEMP:
-    _unur_string_append(info,"continuous empirical univariate distribution");
+    _unur_string_append(info,"continuous empirical univariate distribution\n");
     return;
   case UNUR_DISTR_CVEC:
-    _unur_string_append(info,"continuous multivariate distribution");
+    _unur_string_append(info,"continuous multivariate distribution\n");
     return;
   case UNUR_DISTR_CVEMP:
-    _unur_string_append(info,"continuous empirical multivariate distribution");
+    _unur_string_append(info,"continuous empirical multivariate distribution\n");
     return;
   case UNUR_DISTR_DISCR:
     _unur_string_append(info,"discrete univariate distribution\n");
     return;
   case UNUR_DISTR_MATR:
-    _unur_string_append(info,"matrix distribution");
+    _unur_string_append(info,"matrix distribution\n");
     return;
   default:
-    /* should not happen error! */
     _unur_error(distr->name,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
   }
 

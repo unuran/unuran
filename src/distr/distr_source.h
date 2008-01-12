@@ -146,6 +146,7 @@ struct unur_distr *_unur_distr_discr_clone( const struct unur_distr *distr );
 
 /*---------------------------------------------------------------------------*/
 /* debuging routines for distributions                                       */
+#ifdef UNUR_ENABLE_LOGGING
 
 void _unur_distr_cont_debug( const UNUR_DISTR *distribution, const char *genid );
 /* write info about distribution into logfile                                */
@@ -174,6 +175,7 @@ void _unur_distr_cvemp_debug( const UNUR_DISTR *distribution, const char *genid,
 void _unur_distr_discr_debug( const UNUR_DISTR *distribution, const char *genid, unsigned printvector );
 /* write info about distribution into logfile                                */
 
+#endif
 /*---------------------------------------------------------------------------*/
 /* routines for creating info strings                                        */
 #ifdef UNUR_ENABLE_INFO

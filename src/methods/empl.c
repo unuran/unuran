@@ -123,6 +123,13 @@ static void _unur_empl_debug_init( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 #endif
 
+#ifdef UNUR_ENABLE_INFO
+static void _unur_empl_info( struct unur_gen *gen, int help );
+/*---------------------------------------------------------------------------*/
+/* create info string.                                                       */
+/*---------------------------------------------------------------------------*/
+#endif
+
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
@@ -303,6 +310,11 @@ _unur_empl_create( struct unur_par *par )
   GEN->observ   = DISTR.sample;          /* observations in distribution object */
   GEN->n_observ = DISTR.n_sample;        /* sample size */
 
+#ifdef UNUR_ENABLE_INFO
+  /* set function for creating info string */
+  gen->info = _unur_empl_info;
+#endif
+
   /* return pointer to (almost empty) generator object */
   return gen;
 
@@ -450,4 +462,60 @@ _unur_empl_debug_init( const struct unur_gen *gen )
 
 /*---------------------------------------------------------------------------*/
 #endif   /* end UNUR_ENABLE_LOGGING */
+/*---------------------------------------------------------------------------*/
+
+
+/*---------------------------------------------------------------------------*/
+#ifdef UNUR_ENABLE_INFO
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_empl_info( struct unur_gen *gen, int help )
+     /*----------------------------------------------------------------------*/
+     /* create character string that contains information about the          */
+     /* given generator object.                                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*   help ... whether to print additional comments                      */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_string *info = gen->infostr;
+
+  /* generator ID */
+  _unur_string_append(info,"generator ID: %s\n\n", gen->genid);
+  
+  /* distribution */
+  _unur_string_append(info,"distribution:\n");
+  _unur_distr_info_typename(gen);
+  _unur_string_append(info,"   functions = DATA  [length=%d]\n", GEN->n_observ);
+  _unur_string_append(info,"\n");
+
+  /*   if (help) { */
+  /*     _unur_string_append(info,"\n"); */
+  /*   } */
+  
+  /* method */
+  _unur_string_append(info,"method: EMPL (EMPirical distribution with Linear interpolation)\n");
+  _unur_string_append(info,"\n");
+
+  /* performance */
+  /*   _unur_string_append(info,"performance characteristics:\n"); */
+  /*   _unur_string_append(info,"\n"); */
+
+  /* parameters */
+  if (help) {
+    _unur_string_append(info,"parameters: none\n");
+    _unur_string_append(info,"\n");
+  }
+
+  /* Hints */
+  /*   if (help) { */
+  /*     _unur_string_append(info,"\n"); */
+  /*   } */
+
+} /* end of _unur_empl_info() */
+
+/*---------------------------------------------------------------------------*/
+#endif   /* end UNUR_ENABLE_INFO */
 /*---------------------------------------------------------------------------*/

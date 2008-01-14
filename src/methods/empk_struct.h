@@ -79,8 +79,8 @@ struct unur_empk_gen {
   double  stddev_observ; /* standard deviation of oberved data               */
   double  sconst;      /* constant used for variance corrected version 
 			  of kernel method                                   */
+  double  alpha;       /* parameter for kernel width                         */
+  double  beta;        /* parameter for kernel width                         */
 };
 
 /*---------------------------------------------------------------------------*/
-
-

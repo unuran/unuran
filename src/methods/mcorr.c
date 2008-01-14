@@ -146,6 +146,13 @@ static void _unur_mcorr_debug_init( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 #endif
 
+#ifdef UNUR_ENABLE_INFO
+static void _unur_mcorr_info( struct unur_gen *gen, int help );
+/*---------------------------------------------------------------------------*/
+/* create info string.                                                       */
+/*---------------------------------------------------------------------------*/
+#endif
+
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
@@ -517,6 +524,11 @@ _unur_mcorr_create( struct unur_par *par )
     GEN->H = _unur_xmalloc(GEN->dim * GEN->dim * sizeof(double));
   }
 
+#ifdef UNUR_ENABLE_INFO
+  /* set function for creating info string */
+  gen->info = _unur_mcorr_info;
+#endif
+
   /* return pointer to (almost empty) generator object */
   return gen;
 
@@ -865,4 +877,69 @@ _unur_mcorr_debug_init( const struct unur_gen *gen )
 
 /*---------------------------------------------------------------------------*/
 #endif   /* end UNUR_ENABLE_LOGGING */
+/*---------------------------------------------------------------------------*/
+
+
+/*---------------------------------------------------------------------------*/
+#ifdef UNUR_ENABLE_INFO
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_mcorr_info( struct unur_gen *gen, int help )
+     /*----------------------------------------------------------------------*/
+     /* create character string that contains information about the          */
+     /* given generator object.                                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*   help ... whether to print additional comments                      */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_string *info = gen->infostr;
+
+  /* generator ID */
+  _unur_string_append(info,"generator ID: %s\n\n", gen->genid);
+  
+  /* distribution */
+  _unur_string_append(info,"distribution:\n");
+  _unur_distr_info_typename(gen);
+  _unur_string_append(info,"   dimension = %d x %d   (= %d)\n", 
+		      DISTR.n_rows, DISTR.n_cols, gen->distr->dim);
+
+  if (gen->set && MCORR_SET_EIGENVALUES) {
+    _unur_string_append(info,"   eigenvalues = ");
+    _unur_distr_info_vector( gen, GEN->eigenvalues, GEN->dim);
+    _unur_string_append(info,"\n");
+  }
+  _unur_string_append(info,"\n");
+
+  /*   if (help) { */
+  /*     _unur_string_append(info,"\n"); */
+  /*   } */
+  
+  /* method */
+  _unur_string_append(info,"method: MCORR (Random CORRelation matrix)\n");
+  if (gen->set && MCORR_SET_EIGENVALUES)
+    _unur_string_append(info,"   generate correlation matrix with given eigenvalues\n");
+  _unur_string_append(info,"\n");
+
+  /* performance */
+  /*   _unur_string_append(info,"performance characteristics:\n"); */
+  /*   _unur_string_append(info,"\n"); */
+
+  /* parameters */
+  if (help) {
+    _unur_string_append(info,"parameters: none\n");
+    _unur_string_append(info,"\n");
+  }
+
+  /* Hints */
+  /*   if (help) { */
+  /*     _unur_string_append(info,"\n"); */
+  /*   } */
+
+} /* end of _unur_mcorr_info() */
+
+/*---------------------------------------------------------------------------*/
+#endif   /* end UNUR_ENABLE_INFO */
 /*---------------------------------------------------------------------------*/

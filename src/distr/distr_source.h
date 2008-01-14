@@ -183,6 +183,9 @@ void _unur_distr_discr_debug( const UNUR_DISTR *distribution, const char *genid,
 void _unur_distr_info_typename( struct unur_gen *gen );
 /* write string that contains type and name of given distribution object     */
 
+void _unur_distr_info_vector( struct unur_gen *gen, const double *vec, int n );
+/* write string that contains given vector                                   */
+
 #endif
 /*---------------------------------------------------------------------------*/
 /* auxiliary routines                                                        */

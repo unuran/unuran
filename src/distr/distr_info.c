@@ -84,6 +84,30 @@ _unur_distr_info_typename( struct unur_gen *gen )
 
 } /* end of unur_distr_info_typename() */
 
+/*---------------------------------------------------------------------------*/
+
+void 
+_unur_distr_info_vector( struct unur_gen *gen, const double *vec, int n )
+     /*----------------------------------------------------------------------*/
+     /* create character string that contains given character vector         */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*   vec ... pointer to vector                                          */
+     /*   n   ... length vector                                              */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_string *info = gen->infostr;
+  int i;
+  
+  if (n<1) return;
+
+  _unur_string_append(info,"(%g",vec[0]);
+  for (i=1;i<n;i++)
+    _unur_string_append(info,", %g",vec[i]);
+  _unur_string_append(info,")");
+
+} /* end of _unur_distr_info_vector() */
 
 /*---------------------------------------------------------------------------*/
 #endif

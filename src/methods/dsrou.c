@@ -964,8 +964,16 @@ _unur_dsrou_info( struct unur_gen *gen, int help )
 
   /* performance */
   _unur_string_append(info,"performance characteristics:\n");
-  _unur_string_append(info,"   enveloping region = (%g,%g) x (%g,%g)\n",
-		      ((GEN->ul > 0.)?GEN->al/GEN->ul:0.),0., GEN->ul,GEN->ur);
+
+  _unur_string_append(info,"   enveloping rectangle = (%g,%g) x (%g,%g)  [left]\n",
+		      (GEN->ul > 0.)?GEN->al/GEN->ul:0., 0.,
+		      0., (GEN->ul > 0.)?GEN->ul:0.);
+  _unur_string_append(info,"                          (%g,%g) x (%g,%g)  [right]\n",
+		      0.,GEN->ar/GEN->ur,  0., GEN->ur);
+
+  _unur_string_append(info,"   area(hat) = %g + %g = %g\n",
+		      fabs(GEN->al), GEN->ar, -GEN->al+GEN->ar);
+
   _unur_string_append(info,"   rejection constant = %g\n",
 		      2. * (-GEN->al+GEN->ar) / DISTR.sum);
   _unur_string_append(info,"\n");

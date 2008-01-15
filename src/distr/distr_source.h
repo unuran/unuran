@@ -186,6 +186,9 @@ void _unur_distr_info_typename( struct unur_gen *gen );
 void _unur_distr_info_vector( struct unur_gen *gen, const double *vec, int n );
 /* write string that contains given vector                                   */
 
+void _unur_distr_cvec_info_domain( struct unur_gen *gen );
+/* create character string that contains domain                              */
+
 #endif
 /*---------------------------------------------------------------------------*/
 /* auxiliary routines                                                        */

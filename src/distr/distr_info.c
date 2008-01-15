@@ -110,5 +110,42 @@ _unur_distr_info_vector( struct unur_gen *gen, const double *vec, int n )
 } /* end of _unur_distr_info_vector() */
 
 /*---------------------------------------------------------------------------*/
+
+void 
+_unur_distr_cvec_info_domain( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* create character string that contains domain                         */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{
+#define DISTR distr->data.cvec
+
+  struct unur_string *info = gen->infostr;
+  struct unur_distr *distr = gen->distr;
+  double *domain;
+  int i;
+
+  COOKIE_CHECK(distr,CK_DISTR_CVEC,RETURN_VOID);
+
+  _unur_string_append(info,"   domain    = ");
+  if (!(distr->set & UNUR_DISTR_SET_DOMAINBOUNDED)) {
+    _unur_string_append(info,"(-inf,inf)^%d  [unbounded]\n",distr->dim);
+  }
+  else {
+    if (DISTR.domainrect) {
+      domain = DISTR.domainrect;
+      for (i=0; i<distr->dim; i++)
+	_unur_string_append(info,"%s(%g,%g)", i?" x ":"", 
+			    domain[2*i], domain[2*i+1]);
+      _unur_string_append(info,"  [rectangular]\n");
+    }
+  }
+
+#undef DISTR
+} /* end of _unur_distr_cvec_info_domain() */
+
+/*---------------------------------------------------------------------------*/
 #endif
 /*---------------------------------------------------------------------------*/

@@ -950,7 +950,7 @@ static int n_tests_failed;          /* number of failed tests                */
 
 void run_verify_generator( FILE *LOG, int line, UNUR_PAR *par );
 
-int unur_$method\_set_verify( UNUR_PAR *par, int );
+int unur_$method\_set_verify( UNUR_PAR *par, int verify);
 
 /*---------------------------------------------------------------------------*/
 
@@ -1120,7 +1120,7 @@ sub add_unur_set_verify_routine {
     }
 
     unless ($have_found) {
-	print "int $verify(UNUR_PAR *par, int verify) {return 0;}\n";
+	print "int $verify(UNUR_PAR *par ATTRIBUTE__UNUSED, int verify ATTRIBUTE__UNUSED) {return 0;}\n";
     }
 }
 

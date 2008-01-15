@@ -526,7 +526,6 @@ _unur_mvstd_info( struct unur_gen *gen, int help )
      /*----------------------------------------------------------------------*/
 {
   struct unur_string *info = gen->infostr;
-  struct unur_distr *distr = gen->distr;
   int dim = gen->distr->dim;
   int samplesize = 10000;
   double E_urn;

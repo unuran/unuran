@@ -1109,7 +1109,7 @@ _unur_nrou_info( struct unur_gen *gen, int help )
   /* performance */
   _unur_string_append(info,"performance characteristics:\n");
   _unur_string_append(info,"   bounding rectangle = (%g,%g) x (%g,%g)\n",
-		      GEN->umin,0., GEN->umax,GEN->vmax);
+		      GEN->umin,GEN->umax, 0.,GEN->vmax);
   harea = (GEN->umax - GEN->umin) * GEN->vmax;
   _unur_string_append(info,"   area(hat) = %g\n", harea);
   _unur_string_append(info,"   rejection constant ");

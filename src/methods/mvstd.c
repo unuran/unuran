@@ -64,6 +64,10 @@
 #include "mvstd.h"
 #include "mvstd_struct.h"
 
+#ifdef UNUR_ENABLE_INFO
+#  include <tests/unuran_tests.h>
+#endif
+
 /*---------------------------------------------------------------------------*/
 /* Variants: none                                                            */
 
@@ -131,7 +135,13 @@ static void _unur_mvstd_debug_init( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed.                 */
 /*---------------------------------------------------------------------------*/
+#endif
 
+#ifdef UNUR_ENABLE_INFO
+static void _unur_mvstd_info( struct unur_gen *gen, int help );
+/*---------------------------------------------------------------------------*/
+/* create info string.                                                       */
+/*---------------------------------------------------------------------------*/
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -338,6 +348,11 @@ _unur_mvstd_create( struct unur_par *par )
   /* defaults */
   GEN->sample_routine_name = NULL ;  /* name of sampling routine             */
 
+#ifdef UNUR_ENABLE_INFO
+  /* set function for creating info string */
+  gen->info = _unur_mvstd_info;
+#endif
+
   /* return pointer to (almost empty) generator object */
   return gen;
   
@@ -494,3 +509,70 @@ _unur_mvstd_debug_init( struct unur_gen *gen )
 #endif   /* end UNUR_ENABLE_LOGGING */
 /*---------------------------------------------------------------------------*/
 
+
+/*---------------------------------------------------------------------------*/
+#ifdef UNUR_ENABLE_INFO
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_mvstd_info( struct unur_gen *gen, int help )
+     /*----------------------------------------------------------------------*/
+     /* create character string that contains information about the          */
+     /* given generator object.                                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*   help ... whether to print additional comments                      */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_string *info = gen->infostr;
+  struct unur_distr *distr = gen->distr;
+  int dim = gen->distr->dim;
+  int samplesize = 10000;
+  double E_urn;
+
+  /* generator ID */
+  _unur_string_append(info,"generator ID: %s\n\n", gen->genid);
+  
+  /* distribution */
+  _unur_string_append(info,"distribution:\n");
+  _unur_distr_info_typename(gen);
+  _unur_string_append(info,"   dimension = %d\n",dim);
+  _unur_distr_cvec_info_domain(gen);
+  _unur_string_append(info,"\n\n");
+  
+  /*   if (help) { */
+  /*   _unur_string_append(info,"\n"); */
+  /*   } */
+
+  /* method */
+  _unur_string_append(info,"method: MVSTD (special generator for MultiVariate continuous STandarD distribution)\n");
+  /*   _unur_string_append(info,"   variant = %d\n", gen->variant); */
+  _unur_string_append(info,"\n");
+
+  /* performance */
+  _unur_string_append(info,"performance characteristics:\n");
+
+  E_urn = unur_test_count_urn(gen,samplesize,0,NULL)/(0.+samplesize);
+  _unur_string_append(info,"   E [#urn] = %.2f x %d = %.2f  [approx.]\n",
+		      E_urn / dim, dim, E_urn);
+  _unur_string_append(info,"\n");
+
+  /* parameters */
+  if (help) {
+    _unur_string_append(info,"parameters: none\n");
+    /*     _unur_string_append(info,"   variant = %d  %s\n", gen->variant, */
+    /* 			(gen->set & MVSTD_SET_VARIANT) ? "" : "[default]"); */
+    _unur_string_append(info,"\n");
+  }
+
+  /* Hints */
+  /*   if (help) { */
+  /*     _unur_string_append(info,"\n"); */
+  /*   } */
+
+} /* end of _unur_mvstd_info() */
+
+/*---------------------------------------------------------------------------*/
+#endif   /* end UNUR_ENABLE_INFO */
+/*---------------------------------------------------------------------------*/

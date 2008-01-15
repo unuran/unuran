@@ -73,6 +73,10 @@
 #include "vnrou.h"
 #include "vnrou_struct.h"
 
+#ifdef UNUR_ENABLE_INFO
+#  include <tests/unuran_tests.h>
+#endif
+
 /*---------------------------------------------------------------------------*/
 /* Variants:                                                                 */
 
@@ -145,6 +149,13 @@ static void _unur_vnrou_debug_init( const struct unur_gen *gen );
 
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed.                 */
+/*---------------------------------------------------------------------------*/
+#endif
+
+#ifdef UNUR_ENABLE_INFO
+static void _unur_vnrou_info( struct unur_gen *gen, int help );
+/*---------------------------------------------------------------------------*/
+/* create info string.                                                       */
 /*---------------------------------------------------------------------------*/
 #endif
 
@@ -665,6 +676,11 @@ _unur_vnrou_create( struct unur_par *par )
   /* get center of the distribution */
   GEN->center = unur_distr_cvec_get_center(gen->distr);
  
+#ifdef UNUR_ENABLE_INFO
+  /* set function for creating info string */
+  gen->info = _unur_vnrou_info;
+#endif
+
   /* return pointer to (almost empty) generator object */
   return gen;
 
@@ -983,4 +999,113 @@ _unur_vnrou_debug_init( const struct unur_gen *gen )
 
 /*---------------------------------------------------------------------------*/
 #endif   /* end UNUR_ENABLE_LOGGING */
+/*---------------------------------------------------------------------------*/
+
+
+/*---------------------------------------------------------------------------*/
+#ifdef UNUR_ENABLE_INFO
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_vnrou_info( struct unur_gen *gen, int help )
+     /*----------------------------------------------------------------------*/
+     /* create character string that contains information about the          */
+     /* given generator object.                                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*   help ... whether to print additional comments                      */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_string *info = gen->infostr;
+  struct unur_distr *distr = gen->distr;
+  int samplesize = 10000;
+  int i;
+  double rc, hvol;
+
+  /* generator ID */
+  _unur_string_append(info,"generator ID: %s\n\n", gen->genid);
+  
+  /* distribution */
+  _unur_string_append(info,"distribution:\n");
+  _unur_distr_info_typename(gen);
+  _unur_string_append(info,"   dimension = %d\n",GEN->dim);
+  _unur_string_append(info,"   functions = PDF\n");
+  _unur_distr_cvec_info_domain(gen);
+
+  _unur_string_append(info,"   center    = ");
+  _unur_distr_info_vector( gen, GEN->center, GEN->dim);
+  if ( !(distr->set & UNUR_DISTR_SET_CENTER) ) {
+    if ( distr->set & UNUR_DISTR_SET_MODE )
+      _unur_string_append(info,"  [= mode]");
+    else
+      _unur_string_append(info,"  [default]");
+  }
+  _unur_string_append(info,"\n\n");
+  
+  /*   if (help) { */
+  /*   _unur_string_append(info,"\n"); */
+  /*   } */
+
+  /* method */
+  _unur_string_append(info,"method: VNROU (Naive Ratio-Of-Uniforms)\n");
+  _unur_string_append(info,"   r = %g\n", GEN->r);
+  _unur_string_append(info,"\n");
+
+  /* performance */
+  _unur_string_append(info,"performance characteristics:\n");
+
+  _unur_string_append(info,"   bounding rectangle = ");
+  for (i=0; i<GEN->dim; i++)
+    _unur_string_append(info,"%s(%g,%g)", i?"x":"", GEN->umin[i], GEN->umax[i]);
+  _unur_string_append(info," x (0,%g)\n", GEN->vmax);
+
+  hvol = GEN->vmax;
+  for (i=0; i<GEN->dim; i++)
+    hvol *= GEN->umax[i] - GEN->umin[i];
+  _unur_string_append(info,"   volume(hat) = %g\n", hvol);
+
+  _unur_string_append(info,"   rejection constant ");
+  if ((distr->set & UNUR_DISTR_SET_PDFVOLUME) && _unur_isone(GEN->r))
+    _unur_string_append(info,"= %g\n", (GEN->dim + 1.) * hvol / DISTR.volume);
+  else {
+    rc = unur_test_count_urn(gen,samplesize,0,NULL)/((1.+GEN->dim)*samplesize);
+    _unur_string_append(info,"= %.2f  [approx.]\n", rc);
+  }
+  _unur_string_append(info,"\n");
+
+  /* parameters */
+  if (help) {
+    _unur_string_append(info,"parameters:\n");
+
+    _unur_string_append(info,"   r = %g  %s\n", GEN->r,
+			(gen->set & VNROU_SET_R) ? "" : "[default]");
+
+    _unur_string_append(info,"   v = %g  %s\n", GEN->vmax,
+ 			(gen->set & VNROU_SET_V) ? "" : "[numeric.]");
+
+    _unur_string_append(info,"   u = ");
+    _unur_distr_info_vector( gen, GEN->umin, GEN->dim);
+    _unur_string_append(info," -- ");
+    _unur_distr_info_vector( gen, GEN->umax, GEN->dim);
+    _unur_string_append(info,"%s\n",(gen->set & VNROU_SET_U) ? "" : "  [numeric.]"); 
+
+    _unur_string_append(info,"\n");
+  }
+
+  /* Hints */
+  if (help) {
+    if ( !(gen->set & VNROU_SET_V) )
+      _unur_string_append(info,"[ Hint: %s ]\n",
+			  "You can set \"v\" to avoid numerical estimate." );
+    if ( !(gen->set & VNROU_SET_U) )
+      _unur_string_append(info,"[ Hint: %s ]\n",
+			  "You can set \"u\" to avoid slow (and inexact) numerical estimates." );
+    _unur_string_append(info,"\n");
+  }
+
+} /* end of _unur_vnrou_info() */
+
+/*---------------------------------------------------------------------------*/
+#endif   /* end UNUR_ENABLE_INFO */
 /*---------------------------------------------------------------------------*/

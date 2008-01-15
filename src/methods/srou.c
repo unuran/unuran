@@ -1571,13 +1571,13 @@ _unur_srou_info( struct unur_gen *gen, int help )
   if (gen->set & SROU_SET_R) {
     int samplesize = 10000;
     rc = 0.01 * (unur_test_count_urn(gen,samplesize,0,NULL)/(samplesize/50));
-    _unur_string_append(info,"   enveloping region = (%g,%g) x (%g,%g)\n",
-			GEN->vl,0., GEN->vr,GEN->um);
+    _unur_string_append(info,"   enveloping rectangle = (%g,%g) x (%g,%g)\n",
+			GEN->vl,GEN->vr, 0.,GEN->um);
     _unur_string_append(info,"   rejection constant = %g  [approx.]\n", rc);
   }
   else {
     _unur_string_append(info,"   bounding rectangle = (%g,%g) x (%g,%g)\n",
-			GEN->vl,0., GEN->vr,GEN->um);
+			GEN->vl,GEN->vr, 0.,GEN->um);
     h_area = (GEN->vr - GEN->vl) * GEN->um;
     _unur_string_append(info,"   area(hat) = %g\n", h_area);
     if (gen->set & SROU_SET_CDFMODE) 

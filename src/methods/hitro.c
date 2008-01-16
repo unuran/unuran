@@ -64,6 +64,11 @@
 #include "hitro.h"
 #include "hitro_struct.h"
 
+#ifdef UNUR_ENABLE_INFO
+#  include <tests/unuran_tests.h>
+#endif
+
+
 /*---------------------------------------------------------------------------*/
 /* Constants                                                                 */
 
@@ -195,6 +200,13 @@ static void _unur_hitro_debug_init_finished( const struct unur_gen *gen );
 static void _unur_hitro_debug_free( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print before generater is destroyed.                                      */
+/*---------------------------------------------------------------------------*/
+#endif
+
+#ifdef UNUR_ENABLE_INFO
+static void _unur_hitro_info( struct unur_gen *gen, int help );
+/*---------------------------------------------------------------------------*/
+/* create info string.                                                       */
 /*---------------------------------------------------------------------------*/
 #endif
 
@@ -353,7 +365,8 @@ unur_hitro_set_variant_random_direction( struct unur_par *par )
 
 /*---------------------------------------------------------------------------*/
 
-int unur_hitro_set_use_adaptiveline( struct unur_par *par, int adaptive )
+int
+unur_hitro_set_use_adaptiveline( struct unur_par *par, int adaptive )
      /*----------------------------------------------------------------------*/
      /* Enable/Disable adaptive line sampling                                */
      /*                                                                      */
@@ -384,7 +397,8 @@ int unur_hitro_set_use_adaptiveline( struct unur_par *par, int adaptive )
 
 /*---------------------------------------------------------------------------*/
 
-int unur_hitro_set_use_adaptiverectangle( struct unur_par *par, int adaptive )
+int
+unur_hitro_set_use_adaptiverectangle( struct unur_par *par, int adaptive )
      /*----------------------------------------------------------------------*/
      /* Enable/Disable adaptive bounding rectangle                           */
      /*                                                                      */
@@ -415,7 +429,8 @@ int unur_hitro_set_use_adaptiverectangle( struct unur_par *par, int adaptive )
 
 /*---------------------------------------------------------------------------*/
 
-int unur_hitro_set_use_boundingrectangle( struct unur_par *par, int rectangle )
+int
+unur_hitro_set_use_boundingrectangle( struct unur_par *par, int rectangle )
      /*----------------------------------------------------------------------*/
      /* Whether to use entire bounding rectangle or just upper bound         */
      /*                                                                      */
@@ -1012,6 +1027,11 @@ _unur_hitro_create( struct unur_par *par )
   /* defaults */
   GEN->coord = 0;           /* current coordinate of HITRO chain. */
 
+#ifdef UNUR_ENABLE_INFO
+  /* set function for creating info string */
+  gen->info = _unur_hitro_info;
+#endif
+
   /* return pointer to (almost empty) generator object */
   return gen;
   
@@ -1606,7 +1626,10 @@ _unur_hitro_debug_init_start( const struct unur_gen *gen )
     fprintf(log,"random direction sampling\n"); break;
   }
   fprintf(log,"%s:\n",gen->genid);
-  fprintf(log,"%s: adaptive line sampling: %s",gen->genid,
+
+  fprintf(log,"%s: r = %g",gen->genid, GEN->r);
+  _unur_print_if_default(gen,HITRO_SET_R);
+  fprintf(log,"\n%s: adaptive line sampling: %s",gen->genid,
 	  (gen->variant&HITRO_VARFLAG_ADAPTLINE)?"on":"off");
   _unur_print_if_default(gen,HITRO_SET_ADAPTLINE);
   fprintf(log,"\n%s: use entire bounding rectangle: %s",gen->genid,
@@ -1735,4 +1758,143 @@ _unur_hitro_debug_free( const struct unur_gen *gen )
 
 /*---------------------------------------------------------------------------*/
 #endif   /* end UNUR_ENABLE_LOGGING */
+/*---------------------------------------------------------------------------*/
+
+
+/*---------------------------------------------------------------------------*/
+#ifdef UNUR_ENABLE_INFO
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_hitro_info( struct unur_gen *gen, int help )
+     /*----------------------------------------------------------------------*/
+     /* create character string that contains information about the          */
+     /* given generator object.                                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*   help ... whether to print additional comments                      */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_string *info = gen->infostr;
+  struct unur_distr *distr = gen->distr;
+  int samplesize = 10000;
+  int i;
+  double rc;
+
+  /* generator ID */
+  _unur_string_append(info,"generator ID: %s\n\n", gen->genid);
+  
+  /* distribution */
+  _unur_string_append(info,"distribution:\n");
+  _unur_distr_info_typename(gen);
+  _unur_string_append(info,"   dimension = %d\n",GEN->dim);
+  _unur_string_append(info,"   functions = PDF\n");
+  _unur_distr_cvec_info_domain(gen);
+
+  _unur_string_append(info,"   center    = ");
+  _unur_distr_info_vector( gen, GEN->center, GEN->dim);
+  if ( !(distr->set & UNUR_DISTR_SET_CENTER) ) {
+    if ( distr->set & UNUR_DISTR_SET_MODE )
+      _unur_string_append(info,"  [= mode]");
+    else
+      _unur_string_append(info,"  [default]");
+  }
+  _unur_string_append(info,"\n\n");
+  
+  /*   if (help) { */
+  /*   _unur_string_append(info,"\n"); */
+  /*   } */
+
+  /* method */
+  _unur_string_append(info,"method: HITRO (HIT-and-run sampler with Ratio-Of-uniforms [MCMC])\n");
+  _unur_string_append(info,"   variant = %s\n",
+		      ((gen->variant & HITRO_VARMASK_VARIANT)==HITRO_VARIANT_COORD)
+		      ? "coordinate sampling [default]" : "random direction sampling");
+
+  _unur_string_append(info,"   r = %g\n", GEN->r);
+  _unur_string_append(info,"   thinning = %d\n", GEN->thinning);
+
+  _unur_string_append(info,"   adaptive line sampling = %s\n", 
+		      (gen->variant&HITRO_VARFLAG_ADAPTLINE)?"on":"off");
+
+  _unur_string_append(info,"   use entire bounding rectangle = %s\n",
+		      (gen->variant&HITRO_VARFLAG_BOUNDRECT)?"on":"off");
+
+  if (gen->variant&HITRO_VARFLAG_ADAPTRECT)
+    _unur_string_append(info,"   adaptive bounding rectangle = on  [multiplier = %g]\n",
+			GEN->adaptive_mult);
+  else
+    _unur_string_append(info,"   adaptive bounding rectangle = off\n");
+
+  _unur_string_append(info,"\n");
+
+  /* performance */
+  _unur_string_append(info,"performance characteristics:\n");
+
+  rc = unur_test_count_urn(gen,samplesize,0,NULL)/((double)samplesize);
+
+  if (gen->variant & HITRO_VARFLAG_BOUNDRECT) {
+    _unur_string_append(info,"   bounding rectangle %s= ",
+			(gen->variant & HITRO_VARFLAG_ADAPTRECT) ? "[adaptive] " : "" );
+    for (i=0; i<GEN->dim; i++)
+      _unur_string_append(info,"%s(%g,%g)", i?"x":"", GEN->vumin[i+1], GEN->vumax[i+1]);
+    _unur_string_append(info," x (0,%g)\n", GEN->vumax[0]);
+  }
+  else {
+    _unur_string_append(info,"   upper bound vmax = %g %s\n", GEN->vumax[0],
+			(gen->variant & HITRO_VARFLAG_ADAPTRECT) ? "[adaptive]" : "" );
+  }
+
+  _unur_string_append(info,"   rejection constant =  %.2f  [approx.]\n", rc);
+  _unur_string_append(info,"\n");
+
+  /* parameters */
+  if (help) {
+    _unur_string_append(info,"parameters:\n");
+
+    switch (gen->variant & HITRO_VARMASK_VARIANT) {
+    case HITRO_VARIANT_COORD:
+      _unur_string_append(info,"   variant_coordinate  [default]\n"); break;
+    case HITRO_VARIANT_RANDOMDIR:
+      _unur_string_append(info,"   variant_random_direction\n"); break;
+    }
+
+    _unur_string_append(info,"   r = %g  %s\n", GEN->r,
+ 			(gen->set & HITRO_SET_R) ? "" : "[default]");
+
+    _unur_string_append(info,"   adaptiveline = %s  %s\n", 
+			(gen->variant&HITRO_VARFLAG_ADAPTLINE)?"on":"off",
+ 			(gen->set & HITRO_SET_ADAPTLINE) ? "" : "[default]");
+
+    _unur_string_append(info,"   boundingrectangle = %s  %s\n",
+			(gen->variant&HITRO_VARFLAG_BOUNDRECT)?"on":"off",
+ 			(gen->set & HITRO_SET_BOUNDRECT) ? "" : "[default]");
+
+    _unur_string_append(info,"   adaptiverectangle = %s  %s\n", 
+			(gen->variant&HITRO_VARFLAG_ADAPTRECT)?"on":"off",
+ 			(gen->set & HITRO_SET_ADAPTRECT) ? "" : "[default]");
+
+    if (gen->variant&HITRO_VARFLAG_ADAPTRECT)
+      _unur_string_append(info,"   adaptive_multiplier = %g  %s\n", 
+			  GEN->adaptive_mult,
+			  (gen->set & HITRO_SET_ADAPTMULT) ? "" : "[default]");
+
+   _unur_string_append(info,"   thinning = %d  %s\n", GEN->thinning,
+ 			(gen->set & HITRO_SET_THINNING) ? "" : "[default]");
+   _unur_string_append(info,"   burnin = %d  %s\n", GEN->burnin,
+ 			(gen->set & HITRO_SET_THINNING) ? "" : "[default]");
+
+    _unur_string_append(info,"\n");
+  }
+
+  /* Hints */
+  /*   if (help) { */
+  /*     _unur_string_append(info,"\n"); */
+  /*   } */
+
+} /* end of _unur_hitro_info() */
+
+/*---------------------------------------------------------------------------*/
+#endif   /* end UNUR_ENABLE_INFO */
 /*---------------------------------------------------------------------------*/

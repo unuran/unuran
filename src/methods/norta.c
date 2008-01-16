@@ -201,7 +201,13 @@ static void _unur_norta_debug_nmgenerator( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print genid of multinormal generator.                                     */
 /*---------------------------------------------------------------------------*/
+#endif
 
+#ifdef UNUR_ENABLE_INFO
+static void _unur_norta_info( struct unur_gen *gen, int help );
+/*---------------------------------------------------------------------------*/
+/* create info string.                                                       */
+/*---------------------------------------------------------------------------*/
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -459,6 +465,11 @@ _unur_norta_create( struct unur_par *par )
   GEN->marginalgen_list = NULL;
   GEN->marginal_urng = NULL;
   GEN->urng_U[0] = 0.;
+
+#ifdef UNUR_ENABLE_INFO
+  /* set function for creating info string */
+  gen->info = _unur_norta_info;
+#endif
 
   /* return pointer to (almost empty) generator object */
   return gen;
@@ -958,7 +969,70 @@ _unur_norta_debug_nmgenerator( const struct unur_gen *gen )
 #endif   /* UNUR_ENABLE_LOGGING */
 /*---------------------------------------------------------------------------*/
 
+
+/*---------------------------------------------------------------------------*/
+#ifdef UNUR_ENABLE_INFO
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_norta_info( struct unur_gen *gen, int help )
+     /*----------------------------------------------------------------------*/
+     /* create character string that contains information about the          */
+     /* given generator object.                                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*   help ... whether to print additional comments                      */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_string *info = gen->infostr;
+  struct unur_distr *distr = gen->distr;
+/*   int samplesize = 10000; */
+  int i;
+
+  /* generator ID */
+  _unur_string_append(info,"generator ID: %s\n\n", gen->genid);
+  
+  /* distribution */
+  _unur_string_append(info,"distribution:\n");
+  _unur_distr_info_typename(gen);
+  _unur_string_append(info,"   dimension = %d\n",GEN->dim);
+  _unur_string_append(info,"   functions = MARGINAL distributions\n");
+
+  _unur_string_append(info,"   marginals =");
+  for (i=0; i<distr->dim; i++)
+    _unur_string_append(info," %s", distr->data.cvec.marginals[i]->name);
+  _unur_string_append(info,"\n\n");
+  
+  /*   if (help) { */
+  /*   _unur_string_append(info,"\n"); */
+  /*   } */
+
+  /* method */
+  _unur_string_append(info,"method: NORTA (NORmal To Anything)\n");
+  _unur_string_append(info,"\n");
+
+  /* performance */
+  /*   _unur_string_append(info,"performance characteristics:\n"); */
+  /*   _unur_string_append(info,"\n"); */
+
+  /* parameters */
+  if (help) {
+    _unur_string_append(info,"parameters: none\n");
+    _unur_string_append(info,"\n");
+  }
+
+  /* Hints */
+  /*   if (help) { */
+  /*     _unur_string_append(info,"\n"); */
+  /*   } */
+
+} /* end of _unur_norta_info() */
+
+/*---------------------------------------------------------------------------*/
+#endif   /* end UNUR_ENABLE_INFO */
+/*---------------------------------------------------------------------------*/
+
 /*---------------------------------------------------------------------------*/
 #endif   /* UNUR_URNG_UNURAN */
 /*---------------------------------------------------------------------------*/
-

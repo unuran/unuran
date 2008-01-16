@@ -64,6 +64,10 @@
 #include "mvtdr.h"
 #include "mvtdr_struct.h"
 
+#ifdef UNUR_ENABLE_INFO
+#  include <tests/unuran_tests.h>
+#endif
+
 /*---------------------------------------------------------------------------*/
 /* Constants                                                                 */
 
@@ -273,6 +277,13 @@ static void _unur_mvtdr_debug_cones( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 #endif
 
+#ifdef UNUR_ENABLE_INFO
+static void _unur_mvtdr_info( struct unur_gen *gen, int help );
+/*---------------------------------------------------------------------------*/
+/* create info string.                                                       */
+/*---------------------------------------------------------------------------*/
+#endif
+
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
@@ -319,5 +330,6 @@ static void _unur_mvtdr_debug_cones( const struct unur_gen *gen );
 #include "mvtdr_init.ch"
 #include "mvtdr_sample.ch"
 #include "mvtdr_debug.ch"
+#include "mvtdr_info.ch"
 
 /*---------------------------------------------------------------------------*/

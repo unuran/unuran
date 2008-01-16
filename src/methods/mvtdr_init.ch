@@ -210,6 +210,11 @@ _unur_mvtdr_create( struct unur_par *par )
   /* whether we have set a domain for the distribution */
   GEN->has_domain = (gen->distr->set & UNUR_DISTR_SET_DOMAIN) ? TRUE : FALSE;
  
+#ifdef UNUR_ENABLE_INFO
+  /* set function for creating info string */
+  gen->info = _unur_mvtdr_info;
+#endif
+
   /* return pointer to (almost empty) generator object */
   return gen;
   

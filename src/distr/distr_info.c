@@ -53,9 +53,34 @@ _unur_distr_info_typename( struct unur_gen *gen )
 {
   struct unur_string *info = gen->infostr;
   struct unur_distr *distr = gen->distr;
+  int n_params = 0;
+  double *params = NULL;
+  int i;
 
   /* name of distribution */
-  _unur_string_append(info,"   name      = %s\n", distr->name);
+  _unur_string_append(info,"   name      = %s", distr->name);
+
+  /* parameters for UNU.RAN standard distributions */
+  if (distr->id & UNUR_DISTR_STD) {
+    switch (distr->type) {
+    case UNUR_DISTR_CONT:
+      n_params = distr->data.cont.n_params;
+      params = distr->data.cont.params;
+      break;
+    case UNUR_DISTR_DISCR:
+      n_params = distr->data.discr.n_params;
+      params = distr->data.discr.params;
+      break;
+    }
+
+    if (n_params > 0) {
+      for( i=0; i<n_params; i++ )
+	_unur_string_append(info,"%s%g", i?",":" (", params[i]);
+      _unur_string_append(info,")");
+    }
+    _unur_string_append(info,"  [UNU.RAN standard distribution]");
+  }
+  _unur_string_append(info,"\n");
 
   /* type of distribution */
   _unur_string_append(info,"   type      = ");

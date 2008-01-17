@@ -220,7 +220,7 @@ unur_cstd_new( const struct unur_distr *distr )
     _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,""); return NULL; }
   COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
 
-  if (distr->id == UNUR_DISTR_GENERIC) {
+  if (!(distr->id & UNUR_DISTR_STD) ) {
     _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,"standard distribution");
     return NULL;
   }

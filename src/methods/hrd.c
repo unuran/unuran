@@ -759,7 +759,6 @@ _unur_hrd_info( struct unur_gen *gen, int help )
 {
   struct unur_string *info = gen->infostr;
   int samplesize = 10000;
-  double rc;
 
   /* generator ID */
   _unur_string_append(info,"generator ID: %s\n\n", gen->genid);
@@ -777,8 +776,8 @@ _unur_hrd_info( struct unur_gen *gen, int help )
 
   /* performance */
   _unur_string_append(info,"performance characteristics:\n");
-  rc = 0.01 * (unur_test_count_urn(gen,samplesize,0,NULL)/(samplesize/100));
-  _unur_string_append(info,"   E[#interations] = %g  [approx.]\n", rc);
+  _unur_string_append(info,"   E[#interations] = %.2f  [approx.]\n",
+		      unur_test_count_urn(gen,samplesize,0,NULL)/((double)samplesize));
   _unur_string_append(info,"\n");
 
   /* parameters */

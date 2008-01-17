@@ -1638,7 +1638,6 @@ _unur_itdr_info( struct unur_gen *gen, int help )
   struct unur_string *info = gen->infostr;
   struct unur_distr *distr = gen->distr;
   int samplesize = 10000;
-  double rc;
 
   /* generator ID */
   _unur_string_append(info,"generator ID: %s\n\n", gen->genid);
@@ -1660,14 +1659,11 @@ _unur_itdr_info( struct unur_gen *gen, int help )
   _unur_string_append(info,"   area(hat) = %g  [ = %g + %g + %g ]\n",
 		      GEN->Atot, GEN->Ap, GEN->Ac, GEN->At);
   _unur_string_append(info,"   rejection constant = ");
-  if (distr->set & UNUR_DISTR_SET_PDFAREA) {
-    rc = GEN->Atot/DISTR.area;
-    _unur_string_append(info,"%g\n", rc);
-  }
-  else {
-    rc = 0.01 * (unur_test_count_urn(gen,samplesize,0,NULL)/(samplesize/50));
-    _unur_string_append(info,"%g  [approx. ]\n", rc);
-  }
+  if (distr->set & UNUR_DISTR_SET_PDFAREA)
+    _unur_string_append(info,"%g\n", GEN->Atot/DISTR.area);
+  else
+    _unur_string_append(info,"%.2f  [approx. ]\n",
+			unur_test_count_urn(gen,samplesize,0,NULL)/(2.*samplesize));
   _unur_string_append(info,"\n");
 
   /* parameters */

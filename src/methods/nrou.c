@@ -1076,6 +1076,7 @@ _unur_nrou_info( struct unur_gen *gen, int help )
 {
   struct unur_string *info = gen->infostr;
   struct unur_distr *distr = gen->distr;
+  int samplesize = 10000;
   double harea;
 
   /* generator ID */
@@ -1115,11 +1116,9 @@ _unur_nrou_info( struct unur_gen *gen, int help )
   _unur_string_append(info,"   rejection constant ");
   if (distr->set & UNUR_DISTR_SET_PDFAREA)
     _unur_string_append(info,"= %g\n", 2. * harea / DISTR.area);
-  else {
-    int samplesize = 10000;
-    double rc = 0.01 * (unur_test_count_urn(gen,samplesize,0,NULL)/(samplesize/50));
-    _unur_string_append(info,"= %g  [approx.]\n", rc);
-  }
+  else
+    _unur_string_append(info,"= %.2f [approx.]\n",
+			unur_test_count_urn(gen,samplesize,0,NULL)/(2.*samplesize));
   _unur_string_append(info,"\n");
 
   /* parameters */

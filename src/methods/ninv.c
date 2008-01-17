@@ -1953,9 +1953,9 @@ _unur_ninv_info( struct unur_gen *gen, int help )
 
   /* performance */
   _unur_string_append(info,"performance characteristics:\n");
-  n_iter = 0.01 * (unur_test_count_pdf(gen,samplesize,FALSE,NULL)/(samplesize/50));
+  n_iter = unur_test_count_pdf(gen,samplesize,FALSE,NULL)/(2.*samplesize);
   if (!use_newton) n_iter *= 2.;
-  _unur_string_append(info,"   average number of iterations = %g  [approx.]\n\n", n_iter);
+  _unur_string_append(info,"   average number of iterations = %.2f  [approx.]\n\n", n_iter);
 
   /* parameters */
   if (help) {

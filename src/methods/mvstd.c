@@ -552,7 +552,7 @@ _unur_mvstd_info( struct unur_gen *gen, int help )
   /* performance */
   _unur_string_append(info,"performance characteristics:\n");
 
-  E_urn = unur_test_count_urn(gen,samplesize,0,NULL)/(0.+samplesize);
+  E_urn = unur_test_count_urn(gen,samplesize,0,NULL)/((double)samplesize);
   _unur_string_append(info,"   E [#urn] = %.2f x %d = %.2f  [approx.]\n",
 		      E_urn / dim, dim, E_urn);
   _unur_string_append(info,"\n");

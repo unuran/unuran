@@ -1189,7 +1189,6 @@ _unur_dari_info( struct unur_gen *gen, int help )
   struct unur_string *info = gen->infostr;
   struct unur_distr *distr = gen->distr;
   int samplesize = 10000;
-  double rc;
 
   /* generator ID */
   _unur_string_append(info,"generator ID: %s\n\n", gen->genid);
@@ -1229,13 +1228,11 @@ _unur_dari_info( struct unur_gen *gen, int help )
   _unur_string_append(info,"performance characteristics:\n");
   _unur_string_append(info,"   sum(hat) = %g\n",GEN->vt);
   _unur_string_append(info,"   rejection constant ");
-  if (distr->set & UNUR_DISTR_SET_PMFSUM) {
+  if (distr->set & UNUR_DISTR_SET_PMFSUM)
     _unur_string_append(info,"= %g\n", GEN->vt/DISTR.sum);
-  }
-  else {
-    rc = 0.01 * (unur_test_count_urn(gen,samplesize,0,NULL)/(samplesize/100));
-    _unur_string_append(info,"= %g  [approx.]\n", rc);
-  }
+  else
+    _unur_string_append(info,"= %.2f  [approx.]\n", 
+			unur_test_count_urn(gen,samplesize,0,NULL)/((double)samplesize));
   _unur_string_append(info,"\n");
 
   /* parameters */

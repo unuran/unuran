@@ -1294,7 +1294,6 @@ _unur_utdr_info( struct unur_gen *gen, int help )
   struct unur_string *info = gen->infostr;
   struct unur_distr *distr = gen->distr;
   int samplesize = 10000;
-  double rc;
 
   /* generator ID */
   _unur_string_append(info,"generator ID: %s\n\n", gen->genid);
@@ -1315,8 +1314,8 @@ _unur_utdr_info( struct unur_gen *gen, int help )
 
   /* performance */
   _unur_string_append(info,"performance characteristics:\n");
-  rc = 0.01 * (unur_test_count_urn(gen,samplesize,0,NULL)/(samplesize/50));
-  _unur_string_append(info,"   rejection constant = %g  [approx]\n", rc);
+  _unur_string_append(info,"   rejection constant = %.2f  [approx]\n",
+		      unur_test_count_urn(gen,samplesize,0,NULL)/(2.*samplesize));
   _unur_string_append(info,"\n");
 
   /* parameters */

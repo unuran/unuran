@@ -1157,8 +1157,8 @@ _unur_ssr_info( struct unur_gen *gen, int help )
   _unur_string_append(info,"performance characteristics:\n");
   rc = (gen->set & SSR_SET_CDFMODE) ? 2. : 4.;
   if (_unur_isfinite(DISTR.BD_RIGHT) || _unur_isfinite(DISTR.BD_LEFT)) {
-    rc_approx = 0.01 * (unur_test_count_urn(gen,samplesize,0,NULL)/(samplesize/50));
-    _unur_string_append(info,"   rejection constant <= %g  [approx. = %g]\n", rc,rc_approx);
+    rc_approx = unur_test_count_urn(gen,samplesize,0,NULL)/(2.*samplesize);
+    _unur_string_append(info,"   rejection constant <= %g  [approx. = %.2f]\n", rc,rc_approx);
   }
   else {
     _unur_string_append(info,"   rejection constant = %g\n", rc);

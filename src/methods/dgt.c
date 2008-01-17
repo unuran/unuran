@@ -889,7 +889,7 @@ _unur_dgt_info( struct unur_gen *gen, int help )
 
   /* performance */
   _unur_string_append(info,"performance characteristics:\n");
-  _unur_string_append(info,"   E [#interations] = %g\n", 1+1./GEN->guide_factor);
+  _unur_string_append(info,"   E [#look-ups] = %g\n", 1+1./GEN->guide_factor);
   _unur_string_append(info,"\n");
 
   /* parameters */

@@ -987,7 +987,6 @@ _unur_norta_info( struct unur_gen *gen, int help )
 {
   struct unur_string *info = gen->infostr;
   struct unur_distr *distr = gen->distr;
-/*   int samplesize = 10000; */
   int i;
 
   /* generator ID */

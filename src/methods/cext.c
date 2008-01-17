@@ -653,8 +653,8 @@ _unur_cext_info( struct unur_gen *gen, int help )
 
   /* performance */
   _unur_string_append(info,"performance characteristics:\n");
-  _unur_string_append(info,"   E [#urn] = %g  [approx.]\n",
-		      0.01 * (unur_test_count_urn(gen,samplesize,0,NULL)/(samplesize/100)));
+  _unur_string_append(info,"   E [#urn] = %.2f  [approx.]\n",
+		      unur_test_count_urn(gen,samplesize,0,NULL)/((double)samplesize));
   _unur_string_append(info,"\n");
 
   /* parameters */

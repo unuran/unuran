@@ -1021,7 +1021,7 @@ _unur_vnrou_info( struct unur_gen *gen, int help )
   struct unur_distr *distr = gen->distr;
   int samplesize = 10000;
   int i;
-  double rc, hvol;
+  double hvol;
 
   /* generator ID */
   _unur_string_append(info,"generator ID: %s\n\n", gen->genid);
@@ -1068,10 +1068,9 @@ _unur_vnrou_info( struct unur_gen *gen, int help )
   _unur_string_append(info,"   rejection constant ");
   if ((distr->set & UNUR_DISTR_SET_PDFVOLUME) && _unur_isone(GEN->r))
     _unur_string_append(info,"= %g\n", (GEN->dim + 1.) * hvol / DISTR.volume);
-  else {
-    rc = unur_test_count_urn(gen,samplesize,0,NULL)/((1.+GEN->dim)*samplesize);
-    _unur_string_append(info,"= %.2f  [approx.]\n", rc);
-  }
+  else
+    _unur_string_append(info,"= %.2f  [approx.]\n",
+			unur_test_count_urn(gen,samplesize,0,NULL)/((1.+GEN->dim)*samplesize));
   _unur_string_append(info,"\n");
 
   /* parameters */

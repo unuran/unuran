@@ -2754,7 +2754,6 @@ _unur_tdrgw_info( struct unur_gen *gen, int help )
   struct unur_string *info = gen->infostr;
   struct unur_distr *distr = gen->distr;
   int samplesize = 10000;
-  double rc;
 
   /* generator ID */
   _unur_string_append(info,"generator ID: %s\n\n", gen->genid);
@@ -2777,10 +2776,10 @@ _unur_tdrgw_info( struct unur_gen *gen, int help )
   _unur_string_append(info,"   rejection constant ");
   if (distr->set & UNUR_DISTR_SET_PDFAREA)
     _unur_string_append(info,"= %g\n", GEN->Atotal/DISTR.area);
-  else {
-    rc = 0.001 * (unur_test_count_urn(gen,samplesize,0,NULL)/(samplesize/500));
-    _unur_string_append(info,"= %g  [approx.]\n", rc);
-  }
+  else
+    _unur_string_append(info,"= %.3f  [approx.]\n",
+			unur_test_count_urn(gen,samplesize,0,NULL)/(2.*samplesize));
+  
   _unur_string_append(info,"   # intervals = %d\n", GEN->n_ivs);
   _unur_string_append(info,"\n");
   

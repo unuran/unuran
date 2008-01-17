@@ -1529,6 +1529,7 @@ _unur_srou_info( struct unur_gen *gen, int help )
 {
   struct unur_string *info = gen->infostr;
   struct unur_distr *distr = gen->distr;
+  int samplesize = 10000;
   double h_area, rc;
 
   /* generator ID */
@@ -1569,11 +1570,10 @@ _unur_srou_info( struct unur_gen *gen, int help )
   /* performance */
   _unur_string_append(info,"performance characteristics:\n");
   if (gen->set & SROU_SET_R) {
-    int samplesize = 10000;
-    rc = 0.01 * (unur_test_count_urn(gen,samplesize,0,NULL)/(samplesize/50));
+    rc = unur_test_count_urn(gen,samplesize,0,NULL)/(2.*samplesize);
     _unur_string_append(info,"   enveloping rectangle = (%g,%g) x (%g,%g)\n",
 			GEN->vl,GEN->vr, 0.,GEN->um);
-    _unur_string_append(info,"   rejection constant = %g  [approx.]\n", rc);
+    _unur_string_append(info,"   rejection constant = %.2f  [approx.]\n", rc);
   }
   else {
     _unur_string_append(info,"   bounding rectangle = (%g,%g) x (%g,%g)\n",

@@ -23,6 +23,7 @@ libmethods_la_SOURCES = \
 \
  auto.c   auto.h   auto_struct.h \
  arou.c   arou.h   arou_struct.h \
+ ars.c    ars.h    ars_struct.h \
  cext.c   cext.h   cext_struct.h \
  cstd.c   cstd.h   cstd_struct.h \
  dari.c   dari.h   dari_struct.h \
@@ -58,7 +59,6 @@ libmethods_la_SOURCES = \
           tdr_init.ch tdr_gw_init.ch tdr_ps_init.ch \
           tdr_sample.ch tdr_gw_sample.ch tdr_ps_sample.ch tdr_ia_sample.ch \
           tdr_debug.ch tdr_gw_debug.ch tdr_ps_debug.ch tdr_info.ch \
- tdrgw.c  tdrgw.h  tdrgw_struct.h \
  unif.c   unif.h   unif_struct.h \
  utdr.c   utdr.h   utdr_struct.h \
  vempk.c  vempk.h  vempk_struct.h \

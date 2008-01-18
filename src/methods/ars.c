@@ -58,8 +58,8 @@
 #include <urng/urng.h>
 #include "unur_methods_source.h"
 #include "x_gen_source.h"
-#include "tdrgw.h"
-#include "tdrgw_struct.h"
+#include "ars.h"
+#include "ars_struct.h"
 
 #ifdef UNUR_ENABLE_INFO
 #  include <tests/unuran_tests.h>

@@ -59,8 +59,8 @@
 #include "x_gen.h"
 #include "x_gen_source.h"
 #include "arou.h"
+#include "ars.h"
 #include "tdr.h"
-#include "tdrgw.h"
 
 #include "gibbs.h"
 #include "gibbs_struct.h"

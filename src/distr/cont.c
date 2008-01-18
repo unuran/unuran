@@ -674,6 +674,21 @@ unur_distr_cont_set_pdfstr( struct unur_distr *distr, const char *pdfstr )
   _unur_check_distr_object( distr, CONT, UNUR_ERR_DISTR_INVALID );
   _unur_check_NULL( NULL, pdfstr, UNUR_ERR_NULL );
 
+  /* When the user calls unur_distr_cont_set_cdfstr() before this function   */
+  /* then the PDF and dPDF probably are already set and we get an error.     */
+  /* This might happen in particular for the String API.                     */
+  /* To avoid confusion we remove these settings.                            */
+  if ( DISTR.pdftree || DISTR.logpdftree ) {
+    if (DISTR.pdftree)  _unur_fstr_free(DISTR.pdftree);
+    if (DISTR.dpdftree) _unur_fstr_free(DISTR.dpdftree);
+    if (DISTR.logpdftree)  _unur_fstr_free(DISTR.logpdftree);
+    if (DISTR.dlogpdftree) _unur_fstr_free(DISTR.dlogpdftree);
+    DISTR.pdf = NULL;
+    DISTR.dpdf = NULL;
+    DISTR.logpdf = NULL;
+    DISTR.dlogpdf = NULL;
+  }
+
   /* we do not allow overwriting a PDF */
   if (DISTR.pdf != NULL) {
     _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of PDF not allowed");
@@ -722,6 +737,21 @@ unur_distr_cont_set_logpdfstr( struct unur_distr *distr, const char *logpdfstr )
   _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
   _unur_check_distr_object( distr, CONT, UNUR_ERR_DISTR_INVALID );
   _unur_check_NULL( NULL, logpdfstr, UNUR_ERR_NULL );
+
+  /* When the user calls unur_distr_cont_set_cdfstr() before this function   */
+  /* then the PDF and dPDF probably are already set and we get an error.     */
+  /* This might happen in particular for the String API.                     */
+  /* To avoid confusion we remove these settings.                            */
+  if ( DISTR.pdftree || DISTR.logpdftree ) {
+    if (DISTR.pdftree)  _unur_fstr_free(DISTR.pdftree);
+    if (DISTR.dpdftree) _unur_fstr_free(DISTR.dpdftree);
+    if (DISTR.logpdftree)  _unur_fstr_free(DISTR.logpdftree);
+    if (DISTR.dlogpdftree) _unur_fstr_free(DISTR.dlogpdftree);
+    DISTR.pdf = NULL;
+    DISTR.dpdf = NULL;
+    DISTR.logpdf = NULL;
+    DISTR.dlogpdf = NULL;
+  }
 
   /* we do not allow overwriting a PDF */
   if (DISTR.pdf != NULL || DISTR.logpdf != NULL) {
@@ -794,12 +824,17 @@ unur_distr_cont_set_cdfstr( struct unur_distr *distr, const char *cdfstr )
   }
   DISTR.cdf  = _unur_distr_cont_eval_cdf_tree;
   
-  /* make derivatives */
-  /* (we do not return an error code if it did not work!) */
-  if ( (DISTR.pdftree = _unur_fstr_make_derivative(DISTR.cdftree)) != NULL )
-    DISTR.pdf = _unur_distr_cont_eval_pdf_tree;
-  if ( (DISTR.dpdftree = _unur_fstr_make_derivative(DISTR.pdftree)) != NULL )
-    DISTR.dpdf = _unur_distr_cont_eval_dpdf_tree;
+  /* make derivatives (if necessary) */
+  /* We do not compute derivatives, if these strings are alreasy set by an   */
+  /* unur_distr_cont_set_pdfstr() or unur_distr_cont_set_logpdfstr() call.   */
+  /* We also do not return an error code if computation of derivatives       */
+  /* did not work.                                                           */
+  if (DISTR.pdftree == NULL)
+    if ( (DISTR.pdftree = _unur_fstr_make_derivative(DISTR.cdftree)) != NULL )
+      DISTR.pdf = _unur_distr_cont_eval_pdf_tree;
+  if (DISTR.dpdftree == NULL)
+    if ( (DISTR.dpdftree = _unur_fstr_make_derivative(DISTR.pdftree)) != NULL )
+      DISTR.dpdf = _unur_distr_cont_eval_dpdf_tree;
 
   return UNUR_SUCCESS;
 } /* end of unur_distr_cont_set_cdfstr() */

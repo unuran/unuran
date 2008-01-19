@@ -10,6 +10,7 @@ noinst_LTLIBRARIES = libmethods.la
 if ENABLE_DEPRECATED
 DEPRECATED_FILES = \
  deprecated_methods.c deprecated_methods.h \
+ deprecated_tdrgw.h \
  deprecated_vmt.c  deprecated_vmt.h  deprecated_vmt_struct.h
 else
 DEPRECATED_FILES = 

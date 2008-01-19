@@ -4,11 +4,11 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: tdrgw.h                                                           *
+ *   FILE: ars.h                                                             *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         function prototypes for method TDRGW                              *
- *         (Transformed Density Rejection - Gilks & Wild variant)            *
+ *         function prototypes for method ARS                                *
+ *         (Adaptive Rejection Sampling - Gilks & Wild)                      *
  *                                                                           *
  *   USAGE:                                                                  *
  *         only included in unuran.h                                         *
@@ -36,7 +36,7 @@
  *****************************************************************************/
 
 /* 
-   =METHOD  TDRGW   Transformed Density Rejection - Gilks&Wild variant
+   =METHOD  ARS   Adaptive Rejection Sampling
 
    =UP  Methods_for_CONT
 
@@ -51,12 +51,12 @@
    =REF  [GWa92] [HLD04: Cha.4]
 
    =DESCRIPTION
-      TDRGW is an acceptance/rejection method that uses the concavity
+      ARS is an acceptance/rejection method that uses the concavity
       of the log-density function to construct hat function and
       squeezes automatically. 
       It is very similar to method TDR (@pxref{TDR}) with variant GW,
       parameter @code{c = 0}, and DARS switched off. 
-      Moreover, method TDRGW requires the logPDF and its derivative
+      Moreover, method ARS requires the logPDF and its derivative
       dlogPDF to run. On the other hand, it is designed to draw only a
       (very) small samples and it is much more robust against
       densities with very large or small areas below the PDF as 
@@ -66,36 +66,36 @@
       distribution has been modified. 
       Thus it is well suited for Gibbs sampling. 
 
-      Notice, that method TDRGW is a restricted version of TDR. If the
+      Notice, that method ARS is a restricted version of TDR. If the
       full functionally of Transformed Density Rejection is needed use
       method @ref{TDR}.
 
    =HOWTOUSE
-      Method TDRGW is designed for distributions with log-concave
+      Method ARS is designed for distributions with log-concave
       densities. To use this method you need a distribution object
       with the logarithm of the PDF and its derivative given.
 
       The number of construction points as well as a set of such
-      points can be provided using unur_tdrgw_set_cpoints().
+      points can be provided using unur_ars_set_cpoints().
       Notice that addition construction points are added by means of
       adaptive rejection sampling until the maximal number of
-      intervals given by unur_tdrgw_set_max_intervals() is reached.
+      intervals given by unur_ars_set_max_intervals() is reached.
       
       A generated distribution object can be reinitialized using the
       unur_reinit() call. When unur_reinit() is called construction
       points for the new generator are necessary. There are two options:
       Either the same construction points as for the initial generator 
-      (given by a unur_tdrgw_set_cpoints() call) are used (this is the
+      (given by a unur_ars_set_cpoints() call) are used (this is the
       default), or percentiles of the old hat function can be used.
-      This can be set or changed using unur_tdrgw_set_reinit_percentiles()
-      and unur_tdrgw_chg_reinit_percentiles().
+      This can be set or changed using unur_ars_set_reinit_percentiles()
+      and unur_ars_chg_reinit_percentiles().
       This feature is usefull when the underlying distribution object
       is only moderately changed. (An example is Gibbs sampling with
       small correlations.)
 
       There exists a test mode that verifies whether the conditions for
       the method are satisfied or not. It can be switched on by calling 
-      unur_tdrgw_set_verify() and unur_tdrgw_chg_verify(), respectively.
+      unur_ars_set_verify() and unur_ars_chg_verify(), respectively.
       Notice however that sampling is (much) slower then.
 
    =END
@@ -106,14 +106,14 @@
 
 /* =ROUTINES */
 
-UNUR_PAR *unur_tdrgw_new( const UNUR_DISTR* distribution );
+UNUR_PAR *unur_ars_new( const UNUR_DISTR* distribution );
 /* 
    Get default parameters for generator.
 */
 
 /*...........................................................................*/
 
-int unur_tdrgw_set_max_intervals( UNUR_PAR *parameters, int max_ivs );
+int unur_ars_set_max_intervals( UNUR_PAR *parameters, int max_ivs );
 /* 
    Set maximum number of intervals.
    No construction points are added after the setup when the number of
@@ -124,7 +124,7 @@ int unur_tdrgw_set_max_intervals( UNUR_PAR *parameters, int max_ivs );
    Default is @code{200}.
 */
 
-int unur_tdrgw_set_cpoints( UNUR_PAR *parameters, int n_cpoints, const double *cpoints );
+int unur_ars_set_cpoints( UNUR_PAR *parameters, int n_cpoints, const double *cpoints );
 /* 
    Set construction points for the hat function. If @var{cpoints} is
    NULL then a heuristic rule of thumb is used to get @var{n_cpoints}
@@ -134,10 +134,10 @@ int unur_tdrgw_set_cpoints( UNUR_PAR *parameters, int n_cpoints, const double *c
    The default number of construction points is 2.
 */
 
-int unur_tdrgw_set_reinit_percentiles( UNUR_PAR *parameters, int n_percentiles, const double *percentiles );
+int unur_ars_set_reinit_percentiles( UNUR_PAR *parameters, int n_percentiles, const double *percentiles );
 /* */ 
 
-int unur_tdrgw_chg_reinit_percentiles( UNUR_GEN *generator, int n_percentiles, const double *percentiles );
+int unur_ars_chg_reinit_percentiles( UNUR_GEN *generator, int n_percentiles, const double *percentiles );
 /* 
    By default, when the @var{generator} object is reinitialized, it
    used the same construction points as for the initialization
@@ -156,10 +156,10 @@ int unur_tdrgw_chg_reinit_percentiles( UNUR_GEN *generator, int n_percentiles, c
    (Then the first and third quartiles are used by default.) 
 */
 
-int unur_tdrgw_set_reinit_ncpoints( UNUR_PAR *parameters, int ncpoints );
+int unur_ars_set_reinit_ncpoints( UNUR_PAR *parameters, int ncpoints );
 /* */ 
 
-int unur_tdrgw_chg_reinit_ncpoints( UNUR_GEN *generator, int ncpoints );
+int unur_ars_chg_reinit_ncpoints( UNUR_GEN *generator, int ncpoints );
 /* 
    When reinit fails with the given construction points or the percentiles 
    of the old hat function, another trial is undertaken with @var{ncpoints}
@@ -168,10 +168,10 @@ int unur_tdrgw_chg_reinit_ncpoints( UNUR_GEN *generator, int ncpoints );
    Default: @code{30}
  */
 
-int unur_tdrgw_set_verify( UNUR_PAR *parameters, int verify );
+int unur_ars_set_verify( UNUR_PAR *parameters, int verify );
 /* */
 
-int unur_tdrgw_chg_verify( UNUR_GEN *generator, int verify );
+int unur_ars_chg_verify( UNUR_GEN *generator, int verify );
 /* 
    Turn verifying of algorithm while sampling on/off.
    If the condition squeeze(@i{x}) <= PDF(@i{x}) <= hat(@i{x}) is
@@ -183,7 +183,7 @@ int unur_tdrgw_chg_verify( UNUR_GEN *generator, int verify );
    Default is FALSE.
 */
 
-int unur_tdrgw_set_pedantic( UNUR_PAR *parameters, int pedantic );
+int unur_ars_set_pedantic( UNUR_PAR *parameters, int pedantic );
 /* 
    Sometimes it might happen that unur_init() has been executed
    successfully. But when additional construction points are added by
@@ -207,13 +207,13 @@ int unur_tdrgw_set_pedantic( UNUR_PAR *parameters, int pedantic );
    Default is FALSE.
 */
 
-double unur_tdrgw_get_loghatarea( const UNUR_GEN *generator );
+double unur_ars_get_loghatarea( const UNUR_GEN *generator );
 /* 
    Get the logarithm of area below the hat for the generator.
    (In case of an error @code{UNUR_INFINITY} is returned.)
 */
 
-double unur_tdrgw_eval_invcdfhat( const UNUR_GEN *generator, double u );
+double unur_ars_eval_invcdfhat( const UNUR_GEN *generator, double u );
 /* 
    Evaluate the inverse of the CDF of the hat distribution at @var{u}.
 

@@ -74,7 +74,7 @@
       the random vector are not too high.
 
       For both variants transformed density rejection (see methods
-      @pxref{TDR} and @pxref{TDRGW}) is used to
+      @pxref{TDR} and @pxref{ARS}) is used to
       sample from the full conditional distributions. In opposition to
       the univariate case, it is important that the factor @code{c} is
       as large as possible. I.e., for a log-concave density @code{c}
@@ -185,8 +185,8 @@ int unur_gibbs_set_c( UNUR_PAR *parameters, double c );
    allowed. If @code{c} is between @code{0} and @code{-0.5} it is set
    to @code{-0.5}. 
 
-   For @var{c} @code{=0} (for logconcave densities) method TDRGW
-   (@pxref{TDRGW}) is used which is very robust against badly
+   For @var{c} @code{=0} (for logconcave densities) method ARS
+   (@pxref{ARS}) is used which is very robust against badly
    normalized PDFs. For other values method TDR (@pxref{TDR}) is used.
 
    The value for @var{c} should be as large as possible to avoid 

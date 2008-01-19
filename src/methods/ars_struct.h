@@ -4,11 +4,11 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE: tdrgw_struct.h                                                    *
+ *   FILE: ars_struct.h                                                      *
  *                                                                           *
  *   PURPOSE:                                                                *
- *         declares structures for method TDRGW                              *
- *         (Transformed Density Rejection - Gilks & Wild variant)            *
+ *         declares structures for method ARS                                *
+ *         (Adaptive Rejection Sampling - Gilks & Wild)                      *
  *                                                                           *
  *****************************************************************************
  *                                                                           *
@@ -35,7 +35,7 @@
 /*---------------------------------------------------------------------------*/
 /* Information for constructing the generator                                */
 
-struct unur_tdrgw_par { 
+struct unur_ars_par { 
 
   const double *starting_cpoints; /* pointer to array of starting points     */
   int n_starting_cpoints;         /* number of construction points at start  */
@@ -49,7 +49,7 @@ struct unur_tdrgw_par {
 /*---------------------------------------------------------------------------*/
 /* store data for segments                                                   */
 
-struct unur_tdrgw_interval {
+struct unur_ars_interval {
 
   double  x;              /* (left hand side) construction point (cp)        */
   double  logfx;          /* value of logPDF at cp                           */
@@ -60,7 +60,7 @@ struct unur_tdrgw_interval {
   double  logAhat;        /* log of area below hat                           */
   double  Ahatr_fract;    /* fraction of area below hat on r.h.s.            */
 
-  struct unur_tdrgw_interval *next; /* pointer to next interval in list      */
+  struct unur_ars_interval *next; /* pointer to next interval in list        */
 
 #ifdef DEBUG_STORE_IP 
   double  ip;             /* intersection point between two tangents         */
@@ -73,12 +73,12 @@ struct unur_tdrgw_interval {
 /*---------------------------------------------------------------------------*/
 /* The generator object                                                      */
 
-struct unur_tdrgw_gen { 
+struct unur_ars_gen { 
 
   double  Atotal;               /* area below hat                            */
   double  logAmax;              /* log of maximum area in intervals          */
 
-  struct unur_tdrgw_interval *iv; /* pointer to linked list of intervals     */
+  struct unur_ars_interval *iv; /* pointer to linked list of intervals       */
   int     n_ivs;                /* number of intervals                       */
   int     max_ivs;              /* maximum number of intervals               */
 

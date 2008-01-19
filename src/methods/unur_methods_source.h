@@ -58,6 +58,7 @@
 #define UNUR_METH_CONT     0x02000000u
 
 #define UNUR_METH_AROU     0x02000100u
+#define UNUR_METH_ARS      0x02000d00u
 #define UNUR_METH_HINV     0x02000200u
 #define UNUR_METH_HRB      0x02000300u
 #define UNUR_METH_HRD      0x02000400u
@@ -69,7 +70,6 @@
 #define UNUR_METH_SSR      0x02000a00u
 #define UNUR_METH_TABL     0x02000b00u
 #define UNUR_METH_TDR      0x02000c00u
-#define UNUR_METH_TDRGW    0x02000d00u
 #define UNUR_METH_UNIF     0x02000e00u
 #define UNUR_METH_UTDR     0x02000f00u
 

@@ -61,6 +61,9 @@
 #define CK_AROU_PAR      0x00100010u
 #define CK_AROU_GEN      0x00100011u
 #define CK_AROU_SEG      0x00100012u
+#define CK_ARS_PAR       0x001000d0u
+#define CK_ARS_GEN       0x001000d1u
+#define CK_ARS_IV        0x001000d2u
 #define CK_HINV_PAR      0x00100020u
 #define CK_HINV_GEN      0x00100021u
 #define CK_HINV_IV       0x00100022u
@@ -86,9 +89,6 @@
 #define CK_TDR_PAR       0x001000c0u
 #define CK_TDR_GEN       0x001000c1u
 #define CK_TDR_IV        0x001000c2u
-#define CK_TDRGW_PAR     0x001000d0u
-#define CK_TDRGW_GEN     0x001000d1u
-#define CK_TDRGW_IV      0x001000d2u
 #define CK_UNIF_PAR      0x001000e0u
 #define CK_UNIF_GEN      0x001000e1u
 #define CK_UTDR_PAR      0x001000f0u

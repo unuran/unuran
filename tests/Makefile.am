@@ -26,7 +26,7 @@ endif
 
 # Files that contain deprecated routines
 if ENABLE_DEPRECATED
-DEPRECATED_TESTS = t_deprecated_vmt
+DEPRECATED_TESTS = t_deprecated_vmt t_deprecated_tdrgw
 else
 DEPRECATED_TESTS = 
 endif
@@ -47,6 +47,7 @@ check_PROGRAMS = \
  t_distr_matr \
  t_auto \
  t_arou \
+ t_ars \
  t_cext \
  t_cstd \
  t_dari \
@@ -76,7 +77,6 @@ check_PROGRAMS = \
  t_ssr \
  t_tabl \
  t_tdr t_tdr_gw t_tdr_ps t_tdr_ia \
- t_tdrgw \
  t_unif \
  t_utdr \
  t_vempk \

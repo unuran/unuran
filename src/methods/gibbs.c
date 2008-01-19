@@ -699,9 +699,9 @@ _unur_gibbs_coord_init( struct unur_gen *gen )
     /* make parameter object */
     switch( gen->variant & GIBBS_VARMASK_T ) {
     case GIBBS_VAR_T_LOG:
-      /* use more robust method TDRGW for T = log */
-      par_condi = unur_tdrgw_new(GEN->distr_condi);
-      unur_tdrgw_set_reinit_percentiles(par_condi,2,NULL);
+      /* use more robust method ARS for T = log */
+      par_condi = unur_ars_new(GEN->distr_condi);
+      unur_ars_set_reinit_percentiles(par_condi,2,NULL);
       break;
       
     case GIBBS_VAR_T_SQRT:
@@ -784,9 +784,9 @@ _unur_gibbs_randomdir_init( struct unur_gen *gen )
   /* make parameter object */
   switch( gen->variant & GIBBS_VARMASK_T ) {
   case GIBBS_VAR_T_LOG:
-    /* use more robust method TDRGW for T = log */
-    par_condi = unur_tdrgw_new(GEN->distr_condi);
-    unur_tdrgw_set_reinit_percentiles(par_condi,2,NULL);
+    /* use more robust method ARS for T = log */
+    par_condi = unur_ars_new(GEN->distr_condi);
+    unur_ars_set_reinit_percentiles(par_condi,2,NULL);
     break;
 
   case GIBBS_VAR_T_SQRT:

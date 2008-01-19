@@ -1094,6 +1094,8 @@ unur_tdrgw_reinit( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* Deprecated call!                                                     */
      /*----------------------------------------------------------------------*/
+     /* Remark: method TDRGW has been renamed into ARS!                      */
+     /*----------------------------------------------------------------------*/
      /* re-initialize (existing) generator.                                  */
      /*                                                                      */
      /* parameters:                                                          */
@@ -1106,7 +1108,7 @@ unur_tdrgw_reinit( struct unur_gen *gen )
 {
   /* check arguments */
   _unur_check_NULL( GENTYPE,gen, UNUR_ERR_NULL );
-  _unur_check_gen_object( gen, TDRGW, UNUR_ERR_GEN_INVALID );
+  _unur_check_gen_object( gen, ARS, UNUR_ERR_GEN_INVALID );
 
   return gen->reinit(gen);
 } /* end of unur_tdrgw_reinit() */

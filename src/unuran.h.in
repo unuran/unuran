@@ -145,6 +145,7 @@
 
 #include <distr/deprecated_distr.h>
 #include <methods/deprecated_methods.h>
+#include <methods/deprecated_tdrgw.h>
 #include <methods/deprecated_vmt.h>
 
 /*****************************************************************************/

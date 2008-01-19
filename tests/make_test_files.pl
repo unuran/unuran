@@ -950,7 +950,9 @@ static int n_tests_failed;          /* number of failed tests                */
 
 void run_verify_generator( FILE *LOG, int line, UNUR_PAR *par );
 
+#ifndef unur_$method\_set_verify
 int unur_$method\_set_verify( UNUR_PAR *par, int verify);
+#endif
 
 /*---------------------------------------------------------------------------*/
 

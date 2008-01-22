@@ -121,10 +121,16 @@ _unur_mvtdr_info( struct unur_gen *gen, int help )
 
     _unur_string_append(info,"   stepsmin = %d  %s\n", GEN->steps_min,
  			(gen->set & MVTDR_SET_STEPSMIN) ? "" : "[default]");
+
     _unur_string_append(info,"   maxcones = %d  %s\n", GEN->max_cones,
  			(gen->set & MVTDR_SET_MAXCONES) ? "" : "[default]");
+
     _unur_string_append(info,"   boundsplitting = %g  %s\n", GEN->bound_splitting,
  			(gen->set & MVTDR_SET_BOUNDSPLITTING) ? "" : "[default]");
+
+    if (gen->variant & MVTDR_VARFLAG_VERIFY)
+      _unur_string_append(info,"   verify = on\n");
+
     _unur_string_append(info,"\n");
   }
 

@@ -1089,6 +1089,9 @@ _unur_vnrou_info( struct unur_gen *gen, int help )
     _unur_distr_info_vector( gen, GEN->umax, GEN->dim);
     _unur_string_append(info,"%s\n",(gen->set & VNROU_SET_U) ? "" : "  [numeric.]"); 
 
+    if (gen->variant & VNROU_VARFLAG_VERIFY)
+      _unur_string_append(info,"   verify = on\n");
+
     _unur_string_append(info,"\n");
   }
 

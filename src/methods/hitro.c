@@ -1886,6 +1886,12 @@ _unur_hitro_info( struct unur_gen *gen, int help )
  			(gen->set & HITRO_SET_THINNING) ? "" : "[default]");
 
     _unur_string_append(info,"\n");
+
+    /* Not displayed:
+       int unur_hitro_set_v( UNUR_PAR *parameters, double vmax );
+       int unur_hitro_set_u( UNUR_PAR *parameters, const double *umin, const double *umax );
+       int unur_hitro_set_startingpoint( UNUR_PAR *parameters, const double *x0 );
+    */
   }
 
   /* Hints */

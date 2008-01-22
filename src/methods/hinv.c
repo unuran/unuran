@@ -2037,9 +2037,21 @@ _unur_hinv_info( struct unur_gen *gen, int help )
     _unur_string_append(info,"parameters:\n");
     _unur_string_append(info,"   order = %d  %s\n", GEN->order,
  			(gen->set & HINV_SET_ORDER) ? "" : "[default]");
+
     _unur_string_append(info,"   u_resolution = %g  %s\n", GEN->u_resolution,
  			(gen->set & HINV_SET_U_RESOLUTION) ? "" : "[default]");
+    
+    if (gen->set & HINV_SET_MAX_IVS)
+      _unur_string_append(info,"   max_intervals = %d\n", GEN->max_ivs);
+    
+    _unur_string_append(info,"   boundary = (%g,%g)  %s\n", GEN->bleft, GEN->bright,
+			(gen->set & HINV_SET_BOUNDARY) ? "" : "[computed]");
+
     _unur_string_append(info,"\n");
+    /* Not displayed:
+       int unur_hinv_set_cpoints( UNUR_PAR *parameters, const double *stp, int n_stp );
+       int unur_hinv_set_guidefactor( UNUR_PAR *parameters, double factor );
+    */
   }
 
 

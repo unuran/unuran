@@ -897,6 +897,8 @@ _unur_dgt_info( struct unur_gen *gen, int help )
     _unur_string_append(info,"parameters:\n");
     _unur_string_append(info,"   guidefactor = %g  %s\n", GEN->guide_factor,
 			(gen->set & DGT_SET_GUIDEFACTOR) ? "" : "[default]");
+    if (gen->set & DGT_SET_VARIANT)
+      _unur_string_append(info,"   variant = %d\n", gen->variant);
     _unur_string_append(info,"\n");
   }
 

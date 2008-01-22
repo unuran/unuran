@@ -782,7 +782,9 @@ _unur_hrd_info( struct unur_gen *gen, int help )
 
   /* parameters */
     if (help) {
-      _unur_string_append(info,"parameters: none\n");
+      _unur_string_append(info,"parameters:\n");
+      if (gen->variant & HRD_VARFLAG_VERIFY)
+	_unur_string_append(info,"   verify = on\n");
       _unur_string_append(info,"\n");
     }
 

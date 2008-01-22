@@ -1246,6 +1246,9 @@ _unur_dari_info( struct unur_gen *gen, int help )
     if (gen->set & DARI_SET_CFACTOR)
       _unur_string_append(info,"   cpfactor = %g\n",   GEN->c_factor);
 
+    if (gen->variant & DARI_VARFLAG_VERIFY)
+      _unur_string_append(info,"   verify = on\n");
+
     _unur_string_append(info,"\n");
   }
 

@@ -985,6 +985,10 @@ _unur_dsrou_info( struct unur_gen *gen, int help )
       _unur_string_append(info,"   cdfatmode = %g\n", GEN->Fmode);
     else
       _unur_string_append(info,"   cdfatmode = [not set]\n");
+
+    if (gen->variant & DSROU_VARFLAG_VERIFY)
+      _unur_string_append(info,"   verify = on\n");
+
     _unur_string_append(info,"\n");
   }
 

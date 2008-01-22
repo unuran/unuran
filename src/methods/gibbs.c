@@ -1432,6 +1432,10 @@ _unur_gibbs_info( struct unur_gen *gen, int help )
  			(gen->set & GIBBS_SET_THINNING) ? "" : "[default]");
     
     _unur_string_append(info,"\n");
+
+    /* Not displayed:
+       int unur_gibbs_set_startingpoint( UNUR_PAR *parameters, const double *x0 );
+    */
   }
 
   /* Hints */

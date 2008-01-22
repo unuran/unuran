@@ -1323,8 +1323,16 @@ _unur_utdr_info( struct unur_gen *gen, int help )
     _unur_string_append(info,"parameters:\n");
     _unur_string_append(info,"   deltafactor = %g  %s\n", GEN->delta_factor,
 			(gen->set & UTDR_SET_DELTA) ? "" : "[default]");
+
     if (gen->set & UTDR_SET_PDFMODE)
       _unur_string_append(info,"   pdfatmode = %g\n", GEN->fm);
+    
+    if (gen->set & UTDR_SET_CPFACTOR)
+      _unur_string_append(info,"   cpfactor = %g\n", GEN->c_factor);
+
+    if (gen->variant & UTDR_VARFLAG_VERIFY)
+      _unur_string_append(info,"   verify = on\n");
+
     _unur_string_append(info,"\n");
   }
 

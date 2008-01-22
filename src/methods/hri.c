@@ -974,6 +974,8 @@ _unur_hri_info( struct unur_gen *gen, int help )
     _unur_string_append(info,"parameters:\n");
     _unur_string_append(info,"   p0 = %g  %s\n", GEN->p0,
   			(gen->set & HRI_SET_P0) ? "" : "[default]"); 
+    if (gen->variant & HRI_VARFLAG_VERIFY)
+      _unur_string_append(info,"   verify = on\n");
     _unur_string_append(info,"\n");
   }
 

@@ -929,7 +929,12 @@ _unur_mcorr_info( struct unur_gen *gen, int help )
 
   /* parameters */
   if (help) {
-    _unur_string_append(info,"parameters: none\n");
+    _unur_string_append(info,"parameters: \n");
+    if (gen->set && MCORR_SET_EIGENVALUES) {
+      _unur_string_append(info,"   eigenvalues = ");
+      _unur_distr_info_vector( gen, GEN->eigenvalues, GEN->dim);
+      _unur_string_append(info,"\n");
+    }
     _unur_string_append(info,"\n");
   }
 

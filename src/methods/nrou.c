@@ -1132,9 +1132,10 @@ _unur_nrou_info( struct unur_gen *gen, int help )
 			(gen->set & NROU_SET_V) ? "" : "[numeric.]");
     _unur_string_append(info,"   u = (%g, %g)  %s\n", GEN->umin,GEN->umax,
 			(gen->set & NROU_SET_U) ? "" : "[numeric.]");
+    if (gen->variant & NROU_VARFLAG_VERIFY)
+      _unur_string_append(info,"   verify = on\n");
     _unur_string_append(info,"\n");
   }
-
 
   /* Hints */
   if (help) {

@@ -1675,6 +1675,8 @@ _unur_itdr_info( struct unur_gen *gen, int help )
 			(gen->set & ITDR_SET_CT) ? "" : " [computed]");
     _unur_string_append(info,"   xi = %g  %s\n", GEN->xi,
 			(gen->set & ITDR_SET_XI) ? "" : " [computed]");
+    if (gen->variant & ITDR_VARFLAG_VERIFY)
+      _unur_string_append(info,"   verify = on\n");
     _unur_string_append(info,"\n");
   }
 

@@ -809,6 +809,10 @@ _unur_hrb_info( struct unur_gen *gen, int help )
     _unur_string_append(info,"parameters:\n");
     _unur_string_append(info,"  upperbound = %g  %s\n", GEN->upper_bound,
  			(gen->set & HRB_SET_UPPERBOUND) ? "" : "[default]");
+
+    if (gen->variant & HRB_VARFLAG_VERIFY)
+      _unur_string_append(info,"   verify = on\n");
+
     _unur_string_append(info,"\n");
   }
 

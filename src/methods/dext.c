@@ -661,7 +661,12 @@ _unur_dext_info( struct unur_gen *gen, int help )
   if (help) {
     _unur_string_append(info,"parameters: none\n");
     _unur_string_append(info,"\n");
+    /* Not displayed:
+       int unur_dext_set_init( UNUR_PAR *parameters, int (*init)(UNUR_GEN *gen) );
+       int unur_dext_set_sample( UNUR_PAR *parameters, int (*sample)(UNUR_GEN *gen) );
+    */
   }
+
 
   /* Hints */
   /*   if (help) { */

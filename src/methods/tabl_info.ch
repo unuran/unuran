@@ -113,9 +113,30 @@ _unur_tabl_info( struct unur_gen *gen, int help )
 
     _unur_string_append(info,"   max_sqhratio = %g  %s\n", GEN->max_ratio,
 			(gen->set & TABL_SET_MAX_SQHRATIO) ? "" : "[default]");
+
     _unur_string_append(info,"   max_intervals = %d  %s\n", GEN->max_ivs_info,
 			(gen->set & TABL_SET_MAX_IVS) ? "" : "[default]");
+
+    if (gen->variant & TABL_VARFLAG_VERIFY)
+      _unur_string_append(info,"   verify = on\n");
+
+    if (gen->variant & TABL_VARFLAG_PEDANTIC)
+      _unur_string_append(info,"   pedantic = on\n");
+
     _unur_string_append(info,"\n");
+
+    /* Not displayed:
+       int unur_tabl_set_cpoints( UNUR_PAR *parameters, int n_cpoints, const double *cpoints );
+       int unur_tabl_set_nstp( UNUR_PAR *parameters, int n_stp );
+       int unur_tabl_set_useear( UNUR_PAR *parameters, int useear );
+       int unur_tabl_set_areafraction( UNUR_PAR *parameters, double fraction );
+       int unur_tabl_set_usedars( UNUR_PAR *parameters, int usedars );
+       int unur_tabl_set_darsfactor( UNUR_PAR *parameters, double factor );
+       int unur_tabl_set_variant_splitmode( UNUR_PAR *parameters, unsigned splitmode );
+       int unur_tabl_set_slopes( UNUR_PAR *parameters, const double *slopes, int n_slopes );
+       int unur_tabl_set_guidefactor( UNUR_PAR *parameters, double factor );
+       int unur_tabl_set_boundary( UNUR_PAR *parameters, double left, double right );
+    */
   }
 
   /* Hints */

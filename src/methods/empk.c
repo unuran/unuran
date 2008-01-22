@@ -1277,13 +1277,22 @@ _unur_empk_info( struct unur_gen *gen, int help )
     _unur_string_append(info,"parameters:\n");
     _unur_string_append(info,"   smoothing = %g   %s\n", GEN->smoothing,
 			(gen->set & EMPK_SET_SMOOTHING) ? "" : "[default]");
+
     if (gen->set & EMPK_SET_BETA)
       _unur_string_append(info,"   beta = %g\n", GEN->beta);
+
     if (gen->variant & EMPK_VARFLAG_VARCOR) 
       _unur_string_append(info,"   varcor = on\n");
+
     if (gen->variant & EMPK_VARFLAG_POSITIVE) 
       _unur_string_append(info,"   positive = on\n");
+
     _unur_string_append(info,"\n");
+
+    /* Not displayed:
+       int unur_empk_set_kernel( UNUR_PAR *parameters, unsigned kernel);
+       int unur_empk_set_kernelgen( UNUR_PAR *parameters, const UNUR_GEN *kernelgen, double alpha, double kernelvar );
+    */
   }
 
   /* Hints */

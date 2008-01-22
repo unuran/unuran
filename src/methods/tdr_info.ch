@@ -129,14 +129,36 @@ _unur_tdr_info( struct unur_gen *gen, int help )
     case TDR_VARIANT_IA:
       _unur_string_append(info,"   variant_ia = on\n"); break;
     }
+
     _unur_string_append(info,"   c = %g  %s\n", GEN->c_T,
 			(gen->set & TDR_SET_C) ? "" : "[default]");
+
     _unur_string_append(info,"   max_sqhratio = %g  %s\n", GEN->max_ratio,
 			(gen->set & TDR_SET_MAX_SQHRATIO) ? "" : "[default]");
+
     _unur_string_append(info,"   max_intervals = %d  %s\n", GEN->max_ivs_info,
 			(gen->set & TDR_SET_MAX_IVS) ? "" : "[default]");
+
+    if (gen->variant & TDR_VARFLAG_VERIFY)
+      _unur_string_append(info,"   verify = on\n");
+
+    if (gen->variant & TDR_VARFLAG_PEDANTIC)
+      _unur_string_append(info,"   pedantic = on\n");
+
     _unur_string_append(info,"\n");
+
+    /* Not displayed:
+       int unur_tdr_set_usedars( UNUR_PAR *parameters, int usedars );
+       int unur_tdr_set_darsfactor( UNUR_PAR *parameters, double factor );
+       int unur_tdr_set_cpoints( UNUR_PAR *parameters, int n_stp, const double *stp );
+       int unur_tdr_set_reinit_percentiles( UNUR_PAR *parameters, int n_percentiles, const double *percentiles );
+       int unur_tdr_set_reinit_ncpoints( UNUR_PAR *parameters, int ncpoints );
+       int unur_tdr_set_usecenter( UNUR_PAR *parameters, int usecenter );
+       int unur_tdr_set_usemode( UNUR_PAR *parameters, int usemode );
+       int unur_tdr_set_guidefactor( UNUR_PAR *parameters, double factor );
+    */
   }
+
 
   /* Hints */
   if (help) {

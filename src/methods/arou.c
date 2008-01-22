@@ -2860,9 +2860,22 @@ _unur_arou_info( struct unur_gen *gen, int help )
 			(gen->set & AROU_SET_MAX_SQHRATIO) ? "" : "[default]");
     _unur_string_append(info,"   max_segments = %d  %s\n", GEN->max_segs_info,
 			(gen->set & AROU_SET_MAX_SEGS) ? "" : "[default]");
+
+    if (gen->variant & AROU_VARFLAG_VERIFY)
+      _unur_string_append(info,"   verify = on\n");
+
+    if (gen->variant & AROU_VARFLAG_PEDANTIC)
+      _unur_string_append(info,"   pedantic = on\n");
+
+    /* Not displayed:
+       int unur_arou_set_usedars( UNUR_PAR *parameters, int usedars );
+       int unur_arou_set_darsfactor( UNUR_PAR *parameters, double factor );
+       int unur_arou_set_cpoints( UNUR_PAR *parameters, int n_stp, const double *stp );
+       int unur_arou_set_usecenter( UNUR_PAR *parameters, int usecenter );
+       int unur_arou_set_guidefactor( UNUR_PAR *parameters, double factor );
+    */
     _unur_string_append(info,"\n");
   }
-
 
   /* Hints */
   if (help) {

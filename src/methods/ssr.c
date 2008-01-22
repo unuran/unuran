@@ -1172,9 +1172,18 @@ _unur_ssr_info( struct unur_gen *gen, int help )
       _unur_string_append(info,"   cdfatmode = %g\n", GEN->Fmode); 
     else
       _unur_string_append(info,"   cdfatmode = [not set]\n"); 
+
     if (gen->variant & SSR_VARFLAG_SQUEEZE)
       _unur_string_append(info,"   usesqueeze\n");
+
+    if (gen->variant & SSR_VARFLAG_VERIFY)
+      _unur_string_append(info,"   verify = on\n");
+
     _unur_string_append(info,"\n");
+
+    /* Not displayed:
+       int unur_ssr_set_pdfatmode( UNUR_PAR *parameters, double fmode );
+    */
   }
 
   /* Hints */

@@ -1955,7 +1955,25 @@ _unur_ninv_info( struct unur_gen *gen, int help )
   _unur_string_append(info,"performance characteristics:\n");
   n_iter = unur_test_count_pdf(gen,samplesize,FALSE,NULL)/(2.*samplesize);
   if (!use_newton) n_iter *= 2.;
-  _unur_string_append(info,"   average number of iterations = %.2f  [approx.]\n\n", n_iter);
+  _unur_string_append(info,"   average number of iterations = %.2f  [approx.]\n", n_iter);
+
+  if (GEN->table_on) {
+    _unur_string_append(info,"   starting points = table of size %d\n", GEN->table_size);
+  }
+  else {
+    _unur_string_append(info,"   starting points = ");
+    if (use_newton) {
+      _unur_string_append(info,"%g (CDF = %g)  %s\n", GEN->s[0], GEN->CDFs[0],
+			  (gen->set & NINV_SET_START) ? "" : "[default]");
+    }
+    else {
+      _unur_string_append(info,"%g, %g  (CDF = %g, %g)   %s\n",
+			  GEN->s[0],GEN->s[1], GEN->CDFs[0],GEN->CDFs[1],
+			  (gen->set & NINV_SET_START) ? "" : "[default]");
+    }
+  }
+  _unur_string_append(info,"\n");
+
 
   /* parameters */
   if (help) {
@@ -1964,27 +1982,20 @@ _unur_ninv_info( struct unur_gen *gen, int help )
       _unur_string_append(info,"   usenewton\n");
     else
       _unur_string_append(info,"   useregula  [default]\n");
+
     _unur_string_append(info,"   x_resolution = %g  %s\n", GEN->rel_x_resolution,
 			(gen->set & NINV_SET_X_RESOLUTION) ? "" : "[default]");
+
     _unur_string_append(info,"   max_iter = %d  %s\n", GEN->max_iter,
 			(gen->set & NINV_SET_MAX_ITER) ? "" : "[default]");
-    if (GEN->table_on) {
-      _unur_string_append(info,"   starting points = table of size %d\n", GEN->table_size);
-    }
-    else {
-      _unur_string_append(info,"   starting points = ");
-      if (use_newton) {
-	_unur_string_append(info,"%g (CDF = %g)  %s\n", GEN->s[0], GEN->CDFs[0],
-			    (gen->set & NINV_SET_START) ? "" : "[default]");
-      }
-      else {
-	_unur_string_append(info,"%g, %g  (CDF = %g, %g)   %s\n",
-			    GEN->s[0],GEN->s[1], GEN->CDFs[0],GEN->CDFs[1],
-			    (gen->set & NINV_SET_START) ? "" : "[default]");
-      }
-    }
+
+    /* Not displayed:
+       int unur_ninv_set_start( UNUR_PAR *parameters, double left, double right);
+       int unur_ninv_set_table(UNUR_PAR *parameters, int no_of_points);
+    */
     _unur_string_append(info,"\n");
   }
+
 
   /* Hints */
   if (help) {

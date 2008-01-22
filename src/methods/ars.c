@@ -2792,7 +2792,20 @@ _unur_ars_info( struct unur_gen *gen, int help )
     _unur_string_append(info,"parameters:\n");
     _unur_string_append(info,"   cpoints = %d  %s\n", GEN->n_starting_cpoints,
 			(gen->set & ARS_SET_N_CPOINTS) ? "" : "[default]");
+
+    if (gen->variant & ARS_VARFLAG_VERIFY)
+      _unur_string_append(info,"   verify = on\n");
+
+    if (gen->variant & ARS_VARFLAG_PEDANTIC)
+      _unur_string_append(info,"   pedantic = on\n");
     _unur_string_append(info,"\n");
+
+    /* Not displayed:
+       int unur_ars_set_max_intervals( UNUR_PAR *parameters, int max_ivs );
+       int unur_ars_set_cpoints( UNUR_PAR *parameters, int n_cpoints, const double *cpoints );
+       int unur_ars_set_reinit_percentiles( UNUR_PAR *parameters, int n_percentiles, const double *percentiles );
+       int unur_ars_set_reinit_ncpoints( UNUR_PAR *parameters, int ncpoints );
+    */
   }
 
   /* Hints */

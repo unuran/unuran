@@ -946,6 +946,8 @@ static FILE *UNURANLOG;             /* unuran log file                       */
 static int test_ok = TRUE;          /* all tests ok (boolean)                */
 static int n_tests_failed;          /* number of failed tests                */
 
+static int fullcheck = FALSE;       /* whether all checks are performed      */ 
+
 /*---------------------------------------------------------------------------*/
 
 void run_verify_generator( FILE *LOG, int line, UNUR_PAR *par );
@@ -1033,8 +1035,11 @@ int main(void)
 	/* set default debugging flag */
 	unur_set_default_debug(UNUR_DEBUG_ALL);
 
+        /* detect required check mode */
+        fullcheck = (getenv("FULLCHECK")==NULL) ? FALSE : TRUE;
+
 	/* write header into log file */
-        print_test_log_header( TESTLOG, seed );
+        print_test_log_header( TESTLOG, seed, fullcheck );
 
 	/* start test */
 	printf("$method: ");

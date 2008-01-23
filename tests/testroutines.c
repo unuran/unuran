@@ -67,7 +67,7 @@ cannot_compare_sequence ( FILE *LOG )
 /*---------------------------------------------------------------------------*/
 /* print header for test log file                                            */
 
-void print_test_log_header( FILE *LOG, unsigned long seed )
+void print_test_log_header( FILE *LOG, unsigned long seed, int fullcheck )
 {
   time_t started;  
   
@@ -133,17 +133,11 @@ void print_test_log_header( FILE *LOG, unsigned long seed )
   else
     fprintf(LOG,"SEED = (not set)\n");
   
+  fprintf(LOG,"\n");
 
-/* *======================================================== */
-/* * */
-/* * Configuration for unuran-1.1.devel: */
-/* * */
-/* *  Source directory:           . */
-/* *  Installation directory:     /usr/local */
-/* *  C Compiler:                 gcc */
-/* * */
-/* *======================================================== */
-
+  /* whether all checks are performed */
+  fprintf(LOG,"check mode: %s\n",
+	  fullcheck ? "full check" : "installation");
 
   /* end */
   fprintf(LOG,"\n=======================================================\n\n");

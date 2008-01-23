@@ -86,7 +86,7 @@
 
 /*---------------------------------------------------------------------------*/
 /* print header for test log file                                            */
-void print_test_log_header( FILE *LOG, unsigned long seed );
+void print_test_log_header( FILE *LOG, unsigned long seed, int fullcheck );
 
 /*---------------------------------------------------------------------------*/
 /* check for invalid NULL pointer, that should not happen in this program */

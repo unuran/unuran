@@ -990,56 +990,51 @@ sub print_C_main {
 
 int main(void)
 { 
-       unsigned long seed;
+        unsigned long seed;
 
-	/* open log file for unuran and set output stream for unuran messages */
-	UNURANLOG = fopen( "$file_unuranlog","w" );
-	abort_if_NULL( stderr,-1, UNURANLOG );
-	unur_set_stream( UNURANLOG );
+        /* open log file for unuran and set output stream for unuran messages */
+        UNURANLOG = fopen( "$file_unuranlog","w" );
+        abort_if_NULL( stderr,-1, UNURANLOG );
+        unur_set_stream( UNURANLOG );
 
-	/* open log file for testing */
+        /* open log file for testing */
 	TESTLOG = fopen( "$file_testlog","w" );
 	abort_if_NULL( stderr,-1, TESTLOG );
 
-	/* write header into log file */
-  	{
-		time_t started;  
-		fprintf(TESTLOG,"\\nUNU.RAN - Universal Non-Uniform RANdom number generator\\n\\n");
-		if (time( \&started ) != -1)
-			fprintf(TESTLOG,"%s",ctime(\&started));
-		fprintf(TESTLOG,"\\n=======================================================\\n\\n");
-	}
-
-       /* seed for uniform generators */
+        /* seed for uniform generators */
 #ifdef SEED
-	seed = SEED;
+        seed = SEED;
 #else
-       seed = $seed;
+        seed = $seed;
 #endif
 
-       /* seed build-in uniform generators */
-       unur_urng_MRG31k3p_seed(NULL,seed);
-	unur_urng_fish_seed(NULL,seed);
+        /* seed build-in uniform generators */
+        unur_urng_MRG31k3p_seed(NULL,seed);
+        unur_urng_fish_seed(NULL,seed);
 	unur_urng_mstd_seed(NULL,seed);
 
 	/* seed uniform random number generator */
 #ifdef UNUR_URNG_UNURAN
 #  ifdef UNUR_URNG_DEFAULT_RNGSTREAM
 	{
-	   unsigned long sa[6];
-	   int i;
-	   for (i=0; i<6; i++) sa[i] = seed;
-          RngStream_SetPackageSeed(sa);
-       }
+	        unsigned long sa[6];
+	        int i;
+	        for (i=0; i<6; i++) sa[i] = seed;
+                RngStream_SetPackageSeed(sa);
+        }
 #  else
 	if (unur_urng_seed(NULL,seed) != UNUR_SUCCESS) {
-	  fprintf(stderr,"WARNING: Seed could not be set at random\\n");
+	        fprintf(stderr,"WARNING: Seed could not be set at random\\n");
+                seed = ~0u;
 	}
 #  endif  /* UNUR_URNG_DEFAULT_RNGSTREAM */
 #endif  /* UNUR_URNG_UNURAN */
  
 	/* set default debugging flag */
 	unur_set_default_debug(UNUR_DEBUG_ALL);
+
+	/* write header into log file */
+        print_test_log_header( TESTLOG, seed );
 
 	/* start test */
 	printf("$method: ");

@@ -62,7 +62,93 @@ cannot_compare_sequence ( FILE *LOG )
   printf ("URNG cannot be reset. Cannot compare sequences. (Skip)\n");
 
   return UNUR_SUCCESS; /* indicate as "not failed" for practical reasons */
-}
+} /* end of cannot_compare_sequence() */
+
+/*---------------------------------------------------------------------------*/
+/* print header for test log file                                            */
+
+void print_test_log_header( FILE *LOG, unsigned long seed )
+{
+  time_t started;  
+  
+  /* Title */
+  fprintf(LOG,"\nUNU.RAN - Universal Non-Uniform RANdom number generator\n\n");
+  if (time( &started ) != -1)
+    fprintf(LOG,"%s",ctime(&started));
+  fprintf(LOG,"\n=======================================================\n\n");
+
+  /* version */
+  fprintf(LOG,"UNU.RAN version:        %s\n", PACKAGE_STRING);
+
+  /* deprecated code */
+  fprintf(LOG,"Use deprecated code:    %s\n",
+#ifdef USE_DEPRECATED_CODE
+	  "yes"
+#else
+	  "no"
+#endif
+	  );
+  
+  /* runtime checks */
+  fprintf(LOG,"Enable runtime checks:  %s\n",
+#if defined(UNUR_ENABLE_CHECKNULL) || defined(UNUR_COOKIES)
+	  "yes"
+#else
+	  "no"
+#endif
+	  );
+
+  /* printing debugging info into log file */
+  fprintf(LOG,"Enable logging of data: %s\n",
+#ifdef UNUR_ENABLE_LOGGING
+	  "yes"
+#else
+	  "no"
+#endif
+	  );
+
+  /* creating info string */
+  fprintf(LOG,"Enable info routine:    %s\n",
+#ifdef UNUR_ENABLE_INFO
+	  "yes"
+#else
+	  "no"
+#endif
+	  );
+
+  fprintf(LOG,"\n");
+
+  /* Uniform random number generator */
+  fprintf(LOG,"Uniform random number generator: %s\n",
+#ifdef UNUR_URNG_DEFAULT_RNGSTREAM
+	  "RngStreams"
+#else
+	  "[default]  (built-in or user supplied)"
+#endif
+	  );
+
+  /* seed */
+  if (seed != ~0u) 
+    fprintf(LOG,"SEED = %lu\n",seed);
+  else
+    fprintf(LOG,"SEED = (not set)\n");
+  
+
+/* *======================================================== */
+/* * */
+/* * Configuration for unuran-1.1.devel: */
+/* * */
+/* *  Source directory:           . */
+/* *  Installation directory:     /usr/local */
+/* *  C Compiler:                 gcc */
+/* * */
+/* *======================================================== */
+
+
+  /* end */
+  fprintf(LOG,"\n=======================================================\n\n");
+
+} /* end of print_test_log_header() */
 
 /*---------------------------------------------------------------------------*/
 /* check for invalid NULL pointer, that should not happen in this program */

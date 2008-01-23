@@ -85,6 +85,10 @@
 #endif
 
 /*---------------------------------------------------------------------------*/
+/* print header for test log file                                            */
+void print_test_log_header( FILE *LOG, unsigned long seed );
+
+/*---------------------------------------------------------------------------*/
 /* check for invalid NULL pointer, that should not happen in this program */
 void abort_if_NULL( FILE *LOG, int line, const void *ptr );
 

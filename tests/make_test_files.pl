@@ -420,14 +420,16 @@ sub scan_validate {
 	print "\tfprintf( TESTLOG,\"\\nChi^2 Test:\\n\");\n\n";
 	
 	foreach my $test (@chi2tests) {
-	    die "invalide test line" unless ($test =~ /<(\d+)>/);
-	    my $n_distr = $1;
-	    print "/* distribution [$n_distr] */\n\n";
+	    die "invalide test line" unless ($test =~ /^\s*([fFxX]?)\s*<(\d+)>\s*(.+)/);
+	    my $fullcheck = $1;
+	    my $n_distr = $2;
+	    $test = $3;
 	    $test =~ s/^\s+//;
 	    $test =~ s/\s+$//;
 	    my @gentest = split /\s+/, $test;
-	    shift @gentest;
 	    die "invalide number of test indicators" unless ($#gentest == $#generators);
+
+	    print "/* distribution [$n_distr] */\n\n";
 
 	    foreach (@generators) {
 		# get entry for generator
@@ -443,9 +445,19 @@ sub scan_validate {
 		# read what we have to test
 		my $todo = shift @gentest;
 
+		# we encapsulate test into "if(TRUE)" or
+                # "if(fullcheck)" statements.
+		if ($fullcheck) {
+		    print "\tif(fullcheck) {\n";
+		}
+		else {
+		    print "\tif(TRUE) {\n";
+		}
+
 		# nothing to do
 		if ( $todo eq '.' ) {
-		    print "\tprintf(\".\"); fflush(stdout);\n\n";
+		    print "\tprintf(\".\"); fflush(stdout);\n";
+		    print "\t}\n\n";
 		    next;
 		}
 		
@@ -484,7 +496,10 @@ sub scan_validate {
 		print "\tn_tests_failed += (rcode==UNUR_FAILURE)?1000:0;\n";
 		print "\tunur_free(gen);\n";
 		print "\tunur_distr_free(distr_localcopy);\n";
-		print "\t} while (0);\n\n";
+		print "\t} while (0);\n";
+
+		# end of if() statement
+		print "\t}\n\n";
 	    }	    
 	}
     }
@@ -503,14 +518,16 @@ sub scan_validate {
 	print "\tfprintf( TESTLOG,\"\\nVerify Hat Test (squeeze <= PDF <= hat):\\n\");\n\n";
 	
 	foreach my $test (@verifyhattests) {
-	    die "invalid test line" unless ($test =~ /<(\d+)>/);
-	    my $n_distr = $1;
-	    print "/* distribution [$n_distr] */\n\n";
+	    die "invalide test line" unless ($test =~ /^\s*([fFxX]?)\s*<(\d+)>\s*(.+)/);
+	    my $fullcheck = $1;
+	    my $n_distr = $2;
+	    $test = $3;
 	    $test =~ s/^\s+//;
 	    $test =~ s/\s+$//;
 	    my @gentest = split /\s+/, $test;
-	    shift @gentest;
-	    die "invalid number of test indicators" unless ($#gentest == $#generators);
+	    die "invalide number of test indicators" unless ($#gentest == $#generators);
+
+	    print "/* distribution [$n_distr] */\n\n";
 
 	    foreach (@generators) {
 		# get entry for generator
@@ -529,9 +546,19 @@ sub scan_validate {
 		# replace '+' by '~'
 		$todo =~ s/\+/\~/;
 
+		# we encapsulate test into "if(TRUE)" or
+                # "if(fullcheck)" statements.
+		if ($fullcheck) {
+		    print "\tif(fullcheck) {\n";
+		}
+		else {
+		    print "\tif(TRUE) {\n";
+		}
+
 		# nothing to do
 		if ( $todo eq '.' ) {
-		    print "\tprintf(\".\"); fflush(stdout);\n\n";
+		    print "\tprintf(\".\"); fflush(stdout);\n";
+		    print "\t}\n\n";
 		    next;
 		}
 		
@@ -573,7 +600,10 @@ sub scan_validate {
 		print "\tn_tests_failed += (run_validate_verifyhat(TESTLOG,0,gen,distr[$n_distr],'$todo')==UNUR_SUCCESS)?0:1000;\n";
 		print "\tunur_free(gen);\n\n";
 		print "\tunur_distr_free(distr_localcopy);\n";
-		print "\t} while (0);\n\n";
+		print "\t} while (0);\n";
+
+		# end of if() statement
+		print "\t}\n\n";
 	    }	    
 	}
     }

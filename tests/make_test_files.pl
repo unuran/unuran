@@ -1036,7 +1036,7 @@ int main(void)
 	unur_set_default_debug(UNUR_DEBUG_ALL);
 
         /* detect required check mode */
-        fullcheck = (getenv("FULLCHECK")==NULL) ? FALSE : TRUE;
+        fullcheck = (getenv("UNURANFULLCHECK")==NULL) ? FALSE : TRUE;
 
 	/* write header into log file */
         print_test_log_header( TESTLOG, seed, fullcheck );

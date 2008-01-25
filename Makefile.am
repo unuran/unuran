@@ -79,6 +79,11 @@ setgccWflags-ansi:
 	./configure --enable-maintainer-mode
 endif
 
+# run checks in fullcheck mode
+fullcheck:
+	UNURANFULLCHECK=true make check
+
+
 # clean backup files
 CLEANFILES = *~
 

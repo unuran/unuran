@@ -137,7 +137,7 @@ void print_test_log_header( FILE *LOG, unsigned long seed, int fullcheck )
 
   /* whether all checks are performed */
   fprintf(LOG,"check mode: %s\n",
-	  fullcheck ? "full check" : "installation");
+	  fullcheck ? "fullcheck" : "installation");
 
   /* end */
   fprintf(LOG,"\n=======================================================\n\n");

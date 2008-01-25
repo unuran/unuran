@@ -24,6 +24,16 @@ the various routines.
 
 --------------------------------------------------
 
+There are two test modi: 'installation' and 'fullcheck'.
+The additional tests for the 'fullcheck' are only run when
+the environment variable 'UNURANFULLCHECK' is defined (regardless 
+of the actual value of the variable). 
+
+You can use `make fullcheck' to run all tests in 
+'fullcheck' mode.
+
+--------------------------------------------------
+
 To test CDF, PDF, etc. of distributions type
 
 make data

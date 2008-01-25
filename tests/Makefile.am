@@ -194,6 +194,10 @@ valgrind: $(check_PROGRAMS)
 	done
 endif
 
+# run tests in fullcheck mode
+fullcheck:
+	UNURANFULLCHECK=true make check
+
 # clean log files and backup files
 CLEANFILES = \
  *.log \

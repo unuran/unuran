@@ -2387,7 +2387,7 @@ _unur_parse_dlist( char *liststr, double **darray )
 
   /* tokenize the string using ',' as separator and handle the tokens */
   for ( next = token;
-	next != NULL && *token != '\0';
+	next != NULL && *token != '\0' &&*token != ')';
 	token = next ) {
 
     /* find end of token (i.e. the pointer to next token) */

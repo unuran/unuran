@@ -421,7 +421,7 @@ sub scan_validate {
 	
 	foreach my $test (@chi2tests) {
 	    die "invalide test line" unless ($test =~ /^\s*([fFxX]?)\s*<(\d+)>\s*(.+)/);
-	    my $fullcheck = $1;
+	    my $fullcheck_dist = $1;
 	    my $n_distr = $2;
 	    $test = $3;
 	    $test =~ s/^\s+//;
@@ -445,9 +445,16 @@ sub scan_validate {
 		# read what we have to test
 		my $todo = shift @gentest;
 
+		# test for an "fullcheckonly" flag
+ 		my $fullcheck_gen = 0;
+		if ($todo =~ /^[fFxX](.+)/) {
+		    $fullcheck_gen = 1;
+		    $todo = $1;
+		}
+
 		# we encapsulate test into "if(TRUE)" or
                 # "if(fullcheck)" statements.
-		if ($fullcheck) {
+		if ($fullcheck_dist || $fullcheck_gen) {
 		    print "\tif(fullcheck) {\n";
 		}
 		else {
@@ -519,7 +526,7 @@ sub scan_validate {
 	
 	foreach my $test (@verifyhattests) {
 	    die "invalide test line" unless ($test =~ /^\s*([fFxX]?)\s*<(\d+)>\s*(.+)/);
-	    my $fullcheck = $1;
+	    my $fullcheck_dist = $1;
 	    my $n_distr = $2;
 	    $test = $3;
 	    $test =~ s/^\s+//;
@@ -546,9 +553,16 @@ sub scan_validate {
 		# replace '+' by '~'
 		$todo =~ s/\+/\~/;
 
+		# test for an "fullcheckonly" flag
+ 		my $fullcheck_gen = 0;
+		if ($todo =~ /^[fFxX](.+)/) {
+		    $fullcheck_gen = 1;
+		    $todo = $1;
+		}
+
 		# we encapsulate test into "if(TRUE)" or
                 # "if(fullcheck)" statements.
-		if ($fullcheck) {
+		if ($fullcheck_dist || $fullcheck_gen) {
 		    print "\tif(fullcheck) {\n";
 		}
 		else {

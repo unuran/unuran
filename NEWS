@@ -4,12 +4,21 @@ Version 1.2.*: **** 2008
 	* Methods:
 
         - New cal unur_gen_info() for creating info strings
-	  in interactive programming environments
+	  in interactive programming environments.
+          This feature is controlled by the '--enable-info'
+	  configure flag.
 
 	- Renamed method TDRGW to ARS
 	  (avoid confusion with TDR)
           old functions available as macros.
           not available for string API.
+
+	* Inststallation:
+
+	- 'make check' now runs only a restricted set of tests.
+          For additional tests run 'make fullcheck' (These might 
+	  fail occasionlly when randomly chosen distribution 
+          parameter are too extreme).
 
 
 Version 1.1.0: December 2007

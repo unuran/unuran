@@ -151,11 +151,10 @@ const char *unur_gen_info( UNUR_GEN *generator, int help );
    These informations allow some fine tuning of the generation method. 
    If @var{help} is TRUE, some hints on setting parameters are given.
 
-   @emph{Notice:}
-   The function is experimental and currently it is not implemented
-   for all generation methods.
+   This function is intented for using in interactive environments 
+   (like @t{R}).
 
-   If the function is not implemented, then NULL is returned.
+   If an error occurs, then NULL is returned.
 */
 
 /*---------------------------------------------------------------------------*/

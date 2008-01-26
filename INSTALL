@@ -75,6 +75,16 @@ Installing UNU.RAN
          --enable-shared
 	     build shared libraries  [default=no]
 
+     [*] The library provides the function `unur_gen_info' for
+         information about generator objects. This is intented for 
+	 using in interactive computing environments.
+	 This feature can be enabled / disabled by means of the 
+	 configure flag
+
+         --enable-info
+               INFO: provide function with information about generator
+               objects [default=`yes']
+
      [*] Enable support for deprecated UNU.RAN routines if you have
          some problems with older application after upgrading the
          library:

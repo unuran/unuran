@@ -2778,10 +2778,11 @@ _unur_ars_info( struct unur_gen *gen, int help )
 
   /* performance */
   _unur_string_append(info,"performance characteristics:\n");
-  _unur_string_append(info,"   area(hat) = %g\n", GEN->Atotal);
+  _unur_string_append(info,"   area(hat) = %g  [ log = %g ]\n", 
+		      GEN->Atotal*exp(GEN->logAmax), log(GEN->Atotal) + GEN->logAmax);
   _unur_string_append(info,"   rejection constant ");
   if (distr->set & UNUR_DISTR_SET_PDFAREA)
-    _unur_string_append(info,"= %g\n", GEN->Atotal/DISTR.area);
+    _unur_string_append(info,"= %g\n", GEN->Atotal*exp(GEN->logAmax)/DISTR.area);
   else {
     n_ivs_bak = GEN->n_ivs;
     GEN->n_ivs = GEN->max_ivs+1;

@@ -265,8 +265,8 @@ static void _unur_ars_info( struct unur_gen *gen, int help );
 #define dlogPDF(x) _unur_cont_dlogPDF((x),(gen->distr))  /* call to derivative of log PDF */
 
 /* areas in intervaled relative to maximal area */
-#define scaled_area(iv)     (exp((iv)->logAhat - GEN->logAmax))
 #define scaled_logarea(iv)  ((iv)->logAhat - GEN->logAmax)
+#define scaled_area(iv)     (exp(scaled_logarea(iv)))
 
 /* log of function rescaled relative to maximal area */
 #define rescaled_logf(logf) ((logf) - GEN->logAmax)
@@ -1959,6 +1959,7 @@ _unur_ars_interval_parameter( struct unur_gen *gen, struct unur_ars_interval *iv
   iv->logAhat = (logAhatl > logAhatr) 
     ? logAhatl+log(1+exp(logAhatr-logAhatl)) 
     : logAhatr+log(1+exp(logAhatl-logAhatr)) ;       /* = log( Ahatr + Ahatl )     */
+
   iv->Ahatr_fract = 1./(1.+exp(logAhatl-logAhatr));  /*  = Ahatr / (Ahatr + Ahatl) */
 
   /* o.k. */
@@ -2758,6 +2759,7 @@ _unur_ars_info( struct unur_gen *gen, int help )
   struct unur_string *info = gen->infostr;
   struct unur_distr *distr = gen->distr;
   int samplesize = 10000;
+  int n_ivs_bak;
 
   /* generator ID */
   _unur_string_append(info,"generator ID: %s\n\n", gen->genid);
@@ -2780,10 +2782,13 @@ _unur_ars_info( struct unur_gen *gen, int help )
   _unur_string_append(info,"   rejection constant ");
   if (distr->set & UNUR_DISTR_SET_PDFAREA)
     _unur_string_append(info,"= %g\n", GEN->Atotal/DISTR.area);
-  else
+  else {
+    n_ivs_bak = GEN->n_ivs;
+    GEN->n_ivs = GEN->max_ivs+1;
     _unur_string_append(info,"= %.3f  [approx.]\n",
 			unur_test_count_urn(gen,samplesize,0,NULL)/(2.*samplesize));
-  
+    GEN->n_ivs = n_ivs_bak;
+  }
   _unur_string_append(info,"   # intervals = %d\n", GEN->n_ivs);
   _unur_string_append(info,"\n");
   

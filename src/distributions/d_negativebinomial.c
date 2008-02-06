@@ -126,11 +126,14 @@ _unur_cdf_negativebinomial(int k, const UNUR_DISTR *distr)
 int
 _unur_upd_mode_negativebinomial( UNUR_DISTR *distr )
 {
-  double m;
-
-  m = (DISTR.r * (1. - DISTR.p) - 1.) / DISTR.p;
-
-  DISTR.mode = (m<0) ? 0 : (int) (m+1);
+  if (DISTR.r > 1.) {
+    /* mode = floor( (r-1) * (1-p) / p ) */
+    /* (we add a guard against round-off errors */
+    DISTR.mode = (int) ((1.+UNUR_EPSILON) * (DISTR.r - 1.) * (1. - DISTR.p) / DISTR.p);
+  }
+  else { /* r <= 1. */
+    DISTR.mode = 0.;
+  }
 
   /* mode must be in domain */
   if (DISTR.mode < DISTR.domain[0]) 

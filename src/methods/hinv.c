@@ -1535,7 +1535,7 @@ _unur_hinv_interval_adapt( struct unur_gen *gen, struct unur_hinv_interval *iv,
   if (_unur_FP_equal(p_new,iv->p) || _unur_FP_equal(p_new,iv->next->p)) {
     if(!(*error_count_shortinterval)){ 
       _unur_warning(gen->genid,UNUR_ERR_ROUNDOFF,
-		     "one or more intervals very short; possibly due to numerical problems with a pole");
+		     "one or more intervals very short; possibly due to numerical problems with a pole or very flat tail");
       (*error_count_shortinterval)++;
     } 
     /* skip to next interval */
@@ -1565,6 +1565,14 @@ _unur_hinv_interval_adapt( struct unur_gen *gen, struct unur_hinv_interval *iv,
   x = _unur_hinv_eval_polynomial( 0.5, iv->spline, GEN->order );
   Fx = CDF(x);
 
+  /* check for FP errors */
+  if (_unur_isnan(x)) { 
+    _unur_error(gen->genid,UNUR_ERR_ROUNDOFF,
+ 		"NaN occured; possibly due to numerical problems with a pole or very flat tail");
+    return NULL;
+   }
+
+  /* check error */
   if (!(fabs(Fx - 0.5*(iv->next->u + iv->u)) < GEN->u_resolution)) {
     /* error in u-direction too large */
     /* if possible we use the point x instead of p_new */
@@ -1599,13 +1607,12 @@ _unur_hinv_interval_is_monotone( struct unur_gen *gen, struct unur_hinv_interval
      /*   FALSE ... otherwise                                                */
      /*----------------------------------------------------------------------*/
 {
-
   double bound;
 
   switch (GEN->order) {
   case 5:
     /* the monotone check is in the moment only implemented for order 3
-       as approximation we use the same check for order 5*/
+       as approximation we use the same check for order 5 */
   case 3:
     /* we skip the test if computing the bound has too many round-off errors */
     if (_unur_iszero(iv->u) || _unur_FP_approx(iv->u,iv->next->u))

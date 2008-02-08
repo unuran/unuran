@@ -1037,6 +1037,7 @@ sub print_C_main {
 int main(void)
 { 
         unsigned long seed;
+	char *str_seed, *str_tail;
 
         /* open log file for unuran and set output stream for unuran messages */
         UNURANLOG = fopen( "$file_unuranlog","w" );
@@ -1048,11 +1049,22 @@ int main(void)
 	abort_if_NULL( stderr,-1, TESTLOG );
 
         /* seed for uniform generators */
+
+	/* seed set by environment */
+	str_seed = getenv("SEED");
+
+	if (str_seed != NULL) {
+	    seed = strtol(str_seed, &str_tail, 10);
+	    if (seed == 0u) 
+		seed = $seed;
+	}
+	else {
 #ifdef SEED
-        seed = SEED;
+	    seed = SEED;
 #else
-        seed = $seed;
+	    seed = $seed;
 #endif
+	}
 
         /* seed build-in uniform generators */
         unur_urng_MRG31k3p_seed(NULL,seed);

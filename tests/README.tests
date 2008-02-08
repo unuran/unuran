@@ -34,6 +34,12 @@ You can use `make fullcheck' to run all tests in
 
 --------------------------------------------------
 
+The seed used for all the tests can be changed at runtime by
+setting the environmental variable 'SEED' with a none-zero
+unsigned integer.
+
+--------------------------------------------------
+
 To test CDF, PDF, etc. of distributions type
 
 make data

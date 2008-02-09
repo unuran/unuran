@@ -2,7 +2,9 @@
 # -----------------------------------
 
 # directory for storing results and log files
-RESULTS=checkresults
+RESULTS=RESULTS
+
+RULER="-------------------------------"
 
 # -----------------------------------
 
@@ -51,17 +53,22 @@ echo "number of repetitions = $rep"
 # -----------------------------------
 # make
 
-if [[ -x ../hmake ]] ; then
-    MAKE=../hmake
-else
-    MAKE=make
-fi
+MAKE=make
 
 # -----------------------------------
 # make directory with test results
 
 if [[ -d "$RESULTS" ]] ; then rm -rf "$RESULTS"; fi
 mkdir -v "$RESULTS"
+
+# -----------------------------------
+# start
+
+date
+echo "${RULER}" >> $RESULTS/RESULTS
+echo -n "started: " >> $RESULTS/RESULTS
+date >> $RESULTS/RESULTS
+echo "${RULER}" >> $RESULTS/RESULTS
 
 # -----------------------------------
 # run ...
@@ -76,10 +83,26 @@ for (( i=0; i<$rep; i++)); do
     else
 	echo "check mode: installation" >> $RESULTS/$i/ENV
     fi
-    $MAKE check > $RESULTS/$i/RESULTS
-    echo "copy log file"
+    time ($MAKE check > $RESULTS/$i/RESULTS) > $RESULTS/$i/TIMING 2>&1
+    echo "move log file"
     mv *.log $RESULTS/$i
+    echo "#${i}: SEED=${SEED}" >> $RESULTS/RESULTS
+    grep "real" $RESULTS/$i/TIMING  | sed -e 's/real/time =/' >> $RESULTS/RESULTS
+    tail -n 10 $RESULTS/$i/RESULTS | grep "[0-9]\+ of [0-9]\+ tests failed" >> $RESULTS/RESULTS
+    tail -n 10 $RESULTS/$i/RESULTS | grep "All [0-9]\+ tests passed" >> $RESULTS/RESULTS
+    grep "FAIL: " $RESULTS/$i/RESULTS | sed -e 's/FAIL:/   FAIL:/' >> $RESULTS/RESULTS
+    echo "${RULER}" >> $RESULTS/RESULTS
+    (cd $RESULTS/$i; grep "PASS: " RESULTS | sed -e 's/PASS: //' | sed -e 's/$/_test.log/' | xargs -i= rm "=")
+    (cd $RESULTS/$i; grep "PASS: " RESULTS | sed -e 's/PASS: //' | sed -e 's/$/_unuran.log/' | xargs -i= rm "=")
 done
+
+# -----------------------------------
+# stop
+
+echo -n "stopped: " >> $RESULTS/RESULTS
+date >> $RESULTS/RESULTS
+echo "${RULER}" >> $RESULTS/RESULTS
+date
 
 # -----------------------------------
 # end

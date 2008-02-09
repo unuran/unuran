@@ -53,7 +53,7 @@ echo "number of repetitions = $rep"
 # -----------------------------------
 # make
 
-MAKE=make
+MAKE="make -j2"
 
 # -----------------------------------
 # make directory with test results
@@ -83,7 +83,7 @@ for (( i=0; i<$rep; i++)); do
     else
 	echo "check mode: installation" >> $RESULTS/$i/ENV
     fi
-    time ($MAKE check > $RESULTS/$i/RESULTS) > $RESULTS/$i/TIMING 2>&1
+    export SEED="${SEED}"; time ($MAKE check > $RESULTS/$i/RESULTS) > $RESULTS/$i/TIMING 2>&1
     echo "move log file"
     mv *.log $RESULTS/$i
     echo "#${i}: SEED=${SEED}" >> $RESULTS/RESULTS

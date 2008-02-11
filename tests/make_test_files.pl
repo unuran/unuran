@@ -409,7 +409,7 @@ sub scan_validate {
     }
 
     print "\t/* timing */\n";
-    print "\tfprintf(TESTLOG,\"\\n<*>setup time = %.3f ms\\n\", stopwatch_lap(&watch));\n\n";
+    print "\tstopwatch_print(TESTLOG,\"\\n<*>setup time = %.3f ms\\n\", stopwatch_lap(&watch));\n\n";
 
     # --- chisquare GoF tests -----
 
@@ -519,7 +519,7 @@ sub scan_validate {
 	}
 
 	print "\t/* timing */\n";
-	print "\tfprintf(TESTLOG,\"\\n<*>time = %.3f ms\\n\", stopwatch_lap(&watch));\n\n";
+	print "\tstopwatch_print(TESTLOG,\"\\n<*>time = %.3f ms\\n\", stopwatch_lap(&watch));\n\n";
     }
 
     ## run in verify mode  ##
@@ -633,7 +633,7 @@ sub scan_validate {
 	}
 
 	print "\t/* timing */\n";
-	print "\tfprintf(TESTLOG,\"\\n<*>time = %.3f ms\\n\", stopwatch_lap(&watch));\n\n";
+	print "\tstopwatch_print(TESTLOG,\"\\n<*>time = %.3f ms\\n\", stopwatch_lap(&watch));\n\n";
     }
 
     ## free distributions ##
@@ -644,7 +644,7 @@ sub scan_validate {
     }
 
     print "\t/* timing */\n";
-    print "\tfprintf(TESTLOG,\"\\n<*>clearing time = %.3f ms\\n\", stopwatch_lap(&watch));\n\n";
+    print "\tstopwatch_print(TESTLOG,\"\\n<*>clearing time = %.3f ms\\n\", stopwatch_lap(&watch));\n\n";
 
     ## end ##
 
@@ -725,7 +725,7 @@ EOM
   print <<EOM;
 
 	/* timing */
-        fprintf(TESTLOG,"\\n<*>time = %.3f ms\\n\\n", stopwatch_lap(&watch));
+	stopwatch_print(TESTLOG,"\\n<*>time = %.3f ms\\n\\n", stopwatch_lap(&watch));
 
 	/* test finished */
 	test_ok &= (FAILED) ? 0 : 1;
@@ -861,7 +861,7 @@ EOM
   print <<EOM;
 
 	/* timing */
-        fprintf(TESTLOG,"\\n<*>time = %.3f ms\\n\\n", stopwatch_lap(&watch));
+	stopwatch_print(TESTLOG,"\\n<*>time = %.3f ms\\n\\n", stopwatch_lap(&watch));
 
 	/* test finished */
 	test_ok &= (n_tests_failed) ? 0 : 1;
@@ -1147,7 +1147,7 @@ $test_routines
 		fprintf(TESTLOG,"Test(s) FAILED.\\n");
 
 	/* timing */
-        fprintf(TESTLOG,"\\n<*>time = %.3f ms\\n\\n", stopwatch_stop(&watch));
+	stopwatch_print(TESTLOG,"\\n<*>time = %.3f ms\\n\\n", stopwatch_stop(&watch));
 
 	fclose(UNURANLOG);
 	fclose(TESTLOG);

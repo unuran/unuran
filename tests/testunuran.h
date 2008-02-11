@@ -119,6 +119,9 @@ void stopwatch_start(TIMER *t);
 double stopwatch_lap(TIMER *t);
 double stopwatch_stop(TIMER *t);
 
+void stopwatch_init(void);
+void stopwatch_print( FILE *LOG, const char *format, double time );
+
 /*---------------------------------------------------------------------------*/
 /* print header for test log file                                            */
 void print_test_log_header( FILE *LOG, unsigned long seed, int fullcheck );

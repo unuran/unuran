@@ -34,6 +34,11 @@ You can use `make fullcheck' to run all tests in
 
 --------------------------------------------------
 
+It is possible to measure the elapsed times for each of the tests
+by defining the environment variable 'UNURANSTOPWATCH'.
+
+--------------------------------------------------
+
 The seed used for all the tests can be changed at runtime by
 setting the environmental variable 'SEED' with a none-zero
 unsigned integer.

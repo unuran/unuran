@@ -83,7 +83,9 @@ for (( i=0; i<$rep; i++)); do
     else
 	echo "check mode: installation" >> $RESULTS/$i/ENV
     fi
-    export SEED="${SEED}"; time ($MAKE check > $RESULTS/$i/RESULTS) > $RESULTS/$i/TIMING 2>&1
+    export SEED="${SEED}"
+    export UNURANSTOPWATCH=true
+    time ($MAKE check > $RESULTS/$i/RESULTS) > $RESULTS/$i/TIMING 2>&1
     echo "move log file"
     mv *.log $RESULTS/$i
     echo "#${i}: SEED=${SEED}" >> $RESULTS/RESULTS
@@ -92,7 +94,7 @@ for (( i=0; i<$rep; i++)); do
     tail -n 10 $RESULTS/$i/RESULTS | grep "All [0-9]\+ tests passed" >> $RESULTS/RESULTS
     grep "FAIL: " $RESULTS/$i/RESULTS | sed -e 's/FAIL:/   FAIL:/' >> $RESULTS/RESULTS
     echo "${RULER}" >> $RESULTS/RESULTS
-    (cd $RESULTS/$i; grep "PASS: " RESULTS | sed -e 's/PASS: //' | sed -e 's/$/_test.log/' | xargs -i= rm "=")
+    ## (cd $RESULTS/$i; grep "PASS: " RESULTS | sed -e 's/PASS: //' | sed -e 's/$/_test.log/' | xargs -i= rm "=")
     (cd $RESULTS/$i; grep "PASS: " RESULTS | sed -e 's/PASS: //' | sed -e 's/$/_unuran.log/' | xargs -i= rm "=")
 done
 

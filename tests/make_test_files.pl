@@ -519,7 +519,7 @@ sub scan_validate {
 	}
 
 	print "\t/* timing */\n";
-	print "\tstopwatch_print(TESTLOG,\"\\n<*>time = %.3f ms\\n\", stopwatch_lap(&watch));\n\n";
+	print "\tstopwatch_print(TESTLOG,\"\\n<*>time = %.0f ms\\n\", stopwatch_lap(&watch));\n\n";
     }
 
     ## run in verify mode  ##
@@ -633,7 +633,7 @@ sub scan_validate {
 	}
 
 	print "\t/* timing */\n";
-	print "\tstopwatch_print(TESTLOG,\"\\n<*>time = %.3f ms\\n\", stopwatch_lap(&watch));\n\n";
+	print "\tstopwatch_print(TESTLOG,\"\\n<*>time = %.0f ms\\n\", stopwatch_lap(&watch));\n\n";
     }
 
     ## free distributions ##
@@ -1070,6 +1070,7 @@ int main(void)
 	char *str_seed, *str_tail;
 
 	/* start stop watch */
+	stopwatch_init();
 	stopwatch_start(&watch);
 
         /* open log file for unuran and set output stream for unuran messages */
@@ -1147,7 +1148,7 @@ $test_routines
 		fprintf(TESTLOG,"Test(s) FAILED.\\n");
 
 	/* timing */
-	stopwatch_print(TESTLOG,"\\n<*>time = %.3f ms\\n\\n", stopwatch_stop(&watch));
+	stopwatch_print(TESTLOG,"\\n<*>time = %.0f ms\\n\\n", stopwatch_stop(&watch));
 
 	fclose(UNURANLOG);
 	fclose(TESTLOG);

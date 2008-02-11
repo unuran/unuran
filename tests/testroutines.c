@@ -37,7 +37,8 @@
 /*---------------------------------------------------------------------------*/
 /* global switches                                                           */
 
-int stopwatch = FALSE;          /* whether to use a stop watch for checks    */ 
+static int stopwatch = FALSE;   /* whether to use a stop watch for checks    */ 
+static TIMER vw;                /* timer for particular tests                */
 
 /*---------------------------------------------------------------------------*/
 
@@ -75,7 +76,6 @@ cannot_compare_sequence ( FILE *LOG )
 void stopwatch_start(TIMER *t)
 /* start stop watch */
 {
-  stopwatch_init();
   t->stop = stopwatch_get_time(t->tv);
   t->interim = t->stop;
   t->start = t->stop;
@@ -115,6 +115,7 @@ void stopwatch_init(void)
 {
   /* detect whether stopwatch should be used */
   stopwatch = (getenv("UNURANSTOPWATCH")==NULL) ? FALSE : TRUE;
+  stopwatch_start(&vw);
 }
 
 void stopwatch_print( FILE *LOG, const char *format, double time )
@@ -1039,6 +1040,9 @@ int print_pval( FILE *LOG, UNUR_GEN *gen, const UNUR_DISTR *distr, double pval, 
     exit (-1);
   }
 
+  /* timing */
+  stopwatch_print(LOG,"\ttime=%.1f ms ", stopwatch_lap(&vw));
+
   /* print distribution name */
   fprintf(LOG,"\t");
   print_distr_name( LOG, distr, gen ? unur_get_genid(gen):"???\t" );
@@ -1072,6 +1076,9 @@ int run_validate_chi2( FILE *LOG, int line ATTRIBUTE__UNUSED,
     printf(" [!!no distribution!!] "); fflush(stdout);
     return UNUR_FAILURE;
   }
+
+  /* timer */
+  stopwatch_lap(&vw);
 
   /* get name of distribution */
   distr_name = unur_distr_get_name( distr );
@@ -1180,6 +1187,9 @@ int run_validate_verifyhat( FILE *LOG, int line, UNUR_GEN *gen, const UNUR_DISTR
     printf(" [!!no distribution!!]" ); fflush(stdout);
     return UNUR_FAILURE;
   }
+
+  /* timer */
+  stopwatch_lap(&vw);
 
   /* get name of distribution */
   distr_name = unur_distr_get_name( distr );
@@ -1340,6 +1350,9 @@ int print_verifyhat_result( FILE *LOG, UNUR_GEN *gen, const UNUR_DISTR *distr, i
       fprintf(LOG,"\t Failed");
     }
   }
+
+  /* timing */
+  stopwatch_print(LOG,"\ttime=%.1f ms ", stopwatch_lap(&vw));
 
   /* print distribution name */
   fprintf(LOG,"\t");

@@ -83,7 +83,7 @@ check_PROGRAMS = \
  t_vnrou \
  t_stringparser \
  t_info \
- test_special_matrix \
+ t_util_matrix \
  $(DEPRECATED_TESTS) \
  $(MATHEMATICA_PROGS)
 

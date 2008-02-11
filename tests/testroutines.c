@@ -65,6 +65,43 @@ cannot_compare_sequence ( FILE *LOG )
 } /* end of cannot_compare_sequence() */
 
 /*---------------------------------------------------------------------------*/
+/* stop watch                                                                */
+
+void stopwatch_start(TIMER *t)
+{
+  t->stop = stopwatch_get_time(t->tv);
+  t->interim = t->stop;
+  t->start = t->stop;
+}
+
+double stopwatch_lap(TIMER *t)
+{
+  double time;
+
+  t->stop = stopwatch_get_time(t->tv);
+  time = t->stop - t->interim;
+
+  t->interim = t->stop;
+
+  return time;
+}
+
+double stopwatch_stop(TIMER *t)
+{
+  double time;
+
+  
+
+  t->stop = stopwatch_get_time(t->tv);
+  time = t->stop - t->start;
+
+  t->interim = t->stop;
+  t->start = t->stop;
+
+  return time;
+}
+
+/*---------------------------------------------------------------------------*/
 /* print header for test log file                                            */
 
 void print_test_log_header( FILE *LOG, unsigned long seed, int fullcheck )

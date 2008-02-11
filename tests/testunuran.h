@@ -85,6 +85,41 @@
 #endif
 
 /*---------------------------------------------------------------------------*/
+/* stop watch (return milliseconds)                                          */
+
+#if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
+/* use gettimeofday() command. Not in ANSI C! */
+
+#include <sys/time.h>
+typedef struct timer {
+  struct timeval tv;
+  double start;
+  double interim;
+  double stop;
+} TIMER;
+#define stopwatch_get_time(tv) \
+  ( gettimeofday(&tv, NULL), ((tv).tv_sec * 1.e3 + (tv).tv_usec * 1.e-3) )
+
+#else
+/* use clock() command. ANSI C but less accurate */
+
+#include <time.h>
+typedef struct timer {
+  clock_t tv;
+  double start;
+  double interim;
+  double stop;
+} TIMER;
+#define stopwatch_get_time(tv) \
+  ( (1.e3 * clock()) / CLOCKS_PER_SEC )
+
+#endif
+
+void stopwatch_start(TIMER *t);
+double stopwatch_lap(TIMER *t);
+double stopwatch_stop(TIMER *t);
+
+/*---------------------------------------------------------------------------*/
 /* print header for test log file                                            */
 void print_test_log_header( FILE *LOG, unsigned long seed, int fullcheck );
 

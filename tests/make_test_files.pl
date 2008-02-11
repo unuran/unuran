@@ -398,12 +398,20 @@ sub scan_validate {
     print "\tfprintf(TESTLOG,\"\\n[validate]\\n\");\n\n";
     print "\t/* reset counter */\n\tn_tests_failed = 0;\n\n";
 
+    print "\t/* set stop watch */\n";
+    print "\tstopwatch_lap(&watch);\n\n";
+
     ## list of distributions ##
 
     print "\n/* distributions: $n_distributions */\n";
     foreach my $d (@distributions) {
 	print "{\n$d}\n\n";
     }
+
+    print "\t/* timing */\n";
+    print "\tfprintf(TESTLOG,\"\\n<*>setup time = %.3f ms\\n\", stopwatch_lap(&watch));\n\n";
+
+    # --- chisquare GoF tests -----
 
     if ($chi2) {
 
@@ -509,6 +517,9 @@ sub scan_validate {
 		print "\t}\n\n";
 	    }	    
 	}
+
+	print "\t/* timing */\n";
+	print "\tfprintf(TESTLOG,\"\\n<*>time = %.3f ms\\n\", stopwatch_lap(&watch));\n\n";
     }
 
     ## run in verify mode  ##
@@ -620,6 +631,9 @@ sub scan_validate {
 		print "\t}\n\n";
 	    }	    
 	}
+
+	print "\t/* timing */\n";
+	print "\tfprintf(TESTLOG,\"\\n<*>time = %.3f ms\\n\", stopwatch_lap(&watch));\n\n";
     }
 
     ## free distributions ##
@@ -628,6 +642,9 @@ sub scan_validate {
     for (my $i=0; $i<$n_distributions; ++$i) {
 	print "\tunur_distr_free(distr[$i]);\n";
     }
+
+    print "\t/* timing */\n";
+    print "\tfprintf(TESTLOG,\"\\n<*>clearing time = %.3f ms\\n\", stopwatch_lap(&watch));\n\n";
 
     ## end ##
 
@@ -644,7 +661,6 @@ sub scan_validate {
     print "\tfpm[0] = 0.;\n";
 
     print "\n} /* end of test_validate */\n\n";
-
 
     # mark as read
     undef $DATA{"validate"};
@@ -676,6 +692,9 @@ void test_$section (void)
 	/* set boolean to FALSE */
 	int FAILED = 0;
   
+	/* set stop watch */
+	stopwatch_lap(&watch);
+  
 EOM
 
     # There must be only one subsection: [start]
@@ -704,6 +723,9 @@ EOM
 
   # print section closing ...
   print <<EOM;
+
+	/* timing */
+        fprintf(TESTLOG,"\\n<*>time = %.3f ms\\n\\n", stopwatch_lap(&watch));
 
 	/* test finished */
 	test_ok &= (FAILED) ? 0 : 1;
@@ -744,6 +766,9 @@ void test_$section (void)
 
 	/* reset counter */
 	n_tests_failed = 0;
+
+	/* set stop watch */
+	stopwatch_lap(&watch);
   
 EOM
 
@@ -834,6 +859,9 @@ EOM
 
   # print section closing ...
   print <<EOM;
+
+	/* timing */
+        fprintf(TESTLOG,"\\n<*>time = %.3f ms\\n\\n", stopwatch_lap(&watch));
 
 	/* test finished */
 	test_ok &= (n_tests_failed) ? 0 : 1;
@@ -992,6 +1020,8 @@ static int n_tests_failed;          /* number of failed tests                */
 
 static int fullcheck = FALSE;       /* whether all checks are performed      */ 
 
+static TIMER watch;                 /* stop watch                            */
+
 /*---------------------------------------------------------------------------*/
 
 void run_verify_generator( FILE *LOG, int line, UNUR_PAR *par );
@@ -1038,6 +1068,9 @@ int main(void)
 { 
         unsigned long seed;
 	char *str_seed, *str_tail;
+
+	/* start stop watch */
+	stopwatch_start(&watch);
 
         /* open log file for unuran and set output stream for unuran messages */
         UNURANLOG = fopen( "$file_unuranlog","w" );
@@ -1112,6 +1145,9 @@ $test_routines
 		fprintf(TESTLOG,"All tests PASSED.\\n");
 	else
 		fprintf(TESTLOG,"Test(s) FAILED.\\n");
+
+	/* timing */
+        fprintf(TESTLOG,"\\n<*>time = %.3f ms\\n\\n", stopwatch_stop(&watch));
 
 	fclose(UNURANLOG);
 	fclose(TESTLOG);

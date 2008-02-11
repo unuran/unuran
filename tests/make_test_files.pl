@@ -643,9 +643,6 @@ sub scan_validate {
 	print "\tunur_distr_free(distr[$i]);\n";
     }
 
-    print "\t/* timing */\n";
-    print "\tstopwatch_print(TESTLOG,\"\\n<*>clearing time = %.3f ms\\n\", stopwatch_lap(&watch));\n\n";
-
     ## end ##
 
     print "\n\t/* test finished */\n";
@@ -1148,7 +1145,7 @@ $test_routines
 		fprintf(TESTLOG,"Test(s) FAILED.\\n");
 
 	/* timing */
-	stopwatch_print(TESTLOG,"\\n<*>time = %.0f ms\\n\\n", stopwatch_stop(&watch));
+	stopwatch_print(TESTLOG,"\\n<*>total time = %.0f ms\\n\\n", stopwatch_stop(&watch));
 
 	fclose(UNURANLOG);
 	fclose(TESTLOG);

@@ -76,6 +76,7 @@ echo "${RULER}" >> $RESULTS/RESULTS
 for (( i=0; i<$rep; i++)); do
     SEED=`echo $RANDOM$RANDOM | cut -b1-8`
     echo $i:$SEED
+    date
     mkdir -v "$RESULTS/$i"
     echo "SEED = ${SEED}" > $RESULTS/$i/ENV
     if [[ -n "${UNURANFULLCHECK}" ]] ; then
@@ -86,7 +87,7 @@ for (( i=0; i<$rep; i++)); do
     export SEED="${SEED}"
     export UNURANSTOPWATCH=true
     time ($MAKE check > $RESULTS/$i/RESULTS) > $RESULTS/$i/TIMING 2>&1
-    echo "move log file"
+    echo "move log files"
     mv *.log $RESULTS/$i
     echo "#${i}: SEED=${SEED}" >> $RESULTS/RESULTS
     grep "real" $RESULTS/$i/TIMING  | sed -e 's/real/time =/' >> $RESULTS/RESULTS

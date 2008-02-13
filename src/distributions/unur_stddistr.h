@@ -106,7 +106,7 @@ enum {
   UNUR_DISTR_COPULA           = 0x05000001u,  /*    .                             .      */
 
   /**                                                                        */
-  UNUR_DISTR_MCORRELATION     = 0xf0000001u   /*                                         */
+  UNUR_DISTR_MCORRELATION     = 0x10000001u   /*                                         */
 
 };
 

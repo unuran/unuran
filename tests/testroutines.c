@@ -33,12 +33,21 @@
 /*---------------------------------------------------------------------------*/
 
 #include "testunuran.h"
+#include <signal.h>
+#include <unistd.h>
 
 /*---------------------------------------------------------------------------*/
 /* global switches                                                           */
 
 static int stopwatch = FALSE;   /* whether to use a stop watch for checks    */ 
 static TIMER vw;                /* timer for particular tests                */
+
+/*---------------------------------------------------------------------------*/
+
+#if defined(HAVE_ALARM) && defined(HAVE_SIGNAL)
+/* handle SIGALRM signals */
+static void catch_alarm (int sig);
+#endif
 
 /*---------------------------------------------------------------------------*/
 
@@ -124,6 +133,42 @@ void stopwatch_print( FILE *LOG, const char *format, double time )
   if (stopwatch) 
     fprintf(LOG,format,time);
 }
+
+/*---------------------------------------------------------------------------*/
+/* exit with FAIL when run time exceeds limit                                */
+ 
+#if defined(HAVE_ALARM) && defined(HAVE_SIGNAL)
+
+void catch_alarm (int sig ATTRIBUTE__UNUSED)
+{
+  fprintf(stderr," stopped! time limit exceeded ...\n");
+  exit (EXIT_FAILURE);
+}
+
+void set_alarm(void)
+{
+  int timer = 1;
+  char *read_timer;
+
+  /* read time limit from environment */
+  read_timer = getenv("UNURANTIMER");
+  timer = (read_timer!=NULL) ? atoi(read_timer) : 0;
+
+  /* alarm is only set when environment variable is defined */
+  if (timer<=0) return;
+  
+  /* Establish a handler for SIGALRM signals. */
+  signal(SIGALRM, catch_alarm);
+
+  /* set in alarm in 'time' seconds */
+  alarm(timer);
+}
+
+#else
+
+void set_alarm(void) {;}
+
+#endif
 
 /*---------------------------------------------------------------------------*/
 /* print header for test log file                                            */

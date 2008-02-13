@@ -123,6 +123,11 @@ AC_CHECK_DECLS(isnan,,,[#include <math.h>])
 AC_CHECK_DECLS(INFINITY,,,[#include <math.h>])
 AC_CHECK_DECLS(HUGE_VAL,,,[#include <math.h>])
 
+dnl Check for alarm and signal handler
+AC_CHECK_DECLS(alarm,,,[#include <unistd.h>])
+AC_CHECK_DECLS(signal,,,[#include <signal.h>])
+AC_CHECK_FUNCS([alarm signal])
+
 dnl Check IEEE comparisons, whether "x != x" is true for NaNs
 AX_IEEE_COMP
 

@@ -1128,6 +1128,9 @@ int main(void)
 	/* write header into log file */
         print_test_log_header( TESTLOG, seed, fullcheck );
 
+	/* set timer for sending SIGALRM signal */
+	set_alarm();
+
 	/* start test */
 	printf("$method: ");
 

@@ -24,6 +24,28 @@ the various routines.
 
 --------------------------------------------------
 
+Environment variables (see also below):
+
+SEED=<positive integer>
+	Seed for uniform random number generator
+
+UNURANFULLCHECK=<any string>
+	If set then run checks in 'fullcheck' mode.
+	(The value of the variable is ignored.)
+
+UNURANSTOPWATCH=<any string>
+	If set then a stop watch is enabled when running
+	checks. The time for each test are written into
+	the test log file.
+	(The value of the variable is ignored.)
+
+UNURANTIMER=<positive integer>
+	If set the value is used for a time limit for
+	running the tests.
+	(This feature might not be available on all platforms.)
+
+--------------------------------------------------
+
 There are two test modi: 'installation' and 'fullcheck'.
 The additional tests for the 'fullcheck' are only run when
 the environment variable 'UNURANFULLCHECK' is defined (regardless 
@@ -40,8 +62,15 @@ by defining the environment variable 'UNURANSTOPWATCH'.
 --------------------------------------------------
 
 The seed used for all the tests can be changed at runtime by
-setting the environmental variable 'SEED' with a none-zero
+setting the environmental variable 'SEED' with a non-zero
 unsigned integer.
+
+--------------------------------------------------
+
+Sometimes a particular test runs extremely long.
+By setting UNURANTIMER to some positive integer one can set a time
+limit in seconds. When this time is exceeded then the 
+test is aborted.
 
 --------------------------------------------------
 

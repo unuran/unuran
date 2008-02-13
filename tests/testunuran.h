@@ -123,6 +123,10 @@ void stopwatch_init(void);
 void stopwatch_print( FILE *LOG, const char *format, double time );
 
 /*---------------------------------------------------------------------------*/
+/* set alarm when run time exceeds given limit                               */
+void set_alarm(void);
+
+/*---------------------------------------------------------------------------*/
 /* print header for test log file                                            */
 void print_test_log_header( FILE *LOG, unsigned long seed, int fullcheck );
 

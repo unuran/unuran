@@ -1129,7 +1129,7 @@ int main(void)
         print_test_log_header( TESTLOG, seed, fullcheck );
 
 	/* set timer for sending SIGALRM signal */
-	set_alarm();
+	set_alarm(TESTLOG);
 
 	/* start test */
 	printf("$method: ");

@@ -51,6 +51,10 @@ int time_limit = 0;
 
 /* handle SIGALRM signals */
 static void catch_alarm (int sig);
+
+/* test log file */
+static FILE *TESTLOG = NULL;
+
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -145,13 +149,17 @@ void stopwatch_print( FILE *LOG, const char *format, double time )
 
 void catch_alarm (int sig ATTRIBUTE__UNUSED)
 {
-  fprintf(stderr," stopped! time limit of %d seconds exceeded ...\n",time_limit);
+  fprintf(stdout," aborted! time limit of %d seconds exceeded ...\n",time_limit);
+  fprintf(TESTLOG,"\n\n=== ABORTED! ===\ntime limit of %d seconds exceeded ...\n\n",time_limit);
   exit (EXIT_FAILURE);
 }
 
-void set_alarm(void)
+void set_alarm(FILE *LOG)
 {
   char *read_timer;
+
+  /* file handle for test log file */
+  TESTLOG = LOG;
 
   /* read time limit from environment */
   read_timer = getenv("UNURANTIMER");
@@ -165,6 +173,11 @@ void set_alarm(void)
 
   /* set in alarm in 'time' seconds */
   alarm(time_limit);
+
+  /* print message into test log file */
+  fprintf(TESTLOG,"Send alarm in %d seconds\n",time_limit);
+  fprintf(TESTLOG,"\n====================================================\n\n");
+
 }
 
 #else

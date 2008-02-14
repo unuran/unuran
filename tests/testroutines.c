@@ -45,6 +45,10 @@ static TIMER vw;                /* timer for particular tests                */
 /*---------------------------------------------------------------------------*/
 
 #if defined(HAVE_ALARM) && defined(HAVE_SIGNAL)
+
+/* time limit before SIGALRM is sent to process */
+int time_limit = 0;
+
 /* handle SIGALRM signals */
 static void catch_alarm (int sig);
 #endif
@@ -141,27 +145,26 @@ void stopwatch_print( FILE *LOG, const char *format, double time )
 
 void catch_alarm (int sig ATTRIBUTE__UNUSED)
 {
-  fprintf(stderr," stopped! time limit exceeded ...\n");
+  fprintf(stderr," stopped! time limit of %d seconds exceeded ...\n",time_limit);
   exit (EXIT_FAILURE);
 }
 
 void set_alarm(void)
 {
-  int timer = 1;
   char *read_timer;
 
   /* read time limit from environment */
   read_timer = getenv("UNURANTIMER");
-  timer = (read_timer!=NULL) ? atoi(read_timer) : 0;
+  time_limit = (read_timer!=NULL) ? atoi(read_timer) : 0;
 
   /* alarm is only set when environment variable is defined */
-  if (timer<=0) return;
+  if (time_limit<=0) return;
   
   /* Establish a handler for SIGALRM signals. */
   signal(SIGALRM, catch_alarm);
 
   /* set in alarm in 'time' seconds */
-  alarm(timer);
+  alarm(time_limit);
 }
 
 #else

@@ -3,7 +3,7 @@ Version 1.2.*: **** 2008
 
 	* Methods:
 
-        - New cal unur_gen_info() for creating info strings
+        - New call unur_gen_info() for creating info strings
 	  in interactive programming environments.
           This feature is controlled by the '--enable-info'
 	  configure flag.
@@ -12,6 +12,9 @@ Version 1.2.*: **** 2008
 	  (avoid confusion with TDR)
           old functions available as macros.
           not available for string API.
+
+	- DARI now checks for distributions with negative
+	  negative domain.
 
 	* Inststallation:
 

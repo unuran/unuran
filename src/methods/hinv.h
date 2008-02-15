@@ -171,7 +171,12 @@ int unur_hinv_set_order( UNUR_PAR *parameters, int order);
    and is therefore not recommended. If the maximal error in
    u-direction is very small (say smaller than @code{1.e-10}),
    @var{order} @code{5} is recommended as it leads to considerably 
-   fewer design points.
+   fewer design points, as long there are no poles or heavy tails.
+
+   @emph{Remark:} When the target distribution has poles or (very) heavy
+   tails @var{order} @code{5} (i.e., quintic interpolation) is 
+   numerically less stable and more sensitive to round-off errors than
+   @var{order} @code{3} (i.e., cubic interpolation).
 
    Default is @code{3} if the density is given and @code{1} otherwise.
 */

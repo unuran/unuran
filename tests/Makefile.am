@@ -105,6 +105,7 @@ EXTRA_DIST = \
  t_unur_tests.conf \
  t_unur_error.conf \
  t_urng.conf \
+ t_util_matrix.conf \
  t_distr.conf \
  t_distr_cemp.conf \
  t_distr_cont.conf \

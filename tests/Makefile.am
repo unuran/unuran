@@ -117,6 +117,7 @@ EXTRA_DIST = \
  t_distr_matr.conf \
  t_auto.conf \
  t_arou.conf \
+ t_ars.conf \
  t_cext.conf \
  t_cstd.conf \
  t_dari.conf \
@@ -145,7 +146,6 @@ EXTRA_DIST = \
  t_ssr.conf \
  t_tabl.conf \
  t_tdr.conf t_tdr_gw.conf t_tdr_ps.conf t_tdr_ia.conf \
- t_tdrgw.conf \
  t_unif.conf \
  t_utdr.conf \
  t_vempk.conf \

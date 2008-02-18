@@ -1067,7 +1067,7 @@ int print_pval( FILE *LOG, UNUR_GEN *gen, const UNUR_DISTR *distr, double pval, 
     }
     else {
       failed = 1;
-      if (trial > 1) {
+      if (trial > 2) {
 	fprintf(LOG,"\t Failed");
 	printf("(!+)");
       }
@@ -1193,8 +1193,8 @@ int run_validate_chi2( FILE *LOG, int line ATTRIBUTE__UNUSED,
   if ( todo == '/' ) todo = '+';
 
   /* run chi^2 test */
-  for (i=1; i<=2; i++) {
-    /* we run the test twice when it fails the first time */
+  for (i=1; i<=3; i++) {
+    /* we run the test up to three times when it fails */
 
     switch (type) {
     case UNUR_DISTR_DISCR:
@@ -1221,7 +1221,7 @@ int run_validate_chi2( FILE *LOG, int line ATTRIBUTE__UNUSED,
       break;
   }
 
-  return (failed==0 ? UNUR_SUCCESS : (failed<=1 ? UNUR_ERR_SILENT : UNUR_FAILURE));
+  return (failed==0 ? UNUR_SUCCESS : (failed<=2 ? UNUR_ERR_SILENT : UNUR_FAILURE));
 
 #undef BUFSIZE
 } /* end of run_validate_chi2() */

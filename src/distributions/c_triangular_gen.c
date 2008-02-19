@@ -108,6 +108,7 @@ double _unur_stdgen_sample_triangular_inv( struct unur_gen *gen )
 {
   /* -X- generator code -X- */
   double U,X;
+  double tmp;
 
   /* check arguments */
   CHECK_NULL(gen,INFINITY);
@@ -117,7 +118,12 @@ double _unur_stdgen_sample_triangular_inv( struct unur_gen *gen )
   U = GEN->umin + uniform() * (GEN->umax-GEN->umin);
 
   /* transform to random variate */
-  X = (U<=H) ? sqrt(H*U) : 1. - sqrt( (1-H)*(1-U) );
+  if (U<=H)
+    return sqrt(H*U);
+  else {
+    tmp = (1.-H)*(1.-U);
+    return ((tmp>0.) ? (1.-sqrt(tmp)) : 1.);
+  }
 
   /* -X- end of generator code -X- */
 

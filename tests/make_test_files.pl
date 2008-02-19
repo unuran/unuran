@@ -688,10 +688,7 @@ void test_$section (void)
 {
 	/* set boolean to FALSE */
 	int FAILED = 0;
-  
-	/* set stop watch */
-	stopwatch_lap(&watch);
-  
+
 EOM
 
     # There must be only one subsection: [start]
@@ -706,8 +703,11 @@ EOM
 	    print 
 		"/* start test */\n".
 		"printf(\"[$section \"); fflush(stdout);\n".
-		"fprintf(TESTLOG,\"\\n[$section]\\n\");";
-	}
+		"fprintf(TESTLOG,\"\\n[$section]\\n\");\n\n";
+	    print
+		"/* set stop watch */\n".
+		"stopwatch_lap(&watch);\n\n";
+  	}
 	elsif ($title eq "start") {
 	    $body =~ s/(^|\n)\d+\:/\n/g;   # remove line info
 	    print $body;

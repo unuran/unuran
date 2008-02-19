@@ -185,7 +185,7 @@ void set_alarm(FILE *LOG)
 
 #else
 
-void set_alarm(void) {;}
+void set_alarm(FILE *LOG ATTRIBUTE__UNUSED) {;}
 
 #endif
 

@@ -1,7 +1,4 @@
 
-(*) Umbenennen: TDRGW --> ARS
-
-
 -----------------------------------------------------------------------------
 
 (*) DOCU: erklaere Phrase: ... in case of failure an error code is returned.
@@ -201,12 +198,6 @@ Beta
     (.) test correctness of distribution
 
 ----------------------------------------------------------------------
-
-(*) testing UNRUAN on different platforms (including windows?)
-
-----------------------------------------------------------------------
-
-
 
 ***** New ideas linked with UNURAN ******************
 

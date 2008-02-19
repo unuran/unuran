@@ -164,7 +164,13 @@
 	 However, some of these tests requires the usage of the PRNG or 
 	 RngStreams library and are only executed if these are installed
 	 enabled by the corresponding configure flag.
-	 It might happen that some of the tests might fail due to 
+
+	 An extended set of tests is run by 
+	 @smallexample
+	    make fullcheck
+	 @end smallexample
+
+	 However some of these might fail occasionally due to 
 	 roundoff errors or the mysteries of floating point arithmetic,
 	 since we have used some extreme settings to test the library.
 

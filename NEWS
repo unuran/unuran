@@ -1,5 +1,5 @@
 
-Version 1.2.*: **** 2008
+Version 1.2.*: February 2008
 
 	* Methods:
 
@@ -13,15 +13,14 @@ Version 1.2.*: **** 2008
           old functions available as macros.
           not available for string API.
 
-	- DARI now checks for distributions with negative
-	  negative domain.
+	- DARI now checks for distributions with negative domains.
 
 	* Inststallation:
 
 	- 'make check' now runs only a restricted set of tests.
-          For additional tests run 'make fullcheck' (These might 
-	  fail occasionlly when randomly chosen distribution 
-          parameter are too extreme).
+          For additional tests run 'make fullcheck'.
+	  (These might fail occasionally when randomly chosen 
+	  distribution parameter are too extreme).
 
 
 Version 1.1.0: December 2007

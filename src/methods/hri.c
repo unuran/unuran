@@ -70,6 +70,9 @@
 /*---------------------------------------------------------------------------*/
 /* Constants                                                                 */
 
+/* abort sampling after this number of iterations and return INFINITY */
+#define HRI_EMERGENCY_BREAK  (10000)
+
 /*---------------------------------------------------------------------------*/
 /* Variants:                                                                 */
 
@@ -606,6 +609,8 @@ _unur_hri_sample( struct unur_gen *gen )
 { 
   double U, V, E, X, hrx1;
   double lambda0, p1, lambda1;
+  int i0 = 0;
+  int i1 = 0;
 
   /* check arguments */
   CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_HRI_GEN,INFINITY);
@@ -622,7 +627,7 @@ _unur_hri_sample( struct unur_gen *gen )
   /* starting point */
   X = GEN->left_border;
 
-  for(;;) {
+  for(i0=1;;i0++) {
     /* sample from U(0,1) */
     while ( _unur_iszero(U = 1.-_unur_call_urng(gen->urng)) );
 
@@ -644,6 +649,13 @@ _unur_hri_sample( struct unur_gen *gen )
     if( V <= hrx1 )
       /* accept */
       break;
+
+    if (i0>HRI_EMERGENCY_BREAK) {
+      /* emergency break */
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"abort computation");
+      return INFINITY;
+    }
+
   }
 
   /* accept point if not larger than design (split) point */
@@ -671,7 +683,7 @@ _unur_hri_sample( struct unur_gen *gen )
   p1 = X;
   X = GEN->p0;
 
-  for(;;) {
+  for(i1=1;;i1++) {
     /* sample from U(0,1) */
     while ( _unur_iszero(U = 1.-_unur_call_urng(gen->urng)) );
 
@@ -692,6 +704,12 @@ _unur_hri_sample( struct unur_gen *gen )
     /* hazard rate at generated point */
     if (V <= HR(X))
       break;
+
+    if (i1>HRI_EMERGENCY_BREAK) {
+      /* emergency break */
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"abort computation");
+      return INFINITY;
+    }
   }
 
   return ((X <= p1) ? X : p1);
@@ -756,12 +774,20 @@ _unur_hri_sample_check( struct unur_gen *gen )
 
     /* verify majorizing hazard rate */
     if ( (X <= GEN->p0 && (1.+UNUR_EPSILON) * lambda0 < hrx1 ) || 
-	 (X >= GEN->p0 && (1.-UNUR_EPSILON) * lambda0 > hrx1 ) )
+	 (X >= GEN->p0 && (1.-UNUR_EPSILON) * lambda0 > hrx1 ) ) {
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"HR not increasing");
+    }
 
     if( V <= hrx1 )
       /* accept */
       break;
+
+    if (i0>HRI_EMERGENCY_BREAK) {
+      /* emergency break */
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"abort computation");
+      return INFINITY;
+    }
+
   }
 
   /* accept point if not larger than design (split) point */
@@ -830,6 +856,13 @@ _unur_hri_sample_check( struct unur_gen *gen )
     /* hazard rate at generated point */
     if (V <= hrx)
       break;
+
+    if (i1>HRI_EMERGENCY_BREAK) {
+      /* emergency break */
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"abort computation");
+      return INFINITY;
+    }
+
   }
 
 #ifdef UNUR_ENABLE_LOGGING

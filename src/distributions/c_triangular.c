@@ -121,7 +121,7 @@ _unur_cdf_triangular( double x, const UNUR_DISTR *distr )
     return 0.;
   if (x <= H)
     return (x*x/H);
-  if (x < 1.-DBL_EPSILON) {
+  if (x < 1.) {
     if ((Fx = ((H + x * (x-2.))/(H-1.))) < 1.)
       return Fx;
   }

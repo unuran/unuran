@@ -70,6 +70,9 @@
 /*---------------------------------------------------------------------------*/
 /* Constants                                                                 */
 
+/* abort sampling after this number of iterations and return INFINITY */
+#define HRB_EMERGENCY_BREAK  (10000)
+
 /*---------------------------------------------------------------------------*/
 /* Variants:                                                                 */
 
@@ -590,6 +593,7 @@ _unur_hrb_sample( struct unur_gen *gen )
 { 
   double U,V,E,X;
   double lambda;
+  int i;
 
   /* check arguments */
   CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_HRB_GEN,INFINITY);
@@ -600,7 +604,7 @@ _unur_hrb_sample( struct unur_gen *gen )
   /* starting point */
   X = GEN->left_border;
 
-  for(;;) {
+  for(i=1;;i++) {
     /* sample from U(0,1) */
     while ( _unur_iszero(U = 1.-_unur_call_urng(gen->urng)) );
 
@@ -616,6 +620,13 @@ _unur_hrb_sample( struct unur_gen *gen )
     /* reject or accept */
     V =  lambda * _unur_call_urng(gen->urng);
     if( V <= HR(X) ) return X;
+
+    if (i > HRB_EMERGENCY_BREAK) {
+      /* emergency break */
+      _unur_warning(gen->genid,UNUR_ERR_GEN_SAMPLING,"maximum number of iterations exceeded");
+      return X;
+    }
+
   }
 
 } /* end of _unur_hrb_sample() */
@@ -680,6 +691,13 @@ _unur_hrb_sample_check( struct unur_gen *gen )
 #endif
       return X;
     }
+
+    if (i > HRB_EMERGENCY_BREAK) {
+      /* emergency break */
+      _unur_warning(gen->genid,UNUR_ERR_GEN_SAMPLING,"maximum number of iterations exceeded");
+      return X;
+    }
+
   }
 
 } /* end of _unur_hrb_sample_check() */

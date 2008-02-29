@@ -71,7 +71,7 @@
 /* Constants                                                                 */
 
 /* abort sampling after this number of iterations and return INFINITY */
-#define HRB_EMERGENCY_BREAK  (10000)
+#define HRB_EMERGENCY_BREAK  (100000)
 
 /*---------------------------------------------------------------------------*/
 /* Variants:                                                                 */

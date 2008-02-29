@@ -110,6 +110,9 @@ for (( i=0; i<$rep; i++)); do
 	time ($MAKE check >> $RESULTS/$i/RESULTS) >> $RESULTS/$i/TIMING 2>&1
     else
 	time ("./$testname" >> $RESULTS/$i/RESULTS) >> $RESULTS/$i/TIMING 2>&1
+	if [ $? != 0 -a $? != 77 ] ; then
+	    echo "FAIL: $testname" >> $RESULTS/$i/RESULTS;
+	fi
     fi
     ## move log files
     mv *.log $RESULTS/$i

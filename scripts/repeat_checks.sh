@@ -34,10 +34,6 @@ for x in "$@" ; do
 	    ;;
 	-t=*) # name of test program
 	    testname=`echo "${x}" | sed -e "s/-t=//"`
-	    if [[ ! -x "$testname" ]] ; then 
-		echo "invalid test: \"$testname\""
-		usage 1
-	    fi
 	    ;;
         -f)        # fullcheck mode
 	    export UNURANFULLCHECK=true
@@ -68,6 +64,17 @@ echo "number of repetitions = $rep"
 
 if [[ -d "$RESULTS" ]] ; then rm -rf "$RESULTS"; fi
 mkdir -v "$RESULTS"
+
+# -----------------------------------
+# check test program
+
+if [[ -n "$testname" ]] ; then 
+    $MAKE $testname >> $RESULTS/RESULTS 2>&1
+    if [[ ! -x "$testname" ]] ; then 
+	echo "invalid test: \"$testname\""
+	usage 1
+    fi
+fi
 
 # -----------------------------------
 # start
@@ -102,7 +109,6 @@ for (( i=0; i<$rep; i++)); do
     if [[ -z "$testname" ]] ; then 
 	time ($MAKE check >> $RESULTS/$i/RESULTS) >> $RESULTS/$i/TIMING 2>&1
     else
-	$MAKE $testname >> $RESULTS/$i/RESULTS 2>&1
 	time ("./$testname" >> $RESULTS/$i/RESULTS) >> $RESULTS/$i/TIMING 2>&1
     fi
     ## move log files

@@ -112,6 +112,8 @@ for (( i=0; i<$rep; i++)); do
 	time ("./$testname" >> $RESULTS/$i/RESULTS) >> $RESULTS/$i/TIMING 2>&1
 	if [ $? != 0 -a $? != 77 ] ; then
 	    echo "FAIL: $testname" >> $RESULTS/$i/RESULTS;
+	else
+	    echo "PASS: $testname" >> $RESULTS/$i/RESULTS;
 	fi
     fi
     ## move log files

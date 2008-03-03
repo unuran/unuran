@@ -481,7 +481,7 @@ compare_doubles ( double x1, double x2 )
 {
   if (_unur_FP_approx(x1,x2))
     return TRUE;
-  else if (fabs(x1-x2) < DBL_EPSILON)
+  else if (fabs(x1-x2) < UNUR_EPSILON)
     return TRUE;
   else
     return FALSE;

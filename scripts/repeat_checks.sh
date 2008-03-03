@@ -17,6 +17,7 @@ Usage: repeat_checks.sh [options]
 Options:
   -n=N           repeat N times [default: N=10]
   -t=TEST        run particular program TEST [default: run all tests]
+  -c             clear directories with PASSed tests
   -f             run in fullcheck mode
   -h, --help     help (print this page)
 
@@ -35,17 +36,20 @@ for x in "$@" ; do
 	-t=*) # name of test program
 	    testname=`echo "${x}" | sed -e "s/-t=//"`
 	    ;;
-        -f)        # fullcheck mode
+	-c)  # clear directory with PASSed tests
+	    cleardir=true
+	    ;;
+	-f)  # fullcheck mode
 	    export UNURANFULLCHECK=true
 	    ;;
-        -h|--help) # helpfullcheck mode
+	-h|--help) # helpfullcheck mode
 	    usage 0
 	    ;;
-        -*)  # invalid option
+	-*)  # invalid option
 	    echo "$0: Invalid switch \"${x}\"!."
 	    usage 1
 	    ;;
-        *)   # invalid argument
+	*)   # invalid argument
 	    echo "$0: Invalid argument \"${x}\"!."
 	    usage 1
 	    ;;
@@ -129,6 +133,10 @@ for (( i=0; i<$rep; i++)); do
     echo "${RULER}" >> $RESULTS/RESULTS
     ## print info on screen
     echo `grep "FAIL: " $RESULTS/$i/RESULTS | sed -e 's/FAIL:/   FAIL:/'`
+    ## clear working space
+    if [[ -n "${cleardir}" ]] ; then
+	grep "FAIL: " $RESULTS/$i/RESULTS || rm -r "$RESULTS/$i"
+    fi
 done
 
 # -----------------------------------

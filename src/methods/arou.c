@@ -374,7 +374,8 @@ unur_arou_new( const struct unur_distr *distr )
 				       ratio r_n = |P^s| / |P^e| > max_ratio */
 
   par->method   = UNUR_METH_AROU;             /* method                      */
-  par->variant  = AROU_VARFLAG_USECENTER;     /* default variant             */
+  par->variant  = ( AROU_VARFLAG_USECENTER |
+		    AROU_VARFLAG_USEDARS );   /* default variant             */
   par->set      = 0u;                      /* inidicate default parameters   */    
   par->urng     = unur_get_default_urng(); /* use default urng               */
   par->urng_aux = par->urng;               /* no special auxilliary URNG     */

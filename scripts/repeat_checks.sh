@@ -18,6 +18,7 @@ Options:
   -n=N           repeat N times [default: N=10]
   -t=TEST        run particular program TEST [default: run all tests]
   -c             clear directories with PASSed tests
+  -cl            remove all log files
   -f             run in fullcheck mode
   -h, --help     help (print this page)
 
@@ -39,10 +40,14 @@ for x in "$@" ; do
 	-c)  # clear directory with PASSed tests
 	    cleardir=true
 	    ;;
+	-cl) # remve all log files
+	    cleardir=true
+	    clearlog=true
+	    ;;
 	-f)  # fullcheck mode
 	    export UNURANFULLCHECK=true
 	    ;;
-	-h|--help) # helpfullcheck mode
+	-h|--help) # help
 	    usage 0
 	    ;;
 	-*)  # invalid option
@@ -109,10 +114,23 @@ for (( i=0; i<$rep; i++)); do
     ## set environment variables for tests
     export SEED="${SEED}"
     export UNURANSTOPWATCH=true
+    ## set command for running same test
+    echo -n "SEED=${SEED}" > $RESULTS/$i/COMMAND
+    if [[ -n "${UNURANFULLCHECK}" ]] ; then
+	echo -n " UNURANFULLCHECK=true" >> $RESULTS/$i/COMMAND
+    fi
+    if [[ -n "${UNURANSTOPWATCH}" ]] ; then
+	echo -n " UNURANSTOPWATCH=true" >> $RESULTS/$i/COMMAND
+    fi
+    if [[ -n "${UNURANTIMER}" ]] ; then
+	echo -n " UNURANTIMER=${UNURANTIMER}" >> $RESULTS/$i/COMMAND
+    fi
     ## run tests
     if [[ -z "$testname" ]] ; then 
+	echo " make check" >> $RESULTS/$i/COMMAND
 	time ($MAKE check >> $RESULTS/$i/RESULTS) >> $RESULTS/$i/TIMING 2>&1
     else
+	echo " ./$testname" >> $RESULTS/$i/COMMAND
 	time ("./$testname" >> $RESULTS/$i/RESULTS) >> $RESULTS/$i/TIMING 2>&1
 	if [ $? != 0 -a $? != 77 ] ; then
 	    echo "FAIL: $testname" >> $RESULTS/$i/RESULTS;
@@ -134,6 +152,9 @@ for (( i=0; i<$rep; i++)); do
     ## print info on screen
     echo `grep "FAIL: " $RESULTS/$i/RESULTS | sed -e 's/FAIL:/   FAIL:/'`
     ## clear working space
+    if [[ -n "${clearlog}" ]] ; then
+	rm -f $RESULTS/$i/*.log
+    fi
     if [[ -n "${cleardir}" ]] ; then
 	grep "FAIL: " $RESULTS/$i/RESULTS || rm -r "$RESULTS/$i"
     fi

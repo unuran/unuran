@@ -331,8 +331,11 @@ _unur_STerm (struct parser_data *pdata)
   CHECK_NULL(pdata,NULL);  COOKIE_CHECK(pdata,CK_FSTR_PDATA,NULL);
 
   /* get next token */
-  if ( _unur_fstr_next_token(pdata,&token,&symb) == UNUR_SUCCESS &&
-       symb[0] == '-' ) {
+  if ( _unur_fstr_next_token(pdata,&token,&symb) != UNUR_SUCCESS)
+    /* there is no next token */
+    return NULL;
+
+  if ( symb[0] == '-' ) {
     /* term with negative sign                 */
     /* "-" is interpreted as binary operator   */
     /* thus "0" is added in front of it         */

@@ -453,6 +453,12 @@ _unur_tdr_gw_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_
   CHECK_NULL(gen,UNUR_ERR_NULL);      COOKIE_CHECK(gen,CK_TDR_GEN,UNUR_ERR_COOKIE);
   CHECK_NULL(iv_oldl,UNUR_ERR_NULL);  COOKIE_CHECK(iv_oldl,CK_TDR_IV,UNUR_ERR_COOKIE);
 
+  /* we cannot split point when x is not finite (NaN or Infinity) */
+  if (!_unur_isfinite(x)) {
+    _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"splitting point not finite (skipped)");
+    return UNUR_ERR_SILENT;
+  }
+
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
   if (gen->debug & TDR_DEBUG_SPLIT) 

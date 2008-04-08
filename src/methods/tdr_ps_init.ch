@@ -619,6 +619,12 @@ _unur_tdr_ps_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv,
   CHECK_NULL(gen,UNUR_ERR_NULL); COOKIE_CHECK(gen,CK_TDR_GEN,UNUR_ERR_COOKIE);
   CHECK_NULL(iv,UNUR_ERR_NULL);  COOKIE_CHECK(iv,CK_TDR_IV,UNUR_ERR_COOKIE);
 
+  /* we cannot split point when x is not finite (NaN or Infinity) */
+  if (!_unur_isfinite(x)) {
+    _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"splitting point not finite (skipped)");
+    return UNUR_ERR_SILENT;
+  }
+
   /* we only add a new construction point, if the relative area is large enough */
   if ( (GEN->n_ivs * (iv->Ahat - iv->Asqueeze) / (GEN->Atotal - GEN->Asqueeze))
        < GEN->bound_for_adding)

@@ -72,6 +72,10 @@
 /*---------------------------------------------------------------------------*/
 /* Constants                                                                 */
 
+/* maximum number of iterations of rejection loop.                           */
+/* the loop is then aborted and INFINITY is returned.                        */
+#define ARS_MAX_ITER          (1000)
+
 /*---------------------------------------------------------------------------*/
 /* Variants                                                                  */
 
@@ -1211,6 +1215,7 @@ _unur_ars_sample( struct unur_gen *gen )
   double X;                         /* generated point                       */
   double logfx, logsqx, loghx;      /* log of density, squeeze, and hat at X */
   double x0, logfx0, dlogfx0, fx0;  /* construction point and logPDF at x0   */
+  int n_trials;
 
   /* check arguments */
   CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_ARS_GEN,INFINITY);
@@ -1220,7 +1225,7 @@ _unur_ars_sample( struct unur_gen *gen )
     return INFINITY;
   } 
 
-  while (1) {
+  for (n_trials=0; n_trials<ARS_MAX_ITER; ++n_trials) {
 
     /* sample from U(0,1) */
     U = _unur_call_urng(gen->urng);
@@ -1305,6 +1310,10 @@ _unur_ars_sample( struct unur_gen *gen )
 
   }
 
+  /* number of trials exceeded */
+  _unur_warning(gen->genid,UNUR_ERR_GEN_SAMPLING,"max number of iterations exceeded");
+  return UNUR_INFINITY;
+
 } /* end of _unur_ars_sample() */
 
 /*---------------------------------------------------------------------------*/
@@ -1329,6 +1338,7 @@ _unur_ars_sample_check( struct unur_gen *gen )
   double X;                         /* generated point                       */
   double logfx, logsqx, loghx;      /* log of density, squeeze, and hat at X */
   double x0, logfx0, dlogfx0, fx0;  /* construction point and logPDF at x0   */
+  int n_trials;
 
   /* check arguments */
   CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_ARS_GEN,INFINITY);
@@ -1338,7 +1348,7 @@ _unur_ars_sample_check( struct unur_gen *gen )
     return INFINITY;
   } 
 
-  while (1) {
+  for (n_trials=0; n_trials<ARS_MAX_ITER; ++n_trials) {
 
     /* sample from U(0,1) */
     U = _unur_call_urng(gen->urng);
@@ -1433,6 +1443,10 @@ _unur_ars_sample_check( struct unur_gen *gen )
     /* reject and try again */
 
   }
+
+  /* number of trials exceeded */
+  _unur_warning(gen->genid,UNUR_ERR_GEN_SAMPLING,"max number of iterations exceeded");
+  return UNUR_INFINITY;
 
 } /* end of _unur_ars_sample_check() */
 

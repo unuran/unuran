@@ -640,9 +640,7 @@ _unur_gibbs_init( struct unur_par *par )
     GEN->thinning = 1;
 
     for (burnin = GEN->burnin; burnin>0; --burnin) {
-      _unur_sample_vec(gen,X);
-      /* If there was a fatal error X contains INFINITY */
-      if (!_unur_isfinite(X[0])) {
+      if ( _unur_sample_vec(gen,X) != UNUR_SUCCESS ) {
 #ifdef UNUR_ENABLE_LOGGING
 	_unur_gibbs_debug_burnin_failed(gen);
 	if (gen->debug) _unur_gibbs_debug_init_finished(gen,FALSE);
@@ -739,7 +737,7 @@ _unur_gibbs_coord_init( struct unur_gen *gen )
       errorcode = UNUR_ERR_GEN_CONDITION;
       break;
     }
-    
+
     /* store pointer to generator of conditional distribution */
     GEN_CONDI[i] = gen_condi;
 
@@ -1023,6 +1021,7 @@ _unur_gibbs_coord_sample_cvec( struct unur_gen *gen, double *vec )
 {
   double X;
   int thinning;
+  int error = FALSE;
 
   /* check arguments */
   CHECK_NULL(gen,UNUR_ERR_NULL);
@@ -1046,12 +1045,18 @@ _unur_gibbs_coord_sample_cvec( struct unur_gen *gen, double *vec )
     unur_distr_condi_set_condition( GEN->distr_condi, GEN->state, NULL, GEN->coord);
 
     /* reinit generator object */
-    unur_reinit(GEN_CONDI[GEN->coord]);
+    error = (unur_reinit(GEN_CONDI[GEN->coord]) != UNUR_SUCCESS);
 
     /* sample from distribution */
     X = unur_sample_cont(GEN_CONDI[GEN->coord]);
-    /* remark: if reinit failed we get X=INFINITY here */
-    
+
+    if (error || !_unur_isfinite(X)) {
+      /* reset to starting point */
+      _unur_warning(gen->genid,UNUR_ERR_GEN_SAMPLING,"reset chain");
+      unur_gibbs_reset_state(gen);
+      return UNUR_FAILURE;
+    }
+
     /* update state */
     GEN->state[GEN->coord] = X;
   }
@@ -1078,6 +1083,7 @@ _unur_gibbs_randomdir_sample_cvec( struct unur_gen *gen, double *vec )
   int i;
   double X;
   int thinning;
+  int error = FALSE;
 
   /* check arguments */
   CHECK_NULL(gen,UNUR_ERR_NULL);
@@ -1101,11 +1107,18 @@ _unur_gibbs_randomdir_sample_cvec( struct unur_gen *gen, double *vec )
     unur_distr_condi_set_condition( GEN->distr_condi, GEN->state, GEN->direction, 0);
 
     /* reinit generator object */
-    unur_reinit(*GEN_CONDI);
+    error = (unur_reinit(*GEN_CONDI) != UNUR_SUCCESS);
 
     /* sample from distribution */
     X = unur_sample_cont(*GEN_CONDI);
-    /* if reinit failed we get X=INFINITY here */
+
+    if (error || !_unur_isfinite(X)) {
+      /* reset to starting point */
+      _unur_warning(gen->genid,UNUR_ERR_GEN_SAMPLING,"reset chain");
+      unur_gibbs_reset_state(gen);
+      return UNUR_FAILURE;
+    }
+
 
     /* update state */
     for (i=0; i<GEN->dim; i++)

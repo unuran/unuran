@@ -7,6 +7,12 @@ Version 1.2.2: March 2008
 
 	- AROU: run DARS by default (as stated in the manual)
 
+	- ARS: stop after 1000 iterations and return INFINITY
+	  to prevent infinite loops when invalid PDFs are given
+          but not detected during setup.
+
+	- GIBBS: fixed rare problem with infinite loop (see ARS)
+
 
 Version 1.2.*: February 2008
 

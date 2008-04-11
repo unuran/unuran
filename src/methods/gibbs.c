@@ -708,6 +708,7 @@ _unur_gibbs_coord_init( struct unur_gen *gen )
       unur_tdr_set_reinit_percentiles(par_condi,2,NULL);
       unur_tdr_set_c(par_condi,-0.5);
       unur_tdr_set_usedars(par_condi,FALSE);
+      unur_tdr_set_variant_gw(par_condi);
       break;
       
     case GIBBS_VAR_T_POW:

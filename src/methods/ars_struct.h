@@ -44,6 +44,7 @@ struct unur_ars_par {
   int retry_ncpoints;        /* number of cpoints for second trial of reinit */
 
   int max_ivs;               /* maximum number of intervals                  */
+  int max_iter;              /* maximum number of iterations                 */
 };
 
 /*---------------------------------------------------------------------------*/
@@ -81,6 +82,7 @@ struct unur_ars_gen {
   struct unur_ars_interval *iv; /* pointer to linked list of intervals       */
   int     n_ivs;                /* number of intervals                       */
   int     max_ivs;              /* maximum number of intervals               */
+  int     max_iter;             /* maximum number of iterations              */
 
   double *starting_cpoints;     /* pointer to array of starting points       */
   int     n_starting_cpoints;   /* number of construction points at start    */

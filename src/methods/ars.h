@@ -98,6 +98,14 @@
       unur_ars_set_verify() and unur_ars_chg_verify(), respectively.
       Notice however that sampling is (much) slower then.
 
+      Method ARS aborts after a given number of iterations and return
+      UNUR_INFINITY to prevent (almost) infinite loops. This might
+      happen when the starting hat is much too large and it is not
+      possible to insert new construction points due to severe
+      numerical errors or (more likely) the given PDF is not
+      log-concave. This maximum number of iterations can be set by
+      means of a unur_ars_set_max_iter() call.
+
    =END
 */
 
@@ -167,6 +175,14 @@ int unur_ars_chg_reinit_ncpoints( UNUR_GEN *generator, int ncpoints );
 
    Default: @code{30}
  */
+
+int unur_ars_set_max_iter( UNUR_PAR *parameters, int max_iter );
+/* 
+   The rejection loop stops after @var{max_iter} iterations and return
+   UNUR_INFINITY.
+
+   Default: @code{10000}
+*/
 
 int unur_ars_set_verify( UNUR_PAR *parameters, int verify );
 /* */

@@ -7,14 +7,17 @@ Version 1.2.2: March 2008
 
 	- AROU: run DARS by default (as stated in the manual)
 
-	- ARS: stop after 1000 iterations and return INFINITY
-	  to prevent infinite loops when invalid PDFs are given
-          but not detected during setup.
+	- ARS: 
+	  new method unur_ars_set_max_iter():
+	  Sets maximum number of iterations of rejection loop.
+	  The loops aborts then and UNUR_INFINITY is returned.
+	  Thus (almost) infinite loops are prevented when invalid 
+          PDFs are given but not detected during setup.
 
-	- GIBBS: fixed rare problem with infinite loop (see ARS)
+	- GIBBS: fixed rare problem with infinite loops (see ARS)
 
 
-Version 1.2.*: February 2008
+Version 1.2.0: February 2008
 
 	* Methods:
 

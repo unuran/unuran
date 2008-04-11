@@ -74,7 +74,7 @@
 
 /* maximum number of iterations of rejection loop.                           */
 /* the loop is then aborted and INFINITY is returned.                        */
-#define ARS_MAX_ITER          (1000)
+// #define ARS_MAX_ITER          (1000)
 
 /*---------------------------------------------------------------------------*/
 /* Variants                                                                  */
@@ -102,6 +102,7 @@
 #define ARS_SET_N_PERCENTILES  0x008u
 #define ARS_SET_RETRY_NCPOINTS 0x010u
 #define ARS_SET_MAX_IVS        0x020u
+#define ARS_SET_MAX_ITER       0x040u   /* maximum number of interations     */
 
 /*---------------------------------------------------------------------------*/
 
@@ -331,6 +332,7 @@ unur_ars_new( const struct unur_distr* distr )
   PAR->n_percentiles       = 2;      /* number of percentiles                */
   PAR->retry_ncpoints      = 30;     /* number of cpoints for second trial of reinit */
   PAR->max_ivs             = 200;    /* maximum number of intervals          */
+  PAR->max_iter            = 10000;  /* maximum number of iterations         */
  
   par->method   = UNUR_METH_ARS;     /* method                               */
   par->variant  = 0u;                /* default variant                      */
@@ -644,6 +646,42 @@ unur_ars_chg_reinit_ncpoints( struct unur_gen *gen, int ncpoints )
   return UNUR_SUCCESS;
 
 } /* end of unur_ars_chg_reinit_ncpoints() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_ars_set_max_iter( struct unur_par *par, int max_iter )
+     /*----------------------------------------------------------------------*/
+     /* set maximum number of iterations                                     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par      ... pointer to parameter for building generator object    */
+     /*   max_iter ... maximum number of iterations                          */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, ARS );
+
+  /* check new parameter for generator */
+  if (max_iter < 1) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"maximum number of iterations");
+    return UNUR_ERR_PAR_SET;
+  }
+
+  /* store date */
+  PAR->max_iter = max_iter;
+
+  /* changelog */
+  par->set |= ARS_SET_MAX_ITER;
+
+  return UNUR_SUCCESS;
+
+} /* end of unur_ars_set_max_iter() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -1035,6 +1073,9 @@ _unur_ars_create( struct unur_par *par )
   /* bounds for adding construction points  */
   GEN->max_ivs = _unur_max(2*PAR->n_starting_cpoints,PAR->max_ivs);  /* maximum number of intervals */
 
+  /* bound for number of repetitions of rejection loop */
+  GEN->max_iter = PAR->max_iter;
+
   /* copy variant */
   gen->variant = par->variant;
 
@@ -1225,7 +1266,7 @@ _unur_ars_sample( struct unur_gen *gen )
     return INFINITY;
   } 
 
-  for (n_trials=0; n_trials<ARS_MAX_ITER; ++n_trials) {
+  for (n_trials=0; n_trials<GEN->max_iter; ++n_trials) {
 
     /* sample from U(0,1) */
     U = _unur_call_urng(gen->urng);
@@ -1348,7 +1389,7 @@ _unur_ars_sample_check( struct unur_gen *gen )
     return INFINITY;
   } 
 
-  for (n_trials=0; n_trials<ARS_MAX_ITER; ++n_trials) {
+  for (n_trials=0; n_trials<GEN->max_iter; ++n_trials) {
 
     /* sample from U(0,1) */
     U = _unur_call_urng(gen->urng);
@@ -2390,6 +2431,10 @@ _unur_ars_debug_init_start( const struct unur_gen *gen )
 
   fprintf(log,"%s: maximum number of intervals        = %d",gen->genid,GEN->max_ivs);
   _unur_print_if_default(gen,ARS_SET_MAX_IVS);
+  fprintf(log,"\n");
+
+  fprintf(log,"%s: maximum number of iterations       = %d",gen->genid,GEN->max_iter);
+  _unur_print_if_default(gen,ARS_SET_MAX_ITER);
   fprintf(log,"\n%s:\n",gen->genid);
 
   fprintf(log,"%s: number of starting points = %d",gen->genid,GEN->n_starting_cpoints);

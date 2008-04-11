@@ -1006,6 +1006,9 @@ _unur_ars_reinit( struct unur_gen *gen )
     _unur_ars_debug_reinit_finished(gen);
 #endif
 
+  /* reset routine for sampling */
+  SAMPLE = _unur_ars_getSAMPLE(gen);
+
   return UNUR_SUCCESS;
 } /* end of _unur_ars_reinit() */
 

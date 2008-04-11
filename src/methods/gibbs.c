@@ -1021,7 +1021,6 @@ _unur_gibbs_coord_sample_cvec( struct unur_gen *gen, double *vec )
 {
   double X;
   int thinning;
-  int error = FALSE;
 
   /* check arguments */
   CHECK_NULL(gen,UNUR_ERR_NULL);
@@ -1045,20 +1044,23 @@ _unur_gibbs_coord_sample_cvec( struct unur_gen *gen, double *vec )
     unur_distr_condi_set_condition( GEN->distr_condi, GEN->state, NULL, GEN->coord);
 
     /* reinit generator object */
-    error = (unur_reinit(GEN_CONDI[GEN->coord]) != UNUR_SUCCESS);
+    if (unur_reinit(GEN_CONDI[GEN->coord]) == UNUR_SUCCESS) {
 
-    /* sample from distribution */
-    X = unur_sample_cont(GEN_CONDI[GEN->coord]);
+      /* sample from distribution */
+      X = unur_sample_cont(GEN_CONDI[GEN->coord]);
 
-    if (error || !_unur_isfinite(X)) {
-      /* reset to starting point */
-      _unur_warning(gen->genid,UNUR_ERR_GEN_SAMPLING,"reset chain");
-      unur_gibbs_reset_state(gen);
-      return UNUR_FAILURE;
+      if (_unur_isfinite(X)) {
+	/* update state */
+	GEN->state[GEN->coord] = X;
+	continue;
+      }
     }
+    
+    /* ERROR: reset to starting point */
+    _unur_warning(gen->genid,UNUR_ERR_GEN_SAMPLING,"reset chain");
+    unur_gibbs_reset_state(gen);
+    return UNUR_FAILURE;
 
-    /* update state */
-    GEN->state[GEN->coord] = X;
   }
   
   /* copy current state into given vector */
@@ -1083,7 +1085,6 @@ _unur_gibbs_randomdir_sample_cvec( struct unur_gen *gen, double *vec )
   int i;
   double X;
   int thinning;
-  int error = FALSE;
 
   /* check arguments */
   CHECK_NULL(gen,UNUR_ERR_NULL);
@@ -1107,22 +1108,24 @@ _unur_gibbs_randomdir_sample_cvec( struct unur_gen *gen, double *vec )
     unur_distr_condi_set_condition( GEN->distr_condi, GEN->state, GEN->direction, 0);
 
     /* reinit generator object */
-    error = (unur_reinit(*GEN_CONDI) != UNUR_SUCCESS);
+    if (unur_reinit(*GEN_CONDI) == UNUR_SUCCESS) {
 
-    /* sample from distribution */
-    X = unur_sample_cont(*GEN_CONDI);
+      /* sample from distribution */
+      X = unur_sample_cont(*GEN_CONDI);
 
-    if (error || !_unur_isfinite(X)) {
-      /* reset to starting point */
-      _unur_warning(gen->genid,UNUR_ERR_GEN_SAMPLING,"reset chain");
-      unur_gibbs_reset_state(gen);
-      return UNUR_FAILURE;
+      if (_unur_isfinite(X)) {
+	/* update state */
+	for (i=0; i<GEN->dim; i++)
+	  GEN->state[i] += X * GEN->direction[i];	  
+	continue;
+      }
     }
 
+    /* ERROR: reset to starting point */
+    _unur_warning(gen->genid,UNUR_ERR_GEN_SAMPLING,"reset chain");
+    unur_gibbs_reset_state(gen);
+    return UNUR_FAILURE;
 
-    /* update state */
-    for (i=0; i<GEN->dim; i++)
-      GEN->state[i] += X * GEN->direction[i];	  
   }
 
   /* copy current state into given vector */

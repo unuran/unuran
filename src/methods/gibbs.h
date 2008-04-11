@@ -146,6 +146,14 @@
       the targent distribution it is a good idea to use a burn-in for
       checking.  
 
+      @emph{Remark:} It might happen (very rarely) that the chain
+      becomes stuck due to numerical errors. (This is in particular the
+      case when the given PDF does not fulfill the condition of this
+      method.)
+      When this happens during burn-in then the setup is aborted
+      (i.e. it fails). Otherwise the chain restarts again from its
+      starting point.
+
       @strong{Warning:} Be carefull with debugging flags. If it
       contains flag @code{0x01000000u} it produces a lot of output for
       each step in the algorithm.

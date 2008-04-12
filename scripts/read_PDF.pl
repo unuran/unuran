@@ -290,7 +290,7 @@ sub read_distr_file
 	$DISTR->{$distr}->{"=PDF"}->{"=NAME"}  = $PDF_name;  # name of PDF function
 	$DISTR->{$distr}->{"=PDF"}->{"=RTYPE"} = $1;         # return type 
 	$DISTR->{$distr}->{"=PDF"}->{"=ARGS"}  = $2;         # arguments for function
-	$DISTR->{$distr}->{"=PDF"}->{"=BODY"}  = $3.$4;      # function body
+	$DISTR->{$distr}->{"=PDF"}->{"=BODY"}  = polish_C_code($3.$4); # function body
     }
     else {
 	$PDF_name = "";
@@ -304,20 +304,6 @@ sub read_distr_file
     #   remove DISTR from argument list
     $DISTR->{$distr}->{"=PDF"}->{"=ARGS"}  =~
 	s /\,\s*(UNUR_DISTR|struct unur_distr)\s*\*\s*distr\s*//;
-
-    # Modify function body:
-    #   remove comments
-    $DISTR->{$distr}->{"=PDF"}->{"=BODY"}  =~ s {/\*.*?\*/} []gsx;
-    #   remove enclosing brackets
-    $DISTR->{$distr}->{"=PDF"}->{"=BODY"}  =~ s /^\s*\{(.*)\}\s*$/$1/s;
-    #   remove empty lines
-    $DISTR->{$distr}->{"=PDF"}->{"=BODY"}  =~ s /\n\s*\n/\n/gx;
-    $DISTR->{$distr}->{"=PDF"}->{"=BODY"}  =~ s /^\s*\n//;
-    #   remove declaration of "params"
-    $DISTR->{$distr}->{"=PDF"}->{"=BODY"}  =~ 
-	s /.*(register)?\s+double\s*\*\s*params\W.*\n//;
-    #   remove all `DISTR.' from body
-    $DISTR->{$distr}->{"=PDF"}->{"=BODY"}  =~ s /DISTR\.//g;
 
     # Get parameters for PDF
     $file_content =~ s {/\*.*?\*/} []gsx;    # remove all comments
@@ -354,6 +340,28 @@ sub read_distr_file
     $DISTR->{$distr}->{"=ID"} = $1;
 	
 } # end of read_distr_file()
+
+# ----------------------------------------------------------------
+# polish C code of function body
+
+sub polish_C_code {
+    my $code = shift;
+
+    # remove comments
+    $code =~ s {/\*.*?\*/} []gsx;
+    # remove enclosing brackets
+    $code =~ s /^\s*\{(.*)\}\s*$/$1/s;
+    # remove empty lines
+    $code =~ s /\n\s*\n/\n/gx;
+    $code =~ s /^\s*\n//;
+    # remove declaration of "params"
+    $code =~ s /.*(register)?\s+double\s*\*\s*params\W.*\n//;
+    # remove all `DISTR.' from body
+    $code =~ s /DISTR\.//g;
+
+    return $code;
+
+} # end of polish_C_code()
 
 # ----------------------------------------------------------------
 # Print data on screen (for debugging)

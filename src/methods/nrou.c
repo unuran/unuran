@@ -568,15 +568,15 @@ _unur_nrou_reinit( struct unur_gen *gen )
 {
   int rcode;
 
-  /* (re)set sampling routine */
-  SAMPLE = _unur_nrou_getSAMPLE(gen);
-
   /* mark U and V as unknown */
   gen->set &= ~(NROU_SET_V | NROU_SET_U);
 
   /* check parameters */
   if ( (rcode = _unur_nrou_check_par(gen)) != UNUR_SUCCESS)
     return rcode;
+
+  /* (re)set sampling routine */
+  SAMPLE = _unur_nrou_getSAMPLE(gen);
 
   /* compute bounding rectangle */
   return _unur_nrou_rectangle(gen);

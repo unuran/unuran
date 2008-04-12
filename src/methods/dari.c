@@ -534,9 +534,6 @@ _unur_dari_reinit( struct unur_gen *gen )
 {
   int result;
 
-  /* (re)set sampling routine */
-  SAMPLE = _unur_dari_getSAMPLE(gen);
-
   /* check parameters */
   if ( (result = _unur_dari_check_par(gen)) != UNUR_SUCCESS)
     return result;
@@ -544,6 +541,9 @@ _unur_dari_reinit( struct unur_gen *gen )
   /* compute hat  */
   if ( (result = _unur_dari_hat( gen )) != UNUR_SUCCESS)
     return result;
+
+  /* (re)set sampling routine */
+  SAMPLE = _unur_dari_getSAMPLE(gen);
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */

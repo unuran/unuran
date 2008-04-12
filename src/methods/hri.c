@@ -418,12 +418,12 @@ _unur_hri_reinit( struct unur_gen *gen )
 {
   int rcode;
 
-  /* (re)set sampling routine */
-  SAMPLE = _unur_hri_getSAMPLE(gen);
-
   /* check parameters */
   if ( (rcode = _unur_hri_check_par(gen)) != UNUR_SUCCESS)
     return rcode;
+
+  /* (re)set sampling routine */
+  SAMPLE = _unur_hri_getSAMPLE(gen);
 
   /* nothing to do */
   return UNUR_SUCCESS;

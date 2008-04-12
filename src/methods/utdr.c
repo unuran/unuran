@@ -603,9 +603,6 @@ _unur_utdr_reinit( struct unur_gen *gen )
 {
   int rcode;
 
-  /* (re)set sampling routine */
-  SAMPLE = _unur_utdr_getSAMPLE(gen);
-
   /* check parameters */
   if ( (rcode = _unur_utdr_check_par(gen)) != UNUR_SUCCESS)
     return rcode;
@@ -613,6 +610,9 @@ _unur_utdr_reinit( struct unur_gen *gen )
   /* update left and right boundary for algorithm */
   GEN->il = DISTR.BD_LEFT;
   GEN->ir = DISTR.BD_RIGHT;
+
+  /* (re)set sampling routine */
+  SAMPLE = _unur_utdr_getSAMPLE(gen);
 
   /* compute universal bounding rectangle */
   return _unur_utdr_hat( gen );

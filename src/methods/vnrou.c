@@ -608,13 +608,13 @@ _unur_vnrou_reinit( struct unur_gen *gen )
 {
   int rcode;
 
-  /* (re)set sampling routine */
-  SAMPLE = _unur_vnrou_getSAMPLE(gen);
-
   /* compute bounding rectangle */
   if ( (rcode = _unur_vnrou_rectangle(gen))!=UNUR_SUCCESS) {
     return rcode;
   }
+
+  /* (re)set sampling routine */
+  SAMPLE = _unur_vnrou_getSAMPLE(gen);
 
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */

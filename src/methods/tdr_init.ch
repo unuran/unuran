@@ -426,7 +426,7 @@ _unur_tdr_reinit( struct unur_gen *gen )
     if (gen->debug) _unur_tdr_debug_reinit_finished(gen);
 #endif
 
-  /* reset sampling routine */
+  /* (re)set sampling routine */
   SAMPLE = _unur_tdr_getSAMPLE(gen);
 
   return UNUR_SUCCESS;

@@ -677,9 +677,6 @@ _unur_itdr_reinit( struct unur_gen *gen )
 {
   int rcode;
 
-  /* (re)set sampling routine */
-  SAMPLE = _unur_itdr_getSAMPLE(gen);
-
   /* we do not use the given values for when we run reinit */
   gen->set &= ~(ITDR_SET_XI | ITDR_SET_CP | ITDR_SET_CT);
 
@@ -689,6 +686,9 @@ _unur_itdr_reinit( struct unur_gen *gen )
 
   /* create hat function */
   rcode = _unur_itdr_get_hat(gen);
+
+  /* (re)set sampling routine */
+  SAMPLE = _unur_itdr_getSAMPLE(gen);
 
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */

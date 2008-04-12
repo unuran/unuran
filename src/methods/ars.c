@@ -1000,14 +1000,14 @@ _unur_ars_reinit( struct unur_gen *gen )
     GEN->starting_cpoints = bak_cpoints;
   }
 
+  /* (re)set sampling routine */
+  SAMPLE = _unur_ars_getSAMPLE(gen);
+
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
   if (gen->debug & ARS_DEBUG_REINIT)
     _unur_ars_debug_reinit_finished(gen);
 #endif
-
-  /* reset routine for sampling */
-  SAMPLE = _unur_ars_getSAMPLE(gen);
 
   return UNUR_SUCCESS;
 } /* end of _unur_ars_reinit() */

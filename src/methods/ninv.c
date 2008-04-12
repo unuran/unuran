@@ -866,9 +866,6 @@ _unur_ninv_reinit( struct unur_gen *gen )
 {
   int rcode;
 
-  /* (re)set sampling routine */
-  SAMPLE = _unur_ninv_getSAMPLE(gen);
-
   /* check parameters */
   if ( (rcode = _unur_ninv_check_par(gen)) != UNUR_SUCCESS)
     return rcode;
@@ -886,6 +883,9 @@ _unur_ninv_reinit( struct unur_gen *gen )
 
   else /* or compute starting points */
     rcode = unur_ninv_chg_start( gen, 0., 0. );
+
+  /* (re)set sampling routine */
+  SAMPLE = _unur_ninv_getSAMPLE(gen);
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */

@@ -372,12 +372,12 @@ _unur_hrd_reinit( struct unur_gen *gen )
 {
   int rcode;
 
-  /* (re)set sampling routine */
-  SAMPLE = _unur_hrd_getSAMPLE(gen);
-
   /* check parameters */
   if ( (rcode = _unur_hrd_check_par(gen)) != UNUR_SUCCESS)
     return rcode;
+
+  /* (re)set sampling routine */
+  SAMPLE = _unur_hrd_getSAMPLE(gen);
 
   /* nothing to do */
   return UNUR_SUCCESS;

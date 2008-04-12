@@ -758,9 +758,6 @@ _unur_srou_reinit( struct unur_gen *gen )
 {
   int rcode;
 
-  /* (re)set sampling routine */
-  SAMPLE = _unur_srou_getSAMPLE(gen);
-
   /* check parameters */
   if ( (rcode = _unur_srou_check_par(gen)) != UNUR_SUCCESS)
     return rcode;
@@ -770,6 +767,9 @@ _unur_srou_reinit( struct unur_gen *gen )
     rcode = _unur_gsrou_envelope( gen );
   else
     rcode = _unur_srou_rectangle( gen );
+
+  /* (re)set sampling routine */
+  SAMPLE = _unur_srou_getSAMPLE(gen);
 
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */

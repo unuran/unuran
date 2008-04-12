@@ -506,9 +506,6 @@ _unur_dsrou_reinit( struct unur_gen *gen )
 {
   int result;
 
-  /* (re)set sampling routine */
-  SAMPLE = _unur_dsrou_getSAMPLE(gen);
-
   /* check parameters */
   if ( (result = _unur_dsrou_check_par(gen)) != UNUR_SUCCESS)
     return result;
@@ -516,6 +513,9 @@ _unur_dsrou_reinit( struct unur_gen *gen )
   /* compute universal bounding rectangle */
   if ( (result = _unur_dsrou_rectangle(gen)) != UNUR_SUCCESS)
     return result;
+
+  /* (re)set sampling routine */
+  SAMPLE = _unur_dsrou_getSAMPLE(gen);
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */

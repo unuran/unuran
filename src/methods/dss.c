@@ -291,12 +291,12 @@ _unur_dss_reinit( struct unur_gen *gen )
 {
   int rcode;
 
-  /* (re)set sampling routine */
-  SAMPLE = _unur_dss_getSAMPLE(gen);
-
   /* check parameters */
   if ( (rcode = _unur_dss_check_par(gen)) != UNUR_SUCCESS)
     return rcode;
+
+  /* (re)set sampling routine */
+  SAMPLE = _unur_dss_getSAMPLE(gen);
 
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */

@@ -421,9 +421,6 @@ _unur_dgt_reinit( struct unur_gen *gen )
 {
   int rcode;
 
-  /* (re)set sampling routine */
-  SAMPLE = _unur_dgt_getSAMPLE(gen);
-
   /* check parameters */
   if ( (rcode = _unur_dgt_check_par(gen)) != UNUR_SUCCESS)
     return rcode;
@@ -433,6 +430,9 @@ _unur_dgt_reinit( struct unur_gen *gen )
        ((rcode = _unur_dgt_make_guidetable(gen)) != UNUR_SUCCESS) ) {
     return rcode;
   }
+
+  /* (re)set sampling routine */
+  SAMPLE = _unur_dgt_getSAMPLE(gen);
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */

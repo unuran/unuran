@@ -161,7 +161,7 @@ _unur_sample_matr_error( struct unur_gen *gen, double *mat )
   for (j=0; j<dim; j++)
     mat[j] = INFINITY;
   return UNUR_FAILURE;
-} /* end of _unur_sample_cvec_error() */
+} /* end of _unur_sample_matr_error() */
 
 /*---------------------------------------------------------------------------*/
 

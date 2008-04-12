@@ -404,9 +404,6 @@ _unur_dau_reinit( struct unur_gen *gen )
 {
   int rcode;
 
-  /* (re)set sampling routine */
-  SAMPLE = _unur_dau_getSAMPLE(gen);
-
   /* check parameters */
   if ( (rcode = _unur_dau_check_par(gen)) != UNUR_SUCCESS)
     return rcode;
@@ -416,6 +413,9 @@ _unur_dau_reinit( struct unur_gen *gen )
        ((rcode = _unur_dau_make_urntable(gen)) != UNUR_SUCCESS) ) {
     return rcode;
   }
+
+  /* (re)set sampling routine */
+  SAMPLE = _unur_dau_getSAMPLE(gen);
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */

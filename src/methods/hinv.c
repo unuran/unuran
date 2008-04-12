@@ -812,9 +812,6 @@ _unur_hinv_reinit( struct unur_gen *gen )
 {
   int rcode;
 
-  /* (re)set sampling routine */
-  SAMPLE = _unur_hinv_getSAMPLE(gen);
-
   /* check parameters */
   if ( (rcode = _unur_hinv_check_par(gen)) != UNUR_SUCCESS)
     return rcode;
@@ -829,6 +826,9 @@ _unur_hinv_reinit( struct unur_gen *gen )
   /* adjust minimal and maximal U value */
   GEN->Umin = _unur_max(0.,GEN->intervals[0]);
   GEN->Umax = _unur_min(1.,GEN->intervals[(GEN->N-1)*(GEN->order+2)]);
+
+  /* (re)set sampling routine */
+  SAMPLE = _unur_hinv_getSAMPLE(gen);
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */

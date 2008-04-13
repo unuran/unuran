@@ -146,7 +146,7 @@ sub find_files
 sub scan_stddistr
 {
     # header file for standard distributions
-    my $file = $_[0];
+    my $file = shift;
 
     # Read header file
     open HFILE, $file or die "cannot open file \"$file\".\n";
@@ -342,10 +342,10 @@ sub read_distr_file
 } # end of read_distr_file()
 
 # ----------------------------------------------------------------
-# polish C code of function body
+# Polish C code of function body
 
 sub polish_C_code {
-    my $code = shift;
+    my $code = $_[0];
 
     # remove comments
     $code =~ s {/\*.*?\*/} []gsx;
@@ -359,9 +359,75 @@ sub polish_C_code {
     # remove all `DISTR.' from body
     $code =~ s /DISTR\.//g;
 
+    # remove UNU.RAN-isms
+
+    # expand _unur_iszero
+    while ($code =~ "_unur_iszero") {
+	$code = expand_unuris($code,"zero","==0.0");
+    }
+
+    # expand _unur_isone
+    while ($code =~ "_unur_isone") {
+	$code = expand_unuris($code,"one","==1.0");
+    }
+
+    # expand INFINITY
+    $code =~ s/(UNUR\_)?INFINITY/HUGE_VAL/g;
+
     return $code;
 
 } # end of polish_C_code()
+
+# ----------------------------------------------------------------
+# Expand _unur_is... functions
+
+sub expand_unuris
+{
+    my $code = $_[0];
+    my $what = "_unur_is".$_[1];
+    my $cmpstring = $_[2];
+
+    # split into part before UNU.RAN function name
+    # and part after name
+    my ($first,$second) = split /$what/, $code, 2;
+    
+    # split second part into argument of function call
+    # and part after function call
+    my ($arg,$remaining) = find_argument($second);
+
+    # compile new string with UNU.RAN function call expanded (replaced)
+    $code = $first."((".$arg.")".$cmpstring.")".$remaining;
+
+    return $code;
+} # end of expand_unuris()
+
+
+# ----------------------------------------------------------------
+# Find argument of function call (i.e. matching brackets)
+
+sub find_argument
+{
+    my $code = $_[0];
+    
+    # remove leading blanks and check for starting '('
+    $code =~ s/^\s+//;
+    die unless $code =~ /\(/;
+
+    # find closing bracket ')'
+    my $open = 1;
+    my $idx = 1;
+    while ($open) {
+	++$open if substr($code, $idx, 1) eq "(";
+	--$open if substr($code, $idx, 1) eq ")";
+	++$idx;
+	die "Cannot find closing bracket" if $idx > length($code);
+    }
+    my $arg = substr $code, 1, $idx-2;
+    my $remaining = substr $code, $idx;
+
+    return ($arg, $remaining);
+
+} # end of find_argument()
 
 # ----------------------------------------------------------------
 # Print data on screen (for debugging)

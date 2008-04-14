@@ -426,7 +426,7 @@ sub expand_unurisfsame
     die "Invalid number of arguments" unless $#args==1;
 
     # compile new string with UNU.RAN function call expanded (replaced)
-    $code = $first."((".$args[0].")==(".$args[1].")".$remaining;
+    $code = $first."((".$args[0].")==(".$args[1]."))".$remaining;
 
     return $code;
 } # end of expand_unuris()

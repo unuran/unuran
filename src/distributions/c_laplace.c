@@ -117,7 +117,7 @@ _unur_logpdf_laplace( double x, const UNUR_DISTR *distr )
   /* else */
   return (  (theta-x)/phi - log(2.*phi) ); 
 
-} /* end of _unur_pdf_laplace() */
+} /* end of _unur_logpdf_laplace() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -142,7 +142,7 @@ _unur_dlogpdf_laplace( double x, const UNUR_DISTR *distr )
 { 
   register const double *params = DISTR.params;
   return ( (x<theta) ? 1./phi : -1./phi );
-} /* end of unur_dpdf_laplace() */
+} /* end of unur_dlogpdf_laplace() */
 
 /*---------------------------------------------------------------------------*/
 

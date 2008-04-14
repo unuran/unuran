@@ -114,6 +114,10 @@ sub read_PDFdata {
 # and get a list of valid distributions
     scan_stddistr( $file_list{$h_stddistr} );
 
+
+    print_data($DISTR);
+
+
 # ................................................................
 # End. Return result
     return $DISTR;
@@ -371,6 +375,11 @@ sub polish_C_code {
 	$code = expand_unuris($code,"one","==1.0");
     }
 
+    # expand _unur_isfsame
+    while ($code =~ "_unur_isfsame") {
+	$code = expand_unurisfsame($code);
+    }
+
     # expand INFINITY
     $code =~ s/(UNUR\_)?INFINITY/HUGE_VAL/g;
 
@@ -397,6 +406,31 @@ sub expand_unuris
 
     # compile new string with UNU.RAN function call expanded (replaced)
     $code = $first."((".$arg.")".$cmpstring.")".$remaining;
+
+    return $code;
+} # end of expand_unuris()
+
+# ................................................................
+
+sub expand_unurisfsame
+{
+    my $code = $_[0];
+    my $what = "_unur_isfsame";
+
+    # split into part before UNU.RAN function name
+    # and part after name
+    my ($first,$second) = split /$what/, $code, 2;
+    
+    # split second part into argument of function call
+    # and part after function call
+    my ($arg,$remaining) = find_argument($second);
+
+    # split arguments
+    my (@args) = split /\,/, $arg;
+    die "Invalid number of arguments" unless $#args==1;
+
+    # compile new string with UNU.RAN function call expanded (replaced)
+    $code = $first."((".$args[0].")==(".$args[1].")".$remaining;
 
     return $code;
 } # end of expand_unuris()

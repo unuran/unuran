@@ -114,10 +114,6 @@ sub read_PDFdata {
 # and get a list of valid distributions
     scan_stddistr( $file_list{$h_stddistr} );
 
-
-    print_data($DISTR);
-
-
 # ................................................................
 # End. Return result
     return $DISTR;

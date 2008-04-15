@@ -60,6 +60,11 @@ unur_urng_prngptr_new( struct prng *prng )
   urng = unur_urng_new( (double(*)(void*)) prng->get_next, prng );
   unur_urng_set_reset(urng, (void(*)(void*)) prng->reset);
   unur_urng_set_delete(urng, (void(*)(void*)) prng->destroy);
+
+  if (prng_can_seed(prng)) {
+    unur_urng_set_seed(urng, (void(*)(void*,unsigned long))prng->seed);
+  }
+
   return urng;
 } /* end of unur_urng_prngptr_new() */
 

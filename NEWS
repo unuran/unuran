@@ -17,6 +17,11 @@ Version 1.2.2: March 2008
 	- GIBBS: fixed rare problem with infinite loops (see ARS)
 
 
+	* Uniform random number generators:
+
+	- unur_urng_prng_new() now supports 'unur_urng_seed'.
+
+
 Version 1.2.0: February 2008
 
 	* Methods:

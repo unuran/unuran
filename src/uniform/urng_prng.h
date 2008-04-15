@@ -83,6 +83,8 @@
       @itemize @minus
       @item unur_urng_sample()
       @item unur_urng_sample_array()
+      @item unur_urng_seed() 
+            (availability depends on chosen PRNG generator!)
       @item unur_urng_reset() 
       @item unur_urng_free()
       @end itemize

@@ -1,9 +1,6 @@
-Version 1.2.2: March 2008
+Version 1.2.2: April 2008
 
 	* Methods:
-
-	- HRB and HRI: fixed possible infinite loop with
-	  invalid hazad rates.
 
 	- AROU: run DARS by default (as stated in the manual)
 
@@ -15,6 +12,9 @@ Version 1.2.2: March 2008
           PDFs are given but not detected during setup.
 
 	- GIBBS: fixed rare problem with infinite loops (see ARS)
+
+	- HRB and HRI: fixed possible infinite loop with
+	  invalid hazad rates.
 
 
 	* Uniform random number generators:

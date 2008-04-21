@@ -72,10 +72,6 @@
 /*---------------------------------------------------------------------------*/
 /* Constants                                                                 */
 
-/* maximum number of iterations of rejection loop.                           */
-/* the loop is then aborted and INFINITY is returned.                        */
-// #define ARS_MAX_ITER          (1000)
-
 /*---------------------------------------------------------------------------*/
 /* Variants                                                                  */
 

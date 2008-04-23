@@ -315,7 +315,9 @@ enum {
 /** List of known symbols                                                   **/
 /*****************************************************************************/
 
+#define PARSER
 #include "functparser_symbols.h"
+#undef PARSER
 
 /*****************************************************************************/
 /** Prototypes                                                              **/
@@ -584,66 +586,6 @@ static int _unur_fstr_print ( struct unur_string *output, const char *symb, doub
 
 
 /**-------------------------------------------------------------------------**/
-/** functparser_codegen_C.c                                                 **/
-/**   Make C code for function given by its tree.                           **/
-/**-------------------------------------------------------------------------**/
-
-static int _unur_fstr_print_C ( struct unur_string *output, const char *symb, double number );
-/*---------------------------------------------------------------------------*/
-/* Print string or number as C code into output string.                      */
-/* The number is only printed if symb is the NULL pointer.                   */
-/*---------------------------------------------------------------------------*/
-
-static int _unur_fstr_C_specfunct ( FILE *out, unsigned flags );
-/*---------------------------------------------------------------------------*/
-/* Print C code for special functions                                        */ 
-/*---------------------------------------------------------------------------*/
-
-static int _unur_fstr_C_sgn ( FILE *out );
-/*---------------------------------------------------------------------------*/
-/* Print C code for sign function                                            */ 
-/*---------------------------------------------------------------------------*/
-
-static int _unur_fstr_C_sec ( FILE *out );
-/*---------------------------------------------------------------------------*/
-/* Print C code for secant function                                          */ 
-/*---------------------------------------------------------------------------*/
-
-
-/**-------------------------------------------------------------------------**/
-/** functparser_codegen_FORTRAN.c                                           **/
-/**   Make FORTRAN code for function given by its tree.                     **/
-/**-------------------------------------------------------------------------**/
-
-static int _unur_fstr_print_F ( struct unur_string *output, const char *symb, double number );
-/*---------------------------------------------------------------------------*/
-/* Print string or number as FORTRAN code into output string.                */
-/* The number is only printed if symb is the NULL pointer.                   */
-/*---------------------------------------------------------------------------*/
-
-static int _unur_fstr_F_specfunct ( FILE *out, unsigned flags );
-/*---------------------------------------------------------------------------*/
-/* Print FORTRAN code for special functions                                  */ 
-/*---------------------------------------------------------------------------*/
-
-
-/**-------------------------------------------------------------------------**/
-/** functparser_codegen_JAVA.c                                              **/
-/**   Make JAVA code for function given by its tree.                        **/
-/**-------------------------------------------------------------------------**/
-
-static int _unur_fstr_J_specfunct ( FILE *out, unsigned flags );
-/*---------------------------------------------------------------------------*/
-/* Print JAVA code for special functions                                     */ 
-/*---------------------------------------------------------------------------*/
-
-static int _unur_fstr_J_sgn ( FILE *out );
-/*---------------------------------------------------------------------------*/
-/* Print JAVA code for sign function                                         */ 
-/*---------------------------------------------------------------------------*/
-
-
-/**-------------------------------------------------------------------------**/
 /** functparser_debug.c                                                     **/
 /**   Debugging tools for function parser.                                  **/
 /**-------------------------------------------------------------------------**/
@@ -699,9 +641,6 @@ static void _unur_fstr_debug_deriv (const struct ftreenode *funct,
 #include "functparser_eval.ch"
 #include "functparser_deriv.ch"
 #include "functparser_stringgen.ch"
-#include "functparser_codegen_C.ch"
-#include "functparser_codegen_FORTRAN.ch"
-#include "functparser_codegen_JAVA.ch"
 #include "functparser_debug.ch"
 /*---------------------------------------------------------------------------*/
 

@@ -14,9 +14,6 @@ libparser_la_SOURCES = \
  functparser_struct.h \
  functparser_symbols.h \
  functparser_stringgen.ch \
- functparser_codegen_C.ch \
- functparser_codegen_FORTRAN.ch \
- functparser_codegen_JAVA.ch \
  functparser_debug.ch \
  functparser_deriv.ch \
  functparser_eval.ch \

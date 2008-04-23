@@ -259,6 +259,7 @@ _unur_read_data( const char *filename, int no_of_entries, double **ar )
   char line[LINELENGTH];
   char *toline;
   char *chktoline;
+  char *tmp;
 
   double *data;              /* pointer to data array        */
   int n_data;                /* number of data in array      */
@@ -289,9 +290,9 @@ _unur_read_data( const char *filename, int no_of_entries, double **ar )
   }
 
   /* read lines until eof */
-  for ( fgets(line, LINELENGTH, fp), i=0;
+  for ( tmp=fgets(line, LINELENGTH, fp), i=0;
         !feof(fp);
-        fgets(line, LINELENGTH, fp) ) {
+        tmp=fgets(line, LINELENGTH, fp) ) {
 
     /* if necessary allocate more memory for array */
     if (i > memfactor*datasize - no_of_entries-2){

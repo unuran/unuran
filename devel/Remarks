@@ -18,3 +18,9 @@ GCC compiler options:
 -fstack-protector-all
      Like `-fstack-protector' except that all functions are protected.
 
+-Wp,-D_FORTIFY_SOURCE=2
+     GCC compile time buffer checks (FORTIFY SOURCE)
+     see https://www.wideopen.com/magazine/009jul05/features/execshield/
+
+-fno-optimize-sibling-calls
+     this suppresses a strange compiler bug in GCC-4.3.0

@@ -1,5 +1,17 @@
-GCC compiler options:
+SOP for creating new release:
+*****************************
+- update NEWS
 
+- update version number in 
+  
+    INSTALL       (3x)
+    configure.ac  (2x)
+
+- update 'UNURAN_LT_VERSION' in configure.ac
+
+
+GCC compiler options:
+*********************
 -ffloat-store
      Do not store floating point variables in registers, and inhibit
      other options that might change whether a floating point value is

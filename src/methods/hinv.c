@@ -215,6 +215,11 @@ static int _unur_hinv_make_guide_table( struct unur_gen *gen );
 /* make a guide table for indexed search.                                    */
 /*---------------------------------------------------------------------------*/
 
+static double _unur_hinv_CDF( const struct unur_gen *gen, double x );
+/*---------------------------------------------------------------------------*/
+/* compute CDF of truncated distribution.                                    */
+/*---------------------------------------------------------------------------*/
+
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 /* the following functions print debugging information on output stream,     */
@@ -258,9 +263,12 @@ static void _unur_hinv_info( struct unur_gen *gen, int help );
 /* CDF, PDF, and dPDF are rescaled such that the CDF is a "real" CDF with    */
 /* u (range) in (0,1) on the interval (DISTR.domain[0], DISTR.domain[1]).    */
 /* call to CDF: */
-#define CDF(x)  ((_unur_cont_CDF((x),(gen->distr))-GEN->CDFmin)/(GEN->CDFmax-GEN->CDFmin))
+#define CDF(x)  (_unur_hinv_CDF((gen),(x)))
+/* --> ((_unur_cont_CDF((x),(gen->distr))-GEN->CDFmin)/(GEN->CDFmax-GEN->CDFmin)) */
+
 /* call to PDF: */
 #define PDF(x)  (_unur_cont_PDF((x),(gen->distr))/(GEN->CDFmax-GEN->CDFmin)) 
+
 /* call to derivative of PDF: */   
 #define dPDF(x) (_unur_cont_dPDF((x),(gen->distr))/(GEN->CDFmax-GEN->CDFmin))
 
@@ -1824,6 +1832,40 @@ _unur_hinv_make_guide_table( struct unur_gen *gen )
   /* o.k. */
   return UNUR_SUCCESS;
 } /* end of _unur_hinv_make_guide_table() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_hinv_CDF( const struct unur_gen *gen, double x )
+     /*----------------------------------------------------------------------*/
+     /* Compute CDF of truncated distribution.                               */
+     /* The CDF is rescaled such that the CDF is a "real" CDF with           */
+     /* range u is [0,1] in the interval (DISTR.domain[0], DISTR.domain[1]). */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*   x   ... argument for CDF                                           */
+     /*----------------------------------------------------------------------*/
+{
+  double u;
+
+  /* check for boundaries */
+  if (x<=DISTR.domain[0]) return 0.;
+  if (x>=DISTR.domain[1]) return 1.;
+
+  /* compute rescaled CDF */
+  u = (_unur_cont_CDF(x,gen->distr) - GEN->CDFmin) / (GEN->CDFmax - GEN->CDFmin);
+
+  /* we have to protect us against round-off errors.        */
+  /* thus we allow results that are a little bit too large. */
+  if (u>1. && _unur_FP_equal(u,1.))
+    u = 1.;
+  
+  /* Remark: We do not change u if it is too large since then we assume that */
+  /* the given CDF is incorrect.                                             */
+
+  return u;
+} /* end of _unur_hinv_CDF() */
 
 
 /*****************************************************************************/

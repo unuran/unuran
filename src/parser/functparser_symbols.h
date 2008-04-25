@@ -320,15 +320,15 @@ struct symbols {
 /* entries needed for parsing and evaluation of terms */
 #ifdef PARSER
 #  define S(name,type,priority,value,funct,deriv) \
-   (name),(type),(priority),(value),(funct),(deriv)
+   name,type,priority,value,funct,deriv
 #else
 #  define S(name,type,priority,value,funct,deriv) \
-   (name),
+   name,
 #endif
 
 /* code generating functings */
 #ifdef CODEGEN
-#  define CG(cc,fortran,java)  (cc),(fortran),(java)
+#  define CG(cc,fortran,java)  cc,fortran,java
 #else
 #  define CG(cc,fortran,java)
 #endif

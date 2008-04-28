@@ -3,9 +3,12 @@ Version 1.2.4: ???? April 2008
 
 	* Methods:
 
+	- GIBBS: fixed possible infinite loops.
+
 	- HINV: fixed round-off errors that occured for truncated 
           distributions when compiler with 'gcc-4.3 -O2' on some
           plattforms.
+
 
 Version 1.2.3: April 2008
 

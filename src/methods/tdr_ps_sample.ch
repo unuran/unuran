@@ -451,7 +451,7 @@ _unur_tdr_ps_improve_hat( struct unur_gen *gen, struct unur_tdr_interval *iv,
   if (result!=UNUR_SUCCESS && result!=UNUR_ERR_SILENT && result!=UNUR_ERR_INF) {
     /* condition for PDF is violated! */
     _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"");
-    if (gen->variant & TDR_VARFLAG_PEDANTIC) {
+    if (gen->variant & TDR_VARFLAG_PEDANTIC || result == UNUR_ERR_ROUNDOFF) {
       /* replace sampling routine by dummy routine that just returns INFINITY */
       SAMPLE = _unur_sample_cont_error;
       return UNUR_ERR_GEN_CONDITION;

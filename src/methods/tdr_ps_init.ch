@@ -783,6 +783,12 @@ _unur_tdr_ps_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv,
     _unur_tdr_ps_debug_split_stop( gen,oldl,iv_new,oldr );
 #endif
 
+  /* when using inside Gibbs sampler Atotal might be 0 */
+  if (GEN->Atotal <= 1.e10 * DBL_MIN) {
+    _unur_error(gen->genid,UNUR_ERR_ROUNDOFF,"error below hat (almost) 0");
+    return UNUR_ERR_ROUNDOFF;
+  }
+
   /* o.k. */
   return UNUR_SUCCESS;
 

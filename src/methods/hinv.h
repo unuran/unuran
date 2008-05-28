@@ -276,9 +276,9 @@ double unur_hinv_eval_approxinvcdf( const UNUR_GEN *generator, double u );
    @code{-UNUR_INFINITY} or @code{UNUR_INFINITY} in the case of
    unbounded domains).
 
-   @emph{Notice}: This function always evaluates the inverse CDF of
-   the given distribution. A call to unur_hinv_chg_truncated() call
-   has no effect.
+   @emph{Notice}: When the domain has been truncated by a  
+   unur_hinv_chg_truncated() call then the inverse CDF of the
+   truncated distribution is returned.
 */
 
 int unur_hinv_chg_truncated( UNUR_GEN *generator, double left, double right );

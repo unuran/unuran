@@ -1158,6 +1158,9 @@ unur_hinv_eval_approxinvcdf( const struct unur_gen *gen, double u )
   if (u<=0.) return DISTR.domain[0];
   if (u>=1.) return DISTR.domain[1];
 
+  /* rescale given u */
+  u = GEN->Umin + u * (GEN->Umax - GEN->Umin);
+
   /* compute inverse CDF */
   x = _unur_hinv_eval_approxinvcdf(gen,u);
 
@@ -1543,7 +1546,7 @@ _unur_hinv_interval_adapt( struct unur_gen *gen, struct unur_hinv_interval *iv,
   if (_unur_FP_equal(p_new,iv->p) || _unur_FP_equal(p_new,iv->next->p)) {
     if(!(*error_count_shortinterval)){ 
       _unur_warning(gen->genid,UNUR_ERR_ROUNDOFF,
-		     "one or more intervals very short; possibly due to numerical problems with a pole or very flat tail");
+		    "one or more intervals very short; possibly due to numerical problems with a pole or very flat tail");
       (*error_count_shortinterval)++;
     } 
     /* skip to next interval */

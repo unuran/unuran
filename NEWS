@@ -1,4 +1,16 @@
 
+Version 1.?.?: ??? 2008
+
+	* Methods:
+
+	- HINV: fixed segfault when calling 
+          unur_hinv_eval_approxinvcdf with u-value very close
+          too 1.
+          However, when the domain has been truncated then
+          this function evaluates the inverse CDF of the
+	  truncated distribution.
+
+
 Version 1.2.4: April 2008
 
 	* Methods:

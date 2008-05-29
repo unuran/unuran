@@ -10,9 +10,8 @@ AM_CPPFLAGS = \
 
 LDADD = \
  $(unuran_builddir)/tests/testdistributions/libtestdistributions.la \
+ $(top_builddir)/src/libunurexperimental.la \
  $(unuran_builddir)/src/libunuran.la
-
-## $(top_builddir)/src/libunurexperimental.la
 
 noinst_PROGRAMS = run 
 

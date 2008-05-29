@@ -8,14 +8,13 @@ AM_CPPFLAGS = \
 
 lib_LTLIBRARIES = libunurexperimental.la
 
-libunurexperimental_la_SOURCES =
+libunurexperimental_la_SOURCES = \
+ pinv.c  pinv.h  pinv_struct.h
 
 #libunurexperimental_la_SOURCES = \
 # ball.c    ball.h    ball_struct.h \
 # varou.c   varou.h   varou_struct.h \
-# walk.c    walk.h    walk_struct.h \
-# mvtdr.c   mvtdr.h   mvtdr_struct.h \
-#   mvtdr_newset.ch mvtdr_init.ch mvtdr_sample.ch mvtdr_debug.ch
+# walk.c    walk.h    walk_struct.h
 
 noinst_HEADERS = 
 

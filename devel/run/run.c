@@ -17,6 +17,8 @@
 #include <unuran_tests.h>
 #include <testdistributions.h>
 
+#include <pinv.h>
+
 #define RUN_TESTS       (~0x0u)
 /* #define RUN_TESTS       UNUR_TEST_SAMPLE */
 
@@ -39,6 +41,8 @@ int main()
   UNUR_DISTR *distr;
   UNUR_PAR *par;
   UNUR_GEN *gen;
+  int i;
+
 /*   double ll[] = { -1e-5, -1e-5}; */
 /*   double ll[] = { 0, 0}; */
 /*   double ur[] = { 10000., 10000.}; */
@@ -60,13 +64,20 @@ int main()
 /*   unur_mvtdr_set_maxcones(par,1);  */
 
   distr = unur_distr_normal(NULL,0);
-  par = unur_tdr_new(distr);
+  par = unur_pinv_new(distr);
 
 /*   unur_run_tests(par,RUN_TESTS,stdout); */
 
   gen = unur_init(par);
 
-  printf("%s\n",unur_gen_info(gen));
+/*   printf("%g\n", unur_hinv_eval_approxinvcdf( gen,1.e-100 )); */
+/*   printf("%g\n", unur_hinv_eval_approxinvcdf( gen,1.-1e-17 )); */
+
+
+  for (i=0; i<10; i++)
+    printf("%g\n",unur_sample_cont(gen));
+
+/*  printf("%s\n",unur_gen_info(gen)); */
 
 /*   unur_test_printsample (gen, 100, 1, stdout); */
 /*   unur_test_chi2( gen, 100, 0, 20, 1, stdout); */

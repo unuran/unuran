@@ -15,7 +15,7 @@ LDADD = \
  $(top_builddir)/src/libunurexperimental.la \
  $(unuran_builddir)/src/libunuran.la
 
-check_PROGRAMS =
+check_PROGRAMS = t_pinv
 
 TESTS = $(check_PROGRAMS)
 

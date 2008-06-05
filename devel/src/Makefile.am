@@ -9,7 +9,7 @@ AM_CPPFLAGS = \
 lib_LTLIBRARIES = libunurexperimental.la
 
 libunurexperimental_la_SOURCES = \
- pinvwh.c pinvwh.h \
+ pinvwh.h \
  pinv.c  pinv.h  pinv_struct.h
 
 #libunurexperimental_la_SOURCES = \

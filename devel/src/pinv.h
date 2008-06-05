@@ -260,7 +260,7 @@ int unur_pinv_set_searchboundary( UNUR_PAR *parameters, int left, int right );
    It returns an error code in case of an error.
 */
 
-/* double unur_pinv_eval_approxinvcdf( const UNUR_GEN *generator, double u ); */
+double unur_pinv_eval_approxinvcdf( const UNUR_GEN *generator, double u );
 /*
    Evaluate Hermite interpolation of inverse CDF at @var{u}.
    If @var{u} is out of the domain [0,1] then @code{unur_errno} is set

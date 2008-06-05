@@ -32,6 +32,12 @@
  *                                                                           *
  *****************************************************************************/
 
+
+
+#include "pinvwh.h"
+
+
+
 /*---------------------------------------------------------------------------*/
 /* Information for constructing the generator                                */
 
@@ -96,6 +102,13 @@ struct unur_pinv_gen {
 /*   int     n_stp;           /\* number of construction points at start         *\/ */
   double  bleft_par;       /* border of the computational domain as ...      */
   double  bright_par;      /* ... given by user                              */
+
+
+
+
+  struct genobject *genpinv;
+
+
 };
 
 /*---------------------------------------------------------------------------*/

@@ -61,6 +61,7 @@
 #include "pinv.h"
 #include "pinv_struct.h"
 
+
 /*---------------------------------------------------------------------------*/
 /* Constants                                                                 */
 
@@ -276,14 +277,14 @@ static void _unur_pinv_debug_init( const struct unur_gen *gen, int ok);
 /* CDF, PDF, and dPDF are rescaled such that the CDF is a "real" CDF with    */
 /* u (range) in (0,1) on the interval (DISTR.domain[0], DISTR.domain[1]).    */
 /* call to CDF: */
-#define CDF(x)  (_unur_pinv_CDF((gen),(x)))
+/* #define CDF(x)  (_unur_pinv_CDF((gen),(x))) */
 /* --> ((_unur_cont_CDF((x),(gen->distr))-GEN->CDFmin)/(GEN->CDFmax-GEN->CDFmin)) */
 
 /* call to PDF: */
 #define PDF(x)  (_unur_cont_PDF((x),(gen->distr))/(GEN->CDFmax-GEN->CDFmin)) 
 
 /* call to derivative of PDF: */   
-#define dPDF(x) (_unur_cont_dPDF((x),(gen->distr))/(GEN->CDFmax-GEN->CDFmin))
+/* #define dPDF(x) (_unur_cont_dPDF((x),(gen->distr))/(GEN->CDFmax-GEN->CDFmin)) */
 
 /*---------------------------------------------------------------------------*/
 
@@ -673,6 +674,12 @@ unur_pinv_set_searchboundary( struct unur_par *par, int left, int right )
 /* } /\* end of unur_pinv_chg_truncated() *\/ */
 
 
+static struct unur_distr *bad_global_pointer_to_distribution = NULL;
+double bad_global_pdf (double x) { 
+  struct unur_distr *distr = bad_global_pointer_to_distribution;
+  return (distr->data.cont.pdf)(x,distr);
+}
+
 /*****************************************************************************/
 /**  Private                                                                **/
 /*****************************************************************************/
@@ -694,6 +701,7 @@ _unur_pinv_init( struct unur_par *par )
 { 
   struct unur_gen *gen;
 
+
   /* check arguments */
   _unur_check_NULL( GENTYPE,par,NULL );
 
@@ -705,6 +713,14 @@ _unur_pinv_init( struct unur_par *par )
 
   /* create a new empty generator object */    
   gen = _unur_pinv_create(par);
+
+
+  bad_global_pointer_to_distribution = gen->distr;
+  GEN->genpinv = pinvsetup(bad_global_pdf, GEN->order, GEN->u_resolution, DISTR.center,
+ 		      PAR->sleft, PAR->sright, GEN->bleft_par, GEN->bright_par);
+
+
+
   _unur_par_free(par);
   if (!gen) return NULL;
 
@@ -712,6 +728,11 @@ _unur_pinv_init( struct unur_par *par )
   if (_unur_pinv_check_par(gen) != UNUR_SUCCESS) {
     _unur_pinv_free(gen); return NULL;
   }
+
+
+
+ 
+
 
   /* compute splines */
 /*   if (_unur_pinv_create_table(gen)!=UNUR_SUCCESS) { */
@@ -866,6 +887,10 @@ _unur_pinv_create( struct unur_par *par )
   GEN->guide_size = 0; 
   GEN->guide = NULL;
 
+
+
+  GEN->genpinv = NULL;
+
 #ifdef UNUR_ENABLE_INFO
   /* set function for creating info string */
 /*   gen->info = _unur_pinv_info; */
@@ -998,6 +1023,11 @@ _unur_pinv_free( struct unur_gen *gen )
   /* free tables */
 /*   if (GEN->intervals) free (GEN->intervals); */
 /*   if (GEN->guide)     free (GEN->guide); */
+
+
+
+  free_genobject(GEN->genpinv);
+
 
   /* free memory */
   _unur_generic_free(gen);
@@ -2074,3 +2104,41 @@ _unur_pinv_debug_init( const struct unur_gen *gen, int ok )
 /*---------------------------------------------------------------------------*/
 #endif   /* end UNUR_ENABLE_INFO */
 /*---------------------------------------------------------------------------*/
+
+
+
+int check_inversion_unuran(struct unur_gen *gen,double uerror,double (*cdf)(double x),int printyn){
+  /* checks the inversion for a generator object by calculating the u-error using the CDF
+     checks many u-values especially in the etreme tails
+  */
+
+  double u,x,uerr,maxerror=0.,maxu;
+
+  struct genobject *geno = GEN->genpinv;
+
+  uerror*=1.1;
+/* "*1.1" is necessary for this controll as the left cut-off tail has about 10% of the uerror */
+  maxu=1.;
+  for(u=1.e-10;u<maxu;u+=1./33211){
+    x=quantile(u,geno);
+    uerr=(*cdf)(x)-u;
+    if(fabs(uerr)>maxerror) maxerror=uerr;
+    if(printyn&&fabs(uerr)>uerror) printf("%g %g %g\n",u,x,uerr);
+  }
+  for(u=1.e-13;u<1.e-5;u+=1.e-8){//check left tail
+    x=quantile(u,geno);
+    uerr=(*cdf)(x)-u;
+    if(fabs(uerr)>maxerror) maxerror=uerr;
+    if(printyn&&fabs(uerr)>uerror)printf("%g %g %g\n",u,x,uerr);
+  }
+  for(u=maxu-1.e-13;u>maxu-1.e-5;u-=1.e-8){//check right tail
+    x=quantile(u,geno);
+    uerr=(*cdf)(x)-u;
+    if(fabs(uerr)>maxerror) maxerror=uerr;
+    if(printyn&&fabs(uerr)>uerror)printf("%g %g %g\n",u,x,uerr);
+  }
+  printf("aimed uerror: %g ;  observed maxerror : %g\n",uerror,maxerror);
+  return 0;
+}
+
+/**********************************************/

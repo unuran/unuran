@@ -22,8 +22,6 @@ struct genobject *pinvsetup( double (*f)(double x),int g, double uerror, double 
 struct genobject *setup(double (*f)(double x),int g, double a, double b, double hh, double uerror);
 
 
-
-
 double lobato5(double x, double h, double fx, double *fxph, double (*f)(double x));
 
 double nint_12(double a,double b,double *res_relerror, double (*f)(double x));

@@ -269,37 +269,36 @@ static void _unur_pinv_debug_init( const struct unur_gen *gen, int ok);
 
 
 
-struct genobject *pinvsetup( double (*f)(double x),int g, double uerror, double x0, int asearch, int bsearch,double a, double b);
+static struct genobject *pinvsetup( struct unur_gen *gen, double (*f)(double x),int g, double uerror, double x0, int asearch, int bsearch,double a, double b);
                              
 
-struct genobject *setup(double (*f)(double x),int g, double a, double b, double hh, double uerror);
+static struct genobject *setup(struct unur_gen *gen, double (*f)(double x),int g, double a, double b, double hh, double uerror);
 
 
-double lobato5(double x, double h, double fx, double *fxph, double (*f)(double x));
+static double lobato5(double x, double h, double fx, double *fxph, double (*f)(double x));
 
-double nint_12(double a,double b,double *res_relerror, double (*f)(double x));
+static double nint_12(double a,double b,double *res_relerror, double (*f)(double x));
 
-double nint_monoton_dens(double a,double b,double step,double crit, double (*f)(double x));
+static double nint_monoton_dens(double a,double b,double step,double crit, double (*f)(double x));
 
-double evalnewtoninterpol(double u,int g,double ui[],double zi[]);
+static double evalnewtoninterpol(double u,int g,double ui[],double zi[]);
 
-int newtoninterpol(double x0, double h,int g,double ui[],double zi[],double *x,double (*f)(double x));
+static int newtoninterpol(double x0, double h,int g,double ui[],double zi[],double *x,double (*f)(double x));
 
-int tstpt(int g,double ui[],double utest[]);
+static int tstpt(int g,double ui[],double utest[]);
 
-double maxerrornewton(int g,double ui[],double zi[],double x0,double xval[],double (*f)(double x));
+static double maxerrornewton(int g,double ui[],double zi[],double x0,double xval[],double (*f)(double x));
 
-struct genobject *init_genobject(int g,int maxint);
+static struct genobject *init_genobject(int g,int maxint);
 
-int free_genobject(struct genobject *p);
+static int free_genobject(struct genobject *p);
 
-double searchborder(double x0, double step,double border,double (*f)(double x));
+static double searchborder(double x0, double step,double border,double (*f)(double x));
 
-double tail(double x, double d,double (*f)(double x));
+static double tail(double x, double d,double (*f)(double x));
 
-double cut(double w,double dw, double crit,double (*f)(double x));
+static double cut(double w,double dw, double crit,double (*f)(double x));
 
-double quantile(double u, struct genobject *geno);
 
 
 
@@ -766,7 +765,7 @@ _unur_pinv_init( struct unur_par *par )
 
 
   bad_global_pointer_to_distribution = gen->distr;
-  GEN->genpinv = pinvsetup(bad_global_pdf, GEN->order, GEN->u_resolution, DISTR.center,
+  GEN->genpinv = pinvsetup(gen, bad_global_pdf, GEN->order, GEN->u_resolution, DISTR.center,
  		      PAR->sleft, PAR->sright, GEN->bleft_par, GEN->bright_par);
 
 
@@ -1072,7 +1071,7 @@ _unur_pinv_free( struct unur_gen *gen )
 
   /* free tables */
 /*   if (GEN->intervals) free (GEN->intervals); */
-/*   if (GEN->guide)     free (GEN->guide); */
+  if (GEN->guide)     free (GEN->guide);
 
 
 
@@ -1111,10 +1110,10 @@ _unur_pinv_sample( struct unur_gen *gen )
 
   /* compute inverse CDF */
   X = U;
-/*   X = _unur_pinv_eval_approxinvcdf(gen,U); */
+  X = _unur_pinv_eval_approxinvcdf(gen,U);
 
-/*   if (X<DISTR.trunc[0]) return DISTR.trunc[0]; */
-/*   if (X>DISTR.trunc[1]) return DISTR.trunc[1]; */
+  if (X<DISTR.trunc[0]) return DISTR.trunc[0];
+  if (X>DISTR.trunc[1]) return DISTR.trunc[1];
 
   return X;
 
@@ -1139,7 +1138,8 @@ _unur_pinv_eval_approxinvcdf( const struct unur_gen *gen, double u )
      /*   return INFINITY                                                    */
      /*----------------------------------------------------------------------*/
 {
-/*   int i; */
+  int i;
+  double x,un;
 
   /* check arguments */
   CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_PINV_GEN,INFINITY);
@@ -1155,7 +1155,14 @@ _unur_pinv_eval_approxinvcdf( const struct unur_gen *gen, double u )
 /*   /\* evaluate polynome *\/ */
 /*   return _unur_pinv_eval_polynomial( u, GEN->intervals+i+1, GEN->order ); */
   
-  return quantile(u, GEN->genpinv);
+
+  un = u * GEN->umax;
+  for(i= GEN->guide[(int)(u * GEN->guide_size)]; GEN->genpinv->iv[i+1].cdfi < un ; i++)
+    ;
+
+  x = evalnewtoninterpol(un- GEN->genpinv->iv[i].cdfi,GEN->order,GEN->genpinv->iv[i].ui,GEN->genpinv->iv[i].zi);
+
+  return (GEN->genpinv -> iv)[i].xi+x;
 
 } /* end of _unur_pinv_eval_approxinvcdf() */
 
@@ -2379,7 +2386,6 @@ double maxerrornewton(int g,double ui[],double zi[],double x0,double xval[],doub
 struct genobject *init_genobject(int g,int maxint){
  struct genobject *p;
  p = malloc(sizeof(struct genobject));
- p->g = g;
  p->ni = 0;
  p->iv = malloc(sizeof(struct siv)*maxint);
  return p;
@@ -2393,15 +2399,13 @@ int free_genobject(struct genobject *p){
   }
   free(p->iv);
   p->iv=NULL;
-  free(p->gt);
-  p->gt=NULL;
   free(p);
   return 0;
 }
 
 
 
-struct genobject *setup(double (*f)(double x),int g, double a, double b, double hh, double uerror){
+struct genobject *setup(struct unur_gen *gen, double (*f)(double x),int g, double a, double b, double hh, double uerror){
   /*
     f ... PDF
     g ... order of polynomial
@@ -2452,20 +2456,20 @@ struct genobject *setup(double (*f)(double x),int g, double a, double b, double 
 
  free(xval);
 
- geno->umax = geno->iv[geno ->ni].cdfi;
+ GEN->umax = geno->iv[geno ->ni].cdfi;
 
 
- geno->C = geno->ni;//size of guide-table
- geno->gt = malloc(sizeof(int)*geno->C);  
- geno->gt[0] = 0;
+ GEN->guide_size = geno->ni;//size of guide-table
+ GEN->guide = malloc(sizeof(int)*GEN->guide_size);  
+ GEN->guide[0] = 0;
  i=0;
- for(j=1; j<geno->C; j++){
-   while(j/(double)geno->C > geno->iv[i+1].cdfi/geno->umax) i++;
+ for(j=1; j<GEN->guide_size; j++){
+   while(j/(double)GEN->guide_size > geno->iv[i+1].cdfi/GEN->umax) i++;
    /* "/geno->umax" above is necessary, as we need the guide table for u in (0,umax) */
-   geno->gt[j] = i;
+   GEN->guide[j] = i;
  }
  printf("Set-up finished: g=%d,  Number of intervals = %d,\n         additional calculated interpolations=%d\n",g,geno->ni,countextracalc);
- printf("u in (0,%.18g)   1-umax%g\n",geno->umax,1-geno->umax);
+ printf("u in (0,%.18g)   1-umax%g\n",GEN->umax,1-GEN->umax);
  return geno;
 } 
 
@@ -2571,38 +2575,12 @@ double cut(double w,double dw, double crit,double (*f)(double x)){
 
 /**********************************************************************/
 
-double quantile(double u, struct genobject *geno){
-  /* evaluates the inverse CDF of the generator object geno for a given
-    u-value in [0,1];
-    for u>1 the right border of the domain is returned.
-    for u=0 the left border of the domain is returned.
-    for u<0 seg-fault is possible
-  */
-  
-int i;
- double x,un;
-
- if(u>=1.)u=(1-3.e-16);
- un =u*geno->umax;
- for(i= geno -> gt[(int)(u * geno ->C)]; geno->iv[i+1].cdfi < un ; i++);
- //for(i= 0; geno->iv[i+1].cdfi < un ; i++);
- //printf("i-gti%d\n",i-geno -> gt[(int)(u * geno ->C)]);
-
- x=evalnewtoninterpol(un- geno->iv[i].cdfi,geno->g,geno->iv[i].ui,geno->iv[i].zi);
-
-
- return (geno -> iv)[i].xi+x;
-
-}
-
-
-
 
 
 
 /******************************************************/
 
-struct genobject *pinvsetup( double (*f)(double x),int g, double uerror, double x0, int asearch, int bsearch,double a, double b){
+struct genobject *pinvsetup( struct unur_gen *gen, double (*f)(double x),int g, double uerror, double x0, int asearch, int bsearch,double a, double b){
 /***********************************************
   starts the set-up and returns a pointer to the generator object
 
@@ -2646,45 +2624,7 @@ struct genobject *pinvsetup( double (*f)(double x),int g, double uerror, double 
   if(bsearch) b = cut(b,(b-a)/128,uerror*area*tailcutfact,f);
   printf("after cut: a=%g b=%g\n",a,b);
 
-  return setup(f,g,a,b,(b-a)/128,uerror*area);
+  return setup(gen,f,g,a,b,(b-a)/128,uerror*area);
 }
 
 /****************************************/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -59,11 +59,7 @@ double cdfi;
 
 struct genobject{
  struct siv *iv;//[maxint+1] for setup; for sampling [ni+1]
- int g; //degree of polynomial
  int ni;//number of sub intervals
- int *gt;//[C]   guidetable
- int C; //size of guide table
- double umax;
   
 };
 
@@ -119,33 +115,16 @@ struct unur_pinv_gen {
 
 
 
+
+  /* from pinvwh: */
+  double umax;
+
+/*  struct siv *iv;//[maxint+1] for setup; for sampling [ni+1] */
+/*  int ni;//number of sub intervals */
+
   struct genobject *genpinv;
 
 
 };
 
 /*---------------------------------------------------------------------------*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

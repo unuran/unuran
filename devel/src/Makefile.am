@@ -9,6 +9,7 @@ AM_CPPFLAGS = \
 lib_LTLIBRARIES = libunurexperimental.la
 
 libunurexperimental_la_SOURCES = \
+ pinvwh.c pinvwh.h \
  pinv.c  pinv.h  pinv_struct.h
 
 #libunurexperimental_la_SOURCES = \
@@ -17,6 +18,15 @@ libunurexperimental_la_SOURCES = \
 # walk.c    walk.h    walk_struct.h
 
 noinst_HEADERS = 
+
+noinst_PROGRAMS = pinvwh
+pinvwh_SOURCES = pinvwh.h pinvwh_main.c
+
+pinvwh_LDADD = \
+ $(top_builddir)/src/libunurexperimental.la \
+ $(unuran_builddir)/src/libunuran.la
+
+
 
 # clean backup files
 CLEANFILES = *~

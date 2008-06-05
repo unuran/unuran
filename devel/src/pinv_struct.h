@@ -38,8 +38,10 @@
 struct unur_pinv_par { 
   int order;               /* order of interpolating polynomial              */
   double u_resolution;     /* maximal error in u                             */
-  double  bleft;           /* left border of the computational domain        */
-  double  bright;          /* right border of the computational domain       */
+  double bleft;            /* left boundary of the computational domain      */
+  double bright;           /* right boundary of the computational domain     */
+  int sleft;               /* whether to search for left boundary point      */
+  int sright;              /* whether to search for right boundary point     */
 /*   const double *stp;       /\* pointer to array of starting points            *\/ */
 /*   int     n_stp;           /\* number of construction points at start         *\/ */
 };

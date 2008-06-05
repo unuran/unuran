@@ -133,6 +133,7 @@
 #define PINV_SET_U_RESOLUTION   0x002u  /* maximal error in u                */
 #define PINV_SET_STP            0x004u  /* starting design points            */
 #define PINV_SET_BOUNDARY       0x008u  /* boundary of computational region  */
+#define PINV_SET_SEARCHBOUNDARY 0x010u  /* search for boundary               */
 
 /*---------------------------------------------------------------------------*/
 
@@ -330,10 +331,12 @@ unur_pinv_new( const struct unur_distr *distr )
   par->distr   = distr;           /* pointer to distribution object          */
 
   /* set default values */
-  PAR->order = 5;                 /* order of polynomial               */
-  PAR->u_resolution = 1.0e-10;    /* maximal error allowed in u-direction    */
-  PAR->bleft = -1.e20;            /* left border of the computational domain   */
-  PAR->bright = 1.e20;            /* right border of the computational domain  */
+  PAR->order = 5;                /* order of polynomial                      */
+  PAR->u_resolution = 1.0e-10;   /* maximal error allowed in u-direction     */
+  PAR->bleft = -1.e100;          /* left border of the computational domain  */
+  PAR->bright = 1.e100;          /* right border of the computational domain */
+  PAR->sleft = TRUE;             /* whether to search for left boundary      */
+  PAR->sright = TRUE;            /* whether to search for right boundary     */
 /*   PAR->stp = NULL;                /\* starting nodes                          *\/ */
 /*   PAR->n_stp = 0;                 /\* number of starting nodes                *\/ */
 
@@ -521,6 +524,38 @@ unur_pinv_set_boundary( struct unur_par *par, double left, double right )
   return UNUR_SUCCESS;
 
 } /* end of unur_pinv_set_boundary() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_pinv_set_searchboundary( struct unur_par *par, int left, int right )
+     /*----------------------------------------------------------------------*/
+     /* set flag for boundary searching algorithm                            */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par   ... pointer to parameter for building generator object       */
+     /*   left  ... whether to search for left boundary point                */
+     /*   right ... whether to search for right boundary point               */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, PINV );
+
+  /* store date */
+  PAR->sleft  = (left)  ? TRUE : FALSE;
+  PAR->sright = (right) ? TRUE : FALSE;
+
+  /* changelog */
+  par->set |= PINV_SET_SEARCHBOUNDARY;
+
+  return UNUR_SUCCESS;
+
+} /* end of unur_pinv_set_searchboundary() */
 
 /*---------------------------------------------------------------------------*/
 

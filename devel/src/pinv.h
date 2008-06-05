@@ -227,16 +227,29 @@ int unur_pinv_set_u_resolution( UNUR_PAR *parameters, double u_resolution);
 int unur_pinv_set_boundary( UNUR_PAR *parameters, double left, double right );
 /* 
    Set the left and right boundary of the computational interval.
-   Of course @code{+/- UNUR_INFINITY} is not allowed.
-   If the CDF at @var{left} and @var{right} is not close to the
-   respective values @code{0.} and @code{1.} then this interval is
-   increased by a (rather slow) search algorithm.
+   The interval must cover the essential part of the distribution.
+   Thus it is usually safe to use a large interval.
+   However, @code{+/- UNUR_INFINITY} is not allowed.
 
    @emph{Important}: This call does not change the domain of the
    given distribution itself. But it restricts the domain for the
    resulting random variates.
 
-   Default is @code{1.e20}.
+   Default is @code{1.e100}.
+*/
+
+int unur_pinv_set_searchboundary( UNUR_PAR *parameters, int left, int right );
+/* 
+   If @var{left} or @var{right} is set to FALSE then the respective
+   boundary is used as given by a unur_pinv_set_boundary() call.
+   However, these boundary points might cause numerical problems
+   during the setup when PDF returns @code{0.} "almost everywhere".
+   If set to TRUE (the default) then the computational interval is
+   shortened to a more sensible region by means of a search algorithm.
+   Switching off this search is useful, e.g. for the Gamma(2)
+   distribution where the left border 0 is fixed and finite.
+
+   Default is TRUE.
 */
 
 /* int unur_pinv_get_n_intervals( const UNUR_GEN *generator ); */

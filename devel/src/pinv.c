@@ -270,11 +270,9 @@ static void _unur_pinv_debug_init( const struct unur_gen *gen, int ok);
 
 
 
-static struct genobject *pinvsetup( struct unur_gen *gen, double (*f)(double x),int g, double uerror, double x0, int asearch, int bsearch,double a, double b);
+int  pinvsetup( struct unur_gen *gen, double (*f)(double x),int g, double uerror, double x0, int asearch, int bsearch,double a, double b);
                              
-
-static struct genobject *setup(struct unur_gen *gen, double (*f)(double x),int g, double a, double b, double hh, double uerror);
-
+int setup(struct unur_gen *gen, double (*f)(double x),int g, double a, double b, double hh, double uerror);
 
 static double lobato5(double x, double h, double fx, double *fxph, double (*f)(double x));
 
@@ -289,10 +287,6 @@ static int newtoninterpol(double x0, double h,int g,double ui[],double zi[],doub
 static int tstpt(int g,double ui[],double utest[]);
 
 static double maxerrornewton(int g,double ui[],double zi[],double x0,double xval[],double (*f)(double x));
-
-/* static struct genobject *init_genobject(int g,int maxint); */
-
-/* static int free_genobject(struct genobject *p); */
 
 static double searchborder(double x0, double step,double border,double (*f)(double x));
 
@@ -331,7 +325,7 @@ static double cut(double w,double dw, double crit,double (*f)(double x));
 /* --> ((_unur_cont_CDF((x),(gen->distr))-GEN->CDFmin)/(GEN->CDFmax-GEN->CDFmin)) */
 
 /* call to PDF: */
-#define PDF(x)  (_unur_cont_PDF((x),(gen->distr))/(GEN->CDFmax-GEN->CDFmin)) 
+/* #define PDF(x)  (_unur_cont_PDF((x),(gen->distr))/(GEN->CDFmax-GEN->CDFmin))  */
 
 /* call to derivative of PDF: */   
 /* #define dPDF(x) (_unur_cont_dPDF((x),(gen->distr))/(GEN->CDFmax-GEN->CDFmin)) */
@@ -1065,15 +1059,6 @@ _unur_pinv_free( struct unur_gen *gen )
 
   /* we cannot use this generator object any more */
   SAMPLE = NULL;   /* make sure to show up a programming error */
-
-/*   /\* free linked list of intervals *\/ */
-/*   if (GEN->iv) { */
-/*     struct unur_pinv_interval *iv,*next; */
-/*     for (iv = GEN->iv; iv != NULL; iv = next) { */
-/*       next = iv->next; */
-/*       free(iv); */
-/*     } */
-/*   } */
 
   /* free tables */
 /*   if (GEN->intervals) free (GEN->intervals); */
@@ -1889,39 +1874,6 @@ unur_pinv_eval_approxinvcdf( const struct unur_gen *gen, double u )
 
 /*---------------------------------------------------------------------------*/
 
-/* double */
-/* _unur_pinv_CDF( const struct unur_gen *gen, double x ) */
-/*      /\*----------------------------------------------------------------------*\/ */
-/*      /\* Compute CDF of truncated distribution.                               *\/ */
-/*      /\* The CDF is rescaled such that the CDF is a "real" CDF with           *\/ */
-/*      /\* range u is [0,1] in the interval (DISTR.domain[0], DISTR.domain[1]). *\/ */
-/*      /\*                                                                      *\/ */
-/*      /\* parameters:                                                          *\/ */
-/*      /\*   gen ... pointer to generator object                                *\/ */
-/*      /\*   x   ... argument for CDF                                           *\/ */
-/*      /\*----------------------------------------------------------------------*\/ */
-/* { */
-/*   double u; */
-
-/*   /\* check for boundaries *\/ */
-/*   if (x<=DISTR.domain[0]) return 0.; */
-/*   if (x>=DISTR.domain[1]) return 1.; */
-
-/*   /\* compute rescaled CDF *\/ */
-/*   u = (_unur_cont_CDF(x,gen->distr) - GEN->CDFmin) / (GEN->CDFmax - GEN->CDFmin); */
-
-/*   /\* we have to protect us against round-off errors.        *\/ */
-/*   /\* thus we allow results that are a little bit too large. *\/ */
-/*   if (u>1. && _unur_FP_equal(u,1.)) */
-/*     u = 1.; */
-  
-/*   /\* Remark: We do not change u if it is too large since then we assume that *\/ */
-/*   /\* the given CDF is incorrect.                                             *\/ */
-
-/*   return u; */
-/* } /\* end of _unur_pinv_CDF() *\/ */
-
-
 /*****************************************************************************/
 /**  Debugging utilities                                                    **/
 /*****************************************************************************/
@@ -2226,16 +2178,6 @@ int check_inversion_unuran(struct unur_gen *gen,double uerror,double (*cdf)(doub
 
 
 
-/* #include <math.h> */
-/* #include <stdlib.h> */
-/* #include <stdio.h> */
-
-/* #include <pinvwh.h> */
-
-
-
-
-
 double lobato5(double x, double h, double fx, double *fxph, double (*f)(double x))
 /************************************
  * Numerical Integration of the interval (x,x+h)
@@ -2391,30 +2333,7 @@ double maxerrornewton(int g,double ui[],double zi[],double x0,double xval[],doub
 }
 
 
-
-/* struct genobject *init_genobject(int g,int maxint){ */
-/*  struct genobject *p; */
-/*  p = malloc(sizeof(struct genobject)); */
-/* /\*  p->ni = 0; *\/ */
-/* /\*  p->iv =  malloc(sizeof(struct siv)*maxint); *\/ */
-/*  return p; */
-/* } */
-
-/* int free_genobject(struct genobject *p){ */
-/* /\*   int i; *\/ */
-/* /\*   for(i=0;i<=p->ni;i++){  *\/ */
-/* /\*     free(p->iv[i].ui); *\/ */
-/* /\*     free(p->iv[i].zi); *\/ */
-/* /\*   } *\/ */
-/* /\*   free(p->iv); *\/ */
-/* /\*   p->iv=NULL; *\/ */
-/*   free(p); */
-/*   return 0; */
-/* } */
-
-
-
-struct genobject *setup(struct unur_gen *gen, double (*f)(double x),int g, double a, double b, double hh, double uerror){
+int  setup(struct unur_gen *gen, double (*f)(double x),int g, double a, double b, double hh, double uerror){
   /*
     f ... PDF
     g ... order of polynomial
@@ -2426,10 +2345,9 @@ struct genobject *setup(struct unur_gen *gen, double (*f)(double x),int g, doubl
   double maxerror,h=hh,*xval;
   int i,j,cont;
   int countextracalc=0;
-/*   int maxint=10000; */
-/*   struct genobject *geno; */
+
   xval=malloc(sizeof(double)*(g+1));
-/*   geno = init_genobject(g,maxint); */
+
   GEN->iv[0].ui = malloc(sizeof(double)*(g+1));
   GEN->iv[0].zi = malloc(sizeof(double)*(g+1));
   GEN->iv[0].xi = a;
@@ -2481,7 +2399,8 @@ struct genobject *setup(struct unur_gen *gen, double (*f)(double x),int g, doubl
  }
  printf("Set-up finished: g=%d,  Number of intervals = %d,\n         additional calculated interpolations=%d\n",g,GEN->ni,countextracalc);
  printf("u in (0,%.18g)   1-umax%g\n",GEN->umax,1-GEN->umax);
- return NULL;
+
+ return UNUR_SUCCESS;
 } 
 
 
@@ -2591,7 +2510,7 @@ double cut(double w,double dw, double crit,double (*f)(double x)){
 
 /******************************************************/
 
-struct genobject *pinvsetup( struct unur_gen *gen, double (*f)(double x),int g, double uerror, double x0, int asearch, int bsearch,double a, double b){
+int pinvsetup( struct unur_gen *gen, double (*f)(double x),int g, double uerror, double x0, int asearch, int bsearch,double a, double b){
 /***********************************************
   starts the set-up and returns a pointer to the generator object
 

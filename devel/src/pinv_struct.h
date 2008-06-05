@@ -32,12 +32,6 @@
  *                                                                           *
  *****************************************************************************/
 
-
-
-#include "pinvwh.h"
-
-
-
 /*---------------------------------------------------------------------------*/
 /* Information for constructing the generator                                */
 
@@ -54,6 +48,25 @@ struct unur_pinv_par {
 
 /*---------------------------------------------------------------------------*/
 /* store information about splines                                           */
+
+
+struct siv{
+double *ui;//[g+1];
+double *zi;//[g+1];
+double xi;
+double cdfi;
+};
+
+struct genobject{
+ struct siv *iv;//[maxint+1] for setup; for sampling [ni+1]
+ int g; //degree of polynomial
+ int ni;//number of sub intervals
+ int *gt;//[C]   guidetable
+ int C; //size of guide table
+ double umax;
+  
+};
+
 
 /* #define UNUR_PINV_MAX_ORDER   (5) */
 

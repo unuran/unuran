@@ -9,7 +9,6 @@ AM_CPPFLAGS = \
 lib_LTLIBRARIES = libunurexperimental.la
 
 libunurexperimental_la_SOURCES = \
- pinvwh.h \
  pinv.c  pinv.h  pinv_struct.h
 
 #libunurexperimental_la_SOURCES = \
@@ -20,7 +19,7 @@ libunurexperimental_la_SOURCES = \
 noinst_HEADERS = 
 
 noinst_PROGRAMS = pinvwh
-pinvwh_SOURCES = pinvwh.h pinvwh_main.c
+pinvwh_SOURCES = pinvwh_main.c
 
 pinvwh_LDADD = \
  $(top_builddir)/src/libunurexperimental.la \

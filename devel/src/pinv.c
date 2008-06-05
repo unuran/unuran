@@ -79,15 +79,15 @@
 
 
 
-#define PINV_MAX_ITER      (300)
+/* #define PINV_MAX_ITER      (300) */
 /* Maximal number of iterations for finding the boundary of the              */
 /* computational interval, i.e. where CDF(x) is close to 0 and 1, resp.      */
 
-#define PINV_MAX_U_LENGTH  (0.05)
+/* #define PINV_MAX_U_LENGTH  (0.05) */
 /* Maximal value for |u_i - u_{i-1}|. If for an interval this value is       */
 /* larger then it is splitted (independently of its u-error).                */
 
-#define PINV_TAILCUTOFF    (1.e-10) 
+/* #define PINV_TAILCUTOFF    (1.e-10)  */
 /* For unbounded domains the tails has to be cut of. We use the given        */
 /* u-resolution for finding the cut points. (The probability of the chop     */
 /* regions should be less than the 1 fifth of the u-resolution.)             */
@@ -97,7 +97,7 @@
 /* However, for computational reasons we use a value that is at least twice  */
 /* the machine epsilon for the right hand boundary.                          */
 
-#define PINV_XDEVIATION    (0.05)
+/* #define PINV_XDEVIATION    (0.05) */
 /* Used for splitting intervals. When the u-error is estimated for an        */
 /* interval then the CDF is evaluated in the approximate center of the       */
 /* u-interval. This could be used as splitting point of the interval.        */
@@ -262,6 +262,56 @@ static void _unur_pinv_debug_init( const struct unur_gen *gen, int ok);
 /* create info string.                                                       */
 /*---------------------------------------------------------------------------*/
 #endif
+
+
+
+
+
+
+
+struct genobject *pinvsetup( double (*f)(double x),int g, double uerror, double x0, int asearch, int bsearch,double a, double b);
+                             
+
+struct genobject *setup(double (*f)(double x),int g, double a, double b, double hh, double uerror);
+
+
+double lobato5(double x, double h, double fx, double *fxph, double (*f)(double x));
+
+double nint_12(double a,double b,double *res_relerror, double (*f)(double x));
+
+double nint_monoton_dens(double a,double b,double step,double crit, double (*f)(double x));
+
+double evalnewtoninterpol(double u,int g,double ui[],double zi[]);
+
+int newtoninterpol(double x0, double h,int g,double ui[],double zi[],double *x,double (*f)(double x));
+
+int tstpt(int g,double ui[],double utest[]);
+
+double maxerrornewton(int g,double ui[],double zi[],double x0,double xval[],double (*f)(double x));
+
+struct genobject *init_genobject(int g,int maxint);
+
+int free_genobject(struct genobject *p);
+
+double searchborder(double x0, double step,double border,double (*f)(double x));
+
+double tail(double x, double d,double (*f)(double x));
+
+double cut(double w,double dw, double crit,double (*f)(double x));
+
+double quantile(double u, struct genobject *geno);
+
+
+
+
+
+
+
+
+
+
+
+
 
 /*---------------------------------------------------------------------------*/
 /* abbreviations */

@@ -5,7 +5,6 @@
 #include <stdio.h>
 
 #include <unuran.h>
-#include <pinvwh.h>
 #include <pinv.h>
 
 int check_inversion_unuran(UNUR_GEN *gen,double uerror,double (*cdf)(double x),int printyn);

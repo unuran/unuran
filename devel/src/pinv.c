@@ -78,6 +78,7 @@
 #define CK_PINV_IV     0x00100132u
 
 
+#define PINVMAXINT  10000
 
 /* #define PINV_MAX_ITER      (300) */
 /* Maximal number of iterations for finding the boundary of the              */
@@ -289,9 +290,9 @@ static int tstpt(int g,double ui[],double utest[]);
 
 static double maxerrornewton(int g,double ui[],double zi[],double x0,double xval[],double (*f)(double x));
 
-static struct genobject *init_genobject(int g,int maxint);
+/* static struct genobject *init_genobject(int g,int maxint); */
 
-static int free_genobject(struct genobject *p);
+/* static int free_genobject(struct genobject *p); */
 
 static double searchborder(double x0, double step,double border,double (*f)(double x));
 
@@ -765,8 +766,8 @@ _unur_pinv_init( struct unur_par *par )
 
 
   bad_global_pointer_to_distribution = gen->distr;
-  GEN->genpinv = pinvsetup(gen, bad_global_pdf, GEN->order, GEN->u_resolution, DISTR.center,
- 		      PAR->sleft, PAR->sright, GEN->bleft_par, GEN->bright_par);
+  pinvsetup(gen, bad_global_pdf, GEN->order, GEN->u_resolution, DISTR.center,
+	    PAR->sleft, PAR->sright, GEN->bleft_par, GEN->bright_par);
 
 
 
@@ -922,23 +923,26 @@ _unur_pinv_create( struct unur_par *par )
 /*   GEN->n_stp = PAR->n_stp;           /\* number of construction points        *\/ */
 
   /* default values */
-  GEN->tailcutoff_left  = -1.;       /* no cut-off by default                */
-  GEN->tailcutoff_right = 10.;
+/*   GEN->tailcutoff_left  = -1.;       /\* no cut-off by default                *\/ */
+/*   GEN->tailcutoff_right = 10.; */
 
   /* initialize variables */
   GEN->bleft = GEN->bleft_par;
   GEN->bright = GEN->bright_par;
   GEN->Umin = 0.;
   GEN->Umax = 1.;
-  GEN->N = 0;
+  GEN->umax = 1.;
+  /*   GEN->N = 0; */
   GEN->iv = NULL;
-  GEN->intervals = NULL;
+  GEN->ni = 0;
+  /*   GEN->intervals = NULL; */
   GEN->guide_size = 0; 
   GEN->guide = NULL;
 
 
 
-  GEN->genpinv = NULL;
+  GEN->iv =  _unur_xmalloc(sizeof(struct siv)*PINVMAXINT);
+
 
 #ifdef UNUR_ENABLE_INFO
   /* set function for creating info string */
@@ -1047,6 +1051,8 @@ _unur_pinv_free( struct unur_gen *gen )
      /*   gen ... pointer to generator object                                */
      /*----------------------------------------------------------------------*/
 { 
+  int i;
+
   /* check arguments */
   if( !gen ) /* nothing to do */
     return;
@@ -1073,10 +1079,13 @@ _unur_pinv_free( struct unur_gen *gen )
 /*   if (GEN->intervals) free (GEN->intervals); */
   if (GEN->guide)     free (GEN->guide);
 
-
-
-  free_genobject(GEN->genpinv);
-
+  if (GEN->iv) {
+    for(i=0;i<=GEN->ni;i++){
+      free(GEN->iv[i].ui);
+      free(GEN->iv[i].zi);
+    }
+    free (GEN->iv);
+  }
 
   /* free memory */
   _unur_generic_free(gen);
@@ -1157,12 +1166,12 @@ _unur_pinv_eval_approxinvcdf( const struct unur_gen *gen, double u )
   
 
   un = u * GEN->umax;
-  for(i= GEN->guide[(int)(u * GEN->guide_size)]; GEN->genpinv->iv[i+1].cdfi < un ; i++)
+  for(i= GEN->guide[(int)(u * GEN->guide_size)]; GEN->iv[i+1].cdfi < un ; i++)
     ;
 
-  x = evalnewtoninterpol(un- GEN->genpinv->iv[i].cdfi,GEN->order,GEN->genpinv->iv[i].ui,GEN->genpinv->iv[i].zi);
+  x = evalnewtoninterpol(un- GEN->iv[i].cdfi,GEN->order,GEN->iv[i].ui,GEN->iv[i].zi);
 
-  return (GEN->genpinv -> iv)[i].xi+x;
+  return (GEN->iv)[i].xi+x;
 
 } /* end of _unur_pinv_eval_approxinvcdf() */
 
@@ -2383,25 +2392,25 @@ double maxerrornewton(int g,double ui[],double zi[],double x0,double xval[],doub
 
 
 
-struct genobject *init_genobject(int g,int maxint){
- struct genobject *p;
- p = malloc(sizeof(struct genobject));
- p->ni = 0;
- p->iv = malloc(sizeof(struct siv)*maxint);
- return p;
-}
+/* struct genobject *init_genobject(int g,int maxint){ */
+/*  struct genobject *p; */
+/*  p = malloc(sizeof(struct genobject)); */
+/* /\*  p->ni = 0; *\/ */
+/* /\*  p->iv =  malloc(sizeof(struct siv)*maxint); *\/ */
+/*  return p; */
+/* } */
 
-int free_genobject(struct genobject *p){
-  int i;
-  for(i=0;i<=p->ni;i++){ 
-    free(p->iv[i].ui);
-    free(p->iv[i].zi);
-  }
-  free(p->iv);
-  p->iv=NULL;
-  free(p);
-  return 0;
-}
+/* int free_genobject(struct genobject *p){ */
+/* /\*   int i; *\/ */
+/* /\*   for(i=0;i<=p->ni;i++){  *\/ */
+/* /\*     free(p->iv[i].ui); *\/ */
+/* /\*     free(p->iv[i].zi); *\/ */
+/* /\*   } *\/ */
+/* /\*   free(p->iv); *\/ */
+/* /\*   p->iv=NULL; *\/ */
+/*   free(p); */
+/*   return 0; */
+/* } */
 
 
 
@@ -2415,62 +2424,64 @@ struct genobject *setup(struct unur_gen *gen, double (*f)(double x),int g, doubl
     uerror ... u-error
   */
   double maxerror,h=hh,*xval;
-  int i,j,cont,countextracalc=0,maxint=10000;
-  struct genobject *geno;
+  int i,j,cont;
+  int countextracalc=0;
+/*   int maxint=10000; */
+/*   struct genobject *geno; */
   xval=malloc(sizeof(double)*(g+1));
-  geno = init_genobject(g,maxint);
-  geno -> iv[0].ui = malloc(sizeof(double)*(g+1));
-  geno -> iv[0].zi = malloc(sizeof(double)*(g+1));
-  geno -> iv[0].xi = a;
-  geno -> iv[0].cdfi = 0.;//cdfi holds cdf value at the left border of the interval
+/*   geno = init_genobject(g,maxint); */
+  GEN->iv[0].ui = malloc(sizeof(double)*(g+1));
+  GEN->iv[0].zi = malloc(sizeof(double)*(g+1));
+  GEN->iv[0].xi = a;
+  GEN->iv[0].cdfi = 0.;//cdfi holds cdf value at the left border of the interval
   cont=1;
   i=0;
   while(cont){
-    if(geno->iv[i].xi+h >b){
-      h = b - geno->iv[i].xi;
+    if(GEN->iv[i].xi+h >b){
+      h = b - GEN->iv[i].xi;
       cont=0;
     }
-    newtoninterpol(geno->iv[i].xi,h,g,geno->iv[i].ui,geno->iv[i].zi,xval,f);
-    maxerror = maxerrornewton(g,geno->iv[i].ui,geno->iv[i].zi,geno->iv[i].xi,xval,f);
+    newtoninterpol(GEN->iv[i].xi,h,g,GEN->iv[i].ui,GEN->iv[i].zi,xval,f);
+    maxerror = maxerrornewton(g,GEN->iv[i].ui,GEN->iv[i].zi,GEN->iv[i].xi,xval,f);
     if(maxerror > uerror){ 
       countextracalc++;
       h*= 0.9;
      if(maxerror>4.*uerror) h*=0.9;
  
     }else{
-	geno->iv[i+1].ui = malloc(sizeof(double)*(g+1));
-  	geno->iv[i+1].zi = malloc(sizeof(double)*(g+1));
-  	geno->iv[i+1].xi = geno->iv[i].xi+h;
-  	geno->iv[i+1].cdfi = geno->iv[i].cdfi +(geno -> iv)[i].ui[g];//cdfi holds cdf value at the left border of the interval
+	GEN->iv[i+1].ui = malloc(sizeof(double)*(g+1));
+  	GEN->iv[i+1].zi = malloc(sizeof(double)*(g+1));
+  	GEN->iv[i+1].xi = GEN->iv[i].xi+h;
+  	GEN->iv[i+1].cdfi = GEN->iv[i].cdfi +(GEN->iv)[i].ui[g];//cdfi holds cdf value at the left border of the interval
         if(maxerror < 0.3*uerror) h*=1.2;
         if(maxerror < 0.1*uerror) h*=2.;
         i++;
    }
-   if(i>maxint){
+   if(i>PINVMAXINT){
      printf("error setup(); i>maxint; EXITING\n");
      exit(1);
    }
  }
- geno->ni = i;
- geno->iv = realloc(geno->iv,sizeof(struct siv)*(geno->ni+1));
+ GEN->ni = i;
+ GEN->iv = realloc(GEN->iv,sizeof(struct siv)*(GEN->ni+1));
 
  free(xval);
 
- GEN->umax = geno->iv[geno ->ni].cdfi;
+ GEN->umax = GEN->iv[GEN->ni].cdfi;
 
 
- GEN->guide_size = geno->ni;//size of guide-table
+ GEN->guide_size = GEN->ni;//size of guide-table
  GEN->guide = malloc(sizeof(int)*GEN->guide_size);  
  GEN->guide[0] = 0;
  i=0;
  for(j=1; j<GEN->guide_size; j++){
-   while(j/(double)GEN->guide_size > geno->iv[i+1].cdfi/GEN->umax) i++;
+   while(j/(double)GEN->guide_size > GEN->iv[i+1].cdfi/GEN->umax) i++;
    /* "/geno->umax" above is necessary, as we need the guide table for u in (0,umax) */
    GEN->guide[j] = i;
  }
- printf("Set-up finished: g=%d,  Number of intervals = %d,\n         additional calculated interpolations=%d\n",g,geno->ni,countextracalc);
+ printf("Set-up finished: g=%d,  Number of intervals = %d,\n         additional calculated interpolations=%d\n",g,GEN->ni,countextracalc);
  printf("u in (0,%.18g)   1-umax%g\n",GEN->umax,1-GEN->umax);
- return geno;
+ return NULL;
 } 
 
 

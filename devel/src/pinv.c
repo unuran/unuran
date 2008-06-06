@@ -270,9 +270,7 @@ static void _unur_pinv_debug_init( const struct unur_gen *gen, int ok);
 
 
 
-int  pinvsetup ( struct unur_gen *gen );
-                             
-int setup (struct unur_gen *gen, double a, double b, double hh, double uerror);
+static int setup (struct unur_gen *gen, double a, double b, double hh, double uerror);
 
 static double lobato5 (struct unur_gen *gen, double x, double h, double fx, double *fxph);
 
@@ -761,9 +759,28 @@ _unur_pinv_init( struct unur_par *par )
   }
 
 
+{
+  double area,areal,tailcutfact;
 
-  pinvsetup(gen);
+  if(GEN->sleft) GEN->bleft = searchborder(gen,DISTR.center, -1, GEN->bleft);
+  if(GEN->sright) GEN->bright = searchborder(gen,DISTR.center, 1, GEN->bright);
+  area = nint_monoton_dens(gen,DISTR.center,GEN->bright,1.,1.e-8);
+  areal = nint_monoton_dens(gen,GEN->bleft,DISTR.center,1.,1.e-8);
+  area+=areal;
+  printf("after searchborder: a=%g  b=%g area=%g\n",GEN->bleft,GEN->bright,area);
+//  printf("a=%g  b=%g area=%g integralerror%g\n",a,b,area,area/(cdf(b)-cdf(a))-1.);
 
+ 
+  tailcutfact= 0.1;
+  if(GEN->u_resolution<=9.e-13) tailcutfact=0.5;
+/* above command necessary for Cauchy distribution where cut has problems with very small values*/
+ 
+  if(GEN->sleft) GEN->bleft = cut(gen,GEN->bleft,(GEN->bleft-GEN->bright)/128,GEN->u_resolution*area*tailcutfact);
+  if(GEN->sright) GEN->bright = cut(gen,GEN->bright,(GEN->bright-GEN->bleft)/128,GEN->u_resolution*area*tailcutfact);
+  printf("after cut: a=%g b=%g\n",GEN->bleft,GEN->bright);
+
+  setup(gen,GEN->bleft,GEN->bright,(GEN->bright-GEN->bleft)/128,GEN->u_resolution*area);
+}
 
   /* compute splines */
 /*   if (_unur_pinv_create_table(gen)!=UNUR_SUCCESS) { */
@@ -2501,60 +2518,3 @@ double cut (struct unur_gen *gen, double w,double dw, double crit){
 }
 
 /**********************************************************************/
-
-
-
-
-/******************************************************/
-
-int pinvsetup( struct unur_gen *gen)
-/***********************************************
-  starts the set-up and returns a pointer to the generator object
-
-  f      ... pointer to the pdf)
-  g      ... degree of polynomial
-  uerror ... maximal accepted u-error
-  x0     ... value with f(x0) not small
-  asearch... 1 ... search for a cut off value >= a
-  bsearch... 1 ... search for a cut off value <= b
-  a   ...left domain border, can be set very small eg. -1.e100 for asearch==1
-  b   ...right domain border, can be set very large eg. 1.e100 for bsearch==1
-
-  asearch==0 means that the direct a-value is left unchanged
-  bsearch==0 means that the direct a-value is left unchanged
-  note that this may lead to numericl problems in the set-up
-  if f(x) is very small close to the border.
-
- So the algorithm should run more stable for  asearch and bsearch =1.
- 
- asearch=0 is useful eg. for the Gamma(2) distribution where the left border 0
- is fixed and should not be searched for, as f(x) has no left tail
-
- ***********************************************/
-{
-/*   double a = GEN->bleft; */
-/*   double b = GEN->bright; */
-
-  double area,areal,tailcutfact;
-
-  if(GEN->sleft) GEN->bleft = searchborder(gen,DISTR.center, -1, GEN->bleft);
-  if(GEN->sright) GEN->bright = searchborder(gen,DISTR.center, 1, GEN->bright);
-  area = nint_monoton_dens(gen,DISTR.center,GEN->bright,1.,1.e-8);
-  areal = nint_monoton_dens(gen,GEN->bleft,DISTR.center,1.,1.e-8);
-  area+=areal;
-  printf("after searchborder: a=%g  b=%g area=%g\n",GEN->bleft,GEN->bright,area);
-//  printf("a=%g  b=%g area=%g integralerror%g\n",a,b,area,area/(cdf(b)-cdf(a))-1.);
-
- 
-  tailcutfact= 0.1;
-  if(GEN->u_resolution<=9.e-13) tailcutfact=0.5;
-/* above command necessary for Cauchy distribution where cut has problems with very small values*/
- 
-  if(GEN->sleft) GEN->bleft = cut(gen,GEN->bleft,(GEN->bleft-GEN->bright)/128,GEN->u_resolution*area*tailcutfact);
-  if(GEN->sright) GEN->bright = cut(gen,GEN->bright,(GEN->bright-GEN->bleft)/128,GEN->u_resolution*area*tailcutfact);
-  printf("after cut: a=%g b=%g\n",GEN->bleft,GEN->bright);
-
-  return setup(gen,GEN->bleft,GEN->bright,(GEN->bright-GEN->bleft)/128,GEN->u_resolution*area);
-}
-
-/****************************************/

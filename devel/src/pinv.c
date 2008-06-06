@@ -270,7 +270,7 @@ static void _unur_pinv_debug_init( const struct unur_gen *gen, int ok);
 
 
 
-int  pinvsetup ( struct unur_gen *gen, double uerror, double x0, int asearch, int bsearch,double a, double b);
+int  pinvsetup ( struct unur_gen *gen );
                              
 int setup (struct unur_gen *gen, double a, double b, double hh, double uerror);
 
@@ -762,8 +762,8 @@ _unur_pinv_init( struct unur_par *par )
 
 
 
-  pinvsetup(gen, GEN->u_resolution, DISTR.center,
-	    GEN->sleft, GEN->sright, GEN->bleft_par, GEN->bright_par);
+  pinvsetup(gen);
+
 
   /* compute splines */
 /*   if (_unur_pinv_create_table(gen)!=UNUR_SUCCESS) { */
@@ -2507,7 +2507,7 @@ double cut (struct unur_gen *gen, double w,double dw, double crit){
 
 /******************************************************/
 
-int pinvsetup( struct unur_gen *gen, double uerror, double x0, int asearch, int bsearch,double a, double b){
+int pinvsetup( struct unur_gen *gen)
 /***********************************************
   starts the set-up and returns a pointer to the generator object
 
@@ -2531,27 +2531,30 @@ int pinvsetup( struct unur_gen *gen, double uerror, double x0, int asearch, int 
  is fixed and should not be searched for, as f(x) has no left tail
 
  ***********************************************/
+{
+/*   double a = GEN->bleft; */
+/*   double b = GEN->bright; */
 
   double area,areal,tailcutfact;
 
-  if(asearch) a = searchborder(gen,x0, -1, a);
-  if(bsearch) b = searchborder(gen,x0, 1, b);
-  area = nint_monoton_dens(gen,x0,b,1.,1.e-8);
-  areal = nint_monoton_dens(gen,a,x0,1.,1.e-8);
+  if(GEN->sleft) GEN->bleft = searchborder(gen,DISTR.center, -1, GEN->bleft);
+  if(GEN->sright) GEN->bright = searchborder(gen,DISTR.center, 1, GEN->bright);
+  area = nint_monoton_dens(gen,DISTR.center,GEN->bright,1.,1.e-8);
+  areal = nint_monoton_dens(gen,GEN->bleft,DISTR.center,1.,1.e-8);
   area+=areal;
-  printf("after searchborder: a=%g  b=%g area=%g\n",a,b,area);
+  printf("after searchborder: a=%g  b=%g area=%g\n",GEN->bleft,GEN->bright,area);
 //  printf("a=%g  b=%g area=%g integralerror%g\n",a,b,area,area/(cdf(b)-cdf(a))-1.);
 
  
   tailcutfact= 0.1;
-  if(uerror<=9.e-13) tailcutfact=0.5;
+  if(GEN->u_resolution<=9.e-13) tailcutfact=0.5;
 /* above command necessary for Cauchy distribution where cut has problems with very small values*/
  
-  if(asearch) a = cut(gen,a,(a-b)/128,uerror*area*tailcutfact);
-  if(bsearch) b = cut(gen,b,(b-a)/128,uerror*area*tailcutfact);
-  printf("after cut: a=%g b=%g\n",a,b);
+  if(GEN->sleft) GEN->bleft = cut(gen,GEN->bleft,(GEN->bleft-GEN->bright)/128,GEN->u_resolution*area*tailcutfact);
+  if(GEN->sright) GEN->bright = cut(gen,GEN->bright,(GEN->bright-GEN->bleft)/128,GEN->u_resolution*area*tailcutfact);
+  printf("after cut: a=%g b=%g\n",GEN->bleft,GEN->bright);
 
-  return setup(gen,a,b,(b-a)/128,uerror*area);
+  return setup(gen,GEN->bleft,GEN->bright,(GEN->bright-GEN->bleft)/128,GEN->u_resolution*area);
 }
 
 /****************************************/

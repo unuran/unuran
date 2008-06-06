@@ -29,6 +29,7 @@ pinvwh_LDADD = \
 
 # clean backup files
 CLEANFILES = \
+ unuran.log \
  valgrind-* \
  *~
 

@@ -105,6 +105,8 @@ struct unur_pinv_gen {
   double  bleft_par;       /* border of the computational domain as ...      */
   double  bright_par;      /* ... given by user                              */
 
+  int sleft;               /* whether to search for left boundary point      */
+  int sright;              /* whether to search for right boundary point     */
 
 
 

@@ -270,9 +270,9 @@ static void _unur_pinv_debug_init( const struct unur_gen *gen, int ok);
 
 
 
-int  pinvsetup ( struct unur_gen *gen, int g, double uerror, double x0, int asearch, int bsearch,double a, double b);
+int  pinvsetup ( struct unur_gen *gen, double uerror, double x0, int asearch, int bsearch,double a, double b);
                              
-int setup (struct unur_gen *gen, int g, double a, double b, double hh, double uerror);
+int setup (struct unur_gen *gen, double a, double b, double hh, double uerror);
 
 static double lobato5 (struct unur_gen *gen, double x, double h, double fx, double *fxph);
 
@@ -282,11 +282,11 @@ static double nint_monoton_dens (struct unur_gen *gen, double a,double b,double 
 
 static double evalnewtoninterpol (double u,int g,double ui[],double zi[]);
 
-static int newtoninterpol (struct unur_gen *gen, double x0, double h,int g,double ui[],double zi[],double *x);
+static int newtoninterpol (struct unur_gen *gen, double x0, double h,double ui[],double zi[],double *x);
 
 static int tstpt (int g,double ui[],double utest[]);
 
-static double maxerrornewton (struct unur_gen *gen, int g,double ui[],double zi[],double x0,double xval[]);
+static double maxerrornewton (struct unur_gen *gen,double ui[],double zi[],double x0,double xval[]);
 
 static double searchborder (struct unur_gen *gen, double x0, double step,double border);
 
@@ -752,13 +752,6 @@ _unur_pinv_init( struct unur_par *par )
 
   /* create a new empty generator object */    
   gen = _unur_pinv_create(par);
-
-
-  pinvsetup(gen, GEN->order, GEN->u_resolution, DISTR.center,
-	    PAR->sleft, PAR->sright, GEN->bleft_par, GEN->bright_par);
-
-
-
   _unur_par_free(par);
   if (!gen) return NULL;
 
@@ -769,8 +762,8 @@ _unur_pinv_init( struct unur_par *par )
 
 
 
- 
-
+  pinvsetup(gen, GEN->u_resolution, DISTR.center,
+	    GEN->sleft, GEN->sright, GEN->bleft_par, GEN->bright_par);
 
   /* compute splines */
 /*   if (_unur_pinv_create_table(gen)!=UNUR_SUCCESS) { */
@@ -907,6 +900,9 @@ _unur_pinv_create( struct unur_par *par )
   GEN->u_resolution = PAR->u_resolution; /* maximal error in u-direction     */
   GEN->bleft_par  = PAR->bleft;          /* border of computational domain   */
   GEN->bright_par = PAR->bright;
+  GEN->sleft  = PAR->sleft;              /* whether to search for boundary   */
+  GEN->sright = PAR->sright;
+
 /*   GEN->stp = PAR->stp;               /\* pointer to array of starting points  *\/ */
 /*   GEN->n_stp = PAR->n_stp;           /\* number of construction points        *\/ */
 
@@ -2255,15 +2251,17 @@ double evalnewtoninterpol(double u,int g,double ui[],double zi[]){
 }
 
 
-int newtoninterpol (struct unur_gen *gen, double x0, double h,int g,double ui[],double zi[],double *x){
+int newtoninterpol (struct unur_gen *gen, double x0, double h,double ui[],double zi[],double *x)
+{
   /*calculates ui and zi arrays, xi pointer may be NULL */
   double xi, dxi, temp,// zi[20], ui[20]={0.},
-phi;/*20 statt g+1 */
+    phi;/*20 statt g+1 */
   int i,k;
-  phi = M_PI*0.5/(g+1);
+
+  phi = M_PI*0.5/(GEN->order+1);
   ui[0]=0.;
   if(x!=NULL)x[0]=xi;
-  for(i=1; i<=g; i++){
+  for(i=1; i<=GEN->order; i++){
     xi = x0 + h*sin((i-1)*phi)*sin(i*phi)/cos(phi);
     dxi = h*sin(2*i*phi)*tan(phi);
     if(x!=NULL)x[i]=xi+dxi;
@@ -2275,8 +2273,9 @@ phi;/*20 statt g+1 */
     zi[i]=dxi/temp;
     ui[i]=ui[i-1]+temp; /* ui[0] initialisation??? */
   } // ui[g] is the probability of the interval
-  for(k=2; k<=g; k++)
-    for(i=g; i>=k; i--) zi[i]=(zi[i]-zi[i-1])/(ui[i]-ui[i-k]);
+  for(k=2; k<=GEN->order; k++)
+    for(i=GEN->order; i>=k; i--)
+      zi[i]=(zi[i]-zi[i-1])/(ui[i]-ui[i-k]);
 
   //  printf("x:");
   //    printvec(g+1,x);
@@ -2307,19 +2306,19 @@ int tstpt(int g,double ui[],double utest[]){
   return 1;
 }
 
-double maxerrornewton (struct unur_gen *gen, int g,double ui[],double zi[],double x0,double xval[]){
+double maxerrornewton (struct unur_gen *gen, double ui[],double zi[],double x0,double xval[]){
   double maxerror=0.,uerror,*testu,uarr[21],x;
   int i,n;
-    n=g;
+    n=GEN->order;
     testu=uarr;
-    tstpt(g,ui,testu);
+    tstpt(GEN->order,ui,testu);
     //printvec(n+1,testu);
     //printvec(n+1,ui);
     //if(xval!=NULL)printvec(3,xval);
   for(i=0;i<n;i++){
     //Naechste Zeile: TODO Verbesserung moeglich, wenn man die xi verwendet und so kuerzere
     // intervalle fuer LObato integration bekommt
-    x=evalnewtoninterpol(testu[i+1],g,ui,zi);
+    x=evalnewtoninterpol(testu[i+1],GEN->order,ui,zi);
     if(i==0||xval==NULL) uerror=fabs(lobato5(gen,x0,x ,0.,NULL)-testu[i+1]);
     else uerror=fabs(ui[i]+lobato5(gen,xval[i],x+x0-xval[i],0.,NULL)-testu[i+1]);
     if(uerror>maxerror) maxerror=uerror;
@@ -2330,7 +2329,7 @@ double maxerrornewton (struct unur_gen *gen, int g,double ui[],double zi[],doubl
 }
 
 
-int  setup(struct unur_gen *gen, int g, double a, double b, double hh, double uerror){
+int  setup(struct unur_gen *gen, double a, double b, double hh, double uerror){
   /*
     f ... PDF
     g ... order of polynomial
@@ -2343,10 +2342,10 @@ int  setup(struct unur_gen *gen, int g, double a, double b, double hh, double ue
   int i,j,cont;
   int countextracalc=0;
 
-  xval=malloc(sizeof(double)*(g+1));
+  xval=malloc(sizeof(double)*(GEN->order+1));
 
-  GEN->iv[0].ui = malloc(sizeof(double)*(g+1));
-  GEN->iv[0].zi = malloc(sizeof(double)*(g+1));
+  GEN->iv[0].ui = malloc(sizeof(double)*(GEN->order+1));
+  GEN->iv[0].zi = malloc(sizeof(double)*(GEN->order+1));
   GEN->iv[0].xi = a;
   GEN->iv[0].cdfi = 0.;//cdfi holds cdf value at the left border of the interval
   cont=1;
@@ -2356,18 +2355,18 @@ int  setup(struct unur_gen *gen, int g, double a, double b, double hh, double ue
       h = b - GEN->iv[i].xi;
       cont=0;
     }
-    newtoninterpol(gen,GEN->iv[i].xi,h,g,GEN->iv[i].ui,GEN->iv[i].zi,xval);
-    maxerror = maxerrornewton(gen,g,GEN->iv[i].ui,GEN->iv[i].zi,GEN->iv[i].xi,xval);
+    newtoninterpol(gen,GEN->iv[i].xi,h,GEN->iv[i].ui,GEN->iv[i].zi,xval);
+    maxerror = maxerrornewton(gen,GEN->iv[i].ui,GEN->iv[i].zi,GEN->iv[i].xi,xval);
     if(maxerror > uerror){ 
       countextracalc++;
       h*= 0.9;
      if(maxerror>4.*uerror) h*=0.9;
  
     }else{
-	GEN->iv[i+1].ui = malloc(sizeof(double)*(g+1));
-  	GEN->iv[i+1].zi = malloc(sizeof(double)*(g+1));
+	GEN->iv[i+1].ui = malloc(sizeof(double)*(GEN->order+1));
+  	GEN->iv[i+1].zi = malloc(sizeof(double)*(GEN->order+1));
   	GEN->iv[i+1].xi = GEN->iv[i].xi+h;
-  	GEN->iv[i+1].cdfi = GEN->iv[i].cdfi +(GEN->iv)[i].ui[g];//cdfi holds cdf value at the left border of the interval
+  	GEN->iv[i+1].cdfi = GEN->iv[i].cdfi +(GEN->iv)[i].ui[GEN->order];//cdfi holds cdf value at the left border of the interval
         if(maxerror < 0.3*uerror) h*=1.2;
         if(maxerror < 0.1*uerror) h*=2.;
         i++;
@@ -2394,7 +2393,8 @@ int  setup(struct unur_gen *gen, int g, double a, double b, double hh, double ue
    /* "/geno->umax" above is necessary, as we need the guide table for u in (0,umax) */
    GEN->guide[j] = i;
  }
- printf("Set-up finished: g=%d,  Number of intervals = %d,\n         additional calculated interpolations=%d\n",g,GEN->ni,countextracalc);
+ printf("Set-up finished: g=%d,  Number of intervals = %d,\n         additional calculated interpolations=%d\n",
+	GEN->order,GEN->ni,countextracalc);
  printf("u in (0,%.18g)   1-umax%g\n",GEN->umax,1-GEN->umax);
 
  return UNUR_SUCCESS;
@@ -2507,7 +2507,7 @@ double cut (struct unur_gen *gen, double w,double dw, double crit){
 
 /******************************************************/
 
-int pinvsetup( struct unur_gen *gen,int g, double uerror, double x0, int asearch, int bsearch,double a, double b){
+int pinvsetup( struct unur_gen *gen, double uerror, double x0, int asearch, int bsearch,double a, double b){
 /***********************************************
   starts the set-up and returns a pointer to the generator object
 
@@ -2551,7 +2551,7 @@ int pinvsetup( struct unur_gen *gen,int g, double uerror, double x0, int asearch
   if(bsearch) b = cut(gen,b,(b-a)/128,uerror*area*tailcutfact);
   printf("after cut: a=%g b=%g\n",a,b);
 
-  return setup(gen,g,a,b,(b-a)/128,uerror*area);
+  return setup(gen,a,b,(b-a)/128,uerror*area);
 }
 
 /****************************************/

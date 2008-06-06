@@ -86,7 +86,7 @@ int main(){
       unur_pinv_set_searchboundary(par,TRUE,TRUE);
       gen = unur_init(par);
       check_inversion_unuran(gen,uerror,cdf_normal,0);
-      free(gen);
+      unur_free(gen);
       
       
       /* --------------------------------------------- */
@@ -99,7 +99,7 @@ int main(){
       unur_pinv_set_searchboundary(par,FALSE,TRUE);
       gen = unur_init(par);
       check_inversion_unuran(gen,uerror,cdf_gamma2,0);
-      free(gen);
+      unur_free(gen);
       
       
       /* --------------------------------------------- */
@@ -112,9 +112,14 @@ int main(){
       unur_pinv_set_searchboundary(par,TRUE,TRUE);
       gen = unur_init(par);
       check_inversion_unuran(gen,uerror,cdf_cauchy,0);
-      free(gen);
+      unur_free(gen);
       
     }
   }
+
+  unur_distr_free(normal);
+  unur_distr_free(cauchy);
+  unur_distr_free(gamma2);
+
   return 0;
 }

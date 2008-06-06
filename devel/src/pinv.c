@@ -1771,7 +1771,7 @@ _unur_pinv_cut( struct unur_gen *gen, double w, double dw, double crit )
      /* parameters:                                                          */
      /*   gen  ... pointer to generator object                               */
      /*   w    ... starting point for searching cut-off point                */
-     /*   dw   ... initial step length for searching,                        */
+     /*   dw   ... initial step size for searching,                          */
      /*            sign of dw gives searching direction:                     */
      /*               dw < 0 ... left hand side cut-off point                */
      /*               dw > 0 ... right hand side cut-off point               */
@@ -1792,40 +1792,62 @@ _unur_pinv_cut( struct unur_gen *gen, double w, double dw, double crit )
     the area outside is approximately crit/10
   ****************/
 
-  double H,rezH,y,d,rezy,yplus,rezys,corr;
-  int j,k,cont;
+  double /* H, */ rezH,y,rezy,yplus,rezys,corr;
 
-  H = crit;
-  rezH=1./H;
-  cont=1;
-  for(j=1;j<1000&&cont;j++){
-    y = _unur_pinv_tailprob(gen,w,dw/64.);
-    if(y<H) cont=0;
-    else{
-      w+=dw;
-      if(j>32) dw*=1.5;
+  int found = FALSE;   /* indicates whether we have found an cut-off point */
+  double dx = dw/64.;  /* step size for numeric differentiation */
+  int j,k;             /* aux variables */
+
+/*   H = crit; */
+  rezH= 1./crit; // 1./H;
+
+  /* search for cut-off point with tail probability less than 'crit'ical value */
+  for (j=1; j<1000; j++) {
+
+    /* compute approximate tail probability at w */
+    y = _unur_pinv_tailprob(gen, w, dw/64.);
+
+    /* below threshold value ? */
+    if (y < crit && y > 0.) {
+      found = TRUE;
+      break;
     }
-  }
-  if(cont){
-    printf("error in cut(), first loop; exiting!!!\n");
-    exit(1);
+
+    /* else
+       the tail probability is too large, or the approximation formula
+       is not appropriate for the point.
+       Hence we make a step towards + or - infinity
+       (and increase stepsize for next interation).
+    */
+    w += dw;
+    if (j>32) dw *= 1.5;
   }
 
-  d=dw/64.;
+  if(!found){
+    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,
+		  "cound not find cut point");
+    /** TODO! **/
+    exit(1);
+/*     return INFINITY; */
+  }
+
+  dx=dw/64.;
   for(k=0;k<50;k++){
     rezy=1./y;
-    yplus = _unur_pinv_tailprob(gen,w+d,d);
+    yplus = _unur_pinv_tailprob(gen,w+dx,dx);
     if(yplus<0){
-      printf("error in cut(), yplus negative; exiting!!!\n");
+      _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"negative tail probability");
+      /* return INFINITY; */
       exit(1);
     }
-    rezys = (1./yplus-rezy)/d;
+    rezys = (1./yplus-rezy)/dx;
     corr = -(rezy-rezH)/rezys;
     if(fabs(rezy/rezH-1.)<1.e-7) return w;
     w+=corr;
-    y = _unur_pinv_tailprob(gen,w,d);
+    y = _unur_pinv_tailprob(gen,w,dx);
     if(y<0){
-      printf("error in cut(), y negative; exiting!!!\n");
+      _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"negative tail probability");
+      /* return INFINITY; */
       exit(1);
     }
   }
@@ -1847,7 +1869,7 @@ _unur_pinv_tailprob( struct unur_gen *gen, double x, double dx )
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
      /*   x   ... cut-off point                                              */
-     /*   dx  ... step length for numeric differentiation                    */
+     /*   dx  ... step size for numeric differentiation                      */
      /*                                                                      */
      /* return:                                                              */
      /*   approximate tail probability                                       */
@@ -1859,6 +1881,7 @@ _unur_pinv_tailprob( struct unur_gen *gen, double x, double dx )
   double fx, fp, fm; /* value of PDF at x, x+dx, and x-dx */
   double df;         /* derivative of PDF                 */
   double lcplus1;    /* local concavity + 1               */
+  double area;       /* tail probability                  */
 
   /* compute PDF */
   fx = PDF(x);
@@ -1866,25 +1889,34 @@ _unur_pinv_tailprob( struct unur_gen *gen, double x, double dx )
   fm = PDF(x-dx);
 
   /* check data */
-  if (fx<0. || fp<0. || fm<0.) {
-    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF not positive");
-    return -INFINITY;
-  }
-
-  /** TODO!!! **/
-  if(fm-2.*fx+fp < 0.||fm<1.e-100||fx<1.e-100||fp<1.e-100){
-    printf("warning possible problem in function tail() !!!\n");
+  if( fm-2.*fx+fp < 0.|| fm<1.e-100 || fx<1.e-100 || fp<1.e-100) {
+    _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,
+		  "numerical problems with tail probability");
   }
 
   /* approximate local concavity + 1 */
   lcplus1 = fp/(fp-fx) + fm/(fm-fx);
-  /* ?WH? was ist wenn cplus1 negativ wird ? */
 
   /* approximate derivative */
   df = (fp-fm)/(2.*dx);
   /* ?WH? macht es sinn hier f' direct zu verwenden, wenn es vorhanden ist? */
 
-  return (fx*fx) / (lcplus1 * fabs(df));
+  /* approximate tail probability */
+  area = (fx*fx) / (lcplus1 * fabs(df));
+
+  /* check result */
+  if (area < 0.) {
+    _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"negative tail probability");
+    /* Remark: 
+       It is difficult to distinguish between an invalid PDF given by the user,
+       a real numerical (round-off) error or simply a point too far from 
+       the region of "computational irrelevant".
+       Hence we just print a warning and let the calling routine handle the 
+       situation.
+     */
+  }
+
+  return area;
 
 } /* end of _unur_pinv_tailprob() */
 

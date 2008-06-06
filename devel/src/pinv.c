@@ -215,9 +215,14 @@ static double _unur_pinv_eval_approxinvcdf( const struct unur_gen *gen, double u
 /* compute all parameter for interval (spline coefficients).                 */
 /*---------------------------------------------------------------------------*/
 
-/* static double _unur_pinv_eval_polynomial( double x, double *coeff, int order ); */
+static double _unur_pinv_tailprob( struct unur_gen *gen, double x, double dx );
 /*---------------------------------------------------------------------------*/
-/* evaluate polynomial.                                                      */
+/* calculate approximate tail probability.                                   */
+/*---------------------------------------------------------------------------*/
+
+static double _unur_pinv_eval_newtonpolynomial( double q, double ui[], double zi[], int order );
+/*---------------------------------------------------------------------------*/
+/* evaluate Newton polynomial.                                               */
 /*---------------------------------------------------------------------------*/
 
 /* static int _unur_pinv_list_to_array( struct unur_gen *gen ); */
@@ -270,15 +275,13 @@ static void _unur_pinv_debug_init( const struct unur_gen *gen, int ok);
 
 
 
-static int setup (struct unur_gen *gen, double a, double b, double hh, double uerror);
+static int setup (struct unur_gen *gen, double hh, double uerror);
 
 static double lobato5 (struct unur_gen *gen, double x, double h, double fx, double *fxph);
 
 static double nint_12 (struct unur_gen *gen, double a,double b,double *res_relerror);
 
 static double nint_monoton_dens (struct unur_gen *gen, double a,double b,double step,double crit);
-
-static double evalnewtoninterpol (double u,int g,double ui[],double zi[]);
 
 static int newtoninterpol (struct unur_gen *gen, double x0, double h,double ui[],double zi[],double *x);
 
@@ -287,8 +290,6 @@ static int tstpt (int g,double ui[],double utest[]);
 static double maxerrornewton (struct unur_gen *gen,double ui[],double zi[],double x0,double xval[]);
 
 static double searchborder (struct unur_gen *gen, double x0, double step,double border);
-
-static double tail (struct unur_gen *gen, double x, double d);
 
 static double cut (struct unur_gen *gen, double w,double dw, double crit);
 
@@ -779,7 +780,7 @@ _unur_pinv_init( struct unur_par *par )
   if(GEN->sright) GEN->bright = cut(gen,GEN->bright,(GEN->bright-GEN->bleft)/128,GEN->u_resolution*area*tailcutfact);
   printf("after cut: a=%g b=%g\n",GEN->bleft,GEN->bright);
 
-  setup(gen,GEN->bleft,GEN->bright,(GEN->bright-GEN->bleft)/128,GEN->u_resolution*area);
+  setup(gen, (GEN->bright-GEN->bleft)/128,GEN->u_resolution*area);
 }
 
   /* compute splines */
@@ -1161,7 +1162,7 @@ _unur_pinv_eval_approxinvcdf( const struct unur_gen *gen, double u )
   for(i= GEN->guide[(int)(u * GEN->guide_size)]; GEN->iv[i+1].cdfi < un ; i++)
     ;
 
-  x = evalnewtoninterpol(un- GEN->iv[i].cdfi,GEN->order,GEN->iv[i].ui,GEN->iv[i].zi);
+  x = _unur_pinv_eval_newtonpolynomial(un- GEN->iv[i].cdfi,GEN->iv[i].ui,GEN->iv[i].zi,GEN->order);
 
   return (GEN->iv)[i].xi+x;
 
@@ -1758,29 +1759,91 @@ unur_pinv_eval_approxinvcdf( const struct unur_gen *gen, double u )
 
 /*---------------------------------------------------------------------------*/
 
-/* double */
-/* _unur_pinv_eval_polynomial( double x, double *coeff, int order ) */
-/*      /\*----------------------------------------------------------------------*\/ */
-/*      /\* evaluate polynomial using Horner scheme.                             *\/ */
-/*      /\*                                                                      *\/ */
-/*      /\* parameters:                                                          *\/ */
-/*      /\*   x     ... argument                                                 *\/ */
-/*      /\*   coeff ... coefficients of polynomial (increasing order)            *\/ */
-/*      /\*   order ... order of polynomial                                      *\/ */
-/*      /\*                                                                      *\/ */
-/*      /\* return:                                                              *\/ */
-/*      /\*   value of spline at u                                               *\/ */
-/*      /\*----------------------------------------------------------------------*\/ */
-/* { */
-/*   int i; */
-/*   double poly; */
+double
+_unur_pinv_tailprob( struct unur_gen *gen, double x, double dx )
+     /*----------------------------------------------------------------------*/
+     /* calculate approximate tail probability.                              */
+     /* use formula                                                          */
+     /*   area ~ f(x)^2 / ( (lc_f(x)+1) * abs(f'(x)) )                       */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*   x   ... cut-off point                                              */
+     /*   dx  ... step length for numeric differentiation                    */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   approximate tail probability                                       */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return -INFINITY                                                   */
+     /*----------------------------------------------------------------------*/
+     /* ?WH? macht es sinn hier f' direct zu verwenden, wenn es vorhanden
+	ist?
+     */
+{
+  double fx, fp, fm; /* value of PDF at x, x+dx, and x-dx */
+  double cplus1;     /* temporary value: lc_f(x)+1        */
 
-/*   poly = coeff[order]; */
-/*   for (i=order-1; i>=0; i--) */
-/*     poly = x*poly + coeff[i]; */
+  /* check arguments */
+  CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_PINV_GEN,INFINITY);
 
-/*   return poly; */
-/* } /\* end of _unur_pinv_eval_polynomial() *\/ */
+  fx = PDF(x);
+  fp = PDF(x+dx);
+  fm = PDF(x-dx);
+
+  /*   if (fx < 0.) { */
+  /*     _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF not positive"); */
+  /*     return -INFINITY; */
+  /*   } */
+
+  /** TODO!!! **/
+  if(fm-2.*fx+fp < 0.||fm<1.e-100||fx<1.e-100||fp<1.e-100){
+    printf("warning possible problem in function tail() !!!\n");
+  }
+
+  /* ?WH? was ist wenn cplus1 negativ wird ? */
+
+  cplus1 = fp/(fp-fx) + fm/(fm-fx);
+  return (fx*fx) / (cplus1 * fabs((fp-fm)/(2.*dx)) );
+
+} /* end of _unur_pinv_tailprob() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_pinv_eval_newtonpolynomial( double q, double ui[], double zi[], int order )
+     /*----------------------------------------------------------------------*/
+     /* evaluate Newton interpolation polynomial using Horner scheme.        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   q     ... argument                                                 */
+     /*   ui    ... coefficients of polynomial (increasing order)            */
+     /*   zi    ... coefficients of polynomial (increasing order)            */
+     /*   order ... order of polynomial                                      */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   value of spline at u                                               */
+     /*----------------------------------------------------------------------*/
+     /* zi = pi;  ui=yi */
+
+     /* ?WH? welche bedeutung haben ui und zi ?
+        kannst du die newton interpolationsformel dazuschreiben, damit man
+        hier sieht, wie das funktioniert?
+     */
+{
+  int k;
+  double chi;
+
+  chi = zi[order];
+
+  for (k=order-1; k>=1; k--)
+    chi = chi*(q-ui[k])+zi[k];
+
+  /* ?WH? was ist mit k=0? */
+
+  return (chi*q);
+
+} /* end of _unur_pinv_eval_newtonpolynomial() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -2198,18 +2261,19 @@ double lobato5 (struct unur_gen *gen, double x, double h, double fx, double *fxp
 
  ifxph = PDF(x+h);
  if(fxph!=NULL){ 
+   /* fxph ist aber immer NULL!! */
    ifx = fx;
    *fxph = ifxph;
  }
  else {
    ifx = PDF(x);
  }
-/*  return (9*(ifx+(ifxph))+49.*((*f)(x+h*W1)+(*f)(x+h*W2))+64.*(*f)(x+h/2.))*h/180.; */
  return (9*(ifx+(ifxph))+49.*(PDF(x+h*W1)+PDF(x+h*W2))+64.*PDF(x+h/2.))*h/180.;
 }
 #undef W1
 #undef W2
 
+/************************************/
 
 double nint_12 (struct unur_gen *gen, double a,double b,double *res_relerror){
   //with 1 and two intervals reports the resulting (relative-error) in res_relerror 
@@ -2222,6 +2286,8 @@ double nint_12 (struct unur_gen *gen, double a,double b,double *res_relerror){
   *res_relerror = fabs(res-reso)/res; 
   return res;
 }
+
+/************************************/
 
 double nint_monoton_dens(struct unur_gen *gen, double a,double b,double step,double crit){
   // step <= b-1 !!!
@@ -2253,20 +2319,7 @@ double nint_monoton_dens(struct unur_gen *gen, double a,double b,double step,dou
   return sum;
 }
 
-
 ////////////////////////////////////////////////////////////////////////////////////
-
-double evalnewtoninterpol(double u,int g,double ui[],double zi[]){
-  /* zi = pi;  ui=yi */
-  double q,chi;
-  int k;
-  
-  q = u;
-  chi = zi[g];
-  for(k=g-1;k>=1;k--) chi = chi*(q-ui[k])+zi[k];
-  return( chi*q);
-}
-
 
 int newtoninterpol (struct unur_gen *gen, double x0, double h,double ui[],double zi[],double *x)
 {
@@ -2302,8 +2355,10 @@ int newtoninterpol (struct unur_gen *gen, double x0, double h,double ui[],double
   return 1;
 }
 
+/************************************/
 
 int tstpt(int g,double ui[],double utest[]){
+  /* ?WH? was tut diese funktion ? */
   int k,j,i;
   double sum, qsum,x;
   utest[0]=0.;
@@ -2323,6 +2378,8 @@ int tstpt(int g,double ui[],double utest[]){
   return 1;
 }
 
+/************************************/
+
 double maxerrornewton (struct unur_gen *gen, double ui[],double zi[],double x0,double xval[]){
   double maxerror=0.,uerror,*testu,uarr[21],x;
   int i,n;
@@ -2335,7 +2392,8 @@ double maxerrornewton (struct unur_gen *gen, double ui[],double zi[],double x0,d
   for(i=0;i<n;i++){
     //Naechste Zeile: TODO Verbesserung moeglich, wenn man die xi verwendet und so kuerzere
     // intervalle fuer LObato integration bekommt
-    x=evalnewtoninterpol(testu[i+1],GEN->order,ui,zi);
+    x = _unur_pinv_eval_newtonpolynomial(testu[i+1],ui,zi,GEN->order);
+
     if(i==0||xval==NULL) uerror=fabs(lobato5(gen,x0,x ,0.,NULL)-testu[i+1]);
     else uerror=fabs(ui[i]+lobato5(gen,xval[i],x+x0-xval[i],0.,NULL)-testu[i+1]);
     if(uerror>maxerror) maxerror=uerror;
@@ -2345,13 +2403,11 @@ double maxerrornewton (struct unur_gen *gen, double ui[],double zi[],double x0,d
   return maxerror;
 }
 
+/************************************/
 
-int  setup(struct unur_gen *gen, double a, double b, double hh, double uerror){
+int  setup(struct unur_gen *gen, double hh, double uerror){
   /*
     f ... PDF
-    g ... order of polynomial
-    a ...
-    b ...
     hh ...
     uerror ... u-error
   */
@@ -2363,13 +2419,13 @@ int  setup(struct unur_gen *gen, double a, double b, double hh, double uerror){
 
   GEN->iv[0].ui = malloc(sizeof(double)*(GEN->order+1));
   GEN->iv[0].zi = malloc(sizeof(double)*(GEN->order+1));
-  GEN->iv[0].xi = a;
+  GEN->iv[0].xi = GEN->bleft;
   GEN->iv[0].cdfi = 0.;//cdfi holds cdf value at the left border of the interval
   cont=1;
   i=0;
   while(cont){
-    if(GEN->iv[i].xi+h >b){
-      h = b - GEN->iv[i].xi;
+    if(GEN->iv[i].xi+h > GEN->bright){
+      h = GEN->bright - GEN->iv[i].xi;
       cont=0;
     }
     newtoninterpol(gen,GEN->iv[i].xi,h,GEN->iv[i].ui,GEN->iv[i].zi,xval);
@@ -2417,7 +2473,7 @@ int  setup(struct unur_gen *gen, double a, double b, double hh, double uerror){
  return UNUR_SUCCESS;
 } 
 
-
+/************************************/
 
 double searchborder (struct unur_gen *gen, double x0, double step,double border){
   // x0 starting point with f(x0) not small; may but need not be the mode
@@ -2440,33 +2496,13 @@ double searchborder (struct unur_gen *gen, double x0, double step,double border)
     //printf("%d:x%g fx%g\n",i,x,fx);
   }while(fx<fx0*1.e-13);
  
-
-
   return x;
 }
 
 /************************************/
-double tail (struct unur_gen *gen, double x, double d){
-  /********************************
-     calculates approximate tail area = f(x)^2/((lc_f(x)+1)*abs(f'(x)) 
-     x...cut off point
-     d... step length for numeric differentiation
-  **********************************/
-  double ff,fp,fm,cplus1;
-  ff = PDF(x);
-  fp = PDF(x+d);
-  fm = PDF(x-d);
-  if(fm-2.*ff+fp < 0.||fm<1.e-100||ff<1.e-100||fp<1.e-100){
-    printf("warning possible problem in function tail() !!!\n");
-  }
-  cplus1 = fp/(fp-ff) + fm/(fm-ff);
-  return ff*ff/(cplus1*fabs((fp-fm)/(2.*d)));
-}
 
-
-
-
-double cut (struct unur_gen *gen, double w,double dw, double crit){
+double cut (struct unur_gen *gen, double w,double dw, double crit)
+{
   /**********************
     calculates starting from w the left (dw<0) or right (dw>0) cut off point.
     crit... u-error criterium for tail cut off 
@@ -2481,7 +2517,7 @@ double cut (struct unur_gen *gen, double w,double dw, double crit){
   rezH=1./H;
   cont=1;
   for(j=1;j<1000&&cont;j++){
-    y=tail(gen,w,dw/64.);
+    y = _unur_pinv_tailprob(gen,w,dw/64.);
     if(y<H) cont=0;
     else{
       w+=dw;
@@ -2496,7 +2532,7 @@ double cut (struct unur_gen *gen, double w,double dw, double crit){
   d=dw/64.;
   for(k=0;k<50;k++){
     rezy=1./y;
-    yplus = tail(gen,w+d,d);
+    yplus = _unur_pinv_tailprob(gen,w+d,d);
     if(yplus<0){
       printf("error in cut(), yplus negative; exiting!!!\n");
       exit(1);
@@ -2505,7 +2541,7 @@ double cut (struct unur_gen *gen, double w,double dw, double crit){
     corr = -(rezy-rezH)/rezys;
     if(fabs(rezy/rezH-1.)<1.e-7) return w;
     w+=corr;
-    y=tail(gen,w,d);
+    y = _unur_pinv_tailprob(gen,w,d);
     if(y<0){
       printf("error in cut(), y negative; exiting!!!\n");
       exit(1);

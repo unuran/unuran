@@ -51,8 +51,8 @@ struct unur_pinv_par {
 
 
 struct siv{
-double *ui;//[g+1];
-double *zi;//[g+1];
+double *ui;  //[g+1];    
+double *zi;  //[g+1];
 double xi;
 double cdfi;
 };

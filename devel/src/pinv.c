@@ -779,8 +779,16 @@ _unur_pinv_init( struct unur_par *par )
   if(GEN->u_resolution<=9.e-13) tailcutfact=0.5;
 /* above command necessary for Cauchy distribution where cut has problems with very small values*/
  
-  if(GEN->sleft) GEN->bleft = _unur_pinv_cut(gen,GEN->bleft,(GEN->bleft-GEN->bright)/128,GEN->u_resolution*area*tailcutfact);
-  if(GEN->sright) GEN->bright = _unur_pinv_cut(gen,GEN->bright,(GEN->bright-GEN->bleft)/128,GEN->u_resolution*area*tailcutfact);
+  if(GEN->sleft)
+    GEN->bleft = _unur_pinv_cut(gen,GEN->bleft,(GEN->bleft-GEN->bright)/128,GEN->u_resolution*area*tailcutfact);
+  if(GEN->sright)
+    GEN->bright = _unur_pinv_cut(gen,GEN->bright,(GEN->bright-GEN->bleft)/128,GEN->u_resolution*area*tailcutfact);
+
+  if (! (_unur_isfinite(GEN->bleft) && _unur_isfinite(GEN->sright)) ) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"cannot find boundary for computational domain");
+    _unur_pinv_free(gen); return NULL;
+  }
+
   printf("after cut: a=%g b=%g\n",GEN->bleft,GEN->bright);
 
   setup(gen, (GEN->bright-GEN->bleft)/128,GEN->u_resolution*area);
@@ -1790,13 +1798,15 @@ _unur_pinv_cut( struct unur_gen *gen, double w, double dw, double crit )
     crit... u-error criterium for tail cut off 
     dw ... initial step-length
     the area outside is approximately crit/10
+
+    ?WH? woher kommt das "crit/10" ??
   ****************/
 
   double /* H, */ rezH,y,rezy,yplus,rezys,corr;
 
   int found = FALSE;   /* indicates whether we have found an cut-off point */
   double dx = dw/64.;  /* step size for numeric differentiation */
-  int j,k;             /* aux variables */
+  int j;               /* aux variable */
 
 /*   H = crit; */
   rezH= 1./crit; // 1./H;
@@ -1824,21 +1834,25 @@ _unur_pinv_cut( struct unur_gen *gen, double w, double dw, double crit )
   }
 
   if(!found){
-    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,
-		  "cound not find cut point");
-    /** TODO! **/
-    exit(1);
-/*     return INFINITY; */
+    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"cound not find valid cut point");
+    return INFINITY;
   }
 
+  /* ?WH? das folgende ist fuer mich absolut unverstaendlich!
+     was tut diese schleife?
+  */
   dx=dw/64.;
-  for(k=0;k<50;k++){
+  for (j=0; j<50; j++) {
+
+    /* alternative abfrage: */
+    /*     if (_unur_FP_cmp_approx(fabs(y),crit)) return w; */
+
     rezy=1./y;
+
     yplus = _unur_pinv_tailprob(gen,w+dx,dx);
     if(yplus<0){
       _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"negative tail probability");
-      /* return INFINITY; */
-      exit(1);
+      return INFINITY;
     }
     rezys = (1./yplus-rezy)/dx;
     corr = -(rezy-rezH)/rezys;
@@ -1847,15 +1861,14 @@ _unur_pinv_cut( struct unur_gen *gen, double w, double dw, double crit )
     y = _unur_pinv_tailprob(gen,w,dx);
     if(y<0){
       _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"negative tail probability");
-      /* return INFINITY; */
-      exit(1);
+      return INFINITY;
     }
   }
-    printf("error in cut(), second loop; exiting!!!\n");
-    exit(1);
 
+  _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"cound not find cut point");
+  return INFINITY;
 
-}
+} /* end of _unur_pinv_cut() */
 
 /*---------------------------------------------------------------------------*/
 

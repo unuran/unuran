@@ -228,6 +228,10 @@ int unur_pinv_set_boundary( UNUR_PAR *parameters, double left, double right );
 /* 
    Set the left and right boundary of the computational interval.
    The interval must cover the essential part of the distribution.
+   When unur_pinv_set_searchboundary() is called with TRUE then
+   this given domain is shortened to a domain of "computational
+   relevance" such that the tail probabilities are smaller than given
+   by unur_pinv_set_u_resolution().
    Thus it is usually safe to use a large interval.
    However, @code{+/- UNUR_INFINITY} is not allowed.
 

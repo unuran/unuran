@@ -80,6 +80,8 @@
 
 #define PINVMAXINT  10000
 
+#define PINV_PDFLLIM    (1.e-13)
+
 /* #define PINV_MAX_ITER      (300) */
 /* Maximal number of iterations for finding the boundary of the              */
 /* computational interval, i.e. where CDF(x) is close to 0 and 1, resp.      */
@@ -215,6 +217,11 @@ static double _unur_pinv_eval_approxinvcdf( const struct unur_gen *gen, double u
 /* compute all parameter for interval (spline coefficients).                 */
 /*---------------------------------------------------------------------------*/
 
+static double _unur_pinv_searchborder( struct unur_gen *gen, double x0, double dx, double bound);
+/*---------------------------------------------------------------------------*/
+/* calculate domain of computational relevant region.                        */
+/*---------------------------------------------------------------------------*/
+
 static double _unur_pinv_cut( struct unur_gen *gen, double w, double dw, double crit );
 /*---------------------------------------------------------------------------*/
 /* calculate cut-off points for computationally stable domain for distr.     */
@@ -293,8 +300,6 @@ static int newtoninterpol (struct unur_gen *gen, double x0, double h,double ui[]
 static int tstpt (int g,double ui[],double utest[]);
 
 static double maxerrornewton (struct unur_gen *gen,double ui[],double zi[],double x0,double xval[]);
-
-static double searchborder (struct unur_gen *gen, double x0, double step,double border);
 
 
 
@@ -764,13 +769,14 @@ _unur_pinv_init( struct unur_par *par )
 
 
 {
-  double area,areal,tailcutfact;
+  double area,tailcutfact;
 
-  if(GEN->sleft) GEN->bleft = searchborder(gen,DISTR.center, -1, GEN->bleft);
-  if(GEN->sright) GEN->bright = searchborder(gen,DISTR.center, 1, GEN->bright);
+  if(GEN->sleft) GEN->bleft = _unur_pinv_searchborder(gen,DISTR.center, -1, GEN->bleft);
+  if(GEN->sright) GEN->bright = _unur_pinv_searchborder(gen,DISTR.center, 1, GEN->bright);
+
   area = nint_monoton_dens(gen,DISTR.center,GEN->bright,1.,1.e-8);
-  areal = nint_monoton_dens(gen,GEN->bleft,DISTR.center,1.,1.e-8);
-  area+=areal;
+  area += nint_monoton_dens(gen,GEN->bleft,DISTR.center,1.,1.e-8);
+
   printf("after searchborder: a=%g  b=%g area=%g\n",GEN->bleft,GEN->bright,area);
 //  printf("a=%g  b=%g area=%g integralerror%g\n",a,b,area,area/(cdf(b)-cdf(a))-1.);
 
@@ -1770,6 +1776,59 @@ unur_pinv_eval_approxinvcdf( const struct unur_gen *gen, double u )
 /*---------------------------------------------------------------------------*/
 
 double
+_unur_pinv_searchborder( struct unur_gen *gen, double x0, double dx, double bound)
+     /*----------------------------------------------------------------------*/
+     /* calculate domain of computational relevant region.                   */
+     /* the boundary points of this domain are approximately given as        */
+     /*      PDF(x0) * PINV_PDFLLIM                                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen   ... pointer to generator object                              */
+     /*   x0    ... starting point for searching boudary                     */
+     /*             PDF(x0) must not be too small                            */
+     /*   dx    ... initial step size for searching                          */
+     /*             its sign gives searching direction                       */
+     /*   bound ... stop searching at this point                             */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   boundary point                                                     */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return INFINITY                                                    */
+     /*----------------------------------------------------------------------*/
+{
+  double x, xold;         /* current and old previous searching point */
+  double fllim;           /* threshold value */
+  int i;                  /* aux variable */
+
+  /* threshold value where we stop searching */
+  fllim = PDF(x0) * PINV_PDFLLIM;
+  
+  /* starting point */
+  xold = x0;
+  x = _unur_arcmean(x0,bound);
+
+  /* find a point where PDF is less than the threshold value */
+  for (i=0; i<100 && PDF(x) > fllim; i++) {
+    xold = x;
+    x = _unur_arcmean(x,bound);
+  }
+  /** TODO: check against exceeded number of iterations! **/
+
+
+  /* however: PDF(x) must not be too small */
+  do{
+    x = (x+xold)*0.5;
+  } while(PDF(x)<fllim);
+  /** TODO: check against exceeded number of iterations! **/
+ 
+  return x;
+
+} /* end of _unur_pinv_searchborder() */
+
+/*---------------------------------------------------------------------------*/
+
+double
 _unur_pinv_cut( struct unur_gen *gen, double w, double dw, double crit )
      /*----------------------------------------------------------------------*/
      /* calculate cut-off points for computationally stable domain for       */
@@ -1791,7 +1850,6 @@ _unur_pinv_cut( struct unur_gen *gen, double w, double dw, double crit )
      /* error:                                                               */
      /*   return INFINITY                                                    */
      /*----------------------------------------------------------------------*/
-
 {
   /**********************
     calculates starting from w the left (dw<0) or right (dw>0) cut off point.
@@ -1865,6 +1923,7 @@ _unur_pinv_cut( struct unur_gen *gen, double w, double dw, double crit )
     }
   }
 
+  /* could not find point till now */
   _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"cound not find cut point");
   return INFINITY;
 
@@ -2597,31 +2656,5 @@ int  setup(struct unur_gen *gen, double hh, double uerror){
 
  return UNUR_SUCCESS;
 } 
-
-/************************************/
-
-double searchborder (struct unur_gen *gen, double x0, double step,double border){
-  // x0 starting point with f(x0) not small; may but need not be the mode
-  // step first step size, includes direction
-  double fx0=PDF(x0),fx=fx0,x=x0,xa;
-  int i;
-
-  for(i=0;i<100 && PDF(x)>fx0*1.e-13;i++){
-    xa=x;
-    if(i>10) step*=2;
-    if((x-border)*(x+step-border)>0.) x+= step;
-    else x=(x+border)*0.5;
-    fx=PDF(x);
-    //printf("%d:x%g fx%g\n",i,x,fx);
-  }
-
-  do{
-    x=(x+xa)*0.5;
-    fx=PDF(x);
-    //printf("%d:x%g fx%g\n",i,x,fx);
-  }while(fx<fx0*1.e-13);
- 
-  return x;
-}
 
 /************************************/

@@ -215,6 +215,11 @@ static double _unur_pinv_eval_approxinvcdf( const struct unur_gen *gen, double u
 /* compute all parameter for interval (spline coefficients).                 */
 /*---------------------------------------------------------------------------*/
 
+static double _unur_pinv_cut( struct unur_gen *gen, double w, double dw, double crit );
+/*---------------------------------------------------------------------------*/
+/* calculate cut-off points for computationally stable domain for distr.     */
+/*---------------------------------------------------------------------------*/
+
 static double _unur_pinv_tailprob( struct unur_gen *gen, double x, double dx );
 /*---------------------------------------------------------------------------*/
 /* calculate approximate tail probability.                                   */
@@ -290,8 +295,6 @@ static int tstpt (int g,double ui[],double utest[]);
 static double maxerrornewton (struct unur_gen *gen,double ui[],double zi[],double x0,double xval[]);
 
 static double searchborder (struct unur_gen *gen, double x0, double step,double border);
-
-static double cut (struct unur_gen *gen, double w,double dw, double crit);
 
 
 
@@ -776,8 +779,8 @@ _unur_pinv_init( struct unur_par *par )
   if(GEN->u_resolution<=9.e-13) tailcutfact=0.5;
 /* above command necessary for Cauchy distribution where cut has problems with very small values*/
  
-  if(GEN->sleft) GEN->bleft = cut(gen,GEN->bleft,(GEN->bleft-GEN->bright)/128,GEN->u_resolution*area*tailcutfact);
-  if(GEN->sright) GEN->bright = cut(gen,GEN->bright,(GEN->bright-GEN->bleft)/128,GEN->u_resolution*area*tailcutfact);
+  if(GEN->sleft) GEN->bleft = _unur_pinv_cut(gen,GEN->bleft,(GEN->bleft-GEN->bright)/128,GEN->u_resolution*area*tailcutfact);
+  if(GEN->sright) GEN->bright = _unur_pinv_cut(gen,GEN->bright,(GEN->bright-GEN->bleft)/128,GEN->u_resolution*area*tailcutfact);
   printf("after cut: a=%g b=%g\n",GEN->bleft,GEN->bright);
 
   setup(gen, (GEN->bright-GEN->bleft)/128,GEN->u_resolution*area);
@@ -1759,6 +1762,82 @@ unur_pinv_eval_approxinvcdf( const struct unur_gen *gen, double u )
 /*---------------------------------------------------------------------------*/
 
 double
+_unur_pinv_cut( struct unur_gen *gen, double w, double dw, double crit )
+     /*----------------------------------------------------------------------*/
+     /* calculate cut-off points for computationally stable domain for       */
+     /* distribution.                                                        */
+     /* the area outside the cut-off point is approximately crit/10.         */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*   w    ... starting point for searching cut-off point                */
+     /*   dw   ... initial step length for searching,                        */
+     /*            sign of dw gives searching direction:                     */
+     /*               dw < 0 ... left hand side cut-off point                */
+     /*               dw > 0 ... right hand side cut-off point               */
+     /*   crit ... u-error criterium for tail cut off                        */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   cut-off point                                                      */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return INFINITY                                                    */
+     /*----------------------------------------------------------------------*/
+
+{
+  /**********************
+    calculates starting from w the left (dw<0) or right (dw>0) cut off point.
+    crit... u-error criterium for tail cut off 
+    dw ... initial step-length
+    the area outside is approximately crit/10
+  ****************/
+
+  double H,rezH,y,d,rezy,yplus,rezys,corr;
+  int j,k,cont;
+
+  H = crit;
+  rezH=1./H;
+  cont=1;
+  for(j=1;j<1000&&cont;j++){
+    y = _unur_pinv_tailprob(gen,w,dw/64.);
+    if(y<H) cont=0;
+    else{
+      w+=dw;
+      if(j>32) dw*=1.5;
+    }
+  }
+  if(cont){
+    printf("error in cut(), first loop; exiting!!!\n");
+    exit(1);
+  }
+
+  d=dw/64.;
+  for(k=0;k<50;k++){
+    rezy=1./y;
+    yplus = _unur_pinv_tailprob(gen,w+d,d);
+    if(yplus<0){
+      printf("error in cut(), yplus negative; exiting!!!\n");
+      exit(1);
+    }
+    rezys = (1./yplus-rezy)/d;
+    corr = -(rezy-rezH)/rezys;
+    if(fabs(rezy/rezH-1.)<1.e-7) return w;
+    w+=corr;
+    y = _unur_pinv_tailprob(gen,w,d);
+    if(y<0){
+      printf("error in cut(), y negative; exiting!!!\n");
+      exit(1);
+    }
+  }
+    printf("error in cut(), second loop; exiting!!!\n");
+    exit(1);
+
+
+}
+
+/*---------------------------------------------------------------------------*/
+
+double
 _unur_pinv_tailprob( struct unur_gen *gen, double x, double dx )
      /*----------------------------------------------------------------------*/
      /* calculate approximate tail probability.                              */
@@ -2501,57 +2580,3 @@ double searchborder (struct unur_gen *gen, double x0, double step,double border)
 }
 
 /************************************/
-
-double cut (struct unur_gen *gen, double w,double dw, double crit)
-{
-  /**********************
-    calculates starting from w the left (dw<0) or right (dw>0) cut off point.
-    crit... u-error criterium for tail cut off 
-    dw ... initial step-length
-    the area outside is approximately crit/10
-  ****************/
-
-  double H,rezH,y,d,rezy,yplus,rezys,corr;
-  int j,k,cont;
-
-  H = crit;
-  rezH=1./H;
-  cont=1;
-  for(j=1;j<1000&&cont;j++){
-    y = _unur_pinv_tailprob(gen,w,dw/64.);
-    if(y<H) cont=0;
-    else{
-      w+=dw;
-      if(j>32) dw*=1.5;
-    }
-  }
-  if(cont){
-    printf("error in cut(), first loop; exiting!!!\n");
-    exit(1);
-  }
-
-  d=dw/64.;
-  for(k=0;k<50;k++){
-    rezy=1./y;
-    yplus = _unur_pinv_tailprob(gen,w+d,d);
-    if(yplus<0){
-      printf("error in cut(), yplus negative; exiting!!!\n");
-      exit(1);
-    }
-    rezys = (1./yplus-rezy)/d;
-    corr = -(rezy-rezH)/rezys;
-    if(fabs(rezy/rezH-1.)<1.e-7) return w;
-    w+=corr;
-    y = _unur_pinv_tailprob(gen,w,d);
-    if(y<0){
-      printf("error in cut(), y negative; exiting!!!\n");
-      exit(1);
-    }
-  }
-    printf("error in cut(), second loop; exiting!!!\n");
-    exit(1);
-
-
-}
-
-/**********************************************************************/

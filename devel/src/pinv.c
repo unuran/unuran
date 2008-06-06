@@ -19,7 +19,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2008 Wolfgang Hoermann and Josef Leydold                  *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -270,29 +270,29 @@ static void _unur_pinv_debug_init( const struct unur_gen *gen, int ok);
 
 
 
-int  pinvsetup( struct unur_gen *gen, double (*f)(double x),int g, double uerror, double x0, int asearch, int bsearch,double a, double b);
+int  pinvsetup ( struct unur_gen *gen, int g, double uerror, double x0, int asearch, int bsearch,double a, double b);
                              
-int setup(struct unur_gen *gen, double (*f)(double x),int g, double a, double b, double hh, double uerror);
+int setup (struct unur_gen *gen, int g, double a, double b, double hh, double uerror);
 
-static double lobato5(double x, double h, double fx, double *fxph, double (*f)(double x));
+static double lobato5 (struct unur_gen *gen, double x, double h, double fx, double *fxph);
 
-static double nint_12(double a,double b,double *res_relerror, double (*f)(double x));
+static double nint_12 (struct unur_gen *gen, double a,double b,double *res_relerror);
 
-static double nint_monoton_dens(double a,double b,double step,double crit, double (*f)(double x));
+static double nint_monoton_dens (struct unur_gen *gen, double a,double b,double step,double crit);
 
-static double evalnewtoninterpol(double u,int g,double ui[],double zi[]);
+static double evalnewtoninterpol (double u,int g,double ui[],double zi[]);
 
-static int newtoninterpol(double x0, double h,int g,double ui[],double zi[],double *x,double (*f)(double x));
+static int newtoninterpol (struct unur_gen *gen, double x0, double h,int g,double ui[],double zi[],double *x);
 
-static int tstpt(int g,double ui[],double utest[]);
+static int tstpt (int g,double ui[],double utest[]);
 
-static double maxerrornewton(int g,double ui[],double zi[],double x0,double xval[],double (*f)(double x));
+static double maxerrornewton (struct unur_gen *gen, int g,double ui[],double zi[],double x0,double xval[]);
 
-static double searchborder(double x0, double step,double border,double (*f)(double x));
+static double searchborder (struct unur_gen *gen, double x0, double step,double border);
 
-static double tail(double x, double d,double (*f)(double x));
+static double tail (struct unur_gen *gen, double x, double d);
 
-static double cut(double w,double dw, double crit,double (*f)(double x));
+static double cut (struct unur_gen *gen, double w,double dw, double crit);
 
 
 
@@ -326,6 +326,7 @@ static double cut(double w,double dw, double crit,double (*f)(double x));
 
 /* call to PDF: */
 /* #define PDF(x)  (_unur_cont_PDF((x),(gen->distr))/(GEN->CDFmax-GEN->CDFmin))  */
+#define PDF(x)  (_unur_cont_PDF((x),(gen->distr)))    /* call to PDF         */
 
 /* call to derivative of PDF: */   
 /* #define dPDF(x) (_unur_cont_dPDF((x),(gen->distr))/(GEN->CDFmax-GEN->CDFmin)) */
@@ -718,12 +719,6 @@ unur_pinv_set_searchboundary( struct unur_par *par, int left, int right )
 /* } /\* end of unur_pinv_chg_truncated() *\/ */
 
 
-static struct unur_distr *bad_global_pointer_to_distribution = NULL;
-double bad_global_pdf (double x) { 
-  struct unur_distr *distr = bad_global_pointer_to_distribution;
-  return (distr->data.cont.pdf)(x,distr);
-}
-
 /*****************************************************************************/
 /**  Private                                                                **/
 /*****************************************************************************/
@@ -759,8 +754,7 @@ _unur_pinv_init( struct unur_par *par )
   gen = _unur_pinv_create(par);
 
 
-  bad_global_pointer_to_distribution = gen->distr;
-  pinvsetup(gen, bad_global_pdf, GEN->order, GEN->u_resolution, DISTR.center,
+  pinvsetup(gen, GEN->order, GEN->u_resolution, DISTR.center,
 	    PAR->sleft, PAR->sright, GEN->bleft_par, GEN->bright_par);
 
 
@@ -2178,7 +2172,7 @@ int check_inversion_unuran(struct unur_gen *gen,double uerror,double (*cdf)(doub
 
 
 
-double lobato5(double x, double h, double fx, double *fxph, double (*f)(double x))
+double lobato5 (struct unur_gen *gen, double x, double h, double fx, double *fxph)
 /************************************
  * Numerical Integration of the interval (x,x+h)
  * using Gauss-Lobato integration with 5 points.
@@ -2189,31 +2183,34 @@ double lobato5(double x, double h, double fx, double *fxph, double (*f)(double x
 #define W2 (1.-W1)
 { double ifx,ifxph;
 
- ifxph = (*f)(x+h);
+ ifxph = PDF(x+h);
  if(fxph!=NULL){ 
    ifx = fx;
    *fxph = ifxph;
  }
- else ifx = (*f)(x);
- return (9*(ifx+(ifxph))+49.*((*f)(x+h*W1)+(*f)(x+h*W2))+64.*(*f)(x+h/2.))*h/180.;
+ else {
+   ifx = PDF(x);
+ }
+/*  return (9*(ifx+(ifxph))+49.*((*f)(x+h*W1)+(*f)(x+h*W2))+64.*(*f)(x+h/2.))*h/180.; */
+ return (9*(ifx+(ifxph))+49.*(PDF(x+h*W1)+PDF(x+h*W2))+64.*PDF(x+h/2.))*h/180.;
 }
 #undef W1
 #undef W2
 
 
-double nint_12(double a,double b,double *res_relerror, double (*f)(double x)){
+double nint_12 (struct unur_gen *gen, double a,double b,double *res_relerror){
   //with 1 and two intervals reports the resulting (relative-error) in res_relerror 
   int i;
   double res,reso;
 
-  reso = lobato5(a,(b-a),0,NULL,f);
+  reso = lobato5(gen,a,(b-a),0,NULL);
   i=1;
-  res = lobato5(a,(b-a)*0.5,0,NULL,f)+lobato5((b+a)*0.5,(b-a)*0.5,0,NULL,f);
+  res = lobato5(gen,a,(b-a)*0.5,0,NULL)+lobato5(gen,(b+a)*0.5,(b-a)*0.5,0,NULL);
   *res_relerror = fabs(res-reso)/res; 
   return res;
 }
 
-double nint_monoton_dens(double a,double b,double step,double crit, double (*f)(double x)){
+double nint_monoton_dens(struct unur_gen *gen, double a,double b,double step,double crit){
   // step <= b-1 !!!
 // numerical integration with a variable step-size for a monoton density, starting with "step"
 // crit ... maximal accepted relative error
@@ -2225,7 +2222,7 @@ double nint_monoton_dens(double a,double b,double step,double crit, double (*f)(
 
   x=a;
   while(x<b){
-    sumi = nint_12(x,x+step,&error,f);
+    sumi = nint_12(gen,x,x+step,&error);
     //printf("%d: x%g step%g sumi%g error%g\n",i,x,step,sumi,error);
     if(error > crit){ 
       step = step*pow(0.5*crit/error,1./9.);
@@ -2258,7 +2255,7 @@ double evalnewtoninterpol(double u,int g,double ui[],double zi[]){
 }
 
 
-int newtoninterpol(double x0, double h,int g,double ui[],double zi[],double *x,double (*f)(double x)){
+int newtoninterpol (struct unur_gen *gen, double x0, double h,int g,double ui[],double zi[],double *x){
   /*calculates ui and zi arrays, xi pointer may be NULL */
   double xi, dxi, temp,// zi[20], ui[20]={0.},
 phi;/*20 statt g+1 */
@@ -2270,7 +2267,7 @@ phi;/*20 statt g+1 */
     xi = x0 + h*sin((i-1)*phi)*sin(i*phi)/cos(phi);
     dxi = h*sin(2*i*phi)*tan(phi);
     if(x!=NULL)x[i]=xi+dxi;
-   temp = lobato5(xi, dxi,0,NULL,f);
+   temp = lobato5(gen,xi, dxi,0,NULL);
    if(temp<1.e-50){
      printf("ERROR!! Newtoninterpolation interval too short. or density 0 EXITINGNG\n");
      exit(1);
@@ -2310,7 +2307,7 @@ int tstpt(int g,double ui[],double utest[]){
   return 1;
 }
 
-double maxerrornewton(int g,double ui[],double zi[],double x0,double xval[],double (*f)(double x)){
+double maxerrornewton (struct unur_gen *gen, int g,double ui[],double zi[],double x0,double xval[]){
   double maxerror=0.,uerror,*testu,uarr[21],x;
   int i,n;
     n=g;
@@ -2323,8 +2320,8 @@ double maxerrornewton(int g,double ui[],double zi[],double x0,double xval[],doub
     //Naechste Zeile: TODO Verbesserung moeglich, wenn man die xi verwendet und so kuerzere
     // intervalle fuer LObato integration bekommt
     x=evalnewtoninterpol(testu[i+1],g,ui,zi);
-    if(i==0||xval==NULL) uerror=fabs(lobato5(x0,x ,0.,NULL,f)-testu[i+1]);
-    else uerror=fabs(ui[i]+lobato5(xval[i],x+x0-xval[i],0.,NULL,f)-testu[i+1]);
+    if(i==0||xval==NULL) uerror=fabs(lobato5(gen,x0,x ,0.,NULL)-testu[i+1]);
+    else uerror=fabs(ui[i]+lobato5(gen,xval[i],x+x0-xval[i],0.,NULL)-testu[i+1]);
     if(uerror>maxerror) maxerror=uerror;
     //    printf("%d:u max %g %g\n",i,uerror,maxerror);
   }
@@ -2333,7 +2330,7 @@ double maxerrornewton(int g,double ui[],double zi[],double x0,double xval[],doub
 }
 
 
-int  setup(struct unur_gen *gen, double (*f)(double x),int g, double a, double b, double hh, double uerror){
+int  setup(struct unur_gen *gen, int g, double a, double b, double hh, double uerror){
   /*
     f ... PDF
     g ... order of polynomial
@@ -2359,8 +2356,8 @@ int  setup(struct unur_gen *gen, double (*f)(double x),int g, double a, double b
       h = b - GEN->iv[i].xi;
       cont=0;
     }
-    newtoninterpol(GEN->iv[i].xi,h,g,GEN->iv[i].ui,GEN->iv[i].zi,xval,f);
-    maxerror = maxerrornewton(g,GEN->iv[i].ui,GEN->iv[i].zi,GEN->iv[i].xi,xval,f);
+    newtoninterpol(gen,GEN->iv[i].xi,h,g,GEN->iv[i].ui,GEN->iv[i].zi,xval);
+    maxerror = maxerrornewton(gen,g,GEN->iv[i].ui,GEN->iv[i].zi,GEN->iv[i].xi,xval);
     if(maxerror > uerror){ 
       countextracalc++;
       h*= 0.9;
@@ -2405,24 +2402,24 @@ int  setup(struct unur_gen *gen, double (*f)(double x),int g, double a, double b
 
 
 
-double searchborder(double x0, double step,double border,double (*f)(double x)){
+double searchborder (struct unur_gen *gen, double x0, double step,double border){
   // x0 starting point with f(x0) not small; may but need not be the mode
   // step first step size, includes direction
-  double fx0=f(x0),fx=fx0,x=x0,xa;
+  double fx0=PDF(x0),fx=fx0,x=x0,xa;
   int i;
 
-  for(i=0;i<100 && f(x)>fx0*1.e-13;i++){
+  for(i=0;i<100 && PDF(x)>fx0*1.e-13;i++){
     xa=x;
     if(i>10) step*=2;
     if((x-border)*(x+step-border)>0.) x+= step;
     else x=(x+border)*0.5;
-    fx=f(x);
+    fx=PDF(x);
     //printf("%d:x%g fx%g\n",i,x,fx);
   }
 
   do{
     x=(x+xa)*0.5;
-    fx=f(x);
+    fx=PDF(x);
     //printf("%d:x%g fx%g\n",i,x,fx);
   }while(fx<fx0*1.e-13);
  
@@ -2432,16 +2429,16 @@ double searchborder(double x0, double step,double border,double (*f)(double x)){
 }
 
 /************************************/
-double tail(double x, double d,double (*f)(double x)){
+double tail (struct unur_gen *gen, double x, double d){
   /********************************
      calculates approximate tail area = f(x)^2/((lc_f(x)+1)*abs(f'(x)) 
      x...cut off point
      d... step length for numeric differentiation
   **********************************/
   double ff,fp,fm,cplus1;
-  ff = f(x);
-  fp = f(x+d);
-  fm = f(x-d);
+  ff = PDF(x);
+  fp = PDF(x+d);
+  fm = PDF(x-d);
   if(fm-2.*ff+fp < 0.||fm<1.e-100||ff<1.e-100||fp<1.e-100){
     printf("warning possible problem in function tail() !!!\n");
   }
@@ -2452,7 +2449,7 @@ double tail(double x, double d,double (*f)(double x)){
 
 
 
-double cut(double w,double dw, double crit,double (*f)(double x)){
+double cut (struct unur_gen *gen, double w,double dw, double crit){
   /**********************
     calculates starting from w the left (dw<0) or right (dw>0) cut off point.
     crit... u-error criterium for tail cut off 
@@ -2467,7 +2464,7 @@ double cut(double w,double dw, double crit,double (*f)(double x)){
   rezH=1./H;
   cont=1;
   for(j=1;j<1000&&cont;j++){
-    y=tail(w,dw/64.,f);
+    y=tail(gen,w,dw/64.);
     if(y<H) cont=0;
     else{
       w+=dw;
@@ -2482,7 +2479,7 @@ double cut(double w,double dw, double crit,double (*f)(double x)){
   d=dw/64.;
   for(k=0;k<50;k++){
     rezy=1./y;
-    yplus = tail(w+d,d,f);
+    yplus = tail(gen,w+d,d);
     if(yplus<0){
       printf("error in cut(), yplus negative; exiting!!!\n");
       exit(1);
@@ -2491,7 +2488,7 @@ double cut(double w,double dw, double crit,double (*f)(double x)){
     corr = -(rezy-rezH)/rezys;
     if(fabs(rezy/rezH-1.)<1.e-7) return w;
     w+=corr;
-    y=tail(w,d,f);
+    y=tail(gen,w,d);
     if(y<0){
       printf("error in cut(), y negative; exiting!!!\n");
       exit(1);
@@ -2510,7 +2507,7 @@ double cut(double w,double dw, double crit,double (*f)(double x)){
 
 /******************************************************/
 
-int pinvsetup( struct unur_gen *gen, double (*f)(double x),int g, double uerror, double x0, int asearch, int bsearch,double a, double b){
+int pinvsetup( struct unur_gen *gen,int g, double uerror, double x0, int asearch, int bsearch,double a, double b){
 /***********************************************
   starts the set-up and returns a pointer to the generator object
 
@@ -2537,10 +2534,10 @@ int pinvsetup( struct unur_gen *gen, double (*f)(double x),int g, double uerror,
 
   double area,areal,tailcutfact;
 
-  if(asearch) a = searchborder(x0, -1, a,f);
-  if(bsearch) b = searchborder(x0, 1, b,f);
-  area = nint_monoton_dens(x0,b,1.,1.e-8,f);
-  areal = nint_monoton_dens(a,x0,1.,1.e-8,f);
+  if(asearch) a = searchborder(gen,x0, -1, a);
+  if(bsearch) b = searchborder(gen,x0, 1, b);
+  area = nint_monoton_dens(gen,x0,b,1.,1.e-8);
+  areal = nint_monoton_dens(gen,a,x0,1.,1.e-8);
   area+=areal;
   printf("after searchborder: a=%g  b=%g area=%g\n",a,b,area);
 //  printf("a=%g  b=%g area=%g integralerror%g\n",a,b,area,area/(cdf(b)-cdf(a))-1.);
@@ -2550,11 +2547,11 @@ int pinvsetup( struct unur_gen *gen, double (*f)(double x),int g, double uerror,
   if(uerror<=9.e-13) tailcutfact=0.5;
 /* above command necessary for Cauchy distribution where cut has problems with very small values*/
  
-  if(asearch) a = cut(a,(a-b)/128,uerror*area*tailcutfact,f);
-  if(bsearch) b = cut(b,(b-a)/128,uerror*area*tailcutfact,f);
+  if(asearch) a = cut(gen,a,(a-b)/128,uerror*area*tailcutfact);
+  if(bsearch) b = cut(gen,b,(b-a)/128,uerror*area*tailcutfact);
   printf("after cut: a=%g b=%g\n",a,b);
 
-  return setup(gen,f,g,a,b,(b-a)/128,uerror*area);
+  return setup(gen,g,a,b,(b-a)/128,uerror*area);
 }
 
 /****************************************/

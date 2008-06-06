@@ -28,7 +28,9 @@ pinvwh_LDADD = \
 
 
 # clean backup files
-CLEANFILES = *~
+CLEANFILES = \
+ valgrind-* \
+ *~
 
 # clean generated files
 MAINTAINERCLEANFILES = \

@@ -931,9 +931,7 @@ _unur_pinv_create( struct unur_par *par )
   /* initialize variables */
   GEN->bleft = GEN->bleft_par;
   GEN->bright = GEN->bright_par;
-  GEN->Umin = 0.;
   GEN->Umax = 1.;
-  GEN->umax = 1.;
   /*   GEN->N = 0; */
   GEN->iv = NULL;
   GEN->ni = 0;
@@ -1107,8 +1105,8 @@ _unur_pinv_sample( struct unur_gen *gen )
   /* check arguments */
   CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_PINV_GEN,INFINITY);
 
-  /* sample from U( Umin, Umax ) */
-  U = GEN->Umin + _unur_call_urng(gen->urng) * (GEN->Umax - GEN->Umin);
+  /* sample from U(0,1) */
+  U = _unur_call_urng(gen->urng);
 
   /* compute inverse CDF */
   X = U;
@@ -1157,8 +1155,9 @@ _unur_pinv_eval_approxinvcdf( const struct unur_gen *gen, double u )
 /*   /\* evaluate polynome *\/ */
 /*   return _unur_pinv_eval_polynomial( u, GEN->intervals+i+1, GEN->order ); */
   
+  /* rescale for range (0, Umax) */
+  un = u * GEN->Umax;
 
-  un = u * GEN->umax;
   for(i= GEN->guide[(int)(u * GEN->guide_size)]; GEN->iv[i+1].cdfi < un ; i++)
     ;
 
@@ -1777,34 +1776,36 @@ _unur_pinv_tailprob( struct unur_gen *gen, double x, double dx )
      /* error:                                                               */
      /*   return -INFINITY                                                   */
      /*----------------------------------------------------------------------*/
-     /* ?WH? macht es sinn hier f' direct zu verwenden, wenn es vorhanden
-	ist?
-     */
 {
   double fx, fp, fm; /* value of PDF at x, x+dx, and x-dx */
-  double cplus1;     /* temporary value: lc_f(x)+1        */
+  double df;         /* derivative of PDF                 */
+  double lcplus1;    /* local concavity + 1               */
 
-  /* check arguments */
-  CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_PINV_GEN,INFINITY);
-
+  /* compute PDF */
   fx = PDF(x);
   fp = PDF(x+dx);
   fm = PDF(x-dx);
 
-  /*   if (fx < 0.) { */
-  /*     _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF not positive"); */
-  /*     return -INFINITY; */
-  /*   } */
+  /* check data */
+  if (fx<0. || fp<0. || fm<0.) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF not positive");
+    return -INFINITY;
+  }
 
   /** TODO!!! **/
   if(fm-2.*fx+fp < 0.||fm<1.e-100||fx<1.e-100||fp<1.e-100){
     printf("warning possible problem in function tail() !!!\n");
   }
 
+  /* approximate local concavity + 1 */
+  lcplus1 = fp/(fp-fx) + fm/(fm-fx);
   /* ?WH? was ist wenn cplus1 negativ wird ? */
 
-  cplus1 = fp/(fp-fx) + fm/(fm-fx);
-  return (fx*fx) / (cplus1 * fabs((fp-fm)/(2.*dx)) );
+  /* approximate derivative */
+  df = (fp-fm)/(2.*dx);
+  /* ?WH? macht es sinn hier f' direct zu verwenden, wenn es vorhanden ist? */
+
+  return (fx*fx) / (lcplus1 * fabs(df));
 
 } /* end of _unur_pinv_tailprob() */
 
@@ -2454,7 +2455,7 @@ int  setup(struct unur_gen *gen, double hh, double uerror){
 
  free(xval);
 
- GEN->umax = GEN->iv[GEN->ni].cdfi;
+ GEN->Umax = GEN->iv[GEN->ni].cdfi;
 
 
  GEN->guide_size = GEN->ni;//size of guide-table
@@ -2462,13 +2463,13 @@ int  setup(struct unur_gen *gen, double hh, double uerror){
  GEN->guide[0] = 0;
  i=0;
  for(j=1; j<GEN->guide_size; j++){
-   while(j/(double)GEN->guide_size > GEN->iv[i+1].cdfi/GEN->umax) i++;
+   while(j/(double)GEN->guide_size > GEN->iv[i+1].cdfi/GEN->Umax) i++;
    /* "/geno->umax" above is necessary, as we need the guide table for u in (0,umax) */
    GEN->guide[j] = i;
  }
  printf("Set-up finished: g=%d,  Number of intervals = %d,\n         additional calculated interpolations=%d\n",
 	GEN->order,GEN->ni,countextracalc);
- printf("u in (0,%.18g)   1-umax%g\n",GEN->umax,1-GEN->umax);
+ printf("u in (0,%.18g)   1-umax%g\n",GEN->Umax,1.-GEN->Umax);
 
  return UNUR_SUCCESS;
 } 
@@ -2507,7 +2508,7 @@ double cut (struct unur_gen *gen, double w,double dw, double crit)
     calculates starting from w the left (dw<0) or right (dw>0) cut off point.
     crit... u-error criterium for tail cut off 
     dw ... initial step-length
-    the are outside is approximately crit/10
+    the area outside is approximately crit/10
   ****************/
 
   double H,rezH,y,d,rezy,yplus,rezys,corr;

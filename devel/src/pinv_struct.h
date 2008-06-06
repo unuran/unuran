@@ -51,10 +51,13 @@ struct unur_pinv_par {
 
 
 struct siv{
-double *ui;  //[g+1];    
-double *zi;  //[g+1];
-double xi;
-double cdfi;
+  double *ui;  //[g+1];    
+  double *zi;  //[g+1];
+  double xi;
+  double cdfi;
+/* #ifdef UNUR_COOKIES */
+/*   unsigned cookie;         /\* magic cookie                                    *\/ */
+/* #endif */
 };
 
 /* #define UNUR_PINV_MAX_ORDER   (5) */
@@ -90,9 +93,11 @@ struct unur_pinv_gen {
   int    *guide;           /* pointer to guide table                         */ 
   int     guide_size;      /* size of guide table                            */
 
-  double  Umin, Umax;      /* bounds for iid random variable in respect to
-			      the given (truncated) domain of the distr.     */
+  double  Umax;            /* upper bound for uniform random variable U 
+			      [ Umin = 0. ]                                  */
+
 /*   double  CDFmin, CDFmax;  /\* CDF-bounds of domain                           *\/ */
+
   double  u_resolution;    /* maximal error in u                             */
   double  bleft;           /* left border of the computational domain        */
   double  bright;          /* right border of the computational domain       */
@@ -102,6 +107,7 @@ struct unur_pinv_gen {
 /*   double  tailcutoff_right;/\* cut point for right hand tail (u-value)        *\/  */
 /*   const double *stp;       /\* pointer to array of starting points            *\/ */
 /*   int     n_stp;           /\* number of construction points at start         *\/ */
+
   double  bleft_par;       /* border of the computational domain as ...      */
   double  bright_par;      /* ... given by user                              */
 
@@ -112,7 +118,6 @@ struct unur_pinv_gen {
 
 
   /* from pinvwh: */
-  double umax;
 
   struct siv *iv;//[maxint+1] for setup; for sampling [ni+1]
   int ni;//number of sub intervals

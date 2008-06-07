@@ -67,11 +67,9 @@
 
 
 
-/*   PAR->guide_factor = factor; */
-#define PINV_GUIDE_FACTOR  (1)
 
 /*   PAR->max_ivs = max_ivs; */
-#define PINV_MAX_IVS  (1000000)
+/* #define PINV_MAX_IVS  (1000000) */
 
 
 
@@ -81,6 +79,9 @@
 #define PINVMAXINT  10000
 
 #define PINV_PDFLLIM    (1.e-13)
+
+#define PINV_GUIDE_FACTOR  (1)
+
 
 /* #define PINV_MAX_ITER      (300) */
 /* Maximal number of iterations for finding the boundary of the              */
@@ -2256,48 +2257,36 @@ _unur_pinv_make_guide_table (struct unur_gen *gen)
 {
   int i,j, imax;
 
-/*   /\* check arguments *\/ */
-/*   CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_PINV_GEN,UNUR_ERR_COOKIE); */
+  /* check arguments */
+  CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_PINV_GEN,UNUR_ERR_COOKIE);
 
-/*   /\* allocate blocks for guide table (if necessary). */
-/*      (we allocate blocks for maximal guide table.) *\/ */
-/*   GEN->guide_size = GEN->N * PINV_GUIDE_FACTOR; */
-/*   if (GEN->guide_size <= 0) GEN->guide_size = 1;  */
-/*   GEN->guide = _unur_xrealloc( GEN->guide, GEN->guide_size * sizeof(int) ); */
+  /* allocate blocks for guide table (if necessary).
+     (we allocate blocks for maximal guide table.) */
+  GEN->guide_size = GEN->ni * PINV_GUIDE_FACTOR;
+  if (GEN->guide_size <= 0) GEN->guide_size = 1;
+  GEN->guide = _unur_xrealloc( GEN->guide, GEN->guide_size * sizeof(int) );
 
-/*   imax = (GEN->N-2) * (GEN->order+2); */
+  /* maximum index for array of data */
+  imax = GEN->ni;
 
-/*   /\* u value at end of interval *\/ */
-/* # define u(i)  (GEN->intervals[(i)+GEN->order+2]) */
-
-/*   i = 0; */
-/*   GEN->guide[0] = 0; */
-/*   for( j=1; j<GEN->guide_size ;j++ ) { */
-/*     while( u(i) < (j/(double)GEN->guide_size) && i <= imax) */
-/*       i += GEN->order+2; */
-/*     if (i > imax) break; */
-/*     GEN->guide[j]=i; */
-/*   } */
-
-/* # undef u */
-
-/*   /\* check i *\/ */
-/*   i = _unur_min(i,imax); */
-
-/*   /\* if there has been an round off error, we have to complete the guide table *\/ */
-/*   for( ; j<GEN->guide_size ;j++ ) */
-/*     GEN->guide[j] = i; */
-
-
-  GEN->guide_size = GEN->ni;//size of guide-table
-  GEN->guide = malloc(sizeof(int)*GEN->guide_size);
+  /* create guide table */
+  i = 0;
   GEN->guide[0] = 0;
-  i=0;
-  for(j=1; j<GEN->guide_size; j++){
-    while(j/(double)GEN->guide_size > GEN->iv[i+1].cdfi/GEN->Umax) i++;
-    /* "/geno->umax" above is necessary, as we need the guide table for u in (0,umax) */
-    GEN->guide[j] = i;
+  for( j=1; j<GEN->guide_size ;j++ ) {
+    while(GEN->iv[i+1].cdfi/GEN->Umax < j/(double)GEN->guide_size && i < imax)
+      /* "/GEN->Umax" above is necessary, as we need the guide table for u in (0,umax) */
+      /* ?WH? ist das wirklich notwendig ? */
+      i++;
+    if (i >= imax) break;
+    GEN->guide[j]=i;
   }
+
+  /* check i */
+  i = _unur_min(i,imax);
+
+  /* if there has been an round off error, we have to complete the guide table */
+  for( ; j<GEN->guide_size ;j++ )
+    GEN->guide[j] = i;
 
   /* o.k. */
   return UNUR_SUCCESS;
@@ -2706,7 +2695,7 @@ int  setup(struct unur_gen *gen, double hh, double uerror){
     uerror ... u-error
   */
   double maxerror,h=hh,*xval;
-  int i,j,cont;
+  int i,cont;
   int countextracalc=0;
 
   xval=malloc(sizeof(double)*(GEN->order+1));
@@ -2750,16 +2739,6 @@ int  setup(struct unur_gen *gen, double hh, double uerror){
 
  GEN->Umax = GEN->iv[GEN->ni].cdfi;
 
-
-/*  GEN->guide_size = GEN->ni;//size of guide-table */
-/*  GEN->guide = malloc(sizeof(int)*GEN->guide_size);   */
-/*  GEN->guide[0] = 0; */
-/*  i=0; */
-/*  for(j=1; j<GEN->guide_size; j++){ */
-/*    while(j/(double)GEN->guide_size > GEN->iv[i+1].cdfi/GEN->Umax) i++; */
-/*    /\* "/geno->umax" above is necessary, as we need the guide table for u in (0,umax) *\/ */
-/*    GEN->guide[j] = i; */
-/*  } */
 
  _unur_pinv_make_guide_table(gen);
 

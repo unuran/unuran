@@ -145,42 +145,42 @@
 
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *_unur_pinv_init( struct unur_par *par );
+static struct unur_gen *_unur_pinv_init (struct unur_par *par);
 /*---------------------------------------------------------------------------*/
 /* Initialize new generator.                                                 */
 /*---------------------------------------------------------------------------*/
 
-/* static int _unur_pinv_reinit( struct unur_gen *gen ); */
+/* static int _unur_pinv_reinit (struct unur_gen *gen); */
 /*---------------------------------------------------------------------------*/
 /* Reinitialize generator.                                                   */
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *_unur_pinv_create( struct unur_par *par );
+static struct unur_gen *_unur_pinv_create (struct unur_par *par);
 /*---------------------------------------------------------------------------*/
 /* create new (almost empty) generator object.                               */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_pinv_check_par( struct unur_gen *gen );
+static int _unur_pinv_check_par (struct unur_gen *gen);
 /*---------------------------------------------------------------------------*/
 /* Check parameters of given distribution and method                         */
 /*---------------------------------------------------------------------------*/
 
-static struct unur_gen *_unur_pinv_clone( const struct unur_gen *gen );
+static struct unur_gen *_unur_pinv_clone (const struct unur_gen *gen);
 /*---------------------------------------------------------------------------*/
 /* copy (clone) generator object.                                            */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_pinv_free( struct unur_gen *gen );
+static void _unur_pinv_free (struct unur_gen *gen);
 /*---------------------------------------------------------------------------*/
 /* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_pinv_sample( struct unur_gen *gen );
+static double _unur_pinv_sample (struct unur_gen *gen);
 /*---------------------------------------------------------------------------*/
 /* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_pinv_eval_approxinvcdf( const struct unur_gen *gen, double u );
+static double _unur_pinv_eval_approxinvcdf (const struct unur_gen *gen, double u);
 /*---------------------------------------------------------------------------*/
 /* evaluate Hermite interpolation of inverse CDF at u.                       */
 /*---------------------------------------------------------------------------*/
@@ -217,19 +217,25 @@ static double _unur_pinv_eval_approxinvcdf( const struct unur_gen *gen, double u
 /* compute all parameter for interval (spline coefficients).                 */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_pinv_searchborder( struct unur_gen *gen, double x0, double dx, double bound);
+static double _unur_pinv_searchborder (struct unur_gen *gen, double x0, double dx, double bound);
 /*---------------------------------------------------------------------------*/
 /* calculate domain of computational relevant region.                        */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_pinv_cut( struct unur_gen *gen, double w, double dw, double crit );
+static double _unur_pinv_cut (struct unur_gen *gen, double w, double dw, double crit);
 /*---------------------------------------------------------------------------*/
 /* calculate cut-off points for computationally stable domain for distr.     */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_pinv_tailprob( struct unur_gen *gen, double x, double dx );
+static double _unur_pinv_tailprob (struct unur_gen *gen, double x, double dx);
 /*---------------------------------------------------------------------------*/
 /* calculate approximate tail probability.                                   */
+/*---------------------------------------------------------------------------*/
+
+static double _unur_pinv_approxarea (struct unur_gen *gen, double xl, double xr);
+/*---------------------------------------------------------------------------*/
+/* (Crude) numerical integration of PDF.                                     */
+/* The routine is primarily designed for monotone densities.                 */
 /*---------------------------------------------------------------------------*/
 
 static double _unur_pinv_nint12 (struct unur_gen *gen, double xl, double xr, double *rel_error);
@@ -238,13 +244,13 @@ static double _unur_pinv_nint12 (struct unur_gen *gen, double xl, double xr, dou
 /* with rough estimate of relative integration error.                        */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_pinv_lobato5( struct unur_gen *gen, double x, double h, double fx, double *fxph );
+static double _unur_pinv_lobato5 (struct unur_gen *gen, double x, double h, double fx, double *fxph);
 /*---------------------------------------------------------------------------*/
 /* numerical integration of the PDF over the interval (x,x+h)                */
 /* using Gauss-Lobato integration with 5 points.                             */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_pinv_eval_newtonpolynomial( double q, double ui[], double zi[], int order );
+static double _unur_pinv_eval_newtonpolynomial (double q, double ui[], double zi[], int order);
 /*---------------------------------------------------------------------------*/
 /* evaluate Newton polynomial.                                               */
 /*---------------------------------------------------------------------------*/
@@ -270,7 +276,7 @@ static double _unur_pinv_eval_newtonpolynomial( double q, double ui[], double zi
 /* i.e., into the log file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_pinv_debug_init( const struct unur_gen *gen, int ok);
+static void _unur_pinv_debug_init (const struct unur_gen *gen, int ok);
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed.                 */
 /*---------------------------------------------------------------------------*/
@@ -300,8 +306,6 @@ static void _unur_pinv_debug_init( const struct unur_gen *gen, int ok);
 
 
 static int setup (struct unur_gen *gen, double hh, double uerror);
-
-static double nint_monoton_dens (struct unur_gen *gen, double a,double b,double step,double crit);
 
 static int newtoninterpol (struct unur_gen *gen, double x0, double h,double ui[],double zi[],double *x);
 
@@ -783,9 +787,9 @@ _unur_pinv_init( struct unur_par *par )
   if(GEN->sleft) GEN->bleft = _unur_pinv_searchborder(gen,DISTR.center, -1, GEN->bleft);
   if(GEN->sright) GEN->bright = _unur_pinv_searchborder(gen,DISTR.center, 1, GEN->bright);
 
-
-  area = nint_monoton_dens(gen,DISTR.center,GEN->bright,1.,1.e-8);
-  area += nint_monoton_dens(gen,GEN->bleft,DISTR.center,1.,1.e-8);
+  /* estimate area below PDF */
+  area  = _unur_pinv_approxarea( gen, DISTR.center, GEN->bright );
+  area += _unur_pinv_approxarea( gen, GEN->bleft, DISTR.center );
 
   printf("after searchborder: a=%g  b=%g area=%g\n",GEN->bleft,GEN->bright,area);
 //  printf("a=%g  b=%g area=%g integralerror%g\n",a,b,area,area/(cdf(b)-cdf(a))-1.);
@@ -2004,6 +2008,71 @@ _unur_pinv_tailprob( struct unur_gen *gen, double x, double dx )
 
 /*---------------------------------------------------------------------------*/
 
+double
+_unur_pinv_approxarea (struct unur_gen *gen, double xl, double xr)
+     /*----------------------------------------------------------------------*/
+     /* (Crude) numerical integration of PDF.                                */
+     /* The routine is primarily designed for monotone densities.            */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*   xl   ... left boundary point of interval                           */
+     /*   xr   ... right boundary point of interval                          */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   integral                                                           */
+     /*----------------------------------------------------------------------*/
+{
+  /** TODO: Kann man verbessern, wenn man in den Tails den Error relativ 
+      zum Gesamtintegral rechnet.
+  **/
+
+#define CRIT  (1.e-8) /* maximal accepted relative error */
+
+  double sum;         /* cumulative sum off integrals */
+  double sumi;        /* integral over subinterval */
+  double step;        /* step size for integration */
+  double error;       /* relative integration error in subinterval */
+  double x, xh;       /* left and right boundary points of subinterval */
+
+  /* initialize variables */
+  x = xl;
+  sum = 0.;
+  step = 1.;
+
+  while (x<xr) {
+
+    /* right boundary point */
+    xh = _unur_min(x+step,xr);
+
+    /* compute integral over (x,x+step) and estimate relative error */
+    sumi = _unur_pinv_nint12( gen, x, xh, &error );
+
+    /* check relative error */
+    if(error > CRIT) { 
+      /* adjust step size and try again */
+      step *= pow(0.5*CRIT/error,1./9.);
+      continue;
+    }
+
+    /* update integral */
+    sum += sumi;
+
+    /* go to next interval */
+    x = xh;
+
+    /* adjust interval to avoid too narrow steps */
+    step *= pow(CRIT/error,1./9.);
+    /* ?WH? step *= 1.2*pow(CRIT/error,1./9.); */
+  }
+
+  return sum;
+
+#undef CRIT
+} /* end of _unur_pinv_approxarea() */
+
+/*---------------------------------------------------------------------------*/
+
 double 
 _unur_pinv_nint12 (struct unur_gen *gen, double xl, double xr, double *relerror)
      /*----------------------------------------------------------------------*/
@@ -2521,35 +2590,6 @@ int check_inversion_unuran(struct unur_gen *gen,double uerror,double (*cdf)(doub
 
 /************************************/
 
-double nint_monoton_dens(struct unur_gen *gen, double a,double b,double step,double crit){
-  // step <= b-1 !!!
-// numerical integration with a variable step-size for a monoton density, starting with "step"
-// crit ... maximal accepted relative error
-
-//TODO: Kann man verbessern, wenn man in den Tails den Error relativ zum Gesamtintegral rechnet
-
-  double sum=0.,sumi,x,error;
-  int i=1;
-
-  x=a;
-  while(x<b){
-    sumi = _unur_pinv_nint12(gen,x,x+step,&error);
-    //printf("%d: x%g step%g sumi%g error%g\n",i,x,step,sumi,error);
-    if(error > crit){ 
-      step = step*pow(0.5*crit/error,1./9.);
-    }else{
-      i++;
-      sum += sumi;
-      x = x+step;
-      //      step = step*1.2*pow(crit/error,1./9.);
-      step = step*pow(crit/error,1./9.);
-      if(x+step >b){
-        step = (b-x)*(1+5.e-16);
-      }
-    }    
-  }
-  return sum;
-}
 
 ////////////////////////////////////////////////////////////////////////////////////
 

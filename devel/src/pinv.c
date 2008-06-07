@@ -260,7 +260,7 @@ static double _unur_pinv_eval_newtonpolynomial (double q, double ui[], double zi
 /* copy list of intervals into double array.                                 */
 /*---------------------------------------------------------------------------*/
 
-/* static int _unur_pinv_make_guide_table( struct unur_gen *gen ); */
+static int _unur_pinv_make_guide_table (struct unur_gen *gen);
 /*---------------------------------------------------------------------------*/
 /* make a guide table for indexed search.                                    */
 /*---------------------------------------------------------------------------*/
@@ -2231,20 +2231,20 @@ _unur_pinv_eval_newtonpolynomial( double q, double ui[], double zi[], int order 
 
 /*---------------------------------------------------------------------------*/
 
-/* int */
-/* _unur_pinv_make_guide_table( struct unur_gen *gen ) */
-/*      /\*----------------------------------------------------------------------*\/ */
-/*      /\* make a guide table for indexed search                                *\/ */
-/*      /\*                                                                      *\/ */
-/*      /\* parameters:                                                          *\/ */
-/*      /\*   gen ... pointer to generator object                                *\/ */
-/*      /\*                                                                      *\/ */
-/*      /\* return:                                                              *\/ */
-/*      /\*   UNUR_SUCCESS ... on success                                        *\/ */
-/*      /\*   error code   ... on error                                          *\/ */
-/*      /\*----------------------------------------------------------------------*\/ */
-/* { */
-/*   int i,j, imax; */
+int
+_unur_pinv_make_guide_table (struct unur_gen *gen)
+     /*----------------------------------------------------------------------*/
+     /* make a guide table for indexed search                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  int i,j, imax;
 
 /*   /\* check arguments *\/ */
 /*   CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_PINV_GEN,UNUR_ERR_COOKIE); */
@@ -2278,9 +2278,21 @@ _unur_pinv_eval_newtonpolynomial( double q, double ui[], double zi[], int order 
 /*   for( ; j<GEN->guide_size ;j++ ) */
 /*     GEN->guide[j] = i; */
 
-/*   /\* o.k. *\/ */
-/*   return UNUR_SUCCESS; */
-/* } /\* end of _unur_pinv_make_guide_table() *\/ */
+
+  GEN->guide_size = GEN->ni;//size of guide-table
+  GEN->guide = malloc(sizeof(int)*GEN->guide_size);
+  GEN->guide[0] = 0;
+  i=0;
+  for(j=1; j<GEN->guide_size; j++){
+    while(j/(double)GEN->guide_size > GEN->iv[i+1].cdfi/GEN->Umax) i++;
+    /* "/geno->umax" above is necessary, as we need the guide table for u in (0,umax) */
+    GEN->guide[j] = i;
+  }
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+
+} /* end of _unur_pinv_make_guide_table() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -2729,15 +2741,19 @@ int  setup(struct unur_gen *gen, double hh, double uerror){
  GEN->Umax = GEN->iv[GEN->ni].cdfi;
 
 
- GEN->guide_size = GEN->ni;//size of guide-table
- GEN->guide = malloc(sizeof(int)*GEN->guide_size);  
- GEN->guide[0] = 0;
- i=0;
- for(j=1; j<GEN->guide_size; j++){
-   while(j/(double)GEN->guide_size > GEN->iv[i+1].cdfi/GEN->Umax) i++;
-   /* "/geno->umax" above is necessary, as we need the guide table for u in (0,umax) */
-   GEN->guide[j] = i;
- }
+/*  GEN->guide_size = GEN->ni;//size of guide-table */
+/*  GEN->guide = malloc(sizeof(int)*GEN->guide_size);   */
+/*  GEN->guide[0] = 0; */
+/*  i=0; */
+/*  for(j=1; j<GEN->guide_size; j++){ */
+/*    while(j/(double)GEN->guide_size > GEN->iv[i+1].cdfi/GEN->Umax) i++; */
+/*    /\* "/geno->umax" above is necessary, as we need the guide table for u in (0,umax) *\/ */
+/*    GEN->guide[j] = i; */
+/*  } */
+
+ _unur_pinv_make_guide_table(gen);
+
+
  printf("Set-up finished: g=%d,  Number of intervals = %d,\n         additional calculated interpolations=%d\n",
 	GEN->order,GEN->ni,countextracalc);
  printf("u in (0,%.18g)   1-umax%g\n",GEN->Umax,1.-GEN->Umax);

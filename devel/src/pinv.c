@@ -2023,33 +2023,36 @@ _unur_pinv_approxarea (struct unur_gen *gen, double xl, double xr)
      /*   integral                                                           */
      /*----------------------------------------------------------------------*/
 {
-  /** TODO: Kann man verbessern, wenn man in den Tails den Error relativ 
+  /** TODO: Kann man verbessern, wenn man in den Tails den Error relativ
       zum Gesamtintegral rechnet.
   **/
 
-#define CRIT  (1.e-8) /* maximal accepted relative error */
+#define CRIT      (1.e-8)         /* maximal accepted relative error */
 
-  double sum;         /* cumulative sum off integrals */
-  double sumi;        /* integral over subinterval */
-  double step;        /* step size for integration */
-  double error;       /* relative integration error in subinterval */
-  double x, xh;       /* left and right boundary points of subinterval */
+  double sum;             /* cumulative sum off integrals */
+  double sumi;            /* integral over subinterval */
+  double step, stepinit;  /* (initial) step size for integration */
+  double error;           /* relative integration error in subinterval */
+  double x, xh;           /* left and right boundary points of subinterval */
 
   /* initialize variables */
   x = xl;
   sum = 0.;
-  step = 1.;
+  stepinit = (xr-xl)/1.e2;   /* ?WH? ich habe 1 durch diesen wert ersetzt (siehe auch unten) */
+  step = stepinit;
 
   while (x<xr) {
 
     /* right boundary point */
-    xh = _unur_min(x+step,xr);
+    xh = x+step;
+    if (!_unur_FP_less(xh,xr)) 
+      xh = xr*(1.+DBL_EPSILON);
 
     /* compute integral over (x,x+step) and estimate relative error */
     sumi = _unur_pinv_nint12( gen, x, xh, &error );
 
     /* check relative error */
-    if(error > CRIT) { 
+    if(error > CRIT) {
       /* adjust step size and try again */
       step *= pow(0.5*CRIT/error,1./9.);
       continue;
@@ -2063,7 +2066,14 @@ _unur_pinv_approxarea (struct unur_gen *gen, double xl, double xr)
 
     /* adjust interval to avoid too narrow steps */
     step *= pow(CRIT/error,1./9.);
-    /* ?WH? step *= 1.2*pow(CRIT/error,1./9.); */
+    /* ?WH? das ganze ist numerisch ziemlich instabil.
+        es koennte sein, dass error = 0 wird !
+        mir ist das beim testen mit valgrind passiert.
+    */
+    if (!_unur_isfinite(step)) {
+      /* we have to use the initial step size again */
+      step = stepinit;
+    }
   }
 
   return sum;

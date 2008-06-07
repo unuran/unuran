@@ -232,6 +232,18 @@ static double _unur_pinv_tailprob( struct unur_gen *gen, double x, double dx );
 /* calculate approximate tail probability.                                   */
 /*---------------------------------------------------------------------------*/
 
+static double _unur_pinv_nint12 (struct unur_gen *gen, double xl, double xr, double *rel_error);
+/*---------------------------------------------------------------------------*/
+/* Numerical integration of the PDF over the interval (xl,xr)                */
+/* with rough estimate of relative integration error.                        */
+/*---------------------------------------------------------------------------*/
+
+static double _unur_pinv_lobato5( struct unur_gen *gen, double x, double h, double fx, double *fxph );
+/*---------------------------------------------------------------------------*/
+/* numerical integration of the PDF over the interval (x,x+h)                */
+/* using Gauss-Lobato integration with 5 points.                             */
+/*---------------------------------------------------------------------------*/
+
 static double _unur_pinv_eval_newtonpolynomial( double q, double ui[], double zi[], int order );
 /*---------------------------------------------------------------------------*/
 /* evaluate Newton polynomial.                                               */
@@ -288,10 +300,6 @@ static void _unur_pinv_debug_init( const struct unur_gen *gen, int ok);
 
 
 static int setup (struct unur_gen *gen, double hh, double uerror);
-
-static double lobato5 (struct unur_gen *gen, double x, double h, double fx, double *fxph);
-
-static double nint_12 (struct unur_gen *gen, double a,double b,double *res_relerror);
 
 static double nint_monoton_dens (struct unur_gen *gen, double a,double b,double step,double crit);
 
@@ -771,8 +779,10 @@ _unur_pinv_init( struct unur_par *par )
 {
   double area,tailcutfact;
 
+  /* search interval of computational relevance */
   if(GEN->sleft) GEN->bleft = _unur_pinv_searchborder(gen,DISTR.center, -1, GEN->bleft);
   if(GEN->sright) GEN->bright = _unur_pinv_searchborder(gen,DISTR.center, 1, GEN->bright);
+
 
   area = nint_monoton_dens(gen,DISTR.center,GEN->bright,1.,1.e-8);
   area += nint_monoton_dens(gen,GEN->bleft,DISTR.center,1.,1.e-8);
@@ -1994,6 +2004,83 @@ _unur_pinv_tailprob( struct unur_gen *gen, double x, double dx )
 
 /*---------------------------------------------------------------------------*/
 
+double 
+_unur_pinv_nint12 (struct unur_gen *gen, double xl, double xr, double *relerror)
+     /*----------------------------------------------------------------------*/
+     /* Numerical integration of the PDF over the interval (xl,xr)           */
+     /* using Gauss-Lobato integration with 5 points.                        */
+     /* The relative numerical error is roughly estimated by comparing       */
+     /* the result with the sum of the integral over (xl,xm) and (xm,xr)     */
+     /* where  xm = (xr+xl)/2.                                               */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*   xl   ... left boundary point of interval                           */
+     /*   xr   ... right boundary point of interval                          */
+     /*   relerror ... for storing estimate of relative integration error    */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   integral                                                           */
+     /*----------------------------------------------------------------------*/
+{
+  double res, reso;
+
+  /* Gauss-Lobato integration over (xl,xr) */
+  reso = _unur_pinv_lobato5( gen, xl, (xr-xl), 0, NULL);
+
+  /* improved result by sum of integral over (xl,xm) and (xm,xr) */
+  res = ( _unur_pinv_lobato5( gen, xl, (xr-xl)*0.5, 0, NULL) +
+	  _unur_pinv_lobato5( gen, (xl+xr)*0.5, (xr-xl)*0.5, 0, NULL) );
+
+  /* estimate relative integration error */
+  *relerror = fabs(res-reso)/res; 
+
+  return res;
+} /* end of _unur_pinv_nint12() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_pinv_lobato5 (struct unur_gen *gen, double x, double h, double fx, double *fxph)
+     /*----------------------------------------------------------------------*/
+     /* numerical integration of the PDF over the interval (x,x+h)           */
+     /* using Gauss-Lobato integration with 5 points.                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*   x    ... left boundary point of interval                           */
+     /*   h    ... length of interval                                        */
+     /*   fx   ... PDF(x)                                                    */
+     /*   fxph ... PDF(x+h)   [for saving value for later use]               */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   integral                                                           */
+     /*----------------------------------------------------------------------*/
+{
+#define W1 0.17267316464601146  /* = 0.5-sqrt(3/28) */
+#define W2 (1.-W1)
+
+  double ifx,ifxph;
+
+  ifxph = PDF(x+h);
+
+  if(fxph!=NULL){ 
+    /* ?WH? fxph ist aber immer NULL!! */
+    ifx = fx;
+    *fxph = ifxph;
+  }
+  else {
+    ifx = PDF(x);
+  }
+
+  return (9*(ifx+(ifxph))+49.*(PDF(x+h*W1)+PDF(x+h*W2))+64.*PDF(x+h/2.))*h/180.;
+
+#undef W1
+#undef W2
+} /* end of _unur_pinv_lobato5() */
+
+/*---------------------------------------------------------------------------*/
+
 double
 _unur_pinv_eval_newtonpolynomial( double q, double ui[], double zi[], int order )
      /*----------------------------------------------------------------------*/
@@ -2432,45 +2519,6 @@ int check_inversion_unuran(struct unur_gen *gen,double uerror,double (*cdf)(doub
 
 
 
-double lobato5 (struct unur_gen *gen, double x, double h, double fx, double *fxph)
-/************************************
- * Numerical Integration of the interval (x,x+h)
- * using Gauss-Lobato integration with 5 points.
- * fx ... f(x) to save calls to f()
- * *fxph ... f(x+h) 
- ************************************/
-#define W1 0.17267316464601146  //= 0.5-sqrt(3/28)
-#define W2 (1.-W1)
-{ double ifx,ifxph;
-
- ifxph = PDF(x+h);
- if(fxph!=NULL){ 
-   /* fxph ist aber immer NULL!! */
-   ifx = fx;
-   *fxph = ifxph;
- }
- else {
-   ifx = PDF(x);
- }
- return (9*(ifx+(ifxph))+49.*(PDF(x+h*W1)+PDF(x+h*W2))+64.*PDF(x+h/2.))*h/180.;
-}
-#undef W1
-#undef W2
-
-/************************************/
-
-double nint_12 (struct unur_gen *gen, double a,double b,double *res_relerror){
-  //with 1 and two intervals reports the resulting (relative-error) in res_relerror 
-  int i;
-  double res,reso;
-
-  reso = lobato5(gen,a,(b-a),0,NULL);
-  i=1;
-  res = lobato5(gen,a,(b-a)*0.5,0,NULL)+lobato5(gen,(b+a)*0.5,(b-a)*0.5,0,NULL);
-  *res_relerror = fabs(res-reso)/res; 
-  return res;
-}
-
 /************************************/
 
 double nint_monoton_dens(struct unur_gen *gen, double a,double b,double step,double crit){
@@ -2485,7 +2533,7 @@ double nint_monoton_dens(struct unur_gen *gen, double a,double b,double step,dou
 
   x=a;
   while(x<b){
-    sumi = nint_12(gen,x,x+step,&error);
+    sumi = _unur_pinv_nint12(gen,x,x+step,&error);
     //printf("%d: x%g step%g sumi%g error%g\n",i,x,step,sumi,error);
     if(error > crit){ 
       step = step*pow(0.5*crit/error,1./9.);
@@ -2519,7 +2567,7 @@ int newtoninterpol (struct unur_gen *gen, double x0, double h,double ui[],double
     xi = x0 + h*sin((i-1)*phi)*sin(i*phi)/cos(phi);
     dxi = h*sin(2*i*phi)*tan(phi);
     if(x!=NULL)x[i]=xi+dxi;
-   temp = lobato5(gen,xi, dxi,0,NULL);
+   temp = _unur_pinv_lobato5(gen,xi, dxi,0,NULL);
    if(temp<1.e-50){
      printf("ERROR!! Newtoninterpolation interval too short. or density 0 EXITINGNG\n");
      exit(1);
@@ -2578,8 +2626,8 @@ double maxerrornewton (struct unur_gen *gen, double ui[],double zi[],double x0,d
     // intervalle fuer LObato integration bekommt
     x = _unur_pinv_eval_newtonpolynomial(testu[i+1],ui,zi,GEN->order);
 
-    if(i==0||xval==NULL) uerror=fabs(lobato5(gen,x0,x ,0.,NULL)-testu[i+1]);
-    else uerror=fabs(ui[i]+lobato5(gen,xval[i],x+x0-xval[i],0.,NULL)-testu[i+1]);
+    if(i==0||xval==NULL) uerror=fabs(_unur_pinv_lobato5(gen,x0,x ,0.,NULL)-testu[i+1]);
+    else uerror=fabs(ui[i]+_unur_pinv_lobato5(gen,xval[i],x+x0-xval[i],0.,NULL)-testu[i+1]);
     if(uerror>maxerror) maxerror=uerror;
     //    printf("%d:u max %g %g\n",i,uerror,maxerror);
   }

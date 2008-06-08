@@ -42,8 +42,6 @@ struct unur_pinv_par {
   double bright;           /* right boundary of the computational domain     */
   int sleft;               /* whether to search for left boundary point      */
   int sright;              /* whether to search for right boundary point     */
-/*   const double *stp;       /\* pointer to array of starting points            *\/ */
-/*   int     n_stp;           /\* number of construction points at start         *\/ */
 };
 
 /*---------------------------------------------------------------------------*/
@@ -59,6 +57,8 @@ struct siv{
 /*   unsigned cookie;         /\* magic cookie                                    *\/ */
 /* #endif */
 };
+
+#define unur_pinv_interval siv
 
 /* #define UNUR_PINV_MAX_ORDER   (5) */
 
@@ -105,8 +105,6 @@ struct unur_pinv_gen {
 /*   struct unur_pinv_interval *iv; /\* linked list of splines (only used in setup) *\/ */
 /*   double  tailcutoff_left; /\* cut point for left hand tail (u-value)         *\/  */
 /*   double  tailcutoff_right;/\* cut point for right hand tail (u-value)        *\/  */
-/*   const double *stp;       /\* pointer to array of starting points            *\/ */
-/*   int     n_stp;           /\* number of construction points at start         *\/ */
 
   double  bleft_par;       /* border of the computational domain as ...      */
   double  bright_par;      /* ... given by user                              */

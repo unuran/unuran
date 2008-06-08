@@ -48,7 +48,7 @@ struct unur_pinv_par {
 /* store information about splines                                           */
 
 
-struct siv{
+struct unur_pinv_interval {
   double *ui;  //[g+1];    
   double *zi;  //[g+1];
   double xi;
@@ -57,8 +57,6 @@ struct siv{
 /*   unsigned cookie;         /\* magic cookie                                    *\/ */
 /* #endif */
 };
-
-#define unur_pinv_interval siv
 
 /* #define UNUR_PINV_MAX_ORDER   (5) */
 
@@ -102,7 +100,11 @@ struct unur_pinv_gen {
   double  bleft;           /* left border of the computational domain        */
   double  bright;          /* right border of the computational domain       */
 
-/*   struct unur_pinv_interval *iv; /\* linked list of splines (only used in setup) *\/ */
+  struct unur_pinv_interval *iv; /* list of intervals */
+/*   struct siv *iv;//[maxint+1] for setup; for sampling [ni+1] */
+
+
+
 /*   double  tailcutoff_left; /\* cut point for left hand tail (u-value)         *\/  */
 /*   double  tailcutoff_right;/\* cut point for right hand tail (u-value)        *\/  */
 
@@ -117,7 +119,6 @@ struct unur_pinv_gen {
 
   /* from pinvwh: */
 
-  struct siv *iv;//[maxint+1] for setup; for sampling [ni+1]
   int ni;//number of sub intervals
 
 };

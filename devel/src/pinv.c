@@ -821,7 +821,7 @@ _unur_pinv_create( struct unur_par *par )
 
 
 
-  GEN->iv =  _unur_xmalloc(sizeof(struct siv)*PINVMAXINT);
+  GEN->iv =  _unur_xmalloc(sizeof(struct unur_pinv_interval)*PINVMAXINT);
 
 
 #ifdef UNUR_ENABLE_INFO
@@ -2398,6 +2398,7 @@ int  setup(struct unur_gen *gen, double hh, double uerror){
       cont=0;
     }
     _unur_pinv_newtoninterpol(gen,&(GEN->iv[i]),h,xval);
+    /** TODO: return code ueberpruefen **/
     maxerror = maxerrornewton(gen,GEN->iv[i].ui,GEN->iv[i].zi,GEN->iv[i].xi,xval);
     if(maxerror > uerror){ 
       countextracalc++;
@@ -2419,7 +2420,7 @@ int  setup(struct unur_gen *gen, double hh, double uerror){
    }
  }
  GEN->ni = i;
- GEN->iv = realloc(GEN->iv,sizeof(struct siv)*(GEN->ni+1));
+ GEN->iv = realloc(GEN->iv,sizeof(struct unur_pinv_interval)*(GEN->ni+1));
 
  free(xval);
 

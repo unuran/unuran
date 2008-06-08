@@ -51,42 +51,19 @@ struct unur_pinv_par {
 struct unur_pinv_interval {
   double *ui;  //[g+1];    
   double *zi;  //[g+1];
-  double xi;
-  double cdfi;
+  double xi;   /* ?WH? left point of interval */
+  double cdfi; /* ?WH? CDF at left point of interval */
+
 /* #ifdef UNUR_COOKIES */
 /*   unsigned cookie;         /\* magic cookie                                    *\/ */
 /* #endif */
 };
-
-/* #define UNUR_PINV_MAX_ORDER   (5) */
-
-/* struct unur_pinv_interval { */
-/*   double spline[UNUR_PINV_MAX_ORDER+1];   /\* coefficients of spline           *\/ */
-/*   double p;                /\* left design point (node) in interval            *\/   */
-/*   double u;                /\* CDF at node p (u=CDF(p))                        *\/ */
-/*   double f;                /\* PDF at node p (u=CDF(p))                        *\/ */
-/*   double df;               /\* derivative of PDF at node p (u=CDF(p))          *\/ */
-
-/*   struct unur_pinv_interval *next;  /\* pointer to next element in list        *\/ */
-
-/* #ifdef UNUR_COOKIES */
-/*   unsigned cookie;         /\* magic cookie                                    *\/ */
-/* #endif */
-/* }; */
 
 /*---------------------------------------------------------------------------*/
 /* The generator object                                                      */
 
 struct unur_pinv_gen { 
   int order;               /* order of interpolating polynomial              */
-
-/*   int N;                   /\* total number of division points = #intervals+1 *\/ */
-/*   double *intervals;       /\* pointer to array for storing data for intervals */
-/* 			      in blocks of size order+2: */
-/* 			      [0] ... u_{i-1} = CDF at left design point */
-/* 			      [1] ... p_{i-1} = left design point = spline[0] */
-/* 			      [2]-[order+1] ... spline[1] - spline[order]  */
-/* 			      size of the array = N * (2+order)              *\/ */
 
   int    *guide;           /* pointer to guide table                         */ 
   int     guide_size;      /* size of guide table                            */
@@ -102,6 +79,7 @@ struct unur_pinv_gen {
 
   struct unur_pinv_interval *iv; /* list of intervals */
 /*   struct siv *iv;//[maxint+1] for setup; for sampling [ni+1] */
+  int ni; //number of sub intervals
 
 
 
@@ -113,13 +91,6 @@ struct unur_pinv_gen {
 
   int sleft;               /* whether to search for left boundary point      */
   int sright;              /* whether to search for right boundary point     */
-
-
-
-
-  /* from pinvwh: */
-
-  int ni;//number of sub intervals
 
 };
 

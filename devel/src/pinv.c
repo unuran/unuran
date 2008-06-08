@@ -208,11 +208,6 @@ static struct unur_pinv_interval *_unur_pinv_interval_new( struct unur_gen *gen,
 /* check parameters in interval and split or truncate where necessary.       */
 /*---------------------------------------------------------------------------*/
 
-/* static int _unur_pinv_interval_is_monotone( struct unur_gen *gen, struct unur_pinv_interval *iv ); */
-/*---------------------------------------------------------------------------*/
-/* check whether the given interval is monotone.                             */
-/*---------------------------------------------------------------------------*/
-
 /* static int _unur_pinv_interval_parameter( struct unur_gen *gen, struct unur_pinv_interval *iv ); */
 /*---------------------------------------------------------------------------*/
 /* compute all parameter for interval (spline coefficients).                 */
@@ -262,19 +257,19 @@ static double _unur_pinv_eval_newtonpolynomial (double q, double ui[], double zi
 /* evaluate Newton polynomial.                                               */
 /*---------------------------------------------------------------------------*/
 
-/* static int _unur_pinv_list_to_array( struct unur_gen *gen ); */
+static double _unur_pinv_maxerror_newton (struct unur_gen *gen, struct unur_pinv_interval *iv, double xval[]);
 /*---------------------------------------------------------------------------*/
-/* copy list of intervals into double array.                                 */
+/* estimate maximal error of Newton interpolation in subinterval             */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_pinv_tstpt (int g,double ui[],double utest[]);
+/*---------------------------------------------------------------------------*/
+/* ?WH? was tut diese funktion (siehe unten)                                 */
 /*---------------------------------------------------------------------------*/
 
 static int _unur_pinv_make_guide_table (struct unur_gen *gen);
 /*---------------------------------------------------------------------------*/
 /* make a guide table for indexed search.                                    */
-/*---------------------------------------------------------------------------*/
-
-/* static double _unur_pinv_CDF( const struct unur_gen *gen, double x ); */
-/*---------------------------------------------------------------------------*/
-/* compute CDF of truncated distribution.                                    */
 /*---------------------------------------------------------------------------*/
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -293,10 +288,6 @@ static void _unur_pinv_debug_init (const struct unur_gen *gen, int ok);
 /* print starting points or table for algorithms into logfile.               */
 /*---------------------------------------------------------------------------*/
 
-/* static void _unur_pinv_debug_chg_truncated( const struct unur_gen *gen); */
-/*---------------------------------------------------------------------------*/
-/* trace changes of the truncated domain.                                    */
-/*---------------------------------------------------------------------------*/
 #endif
 
 #ifdef UNUR_ENABLE_INFO
@@ -312,11 +303,8 @@ static void _unur_pinv_debug_init (const struct unur_gen *gen, int ok);
 
 
 
-static int setup (struct unur_gen *gen, double hh, double uerror);
+static int setup (struct unur_gen *gen, double uerror);
 
-static int tstpt (int g,double ui[],double utest[]);
-
-static double maxerrornewton (struct unur_gen *gen,double ui[],double zi[],double x0,double xval[]);
 
 
 
@@ -673,7 +661,7 @@ _unur_pinv_init( struct unur_par *par )
 
   printf("after cut: a=%g b=%g\n",GEN->bleft,GEN->bright);
 
-  setup(gen, (GEN->bright-GEN->bleft)/128,GEN->u_resolution*area);
+  setup(gen, GEN->u_resolution*area);
 }
 
   /* compute splines */
@@ -1988,6 +1976,100 @@ _unur_pinv_eval_newtonpolynomial( double q, double ui[], double zi[], int order 
 
 /*---------------------------------------------------------------------------*/
 
+double
+_unur_pinv_maxerror_newton (struct unur_gen *gen, struct unur_pinv_interval *iv, double xval[])
+     /*----------------------------------------------------------------------*/
+     /* Estimate maximal error of Newton interpolation in subinterval.       */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*   iv   ... pointer to current interval                               */
+     /*   xval ... ?WH?                                                      */
+     /*                                                                      */
+     /* return:                                                              */
+     /*----------------------------------------------------------------------*/
+{
+  /* ?WH? xval ist nie NULL ! */
+
+  double x0 = iv->xi;    /* left boundary point of interval ?WH? */
+  double *ui = iv->ui;   /* ?WH? */
+  double *zi = iv->zi;   /* ?WH? */
+
+  double maxerror = 0.;  /* maximum error */
+  double uerror;         /* error for given U value */
+  double x;              /* x = CDF^{-1}(U) */
+
+  double testu[21];      /* ?WH? array of U numbers for testing */ 
+  /** TODO: replace 21 by macro.
+      ?WH? is 21 = maximaler grad + 2 ? 
+  */
+
+  int i;                 /* aux variable */
+
+  /* ?WH? get U values for test ? */
+  _unur_pinv_tstpt(GEN->order,ui,testu);
+
+  /* ?WH? was passiert da ? */
+  for(i=0;i<GEN->order;i++){
+    /* Naechste Zeile: TODO Verbesserung moeglich, wenn man die xi verwendet und so kuerzere
+       intervalle fuer LObato integration bekommt.
+    */
+    
+    /* inverse CDF for U test point */
+    x = _unur_pinv_eval_newtonpolynomial(testu[i+1],ui,zi,GEN->order);
+    
+    /* ?WH? worin liegt da der unterschied? */
+    if (i==0 || xval==NULL)
+      uerror = fabs(_unur_pinv_lobato5(gen,x0,x ,0.,NULL) - testu[i+1]);
+    else
+      uerror = fabs(ui[i] + _unur_pinv_lobato5(gen,xval[i],x+x0-xval[i],0.,NULL) - testu[i+1]);
+
+    /* update maximal error */
+    if (uerror>maxerror) maxerror=uerror;
+
+  }
+
+  return maxerror;
+} /* end of _unur_pinv_maxerror_newton() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_pinv_tstpt (int g, double ui[], double utest[])
+     /*----------------------------------------------------------------------*/
+     /* ?WH? was tut diese funktion ? */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*                                                                      */
+     /* return:                                                              */
+     /*----------------------------------------------------------------------*/
+     /* ?WH? was tut diese funktion ? */
+{
+  int k,j,i;
+  double sum, qsum,x;
+
+  utest[0]=0.;
+  for(k=1; k<=g; k++){
+    x = 0.5*(ui[k-1]+ui[k]);
+    for(j=1; j<=2; j++){
+      sum = 1./x;
+      qsum = sum*sum;
+      for(i=1; i<=g; i++){
+	sum = sum + 1./(x-ui[i]);
+	qsum = qsum + 1./((x-ui[i])*(x-ui[i]));
+      }
+      x +=sum/qsum;
+    }
+    utest[k] = x;
+  }
+
+  return 1;
+  /* ?WH? hat 1 irgendeine bedeutung ? */
+
+} /* end of _unur_pinv_tstpt() */
+
+/*---------------------------------------------------------------------------*/
+
 int
 _unur_pinv_make_guide_table (struct unur_gen *gen)
      /*----------------------------------------------------------------------*/
@@ -2310,81 +2392,22 @@ int check_inversion_unuran(struct unur_gen *gen,double uerror,double (*cdf)(doub
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-/************************************/
-
-
 ////////////////////////////////////////////////////////////////////////////////////
-int tstpt(int g,double ui[],double utest[]){
-  /* ?WH? was tut diese funktion ? */
-  int k,j,i;
-  double sum, qsum,x;
-  utest[0]=0.;
-  for(k=1; k<=g; k++){
-    x = 0.5*(ui[k-1]+ui[k]);
-    for(j=1; j<=2; j++){
-      sum = 1./x;
-      qsum = sum*sum;
-      for(i=1; i<=g; i++){
-	sum = sum + 1./(x-ui[i]);
-	qsum = qsum + 1./((x-ui[i])*(x-ui[i]));
-      }
-      x +=sum/qsum;
-    }
-    utest[k] = x;
-  }
-  return 1;
-}
 
-/************************************/
-
-double maxerrornewton (struct unur_gen *gen, double ui[],double zi[],double x0,double xval[]){
-  double maxerror=0.,uerror,*testu,uarr[21],x;
-  int i,n;
-    n=GEN->order;
-    testu=uarr;
-    tstpt(GEN->order,ui,testu);
-    //printvec(n+1,testu);
-    //printvec(n+1,ui);
-    //if(xval!=NULL)printvec(3,xval);
-  for(i=0;i<n;i++){
-    //Naechste Zeile: TODO Verbesserung moeglich, wenn man die xi verwendet und so kuerzere
-    // intervalle fuer LObato integration bekommt
-    x = _unur_pinv_eval_newtonpolynomial(testu[i+1],ui,zi,GEN->order);
-
-    if(i==0||xval==NULL) uerror=fabs(_unur_pinv_lobato5(gen,x0,x ,0.,NULL)-testu[i+1]);
-    else uerror=fabs(ui[i]+_unur_pinv_lobato5(gen,xval[i],x+x0-xval[i],0.,NULL)-testu[i+1]);
-    if(uerror>maxerror) maxerror=uerror;
-    //    printf("%d:u max %g %g\n",i,uerror,maxerror);
-  }
-  //printf("maxerror %g\n",maxerror);
-  return maxerror;
-}
-
-/************************************/
-
-int  setup(struct unur_gen *gen, double hh, double uerror){
+int  setup(struct unur_gen *gen, double uerror) {
   /*
     f ... PDF
-    hh ...
     uerror ... u-error
   */
-  double maxerror,h=hh,*xval;
+  double maxerror,h,*xval;
   int i,cont;
   int countextracalc=0;
 
   xval=malloc(sizeof(double)*(GEN->order+1));
+
+  /* initialize values */
+  h = (GEN->bright-GEN->bleft)/128.;  /* step size for subintervals */
+
 
   GEN->iv[0].ui = malloc(sizeof(double)*(GEN->order+1));
   GEN->iv[0].zi = malloc(sizeof(double)*(GEN->order+1));
@@ -2392,20 +2415,26 @@ int  setup(struct unur_gen *gen, double hh, double uerror){
   GEN->iv[0].cdfi = 0.;//cdfi holds cdf value at the left border of the interval
   cont=1;
   i=0;
-  while(cont){
-    if(GEN->iv[i].xi+h > GEN->bright){
+  while(cont) {
+    if(GEN->iv[i].xi+h > GEN->bright) {
       h = GEN->bright - GEN->iv[i].xi;
       cont=0;
     }
-    _unur_pinv_newtoninterpol(gen,&(GEN->iv[i]),h,xval);
-    /** TODO: return code ueberpruefen **/
-    maxerror = maxerrornewton(gen,GEN->iv[i].ui,GEN->iv[i].zi,GEN->iv[i].xi,xval);
-    if(maxerror > uerror){ 
+
+    /* compute Newton interpolation polynomial */
+    if (_unur_pinv_newtoninterpol(gen,&(GEN->iv[i]),h,xval) != UNUR_SUCCESS) {
+      return UNUR_ERR_GEN_CONDITION;
+    }
+
+    /* estimate error of Newton interpolation */
+    maxerror = _unur_pinv_maxerror_newton(gen,&(GEN->iv[i]),xval);
+
+    if (maxerror > uerror) { 
       countextracalc++;
       h*= 0.9;
-     if(maxerror>4.*uerror) h*=0.9;
- 
-    }else{
+      if(maxerror>4.*uerror) h*=0.9;
+    }
+    else {
 	GEN->iv[i+1].ui = malloc(sizeof(double)*(GEN->order+1));
   	GEN->iv[i+1].zi = malloc(sizeof(double)*(GEN->order+1));
   	GEN->iv[i+1].xi = GEN->iv[i].xi+h;
@@ -2414,6 +2443,7 @@ int  setup(struct unur_gen *gen, double hh, double uerror){
         if(maxerror < 0.1*uerror) h*=2.;
         i++;
    }
+
    if(i>PINVMAXINT){
      printf("error setup(); i>maxint; EXITING\n");
      exit(1);

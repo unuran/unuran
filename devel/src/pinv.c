@@ -102,35 +102,6 @@ xi sind die Intervallgrenzen der sub-intervalle.
 /* Maximal number of iterations for finding the boundary of the              */
 /* computational interval, i.e. where CDF(x) is close to 0 and 1, resp.      */
 
-/* #define PINV_MAX_U_LENGTH  (0.05) */
-/* Maximal value for |u_i - u_{i-1}|. If for an interval this value is       */
-/* larger then it is splitted (independently of its u-error).                */
-
-/* #define PINV_TAILCUTOFF    (1.e-10)  */
-/* For unbounded domains the tails has to be cut of. We use the given        */
-/* u-resolution for finding the cut points. (The probability of the chop     */
-/* regions should be less than the 1 fifth of the u-resolution.)             */
-/* However, it should not be greater than some threshold value, given by     */
-/* PINV_TAILCUTOFF which reflects the precision of the used stream of        */
-/* uniform pseudo-random numbers (typically about 2^32).                     */
-/* However, for computational reasons we use a value that is at least twice  */
-/* the machine epsilon for the right hand boundary.                          */
-
-/* #define PINV_XDEVIATION    (0.05) */
-/* Used for splitting intervals. When the u-error is estimated for an        */
-/* interval then the CDF is evaluated in the approximate center of the       */
-/* u-interval. This could be used as splitting point of the interval.        */
-/* However, this might result in slow convergence. A much more stable        */
-/* point is the center of the x-interval. However, this requires an          */
-/* additional evalution of the CDF.                                          */
-/* Thus we use the following rule: If CDF(approx. center of u-int) is        */
-/* close to the center of the x-interval use the first, otherwise use the    */
-/* latter. PINV_XDEVIATION is the threshold value for relative distance      */
-/* between these two points.                                                 */
-/* As a rule-of-thumb larger values of PINV_XDEVIATION result in more        */
-/* intervals but less evaluations of the CDF (until there are too many       */
-/* intervals).                                                               */
-
 /*---------------------------------------------------------------------------*/
 /* Variants: none                                                            */
 
@@ -1164,8 +1135,7 @@ _unur_pinv_create_table( struct unur_gen *gen )
 
   }
 
-  /* update size of array (number of intervals) */
-  GEN->n_ivs = i;
+  /* update size of array */
   GEN->iv = _unur_xrealloc( GEN->iv, (GEN->n_ivs+1) * sizeof(struct unur_pinv_interval) );
   
   /* set range for uniform random numbers */
@@ -1220,6 +1190,9 @@ _unur_pinv_interval( struct unur_gen *gen, int i, double x, double cdfx )
   /* allocate space for coefficients for Newton interpolation */
   iv->ui = _unur_xmalloc( (GEN->order+1) * sizeof(double) );
   iv->zi = _unur_xmalloc( (GEN->order+1) * sizeof(double) );
+
+  /* update size of array (number of intervals) */
+  GEN->n_ivs = i;
 
   /* o.k. */
   return UNUR_SUCCESS;

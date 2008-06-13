@@ -201,19 +201,19 @@ static double _unur_pinv_eval_approxinvcdf (const struct unur_gen *gen, double u
 /* evaluate Hermite interpolation of inverse CDF at u.                       */
 /*---------------------------------------------------------------------------*/
 
-/* static int _unur_pinv_find_boundary( struct unur_gen *gen ); */
+static int _unur_pinv_create_table( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* find boundary of computational interval                                   */
-/*---------------------------------------------------------------------------*/
-
-/* static int _unur_pinv_create_table( struct unur_gen *gen ); */
-/*---------------------------------------------------------------------------*/
-/* create the table with splines                                             */
+/* create table for Newton interpolation                                     */
 /*---------------------------------------------------------------------------*/
 
 static int _unur_pinv_interval( struct unur_gen *gen, int i, double x, double cdfx );
 /*---------------------------------------------------------------------------*/
 /* make a new interval i with left boundary point x and CDF(x).              */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_pinv_find_boundary( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* find boundary for Newton interpolation                                    */
 /*---------------------------------------------------------------------------*/
 
 static double _unur_pinv_searchborder (struct unur_gen *gen, double x0, double dx, double bound);
@@ -299,28 +299,6 @@ static void _unur_pinv_debug_init (const struct unur_gen *gen, int ok);
 /* create info string.                                                       */
 /*---------------------------------------------------------------------------*/
 #endif
-
-
-
-
-
-
-
-static int setup (struct unur_gen *gen, double uerror);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
@@ -632,42 +610,16 @@ _unur_pinv_init( struct unur_par *par )
     _unur_pinv_free(gen); return NULL;
   }
 
-
-{
-  double area,tailcutfact;
-
-  /* search interval of computational relevance */
-  if(GEN->sleft) GEN->bleft = _unur_pinv_searchborder(gen,DISTR.center, -1, GEN->bleft);
-  if(GEN->sright) GEN->bright = _unur_pinv_searchborder(gen,DISTR.center, 1, GEN->bright);
-
-  /* estimate area below PDF */
-  area  = _unur_pinv_approxarea( gen, DISTR.center, GEN->bright );
-  area += _unur_pinv_approxarea( gen, GEN->bleft, DISTR.center );
-
-  printf("after searchborder: a=%g  b=%g area=%g\n",GEN->bleft,GEN->bright,area);
-//  printf("a=%g  b=%g area=%g integralerror%g\n",a,b,area,area/(cdf(b)-cdf(a))-1.);
-
- 
-  tailcutfact= 0.1;
-  if(GEN->u_resolution<=9.e-13) tailcutfact=0.5;
-/* above command necessary for Cauchy distribution where cut has problems with very small values*/
- 
-  if(GEN->sleft)
-    GEN->bleft = _unur_pinv_cut(gen,GEN->bleft,(GEN->bleft-GEN->bright)/128,GEN->u_resolution*area*tailcutfact);
-  if(GEN->sright)
-    GEN->bright = _unur_pinv_cut(gen,GEN->bright,(GEN->bright-GEN->bleft)/128,GEN->u_resolution*area*tailcutfact);
-
-  if (! (_unur_isfinite(GEN->bleft) && _unur_isfinite(GEN->sright)) ) {
-    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"cannot find boundary for computational domain");
+  /* find interval for computing Newton interpolation */
+  if (_unur_pinv_find_boundary(gen) != UNUR_SUCCESS) {
     _unur_pinv_free(gen); return NULL;
   }
 
-  printf("after cut: a=%g b=%g\n",GEN->bleft,GEN->bright);
-
-  if (setup(gen, GEN->u_resolution*area) != UNUR_SUCCESS) {
+  /* compute table for Newton interpolation */
+  if (_unur_pinv_create_table(gen) != UNUR_SUCCESS) {
     _unur_pinv_free(gen); return NULL;
   }
-}
+
 
   /* compute splines */
 /*   if (_unur_pinv_create_table(gen)!=UNUR_SUCCESS) { */
@@ -690,11 +642,8 @@ _unur_pinv_init( struct unur_par *par )
      is available for the inverse CDF.
      So this is a safe guard against segfault for U=0. or U=1. */
 
-  /* These values for Umin and Umax are only changed in
-     unur_pinv_chg_truncated(). */
-
   /* make guide table */
-/*   _unur_pinv_make_guide_table(gen); */
+  _unur_pinv_make_guide_table(gen);
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
@@ -797,10 +746,6 @@ _unur_pinv_create( struct unur_par *par )
   GEN->sleft  = PAR->sleft;              /* whether to search for boundary   */
   GEN->sright = PAR->sright;
 
-  /* default values */
-/*   GEN->tailcutoff_left  = -1.;       /\* no cut-off by default                *\/ */
-/*   GEN->tailcutoff_right = 10.; */
-
   /* initialize variables */
   GEN->bleft = GEN->bleft_par;
   GEN->bright = GEN->bright_par;
@@ -809,6 +754,7 @@ _unur_pinv_create( struct unur_par *par )
   GEN->n_ivs = 0;
   GEN->guide_size = 0; 
   GEN->guide = NULL;
+  GEN->area = 0.;
 
   /* allocate maximal array of intervals */
   /* [ Maybe we could move this into _unur_pinv_interval() ] */
@@ -1148,79 +1094,92 @@ unur_pinv_eval_approxinvcdf( const struct unur_gen *gen, double u )
 /**  Auxilliary Routines                                                    **/
 /*****************************************************************************/
 
-/* int */
-/* _unur_pinv_create_table( struct unur_gen *gen ) */
-/*      /\*----------------------------------------------------------------------*\/ */
-/*      /\* create a table of splines                                            *\/ */
-/*      /\*                                                                      *\/ */
-/*      /\* parameters:                                                          *\/ */
-/*      /\*   gen ... pointer generator object                                   *\/ */
-/*      /\*                                                                      *\/ */
-/*      /\* return:                                                              *\/ */
-/*      /\*   UNUR_SUCCESS ... on success                                        *\/ */
-/*      /\*   error code   ... on error                                          *\/ */
-/*      /\*----------------------------------------------------------------------*\/ */
-/* { */
-/*   struct unur_pinv_interval *iv, *iv_new; */
-/*   int i, error_count_shortinterval=0; */
-/*   double Fx; */
+int
+_unur_pinv_create_table( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* create table for Newton interpolation                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer generator object                                   */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  double uerror = GEN->u_resolution * GEN->area;
+  double maxerror,h;
+  double xval[MAX_ORDER+1];
+  int i,cont;
+  int countextracalc=0;
 
-/*   /\* check arguments *\/ */
-/*   CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_PINV_GEN,UNUR_ERR_COOKIE); */
+  /* check arguments */
+  COOKIE_CHECK(gen,CK_PINV_GEN,UNUR_ERR_COOKIE);
 
-/*   /\* find boundary point of computational interval *\/ */
-/*   if (_unur_pinv_find_boundary(gen) != UNUR_SUCCESS) */
-/*     return UNUR_ERR_GEN_DATA; */
+  /* initialize step size for subintervals */
+  h = (GEN->bright-GEN->bleft)/128.;
 
-/*   /\* use starting design points of given *\/ */
-/*   if (GEN->stp) { */
-/*     iv = GEN->iv; */
-/*     for (i=0; i<GEN->n_stp; i++) { */
-/*       if (!_unur_FP_greater(GEN->stp[i],GEN->bleft)) continue; /\* skip *\/ */
-/*       if (!_unur_FP_less(GEN->stp[i],GEN->bright))   break;    /\* no more points *\/ */
- 
-/*       Fx = CDF(GEN->stp[i]); */
-/*       iv_new = _unur_pinv_interval_new(gen,GEN->stp[i],Fx); */
-/*       if (iv_new == NULL) return UNUR_ERR_GEN_DATA; */
-/*       iv_new->next = iv->next; */
-/*       iv->next = iv_new; */
-/*       iv = iv_new; */
+  /* initialize array of interval: starting interval */
+  if (_unur_pinv_interval( gen, 0, GEN->bleft, 0.) != UNUR_SUCCESS) 
+    return UNUR_ERR_GEN_CONDITION;
 
-/*       if (Fx > GEN->tailcutoff_right) */
-/* 	/\* there is no need to add another starting point in the r.h. tail *\/ */
-/* 	break; */
-/*     } */
-/*   } */
 
-/*   else /\* mode - if known - is inserted as "default design point" *\/ */
-/*     if( (gen->distr->set & UNUR_DISTR_SET_MODE) && */
-/*         _unur_FP_greater(DISTR.mode, GEN->bleft) && */
-/*         _unur_FP_less(DISTR.mode, GEN->bright) ) { */
-/*       iv = GEN->iv; */
-/*       iv_new = _unur_pinv_interval_new(gen,DISTR.mode,CDF(DISTR.mode)); */
-/*       if (iv_new == NULL) return UNUR_ERR_GEN_DATA; */
-/*       iv_new->next = iv->next; */
-/*       iv->next = iv_new; */
-/*     } */
+  cont=1;
+  i=0;
+  while(cont) {
+    if(GEN->iv[i].xi+h > GEN->bright) {
+      h = GEN->bright - GEN->iv[i].xi;
+      cont=0;
+    }
 
-/*   /\* now split intervals where approximation error is too large *\/ */
-/*   for (iv=GEN->iv; iv->next!=NULL; ) { */
-/*     COOKIE_CHECK(iv,CK_PINV_IV,UNUR_ERR_COOKIE); */
-/*     if (GEN->N >= PINV_MAX_IVS) { */
-/*       /\* emergency break *\/ */
-/*       _unur_error(GENTYPE,UNUR_ERR_GEN_CONDITION,"too many intervals"); */
-/*       return UNUR_ERR_GEN_CONDITION; */
-/*     } */
-/*     iv = _unur_pinv_interval_adapt(gen,iv, &error_count_shortinterval); */
-/*     if (iv == NULL) return UNUR_ERR_GEN_DATA; */
-/*   } */
+    /* compute Newton interpolation polynomial */
+    if (_unur_pinv_newtoninterpol(gen,&(GEN->iv[i]),h,xval) != UNUR_SUCCESS)
+      return UNUR_ERR_GEN_CONDITION;
 
-/*   /\* last interval is only used to store right boundary *\/ */
-/*   iv->spline[0] = iv->p; */
+    /* estimate error of Newton interpolation */
+    maxerror = _unur_pinv_maxerror_newton(gen,&(GEN->iv[i]),xval);
 
-/*   /\* o.k. *\/ */
-/*   return UNUR_SUCCESS; */
-/* }  /\* end of _unur_pinv_create_table() *\/ */
+    if (maxerror > uerror) { 
+      /* error too large: reduce step size */
+      h *= (maxerror > 4.*uerror) ? 0.81 : 0.9;
+      countextracalc++; /** TODO **/
+    }
+
+    else {
+      /* create next interval */
+      if ( _unur_pinv_interval( gen, i+1, GEN->iv[i].xi+h, 
+				GEN->iv[i].cdfi +(GEN->iv)[i].ui[GEN->order]) 
+	   /* cdfi holds CDF value at the left border of the interval,                */
+	   /* ui[order] holds area below PDF in interval, i.e. CDF(right) - CDF(left) */
+      	   != UNUR_SUCCESS )
+	return UNUR_ERR_GEN_CONDITION;
+
+      /* increase step size for very small errors */
+      if(maxerror < 0.3*uerror) h *= 1.2;
+      if(maxerror < 0.1*uerror) h *= 2.;
+      
+      /* continue with next interval */
+      i++;
+    }
+
+  }
+
+  /* update size of array (number of intervals) */
+  GEN->n_ivs = i;
+  GEN->iv = _unur_xrealloc( GEN->iv, (GEN->n_ivs+1) * sizeof(struct unur_pinv_interval) );
+  
+  /* set range for uniform random numbers */
+  /* Umin = 0, Umax depends on area below PDF, tail cut-off points and round-off errors */
+  GEN->Umax = GEN->iv[GEN->n_ivs].cdfi;
+
+
+  printf("Set-up finished: g=%d,  Number of intervals = %d,\n         additional calculated interpolations=%d\n",
+	 GEN->order,GEN->n_ivs,countextracalc);
+  printf("u in (0,%.18g)   1-umax%g\n",GEN->Umax,1.-GEN->Umax);
+  
+  /* o.k. */
+  return UNUR_SUCCESS;
+}  /* end of _unur_pinv_create_table() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -1236,10 +1195,8 @@ _unur_pinv_interval( struct unur_gen *gen, int i, double x, double cdfx )
      /*   cdfx ... CDF at x                                                  */
      /*                                                                      */
      /* return:                                                              */
-     /*   pointer to new interval                                            */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return NULL                                                        */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
   struct unur_pinv_interval *iv;
@@ -1268,6 +1225,70 @@ _unur_pinv_interval( struct unur_gen *gen, int i, double x, double cdfx )
   return UNUR_SUCCESS;
 
 } /* end of _unur_pinv_interval() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_pinv_find_boundary( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* find boundary for Newton interpolation                               */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen   ... pointer to generator object                              */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  double tailcut_factor, tailcut_error;  /* threshold values for cut-off points */
+
+  /* search for interval of computational relevance (if required) */
+  if(GEN->sleft)
+    GEN->bleft = _unur_pinv_searchborder(gen,DISTR.center, -1, GEN->bleft);
+  if(GEN->sright)
+    GEN->bright = _unur_pinv_searchborder(gen,DISTR.center, 1, GEN->bright);
+
+  /* estimate area below PDF */
+  GEN->area  = _unur_pinv_approxarea( gen, DISTR.center, GEN->bright );
+  GEN->area += _unur_pinv_approxarea( gen, GEN->bleft, DISTR.center );
+  if (! _unur_isfinite(GEN->area) ) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"cannot estimate area below PDF");
+    return UNUR_FAILURE;
+  }
+
+  /** TODO **/
+  printf("after searchborder: a=%g  b=%g area=%g\n",GEN->bleft,GEN->bright,GEN->area);
+  //  printf("a=%g  b=%g area=%g integralerror%g\n",a,b,area,area/(cdf(b)-cdf(a))-1.);
+
+  /* parameters for tail cut-off points */
+  tailcut_factor = (GEN->u_resolution <= 9.e-13) ? 0.5 : 0.1;
+  /* The higher factor is necessary for distributions with heavy tails, 
+     e.g. the Cauchy distrbutions.
+     Otherwise we have problems to find proper cut-off points.
+  */
+  tailcut_error = GEN->u_resolution * GEN->area * tailcut_factor;
+
+  /* compute cut-off points for tails */
+  if(GEN->sleft)
+    GEN->bleft = _unur_pinv_cut( gen, GEN->bleft, (GEN->bleft-GEN->bright)/128, tailcut_error);
+  if(GEN->sright)
+    GEN->bright = _unur_pinv_cut( gen, GEN->bright, (GEN->bright-GEN->bleft)/128, tailcut_error);
+
+  if (! (_unur_isfinite(GEN->bleft) && _unur_isfinite(GEN->sright)) ) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"cannot find boundary for computational domain");
+    return UNUR_FAILURE;
+  }
+
+  printf("after cut: a=%g b=%g\n",GEN->bleft,GEN->bright);
+
+/*   if (setup(gen, GEN->u_resolution * GEN->area) != UNUR_SUCCESS) { */
+/*     return UNUR_FAILURE; */
+/*   } */
+
+  return UNUR_SUCCESS;
+
+} /* end of _unur_pinv_find_boundary() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -1503,6 +1524,9 @@ _unur_pinv_approxarea (struct unur_gen *gen, double xl, double xr)
      /*                                                                      */
      /* return:                                                              */
      /*   integral                                                           */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return INFINITY                                                    */
      /*----------------------------------------------------------------------*/
 {
   /** TODO: Kann man verbessern, wenn man in den Tails den Error relativ
@@ -1523,7 +1547,9 @@ _unur_pinv_approxarea (struct unur_gen *gen, double xl, double xr)
   stepinit = (xr-xl)/1.e2;   /* ?WH? ich habe 1 durch diesen wert ersetzt (siehe auch unten) */
   step = stepinit;
 
-  while (x<xr) {
+  /* ?WH? muessen wir uns hier for einer endlosschleife schutzen? */
+
+  while (x < xr) {
 
     /* right boundary point */
     xh = x+step;
@@ -1725,7 +1751,7 @@ _unur_pinv_newtoninterpol (struct unur_gen *gen, struct unur_pinv_interval *iv, 
 
   /* o.k. */
   return UNUR_SUCCESS;
-}
+} /* end of _unur_pinv_newtoninterpol() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -2183,88 +2209,3 @@ int check_inversion_unuran(struct unur_gen *gen,double uerror,double (*cdf)(doub
 
 /**********************************************/
 
-
-
-
-
-
-////////////////////////////////////////////////////////////////////////////////////
-
-int  setup(struct unur_gen *gen, double uerror) {
-  /*
-    uerror ... u-error
-  */
-  double maxerror,h;
-  double xval[MAX_ORDER+1];
-  int i,cont;
-  int countextracalc=0;
-
-  /* initialize step size for subintervals */
-  h = (GEN->bright-GEN->bleft)/128.;
-
-  /* initialize array of interval: starting interval */
-  if (_unur_pinv_interval( gen, 0, GEN->bleft, 0.) != UNUR_SUCCESS) 
-    return UNUR_ERR_GEN_CONDITION;
-
-
-  cont=1;
-  i=0;
-  while(cont) {
-    if(GEN->iv[i].xi+h > GEN->bright) {
-      h = GEN->bright - GEN->iv[i].xi;
-      cont=0;
-    }
-
-    /* compute Newton interpolation polynomial */
-    if (_unur_pinv_newtoninterpol(gen,&(GEN->iv[i]),h,xval) != UNUR_SUCCESS)
-      return UNUR_ERR_GEN_CONDITION;
-
-    /* estimate error of Newton interpolation */
-    maxerror = _unur_pinv_maxerror_newton(gen,&(GEN->iv[i]),xval);
-
-    if (maxerror > uerror) { 
-      /* error too large: reduce step size */
-      h *= (maxerror > 4.*uerror) ? 0.81 : 0.9;
-      countextracalc++; /** TODO **/
-    }
-
-    else {
-      /* create next interval */
-      if ( _unur_pinv_interval( gen, i+1, GEN->iv[i].xi+h, 
-				GEN->iv[i].cdfi +(GEN->iv)[i].ui[GEN->order]) 
-	   /* cdfi holds CDF value at the left border of the interval,                */
-	   /* ui[order] holds area below PDF in interval, i.e. CDF(right) - CDF(left) */
-      	   != UNUR_SUCCESS )
-	return UNUR_ERR_GEN_CONDITION;
-
-      /* increase step size for very small errors */
-      if(maxerror < 0.3*uerror) h *= 1.2;
-      if(maxerror < 0.1*uerror) h *= 2.;
-      
-      /* continue with next interval */
-      i++;
-    }
-
-  }
-
-  /* update size of array (number of intervals) */
-  GEN->n_ivs = i;
-  GEN->iv = _unur_xrealloc( GEN->iv, (GEN->n_ivs+1) * sizeof(struct unur_pinv_interval) );
-  
-  /* set range for uniform random numbers */
-  /* Umin = 0, Umax depends on area below PDF, tail cut-off points and round-off errors */
-  GEN->Umax = GEN->iv[GEN->n_ivs].cdfi;
-
-  /* make guide table */
-  _unur_pinv_make_guide_table(gen);
-
-
-  printf("Set-up finished: g=%d,  Number of intervals = %d,\n         additional calculated interpolations=%d\n",
-	 GEN->order,GEN->n_ivs,countextracalc);
-  printf("u in (0,%.18g)   1-umax%g\n",GEN->Umax,1.-GEN->Umax);
-  
-  /* o.k. */
-  return UNUR_SUCCESS;
-} 
-
-/************************************/

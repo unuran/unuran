@@ -54,9 +54,9 @@ struct unur_pinv_interval {
   double xi;   /* ?WH? left point of interval */
   double cdfi; /* ?WH? CDF at left point of interval */
 
-/* #ifdef UNUR_COOKIES */
-/*   unsigned cookie;         /\* magic cookie                                    *\/ */
-/* #endif */
+#ifdef UNUR_COOKIES
+  unsigned cookie;         /* magic cookie                                    */
+#endif
 };
 
 /*---------------------------------------------------------------------------*/
@@ -79,7 +79,7 @@ struct unur_pinv_gen {
 
   struct unur_pinv_interval *iv; /* list of intervals */
 /*   struct siv *iv;//[maxint+1] for setup; for sampling [ni+1] */
-  int ni; //number of sub intervals
+  int n_ivs;               /* number of sub intervals                        */
 
 
 

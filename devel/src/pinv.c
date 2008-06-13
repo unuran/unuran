@@ -12,10 +12,9 @@
  *   DESCRIPTION:                                                            *
  *                                                                           *
  *   REQUIRED:                                                               *
- *      pointer to the CDF                                                   *
+ *      pointer to the PDF, center of distribution                           *
  *                                                                           *
  *   OPTIONAL:                                                               *
- *      pointer to PDF and dPDF                                              *
  *                                                                           *
  *****************************************************************************
  *                                                                           *
@@ -40,13 +39,29 @@
  *****************************************************************************
  *                                                                           *
  *   REFERENCES:                                                             *
- *   [1] W. Hörmann and J. Leydold:                                          *
- *       Continuous Random Variate Generation by Fast Numerical Inversion,   *
- *       ACM Trans. Model. Comput. Simul. 13(4), pp. 347-362 (2003)          *
  *                                                                           *
- *   [2] W. Hörmann, J. Leydold, and G. Derflinger:                          *
- *       Automatic Nonuniform Random Variate Generation,                     *
- *       Springer-Verlag, Berlin Heidelberg (2004)                           *
+ *****************************************************************************
+ *                                                                           *
+ *   Method PINV combines numerical integration with interpolation of the    *
+ *   inverste CDF.                                                           *
+ *                                                                           *
+ *   Integration:                                                            *
+ *     Gauss-Lobato integration with 5 points                                *
+ *                                                                           *
+ *   Interpolation:                                                          *
+ *     Newton interpolation                                                  *
+ *                                                                           *
+
+ui sind die stuetzstellen der Interpolation von F^{-1} in jedem subinterval.
+zi sind die dazugehoerigen polynomkoeffizienten der Newton Interpolation, also
+Koeffizienten eines Horner-aehnlichen Schemas.
+
+Die Berechnung der zi folgt der Reukursion der Newton Interpolation. Gerhard hat
+das aus einem Deutschen Numerik Lehrbuch, ich hab es mit Wikipedia "Newton
+Interpolation" verglichen. Es ist das gleiche.
+xi sind die Intervallgrenzen der sub-intervalle.
+
+
  *                                                                           *
  *****************************************************************************/
 
@@ -73,15 +88,15 @@
 
 
 
-#define CK_PINV_IV     0x00100132u
-
-
-#define PINVMAXINT  10000
+#define PINVMAXINT  (10000)
 
 #define PINV_PDFLLIM    (1.e-13)
 
 #define PINV_GUIDE_FACTOR  (1)
 
+
+/* maximum order of Newton interpolation polynomial */
+#define MAX_ORDER   (19) 
 
 /* #define PINV_MAX_ITER      (300) */
 /* Maximal number of iterations for finding the boundary of the              */
@@ -196,21 +211,9 @@ static double _unur_pinv_eval_approxinvcdf (const struct unur_gen *gen, double u
 /* create the table with splines                                             */
 /*---------------------------------------------------------------------------*/
 
-static struct unur_pinv_interval *_unur_pinv_interval_new( struct unur_gen *gen, double p, double u );
+static int _unur_pinv_interval( struct unur_gen *gen, int i, double x, double cdfx );
 /*---------------------------------------------------------------------------*/
-/* make a new interval with node (u=F(p),p).                                 */
-/*---------------------------------------------------------------------------*/
-
-/* static struct unur_pinv_interval *_unur_pinv_interval_adapt( struct unur_gen *gen,  */
-/* 							     struct unur_pinv_interval *iv,  */
-/* 							     int *error_count_shortinterval ); */
-/*---------------------------------------------------------------------------*/
-/* check parameters in interval and split or truncate where necessary.       */
-/*---------------------------------------------------------------------------*/
-
-/* static int _unur_pinv_interval_parameter( struct unur_gen *gen, struct unur_pinv_interval *iv ); */
-/*---------------------------------------------------------------------------*/
-/* compute all parameter for interval (spline coefficients).                 */
+/* make a new interval i with left boundary point x and CDF(x).              */
 /*---------------------------------------------------------------------------*/
 
 static double _unur_pinv_searchborder (struct unur_gen *gen, double x0, double dx, double bound);
@@ -433,7 +436,7 @@ unur_pinv_set_order( struct unur_par *par, int order)
   _unur_check_par_object( par, PINV );
 
   /* check new parameter for generator */
-  if (order<2 || order>19) {
+  if (order<2 || order>MAX_ORDER) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"order <2 or >19");
     return UNUR_ERR_PAR_SET;
   }
@@ -661,7 +664,9 @@ _unur_pinv_init( struct unur_par *par )
 
   printf("after cut: a=%g b=%g\n",GEN->bleft,GEN->bright);
 
-  setup(gen, GEN->u_resolution*area);
+  if (setup(gen, GEN->u_resolution*area) != UNUR_SUCCESS) {
+    _unur_pinv_free(gen); return NULL;
+  }
 }
 
   /* compute splines */
@@ -800,17 +805,14 @@ _unur_pinv_create( struct unur_par *par )
   GEN->bleft = GEN->bleft_par;
   GEN->bright = GEN->bright_par;
   GEN->Umax = 1.;
-  /*   GEN->N = 0; */
   GEN->iv = NULL;
-  GEN->ni = 0;
-  /*   GEN->intervals = NULL; */
+  GEN->n_ivs = 0;
   GEN->guide_size = 0; 
   GEN->guide = NULL;
 
-
-
-  GEN->iv =  _unur_xmalloc(sizeof(struct unur_pinv_interval)*PINVMAXINT);
-
+  /* allocate maximal array of intervals */
+  /* [ Maybe we could move this into _unur_pinv_interval() ] */
+  GEN->iv =  _unur_xmalloc(PINVMAXINT * sizeof(struct unur_pinv_interval) );
 
 #ifdef UNUR_ENABLE_INFO
   /* set function for creating info string */
@@ -939,7 +941,7 @@ _unur_pinv_free( struct unur_gen *gen )
 
   /* free tables of coefficients of interpolating polynomials */
   if (GEN->iv) {
-    for(i=0;i<=GEN->ni;i++){
+    for(i=0; i<=GEN->n_ivs; i++){
       free(GEN->iv[i].ui);
       free(GEN->iv[i].zi);
     }
@@ -1222,15 +1224,16 @@ unur_pinv_eval_approxinvcdf( const struct unur_gen *gen, double u )
 
 /*---------------------------------------------------------------------------*/
 
-struct unur_pinv_interval *
-_unur_pinv_interval_new( struct unur_gen *gen, double p, double u )
+int 
+_unur_pinv_interval( struct unur_gen *gen, int i, double x, double cdfx )
      /*----------------------------------------------------------------------*/
-     /* make a new interval with node (u=F(p),p).                            */
+     /* make a new interval i with left boundary point x and CDF(x).         */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*   p   ... left design point of new interval                          */
-     /*   u   ... value of CDF at p, u=CDF(p)                                */
+     /*   gen  ... pointer to generator object                               */
+     /*   i    ... index (number) of interval                                */
+     /*   x    ... left boundary point of new interval                       */
+     /*   cdfx ... CDF at x                                                  */
      /*                                                                      */
      /* return:                                                              */
      /*   pointer to new interval                                            */
@@ -1242,246 +1245,29 @@ _unur_pinv_interval_new( struct unur_gen *gen, double p, double u )
   struct unur_pinv_interval *iv;
 
   /* check arguments */
-  CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_PINV_GEN,NULL);
+  COOKIE_CHECK(gen,CK_PINV_GEN,UNUR_FAILURE);
 
-/*   /\* first check u *\/ */
-/*   if (u<0.) { */
-/*     if (u < -UNUR_SQRT_DBL_EPSILON) { */
-/*       _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"CDF(x) < 0."); */
-/*       return NULL; */
-/*     } */
-/*     else { /\* round off error *\/ */
-/*       u = 0.; */
-/*     } */
-/*   } */
-/*   if (u>1.) { */
-/*     _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"CDF(x) > 1."); */
-/*     return NULL; */
-/*   } */
+  /* check for free intervalls */
+  if (i >= PINVMAXINT) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,
+		"maximum number of intervals exceeded");
+    return UNUR_ERR_GEN_CONDITION;
+  }
 
-/*   /\* we need new interval *\/ */
-/*   iv = _unur_xmalloc( sizeof(struct unur_pinv_interval) ); */
-/*   COOKIE_SET(iv,CK_PINV_IV); */
+  /* set values */
+  iv = GEN->iv+i;     /* pointer to interval */
+  iv->xi = x;         /* left boundary of interval */
+  iv->cdfi = cdfx;    /* CDF at left boundary */
+  COOKIE_SET(iv,CK_PINV_IV);
 
-/*   /\* compute and store data *\/ */
-/*   switch (GEN->order) { */
-/*   case 5: */
-/*     iv->df = dPDF(p); */
-/*   case 3: */
-/*     iv->f = PDF(p); */
-/*   case 1: */
-/*     iv->p = p; */
-/*     iv->u = u; */
-/*     break; */
-/*   default: */
-/*     _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,""); */
-/*     free(iv); */
-/*     return NULL; */
-/*   } */
-
-/*   iv->next = NULL;  /\* add eol marker *\/ */
-/*   ++(GEN->N);   /\* increment counter for intervals *\/ */
+  /* allocate space for coefficients for Newton interpolation */
+  iv->ui = _unur_xmalloc( (GEN->order+1) * sizeof(double) );
+  iv->zi = _unur_xmalloc( (GEN->order+1) * sizeof(double) );
 
   /* o.k. */
-  return iv;
+  return UNUR_SUCCESS;
 
-} /* end of _unur_pinv_interval_new() */
-
-/*---------------------------------------------------------------------------*/
-
-/* struct unur_pinv_interval * */
-/* _unur_pinv_interval_adapt( struct unur_gen *gen, struct unur_pinv_interval *iv, */
-/*                            int *error_count_shortinterval ) */
-/*      /\*----------------------------------------------------------------------*\/ */
-/*      /\* check parameters in interval and split or truncate where necessary.  *\/ */
-/*      /\*                                                                      *\/ */
-/*      /\* parameters:                                                          *\/ */
-/*      /\*   gen ... pointer to generator object                                *\/ */
-/*      /\*   iv  ... pointer to interval                                        *\/ */
-/*      /\*   error_count_shortinterval ... pointer to errorcount to supress too *\/ */
-/*      /\*                                 many error messages                  *\/ */
-/*      /\*                                                                      *\/ */
-/*      /\* return:                                                              *\/ */
-/*      /\*   iv       ... if splitted                                           *\/ */
-/*      /\*   iv->next ... if interval was o.k.                                  *\/ */
-/*      /\*----------------------------------------------------------------------*\/ */
-/* { */
-/*   double p_new;   /\* new design point *\/ */
-/*   struct unur_pinv_interval *iv_new, *iv_tmp; */
-/*   double x, Fx; */
-
-/*   /\* check arguments *\/ */
-/*   CHECK_NULL(gen,NULL);       COOKIE_CHECK(gen,CK_PINV_GEN,NULL); */
-/*   CHECK_NULL(iv,NULL);        COOKIE_CHECK(iv,CK_PINV_IV,NULL); */
-/*   CHECK_NULL(iv->next,NULL);  COOKIE_CHECK(iv->next,CK_PINV_IV,NULL); */
-
-/*   /\* 1st check: right most interval (of at least 2) */
-/*      with CDF greater than GEN->tailcutoff_right *\/ */
-
-/*   iv_tmp = iv->next->next; */
-/*   if(iv_tmp && iv->next->u > GEN->tailcutoff_right) { */
-/*     /\* chop off right hand tail *\/ */
-/*     free (iv_tmp); */
-/*     iv->next->next = NULL; */
-/*     GEN->N--; */
-/*     /\* update right boundary *\/ */
-/*     GEN->bright = iv->next->p; */
-/*     return iv; */
-/*   } */
-
-/*   /\* 2nd check: is the left most interval (of at least 2)  */
-/*      with CDF less than GEN->tailcutoff_left *\/ */
-
-/*   if (iv==GEN->iv && iv->next->next && iv->next->u < GEN->tailcutoff_left) { */
-/*     /\* chop off left hand tail *\/ */
-/*     iv_tmp = GEN->iv; */
-/*     GEN->iv = iv->next; */
-/*     free (iv_tmp); */
-/*     GEN->N--; */
-/*     /\* update left boundary *\/ */
-/*     GEN->bleft = GEN->iv->p; */
-/*     return GEN->iv; */
-/*   } */
-
-/*   /\* center of x-interval as splitting point *\/ */
-/*   p_new = 0.5 * (iv->next->p + iv->p); */
-
-/*   /\* we do not split an interval if is too close *\/ */
-/*   /\*  changing the below FP_equal to FP_same can strongly increase the number of */
-/*       intervals needed and may slightly decrease the MAError. In both cases the */
-/*       required u-precision is not reached due to numerical problems with very steep CDF*\/ */
-/*   if (_unur_FP_equal(p_new,iv->p) || _unur_FP_equal(p_new,iv->next->p)) { */
-/*     if(!(*error_count_shortinterval)){  */
-/*       _unur_warning(gen->genid,UNUR_ERR_ROUNDOFF, */
-/* 		     "one or more intervals very short; possibly due to numerical problems with a pole or very flat tail"); */
-/*       (*error_count_shortinterval)++; */
-/*     }  */
-/*     /\* skip to next interval *\/ */
-/*     _unur_pinv_interval_parameter(gen,iv); */
-/*     return iv->next; */
-/*   } */
-
-/*   /\* 3rd check: |u_i - u_{i-1}| must not exceed threshold value *\/ */
-/*   /\* 4th check: monotonicity                                    *\/ */
-
-/*   if ( (iv->next->u - iv->u > PINV_MAX_U_LENGTH) || */
-/*        (! _unur_pinv_interval_is_monotone(gen,iv)) ) { */
-/*     /\* insert new interval into linked list *\/ */
-/*     iv_new = _unur_pinv_interval_new(gen,p_new,CDF(p_new)); */
-/*     if (iv_new == NULL) return NULL; */
-/*     iv_new->next = iv->next; */
-/*     iv->next = iv_new; */
-/*     return iv; */
-/*   } */
-
-/*   /\* compute coefficients for spline (only necessary if monotone) *\/ */
-/*   _unur_pinv_interval_parameter(gen,iv); */
-
-/*   /\* 5th check: error in u-direction *\/ */
-
-/*   /\* compute approximate value for inverse CDF in center of interval *\/ */
-/*   x = _unur_pinv_eval_polynomial( 0.5, iv->spline, GEN->order ); */
-/*   Fx = CDF(x); */
-
-/*   /\* check for FP errors *\/ */
-/*   if (_unur_isnan(x)) {  */
-/*     _unur_error(gen->genid,UNUR_ERR_ROUNDOFF, */
-/*  		"NaN occured; possibly due to numerical problems with a pole or very flat tail"); */
-/*     return NULL; */
-/*    } */
-
-/*   /\* check error *\/ */
-/*   if (!(fabs(Fx - 0.5*(iv->next->u + iv->u)) < GEN->u_resolution)) { */
-/*     /\* error in u-direction too large *\/ */
-/*     /\* if possible we use the point x instead of p_new *\/ */
-/*     if(fabs(p_new-x)< PINV_XDEVIATION * (iv->next->p - iv->p)) */
-/*       iv_new = _unur_pinv_interval_new(gen,x,Fx); */
-/*     else */
-/*       iv_new = _unur_pinv_interval_new(gen,p_new,CDF(p_new)); */
-/*     if (iv_new == NULL) return NULL; */
-/*     iv_new->next = iv->next; */
-/*     iv->next = iv_new; */
-/*     return iv; */
-/*   } */
-
-/*   /\* interval o.k. *\/ */
-/*   return iv->next; */
-
-/* } /\* end of _unur_pinv_interval_adapt() *\/ */
-
-/*---------------------------------------------------------------------------*/
-
-/* int */
-/* _unur_pinv_interval_parameter( struct unur_gen *gen, struct unur_pinv_interval *iv ) */
-/*      /\*----------------------------------------------------------------------*\/ */
-/*      /\* compute all parameter for interval (spline coefficients).            *\/ */
-/*      /\*                                                                      *\/ */
-/*      /\* parameters:                                                          *\/ */
-/*      /\*   gen ... pointer to generator object                                *\/ */
-/*      /\*   iv  ... pointer to interval                                        *\/ */
-/*      /\*                                                                      *\/ */
-/*      /\* return:                                                              *\/ */
-/*      /\*   UNUR_SUCCESS ... on success                                        *\/ */
-/*      /\*   error code   ... on error                                          *\/ */
-/*      /\*----------------------------------------------------------------------*\/ */
-/* { */
-/*   double delta_u, delta_p; */
-/*   double f1, fs0, fs1, fss0, fss1; */
-
-/*   delta_u = iv->next->u - iv->u; */
-/*   delta_p = iv->next->p - iv->p; */
-
-/*   switch (GEN->order) { */
-
-/*   case 5:    /\* quintic Hermite interpolation *\/ */
-/*     if (iv->f > 0. && iv->next->f > 0. && */
-/* 	iv->df < INFINITY && iv->df > -INFINITY &&  */
-/* 	iv->next->df < INFINITY && iv->next->df > -INFINITY ) { */
-/*       f1   = delta_p; */
-/*       fs0  = delta_u / iv->f;       */
-/*       fs1  = delta_u / iv->next->f; */
-/*       fss0 = -delta_u * delta_u * iv->df / (iv->f * iv->f * iv->f); */
-/*       fss1 = -delta_u * delta_u * iv->next->df / (iv->next->f * iv->next->f * iv->next->f); */
-      
-/*       iv->spline[0] = iv->p; */
-/*       iv->spline[1] = fs0; */
-/*       iv->spline[2] = 0.5*fss0; */
-/*       iv->spline[3] = 10.*f1 - 6.*fs0 - 4.*fs1 - 1.5*fss0 + 0.5*fss1; */
-/*       iv->spline[4] = -15.*f1 + 8.*fs0 + 7.*fs1 + 1.5*fss0 - fss1; */
-/*       iv->spline[5] = 6.*f1 - 3.*fs0 - 3.*fs1 - 0.5*fss0 + 0.5*fss1; */
-/*       return UNUR_SUCCESS; */
-/*     } */
-/*     else { */
-/*       /\* cannot use quintic interpolation in interval; use cubic instead *\/ */
-/*       iv->spline[4] = 0.; */
-/*       iv->spline[5] = 0.; */
-/*     } */
-
-/*   case 3:    /\* cubic Hermite interpolation *\/ */
-/*     if (iv->f > 0. && iv->next->f > 0.) { */
-/*       iv->spline[0] = iv->p; */
-/*       iv->spline[1] = delta_u / iv->f; */
-/*       iv->spline[2] = 3.* delta_p - delta_u * (2./iv->f + 1./iv->next->f); */
-/*       iv->spline[3] = -2.* delta_p + delta_u * (1./iv->f + 1./iv->next->f); */
-/*       return UNUR_SUCCESS; */
-/*     } */
-/*     else { */
-/*       /\* cannot use cubic interpolation in interval; use linear instead *\/ */
-/*       iv->spline[2] = 0.; */
-/*       iv->spline[3] = 0.; */
-/*     } */
-
-/*   case 1:    /\* linear interpolation *\/ */
-/*     iv->spline[0] = iv->p; */
-/*     iv->spline[1] = delta_p; */
-/*     return UNUR_SUCCESS; */
-
-/*   default: */
-/*     _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,""); */
-/*     return UNUR_ERR_SHOULD_NOT_HAPPEN; */
-/*   } */
-
-/* } /\* end of _unur_pinv_interval_parameter() *\/ */
+} /* end of _unur_pinv_interval() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -1888,6 +1674,10 @@ _unur_pinv_newtoninterpol (struct unur_gen *gen, struct unur_pinv_interval *iv, 
   double temp;           /* auxiliary variables */
   int i,k;
 
+  /* check arguments */
+  COOKIE_CHECK(gen,CK_PINV_GEN,UNUR_FAILURE);
+  COOKIE_CHECK(iv,CK_PINV_IV,UNUR_FAILURE);
+
   /* parameter for ?WH? */
   phi = M_PI*0.5/(GEN->order+1);
 
@@ -2006,6 +1796,10 @@ _unur_pinv_maxerror_newton (struct unur_gen *gen, struct unur_pinv_interval *iv,
 
   int i;                 /* aux variable */
 
+  /* check arguments */
+  COOKIE_CHECK(gen,CK_PINV_GEN,UNUR_FAILURE);
+  COOKIE_CHECK(iv,CK_PINV_IV,UNUR_FAILURE);
+
   /* ?WH? get U values for test ? */
   _unur_pinv_tstpt(GEN->order,ui,testu);
 
@@ -2090,12 +1884,12 @@ _unur_pinv_make_guide_table (struct unur_gen *gen)
 
   /* allocate blocks for guide table (if necessary).
      (we allocate blocks for maximal guide table.) */
-  GEN->guide_size = GEN->ni * PINV_GUIDE_FACTOR;
+  GEN->guide_size = GEN->n_ivs * PINV_GUIDE_FACTOR;
   if (GEN->guide_size <= 0) GEN->guide_size = 1;
   GEN->guide = _unur_xrealloc( GEN->guide, GEN->guide_size * sizeof(int) );
 
   /* maximum index for array of data */
-  imax = GEN->ni;
+  imax = GEN->n_ivs;
 
   /* create guide table */
   i = 0;
@@ -2360,6 +2154,8 @@ int check_inversion_unuran(struct unur_gen *gen,double uerror,double (*cdf)(doub
 
   double u,x,uerr,maxerror=0.,maxu;
 
+  if (gen == NULL) return 1;
+
   uerror*=1.1;
 /* "*1.1" is necessary for this controll as the left cut-off tail has about 10% of the uerror */
   maxu=1.;
@@ -2396,23 +2192,21 @@ int check_inversion_unuran(struct unur_gen *gen,double uerror,double (*cdf)(doub
 
 int  setup(struct unur_gen *gen, double uerror) {
   /*
-    f ... PDF
     uerror ... u-error
   */
-  double maxerror,h,*xval;
+  double maxerror,h;
+  double xval[MAX_ORDER+1];
   int i,cont;
   int countextracalc=0;
 
-  xval=malloc(sizeof(double)*(GEN->order+1));
+  /* initialize step size for subintervals */
+  h = (GEN->bright-GEN->bleft)/128.;
 
-  /* initialize values */
-  h = (GEN->bright-GEN->bleft)/128.;  /* step size for subintervals */
+  /* initialize array of interval: starting interval */
+  if (_unur_pinv_interval( gen, 0, GEN->bleft, 0.) != UNUR_SUCCESS) 
+    return UNUR_ERR_GEN_CONDITION;
 
 
-  GEN->iv[0].ui = malloc(sizeof(double)*(GEN->order+1));
-  GEN->iv[0].zi = malloc(sizeof(double)*(GEN->order+1));
-  GEN->iv[0].xi = GEN->bleft;
-  GEN->iv[0].cdfi = 0.;//cdfi holds cdf value at the left border of the interval
   cont=1;
   i=0;
   while(cont) {
@@ -2422,49 +2216,55 @@ int  setup(struct unur_gen *gen, double uerror) {
     }
 
     /* compute Newton interpolation polynomial */
-    if (_unur_pinv_newtoninterpol(gen,&(GEN->iv[i]),h,xval) != UNUR_SUCCESS) {
+    if (_unur_pinv_newtoninterpol(gen,&(GEN->iv[i]),h,xval) != UNUR_SUCCESS)
       return UNUR_ERR_GEN_CONDITION;
-    }
 
     /* estimate error of Newton interpolation */
     maxerror = _unur_pinv_maxerror_newton(gen,&(GEN->iv[i]),xval);
 
     if (maxerror > uerror) { 
-      countextracalc++;
-      h*= 0.9;
-      if(maxerror>4.*uerror) h*=0.9;
+      /* error too large: reduce step size */
+      h *= (maxerror > 4.*uerror) ? 0.81 : 0.9;
+      countextracalc++; /** TODO **/
     }
+
     else {
-	GEN->iv[i+1].ui = malloc(sizeof(double)*(GEN->order+1));
-  	GEN->iv[i+1].zi = malloc(sizeof(double)*(GEN->order+1));
-  	GEN->iv[i+1].xi = GEN->iv[i].xi+h;
-  	GEN->iv[i+1].cdfi = GEN->iv[i].cdfi +(GEN->iv)[i].ui[GEN->order];//cdfi holds cdf value at the left border of the interval
-        if(maxerror < 0.3*uerror) h*=1.2;
-        if(maxerror < 0.1*uerror) h*=2.;
-        i++;
-   }
+      /* create next interval */
+      if ( _unur_pinv_interval( gen, i+1, GEN->iv[i].xi+h, 
+				GEN->iv[i].cdfi +(GEN->iv)[i].ui[GEN->order]) 
+	   /* cdfi holds CDF value at the left border of the interval,                */
+	   /* ui[order] holds area below PDF in interval, i.e. CDF(right) - CDF(left) */
+      	   != UNUR_SUCCESS )
+	return UNUR_ERR_GEN_CONDITION;
 
-   if(i>PINVMAXINT){
-     printf("error setup(); i>maxint; EXITING\n");
-     exit(1);
-   }
- }
- GEN->ni = i;
- GEN->iv = realloc(GEN->iv,sizeof(struct unur_pinv_interval)*(GEN->ni+1));
+      /* increase step size for very small errors */
+      if(maxerror < 0.3*uerror) h *= 1.2;
+      if(maxerror < 0.1*uerror) h *= 2.;
+      
+      /* continue with next interval */
+      i++;
+    }
 
- free(xval);
+  }
 
- GEN->Umax = GEN->iv[GEN->ni].cdfi;
+  /* update size of array (number of intervals) */
+  GEN->n_ivs = i;
+  GEN->iv = _unur_xrealloc( GEN->iv, (GEN->n_ivs+1) * sizeof(struct unur_pinv_interval) );
+  
+  /* set range for uniform random numbers */
+  /* Umin = 0, Umax depends on area below PDF, tail cut-off points and round-off errors */
+  GEN->Umax = GEN->iv[GEN->n_ivs].cdfi;
+
+  /* make guide table */
+  _unur_pinv_make_guide_table(gen);
 
 
- _unur_pinv_make_guide_table(gen);
-
-
- printf("Set-up finished: g=%d,  Number of intervals = %d,\n         additional calculated interpolations=%d\n",
-	GEN->order,GEN->ni,countextracalc);
- printf("u in (0,%.18g)   1-umax%g\n",GEN->Umax,1.-GEN->Umax);
-
- return UNUR_SUCCESS;
+  printf("Set-up finished: g=%d,  Number of intervals = %d,\n         additional calculated interpolations=%d\n",
+	 GEN->order,GEN->n_ivs,countextracalc);
+  printf("u in (0,%.18g)   1-umax%g\n",GEN->Umax,1.-GEN->Umax);
+  
+  /* o.k. */
+  return UNUR_SUCCESS;
 } 
 
 /************************************/

@@ -292,6 +292,35 @@ int unur_test_quartiles( UNUR_GEN *generator,
    stream @var{out}.
 */
 
+double unur_test_estimate_inverror( const UNUR_GEN *generator, 
+				    double *max_error, double *MAE,
+				    int samplesize, int randomized, double threshold,
+				    int verbosity, FILE *out );
+/*
+   Estimate U-error of an inversion method, i.e. 
+   @unurmath{error = | CDF^{-1}(U) - U |}, by means of a simple Monte
+   Carlo method.
+   Maximum and mean absolute errors are stored in @var{max_error} and
+   @var{MAE}, respectively.
+   The particular computed U-errors should not exceed the given
+   @var{threshold}. However, approximization and round-off errors
+   might occasionally trigger such an event.
+   Thus the function returns a penalty score. It is @code{0.} when the
+   U-error never exceed the @var{threshold} value. It roughly gives the
+   portion of praticular test where the U-error is too larger.
+   However, each such event is weighted with 
+   @unurmath{1 + 10 \times (uerror - threshold) / threshold}.
+
+   If @var{randomized} is TRUE a pseudo-random sequence is used for
+   the estimation, if it is FALSE the U-values are choosen
+   equidistributed. 
+
+   If @var{verbosity} is TRUE the result is written to the output
+   stream @var{out}.
+
+   In case of an error a negative value is returned. 
+*/
+
 /* =END */
 
 /*---------------------------------------------------------------------------*/

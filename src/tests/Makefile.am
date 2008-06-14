@@ -11,6 +11,7 @@ libtests_la_SOURCES = \
  correlation.c\
  countpdf.c \
  counturn.c \
+ inverror.c \
  moments.c \
  printsample.c \
  quantiles.c \

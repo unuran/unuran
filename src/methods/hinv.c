@@ -72,15 +72,25 @@
 /* Maximal value for |u_i - u_{i-1}|. If for an interval this value is       */
 /* larger then it is splitted (independently of its u-error).                */
 
-#define HINV_TAILCUTOFF    (1.e-10) 
+#define HINV_TAILCUTOFF_FACTOR  (0.1)
+#define HINV_TAILCUTOFF_MIN     (1.e-10) 
 /* For unbounded domains the tails has to be cut of. We use the given        */
-/* u-resolution for finding the cut points. (The probability of the chop     */
-/* regions should be less than the 1 fifth of the u-resolution.)             */
+/* u-resolution for finding the cut points. (The probability for each of the */
+/* chopped regions should be less than                                       */
+/* HINV_TAILCUTOFF_FACTOR * u-resolution.)                                   */
 /* However, it should not be greater than some threshold value, given by     */
-/* HINV_TAILCUTOFF which reflects the precision of the used stream of        */
+/* HINV_TAILCUTOFF_MIN which reflects the precision of the used stream of    */
 /* uniform pseudo-random numbers (typically about 2^32).                     */
 /* However, for computational reasons we use a value that is at least twice  */
 /* the machine epsilon for the right hand boundary.                          */
+
+#define HINV_UERROR_CORRECTION  (1.-HINV_TAILCUTOFF_FACTOR)
+/* HINV tries to create an approximation of the inverse CDF where the        */
+/* U-error is bounded by the given u-resolution. However, the error caused   */
+/* by cutting off the tails introduces some additional errors which must be  */
+/* corrected. Thus the upper bound for the pure approximation error by       */
+/* Hermite interpolation is set to HINV_UERROR_CORRECTION * u-resolution     */
+/* The correction factor should not exceed (1-HINV_TAILCUTOFF_FACTOR).       */
 
 #define HINV_XDEVIATION    (0.05)
 /* Used for splitting intervals. When the u-error is estimated for an        */
@@ -936,6 +946,12 @@ _unur_hinv_check_par( struct unur_gen *gen )
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
+  double tailcutoff;
+
+  /* default tail cut-off points */
+  tailcutoff = _unur_min(HINV_TAILCUTOFF_MIN, HINV_TAILCUTOFF_FACTOR * GEN->u_resolution);
+  tailcutoff = _unur_max(tailcutoff, 2*DBL_EPSILON);
+
   /* computational domain as given by user */
   GEN->bleft = GEN->bleft_par;
   GEN->bright = GEN->bright_par;
@@ -956,14 +972,11 @@ _unur_hinv_check_par( struct unur_gen *gen )
   /* cut points for tails */
   if (DISTR.domain[0] <= -INFINITY || 
       (DISTR.pdf!=NULL && _unur_cont_PDF((DISTR.domain[0]),(gen->distr))<=0.) ) {
-    GEN->tailcutoff_left = _unur_min(HINV_TAILCUTOFF, 0.1*GEN->u_resolution);
-    GEN->tailcutoff_left = _unur_max(GEN->tailcutoff_left,2*DBL_EPSILON);
+    GEN->tailcutoff_left = tailcutoff;
   }
   if (DISTR.domain[1] >= INFINITY || 
       (DISTR.pdf!=NULL && _unur_cont_PDF((DISTR.domain[1]),(gen->distr))<=0.) ) {
-    GEN->tailcutoff_right = _unur_min(HINV_TAILCUTOFF, 0.1*GEN->u_resolution);
-    GEN->tailcutoff_right = _unur_max(GEN->tailcutoff_right,2*DBL_EPSILON);
-    GEN->tailcutoff_right = 1. - GEN->tailcutoff_right;
+    GEN->tailcutoff_right = 1.- tailcutoff;
   }
 
   return UNUR_SUCCESS;
@@ -1155,8 +1168,8 @@ unur_hinv_eval_approxinvcdf( const struct unur_gen *gen, double u )
   }
 
   /* validate argument */
-  if (u<=0.) return DISTR.domain[0];
-  if (u>=1.) return DISTR.domain[1];
+  if (u<=0.) return DISTR.trunc[0];
+  if (u>=1.) return DISTR.trunc[1];
 
   /* rescale given u */
   u = GEN->Umin + u * (GEN->Umax - GEN->Umin);
@@ -1165,8 +1178,8 @@ unur_hinv_eval_approxinvcdf( const struct unur_gen *gen, double u )
   x = _unur_hinv_eval_approxinvcdf(gen,u);
 
   /* validate range */
-  if (x<DISTR.domain[0]) x = DISTR.domain[0];
-  if (x>DISTR.domain[1]) x = DISTR.domain[1];
+  if (x<DISTR.trunc[0]) x = DISTR.trunc[0];
+  if (x>DISTR.trunc[1]) x = DISTR.trunc[1];
 
   return x;
 
@@ -1191,7 +1204,7 @@ unur_hinv_estimate_error( const UNUR_GEN *gen, int samplesize, double *max_error
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 { 
-  double U, ualt, X;
+  double U, X;
   double max=0., average=0., uerror, errorat=0.;
   int j, outside_interval=0;
 
@@ -1201,15 +1214,14 @@ unur_hinv_estimate_error( const UNUR_GEN *gen, int samplesize, double *max_error
   for(j=0;j<samplesize;j++) {  
     /* sample from U( Umin, Umax ) */
     U = GEN->Umin + _unur_call_urng(gen->urng) * (GEN->Umax - GEN->Umin);
-    ualt=U;
-
+    
     /* compute inverse CDF */
     X = _unur_hinv_eval_approxinvcdf(gen,U);
 
     if (X<DISTR.trunc[0]) { X = DISTR.trunc[0]; outside_interval++; }
     if (X>DISTR.trunc[1]) { X = DISTR.trunc[1]; outside_interval++; }
 
-    uerror = fabs(ualt-CDF(X));
+    uerror = fabs(U-CDF(X));
 
     average += uerror;
     if(uerror>max) {
@@ -1584,7 +1596,7 @@ _unur_hinv_interval_adapt( struct unur_gen *gen, struct unur_hinv_interval *iv,
    }
 
   /* check error */
-  if (!(fabs(Fx - 0.5*(iv->next->u + iv->u)) < GEN->u_resolution)) {
+  if (!(fabs(Fx - 0.5*(iv->next->u + iv->u)) < (GEN->u_resolution * HINV_UERROR_CORRECTION))) {
     /* error in u-direction too large */
     /* if possible we use the point x instead of p_new */
     if(fabs(p_new-x)< HINV_XDEVIATION * (iv->next->p - iv->p))

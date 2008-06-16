@@ -10,6 +10,7 @@ Version 1.?.?: ??? 2008
           this function evaluates the inverse CDF of the
 	  truncated distribution.
 
+	  Improved u-error
 
 Version 1.2.4: April 2008
 

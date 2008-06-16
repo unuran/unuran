@@ -48,10 +48,10 @@ static char test_name[] = "InvError";
 /*---------------------------------------------------------------------------*/
 
 double
-unur_test_estimate_inverror( const UNUR_GEN *gen, 
-			     double *max_error, double *MAE,
-			     int samplesize, int randomized, double threshold,
-			     int verbosity, FILE *out )
+unur_test_inverror( const UNUR_GEN *gen, 
+		    double *max_error, double *MAE, double threshold,
+		    int samplesize, int randomized, 
+		    int verbosity, FILE *out )
      /*----------------------------------------------------------------------*/
      /* Estimate maximal u-error and mean absolute error (MAE) by means of   */
      /* (Quasi-) Monte-Carlo simulation.                                     */
@@ -61,9 +61,9 @@ unur_test_estimate_inverror( const UNUR_GEN *gen,
      /*   gen        ... pointer to generator object                         */
      /*   max_error  ... pointer for storing maximal u-error                 */
      /*   MEA        ... pointer for storing MA u-error                      */
+     /*   threshold  ... maximum allowed error                               */
      /*   samplesize ... sample size for Monte Carlo simulation              */
      /*   randomized ... use pseudo-random (TRUE) or quasi-random (FALSE)    */
-     /*   threshold  ... maximum allowed error                               */
      /*   verbosity  ... verbosity level, 0 = no output, 1 = output          */
      /*   out        ... output stream                                       */
      /*                                                                      */
@@ -114,8 +114,8 @@ unur_test_estimate_inverror( const UNUR_GEN *gen,
   cdf = DISTR.cdf;
 
   /* range of CDF */
-  CDFmin = (DISTR.domain[0] > -INFINITY) ? _unur_cont_CDF((DISTR.domain[0]),(gen->distr)) : 0.;
-  CDFmax = (DISTR.domain[1] < INFINITY)  ? _unur_cont_CDF((DISTR.domain[1]),(gen->distr)) : 1.;
+  CDFmin = (DISTR.trunc[0] > -INFINITY) ? _unur_cont_CDF((DISTR.trunc[0]),(gen->distr)) : 0.;
+  CDFmax = (DISTR.trunc[1] < INFINITY)  ? _unur_cont_CDF((DISTR.trunc[1]),(gen->distr)) : 1.;
   if (! _unur_FP_less(CDFmin,CDFmax)) {
     _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"CDF not increasing");
     return -1;

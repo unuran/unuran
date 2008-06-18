@@ -191,6 +191,10 @@ int unur_hinv_set_u_resolution( UNUR_PAR *parameters, double u_resolution);
    simulations slighly bigger values for the maximal error are enough
    as well. 
 
+   Remark: The u-error might become larger than @var{u_resolution} due
+   to rescaling of floating point numbers when the domain of the
+   distribution is truncated by a unur_hinv_chg_truncated() call.
+
    Default is @code{1.e-10}.
 */
 
@@ -295,6 +299,11 @@ int unur_hinv_chg_truncated( UNUR_GEN *generator, double left, double right );
    of the boundary points are too close, i.e. when only a few different
    floating point numbers would be computed due to round-off errors
    with floating point arithmetic.
+
+   Remark: The u-error might become larger than the @var{u_resolution}
+   given by a unur_hinv_set_u_resolution() call due to rescaling of
+   floating point numbers when the domain of the distribution is
+   truncated.
 
    When failed an error code is returned.
 

@@ -86,7 +86,6 @@ unur_test_inverror( const UNUR_GEN *gen,
   double U, X;               /* uniform and non-uniform (Q)RN */
   double cdfX;               /* CDF at X */
   double uerror, umax, usum; /* last, maximum, sum of U-error(s) */
-  double Xmax = INFINITY;    /* x-value with largest U-error */
   double penalty = 0;        /* score for error */
 
   int j;                     /* aux variable */
@@ -116,10 +115,6 @@ unur_test_inverror( const UNUR_GEN *gen,
   /* range of CDF */
   CDFmin = (DISTR.trunc[0] > -INFINITY) ? _unur_cont_CDF((DISTR.trunc[0]),(gen->distr)) : 0.;
   CDFmax = (DISTR.trunc[1] < INFINITY)  ? _unur_cont_CDF((DISTR.trunc[1]),(gen->distr)) : 1.;
-  if (! _unur_FP_less(CDFmin,CDFmax)) {
-    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"CDF not increasing");
-    return -1;
-  }
 
   /* initialize variables */
   umax = 0.;
@@ -134,30 +129,33 @@ unur_test_inverror( const UNUR_GEN *gen,
     /* compute inverse CDF */
     X = quantile(gen,U);
 
-    /* compute (rescaled) CDF at X */
-    cdfX = (_unur_cont_CDF(X,gen->distr) - CDFmin) / (CDFmax - CDFmin);
+    /* compute CDF at X */
+    cdfX = _unur_cont_CDF(X,gen->distr);
 
-
-    /* compute U-error */
-    uerror = fabs(U - cdfX);
+    /* compute U-error:  U-error = | U - CDF(X) |
+       However, we have first to rescale CDF(X):
+          CDFrescaled = (CDF(X) - CDFmin) / (CDFmax - CDFmin)
+       as we have to deal with truncated distribution.
+       But then the computed U error might be too large; thus 
+       we have to correct it by the factor (CDFmax - CDFmin)
+       to unavoidably high U-errors.
+     */
+    uerror = fabs( U*(CDFmax - CDFmin) - (cdfX-CDFmin));
 
     /* update error estimates */
     usum += uerror;
     if (uerror > umax) {
       umax = uerror;
-      Xmax = X;
     }
-    /* printf("j %d uerror %e maxerror %e average %e\n",j,uerror,max,average/(j+1)); */
 
     /* update penalty */
-    if (_unur_FP_less(threshold,uerror))
+    if (_unur_FP_less(threshold,uerror)) {
       penalty += 1. + 10.*(uerror - threshold) / threshold;
+      if (verbosity)
+	fprintf(out,"\tmax u-error exceeded at %g: %g (>%g)\n",
+		X,uerror,umax);
+    }
   }
-
-  /*
-    printf("maximal error occured at x= %.16e percentage outside interval %e \n",
-    errorat,(double)outside_interval/(double)samplesize);
-  */
 
   /* save data */
   *max_error = umax;

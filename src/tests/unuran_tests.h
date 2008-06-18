@@ -318,6 +318,11 @@ double unur_test_inverror( const UNUR_GEN *generator,
    If @var{verbosity} is TRUE the result is written to the output
    stream @var{out}.
 
+   When the domain of the distribution is truncated then the u-error
+   might be larger due to rescaling of floating point numbers. Thus
+   the observed u-errors are corrected by the corresponding rescaling
+   factor.
+
    In case of an error a negative value is returned. 
 */
 

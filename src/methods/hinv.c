@@ -56,6 +56,7 @@
 #include <distr/distr.h>
 #include <distr/distr_source.h>
 #include <urng/urng.h>
+#include <tests/unuran_tests.h>
 #include "unur_methods_source.h"
 #include "x_gen_source.h"
 #include "hinv.h"
@@ -1197,46 +1198,22 @@ unur_hinv_estimate_error( const UNUR_GEN *gen, int samplesize, double *max_error
      /*   gen        ... pointer to generator object                         */
      /*   samplesize ... sample size for Monte Carlo simulation              */
      /*   max_error  ... pointer to double for storing maximal u-error       */
-     /*   MEA        ... pointer to double for storing MA u-error            */
+     /*   MAE        ... pointer to double for storing MA u-error            */
      /*                                                                      */
      /* return:                                                              */
      /*   UNUR_SUCCESS ... on success                                        */
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 { 
-  double U, X;
-  double max=0., average=0., uerror, errorat=0.;
-  int j, outside_interval=0;
+  double score;
 
   /* check arguments */
-  CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_HINV_GEN,UNUR_ERR_COOKIE);
+  _unur_check_NULL(GENTYPE, gen, UNUR_ERR_NULL);  
+  COOKIE_CHECK(gen,CK_HINV_GEN,UNUR_ERR_COOKIE);
 
-  for(j=0;j<samplesize;j++) {  
-    /* sample from U( Umin, Umax ) */
-    U = GEN->Umin + _unur_call_urng(gen->urng) * (GEN->Umax - GEN->Umin);
-    
-    /* compute inverse CDF */
-    X = _unur_hinv_eval_approxinvcdf(gen,U);
-
-    if (X<DISTR.trunc[0]) { X = DISTR.trunc[0]; outside_interval++; }
-    if (X>DISTR.trunc[1]) { X = DISTR.trunc[1]; outside_interval++; }
-
-    uerror = fabs(U-CDF(X));
-
-    average += uerror;
-    if(uerror>max) {
-      max = uerror;
-      errorat = X;
-    }
-    /* printf("j %d uerror %e maxerror %e average %e\n",j,uerror,max,average/(j+1)); */
-  }
-  /*
-  printf("maximal error occured at x= %.16e percentage outside interval %e \n",
-	 errorat,(double)outside_interval/(double)samplesize); 
-  */
-
-  *max_error = max;
-  *MAE = average/samplesize;
+  /* run test */
+  score = unur_test_inverror(gen, max_error, MAE, 1.e-20, samplesize, 
+			     TRUE, FALSE, NULL);
 
   /* o.k. */
   return UNUR_SUCCESS;

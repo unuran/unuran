@@ -1488,3 +1488,52 @@ void print_timing_results( FILE *LOG, int line ATTRIBUTE__UNUSED, const UNUR_DIS
 } /* end of print_timing_results() */
 
 /*---------------------------------------------------------------------------*/
+/* run inversion error test and print results */
+
+int run_validate_inverror( FILE *LOG, UNUR_GEN *gen, const UNUR_DISTR *distr,
+			   double uerror, int samplesize )
+{
+  double maxerror, MAE;  /* maximum observed and mean absolute uerror */
+  double score;          /* penalty score of inversion error test */
+  const char *genid;
+
+  /* check objectst */
+  if (gen == NULL || distr == NULL) return 1000;
+
+  /* get generator id */
+  genid = unur_get_genid(gen);
+
+  /* run test */
+  score = unur_test_inverror(gen, &maxerror, &MAE, uerror, samplesize, FALSE, TRUE, LOG);
+
+  /* print result into log file */
+  fprintf(LOG,"%s:   result: #intervals = %d, ",genid,unur_hinv_get_n_intervals(gen));
+  fprintf(LOG,"max u-error = %g, MAE = %g  ",maxerror,MAE);
+  if (maxerror > uerror) {
+     fprintf(LOG,"(NOT <= %g)\n",uerror);
+     fprintf(LOG,"%s: Warning: precision problem, maxerror > u_resolution\n",genid);
+  }
+  else {
+     fprintf(LOG,"(<= %g)\n",uerror);
+  }
+
+  fprintf(LOG,"%s:           score = %5.2f %%\t--> %s\n", genid,
+	  score*100, (score<0.001) ? "passed" : "failed");
+  
+  /* print result of test on screen and return result */
+  if (score == 0.) {
+    printf("+"); fflush(stdout);
+    return 0;
+  }
+  if (score < 0.001) {
+    printf("(?+)"); fflush(stdout);
+    return 1;
+  }     
+  else {
+    printf("(!+)"); fflush(stdout);
+    return 2;
+  }
+
+} /* end of run_validate_inverror() */
+
+/*---------------------------------------------------------------------------*/

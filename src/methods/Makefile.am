@@ -52,6 +52,7 @@ libmethods_la_SOURCES = \
  ninv.c   ninv.h   ninv_struct.h \
  norta.c  norta.h  norta_struct.h \
  nrou.c   nrou.h   nrou_struct.h \
+ pinv.c   pinv.h   pinv_struct.h \
  srou.c   srou.h   srou_struct.h \
  ssr.c    ssr.h    ssr_struct.h \
  tabl.c   tabl.h   tabl_struct.h tabl_newset.ch \

@@ -8,9 +8,6 @@ AM_CPPFLAGS = \
 
 lib_LTLIBRARIES = libunurexperimental.la
 
-libunurexperimental_la_SOURCES = \
- pinv.c  pinv.h  pinv_struct.h
-
 #libunurexperimental_la_SOURCES = \
 # ball.c    ball.h    ball_struct.h \
 # varou.c   varou.h   varou_struct.h \
@@ -18,14 +15,12 @@ libunurexperimental_la_SOURCES = \
 
 noinst_HEADERS = 
 
-noinst_PROGRAMS = pinvwh
-pinvwh_SOURCES = pinvwh_main.c
+#noinst_PROGRAMS = pinvwh
+#pinvwh_SOURCES = pinvwh_main.c
 
-pinvwh_LDADD = \
- $(top_builddir)/src/libunurexperimental.la \
- $(unuran_builddir)/src/libunuran.la
-
-
+#pinvwh_LDADD = \
+# $(top_builddir)/src/libunurexperimental.la \
+# $(unuran_builddir)/src/libunuran.la
 
 # clean backup files
 CLEANFILES = \

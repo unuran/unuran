@@ -38,7 +38,7 @@
 #include <methods/x_gen.h>
 #include <methods/x_gen_source.h>
 #include <methods/hinv.h>
-
+#include <methods/pinv.h>
 #include "unuran_tests.h"
 
 /*---------------------------------------------------------------------------*/
@@ -100,6 +100,10 @@ unur_test_inverror( const UNUR_GEN *gen,
     quantile = unur_hinv_eval_approxinvcdf;
     break;
 
+  case UNUR_METH_PINV:
+    quantile = unur_pinv_eval_approxinvcdf;
+    break;
+
   default:
     _unur_error(test_name,UNUR_ERR_GENERIC,"inversion method required");
     return -1.;
@@ -153,7 +157,7 @@ unur_test_inverror( const UNUR_GEN *gen,
       penalty += 1. + 10.*(uerror - threshold) / threshold;
       if (verbosity)
 	fprintf(out,"\tmax u-error exceeded at %g: %g (>%g)\n",
-		X,uerror,umax);
+		X,uerror,threshold);
     }
   }
 

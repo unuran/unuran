@@ -73,6 +73,7 @@ check_PROGRAMS = \
  t_ninv \
  t_norta \
  t_nrou \
+ t_pinv \
  t_srou \
  t_ssr \
  t_tabl \
@@ -143,6 +144,7 @@ EXTRA_DIST = \
  t_ninv.conf \
  t_norta.conf \
  t_nrou.conf \
+ t_pinv \
  t_srou.conf \
  t_ssr.conf \
  t_tabl.conf \

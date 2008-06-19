@@ -1506,6 +1506,14 @@ int run_validate_inverror( FILE *LOG, UNUR_GEN *gen, const UNUR_DISTR *distr,
   /* run test */
   score = unur_test_inverror(gen, &maxerror, &MAE, uerror, samplesize, FALSE, TRUE, LOG);
 
+  /* check score */
+  if (score < 0.) {
+    /* an error has occured */
+    fprintf(LOG,"%s:   ERROR: could not run test\n",genid);
+    printf("(!!+)"); fflush(stdout);
+    return 3;
+  }
+
   /* print result into log file */
   fprintf(LOG,"%s:   result: #intervals = %d, ",genid,unur_hinv_get_n_intervals(gen));
   fprintf(LOG,"max u-error = %g, MAE = %g  ",maxerror,MAE);

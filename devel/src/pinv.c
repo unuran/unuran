@@ -520,24 +520,24 @@ unur_pinv_set_searchboundary( struct unur_par *par, int left, int right )
 
 /*---------------------------------------------------------------------------*/
 
-/* int */
-/* unur_pinv_get_n_intervals( const struct unur_gen *gen ) */
-/*      /\*----------------------------------------------------------------------*\/ */
-/*      /\* get number of intervals (or more precisely the number of nodes)      *\/ */
-/*      /\*                                                                      *\/ */
-/*      /\* parameters:                                                          *\/ */
-/*      /\*   gen  ... pointer to generator object                               *\/ */
-/*      /\*                                                                      *\/ */
-/*      /\* return:                                                              *\/ */
-/*      /\*   number of intervals ... on success                                 *\/ */
-/*      /\*   0     ... on error                                                 *\/ */
-/*      /\*----------------------------------------------------------------------*\/ */
-/* { */
-/*   /\* check input *\/ */
-/*   _unur_check_NULL( GENTYPE, gen, 0 ); */
-/*   _unur_check_gen_object( gen, PINV, 0 ); */
-/*   return GEN->N; */
-/* } /\* end of unur_pinv_get_n_intervals() *\/ */
+int
+unur_pinv_get_n_intervals( const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* get number of intervals (or more precisely the number of nodes)      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   number of intervals ... on success                                 */
+     /*   0     ... on error                                                 */
+     /*----------------------------------------------------------------------*/
+{
+  /* check input */
+  _unur_check_NULL( GENTYPE, gen, 0 );
+  _unur_check_gen_object( gen, PINV, 0 );
+  return GEN->n_ivs;
+} /* end of unur_pinv_get_n_intervals() */
 
 
 /*****************************************************************************/

@@ -194,36 +194,6 @@ int unur_pinv_set_u_resolution( UNUR_PAR *parameters, double u_resolution);
    Default is @code{1.e-10}.
 */
 
-/* int unur_pinv_set_cpoints( UNUR_PAR *parameters, const double *stp, int n_stp ); */
-/* 
-   Set starting construction points (nodes) for Hermite interpolation. 
-      
-   As the possible maximal error is only estimated in the setup
-   it may be necessary to set some special design points for
-   computing the Hermite interpolation to guarantee that the
-   maximal u-error can not be bigger than desired. We suggest to 
-   include as special design points all local extrema of the density,
-   all points where the density is not differentiable, and isolated
-   points inside of the domain with density 0. 
-   If there is an interval with density constant equal to 0 inside of
-   the given domain of the density, both endpoints of this interval 
-   should be included as special design points. Notice that there is no
-   necessity to do so. However, if these points are not provided to
-   the algorithm the approximation error might be larger than the
-   given u-resolution, or the required number of intervals could be
-   larger than necessary.
-
-   @emph{Important}: Notice that the given points must be in
-   increasing order and they must be disjoint. 
-
-   @emph{Important}: The boundary point of the computational region
-   must not be given in this list!
-   Points outside the boundary of the computational region are ignored.
-
-   Default is for unimodal densities - if known - the mode of the 
-   density, if it is not equal to the border of the domain. 
-*/
-
 int unur_pinv_set_boundary( UNUR_PAR *parameters, double left, double right );
 /* 
    Set the left and right boundary of the computational interval.
@@ -256,7 +226,7 @@ int unur_pinv_set_searchboundary( UNUR_PAR *parameters, int left, int right );
    Default is TRUE.
 */
 
-/* int unur_pinv_get_n_intervals( const UNUR_GEN *generator ); */
+int unur_pinv_get_n_intervals( const UNUR_GEN *generator ); 
 /* 
    Get number of nodes (design points) used for Hermite interpolation in 
    the generator object. The number of intervals is the number of
@@ -276,27 +246,6 @@ double unur_pinv_eval_approxinvcdf( const UNUR_GEN *generator, double u );
    @emph{Notice}: This function always evaluates the inverse CDF of
    the given distribution. A call to unur_pinv_chg_truncated() call
    has no effect.
-*/
-
-/* int unur_pinv_chg_truncated( UNUR_GEN *generator, double left, double right ); */
-/*
-   Changes the borders of the domain of the (truncated) distribution. 
-
-   Notice that the given truncated domain must be a subset of the
-   domain of the given distribution. The generator always uses the
-   intersection of the domain of the distribution and the truncated
-   domain given by this call. The tables of splines are not recomputed.
-   Thus it might happen that the relative error for the generated variates
-   from the truncated distribution is greater than the bound for the
-   non-truncated distribution. This call also fails when the CDF values
-   of the boundary points are too close, i.e. when only a few different
-   floating point numbers would be computed due to round-off errors
-   with floating point arithmetic.
-
-   When failed an error code is returned.
-
-   @emph{Important}: Always check the return code since the domain is
-   not changed in case of an error.
 */
 
 /* int unur_pinv_estimate_error( const UNUR_GEN *generator, int samplesize, double *max_error, double *MAE ); */

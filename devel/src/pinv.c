@@ -102,6 +102,14 @@ xi sind die Intervallgrenzen der sub-intervalle.
 /* Maximal number of iterations for finding the boundary of the              */
 /* computational interval, i.e. where CDF(x) is close to 0 and 1, resp.      */
 
+#define PINV_UERROR_CORRECTION  (0.9)
+/* PINV tries to create an approximation of the inverse CDF where the        */
+/* U-error is bounded by the given u-resolution. However, the error caused   */
+/* by cutting off the tails introduces some additional errors which must be  */
+/* corrected. Thus the upper bound for the pure approximation error of the   */
+/* interpolation is set to PINV_UERROR_CORRECTION * u-resolution.            */
+
+
 /*---------------------------------------------------------------------------*/
 /* Variants: none                                                            */
 
@@ -1078,7 +1086,7 @@ _unur_pinv_create_table( struct unur_gen *gen )
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
-  double uerror = GEN->u_resolution * GEN->area;
+  double uerror = GEN->u_resolution * GEN->area * PINV_UERROR_CORRECTION;
   double maxerror,h;
   double xval[MAX_ORDER+1];
   int i,cont;
@@ -1240,7 +1248,7 @@ _unur_pinv_find_boundary( struct unur_gen *gen )
      e.g. the Cauchy distrbutions.
      Otherwise we have problems to find proper cut-off points.
   */
-  tailcut_error = GEN->u_resolution * GEN->area * tailcut_factor;
+  tailcut_error = GEN->u_resolution * GEN->area * tailcut_factor * PINV_UERROR_CORRECTION;
 
   /* compute cut-off points for tails */
   if(GEN->sleft)
@@ -2160,21 +2168,21 @@ int check_inversion_unuran(struct unur_gen *gen,double uerror,double (*cdf)(doub
   maxu=1.;
   for(u=1.e-10;u<maxu;u+=1./33211){
     x = _unur_pinv_eval_approxinvcdf(gen,u);
-    uerr=(*cdf)(x)-u;
-    if(fabs(uerr)>maxerror) maxerror=uerr;
-    if(printyn&&fabs(uerr)>uerror) printf("%g %g %g\n",u,x,uerr);
+    uerr=fabs((*cdf)(x)-u);
+    if(uerr>maxerror) maxerror=uerr;
+    if(printyn&&uerr>uerror) printf("%g %g %g\n",u,x,uerr);
   }
   for(u=1.e-13;u<1.e-5;u+=1.e-8){//check left tail
     x = _unur_pinv_eval_approxinvcdf(gen,u);
-    uerr=(*cdf)(x)-u;
-    if(fabs(uerr)>maxerror) maxerror=uerr;
-    if(printyn&&fabs(uerr)>uerror)printf("%g %g %g\n",u,x,uerr);
+    uerr=fabs((*cdf)(x)-u);
+    if(uerr>maxerror) maxerror=uerr;
+    if(printyn&&uerr>uerror)printf("%g %g %g\n",u,x,uerr);
   }
   for(u=maxu-1.e-13;u>maxu-1.e-5;u-=1.e-8){//check right tail
     x = _unur_pinv_eval_approxinvcdf(gen,u);
-    uerr=(*cdf)(x)-u;
-    if(fabs(uerr)>maxerror) maxerror=uerr;
-    if(printyn&&fabs(uerr)>uerror)printf("%g %g %g\n",u,x,uerr);
+    uerr=fabs( (*cdf)(x)-u );
+    if(uerr>maxerror) maxerror=uerr;
+    if(printyn&&uerr>uerror)printf("%g %g %g\n",u,x,uerr);
   }
   printf("aimed uerror: %g ;  observed maxerror : %g\n",uerror,maxerror);
   return 0;

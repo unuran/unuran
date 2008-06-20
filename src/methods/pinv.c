@@ -246,7 +246,7 @@ static double _unur_pinv_maxerror_newton (struct unur_gen *gen, struct unur_pinv
 
 static int _unur_pinv_tstpt (int g,double ui[],double utest[]);
 /*---------------------------------------------------------------------------*/
-/* ?WH? was tut diese funktion (siehe unten)                                 */
+/* calculate the local maxima of the interpolation polynomial                */
 /*---------------------------------------------------------------------------*/
 
 static int _unur_pinv_make_guide_table (struct unur_gen *gen);
@@ -1355,7 +1355,8 @@ _unur_pinv_cut( struct unur_gen *gen, double w, double dw, double crit )
     dw ... initial step-length
     the area outside is approximately crit/10
 
-    ?WH? woher kommt das "crit/10" ??
+    ?WH? woher kommt das "crit/10" ?? Von unserer "HINV" Arbeit, kommt mir auch weiterhin sinnvoll vor
+                          eigener Parameter statt 1/10 scheint mir dafuer ueberfluessig
   ****************/
 
   double /* H, */ rezH,y,rezy,yplus,rezys,corr;
@@ -1395,7 +1396,9 @@ _unur_pinv_cut( struct unur_gen *gen, double w, double dw, double crit )
   }
 
   /* ?WH? das folgende ist fuer mich absolut unverstaendlich!
-     was tut diese schleife?
+     was tut diese schleife? 
+     Das ist Gerhards Regula Falsi oder Newton(??) root finding um genau den Tail
+     mit der gewuenschten Flaeche ab zu schneiden.
   */
   dx=dw/64.;
   for (j=0; j<50; j++) {
@@ -1470,7 +1473,8 @@ _unur_pinv_tailprob( struct unur_gen *gen, double x, double dx )
   /* approximate derivative */
   df = (fp-fm)/(2.*dx);
   /* ?WH? macht es sinn hier f' direct zu verwenden, wenn es vorhanden ist? */
-
+  /* macht wohl Sinn, ist aber nicht wirklich notwendig */
+ 
   /* approximate tail probability */
   area = (fx*fx) / (lcplus1 * fabs(df));
 
@@ -1521,17 +1525,18 @@ _unur_pinv_approxarea (struct unur_gen *gen, double xl, double xr)
   double step, stepinit;  /* (initial) step size for integration */
   double error;           /* relative integration error in subinterval */
   double x, xh;           /* left and right boundary points of subinterval */
-
+  int count=0;
   /* initialize variables */
   x = xl;
   sum = 0.;
-  stepinit = (xr-xl)/1.e2;   /* ?WH? ich habe 1 durch diesen wert ersetzt (siehe auch unten) */
+  stepinit = (xr-xl)/1.e2;   /* ?WH? ich habe 1 durch diesen wert ersetzt (siehe auch unten).  Ist OK */
   step = stepinit;
 
-  /* ?WH? muessen wir uns hier for einer endlosschleife schutzen? */
+  /* ?WH? muessen wir uns hier for einer endlosschleife schutzen? Wh: habe ich dazu gegeben.
+     Da die Genauigkeit des Integrals nicht kritisch ist, habe ich keine warning gemacht????*/
 
-  while (x < xr) {
-
+  while (x < xr & count < 1.e5) {
+    count ++;
     /* right boundary point */
     xh = x+step;
     if (!_unur_FP_less(xh,xr)) 
@@ -1554,10 +1559,13 @@ _unur_pinv_approxarea (struct unur_gen *gen, double xl, double xr)
     x = xh;
 
     /* adjust interval to avoid too narrow steps */
-    step *= pow(CRIT/error,1./9.);
+    if(error>1.e-25) step *= pow(CRIT/error,1./9.);
+    else step*=10;   
+
     /* ?WH? das ganze ist numerisch ziemlich instabil.
         es koennte sein, dass error = 0 wird !
         mir ist das beim testen mit valgrind passiert.
+        WH: diesen Fehler hab ich hier einfach abgefangen
     */
     if (!_unur_isfinite(step)) {
       /* we have to use the initial step size again */
@@ -1633,7 +1641,7 @@ _unur_pinv_lobato5 (struct unur_gen *gen, double x, double h, double fx, double 
   ifxph = PDF(x+h);
 
   if(fxph!=NULL){ 
-    /* ?WH? fxph ist aber immer NULL!! */
+    /* ?WH? fxph ist aber immer NULL!! WH: Ich weiss, hier koennte man beim set-up calls to f() sparen. Ich war zu faul dazu*/
     ifx = fx;
     *fxph = ifxph;
   }
@@ -1658,8 +1666,8 @@ _unur_pinv_newtoninterpol (struct unur_gen *gen, struct unur_pinv_interval *iv, 
      /* parameters:                                                          */
      /*   gen  ... pointer to generator object                               */
      /*   iv   ... pointer to current interval                               */
-     /*   h    ... length of subinterval  ?WH?                               */
-     /*   x    ... ?WH?                                                      */
+     /*   h    ... length of subinterval  ?WH  ja?                           */
+     /*   x    ... ?WH? xi values associated with the ui, necessary for controll*/
      /*                                                                      */
      /* return:                                                              */
      /*   UNUR_SUCCESS ... on success                                        */
@@ -1669,9 +1677,13 @@ _unur_pinv_newtoninterpol (struct unur_gen *gen, struct unur_pinv_interval *iv, 
   /*calculates ui and zi arrays, xi pointer may be NULL */
   /* ?WH? x ist aber nie NULL */
 
-  double x0 = iv->xi;    /* left boundary point of interval ?WH? */
-  double *ui = iv->ui;   /* ?WH? */
-  double *zi = iv->zi;   /* ?WH? */
+/*TODOWH: Wie DU richtig siehst ist das hier furchtaber Baustelle, fortran Code in
+    C uebersetzt aber auch verbessert. Ich habe ca 1 Tag daran gebastelt, aber es nicht geschafft
+    ihn wirklich zu verbessern und dann aufgegeben, weil vor Montreal zu viel zu tun ist. Muss ich noch machen!!*/
+
+  double x0 = iv->xi;    /* left boundary point of interval ?WH? ja */
+  double *ui = iv->ui;   /* u-values for Newton interpolation */
+  double *zi = iv->zi;   /* coefficients of Newton interpolation */
   
   // zi[20], ui[20]={0.}, /*20 statt g+1 */
 
@@ -1692,7 +1704,7 @@ _unur_pinv_newtoninterpol (struct unur_gen *gen, struct unur_pinv_interval *iv, 
   ui[0] = 0.;
   zi[0] = 0.;  /* ?WH? sollte man das nicht auch initialisieren
 		  ?WH? braucht man ueberhaupt ui[0] und zi[0] oder
-	          stammt das aus FORTRAN -> C ?
+	          stammt das aus FORTRAN -> C ?  Ja, aber nicht nur
 	       */
   xi = x0;    /* ?WH? das hat im code gefehlt! 
 		 (ansonst hat man mit der naechsten Zeile ein problem)
@@ -1727,7 +1739,7 @@ _unur_pinv_newtoninterpol (struct unur_gen *gen, struct unur_pinv_interval *iv, 
       zi[i]=(zi[i]-zi[i-1])/(ui[i]-ui[i-k]);
 
   /* ?WH? muesste man da nicht ueberpruefen ob ui[i]-ui[i-k] != 0,
-     bzw. of _unur_isfinite(zi[i]) TRUE ist ?
+     bzw. of _unur_isfinite(zi[i]) TRUE ist,  ja sollte man machen ? Siehe TODO oben
   */
 
   /* o.k. */
@@ -1765,7 +1777,7 @@ _unur_pinv_eval_newtonpolynomial( double q, double ui[], double zi[], int order 
   for (k=order-1; k>=1; k--)
     chi = chi*(q-ui[k])+zi[k];
 
-  /* ?WH? was ist mit k=0? */
+  /* ?WH? was ist mit k=0? WH:Das ist wieder die Fortran Indices*/
 
   return (chi*q);
 
@@ -1781,16 +1793,16 @@ _unur_pinv_maxerror_newton (struct unur_gen *gen, struct unur_pinv_interval *iv,
      /* parameters:                                                          */
      /*   gen  ... pointer to generator object                               */
      /*   iv   ... pointer to current interval                               */
-     /*   xval ... ?WH?                                                      */
+     /*   xval ... ?WH? xi values associated with the ui, necessary for controll*/
      /*                                                                      */
      /* return:                                                              */
      /*----------------------------------------------------------------------*/
 {
   /* ?WH? xval ist nie NULL ! */
 
-  double x0 = iv->xi;    /* left boundary point of interval ?WH? */
-  double *ui = iv->ui;   /* ?WH? */
-  double *zi = iv->zi;   /* ?WH? */
+  double x0 = iv->xi;    /* left boundary point of interval ?WH?ja */
+  double *ui = iv->ui;   /* u-values for Newton interpolation  */
+  double *zi = iv->zi;   /* coefficient of Newton interpolation  */
 
   double maxerror = 0.;  /* maximum error */
   double uerror;         /* error for given U value */
@@ -1798,7 +1810,7 @@ _unur_pinv_maxerror_newton (struct unur_gen *gen, struct unur_pinv_interval *iv,
 
   double testu[21];      /* ?WH? array of U numbers for testing */ 
   /** TODO: replace 21 by macro.
-      ?WH? is 21 = maximaler grad + 2 ? 
+      ?WH? is 21 = maximaler grad + 2 ? ja 
   */
 
   int i;                 /* aux variable */
@@ -1807,19 +1819,21 @@ _unur_pinv_maxerror_newton (struct unur_gen *gen, struct unur_pinv_interval *iv,
   COOKIE_CHECK(gen,CK_PINV_GEN,UNUR_FAILURE);
   COOKIE_CHECK(iv,CK_PINV_IV,UNUR_FAILURE);
 
-  /* ?WH? get U values for test ? */
+  /* ?WH?ja get U values for test ? */
   _unur_pinv_tstpt(GEN->order,ui,testu);
 
-  /* ?WH? was passiert da ? */
+  /* calculate the max u-error at the test points */
   for(i=0;i<GEN->order;i++){
-    /* Naechste Zeile: TODO Verbesserung moeglich, wenn man die xi verwendet und so kuerzere
-       intervalle fuer LObato integration bekommt.
-    */
     
     /* inverse CDF for U test point */
     x = _unur_pinv_eval_newtonpolynomial(testu[i+1],ui,zi,GEN->order);
     
-    /* ?WH? worin liegt da der unterschied? */
+    /* ?WH? worin liegt da der unterschied? 
+       WH: Oberes integriert vom linken Rand des Intervalls
+           unteres nur vom letzten stuetzpunkt
+           unteres ist daher genauer fuer lange Intervalle (g gross)
+           das habe ich als Verbessrung von Gerhards Algo eingebaut,
+           weil mir aufgefallen ist, dass es fuer g gross Probleme mit dem INtegrationsfehler gibt*/
     if (i==0 || xval==NULL)
       uerror = fabs(_unur_pinv_lobato5(gen,x0,x ,0.,NULL) - testu[i+1]);
     else
@@ -1838,13 +1852,14 @@ _unur_pinv_maxerror_newton (struct unur_gen *gen, struct unur_pinv_interval *iv,
 int
 _unur_pinv_tstpt (int g, double ui[], double utest[])
      /*----------------------------------------------------------------------*/
-     /* ?WH? was tut diese funktion ? */
+     /* calcuates the local maxima of the polynomial used as control points for error estimate */
      /*                                                                      */
-     /* parameters:                                                          */
+     /* parameters: g... degree of interpolation polynomial                  */
+     /*             ui... u-values of interpolation                          */ 
      /*                                                                      */
-     /* return:                                                              */
+     /* return: the u-values of the controll points in the array utest       */
      /*----------------------------------------------------------------------*/
-     /* ?WH? was tut diese funktion ? */
+     /* ?WH? was tut diese funktion ? WH: Siehe oben*/
 {
   int k,j,i;
   double sum, qsum,x;
@@ -1865,7 +1880,7 @@ _unur_pinv_tstpt (int g, double ui[], double utest[])
   }
 
   return 1;
-  /* ?WH? hat 1 irgendeine bedeutung ? */
+  /* ?WH? hat 1 irgendeine beddeutng? Wh: Nein soll nur anzeigen, dass alles ok */
 
 } /* end of _unur_pinv_tstpt() */
 
@@ -1904,7 +1919,7 @@ _unur_pinv_make_guide_table (struct unur_gen *gen)
   for( j=1; j<GEN->guide_size ;j++ ) {
     while(GEN->iv[i+1].cdfi/GEN->Umax < j/(double)GEN->guide_size && i < imax)
       /* "/GEN->Umax" above is necessary, as we need the guide table for u in (0,umax) */
-      /* ?WH? ist das wirklich notwendig ? */
+      /* ?WH? ist das wirklich notwendig ? WH: Hab laenger herumgebastelt und nichts besseres gefunden??? */
       i++;
     if (i >= imax) break;
     GEN->guide[j]=i;

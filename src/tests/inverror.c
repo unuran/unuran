@@ -45,6 +45,8 @@
 
 static char test_name[] = "InvError";
 
+static double qrng (int i, int samplesize);
+
 /*---------------------------------------------------------------------------*/
 
 double
@@ -75,9 +77,7 @@ unur_test_inverror( const UNUR_GEN *gen,
      /*----------------------------------------------------------------------*/
 {
 #define DISTR   gen->distr->data.cont
-
-  double a;                  /* multiplicator for QRNG */ 
-
+  
   UNUR_FUNCT_CONT *cdf;      /* pointer to CDF */
   double CDFmin, CDFmax;     /* minimum and maximum of CDF in given domain */
 
@@ -94,12 +94,9 @@ unur_test_inverror( const UNUR_GEN *gen,
   _unur_check_NULL(test_name,gen,-1.);
   if (verbosity) { _unur_check_NULL(test_name,out,-1.); }
   if (samplesize < 1000) {
-    _unur_error(test_name,UNUR_ERR_GENERIC,"samplesize too small");
+    _unur_error(test_name,UNUR_ERR_GENERIC,"samplesize too small --> increased to 1000");
     samplesize = 1000;
   }
-
-  /* compute same constants */
-  a = 1./samplesize; /* multiplicator for QRNG */ 
 
   /* get pointer to function that approximates quantiles */
   switch (gen->method) {
@@ -135,7 +132,7 @@ unur_test_inverror( const UNUR_GEN *gen,
   for(j=0;j<samplesize;j++) {
 
     /* uniform random number */
-    U = (randomized) ? _unur_call_urng(gen->urng) : (j+0.5)*a;
+    U = (randomized) ? _unur_call_urng(gen->urng) : qrng(j,samplesize);
 
     /* compute inverse CDF */
     X = quantile(gen,U);
@@ -177,5 +174,52 @@ unur_test_inverror( const UNUR_GEN *gen,
 
 #undef DISTR
 } /* end of unur_test_estimate_inverror() */
+
+/*---------------------------------------------------------------------------*/
+
+double 
+qrng (int i, int samplesize)
+     /*----------------------------------------------------------------------*/
+     /* Quasi-random sequence for testing inversion error.                   */
+     /* 90% of the sample size is used for equidistributed points in (0,1),  */
+     /* 5% for left tail in (0,1e-5) and                                     */
+     /* 5% for the right tail in (1-1e-5,1).                                 */ 
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   i          ... index of pointe in sequence                         */
+     /*   samplesize ... sample size for Monte Carlo simulation              */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   point in sequence                                                  */
+     /*----------------------------------------------------------------------*/
+{
+  double U;
+  int tail;
+
+  /* theshold values for tail parts */
+  tail = (int) (0.05 * samplesize);
+
+  /* i must be in 0, ..., samplesize-1 */
+  i = i % samplesize;
+
+  if (i < tail) {
+    /* lower tail */
+    U = (i+0.5) / (1.e5 * tail); 
+  }
+  else if (i >= samplesize-tail) {
+    /* upper tail */
+    i -= samplesize-tail;
+    U = 1. - (i+0.5) / (1.e5 * tail);
+  }
+  else {
+    /* central part */
+    i -= tail;
+    U = (i+0.5) / (samplesize - 2.*tail);
+  }
+
+  /* return point */
+  return U;
+
+}  /* end of qrng() */
 
 /*---------------------------------------------------------------------------*/

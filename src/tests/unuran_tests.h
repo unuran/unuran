@@ -312,8 +312,8 @@ double unur_test_inverror( const UNUR_GEN *generator,
    @unurmath{1 + 10 \times (uerror - threshold) / threshold}.
 
    If @var{randomized} is TRUE a pseudo-random sequence is used for
-   the estimation, if it is FALSE the U-values are choosen
-   equidistributed. 
+   the estimation. If it is FALSE the U-values are choosen
+   equidistributed with special tests in the tail regions. 
 
    If @var{verbosity} is TRUE the result is written to the output
    stream @var{out}.

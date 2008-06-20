@@ -17,8 +17,6 @@
 #include <unuran_tests.h>
 #include <testdistributions.h>
 
-#include <pinv.h>
-
 #define RUN_TESTS       (~0x0u)
 /* #define RUN_TESTS       UNUR_TEST_SAMPLE */
 

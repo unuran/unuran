@@ -1515,8 +1515,7 @@ int run_validate_inverror( FILE *LOG, UNUR_GEN *gen, const UNUR_DISTR *distr,
   }
 
   /* print result into log file */
-  fprintf(LOG,"%s:   result: #intervals = %d, ",genid,unur_hinv_get_n_intervals(gen));
-  fprintf(LOG,"max u-error = %g, MAE = %g  ",maxerror,MAE);
+  fprintf(LOG,"%s:   result: max u-error = %g, MAE = %g  ",genid,maxerror,MAE);
   if (maxerror > uerror) {
      fprintf(LOG,"(NOT <= %g)\n",uerror);
      fprintf(LOG,"%s: Warning: precision problem, maxerror > u_resolution\n",genid);

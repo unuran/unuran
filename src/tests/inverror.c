@@ -76,7 +76,7 @@ unur_test_inverror( const UNUR_GEN *gen,
 {
 #define DISTR   gen->distr->data.cont
 
-  double a = 1./samplesize;  /* multiplicator for QRNG */ 
+  double a;                  /* multiplicator for QRNG */ 
 
   UNUR_FUNCT_CONT *cdf;      /* pointer to CDF */
   double CDFmin, CDFmax;     /* minimum and maximum of CDF in given domain */
@@ -93,6 +93,13 @@ unur_test_inverror( const UNUR_GEN *gen,
   /* check arguments */
   _unur_check_NULL(test_name,gen,-1.);
   if (verbosity) { _unur_check_NULL(test_name,out,-1.); }
+  if (samplesize < 1000) {
+    _unur_error(test_name,UNUR_ERR_GENERIC,"samplesize too small");
+    samplesize = 1000;
+  }
+
+  /* compute same constants */
+  a = 1./samplesize; /* multiplicator for QRNG */ 
 
   /* get pointer to function that approximates quantiles */
   switch (gen->method) {

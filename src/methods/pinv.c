@@ -1535,7 +1535,7 @@ _unur_pinv_approxarea (struct unur_gen *gen, double xl, double xr)
   /* ?WH? muessen wir uns hier for einer endlosschleife schutzen? Wh: habe ich dazu gegeben.
      Da die Genauigkeit des Integrals nicht kritisch ist, habe ich keine warning gemacht????*/
 
-  while (x < xr & count < 1.e5) {
+  while (x < xr && count < 1.e5) {
     count ++;
     /* right boundary point */
     xh = x+step;

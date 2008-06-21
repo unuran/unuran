@@ -1213,7 +1213,7 @@ unur_hinv_estimate_error( const UNUR_GEN *gen, int samplesize, double *max_error
 
   /* run test */
   score = unur_test_inverror(gen, max_error, MAE, 1.e-20, samplesize, 
-			     TRUE, FALSE, NULL);
+			     FALSE, FALSE, FALSE, NULL);
 
   /* o.k. */
   return UNUR_SUCCESS;

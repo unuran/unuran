@@ -294,7 +294,7 @@ int unur_test_quartiles( UNUR_GEN *generator,
 
 double unur_test_inverror( const UNUR_GEN *generator, 
 			   double *max_error, double *MAE, double threshold,
-			   int samplesize, int randomized,
+			   int samplesize, int randomized, int testtails,
 			   int verbosity, FILE *out );
 /*
    Estimate U-error of an inversion method, i.e. 
@@ -312,8 +312,12 @@ double unur_test_inverror( const UNUR_GEN *generator,
    @unurmath{1 + 10 \times (uerror - threshold) / threshold}.
 
    If @var{randomized} is TRUE a pseudo-random sequence is used for
-   the estimation. If it is FALSE the U-values are choosen
-   equidistributed with special tests in the tail regions. 
+   the estimation. 
+
+   If @var{randomized} is FALSE then the U-values are choosen
+   equidistributed.
+   If in addition @var{randomized} is set to TRUE then the tails of
+   the distributions are tested with a more dense set of points.
 
    If @var{verbosity} is TRUE the result is written to the output
    stream @var{out}.

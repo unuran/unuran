@@ -313,8 +313,9 @@ int unur_hinv_chg_truncated( UNUR_GEN *generator, double left, double right );
 
 int unur_hinv_estimate_error( const UNUR_GEN *generator, int samplesize, double *max_error, double *MAE );
 /*
-   Estimate maximal u-error and mean absolute error (MAE) for @var{generator}
-   by means of Monte-Carlo simulation with sample size @var{samplesize}.
+   Estimate maximal u-error and mean absolute error (MAE) for
+   @var{generator} by means of a (quasi-) Monte-Carlo simulation with
+   sample size @var{samplesize}.
    The results are stored in @var{max_error} and @var{MAE}, respectively.
 
    It returns @code{UNUR_SUCCESS} if successful. 

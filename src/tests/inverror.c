@@ -52,7 +52,7 @@ static double qrng (int i, int samplesize);
 double
 unur_test_inverror( const UNUR_GEN *gen, 
 		    double *max_error, double *MAE, double threshold,
-		    int samplesize, int randomized, 
+		    int samplesize, int randomized, int testtails, 
 		    int verbosity, FILE *out )
      /*----------------------------------------------------------------------*/
      /* Estimate maximal u-error and mean absolute error (MAE) by means of   */
@@ -66,6 +66,7 @@ unur_test_inverror( const UNUR_GEN *gen,
      /*   threshold  ... maximum allowed error                               */
      /*   samplesize ... sample size for Monte Carlo simulation              */
      /*   randomized ... use pseudo-random (TRUE) or quasi-random (FALSE)    */
+     /*   testtails  ... when TRUE then run a special test for tails         */
      /*   verbosity  ... verbosity level, 0 = no output, 1 = output          */
      /*   out        ... output stream                                       */
      /*                                                                      */
@@ -132,7 +133,10 @@ unur_test_inverror( const UNUR_GEN *gen,
   for(j=0;j<samplesize;j++) {
 
     /* uniform random number */
-    U = (randomized) ? _unur_call_urng(gen->urng) : qrng(j,samplesize);
+    if (randomized)
+      U = _unur_call_urng(gen->urng);
+    else
+      U = (testtails) ? qrng(j,samplesize) : (j+0.5) / ((double) samplesize);
 
     /* compute inverse CDF */
     X = quantile(gen,U);

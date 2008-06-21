@@ -40,6 +40,12 @@
 #endif
 
 /*---------------------------------------------------------------------------*/
+/* Compiler switches                                                         */
+
+/* whether to test U-errors for inversion method in tails more accurately */
+#define TEST_INVERROR_TAILS (FALSE)
+
+/*---------------------------------------------------------------------------*/
 /* global switches                                                           */
 
 static int stopwatch = FALSE;   /* whether to use a stop watch for checks    */ 
@@ -1504,7 +1510,8 @@ int run_validate_inverror( FILE *LOG, UNUR_GEN *gen, const UNUR_DISTR *distr,
   genid = unur_get_genid(gen);
 
   /* run test */
-  score = unur_test_inverror(gen, &maxerror, &MAE, uerror, samplesize, FALSE, TRUE, LOG);
+  score = unur_test_inverror(gen, &maxerror, &MAE, uerror, samplesize, 
+			     FALSE, TEST_INVERROR_TAILS, TRUE, LOG);
 
   /* check score */
   if (score < 0.) {

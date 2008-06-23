@@ -1344,9 +1344,6 @@ _unur_pinv_cut( struct unur_gen *gen, double w, double dw, double crit )
   /* dw < 0 --> suche nach links
      ueberpruefe of domain!! */
 
-  /* H = crit; */
-  rezH= 1./crit;
-
   /* search for cut-off point with tail probability less than 'crit'ical value */
   for (j=1; j<1000; j++) {
 
@@ -1362,10 +1359,13 @@ _unur_pinv_cut( struct unur_gen *gen, double w, double dw, double crit )
     /* else
        the tail probability is too large, or the approximation formula
        is not appropriate for the point.
-       Hence we make a step towards + or - infinity
-       (and increase stepsize for next interation).
+       Hence we make a step towards + or - infinity ...
     */
     w += dw;
+
+    /** TODO: check for domain! **/
+
+    /* ... and increase stepsize for next interation. */
     if (j>32) dw *= 1.5;
   }
 
@@ -1379,6 +1379,9 @@ _unur_pinv_cut( struct unur_gen *gen, double w, double dw, double crit )
      Das ist Gerhards Regula Falsi oder Newton(??) root finding um genau den Tail
      mit der gewuenschten Flaeche ab zu schneiden.
   */
+  /* H = crit; */
+  rezH= 1./crit;
+
   dx=dw/64.;
   for (j=0; j<50; j++) {
 
@@ -1458,8 +1461,7 @@ _unur_pinv_tailprob( struct unur_gen *gen, double x, double dx )
 
   /* approximate derivative */
   df = (fp-fm)/(2.*dx);
-  /* ?WH? macht es sinn hier f' direct zu verwenden, wenn es vorhanden ist? */
-  /* macht wohl Sinn, ist aber nicht wirklich notwendig */
+  /** TODO: use dPDF if available **/
  
   /* approximate tail probability */
   area = (fx*fx) / (lcplus1 * fabs(df));

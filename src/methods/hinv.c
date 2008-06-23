@@ -75,7 +75,7 @@
 
 #define HINV_TAILCUTOFF_FACTOR  (0.1)
 #define HINV_TAILCUTOFF_MIN     (1.e-10) 
-/* For unbounded domains the tails has to be cut of. We use the given        */
+/* For unbounded domains the tails has to be cut off. We use the given       */
 /* u-resolution for finding the cut points. (The probability for each of the */
 /* chopped regions should be less than                                       */
 /* HINV_TAILCUTOFF_FACTOR * u-resolution.)                                   */

@@ -36,21 +36,23 @@
  *****************************************************************************/
 
 /* 
-   =experimentalMETHOD PINV  Polynomial interpolation based INVersion of CDF
+   =METHOD PINV  Polynomial interpolation based INVersion of CDF
 
    =UP  Methods_for_CONT
 
    =REQUIRED CDF
 
-   =OPTIONAL PDF, dPDF
+   =OPTIONAL PDF?
 
-   =REF [HLa03] [HLD04: Sect.7.2, Alg.7.1]
+   =REF [HLD04: TODO]
 
    =SPEED Set-up: (very) slow, Sampling: (very) fast
 
-   =REINIT supported
+   =REINIT not implemented
 
    =DESCRIPTION
+      TODO!!
+
       PINV is a variant of numerical inversion, where the inverse CDF
       is approximated using Hermite interpolation, i.e., the interval 
       [0,1] is split into several intervals and in each interval the
@@ -102,45 +104,16 @@
       this region and wants to avoid this search heuristics) it can be
       directly set via a unur_pinv_set_boundary() call.
 
-      It is possible to use this method for generating from truncated
-      distributions. It even can be changed for an existing generator
-      object by an unur_pinv_chg_truncated() call.
-
       This method is not exact, as it only produces random variates of 
       the approximated distribution. Nevertheless, the numerical error
       in "u-direction" (i.e. |U-CDF(X)|, for 
       X = "approximate inverse CDF"(U) |U-CDF(X)|) can be controlled
       by means of unur_pinv_set_u_resolution().
 
-      The possible maximal error is only estimated in the setup. Thus
-      it might be necessary to set some special design points for
-      computing the Hermite interpolation to guarantee that the
-      maximal u-error can not be bigger than desired. Such points
-      (e.g. extremal points of the PDF, points with infinite
-      derivative) can be set using using the
-      unur_pinv_set_cpoints() call. 
-      If the mode for a unimodal distribution is set in the distribution
-      object this mode is automatically used as design-point if the
-      unur_pinv_set_cpoints() call is not used.
-
       As already mentioned the maximal error of this approximation is 
       only estimated. If this error is crucial for an application we
       recommend to compute this error using unur_pinv_estimate_error()
       which runs a small Monte Carlo simulation.
-      
-      It is possible to change the parameters and the domain of the chosen 
-      distribution and run unur_reinit() to reinitialize the generator object.
-      The values given by the last unur_pinv_chg_truncated() call will be 
-      then changed to the values of the domain of the underlying distribution
-      object. Moreover, starting construction points (nodes) that are given by
-      a unur_pinv_set_cpoints() call are ignored when unur_reinit() is
-      called.
-      It is important to note that for a distribution from the 
-      UNU.RAN library of standard distributions
-      (@pxref{Stddist,,Standard distributions})
-      the normalization constant has to be updated using the 
-      unur_distr_cont_upd_pdfarea() call whenever its parameters have been
-      changed by means of a unur_distr_cont_set_pdfparams() call.
 
    =END
 */
@@ -242,13 +215,9 @@ double unur_pinv_eval_approxinvcdf( const UNUR_GEN *generator, double u );
    the domain of the distribution are returned (which is
    @code{-UNUR_INFINITY} or @code{UNUR_INFINITY} in the case of
    unbounded domains).
-
-   @emph{Notice}: This function always evaluates the inverse CDF of
-   the given distribution. A call to unur_pinv_chg_truncated() call
-   has no effect.
 */
 
-/* int unur_pinv_estimate_error( const UNUR_GEN *generator, int samplesize, double *max_error, double *MAE ); */
+int unur_pinv_estimate_error( const UNUR_GEN *generator, int samplesize, double *max_error, double *MAE );
 /*
    Estimate maximal u-error and mean absolute error (MAE) for @var{generator}
    by means of Monte-Carlo simulation with sample size @var{samplesize}.

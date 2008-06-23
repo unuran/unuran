@@ -559,7 +559,7 @@ sub make_list_of_distr_sets {
 
 	    else {
 		# cannot handle this set command
-		$code_unsupported .= "\t /* $l\n\t\t n = $n_args; type = $type_args\t */\n";
+		$code_unsupported .= "\t/* $l\n\t\t n = $n_args; type = $type_args\t */\n";
 		$msg_unsupported .= "  $command_name()\n";
 	    }
 	}
@@ -894,6 +894,7 @@ sub make_list_of_par_sets {
 	    # we support the following cases:
 	    #   void   ... no argument required
 	    #   "i"    ... one argument of type int required
+	    #   "ii"   ... two arguments of type int required
 	    #   "u"    ... one argument of type unsigned required
 	    #   "d"    ... one argument of type double required 
 	    #   "dd"   ... two arguments of type double required 
@@ -904,6 +905,7 @@ sub make_list_of_par_sets {
 	    my %type_args_doc = 
 		( 'void' => ' ',
 		  'i'  => '[= @i{<int>}]',
+		  'ii' => '= @i{<int>}, @i{<int>} | (@i{<list>})',
 		  'u'  => '= @i{<unsigned>}',
 		  'd'  => '= @i{<double>}',
 		  'dd' => '= @i{<double>}, @i{<double>} | (@i{<list>})',
@@ -911,7 +913,7 @@ sub make_list_of_par_sets {
 		  'Di' => '= (@i{<list>}), @i{<int>}'
 		  );
 
-	    if ($type_args =~ /^(void|i|u|d|dd|iD|Di)$/) {
+	    if ($type_args =~ /^(void|i|ii|u|d|dd|iD|Di)$/) {
 		my $type = $1;
 		if ($type_args =~ /^(iD|Di)$/) {
 		    $set .= "\t\t\t\t result = _unur_str_par_set_$type(par,key,type_args,args,$command_name,mlist);\n"; }

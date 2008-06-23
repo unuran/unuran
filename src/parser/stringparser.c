@@ -251,6 +251,7 @@ static int _unur_str_par_set( UNUR_PAR *par, const char *key, char *value,
 /*---------------------------------------------------------------------------*/
 typedef int par_set_void( UNUR_PAR *par );
 typedef int par_set_i( UNUR_PAR *par, int i );
+typedef int par_set_ii( UNUR_PAR *par, int i1, int i2 );
 typedef int par_set_u( UNUR_PAR *par, unsigned u );
 typedef int par_set_d( UNUR_PAR *par, double d );
 typedef int par_set_dd( UNUR_PAR *par, double d1, double d2 );
@@ -270,6 +271,12 @@ static int _unur_str_par_set_i( UNUR_PAR *par, const char *key, char *type_args,
 				par_set_i set );
 /*---------------------------------------------------------------------------*/
 /* integer.                                                                  */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_str_par_set_ii( UNUR_PAR *par, const char *key, char *type_args, char **args,
+				   par_set_ii set );
+/*---------------------------------------------------------------------------*/
+/* 2 integers.                                                               */
 /*---------------------------------------------------------------------------*/
 
 static int _unur_str_par_set_u( UNUR_PAR *par, const char *key, char *type_args, char **args,
@@ -1648,6 +1655,96 @@ _unur_str_par_set_i (UNUR_PAR *par, const char *key, char *type_args, char **arg
   return set(par,iarg);
 
 } /* end of _unur_str_par_set_i() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_str_par_set_ii (UNUR_PAR *par, const char *key, char *type_args, char **args, par_set_ii set)
+     /*----------------------------------------------------------------------*/
+     /* Set parameter in given parameter object.                             */
+     /* The list of arguments and their types are given as string.           */
+     /*                                                                      */
+     /* type: "ii"   (int,int)                                               */
+     /*                                                                      */
+     /* input: "tt"  (exactly two single tokens)                             */
+     /*        "L"   (exactly one list)                                      */
+     /*                                                                      */
+     /* action:                                                              */
+     /*    if "tt": convert both to int.                                     */
+     /*             execute set call.                                        */
+     /*    if "L":  convert list entries to int.                             */
+     /*             execute set call with first two entries.                 */
+     /*                (error if list has less than two entries)             */
+     /*    otherwise: error                                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par       ... pointer to parameter object                          */
+     /*   key       ... name of parameter to be set                          */
+     /*   type_args ... contains types of arguments. Possible values:        */
+     /*                   't'   for single token                             */
+     /*                   'L'   for a list                                   */
+     /*   args      ... array of pointers to argument strings                */
+     /*   set       ... pointer to UNU.RAN function for set call             */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   return code from set call, i.e.                                    */
+     /*      UNUR_SUCCESS ... on success                                     */
+     /*      error code   ... on error                                       */
+     /*----------------------------------------------------------------------*/
+{
+  int *iarray = NULL;
+  int iarg[2];
+  int result;
+
+  /* either exactly two arguments are given */
+  if ( !strcmp(type_args, "tt") ) {
+    iarg[0] = _unur_atoi( args[0] );
+    iarg[1] = _unur_atoi( args[1] );
+
+#ifdef UNUR_ENABLE_LOGGING
+    /* write info into log file */
+    if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
+      _unur_str_debug_set(2,key,"ii",iarg[0],iarg[1]);
+#endif
+
+    return set( par,iarg[0],iarg[1] );
+  }
+
+  /* or one list with 2 entries is given */
+  else if ( !strcmp(type_args, "L") ) {
+    if ( _unur_parse_ilist( args[0], &iarray ) < 2 ) {
+      _unur_error_args(key);
+      free (iarray);
+#ifdef UNUR_ENABLE_LOGGING
+      /* write info into log file */
+      if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
+	_unur_str_debug_set(2,key,"!");
+#endif
+      return UNUR_ERR_STR_INVALID;
+    }
+    result = set( par,iarray[0],iarray[1] );
+
+#ifdef UNUR_ENABLE_LOGGING
+    /* write info into log file */
+    if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
+      _unur_str_debug_set(2,key,"ii",iarray[0],iarray[1] );
+#endif
+
+    free (iarray);
+    return result;
+  }
+  
+  else {
+    _unur_error_args(key);
+#ifdef UNUR_ENABLE_LOGGING
+    /* write info into log file */
+    if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
+      _unur_str_debug_set(2,key,"!");
+#endif
+    return UNUR_ERR_STR_INVALID;
+  }
+
+} /* end of _unur_str_par_set_ii() */
 
 /*---------------------------------------------------------------------------*/
 

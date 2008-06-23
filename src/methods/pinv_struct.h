@@ -47,7 +47,6 @@ struct unur_pinv_par {
 /*---------------------------------------------------------------------------*/
 /* store information about splines                                           */
 
-
 struct unur_pinv_interval {
   double *ui;  //[g+1];    
   double *zi;  //[g+1];
@@ -71,28 +70,20 @@ struct unur_pinv_gen {
   double  Umax;            /* upper bound for uniform random variable U 
 			      [ Umin = 0. ]                                  */
 
-/*   double  CDFmin, CDFmax;  /\* CDF-bounds of domain                           *\/ */
-
   double  u_resolution;    /* maximal error in u                             */
   double  bleft;           /* left border of the computational domain        */
   double  bright;          /* right border of the computational domain       */
 
-  struct unur_pinv_interval *iv; /* list of intervals */
-/*   struct siv *iv;//[maxint+1] for setup; for sampling [ni+1] */
+  struct unur_pinv_interval *iv; /* list of intervals                        */
   int n_ivs;               /* number of sub intervals                        */
-
-
-
-/*   double  tailcutoff_left; /\* cut point for left hand tail (u-value)         *\/  */
-/*   double  tailcutoff_right;/\* cut point for right hand tail (u-value)        *\/  */
 
   double  bleft_par;       /* border of the computational domain as ...      */
   double  bright_par;      /* ... given by user                              */
 
-  double area;             /* approximate area below PDF                     */ 
-
   int sleft;               /* whether to search for left boundary point      */
   int sright;              /* whether to search for right boundary point     */
+
+  double area;             /* approximate area below PDF                     */ 
 
 };
 

@@ -52,6 +52,17 @@
  *     Newton interpolation                                                  *
  *                                                                           *
 
+TODO: Das ganze funktioniert bei exponentialverteilung (und normalverteilung 
+auf (-1,1)) nicht!!!!!
+Domain der verteilung benutzen!!!!!
+vielleicht sollte man auch defaults fuer randsuche davon abhaengig machen,
+welchen domain der benutzer angegeben hat (INFINITY?)
+
+
+
+Wichtig: die dichte darf nicht zwischen einzelnen modi auf zu langen
+intervallen zu klein (fast 0) werden.
+
 ui sind die stuetzstellen der Interpolation von F^{-1} in jedem subinterval.
 zi sind die dazugehoerigen polynomkoeffizienten der Newton Interpolation, also
 Koeffizienten eines Horner-aehnlichen Schemas.
@@ -70,7 +81,9 @@ xi sind die Intervallgrenzen der sub-intervalle.
 #include <unur_source.h>
 #include <distr/distr.h>
 #include <distr/distr_source.h>
+#include <distr/cont.h>
 #include <urng/urng.h>
+#include <tests/unuran_tests.h>
 #include "unur_methods_source.h"
 #include "x_gen_source.h"
 #include "pinv.h"
@@ -81,26 +94,8 @@ xi sind die Intervallgrenzen der sub-intervalle.
 /* Constants                                                                 */
 
 
-
-
-/*   PAR->max_ivs = max_ivs; */
-/* #define PINV_MAX_IVS  (1000000) */
-
-
-
-#define PINVMAXINT  (10000)
-
-#define PINV_PDFLLIM    (1.e-13)
-
-#define PINV_GUIDE_FACTOR  (1)
-
-
-/* maximum order of Newton interpolation polynomial */
 #define MAX_ORDER   (19) 
-
-/* #define PINV_MAX_ITER      (300) */
-/* Maximal number of iterations for finding the boundary of the              */
-/* computational interval, i.e. where CDF(x) is close to 0 and 1, resp.      */
+/* maximum order of Newton interpolation polynomial */
 
 #define PINV_UERROR_CORRECTION  (0.9)
 /* PINV tries to create an approximation of the inverse CDF where the        */
@@ -109,6 +104,43 @@ xi sind die Intervallgrenzen der sub-intervalle.
 /* corrected. Thus the upper bound for the pure approximation error of the   */
 /* interpolation is set to PINV_UERROR_CORRECTION * u-resolution.            */
 
+#define PINV_PDFLLIM    (1.e-13)
+/* Threshold value used for finding the boundary of the computational        */
+/* domain. When starting the search at some point x0 then the search stops   */
+/* when a point x is found where PDF(x) approx. PDF(x0) * PINV_PDFLLIM.      */
+
+#define PINV_TAILCUTOFF_FACTOR(ures) ((ures <= 9.e-13) ? 0.5 : 0.1)
+#define PINV_TAILCUTOFF_MIN     (1.e-10) 
+/* For unbounded domains the tails has to be cut off. We use the given       */
+/* u-resolution for finding the cut points. (The probability for each of the */
+/* chopped regions should be less than                                       */
+/* HINV_TAILCUTOFF_FACTOR * u-resolution.)                                   */
+/* For very small u-resolution we need a higher factor for distributions     */
+/* with heavy tails, e.g. the Cauchy distribution, since otherwise we have   */
+/* numerical problems to find proper cut-off points .                        */
+/*                                                                           */
+/* However, the tail probabilities should not be greater than some threshold */
+/* value, given by PINV_TAILCUTOFF_MIN which reflects the precision of the   */
+/* used stream of uniform pseudo-random numbers (typically about 2^32).      */
+/* However, for computational reasons we use a value that is at least twice  */
+/* the machine epsilon for the right hand boundary.                          */
+
+#define PINV_MAX_IVS  (10000)
+/* maximum number of intervals */
+
+#define PINV_MAX_ITER_IVS    (10 * PINV_MAX_IVS)
+/* maximum number of iterations for computing intervals for Newtwon          */
+/* interpolation polynomials. Obviously it should be larger than the maximum */
+/* number of intervals (or the latter can be reduced).                       */
+
+#define PINV_GUIDE_FACTOR  (1)
+/* relative size of guide table */
+
+
+
+/* #define PINV_MAX_ITER      (300) */
+/* Maximal number of iterations for finding the boundary of the              */
+/* computational interval, i.e. where CDF(x) is close to 0 and 1, resp.      */
 
 /*---------------------------------------------------------------------------*/
 /* Variants: none                                                            */
@@ -122,15 +154,13 @@ xi sind die Intervallgrenzen der sub-intervalle.
 
 #define PINV_DEBUG_REINIT    0x00000002u   /* print parameters after reinit  */
 #define PINV_DEBUG_TABLE     0x00000010u   /* print table                    */
-#define PINV_DEBUG_CHG       0x00001000u   /* print changed parameters       */
-#define PINV_DEBUG_SAMPLE    0x01000000u   /* trace sampling                 */
+#define PINV_DEBUG_SEARCHBD  0x00010000u   /* trace search boundary          */
 
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
 
 #define PINV_SET_ORDER          0x001u  /* order of polynomial               */
 #define PINV_SET_U_RESOLUTION   0x002u  /* maximal error in u                */
-#define PINV_SET_STP            0x004u  /* starting design points            */
 #define PINV_SET_BOUNDARY       0x008u  /* boundary of computational region  */
 #define PINV_SET_SEARCHBOUNDARY 0x010u  /* search for boundary               */
 
@@ -195,7 +225,7 @@ static int _unur_pinv_find_boundary( struct unur_gen *gen );
 /* find boundary for Newton interpolation                                    */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_pinv_searchborder (struct unur_gen *gen, double x0, double dx, double bound);
+static double _unur_pinv_searchborder (struct unur_gen *gen, double x0, double bound);
 /*---------------------------------------------------------------------------*/
 /* calculate domain of computational relevant region.                        */
 /*---------------------------------------------------------------------------*/
@@ -228,7 +258,6 @@ static double _unur_pinv_lobato5 (struct unur_gen *gen, double x, double h, doub
 /* using Gauss-Lobato integration with 5 points.                             */
 /*---------------------------------------------------------------------------*/
 
-/* static int _unur_pinv_newtoninterpol (struct unur_gen *gen, double x0, double h, double *ui, double *zi, double *x); */
 static int _unur_pinv_newtoninterpol (struct unur_gen *gen, struct unur_pinv_interval *iv, double h, double *x);
 /*---------------------------------------------------------------------------*/
 /* Compute coefficients for Newton interpolation.                            */
@@ -260,12 +289,22 @@ static int _unur_pinv_make_guide_table (struct unur_gen *gen);
 /* i.e., into the log file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 
+static void _unur_pinv_debug_init_start (const struct unur_gen *gen);
+/*---------------------------------------------------------------------------*/
+/* print before setup starts.                                                */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_pinv_debug_searchbd (const struct unur_gen *gen, int aftercut);
+/*---------------------------------------------------------------------------*/
+/* akfjaskfjalkfjlkprint before setup starts.                                                */
+/*---------------------------------------------------------------------------*/
+
 static void _unur_pinv_debug_init (const struct unur_gen *gen, int ok);
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed.                 */
 /*---------------------------------------------------------------------------*/
 
-/* static void _unur_pinv_debug_intervals( const struct unur_gen *gen ); */
+static void _unur_pinv_debug_intervals( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print starting points or table for algorithms into logfile.               */
 /*---------------------------------------------------------------------------*/
@@ -273,7 +312,7 @@ static void _unur_pinv_debug_init (const struct unur_gen *gen, int ok);
 #endif
 
 #ifdef UNUR_ENABLE_INFO
-/* static void _unur_pinv_info( struct unur_gen *gen, int help ); */
+static void _unur_pinv_info( struct unur_gen *gen, int help );
 /*---------------------------------------------------------------------------*/
 /* create info string.                                                       */
 /*---------------------------------------------------------------------------*/
@@ -290,18 +329,8 @@ static void _unur_pinv_debug_init (const struct unur_gen *gen, int ok);
 
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */
 
-/* CDF, PDF, and dPDF are rescaled such that the CDF is a "real" CDF with    */
-/* u (range) in (0,1) on the interval (DISTR.domain[0], DISTR.domain[1]).    */
-/* call to CDF: */
-/* #define CDF(x)  (_unur_pinv_CDF((gen),(x))) */
-/* --> ((_unur_cont_CDF((x),(gen->distr))-GEN->CDFmin)/(GEN->CDFmax-GEN->CDFmin)) */
-
-/* call to PDF: */
-/* #define PDF(x)  (_unur_cont_PDF((x),(gen->distr))/(GEN->CDFmax-GEN->CDFmin))  */
 #define PDF(x)  (_unur_cont_PDF((x),(gen->distr)))    /* call to PDF         */
-
-/* call to derivative of PDF: */   
-/* #define dPDF(x) (_unur_cont_dPDF((x),(gen->distr))/(GEN->CDFmax-GEN->CDFmin)) */
+/* #define dPDF(x) (_unur_cont_dPDF((x),(gen->distr)))   /\* call to derivative of PDF *\/    */
 
 /*---------------------------------------------------------------------------*/
 
@@ -431,11 +460,11 @@ unur_pinv_set_u_resolution( struct unur_par *par, double u_resolution )
   /* check new parameter for generator */
   if (u_resolution > 1.e-2) {
     /* this is obviously an error */
-    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"u-resolution");
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"u-resolution too large --> not changed");
     return UNUR_ERR_PAR_SET;
   }
   if (u_resolution < 5.*DBL_EPSILON ) {
-    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"u-resolution");
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"u-resolution too small --> corrected");
     u_resolution = 5.*DBL_EPSILON;
   }
 
@@ -589,37 +618,26 @@ _unur_pinv_init( struct unur_par *par )
     _unur_pinv_free(gen); return NULL;
   }
 
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  if (gen->debug) _unur_pinv_debug_init_start(gen);
+#endif
+
   /* find interval for computing Newton interpolation */
   if (_unur_pinv_find_boundary(gen) != UNUR_SUCCESS) {
+#ifdef UNUR_ENABLE_LOGGING
+    if (gen->debug) _unur_pinv_debug_init(gen,FALSE);
+#endif
     _unur_pinv_free(gen); return NULL;
   }
 
   /* compute table for Newton interpolation */
   if (_unur_pinv_create_table(gen) != UNUR_SUCCESS) {
+#ifdef UNUR_ENABLE_LOGGING
+    if (gen->debug) _unur_pinv_debug_init(gen,FALSE);
+#endif
     _unur_pinv_free(gen); return NULL;
   }
-
-
-  /* compute splines */
-/*   if (_unur_pinv_create_table(gen)!=UNUR_SUCCESS) { */
-/*     /\* make entry in log file *\/ */
-/* #ifdef UNUR_ENABLE_LOGGING */
-/*     if (gen->debug) { */
-/*       _unur_pinv_list_to_array( gen ); */
-/*       _unur_pinv_debug_init(gen,FALSE); */
-/*     } */
-/* #endif */
-/*     _unur_pinv_free(gen); return NULL; */
-/*   } */
-
-  /* adjust minimal and maximal U value */
-/*   GEN->Umin = _unur_max(0.,GEN->intervals[0]); */
-/*   GEN->Umax = _unur_min(1.,GEN->intervals[(GEN->N-1)*(GEN->order+2)]); */
-
-  /* this setting of Umin and Umax guarantees that in the
-     sampling algorithm U is always in a range where a table
-     is available for the inverse CDF.
-     So this is a safe guard against segfault for U=0. or U=1. */
 
   /* make guide table */
   _unur_pinv_make_guide_table(gen);
@@ -654,28 +672,6 @@ _unur_pinv_init( struct unur_par *par )
 /*   /\* check parameters *\/ */
 /*   if ( (rcode = _unur_pinv_check_par(gen)) != UNUR_SUCCESS) */
 /*     return rcode; */
-
-/*   /\* compute splines *\/ */
-/*   if ( (rcode = _unur_pinv_create_table(gen)) != UNUR_SUCCESS) */
-/*     return rcode; */
-
-/*   /\* copy linked list into array *\/ */
-/*   _unur_pinv_list_to_array( gen ); */
-
-/*   /\* adjust minimal and maximal U value *\/ */
-/*   GEN->Umin = _unur_max(0.,GEN->intervals[0]); */
-/*   GEN->Umax = _unur_min(1.,GEN->intervals[(GEN->N-1)*(GEN->order+2)]); */
-
-/*   /\* (re)set sampling routine *\/ */
-/*   SAMPLE = _unur_pinv_getSAMPLE(gen); */
-
-/* #ifdef UNUR_ENABLE_LOGGING */
-/*   /\* write info into log file *\/ */
-/*   if (gen->debug & PINV_DEBUG_REINIT) _unur_pinv_debug_init(gen,TRUE); */
-/* #endif */
-
-/*   /\* make guide table *\/ */
-/*   _unur_pinv_make_guide_table(gen); */
 
 /*   return UNUR_SUCCESS; */
 /* } /\* end of _unur_pinv_reinit() *\/ */
@@ -730,18 +726,18 @@ _unur_pinv_create( struct unur_par *par )
   GEN->bright = GEN->bright_par;
   GEN->Umax = 1.;
   GEN->iv = NULL;
-  GEN->n_ivs = 0;
+  GEN->n_ivs = -1;        /* -1 indicates that there are no intervals at all */
   GEN->guide_size = 0; 
   GEN->guide = NULL;
   GEN->area = 0.;
 
   /* allocate maximal array of intervals */
   /* [ Maybe we could move this into _unur_pinv_interval() ] */
-  GEN->iv =  _unur_xmalloc(PINVMAXINT * sizeof(struct unur_pinv_interval) );
+  GEN->iv =  _unur_xmalloc(PINV_MAX_IVS * sizeof(struct unur_pinv_interval) );
 
 #ifdef UNUR_ENABLE_INFO
   /* set function for creating info string */
-/*   gen->info = _unur_pinv_info; */
+  gen->info = _unur_pinv_info;
 #endif
 
   /* return pointer to (almost empty) generator object */
@@ -772,28 +768,6 @@ _unur_pinv_check_par( struct unur_gen *gen )
   DISTR.trunc[0] = DISTR.domain[0];
   DISTR.trunc[1] = DISTR.domain[1];
 
-/*   /\* set bounds of U -- in respect to given bounds                          *\/ */
-/*   GEN->CDFmin = (DISTR.domain[0] > -INFINITY) ? _unur_cont_CDF((DISTR.domain[0]),(gen->distr)) : 0.; */
-/*   GEN->CDFmax = (DISTR.domain[1] < INFINITY)  ? _unur_cont_CDF((DISTR.domain[1]),(gen->distr)) : 1.; */
-
-/*   if (!_unur_FP_less(GEN->CDFmin,GEN->CDFmax)) { */
-/*     _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"CDF not increasing"); */
-/*     return UNUR_ERR_GEN_DATA; */
-/*   } */
-
-/*   /\* cut points for tails *\/ */
-/*   if (DISTR.domain[0] <= -INFINITY ||  */
-/*       (DISTR.pdf!=NULL && _unur_cont_PDF((DISTR.domain[0]),(gen->distr))<=0.) ) { */
-/*     GEN->tailcutoff_left = _unur_min(PINV_TAILCUTOFF, 0.1*GEN->u_resolution); */
-/*     GEN->tailcutoff_left = _unur_max(GEN->tailcutoff_left,2*DBL_EPSILON); */
-/*   } */
-/*   if (DISTR.domain[1] >= INFINITY ||  */
-/*       (DISTR.pdf!=NULL && _unur_cont_PDF((DISTR.domain[1]),(gen->distr))<=0.) ) { */
-/*     GEN->tailcutoff_right = _unur_min(PINV_TAILCUTOFF, 0.1*GEN->u_resolution); */
-/*     GEN->tailcutoff_right = _unur_max(GEN->tailcutoff_right,2*DBL_EPSILON); */
-/*     GEN->tailcutoff_right = 1. - GEN->tailcutoff_right; */
-/*   } */
-
   return UNUR_SUCCESS;
 } /* end of _unur_pinv_check_par() */
 
@@ -817,6 +791,7 @@ _unur_pinv_clone( const struct unur_gen *gen )
 #define CLONE  ((struct unur_pinv_gen*)clone->datap)
 
   struct unur_gen *clone;
+  int i;
 
   /* check arguments */
   CHECK_NULL(gen,NULL);  COOKIE_CHECK(gen,CK_PINV_GEN,NULL);
@@ -824,11 +799,20 @@ _unur_pinv_clone( const struct unur_gen *gen )
   /* create generic clone */
   clone = _unur_generic_clone( gen, GENTYPE );
 
-/*   /\* copy tables for generator object *\/ */
-/*   CLONE->intervals = _unur_xmalloc( GEN->N*(GEN->order+2) * sizeof(double) ); */
-/*   memcpy( CLONE->intervals, GEN->intervals, GEN->N*(GEN->order+2) * sizeof(double) ); */
-/*   CLONE->guide = _unur_xmalloc( GEN->guide_size * sizeof(int) ); */
-/*   memcpy( CLONE->guide, GEN->guide, GEN->guide_size * sizeof(int) ); */
+  /* copy coefficients for Newton polynomial */
+  CLONE->iv =  _unur_xmalloc((GEN->n_ivs+1) * sizeof(struct unur_pinv_interval) );
+  memcpy( CLONE->iv, GEN->iv, (GEN->n_ivs+1) * sizeof(struct unur_pinv_interval) );
+
+  for(i=0; i<=GEN->n_ivs; i++) {
+    CLONE->iv[i].ui = _unur_xmalloc( (GEN->order+1) * sizeof(double) );
+    CLONE->iv[i].zi = _unur_xmalloc( (GEN->order+1) * sizeof(double) );
+    memcpy( CLONE->iv[i].ui, GEN->iv[i].ui, (GEN->order+1) * sizeof(double) );
+    memcpy( CLONE->iv[i].zi, GEN->iv[i].zi, (GEN->order+1) * sizeof(double) );
+  }
+
+  /* copy guide table */
+  CLONE->guide = _unur_xmalloc( GEN->guide_size * sizeof(int) );
+  memcpy( CLONE->guide, GEN->guide, GEN->guide_size * sizeof(int) );
 
   return clone;
 
@@ -904,7 +888,6 @@ _unur_pinv_sample( struct unur_gen *gen )
   U = _unur_call_urng(gen->urng);
 
   /* compute inverse CDF */
-  X = U;
   X = _unur_pinv_eval_approxinvcdf(gen,U);
 
   if (X<DISTR.trunc[0]) return DISTR.trunc[0];
@@ -939,26 +922,22 @@ _unur_pinv_eval_approxinvcdf( const struct unur_gen *gen, double u )
   /* check arguments */
   CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_PINV_GEN,INFINITY);
 
-/*   /\* look up in guide table and search for interval *\/ */
-/*   i =  GEN->guide[(int) (GEN->guide_size*u)]; */
-/*   while (u > GEN->intervals[i+GEN->order+2]) */
-/*     i += GEN->order+2; */
-
-/*   /\* rescale uniform random number *\/ */
-/*   u = (u-GEN->intervals[i])/(GEN->intervals[i+GEN->order+2] - GEN->intervals[i]); */
-
-/*   /\* evaluate polynome *\/ */
-/*   return _unur_pinv_eval_polynomial( u, GEN->intervals+i+1, GEN->order ); */
-  
   /* rescale for range (0, Umax) */
   un = u * GEN->Umax;
 
-  for(i= GEN->guide[(int)(u * GEN->guide_size)]; GEN->iv[i+1].cdfi < un ; i++)
-    ;
+  /* look up in guide table and search for interval */
+  i = GEN->guide[(int)(u * GEN->guide_size)];
+  while (GEN->iv[i+1].cdfi < un)
+    i++;
 
-  x = _unur_pinv_eval_newtonpolynomial(un- GEN->iv[i].cdfi,GEN->iv[i].ui,GEN->iv[i].zi,GEN->order);
+  /* rescale for range (0, CDF(right)-CDF(left) for interval */
+  un -= GEN->iv[i].cdfi;
 
-  return (GEN->iv)[i].xi+x;
+  /* evaluate polynomial */
+  x = _unur_pinv_eval_newtonpolynomial(un, GEN->iv[i].ui, GEN->iv[i].zi, GEN->order);
+
+  /* return point (add left boundary point to x) */
+  return (GEN->iv)[i].xi + x;
 
 } /* end of _unur_pinv_eval_approxinvcdf() */
 
@@ -1012,62 +991,37 @@ unur_pinv_eval_approxinvcdf( const struct unur_gen *gen, double u )
 
 /*****************************************************************************/
 
-/* int */
-/* unur_pinv_estimate_error( const UNUR_GEN *gen, int samplesize, double *max_error, double *MAE ) */
-/*      /\*----------------------------------------------------------------------*\/ */
-/*      /\* Estimate maximal u-error and mean absolute error (MAE) by means of   *\/ */
-/*      /\* Monte-Carlo simulation.                                              *\/ */
-/*      /\*                                                                      *\/ */
-/*      /\* parameters:                                                          *\/ */
-/*      /\*   gen        ... pointer to generator object                         *\/ */
-/*      /\*   samplesize ... sample size for Monte Carlo simulation              *\/ */
-/*      /\*   max_error  ... pointer to double for storing maximal u-error       *\/ */
-/*      /\*   MEA        ... pointer to double for storing MA u-error            *\/ */
-/*      /\*                                                                      *\/ */
-/*      /\* return:                                                              *\/ */
-/*      /\*   UNUR_SUCCESS ... on success                                        *\/ */
-/*      /\*   error code   ... on error                                          *\/ */
-/*      /\*----------------------------------------------------------------------*\/ */
-/* {  */
-/*   double U, ualt, X; */
-/*   double max=0., average=0., uerror, errorat=0.; */
-/*   int j, outside_interval=0; */
+int
+unur_pinv_estimate_error( const UNUR_GEN *gen, int samplesize, double *max_error, double *MAE )
+     /*----------------------------------------------------------------------*/
+     /* Estimate maximal u-error and mean absolute error (MAE) by means of   */
+     /* Monte-Carlo simulation.                                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen        ... pointer to generator object                         */
+     /*   samplesize ... sample size for Monte Carlo simulation              */
+     /*   max_error  ... pointer to double for storing maximal u-error       */
+     /*   MAE        ... pointer to double for storing MA u-error            */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{ 
+  double score;
 
-/*   /\* check arguments *\/ */
-/*   CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_PINV_GEN,UNUR_ERR_COOKIE); */
+  /* check arguments */
+  _unur_check_NULL(GENTYPE, gen, UNUR_ERR_NULL);  
+  COOKIE_CHECK(gen,CK_PINV_GEN,UNUR_ERR_COOKIE);
 
-/*   for(j=0;j<samplesize;j++) {   */
-/*     /\* sample from U( Umin, Umax ) *\/ */
-/*     U = GEN->Umin + _unur_call_urng(gen->urng) * (GEN->Umax - GEN->Umin); */
-/*     ualt=U; */
+  /* run test */
+  score = unur_test_inverror(gen, max_error, MAE, 1.e-20, samplesize, 
+			     FALSE, FALSE, FALSE, NULL);
 
-/*     /\* compute inverse CDF *\/ */
-/*     X = _unur_pinv_eval_approxinvcdf(gen,U); */
+  /* o.k. */
+  return UNUR_SUCCESS;
 
-/*     if (X<DISTR.trunc[0]) { X = DISTR.trunc[0]; outside_interval++; } */
-/*     if (X>DISTR.trunc[1]) { X = DISTR.trunc[1]; outside_interval++; } */
-
-/*     uerror = fabs(ualt-CDF(X)); */
-
-/*     average += uerror; */
-/*     if(uerror>max) { */
-/*       max = uerror; */
-/*       errorat = X; */
-/*     } */
-/*     /\* printf("j %d uerror %e maxerror %e average %e\n",j,uerror,max,average/(j+1)); *\/ */
-/*   } */
-/*   /\* */
-/*   printf("maximal error occured at x= %.16e percentage outside interval %e \n", */
-/* 	 errorat,(double)outside_interval/(double)samplesize);  */
-/*   *\/ */
-
-/*   *max_error = max; */
-/*   *MAE = average/samplesize; */
-
-/*   /\* o.k. *\/ */
-/*   return UNUR_SUCCESS; */
-
-/* } /\* end of unur_pinv_estimate_error() *\/ */
+} /* end of unur_pinv_estimate_error() */
 
 /*****************************************************************************/
 /**  Auxilliary Routines                                                    **/
@@ -1086,14 +1040,20 @@ _unur_pinv_create_table( struct unur_gen *gen )
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
-  double uerror = GEN->u_resolution * GEN->area * PINV_UERROR_CORRECTION;
-  double maxerror,h;
+  double uerror;             /* threshold for maximum U-error */
+  double maxerror;           /* maximum U-error in a particular interval */ 
+  double h;                  /* step size / length of intervals */
+  int i;                     /* number of interval at work */
+  int iter;                  /* number of iterations */
+  int cont;                  /* whether we have to continue or loop */
   double xval[MAX_ORDER+1];
-  int i,cont;
-  int countextracalc=0;
+  /* int countextracalc = 0; */
 
   /* check arguments */
   COOKIE_CHECK(gen,CK_PINV_GEN,UNUR_ERR_COOKIE);
+
+  /* threshold for tolerated U-error */
+  uerror = GEN->u_resolution * GEN->area * PINV_UERROR_CORRECTION;
 
   /* initialize step size for subintervals */
   h = (GEN->bright-GEN->bleft)/128.;
@@ -1102,13 +1062,25 @@ _unur_pinv_create_table( struct unur_gen *gen )
   if (_unur_pinv_interval( gen, 0, GEN->bleft, 0.) != UNUR_SUCCESS) 
     return UNUR_ERR_GEN_CONDITION;
 
+  /* initialize counter and control variables */
+  i = 0;        /* start at interval 0 ;-) */
+  cont = TRUE;  /* there is at least one iteration */
 
-  cont=1;
-  i=0;
-  while(cont) {
+  /* compute intervals and coefficients of Newton polynomials */
+  for (iter=0; cont ; iter++) {
+
+    /* check number of iterations */
+    if (iter > PINV_MAX_ITER_IVS) {
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,
+		  "maximum number of interations exceeded");
+      return UNUR_ERR_GEN_CONDITION;
+    }
+
+    /* right boundary reached ? */
     if(GEN->iv[i].xi+h > GEN->bright) {
       h = GEN->bright - GEN->iv[i].xi;
-      cont=0;
+      cont = FALSE;  /* we probably can stop after this iteration */
+      /** TODO: What if h is too close to 0 ? **/
     }
 
     /* compute Newton interpolation polynomial */
@@ -1121,7 +1093,8 @@ _unur_pinv_create_table( struct unur_gen *gen )
     if (maxerror > uerror) { 
       /* error too large: reduce step size */
       h *= (maxerror > 4.*uerror) ? 0.81 : 0.9;
-      countextracalc++; /** TODO **/
+      cont = TRUE;  /* we need another iteration */
+      /* countextracalc++; ** TODO ** */
     }
 
     else {
@@ -1140,7 +1113,6 @@ _unur_pinv_create_table( struct unur_gen *gen )
       /* continue with next interval */
       i++;
     }
-
   }
 
   /* update size of array */
@@ -1150,11 +1122,6 @@ _unur_pinv_create_table( struct unur_gen *gen )
   /* Umin = 0, Umax depends on area below PDF, tail cut-off points and round-off errors */
   GEN->Umax = GEN->iv[GEN->n_ivs].cdfi;
 
-
-  printf("Set-up finished: g=%d,  Number of intervals = %d,\n         additional calculated interpolations=%d\n",
-	 GEN->order,GEN->n_ivs,countextracalc);
-  printf("u in (0,%.18g)   1-umax%g\n",GEN->Umax,1.-GEN->Umax);
-  
   /* o.k. */
   return UNUR_SUCCESS;
 }  /* end of _unur_pinv_create_table() */
@@ -1183,7 +1150,7 @@ _unur_pinv_interval( struct unur_gen *gen, int i, double x, double cdfx )
   COOKIE_CHECK(gen,CK_PINV_GEN,UNUR_FAILURE);
 
   /* check for free intervalls */
-  if (i >= PINVMAXINT) {
+  if (i >= PINV_MAX_IVS) {
     _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,
 		"maximum number of intervals exceeded");
     return UNUR_ERR_GEN_CONDITION;
@@ -1222,33 +1189,39 @@ _unur_pinv_find_boundary( struct unur_gen *gen )
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
-  double tailcut_factor, tailcut_error;  /* threshold values for cut-off points */
+  double tailcut_error;    /* threshold values for cut-off points */
 
   /* search for interval of computational relevance (if required) */
   if(GEN->sleft)
-    GEN->bleft = _unur_pinv_searchborder(gen,DISTR.center, -1, GEN->bleft);
+    GEN->bleft = _unur_pinv_searchborder(gen,DISTR.center, GEN->bleft);
   if(GEN->sright)
-    GEN->bright = _unur_pinv_searchborder(gen,DISTR.center, 1, GEN->bright);
+    GEN->bright = _unur_pinv_searchborder(gen,DISTR.center, GEN->bright);
 
   /* estimate area below PDF */
   GEN->area  = _unur_pinv_approxarea( gen, DISTR.center, GEN->bright );
   GEN->area += _unur_pinv_approxarea( gen, GEN->bleft, DISTR.center );
+
+  /** TODO: use PDFarea provided by user ? **/
+
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  if (gen->debug & PINV_DEBUG_SEARCHBD)
+    _unur_pinv_debug_searchbd(gen,FALSE);
+#endif
+
   if (! _unur_isfinite(GEN->area) ) {
     _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"cannot estimate area below PDF");
     return UNUR_FAILURE;
   }
 
+  /* parameters for tail cut-off points: maximal area in tails */
+  /*   tailcut_error = GEN->u_resolution * PINV_TAILCUTOFF_FACTOR(GEN->u_resolution); */
+  /*   tailcut_error = _unur_min( tailcut_error, PINV_TAILCUTOFF_MIN ); */
+  /*   tailcut_error = _unur_max( tailcut_error, 2*DBL_EPSILON ); */
+  /*   tailcut_error *= GEN->area * PINV_UERROR_CORRECTION; */
   /** TODO **/
-  printf("after searchborder: a=%g  b=%g area=%g\n",GEN->bleft,GEN->bright,GEN->area);
-  //  printf("a=%g  b=%g area=%g integralerror%g\n",a,b,area,area/(cdf(b)-cdf(a))-1.);
-
-  /* parameters for tail cut-off points */
-  tailcut_factor = (GEN->u_resolution <= 9.e-13) ? 0.5 : 0.1;
-  /* The higher factor is necessary for distributions with heavy tails, 
-     e.g. the Cauchy distrbutions.
-     Otherwise we have problems to find proper cut-off points.
-  */
-  tailcut_error = GEN->u_resolution * GEN->area * tailcut_factor * PINV_UERROR_CORRECTION;
+  tailcut_error = ( GEN->u_resolution * PINV_TAILCUTOFF_FACTOR(GEN->u_resolution)
+		    * GEN->area * PINV_UERROR_CORRECTION );
 
   /* compute cut-off points for tails */
   if(GEN->sleft)
@@ -1261,12 +1234,13 @@ _unur_pinv_find_boundary( struct unur_gen *gen )
     return UNUR_FAILURE;
   }
 
-  printf("after cut: a=%g b=%g\n",GEN->bleft,GEN->bright);
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  if (gen->debug & PINV_DEBUG_SEARCHBD)
+    _unur_pinv_debug_searchbd(gen,TRUE);
+#endif
 
-/*   if (setup(gen, GEN->u_resolution * GEN->area) != UNUR_SUCCESS) { */
-/*     return UNUR_FAILURE; */
-/*   } */
-
+  /* o.k. */
   return UNUR_SUCCESS;
 
 } /* end of _unur_pinv_find_boundary() */
@@ -1274,18 +1248,17 @@ _unur_pinv_find_boundary( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_pinv_searchborder( struct unur_gen *gen, double x0, double dx, double bound)
+_unur_pinv_searchborder( struct unur_gen *gen, double x0, double bound)
      /*----------------------------------------------------------------------*/
-     /* calculate domain of computational relevant region.                   */
-     /* the boundary points of this domain are approximately given as        */
+     /* Calculate domain of computational relevant region.                   */
+     /* Start at 'x0' and search towards 'bound'.                            */
+     /* The boundary points of this domain are approximately given as        */
      /*      PDF(x0) * PINV_PDFLLIM                                          */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen   ... pointer to generator object                              */
      /*   x0    ... starting point for searching boudary                     */
      /*             PDF(x0) must not be too small                            */
-     /*   dx    ... initial step size for searching                          */
-     /*             its sign gives searching direction                       */
      /*   bound ... stop searching at this point                             */
      /*                                                                      */
      /* return:                                                              */
@@ -1480,7 +1453,7 @@ _unur_pinv_tailprob( struct unur_gen *gen, double x, double dx )
 
   /* check result */
   if (area < 0.) {
-    _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"negative tail probability");
+    _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"tail probability might be negative");
     /* Remark: 
        It is difficult to distinguish between an invalid PDF given by the user,
        a real numerical (round-off) error or simply a point too far from 
@@ -1529,7 +1502,7 @@ _unur_pinv_approxarea (struct unur_gen *gen, double xl, double xr)
   /* initialize variables */
   x = xl;
   sum = 0.;
-  stepinit = (xr-xl)/1.e2;   /* ?WH? ich habe 1 durch diesen wert ersetzt (siehe auch unten).  Ist OK */
+  stepinit = (xr-xl)/1.e2;
   step = stepinit;
 
   /* ?WH? muessen wir uns hier for einer endlosschleife schutzen? Wh: habe ich dazu gegeben.
@@ -1948,6 +1921,44 @@ _unur_pinv_make_guide_table (struct unur_gen *gen)
 /*---------------------------------------------------------------------------*/
 
 void
+_unur_pinv_debug_init_start( const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* write info about generator into logfile before setup starts.         */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{
+  FILE *log;
+
+  /* check arguments */
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_PINV_GEN,RETURN_VOID);
+
+  log = unur_get_stream();
+
+  fprintf(log,"%s:\n",gen->genid);
+  fprintf(log,"%s: type    = continuous univariate random variates\n",gen->genid);
+  fprintf(log,"%s: method  = PINV (Polynomial interpolation based INVerse CDF)\n",gen->genid);
+  fprintf(log,"%s:\n",gen->genid);
+
+  _unur_distr_cont_debug( gen->distr, gen->genid );
+
+  fprintf(log,"%s: sampling routine = _unur_pinv_sample\n",gen->genid);
+  fprintf(log,"%s:\n",gen->genid);
+
+  fprintf(log,"%s: order of polynomial = %d",gen->genid,GEN->order);
+  _unur_print_if_default(gen,PINV_SET_ORDER);
+  fprintf(log,"\n%s: u-resolution = %g",gen->genid,GEN->u_resolution);
+  _unur_print_if_default(gen,PINV_SET_U_RESOLUTION);
+  fprintf(log,"\n");
+
+  fprintf(log,"%s:\n",gen->genid);
+  fflush(log);
+} /* end of _unur_pinv_debug_init_start() */
+
+/*---------------------------------------------------------------------------*/
+
+void
 _unur_pinv_debug_init( const struct unur_gen *gen, int ok )
      /*----------------------------------------------------------------------*/
      /* write info about generator into logfile                              */
@@ -1958,55 +1969,27 @@ _unur_pinv_debug_init( const struct unur_gen *gen, int ok )
      /*----------------------------------------------------------------------*/
 {
   FILE *log;
-/*   int i; */
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_PINV_GEN,RETURN_VOID);
 
   log = unur_get_stream();
 
-  fprintf(log,"%s:\n",gen->genid);
-  fprintf(log,"%s: type    = continuous univariate random variates\n",gen->genid);
-  fprintf(log,"%s: method  = PINV (Hermite approximation of INVerse CDF)\n",gen->genid);
+  fprintf(log,"%s: INIT completed **********************\n",gen->genid);
   fprintf(log,"%s:\n",gen->genid);
 
-  _unur_distr_cont_debug( gen->distr, gen->genid );
-
-  fprintf(log,"%s: sampling routine = _unur_pinv_sample\n",gen->genid);
+  fprintf(log,"%s: domain of computation = [%g,%g]\n",gen->genid, GEN->bleft,GEN->bright);
+  fprintf(log,"%s: Umin = 0 [fixed], Umax = %g,  1-Umax = %g\n",gen->genid,
+	  GEN->Umax,1.-GEN->Umax);
+  fprintf(log,"%s: approx. area below PDF = %g\n",gen->genid, GEN->area);
   fprintf(log,"%s:\n",gen->genid);
 
-/*   fprintf(log,"%s: order of polynomial = %d",gen->genid,GEN->order); */
-/*   _unur_print_if_default(gen,PINV_SET_ORDER); */
+  fprintf(log,"%s: # Intervals = %d\n",gen->genid,GEN->n_ivs);
+  fprintf(log,"%s:\n",gen->genid);
 
-/*   fprintf(log,"\n%s: u-resolution = %g",gen->genid,GEN->u_resolution); */
-/*   _unur_print_if_default(gen,PINV_SET_U_RESOLUTION); */
-/*   fprintf(log,"\n%s: tail cut-off points = ",gen->genid); */
-/*   if (GEN->tailcutoff_left < 0.)  fprintf(log,"none, "); */
-/*   else                            fprintf(log,"%g, ",GEN->tailcutoff_left); */
-/*   if (GEN->tailcutoff_right > 1.) fprintf(log,"none\n"); */
-/*   else                            fprintf(log,"1.-%g\n",1.-GEN->tailcutoff_right); */
-  
-/*   fprintf(log,"%s: domain of computation = [%g,%g]\n",gen->genid,GEN->bleft,GEN->bright); */
-/*   fprintf(log,"%s:\tU in (%g,%g)\n",gen->genid,GEN->Umin,GEN->Umax); */
-/*   fprintf(log,"%s:\n",gen->genid); */
+  _unur_pinv_debug_intervals(gen);
 
-/*   if (GEN->stp && gen->set & PINV_SET_STP) { */
-/*     fprintf(log,"%s: starting points: (%d)",gen->genid,GEN->n_stp); */
-/*     for (i=0; i<GEN->n_stp; i++) { */
-/*       if (i%5==0) fprintf(log,"\n%s:\t",gen->genid); */
-/*       fprintf(log,"   %#g,",GEN->stp[i]); */
-/*     } */
-/*   fprintf(log,"\n%s:\n",gen->genid); */
-/*   } */
- 
-/*   fprintf(log,"%s: sampling from list of intervals: indexed search (guide table method)\n",gen->genid); */
-/*   fprintf(log,"%s:    relative guide table size = %g%%",gen->genid,100.*PINV_GUIDE_FACTOR); */
-/*   _unur_print_if_default(gen,PINV_SET_GUIDEFACTOR); */
-/*   fprintf(log,"\n%s:\n",gen->genid); */
-
-/*   _unur_pinv_debug_intervals(gen); */
-
-  fprintf(log,"%s: initialization %s\n",gen->genid,((ok)?"successful":"failed")); 
+  fprintf(log,"%s: initialization %s\n",gen->genid,((ok)?"successful":"FAILED")); 
   fprintf(log,"%s:\n",gen->genid);
 
   fflush(log);
@@ -2015,47 +1998,66 @@ _unur_pinv_debug_init( const struct unur_gen *gen, int ok )
 
 /*---------------------------------------------------------------------------*/
 
-/* void */
-/* _unur_pinv_debug_intervals( const struct unur_gen *gen ) */
-/*      /\*----------------------------------------------------------------------*\/ */
-/*      /\* print table of intervals into logfile                                *\/ */
-/*      /\*                                                                      *\/ */
-/*      /\* parameters:                                                          *\/ */
-/*      /\*   gen ... pointer to generator object                                *\/ */
-/*      /\*----------------------------------------------------------------------*\/ */
-/* { */
-/*   int i,n; */
-/*   FILE *log; */
+void
+_unur_pinv_debug_searchbd( const struct unur_gen *gen, int aftercut )
+     /*----------------------------------------------------------------------*/
+     /* print computational before or after searching for cut-off points     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen      ... pointer to generator object                           */
+     /*   aftercut ... whether we print boundary points after searching      */
+     /*                for proper points (before computing cut-off points)   */
+     /*                or after computing cut-off points                     */
+     /*----------------------------------------------------------------------*/
+{
+  FILE *log;
 
-/*   /\* check arguments *\/ */
-/*   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_PINV_GEN,RETURN_VOID); */
+  /* check arguments */
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_PINV_GEN,RETURN_VOID);
 
-/*   log = unur_get_stream(); */
+  log = unur_get_stream();
 
-/*   fprintf(log,"%s: Intervals: %d\n",gen->genid,GEN->N-1); */
+  if (aftercut)
+    fprintf(log,"%s: after cutting-off points: domain = (%g,%g)\n",gen->genid,
+	    GEN->bleft,GEN->bright);
+   else
+    fprintf(log,"%s: after searching border:   domain = (%g,%g),  area = %g\n",gen->genid,
+	    GEN->bleft,GEN->bright,GEN->area);
 
-/*   if (gen->debug & PINV_DEBUG_TABLE) { */
-/*     fprintf(log,"%s:   Nr.      u=CDF(p)     p=spline[0]   spline[1]    ...\n",gen->genid); */
-/*     for (n=0; n<GEN->N-1; n++) { */
-/*       i = n*(GEN->order+2); */
-/*       fprintf(log,"%s:[%4d]: %#12.6g  %#12.6g  %#12.6g", gen->genid, n, */
-/* 	      GEN->intervals[i], GEN->intervals[i+1], GEN->intervals[i+2]); */
-/*       if (GEN->order>1) */
-/* 	fprintf(log,"  %#12.6g  %#12.6g", GEN->intervals[i+3], GEN->intervals[i+4]); */
-/*       if (GEN->order>3) */
-/* 	fprintf(log,"  %#12.6g  %#12.6g", GEN->intervals[i+5], GEN->intervals[i+6]); */
-/*       fprintf(log,"\n"); */
-/*     } */
-/*     /\* the following might cause troubles when creating the tables fails. *\/ */
-/*     /\* so we remove it.                                                   *\/ */
-/*     /\*     i = n*(GEN->order+2); *\/ */
-/*     /\*     fprintf(log,"%s:[%4d]: %#12.6g  %#12.6g  (right boundary)\n", gen->genid, n, *\/ */
-/*     /\* 	    GEN->intervals[i], GEN->intervals[i+1] ); *\/ */
-/*   } */
+  fprintf(log,"%s:\n",gen->genid);
+  fflush(log);
+} /* end of _unur_pinv_debug_searchbd() */
 
-/*   fprintf(log,"%s:\n",gen->genid); */
+/*---------------------------------------------------------------------------*/
 
-/* } /\* end of _unur_pinv_debug_intervals() *\/ */
+void
+_unur_pinv_debug_intervals( const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* print table of intervals into logfile                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{
+  int n;
+  FILE *log;
+
+  /* check arguments */
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_PINV_GEN,RETURN_VOID);
+
+  log = unur_get_stream();
+
+  if (gen->debug & PINV_DEBUG_TABLE) {
+    for (n=0; n<=GEN->n_ivs; n++) {
+      fprintf(log,"%s: [%3d] xi = %g, cdfi = %g\n",gen->genid,
+	      n, GEN->iv[n].xi, GEN->iv[n].cdfi);
+    }
+  }
+
+  fflush(log);
+  fprintf(log,"%s:\n",gen->genid);
+
+} /* end of _unur_pinv_debug_intervals() */
 
 
 /*---------------------------------------------------------------------------*/
@@ -2066,142 +2068,97 @@ _unur_pinv_debug_init( const struct unur_gen *gen, int ok )
 #ifdef UNUR_ENABLE_INFO
 /*---------------------------------------------------------------------------*/
 
-/* void */
-/* _unur_pinv_info( struct unur_gen *gen, int help ) */
-/*      /\*----------------------------------------------------------------------*\/ */
-/*      /\* create character string that contains information about the          *\/ */
-/*      /\* given generator object.                                              *\/ */
-/*      /\*                                                                      *\/ */
-/*      /\* parameters:                                                          *\/ */
-/*      /\*   gen  ... pointer to generator object                               *\/ */
-/*      /\*   help ... whether to print additional comments                      *\/ */
-/*      /\*----------------------------------------------------------------------*\/ */
-/* { */
-/*   struct unur_string *info = gen->infostr; */
-/*   struct unur_distr *distr = gen->distr; */
+void
+_unur_pinv_info( struct unur_gen *gen, int help )
+     /*----------------------------------------------------------------------*/
+     /* create character string that contains information about the          */
+     /* given generator object.                                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*   help ... whether to print additional comments                      */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_string *info = gen->infostr;
+  struct unur_distr *distr = gen->distr;
 
-/*   /\* generator ID *\/ */
-/*   _unur_string_append(info,"generator ID: %s\n\n", gen->genid); */
+  /* generator ID */
+  _unur_string_append(info,"generator ID: %s\n\n", gen->genid);
   
-/*   /\* distribution *\/ */
-/*   _unur_string_append(info,"distribution:\n"); */
-/*   _unur_distr_info_typename(gen); */
-/*   _unur_string_append(info,"   functions = CDF"); */
-/*   if (GEN->order > 1) */
-/*     _unur_string_append(info," PDF"); */
-/*   if (GEN->order > 3) */
-/*     _unur_string_append(info," dPDF"); */
-/*   _unur_string_append(info,"\n"); */
-/*   _unur_string_append(info,"   domain    = (%g, %g)", DISTR.trunc[0],DISTR.trunc[1]); */
-/*   if (gen->distr->set & UNUR_DISTR_SET_TRUNCATED) { */
-/*     _unur_string_append(info,"   [truncated from (%g, %g)]", DISTR.domain[0],DISTR.domain[1]); */
-/*   } */
-/*   _unur_string_append(info,"\n"); */
+  /* distribution */
+  _unur_string_append(info,"distribution:\n");
+  _unur_distr_info_typename(gen);
+  _unur_string_append(info,"   functions = PDF\n");
+  _unur_string_append(info,"   domain    = (%g, %g)\n", DISTR.trunc[0],DISTR.trunc[1]);
+  _unur_string_append(info,"   center    = %g", unur_distr_cont_get_center(distr));
+  if ( !(distr->set & UNUR_DISTR_SET_CENTER) ) {
+    if ( distr->set & UNUR_DISTR_SET_MODE )
+      _unur_string_append(info,"  [= mode]\n");
+    else 
+      _unur_string_append(info,"  [default]\n");
+  }
 
-/*   if (distr->set & UNUR_DISTR_SET_MODE) { */
-/*     _unur_string_append(info,"   mode      = %g\n", DISTR.mode); */
-/*   } */
+  if (help) {
+    if ( !(distr->set & (UNUR_DISTR_SET_CENTER | UNUR_DISTR_SET_MODE )) ) 
+      _unur_string_append(info,"\n[ Hint: %s ]\n",
+                          "You may provide a point near the mode as \"center\"."); 
+  }
+  _unur_string_append(info,"\n");
+  
+  /* method */
+  _unur_string_append(info,"method: PINV (Polynomial interpolation based INVerse CDF)\n");
+  _unur_string_append(info,"   order of polynomial = %d\n", GEN->order);
+  _unur_string_append(info,"\n");
 
-/*   if (help) */
-/*     if (! (distr->set & UNUR_DISTR_SET_MODE) ) */
-/*       _unur_string_append(info,"\n[ Hint: %s ]\n", */
-/* 			  "You may set the \"mode\" of the distribution in case of a high peak"); */
+  /* performance */
+  _unur_string_append(info,"performance characteristics:\n");
+  _unur_string_append(info,"   truncated domain = (%g,%g)\n",GEN->bleft,GEN->bright);
+  /*   _unur_string_append(info,"   Prob(X<domain)   = %g\n", _unur_max(0,GEN->tailcutoff_left)); */
+  /*   _unur_string_append(info,"   Prob(X>domain)   = %g\n", _unur_max(0,1.-GEN->tailcutoff_right)); */
+  {
+    double max_error=1.; double MAE=1.;
+    unur_pinv_estimate_error( gen, 10000, &max_error, &MAE );
+    _unur_string_append(info,"   u-error         <= %g  (mean = %g)\n", max_error, MAE);
+  }
 
-/*   _unur_string_append(info,"\n"); */
-      
-/*   /\* method *\/ */
-/*   _unur_string_append(info,"method: PINV (Hermite approximation of INVerse CDF)\n"); */
-/*   _unur_string_append(info,"   order of polynomial = %d\n", GEN->order); */
-/*   _unur_string_append(info,"\n"); */
-
-/*   /\* performance *\/ */
-/*   _unur_string_append(info,"performance characteristics:\n"); */
-/*   _unur_string_append(info,"   truncated domain = (%g,%g)\n",GEN->bleft,GEN->bright); */
-/*   _unur_string_append(info,"   Prob(X<domain)   = %g\n", _unur_max(0,GEN->tailcutoff_left)); */
-/*   _unur_string_append(info,"   Prob(X>domain)   = %g\n", _unur_max(0,1.-GEN->tailcutoff_right)); */
-/*   { */
-/*     double max_error=1.; double MAE=1.; */
-/*     unur_pinv_estimate_error( gen, 10000, &max_error, &MAE ); */
-/*     _unur_string_append(info,"   u-error         <= %g  (mean = %g)\n", max_error, MAE); */
-/*   } */
-
-/*   _unur_string_append(info,"   # intervals      = %d\n", GEN->N-1); */
-/*   _unur_string_append(info,"\n"); */
+  _unur_string_append(info,"   # intervals      = %d\n", GEN->n_ivs);
+  _unur_string_append(info,"\n");
   
 
-/*   /\* parameters *\/ */
-/*   if (help) { */
-/*     _unur_string_append(info,"parameters:\n"); */
-/*     _unur_string_append(info,"   order = %d  %s\n", GEN->order, */
-/*  			(gen->set & PINV_SET_ORDER) ? "" : "[default]"); */
+  /* parameters */
+  if (help) {
+    _unur_string_append(info,"parameters:\n");
+    _unur_string_append(info,"   order = %d  %s\n", GEN->order,
+ 			(gen->set & PINV_SET_ORDER) ? "" : "[default]");
 
-/*     _unur_string_append(info,"   u_resolution = %g  %s\n", GEN->u_resolution, */
-/*  			(gen->set & PINV_SET_U_RESOLUTION) ? "" : "[default]"); */
+    _unur_string_append(info,"   u_resolution = %g  %s\n", GEN->u_resolution,
+ 			(gen->set & PINV_SET_U_RESOLUTION) ? "" : "[default]");
     
-/*     _unur_string_append(info,"   boundary = (%g,%g)  %s\n", GEN->bleft, GEN->bright, */
-/* 			(gen->set & PINV_SET_BOUNDARY) ? "" : "[computed]"); */
+    _unur_string_append(info,"   boundary = (%g,%g)  %s\n", GEN->bleft_par, GEN->bright_par,
+			(gen->set & PINV_SET_BOUNDARY) ? "" : "[default]");
 
-/*     _unur_string_append(info,"\n"); */
-/*     /\* Not displayed: */
-/*        int unur_pinv_set_cpoints( UNUR_PAR *parameters, const double *stp, int n_stp ); */
-/*        int unur_pinv_set_guidefactor( UNUR_PAR *parameters, double factor ); */
-/*     *\/ */
-/*   } */
+    _unur_string_append(info,"   search for boundary: left=%s,  right=%s  %s\n",
+			(GEN->sleft ? "TRUE":"FALSE"), (GEN->sright ? "TRUE":"FALSE"), 
+			(gen->set & PINV_SET_BOUNDARY) ? "" : "[default]");
+
+    _unur_string_append(info,"\n");
+  }
 
 
-/*   /\* Hints *\/ */
-/*   if (help) { */
-/*     if ( GEN->order < 5 )  */
-/*       _unur_string_append(info,"[ Hint: %s ]\n", */
-/* 			  "You can set \"order=5\" to decrease #intervals"); */
-/*     if (! (gen->set & PINV_SET_U_RESOLUTION) ) */
-/*       _unur_string_append(info,"[ Hint: %s\n\t%s ]\n", */
-/* 			  "You can decrease the u-error by decreasing \"u_resolution\".", */
-/* 			  "(it is bounded by the machine epsilon, however.)"); */
-/*     _unur_string_append(info,"\n"); */
-/*   } */
+  /* Hints */
+  if (help) {
+    if ( GEN->order < MAX_ORDER )
+      _unur_string_append(info,"[ Hint: %s ]\n",
+			  "You can increase \"order\" to decrease #intervals");
+    if (! (gen->set & PINV_SET_U_RESOLUTION) )
+      _unur_string_append(info,"[ Hint: %s\n\t%s ]\n",
+			  "You can decrease the u-error by decreasing \"u_resolution\".",
+			  "(it is bounded by the machine epsilon, however.)");
+    _unur_string_append(info,"\n");
+  }
 
-/* } /\* end of _unur_tdr_info() *\/ */
+} /* end of _unur_tdr_info() */
 
 /*---------------------------------------------------------------------------*/
 #endif   /* end UNUR_ENABLE_INFO */
 /*---------------------------------------------------------------------------*/
-
-
-
-int check_inversion_unuran(struct unur_gen *gen,double uerror,double (*cdf)(double x),int printyn){
-  /* checks the inversion for a generator object by calculating the u-error using the CDF
-     checks many u-values especially in the etreme tails
-  */
-
-  double u,x,uerr,maxerror=0.,maxu;
-
-  if (gen == NULL) return 1;
-
-  uerror*=1.1;
-/* "*1.1" is necessary for this controll as the left cut-off tail has about 10% of the uerror */
-  maxu=1.;
-  for(u=1.e-10;u<maxu;u+=1./33211){
-    x = _unur_pinv_eval_approxinvcdf(gen,u);
-    uerr=fabs((*cdf)(x)-u);
-    if(uerr>maxerror) maxerror=uerr;
-    if(printyn&&uerr>uerror) printf("%g %g %g\n",u,x,uerr);
-  }
-  for(u=1.e-13;u<1.e-5;u+=1.e-8){//check left tail
-    x = _unur_pinv_eval_approxinvcdf(gen,u);
-    uerr=fabs((*cdf)(x)-u);
-    if(uerr>maxerror) maxerror=uerr;
-    if(printyn&&uerr>uerror)printf("%g %g %g\n",u,x,uerr);
-  }
-  for(u=maxu-1.e-13;u>maxu-1.e-5;u-=1.e-8){//check right tail
-    x = _unur_pinv_eval_approxinvcdf(gen,u);
-    uerr=fabs( (*cdf)(x)-u );
-    if(uerr>maxerror) maxerror=uerr;
-    if(printyn&&uerr>uerror)printf("%g %g %g\n",u,x,uerr);
-  }
-  printf("aimed uerror: %g ;  observed maxerror : %g\n",uerror,maxerror);
-  return 0;
-}
-
-/**********************************************/
-

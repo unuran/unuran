@@ -50,7 +50,7 @@ int main()
   
 /*   double mean[] = {0.,0.}; */
 
-/*   unur_set_default_debug(0U); */
+  unur_set_default_debug(~0U);
 
 /*   distr = unur_distr_multinormal(2,mean,NULL); */
 /* /\*   distr = unur_distr_multinormal(2,NULL,NULL); *\/ */
@@ -61,7 +61,7 @@ int main()
 /*   unur_mvtdr_set_stepsmin(par, 0 ); */
 /*   unur_mvtdr_set_maxcones(par,1);  */
 
-  distr = unur_distr_normal(NULL,0);
+  distr = unur_distr_exponential(NULL,0);
   par = unur_pinv_new(distr);
 
 /*   unur_run_tests(par,RUN_TESTS,stdout); */

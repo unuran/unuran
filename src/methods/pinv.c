@@ -329,6 +329,9 @@ static void _unur_pinv_info( struct unur_gen *gen, int help );
 
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */
 
+#define BD_LEFT   domain[0]             /* left boundary of domain of distribution */
+#define BD_RIGHT  domain[1]             /* right boundary of domain of distribution */
+
 #define PDF(x)  (_unur_cont_PDF((x),(gen->distr)))    /* call to PDF         */
 /* #define dPDF(x) (_unur_cont_dPDF((x),(gen->distr)))   /\* call to derivative of PDF *\/    */
 
@@ -1332,14 +1335,17 @@ _unur_pinv_cut( struct unur_gen *gen, double w, double dw, double crit )
                           eigener Parameter statt 1/10 scheint mir dafuer ueberfluessig
   ****************/
 
-  double /* H, */ rezH,y,rezy,yplus,rezys,corr;
+  double rezH,y,rezy,yplus,rezys,corr;
 
   int found = FALSE;   /* indicates whether we have found an cut-off point */
   double dx = dw/64.;  /* step size for numeric differentiation */
   int j;               /* aux variable */
 
-/*   H = crit; */
-  rezH= 1./crit; // 1./H;
+  /* dw < 0 --> suche nach links
+     ueberpruefe of domain!! */
+
+  /* H = crit; */
+  rezH= 1./crit;
 
   /* search for cut-off point with tail probability less than 'crit'ical value */
   for (j=1; j<1000; j++) {
@@ -1348,7 +1354,7 @@ _unur_pinv_cut( struct unur_gen *gen, double w, double dw, double crit )
     y = _unur_pinv_tailprob(gen, w, dw/64.);
 
     /* below threshold value ? */
-    if (y < crit && y > 0.) {
+    if (y < crit && y >= 0.) {
       found = TRUE;
       break;
     }
@@ -1433,6 +1439,13 @@ _unur_pinv_tailprob( struct unur_gen *gen, double x, double dx )
   fx = PDF(x);
   fp = PDF(x+dx);
   fm = PDF(x-dx);
+
+  /* We have a serious problem when PDF(X) == 0.                      */
+  /* Thus our only chance is to assume that the support of the PDF is */
+  /* connected. Hence we assume that we have found the cut point.     */
+  if ( _unur_iszero(fx) && _unur_iszero(fp) && _unur_iszero(fm) ) {
+    return 0.;
+  } 
 
   /* check data */
   if( fm-2.*fx+fp < 0.|| fm<1.e-100 || fx<1.e-100 || fp<1.e-100) {

@@ -196,6 +196,10 @@ int unur_pinv_set_searchboundary( UNUR_PAR *parameters, int left, int right );
    Switching off this search is useful, e.g. for the Gamma(2)
    distribution where the left border 0 is fixed and finite.
 
+   @emph{Remark:}
+   The searching algorithm assumes that the support of the distribution
+   is connected.
+
    Default is TRUE.
 */
 

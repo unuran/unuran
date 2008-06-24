@@ -1504,7 +1504,11 @@ int run_validate_inverror( FILE *LOG, UNUR_GEN *gen, const UNUR_DISTR *distr,
   const char *genid;
 
   /* check objectst */
-  if (gen == NULL || distr == NULL) return 1000;
+  if (gen == NULL || distr == NULL) {
+    fprintf(LOG,"testname:   ERROR: generator not initialized\n");
+    printf("(!!+)"); fflush(stdout);
+    return 1000;
+  }
 
   /* get generator id */
   genid = unur_get_genid(gen);

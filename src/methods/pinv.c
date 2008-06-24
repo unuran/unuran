@@ -110,7 +110,7 @@ xi sind die Intervallgrenzen der sub-intervalle.
 /* when a point x is found where PDF(x) approx. PDF(x0) * PINV_PDFLLIM.      */
 
 #define PINV_TAILCUTOFF_FACTOR(ures) ((ures <= 9.e-13) ? 0.5 : 0.1)
-#define PINV_TAILCUTOFF_MIN     (1.e-10) 
+#define PINV_TAILCUTOFF_MAX          (1.e-10) 
 /* For unbounded domains the tails has to be cut off. We use the given       */
 /* u-resolution for finding the cut points. (The probability for each of the */
 /* chopped regions should be less than                                       */
@@ -120,7 +120,7 @@ xi sind die Intervallgrenzen der sub-intervalle.
 /* numerical problems to find proper cut-off points .                        */
 /*                                                                           */
 /* However, the tail probabilities should not be greater than some threshold */
-/* value, given by PINV_TAILCUTOFF_MIN which reflects the precision of the   */
+/* value, given by PINV_TAILCUTOFF_MAX which reflects the precision of the   */
 /* used stream of uniform pseudo-random numbers (typically about 2^32).      */
 /* However, for computational reasons we use a value that is at least twice  */
 /* the machine epsilon for the right hand boundary.                          */
@@ -714,7 +714,7 @@ _unur_pinv_create( struct unur_par *par )
   SAMPLE = _unur_pinv_getSAMPLE(gen);
   gen->destroy = _unur_pinv_free;
   gen->clone = _unur_pinv_clone;
-/*   gen->reinit = _unur_pinv_reinit; */
+  /* gen->reinit = _unur_pinv_reinit; */
 
   /* copy parameters into generator object */
   GEN->order = PAR->order;            /* order of polynomial                 */
@@ -1033,7 +1033,8 @@ unur_pinv_estimate_error( const UNUR_GEN *gen, int samplesize, double *max_error
 int
 _unur_pinv_create_table( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* create table for Newton interpolation                                */
+     /* Create table for Newton interpolation.                               */
+     /* The computational domain must be already computed / given.           */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer generator object                                   */
@@ -1050,7 +1051,6 @@ _unur_pinv_create_table( struct unur_gen *gen )
   int iter;                  /* number of iterations */
   int cont;                  /* whether we have to continue or loop */
   double xval[MAX_ORDER+1];
-  /* int countextracalc = 0; */
 
   /* check arguments */
   COOKIE_CHECK(gen,CK_PINV_GEN,UNUR_ERR_COOKIE);
@@ -1083,7 +1083,6 @@ _unur_pinv_create_table( struct unur_gen *gen )
     if(GEN->iv[i].xi+h > GEN->bright) {
       h = GEN->bright - GEN->iv[i].xi;
       cont = FALSE;  /* we probably can stop after this iteration */
-      /** TODO: What if h is too close to 0 ? **/
     }
 
     /* compute Newton interpolation polynomial */
@@ -1097,7 +1096,6 @@ _unur_pinv_create_table( struct unur_gen *gen )
       /* error too large: reduce step size */
       h *= (maxerror > 4.*uerror) ? 0.81 : 0.9;
       cont = TRUE;  /* we need another iteration */
-      /* countextracalc++; ** TODO ** */
     }
 
     else {
@@ -1204,7 +1202,10 @@ _unur_pinv_find_boundary( struct unur_gen *gen )
   GEN->area  = _unur_pinv_approxarea( gen, DISTR.center, GEN->bright );
   GEN->area += _unur_pinv_approxarea( gen, GEN->bleft, DISTR.center );
 
-  /** TODO: use PDFarea provided by user ? **/
+  /* Remark:
+     The user can also provide the area below the PDF.
+     However, then we probably need not method PINV
+   */
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
@@ -1217,14 +1218,12 @@ _unur_pinv_find_boundary( struct unur_gen *gen )
     return UNUR_FAILURE;
   }
 
-  /* parameters for tail cut-off points: maximal area in tails */
-  /*   tailcut_error = GEN->u_resolution * PINV_TAILCUTOFF_FACTOR(GEN->u_resolution); */
-  /*   tailcut_error = _unur_min( tailcut_error, PINV_TAILCUTOFF_MIN ); */
-  /*   tailcut_error = _unur_max( tailcut_error, 2*DBL_EPSILON ); */
-  /*   tailcut_error *= GEN->area * PINV_UERROR_CORRECTION; */
-  /** TODO **/
-  tailcut_error = ( GEN->u_resolution * PINV_TAILCUTOFF_FACTOR(GEN->u_resolution)
-		    * GEN->area * PINV_UERROR_CORRECTION );
+  /* parameters for tail cut-off points: maximal area in tails          */
+  /* We use the given U-reslution * PINV_TAILCUTOFF_FACTOR * PDFarea.   */
+    tailcut_error = GEN->u_resolution * PINV_TAILCUTOFF_FACTOR(GEN->u_resolution);
+    tailcut_error = _unur_min( tailcut_error, PINV_TAILCUTOFF_MAX );
+    tailcut_error = _unur_max( tailcut_error, 2*DBL_EPSILON );
+    tailcut_error *= GEN->area * PINV_UERROR_CORRECTION;
 
   /* compute cut-off points for tails */
   if(GEN->sleft)
@@ -1305,9 +1304,9 @@ _unur_pinv_searchborder( struct unur_gen *gen, double x0, double bound)
 double
 _unur_pinv_cut( struct unur_gen *gen, double w, double dw, double crit )
      /*----------------------------------------------------------------------*/
-     /* calculate cut-off points for computationally stable domain for       */
+     /* Calculate cut-off points for computationally stable domain for       */
      /* distribution.                                                        */
-     /* the area outside the cut-off point is approximately crit/10.         */
+     /* The area outside the cut-off point is given by 'crit'.               */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen  ... pointer to generator object                               */
@@ -1325,17 +1324,7 @@ _unur_pinv_cut( struct unur_gen *gen, double w, double dw, double crit )
      /*   return INFINITY                                                    */
      /*----------------------------------------------------------------------*/
 {
-  /**********************
-    calculates starting from w the left (dw<0) or right (dw>0) cut off point.
-    crit... u-error criterium for tail cut off 
-    dw ... initial step-length
-    the area outside is approximately crit/10
-
-    ?WH? woher kommt das "crit/10" ?? Von unserer "HINV" Arbeit, kommt mir auch weiterhin sinnvoll vor
-                          eigener Parameter statt 1/10 scheint mir dafuer ueberfluessig
-  ****************/
-
-  double rezH,y,rezy,yplus,rezys,corr;
+  double u, uplus;     /* tail probabilities */
 
   int found = FALSE;   /* indicates whether we have found an cut-off point */
   double dx = dw/64.;  /* step size for numeric differentiation */
@@ -1348,10 +1337,10 @@ _unur_pinv_cut( struct unur_gen *gen, double w, double dw, double crit )
   for (j=1; j<1000; j++) {
 
     /* compute approximate tail probability at w */
-    y = _unur_pinv_tailprob(gen, w, dw/64.);
+    u = _unur_pinv_tailprob(gen, w, dw/64.);
 
     /* below threshold value ? */
-    if (y < crit && y >= 0.) {
+    if (u < crit && u >= 0.) {
       found = TRUE;
       break;
     }
@@ -1374,36 +1363,45 @@ _unur_pinv_cut( struct unur_gen *gen, double w, double dw, double crit )
     return INFINITY;
   }
 
-  /* ?WH? das folgende ist fuer mich absolut unverstaendlich!
-     was tut diese schleife? 
-     Das ist Gerhards Regula Falsi oder Newton(??) root finding um genau den Tail
-     mit der gewuenschten Flaeche ab zu schneiden.
-  */
-  /* H = crit; */
-  rezH= 1./crit;
+  /** TODO: check for u == 0 **/
+  if (_unur_iszero(u)) {
+    ; /* stop */
+  }
 
+  /* step size for numeric differentiation */
   dx=dw/64.;
+
+  /* run secant method to find cut-off point with tail probability approx 'crit' */
   for (j=0; j<50; j++) {
 
-    /* alternative abfrage: */
-    /*     if (_unur_FP_cmp_approx(fabs(y),crit)) return w; */
+    /* check whether 'u' approx 'crit' */
+    if (fabs(crit/u - 1.)<1.e-7) 
+      return w;
 
-    rezy=1./y;
-
-    yplus = _unur_pinv_tailprob(gen,w+dx,dx);
-    if(yplus<0){
+    /* compute tail probability in the next point towards 'dx' */
+    /* (required for numerical derivative) */
+    uplus = _unur_pinv_tailprob(gen,w+dx,dx);
+    if(uplus<0){
       _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"negative tail probability");
       return INFINITY;
     }
-    rezys = (1./yplus-rezy)/dx;
-    corr = -(rezy-rezH)/rezys;
-    if(fabs(rezy/rezH-1.)<1.e-7) return w;
-    w+=corr;
-    y = _unur_pinv_tailprob(gen,w,dx);
-    if(y<0){
+    if (_unur_iszero(uplus)) {
+      ; /* stop */
+    }
+
+    /* next iteration for secant method */
+    w -= dx * (1./u-1./crit)/(1./uplus-1./u);
+
+    /* compute */
+    u = _unur_pinv_tailprob(gen,w,dx);
+    if(u<0){
       _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"negative tail probability");
       return INFINITY;
     }
+    if (_unur_iszero(uplus)) {
+      ; /* stop */
+    }
+
   }
 
   /* could not find point till now */

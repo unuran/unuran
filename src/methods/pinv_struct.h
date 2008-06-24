@@ -80,6 +80,9 @@ struct unur_pinv_gen {
   double  bleft_par;       /* border of the computational domain as ...      */
   double  bright_par;      /* ... given by user                              */
 
+  double  dleft;           /* left and right boundary of domain / support    */
+  double  dright;          /* of distribution                                */
+
   int sleft;               /* whether to search for left boundary point      */
   int sright;              /* whether to search for right boundary point     */
 

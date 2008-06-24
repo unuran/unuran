@@ -225,12 +225,12 @@ static int _unur_pinv_find_boundary( struct unur_gen *gen );
 /* find boundary for Newton interpolation                                    */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_pinv_searchborder (struct unur_gen *gen, double x0, double bound);
+static double _unur_pinv_searchborder (struct unur_gen *gen, double x0, double bound, double *dom);
 /*---------------------------------------------------------------------------*/
 /* calculate domain of computational relevant region.                        */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_pinv_cut (struct unur_gen *gen, double w, double dw, double crit);
+static double _unur_pinv_cut (struct unur_gen *gen, double dom, double w, double dw, double crit);
 /*---------------------------------------------------------------------------*/
 /* calculate cut-off points for computationally stable domain for distr.     */
 /*---------------------------------------------------------------------------*/
@@ -328,9 +328,6 @@ static void _unur_pinv_info( struct unur_gen *gen, int help );
 #define DISTR     gen->distr->data.cont /* data for distribution in generator object */
 
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */
-
-#define BD_LEFT   domain[0]             /* left boundary of domain of distribution */
-#define BD_RIGHT  domain[1]             /* right boundary of domain of distribution */
 
 #define PDF(x)  (_unur_cont_PDF((x),(gen->distr)))    /* call to PDF         */
 /* #define dPDF(x) (_unur_cont_dPDF((x),(gen->distr)))   /\* call to derivative of PDF *\/    */
@@ -727,6 +724,8 @@ _unur_pinv_create( struct unur_par *par )
   /* initialize variables */
   GEN->bleft = GEN->bleft_par;
   GEN->bright = GEN->bright_par;
+  GEN->dleft = -INFINITY;
+  GEN->dright = INFINITY;
   GEN->Umax = 1.;
   GEN->iv = NULL;
   GEN->n_ivs = -1;        /* -1 indicates that there are no intervals at all */
@@ -763,13 +762,17 @@ _unur_pinv_check_par( struct unur_gen *gen )
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
-  /* computational domain as given by user */
-  GEN->bleft = GEN->bleft_par;
-  GEN->bright = GEN->bright_par;
+  /* points for searching computational domain */
+  GEN->bleft = _unur_max(GEN->bleft_par,DISTR.domain[0]);
+  GEN->bright = _unur_min(GEN->bright_par,DISTR.domain[1]);
 
   /* domain not truncated at init */
   DISTR.trunc[0] = DISTR.domain[0];
   DISTR.trunc[1] = DISTR.domain[1];
+
+  /* domain of distribution (used when x with PDF(x)=0 are found) */
+  GEN->dleft =  DISTR.domain[0];
+  GEN->dright =  DISTR.domain[1];
 
   return UNUR_SUCCESS;
 } /* end of _unur_pinv_check_par() */
@@ -1194,17 +1197,17 @@ _unur_pinv_find_boundary( struct unur_gen *gen )
 
   /* search for interval of computational relevance (if required) */
   if(GEN->sleft)
-    GEN->bleft = _unur_pinv_searchborder(gen,DISTR.center, GEN->bleft);
+    GEN->bleft = _unur_pinv_searchborder(gen,DISTR.center, GEN->bleft, &(GEN->dleft));
   if(GEN->sright)
-    GEN->bright = _unur_pinv_searchborder(gen,DISTR.center, GEN->bright);
+    GEN->bright = _unur_pinv_searchborder(gen,DISTR.center, GEN->bright, &(GEN->dright));
 
   /* estimate area below PDF */
   GEN->area  = _unur_pinv_approxarea( gen, DISTR.center, GEN->bright );
   GEN->area += _unur_pinv_approxarea( gen, GEN->bleft, DISTR.center );
 
   /* Remark:
-     The user can also provide the area below the PDF.
-     However, then we probably need not method PINV
+   * The user can also provide the area below the PDF.
+   * However, then we probably need not method PINV
    */
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -1227,9 +1230,9 @@ _unur_pinv_find_boundary( struct unur_gen *gen )
 
   /* compute cut-off points for tails */
   if(GEN->sleft)
-    GEN->bleft = _unur_pinv_cut( gen, GEN->bleft, (GEN->bleft-GEN->bright)/128, tailcut_error);
+    GEN->bleft = _unur_pinv_cut( gen, GEN->dleft, GEN->bleft, (GEN->bleft-GEN->bright)/128, tailcut_error);
   if(GEN->sright)
-    GEN->bright = _unur_pinv_cut( gen, GEN->bright, (GEN->bright-GEN->bleft)/128, tailcut_error);
+    GEN->bright = _unur_pinv_cut( gen, GEN->dright, GEN->bright, (GEN->bright-GEN->bleft)/128, tailcut_error);
 
   if (! (_unur_isfinite(GEN->bleft) && _unur_isfinite(GEN->sright)) ) {
     _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"cannot find boundary for computational domain");
@@ -1250,18 +1253,22 @@ _unur_pinv_find_boundary( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_pinv_searchborder( struct unur_gen *gen, double x0, double bound)
+_unur_pinv_searchborder( struct unur_gen *gen, double x0, double bound, double *dom)
      /*----------------------------------------------------------------------*/
      /* Calculate domain of computational relevant region.                   */
      /* Start at 'x0' and search towards 'bound'.                            */
      /* The boundary points of this domain are approximately given as        */
      /*      PDF(x0) * PINV_PDFLLIM                                          */
      /*                                                                      */
+     /* As a side effect the support of the distribution is shrinked if      */
+     /* points with PDF(x)=0 are found.                                      */
+     /*                                                                      */
      /* parameters:                                                          */
      /*   gen   ... pointer to generator object                              */
      /*   x0    ... starting point for searching boudary                     */
      /*             PDF(x0) must not be too small                            */
      /*   bound ... stop searching at this point                             */
+     /*   dom   ... pointer to boundary of domain / support of distribution  */
      /*                                                                      */
      /* return:                                                              */
      /*   boundary point                                                     */
@@ -1271,38 +1278,51 @@ _unur_pinv_searchborder( struct unur_gen *gen, double x0, double bound)
      /*----------------------------------------------------------------------*/
 {
   double x, xold;         /* current and old previous searching point */
+  double xnull;           /* last point where PDF vanishes */
+  double fx;              /* PDF at x */
   double fllim;           /* threshold value */
   int i;                  /* aux variable */
 
   /* threshold value where we stop searching */
   fllim = PDF(x0) * PINV_PDFLLIM;
-  
+
   /* starting point */
   xold = x0;
   x = _unur_arcmean(x0,bound);
+  xnull = INFINITY;
 
   /* find a point where PDF is less than the threshold value */
   for (i=0; i<100 && PDF(x) > fllim; i++) {
     xold = x;
     x = _unur_arcmean(x,bound);
   }
-  /** TODO: check against exceeded number of iterations! **/
-
 
   /* however: PDF(x) must not be too small */
   do{
     x = (x+xold)*0.5;
-  } while(PDF(x)<fllim);
-  /** TODO: check against exceeded number of iterations! **/
- 
-  return x;
+    fx = PDF(x);
+    if (_unur_iszero(fx)) xnull = x;
+    i++;
+  } while(i<2048 && fx<fllim);
+  /* Remark:
+   * The emergency break after 2048 seems very high. On the other hand we can 
+   * protect ourselves agains users that provide a PDF like that of the 
+   * expontential distribution without providing a domain.
+   */
+
+  /* Check whether we have to shrink the support of the distribution */
+  if (_unur_isfinite(xnull))
+    *dom = (xnull<1.e300) ? 0. : xnull;
+
+  /* return point */
+   return x;
 
 } /* end of _unur_pinv_searchborder() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_pinv_cut( struct unur_gen *gen, double w, double dw, double crit )
+_unur_pinv_cut( struct unur_gen *gen, double dom, double w, double dw, double crit )
      /*----------------------------------------------------------------------*/
      /* Calculate cut-off points for computationally stable domain for       */
      /* distribution.                                                        */
@@ -1310,6 +1330,7 @@ _unur_pinv_cut( struct unur_gen *gen, double w, double dw, double crit )
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen  ... pointer to generator object                               */
+     /*   dom  ... pointer to boundary of domain / support of distribution   */
      /*   w    ... starting point for searching cut-off point                */
      /*   dw   ... initial step size for searching,                          */
      /*            sign of dw gives searching direction:                     */
@@ -1330,11 +1351,15 @@ _unur_pinv_cut( struct unur_gen *gen, double w, double dw, double crit )
   double dx = dw/64.;  /* step size for numeric differentiation */
   int j;               /* aux variable */
 
-  /* dw < 0 --> suche nach links
-     ueberpruefe of domain!! */
+  int s = (dw>0) ? 1 : -1; /* searching direction */
 
   /* search for cut-off point with tail probability less than 'crit'ical value */
   for (j=1; j<1000; j++) {
+
+    /* check for boundary */
+    if (s*dom < s*w)
+      /* boundary exceeded */
+       return dom;
 
     /* compute approximate tail probability at w */
     u = _unur_pinv_tailprob(gen, w, dw/64.);
@@ -1352,8 +1377,6 @@ _unur_pinv_cut( struct unur_gen *gen, double w, double dw, double crit )
     */
     w += dw;
 
-    /** TODO: check for domain! **/
-
     /* ... and increase stepsize for next interation. */
     if (j>32) dw *= 1.5;
   }
@@ -1363,15 +1386,17 @@ _unur_pinv_cut( struct unur_gen *gen, double w, double dw, double crit )
     return INFINITY;
   }
 
-  /** TODO: check for u == 0 **/
   if (_unur_iszero(u)) {
-    ; /* stop */
+    /* the tail probability at w is approximately 0, i.e. _unur_pinv_tailprob() */
+    /* assumes it is 0. Thus we only can return this point w.                   */
+    return w;
   }
+
+  /* now run secant method to find cut-off point with tail probability approx 'crit' */
 
   /* step size for numeric differentiation */
   dx=dw/64.;
 
-  /* run secant method to find cut-off point with tail probability approx 'crit' */
   for (j=0; j<50; j++) {
 
     /* check whether 'u' approx 'crit' */
@@ -1385,23 +1410,25 @@ _unur_pinv_cut( struct unur_gen *gen, double w, double dw, double crit )
       _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"negative tail probability");
       return INFINITY;
     }
-    if (_unur_iszero(uplus)) {
-      ; /* stop */
-    }
+    if (_unur_iszero(uplus)) 
+      return w;
 
     /* next iteration for secant method */
     w -= dx * (1./u-1./crit)/(1./uplus-1./u);
 
-    /* compute */
+    /* check for boundary */
+    if (s*dom < s*w)
+      /* boundary exceeded */
+       return dom;
+
+    /* compute tail probability */
     u = _unur_pinv_tailprob(gen,w,dx);
     if(u<0){
       _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"negative tail probability");
       return INFINITY;
     }
-    if (_unur_iszero(uplus)) {
-      ; /* stop */
-    }
-
+    if (_unur_iszero(u))
+      return w;
   }
 
   /* could not find point till now */
@@ -2030,12 +2057,16 @@ _unur_pinv_debug_searchbd( const struct unur_gen *gen, int aftercut )
 
   log = unur_get_stream();
 
-  if (aftercut)
+  if (aftercut) {
     fprintf(log,"%s: after cutting-off points: domain = (%g,%g)\n",gen->genid,
 	    GEN->bleft,GEN->bright);
-   else
+  }
+  else {
     fprintf(log,"%s: after searching border:   domain = (%g,%g),  area = %g\n",gen->genid,
 	    GEN->bleft,GEN->bright,GEN->area);
+    fprintf(log,"%s: possible support of distribution = (%g,%g)\n",gen->genid,
+	    GEN->dleft,GEN->dright);
+  }
 
   fprintf(log,"%s:\n",gen->genid);
   fflush(log);

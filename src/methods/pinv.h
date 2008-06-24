@@ -182,7 +182,8 @@ int unur_pinv_set_boundary( UNUR_PAR *parameters, double left, double right );
    given distribution itself. But it restricts the domain for the
    resulting random variates.
 
-   Default is @code{1.e100}.
+   Default is the smaller off @code{-1.e100,+1.e100} and the given domain 
+   of the distribution.
 */
 
 int unur_pinv_set_searchboundary( UNUR_PAR *parameters, int left, int right );

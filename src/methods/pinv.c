@@ -241,11 +241,10 @@ static double _unur_pinv_tailprob (struct unur_gen *gen, double x, double dx);
 /*---------------------------------------------------------------------------*/
 
 static double _unur_pinv_lobato5 (struct unur_gen *gen, double x, double h, double errormax);
-/*----------------------------------------------------------------------*/
-/* numerical integration of the PDF over the interval (x,x+h)           */
-/* using Gauss-Lobato integration with 5 points.                        */
-/*                                                                      */
-/*----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/* numerical integration of the PDF over the interval (x,x+h)                */
+/* using Gauss-Lobato integration with 5 points.                             */
+/*---------------------------------------------------------------------------*/
 
 static int _unur_pinv_newtoninterpol (struct unur_gen *gen, struct unur_pinv_interval *iv, double h, double *x,double uerrcrit);
 /*---------------------------------------------------------------------------*/
@@ -285,7 +284,7 @@ static void _unur_pinv_debug_init_start (const struct unur_gen *gen);
 
 static void _unur_pinv_debug_searchbd (const struct unur_gen *gen, int aftercut);
 /*---------------------------------------------------------------------------*/
-/* akfjaskfjalkfjlkprint before setup starts.                                                */
+/* print computational before or after searching for cut-off points          */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_pinv_debug_init (const struct unur_gen *gen, int ok);
@@ -1046,7 +1045,7 @@ _unur_pinv_create_table( struct unur_gen *gen )
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
-  double uerrcrit;             /* threshold for maximum U-error */
+  double uerrcrit;           /* threshold for maximum U-error */
   double maxerror;           /* maximum U-error in a particular interval */ 
   double h;                  /* step size / length of intervals */
   int i;                     /* number of interval at work */
@@ -1563,7 +1562,8 @@ _unur_pinv_lobato5 (struct unur_gen *gen, double x, double h, double errormax)
  relerror = fabs(int2-int1)/int2;
  // printf("recurslevel%d x%g h%g int2 %g int1 %g relerror%g\n",recurslevel,x,h,int2,int1,relerror);
  if(recurslevel==MAXRECURSLEVEL){
-   printf("unuran warning numeric integration did not reach full accuracy\n");
+   _unur_warning(gen->genid,UNUR_ERR_ROUNDOFF,
+		 "numeric integration did not reach full accuracy");
    return int2;
  }
 
@@ -1573,7 +1573,6 @@ _unur_pinv_lobato5 (struct unur_gen *gen, double x, double h, double errormax)
 #undef W1
 #undef W2
 } /* end of _unur_pinv_lobato5() */
-
 
 /*---------------------------------------------------------------------------*/
 

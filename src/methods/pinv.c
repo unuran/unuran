@@ -774,6 +774,14 @@ _unur_pinv_check_par( struct unur_gen *gen )
   GEN->dleft =  DISTR.domain[0];
   GEN->dright =  DISTR.domain[1];
 
+  /* center of distribution */
+  DISTR.center = unur_distr_cont_get_center(gen->distr);
+  if (PDF(DISTR.center)<=0.) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,
+		"PDF(center) <= 0.");
+    return UNUR_ERR_GEN_CONDITION;
+  }
+
   return UNUR_SUCCESS;
 } /* end of _unur_pinv_check_par() */
 
@@ -1312,7 +1320,7 @@ _unur_pinv_searchborder( struct unur_gen *gen, double x0, double bound, double *
 
   /* Check whether we have to shrink the support of the distribution */
   if (_unur_isfinite(xnull))
-    *dom = (xnull<1.e300) ? 0. : xnull;
+    *dom = (fabs(xnull)<1.e-300) ? 0. : xnull;
 
   /* return point */
    return x;
@@ -1351,15 +1359,16 @@ _unur_pinv_cut( struct unur_gen *gen, double dom, double w, double dw, double cr
   double dx = dw/64.;  /* step size for numeric differentiation */
   int j;               /* aux variable */
 
-  int s = (dw>0) ? 1 : -1; /* searching direction */
+  double s = (dw>0) ? 1 : -1; /* searching direction */
 
   /* search for cut-off point with tail probability less than 'crit'ical value */
   for (j=1; j<1000; j++) {
-
+    
     /* check for boundary */
-    if (s*dom < s*w)
+    if (s*dom < s*w) {
       /* boundary exceeded */
        return dom;
+    }
 
     /* compute approximate tail probability at w */
     u = _unur_pinv_tailprob(gen, w, dw/64.);
@@ -1385,6 +1394,7 @@ _unur_pinv_cut( struct unur_gen *gen, double dom, double w, double dw, double cr
     _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"cound not find valid cut point");
     return INFINITY;
   }
+
 
   if (_unur_iszero(u)) {
     /* the tail probability at w is approximately 0, i.e. _unur_pinv_tailprob() */
@@ -1471,7 +1481,10 @@ _unur_pinv_tailprob( struct unur_gen *gen, double x, double dx )
   /* We have a serious problem when PDF(X) == 0.                      */
   /* Thus our only chance is to assume that the support of the PDF is */
   /* connected. Hence we assume that we have found the cut point.     */
-  if ( _unur_iszero(fx) && _unur_iszero(fp) && _unur_iszero(fm) ) {
+  /*   if ( _unur_iszero(fp) || _unur_iszero(fm) ) { */
+  if ( _unur_iszero(fx) ) {
+    /* TODO: we should start simple bisection to find the extremal point */
+    /* where PDF(X) is non-zero.                                         */
     return 0.;
   } 
 
@@ -1503,6 +1516,16 @@ _unur_pinv_tailprob( struct unur_gen *gen, double x, double dx )
      */
   }
 
+  if (_unur_isnan(area)) {
+    /* When the PDF is extremely flat than NaN might occur. There are two possibilities: 
+     * (1) We are far away from the center. Then the tail probabilty is almost 0.
+     * (2) PDF(X) is still quite large. Then we should return INFINITY.
+     */
+    _unur_warning(gen->genid,UNUR_ERR_NAN,"tail probability gives NaN --> assume 0.");
+    return 0.;
+  }
+
+  /* return area below PDF in tail ("tail probability") */
   return area;
 
 } /* end of _unur_pinv_tailprob() */
@@ -2029,7 +2052,7 @@ _unur_pinv_debug_init( const struct unur_gen *gen, int ok )
 
   _unur_pinv_debug_intervals(gen);
 
-  fprintf(log,"%s: initialization %s\n",gen->genid,((ok)?"successful":"FAILED")); 
+  fprintf(log,"%s: initialization %s\n",gen->genid,((ok)?"successful":"*** FAILED ***")); 
   fprintf(log,"%s:\n",gen->genid);
 
   fflush(log);

@@ -782,6 +782,8 @@ _unur_pinv_check_par( struct unur_gen *gen )
     return UNUR_ERR_GEN_CONDITION;
   }
 
+  /** TODO: check that center is in given domain !! **/
+
   return UNUR_SUCCESS;
 } /* end of _unur_pinv_check_par() */
 

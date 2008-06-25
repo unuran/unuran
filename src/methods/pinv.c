@@ -240,25 +240,14 @@ static double _unur_pinv_tailprob (struct unur_gen *gen, double x, double dx);
 /* calculate approximate tail probability.                                   */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_pinv_approxarea (struct unur_gen *gen, double xl, double xr);
-/*---------------------------------------------------------------------------*/
-/* (Crude) numerical integration of PDF.                                     */
-/* The routine is primarily designed for monotone densities.                 */
-/*---------------------------------------------------------------------------*/
+static double _unur_pinv_lobato5 (struct unur_gen *gen, double x, double h, double errormax);
+/*----------------------------------------------------------------------*/
+/* numerical integration of the PDF over the interval (x,x+h)           */
+/* using Gauss-Lobato integration with 5 points.                        */
+/*                                                                      */
+/*----------------------------------------------------------------------*/
 
-static double _unur_pinv_nint12 (struct unur_gen *gen, double xl, double xr, double *rel_error);
-/*---------------------------------------------------------------------------*/
-/* Numerical integration of the PDF over the interval (xl,xr)                */
-/* with rough estimate of relative integration error.                        */
-/*---------------------------------------------------------------------------*/
-
-static double _unur_pinv_lobato5 (struct unur_gen *gen, double x, double h, double fx, double *fxph);
-/*---------------------------------------------------------------------------*/
-/* numerical integration of the PDF over the interval (x,x+h)                */
-/* using Gauss-Lobato integration with 5 points.                             */
-/*---------------------------------------------------------------------------*/
-
-static int _unur_pinv_newtoninterpol (struct unur_gen *gen, struct unur_pinv_interval *iv, double h, double *x);
+static int _unur_pinv_newtoninterpol (struct unur_gen *gen, struct unur_pinv_interval *iv, double h, double *x,double uerrcrit);
 /*---------------------------------------------------------------------------*/
 /* Compute coefficients for Newton interpolation.                            */
 /*---------------------------------------------------------------------------*/
@@ -268,7 +257,7 @@ static double _unur_pinv_eval_newtonpolynomial (double q, double ui[], double zi
 /* evaluate Newton polynomial.                                               */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_pinv_maxerror_newton (struct unur_gen *gen, struct unur_pinv_interval *iv, double xval[]);
+static double _unur_pinv_maxerror_newton (struct unur_gen *gen, struct unur_pinv_interval *iv, double xval[],double uerrcrit);
 /*---------------------------------------------------------------------------*/
 /* estimate maximal error of Newton interpolation in subinterval             */
 /*---------------------------------------------------------------------------*/
@@ -1057,7 +1046,7 @@ _unur_pinv_create_table( struct unur_gen *gen )
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
-  double uerror;             /* threshold for maximum U-error */
+  double uerrcrit;             /* threshold for maximum U-error */
   double maxerror;           /* maximum U-error in a particular interval */ 
   double h;                  /* step size / length of intervals */
   int i;                     /* number of interval at work */
@@ -1069,7 +1058,7 @@ _unur_pinv_create_table( struct unur_gen *gen )
   COOKIE_CHECK(gen,CK_PINV_GEN,UNUR_ERR_COOKIE);
 
   /* threshold for tolerated U-error */
-  uerror = GEN->u_resolution * GEN->area * PINV_UERROR_CORRECTION;
+  uerrcrit = GEN->u_resolution * GEN->area * PINV_UERROR_CORRECTION;
 
   /* initialize step size for subintervals */
   h = (GEN->bright-GEN->bleft)/128.;
@@ -1099,15 +1088,15 @@ _unur_pinv_create_table( struct unur_gen *gen )
     }
 
     /* compute Newton interpolation polynomial */
-    if (_unur_pinv_newtoninterpol(gen,&(GEN->iv[i]),h,xval) != UNUR_SUCCESS)
+    if (_unur_pinv_newtoninterpol(gen,&(GEN->iv[i]),h,xval,uerrcrit) != UNUR_SUCCESS)
       return UNUR_ERR_GEN_CONDITION;
 
     /* estimate error of Newton interpolation */
-    maxerror = _unur_pinv_maxerror_newton(gen,&(GEN->iv[i]),xval);
+    maxerror = _unur_pinv_maxerror_newton(gen,&(GEN->iv[i]),xval,uerrcrit);
 
-    if (maxerror > uerror) { 
+    if (maxerror > uerrcrit) { 
       /* error too large: reduce step size */
-      h *= (maxerror > 4.*uerror) ? 0.81 : 0.9;
+      h *= (maxerror > 4.*uerrcrit) ? 0.81 : 0.9;
       cont = TRUE;  /* we need another iteration */
     }
 
@@ -1121,8 +1110,8 @@ _unur_pinv_create_table( struct unur_gen *gen )
 	return UNUR_ERR_GEN_CONDITION;
 
       /* increase step size for very small errors */
-      if(maxerror < 0.3*uerror) h *= 1.2;
-      if(maxerror < 0.1*uerror) h *= 2.;
+      if(maxerror < 0.3*uerrcrit) h *= 1.2;
+      if(maxerror < 0.1*uerrcrit) h *= 2.;
       
       /* continue with next interval */
       i++;
@@ -1212,8 +1201,8 @@ _unur_pinv_find_boundary( struct unur_gen *gen )
     GEN->bright = _unur_pinv_searchborder(gen,DISTR.center, GEN->bright, &(GEN->dright));
 
   /* estimate area below PDF */
-  GEN->area  = _unur_pinv_approxarea( gen, DISTR.center, GEN->bright );
-  GEN->area += _unur_pinv_approxarea( gen, GEN->bleft, DISTR.center );
+  GEN->area  = _unur_pinv_lobato5( gen, DISTR.center, GEN->bright - DISTR.center, GEN->u_resolution );
+  GEN->area += _unur_pinv_lobato5( gen, GEN->bleft, DISTR.center - GEN->bleft, GEN->u_resolution );
 
   /* Remark:
    * The user can also provide the area below the PDF.
@@ -1533,170 +1522,63 @@ _unur_pinv_tailprob( struct unur_gen *gen, double x, double dx )
 } /* end of _unur_pinv_tailprob() */
 
 /*---------------------------------------------------------------------------*/
-
 double
-_unur_pinv_approxarea (struct unur_gen *gen, double xl, double xr)
-     /*----------------------------------------------------------------------*/
-     /* (Crude) numerical integration of PDF.                                */
-     /* The routine is primarily designed for monotone densities.            */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen  ... pointer to generator object                               */
-     /*   xl   ... left boundary point of interval                           */
-     /*   xr   ... right boundary point of interval                          */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   integral                                                           */
-     /*                                                                      */
-     /* error:                                                               */
-     /*   return INFINITY                                                    */
-     /*----------------------------------------------------------------------*/
-{
-  /** TODO: Kann man verbessern, wenn man in den Tails den Error relativ
-      zum Gesamtintegral rechnet.
-  **/
-
-#define CRIT      (1.e-8)         /* maximal accepted relative error */
-
-  double sum;             /* cumulative sum off integrals */
-  double sumi;            /* integral over subinterval */
-  double step, stepinit;  /* (initial) step size for integration */
-  double error;           /* relative integration error in subinterval */
-  double x, xh;           /* left and right boundary points of subinterval */
-  int count=0;
-  /* initialize variables */
-  x = xl;
-  sum = 0.;
-  stepinit = (xr-xl)/1.e2;
-  step = stepinit;
-
-  /* ?WH? muessen wir uns hier for einer endlosschleife schutzen? Wh: habe ich dazu gegeben.
-     Da die Genauigkeit des Integrals nicht kritisch ist, habe ich keine warning gemacht????*/
-
-  while (x < xr && count < 1.e5) {
-    count ++;
-    /* right boundary point */
-    xh = x+step;
-    if (!_unur_FP_less(xh,xr)) 
-      xh = xr*(1.+DBL_EPSILON);
-
-    /* compute integral over (x,x+step) and estimate relative error */
-    sumi = _unur_pinv_nint12( gen, x, xh, &error );
-
-    /* check relative error */
-    if(error > CRIT) {
-      /* adjust step size and try again */
-      step *= pow(0.5*CRIT/error,1./9.);
-      continue;
-    }
-
-    /* update integral */
-    sum += sumi;
-
-    /* go to next interval */
-    x = xh;
-
-    /* adjust interval to avoid too narrow steps */
-    if(error>1.e-25) step *= pow(CRIT/error,1./9.);
-    else step*=10;   
-
-    /* ?WH? das ganze ist numerisch ziemlich instabil.
-        es koennte sein, dass error = 0 wird !
-        mir ist das beim testen mit valgrind passiert.
-        WH: diesen Fehler hab ich hier einfach abgefangen
-    */
-    if (!_unur_isfinite(step)) {
-      /* we have to use the initial step size again */
-      step = stepinit;
-    }
-  }
-
-  return sum;
-
-#undef CRIT
-} /* end of _unur_pinv_approxarea() */
-
-/*---------------------------------------------------------------------------*/
-
-double 
-_unur_pinv_nint12 (struct unur_gen *gen, double xl, double xr, double *relerror)
-     /*----------------------------------------------------------------------*/
-     /* Numerical integration of the PDF over the interval (xl,xr)           */
-     /* using Gauss-Lobato integration with 5 points.                        */
-     /* The relative numerical error is roughly estimated by comparing       */
-     /* the result with the sum of the integral over (xl,xm) and (xm,xr)     */
-     /* where  xm = (xr+xl)/2.                                               */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen  ... pointer to generator object                               */
-     /*   xl   ... left boundary point of interval                           */
-     /*   xr   ... right boundary point of interval                          */
-     /*   relerror ... for storing estimate of relative integration error    */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   integral                                                           */
-     /*----------------------------------------------------------------------*/
-{
-  double res, reso;
-
-  /* Gauss-Lobato integration over (xl,xr) */
-  reso = _unur_pinv_lobato5( gen, xl, (xr-xl), 0, NULL);
-
-  /* improved result by sum of integral over (xl,xm) and (xm,xr) */
-  res = ( _unur_pinv_lobato5( gen, xl, (xr-xl)*0.5, 0, NULL) +
-	  _unur_pinv_lobato5( gen, (xl+xr)*0.5, (xr-xl)*0.5, 0, NULL) );
-
-  /* estimate relative integration error */
-  *relerror = fabs(res-reso)/res; 
-
-  return res;
-} /* end of _unur_pinv_nint12() */
-
-/*---------------------------------------------------------------------------*/
-
-double
-_unur_pinv_lobato5 (struct unur_gen *gen, double x, double h, double fx, double *fxph)
+_unur_pinv_lobato5 (struct unur_gen *gen, double x, double h, double errormax)
      /*----------------------------------------------------------------------*/
      /* numerical integration of the PDF over the interval (x,x+h)           */
      /* using Gauss-Lobato integration with 5 points.                        */
+     /*                                                                      */
+     /* halfs intervals recursively if error is too large                    */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen  ... pointer to generator object                               */
      /*   x    ... left boundary point of interval                           */
      /*   h    ... length of interval                                        */
-     /*   fx   ... PDF(x)                                                    */
-     /*   fxph ... PDF(x+h)   [for saving value for later use]               */
+     /*   errormax ... maximal accepted error                                */
      /*                                                                      */
      /* return:                                                              */
      /*   integral                                                           */
      /*----------------------------------------------------------------------*/
-{
-#define W1 0.17267316464601146  /* = 0.5-sqrt(3/28) */
+/************************************
+ * Numerical Integration of the interval (x,x+h)
+ * using Gauss-Lobato integration with 5 points.
+ * fx ... f(x) to save calls to f()
+ * *fxph ... f(x+h)
+ ************************************/
+#define W1 0.17267316464601146  //= 0.5-sqrt(3/28)
 #define W2 (1.-W1)
+#define MAXRECURSLEVEL 9999
+{ double fl,fr,fc,int1,int2,intl,intr,relerror;
+ static int recurslevel=0;
+ recurslevel++;
 
-  double ifx,ifxph;
+ fl=PDF(x);
+ fr=PDF(x+h);
+ fc=PDF(x+h/2);
+ 
+ int1= (9*(fl+fr)+49.*(PDF(x+h*W1)+PDF(x+h*W2))+64*fc)*h/180.;
+ intl= (9*(fl+fc)+49.*(PDF(x+h*W1*0.5)+PDF(x+h*W2*0.5))+64*PDF(x+h*0.25))*h/360.;
+ intr= (9*(fc+fr)+49.*(PDF(x+h*(0.5+W1*0.5))+PDF(x+h*(0.5+W2*0.5)))+64*PDF(x+h*0.75))*h/360.;
+ int2=intl+intr;
+ relerror = fabs(int2-int1)/int2;
+ // printf("recurslevel%d x%g h%g int2 %g int1 %g relerror%g\n",recurslevel,x,h,int2,int1,relerror);
+ if(recurslevel==MAXRECURSLEVEL){
+   printf("unuran warning numeric integration did not reach full accuracy\n");
+   return int2;
+ }
 
-  ifxph = PDF(x+h);
-
-  if(fxph!=NULL){ 
-    /* ?WH? fxph ist aber immer NULL!! WH: Ich weiss, hier koennte man beim set-up calls to f() sparen. Ich war zu faul dazu*/
-    ifx = fx;
-    *fxph = ifxph;
-  }
-  else {
-    ifx = PDF(x);
-  }
-
-  return (9*(ifx+(ifxph))+49.*(PDF(x+h*W1)+PDF(x+h*W2))+64.*PDF(x+h/2.))*h/180.;
-
+ if(relerror>errormax && fabs(int2-int1)>errormax)
+   return _unur_pinv_lobato5(gen,x,h/2,errormax)+_unur_pinv_lobato5(gen,x+h/2,h/2,errormax);
+ else return int2;
 #undef W1
 #undef W2
 } /* end of _unur_pinv_lobato5() */
 
+
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_pinv_newtoninterpol (struct unur_gen *gen, struct unur_pinv_interval *iv, double h, double *x)
+_unur_pinv_newtoninterpol (struct unur_gen *gen, struct unur_pinv_interval *iv, double h, double *x,double uerrcrit)
      /*----------------------------------------------------------------------*/
      /* Compute coefficients for Newton interpolation within a subinterval   */
      /* of the domain of the distribution.                                   */
@@ -1706,6 +1588,7 @@ _unur_pinv_newtoninterpol (struct unur_gen *gen, struct unur_pinv_interval *iv, 
      /*   iv   ... pointer to current interval                               */
      /*   h    ... length of subinterval  ?WH  ja?                           */
      /*   x    ... ?WH? xi values associated with the ui, necessary for controll*/
+     /*  uerrcrit ... maximal accepted u-error                                 */
      /*                                                                      */
      /* return:                                                              */
      /*   UNUR_SUCCESS ... on success                                        */
@@ -1759,7 +1642,7 @@ _unur_pinv_newtoninterpol (struct unur_gen *gen, struct unur_pinv_interval *iv, 
     if (x!=NULL) x[i] = xi+dxi;
 
     /* compute integral of PDF in interval (xi,xi+dxi) */
-    temp = _unur_pinv_lobato5(gen, xi, dxi, 0, NULL);
+    temp = _unur_pinv_lobato5(gen, xi, dxi,uerrcrit*0.1 );
     if(temp<1.e-50) {
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"interval too short or PDF 0");
       return UNUR_ERR_GEN_CONDITION;
@@ -1824,7 +1707,7 @@ _unur_pinv_eval_newtonpolynomial( double q, double ui[], double zi[], int order 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_pinv_maxerror_newton (struct unur_gen *gen, struct unur_pinv_interval *iv, double xval[])
+_unur_pinv_maxerror_newton (struct unur_gen *gen, struct unur_pinv_interval *iv, double xval[],double uerrcrit)
      /*----------------------------------------------------------------------*/
      /* Estimate maximal error of Newton interpolation in subinterval.       */
      /*                                                                      */
@@ -1873,9 +1756,9 @@ _unur_pinv_maxerror_newton (struct unur_gen *gen, struct unur_pinv_interval *iv,
            das habe ich als Verbessrung von Gerhards Algo eingebaut,
            weil mir aufgefallen ist, dass es fuer g gross Probleme mit dem INtegrationsfehler gibt*/
     if (i==0 || xval==NULL)
-      uerror = fabs(_unur_pinv_lobato5(gen,x0,x ,0.,NULL) - testu[i+1]);
+      uerror = fabs(_unur_pinv_lobato5(gen,x0,x ,uerrcrit*0.1) - testu[i+1]);
     else
-      uerror = fabs(ui[i] + _unur_pinv_lobato5(gen,xval[i],x+x0-xval[i],0.,NULL) - testu[i+1]);
+      uerror = fabs(ui[i] + _unur_pinv_lobato5(gen,xval[i],x+x0-xval[i],uerrcrit*0.1) - testu[i+1]);
 
     /* update maximal error */
     if (uerror>maxerror) maxerror=uerror;

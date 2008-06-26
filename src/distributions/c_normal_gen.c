@@ -154,7 +154,8 @@ _unur_stdgen_normal_init( struct unur_par *par, struct unur_gen *gen )
  * UNURAN (c) 2000  W. Hoermann & J. Leydold, Institut f. Statistik, WU Wien *
  *****************************************************************************/
 
-double _unur_stdgen_sample_normal_inv( struct unur_gen *gen )
+double 
+_unur_stdgen_sample_normal_inv( struct unur_gen *gen )
      /* Inversion method */
 {
   /* -X- generator code -X- */
@@ -204,7 +205,7 @@ double _unur_stdgen_sample_normal_inv( struct unur_gen *gen )
 #define Xstore  GEN->gen_param[0]
 #define flag    GEN->flag
 
-inline static int
+int
 normal_bm_init( struct unur_gen *gen )
 {
   /* check arguments */
@@ -278,7 +279,7 @@ _unur_stdgen_sample_normal_bm( struct unur_gen *gen )
 #define Xstore  GEN->gen_param[0]
 #define flag    GEN->flag
 
-inline static int
+int
 normal_pol_init( struct unur_gen *gen )
 {
   /* check arguments */
@@ -504,6 +505,12 @@ _unur_stdgen_sample_normal_leva( struct unur_gen *gen )
  *               Computer Generation of Normal Random Variables,             *
  *               J. Am. Stat. Assoc. 71(356), 893 - 898.                     *
  *                                                                           *
+ *             - Tirler G., Dalgaard P., Hoermann W., and Leydold J. (2004): *
+ *               An Error in the {Kinderman-Ramage} Method and How to Fix It,*
+ *               Comp. Stat. Data Anal. 47(3), 433 - 440.                    *
+ *                                                                           *
+ * Remark: This is the fixed version of the algorithm.                       *
+ *                                                                           *
  *****************************************************************************
  * UNURAN (c) 2000  W. Hoermann & J. Leydold, Institut f. Statistik, WU Wien *
  *****************************************************************************/
@@ -567,6 +574,13 @@ _unur_stdgen_sample_normal_kr( struct unur_gen *gen )
       W = uniform(); 
       z = V - W;
       t = 0.479727404222441 - 0.595507138015940 * _unur_min(V,W);
+      /* 
+       * The following line rejects negative values for t 
+       * (the KR algorithm only generates random variates from
+       * the half-normal distribution).
+       * However, it is missing in the original algorithm as 
+       * compiled in the paper.
+       */
       if (t<=0.) continue;
     } while (_unur_max(V,W)>0.805777924423817 &&
 	     0.053377549506886*fabs(z) > (PIhochK * exp(t*t/(-2)) -0.180025191068563*(XI-fabs(t))) );
@@ -582,6 +596,93 @@ _unur_stdgen_sample_normal_kr( struct unur_gen *gen )
   return ((DISTR.n_params==0) ? X : mu + sigma * X );
   
 } /* end of _unur_stdgen_sample_normal_kr() */
+
+/*---------------------------------------------------------------------------*/
+
+#ifdef USE_DEPRECATED_CODE
+
+/* Original version with error!! */
+
+double
+_unur_stdgen_sample_normal_kr_buggy( struct unur_gen *gen )
+{
+  /* -X- generator code -X- */
+#define XI 2.216035867166471
+#define PIhochK 0.3989422804
+  
+  double U, V, W, X;
+  double t, z;
+  
+  /* check arguments */
+  CHECK_NULL(gen,INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
+  
+  U = uniform();
+  
+  if (U < 0.884070402298758) {
+    V = uniform();
+    X = XI * (1.131131635444180 * U + V - 1.);
+  }
+  
+  else if (U >= 0.973310954173898) {
+    do {
+      V = uniform();
+      W = uniform();
+      if (_unur_iszero(W)) { t=0.; continue; }
+      t = XI * XI/2. - log(W);
+    } while ( (V*V*t) > (XI*XI/2.) );
+    X = (U < 0.986655477086949) ? pow(2*t,0.5) : -pow(2*t,0.5);
+  }
+  
+  else if (U>=0.958720824790463) {
+    do {
+      V = uniform();
+      W = uniform();
+      z = V - W;
+      t = XI - 0.630834801921960 * _unur_min(V,W);
+    } while (_unur_max(V,W) > 0.755591531667601 &&
+	     0.034240503750111 * fabs(z) > (PIhochK * exp(t*t/(-2.)) - 0.180025191068563*(XI-fabs(t))) );
+    X = (z<0) ? t : -t;
+  }
+  
+  else if (U>=0.911312780288703) {
+    do {
+      V = uniform();
+      W = uniform();
+      z = V - W;
+      t = 0.479727404222441 + 1.105473661022070 * _unur_min(V,W);
+    } while (_unur_max(V,W) > 0.872834976671790 &&
+	     0.049264496373128*fabs(z) > (PIhochK * exp(t*t/(-2)) -0.180025191068563*(XI-fabs(t))) );
+    X = (z<0) ? t : -t;
+  }
+  
+  else {
+    do {
+      V = uniform();
+      W = uniform(); 
+      z = V - W;
+      t = 0.479727404222441 - 0.595507138015940 * _unur_min(V,W);
+      /* 
+       * The following line would correct the error but is missing
+       * in the original algorithm as compiled in the paper.
+       */
+      /* if (t<=0.) continue; */
+    } while (_unur_max(V,W)>0.805777924423817 &&
+	     0.053377549506886*fabs(z) > (PIhochK * exp(t*t/(-2)) -0.180025191068563*(XI-fabs(t))) );
+    X = (z<0) ? t : -t;
+  }
+  
+#undef XI
+#undef PIhochK 
+#undef min
+#undef max
+  /* -X- end of generator code -X- */
+
+  return ((DISTR.n_params==0) ? X : mu + sigma * X );
+  
+} /* end of _unur_stdgen_sample_normal_kr_buggy() */
+
+#endif   /* USE_DEPRECATED_CODE */
 
 /*---------------------------------------------------------------------------*/
 

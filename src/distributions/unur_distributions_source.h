@@ -284,9 +284,6 @@ double _unur_stdgen_sample_normal_leva( UNUR_GEN *generator );
 
 /* Kindermann-Ramage method                                                  */
 double _unur_stdgen_sample_normal_kr( UNUR_GEN *generator );
-#ifdef USE_DEPRECATED_CODE
-double _unur_stdgen_sample_normal_kr_buggy( UNUR_GEN *generator );
-#endif
 
 /* Acceptance-complement ratio                                               */
 double _unur_stdgen_sample_normal_acr( UNUR_GEN *generator );

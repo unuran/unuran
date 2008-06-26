@@ -44,6 +44,10 @@
 inline static int normal_bm_init( struct unur_gen *gen );
 inline static int normal_pol_init( struct unur_gen *gen );
 
+#ifdef USE_DEPRECATED_CODE
+double _unur_stdgen_sample_normal_kr_buggy( UNUR_GEN *generator );
+#endif
+
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
@@ -97,6 +101,12 @@ _unur_stdgen_normal_init( struct unur_par *par, struct unur_gen *gen )
   case 3:    /* Kindermann-Ramage method */
     _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_normal_kr );
     return UNUR_SUCCESS;
+
+#ifdef USE_DEPRECATED_CODE
+  case 999:  /* Buggy Kindermann-Ramage method */
+    _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_normal_kr_buggy );
+    return UNUR_SUCCESS;
+#endif
 
   case 0:    /* DEFAULT */
   case 4:    /* Acceptance-complement ratio */

@@ -3,8 +3,7 @@
 
 AUTOMAKE_OPTIONS = foreign
 
-##SUBDIRS = . src run tests
-SUBDIRS = . run
+SUBDIRS = . src run tests
 
 # compile with almost all GCC warnings enabled
 setgccWflags:

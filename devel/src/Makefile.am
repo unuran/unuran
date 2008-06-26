@@ -6,7 +6,7 @@ AM_CPPFLAGS = \
  -I$(unuran_srcdir)/src \
  -I$(unuran_srcdir)/src/methods
 
-lib_LTLIBRARIES = libunurexperimental.la
+#lib_LTLIBRARIES = libunurexperimental.la
 
 #libunurexperimental_la_SOURCES = \
 # ball.c    ball.h    ball_struct.h \

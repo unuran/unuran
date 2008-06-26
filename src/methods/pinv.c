@@ -1397,7 +1397,7 @@ _unur_pinv_cut( struct unur_gen *gen, double dom, double w, double dw, double cr
   /* step size for numeric differentiation */
   dx=dw/64.;
 
-  for (j=0; j<50; j++) {
+  for (j=0; j<1000; j++) {
 
     /* check whether 'u' approx 'crit' */
     if (fabs(crit/u - 1.)<1.e-7) 

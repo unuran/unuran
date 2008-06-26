@@ -673,11 +673,24 @@ _unur_dari_check_par( struct unur_gen *gen )
     }
   }
 
+  /* check mode. we assume unimodality 
+     since otherwise the PMF would not be T-concave! */
+  if (DISTR.BD_LEFT > DISTR.mode)
+    DISTR.mode = DISTR.BD_LEFT;
+  else if (DISTR.BD_RIGHT < DISTR.mode)
+    DISTR.mode = DISTR.BD_RIGHT;
+
   /* check for required data: sum over PMF */
   if (!(gen->distr->set & UNUR_DISTR_SET_PMFSUM))
     if (unur_distr_discr_upd_pmfsum(gen->distr)!=UNUR_SUCCESS)
       _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"sum over PMF; use default");
 
+  /* sum must not be zero */
+  if (DISTR.sum <= 0.) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"sum <= 0");
+    return UNUR_ERR_GEN_DATA;
+  }
+ 
   return UNUR_SUCCESS;
 } /* end of _unur_dari_check_par() */
 
@@ -788,10 +801,7 @@ _unur_dari_sample( struct unur_gen *gen )
     if (U<=GEN->vc) {
       X = U * (GEN->ac[1]-GEN->ac[0]) / GEN->vc + GEN->ac[0]; 
       k = (int)(X+0.5);
-      if (k<GEN->m)
-	i=0; 
-      else
-	i=1;
+      i = (k<GEN->m) ? 0 : 1;
       if (GEN->squeeze && sign[i]*(GEN->ac[i]-GEN->s[i]) > sign[i]*(X-k))
 	return k;
       if (sign[i]*k <= sign[i]*GEN->n[i]) {
@@ -876,10 +886,7 @@ _unur_dari_sample_check( struct unur_gen *gen )
     if (U <= GEN->vc) {
       X = U * (GEN->ac[1]-GEN->ac[0]) / GEN->vc + GEN->ac[0]; 
       k = (int)(X+0.5);
-      if (k<GEN->m)
-	i=0; 
-      else
-	i=1;
+      i = (k<GEN->m) ? 0 : 1;
       if (GEN->squeeze && sign[i]*(GEN->ac[i]-GEN->s[i]) > sign[i]*(X-k))
 	return k;
       if (sign[i]*k <= sign[i]*GEN->n[i]) {
@@ -929,7 +936,7 @@ _unur_dari_sample_check( struct unur_gen *gen )
       X = GEN->x[i] + (FM(U*GEN->ys[i])-GEN->y[i]) / GEN->ys[i];
       k = (int)(X+0.5);
       /* this is for a very rare case that for k of the tail closest to 
-	 the mode an x value farer away than 0.5 is geenrated. */
+	 the mode an x value farer away than 0.5 is generated. */
       if(k==GEN->s[i]) 
 	k += sign[i];
 
@@ -1009,25 +1016,18 @@ _unur_dari_hat( struct unur_gen *gen )
   CHECK_NULL( gen, UNUR_ERR_NULL );
   COOKIE_CHECK( gen, CK_DARI_GEN, UNUR_ERR_COOKIE );
   
-  /* check mode. we assume unimodality 
-     since otherwise the PMF would not be T-concave! */
-  if (DISTR.BD_LEFT > DISTR.mode)
-    DISTR.mode = DISTR.BD_LEFT;
-  else if (DISTR.BD_RIGHT < DISTR.mode)
-    DISTR.mode = DISTR.BD_RIGHT;
-
-  /* sum must not be zero */
-  if (DISTR.sum <= 0.) {
-    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"sum <= 0");
-    return UNUR_ERR_GEN_DATA;
-  }
- 
   /* Step 0: setup */
   GEN->m = DISTR.mode;
   b[0] = DISTR.BD_LEFT;
   b[1] = DISTR.BD_RIGHT;
   GEN->pm = PMF(GEN->m);
   d = _unur_max(2, (int)( GEN->c_factor/(GEN->pm/DISTR.sum)));
+
+  /* check mode */
+  if (_unur_iszero(GEN->pm)) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PMF(mode)=0");
+    return UNUR_ERR_GEN_DATA;
+  }
 
   /* step 0.1 */
   do {
@@ -1047,7 +1047,7 @@ _unur_dari_hat( struct unur_gen *gen )
         else {
 	  GEN->s[i] = (int)(0.5+GEN->x[i]+(T(GEN->pm)-GEN->y[i])/GEN->ys[i]);
 	  GEN->Hat[i] = ( F(GEN->y[i]+GEN->ys[i]*(GEN->s[i]+sign[i]*1.5-GEN->x[i])) /
-			 GEN->ys[i]-sign[i]*PMF(GEN->s[i]+sign[i]) ); 
+			  GEN->ys[i]-sign[i]*PMF(GEN->s[i]+sign[i]) ); 
 	  at[i] = GEN->x[i] + (FM(GEN->ys[i]*GEN->Hat[i])-GEN->y[i]) / GEN->ys[i]; 
           if(GEN->squeeze)
 	    GEN->xsq[i] = sign[i]*(at[i]-(GEN->s[i]+sign[i]));
@@ -1093,7 +1093,7 @@ _unur_dari_hat( struct unur_gen *gen )
       rep=0; 
   } while(rep);
 
-  if (setup == -2 || GEN->vt > 100.*t0 || GEN->vt <0.) {
+  if (setup == -2 || GEN->vt > 100.*t0 || !(GEN->vt > 0.)) {
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into log file */
     if (gen->debug)

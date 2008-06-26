@@ -2048,6 +2048,9 @@ _unur_pinv_info( struct unur_gen *gen, int help )
     else 
       _unur_string_append(info,"  [default]\n");
   }
+  else {
+    _unur_string_append(info,"\n");
+  }
 
   if (help) {
     if ( !(distr->set & (UNUR_DISTR_SET_CENTER | UNUR_DISTR_SET_MODE )) ) 

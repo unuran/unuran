@@ -44,7 +44,9 @@
 inline static int normal_bm_init( struct unur_gen *gen );
 inline static int normal_pol_init( struct unur_gen *gen );
 
-#ifdef USE_DEPRECATED_CODE
+
+
+#ifdef INCL_BUGGY_KR
 double _unur_stdgen_sample_normal_kr_buggy( UNUR_GEN *generator );
 #endif
 
@@ -102,7 +104,7 @@ _unur_stdgen_normal_init( struct unur_par *par, struct unur_gen *gen )
     _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_normal_kr );
     return UNUR_SUCCESS;
 
-#ifdef USE_DEPRECATED_CODE
+#ifdef INCL_BUGGY_KR
   case 999:  /* Buggy Kindermann-Ramage method */
     _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_normal_kr_buggy );
     return UNUR_SUCCESS;
@@ -609,7 +611,7 @@ _unur_stdgen_sample_normal_kr( struct unur_gen *gen )
 
 /*---------------------------------------------------------------------------*/
 
-#ifdef USE_DEPRECATED_CODE
+#ifdef INCL_BUGGY_KR
 
 /* Original version with error!! */
 
@@ -692,7 +694,7 @@ _unur_stdgen_sample_normal_kr_buggy( struct unur_gen *gen )
   
 } /* end of _unur_stdgen_sample_normal_kr_buggy() */
 
-#endif   /* USE_DEPRECATED_CODE */
+#endif   /* INCL_BUGGY_KR */
 
 /*---------------------------------------------------------------------------*/
 

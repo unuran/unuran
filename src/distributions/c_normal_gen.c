@@ -44,12 +44,6 @@
 inline static int normal_bm_init( struct unur_gen *gen );
 inline static int normal_pol_init( struct unur_gen *gen );
 
-
-
-#ifdef INCL_BUGGY_KR
-double _unur_stdgen_sample_normal_kr_buggy( UNUR_GEN *generator );
-#endif
-
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
 
@@ -103,12 +97,6 @@ _unur_stdgen_normal_init( struct unur_par *par, struct unur_gen *gen )
   case 3:    /* Kindermann-Ramage method */
     _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_normal_kr );
     return UNUR_SUCCESS;
-
-#ifdef INCL_BUGGY_KR
-  case 999:  /* Buggy Kindermann-Ramage method */
-    _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_normal_kr_buggy );
-    return UNUR_SUCCESS;
-#endif
 
   case 0:    /* DEFAULT */
   case 4:    /* Acceptance-complement ratio */
@@ -601,100 +589,11 @@ _unur_stdgen_sample_normal_kr( struct unur_gen *gen )
   
 #undef XI
 #undef PIhochK 
-#undef min
-#undef max
   /* -X- end of generator code -X- */
 
   return ((DISTR.n_params==0) ? X : mu + sigma * X );
   
 } /* end of _unur_stdgen_sample_normal_kr() */
-
-/*---------------------------------------------------------------------------*/
-
-#ifdef INCL_BUGGY_KR
-
-/* Original version with error!! */
-
-double
-_unur_stdgen_sample_normal_kr_buggy( struct unur_gen *gen )
-{
-  /* -X- generator code -X- */
-#define XI 2.216035867166471
-#define PIhochK 0.3989422804
-  
-  double U, V, W, X;
-  double t, z;
-  
-  /* check arguments */
-  CHECK_NULL(gen,INFINITY);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
-  
-  U = uniform();
-  
-  if (U < 0.884070402298758) {
-    V = uniform();
-    X = XI * (1.131131635444180 * U + V - 1.);
-  }
-  
-  else if (U >= 0.973310954173898) {
-    do {
-      V = uniform();
-      W = uniform();
-      if (_unur_iszero(W)) { t=0.; continue; }
-      t = XI * XI/2. - log(W);
-    } while ( (V*V*t) > (XI*XI/2.) );
-    X = (U < 0.986655477086949) ? pow(2*t,0.5) : -pow(2*t,0.5);
-  }
-  
-  else if (U>=0.958720824790463) {
-    do {
-      V = uniform();
-      W = uniform();
-      z = V - W;
-      t = XI - 0.630834801921960 * _unur_min(V,W);
-    } while (_unur_max(V,W) > 0.755591531667601 &&
-	     0.034240503750111 * fabs(z) > (PIhochK * exp(t*t/(-2.)) - 0.180025191068563*(XI-fabs(t))) );
-    X = (z<0) ? t : -t;
-  }
-  
-  else if (U>=0.911312780288703) {
-    do {
-      V = uniform();
-      W = uniform();
-      z = V - W;
-      t = 0.479727404222441 + 1.105473661022070 * _unur_min(V,W);
-    } while (_unur_max(V,W) > 0.872834976671790 &&
-	     0.049264496373128*fabs(z) > (PIhochK * exp(t*t/(-2)) -0.180025191068563*(XI-fabs(t))) );
-    X = (z<0) ? t : -t;
-  }
-  
-  else {
-    do {
-      V = uniform();
-      W = uniform(); 
-      z = V - W;
-      t = 0.479727404222441 - 0.595507138015940 * _unur_min(V,W);
-      /* 
-       * The following line would correct the error but is missing
-       * in the original algorithm as compiled in the paper.
-       */
-      /* if (t<=0.) continue; */
-    } while (_unur_max(V,W)>0.805777924423817 &&
-	     0.053377549506886*fabs(z) > (PIhochK * exp(t*t/(-2)) -0.180025191068563*(XI-fabs(t))) );
-    X = (z<0) ? t : -t;
-  }
-  
-#undef XI
-#undef PIhochK 
-#undef min
-#undef max
-  /* -X- end of generator code -X- */
-
-  return ((DISTR.n_params==0) ? X : mu + sigma * X );
-  
-} /* end of _unur_stdgen_sample_normal_kr_buggy() */
-
-#endif   /* INCL_BUGGY_KR */
 
 /*---------------------------------------------------------------------------*/
 

@@ -40,6 +40,7 @@ int main()
   UNUR_PAR *par;
   UNUR_GEN *gen;
   int i;
+  double fpar[] = {6.2};
 
 /*   double ll[] = { -1e-5, -1e-5}; */
 /*   double ll[] = { 0, 0}; */
@@ -61,7 +62,7 @@ int main()
 /*   unur_mvtdr_set_stepsmin(par, 0 ); */
 /*   unur_mvtdr_set_maxcones(par,1);  */
 
-  distr = unur_distr_exponential(NULL,0);
+  distr = unur_distr_gamma(fpar,1);
   par = unur_pinv_new(distr);
 
 /*   unur_run_tests(par,RUN_TESTS,stdout); */

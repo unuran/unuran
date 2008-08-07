@@ -46,7 +46,7 @@
  *   inverste CDF.                                                           *
  *                                                                           *
  *   Integration:                                                            *
- *     Gauss-Lobato integration with 5 points                                *
+ *     Gauss-Lobatto integration with 5 points                               *
  *                                                                           *
  *   Interpolation:                                                          *
  *     Newton interpolation                                                  *
@@ -240,10 +240,10 @@ static double _unur_pinv_tailprob (struct unur_gen *gen, double x, double dx);
 /* calculate approximate tail probability.                                   */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_pinv_lobato5 (struct unur_gen *gen, double x, double h, double errormax);
+static double _unur_pinv_lobatto5 (struct unur_gen *gen, double x, double h, double errormax);
 /*---------------------------------------------------------------------------*/
 /* numerical integration of the PDF over the interval (x,x+h)                */
-/* using Gauss-Lobato integration with 5 points.                             */
+/* using Gauss-Lobatto integration with 5 points.                            */
 /*---------------------------------------------------------------------------*/
 
 static int _unur_pinv_newtoninterpol (struct unur_gen *gen, struct unur_pinv_interval *iv, double h, double *x,double uerrcrit);
@@ -1200,8 +1200,8 @@ _unur_pinv_find_boundary( struct unur_gen *gen )
     GEN->bright = _unur_pinv_searchborder(gen,DISTR.center, GEN->bright, &(GEN->dright));
 
   /* estimate area below PDF */
-  GEN->area  = _unur_pinv_lobato5( gen, DISTR.center, GEN->bright - DISTR.center, GEN->u_resolution );
-  GEN->area += _unur_pinv_lobato5( gen, GEN->bleft, DISTR.center - GEN->bleft, GEN->u_resolution );
+  GEN->area  = _unur_pinv_lobatto5( gen, DISTR.center, GEN->bright - DISTR.center, GEN->u_resolution );
+  GEN->area += _unur_pinv_lobatto5( gen, GEN->bleft, DISTR.center - GEN->bleft, GEN->u_resolution );
 
   /* Remark:
    * The user can also provide the area below the PDF.
@@ -1221,10 +1221,10 @@ _unur_pinv_find_boundary( struct unur_gen *gen )
 
   /* parameters for tail cut-off points: maximal area in tails          */
   /* We use the given U-reslution * PINV_TAILCUTOFF_FACTOR * PDFarea.   */
-    tailcut_error = GEN->u_resolution * PINV_TAILCUTOFF_FACTOR(GEN->u_resolution);
-    tailcut_error = _unur_min( tailcut_error, PINV_TAILCUTOFF_MAX );
-    tailcut_error = _unur_max( tailcut_error, 2*DBL_EPSILON );
-    tailcut_error *= GEN->area * PINV_UERROR_CORRECTION;
+  tailcut_error = GEN->u_resolution * PINV_TAILCUTOFF_FACTOR(GEN->u_resolution);
+  tailcut_error = _unur_min( tailcut_error, PINV_TAILCUTOFF_MAX );
+  tailcut_error = _unur_max( tailcut_error, 2*DBL_EPSILON );
+  tailcut_error *= GEN->area * PINV_UERROR_CORRECTION;
 
   /* compute cut-off points for tails */
   if(GEN->sleft)
@@ -1522,10 +1522,10 @@ _unur_pinv_tailprob( struct unur_gen *gen, double x, double dx )
 
 /*---------------------------------------------------------------------------*/
 double
-_unur_pinv_lobato5 (struct unur_gen *gen, double x, double h, double errormax)
+_unur_pinv_lobatto5 (struct unur_gen *gen, double x, double h, double errormax)
      /*----------------------------------------------------------------------*/
      /* numerical integration of the PDF over the interval (x,x+h)           */
-     /* using Gauss-Lobato integration with 5 points.                        */
+     /* using Gauss-Lobatto integration with 5 points.                       */
      /*                                                                      */
      /* halfs intervals recursively if error is too large                    */
      /*                                                                      */
@@ -1534,13 +1534,15 @@ _unur_pinv_lobato5 (struct unur_gen *gen, double x, double h, double errormax)
      /*   x    ... left boundary point of interval                           */
      /*   h    ... length of interval                                        */
      /*   errormax ... maximal accepted error                                */
+     /*            TODO: relative or absolute */
+
      /*                                                                      */
      /* return:                                                              */
      /*   integral                                                           */
      /*----------------------------------------------------------------------*/
 /************************************
  * Numerical Integration of the interval (x,x+h)
- * using Gauss-Lobato integration with 5 points.
+ * using Gauss-Lobatto integration with 5 points.
  * fx ... f(x) to save calls to f()
  * *fxph ... f(x+h)
  ************************************/
@@ -1550,6 +1552,8 @@ _unur_pinv_lobato5 (struct unur_gen *gen, double x, double h, double errormax)
 { double fl,fr,fc,int1,int2,intl,intr,relerror;
  static int recurslevel=0;
  recurslevel++;
+
+ /** FIXME: static not allowed in UNU.RAN !!! **/
 
  fl=PDF(x);
  fr=PDF(x+h);
@@ -1568,11 +1572,11 @@ _unur_pinv_lobato5 (struct unur_gen *gen, double x, double h, double errormax)
  }
 
  if(relerror>errormax && fabs(int2-int1)>errormax)
-   return _unur_pinv_lobato5(gen,x,h/2,errormax)+_unur_pinv_lobato5(gen,x+h/2,h/2,errormax);
+   return _unur_pinv_lobatto5(gen,x,h/2,errormax)+_unur_pinv_lobatto5(gen,x+h/2,h/2,errormax);
  else return int2;
 #undef W1
 #undef W2
-} /* end of _unur_pinv_lobato5() */
+} /* end of _unur_pinv_lobatto5() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -1641,7 +1645,7 @@ _unur_pinv_newtoninterpol (struct unur_gen *gen, struct unur_pinv_interval *iv, 
     if (x!=NULL) x[i] = xi+dxi;
 
     /* compute integral of PDF in interval (xi,xi+dxi) */
-    temp = _unur_pinv_lobato5(gen, xi, dxi,uerrcrit*0.1 );
+    temp = _unur_pinv_lobatto5(gen, xi, dxi,uerrcrit*0.1 );
     if(temp<1.e-50) {
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"interval too short or PDF 0");
       return UNUR_ERR_GEN_CONDITION;
@@ -1755,9 +1759,9 @@ _unur_pinv_maxerror_newton (struct unur_gen *gen, struct unur_pinv_interval *iv,
            das habe ich als Verbessrung von Gerhards Algo eingebaut,
            weil mir aufgefallen ist, dass es fuer g gross Probleme mit dem INtegrationsfehler gibt*/
     if (i==0 || xval==NULL)
-      uerror = fabs(_unur_pinv_lobato5(gen,x0,x ,uerrcrit*0.1) - testu[i+1]);
+      uerror = fabs(_unur_pinv_lobatto5(gen,x0,x ,uerrcrit*0.1) - testu[i+1]);
     else
-      uerror = fabs(ui[i] + _unur_pinv_lobato5(gen,xval[i],x+x0-xval[i],uerrcrit*0.1) - testu[i+1]);
+      uerror = fabs(ui[i] + _unur_pinv_lobatto5(gen,xval[i],x+x0-xval[i],uerrcrit*0.1) - testu[i+1]);
 
     /* update maximal error */
     if (uerror>maxerror) maxerror=uerror;

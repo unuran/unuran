@@ -10,6 +10,11 @@
  *   METHOD:    Polynomial interpolation based INVersion of CDF              *
  *                                                                           *
  *   DESCRIPTION:                                                            *
+ *      Compute values of CDF incrementally and interpolate resulting points *
+ *      by polynomials.                                                      *
+ *                                                                           *
+ *      Integration:   Gauss-Lobatto integration with 5 points               *
+ *      Interpolation: Newton recursion for interpolating polynomial         *
  *                                                                           *
  *   REQUIRED:                                                               *
  *      pointer to the PDF, center of distribution                           *
@@ -43,14 +48,44 @@
  *****************************************************************************
  *                                                                           *
  *   Method PINV combines numerical integration with interpolation of the    *
- *   inverste CDF.                                                           *
+ *   inverse CDF.                                                            *
+ *                                                                           *
+ *   1.  Preprocessing:                                                      *
+ *                                                                           *
+ *   1a.   _unur_pinv_relevant_support():                                    *
+ *         Estimate computationally relevant domain (support) of PDF         *
+ *         (finite interval where PDF is above some threshold value).        *
+ *                                                                           *
+ *   1b.   _unur_pinv_approx_pdfarea():                                      *
+ *         Compute area below PDF over relevant domain approximately.        *
+ *                                                                           *
+ *   1c.   _unur_pinv_computational_domain():                                *
+ *         Compute computational domain where inverse CDF is approximated    *
+ *         (interval where we safely can compute coefficients of             *
+ *         interpolating polynomial).                                        *
+ *                                                                           *
+ *   2.  Interpolation:                                                      *
+ *                                                                           *
+ *   2a.   Compute coefficients for interpolating polynomial for             *
+ *         fixed (sub-) interval.                                            *
+ *                                                                           *
+ *   2b.   Evaluate interpolating polynomial.                                *
+ *                                                                           *
+ *   2c.   Estimate approximation error for given interpolating polynomial.  *
+ *                                                                           *
+ *                                                                           *
+ *   Currently the following methods are implemented:                        *
  *                                                                           *
  *   Integration:                                                            *
- *     Gauss-Lobatto integration with 5 points                               *
+ *     Adaptive Gauss-Lobatto integration with 5 points.                     *
  *                                                                           *
  *   Interpolation:                                                          *
- *     Newton interpolation                                                  *
+ *     Newton recursion for coefficients of polynomial                       *
+ *     ("Newton interpolation").                                             *
  *                                                                           *
+ *****************************************************************************
+
+
 
 TODO: Das ganze funktioniert bei exponentialverteilung (und normalverteilung 
 auf (-1,1)) nicht!!!!!
@@ -92,7 +127,6 @@ xi sind die Intervallgrenzen der sub-intervalle.
 
 /*---------------------------------------------------------------------------*/
 /* Constants                                                                 */
-
 
 #define MAX_ORDER   (19) 
 /* maximum order of Newton interpolation polynomial */
@@ -136,11 +170,6 @@ xi sind die Intervallgrenzen der sub-intervalle.
 #define PINV_GUIDE_FACTOR  (1)
 /* relative size of guide table */
 
-
-
-/* #define PINV_MAX_ITER      (300) */
-/* Maximal number of iterations for finding the boundary of the              */
-/* computational interval, i.e. where CDF(x) is close to 0 and 1, resp.      */
 
 /*---------------------------------------------------------------------------*/
 /* Variants: none                                                            */
@@ -210,6 +239,47 @@ static double _unur_pinv_eval_approxinvcdf (const struct unur_gen *gen, double u
 /* evaluate Hermite interpolation of inverse CDF at u.                       */
 /*---------------------------------------------------------------------------*/
 
+static int _unur_pinv_relevant_support (struct unur_gen *gen);
+/*---------------------------------------------------------------------------*/
+/* 1a. Estimate computationally relevant domain (support) of PDF             */
+/*     (finite interval where PDF is above some threshold value).            */
+/*---------------------------------------------------------------------------*/
+
+static double _unur_pinv_searchborder (struct unur_gen *gen, double x0, double bound, double *dom);
+/*---------------------------------------------------------------------------*/
+/* find left or right hand border of relevant domain.                        */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_pinv_approx_pdfarea (struct unur_gen *gen);
+/*---------------------------------------------------------------------------*/
+/* 1b. Compute area below PDF over relevant domain approximately.            */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_pinv_computational_domain (struct unur_gen *gen);
+/*---------------------------------------------------------------------------*/
+/* 1c. Compute computational domain where inverse CDF is approximated        */
+/*     (interval where we safely can compute coefficients of                 */
+/*     interpolating polynomial).                                            */
+/*---------------------------------------------------------------------------*/
+
+static double _unur_pinv_cut (struct unur_gen *gen, double dom, double w, double dw, double crit);
+/*---------------------------------------------------------------------------*/
+/* calculate cut-off points for computational domain of distribution.        */
+/*---------------------------------------------------------------------------*/
+
+static double _unur_pinv_tailprob (struct unur_gen *gen, double x, double dx);
+/*---------------------------------------------------------------------------*/
+/* calculate approximate tail probability.                                   */
+/*---------------------------------------------------------------------------*/
+
+
+
+
+
+
+
+
+
 static int _unur_pinv_create_table( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* create table for Newton interpolation                                     */
@@ -218,26 +288,6 @@ static int _unur_pinv_create_table( struct unur_gen *gen );
 static int _unur_pinv_interval( struct unur_gen *gen, int i, double x, double cdfx );
 /*---------------------------------------------------------------------------*/
 /* make a new interval i with left boundary point x and CDF(x).              */
-/*---------------------------------------------------------------------------*/
-
-static int _unur_pinv_find_boundary( struct unur_gen *gen );
-/*---------------------------------------------------------------------------*/
-/* find boundary for Newton interpolation                                    */
-/*---------------------------------------------------------------------------*/
-
-static double _unur_pinv_searchborder (struct unur_gen *gen, double x0, double bound, double *dom);
-/*---------------------------------------------------------------------------*/
-/* calculate domain of computational relevant region.                        */
-/*---------------------------------------------------------------------------*/
-
-static double _unur_pinv_cut (struct unur_gen *gen, double dom, double w, double dw, double crit);
-/*---------------------------------------------------------------------------*/
-/* calculate cut-off points for computationally stable domain for distr.     */
-/*---------------------------------------------------------------------------*/
-
-static double _unur_pinv_tailprob (struct unur_gen *gen, double x, double dx);
-/*---------------------------------------------------------------------------*/
-/* calculate approximate tail probability.                                   */
 /*---------------------------------------------------------------------------*/
 
 static double _unur_pinv_lobatto5 (struct unur_gen *gen, double x, double h, double errormax);
@@ -495,7 +545,7 @@ unur_pinv_set_boundary( struct unur_par *par, double left, double right )
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"domain");
     return UNUR_ERR_PAR_SET;
   }
-  if (left <= -INFINITY || right >= INFINITY) {
+  if (! (_unur_isfinite(left) && _unur_isfinite(right)) ) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"domain (+/- INFINITY not allowed)");
     return UNUR_ERR_PAR_SET;
   }
@@ -611,8 +661,12 @@ _unur_pinv_init( struct unur_par *par )
   if (gen->debug) _unur_pinv_debug_init_start(gen);
 #endif
 
-  /* find interval for computing Newton interpolation */
-  if (_unur_pinv_find_boundary(gen) != UNUR_SUCCESS) {
+  /* Preprocessing:                                     */
+  /*   find interval for computing Newton interpolation */
+  if (_unur_pinv_relevant_support(gen)     != UNUR_SUCCESS ||
+      _unur_pinv_approx_pdfarea(gen)       != UNUR_SUCCESS ||
+      _unur_pinv_computational_domain(gen) != UNUR_SUCCESS) {
+
 #ifdef UNUR_ENABLE_LOGGING
     if (gen->debug) _unur_pinv_debug_init(gen,FALSE);
 #endif
@@ -1031,157 +1085,14 @@ unur_pinv_estimate_error( const UNUR_GEN *gen, int samplesize, double *max_error
 /**  Auxilliary Routines                                                    **/
 /*****************************************************************************/
 
-int
-_unur_pinv_create_table( struct unur_gen *gen )
-     /*----------------------------------------------------------------------*/
-     /* Create table for Newton interpolation.                               */
-     /* The computational domain must be already computed / given.           */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer generator object                                   */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   UNUR_SUCCESS ... on success                                        */
-     /*   error code   ... on error                                          */
-     /*----------------------------------------------------------------------*/
-{
-  double uerrcrit;           /* threshold for maximum U-error */
-  double maxerror;           /* maximum U-error in a particular interval */ 
-  double h;                  /* step size / length of intervals */
-  int i;                     /* number of interval at work */
-  int iter;                  /* number of iterations */
-  int cont;                  /* whether we have to continue or loop */
-  double xval[MAX_ORDER+1];
-
-  /* check arguments */
-  COOKIE_CHECK(gen,CK_PINV_GEN,UNUR_ERR_COOKIE);
-
-  /* threshold for tolerated U-error */
-  uerrcrit = GEN->u_resolution * GEN->area * PINV_UERROR_CORRECTION;
-
-  /* initialize step size for subintervals */
-  h = (GEN->bright-GEN->bleft)/128.;
-
-  /* initialize array of interval: starting interval */
-  if (_unur_pinv_interval( gen, 0, GEN->bleft, 0.) != UNUR_SUCCESS) 
-    return UNUR_ERR_GEN_CONDITION;
-
-  /* initialize counter and control variables */
-  i = 0;        /* start at interval 0 ;-) */
-  cont = TRUE;  /* there is at least one iteration */
-
-  /* compute intervals and coefficients of Newton polynomials */
-  for (iter=0; cont ; iter++) {
-
-    /* check number of iterations */
-    if (iter > PINV_MAX_ITER_IVS) {
-      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,
-		  "maximum number of interations exceeded");
-      return UNUR_ERR_GEN_CONDITION;
-    }
-
-    /* right boundary reached ? */
-    if(GEN->iv[i].xi+h > GEN->bright) {
-      h = GEN->bright - GEN->iv[i].xi;
-      cont = FALSE;  /* we probably can stop after this iteration */
-    }
-
-    /* compute Newton interpolation polynomial */
-    if (_unur_pinv_newtoninterpol(gen,&(GEN->iv[i]),h,xval,uerrcrit) != UNUR_SUCCESS)
-      return UNUR_ERR_GEN_CONDITION;
-
-    /* estimate error of Newton interpolation */
-    maxerror = _unur_pinv_maxerror_newton(gen,&(GEN->iv[i]),xval,uerrcrit);
-
-    if (maxerror > uerrcrit) { 
-      /* error too large: reduce step size */
-      h *= (maxerror > 4.*uerrcrit) ? 0.81 : 0.9;
-      cont = TRUE;  /* we need another iteration */
-    }
-
-    else {
-      /* create next interval */
-      if ( _unur_pinv_interval( gen, i+1, GEN->iv[i].xi+h, 
-				GEN->iv[i].cdfi +(GEN->iv)[i].ui[GEN->order]) 
-	   /* cdfi holds CDF value at the left border of the interval,                */
-	   /* ui[order] holds area below PDF in interval, i.e. CDF(right) - CDF(left) */
-      	   != UNUR_SUCCESS )
-	return UNUR_ERR_GEN_CONDITION;
-
-      /* increase step size for very small errors */
-      if(maxerror < 0.3*uerrcrit) h *= 1.2;
-      if(maxerror < 0.1*uerrcrit) h *= 2.;
-      
-      /* continue with next interval */
-      i++;
-    }
-  }
-
-  /* update size of array */
-  GEN->iv = _unur_xrealloc( GEN->iv, (GEN->n_ivs+1) * sizeof(struct unur_pinv_interval) );
-  
-  /* set range for uniform random numbers */
-  /* Umin = 0, Umax depends on area below PDF, tail cut-off points and round-off errors */
-  GEN->Umax = GEN->iv[GEN->n_ivs].cdfi;
-
-  /* o.k. */
-  return UNUR_SUCCESS;
-}  /* end of _unur_pinv_create_table() */
-
-/*---------------------------------------------------------------------------*/
-
-int 
-_unur_pinv_interval( struct unur_gen *gen, int i, double x, double cdfx )
-     /*----------------------------------------------------------------------*/
-     /* make a new interval i with left boundary point x and CDF(x).         */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen  ... pointer to generator object                               */
-     /*   i    ... index (number) of interval                                */
-     /*   x    ... left boundary point of new interval                       */
-     /*   cdfx ... CDF at x                                                  */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   UNUR_SUCCESS ... on success                                        */
-     /*   error code   ... on error                                          */
-     /*----------------------------------------------------------------------*/
-{
-  struct unur_pinv_interval *iv;
-
-  /* check arguments */
-  COOKIE_CHECK(gen,CK_PINV_GEN,UNUR_FAILURE);
-
-  /* check for free intervalls */
-  if (i >= PINV_MAX_IVS) {
-    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,
-		"maximum number of intervals exceeded");
-    return UNUR_ERR_GEN_CONDITION;
-  }
-
-  /* set values */
-  iv = GEN->iv+i;     /* pointer to interval */
-  iv->xi = x;         /* left boundary of interval */
-  iv->cdfi = cdfx;    /* CDF at left boundary */
-  COOKIE_SET(iv,CK_PINV_IV);
-
-  /* allocate space for coefficients for Newton interpolation */
-  iv->ui = _unur_xmalloc( (GEN->order+1) * sizeof(double) );
-  iv->zi = _unur_xmalloc( (GEN->order+1) * sizeof(double) );
-
-  /* update size of array (number of intervals) */
-  GEN->n_ivs = i;
-
-  /* o.k. */
-  return UNUR_SUCCESS;
-
-} /* end of _unur_pinv_interval() */
-
-/*---------------------------------------------------------------------------*/
+/*****************************************************************************/
+/** Preprocessing                                                           **/
 
 int
-_unur_pinv_find_boundary( struct unur_gen *gen )
+_unur_pinv_relevant_support ( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* find boundary for Newton interpolation                               */
+     /* 1a. Estimate computationally relevant domain (support) of PDF        */
+     /*     (finite interval where PDF is above some threshold value).       */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen   ... pointer to generator object                              */
@@ -1191,68 +1102,34 @@ _unur_pinv_find_boundary( struct unur_gen *gen )
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
-  double tailcut_error;    /* threshold values for cut-off points */
-
   /* search for interval of computational relevance (if required) */
-  if(GEN->sleft)
+  if(GEN->sleft) {
     GEN->bleft = _unur_pinv_searchborder(gen,DISTR.center, GEN->bleft, &(GEN->dleft));
-  if(GEN->sright)
+    if (!_unur_isfinite(GEN->bleft)) {
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"Cannot get left boundary of relevant domain.");
+      return UNUR_ERR_GEN_CONDITION;
+    }
+  }
+  
+  if(GEN->sright) {
     GEN->bright = _unur_pinv_searchborder(gen,DISTR.center, GEN->bright, &(GEN->dright));
-
-  /* estimate area below PDF */
-  GEN->area  = _unur_pinv_lobatto5( gen, DISTR.center, GEN->bright - DISTR.center, GEN->u_resolution );
-  GEN->area += _unur_pinv_lobatto5( gen, GEN->bleft, DISTR.center - GEN->bleft, GEN->u_resolution );
-
-  /* Remark:
-   * The user can also provide the area below the PDF.
-   * However, then we probably need not method PINV
-   */
-
-#ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
-  if (gen->debug & PINV_DEBUG_SEARCHBD)
-    _unur_pinv_debug_searchbd(gen,FALSE);
-#endif
-
-  if (! _unur_isfinite(GEN->area) ) {
-    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"cannot estimate area below PDF");
-    return UNUR_FAILURE;
+    if (!_unur_isfinite(GEN->bright)) {
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"Cannot get right boundary of relevant domain.");
+      return UNUR_ERR_GEN_CONDITION;
+    }
   }
-
-  /* parameters for tail cut-off points: maximal area in tails          */
-  /* We use the given U-reslution * PINV_TAILCUTOFF_FACTOR * PDFarea.   */
-  tailcut_error = GEN->u_resolution * PINV_TAILCUTOFF_FACTOR(GEN->u_resolution);
-  tailcut_error = _unur_min( tailcut_error, PINV_TAILCUTOFF_MAX );
-  tailcut_error = _unur_max( tailcut_error, 2*DBL_EPSILON );
-  tailcut_error *= GEN->area * PINV_UERROR_CORRECTION;
-
-  /* compute cut-off points for tails */
-  if(GEN->sleft)
-    GEN->bleft = _unur_pinv_cut( gen, GEN->dleft, GEN->bleft, (GEN->bleft-GEN->bright)/128, tailcut_error);
-  if(GEN->sright)
-    GEN->bright = _unur_pinv_cut( gen, GEN->dright, GEN->bright, (GEN->bright-GEN->bleft)/128, tailcut_error);
-
-  if (! (_unur_isfinite(GEN->bleft) && _unur_isfinite(GEN->sright)) ) {
-    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"cannot find boundary for computational domain");
-    return UNUR_FAILURE;
-  }
-
-#ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
-  if (gen->debug & PINV_DEBUG_SEARCHBD)
-    _unur_pinv_debug_searchbd(gen,TRUE);
-#endif
 
   /* o.k. */
   return UNUR_SUCCESS;
-
-} /* end of _unur_pinv_find_boundary() */
+} /* end of _unur_pinv_relevant_support() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_pinv_searchborder( struct unur_gen *gen, double x0, double bound, double *dom)
+_unur_pinv_searchborder (struct unur_gen *gen, double x0, double bound, double *dom)
      /*----------------------------------------------------------------------*/
+     /* Find left or right hand border of relevant domain.                   */
+     /*                                                                      */
      /* Calculate domain of computational relevant region.                   */
      /* Start at 'x0' and search towards 'bound'.                            */
      /* The boundary points of this domain are approximately given as        */
@@ -1319,11 +1196,122 @@ _unur_pinv_searchborder( struct unur_gen *gen, double x0, double bound, double *
 
 /*---------------------------------------------------------------------------*/
 
+int
+_unur_pinv_approx_pdfarea (struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* 1b. Compute area below PDF over relevant domain approximately.       */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen   ... pointer to generator object                              */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*                                                                      */
+     /* Remark:                                                              */
+     /*   The user can also provide the area below the PDF.                  */
+     /*   However, then we probably need not method PINV                     */
+     /*----------------------------------------------------------------------*/
+{
+  double tol;   /* tolerated integration error */
+  int i;        /* number of trials            */
+  int res = UNUR_SUCCESS; /* return code of computation */
+
+  /* there is no need to be more accurate than the U-resolution.      */
+  /* here we assume that the integral is not too much smaller than 1. */
+  tol = GEN->u_resolution;
+
+
+  for (i=1; i<=2; i++) {
+
+    GEN->area  = _unur_pinv_lobatto5( gen, DISTR.center, GEN->bright - DISTR.center, tol );
+    GEN->area += _unur_pinv_lobatto5( gen, GEN->bleft, DISTR.center - GEN->bleft, tol );
+
+    if ( !_unur_isfinite(GEN->area) || _unur_iszero(GEN->area) ) {
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"cannot estimate area below PDF");
+      res = UNUR_FAILURE;
+      break;
+    }
+
+    if (GEN->area < 1.e-3) {
+      /* the area is too small. thus we the relative integration error is too large */
+      tol *= GEN->area;
+    }
+    else {
+      break;
+    }
+  }
+
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  if (gen->debug & PINV_DEBUG_SEARCHBD)
+    _unur_pinv_debug_searchbd(gen,FALSE);
+#endif
+
+  return res;
+
+} /* end of _unur_pinv_approx_pdfarea() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_pinv_computational_domain (struct unur_gen *gen)
+     /*----------------------------------------------------------------------*/
+     /* 1c. Compute computational domain where inverse CDF is approximated   */
+     /*     (interval where we safely can compute coefficients of            */
+     /*     interpolating polynomial).                                       */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen   ... pointer to generator object                              */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  double tailcut_error;    /* threshold values for cut-off points */
+
+  /* parameters for tail cut-off points: maximal area in tails          */
+  /* We use the given U-reslution * PINV_TAILCUTOFF_FACTOR * PDFarea.   */
+  tailcut_error = GEN->u_resolution * PINV_TAILCUTOFF_FACTOR(GEN->u_resolution);
+  tailcut_error = _unur_min( tailcut_error, PINV_TAILCUTOFF_MAX );
+  tailcut_error = _unur_max( tailcut_error, 2*DBL_EPSILON );
+  tailcut_error *= GEN->area * PINV_UERROR_CORRECTION;
+
+  /* compute cut-off points for tails */
+  if(GEN->sleft) {
+    GEN->bleft = _unur_pinv_cut( gen, GEN->dleft, GEN->bleft, (GEN->bleft-GEN->bright)/128, tailcut_error);
+    if ( !_unur_isfinite(GEN->bleft) ) {
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"cannot find left boundary for computational domain");
+      return UNUR_FAILURE;
+    }
+  }
+
+  if(GEN->sright) {
+    GEN->bright = _unur_pinv_cut( gen, GEN->dright, GEN->bright, (GEN->bright-GEN->bleft)/128, tailcut_error);
+    if ( !_unur_isfinite(GEN->bright) ) {
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"cannot find right boundary for computational domain");
+      return UNUR_FAILURE;
+    }
+  }
+
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  if (gen->debug & PINV_DEBUG_SEARCHBD)
+    _unur_pinv_debug_searchbd(gen,TRUE);
+#endif
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+
+} /* end of _unur_pinv_computational_domain() */
+
+/*---------------------------------------------------------------------------*/
+
 double
 _unur_pinv_cut( struct unur_gen *gen, double dom, double w, double dw, double crit )
      /*----------------------------------------------------------------------*/
-     /* Calculate cut-off points for computationally stable domain for       */
-     /* distribution.                                                        */
+     /* Calculate cut-off points for computational domain of distribution.   */
      /* The area outside the cut-off point is given by 'crit'.               */
      /*                                                                      */
      /* parameters:                                                          */
@@ -1521,6 +1509,157 @@ _unur_pinv_tailprob( struct unur_gen *gen, double x, double dx )
 } /* end of _unur_pinv_tailprob() */
 
 /*---------------------------------------------------------------------------*/
+
+/*****************************************************************************/
+/** Compute coefficients for polynomial                                     **/
+
+int
+_unur_pinv_create_table( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* Create table for Newton interpolation.                               */
+     /* The computational domain must be already computed / given.           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer generator object                                   */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  double uerrcrit;           /* threshold for maximum U-error */
+  double maxerror;           /* maximum U-error in a particular interval */ 
+  double h;                  /* step size / length of intervals */
+  int i;                     /* number of interval at work */
+  int iter;                  /* number of iterations */
+  int cont;                  /* whether we have to continue or loop */
+  double xval[MAX_ORDER+1];
+
+  /* check arguments */
+  COOKIE_CHECK(gen,CK_PINV_GEN,UNUR_ERR_COOKIE);
+
+  /* threshold for tolerated U-error */
+  uerrcrit = GEN->u_resolution * GEN->area * PINV_UERROR_CORRECTION;
+
+  /* initialize step size for subintervals */
+  h = (GEN->bright-GEN->bleft)/128.;
+
+  /* initialize array of interval: starting interval */
+  if (_unur_pinv_interval( gen, 0, GEN->bleft, 0.) != UNUR_SUCCESS) 
+    return UNUR_ERR_GEN_CONDITION;
+
+  /* initialize counter and control variables */
+  i = 0;        /* start at interval 0 ;-) */
+  cont = TRUE;  /* there is at least one iteration */
+
+  /* compute intervals and coefficients of Newton polynomials */
+  for (iter=0; cont ; iter++) {
+
+    /* check number of iterations */
+    if (iter > PINV_MAX_ITER_IVS) {
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,
+		  "maximum number of interations exceeded");
+      return UNUR_ERR_GEN_CONDITION;
+    }
+
+    /* right boundary reached ? */
+    if(GEN->iv[i].xi+h > GEN->bright) {
+      h = GEN->bright - GEN->iv[i].xi;
+      cont = FALSE;  /* we probably can stop after this iteration */
+    }
+
+    /* compute Newton interpolation polynomial */
+    if (_unur_pinv_newtoninterpol(gen,&(GEN->iv[i]),h,xval,uerrcrit) != UNUR_SUCCESS)
+      return UNUR_ERR_GEN_CONDITION;
+
+    /* estimate error of Newton interpolation */
+    maxerror = _unur_pinv_maxerror_newton(gen,&(GEN->iv[i]),xval,uerrcrit);
+
+    if (maxerror > uerrcrit) { 
+      /* error too large: reduce step size */
+      h *= (maxerror > 4.*uerrcrit) ? 0.81 : 0.9;
+      cont = TRUE;  /* we need another iteration */
+    }
+
+    else {
+      /* create next interval */
+      if ( _unur_pinv_interval( gen, i+1, GEN->iv[i].xi+h, 
+				GEN->iv[i].cdfi +(GEN->iv)[i].ui[GEN->order]) 
+	   /* cdfi holds CDF value at the left border of the interval,                */
+	   /* ui[order] holds area below PDF in interval, i.e. CDF(right) - CDF(left) */
+      	   != UNUR_SUCCESS )
+	return UNUR_ERR_GEN_CONDITION;
+
+      /* increase step size for very small errors */
+      if(maxerror < 0.3*uerrcrit) h *= 1.2;
+      if(maxerror < 0.1*uerrcrit) h *= 2.;
+      
+      /* continue with next interval */
+      i++;
+    }
+  }
+
+  /* update size of array */
+  GEN->iv = _unur_xrealloc( GEN->iv, (GEN->n_ivs+1) * sizeof(struct unur_pinv_interval) );
+  
+  /* set range for uniform random numbers */
+  /* Umin = 0, Umax depends on area below PDF, tail cut-off points and round-off errors */
+  GEN->Umax = GEN->iv[GEN->n_ivs].cdfi;
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+}  /* end of _unur_pinv_create_table() */
+
+/*---------------------------------------------------------------------------*/
+
+int 
+_unur_pinv_interval( struct unur_gen *gen, int i, double x, double cdfx )
+     /*----------------------------------------------------------------------*/
+     /* make a new interval i with left boundary point x and CDF(x).         */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*   i    ... index (number) of interval                                */
+     /*   x    ... left boundary point of new interval                       */
+     /*   cdfx ... CDF at x                                                  */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_pinv_interval *iv;
+
+  /* check arguments */
+  COOKIE_CHECK(gen,CK_PINV_GEN,UNUR_FAILURE);
+
+  /* check for free intervalls */
+  if (i >= PINV_MAX_IVS) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,
+		"maximum number of intervals exceeded");
+    return UNUR_ERR_GEN_CONDITION;
+  }
+
+  /* set values */
+  iv = GEN->iv+i;     /* pointer to interval */
+  iv->xi = x;         /* left boundary of interval */
+  iv->cdfi = cdfx;    /* CDF at left boundary */
+  COOKIE_SET(iv,CK_PINV_IV);
+
+  /* allocate space for coefficients for Newton interpolation */
+  iv->ui = _unur_xmalloc( (GEN->order+1) * sizeof(double) );
+  iv->zi = _unur_xmalloc( (GEN->order+1) * sizeof(double) );
+
+  /* update size of array (number of intervals) */
+  GEN->n_ivs = i;
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+
+} /* end of _unur_pinv_interval() */
+
+/*---------------------------------------------------------------------------*/
+
 double
 _unur_pinv_lobatto5 (struct unur_gen *gen, double x, double h, double errormax)
      /*----------------------------------------------------------------------*/

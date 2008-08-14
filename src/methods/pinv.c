@@ -13,7 +13,7 @@
  *      Compute values of CDF incrementally and interpolate resulting points *
  *      by polynomials.                                                      *
  *                                                                           *
- *      Integration:   Gauss-Lobatto integration with 5 points               *
+ *      Integration:   adaptive Gauss-Lobatto integration with 5 points      *
  *      Interpolation: Newton recursion for interpolating polynomial         *
  *                                                                           *
  *   REQUIRED:                                                               *
@@ -52,32 +52,40 @@
  *                                                                           *
  *   1.  Preprocessing:                                                      *
  *                                                                           *
- *   1a.   _unur_pinv_relevant_support():                                    *
- *         Estimate computationally relevant domain (support) of PDF         *
+ *   1a.   Estimate computationally relevant domain (support) of PDF         *
  *         (finite interval where PDF is above some threshold value).        *
+ *            _unur_pinv_relevant_support()                                  *
+ *            _unur_pinv_searchborder()                                      *
  *                                                                           *
- *   1b.   _unur_pinv_approx_pdfarea():                                      *
- *         Compute area below PDF over relevant domain approximately.        *
+ *   1b.   Compute area below PDF over relevant domain approximately.        *
+ *            _unur_pinv_approx_pdfarea()                                    *
  *                                                                           *
- *   1c.   _unur_pinv_computational_domain():                                *
- *         Compute computational domain where inverse CDF is approximated    *
+ *   1c.   Compute computational domain where inverse CDF is approximated    *
  *         (interval where we safely can compute coefficients of             *
  *         interpolating polynomial).                                        *
+ *            _unur_pinv_computational_domain()                              *
+ *            _unur_pinv_cut()                                               *
+ *            _unur_pinv_tailprob()                                          *
  *                                                                           *
  *   2.  Interpolation:                                                      *
  *                                                                           *
  *   2a.   Compute coefficients for interpolating polynomial for             *
  *         fixed (sub-) interval.                                            *
+ *            _unur_pinv_newton_create()                                     *
  *                                                                           *
  *   2b.   Evaluate interpolating polynomial.                                *
+ *            _unur_pinv_newton_eval()                                       *
  *                                                                           *
  *   2c.   Estimate approximation error for given interpolating polynomial.  *
+ *            _unur_pinv_newton_maxerror()                                   *
+ *            _unur_pinv_newton_testpoints()                                 *
  *                                                                           *
  *                                                                           *
  *   Currently the following methods are implemented:                        *
  *                                                                           *
- *   Integration:                                                            *
+ *   Quadrature (Integration):                                               *
  *     Adaptive Gauss-Lobatto integration with 5 points.                     *
+ *        _unur_pinv_lobatto5()                                              *
  *                                                                           *
  *   Interpolation:                                                          *
  *     Newton recursion for coefficients of polynomial                       *
@@ -137,6 +145,9 @@ xi sind die Intervallgrenzen der sub-intervalle.
 /* by cutting off the tails introduces some additional errors which must be  */
 /* corrected. Thus the upper bound for the pure approximation error of the   */
 /* interpolation is set to PINV_UERROR_CORRECTION * u-resolution.            */
+
+#define PINV_MAX_LOBATTORECURSLEVEL  (2048)
+/* Maximal recursion level for adaptive Gauss-Lobatto integration.           */
 
 #define PINV_PDFLLIM    (1.e-13)
 /* Threshold value used for finding the boundary of the computational        */
@@ -239,6 +250,13 @@ static double _unur_pinv_eval_approxinvcdf (const struct unur_gen *gen, double u
 /* evaluate Hermite interpolation of inverse CDF at u.                       */
 /*---------------------------------------------------------------------------*/
 
+static double _unur_pinv_lobatto5 (struct unur_gen *gen, double x, double h, 
+				   double errormax, int reclevel);
+/*---------------------------------------------------------------------------*/
+/* numerical integration of the PDF over the interval (x,x+h)                */
+/* using adaptive Gauss-Lobatto integration with 5 points.                   */
+/*---------------------------------------------------------------------------*/
+
 static int _unur_pinv_relevant_support (struct unur_gen *gen);
 /*---------------------------------------------------------------------------*/
 /* 1a. Estimate computationally relevant domain (support) of PDF             */
@@ -247,7 +265,7 @@ static int _unur_pinv_relevant_support (struct unur_gen *gen);
 
 static double _unur_pinv_searchborder (struct unur_gen *gen, double x0, double bound, double *dom);
 /*---------------------------------------------------------------------------*/
-/* find left or right hand border of relevant domain.                        */
+/* [1a.] find left or right hand border of relevant domain.                  */
 /*---------------------------------------------------------------------------*/
 
 static int _unur_pinv_approx_pdfarea (struct unur_gen *gen);
@@ -264,21 +282,13 @@ static int _unur_pinv_computational_domain (struct unur_gen *gen);
 
 static double _unur_pinv_cut (struct unur_gen *gen, double dom, double w, double dw, double crit);
 /*---------------------------------------------------------------------------*/
-/* calculate cut-off points for computational domain of distribution.        */
+/* [1c.] calculate cut-off points for computational domain of distribution.  */
 /*---------------------------------------------------------------------------*/
 
 static double _unur_pinv_tailprob (struct unur_gen *gen, double x, double dx);
 /*---------------------------------------------------------------------------*/
-/* calculate approximate tail probability.                                   */
+/* [1c.] calculate approximate tail probability.                             */
 /*---------------------------------------------------------------------------*/
-
-
-
-
-
-
-
-
 
 static int _unur_pinv_create_table( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
@@ -290,30 +300,26 @@ static int _unur_pinv_interval( struct unur_gen *gen, int i, double x, double cd
 /* make a new interval i with left boundary point x and CDF(x).              */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_pinv_lobatto5 (struct unur_gen *gen, double x, double h, double errormax);
+static int _unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_interval *iv, 
+				     double h, double *xval, double uerrcrit);
 /*---------------------------------------------------------------------------*/
-/* numerical integration of the PDF over the interval (x,x+h)                */
-/* using Gauss-Lobatto integration with 5 points.                            */
-/*---------------------------------------------------------------------------*/
-
-static int _unur_pinv_newtoninterpol (struct unur_gen *gen, struct unur_pinv_interval *iv, double h, double *x,double uerrcrit);
-/*---------------------------------------------------------------------------*/
-/* Compute coefficients for Newton interpolation.                            */
+/* 2a. Compute coefficients for Newton interpolation.                        */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_pinv_eval_newtonpolynomial (double q, double ui[], double zi[], int order);
+static double _unur_pinv_newton_eval (double q, double ui[], double zi[], int order);
 /*---------------------------------------------------------------------------*/
-/* evaluate Newton polynomial.                                               */
-/*---------------------------------------------------------------------------*/
-
-static double _unur_pinv_maxerror_newton (struct unur_gen *gen, struct unur_pinv_interval *iv, double xval[],double uerrcrit);
-/*---------------------------------------------------------------------------*/
-/* estimate maximal error of Newton interpolation in subinterval             */
+/* 2b. evaluate Newton polynomial.                                           */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_pinv_tstpt (int g,double ui[],double utest[]);
+static double _unur_pinv_newton_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv, 
+					  double xval[], double uerrcrit);
 /*---------------------------------------------------------------------------*/
-/* calculate the local maxima of the interpolation polynomial                */
+/* 2c. estimate maximal error of Newton interpolation in subinterval         */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_pinv_newton_testpoints (int g,double ui[],double utest[]);
+/*---------------------------------------------------------------------------*/
+/* [2c.] calculate the local maxima of the interpolation polynomial          */
 /*---------------------------------------------------------------------------*/
 
 static int _unur_pinv_make_guide_table (struct unur_gen *gen);
@@ -862,10 +868,10 @@ _unur_pinv_clone( const struct unur_gen *gen )
   memcpy( CLONE->iv, GEN->iv, (GEN->n_ivs+1) * sizeof(struct unur_pinv_interval) );
 
   for(i=0; i<=GEN->n_ivs; i++) {
-    CLONE->iv[i].ui = _unur_xmalloc( (GEN->order+1) * sizeof(double) );
-    CLONE->iv[i].zi = _unur_xmalloc( (GEN->order+1) * sizeof(double) );
-    memcpy( CLONE->iv[i].ui, GEN->iv[i].ui, (GEN->order+1) * sizeof(double) );
-    memcpy( CLONE->iv[i].zi, GEN->iv[i].zi, (GEN->order+1) * sizeof(double) );
+    CLONE->iv[i].ui = _unur_xmalloc( GEN->order * sizeof(double) );
+    CLONE->iv[i].zi = _unur_xmalloc( GEN->order * sizeof(double) );
+    memcpy( CLONE->iv[i].ui, GEN->iv[i].ui, GEN->order * sizeof(double) );
+    memcpy( CLONE->iv[i].zi, GEN->iv[i].zi, GEN->order * sizeof(double) );
   }
 
   /* copy guide table */
@@ -904,7 +910,7 @@ _unur_pinv_free( struct unur_gen *gen )
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
   /* free guide table */
-  if (GEN->guide)     free (GEN->guide);
+  if (GEN->guide) free (GEN->guide);
 
   /* free tables of coefficients of interpolating polynomials */
   if (GEN->iv) {
@@ -992,7 +998,7 @@ _unur_pinv_eval_approxinvcdf( const struct unur_gen *gen, double u )
   un -= GEN->iv[i].cdfi;
 
   /* evaluate polynomial */
-  x = _unur_pinv_eval_newtonpolynomial(un, GEN->iv[i].ui, GEN->iv[i].zi, GEN->order);
+  x = _unur_pinv_newton_eval(un, GEN->iv[i].ui, GEN->iv[i].zi, GEN->order);
 
   /* return point (add left boundary point to x) */
   return (GEN->iv)[i].xi + x;
@@ -1086,6 +1092,74 @@ unur_pinv_estimate_error( const UNUR_GEN *gen, int samplesize, double *max_error
 /*****************************************************************************/
 
 /*****************************************************************************/
+/** Quadrature                                                              **/
+
+double
+_unur_pinv_lobatto5 (struct unur_gen *gen, double x, double h, double errormax, int reclevel)
+     /*----------------------------------------------------------------------*/
+     /* numerical integration of the PDF over the interval (x,x+h)           */
+     /* using adaptive Gauss-Lobatto integration with 5 points.              */
+     /*                                                                      */
+     /* halfs intervals recursively if error is too large                    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*   x    ... left boundary point of interval                           */
+     /*   h    ... length of interval                                        */
+     /*   errormax ... maximal tolerated relative error                      */
+/** FIXME: warum relativer und absoluter Fehler?  **/
+     /*                                                                      */
+     /* return:                                                              */
+     /*   integral                                                           */
+     /*----------------------------------------------------------------------*/
+{ 
+  double fl, fr, fc;              /* values of PDF at x-h, x, and x+h */
+  double int1, int2, intl, intr;  /* estimated values of integrals */
+  double relerror;
+
+  /* points for Lobatto integration */
+#define W1 (0.17267316464601146)   /* = 0.5-sqrt(3/28) */
+#define W2 (1.-W1)
+
+  /* compute PDF values */
+  fl = PDF(x);
+  fr = PDF(x+h);
+  fc = PDF(x+h/2);
+ 
+  /* compute integral on [x,x+h] */
+  int1 = (9*(fl+fr)+49.*(PDF(x+h*W1)+PDF(x+h*W2))+64*fc)*h/180.;
+
+  /* compute integral on [x,x+h/2] and on [x+h/2,x+h] */
+  intl = (9*(fl+fc)+49.*(PDF(x+h*W1*0.5)+PDF(x+h*W2*0.5))+64*PDF(x+h*0.25))*h/360.;
+  intr = (9*(fc+fr)+49.*(PDF(x+h*(0.5+W1*0.5))+PDF(x+h*(0.5+W2*0.5)))+64*PDF(x+h*0.75))*h/360.;
+  int2 = intl + intr;
+
+  /* estimate relative integration error */
+  relerror = fabs(int2-int1)/int2;
+
+  /* check error */
+  if (relerror <= errormax || fabs(int2-int1)<= errormax)
+    return int2;
+  /** TODO: warum relativer und absoluter Fehler ?? **/
+  
+  /* else: error above tolerance */
+
+  if (reclevel >= PINV_MAX_LOBATTORECURSLEVEL) {
+    _unur_warning(gen->genid,UNUR_ERR_ROUNDOFF,
+		  "numeric integration did not reach full accuracy");
+    return int2;
+  }
+
+  /* recompute with shorter intervals */
+  return ( _unur_pinv_lobatto5(gen,x,h/2,errormax,reclevel+1) +
+	   _unur_pinv_lobatto5(gen,x+h/2,h/2,errormax,reclevel+1) );
+
+#undef W1
+#undef W2
+} /* end of _unur_pinv_lobatto5() */
+
+
+/*****************************************************************************/
 /** Preprocessing                                                           **/
 
 int
@@ -1128,7 +1202,7 @@ _unur_pinv_relevant_support ( struct unur_gen *gen )
 double
 _unur_pinv_searchborder (struct unur_gen *gen, double x0, double bound, double *dom)
      /*----------------------------------------------------------------------*/
-     /* Find left or right hand border of relevant domain.                   */
+     /* [1a.] Find left or right hand border of relevant domain.             */
      /*                                                                      */
      /* Calculate domain of computational relevant region.                   */
      /* Start at 'x0' and search towards 'bound'.                            */
@@ -1224,8 +1298,8 @@ _unur_pinv_approx_pdfarea (struct unur_gen *gen )
 
   for (i=1; i<=2; i++) {
 
-    GEN->area  = _unur_pinv_lobatto5( gen, DISTR.center, GEN->bright - DISTR.center, tol );
-    GEN->area += _unur_pinv_lobatto5( gen, GEN->bleft, DISTR.center - GEN->bleft, tol );
+    GEN->area  = _unur_pinv_lobatto5( gen, DISTR.center, GEN->bright - DISTR.center, tol, 0 );
+    GEN->area += _unur_pinv_lobatto5( gen, GEN->bleft,   DISTR.center - GEN->bleft,  tol, 0 );
 
     if ( !_unur_isfinite(GEN->area) || _unur_iszero(GEN->area) ) {
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"cannot estimate area below PDF");
@@ -1311,12 +1385,13 @@ _unur_pinv_computational_domain (struct unur_gen *gen)
 double
 _unur_pinv_cut( struct unur_gen *gen, double dom, double w, double dw, double crit )
      /*----------------------------------------------------------------------*/
-     /* Calculate cut-off points for computational domain of distribution.   */
+     /* [1c.] Calculate cut-off points for computational domain of           */
+     /* distribution.                                                        */
      /* The area outside the cut-off point is given by 'crit'.               */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen  ... pointer to generator object                               */
-     /*   dom  ... pointer to boundary of domain / support of distribution   */
+     /*   dom  ... boundary of domain / support of distribution              */
      /*   w    ... starting point for searching cut-off point                */
      /*   dw   ... initial step size for searching,                          */
      /*            sign of dw gives searching direction:                     */
@@ -1385,7 +1460,7 @@ _unur_pinv_cut( struct unur_gen *gen, double dom, double w, double dw, double cr
   /* step size for numeric differentiation */
   dx=dw/64.;
 
-  for (j=0; j<1000; j++) {
+  for (j=0; j<2048; j++) {
 
     /* check whether 'u' approx 'crit' */
     if (fabs(crit/u - 1.)<1.e-7) 
@@ -1430,7 +1505,7 @@ _unur_pinv_cut( struct unur_gen *gen, double dom, double w, double dw, double cr
 double
 _unur_pinv_tailprob( struct unur_gen *gen, double x, double dx )
      /*----------------------------------------------------------------------*/
-     /* calculate approximate tail probability.                              */
+     /* [1c.] calculate approximate tail probability.                        */
      /* use formula                                                          */
      /*   area ~ f(x)^2 / ( (lc_f(x)+1) * abs(f'(x)) )                       */
      /*                                                                      */
@@ -1569,11 +1644,11 @@ _unur_pinv_create_table( struct unur_gen *gen )
     }
 
     /* compute Newton interpolation polynomial */
-    if (_unur_pinv_newtoninterpol(gen,&(GEN->iv[i]),h,xval,uerrcrit) != UNUR_SUCCESS)
+    if (_unur_pinv_newton_create(gen,&(GEN->iv[i]),h,xval,uerrcrit) != UNUR_SUCCESS)
       return UNUR_ERR_GEN_CONDITION;
 
     /* estimate error of Newton interpolation */
-    maxerror = _unur_pinv_maxerror_newton(gen,&(GEN->iv[i]),xval,uerrcrit);
+    maxerror = _unur_pinv_newton_maxerror(gen,&(GEN->iv[i]),xval,uerrcrit);
 
     if (maxerror > uerrcrit) { 
       /* error too large: reduce step size */
@@ -1584,9 +1659,9 @@ _unur_pinv_create_table( struct unur_gen *gen )
     else {
       /* create next interval */
       if ( _unur_pinv_interval( gen, i+1, GEN->iv[i].xi+h, 
-				GEN->iv[i].cdfi +(GEN->iv)[i].ui[GEN->order]) 
-	   /* cdfi holds CDF value at the left border of the interval,                */
-	   /* ui[order] holds area below PDF in interval, i.e. CDF(right) - CDF(left) */
+				GEN->iv[i].cdfi +(GEN->iv)[i].ui[GEN->order-1])
+	   /* cdfi holds CDF value at the left border of the interval,                  */
+	   /* ui[order-1] holds area below PDF in interval, i.e. CDF(right) - CDF(left) */
       	   != UNUR_SUCCESS )
 	return UNUR_ERR_GEN_CONDITION;
 
@@ -1647,8 +1722,8 @@ _unur_pinv_interval( struct unur_gen *gen, int i, double x, double cdfx )
   COOKIE_SET(iv,CK_PINV_IV);
 
   /* allocate space for coefficients for Newton interpolation */
-  iv->ui = _unur_xmalloc( (GEN->order+1) * sizeof(double) );
-  iv->zi = _unur_xmalloc( (GEN->order+1) * sizeof(double) );
+  iv->ui = _unur_xmalloc( GEN->order * sizeof(double) );
+  iv->zi = _unur_xmalloc( GEN->order * sizeof(double) );
 
   /* update size of array (number of intervals) */
   GEN->n_ivs = i;
@@ -1660,161 +1735,94 @@ _unur_pinv_interval( struct unur_gen *gen, int i, double x, double cdfx )
 
 /*---------------------------------------------------------------------------*/
 
-double
-_unur_pinv_lobatto5 (struct unur_gen *gen, double x, double h, double errormax)
-     /*----------------------------------------------------------------------*/
-     /* numerical integration of the PDF over the interval (x,x+h)           */
-     /* using Gauss-Lobatto integration with 5 points.                       */
-     /*                                                                      */
-     /* halfs intervals recursively if error is too large                    */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen  ... pointer to generator object                               */
-     /*   x    ... left boundary point of interval                           */
-     /*   h    ... length of interval                                        */
-     /*   errormax ... maximal accepted error                                */
-     /*            TODO: relative or absolute */
-
-     /*                                                                      */
-     /* return:                                                              */
-     /*   integral                                                           */
-     /*----------------------------------------------------------------------*/
-/************************************
- * Numerical Integration of the interval (x,x+h)
- * using Gauss-Lobatto integration with 5 points.
- * fx ... f(x) to save calls to f()
- * *fxph ... f(x+h)
- ************************************/
-#define W1 0.17267316464601146  //= 0.5-sqrt(3/28)
-#define W2 (1.-W1)
-#define MAXRECURSLEVEL 9999
-{ double fl,fr,fc,int1,int2,intl,intr,relerror;
- static int recurslevel=0;
- recurslevel++;
-
- /** FIXME: static not allowed in UNU.RAN !!! **/
-
- fl=PDF(x);
- fr=PDF(x+h);
- fc=PDF(x+h/2);
- 
- int1= (9*(fl+fr)+49.*(PDF(x+h*W1)+PDF(x+h*W2))+64*fc)*h/180.;
- intl= (9*(fl+fc)+49.*(PDF(x+h*W1*0.5)+PDF(x+h*W2*0.5))+64*PDF(x+h*0.25))*h/360.;
- intr= (9*(fc+fr)+49.*(PDF(x+h*(0.5+W1*0.5))+PDF(x+h*(0.5+W2*0.5)))+64*PDF(x+h*0.75))*h/360.;
- int2=intl+intr;
- relerror = fabs(int2-int1)/int2;
- // printf("recurslevel%d x%g h%g int2 %g int1 %g relerror%g\n",recurslevel,x,h,int2,int1,relerror);
- if(recurslevel==MAXRECURSLEVEL){
-   _unur_warning(gen->genid,UNUR_ERR_ROUNDOFF,
-		 "numeric integration did not reach full accuracy");
-   return int2;
- }
-
- if(relerror>errormax && fabs(int2-int1)>errormax)
-   return _unur_pinv_lobatto5(gen,x,h/2,errormax)+_unur_pinv_lobatto5(gen,x+h/2,h/2,errormax);
- else return int2;
-#undef W1
-#undef W2
-} /* end of _unur_pinv_lobatto5() */
-
-/*---------------------------------------------------------------------------*/
-
 int
-_unur_pinv_newtoninterpol (struct unur_gen *gen, struct unur_pinv_interval *iv, double h, double *x,double uerrcrit)
+_unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_interval *iv, 
+			  double h, double *xval, double uerrcrit)
      /*----------------------------------------------------------------------*/
-     /* Compute coefficients for Newton interpolation within a subinterval   */
-     /* of the domain of the distribution.                                   */
+     /* 2a. Compute coefficients for Newton interpolation within a           */
+     /* subinterval of the domain of the distribution.                       */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   gen  ... pointer to generator object                               */
-     /*   iv   ... pointer to current interval                               */
-     /*   h    ... length of subinterval  ?WH  ja?                           */
-     /*   x    ... ?WH? xi values associated with the ui, necessary for controll*/
-     /*  uerrcrit ... maximal accepted u-error                                 */
+     /*   gen      ... pointer to generator object                           */
+     /*   iv       ... pointer to current interval                           */
+     /*   h        ... length of interval                                    */
+     /*   xval     ... x values associated with the ui,                      */
+     /*                necessary for controlling error                       */
+     /*   uerrcrit ... maximal accepted u-error                              */
      /*                                                                      */
      /* return:                                                              */
      /*   UNUR_SUCCESS ... on success                                        */
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
-  /*calculates ui and zi arrays, xi pointer may be NULL */
-  /* ?WH? x ist aber nie NULL */
-
-/*TODOWH: Wie DU richtig siehst ist das hier furchtaber Baustelle, fortran Code in
-    C uebersetzt aber auch verbessert. Ich habe ca 1 Tag daran gebastelt, aber es nicht geschafft
-    ihn wirklich zu verbessern und dann aufgegeben, weil vor Montreal zu viel zu tun ist. Muss ich noch machen!!*/
-
-  double x0 = iv->xi;    /* left boundary point of interval ?WH? ja */
+  double x0 = iv->xi;    /* left boundary point of interval */
   double *ui = iv->ui;   /* u-values for Newton interpolation */
   double *zi = iv->zi;   /* coefficients of Newton interpolation */
   
-  // zi[20], ui[20]={0.}, /*20 statt g+1 */
+  double phi;            /* parameter for construction points of polynomial */
+  double xi, dxi;        /* boundary and length of i-th subinterval */
 
-  double xi, dxi;        /* ?WH? */
-  double phi;            /* ?WH? */
-
-  double temp;           /* auxiliary variables */
+  double area;           /* integral of PDF over subinterval */
   int i,k;
 
   /* check arguments */
   COOKIE_CHECK(gen,CK_PINV_GEN,UNUR_FAILURE);
   COOKIE_CHECK(iv,CK_PINV_IV,UNUR_FAILURE);
 
-  /* parameter for ?WH? */
+  /* parameter for computing construction points */
   phi = M_PI*0.5/(GEN->order+1);
 
-  /* initialize first element of array */
-  ui[0] = 0.;
-  zi[0] = 0.;  /* ?WH? sollte man das nicht auch initialisieren
-		  ?WH? braucht man ueberhaupt ui[0] und zi[0] oder
-	          stammt das aus FORTRAN -> C ?  Ja, aber nicht nur
-	       */
-  xi = x0;    /* ?WH? das hat im code gefehlt! 
-		 (ansonst hat man mit der naechsten Zeile ein problem)
-	      */ 
-  if (x!=NULL) x[0] = xi;
-  /* ?WH? oder: x[0] = x0 */
-  /* ?WH? x ist nie NULL ! */
+  /* store x-value of left boundary of interval */
+  xval[0] = x0;
 
-  /* compute ... ?WH? */
-  for(i=1; i<=GEN->order; i++) {
-    /* ?WH? was ist xi und dxi ? */
-    xi = x0 + h * sin((i-1)*phi) * sin(i*phi)/cos(phi);
-    dxi = h * sin(2*i*phi) * tan(phi);
-    if (x!=NULL) x[i] = xi+dxi;
+  /* compute tuples (ui,zi) for constructing polynomials */
+  for(i=0; i<GEN->order; i++) {
+
+    /* left boundary and length of subinterval for integration */
+    xi = x0 + h * sin(i*phi) * sin((i+1)*phi)/cos(phi);
+    dxi = h * sin(2*(i+1)*phi) * tan(phi);
+
+    /* store x-value */
+    xval[i+1] = xi+dxi;
 
     /* compute integral of PDF in interval (xi,xi+dxi) */
-    temp = _unur_pinv_lobatto5(gen, xi, dxi,uerrcrit*0.1 );
-    if(temp<1.e-50) {
+    area = _unur_pinv_lobatto5(gen, xi, dxi, uerrcrit*0.1, 0 );
+    if (area<1.e-50) {
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"interval too short or PDF 0");
       return UNUR_ERR_GEN_CONDITION;
     }
 
-    /* compute coefficients of interpolation polynomial */
-    zi[i]=dxi/temp;
-    ui[i]=ui[i-1]+temp; /* ui[0] initialisation??? */
-  } 
-  // ui[GEN->order] is the probability of the interval
+    /* construction points of interpolation polynomial of CDF^{-1} */
+    ui[i] = (i>0) ? (ui[i-1]+area) : area;
+    /* rescaled corresponding values of CDF^{-1} */ 
+    zi[i] = dxi/area;
+  }
+  /* Remark: ui[GEN->order-1] is the probability of the interval */
 
-  /* ?WH? was passiert da ? */
-  for(k=2; k<=GEN->order; k++)
-    for(i=GEN->order; i>=k; i--)
-      zi[i]=(zi[i]-zi[i-1])/(ui[i]-ui[i-k]);
+  /* compute coefficients of interpolation polynomial */
+  for(k=1; k<GEN->order; k++) {
+    for(i=GEN->order-1; i>k; i--) {
+      zi[i] = (zi[i]-zi[i-1]) / (ui[i]-ui[i-(k+1)]);
+    }
+    zi[k] = (zi[i]-zi[i-1]) / ui[i];
+  }
 
   /* ?WH? muesste man da nicht ueberpruefen ob ui[i]-ui[i-k] != 0,
      bzw. of _unur_isfinite(zi[i]) TRUE ist,  ja sollte man machen ? Siehe TODO oben
   */
 
+  /** FIXME: test for inf and NaN **/
+
   /* o.k. */
   return UNUR_SUCCESS;
-} /* end of _unur_pinv_newtoninterpol() */
+} /* end of _unur_pinv_newton_create() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_pinv_eval_newtonpolynomial( double q, double ui[], double zi[], int order )
+_unur_pinv_newton_eval ( double q, double ui[], double zi[], int order )
      /*----------------------------------------------------------------------*/
-     /* evaluate Newton interpolation polynomial using Horner scheme.        */
+     /* 2b. evaluate Newton interpolation polynomial using Horner scheme.    */
      /*                                                                      */
      /* parameters:                                                          */
      /*   q     ... argument                                                 */
@@ -1823,129 +1831,114 @@ _unur_pinv_eval_newtonpolynomial( double q, double ui[], double zi[], int order 
      /*   order ... order of polynomial                                      */
      /*                                                                      */
      /* return:                                                              */
-     /*   value of spline at u                                               */
+     /*   value of interpolating polynomial at u=q                           */
      /*----------------------------------------------------------------------*/
-     /* zi = pi;  ui=yi */
-
-     /* ?WH? welche bedeutung haben ui und zi ?
-        kannst du die newton interpolationsformel dazuschreiben, damit man
-        hier sieht, wie das funktioniert?
-     */
 {
   int k;
   double chi;
 
-  chi = zi[order];
-
-  for (k=order-1; k>=1; k--)
+  chi = zi[order-1];
+  for (k=order-2; k>=0; k--)
     chi = chi*(q-ui[k])+zi[k];
 
-  /* ?WH? was ist mit k=0? WH:Das ist wieder die Fortran Indices*/
-
   return (chi*q);
-
-} /* end of _unur_pinv_eval_newtonpolynomial() */
+} /* end of _unur_pinv_newton_eval() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_pinv_maxerror_newton (struct unur_gen *gen, struct unur_pinv_interval *iv, double xval[],double uerrcrit)
+_unur_pinv_newton_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv,
+			    double xval[], double uerrcrit)
      /*----------------------------------------------------------------------*/
-     /* Estimate maximal error of Newton interpolation in subinterval.       */
+     /* 2c. Estimate maximal error of Newton interpolation in subinterval.   */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen  ... pointer to generator object                               */
      /*   iv   ... pointer to current interval                               */
-     /*   xval ... ?WH? xi values associated with the ui, necessary for controll*/
+     /*   xval ... x values associated with the ui,                          */
+     /*            necessary for controlling error                           */
      /*                                                                      */
      /* return:                                                              */
+     /*   estimated maximal u-error                                          */
      /*----------------------------------------------------------------------*/
 {
-  /* ?WH? xval ist nie NULL ! */
-
-  double x0 = iv->xi;    /* left boundary point of interval ?WH?ja */
+  double x0 = iv->xi;    /* left boundary point of interval */
   double *ui = iv->ui;   /* u-values for Newton interpolation  */
   double *zi = iv->zi;   /* coefficient of Newton interpolation  */
 
   double maxerror = 0.;  /* maximum error */
   double uerror;         /* error for given U value */
   double x;              /* x = CDF^{-1}(U) */
+  double u;              /* u = CDF(x) */
 
-  double testu[21];      /* ?WH? array of U numbers for testing */ 
-  /** TODO: replace 21 by macro.
-      ?WH? is 21 = maximaler grad + 2 ? ja 
-  */
-
+  double testu[MAX_ORDER]; /* array of U values for testing */ 
   int i;                 /* aux variable */
 
   /* check arguments */
   COOKIE_CHECK(gen,CK_PINV_GEN,UNUR_FAILURE);
   COOKIE_CHECK(iv,CK_PINV_IV,UNUR_FAILURE);
 
-  /* ?WH?ja get U values for test ? */
-  _unur_pinv_tstpt(GEN->order,ui,testu);
+  /* get U values for test (points with maximal worst case error) */
+  _unur_pinv_newton_testpoints(GEN->order,ui,testu);
 
   /* calculate the max u-error at the test points */
-  for(i=0;i<GEN->order;i++){
+  for(i=0; i<GEN->order; i++){
     
     /* inverse CDF for U test point */
-    x = _unur_pinv_eval_newtonpolynomial(testu[i+1],ui,zi,GEN->order);
+    x = _unur_pinv_newton_eval(testu[i], ui, zi, GEN->order);
     
-    /* ?WH? worin liegt da der unterschied? 
-       WH: Oberes integriert vom linken Rand des Intervalls
-           unteres nur vom letzten stuetzpunkt
-           unteres ist daher genauer fuer lange Intervalle (g gross)
-           das habe ich als Verbessrung von Gerhards Algo eingebaut,
-           weil mir aufgefallen ist, dass es fuer g gross Probleme mit dem INtegrationsfehler gibt*/
+    /* estimate CDF for interpolated x value */
     if (i==0 || xval==NULL)
-      uerror = fabs(_unur_pinv_lobatto5(gen,x0,x ,uerrcrit*0.1) - testu[i+1]);
+      u = _unur_pinv_lobatto5(gen, x0, x, uerrcrit*0.1, 0);
     else
-      uerror = fabs(ui[i] + _unur_pinv_lobatto5(gen,xval[i],x+x0-xval[i],uerrcrit*0.1) - testu[i+1]);
+      u = ui[i-1] + _unur_pinv_lobatto5(gen, xval[i], x+x0-xval[i], uerrcrit*0.1, 0);
 
+    /* compute u-error */
+    uerror = fabs(u - testu[i]);
+    
     /* update maximal error */
-    if (uerror>maxerror) maxerror=uerror;
-
+    if (uerror>maxerror) maxerror = uerror;
   }
 
   return maxerror;
-} /* end of _unur_pinv_maxerror_newton() */
+} /* end of _unur_pinv_newton_maxerror() */
 
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_pinv_tstpt (int g, double ui[], double utest[])
+_unur_pinv_newton_testpoints (int order, double ui[], double utest[])
      /*----------------------------------------------------------------------*/
-     /* calcuates the local maxima of the polynomial used as control points for error estimate */
+     /* [2c.] calcuates the local maxima of the polynomial.                  */
+     /* used as control points for error estimate.                           */
      /*                                                                      */
-     /* parameters: g... degree of interpolation polynomial                  */
-     /*             ui... u-values of interpolation                          */ 
+     /* parameters:                                                          */
+     /*    order ... order of interpolation polynomial                       */
+     /*    ui    ... u-values of interpolation                               */ 
+     /*    utest ... pointer to array for storing control points             */
      /*                                                                      */
-     /* return: the u-values of the controll points in the array utest       */
+     /* return:                                                              */
+     /*    u-values of control points in the array utest                     */
      /*----------------------------------------------------------------------*/
-     /* ?WH? was tut diese funktion ? WH: Siehe oben*/
 {
   int k,j,i;
   double sum, qsum,x;
-
-  utest[0]=0.;
-  for(k=1; k<=g; k++){
-    x = 0.5*(ui[k-1]+ui[k]);
-    for(j=1; j<=2; j++){
+  
+  for(k=0; k<order; k++) {
+    x = (k>0) ? 0.5*(ui[k-1]+ui[k]) : 0.5*ui[k];
+    for(j=1; j<=2; j++) {
       sum = 1./x;
       qsum = sum*sum;
-      for(i=1; i<=g; i++){
-	sum = sum + 1./(x-ui[i]);
-	qsum = qsum + 1./((x-ui[i])*(x-ui[i]));
+      for(i=0; i<order; i++){
+	sum += 1./(x-ui[i]);
+	qsum += 1./((x-ui[i])*(x-ui[i]));
       }
-      x +=sum/qsum;
+      x += sum/qsum;
     }
     utest[k] = x;
   }
-
-  return 1;
-  /* ?WH? hat 1 irgendeine beddeutng? Wh: Nein soll nur anzeigen, dass alles ok */
-
-} /* end of _unur_pinv_tstpt() */
+  
+  return UNUR_SUCCESS;
+} /* end of _unur_pinv_newton_testpoints() */
 
 /*---------------------------------------------------------------------------*/
 

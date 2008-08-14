@@ -560,6 +560,8 @@ unur_pinv_set_boundary( struct unur_par *par, double left, double right )
   PAR->bleft = left;
   PAR->bright = right;
 
+  /** FIXME: check domain of distribution !! **/
+
   /* changelog */
   par->set |= PINV_SET_BOUNDARY;
 
@@ -1108,11 +1110,14 @@ _unur_pinv_lobatto5 (struct unur_gen *gen, double x, double h, double errormax, 
      /*   h    ... length of interval                                        */
      /*   errormax ... maximal tolerated relative error                      */
 /** FIXME: warum relativer und absoluter Fehler?  **/
+     /** FIXME: use another argument for absolute error  **/
      /*                                                                      */
      /* return:                                                              */
      /*   integral                                                           */
      /*----------------------------------------------------------------------*/
 { 
+
+
   double fl, fr, fc;              /* values of PDF at x-h, x, and x+h */
   double int1, int2, intl, intr;  /* estimated values of integrals */
   double relerror;
@@ -1120,6 +1125,8 @@ _unur_pinv_lobatto5 (struct unur_gen *gen, double x, double h, double errormax, 
   /* points for Lobatto integration */
 #define W1 (0.17267316464601146)   /* = 0.5-sqrt(3/28) */
 #define W2 (1.-W1)
+
+  /** FIXME: if (h==0.) return 0.; **/
 
   /* compute PDF values */
   fl = PDF(x);
@@ -1138,9 +1145,10 @@ _unur_pinv_lobatto5 (struct unur_gen *gen, double x, double h, double errormax, 
   relerror = fabs(int2-int1)/int2;
 
   /* check error */
-  if (relerror <= errormax || fabs(int2-int1)<= errormax)
+  if (relerror <= errormax || fabs(int2-int1) <= errormax /* * 1.e-10*/ )
     return int2;
-  /** TODO: warum relativer und absoluter Fehler ?? **/
+  /** FIXME: warum relativer und absoluter Fehler ?? **/
+  /** use PDF area for upper bound of absolute integration error **/
   
   /* else: error above tolerance */
 
@@ -1176,6 +1184,12 @@ _unur_pinv_relevant_support ( struct unur_gen *gen )
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
+
+  /** FIXME: PDF(boundary of domain) > 0. && < INFINITY --> set sleft=FALSE **/
+  /* y = PDF(domain[0]);
+     if (_unur_isfinite(y) && y > 1.e-16 ) ...
+  */
+
   /* search for interval of computational relevance (if required) */
   if(GEN->sleft) {
     GEN->bleft = _unur_pinv_searchborder(gen,DISTR.center, GEN->bleft, &(GEN->dleft));
@@ -1306,6 +1320,9 @@ _unur_pinv_approx_pdfarea (struct unur_gen *gen )
       res = UNUR_FAILURE;
       break;
     }
+
+    
+    /** FIXME: this is only necessary if we use absolute tolerance **/
 
     if (GEN->area < 1.e-3) {
       /* the area is too small. thus we the relative integration error is too large */
@@ -1646,6 +1663,7 @@ _unur_pinv_create_table( struct unur_gen *gen )
     /* compute Newton interpolation polynomial */
     if (_unur_pinv_newton_create(gen,&(GEN->iv[i]),h,xval,uerrcrit) != UNUR_SUCCESS)
       return UNUR_ERR_GEN_CONDITION;
+    /** FIXME: make interval longer ?? **/
 
     /* estimate error of Newton interpolation */
     maxerror = _unur_pinv_newton_maxerror(gen,&(GEN->iv[i]),xval,uerrcrit);
@@ -1754,6 +1772,15 @@ _unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_interval *iv,
      /*   UNUR_SUCCESS ... on success                                        */
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
+     /** uses Chebyshev points for x-points **/
+     /** not implemented: use Chebyshev points for u-points:
+	 setup less stable and more expensive (need explicit inversion),
+	 but smaller tables as u-points need not be stored.
+	 (also need fewer intervals) (expecially in the tails).
+	 need not _unur_pinv_newton_testpoints()
+	 (could use maxima of Chebyshev polynomial (closed form))
+     **/
+
 {
   double x0 = iv->xi;    /* left boundary point of interval */
   double *ui = iv->ui;   /* u-values for Newton interpolation */
@@ -1765,11 +1792,15 @@ _unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_interval *iv,
   double area;           /* integral of PDF over subinterval */
   int i,k;
 
+  /** static double CHEBYSHEV[MAX_ORDER+1] = {-1.}; 
+      if (CHEBYSHEV[0] < 0.) ... init ...
+  **/
+
   /* check arguments */
   COOKIE_CHECK(gen,CK_PINV_GEN,UNUR_FAILURE);
   COOKIE_CHECK(iv,CK_PINV_IV,UNUR_FAILURE);
 
-  /* parameter for computing construction points */
+  /* constant for computing Chebyshev points */
   phi = M_PI*0.5/(GEN->order+1);
 
   /* store x-value of left boundary of interval */
@@ -1778,9 +1809,10 @@ _unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_interval *iv,
   /* compute tuples (ui,zi) for constructing polynomials */
   for(i=0; i<GEN->order; i++) {
 
-    /* left boundary and length of subinterval for integration */
+    /* left boundary and length of subinterval for integration (Chebyshev points) */
     xi = x0 + h * sin(i*phi) * sin((i+1)*phi)/cos(phi);
     dxi = h * sin(2*(i+1)*phi) * tan(phi);
+    /** FIXME: precompute array of Chebyshev points (see above) */
 
     /* store x-value */
     xval[i+1] = xi+dxi;
@@ -1788,6 +1820,7 @@ _unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_interval *iv,
     /* compute integral of PDF in interval (xi,xi+dxi) */
     area = _unur_pinv_lobatto5(gen, xi, dxi, uerrcrit*0.1, 0 );
     if (area<1.e-50) {
+      /** FIXME: see below **/
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"interval too short or PDF 0");
       return UNUR_ERR_GEN_CONDITION;
     }
@@ -1796,6 +1829,9 @@ _unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_interval *iv,
     ui[i] = (i>0) ? (ui[i-1]+area) : area;
     /* rescaled corresponding values of CDF^{-1} */ 
     zi[i] = dxi/area;
+
+    /** FIXME (see below): if (!_unur_isfinite(zi[i]) ... "PDF over interval too close to 0" **/
+
   }
   /* Remark: ui[GEN->order-1] is the probability of the interval */
 
@@ -1806,6 +1842,9 @@ _unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_interval *iv,
     }
     zi[k] = (zi[i]-zi[i-1]) / ui[i];
   }
+  
+  /** FIXME: if (!_unur_isfinite(zi[i]) ... "PDF over interval too close to 0" **/
+
 
   /* ?WH? muesste man da nicht ueberpruefen ob ui[i]-ui[i-k] != 0,
      bzw. of _unur_isfinite(zi[i]) TRUE ist,  ja sollte man machen ? Siehe TODO oben
@@ -1923,8 +1962,13 @@ _unur_pinv_newton_testpoints (int order, double ui[], double utest[])
   int k,j,i;
   double sum, qsum,x;
   
+  /* compute approximate maxima of error polynomial */
   for(k=0; k<order; k++) {
+
+    /* first approximation: use mean of consecuting construction points */
     x = (k>0) ? 0.5*(ui[k-1]+ui[k]) : 0.5*ui[k];
+
+    /* make two iterations for root finding */
     for(j=1; j<=2; j++) {
       sum = 1./x;
       qsum = sum*sum;
@@ -1934,6 +1978,8 @@ _unur_pinv_newton_testpoints (int order, double ui[], double utest[])
       }
       x += sum/qsum;
     }
+
+    /* store result in utest */
     utest[k] = x;
   }
   

@@ -48,10 +48,10 @@ struct unur_pinv_par {
 /* store information about splines                                           */
 
 struct unur_pinv_interval {
-  double *ui;  //[g+1];    
-  double *zi;  //[g+1];
-  double xi;   /* ?WH? left point of interval */
-  double cdfi; /* ?WH? CDF at left point of interval */
+  double *ui;  /* points for constructing Newton interpolation */
+  double *zi;  /* values of inverse CDF at these U values */
+  double xi;   /* left point of interval */
+  double cdfi; /* CDF at left point of interval */
 
 #ifdef UNUR_COOKIES
   unsigned cookie;         /* magic cookie                                    */

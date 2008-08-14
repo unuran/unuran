@@ -137,6 +137,8 @@ xi sind die Intervallgrenzen der sub-intervalle.
 /*---------------------------------------------------------------------------*/
 /* Constants                                                                 */
 
+/* -- Global parameters                                                      */
+
 #define MAX_ORDER   (19) 
 /* maximum order of Newton interpolation polynomial */
 
@@ -147,8 +149,10 @@ xi sind die Intervallgrenzen der sub-intervalle.
 /* corrected. Thus the upper bound for the pure approximation error of the   */
 /* interpolation is set to PINV_UERROR_CORRECTION * u-resolution.            */
 
-#define PINV_MAX_LOBATTORECURSLEVEL  (2048)
-/* Maximal recursion level for adaptive Gauss-Lobatto integration.           */
+#define PINV_MAX_IVS  (10000)
+/* maximum number of intervals */
+
+/* -- 1. Preprocessing                                                       */
 
 #define PINV_PDFLLIM    (1.e-13)
 /* Threshold value used for finding the boundary of the computational        */
@@ -171,8 +175,7 @@ xi sind die Intervallgrenzen der sub-intervalle.
 /* However, for computational reasons we use a value that is at least twice  */
 /* the machine epsilon for the right hand boundary.                          */
 
-#define PINV_MAX_IVS  (10000)
-/* maximum number of intervals */
+/* -- 2. Newton interpolation                                                */
 
 #define PINV_MAX_ITER_IVS    (10 * PINV_MAX_IVS)
 /* maximum number of iterations for computing intervals for Newtwon          */
@@ -180,7 +183,8 @@ xi sind die Intervallgrenzen der sub-intervalle.
 /* number of intervals (or the latter can be reduced).                       */
 
 #define PINV_GUIDE_FACTOR  (1)
-/* relative size of guide table */
+/* relative size of guide table for finding the subinterval corresponding    */
+/* to the given U-value.                                                     */
 
 
 /*---------------------------------------------------------------------------*/
@@ -251,8 +255,7 @@ static double _unur_pinv_eval_approxinvcdf (const struct unur_gen *gen, double u
 /* evaluate Hermite interpolation of inverse CDF at u.                       */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_pinv_lobatto5 (struct unur_gen *gen, double x, double h, 
-				   double errormax, int reclevel);
+static double _unur_pinv_lobatto5 (struct unur_gen *gen, double x, double h, double tol);
 /*---------------------------------------------------------------------------*/
 /* numerical integration of the PDF over the interval (x,x+h)                */
 /* using adaptive Gauss-Lobatto integration with 5 points.                   */
@@ -566,8 +569,6 @@ unur_pinv_set_boundary( struct unur_par *par, double left, double right )
   PAR->bleft = left;
   PAR->bright = right;
 
-  /** FIXME: check domain of distribution !! **/
-
   /* changelog */
   par->set |= PINV_SET_BOUNDARY;
 
@@ -787,7 +788,7 @@ _unur_pinv_create( struct unur_par *par )
   GEN->n_ivs = -1;        /* -1 indicates that there are no intervals at all */
   GEN->guide_size = 0; 
   GEN->guide = NULL;
-  GEN->area = 0.;
+  GEN->area = 1.;         /* we use 1 as first guess */
 
   /* allocate maximal array of intervals */
   /* [ Maybe we could move this into _unur_pinv_interval() ] */
@@ -1103,70 +1104,70 @@ unur_pinv_estimate_error( const UNUR_GEN *gen, int samplesize, double *max_error
 /** Quadrature                                                              **/
 
 double
-_unur_pinv_lobatto5 (struct unur_gen *gen, double x, double h, double errormax, int reclevel)
+_unur_pinv_lobatto5 (struct unur_gen *gen, double x, double h, double tol)
      /*----------------------------------------------------------------------*/
-     /* numerical integration of the PDF over the interval (x,x+h)           */
+     /* Numerical integration of the PDF over the interval (x,x+h)           */
      /* using adaptive Gauss-Lobatto integration with 5 points.              */
      /*                                                                      */
-     /* halfs intervals recursively if error is too large                    */
+     /* Halfs intervals recursively if error is too large.                   */
+     /*                                                                      */
+     /* The recursion stops when the relative error OR the absolute error    */
+     /* is less than the respective given tolerances.                        */
+     /* (use a negative value if only one of these tolerances has to be      */
+     /* checked.)                                                            */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   gen  ... pointer to generator object                               */
-     /*   x    ... left boundary point of interval                           */
-     /*   h    ... length of interval                                        */
-     /*   errormax ... maximal tolerated relative error                      */
-/** FIXME: warum relativer und absoluter Fehler?  **/
-     /** FIXME: use another argument for absolute error  **/
+     /*   gen ... pointer to generator object                                */
+     /*   x   ... left boundary point of interval                            */
+     /*   h   ... length of interval                                         */
+     /*   tol ... tolerated error (relative to area below PDF)               */
+     /*   reclevel     ... recursion level                                   */   
      /*                                                                      */
      /* return:                                                              */
      /*   integral                                                           */
      /*----------------------------------------------------------------------*/
 { 
-
-
-  double fl, fr, fc;              /* values of PDF at x-h, x, and x+h */
-  double int1, int2, intl, intr;  /* estimated values of integrals */
-  double relerror;
+  double fl, fr, fc;  /* values of PDF at x-h, x, and x+h */
+  double int1, int2;  /* estimated values of integrals */
+  double is;          /* estimate for PDFarea rescaled by requested tolerance */
 
   /* points for Lobatto integration */
 #define W1 (0.17267316464601146)   /* = 0.5-sqrt(3/28) */
 #define W2 (1.-W1)
 
-  /** FIXME: if (h==0.) return 0.; **/
+  /* check length of interval */
+  if (_unur_iszero(h)) return 0.;
 
   /* compute PDF values */
   fl = PDF(x);
   fr = PDF(x+h);
-  fc = PDF(x+h/2);
+  fc = PDF(x+h/2.);
  
   /* compute integral on [x,x+h] */
   int1 = (9*(fl+fr)+49.*(PDF(x+h*W1)+PDF(x+h*W2))+64*fc)*h/180.;
 
   /* compute integral on [x,x+h/2] and on [x+h/2,x+h] */
-  intl = (9*(fl+fc)+49.*(PDF(x+h*W1*0.5)+PDF(x+h*W2*0.5))+64*PDF(x+h*0.25))*h/360.;
-  intr = (9*(fc+fr)+49.*(PDF(x+h*(0.5+W1*0.5))+PDF(x+h*(0.5+W2*0.5)))+64*PDF(x+h*0.75))*h/360.;
-  int2 = intl + intr;
+  int2 = ( (9*(fl+fc)+49.*(PDF(x+h*W1*0.5)+PDF(x+h*W2*0.5))+64*PDF(x+h*0.25))*h/360. +
+	   (9*(fc+fr)+49.*(PDF(x+h*(0.5+W1*0.5))+PDF(x+h*(0.5+W2*0.5)))+64*PDF(x+h*0.75))*h/360. );
 
-  /* estimate relative integration error */
-  relerror = fabs(int2-int1)/int2;
-
-  /* check error */
-  if (relerror <= errormax || fabs(int2-int1) <= errormax /* * 1.e-10*/ )
+  /* check whether accuracy goal is reached */
+  is = GEN->area * tol / DBL_EPSILON;
+  if (is + (int1-int2) == is)
     return int2;
-  /** FIXME: warum relativer und absoluter Fehler ?? **/
-  /** use PDF area for upper bound of absolute integration error **/
   
   /* else: error above tolerance */
 
-  if (reclevel >= PINV_MAX_LOBATTORECURSLEVEL) {
+  if (x+h/2. == x) {
     _unur_warning(gen->genid,UNUR_ERR_ROUNDOFF,
 		  "numeric integration did not reach full accuracy");
     return int2;
+    /* Remark: Since we are halving intervals, this comparision */
+    /* limits the maximal number of iterations to at most 2048. */
   }
 
   /* recompute with shorter intervals */
-  return ( _unur_pinv_lobatto5(gen,x,h/2,errormax,reclevel+1) +
-	   _unur_pinv_lobatto5(gen,x+h/2,h/2,errormax,reclevel+1) );
+  return ( _unur_pinv_lobatto5(gen,x,    h/2,tol) +
+	   _unur_pinv_lobatto5(gen,x+h/2,h/2,tol) );
 
 #undef W1
 #undef W2
@@ -1318,8 +1319,8 @@ _unur_pinv_approx_pdfarea (struct unur_gen *gen )
 
   for (i=1; i<=2; i++) {
 
-    GEN->area  = _unur_pinv_lobatto5( gen, DISTR.center, GEN->bright - DISTR.center, tol, 0 );
-    GEN->area += _unur_pinv_lobatto5( gen, GEN->bleft,   DISTR.center - GEN->bleft,  tol, 0 );
+    GEN->area  = _unur_pinv_lobatto5( gen, DISTR.center, GEN->bright - DISTR.center, tol);
+    GEN->area += _unur_pinv_lobatto5( gen, GEN->bleft,   DISTR.center - GEN->bleft,  tol);
 
     if ( !_unur_isfinite(GEN->area) || _unur_iszero(GEN->area) ) {
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"cannot estimate area below PDF");
@@ -1817,7 +1818,7 @@ _unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_interval *iv,
     dxi = xval[i+1]-xval[i];
 
     /* compute integral of PDF in interval (xi,xi+dxi) */
-    area = _unur_pinv_lobatto5(gen, xi, dxi, uerrcrit*0.1, 0 );
+    area = _unur_pinv_lobatto5(gen, xi, dxi, uerrcrit*0.1);
     if (area<1.e-50) {
       /** FIXME: see below **/
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"interval too short or PDF 0");
@@ -1953,9 +1954,9 @@ _unur_pinv_newton_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv,
     
     /* estimate CDF for interpolated x value */
     if (i==0 || xval==NULL)
-      u = _unur_pinv_lobatto5(gen, x0, x, uerrcrit*0.1, 0);
+      u = _unur_pinv_lobatto5(gen, x0, x, uerrcrit*0.1);
     else
-      u = ui[i-1] + _unur_pinv_lobatto5(gen, xval[i], x+x0-xval[i], uerrcrit*0.1, 0);
+      u = ui[i-1] + _unur_pinv_lobatto5(gen, xval[i], x+x0-xval[i], uerrcrit*0.1);
 
     /* compute u-error */
     uerror = fabs(u - testu[i]);

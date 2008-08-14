@@ -72,6 +72,7 @@
  *   2a.   Compute coefficients for interpolating polynomial for             *
  *         fixed (sub-) interval.                                            *
  *            _unur_pinv_newton_create()                                     *
+ *            _unur_pinv_chebyshev_points()                                  *
  *                                                                           *
  *   2b.   Evaluate interpolating polynomial.                                *
  *            _unur_pinv_newton_eval()                                       *
@@ -301,9 +302,14 @@ static int _unur_pinv_interval( struct unur_gen *gen, int i, double x, double cd
 /*---------------------------------------------------------------------------*/
 
 static int _unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_interval *iv, 
-				     double h, double *xval, double uerrcrit);
+				     double *xval, double uerrcrit);
 /*---------------------------------------------------------------------------*/
 /* 2a. Compute coefficients for Newton interpolation.                        */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_pinv_chebyshev_points (int order, double *pt);
+/*---------------------------------------------------------------------------*/
+/* [2a.] Compute Chebyshev points.                                           */
 /*---------------------------------------------------------------------------*/
 
 static double _unur_pinv_newton_eval (double q, double ui[], double zi[], int order);
@@ -1625,10 +1631,15 @@ _unur_pinv_create_table( struct unur_gen *gen )
   int i;                     /* number of interval at work */
   int iter;                  /* number of iterations */
   int cont;                  /* whether we have to continue or loop */
-  double xval[MAX_ORDER+1];
+  int k;                     /* auxiliary variable */
+  double chebyshev[MAX_ORDER+1]; /* Chebyshev points */
+  double xval[MAX_ORDER+1];  /* x-values for construction points for Newton polynomial */
 
   /* check arguments */
   COOKIE_CHECK(gen,CK_PINV_GEN,UNUR_ERR_COOKIE);
+
+  /* compute construction points for Chebyshev points */
+  _unur_pinv_chebyshev_points(GEN->order,chebyshev);
 
   /* threshold for tolerated U-error */
   uerrcrit = GEN->u_resolution * GEN->area * PINV_UERROR_CORRECTION;
@@ -1660,8 +1671,13 @@ _unur_pinv_create_table( struct unur_gen *gen )
       cont = FALSE;  /* we probably can stop after this iteration */
     }
 
+    /* construction points for Newton interpolation polynomial: */
+    /* uses Chebyshev points for x values.                      */
+    for(k=0; k<=GEN->order; k++)
+      xval[k] = GEN->iv[i].xi + h * chebyshev[k];
+
     /* compute Newton interpolation polynomial */
-    if (_unur_pinv_newton_create(gen,&(GEN->iv[i]),h,xval,uerrcrit) != UNUR_SUCCESS)
+    if (_unur_pinv_newton_create(gen,&(GEN->iv[i]),xval,uerrcrit) != UNUR_SUCCESS)
       return UNUR_ERR_GEN_CONDITION;
     /** FIXME: make interval longer ?? **/
 
@@ -1755,7 +1771,7 @@ _unur_pinv_interval( struct unur_gen *gen, int i, double x, double cdfx )
 
 int
 _unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_interval *iv, 
-			  double h, double *xval, double uerrcrit)
+			  double *xval, double uerrcrit)
      /*----------------------------------------------------------------------*/
      /* 2a. Compute coefficients for Newton interpolation within a           */
      /* subinterval of the domain of the distribution.                       */
@@ -1764,8 +1780,7 @@ _unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_interval *iv,
      /*   gen      ... pointer to generator object                           */
      /*   iv       ... pointer to current interval                           */
      /*   h        ... length of interval                                    */
-     /*   xval     ... x values associated with the ui,                      */
-     /*                necessary for controlling error                       */
+     /*   xval     ... x-values for constructing polynomial                  */
      /*   uerrcrit ... maximal accepted u-error                              */
      /*                                                                      */
      /* return:                                                              */
@@ -1782,40 +1797,24 @@ _unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_interval *iv,
      **/
 
 {
-  double x0 = iv->xi;    /* left boundary point of interval */
   double *ui = iv->ui;   /* u-values for Newton interpolation */
   double *zi = iv->zi;   /* coefficients of Newton interpolation */
   
-  double phi;            /* parameter for construction points of polynomial */
   double xi, dxi;        /* boundary and length of i-th subinterval */
 
   double area;           /* integral of PDF over subinterval */
   int i,k;
 
-  /** static double CHEBYSHEV[MAX_ORDER+1] = {-1.}; 
-      if (CHEBYSHEV[0] < 0.) ... init ...
-  **/
-
   /* check arguments */
   COOKIE_CHECK(gen,CK_PINV_GEN,UNUR_FAILURE);
   COOKIE_CHECK(iv,CK_PINV_IV,UNUR_FAILURE);
 
-  /* constant for computing Chebyshev points */
-  phi = M_PI*0.5/(GEN->order+1);
-
-  /* store x-value of left boundary of interval */
-  xval[0] = x0;
-
   /* compute tuples (ui,zi) for constructing polynomials */
   for(i=0; i<GEN->order; i++) {
 
-    /* left boundary and length of subinterval for integration (Chebyshev points) */
-    xi = x0 + h * sin(i*phi) * sin((i+1)*phi)/cos(phi);
-    dxi = h * sin(2*(i+1)*phi) * tan(phi);
-    /** FIXME: precompute array of Chebyshev points (see above) */
-
-    /* store x-value */
-    xval[i+1] = xi+dxi;
+    /* left boundary and length of subinterval for integration */
+    xi = xval[i];
+    dxi = xval[i+1]-xval[i];
 
     /* compute integral of PDF in interval (xi,xi+dxi) */
     area = _unur_pinv_lobatto5(gen, xi, dxi, uerrcrit*0.1, 0 );
@@ -1858,6 +1857,33 @@ _unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_interval *iv,
 
 /*---------------------------------------------------------------------------*/
 
+int
+_unur_pinv_chebyshev_points (int order, double *pt)
+     /*----------------------------------------------------------------------*/
+     /* [2a.] Compute Chebyshev points.                                      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   order ... order of polynomial                                      */
+     /*   pt    ... pointer to array of size (order+1) for storing points    */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  int i;
+  double phi = M_PI*0.5/(order+1); /* constant for computing Chebyshev points */
+  
+  pt[0] = 0.;
+  for(i=1; i<order; i++)
+    pt[i] = sin(i*phi) * sin((i+1)*phi)/cos(phi);
+  pt[order] = 1.;
+
+  return UNUR_SUCCESS;
+} /* end of _unur_pinv_chebyshev_points() */
+
+/*---------------------------------------------------------------------------*/
+
 double
 _unur_pinv_newton_eval ( double q, double ui[], double zi[], int order )
      /*----------------------------------------------------------------------*/
@@ -1894,8 +1920,7 @@ _unur_pinv_newton_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv,
      /* parameters:                                                          */
      /*   gen  ... pointer to generator object                               */
      /*   iv   ... pointer to current interval                               */
-     /*   xval ... x values associated with the ui,                          */
-     /*            necessary for controlling error                           */
+     /*   xval ... x-values for constructing polynomial                      */
      /*                                                                      */
      /* return:                                                              */
      /*   estimated maximal u-error                                          */

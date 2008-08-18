@@ -3,6 +3,14 @@ Version 1.?.?: ??? 2008
 
 	* Methods:
 
+	- new method PINV (Polynomial interpolation based INVersion of
+          CDF).
+
+	- new function unur_quantile() that (approximately)
+          computes the quantile for a continuous distribution. It
+          requires a generator object that implements an inversion
+          method.  
+
 	- HINV: fixed segfault when calling 
           unur_hinv_eval_approxinvcdf with u-value very close
           too 1.
@@ -11,6 +19,7 @@ Version 1.?.?: ??? 2008
 	  truncated distribution.
 
 	  Improved u-error
+
 
 Version 1.2.4: April 2008
 

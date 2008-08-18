@@ -35,6 +35,8 @@
 #include <unur_source.h>
 #include <distr/distr_source.h>
 #include <distr/matr.h>
+#include <methods/hinv.h>
+#include <methods/pinv.h>
 #include "unur_methods_source.h"
 #include "x_gen.h"
 #include "x_gen_source.h"
@@ -123,6 +125,30 @@ unur_sample_matr( struct unur_gen *gen, double *matrix )
   CHECK_NULL(gen,UNUR_ERR_NULL);
   return (gen->sample.matr(gen,matrix));
 } /* end of unur_sample_matr() */
+
+/*---------------------------------------------------------------------------*/
+/* Estimate quantiles                                                        */
+
+double
+unur_quantile ( struct unur_gen *gen, double U )
+{
+  /* Remark:
+   * We DO NOT check the argument U here 
+   * (i.e. whether 0<=U<=1 holds)
+   */
+  switch (gen->method) {
+  case UNUR_METH_HINV:
+    return unur_hinv_eval_approxinvcdf(gen,U);
+
+  case UNUR_METH_PINV:
+    return unur_pinv_eval_approxinvcdf(gen,U);
+
+  case UNUR_METH_NINV:
+  default:
+    _unur_error(gen->genid,UNUR_ERR_NO_QUANTILE,"");
+    return UNUR_INFINITY;
+  }
+} /* end of unur_quantile() */
 
 /*---------------------------------------------------------------------------*/
 /* aux routines when no sampling routine is available                         */

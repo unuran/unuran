@@ -119,19 +119,44 @@ int    unur_sample_vec(UNUR_GEN *generator, double *vector);
 
 int    unur_sample_matr(UNUR_GEN *generator, double *matrix);
 /*
-  Sample from generator object. The three routines depend on the type
-  of the generator object (discrete or continuous univariate
-  distribution, multivariate distribution, or random matrix).
+   Sample from generator object. The three routines depend on the type
+   of the generator object (discrete or continuous univariate
+   distribution, multivariate distribution, or random matrix).
+   
+   @emph{Notice:} UNU.RAN uses arrays of @code{double}s to handle
+   matrices. There the rows of the matrix are stored consecutively.
+   
+   @emph{Notice:} The routines unur_sample_vec() and unur_sample_matr()
+   return @code{UNUR_SUCCESS} if generation was successful and 
+   some error code otherwise.
+   
+   @strong{Important:} These routines do @strong{not} check whether 
+   @var{generator} is an invalid NULL pointer.
+*/
 
-  @emph{Notice:} UNU.RAN uses arrays of @code{double}s to handle
-  matrices. There the rows of the matrix are stored consecutively.
+/*---------------------------------------------------------------------------*/
+/* Estimate quantiles                                                        */
 
-  @emph{Notice:} The routines unur_sample_vec() and unur_sample_matr()
-  return @code{UNUR_SUCCESS} if generation was successful and 
-  some error code otherwise.
+double unur_quantile ( UNUR_GEN *generator, double U );
+/* 
+   Compute the @var{U} quantile of a continuous distribution using a
+   @var{generator} object that implements an (approximate) inversion
+   methods.
 
-  @strong{Important:} These routines do @strong{not} check whether 
-  @var{generator} is an invalid NULL pointer.
+   The following methods are currently available:
+   @itemize
+   @item 
+   HINV, @pxref{HINV}.
+   @item 
+   NINV, @pxref{NINV}.
+   @item
+   PINV, @pxref{PINV}.
+   @end itemize
+
+   @strong{Important:} This routine does @strong{not} check whether 
+   @var{generator} is an invalid NULL pointer.
+
+   In case of an error UNUR_INFINITY is returned.
 */
 
 /*---------------------------------------------------------------------------*/

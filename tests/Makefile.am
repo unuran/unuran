@@ -32,6 +32,7 @@ DEPRECATED_TESTS =
 endif
 
 check_PROGRAMS = \
+ t_x_gen \
  t_unur_tests \
  t_unur_error \
  t_urng \
@@ -103,6 +104,7 @@ EXTRA_DIST = \
  README.conf \
  t_info.conf \
  t_stringparser.conf \
+ t_x_gen.conf \
  t_unur_tests.conf \
  t_unur_error.conf \
  t_urng.conf \

@@ -213,10 +213,11 @@ unur_get_strerror ( const int unur_errno )
   case UNUR_ERR_GEN_SAMPLING:
     return "(generator) sampling error";
   case UNUR_ERR_NO_REINIT:
-    return "(generator) reinit missing";
+    return "(generator) reinit not implemented";
+  case UNUR_ERR_NO_QUANTILE:
+    return "(generator) quantile not implemented";
   case UNUR_ERR_GEN:
     return "(generator)";
-
 
     /** uniform random number generator (URNG) object **/
   case UNUR_ERR_URNG:

@@ -100,6 +100,8 @@
       sampling error.
       @item UNUR_ERR_NO_REINIT
       reinit routine not implemented.
+      @item UNUR_ERR_NO_QUANTILE
+      quantile routine not implemented.
       @end ftable
 
       @item Errors that occurred while handling URNG objects.
@@ -207,6 +209,7 @@ enum {
   UNUR_ERR_GEN_INVALID    = 0x34,     /* invalid generator object            */
   UNUR_ERR_GEN_SAMPLING   = 0x35,     /* sampling error                      */
   UNUR_ERR_NO_REINIT      = 0x36,     /* reinit not implemented              */
+  UNUR_ERR_NO_QUANTILE    = 0x37,     /* qunantile not implemented           */
 
   /** uniform random number generator (URNG) object **/
   /*

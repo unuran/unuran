@@ -651,7 +651,6 @@ _unur_pinv_init( struct unur_par *par )
 { 
   struct unur_gen *gen;
 
-
   /* check arguments */
   _unur_check_NULL( GENTYPE,par,NULL );
 
@@ -1121,7 +1120,6 @@ _unur_pinv_lobatto5 (struct unur_gen *gen, double x, double h, double tol)
      /*   x   ... left boundary point of interval                            */
      /*   h   ... length of interval                                         */
      /*   tol ... tolerated error (relative to area below PDF)               */
-     /*   reclevel     ... recursion level                                   */   
      /*                                                                      */
      /* return:                                                              */
      /*   integral                                                           */
@@ -1136,7 +1134,11 @@ _unur_pinv_lobatto5 (struct unur_gen *gen, double x, double h, double tol)
 #define W2 (1.-W1)
 
   /* check length of interval */
-  if (_unur_iszero(h)) return 0.;
+  if (_unur_iszero(h)) 
+    return 0.;
+
+  if (!_unur_isfinite(x+h))
+    return INFINITY;
 
   /* compute PDF values */
   fl = PDF(x);
@@ -1191,11 +1193,30 @@ _unur_pinv_relevant_support ( struct unur_gen *gen )
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
+  double fb;
 
-  /** FIXME: PDF(boundary of domain) > 0. && < INFINITY --> set sleft=FALSE **/
-  /* y = PDF(domain[0]);
-     if (_unur_isfinite(y) && y > 1.e-16 ) ...
-  */
+  /* check PDF at boudary */
+  if(GEN->sleft) {
+    /* compute PDF at boundary */
+    fb = PDF(GEN->dleft);
+    if (fb > 1.e-20 && fb < 1.e300) {
+      /* PDF does neither vanish nor is it infinity:      */
+      /* use boundary of given domain of distribution for */
+      /* computational domain.                            */
+      GEN->bleft = GEN->dleft;        
+      /* there is no need for further searching           */
+      GEN->sleft = FALSE;
+    }
+  }
+ 
+  /* same for right hand boundary */
+  if(GEN->sright) {
+    fb = PDF(GEN->dright);
+    if (fb > 1.e-20 && fb < 1.e300) {
+      GEN->bright = GEN->dright;        
+      GEN->sright = FALSE;
+    }
+  }
 
   /* search for interval of computational relevance (if required) */
   if(GEN->sleft) {
@@ -1310,13 +1331,13 @@ _unur_pinv_approx_pdfarea (struct unur_gen *gen )
 {
   double tol;   /* tolerated integration error */
   int i;        /* number of trials            */
-  int res = UNUR_SUCCESS; /* return code of computation */
+  int res = UNUR_SUCCESS; /* exit code of subroutine */
 
   /* there is no need to be more accurate than the U-resolution.      */
   /* here we assume that the integral is not too much smaller than 1. */
   tol = GEN->u_resolution;
 
-
+  /* we might need to trials */
   for (i=1; i<=2; i++) {
 
     GEN->area  = _unur_pinv_lobatto5( gen, DISTR.center, GEN->bright - DISTR.center, tol);
@@ -1328,16 +1349,16 @@ _unur_pinv_approx_pdfarea (struct unur_gen *gen )
       break;
     }
 
-    
-    /** FIXME: this is only necessary if we use absolute tolerance **/
-
-    if (GEN->area < 1.e-3) {
-      /* the area is too small. thus we the relative integration error is too large */
-      tol *= GEN->area;
-    }
-    else {
+    if (GEN->area < 1.e-3);
+      /* The tolerated integration error is relative to the PDF area.
+       * For the first trial we have used area=1 as a first guess.
+       * However, we have seen, that this guess is much too large
+       * which results in integration error that might be too large.
+       * Thus we have to retry again. 
+       */
+    else
+      /* the area is large enough (compared to our first guess) */
       break;
-    }
   }
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -1626,7 +1647,7 @@ _unur_pinv_create_table( struct unur_gen *gen )
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
-  double uerrcrit;           /* threshold for maximum U-error */
+  double utol;               /* tolerated maximum U-error */
   double maxerror;           /* maximum U-error in a particular interval */ 
   double h;                  /* step size / length of intervals */
   int i;                     /* number of interval at work */
@@ -1642,8 +1663,8 @@ _unur_pinv_create_table( struct unur_gen *gen )
   /* compute construction points for Chebyshev points */
   _unur_pinv_chebyshev_points(GEN->order,chebyshev);
 
-  /* threshold for tolerated U-error */
-  uerrcrit = GEN->u_resolution * GEN->area * PINV_UERROR_CORRECTION;
+  /* tolerated U-error */
+  utol = GEN->u_resolution * GEN->area * PINV_UERROR_CORRECTION;
 
   /* initialize step size for subintervals */
   h = (GEN->bright-GEN->bleft)/128.;
@@ -1678,16 +1699,16 @@ _unur_pinv_create_table( struct unur_gen *gen )
       xval[k] = GEN->iv[i].xi + h * chebyshev[k];
 
     /* compute Newton interpolation polynomial */
-    if (_unur_pinv_newton_create(gen,&(GEN->iv[i]),xval,uerrcrit) != UNUR_SUCCESS)
+    if (_unur_pinv_newton_create(gen,&(GEN->iv[i]),xval,utol) != UNUR_SUCCESS)
       return UNUR_ERR_GEN_CONDITION;
     /** FIXME: make interval longer ?? **/
 
     /* estimate error of Newton interpolation */
-    maxerror = _unur_pinv_newton_maxerror(gen,&(GEN->iv[i]),xval,uerrcrit);
+    maxerror = _unur_pinv_newton_maxerror(gen,&(GEN->iv[i]),xval,utol);
 
-    if (maxerror > uerrcrit) { 
+    if (maxerror > utol) { 
       /* error too large: reduce step size */
-      h *= (maxerror > 4.*uerrcrit) ? 0.81 : 0.9;
+      h *= (maxerror > 4.*utol) ? 0.81 : 0.9;
       cont = TRUE;  /* we need another iteration */
     }
 
@@ -1701,8 +1722,8 @@ _unur_pinv_create_table( struct unur_gen *gen )
 	return UNUR_ERR_GEN_CONDITION;
 
       /* increase step size for very small errors */
-      if(maxerror < 0.3*uerrcrit) h *= 1.2;
-      if(maxerror < 0.1*uerrcrit) h *= 2.;
+      if(maxerror < 0.3*utol) h *= 1.2;
+      if(maxerror < 0.1*utol) h *= 2.;
       
       /* continue with next interval */
       i++;
@@ -1737,13 +1758,27 @@ _unur_pinv_interval( struct unur_gen *gen, int i, double x, double cdfx )
      /*   UNUR_SUCCESS ... on success                                        */
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
+     /* We use Newtons interpolating polynomial. The construction points are */
+     /* created by using Chebyshev points for the x-coordinates.             */
+     /*                                                                      */
+     /* Alternative implementation would be:                                 */
+     /* use Chebyshev points for u-coordinates.                              */
+     /* advantage:                                                           */
+     /*  - smaller tables as u-coordinates need not be stored.               */
+     /*  - fewer intervals required (especially in the tails).               */
+     /*  - routine _unur_pinv_newton_testpoints() not required               */
+     /*    (test points are fixed Chebyshev points -- closed form).          */ 
+     /* disadvantage:                                                        */
+     /*  - numerically less stable and more expensive                        */
+     /*    as it requires explicit inversion.                                */
+     /*----------------------------------------------------------------------*/
 {
   struct unur_pinv_interval *iv;
 
   /* check arguments */
   COOKIE_CHECK(gen,CK_PINV_GEN,UNUR_FAILURE);
 
-  /* check for free intervalls */
+  /* check for free intervals */
   if (i >= PINV_MAX_IVS) {
     _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,
 		"maximum number of intervals exceeded");
@@ -1788,23 +1823,13 @@ _unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_interval *iv,
      /*   UNUR_SUCCESS ... on success                                        */
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
-     /** uses Chebyshev points for x-points **/
-     /** not implemented: use Chebyshev points for u-points:
-	 setup less stable and more expensive (need explicit inversion),
-	 but smaller tables as u-points need not be stored.
-	 (also need fewer intervals) (expecially in the tails).
-	 need not _unur_pinv_newton_testpoints()
-	 (could use maxima of Chebyshev polynomial (closed form))
-     **/
-
 {
   double *ui = iv->ui;   /* u-values for Newton interpolation */
   double *zi = iv->zi;   /* coefficients of Newton interpolation */
-  
   double xi, dxi;        /* boundary and length of i-th subinterval */
-
   double area;           /* integral of PDF over subinterval */
-  int i,k;
+  double chk;            /* check sum */
+  int i,k;               /* auxiliary variables */
 
   /* check arguments */
   COOKIE_CHECK(gen,CK_PINV_GEN,UNUR_FAILURE);
@@ -1819,19 +1844,11 @@ _unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_interval *iv,
 
     /* compute integral of PDF in interval (xi,xi+dxi) */
     area = _unur_pinv_lobatto5(gen, xi, dxi, uerrcrit*0.1);
-    if (area<1.e-50) {
-      /** FIXME: see below **/
-      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"interval too short or PDF 0");
-      return UNUR_ERR_GEN_CONDITION;
-    }
 
     /* construction points of interpolation polynomial of CDF^{-1} */
     ui[i] = (i>0) ? (ui[i-1]+area) : area;
     /* rescaled corresponding values of CDF^{-1} */ 
     zi[i] = dxi/area;
-
-    /** FIXME (see below): if (!_unur_isfinite(zi[i]) ... "PDF over interval too close to 0" **/
-
   }
   /* Remark: ui[GEN->order-1] is the probability of the interval */
 
@@ -1843,14 +1860,12 @@ _unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_interval *iv,
     zi[k] = (zi[i]-zi[i-1]) / ui[i];
   }
   
-  /** FIXME: if (!_unur_isfinite(zi[i]) ... "PDF over interval too close to 0" **/
-
-
-  /* ?WH? muesste man da nicht ueberpruefen ob ui[i]-ui[i-k] != 0,
-     bzw. of _unur_isfinite(zi[i]) TRUE ist,  ja sollte man machen ? Siehe TODO oben
-  */
-
-  /** FIXME: test for inf and NaN **/
+  /* check result */
+  for (chk = 0., i=0; i<GEN->order; i++) chk += zi[i];
+  if (!_unur_isfinite(chk)) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF over interval too close to 0");
+      return UNUR_ERR_GEN_CONDITION;
+  }
 
   /* o.k. */
   return UNUR_SUCCESS;
@@ -1958,6 +1973,10 @@ _unur_pinv_newton_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv,
     else
       u = ui[i-1] + _unur_pinv_lobatto5(gen, xval[i], x+x0-xval[i], uerrcrit*0.1);
 
+    /* check u-value */
+    if (!_unur_isfinite(u))
+      return INFINITY;
+
     /* compute u-error */
     uerror = fabs(u - testu[i]);
     
@@ -2046,8 +2065,6 @@ _unur_pinv_make_guide_table (struct unur_gen *gen)
   GEN->guide[0] = 0;
   for( j=1; j<GEN->guide_size ;j++ ) {
     while(GEN->iv[i+1].cdfi/GEN->Umax < j/(double)GEN->guide_size && i < imax)
-      /* "/GEN->Umax" above is necessary, as we need the guide table for u in (0,umax) */
-      /* ?WH? ist das wirklich notwendig ? WH: Hab laenger herumgebastelt und nichts besseres gefunden??? */
       i++;
     if (i >= imax) break;
     GEN->guide[j]=i;

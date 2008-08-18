@@ -201,6 +201,9 @@ int unur_pinv_set_searchboundary( UNUR_PAR *parameters, int left, int right );
    The searching algorithm assumes that the support of the distribution
    is connected.
 
+   @emph{Remark:} 
+   Do not set this parameter to FALSE.
+
    Default is TRUE.
 */
 

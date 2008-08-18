@@ -177,6 +177,10 @@ xi sind die Intervallgrenzen der sub-intervalle.
 
 /* -- 2. Newton interpolation                                                */
 
+#define PINV_UTOL_CORRECTION  (0.1)
+/* We use a smaller tolerance when computing the Gauss-Lobatto integral for  */
+/* the PDF between construction points of the Newton polynomial.             */
+
 #define PINV_MAX_ITER_IVS    (10 * PINV_MAX_IVS)
 /* maximum number of iterations for computing intervals for Newtwon          */
 /* interpolation polynomials. Obviously it should be larger than the maximum */
@@ -305,7 +309,7 @@ static int _unur_pinv_interval( struct unur_gen *gen, int i, double x, double cd
 /*---------------------------------------------------------------------------*/
 
 static int _unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_interval *iv, 
-				     double *xval, double uerrcrit);
+				     double *xval, double utol);
 /*---------------------------------------------------------------------------*/
 /* 2a. Compute coefficients for Newton interpolation.                        */
 /*---------------------------------------------------------------------------*/
@@ -321,7 +325,7 @@ static double _unur_pinv_newton_eval (double q, double ui[], double zi[], int or
 /*---------------------------------------------------------------------------*/
 
 static double _unur_pinv_newton_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv, 
-					  double xval[], double uerrcrit);
+					  double xval[], double utol);
 /*---------------------------------------------------------------------------*/
 /* 2c. estimate maximal error of Newton interpolation in subinterval         */
 /*---------------------------------------------------------------------------*/
@@ -1110,16 +1114,14 @@ _unur_pinv_lobatto5 (struct unur_gen *gen, double x, double h, double tol)
      /*                                                                      */
      /* Halfs intervals recursively if error is too large.                   */
      /*                                                                      */
-     /* The recursion stops when the relative error OR the absolute error    */
-     /* is less than the respective given tolerances.                        */
-     /* (use a negative value if only one of these tolerances has to be      */
-     /* checked.)                                                            */
+     /* The recursion stops when the ABSOLUTE error is less than the         */
+     /* respective given tolerances.                                         */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
      /*   x   ... left boundary point of interval                            */
      /*   h   ... length of interval                                         */
-     /*   tol ... tolerated error (relative to area below PDF)               */
+     /*   tol ... tolerated ABSOLUTE error                                   */
      /*                                                                      */
      /* return:                                                              */
      /*   integral                                                           */
@@ -1153,7 +1155,7 @@ _unur_pinv_lobatto5 (struct unur_gen *gen, double x, double h, double tol)
 	   (9*(fc+fr)+49.*(PDF(x+h*(0.5+W1*0.5))+PDF(x+h*(0.5+W2*0.5)))+64*PDF(x+h*0.75))*h/360. );
 
   /* check whether accuracy goal is reached */
-  is = GEN->area * tol / DBL_EPSILON;
+  is = tol / DBL_EPSILON;
   if (is + (int1-int2) == is)
     return int2;
   
@@ -1335,7 +1337,7 @@ _unur_pinv_approx_pdfarea (struct unur_gen *gen )
 
   /* there is no need to be more accurate than the U-resolution.      */
   /* here we assume that the integral is not too much smaller than 1. */
-  tol = GEN->u_resolution;
+  tol = GEN->u_resolution * GEN->area;
 
   /* we might need to trials */
   for (i=1; i<=2; i++) {
@@ -1349,16 +1351,19 @@ _unur_pinv_approx_pdfarea (struct unur_gen *gen )
       break;
     }
 
-    if (GEN->area < 1.e-3);
+    if (GEN->area < 1.e-3) {
       /* The tolerated integration error is relative to the PDF area.
        * For the first trial we have used area=1 as a first guess.
        * However, we have seen, that this guess is much too large
        * which results in integration error that might be too large.
        * Thus we have to retry again. 
        */
-    else
+      tol = GEN->u_resolution * GEN->area;
+    }
+    else {
       /* the area is large enough (compared to our first guess) */
       break;
+    }
   }
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -1807,17 +1812,17 @@ _unur_pinv_interval( struct unur_gen *gen, int i, double x, double cdfx )
 
 int
 _unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_interval *iv, 
-			  double *xval, double uerrcrit)
+			  double *xval, double utol)
      /*----------------------------------------------------------------------*/
      /* 2a. Compute coefficients for Newton interpolation within a           */
      /* subinterval of the domain of the distribution.                       */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   gen      ... pointer to generator object                           */
-     /*   iv       ... pointer to current interval                           */
-     /*   h        ... length of interval                                    */
-     /*   xval     ... x-values for constructing polynomial                  */
-     /*   uerrcrit ... maximal accepted u-error                              */
+     /*   gen  ... pointer to generator object                               */
+     /*   iv   ... pointer to current interval                               */
+     /*   h    ... length of interval                                        */
+     /*   xval ... x-values for constructing polynomial                      */
+     /*   utol ... maximal tolerated u-error                                 */
      /*                                                                      */
      /* return:                                                              */
      /*   UNUR_SUCCESS ... on success                                        */
@@ -1835,6 +1840,9 @@ _unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_interval *iv,
   COOKIE_CHECK(gen,CK_PINV_GEN,UNUR_FAILURE);
   COOKIE_CHECK(iv,CK_PINV_IV,UNUR_FAILURE);
 
+  /* We use a smaller tolerance for the Gauss-Lobatto integral */
+  utol *= PINV_UTOL_CORRECTION;
+
   /* compute tuples (ui,zi) for constructing polynomials */
   for(i=0; i<GEN->order; i++) {
 
@@ -1843,7 +1851,7 @@ _unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_interval *iv,
     dxi = xval[i+1]-xval[i];
 
     /* compute integral of PDF in interval (xi,xi+dxi) */
-    area = _unur_pinv_lobatto5(gen, xi, dxi, uerrcrit*0.1);
+    area = _unur_pinv_lobatto5(gen, xi, dxi, utol);
 
     /* construction points of interpolation polynomial of CDF^{-1} */
     ui[i] = (i>0) ? (ui[i-1]+area) : area;
@@ -1929,7 +1937,7 @@ _unur_pinv_newton_eval ( double q, double ui[], double zi[], int order )
 
 double
 _unur_pinv_newton_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv,
-			    double xval[], double uerrcrit)
+			    double xval[], double utol)
      /*----------------------------------------------------------------------*/
      /* 2c. Estimate maximal error of Newton interpolation in subinterval.   */
      /*                                                                      */
@@ -1937,6 +1945,7 @@ _unur_pinv_newton_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv,
      /*   gen  ... pointer to generator object                               */
      /*   iv   ... pointer to current interval                               */
      /*   xval ... x-values for constructing polynomial                      */
+     /*   utol ... maximal tolerated u-error                                 */
      /*                                                                      */
      /* return:                                                              */
      /*   estimated maximal u-error                                          */
@@ -1958,6 +1967,9 @@ _unur_pinv_newton_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv,
   COOKIE_CHECK(gen,CK_PINV_GEN,UNUR_FAILURE);
   COOKIE_CHECK(iv,CK_PINV_IV,UNUR_FAILURE);
 
+  /* We use a smaller tolerance for the Gauss-Lobatto integral */
+  utol *= PINV_UTOL_CORRECTION;
+
   /* get U values for test (points with maximal worst case error) */
   _unur_pinv_newton_testpoints(GEN->order,ui,testu);
 
@@ -1969,9 +1981,9 @@ _unur_pinv_newton_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv,
     
     /* estimate CDF for interpolated x value */
     if (i==0 || xval==NULL)
-      u = _unur_pinv_lobatto5(gen, x0, x, uerrcrit*0.1);
+      u = _unur_pinv_lobatto5(gen, x0, x, utol);
     else
-      u = ui[i-1] + _unur_pinv_lobatto5(gen, xval[i], x+x0-xval[i], uerrcrit*0.1);
+      u = ui[i-1] + _unur_pinv_lobatto5(gen, xval[i], x+x0-xval[i], utol);
 
     /* check u-value */
     if (!_unur_isfinite(u))

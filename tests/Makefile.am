@@ -10,7 +10,7 @@ AM_CPPFLAGS = \
  -I$(top_srcdir)/src/tests
 
 noinst_LTLIBRARIES = libtestroutines.la
-libtestroutines_la_SOURCES = testroutines.c
+libtestroutines_la_SOURCES = testroutines.c testcounter.c
 
 LDADD = \
  libtestroutines.la \

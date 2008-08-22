@@ -127,6 +127,28 @@ void stopwatch_print( FILE *LOG, const char *format, double time );
 void set_alarm(FILE *LOG);
 
 /*---------------------------------------------------------------------------*/
+/* count number of function evaluations                                      */
+
+/* set and start counter for PDF in parameter object */
+int start_counter_pdf( UNUR_PAR *par );
+/* IMPORTANT:
+ * This function uses global variables.
+ * Thus the corresponding parameter/generator object has to be DESTROYED
+ * when this routine is called again.
+ * In addition, it creates a clone of the distribution object to which
+ * the parameter objects points to. It is then marked as NON-PRIVATE and 
+ * should be extracted from the generator object and destroyed immediately
+ * before the generator object is destroyed (otherwise we had a memory leak
+ * in the test suite).
+ */
+
+/* get number of PDF evaluations */
+int get_counter_pdf(void);
+
+/* reset counter to 0 */
+void reset_counter_pdf(void);
+
+/*---------------------------------------------------------------------------*/
 /* print header for test log file                                            */
 void print_test_log_header( FILE *LOG, unsigned long seed, int fullcheck );
 

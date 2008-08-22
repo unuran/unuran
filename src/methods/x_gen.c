@@ -36,6 +36,7 @@
 #include <distr/distr_source.h>
 #include <distr/matr.h>
 #include <methods/hinv.h>
+#include <methods/ninv.h>
 #include <methods/pinv.h>
 #include "unur_methods_source.h"
 #include "x_gen.h"
@@ -140,10 +141,12 @@ unur_quantile ( struct unur_gen *gen, double U )
   case UNUR_METH_HINV:
     return unur_hinv_eval_approxinvcdf(gen,U);
 
+  case UNUR_METH_NINV:
+    return unur_ninv_eval_approxinvcdf(gen,U);
+
   case UNUR_METH_PINV:
     return unur_pinv_eval_approxinvcdf(gen,U);
 
-  case UNUR_METH_NINV:
   default:
     _unur_error(gen->genid,UNUR_ERR_NO_QUANTILE,"");
     return UNUR_INFINITY;

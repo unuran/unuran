@@ -265,6 +265,12 @@ static double _unur_pinv_lobatto5 (struct unur_gen *gen, double x, double h, dou
 /* using adaptive Gauss-Lobatto integration with 5 points.                   */
 /*---------------------------------------------------------------------------*/
 
+static double _unur_pinv_lobatto5_adapt (struct unur_gen *gen, double x, double h, double tol,
+					 double int1, double fl, double fr, double fc);
+/*---------------------------------------------------------------------------*/
+/* run recursion for adaptive Lobatto integration.                           */
+/*---------------------------------------------------------------------------*/
+
 static int _unur_pinv_relevant_support (struct unur_gen *gen);
 /*---------------------------------------------------------------------------*/
 /* 1a. Estimate computationally relevant domain (support) of PDF             */
@@ -1104,7 +1110,11 @@ unur_pinv_estimate_error( const UNUR_GEN *gen, int samplesize, double *max_error
 /*****************************************************************************/
 
 /*****************************************************************************/
-/** Quadrature                                                              **/
+/** Gauss-Lobatto integration                                               **/
+
+  /* points for Lobatto integration */
+#define W1 (0.17267316464601146)   /* = 0.5-sqrt(3/28) */
+#define W2 (1.-W1)
 
 double
 _unur_pinv_lobatto5 (struct unur_gen *gen, double x, double h, double tol)
@@ -1127,38 +1137,70 @@ _unur_pinv_lobatto5 (struct unur_gen *gen, double x, double h, double tol)
      /*   integral                                                           */
      /*----------------------------------------------------------------------*/
 { 
-  double fl, fr, fc;  /* values of PDF at x-h, x, and x+h */
-  double int1, int2;  /* estimated values of integrals */
-  double is;          /* estimate for PDFarea rescaled by requested tolerance */
-
-  /* points for Lobatto integration */
-#define W1 (0.17267316464601146)   /* = 0.5-sqrt(3/28) */
-#define W2 (1.-W1)
+  double fl, fc, fr;  /* values of PDF at x, x+h/2, and x+h */
+  double int1;        /* estimated values for integral */
 
   /* check length of interval */
-  if (_unur_iszero(h)) 
+  if (_unur_iszero(h))
     return 0.;
 
-  if (!_unur_isfinite(x+h))
+  /* arguments which are not finite (inf or NaN) cause infinite recursions */
+  if (!_unur_isfinite(x+h)) {
+    _unur_error(gen->genid,UNUR_ERR_INF,"boundaries of integration domain not finite");
     return INFINITY;
+  }
 
   /* compute PDF values */
   fl = PDF(x);
-  fr = PDF(x+h);
   fc = PDF(x+h/2.);
+  fr = PDF(x+h);
  
-  /* compute integral on [x,x+h] */
+  /* first estimate for integral on [x,x+h] */
   int1 = (9*(fl+fr)+49.*(PDF(x+h*W1)+PDF(x+h*W2))+64*fc)*h/180.;
 
+  /* run adaptive steps */
+  return _unur_pinv_lobatto5_adapt(gen,x,h,tol,int1,fl,fc,fr);
+
+} /* end of _unur_pinv_lobatto5() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_pinv_lobatto5_adapt (struct unur_gen *gen, double x, double h, double tol,
+			   double int1, double fl, double fc, double fr)
+     /*----------------------------------------------------------------------*/
+     /* run recursion for adaptive Lobatto integration.                      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*   x   ... left boundary point of interval                            */
+     /*   h   ... length of interval                                         */
+     /*   tol ... tolerated ABSOLUTE error                                   */
+     /*   fl  ... PDF at x                                                   */
+     /*   fc  ... PDF at x+h/2                                               */
+     /*   fr  ... PDF at x+h                                                 */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   integral                                                           */
+     /*----------------------------------------------------------------------*/
+{
+  double flc, frc;    /* values at PDF at x+h/4 and x+3*h/4 */
+  double int2;        /* estimated values of integrals */
+  double intl, intr;  /* left and right part of int2 */
+
+  /* compute PDF values */
+  flc = PDF(x+h/4);
+  frc = PDF(x+3*h/4);
+ 
   /* compute integral on [x,x+h/2] and on [x+h/2,x+h] */
-  int2 = ( (9*(fl+fc)+49.*(PDF(x+h*W1*0.5)+PDF(x+h*W2*0.5))+64*PDF(x+h*0.25))*h/360. +
-	   (9*(fc+fr)+49.*(PDF(x+h*(0.5+W1*0.5))+PDF(x+h*(0.5+W2*0.5)))+64*PDF(x+h*0.75))*h/360. );
+  intl = (9*(fl+fc)+49.*(PDF(x+h*W1*0.5)+PDF(x+h*W2*0.5))+64*flc)*h/360.;
+  intr = (9*(fc+fr)+49.*(PDF(x+h*(0.5+W1*0.5))+PDF(x+h*(0.5+W2*0.5)))+64*frc)*h/360.;
+  int2 = intl + intr;
 
   /* check whether accuracy goal is reached */
-  is = tol / DBL_EPSILON;
-  if (is + (int1-int2) == is)
+  if (fabs(int1-int2) < tol)
     return int2;
-  
+
   /* else: error above tolerance */
 
   if (x+h/2. == x) {
@@ -1170,13 +1212,13 @@ _unur_pinv_lobatto5 (struct unur_gen *gen, double x, double h, double tol)
   }
 
   /* recompute with shorter intervals */
-  return ( _unur_pinv_lobatto5(gen,x,    h/2,tol) +
-	   _unur_pinv_lobatto5(gen,x+h/2,h/2,tol) );
+  return ( _unur_pinv_lobatto5_adapt(gen,x,    h/2,tol,intl,fl,flc,fc) +
+	   _unur_pinv_lobatto5_adapt(gen,x+h/2,h/2,tol,intr,fc,frc,fr) );
+
+} /* end of _unur_pinv_lobatto5_adapt() */
 
 #undef W1
 #undef W2
-} /* end of _unur_pinv_lobatto5() */
-
 
 /*****************************************************************************/
 /** Preprocessing                                                           **/

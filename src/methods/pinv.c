@@ -148,7 +148,7 @@ xi sind die Intervallgrenzen der sub-intervalle.
 /* These macros allow switching between some alternative versions            */
 
 /* Uncomment the following line if a table for CDFvalues should be used */
-#define PINV_USE_CDFTABLE
+/* #define PINV_USE_CDFTABLE */
 
 #ifndef PINV_USE_CDFTABLE
 /* There are two variants when such a table is not used:                     */
@@ -162,7 +162,7 @@ xi sind die Intervallgrenzen der sub-intervalle.
 /* Uncomment the following line if SIMPLE (non-adaptive) Lobatto5            */
 /* integration should be used.                                               */
 
-#define PINV_USE_SIMPLE_LOBATTO
+/* #define PINV_USE_SIMPLE_LOBATTO */
 
 #endif
 
@@ -1551,11 +1551,12 @@ _unur_pinv_Udiff (struct unur_gen *gen, double x, double h, double utol)
   /* check for table */
   if (CDFtable == NULL) {
     /* there is no table: use adaptive integration */
-    return _unur_pinv_adaptivelobatto5(gen, x, h, utol, NULL);
-
-    /** FIXME **/
-    /* should we use _unur_pinv_lobatto5() when x or x+h is out side
-       of the computational domain ? */
+    
+    if (x < GEN->bleft || x+h > GEN->bright)
+      /* the interval [x,x+h] is too large. thus we use simple Lobatto integration. */
+      return _unur_pinv_lobatto5(gen, x, h);
+    else
+      return _unur_pinv_adaptivelobatto5(gen, x, h, utol, NULL);
   }
 
   /* else: we try to read CDF values from table */
@@ -1619,7 +1620,11 @@ _unur_pinv_Udiff (struct unur_gen *gen, double x, double h, double utol)
 #ifdef PINV_USE_SIMPLE_LOBATTO
   return _unur_pinv_lobatto5(gen, x, h);
 #else
-  return _unur_pinv_adaptivelobatto5(gen, x, h, utol, NULL);
+  if (x < GEN->bleft || x+h > GEN->bright)
+    /* the interval [x,x+h] is too large. thus we use simple Lobatto integration. */
+    return _unur_pinv_lobatto5(gen, x, h);
+  else
+    return _unur_pinv_adaptivelobatto5(gen, x, h, utol, NULL);
 #endif
 
 #endif /* defined(PINV_USE_CDFTABLE) */

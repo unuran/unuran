@@ -177,7 +177,7 @@ xi sind die Intervallgrenzen der sub-intervalle.
 /* -- Gauss-Lobatto integration                                              */
 
 #define PINV_MAX_LOBATTO_IVS  (20001)
-/* #define PINV_MAX_LOBATTO_IVS  (101) */   /** FIXME: for testint **/
+/* #define PINV_MAX_LOBATTO_IVS  (101)    */
 /* maximum  number of subintervals for adaptive Gauss-Lobatto integration    */
 
 /* -- 1. Preprocessing                                                       */
@@ -1502,6 +1502,10 @@ _unur_pinv_Udiff (struct unur_gen *gen, double x, double h, double utol)
   if (CDFtable == NULL) {
     /* there is no table: use adaptive integration */
     return _unur_pinv_adaptivelobatto5(gen, x, h, utol, NULL);
+
+    /** FIXME **/
+    /* should we use _unur_pinv_lobatto5() when x or x+h is out side
+       of the computational domain ? */
   }
 
   /* else: we try to read CDF values from table */
@@ -1548,18 +1552,15 @@ _unur_pinv_Udiff (struct unur_gen *gen, double x, double h, double utol)
   } while (cur < CDFtable->n_values
 	   && CDFtable->values[cur].x <= x+h);
 
-  Udiff += _unur_pinv_lobatto5(gen, x1, x+h - x1);
-
-/*   if (cur >= CDFtable->n_values) { */
-/*     printf("> x=%g h=%g, x1=%g, x+h-x1=%g\n",x,h,x1,x+h-x1); */
-/* /\* CDFtable->values[CDFtable->n_values-1].x,); *\/ */
-/*   } */
-
-/*   if (cur < CDFtable->n_values)  */
-/*     Udiff += _unur_pinv_lobatto5(gen, x1, x+h - x1); */
-/*   else  */
-/*     /\* table too short *\/ */
-/*     Udiff += _unur_pinv_adaptivelobatto5(gen, x1, x+h - x1, utol, NULL); */
+  /* We have to distinguish two cases: */
+  if (x+h < GEN->bright && cur >= CDFtable->n_values) {
+    /* the table of CDF values is too small */
+    Udiff += _unur_pinv_adaptivelobatto5(gen, x1, x+h, utol, NULL);
+  }
+  else {
+    /* the table is not too small but x+h is outside the computational domain */
+    Udiff += _unur_pinv_lobatto5(gen, x1, x+h - x1);
+  }
       
   return Udiff;
 
@@ -2125,14 +2126,6 @@ _unur_pinv_create_table( struct unur_gen *gen )
 
   /* tolerated U-error */
   utol = GEN->u_resolution * GEN->area * PINV_UERROR_CORRECTION;
-
-
-  /** FIXME **/
-/*   _unur_pinv_adaptivelobatto5(gen,GEN->bleft,GEN->CDFtable->values[0].x - GEN->bleft,utol,NULL); */
-/*   _unur_pinv_adaptivelobatto5(gen,GEN->CDFtable->values[GEN->CDFtable->n_value-1].x, */
-/* 			      GEN->bright - GEN->CDFtable->values[GEN->CDFtable->n_value-1].x, */
-/* 			      utol,NULL); */
-
 
   /* initialize step size for subintervals */
   h = (GEN->bright-GEN->bleft)/128.;

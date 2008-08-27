@@ -104,9 +104,12 @@ struct unur_pinv_gen {
   int sright;              /* whether to search for right boundary point     */
 
   double area;             /* approximate area below PDF                     */ 
+
+#ifdef PINV_USE_CDFTABLE
   struct unur_pinv_CDFtable *CDFtable; /* store boundaries and integrals of
 					  subintervals computed during
 					  adaptive Gauss-Lobatto integration. */
+#endif
 };
 
 /*---------------------------------------------------------------------------*/

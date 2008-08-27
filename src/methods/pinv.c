@@ -145,6 +145,29 @@ xi sind die Intervallgrenzen der sub-intervalle.
 
 /*---------------------------------------------------------------------------*/
 
+/* These macros allow switching between some alternative versions            */
+
+/* Uncomment the following line if a table for CDFvalues should be used */
+#define PINV_USE_CDFTABLE
+
+#ifndef PINV_USE_CDFTABLE
+/* There are two variants when such a table is not used:                     */
+/*  (1) use simple Lobatto5 integration when creating the Newton polynomial  */
+/*      is computed,                                                         */
+/*  (2) or use adaptive Lobatto integration.                                 */
+/*                                                                           */
+/* The first one is (much) faster, but there is no control of the U-error.   */
+/* The second one checks the integration error, but is (much) slower.        */
+
+/* Uncomment the following line if SIMPLE (non-adaptive) Lobatto5            */
+/* integration should be used.                                               */
+
+#define PINV_USE_SIMPLE_LOBATTO
+
+#endif
+
+/*---------------------------------------------------------------------------*/
+
 #include <unur_source.h>
 #include <distr/distr.h>
 #include <distr/distr_source.h>
@@ -311,6 +334,8 @@ static double _unur_pinv_adaptivelobatto5_rec (struct unur_gen *gen, double x, d
 /* run recursion for adaptive Lobatto integration.                           */
 /*---------------------------------------------------------------------------*/
 
+#ifdef PINV_USE_CDFTABLE
+
 static struct unur_pinv_CDFtable *_unur_pinv_CDFtable_create (int size);
 /*---------------------------------------------------------------------------*/
 /* create table of CDF values.                                               */
@@ -330,6 +355,8 @@ static void _unur_pinv_CDFtable_free (struct unur_pinv_CDFtable **table);
 /*---------------------------------------------------------------------------*/
 /* destroy table of CDF values and set pointer to NULL.                      */
 /*---------------------------------------------------------------------------*/
+
+#endif /* defined(PINV_USE_CDFTABLE) */
 
 static double _unur_pinv_Udiff (struct unur_gen *gen, double x, double h, double utol);
 /*---------------------------------------------------------------------------*/
@@ -353,11 +380,13 @@ static int _unur_pinv_approx_pdfarea (struct unur_gen *gen);
 /* 1b. Compute area below PDF over relevant domain approximately.            */
 /*---------------------------------------------------------------------------*/
 
+#ifdef PINV_USE_CDFTABLE
 static int _unur_pinv_pdfarea (struct unur_gen *gen);
 /*---------------------------------------------------------------------------*/
 /* 1d. Compute area below PDF with requested accuracy and                    */
 /*     store intermediate results from adaptive integration.                 */
 /*---------------------------------------------------------------------------*/
+#endif
 
 static int _unur_pinv_computational_domain (struct unur_gen *gen);
 /*---------------------------------------------------------------------------*/
@@ -766,10 +795,13 @@ _unur_pinv_init( struct unur_par *par )
       _unur_pinv_approx_pdfarea(gen)       != UNUR_SUCCESS ||
       /* 1c. Compute computational domain where inverse CDF is approximated */
       _unur_pinv_computational_domain(gen) != UNUR_SUCCESS ||
+#ifdef PINV_USE_CDFTABLE
       /* 1d. Compute area below PDF with requested accuracy and                    */
       /*     store intermediate results from adaptive integration.                 */
       _unur_pinv_pdfarea(gen)              != UNUR_SUCCESS
-
+#else
+      FALSE
+#endif
       ) {
 
     /* preprocessing failed */
@@ -787,9 +819,11 @@ _unur_pinv_init( struct unur_par *par )
     _unur_pinv_free(gen); return NULL;
   }
 
+#ifdef PINV_USE_CDFTABLE
   /* we do not need the table with CDF values any more. */
   /* thus we free the allocated memory.                 */
   _unur_pinv_CDFtable_free(&(GEN->CDFtable));
+#endif
 
   /* make guide table */
   _unur_pinv_make_guide_table(gen);
@@ -889,8 +923,10 @@ _unur_pinv_create( struct unur_par *par )
   /* [ Maybe we could move this into _unur_pinv_interval() ] */
   GEN->iv = _unur_xmalloc(PINV_MAX_IVS * sizeof(struct unur_pinv_interval) );
 
+#ifdef PINV_USE_CDFTABLE
   /* allocate maximal array of subintervals for adaptive Gauss-Lobatto integration */
   GEN->CDFtable = _unur_pinv_CDFtable_create(PINV_MAX_LOBATTO_IVS);
+#endif
 
 #ifdef UNUR_ENABLE_INFO
   /* set function for creating info string */
@@ -972,8 +1008,10 @@ _unur_pinv_clone( const struct unur_gen *gen )
   /* create generic clone */
   clone = _unur_generic_clone( gen, GENTYPE );
 
+#ifdef PINV_USE_CDFTABLE
   /* we do not need the table with CDF values */
   CLONE->CDFtable = NULL;
+#endif
 
   /* copy coefficients for Newton polynomial */
   CLONE->iv =  _unur_xmalloc((GEN->n_ivs+1) * sizeof(struct unur_pinv_interval) );
@@ -1024,8 +1062,10 @@ _unur_pinv_free( struct unur_gen *gen )
   /* free guide table */
   if (GEN->guide) free (GEN->guide);
 
+#ifdef PINV_USE_CDFTABLE
   /* free array for subintervals of adaptive Gauss-Lobatto integration */
   _unur_pinv_CDFtable_free(&(GEN->CDFtable));
+#endif
 
   /* free tables of coefficients of interpolating polynomials */
   if (GEN->iv) {
@@ -1351,6 +1391,7 @@ _unur_pinv_adaptivelobatto5_rec (struct unur_gen *gen, double x, double h, doubl
     }
   }
 
+#ifdef PINV_USE_CDFTABLE
   /* store integral values */
   if (CDFtable) {
     /* l.h.s. subinterval */
@@ -1359,6 +1400,7 @@ _unur_pinv_adaptivelobatto5_rec (struct unur_gen *gen, double x, double h, doubl
     _unur_pinv_CDFtable_append(CDFtable, x+h, intr);
   }
   /* Remark: we do not throw a warning if the table size is exceeded. */
+#endif
 
   /* return estimate for integral */
   return int2;
@@ -1368,6 +1410,8 @@ _unur_pinv_adaptivelobatto5_rec (struct unur_gen *gen, double x, double h, doubl
 #undef W1
 #undef W2
 
+/*---------------------------------------------------------------------------*/
+#ifdef PINV_USE_CDFTABLE
 /*---------------------------------------------------------------------------*/
 
 struct unur_pinv_CDFtable *
@@ -1468,6 +1512,8 @@ _unur_pinv_CDFtable_free (struct unur_pinv_CDFtable **table)
 } /* end of _unur_pinv_CDFtable_free() */
 
 /*---------------------------------------------------------------------------*/
+#endif /* defined(PINV_USE_CDFTABLE) */
+/*---------------------------------------------------------------------------*/
 
 double
 _unur_pinv_Udiff (struct unur_gen *gen, double x, double h, double utol)
@@ -1487,10 +1533,12 @@ _unur_pinv_Udiff (struct unur_gen *gen, double x, double h, double utol)
      /*    (approximate) difference CDF(x+h) - CDF(x)                        */
      /*----------------------------------------------------------------------*/
 {
+#ifdef PINV_USE_CDFTABLE
   struct unur_pinv_CDFtable *CDFtable = GEN->CDFtable; /* table of CDF values */
   int cur;                    /* pointer to current position in table */
   double x1;                  /* left and right boundary of a subinterval */
   double Udiff;               /* value to be returned */
+#endif
 
   /* arguments which are not finite (inf or NaN) cause infinite recursions */
   if (!_unur_isfinite(x+h)) {
@@ -1498,6 +1546,8 @@ _unur_pinv_Udiff (struct unur_gen *gen, double x, double h, double utol)
     return INFINITY;
   }
 
+
+#ifdef PINV_USE_CDFTABLE
   /* check for table */
   if (CDFtable == NULL) {
     /* there is no table: use adaptive integration */
@@ -1563,6 +1613,16 @@ _unur_pinv_Udiff (struct unur_gen *gen, double x, double h, double utol)
   }
       
   return Udiff;
+
+#else
+
+#ifdef PINV_USE_SIMPLE_LOBATTO
+  return _unur_pinv_lobatto5(gen, x, h);
+#else
+  return _unur_pinv_adaptivelobatto5(gen, x, h, utol, NULL);
+#endif
+
+#endif /* defined(PINV_USE_CDFTABLE) */
 
 } /* end of _unur_pinv_Udiff() */
 
@@ -1773,6 +1833,8 @@ _unur_pinv_approx_pdfarea (struct unur_gen *gen )
 } /* end of _unur_pinv_approx_pdfarea() */
 
 /*---------------------------------------------------------------------------*/
+#ifdef PINV_USE_CDFTABLE
+/*---------------------------------------------------------------------------*/
 
 int
 _unur_pinv_pdfarea (struct unur_gen *gen)
@@ -1832,6 +1894,8 @@ _unur_pinv_pdfarea (struct unur_gen *gen)
 
 } /* end of _unur_pinv_pdfarea() */
 
+/*---------------------------------------------------------------------------*/
+#endif /* defined(PINV_USE_CDFTABLE) */
 /*---------------------------------------------------------------------------*/
 
 int
@@ -2235,7 +2299,9 @@ _unur_pinv_interval( struct unur_gen *gen, int i, double x, double cdfx )
      /*----------------------------------------------------------------------*/
 {
   struct unur_pinv_interval *iv;
+#ifdef PINV_USE_CDFTABLE
   struct unur_pinv_CDFtable *CDFtable = GEN->CDFtable;
+#endif
 
   /* check arguments */
   COOKIE_CHECK(gen,CK_PINV_GEN,UNUR_FAILURE);
@@ -2260,6 +2326,8 @@ _unur_pinv_interval( struct unur_gen *gen, int i, double x, double cdfx )
   /* update size of array (number of intervals) */
   GEN->n_ivs = i;
 
+
+#ifdef PINV_USE_CDFTABLE
   /* set bookmark in table of CDF values */
   if (CDFtable != NULL) {
     /* search for first entry in interval. */
@@ -2271,6 +2339,7 @@ _unur_pinv_interval( struct unur_gen *gen, int i, double x, double cdfx )
 	   CDFtable->values[CDFtable->cur_iv].x < x) 
       ++(CDFtable->cur_iv);
   }
+#endif
 
   /* o.k. */
   return UNUR_SUCCESS;
@@ -2680,10 +2749,12 @@ _unur_pinv_debug_searchbd( const struct unur_gen *gen, int aftercut )
     fprintf(log,"%s: possible support of distribution = (%g,%g)\n",gen->genid,
 	    GEN->dleft,GEN->dright);
 
+#ifdef PINV_USE_CDFTABLE
     if (GEN->CDFtable && (GEN->CDFtable->n_values > 0)) {
       fprintf(log,"%s: # subintervals in Lobatto integration = %d\n",gen->genid,
 	      GEN->CDFtable->n_values-1);
     }
+#endif
   }
 
   fprintf(log,"%s:\n",gen->genid);

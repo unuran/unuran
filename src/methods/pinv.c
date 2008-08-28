@@ -148,7 +148,7 @@ xi sind die Intervallgrenzen der sub-intervalle.
 /* These macros allow switching between some alternative versions            */
 
 /* Uncomment the following line if a table for CDFvalues should be used */
-/* #define PINV_USE_CDFTABLE */
+#define PINV_USE_CDFTABLE
 
 #ifndef PINV_USE_CDFTABLE
 /* There are two variants when such a table is not used:                     */
@@ -458,19 +458,35 @@ static void _unur_pinv_debug_init_start (const struct unur_gen *gen);
 /* print before setup starts.                                                */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_pinv_debug_searchbd (const struct unur_gen *gen, int aftercut);
-/*---------------------------------------------------------------------------*/
-/* print computational before or after searching for cut-off points          */
-/*---------------------------------------------------------------------------*/
-
 static void _unur_pinv_debug_init (const struct unur_gen *gen, int ok);
 /*---------------------------------------------------------------------------*/
 /* print after generator has been initialized has completed.                 */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_pinv_debug_intervals( const struct unur_gen *gen );
+static void _unur_pinv_debug_relevant_support (const struct unur_gen *gen);
+/*---------------------------------------------------------------------------*/
+/* print relevant domain                                                     */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_pinv_debug_pdfarea (const struct unur_gen *gen, int approx);
+/*---------------------------------------------------------------------------*/
+/* print estimated area below PDF                                            */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_pinv_debug_computational_domain (const struct unur_gen *gen);
+/*---------------------------------------------------------------------------*/
+/* print computational domain                                                */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_pinv_debug_intervals (const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* print starting points or table for algorithms into logfile.               */
+/*---------------------------------------------------------------------------*/
+
+static void _unur_pinv_debug_create_table (const struct unur_gen *gen,
+					   int iter, int n_incr_h, int n_decr_h);
+/*---------------------------------------------------------------------------*/
+/* print data that have been collected while creating polynomials.           */
 /*---------------------------------------------------------------------------*/
 
 #endif
@@ -1691,6 +1707,12 @@ _unur_pinv_relevant_support ( struct unur_gen *gen )
     }
   }
 
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  if (gen->debug & PINV_DEBUG_SEARCHBD)
+    _unur_pinv_debug_relevant_support(gen);
+#endif
+
   /* o.k. */
   return UNUR_SUCCESS;
 } /* end of _unur_pinv_relevant_support() */
@@ -1830,7 +1852,7 @@ _unur_pinv_approx_pdfarea (struct unur_gen *gen )
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
   if (gen->debug & PINV_DEBUG_SEARCHBD)
-    _unur_pinv_debug_searchbd(gen,FALSE);
+    _unur_pinv_debug_pdfarea(gen,TRUE);
 #endif
 
   return res;
@@ -1892,7 +1914,7 @@ _unur_pinv_pdfarea (struct unur_gen *gen)
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
   if (gen->debug & PINV_DEBUG_SEARCHBD)
-    _unur_pinv_debug_searchbd(gen,FALSE);
+    _unur_pinv_debug_pdfarea(gen,FALSE);
 #endif
 
   return UNUR_SUCCESS;
@@ -1947,7 +1969,7 @@ _unur_pinv_computational_domain (struct unur_gen *gen)
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into log file */
   if (gen->debug & PINV_DEBUG_SEARCHBD)
-    _unur_pinv_debug_searchbd(gen,TRUE);
+    _unur_pinv_debug_computational_domain(gen);
 #endif
 
   /* o.k. */
@@ -2187,6 +2209,9 @@ _unur_pinv_create_table( struct unur_gen *gen )
   double chebyshev[MAX_ORDER+1]; /* Chebyshev points */
   double xval[MAX_ORDER+1];  /* x-values for construction points for Newton polynomial */
 
+  int n_incr_h = 0;          /* number of steps where h is increased */
+  int n_decr_h = 0;          /* number of steps where h is decreased */
+
   /* check arguments */
   COOKIE_CHECK(gen,CK_PINV_GEN,UNUR_ERR_COOKIE);
 
@@ -2240,6 +2265,7 @@ _unur_pinv_create_table( struct unur_gen *gen )
       /* error too large: reduce step size */
       h *= (maxerror > 4.*utol) ? 0.81 : 0.9;
       cont = TRUE;  /* we need another iteration */
+      ++n_decr_h;
     }
 
     else {
@@ -2252,8 +2278,10 @@ _unur_pinv_create_table( struct unur_gen *gen )
 	return UNUR_ERR_GEN_CONDITION;
 
       /* increase step size for very small errors */
-      if(maxerror < 0.3*utol) h *= 1.2;
-      if(maxerror < 0.1*utol) h *= 2.;
+      if (maxerror < 0.3*utol) {
+	h *= (maxerror < 0.1*utol) ? 2. : 1.2;
+	++n_incr_h;
+      }
       
       /* continue with next interval */
       i++;
@@ -2266,6 +2294,12 @@ _unur_pinv_create_table( struct unur_gen *gen )
   /* set range for uniform random numbers */
   /* Umin = 0, Umax depends on area below PDF, tail cut-off points and round-off errors */
   GEN->Umax = GEN->iv[GEN->n_ivs].cdfi;
+
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  if (gen->debug & PINV_DEBUG_SEARCHBD)
+    _unur_pinv_debug_create_table(gen,iter,n_incr_h,n_decr_h);
+#endif
 
   /* o.k. */
   return UNUR_SUCCESS;
@@ -2706,10 +2740,10 @@ _unur_pinv_debug_init( const struct unur_gen *gen, int ok )
   fprintf(log,"%s:\n",gen->genid);
 
   fprintf(log,"%s: domain of computation = [%g,%g]\n",gen->genid, GEN->bleft,GEN->bright);
-  fprintf(log,"%s: Umin = 0 [fixed], Umax = %g,  1-Umax = %g\n",gen->genid,
-	  GEN->Umax,1.-GEN->Umax);
-  fprintf(log,"%s: approx. area below PDF = %g\n",gen->genid, GEN->area);
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(log,"%s: Umin = 0 [fixed], Umax = %18.16g",gen->genid, GEN->Umax);
+  if (_unur_FP_approx(GEN->Umax,1))
+    fprintf(log,",  1-Umax = %g",1.-GEN->Umax);
+  fprintf(log,"\n%s:\n",gen->genid);
 
   fprintf(log,"%s: # Intervals = %d\n",gen->genid,GEN->n_ivs);
   fprintf(log,"%s:\n",gen->genid);
@@ -2726,15 +2760,12 @@ _unur_pinv_debug_init( const struct unur_gen *gen, int ok )
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_pinv_debug_searchbd( const struct unur_gen *gen, int aftercut )
+_unur_pinv_debug_relevant_support (const struct unur_gen *gen)
      /*----------------------------------------------------------------------*/
-     /* print computational before or after searching for cut-off points     */
+     /* print relevant domain                                                */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen      ... pointer to generator object                           */
-     /*   aftercut ... whether we print boundary points after searching      */
-     /*                for proper points (before computing cut-off points)   */
-     /*                or after computing cut-off points                     */
      /*----------------------------------------------------------------------*/
 {
   FILE *log;
@@ -2744,27 +2775,77 @@ _unur_pinv_debug_searchbd( const struct unur_gen *gen, int aftercut )
 
   log = unur_get_stream();
 
-  if (aftercut) {
-    fprintf(log,"%s: after cutting-off points: domain = (%g,%g)\n",gen->genid,
-	    GEN->bleft,GEN->bright);
-  }
-  else {
-    fprintf(log,"%s: after searching border:   domain = (%g,%g),  area = %g\n",gen->genid,
-	    GEN->bleft,GEN->bright,GEN->area);
-    fprintf(log,"%s: possible support of distribution = (%g,%g)\n",gen->genid,
-	    GEN->dleft,GEN->dright);
-
-#ifdef PINV_USE_CDFTABLE
-    if (GEN->CDFtable && (GEN->CDFtable->n_values > 0)) {
-      fprintf(log,"%s: # subintervals in Lobatto integration = %d\n",gen->genid,
-	      GEN->CDFtable->n_values-1);
-    }
-#endif
-  }
+  fprintf(log,"%s: search for boundaries: left = %s, right = %s\n",gen->genid,
+	  GEN->sleft ? "TRUE" : "FALSE", GEN->sright ? "TRUE" : "FALSE");
+  fprintf(log,"%s: relevant domain = (%g,%g)   [i.e. where PDF > threshold]\n",gen->genid,
+	  GEN->bleft,GEN->bright);
+  fprintf(log,"%s: possible support of distribution = (%g,%g)\n",gen->genid,
+	  GEN->dleft,GEN->dright);
 
   fprintf(log,"%s:\n",gen->genid);
   fflush(log);
-} /* end of _unur_pinv_debug_searchbd() */
+
+} /* end of _unur_pinv_debug_relevant_support() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_pinv_debug_pdfarea (const struct unur_gen *gen, int approx)
+     /*----------------------------------------------------------------------*/
+     /* print estimated area below PDF                                       */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen      ... pointer to generator object                           */
+     /*   approx ... whether this is an approximate value or accurat up to   */
+     /*              requested tolerance                                     */
+     /*----------------------------------------------------------------------*/
+{
+  FILE *log;
+
+  /* check arguments */
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_PINV_GEN,RETURN_VOID);
+
+  log = unur_get_stream();
+
+  fprintf(log,"%s: area below PDF %s = %19.16g\n",gen->genid,
+	  approx ? "(approx.)" : "(accurate)", GEN->area);
+
+#ifdef PINV_USE_CDFTABLE
+  if (GEN->CDFtable && (GEN->CDFtable->n_values > 0)) {
+    fprintf(log,"%s: # subintervals in Lobatto integration = %d\n",gen->genid,
+	    GEN->CDFtable->n_values-1);
+  }
+#endif
+
+  fprintf(log,"%s:\n",gen->genid);
+  fflush(log);
+} /* end of _unur_pinv_debug_pdfarea() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_pinv_debug_computational_domain (const struct unur_gen *gen)
+     /*----------------------------------------------------------------------*/
+     /* print computational domain                                           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen      ... pointer to generator object                           */
+     /*----------------------------------------------------------------------*/
+{
+  FILE *log;
+
+  /* check arguments */
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_PINV_GEN,RETURN_VOID);
+
+  log = unur_get_stream();
+
+  fprintf(log,"%s: computational domain = (%g,%g)\n",gen->genid,
+	    GEN->bleft,GEN->bright);
+
+  fprintf(log,"%s:\n",gen->genid);
+  fflush(log);
+
+} /* end of _unur_pinv_debug_computational_domain() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -2792,11 +2873,42 @@ _unur_pinv_debug_intervals( const struct unur_gen *gen )
     }
   }
 
-  fflush(log);
   fprintf(log,"%s:\n",gen->genid);
+  fflush(log);
 
 } /* end of _unur_pinv_debug_intervals() */
 
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_pinv_debug_create_table (const struct unur_gen *gen,
+			       int iter, int n_incr_h, int n_decr_h)
+     /*----------------------------------------------------------------------*/
+     /* print data that have been collected while creating polynomials.      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen      ... pointer to generator object                           */
+     /*   iter     ... total number of iterations                            */
+     /*   n_incr_h ... number of steps where h is increased                  */
+     /*   n_decr_h ... number of steps where h is decreased                  */
+     /*                                                                      */
+     /*----------------------------------------------------------------------*/
+{
+  FILE *log;
+
+  /* check arguments */
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_PINV_GEN,RETURN_VOID);
+
+  log = unur_get_stream();
+
+  fprintf(log,"%s: Create interpolating polynomaials:\n",gen->genid);
+  fprintf(log,"%s:\t# iterations   = %d\n",gen->genid,iter);
+  fprintf(log,"%s:\t# increasing h = %d  (%g%%)\n",gen->genid,n_incr_h,(100.*n_incr_h)/iter);
+  fprintf(log,"%s:\t# decreasing h = %d  (%g%%)\n",gen->genid,n_decr_h,(100.*n_decr_h)/iter);
+  fprintf(log,"%s:\n",gen->genid);
+
+  fflush(log);
+} /* end of _unur_pinv_debug_create_table() */
 
 /*---------------------------------------------------------------------------*/
 #endif   /* end UNUR_ENABLE_LOGGING */

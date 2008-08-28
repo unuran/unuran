@@ -7,6 +7,7 @@ AM_CPPFLAGS = \
 noinst_LTLIBRARIES = libtestdistributions.la
 
 libtestdistributions_la_SOURCES = \
+ c_with_multiple_of_pdf.c \
  c_wo_logpdf.c \
  c_w_pdf_from_logpdf.c \
  c_sawtooth_discpdf.c \

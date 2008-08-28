@@ -36,6 +36,10 @@
 #define UNURAN_TESTDISTRIBUTIONS_H_SEEN
 /*---------------------------------------------------------------------------*/
 
+/*  Distribution objects of with multiple of PDFs generated from other       */
+/*  distribution objects.                                                    */
+UNUR_DISTR *unur_distr_multPDF( const UNUR_DISTR *distr, double mult );
+
 /*---------------------------------------------------------------------------*/
 /* Special continuous univariate distributions                               */
 

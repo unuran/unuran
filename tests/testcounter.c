@@ -35,13 +35,7 @@
 #include "testunuran.h"
 
 #include <unur_source.h>
-/* #include <distr/distr.h> */
 #include <distr/distr_source.h>
-/* #include <methods/unur_methods_source.h> */
-/* #include <methods/x_gen.h> */
-/* #include <methods/x_gen_source.h> */
-/* #include "unuran_tests.h" */
-
 
 /*---------------------------------------------------------------------------*/
 /* count number of function evaluations                                      */

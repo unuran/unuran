@@ -1207,7 +1207,7 @@ sub add_unur_set_verify_routine {
     undef my $have_found;
 
     foreach my $h (@header_files) {
-	open (H, $h) or die "Cannot open file $h for reading";
+	open (H, $h) or next;
 	while (<H>) {
 	    $have_found = 1 if /$verify/;
 	}

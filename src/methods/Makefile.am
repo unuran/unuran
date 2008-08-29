@@ -53,6 +53,9 @@ libmethods_la_SOURCES = \
  norta.c  norta.h  norta_struct.h \
  nrou.c   nrou.h   nrou_struct.h \
  pinv.c   pinv.h   pinv_struct.h \
+          pinv_newset.ch pinv_init.ch pinv_sample.ch \
+          pinv_prep.ch pinv_lobatto.ch pinv_newton.ch \
+          pinv_debug.ch pinv_info.ch \
  srou.c   srou.h   srou_struct.h \
  ssr.c    ssr.h    ssr_struct.h \
  tabl.c   tabl.h   tabl_struct.h tabl_newset.ch \

@@ -310,6 +310,7 @@ _unur_pinv_computational_domain (struct unur_gen *gen)
      /*----------------------------------------------------------------------*/
 {
   double tailcut_error;    /* threshold values for cut-off points */
+  double range;            /* length of current working domain */
 
   /* parameters for tail cut-off points: maximal area in tails          */
   /* We use the given U-reslution * PINV_TAILCUTOFF_FACTOR * PDFarea.   */
@@ -318,9 +319,12 @@ _unur_pinv_computational_domain (struct unur_gen *gen)
   tailcut_error = _unur_max( tailcut_error, 2*DBL_EPSILON );
   tailcut_error *= GEN->area * PINV_UERROR_CORRECTION;
 
+  /* length of current working domain */
+  range = GEN->bright-GEN->bleft;
+
   /* compute cut-off points for tails */
   if(GEN->sleft) {
-    GEN->bleft = _unur_pinv_cut( gen, GEN->dleft, GEN->bleft, (GEN->bleft-GEN->bright)/128, tailcut_error);
+    GEN->bleft = _unur_pinv_cut( gen, GEN->dleft, GEN->bleft, -range, tailcut_error);
     if ( !_unur_isfinite(GEN->bleft) ) {
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"cannot find left boundary for computational domain");
       return UNUR_FAILURE;
@@ -328,7 +332,7 @@ _unur_pinv_computational_domain (struct unur_gen *gen)
   }
 
   if(GEN->sright) {
-    GEN->bright = _unur_pinv_cut( gen, GEN->dright, GEN->bright, (GEN->bright-GEN->bleft)/128, tailcut_error);
+    GEN->bright = _unur_pinv_cut( gen, GEN->dright, GEN->bright, range, tailcut_error);
     if ( !_unur_isfinite(GEN->bright) ) {
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"cannot find right boundary for computational domain");
       return UNUR_FAILURE;
@@ -348,8 +352,65 @@ _unur_pinv_computational_domain (struct unur_gen *gen)
 
 /*---------------------------------------------------------------------------*/
 
+/*                                                                           456 */
+/*       subroutine cut(w,o,crt,ierr)                                        457 */
+/* c     Calculates the left or right cut-off point.                         458 */
+/* c     The starting point w will be replaced by the cut-off point,         459 */
+/* c     which is calculated such that the area outside is approximately     460 */
+/* c     eps/10.                                                             461 */
+/* c     o, the other bound or the starting point for the other cut-off      462 */
+/* c     point, is left unchanged as well as crt.                            463 */
+/* c     ierr must be zero on input.                                         464 */
+/*       implicit double precision (a-h,o-z)                                 465 */
+/*       R=crt/10                                                            466 */
+/*       sgn=sign(1.d0,o-w)                                                  467 */
+/*       for i=1 to 50 do                                                    468 */
+/*          d=(o-w)/512                                                      469 */
+/*          call cave(w,d,ff,fs,c,cp1,ierr)                                  470 */
+/*          if(ierr.ne.0.or.sign(1.d0,fs).ne.sgn) leave                      471 */
+/*          if(abs(ff**2/(abs(fs)*cp1)/R-1).le.1d-4) return                  472 */
+/*          w=w+ff/(c*fs)*((R*abs(fs)*cp1/ff**2)**(c/cp1)-1)                 473 */
+/*       end for i                                                           474 */
+/*       ierr=6                                                              475 */
+/*       end                                                                 476 */
+/*                                                                           477 */
+/*       subroutine cave(w,d,ff,fs,c,cp1,ierr)                               478 */
+/*       implicit double precision (a-h,o-z)                                 479 */
+/* c     input                                                               480 */
+/* c       w    -                                                            481 */
+/* c       d    - step length for calculation of f'(w) and the local         482 */
+/* c              concavity c at w                                           483 */
+/* c     output                                                              484 */
+/* c       ff   - f(w)                                                       485 */
+/* c       fs   - f'(w)                                                      486 */
+/* c       c    - concavity at w                                             487 */
+/* c       cp1  - c+1                                                        488 */
+/*       ierr=9                                                              489 */
+/*       j=0                                                                 490 */
+/*       repeat                                                              491 */
+/*          d=d/2                                                            492 */
+/*          j=j+1                                                            493 */
+/*          if(j.eq.5) return                                                494 */
+/*          ff=f(w)                                                          495 */
+/*          fo=f(w+d)                                                        496 */
+/*          fu=f(w-d)                                                        497 */
+/*       until max(ff,fo,fu).gt.0.d0                                         498 */
+/*       if((fo-fu).eq.0.d0) return                                          499 */
+/*       fs=(fo-fu)/(2*d)                                                    500 */
+/*       if(fo.eq.ff.or.fu.eq.ff) return                                     501 */
+/*       cp1=fo/(fo-ff)+fu/(fu-ff)                                           502 */
+/*       c=cp1-1                                                             503 */
+/*       ierr=0                                                              504 */
+/*       end                                                                 505 */
+/*                                                                           506 */
+
+
+
+
+/*---------------------------------------------------------------------------*/
+
 double
-_unur_pinv_cut( struct unur_gen *gen, double dom, double w, double dw, double crit )
+new_unur_pinv_cut( struct unur_gen *gen, double dom, double w, double dw, double crit )
      /*----------------------------------------------------------------------*/
      /* [1c.] Calculate cut-off points for computational domain of           */
      /* distribution.                                                        */
@@ -372,13 +433,154 @@ _unur_pinv_cut( struct unur_gen *gen, double dom, double w, double dw, double cr
      /*   return INFINITY                                                    */
      /*----------------------------------------------------------------------*/
 {
+  double R = crit;
+  double sgn = (dw>0) ? 1. : -1.; /* searching direction */
+  double dx;   /* step length for calculation of f'(w) and the local concavity at w */                                   
+
+  double fl,fx,fr;  /* value of PDF at x-dx, x, and x+dx */
+  double x = w;     /* current point */
+
+  double xnew;
+
+  double df;        /* estimate for derivative of PDF at x */
+  double lc;        /* estimate for local concavity of PDF at x */
+  double area;      /* estimate for tail probability */
+
+  int i,j;          /* auxiliary variables */
+
+  /* starting point and step size for search */
+  x = w;
+  dx = fabs(dw) * 1.e-5;
+
+  /* iteratively search for cut-off point with tail probability approximately 'crit'ical value */
+  for (i=1; i<100; i++) {
+
+    /* we need step size 'dx' for computing derivative 'df' and local concavity 'lc' */
+
+    /* check boundary of domain */
+    if (x-dx < GEN->dleft)  dx = x - GEN->dleft;
+    if (x+dx > GEN->dright) dx = GEN->dright - x;
+
+    /* now let us try to find non-zero points for the PDF */
+    for (j=1;;j++) {
+
+      /* decrease step size */
+      dx = dx/2.;
+      
+      /* check length and protect agains infinite loops */
+      if (dx < 1000.*DBL_EPSILON*x || j > 5) {
+	/** FIXME: do we need a warning ? **/
+	/* we are too close to the boudary. So we just return the last value. */
+	return x;
+      }
+
+      /* compute PDF values */
+      fx = PDF(x);
+      fl = PDF(x-dx);
+      fr = PDF(x+dx);
+
+      /* check values */
+      if (! (_unur_iszero(fl) || _unur_iszero(fx) ||_unur_iszero(fr)) )
+	break;
+    }
+
+    /* derivative */
+    df = (fr-fl)/(2.*dx);
+
+    /* local concavity */
+    lc = fl/(fl-fx)+fr/(fr-fx) - 1;
+
+    /* tail probability */
+    area = fabs(fx*fx / ((lc+1.) * df));
+
+    /* check results */
+    if (_unur_isnan(area)) {
+      /* When the PDF is extremely flat than NaN might occur. There are two possibilities: 
+       * (1) We are far away from the center. Then the tail probabilty is almost 0.
+       * (2) PDF(X) is still quite large. Then the tail probability cannot be estimated.
+       * We assume (1).
+       */
+      _unur_warning(gen->genid,UNUR_ERR_NAN,"tail probability gives NaN --> assume 0.");
+      return x;
+    }
+
+    if (sgn * df > 0.) {
+      /* There is a maximum of the PDF in [fl,fr]. */
+      /** FIXME: Should be throw an error ? **/
+      _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF not monotone at boundary");
+      return x;
+    }
+
+    /* check accuracy of computation */
+    if (fabs(area/R-1.) < 1.e-4)
+      return x;
+
+    /* compute next point */
+    xnew = x + fx/(lc*df) * ( pow(R*fabs(df)*(lc+1.)/(fx*fx),lc/(lc+1.)) - 1.);
+
+    /* check results */
+    if (! _unur_isfinite(xnew)) {
+      /* we cannot compute the next point */
+      /** FIXME: Should be throw an error ? **/
+      _unur_warning(gen->genid,UNUR_ERR_NAN,"numerical problems with cut-off point");
+     return x;
+    }
+
+    if (sgn*dom < sgn*x)
+      /* boundary exceeded */
+      return dom;
+
+    /* update point */
+    x = xnew;
+    
+/*     printf("x=%g, d=%g, fl=%g, fx=%g, fr=%g, df=%g, lc=%g \n",x,d,fl,fx,fr,df,lc); */
+
+  }
+
+  /* maximum number of iterations exceeded */
+  return x;
+
+} /* end of _unur_pinv_cut() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_pinv_cut( struct unur_gen *gen, double dom, double w, double dw, double crit )
+     /*----------------------------------------------------------------------*/
+     /* [1c.] Calculate cut-off points for computational domain of           */
+     /* distribution.                                                        */
+     /* The area outside the cut-off point is given by 'crit'.               */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*   dom  ... boundary of domain / support of distribution              */
+     /*   w    ... starting point for searching cut-off point                */
+     /*   dw   ... length of working interval,                               */
+     /*            sign of dw gives searching direction:                     */
+     /*               dw < 0 ... left hand side cut-off point                */
+     /*               dw > 0 ... right hand side cut-off point               */
+     /*   crit ... u-error criterium for tail cut off                        */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   cut-off point                                                      */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return INFINITY                                                    */
+     /*----------------------------------------------------------------------*/
+{
   double u, uplus;     /* tail probabilities */
 
   int found = FALSE;   /* indicates whether we have found an cut-off point */
-  double dx = dw/64.;  /* step size for numeric differentiation */
+  double dx;           /* step size for numeric differentiation */
   int j;               /* aux variable */
 
   double s = (dw>0) ? 1 : -1; /* searching direction */
+
+  /* initial step size */
+  dw /= 128.;
+
+  /* step size for numeric differentiation */
+  dx = dw/64.;
 
   /* search for cut-off point with tail probability less than 'crit'ical value */
   for (j=1; j<1000; j++) {

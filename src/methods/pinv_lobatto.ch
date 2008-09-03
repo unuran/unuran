@@ -314,7 +314,7 @@ _unur_pinv_Udiff (struct unur_gen *gen, double x, double h, double utol)
 
   /* arguments which are not finite (inf or NaN) cause infinite recursions */
   if (!_unur_isfinite(x+h)) {
-    _unur_error(gen->genid,UNUR_ERR_INF,"boundaries of integration domain not finite");
+    /* _unur_warning(gen->genid,UNUR_ERR_INF,"boundaries of integration domain not finite"); */
     return INFINITY;
   }
 

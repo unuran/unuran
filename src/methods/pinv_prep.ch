@@ -352,65 +352,13 @@ _unur_pinv_computational_domain (struct unur_gen *gen)
 
 /*---------------------------------------------------------------------------*/
 
-/*                                                                           456 */
-/*       subroutine cut(w,o,crt,ierr)                                        457 */
-/* c     Calculates the left or right cut-off point.                         458 */
-/* c     The starting point w will be replaced by the cut-off point,         459 */
-/* c     which is calculated such that the area outside is approximately     460 */
-/* c     eps/10.                                                             461 */
-/* c     o, the other bound or the starting point for the other cut-off      462 */
-/* c     point, is left unchanged as well as crt.                            463 */
-/* c     ierr must be zero on input.                                         464 */
-/*       implicit double precision (a-h,o-z)                                 465 */
-/*       R=crt/10                                                            466 */
-/*       sgn=sign(1.d0,o-w)                                                  467 */
-/*       for i=1 to 50 do                                                    468 */
-/*          d=(o-w)/512                                                      469 */
-/*          call cave(w,d,ff,fs,c,cp1,ierr)                                  470 */
-/*          if(ierr.ne.0.or.sign(1.d0,fs).ne.sgn) leave                      471 */
-/*          if(abs(ff**2/(abs(fs)*cp1)/R-1).le.1d-4) return                  472 */
-/*          w=w+ff/(c*fs)*((R*abs(fs)*cp1/ff**2)**(c/cp1)-1)                 473 */
-/*       end for i                                                           474 */
-/*       ierr=6                                                              475 */
-/*       end                                                                 476 */
-/*                                                                           477 */
-/*       subroutine cave(w,d,ff,fs,c,cp1,ierr)                               478 */
-/*       implicit double precision (a-h,o-z)                                 479 */
-/* c     input                                                               480 */
-/* c       w    -                                                            481 */
-/* c       d    - step length for calculation of f'(w) and the local         482 */
-/* c              concavity c at w                                           483 */
-/* c     output                                                              484 */
-/* c       ff   - f(w)                                                       485 */
-/* c       fs   - f'(w)                                                      486 */
-/* c       c    - concavity at w                                             487 */
-/* c       cp1  - c+1                                                        488 */
-/*       ierr=9                                                              489 */
-/*       j=0                                                                 490 */
-/*       repeat                                                              491 */
-/*          d=d/2                                                            492 */
-/*          j=j+1                                                            493 */
-/*          if(j.eq.5) return                                                494 */
-/*          ff=f(w)                                                          495 */
-/*          fo=f(w+d)                                                        496 */
-/*          fu=f(w-d)                                                        497 */
-/*       until max(ff,fo,fu).gt.0.d0                                         498 */
-/*       if((fo-fu).eq.0.d0) return                                          499 */
-/*       fs=(fo-fu)/(2*d)                                                    500 */
-/*       if(fo.eq.ff.or.fu.eq.ff) return                                     501 */
-/*       cp1=fo/(fo-ff)+fu/(fu-ff)                                           502 */
-/*       c=cp1-1                                                             503 */
-/*       ierr=0                                                              504 */
-/*       end                                                                 505 */
-/*                                                                           506 */
 
-
-
-
+/*---------------------------------------------------------------------------*/
+#if 1
 /*---------------------------------------------------------------------------*/
 
 double
-new_unur_pinv_cut( struct unur_gen *gen, double dom, double w, double dw, double crit )
+_unur_pinv_cut( struct unur_gen *gen, double dom, double w, double dw, double crit )
      /*----------------------------------------------------------------------*/
      /* [1c.] Calculate cut-off points for computational domain of           */
      /* distribution.                                                        */
@@ -433,14 +381,12 @@ new_unur_pinv_cut( struct unur_gen *gen, double dom, double w, double dw, double
      /*   return INFINITY                                                    */
      /*----------------------------------------------------------------------*/
 {
-  double R = crit;
   double sgn = (dw>0) ? 1. : -1.; /* searching direction */
-  double dx;   /* step length for calculation of f'(w) and the local concavity at w */                                   
 
   double fl,fx,fr;  /* value of PDF at x-dx, x, and x+dx */
   double x = w;     /* current point */
-
-  double xnew;
+  double dx;        /* step length for calculation of derivative and local concavity */                                   
+  double xnew;      /* new point in iteration */
 
   double df;        /* estimate for derivative of PDF at x */
   double lc;        /* estimate for local concavity of PDF at x */
@@ -448,14 +394,19 @@ new_unur_pinv_cut( struct unur_gen *gen, double dom, double w, double dw, double
 
   int i,j;          /* auxiliary variables */
 
+  /* check length of interval */
+  if (_unur_iszero(fabs(dw))) return w;
+
   /* starting point and step size for search */
   x = w;
-  dx = fabs(dw) * 1.e-5;
 
   /* iteratively search for cut-off point with tail probability approximately 'crit'ical value */
   for (i=1; i<100; i++) {
 
     /* we need step size 'dx' for computing derivative 'df' and local concavity 'lc' */
+
+    /* first try */
+    dx = (fabs(dw) + fabs(x-w)) * 1.e-3;
 
     /* check boundary of domain */
     if (x-dx < GEN->dleft)  dx = x - GEN->dleft;
@@ -467,10 +418,9 @@ new_unur_pinv_cut( struct unur_gen *gen, double dom, double w, double dw, double
       /* decrease step size */
       dx = dx/2.;
       
-      /* check length and protect agains infinite loops */
-      if (dx < 1000.*DBL_EPSILON*x || j > 5) {
-	/** FIXME: do we need a warning ? **/
-	/* we are too close to the boudary. So we just return the last value. */
+      /* check length and protect against infinite loops */
+      if (dx < 128.*DBL_EPSILON*fabs(dw)) {
+	/* we are too close to the boundary. So we just return the last value. */
 	return x;
       }
 
@@ -506,35 +456,32 @@ new_unur_pinv_cut( struct unur_gen *gen, double dom, double w, double dw, double
 
     if (sgn * df > 0.) {
       /* There is a maximum of the PDF in [fl,fr]. */
-      /** FIXME: Should be throw an error ? **/
       _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF not monotone at boundary");
       return x;
     }
 
     /* check accuracy of computation */
-    if (fabs(area/R-1.) < 1.e-4)
+    if (fabs(area/crit-1.) < 1.e-4)
       return x;
-
+    
     /* compute next point */
-    xnew = x + fx/(lc*df) * ( pow(R*fabs(df)*(lc+1.)/(fx*fx),lc/(lc+1.)) - 1.);
+    xnew = x + fx/(lc*df) * ( pow(crit*fabs(df)*(lc+1.)/(fx*fx),lc/(lc+1.)) - 1.);
 
     /* check results */
     if (! _unur_isfinite(xnew)) {
       /* we cannot compute the next point */
-      /** FIXME: Should be throw an error ? **/
       _unur_warning(gen->genid,UNUR_ERR_NAN,"numerical problems with cut-off point");
-     return x;
+      return x;
     }
-
-    if (sgn*dom < sgn*x)
+    
+    if (sgn*dom < sgn*x) {
       /* boundary exceeded */
       return dom;
-
+    }
+    
     /* update point */
     x = xnew;
     
-/*     printf("x=%g, d=%g, fl=%g, fx=%g, fr=%g, df=%g, lc=%g \n",x,d,fl,fx,fr,df,lc); */
-
   }
 
   /* maximum number of iterations exceeded */
@@ -542,6 +489,8 @@ new_unur_pinv_cut( struct unur_gen *gen, double dom, double w, double dw, double
 
 } /* end of _unur_pinv_cut() */
 
+/*---------------------------------------------------------------------------*/
+#else
 /*---------------------------------------------------------------------------*/
 
 double
@@ -751,4 +700,6 @@ _unur_pinv_tailprob( struct unur_gen *gen, double x, double dx )
 
 } /* end of _unur_pinv_tailprob() */
 
+/*---------------------------------------------------------------------------*/
+#endif
 /*---------------------------------------------------------------------------*/

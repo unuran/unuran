@@ -6,7 +6,7 @@
  *                                                                           *
  *   FILE:      pinv_newset.c                                                *
  *                                                                           *
- *   Routines for creating info strings.                                     *
+ *   Routines for creating and changing parameter objects.                   *
  *                                                                           *
  *****************************************************************************
  *                                                                           *

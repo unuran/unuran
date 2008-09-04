@@ -185,10 +185,10 @@ int unur_hinv_set_u_resolution( UNUR_PAR *parameters, double u_resolution);
 /* 
    Set maximal error in u-direction. However, the given u-error must not
    be smaller than machine epsilon (@code{DBL_EPSILON}) and should not be
-   too close to this value. As the resoultion of most uniform random
+   too close to this value. As the resolution of most uniform random
    number sources is 2^(-32) = @code{2.3e-10}, a value of @code{1.e-10}
    leads to an inversion algorithm that could be called exact. For most
-   simulations slighly bigger values for the maximal error are enough
+   simulations slightly bigger values for the maximal error are enough
    as well. 
 
    Remark: The u-error might become larger than @var{u_resolution} due

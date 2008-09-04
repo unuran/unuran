@@ -15,7 +15,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2008 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -40,36 +40,32 @@
 
    =UP  Methods_for_CONT
 
-   =REQUIRED CDF
+   =REQUIRED PDF, center
 
-   =OPTIONAL PDF?
+   =OPTIONAL domain
 
-   =REF [HLD04: TODO]
+   =REF [HLD04: FIXME]
 
    =SPEED Set-up: (very) slow, Sampling: (very) fast
 
    =REINIT not implemented
 
    =DESCRIPTION
-      TODO!!
-
       PINV is a variant of numerical inversion, where the inverse CDF
-      is approximated using Hermite interpolation, i.e., the interval 
-      [0,1] is split into several intervals and in each interval the
-      inverse CDF is approximated by polynomials constructed by means
-      of values of the CDF and PDF at interval boundaries. This makes
-      it possible to improve the accuracy by splitting a particular
-      interval without recomputations in unaffected intervals. Three
-      types of splines are implemented: linear, cubic, and quintic
-      interpolation. For linear interpolation only the CDF is
-      required. Cubic interpolation also requires PDF and quintic
-      interpolation PDF and its derivative. 
+      is approximated using Newton's recursion for interpolating
+      polynomials. The interval [0,1] is split into several
+      subintervals and in each subinterval the inverse CDF is
+      approximated by polynomials constructed by means of values of
+      the CDF. The CDF is numerically computed from the given PDF
+      using adaptive Gauss-Lobatto integration with 5 points.
+      Subintervals are splitted until the requested accuracy goal is
+      reached.
 
-      These splines have to be computed in a setup step. However, it
-      only works for distributions with bounded domain; for
-      distributions with unbounded domain the tails are chopped off
-      such that the probability for the tail regions is small compared
-      to the given u-resolution. 
+      The interpolating polynomials have to be computed in a setup
+      step. However, it only works for distributions with bounded
+      domain; for distributions with unbounded domain the tails are
+      chopped off such that the probability for the tail regions is
+      small compared to the given u-resolution. 
 
       The method is not exact, as it only produces random variates of
       the approximated distribution. Nevertheless, the maximal
@@ -79,30 +75,29 @@
       Notice that very small values of the u-resolution are possible
       but may increase the cost for the setup step.
 
-      As the possible maximal error is only estimated in the setup it
-      may be necessary to set some special design points for computing
-      the Hermite interpolation to guarantee that the maximal u-error
-      can not be bigger than desired. Such points are points where the
-      density is not differentiable or has a local extremum. Notice
-      that there is no necessity to do so. However, if you do not
-      provide these points to the algorithm there might be a small
-      chance that the approximation error is larger than the given
-      u-resolution, or that the required number of intervals is larger
-      than necessary.
+      The construction of the interpolation polynomial only works when
+      the PDF is unimodal or when the PDF does not vanish between two
+      modes. 
+
 
    =HOWTOUSE
       PINV works for continuous univariate distribution objects with
-      given CDF and (optional) PDF. It uses Hermite interpolation of
-      order 1, 3 [default] or 5. The order can be set by means of
-      unur_pinv_set_order().
+      given PDF. It uses Gauss-Lobatto integration with 5 points to
+      estimate the CDF and Newton's recursion for the interpolating
+      polynomial. The order of the polynomial can be set by means of
+      the unur_pinv_set_order() call. 
 
       For distributions with unbounded domains the tails are chopped
       off such that the probability for the tail regions is small
       compared to the given u-resulution. For finding these cut points
-      the algorithm starts with the region @code{[-1.e20,1.e20]}. For
-      the exceptional case where this might be too small (or one knows
-      this region and wants to avoid this search heuristics) it can be
-      directly set via a unur_pinv_set_boundary() call.
+      the algorithm starts with the region @code{[-1.e100,1.e100]}. For
+      the exceptional case where this does not work it these starting
+      points can be changed via a unur_pinv_set_boundary() call.
+      It is important that the given distribution object contains the
+      mode or a typical point of the distribution. The latter can be
+      set for distribution by means of a unur_distr_cont_set_center()
+      call. (It neither the mode nor the center is set for a
+      distribution object, then @code{0} is assumed.)
 
       This method is not exact, as it only produces random variates of 
       the approximated distribution. Nevertheless, the numerical error
@@ -110,10 +105,10 @@
       X = "approximate inverse CDF"(U) |U-CDF(X)|) can be controlled
       by means of unur_pinv_set_u_resolution().
 
-      As already mentioned the maximal error of this approximation is 
-      only estimated. If this error is crucial for an application we
-      recommend to compute this error using unur_pinv_estimate_error()
-      which runs a small Monte Carlo simulation.
+      The maximal error of this approximation is only estimated. If
+      this error is crucial for an application we recommend to compute
+      this error using unur_pinv_estimate_error() which runs a small
+      Monte Carlo simulation.
 
    =END
 */
@@ -135,33 +130,21 @@ UNUR_PAR *unur_pinv_new( const UNUR_DISTR *distribution );
 
 int unur_pinv_set_order( UNUR_PAR *parameters, int order);
 /* 
-   Set order of Hermite interpolation. Valid orders are
-   @code{1}, @code{3}, and @code{5}.
-   Notice that @var{order} greater than @code{1} requires the density 
-   of the distribution, and @var{order} greater than @code{3} even
-   requires the derivative of the density. Using @var{order} @code{1}
-   results for most distributions in a huge number of intervals
-   and is therefore not recommended. If the maximal error in
-   u-direction is very small (say smaller than @code{1.e-10}),
-   @var{order} @code{5} is recommended as it leads to considerably 
-   fewer design points, as long there are no poles or heavy tails.
+   Set order of interpolation. Valid orders are between @code{2} and
+   @code{19}. Higher orders result in fewer intervals for the
+   approximations. 
 
-   @emph{Remark:} When the target distribution has poles or (very) heavy
-   tails @var{order} @code{5} (i.e., quintic interpolation) is 
-   numerically less stable and more sensitive to round-off errors than
-   @var{order} @code{3} (i.e., cubic interpolation).
-
-   Default is @code{3} if the density is given and @code{1} otherwise.
+   Default: @code{5}.
 */
 
 int unur_pinv_set_u_resolution( UNUR_PAR *parameters, double u_resolution);
 /* 
    Set maximal error in u-direction. However, the given u-error must not
    be smaller than machine epsilon (@code{DBL_EPSILON}) and should not be
-   too close to this value. As the resoultion of most uniform random
+   too close to this value. As the resolution of most uniform random
    number sources is 2^(-32) = @code{2.3e-10}, a value of @code{1.e-10}
    leads to an inversion algorithm that could be called exact. For most
-   simulations slighly bigger values for the maximal error are enough
+   simulations slightly bigger values for the maximal error are enough
    as well. 
 
    Default is @code{1.e-10}.
@@ -169,29 +152,29 @@ int unur_pinv_set_u_resolution( UNUR_PAR *parameters, double u_resolution);
 
 int unur_pinv_set_boundary( UNUR_PAR *parameters, double left, double right );
 /* 
-   Set the left and right boundary of the computational interval.
-   The interval must cover the essential part of the distribution.
-   When unur_pinv_set_searchboundary() is called with TRUE then
-   this given domain is shortened to a domain of "computational
-   relevance" such that the tail probabilities are smaller than given
-   by unur_pinv_set_u_resolution().
-   Thus it is usually safe to use a large interval.
+   Set @var{left} and @var{right} point for finding the cut-off points
+   for the "computational domain", i.e., the domain that covers the
+   essential part of the distribution.
+   The cut-off points are computed such that the tail probabilities
+   are smaller than given by unur_pinv_set_u_resolution().
+   It is usually safe to use a large interval.
    However, @code{+/- UNUR_INFINITY} is not allowed.
 
    @emph{Important}: This call does not change the domain of the
    given distribution itself. But it restricts the domain for the
    resulting random variates.
 
-   Default is the smaller off @code{-1.e100,+1.e100} and the given domain 
-   of the distribution.
+   Default: intersection of @code{[-1.e100,+1.e100]} and the given
+   domain of the distribution.
 */
 
 int unur_pinv_set_searchboundary( UNUR_PAR *parameters, int left, int right );
 /* 
    If @var{left} or @var{right} is set to FALSE then the respective
-   boundary is used as given by a unur_pinv_set_boundary() call.
+   boundary as given by a unur_pinv_set_boundary() call is used
+   without any further computations.
    However, these boundary points might cause numerical problems
-   during the setup when PDF returns @code{0.} "almost everywhere".
+   during the setup when PDF returns @code{0.} ``almost everywhere''.
    If set to TRUE (the default) then the computational interval is
    shortened to a more sensible region by means of a search algorithm.
    Switching off this search is useful, e.g. for the Gamma(2)
@@ -201,24 +184,24 @@ int unur_pinv_set_searchboundary( UNUR_PAR *parameters, int left, int right );
    The searching algorithm assumes that the support of the distribution
    is connected.
 
-   @emph{Remark:} 
-   Do not set this parameter to FALSE.
+   @emph{Remark:}
+   Do not set this parameter to FALSE except when searching for
+   cut-off points fails and one wants to try with precomputed values.
 
-   Default is TRUE.
+   Default: TRUE.
 */
 
 int unur_pinv_get_n_intervals( const UNUR_GEN *generator ); 
 /* 
-   Get number of nodes (design points) used for Hermite interpolation in 
-   the generator object. The number of intervals is the number of
-   nodes minus 1.
-   It returns an error code in case of an error.
+   Get number of intervals used for interpolation in 
+   the generator object.
+   It returns @code{0} in case of an error.
 */
 
 double unur_pinv_eval_approxinvcdf( const UNUR_GEN *generator, double u );
 /*
-   Evaluate Hermite interpolation of inverse CDF at @var{u}.
-   If @var{u} is out of the domain [0,1] then @code{unur_errno} is set
+   Evaluate interpolation of inverse CDF at @var{u}.
+   If @var{u} is out of the domain (0,1) then @code{unur_errno} is set
    to @code{UNUR_ERR_DOMAIN} and the respective bound of
    the domain of the distribution are returned (which is
    @code{-UNUR_INFINITY} or @code{UNUR_INFINITY} in the case of

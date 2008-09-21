@@ -244,6 +244,8 @@ _unur_pinv_check_par( struct unur_gen *gen )
   if (DISTR.center < GEN->dleft || DISTR.center > GEN->dright) {
     _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,
 		"center must be in given domain of distribution");
+    DISTR.center = _unur_max(DISTR.center,GEN->dleft);
+    DISTR.center = _unur_min(DISTR.center,GEN->dright);
   }
   if (PDF(DISTR.center)<=0.) {
     _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,

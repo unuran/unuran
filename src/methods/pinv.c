@@ -370,7 +370,8 @@ static int _unur_pinv_relevant_support (struct unur_gen *gen);
 /*     (finite interval where PDF is above some threshold value).            */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_pinv_searchborder (struct unur_gen *gen, double x0, double bound, double *dom);
+static double _unur_pinv_searchborder (struct unur_gen *gen, double x0, double bound,
+				       double *dom, int *search);
 /*---------------------------------------------------------------------------*/
 /* [1a.] find left or right hand border of relevant domain.                  */
 /*---------------------------------------------------------------------------*/

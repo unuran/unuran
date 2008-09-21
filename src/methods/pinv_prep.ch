@@ -61,7 +61,8 @@ _unur_pinv_relevant_support ( struct unur_gen *gen )
 
   /* search for interval of computational relevance (if required) */
   if(GEN->sleft) {
-    GEN->bleft = _unur_pinv_searchborder(gen,DISTR.center, GEN->bleft, &(GEN->dleft));
+    GEN->bleft = _unur_pinv_searchborder(gen,DISTR.center, GEN->bleft, 
+					 &(GEN->dleft), &(GEN->sleft) );
     if (!_unur_isfinite(GEN->bleft)) {
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"Cannot get left boundary of relevant domain.");
       return UNUR_ERR_GEN_CONDITION;
@@ -69,7 +70,8 @@ _unur_pinv_relevant_support ( struct unur_gen *gen )
   }
   
   if(GEN->sright) {
-    GEN->bright = _unur_pinv_searchborder(gen,DISTR.center, GEN->bright, &(GEN->dright));
+    GEN->bright = _unur_pinv_searchborder(gen,DISTR.center, GEN->bright,
+					  &(GEN->dright), &(GEN->sright) );
     if (!_unur_isfinite(GEN->bright)) {
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"Cannot get right boundary of relevant domain.");
       return UNUR_ERR_GEN_CONDITION;
@@ -89,7 +91,8 @@ _unur_pinv_relevant_support ( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_pinv_searchborder (struct unur_gen *gen, double x0, double bound, double *dom)
+_unur_pinv_searchborder (struct unur_gen *gen, double x0, double bound,
+			 double *dom, int *search)
      /*----------------------------------------------------------------------*/
      /* [1a.] Find left or right hand border of relevant domain.             */
      /*                                                                      */
@@ -100,13 +103,19 @@ _unur_pinv_searchborder (struct unur_gen *gen, double x0, double bound, double *
      /*                                                                      */
      /* As a side effect the support of the distribution is shrinked if      */
      /* points with PDF(x)=0 are found.                                      */
+     /* If in addition a discontinuity is detected then the exact position   */
+     /* (up to machine precision) of the boundary of the support of the PDF  */
+     /* is located via interval bisection.                                   */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   gen   ... pointer to generator object                              */
-     /*   x0    ... starting point for searching boudary                     */
-     /*             PDF(x0) must not be too small                            */
-     /*   bound ... stop searching at this point                             */
-     /*   dom   ... pointer to boundary of domain / support of distribution  */
+     /*   gen    ... pointer to generator object                             */
+     /*   x0     ... starting point for searching boudary                    */
+     /*              PDF(x0) must not be too small                           */
+     /*   bound  ... stop searching at this point                            */
+     /*   dom    ... pointer to boundary of domain / support of distribution */
+     /*   search ... pointer to boolean that indicates whether we have to    */
+     /*              for cut-off points. The boolean is set to FALSE if a    */
+     /*              discontinuity is found at the boundary.                 */
      /*                                                                      */
      /* return:                                                              */
      /*   boundary point                                                     */
@@ -115,46 +124,68 @@ _unur_pinv_searchborder (struct unur_gen *gen, double x0, double bound, double *
      /*   return INFINITY                                                    */
      /*----------------------------------------------------------------------*/
 {
-  double x, xold;         /* current and old previous searching point */
-  double xnull;           /* last point where PDF vanishes */
+  double x;         /* current and previous searching point */
+  double xs, xl;       /* point where PDF is less than and larger than threshold */
   double fx;              /* PDF at x */
+  double fs, fl;          /* PDF at xs and xl */
   double fllim;           /* threshold value */
-  int i;                  /* aux variable */
+  double fulim;           /* threshold for detecting discontinuity at boundary */
 
   /* threshold value where we stop searching */
   fllim = PDF(x0) * PINV_PDFLLIM;
+  fulim = 1.e4 * fllim;
 
   /* starting point */
-  xold = x0;
+  xl = x0; 
+  fl = INFINITY;
   x = _unur_arcmean(x0,bound);
-  xnull = INFINITY;
 
-  /* find a point where PDF is less than the threshold value */
-  for (i=0; i<100 && PDF(x) > fllim; i++) {
-    xold = x;
+  /* find a points where PDF values bracket threshold: */
+  /*   fs = PDF(xs) <= fllim <= PDF(xl) = fl           */
+  while ( (fx=PDF(x)) > fllim ) {
+    if (_unur_FP_same(x,bound))
+      return bound;
+    xl = x; fl = fx;
     x = _unur_arcmean(x,bound);
   }
+  xs = x; fs = fx;
 
-  /* however: PDF(x) must not be too small */
-  do{
-    x = (x+xold)*0.5;
+  /* decrease length of bracket if necessary */
+  while (!_unur_FP_same(xs,xl)) {
+
+    /* truncate domain if possible */
+    if (_unur_iszero(fs)) {
+      *dom = xs;
+    }
+
+    /* new point */
+    x = xs/2. + xl/2.;
     fx = PDF(x);
-    if (_unur_iszero(fx)) xnull = x;
-    i++;
-  } while(i<2048 && fx<fllim);
-  /* Remark:
-   * The emergency break after 2048 seems very high. On the other hand we can 
-   * protect ourselves agains users that provide a PDF like that of the 
-   * expontential distribution without providing a domain.
-   */
 
-  /* Check whether we have to shrink the support of the distribution */
-  if (_unur_isfinite(xnull))
-    *dom = (fabs(xnull)<1.e-300) ? 0. : xnull;
+    /* check PDF at new point */
+    if (fx < fllim) {
+      /* update bracket */
+      xs = x; fs = fx;
+    }
+    else {
+      if (fl > fulim) {
+	/* assume discontinuity at boundary -> update bracket */
+	xl = x; fl = fx;
+      }
+      else {
+	/* assume smooth PDF -> stop and return point */
+	return x;      
+      }
+    }
+  }
+
+  /* since we have already found boundary point, we can use this       */
+  /* for the tail cut-off point. Thus we switch off further searching. */
+  *search = FALSE;
 
   /* return point */
-   return x;
-
+  return xl;
+  
 } /* end of _unur_pinv_searchborder() */
 
 /*---------------------------------------------------------------------------*/
@@ -357,6 +388,8 @@ _unur_pinv_computational_domain (struct unur_gen *gen)
 #if 1
 /*---------------------------------------------------------------------------*/
 
+/* new version */
+
 double
 _unur_pinv_cut( struct unur_gen *gen, double dom, double w, double dw, double crit )
      /*----------------------------------------------------------------------*/
@@ -492,6 +525,8 @@ _unur_pinv_cut( struct unur_gen *gen, double dom, double w, double dw, double cr
 /*---------------------------------------------------------------------------*/
 #else
 /*---------------------------------------------------------------------------*/
+
+/* old version */
 
 double
 _unur_pinv_cut( struct unur_gen *gen, double dom, double w, double dw, double crit )

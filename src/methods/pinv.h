@@ -95,9 +95,14 @@
       points can be changed via a unur_pinv_set_boundary() call.
       It is important that the given distribution object contains the
       mode or a typical point of the distribution. The latter can be
-      set for distribution by means of a unur_distr_cont_set_center()
+      set for the distribution by means of a unur_distr_cont_set_center()
       call. (It neither the mode nor the center is set for a
       distribution object, then @code{0} is assumed.)
+      It is recommended that the domain of a distribution should be
+      set in the distribution object using a
+      unur_distr_cont_set_domain() call. Otherwise, the boundary is
+      searched numerically which might be rather expensive, in
+      particular if it is @code{0}.
 
       This method is not exact, as it only produces random variates of 
       the approximated distribution. Nevertheless, the numerical error

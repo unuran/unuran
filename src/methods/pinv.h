@@ -82,10 +82,21 @@
 
    =HOWTOUSE
       PINV works for continuous univariate distribution objects with
-      given PDF. It uses Gauss-Lobatto integration with 5 points to
-      estimate the CDF and Newton's recursion for the interpolating
-      polynomial. The order of the polynomial can be set by means of
-      the unur_pinv_set_order() call. 
+      given PDF. The corresponding distribution object must contain a
+      typical point of the distribution, i.e., a point where the PDF
+      is not too small, e.g., (a point near) the mode. 
+      It can be set using a unur_distr_cont_set_center() or
+      a unur_distr_cont_set_mode() call. (If neither is set, @code{0}
+      is assumed.)
+      It is recommended that the domain of the distribution with
+      bounded support (domain) is set using a
+      unur_distr_cont_set_domain() call. Otherwise, the boundary is
+      searched numerically which might be rather expensive, especially
+      when this boundary point equals @code{0}.
+
+      The inverse CDF is interpolated using Newton polymials.
+      The order of this polynomial can be set by means of a
+      unur_pinv_set_order() call.
 
       For distributions with unbounded domains the tails are chopped
       off such that the probability for the tail regions is small
@@ -93,16 +104,6 @@
       the algorithm starts with the region @code{[-1.e100,1.e100]}. For
       the exceptional case where this does not work it these starting
       points can be changed via a unur_pinv_set_boundary() call.
-      It is important that the given distribution object contains the
-      mode or a typical point of the distribution. The latter can be
-      set for the distribution by means of a unur_distr_cont_set_center()
-      call. (It neither the mode nor the center is set for a
-      distribution object, then @code{0} is assumed.)
-      It is recommended that the domain of a distribution should be
-      set in the distribution object using a
-      unur_distr_cont_set_domain() call. Otherwise, the boundary is
-      searched numerically which might be rather expensive, in
-      particular if it is @code{0}.
 
       This method is not exact, as it only produces random variates of 
       the approximated distribution. Nevertheless, the numerical error

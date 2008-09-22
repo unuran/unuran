@@ -147,7 +147,7 @@ _unur_pinv_adaptivelobatto5_rec (struct unur_gen *gen, double x, double h, doubl
 
   else {
     /* error above tolerance */
-    if (x+h/2. == x) {
+    if (_unur_FP_same(x+h/2.,x)) {
       /* we cannot decrease length of subintervals any more */
       _unur_warning(gen->genid,UNUR_ERR_ROUNDOFF,
 		    "numeric integration did not reach full accuracy");

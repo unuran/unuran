@@ -343,11 +343,6 @@ static double _unur_pinv_cut (struct unur_gen *gen, double dom, double w, double
 /* [1c.] calculate cut-off points for computational domain of distribution.  */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_pinv_tailprob (struct unur_gen *gen, double x, double dx);
-/*---------------------------------------------------------------------------*/
-/* [1c.] calculate approximate tail probability.                             */
-/*---------------------------------------------------------------------------*/
-
 
 /*.........................*/
 /*  file: pinv_lobatto.ch  */

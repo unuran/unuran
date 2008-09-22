@@ -106,39 +106,7 @@ TODO:
 
  - DOCU/comments: use PDF area given by user as first guess for integration
 
- - ALWAYS compute PDFarea
-
- - compute PDFarea: use first guess to roughly estimate area
-                    (sqrt(u-rsolution * user given PDFarea) ?)
-                    rather accurate computation required
-
- - Tests: run tests with multiple of PDFs 
-
-
----------------------------
-
-
-
-TODO: Das ganze funktioniert bei exponentialverteilung (und normalverteilung 
-auf (-1,1)) nicht!!!!!
-Domain der verteilung benutzen!!!!!
-vielleicht sollte man auch defaults fuer randsuche davon abhaengig machen,
-welchen domain der benutzer angegeben hat (INFINITY?)
-
-
-
-Wichtig: die dichte darf nicht zwischen einzelnen modi auf zu langen
-intervallen zu klein (fast 0) werden.
-
-ui sind die stuetzstellen der Interpolation von F^{-1} in jedem subinterval.
-zi sind die dazugehoerigen polynomkoeffizienten der Newton Interpolation, also
-Koeffizienten eines Horner-aehnlichen Schemas.
-
-Die Berechnung der zi folgt der Reukursion der Newton Interpolation. Gerhard hat
-das aus einem Deutschen Numerik Lehrbuch, ich hab es mit Wikipedia "Newton
-Interpolation" verglichen. Es ist das gleiche.
-xi sind die Intervallgrenzen der sub-intervalle.
-
+ - final version of INFO string
 
  *                                                                           *
  *****************************************************************************/
@@ -274,6 +242,17 @@ xi sind die Intervallgrenzen der sub-intervalle.
 
 /*---------------------------------------------------------------------------*/
 
+/*........................*/
+/*  file: pinv_newset.ch  */
+/*........................*/
+
+/* See pinv.h for 'new', 'set', and 'get' calls. */
+
+
+/*......................*/
+/*  file: pinv_init.ch  */
+/*......................*/
+
 static struct unur_gen *_unur_pinv_init (struct unur_par *par);
 /*---------------------------------------------------------------------------*/
 /* Initialize new generator.                                                 */
@@ -304,6 +283,11 @@ static void _unur_pinv_free (struct unur_gen *gen);
 /* destroy generator object.                                                 */
 /*---------------------------------------------------------------------------*/
 
+
+/*........................*/
+/*  file: pinv_sample.ch  */
+/*........................*/
+
 static double _unur_pinv_sample (struct unur_gen *gen);
 /*---------------------------------------------------------------------------*/
 /* sample from generator                                                     */
@@ -311,8 +295,63 @@ static double _unur_pinv_sample (struct unur_gen *gen);
 
 static double _unur_pinv_eval_approxinvcdf (const struct unur_gen *gen, double u);
 /*---------------------------------------------------------------------------*/
-/* evaluate Hermite interpolation of inverse CDF at u.                       */
+/* evaluate interpolation of inverse CDF at u.                               */
 /*---------------------------------------------------------------------------*/
+
+/* declared in pinv.h: */
+/*   double unur_pinv_eval_approxinvcdf (const struct unur_gen *gen, double u); */
+/*   int unur_pinv_estimate_error (const UNUR_GEN *gen, int samplesize, double *max_error, double *MAE); */
+
+/*......................*/
+/*  file: pinv_prep.ch  */
+/*......................*/
+
+static int _unur_pinv_relevant_support (struct unur_gen *gen);
+/*---------------------------------------------------------------------------*/
+/* 1a. Estimate computationally relevant domain (support) of PDF             */
+/*     (finite interval where PDF is above some threshold value).            */
+/*---------------------------------------------------------------------------*/
+
+static double _unur_pinv_searchborder (struct unur_gen *gen, double x0, double bound,
+				       double *dom, int *search);
+/*---------------------------------------------------------------------------*/
+/* [1a.] find left or right hand border of relevant domain.                  */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_pinv_approx_pdfarea (struct unur_gen *gen);
+/*---------------------------------------------------------------------------*/
+/* 1b. Compute area below PDF over relevant domain approximately.            */
+/*---------------------------------------------------------------------------*/
+
+#ifdef PINV_USE_CDFTABLE
+static int _unur_pinv_pdfarea (struct unur_gen *gen);
+/*---------------------------------------------------------------------------*/
+/* 1d. Compute area below PDF with requested accuracy and                    */
+/*     store intermediate results from adaptive integration.                 */
+/*---------------------------------------------------------------------------*/
+#endif
+
+static int _unur_pinv_computational_domain (struct unur_gen *gen);
+/*---------------------------------------------------------------------------*/
+/* 1c. Compute computational domain where inverse CDF is approximated        */
+/*     (interval where we safely can compute coefficients of                 */
+/*     interpolating polynomial).                                            */
+/*---------------------------------------------------------------------------*/
+
+static double _unur_pinv_cut (struct unur_gen *gen, double dom, double w, double dw, double crit);
+/*---------------------------------------------------------------------------*/
+/* [1c.] calculate cut-off points for computational domain of distribution.  */
+/*---------------------------------------------------------------------------*/
+
+static double _unur_pinv_tailprob (struct unur_gen *gen, double x, double dx);
+/*---------------------------------------------------------------------------*/
+/* [1c.] calculate approximate tail probability.                             */
+/*---------------------------------------------------------------------------*/
+
+
+/*.........................*/
+/*  file: pinv_lobatto.ch  */
+/*.........................*/
 
 static double _unur_pinv_lobatto5 (struct unur_gen *gen, double x, double h);
 /*---------------------------------------------------------------------------*/
@@ -364,47 +403,10 @@ static double _unur_pinv_Udiff (struct unur_gen *gen, double x, double h, double
 /* integral of the given (quasi-) density.                                   */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_pinv_relevant_support (struct unur_gen *gen);
-/*---------------------------------------------------------------------------*/
-/* 1a. Estimate computationally relevant domain (support) of PDF             */
-/*     (finite interval where PDF is above some threshold value).            */
-/*---------------------------------------------------------------------------*/
 
-static double _unur_pinv_searchborder (struct unur_gen *gen, double x0, double bound,
-				       double *dom, int *search);
-/*---------------------------------------------------------------------------*/
-/* [1a.] find left or right hand border of relevant domain.                  */
-/*---------------------------------------------------------------------------*/
-
-static int _unur_pinv_approx_pdfarea (struct unur_gen *gen);
-/*---------------------------------------------------------------------------*/
-/* 1b. Compute area below PDF over relevant domain approximately.            */
-/*---------------------------------------------------------------------------*/
-
-#ifdef PINV_USE_CDFTABLE
-static int _unur_pinv_pdfarea (struct unur_gen *gen);
-/*---------------------------------------------------------------------------*/
-/* 1d. Compute area below PDF with requested accuracy and                    */
-/*     store intermediate results from adaptive integration.                 */
-/*---------------------------------------------------------------------------*/
-#endif
-
-static int _unur_pinv_computational_domain (struct unur_gen *gen);
-/*---------------------------------------------------------------------------*/
-/* 1c. Compute computational domain where inverse CDF is approximated        */
-/*     (interval where we safely can compute coefficients of                 */
-/*     interpolating polynomial).                                            */
-/*---------------------------------------------------------------------------*/
-
-static double _unur_pinv_cut (struct unur_gen *gen, double dom, double w, double dw, double crit);
-/*---------------------------------------------------------------------------*/
-/* [1c.] calculate cut-off points for computational domain of distribution.  */
-/*---------------------------------------------------------------------------*/
-
-static double _unur_pinv_tailprob (struct unur_gen *gen, double x, double dx);
-/*---------------------------------------------------------------------------*/
-/* [1c.] calculate approximate tail probability.                             */
-/*---------------------------------------------------------------------------*/
+/*........................*/
+/*  file: pinv_newton.ch  */
+/*........................*/
 
 static int _unur_pinv_create_table( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
@@ -448,6 +450,11 @@ static int _unur_pinv_make_guide_table (struct unur_gen *gen);
 /* make a guide table for indexed search.                                    */
 /*---------------------------------------------------------------------------*/
 
+
+/*.......................*/
+/*  file: pinv_debug.ch  */
+/*.......................*/
+
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 /* the following functions print debugging information on output stream,     */
@@ -489,8 +496,12 @@ static void _unur_pinv_debug_create_table (const struct unur_gen *gen,
 /*---------------------------------------------------------------------------*/
 /* print data that have been collected while creating polynomials.           */
 /*---------------------------------------------------------------------------*/
-
 #endif
+
+
+/*......................*/
+/*  file: pinv_info.ch  */
+/*......................*/
 
 #ifdef UNUR_ENABLE_INFO
 static void _unur_pinv_info( struct unur_gen *gen, int help );
@@ -531,8 +542,8 @@ static void _unur_pinv_info( struct unur_gen *gen, int help );
 /**  Private                                                                **/
 #include "pinv_init.ch"
 #include "pinv_sample.ch"
-#include "pinv_lobatto.ch"
 #include "pinv_prep.ch"
+#include "pinv_lobatto.ch"
 #include "pinv_newton.ch"
 #include "pinv_debug.ch"
 #include "pinv_info.ch"

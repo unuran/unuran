@@ -146,11 +146,12 @@ int start_counter_fcalls( UNUR_PAR *par );
 int stop_counter_fcalls(void);
 /* stop counter for PDF calls and clear memory */
 
-/* get number of PDF evaluations */
-int get_counter_pdf(void);
-
 /* reset counter to 0 */
 void reset_counter_fcalls(void);
+
+/* get number of PDF evaluations */
+int get_counter_pdf(void);
+int get_counter_cdf(void);
 
 /*---------------------------------------------------------------------------*/
 /* print header for test log file                                            */

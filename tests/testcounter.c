@@ -47,9 +47,11 @@ struct unur_distr *distr_to_use = NULL;
 
 /* counter for evaluations of PDF and similar functions */
 static int counter_pdf = 0;
+static int counter_cdf = 0;
 
 /* pointer to original functions */
 static double (*cont_pdf_to_use)(double x, const struct unur_distr *distr);
+static double (*cont_cdf_to_use)(double x, const struct unur_distr *distr);
 
 /*---------------------------------------------------------------------------*/
 /* wrapper for functions */
@@ -57,6 +59,10 @@ static double (*cont_pdf_to_use)(double x, const struct unur_distr *distr);
 static double 
 cont_pdf_with_counter( double x, const struct unur_distr *distr ) {
   ++counter_pdf; return cont_pdf_to_use(x,distr); }
+
+static double 
+cont_cdf_with_counter( double x, const struct unur_distr *distr ) {
+  ++counter_cdf; return cont_cdf_to_use(x,distr); }
 
 /*---------------------------------------------------------------------------*/
 /* set and start counter for PDF calls in parameter object */
@@ -78,13 +84,26 @@ start_counter_fcalls( UNUR_PAR *par )
   switch (distr_to_use->type) {
   case UNUR_DISTR_CONT:
     /* this only works for continuous distributions */
-    if (distr_to_use->data.cont.pdf == cont_pdf_with_counter) {
-      /* we must avoid this situation as it causes infinite recursion */
-      return UNUR_FAILURE;
-    } 
 
-    cont_pdf_to_use = distr_to_use->data.cont.pdf; 
-    distr_to_use->data.cont.pdf = cont_pdf_with_counter;
+    /* PDF */
+    if (distr_to_use->data.cont.pdf) {
+      if (distr_to_use->data.cont.pdf == cont_pdf_with_counter) {
+	/* we must avoid this situation as it causes infinite recursion */
+	return UNUR_FAILURE;
+      } 
+      cont_pdf_to_use = distr_to_use->data.cont.pdf; 
+      distr_to_use->data.cont.pdf = cont_pdf_with_counter;
+    }
+
+    /* CDF */
+    if (distr_to_use->data.cont.cdf) {
+      if (distr_to_use->data.cont.cdf == cont_cdf_with_counter) {
+	return UNUR_FAILURE;
+      } 
+      cont_cdf_to_use = distr_to_use->data.cont.cdf; 
+      distr_to_use->data.cont.cdf = cont_cdf_with_counter;
+    }
+    
     break;
 
   default:
@@ -92,7 +111,7 @@ start_counter_fcalls( UNUR_PAR *par )
   }
 
   /* reset counter */
-  counter_pdf = 0;
+  reset_counter_fcalls();
 
   return UNUR_SUCCESS;
 }
@@ -106,6 +125,7 @@ stop_counter_fcalls(void)
   if (distr_to_use) unur_distr_free(distr_to_use);
   distr_to_use = NULL;
   cont_pdf_to_use = NULL;  
+  cont_cdf_to_use = NULL;  
   return UNUR_SUCCESS;
 }
 
@@ -115,14 +135,13 @@ stop_counter_fcalls(void)
 void reset_counter_fcalls(void)
 {
   counter_pdf = 0;
+  counter_cdf = 0;
 }
 
 /*---------------------------------------------------------------------------*/
 /* get number of PDF evaluations */
 
-int get_counter_pdf(void)
-{
-  return counter_pdf;
-}
+int get_counter_pdf(void) { return counter_pdf; }
+int get_counter_cdf(void) { return counter_cdf; }
 
 /*---------------------------------------------------------------------------*/

@@ -40,7 +40,7 @@
 
    =UP  Methods_for_CONT
 
-   =REQUIRED PDF, center
+   =REQUIRED PDF or CDF, center
 
    =OPTIONAL domain
 
@@ -56,10 +56,10 @@
       polynomials. The interval [0,1] is split into several
       subintervals and in each subinterval the inverse CDF is
       approximated by polynomials constructed by means of values of
-      the CDF. The CDF is numerically computed from the given PDF
-      using adaptive Gauss-Lobatto integration with 5 points.
-      Subintervals are splitted until the requested accuracy goal is
-      reached.
+      the CDF. If the PDF is given then the CDF is numerically
+      integrated from the given PDF using adaptive Gauss-Lobatto
+      integration with 5 points. Subintervals are splitted until the
+      requested accuracy goal is reached.
 
       The interpolating polynomials have to be computed in a setup
       step. However, it only works for distributions with bounded
@@ -79,6 +79,33 @@
       the PDF is unimodal or when the PDF does not vanish between two
       modes. 
 
+      There are some restrictions for the given distribution:
+      @itemize
+      @item 
+      The support of the distribution (i.e., the region where the PDF
+      is strictly positive) must be connected. In practice this means,
+      that the region where PDF is "not too small" must be connected.
+      Unimodal densities satisfy this condition.
+      If this condition is violated then the domain of the
+      distribution might be truncated.
+      @item
+      When the PDF is integrated numerically, then the given PDF must
+      be smooth (except on the boundary if the domain). In particular
+      the 8th derivative should be bounded.
+      @item
+      The PDF must be bounded.
+      @item
+      The distributions should not have heavy tails, since otherwise
+      the inverse CDF becomes too steep at 0 or 1.
+      E.g., the Cauchy distribution is likely to show this problem
+      when the requested u-resolution is (very) small.
+      @end itemize
+      Flat regions or heavy tails might lead to an abortion of the
+      set-up or (even worse) the approximation error might become
+      larger than requested, since the (computation of the)
+      interpolating polynomial becomes numerically unstable.
+      If the PDF or its 8th derivative is not bounded, then the
+      integration error is larger than requested.
 
    =HOWTOUSE
       PINV works for continuous univariate distribution objects with

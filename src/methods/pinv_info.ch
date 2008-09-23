@@ -36,12 +36,11 @@ _unur_pinv_info( struct unur_gen *gen, int help )
   /* generator ID */
   _unur_string_append(info,"generator ID: %s\n\n", gen->genid);
 
-  /** FIXME **/
-  
   /* distribution */
   _unur_string_append(info,"distribution:\n");
   _unur_distr_info_typename(gen);
-  _unur_string_append(info,"   functions = PDF\n");
+  _unur_string_append(info,"   functions = %s\n",
+		      (gen->variant==PINV_VARIANT_PDF) ? "PDF" : "CDF");
   _unur_string_append(info,"   domain    = (%g, %g)\n", DISTR.trunc[0],DISTR.trunc[1]);
   _unur_string_append(info,"   center    = %g", unur_distr_cont_get_center(distr));
   if ( !(distr->set & UNUR_DISTR_SET_CENTER) ) {
@@ -61,10 +60,22 @@ _unur_pinv_info( struct unur_gen *gen, int help )
   }
   _unur_string_append(info,"\n");
   
+
   /* method */
   _unur_string_append(info,"method: PINV (Polynomial interpolation based INVerse CDF)\n");
   _unur_string_append(info,"   order of polynomial = %d\n", GEN->order);
+  switch (gen->variant) {
+  case PINV_VARIANT_PDF:
+    _unur_string_append(info,"   use PDF + Lobatto integration  %s\n",
+			(gen->set & PINV_SET_VARIANT) ? "" : "[default]");
+    break;
+  case PINV_VARIANT_CDF:
+    _unur_string_append(info,"   use CDF  %s\n",
+			(gen->set & PINV_SET_VARIANT) ? "" : "[default]");
+    break;
+  }
   _unur_string_append(info,"\n");
+
 
   /* performance */
   _unur_string_append(info,"performance characteristics:\n");

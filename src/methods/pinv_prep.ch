@@ -20,6 +20,63 @@
 /*****************************************************************************/
 
 int
+_unur_pinv_preprocessing (struct unur_gen *gen)
+     /*----------------------------------------------------------------------*/
+     /* 1. Find computational domain and compute PDF area.                   */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen   ... pointer to generator object                              */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  switch (gen->variant) {
+  case PINV_VARIANT_PDF:
+
+    /* 1a. Estimate computationally relevant domain (support) of PDF */
+    if (_unur_pinv_relevant_support(gen) != UNUR_SUCCESS)
+      return UNUR_FAILURE;
+    
+    /* 1b. Compute area below PDF over relevant domain approximately. */
+    if (_unur_pinv_approx_pdfarea(gen) != UNUR_SUCCESS)
+      return UNUR_FAILURE;
+    
+    /* 1c. Compute computational domain where inverse CDF is approximated */
+    if (_unur_pinv_computational_domain(gen) != UNUR_SUCCESS)
+      return UNUR_FAILURE;
+
+#ifdef PINV_USE_CDFTABLE
+    /* 1d. Compute area below PDF with requested accuracy and    */
+    /*     store intermediate results from adaptive integration. */
+    if (_unur_pinv_pdfarea(gen) != UNUR_SUCCESS) 
+      return UNUR_FAILURE;
+#endif
+    break;
+
+  case PINV_VARIANT_CDF:
+
+    /* 1c. Compute computational domain where inverse CDF is approximated */
+    if (_unur_pinv_computational_domain_CDF(gen) != UNUR_SUCCESS)
+      return UNUR_FAILURE;
+    break;
+
+  default:
+    _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+    return UNUR_FAILURE;
+  }
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+} /* end of _unur_pinv_preprocessing() */
+
+
+/*****************************************************************************/
+/** Preprocessing when PDF is given                                         **/
+/*****************************************************************************/
+
+int
 _unur_pinv_relevant_support ( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* 1a. Estimate computationally relevant domain (support) of PDF        */
@@ -61,7 +118,7 @@ _unur_pinv_relevant_support ( struct unur_gen *gen )
 
   /* search for interval of computational relevance (if required) */
   if(GEN->sleft) {
-    GEN->bleft = _unur_pinv_searchborder(gen,DISTR.center, GEN->bleft, 
+    GEN->bleft = _unur_pinv_searchborder(gen, DISTR.center, GEN->bleft, 
 					 &(GEN->dleft), &(GEN->sleft) );
     if (!_unur_isfinite(GEN->bleft)) {
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"Cannot get left boundary of relevant domain.");
@@ -70,7 +127,7 @@ _unur_pinv_relevant_support ( struct unur_gen *gen )
   }
   
   if(GEN->sright) {
-    GEN->bright = _unur_pinv_searchborder(gen,DISTR.center, GEN->bright,
+    GEN->bright = _unur_pinv_searchborder(gen, DISTR.center, GEN->bright,
 					  &(GEN->dright), &(GEN->sright) );
     if (!_unur_isfinite(GEN->bright)) {
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"Cannot get right boundary of relevant domain.");
@@ -125,11 +182,11 @@ _unur_pinv_searchborder (struct unur_gen *gen, double x0, double bound,
      /*----------------------------------------------------------------------*/
 {
   double x;         /* current and previous searching point */
-  double xs, xl;       /* point where PDF is less than and larger than threshold */
-  double fx;              /* PDF at x */
-  double fs, fl;          /* PDF at xs and xl */
-  double fllim;           /* threshold value */
-  double fulim;           /* threshold for detecting discontinuity at boundary */
+  double xs, xl;    /* point where PDF is less than and larger than threshold */
+  double fx;        /* PDF at x */
+  double fs, fl;    /* PDF at xs and xl */
+  double fllim;     /* threshold value */
+  double fulim;     /* threshold for detecting discontinuity at boundary */
 
   /* threshold value where we stop searching */
   fllim = PDF(x0) * PINV_PDFLLIM;
@@ -140,7 +197,7 @@ _unur_pinv_searchborder (struct unur_gen *gen, double x0, double bound,
   fl = INFINITY;
   x = _unur_arcmean(x0,bound);
 
-  /* find a points where PDF values bracket threshold: */
+  /* find points where PDF values bracket threshold: */
   /*   fs = PDF(xs) <= fllim <= PDF(xl) = fl           */
   while ( (fx=PDF(x)) > fllim ) {
     if (_unur_FP_same(x,bound))
@@ -514,5 +571,213 @@ _unur_pinv_cut( struct unur_gen *gen, double dom, double w, double dw, double cr
   return x;
 
 } /* end of _unur_pinv_cut() */
+
+
+/*****************************************************************************/
+/** Preprocessing when CDF is given                                         **/
+/*****************************************************************************/
+
+int
+_unur_pinv_computational_domain_CDF (struct unur_gen *gen)
+     /*----------------------------------------------------------------------*/
+     /* 1c. Compute computational domain where inverse CDF is approximated   */
+     /*     (interval where we safely can compute coefficients of            */
+     /*     interpolating polynomial).                                       */
+     /*     Use CDF.                                                         */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen   ... pointer to generator object                              */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  double tailcut_error;    /* threshold values for cut-off points */
+  double range;            /* length of current working domain */
+
+  /* parameters for tail cut-off points: maximal area in tails          */
+  /* We use the given U-reslution * PINV_TAILCUTOFF_FACTOR * PDFarea.   */
+  tailcut_error = GEN->u_resolution * PINV_TAILCUTOFF_FACTOR(GEN->u_resolution);
+  tailcut_error = _unur_min( tailcut_error, PINV_TAILCUTOFF_MAX );
+  tailcut_error = _unur_max( tailcut_error, 2*DBL_EPSILON );
+  tailcut_error *= GEN->area * PINV_UERROR_CORRECTION;
+
+  /* length of current working domain */
+  range = GEN->bright-GEN->bleft;
+
+  /* compute cut-off points for tails */
+  if(GEN->sleft) {
+    GEN->bleft = _unur_pinv_cut_CDF( gen, GEN->dleft, DISTR.center, 0.5*tailcut_error, tailcut_error);
+    if ( !_unur_isfinite(GEN->bleft) ) {
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"cannot find left boundary for computational domain");
+      return UNUR_FAILURE;
+    }
+  }
+
+  if(GEN->sright) {
+    GEN->bright = _unur_pinv_cut_CDF( gen, GEN->dright, DISTR.center, 1.-tailcut_error, 1.-0.5*tailcut_error);
+    if ( !_unur_isfinite(GEN->bright) ) {
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"cannot find right boundary for computational domain");
+      return UNUR_FAILURE;
+    }
+  }
+
+#ifdef UNUR_ENABLE_LOGGING
+  /* write info into log file */
+  if (gen->debug & PINV_DEBUG_SEARCHBD)
+    _unur_pinv_debug_computational_domain(gen);
+#endif
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+
+} /* end of _unur_pinv_computational_domain_CDF() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_pinv_cut_CDF( struct unur_gen *gen, double dom, double x0, double ul, double uu )
+     /*----------------------------------------------------------------------*/
+     /* [1c.] Calculate cut-off points for computational domain of           */
+     /* distribution using CDF.                                              */
+     /* The area outside the cut-off point is within the interval ul and uu. */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*   dom  ... boundary of domain / support of distribution              */
+     /*   x0   ... starting point for searching cut-off point                */
+     /*   ul   ... lower u-error criterium for tail cut off                  */
+     /*   uu   ... upper u-error criterium for tail cut off                  */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   cut-off point                                                      */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return INFINITY                                                    */
+     /*----------------------------------------------------------------------*/
+{
+  double x;         /* current and previous searching point */
+  double xs, xl;    /* point where CDF is less than and larger than threshold */
+  double fx;        /* CDF at x */
+  double fs, fl;    /* CDF at xs and xl */
+  double f0, fdom;  /* CDF at x0 and dom */
+  double dx;        /* step size for searching for relevant point */
+
+  /* check length of interval */
+  if (_unur_FP_same(x0,dom))
+      return x0;
+
+  /* check u-error (protect against u-values too close to 1) */
+  if (1.-ul < 4*DBL_EPSILON) ul = 1. - 4*DBL_EPSILON;
+  if (1.-uu < 2*DBL_EPSILON) ul = 1. - 2*DBL_EPSILON;
+
+  /* starting point */
+  x = x0;
+  f0 = CDF(x0);
+  fdom = CDF(dom);
+
+  /* check for starting point */
+  if (_unur_iszero(f0)) {
+    for (dx=0.1; f0<ul; dx*=10.) {
+      dom = x0; fdom = f0;
+      x0 += dx;
+      f0 = CDF(x0);
+      if (!_unur_isfinite(x0))
+	return INFINITY;
+    }
+  }
+  if (_unur_isone(f0)) {
+    for (dx=0.1; f0>ul; dx*=10.) {
+      dom = x0; fdom = f0;
+      x0 -= dx;
+      f0 = CDF(x0);
+      if (!_unur_isfinite(x0))
+	return INFINITY;
+    }
+  }
+
+  /* find points where CDF values bracket threshold critical u values */
+  if ( (f0 < ul && fdom < ul) || (f0 > uu && fdom > uu) ) {
+    _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"CDF too small/large on given domain");
+    return dom;
+  }
+  if (f0 >= ul && f0 <= uu) {
+    /* we already have reached our goal */
+    return x0;
+  }
+  if ( (x0 < dom && _unur_FP_greater(f0,fdom)) ||
+       (x0 > dom && _unur_FP_less(f0,fdom)) ) {
+    /* there is something wrong */
+    return INFINITY;
+  }
+
+  /* bracket */
+  if (x0 > dom) {
+    xs = dom; fs = fdom;
+    xl = x0; fl = f0; }
+  else {
+    xs = x0; fs = f0;
+    xl = dom; fl = fdom;
+  }    
+  x = x0;
+
+  /* decrease length of bracket */
+  while (!_unur_FP_same(xs,xl)) {
+
+    /* new point */
+    x = _unur_arcmean(xs,xl);
+    fx = CDF(x);
+
+    /* check result */
+    if (fx >= ul && fx <= uu) {
+      return x;
+    }
+
+    /* update bracket */
+    if (fx < ul) {
+      xs = x; fs = fx;
+    }
+    else {
+      xl = x; fl = fx;
+    }
+  }
+
+  return x;
+
+} /* end of _unur_pinv_cut_CDF() */
+
+
+/*****************************************************************************/
+
+double
+_unur_pinv_Udiff (struct unur_gen *gen, double x, double h, double utol)
+     /*----------------------------------------------------------------------*/
+     /* Compute difference CDF(x+h)-CDF(x) (approximately), where CDF is the */
+     /* integral of the given (quasi-) density.                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*   x   ... left boundary point of interval                            */
+     /*   h   ... length of interval                                         */
+     /*   tol ... tolerated ABSOLUTE error                                   */
+     /*                                                                      */
+     /* return:                                                              */
+     /*    (approximate) difference CDF(x+h) - CDF(x)                        */
+     /*----------------------------------------------------------------------*/
+{
+  switch (gen->variant) {
+  case PINV_VARIANT_PDF:
+    return _unur_pinv_Udiff_lobatto(gen,x,h,utol);
+
+  case PINV_VARIANT_CDF:
+    return fabs(CDF(x+h) - CDF(x));
+
+  default:
+    _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+    return INFINITY;
+  }
+
+} /* end of _unur_pinv_Udiff() */
 
 /*---------------------------------------------------------------------------*/

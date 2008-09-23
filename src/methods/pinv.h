@@ -156,6 +156,18 @@ int unur_pinv_set_u_resolution( UNUR_PAR *parameters, double u_resolution);
    Default is @code{1.e-10}.
 */
 
+int unur_pinv_set_usepdf( UNUR_PAR *parameters );
+/* 
+   Use PDF (if available) to compute approximate inverse CDF.
+
+   This is the default.
+*/
+
+int unur_pinv_set_usecdf( UNUR_PAR *parameters );
+/* 
+   Use CDF (if available) to compute approximate inverse CDF.
+*/
+
 int unur_pinv_set_boundary( UNUR_PAR *parameters, double left, double right );
 /* 
    Set @var{left} and @var{right} point for finding the cut-off points

@@ -62,29 +62,14 @@ _unur_pinv_init( struct unur_par *par )
 
   /* 1. Preprocessing:                                     */
   /*   find interval for computing Newton interpolation */
-  if (
-      /* 1a. Estimate computationally relevant domain (support) of PDF */
-      _unur_pinv_relevant_support(gen)     != UNUR_SUCCESS ||
-      /* 1b. Compute area below PDF over relevant domain approximately. */
-      _unur_pinv_approx_pdfarea(gen)       != UNUR_SUCCESS ||
-      /* 1c. Compute computational domain where inverse CDF is approximated */
-      _unur_pinv_computational_domain(gen) != UNUR_SUCCESS ||
-#ifdef PINV_USE_CDFTABLE
-      /* 1d. Compute area below PDF with requested accuracy and                    */
-      /*     store intermediate results from adaptive integration.                 */
-      _unur_pinv_pdfarea(gen)              != UNUR_SUCCESS
-#else
-      FALSE
-#endif
-      ) {
-
+  if (_unur_pinv_preprocessing(gen) != UNUR_SUCCESS) {
     /* preprocessing failed */
 #ifdef UNUR_ENABLE_LOGGING
     if (gen->debug) _unur_pinv_debug_init(gen,FALSE);
 #endif
     _unur_pinv_free(gen); return NULL;
   }
-
+  
   /* compute table for Newton interpolation */
   if (_unur_pinv_create_table(gen) != UNUR_SUCCESS) {
 #ifdef UNUR_ENABLE_LOGGING
@@ -247,10 +232,14 @@ _unur_pinv_check_par( struct unur_gen *gen )
     DISTR.center = _unur_max(DISTR.center,GEN->dleft);
     DISTR.center = _unur_min(DISTR.center,GEN->dright);
   }
-  if (PDF(DISTR.center)<=0.) {
-    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,
-		"PDF(center) <= 0.");
-    return UNUR_ERR_GEN_CONDITION;
+
+  /* check center of distribution */
+  if (gen->variant == PINV_VARIANT_PDF) {
+    if (PDF(DISTR.center)<=0.) {
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,
+		  "PDF(center) <= 0.");
+      return UNUR_ERR_GEN_CONDITION;
+    }
   }
 
   return UNUR_SUCCESS;
@@ -358,3 +347,54 @@ _unur_pinv_free( struct unur_gen *gen )
 } /* end of _unur_pinv_free() */
 
 /*****************************************************************************/
+
+int
+_unur_pinv_make_guide_table (struct unur_gen *gen)
+     /*----------------------------------------------------------------------*/
+     /* make a guide table for indexed search                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  int i,j, imax;
+
+  /* check arguments */
+  CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_PINV_GEN,UNUR_ERR_COOKIE);
+
+  /* allocate blocks for guide table (if necessary).
+     (we allocate blocks for maximal guide table.) */
+  GEN->guide_size = GEN->n_ivs * PINV_GUIDE_FACTOR;
+  if (GEN->guide_size <= 0) GEN->guide_size = 1;
+  GEN->guide = _unur_xrealloc( GEN->guide, GEN->guide_size * sizeof(int) );
+
+  /* maximum index for array of data */
+  imax = GEN->n_ivs;
+
+  /* create guide table */
+  i = 0;
+  GEN->guide[0] = 0;
+  for( j=1; j<GEN->guide_size ;j++ ) {
+    while(GEN->iv[i+1].cdfi/GEN->Umax < j/(double)GEN->guide_size && i < imax)
+      i++;
+    if (i >= imax) break;
+    GEN->guide[j]=i;
+  }
+
+  /* check i */
+  i = _unur_min(i,imax);
+
+  /* if there has been an round off error, we have to complete the guide table */
+  for( ; j<GEN->guide_size ;j++ )
+    GEN->guide[j] = i;
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+
+} /* end of _unur_pinv_make_guide_table() */
+
+/*---------------------------------------------------------------------------*/

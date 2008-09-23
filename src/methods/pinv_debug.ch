@@ -53,6 +53,14 @@ _unur_pinv_debug_init_start( const struct unur_gen *gen )
   _unur_print_if_default(gen,PINV_SET_ORDER);
   fprintf(log,"\n%s: u-resolution = %g",gen->genid,GEN->u_resolution);
   _unur_print_if_default(gen,PINV_SET_U_RESOLUTION);
+  fprintf(log,"\n%s: variant = ",gen->genid);
+  switch (gen->variant) {
+  case PINV_VARIANT_PDF:
+    fprintf(log,"use PDF + Lobatto integration"); break;
+  case PINV_VARIANT_CDF:
+    fprintf(log,"use CDF"); break;
+  }
+  _unur_print_if_default(gen,PINV_SET_VARIANT);
   fprintf(log,"\n");
 
   fprintf(log,"%s:\n",gen->genid);

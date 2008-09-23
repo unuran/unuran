@@ -182,113 +182,8 @@ _unur_pinv_adaptivelobatto5_rec (struct unur_gen *gen, double x, double h, doubl
 #undef W2
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-#ifdef PINV_USE_CDFTABLE
-/*---------------------------------------------------------------------------*/
-
-struct unur_pinv_CDFtable *
-_unur_pinv_CDFtable_create (int size)
-     /*----------------------------------------------------------------------*/
-     /* create table of CDF values.                                          */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   size ... size of table                                             */
-     /*----------------------------------------------------------------------*/
-{
-  struct unur_pinv_CDFtable *table;
-
-  /* check argument */
-  if (size<=0)
-    return NULL;
-
-  /* allocate memory */
-  table = _unur_xmalloc( sizeof(struct unur_pinv_CDFtable) );
-  table->values = _unur_xmalloc(size * sizeof(struct unur_pinv_CDFvalues) ); 
-
-  /* set counter */
-  table->size = size;
-  table->n_values = 0;
-  table->cur_iv = 0;
-
-  return table;
-} /* end of _unur_pinv_CDFtable_create() */
-
-/*---------------------------------------------------------------------------*/
-
-int
-_unur_pinv_CDFtable_append (struct unur_pinv_CDFtable *table, double x, double u)
-     /*----------------------------------------------------------------------*/
-     /* append entry to table of CDF values.                                 */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   tables ... table with CDF values                                   */
-     /*   x      ... right boundary of subinterval                           */
-     /*   u      ... integral over subinterval                               */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   UNUR_SUCCESS ... on success                                        */
-     /*   error code   ... on error                                          */
-     /*----------------------------------------------------------------------*/
-{
-  if (table==NULL) 
-    return UNUR_ERR_NULL;
-
-  if (table->n_values >= table->size - 1)
-    /* we do not write a warning here */
-    return UNUR_ERR_GENERIC;
-
-  table->values[table->n_values].x = x;
-  table->values[table->n_values].u = u;
-  ++(table->n_values);
-
-  return UNUR_SUCCESS;
-} /* end of _unur_pinv_CDFtable_append() */
-
-/*---------------------------------------------------------------------------*/
-
-void 
-_unur_pinv_CDFtable_resize (struct unur_pinv_CDFtable **table)
-     /*----------------------------------------------------------------------*/
-     /* resize table of CDF values.                                               */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   table ... pointer to pointer to table with CDF values              */
-     /*----------------------------------------------------------------------*/
-{
-  if (*table) {
-    *table = _unur_xrealloc(*table, (*table)->n_values * sizeof(double));
-    (*table)->size = (*table)->n_values;
-  }
-  /* else: nothing to do */
-  
-} /* end of _unur_pinv_CDFtable_resize() */
-
-/*---------------------------------------------------------------------------*/
-
-void
-_unur_pinv_CDFtable_free (struct unur_pinv_CDFtable **table)
-     /*----------------------------------------------------------------------*/
-     /* destroy table of CDF values and set pointer to NULL.                 */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   table ... pointer to pointer to table with CDF values              */
-     /*----------------------------------------------------------------------*/
-{
-  if (*table) {
-    free ((*table)->values);
-    free (*table);
-    *table = NULL;
-  }
-  /* else: nothing to do */
-
-} /* end of _unur_pinv_CDFtable_free() */
-
-/*---------------------------------------------------------------------------*/
-#endif /* defined(PINV_USE_CDFTABLE) */
-/*---------------------------------------------------------------------------*/
-
 double
-_unur_pinv_Udiff (struct unur_gen *gen, double x, double h, double utol)
+_unur_pinv_Udiff_lobatto (struct unur_gen *gen, double x, double h, double utol)
      /*----------------------------------------------------------------------*/
      /* Compute difference CDF(x+h)-CDF(x) (approximately), where CDF is the */
      /* integral of the given (quasi-) density.                              */
@@ -403,4 +298,108 @@ _unur_pinv_Udiff (struct unur_gen *gen, double x, double h, double utol)
 
 } /* end of _unur_pinv_Udiff() */
 
-/*****************************************************************************/
+
+/*---------------------------------------------------------------------------*/
+#ifdef PINV_USE_CDFTABLE
+/*---------------------------------------------------------------------------*/
+
+struct unur_pinv_CDFtable *
+_unur_pinv_CDFtable_create (int size)
+     /*----------------------------------------------------------------------*/
+     /* create table of CDF values.                                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   size ... size of table                                             */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_pinv_CDFtable *table;
+
+  /* check argument */
+  if (size<=0)
+    return NULL;
+
+  /* allocate memory */
+  table = _unur_xmalloc( sizeof(struct unur_pinv_CDFtable) );
+  table->values = _unur_xmalloc(size * sizeof(struct unur_pinv_CDFvalues) ); 
+
+  /* set counter */
+  table->size = size;
+  table->n_values = 0;
+  table->cur_iv = 0;
+
+  return table;
+} /* end of _unur_pinv_CDFtable_create() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_pinv_CDFtable_append (struct unur_pinv_CDFtable *table, double x, double u)
+     /*----------------------------------------------------------------------*/
+     /* append entry to table of CDF values.                                 */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   tables ... table with CDF values                                   */
+     /*   x      ... right boundary of subinterval                           */
+     /*   u      ... integral over subinterval                               */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  if (table==NULL) 
+    return UNUR_ERR_NULL;
+
+  if (table->n_values >= table->size - 1)
+    /* we do not write a warning here */
+    return UNUR_ERR_GENERIC;
+
+  table->values[table->n_values].x = x;
+  table->values[table->n_values].u = u;
+  ++(table->n_values);
+
+  return UNUR_SUCCESS;
+} /* end of _unur_pinv_CDFtable_append() */
+
+/*---------------------------------------------------------------------------*/
+
+void 
+_unur_pinv_CDFtable_resize (struct unur_pinv_CDFtable **table)
+     /*----------------------------------------------------------------------*/
+     /* resize table of CDF values.                                               */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   table ... pointer to pointer to table with CDF values              */
+     /*----------------------------------------------------------------------*/
+{
+  if (*table) {
+    *table = _unur_xrealloc(*table, (*table)->n_values * sizeof(double));
+    (*table)->size = (*table)->n_values;
+  }
+  /* else: nothing to do */
+  
+} /* end of _unur_pinv_CDFtable_resize() */
+
+/*---------------------------------------------------------------------------*/
+
+void
+_unur_pinv_CDFtable_free (struct unur_pinv_CDFtable **table)
+     /*----------------------------------------------------------------------*/
+     /* destroy table of CDF values and set pointer to NULL.                 */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   table ... pointer to pointer to table with CDF values              */
+     /*----------------------------------------------------------------------*/
+{
+  if (*table) {
+    free ((*table)->values);
+    free (*table);
+    *table = NULL;
+  }
+  /* else: nothing to do */
+
+} /* end of _unur_pinv_CDFtable_free() */
+
+/*---------------------------------------------------------------------------*/
+#endif /* defined(PINV_USE_CDFTABLE) */
+/*---------------------------------------------------------------------------*/

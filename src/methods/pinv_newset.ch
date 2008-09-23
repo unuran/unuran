@@ -44,8 +44,8 @@ unur_pinv_new( const struct unur_distr *distr )
     _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,""); return NULL; }
   COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
 
-  if (DISTR_IN.pdf == NULL) {
-    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"PDF"); return NULL; }
+  if (DISTR_IN.pdf == NULL && DISTR_IN.cdf == NULL) {
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"PDF or CDF"); return NULL; }
 
   /* allocate structure */
   par = _unur_par_new( sizeof(struct unur_pinv_par) );
@@ -63,7 +63,9 @@ unur_pinv_new( const struct unur_distr *distr )
   PAR->sright = TRUE;            /* whether to search for right boundary     */
 
   par->method   = UNUR_METH_PINV; /* method                                  */
-  par->variant  = 0u;             /* default variant                         */
+  par->variant  = ( (DISTR_IN.pdf != NULL)  /* default variant:              */
+		    ? PINV_VARIANT_PDF      /*   use PDF                     */
+		    : PINV_VARIANT_CDF );   /*   use CDF                     */
 
   par->set      = 0u;                      /* inidicate default parameters   */
   par->urng     = unur_get_default_urng(); /* use default urng               */
@@ -154,6 +156,77 @@ unur_pinv_set_u_resolution( struct unur_par *par, double u_resolution )
   return UNUR_SUCCESS;
 
 } /* end of unur_pinv_set_u_resolutuion() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_pinv_set_usepdf( struct unur_par *par )
+     /*----------------------------------------------------------------------*/
+     /* Use PDF (if available) to compute approximate inverse CDF.           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par   ... pointer to parameter for building generator object       */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, PINV );
+
+  /* check function pointer */
+  if (par->distr->data.cont.pdf == NULL) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"PDF missing");
+    return UNUR_ERR_PAR_SET;
+  }
+
+  /* store variant */
+  par->variant = PINV_VARIANT_PDF;
+
+  /* changelog */
+  par->set |= PINV_SET_VARIANT;
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+
+} /* end of unur_pinv_set_usepdf() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_pinv_set_usecdf( struct unur_par *par )
+     /*----------------------------------------------------------------------*/
+     /* Use CDF (if available) to compute approximate inverse CDF.           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par   ... pointer to parameter for building generator object       */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, PINV );
+
+  /* check function pointer */
+  if (par->distr->data.cont.cdf == NULL) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"CDF missing");
+    return UNUR_ERR_PAR_SET;
+  }
+
+  /* store variant */
+  par->variant = PINV_VARIANT_CDF;
+
+  /* changelog */
+  par->set |= PINV_SET_VARIANT;
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+} /* end of unur_pinv_set_usecdf() */
 
 /*---------------------------------------------------------------------------*/
 

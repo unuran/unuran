@@ -129,24 +129,28 @@ void set_alarm(FILE *LOG);
 /*---------------------------------------------------------------------------*/
 /* count number of function evaluations                                      */
 
-/* set and start counter for PDF in parameter object */
-int start_counter_pdf( UNUR_PAR *par );
+/* set and start counter for PDF and similar functions in parameter object */
+int start_counter_fcalls( UNUR_PAR *par );
 /* IMPORTANT:
  * This function uses global variables.
  * Thus the corresponding parameter/generator object has to be DESTROYED
- * when this routine is called again.
+ * before this routine is called again.
  * In addition, it creates a clone of the distribution object to which
- * the parameter objects points to. It is then marked as NON-PRIVATE and 
- * should be extracted from the generator object and destroyed immediately
- * before the generator object is destroyed (otherwise we had a memory leak
- * in the test suite).
+ * the parameter objects points to. 
+ * Thus one should run 
+ *    stop_counter_fcalls() 
+ * immediately after the corresponding parameter/generator object has been
+ * destroyed to avoid memory leaks.
  */
+
+int stop_counter_fcalls(void);
+/* stop counter for PDF calls and clear memory */
 
 /* get number of PDF evaluations */
 int get_counter_pdf(void);
 
 /* reset counter to 0 */
-void reset_counter_pdf(void);
+void reset_counter_fcalls(void);
 
 /*---------------------------------------------------------------------------*/
 /* print header for test log file                                            */

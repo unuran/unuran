@@ -68,7 +68,7 @@ _unur_FP_cmp( double x1, double x2, double eps)
 
   /* denormalized numbers (close to zero) may cause problems. */
   /* so we check this special case.                           */
-  if (fx1 <= DBL_MIN && fx2 <= DBL_MIN)
+  if (fx1 <= 2.*DBL_MIN && fx2 <= 2.*DBL_MIN)
     return 0;
 
   if (difference > delta)       /* x1 > x2 */

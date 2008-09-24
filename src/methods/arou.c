@@ -1590,12 +1590,12 @@ _unur_arou_get_starting_segments( struct unur_gen *gen )
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
-#define MAX_IT   (1000)      /* maximal number of interations to avoid 
+#define MAX_IT   (1000)      /* maximal number of iterations to avoid 
 				infinite loop in case of numerical errors    */
 
   struct unur_arou_segment *seg, *seg_new, *seg_tmp; 
   double x,fx;              /* construction point, value of PDF at x         */
-  int n_it = 0;             /* counter for number of interations             */
+  int n_it = 0;             /* counter for number of iterations              */
 
   /* check arguments */
   CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_AROU_GEN,UNUR_ERR_COOKIE);

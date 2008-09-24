@@ -456,7 +456,7 @@ _unur_util_brent(            /* An estimate to the min or max location */
     }                   /* ----- end-of-block ----- */
   }                /* ===== End of for loop ===== */
 
-  /* maximal number of interations exceeded */
+  /* maximal number of iterations exceeded */
   return INFINITY;
 
 #undef f

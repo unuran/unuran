@@ -818,7 +818,7 @@ _unur_hrb_info( struct unur_gen *gen, int help )
 
   /* performance */
   _unur_string_append(info,"performance characteristics:\n");
-  _unur_string_append(info,"   E[#interations] = %.2f  [approx.]\n", 
+  _unur_string_append(info,"   E[#iterations] = %.2f  [approx.]\n", 
 		      unur_test_count_urn(gen,samplesize,0,NULL)/((double)samplesize));
   _unur_string_append(info,"\n");
 

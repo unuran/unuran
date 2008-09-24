@@ -127,7 +127,7 @@
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
 
-#define NINV_SET_MAX_ITER     0x001u   /* number of maximal interations      */
+#define NINV_SET_MAX_ITER     0x001u   /* number of maximal iterations       */
 #define NINV_SET_X_RESOLUTION 0x002u   /* maximal relative error in x        */
 #define NINV_SET_START        0x004u   /* intervals at start (left/right)    */
 
@@ -1850,7 +1850,7 @@ _unur_ninv_debug_sample_regula( const struct unur_gen *gen, double u, double x, 
 
   log = unur_get_stream();
 
-  fprintf(log,"%s: u = %8.6f,\t x = %8.6g\t(cdf(x)-u = %8.2g)\t -- %2d interations [%d]\n",
+  fprintf(log,"%s: u = %8.6f,\t x = %8.6g\t(cdf(x)-u = %8.2g)\t -- %2d iterations [%d]\n",
 	  gen->genid,u,x,fx,iter,GEN->max_iter);
 
 } /* end of _unur_ninv_debug_sample_regula() */
@@ -1873,7 +1873,7 @@ _unur_ninv_debug_sample_newton( const struct unur_gen *gen, double u, double x, 
 
   log = unur_get_stream();
 
-  fprintf(log,"%s: u = %8.6f,\t x = %8.6g\t(cdf(x)-u = %8.2g)\t -- %2d interations [%d]\n",
+  fprintf(log,"%s: u = %8.6f,\t x = %8.6g\t(cdf(x)-u = %8.2g)\t -- %2d iterations [%d]\n",
 	  gen->genid,u,x,fx,iter,GEN->max_iter);
 
 } /* end of _unur_ninv_debug_sample_newton() */

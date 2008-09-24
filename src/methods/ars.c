@@ -98,7 +98,7 @@
 #define ARS_SET_N_PERCENTILES  0x008u
 #define ARS_SET_RETRY_NCPOINTS 0x010u
 #define ARS_SET_MAX_IVS        0x020u
-#define ARS_SET_MAX_ITER       0x040u   /* maximum number of interations     */
+#define ARS_SET_MAX_ITER       0x040u   /* maximum number of iterations      */
 
 /*---------------------------------------------------------------------------*/
 

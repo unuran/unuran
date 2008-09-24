@@ -100,9 +100,9 @@
       E.g., the Cauchy distribution is likely to show this problem
       when the requested u-resolution is (very) small.
       @end itemize
-      Flat regions or heavy tails might lead to an abortion of the
-      set-up or (even worse) the approximation error might become
-      larger than requested, since the (computation of the)
+      Regions with very small PDF values or heavy tails might lead to
+      an abortion of the set-up or (even worse) the approximation
+      error might become larger than requested, since the (computation of the)
       interpolating polynomial becomes numerically unstable.
       If the PDF or its 8th derivative is not bounded, then the
       integration error is larger than requested.

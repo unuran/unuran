@@ -53,6 +53,8 @@ _unur_pinv_debug_init_start( const struct unur_gen *gen )
   _unur_print_if_default(gen,PINV_SET_ORDER);
   fprintf(log,"\n%s: u-resolution = %g",gen->genid,GEN->u_resolution);
   _unur_print_if_default(gen,PINV_SET_U_RESOLUTION);
+  fprintf(log,"\n%s: maximum number of subintervals = %d",gen->genid,GEN->max_ivs);
+  _unur_print_if_default(gen,PINV_SET_MAX_IVS);
   fprintf(log,"\n%s: variant = ",gen->genid);
   switch (gen->variant) {
   case PINV_VARIANT_PDF:

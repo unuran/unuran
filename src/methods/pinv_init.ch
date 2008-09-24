@@ -165,6 +165,7 @@ _unur_pinv_create( struct unur_par *par )
   GEN->bright_par = PAR->bright;
   GEN->sleft  = PAR->sleft;              /* whether to search for boundary   */
   GEN->sright = PAR->sright;
+  GEN->max_ivs = PAR->max_ivs;           /* maximum number of subintervals   */
 
   /* initialize variables */
   GEN->bleft = GEN->bleft_par;
@@ -180,7 +181,7 @@ _unur_pinv_create( struct unur_par *par )
 
   /* allocate maximal array of intervals */
   /* [ Maybe we could move this into _unur_pinv_interval() ] */
-  GEN->iv = _unur_xmalloc(PINV_MAX_IVS * sizeof(struct unur_pinv_interval) );
+  GEN->iv = _unur_xmalloc(GEN->max_ivs * sizeof(struct unur_pinv_interval) );
 
 #ifdef PINV_USE_CDFTABLE
   /* allocate maximal array of subintervals for adaptive Gauss-Lobatto integration */

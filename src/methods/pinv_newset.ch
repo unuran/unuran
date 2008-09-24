@@ -61,6 +61,7 @@ unur_pinv_new( const struct unur_distr *distr )
   PAR->bright = 1.e100;          /* right border of the computational domain */
   PAR->sleft = TRUE;             /* whether to search for left boundary      */
   PAR->sright = TRUE;            /* whether to search for right boundary     */
+  PAR->max_ivs = PINV_DEFAULT_MAX_IVS; /* maximum number of subintervals     */
 
   par->method   = UNUR_METH_PINV; /* method                                  */
   par->variant  = ( (DISTR_IN.pdf != NULL)  /* default variant:              */
@@ -304,6 +305,42 @@ unur_pinv_set_searchboundary( struct unur_par *par, int left, int right )
   return UNUR_SUCCESS;
 
 } /* end of unur_pinv_set_searchboundary() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_pinv_set_max_intervals( struct unur_par *par, int max_ivs )
+     /*----------------------------------------------------------------------*/
+     /* set maximum number of intervals                                      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par       ... pointer to parameter for building generator object   */
+     /*   max_ivs   ... maximum number of intervals                          */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, PINV );
+
+  /* check new parameter for generator */
+  if (max_ivs < 100 || max_ivs > 1000000) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"maximum number of intervals < 100 or > 1000000");
+    return UNUR_ERR_PAR_SET;
+  }
+
+  /* store date */
+  PAR->max_ivs = max_ivs;
+
+  /* changelog */
+  par->set |= PINV_SET_MAX_IVS;
+
+  return UNUR_SUCCESS;
+
+} /* end of unur_pinv_set_max_intervals() */
 
 /*---------------------------------------------------------------------------*/
 

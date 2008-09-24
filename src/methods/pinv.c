@@ -153,7 +153,7 @@ TODO:
 
 /* -- Global parameters                                                      */
 #define MAX_ORDER   (19) 
-/* maximum order of Newton interpolation polynomial */
+/* Maximum order of Newton interpolation polynomial */
 
 #define PINV_UERROR_CORRECTION  (0.9)
 /* PINV tries to create an approximation of the inverse CDF where the        */
@@ -162,14 +162,17 @@ TODO:
 /* corrected. Thus the upper bound for the pure approximation error of the   */
 /* interpolation is set to PINV_UERROR_CORRECTION * u-resolution.            */
 
-#define PINV_MAX_IVS  (10000)
-/* maximum number of intervals */
+#define PINV_DEFAULT_MAX_IVS  (10000)
+/* Default for maximum number of subintervals */
 
 /* -- Gauss-Lobatto integration                                              */
 
 #define PINV_MAX_LOBATTO_IVS  (20001)
-/* #define PINV_MAX_LOBATTO_IVS  (101)    */
-/* maximum  number of subintervals for adaptive Gauss-Lobatto integration    */
+/* Maximum  number of subintervals for adaptive Gauss-Lobatto integration.   */
+/* We keep this number fixed (independent of the maximum number of           */
+/* subintervals for Newton interpolation), since the number of these         */
+/* subintervals does neither depend on the order of the interpolating        */
+/* polynomial nor on the requested u-resolution.                             */
 
 /* -- 1. Preprocessing                                                       */
 
@@ -204,7 +207,7 @@ TODO:
 /* We use a smaller tolerance when computing the Gauss-Lobatto integral for  */
 /* the PDF between construction points of the Newton polynomial.             */
 
-#define PINV_MAX_ITER_IVS    (10 * PINV_MAX_IVS)
+#define PINV_MAX_ITER_IVS    (10 * GEN->max_ivs)
 /* maximum number of iterations for computing intervals for Newtwon          */
 /* interpolation polynomials. Obviously it should be larger than the maximum */
 /* number of intervals (or the latter can be reduced).                       */
@@ -239,6 +242,7 @@ TODO:
 #define PINV_SET_BOUNDARY       0x008u  /* boundary of computational region  */
 #define PINV_SET_SEARCHBOUNDARY 0x010u  /* search for boundary               */
 #define PINV_SET_VARIANT        0x020u  /* variant of algorithm              */
+#define PINV_SET_MAX_IVS        0x040u  /* maximum number of subintervals    */
 
 /*---------------------------------------------------------------------------*/
 

@@ -138,10 +138,22 @@
       X = "approximate inverse CDF"(U) |U-CDF(X)|) can be controlled
       by means of unur_pinv_set_u_resolution().
 
-      The maximal error of this approximation is only estimated. If
-      this error is crucial for an application we recommend to compute
+      The maximal error of this approximation is only estimated. For
+      very small u-resolution or when the 8th derivative of the PDF
+      becomes very large, then the actual approximation error might be 
+      (slightly) larger than the requested u-resolution.
+      If this error is crucial for an application we recommend to compute
       this error using unur_pinv_estimate_error() which runs a small
       Monte Carlo simulation.
+
+      The number of required subintervals heavily depends on the order
+      of the interpolating polynomial and the requested u-resolution:
+      it increases when order or u-resolution are decreased.
+      It can be checked using a unur_pinv_get_n_intervals() call.
+      The maximum number of such subintervals is fixed but can be
+      increased using a unur_pinv_set_max_intervals() call.
+      If this maximum number is too small then the set-up aborts with
+      a corresponding error message.
 
    =END
 */
@@ -179,6 +191,12 @@ int unur_pinv_set_u_resolution( UNUR_PAR *parameters, double u_resolution);
    leads to an inversion algorithm that could be called exact. For most
    simulations slightly bigger values for the maximal error are enough
    as well. 
+
+   Smaller values for @var{u_resolution} increase the number of
+   subinterval that are necessary for the approximation of the inverse
+   CDF. For very small values (less then @code{1.e-12}) this number
+   might exceed the maximum number of such intervals. However, this
+   number can be increased using a unur_pinv_set_max_intervals() call.
 
    Default is @code{1.e-10}.
 */
@@ -234,6 +252,14 @@ int unur_pinv_set_searchboundary( UNUR_PAR *parameters, int left, int right );
    cut-off points fails and one wants to try with precomputed values.
 
    Default: TRUE.
+*/
+
+int unur_pinv_set_max_intervals( UNUR_PAR *parameters, int max_ivs );
+/* 
+   Set maximum number of intervals. @var{max_ivs} must be at least
+   @code{100} and at most @code{1000000}.
+
+   Default is @code{10000}.
 */
 
 int unur_pinv_get_n_intervals( const UNUR_GEN *generator ); 

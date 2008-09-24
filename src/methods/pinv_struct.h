@@ -42,6 +42,7 @@ struct unur_pinv_par {
   double bright;           /* right boundary of the computational domain     */
   int sleft;               /* whether to search for left boundary point      */
   int sright;              /* whether to search for right boundary point     */
+  int max_ivs;             /* maximum number of subintervals                 */
 };
 
 /*---------------------------------------------------------------------------*/
@@ -92,7 +93,9 @@ struct unur_pinv_gen {
   double  bright;          /* right border of the computational domain       */
 
   struct unur_pinv_interval *iv; /* list of intervals                        */
-  int n_ivs;               /* number of sub intervals                        */
+  int n_ivs;               /* number of subintervals                         */
+  int max_ivs;             /* maximum number of subintervals                 */
+
 
   double  bleft_par;       /* border of the computational domain as ...      */
   double  bright_par;      /* ... given by user                              */

@@ -108,6 +108,9 @@ _unur_pinv_info( struct unur_gen *gen, int help )
 			(GEN->sleft ? "TRUE":"FALSE"), (GEN->sright ? "TRUE":"FALSE"), 
 			(gen->set & PINV_SET_BOUNDARY) ? "" : "[default]");
 
+    _unur_string_append(info,"   maximum number of interval = %d  %s\n", GEN->max_ivs,
+			(gen->set & PINV_SET_MAX_IVS) ? "" : "[default]");
+
     _unur_string_append(info,"\n");
   }
 

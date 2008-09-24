@@ -206,7 +206,7 @@ _unur_pinv_interval( struct unur_gen *gen, int i, double x, double cdfx )
   COOKIE_CHECK(gen,CK_PINV_GEN,UNUR_FAILURE);
 
   /* check for free intervals */
-  if (i >= PINV_MAX_IVS) {
+  if (i >= GEN->max_ivs) {
     _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,
 		"maximum number of intervals exceeded");
     return UNUR_ERR_GEN_CONDITION;

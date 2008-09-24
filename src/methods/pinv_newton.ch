@@ -74,7 +74,12 @@ _unur_pinv_create_table( struct unur_gen *gen )
     /* check number of iterations */
     if (iter >= PINV_MAX_ITER_IVS) {
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,
-		  "maximum number of interations exceeded");
+		  "maximum number of iterations exceeded");
+#ifdef UNUR_ENABLE_LOGGING
+      /* write info into log file */
+      if (gen->debug & PINV_DEBUG_SEARCHBD)
+	_unur_pinv_debug_create_table(gen,iter,n_incr_h,n_decr_h);
+#endif
       return UNUR_ERR_GEN_CONDITION;
     }
 
@@ -121,7 +126,7 @@ _unur_pinv_create_table( struct unur_gen *gen )
     /* estimate error of Newton interpolation */
     maxerror = _unur_pinv_newton_maxerror(gen,&(GEN->iv[i]),xval,utol);
 
-    if (maxerror > utol) { 
+    if (!(maxerror <= utol)) {
       /* error too large: reduce step size */
       h *= (maxerror > 4.*utol) ? 0.81 : 0.9;
       cont = TRUE;  /* we need another iteration */
@@ -414,7 +419,7 @@ _unur_pinv_newton_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv,
     
     /* inverse CDF for U test point */
     x = _unur_pinv_newton_eval(testu[i], ui, zi, GEN->order);
-    
+
     /* estimate CDF for interpolated x value */
     if (i==0 || xval==NULL)
       u = _unur_pinv_Udiff(gen, x0, x, utol);
@@ -427,7 +432,7 @@ _unur_pinv_newton_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv,
 
     /* compute u-error */
     uerror = fabs(u - testu[i]);
-    
+
     /* update maximal error */
     if (uerror>maxerror) maxerror = uerror;
   }

@@ -40,6 +40,8 @@ _unur_pinv_create_table( struct unur_gen *gen )
   int iter;                  /* number of iterations */
   int cont;                  /* whether we have to continue or loop */
   int k;                     /* auxiliary variable */
+  int success;               /* return code */
+  int right_bd;              /* whether we have reach right boundary */
   double chebyshev[MAX_ORDER+1]; /* Chebyshev points */
   double xval[MAX_ORDER+1];  /* x-values for construction points for Newton polynomial */
 
@@ -79,7 +81,11 @@ _unur_pinv_create_table( struct unur_gen *gen )
     /* right boundary reached ? */
     if(GEN->iv[i].xi+h > GEN->bright) {
       h = GEN->bright - GEN->iv[i].xi;
-      cont = FALSE;  /* we probably can stop after this iteration */
+      cont = FALSE;    /* we probably can stop after this iteration */
+      right_bd = TRUE; /* we have reached right boundary */
+    }
+    else {
+      right_bd = FALSE;
     }
 
     /* construction points for Newton interpolation polynomial: */
@@ -88,9 +94,29 @@ _unur_pinv_create_table( struct unur_gen *gen )
       xval[k] = GEN->iv[i].xi + h * chebyshev[k];
 
     /* compute Newton interpolation polynomial */
-    if (_unur_pinv_newton_create(gen,&(GEN->iv[i]),xval,utol) != UNUR_SUCCESS)
-      return UNUR_ERR_GEN_CONDITION;
-    /** FIXME: make interval longer ?? **/
+    success = _unur_pinv_newton_create(gen,&(GEN->iv[i]),xval,utol);
+    if (success != UNUR_SUCCESS) {
+      if (success == UNUR_ERR_SILENT) {
+	/* area below PDF = 0 */
+	if (right_bd) {
+	  /* right boundary --> cut domain */
+	  _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,
+			"PDF near right boundary too close to 0 --> cut domain");
+	  GEN->bright = GEN->iv[i].xi;
+	  break;
+	}
+	else { 
+	  /* left boundary --> increase step size */
+	  h *= 10.;
+	  ++n_incr_h;
+	  continue;
+	}
+      }
+      else {
+	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF over interval too close to 0");
+	return UNUR_ERR_GEN_CONDITION;
+      }
+    }
 
     /* estimate error of Newton interpolation */
     maxerror = _unur_pinv_newton_maxerror(gen,&(GEN->iv[i]),xval,utol);
@@ -244,7 +270,6 @@ _unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_interval *iv,
   double *zi = iv->zi;   /* coefficients of Newton interpolation */
   double xi, dxi;        /* boundary and length of i-th subinterval */
   double area;           /* integral of PDF over subinterval */
-  double chk;            /* check sum */
   int i,k;               /* auxiliary variables */
 
   /* check arguments */
@@ -263,6 +288,7 @@ _unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_interval *iv,
 
     /* compute integral of PDF in interval (xi,xi+dxi) */
     area = _unur_pinv_Udiff(gen, xi, dxi, utol);
+    if (_unur_iszero(area)) return UNUR_ERR_SILENT;
 
     /* construction points of interpolation polynomial of CDF^{-1} */
     ui[i] = (i>0) ? (ui[i-1]+area) : area;
@@ -276,14 +302,13 @@ _unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_interval *iv,
     for(i=GEN->order-1; i>k; i--) {
       zi[i] = (zi[i]-zi[i-1]) / (ui[i]-ui[i-(k+1)]);
     }
-    zi[k] = (zi[i]-zi[i-1]) / ui[i];
+    zi[k] = (zi[k]-zi[k-1]) / ui[k];
   }
-  
+
   /* check result */
-  for (chk = 0., i=0; i<GEN->order; i++) chk += zi[i];
-  if (!_unur_isfinite(chk)) {
-    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF over interval too close to 0");
-      return UNUR_ERR_GEN_CONDITION;
+  for (i=0; i<GEN->order; i++) {
+    if (!_unur_isfinite(zi[i])) 
+      return UNUR_ERR_SILENT;
   }
 
   /* o.k. */

@@ -1505,7 +1505,7 @@ int run_validate_inverror( FILE *LOG, UNUR_GEN *gen, const UNUR_DISTR *distr,
 
   /* check objectst */
   if (gen == NULL || distr == NULL) {
-    fprintf(LOG,"testname:   ERROR: generator not initialized\n");
+    fprintf(LOG,"test_inverror:   ERROR: generator not initialized\n");
     printf("(!!+)"); fflush(stdout);
     return 1000;
   }

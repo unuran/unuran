@@ -175,8 +175,8 @@ UNUR_PAR *unur_pinv_new( const UNUR_DISTR *distribution );
 
 int unur_pinv_set_order( UNUR_PAR *parameters, int order);
 /* 
-   Set order of interpolation. Valid orders are between @code{2} and
-   @code{19}. Higher orders result in fewer intervals for the
+   Set order of interpolation. Valid orders are between @code{3} and
+   @code{12}. Higher orders result in fewer intervals for the
    approximations. 
 
    Default: @code{5}.

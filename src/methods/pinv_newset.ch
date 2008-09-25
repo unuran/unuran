@@ -102,8 +102,8 @@ unur_pinv_set_order( struct unur_par *par, int order)
   _unur_check_par_object( par, PINV );
 
   /* check new parameter for generator */
-  if (order<2 || order>MAX_ORDER) {
-    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"order <2 or >19");
+  if (order<3 || order>MAX_ORDER) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"order <3 or >12");
     return UNUR_ERR_PAR_SET;
   }
 

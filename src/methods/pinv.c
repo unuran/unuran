@@ -152,7 +152,7 @@ TODO:
 /* Constants                                                                 */
 
 /* -- Global parameters                                                      */
-#define MAX_ORDER   (19) 
+#define MAX_ORDER   (12)
 /* Maximum order of Newton interpolation polynomial */
 
 #define PINV_UERROR_CORRECTION  (0.9)

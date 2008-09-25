@@ -185,16 +185,12 @@ TODO:
 /* Tolerated relative area when computing the area below the PDF             */
 /* approximately in Step 1b.                                                 */
 
-#define PINV_TAILCUTOFF_FACTOR(ures) ((ures <= 9.e-13) ? 0.5 : 0.1)
+#define PINV_TAILCUTOFF_FACTOR(ures) (0.05)
 #define PINV_TAILCUTOFF_MAX          (1.e-10) 
 /* For unbounded domains the tails has to be cut off. We use the given       */
 /* u-resolution for finding the cut points. (The probability for each of the */
 /* chopped regions should be less than                                       */
 /* HINV_TAILCUTOFF_FACTOR * u-resolution.)                                   */
-/* For very small u-resolution we need a higher factor for distributions     */
-/* with heavy tails, e.g. the Cauchy distribution, since otherwise we have   */
-/* numerical problems to find proper cut-off points .                        */
-/*                                                                           */
 /* However, the tail probabilities should not be greater than some threshold */
 /* value, given by PINV_TAILCUTOFF_MAX which reflects the precision of the   */
 /* used stream of uniform pseudo-random numbers (typically about 2^32).      */
@@ -203,7 +199,7 @@ TODO:
 
 /* -- 2. Newton interpolation                                                */
 
-#define PINV_UTOL_CORRECTION  (0.1)
+#define PINV_UTOL_CORRECTION  (0.05)
 /* We use a smaller tolerance when computing the Gauss-Lobatto integral for  */
 /* the PDF between construction points of the Newton polynomial.             */
 

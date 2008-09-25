@@ -402,7 +402,7 @@ _unur_pinv_computational_domain (struct unur_gen *gen)
 
   /* parameters for tail cut-off points: maximal area in tails          */
   /* We use the given U-reslution * PINV_TAILCUTOFF_FACTOR * PDFarea.   */
-  tailcut_error = GEN->u_resolution * PINV_TAILCUTOFF_FACTOR(GEN->u_resolution);
+  tailcut_error = GEN->u_resolution * PINV_TAILCUTOFF_FACTOR;
   tailcut_error = _unur_min( tailcut_error, PINV_TAILCUTOFF_MAX );
   tailcut_error = _unur_max( tailcut_error, 2*DBL_EPSILON );
   tailcut_error *= GEN->area * PINV_UERROR_CORRECTION;
@@ -598,7 +598,7 @@ _unur_pinv_computational_domain_CDF (struct unur_gen *gen)
 
   /* parameters for tail cut-off points: maximal area in tails          */
   /* We use the given U-reslution * PINV_TAILCUTOFF_FACTOR * PDFarea.   */
-  tailcut_error = GEN->u_resolution * PINV_TAILCUTOFF_FACTOR(GEN->u_resolution);
+  tailcut_error = GEN->u_resolution * PINV_TAILCUTOFF_FACTOR;
   tailcut_error = _unur_min( tailcut_error, PINV_TAILCUTOFF_MAX );
   tailcut_error = _unur_max( tailcut_error, 2*DBL_EPSILON );
   tailcut_error *= GEN->area * PINV_UERROR_CORRECTION;

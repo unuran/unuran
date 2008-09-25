@@ -185,8 +185,8 @@ TODO:
 /* Tolerated relative area when computing the area below the PDF             */
 /* approximately in Step 1b.                                                 */
 
-#define PINV_TAILCUTOFF_FACTOR(ures) (0.05)
-#define PINV_TAILCUTOFF_MAX          (1.e-10) 
+#define PINV_TAILCUTOFF_FACTOR   (0.05)
+#define PINV_TAILCUTOFF_MAX      (1.e-10) 
 /* For unbounded domains the tails has to be cut off. We use the given       */
 /* u-resolution for finding the cut points. (The probability for each of the */
 /* chopped regions should be less than                                       */

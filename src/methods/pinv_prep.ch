@@ -753,8 +753,8 @@ _unur_pinv_cut_CDF( struct unur_gen *gen, double dom, double x0, double ul, doub
 double
 _unur_pinv_Udiff (struct unur_gen *gen, double x, double h, double utol)
      /*----------------------------------------------------------------------*/
-     /* Compute difference CDF(x+h)-CDF(x) (approximately), where CDF is the */
-     /* integral of the given (quasi-) density.                              */
+     /* Compute difference CDF(x+h)-CDF(x) (approximately), where CDF is     */
+     /* the integral of the given (quasi-) density.                          */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
@@ -771,7 +771,7 @@ _unur_pinv_Udiff (struct unur_gen *gen, double x, double h, double utol)
     return _unur_pinv_Udiff_lobatto(gen,x,h,utol);
 
   case PINV_VARIANT_CDF:
-    return fabs(CDF(x+h) - CDF(x));
+    return CDF(x+h) - CDF(x);
 
   default:
     _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");

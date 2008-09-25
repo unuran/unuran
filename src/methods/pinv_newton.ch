@@ -40,14 +40,17 @@ _unur_pinv_create_table( struct unur_gen *gen )
   int iter;                  /* number of iterations */
   int cont;                  /* whether we have to continue or loop */
   int k;                     /* auxiliary variable */
-  int success;               /* return code */
+
   int right_bd;              /* whether we have reach right boundary */
+  double iarea;              /* area below PDF in subinterval */
+
   double chebyshev[MAX_ORDER+1]; /* Chebyshev points */
   double xval[MAX_ORDER+1];  /* x-values for construction points for Newton polynomial */
 
-  int n_incr_h = 0;          /* number of steps where h is increased */
   int n_decr_h = 0;          /* number of steps where h is decreased */
-
+  int n_incr_h = 0;          /* number of steps where h is increased */
+  int n_incr_h_left = 0;     /* number of steps where h is increased at left boundary 
+				to avoid round-off error */
   /* check arguments */
   COOKIE_CHECK(gen,CK_PINV_GEN,UNUR_ERR_COOKIE);
 
@@ -75,11 +78,6 @@ _unur_pinv_create_table( struct unur_gen *gen )
     if (iter >= PINV_MAX_ITER_IVS) {
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,
 		  "maximum number of iterations exceeded");
-#ifdef UNUR_ENABLE_LOGGING
-      /* write info into log file */
-      if (gen->debug & PINV_DEBUG_SEARCHBD)
-	_unur_pinv_debug_create_table(gen,iter,n_incr_h,n_decr_h);
-#endif
       return UNUR_ERR_GEN_CONDITION;
     }
 
@@ -99,26 +97,95 @@ _unur_pinv_create_table( struct unur_gen *gen )
       xval[k] = GEN->iv[i].xi + h * chebyshev[k];
 
     /* compute Newton interpolation polynomial */
-    success = _unur_pinv_newton_create(gen,&(GEN->iv[i]),xval,utol);
-    if (success != UNUR_SUCCESS) {
-      if (success == UNUR_ERR_SILENT) {
-	/* area below PDF = 0 */
-	if (right_bd) {
-	  /* right boundary --> cut domain */
+    if (_unur_pinv_newton_create(gen,&(GEN->iv[i]),xval,utol) != UNUR_SUCCESS) {
+      /* area below PDF = 0 or serious round-off errors */
+      /* we have to deal with three cases: 
+       *   1. left boundary
+       *   2. interior
+       *   3. right boundary
+       */
+      
+      /* -- 1. left boundary (first interval) -- */
+      if (i==0) { 
+	/* check area: CDF(x) - CDF(left) */
+	iarea = _unur_pinv_Udiff(gen, GEN->bleft, h, utol);
+
+	if (iarea < 0.1*utol) {
+	  /* cut right boundary */
+	  GEN->bleft = GEN->iv[i].xi + h;
+	  GEN->iv[i].xi = GEN->bleft;
+	}
+	else if (n_incr_h_left < 100) {
+	  /* increase step size */
+	  h *= 2.;
+	  ++n_incr_h;
+	  ++n_incr_h_left;
+	}
+	else {
+	  /* emergency exit: since we were not successfull til now --> abort */
+	  _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,
+		      "PDF too close to 0 on relevant part of domain --> abort");
+	  return UNUR_ERR_GEN_CONDITION;
+	}
+	continue;
+      }
+      
+/*       /\* -- 3. right boudary -- *\/ */
+
+/*       /\* check area: CDF(bright) - CDF(x) *\/ */
+/*       iarea = _unur_pinv_Udiff(gen, GEN->iv[i].xi, GEN->bright - GEN->iv[i].xi, utol); */
+
+/*       if (iarea < 0.1*utol) { */
+/* 	/\* cut right boundary *\/ */
+/* 	GEN->bright = GEN->iv[i].xi; */
+/* 	cont = FALSE; */
+/* 	break; */
+/*       } */
+
+/*       /\* -- 2. interior interval -- *\/ */
+/*       if (!right_bd) { */
+/* 	/\* try to replace interval [xi,xi+h] by [xi,bright]         *\/ */
+/* 	/\* (avoid round-off errors by making h a little bit larger) *\/ */
+/* 	h = 1.1*(GEN->bright - GEN->iv[i].xi); */
+/* 	++n_incr_h; */
+/* 	continue; */
+/*       } */
+
+/*       /\* -- no idea what to do now --> abort *\/ */
+/*       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION, */
+/* 		  "PDF too close to 0 on relevant part of domain --> abort"); */
+/*       return UNUR_ERR_GEN_CONDITION; */
+
+      
+      /* -- 2. interior interval -- */
+      if (!right_bd) {
+	/* try to replace interval [xi,xi+h] by [xi,bright]         */
+	/* (avoid round-off errors by making h a little bit larger) */
+
+	h = 1.1*(GEN->bright - GEN->iv[i].xi);
+	++n_incr_h;
+	continue;
+      }
+      
+      /* -- 3. right boudary -- */
+
+      /* check area: CDF(bright) - CDF(x) */
+      iarea = _unur_pinv_Udiff(gen, GEN->iv[i].xi, GEN->bright - GEN->iv[i].xi, utol);
+
+      if (iarea < 10*utol) {
+	/* cut right boundary */
+	if (iarea > utol) {
 	  _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,
 			"PDF near right boundary too close to 0 --> cut domain");
-	  GEN->bright = GEN->iv[i].xi;
-	  break;
 	}
-	else { 
-	  /* left boundary --> increase step size */
-	  h *= 10.;
-	  ++n_incr_h;
-	  continue;
-	}
+	GEN->bright = GEN->iv[i].xi;
+	cont = FALSE;
+	break;
       }
+
       else {
-	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF over interval too close to 0");
+	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,
+		    "PDF too close to 0 on relevant part of domain --> abort");
 	return UNUR_ERR_GEN_CONDITION;
       }
     }

@@ -234,7 +234,7 @@ _unur_pinv_debug_intervals( const struct unur_gen *gen )
 
 void
 _unur_pinv_debug_create_table (const struct unur_gen *gen,
-			       int iter, int n_incr_h, int n_decr_h)
+			       int iter, int n_incr_h, int n_decr_h, int n_use_linear)
      /*----------------------------------------------------------------------*/
      /* print data that have been collected while creating polynomials.      */
      /*                                                                      */
@@ -243,7 +243,7 @@ _unur_pinv_debug_create_table (const struct unur_gen *gen,
      /*   iter     ... total number of iterations                            */
      /*   n_incr_h ... number of steps where h is increased                  */
      /*   n_decr_h ... number of steps where h is decreased                  */
-     /*                                                                      */
+     /*   n_use_linear .. number of steps where linear interpolation is used */
      /*----------------------------------------------------------------------*/
 {
   FILE *log;
@@ -257,6 +257,7 @@ _unur_pinv_debug_create_table (const struct unur_gen *gen,
   fprintf(log,"%s:\t# iterations   = %d\n",gen->genid,iter);
   fprintf(log,"%s:\t# increasing h = %d  (%g%%)\n",gen->genid,n_incr_h,(100.*n_incr_h)/iter);
   fprintf(log,"%s:\t# decreasing h = %d  (%g%%)\n",gen->genid,n_decr_h,(100.*n_decr_h)/iter);
+  fprintf(log,"%s:\t# linear       = %d  (%g%%)\n",gen->genid,n_use_linear,(100.*n_use_linear)/iter);
   fprintf(log,"%s:\n",gen->genid);
 
   fflush(log);

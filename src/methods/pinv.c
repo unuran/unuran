@@ -454,6 +454,12 @@ static int _unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_inte
 /* 2a. Compute coefficients for Newton interpolation.                        */
 /*---------------------------------------------------------------------------*/
 
+static int _unur_pinv_linear_create (struct unur_gen *gen, struct unur_pinv_interval *iv, 
+				     double *xval, double utol);
+/*---------------------------------------------------------------------------*/
+/* [2a.] Compute coefficients for linear interpolation.                      */
+/*---------------------------------------------------------------------------*/
+
 static int _unur_pinv_chebyshev_points (int order, double *pt);
 /*---------------------------------------------------------------------------*/
 /* [2a.] Compute Chebyshev points.                                           */
@@ -470,9 +476,14 @@ static double _unur_pinv_newton_maxerror (struct unur_gen *gen, struct unur_pinv
 /* 2c. estimate maximal error of Newton interpolation in subinterval         */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_pinv_newton_testpoints (int g,double ui[],double utest[]);
+static int _unur_pinv_newton_testpoints (int g, double ui[], double utest[]);
 /*---------------------------------------------------------------------------*/
 /* [2c.] calculate the local maxima of the interpolation polynomial          */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_pinv_linear_testpoints (int g, double ui[], double utest[]);
+/*---------------------------------------------------------------------------*/
+/* [2c.] create table of test points for linear interpolation                */
 /*---------------------------------------------------------------------------*/
 
 
@@ -517,7 +528,8 @@ static void _unur_pinv_debug_intervals (const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 
 static void _unur_pinv_debug_create_table (const struct unur_gen *gen,
-					   int iter, int n_incr_h, int n_decr_h);
+					   int iter, int n_incr_h, int n_decr_h,
+					   int n_use_linear);
 /*---------------------------------------------------------------------------*/
 /* print data that have been collected while creating polynomials.           */
 /*---------------------------------------------------------------------------*/

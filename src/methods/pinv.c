@@ -102,11 +102,7 @@
 
 TODO:
 
- - DOCU/set call: u-resolution must not be to small.
-
  - DOCU/comments: use PDF area given by user as first guess for integration
-
- - final version of INFO string
 
  *                                                                           *
  *****************************************************************************/

@@ -448,6 +448,8 @@ _unur_pinv_newton_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv,
 			    double xval[], double utol)
      /*----------------------------------------------------------------------*/
      /* 2c. Estimate maximal error of Newton interpolation in subinterval.   */
+     /*     In addition it makes a simple check for monotonicity of the      */
+     /*     inverse CDF.                                                     */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen  ... pointer to generator object                               */
@@ -456,7 +458,8 @@ _unur_pinv_newton_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv,
      /*   utol ... maximal tolerated u-error                                 */
      /*                                                                      */
      /* return:                                                              */
-     /*   estimated maximal u-error                                          */
+     /*   estimated maximal u-error, or                                      */
+     /*   1000 whenever the inverse CDF is not monotone                      */
      /*----------------------------------------------------------------------*/
 {
   double x0 = iv->xi;    /* left boundary point of interval */
@@ -487,6 +490,12 @@ _unur_pinv_newton_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv,
     /* inverse CDF for U test point */
     x = _unur_pinv_newton_eval(testu[i], ui, zi, GEN->order);
 
+    /* check for monotonicity */
+    if (! (xval[i] <= x0+x && x0+x <=xval[i+1]) ) {
+      /* not monotone */
+      return 1000.;
+    }
+
     /* estimate CDF for interpolated x value */
     if (i==0 || xval==NULL)
       u = _unur_pinv_Udiff(gen, x0, x, utol);
@@ -512,7 +521,7 @@ _unur_pinv_newton_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv,
 int
 _unur_pinv_newton_testpoints (int order, double ui[], double utest[])
      /*----------------------------------------------------------------------*/
-     /* [2c.] calcuates the local maxima of the polynomial.                  */
+     /* [2c.] calculates the local maxima of the polynomial.                 */
      /* used as control points for error estimate.                           */
      /*                                                                      */
      /* parameters:                                                          */

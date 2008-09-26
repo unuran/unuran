@@ -121,6 +121,14 @@
       searched numerically which might be rather expensive, especially
       when this boundary point equals @code{0}.
 
+      It is also possible to use the CDF of the distribution instead
+      of the PDF. Thus the distribution object must contain a pointer
+      to the CDF. Moreover, this variant of the algorithmus has to be
+      switched on using an unur_pinv_set_usecdf() call.
+      Notice, however, that the setup for this variant is numerically
+      less stable than using integration of the PDF (the default
+      variant).
+
       The inverse CDF is interpolated using Newton polymials.
       The order of this polynomial can be set by means of a
       unur_pinv_set_order() call.
@@ -145,6 +153,8 @@
       If this error is crucial for an application we recommend to compute
       this error using unur_pinv_estimate_error() which runs a small
       Monte Carlo simulation.
+      See also documentation for function unur_pinv_set_u_resolution()
+      and the remark given there.
 
       The number of required subintervals heavily depends on the order
       of the interpolating polynomial and the requested u-resolution:
@@ -184,10 +194,10 @@ int unur_pinv_set_order( UNUR_PAR *parameters, int order);
 
 int unur_pinv_set_u_resolution( UNUR_PAR *parameters, double u_resolution);
 /* 
-   Set maximal error in u-direction. However, the given u-error must not
-   be smaller than machine epsilon (@code{DBL_EPSILON}) and should not be
-   too close to this value. As the resolution of most uniform random
-   number sources is 2^(-32) = @code{2.3e-10}, a value of @code{1.e-10}
+   Set maximal error in u-direction. Values of @var{u_resolution} must
+   at least @code{1.e-15} and @code{1.e-5} at most.
+   Notice that the resolution of most uniform random number sources is
+   2^(-32) = @code{2.3e-10}. Thus a value of @code{1.e-10} 
    leads to an inversion algorithm that could be called exact. For most
    simulations slightly bigger values for the maximal error are enough
    as well. 
@@ -197,6 +207,19 @@ int unur_pinv_set_u_resolution( UNUR_PAR *parameters, double u_resolution);
    CDF. For very small values (less then @code{1.e-12}) this number
    might exceed the maximum number of such intervals. However, this
    number can be increased using a unur_pinv_set_max_intervals() call.
+
+   @emph{Remark:}
+   We ran many experiments and found that the observed u-error was
+   always smaller than the given @var{u_resolution} whenever this
+   value was @code{1.e-12}. For values smaller @code{1e-13} the
+   maximal observed u-error was slightly larger. Thus one use
+   @code{1.e-15} if best approximation is required. However, the
+   actual u-error can be as large as @code{1.e-14}.
+
+   @strong{Warning!}
+   These figures are based on our experiments (with some tolarence
+   adde to be on the safe side). There is no guarentee for these error
+   estimates for a particular distribution.
 
    Default is @code{1.e-10}.
 */
@@ -211,6 +234,12 @@ int unur_pinv_set_usepdf( UNUR_PAR *parameters );
 int unur_pinv_set_usecdf( UNUR_PAR *parameters );
 /* 
    Use CDF (if available) to compute approximate inverse CDF.
+
+   @emph{Remark:}
+   We ran many experiments and found that for small values of the
+   given @var{u_resolution} (less than @code{1.e-12}) the setup fails
+   for distributions with heavy tails. We found that using the PDF
+   (instead of the CDF) is numerically more stable.
 */
 
 int unur_pinv_set_boundary( UNUR_PAR *parameters, double left, double right );

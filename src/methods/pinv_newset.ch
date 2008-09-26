@@ -138,14 +138,14 @@ unur_pinv_set_u_resolution( struct unur_par *par, double u_resolution )
   _unur_check_par_object( par, PINV );
 
   /* check new parameter for generator */
-  if (u_resolution > 1.e-2) {
+  if (u_resolution > 1.001e-5) {
     /* this is obviously an error */
-    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"u-resolution too large --> not changed");
-    return UNUR_ERR_PAR_SET;
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"u-resolution too large --> use 1.e-5 instead");
+    u_resolution = 1.e-5;
   }
-  if (u_resolution < 5.*DBL_EPSILON ) {
-    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"u-resolution too small --> corrected");
-    u_resolution = 5.*DBL_EPSILON;
+  if (u_resolution < 0.999e-15 ) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"u-resolution too small --> use 1.e-15 instead");
+    u_resolution = 1.e-15;
   }
 
   /* store date */

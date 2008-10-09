@@ -319,3 +319,14 @@ int unur_pinv_estimate_error( const UNUR_GEN *generator, int samplesize, double 
 
 /* =END */
 /*---------------------------------------------------------------------------*/
+
+/*
+   Remark:
+   PINV needs a first guess for the area below the PDF. This value can
+   be set using the unur_distr_cont_set_pdfarea() call. Otherwise
+   @code{1} is used.
+   There is no necessity to set this area unless it differs from 1 by
+   several orders of magnitude. 
+*/
+
+/*---------------------------------------------------------------------------*/

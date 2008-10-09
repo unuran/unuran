@@ -177,7 +177,7 @@ _unur_pinv_create( struct unur_par *par )
   GEN->n_ivs = -1;        /* -1 indicates that there are no intervals at all */
   GEN->guide_size = 0; 
   GEN->guide = NULL;
-  GEN->area = 1.;         /* we use 1 as first guess */
+  GEN->area = DISTR.area; /* we use the value in the distribution object as first guess */
 
   /* allocate maximal array of intervals */
   /* [ Maybe we could move this into _unur_pinv_interval() ] */

@@ -82,10 +82,13 @@ _unur_pinv_info( struct unur_gen *gen, int help )
   _unur_string_append(info,"   truncated domain = (%g,%g)\n",GEN->bleft,GEN->bright);
   /*   _unur_string_append(info,"   Prob(X<domain)   = %g\n", _unur_max(0,GEN->tailcutoff_left)); */
   /*   _unur_string_append(info,"   Prob(X>domain)   = %g\n", _unur_max(0,1.-GEN->tailcutoff_right)); */
-  {
+  if (DISTR.cdf) {
     double max_error=1.; double MAE=1.;
     unur_pinv_estimate_error( gen, 10000, &max_error, &MAE );
     _unur_string_append(info,"   u-error         <= %g  (mean = %g)\n", max_error, MAE);
+  }
+  else {
+    _unur_string_append(info,"   u-error            NA  [requires CDF]\n");
   }
 
   _unur_string_append(info,"   # intervals      = %d\n", GEN->n_ivs);

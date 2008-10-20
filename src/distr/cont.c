@@ -2287,7 +2287,8 @@ _unur_distr_cont_debug( const struct unur_distr *distr, const char *genid )
       return;
     default:
       /* nothing to do */
-      return;
+      fprintf(log,"%s: derived distribution.\n",genid);
+      fprintf(log,"%s:\n",genid);
     }
   }
 

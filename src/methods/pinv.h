@@ -120,6 +120,12 @@
       unur_distr_cont_set_domain() call. Otherwise, the boundary is
       searched numerically which might be rather expensive, especially
       when this boundary point equals @code{0}.
+      
+      When sampling from truncated distributions with extreme
+      truncation points, it is recommended to provide the log-density 
+      using unur_distr_cont_set_logpdf() and the mode.
+      The the PDF is rescaled such that the PDF at the mode is 1.
+      Thus the algorithm is numerically more stable.
 
       It is also possible to use the CDF of the distribution instead
       of the PDF. Thus the distribution object must contain a pointer

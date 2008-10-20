@@ -54,6 +54,7 @@ _unur_pinv_init( struct unur_par *par )
   /* compute rescaling factor for PDF */
   /* (only used when logPDF is given) */
   if (DISTR.logpdf != NULL &&
+      (gen->distr->set & UNUR_DISTR_SET_MODE) &&
       ! (gen->variant & PINV_VARIANT_CDF) &&
       !_unur_FP_less(DISTR.mode,DISTR.domain[0]) &&
       !_unur_FP_greater(DISTR.mode,DISTR.domain[1]) ) {

@@ -98,13 +98,6 @@
  *     Newton recursion for coefficients of polynomial                       *
  *     ("Newton interpolation").                                             *
  *                                                                           *
- *****************************************************************************
-
-TODO:
-
- - DOCU/comments: use PDF area given by user as first guess for integration
-
- *                                                                           *
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
@@ -286,6 +279,11 @@ static void _unur_pinv_free (struct unur_gen *gen);
 static int _unur_pinv_make_guide_table (struct unur_gen *gen);
 /*---------------------------------------------------------------------------*/
 /* make a guide table for indexed search.                                    */
+/*---------------------------------------------------------------------------*/
+
+static double _unur_pinv_eval_PDF (double x, struct unur_gen *gen);
+/*---------------------------------------------------------------------------*/
+/* call to PDF.                                                              */
 /*---------------------------------------------------------------------------*/
 
 
@@ -554,7 +552,7 @@ static void _unur_pinv_info( struct unur_gen *gen, int help );
 
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */
 
-#define PDF(x)  (_unur_cont_PDF((x),(gen->distr)))    /* call to PDF         */
+#define PDF(x)  (_unur_pinv_eval_PDF((x),(gen)))      /* call to PDF         */
 #define CDF(x)  (_unur_cont_CDF((x),(gen->distr)))    /* call to CDF         */
 
 /*---------------------------------------------------------------------------*/

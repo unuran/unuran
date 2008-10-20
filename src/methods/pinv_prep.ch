@@ -595,6 +595,15 @@ _unur_pinv_computational_domain_CDF (struct unur_gen *gen)
 {
   double tailcut_error;    /* threshold values for cut-off points */
   double range;            /* length of current working domain */
+  double fl, fr;
+
+  /* first we have to chech the domain of the distribution */
+  fl = CDF(DISTR.domain[0]);
+  fr = CDF(DISTR.domain[1]);
+  if (_unur_FP_approx(fl,fr)) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"truncated domain too narrow");
+    return UNUR_FAILURE;
+  }
 
   /* parameters for tail cut-off points: maximal area in tails          */
   /* We use the given U-reslution * PINV_TAILCUTOFF_FACTOR * PDFarea.   */

@@ -35,6 +35,7 @@ _unur_pinv_init( struct unur_par *par )
      /*----------------------------------------------------------------------*/
 { 
   struct unur_gen *gen;
+  double lfm;
 
   /* check arguments */
   _unur_check_NULL( GENTYPE,par,NULL );
@@ -49,6 +50,20 @@ _unur_pinv_init( struct unur_par *par )
   gen = _unur_pinv_create(par);
   _unur_par_free(par);
   if (!gen) return NULL;
+
+  /* compute rescaling factor for PDF */
+  /* (only used when logPDF is given) */
+  if (DISTR.logpdf != NULL &&
+      ! (gen->variant & PINV_VARIANT_CDF) &&
+      !_unur_FP_less(DISTR.mode,DISTR.domain[0]) &&
+      !_unur_FP_greater(DISTR.mode,DISTR.domain[1]) ) {
+    lfm = (DISTR.logpdf)(DISTR.mode,gen->distr);
+    /* rescaling results in more evaluations of the logPDF, */
+    /* when the logPDF is approximately 0.                  */
+    /* so we only rescale the logPDF when it is too small.  */
+    if (lfm < -3.)
+      GEN->logPDFconstant = (DISTR.logpdf)(DISTR.mode,gen->distr);
+  }
 
   /* check parameters */
   if (_unur_pinv_check_par(gen) != UNUR_SUCCESS) {
@@ -178,6 +193,7 @@ _unur_pinv_create( struct unur_par *par )
   GEN->guide_size = 0; 
   GEN->guide = NULL;
   GEN->area = DISTR.area; /* we use the value in the distribution object as first guess */
+  GEN->logPDFconstant = 0.;   /* rescaling constant for logPDF                  */
 
   /* allocate maximal array of intervals */
   /* [ Maybe we could move this into _unur_pinv_interval() ] */
@@ -397,5 +413,33 @@ _unur_pinv_make_guide_table (struct unur_gen *gen)
   return UNUR_SUCCESS;
 
 } /* end of _unur_pinv_make_guide_table() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_pinv_eval_PDF (double x, struct unur_gen *gen)
+     /*----------------------------------------------------------------------*/
+     /* call to PDF.                                                         */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   x   ... argument of PDF                                            */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   PDF at x                                                           */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_distr *distr = gen->distr;
+
+
+  if (DISTR.logpdf != NULL) {
+    return (exp((DISTR.logpdf)(x,distr) - GEN->logPDFconstant));
+/*     return (exp((DISTR.logpdf)(x,distr))); */
+  }
+  else {
+    return ((DISTR.pdf)(x,distr));
+  }
+
+} /* end of _unur_pinv_eval_PDF() */
 
 /*---------------------------------------------------------------------------*/

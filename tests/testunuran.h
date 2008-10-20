@@ -151,6 +151,7 @@ void reset_counter_fcalls(void);
 
 /* get number of PDF evaluations */
 int get_counter_pdf(void);
+int get_counter_logpdf(void);
 int get_counter_cdf(void);
 
 /*---------------------------------------------------------------------------*/

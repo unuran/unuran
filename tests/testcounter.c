@@ -47,10 +47,12 @@ struct unur_distr *distr_to_use = NULL;
 
 /* counter for evaluations of PDF and similar functions */
 static int counter_pdf = 0;
+static int counter_logpdf = 0;
 static int counter_cdf = 0;
 
 /* pointer to original functions */
 static double (*cont_pdf_to_use)(double x, const struct unur_distr *distr);
+static double (*cont_logpdf_to_use)(double x, const struct unur_distr *distr);
 static double (*cont_cdf_to_use)(double x, const struct unur_distr *distr);
 
 /*---------------------------------------------------------------------------*/
@@ -59,6 +61,10 @@ static double (*cont_cdf_to_use)(double x, const struct unur_distr *distr);
 static double 
 cont_pdf_with_counter( double x, const struct unur_distr *distr ) {
   ++counter_pdf; return cont_pdf_to_use(x,distr); }
+
+static double 
+cont_logpdf_with_counter( double x, const struct unur_distr *distr ) {
+  ++counter_logpdf; return cont_logpdf_to_use(x,distr); }
 
 static double 
 cont_cdf_with_counter( double x, const struct unur_distr *distr ) {
@@ -95,6 +101,16 @@ start_counter_fcalls( UNUR_PAR *par )
       distr_to_use->data.cont.pdf = cont_pdf_with_counter;
     }
 
+    /* logPDF */
+    if (distr_to_use->data.cont.logpdf) {
+      if (distr_to_use->data.cont.logpdf == cont_logpdf_with_counter) {
+	/* we must avoid this situation as it causes infinite recursion */
+	return UNUR_FAILURE;
+      } 
+      cont_logpdf_to_use = distr_to_use->data.cont.logpdf; 
+      distr_to_use->data.cont.logpdf = cont_logpdf_with_counter;
+    }
+
     /* CDF */
     if (distr_to_use->data.cont.cdf) {
       if (distr_to_use->data.cont.cdf == cont_cdf_with_counter) {
@@ -125,6 +141,7 @@ stop_counter_fcalls(void)
   if (distr_to_use) unur_distr_free(distr_to_use);
   distr_to_use = NULL;
   cont_pdf_to_use = NULL;  
+  cont_logpdf_to_use = NULL;  
   cont_cdf_to_use = NULL;  
   return UNUR_SUCCESS;
 }
@@ -135,6 +152,7 @@ stop_counter_fcalls(void)
 void reset_counter_fcalls(void)
 {
   counter_pdf = 0;
+  counter_logpdf = 0;
   counter_cdf = 0;
 }
 
@@ -142,6 +160,7 @@ void reset_counter_fcalls(void)
 /* get number of PDF evaluations */
 
 int get_counter_pdf(void) { return counter_pdf; }
+int get_counter_logpdf(void) { return counter_logpdf; }
 int get_counter_cdf(void) { return counter_cdf; }
 
 /*---------------------------------------------------------------------------*/

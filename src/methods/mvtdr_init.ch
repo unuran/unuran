@@ -881,7 +881,7 @@ _unur_mvtdr_cone_logH( struct unur_gen *gen, CONE *c )
     if (c->height < 1.e-50) 
       return -INFINITY;
     else
-      logH += log(_unur_sf_incomplete_gamma(c->beta*c->height,GEN->dim));
+      logH += log(_unur_sf_incomplete_gamma(c->beta*c->height,(double)GEN->dim));
   }
 
   /* check for numerical errors (alpha or beta too small) */

@@ -56,7 +56,7 @@ static TIMER vw;                /* timer for particular tests                */
 #if defined(HAVE_ALARM) && defined(HAVE_SIGNAL)
 
 /* time limit before SIGALRM is sent to process */
-int time_limit = 0;
+int time_limit = 0u;
 
 /* handle SIGALRM signals */
 static void catch_alarm (int sig);
@@ -184,7 +184,7 @@ void set_alarm(FILE *LOG)
   signal(SIGALRM, catch_alarm);
 
   /* set in alarm in 'time' seconds */
-  alarm(time_limit);
+  alarm((unsigned)time_limit);
 
   /* print message into test log file */
   fprintf(TESTLOG,"Send alarm in %d seconds\n",time_limit);
@@ -1177,7 +1177,7 @@ int run_validate_chi2( FILE *LOG, int line ATTRIBUTE__UNUSED,
 
   if ( strcmp(distr_name,last_distr_name) ) {
     /* different distributions */
-    strncpy(last_distr_name,distr_name,BUFSIZE);
+    strncpy(last_distr_name,distr_name,(size_t)BUFSIZE);
     last_distr_name[BUFSIZE-1] = '\0';
     printf(" %s",distr_name); fflush(stdout);
   }
@@ -1288,7 +1288,7 @@ int run_validate_verifyhat( FILE *LOG, int line, UNUR_GEN *gen, const UNUR_DISTR
 
   if (strcmp(distr_name,last_distr_name) ) {
     /* different distributions */
-    strncpy(last_distr_name,distr_name,BUFSIZE);
+    strncpy(last_distr_name,distr_name,(size_t)BUFSIZE);
     last_distr_name[BUFSIZE-1] = '\0';
     printf(" %s",distr_name); fflush(stdout);
   }

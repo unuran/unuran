@@ -423,7 +423,7 @@ unur_test_timing_uniform( const struct unur_par *par, int log_samplesize )
      /*   return -1                                                          */
      /*----------------------------------------------------------------------*/
 {
-#define TIMING_REPETITIONS 21
+#define TIMING_REPETITIONS (21)
 
   struct unur_gen *gen_urng;
   static double uniform_time = -1.;
@@ -453,7 +453,7 @@ unur_test_timing_uniform( const struct unur_par *par, int log_samplesize )
     }
 
     /* compute median */
-    qsort( time, TIMING_REPETITIONS, sizeof(double), compare_doubles);
+    qsort( time, (size_t)TIMING_REPETITIONS, sizeof(double), compare_doubles);
 
     /* store marginal generation time for uniforms */
     uniform_time = time[TIMING_REPETITIONS/2];
@@ -486,7 +486,7 @@ unur_test_timing_exponential( const struct unur_par *par, int log_samplesize )
      /*   return -1                                                          */
      /*----------------------------------------------------------------------*/
 {
-#define TIMING_REPETITIONS 21
+#define TIMING_REPETITIONS (21)
 
   struct unur_distr *unit_distr;
   struct unur_par   *unit_par;
@@ -521,7 +521,7 @@ unur_test_timing_exponential( const struct unur_par *par, int log_samplesize )
     }
 
     /* compute median */
-    qsort( time, TIMING_REPETITIONS, sizeof(double), compare_doubles);
+    qsort( time, (size_t)TIMING_REPETITIONS, sizeof(double), compare_doubles);
 
     /* store marginal generation time for uniforms */
     exponential_time = time[TIMING_REPETITIONS/2];

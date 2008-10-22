@@ -93,7 +93,7 @@ _unur_pinv_debug_init( const struct unur_gen *gen, int ok )
 
   fprintf(log,"%s: domain of computation = [%g,%g]\n",gen->genid, GEN->bleft,GEN->bright);
   fprintf(log,"%s: Umin = 0 [fixed], Umax = %18.16g",gen->genid, GEN->Umax);
-  if (_unur_FP_approx(GEN->Umax,1))
+  if (_unur_FP_approx(GEN->Umax,1.))
     fprintf(log,",  1-Umax = %g",1.-GEN->Umax);
   fprintf(log,"\n%s:\n",gen->genid);
 

@@ -295,13 +295,13 @@ read_config_file ( const char *filename,
     }
     
     /* store distribution object */
-    if ( strncmp( str, "distr", 5)==0 ) {
+    if ( strncmp( str, "distr", (size_t)5)==0 ) {
       _unur_slist_append(distr_str_list,str);
       continue;
     }
 
     /* store method (parameter object) */
-    if ( strncmp( str, "method=", 7)==0 ) {
+    if ( strncmp( str, "method=", (size_t)7)==0 ) {
       _unur_slist_append(meth_str_list,str);
       continue;
     }

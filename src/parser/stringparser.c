@@ -129,10 +129,58 @@
 #include <stdarg.h>
 #include <ctype.h>
 #include <unur_source.h>
-#include <unuran.h.in>
-#include <distr/distr_source.h>
 #include <methods/unur_methods_source.h>
+#include <methods/x_gen.h>
 #include "parser_source.h"
+#include "parser.h"
+
+#include <urng/urng.h>
+
+#include <distr/distr_source.h>
+#include <distr/distr.h>
+#include <distr/cemp.h>
+#include <distr/cont.h>
+#include <distr/corder.h>
+#include <distr/cvemp.h>
+#include <distr/discr.h>
+
+#include <distributions/unur_distributions.h>
+
+#include <methods/arou.h>
+#include <methods/ars.h>
+#include <methods/auto.h>
+#include <methods/cstd.h>
+#include <methods/dari.h>
+#include <methods/dau.h>
+#include <methods/dgt.h>
+#include <methods/dsrou.h>
+#include <methods/dss.h>
+#include <methods/dstd.h>
+#include <methods/empk.h>
+#include <methods/empl.h>
+#include <methods/gibbs.h>
+#include <methods/hinv.h>
+#include <methods/hist.h>
+#include <methods/hitro.h>
+#include <methods/hrb.h>
+#include <methods/hrd.h>
+#include <methods/hri.h>
+#include <methods/itdr.h>
+#include <methods/mcorr.h>
+#include <methods/mvstd.h>
+#include <methods/mvtdr.h>
+#include <methods/ninv.h>
+#include <methods/norta.h>
+#include <methods/nrou.h>
+#include <methods/pinv.h>
+#include <methods/srou.h>
+#include <methods/ssr.h>
+#include <methods/tabl.h>
+#include <methods/tdr.h>
+#include <methods/unif.h>
+#include <methods/utdr.h>
+#include <methods/vempk.h>
+#include <methods/vnrou.h>
 
 #if defined(UNUR_URNG_UNURAN) && defined(UNURAN_HAS_PRNG)
 #include <uniform/urng_prng.h>

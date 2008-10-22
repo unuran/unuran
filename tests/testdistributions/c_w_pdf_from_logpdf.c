@@ -32,7 +32,8 @@
 /*---------------------------------------------------------------------------*/
 
 #include <unuran.h>
-#include <unur_source.h>
+#include <unuran_config.h>
+#include <unur_struct.h>
 #include <distr/distr_source.h>
 #include "testdistributions.h"
 

@@ -2303,6 +2303,7 @@ _unur_arou_make_guide_table( struct unur_gen *gen )
 {
   struct unur_arou_segment *seg;
   double Acum, Aincum, Astep;
+  int max_guide_size;
   int j;
 
   /* check arguments */
@@ -2311,7 +2312,8 @@ _unur_arou_make_guide_table( struct unur_gen *gen )
   /* allocate blocks for guide table (if necessary).
      (we allocate blocks for maximal guide table.) */
   if (!GEN->guide) {
-    int max_guide_size = (GEN->guide_factor > 0.) ? (GEN->max_segs * GEN->guide_factor) : 1;
+    max_guide_size = (GEN->guide_factor > 0.) ? ((int)(GEN->max_segs * GEN->guide_factor)) : 1;
+    if (max_guide_size <= 0) max_guide_size = 1;   /* protect against overflow */
     GEN->guide = _unur_xmalloc( max_guide_size * sizeof(struct unur_arou_segment*) );
   }
 

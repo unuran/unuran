@@ -1794,7 +1794,7 @@ _unur_hinv_make_guide_table( struct unur_gen *gen )
 
   /* allocate blocks for guide table (if necessary).
      (we allocate blocks for maximal guide table.) */
-  GEN->guide_size = GEN->N * GEN->guide_factor;
+  GEN->guide_size = (int) (GEN->N * GEN->guide_factor);
   if (GEN->guide_size <= 0) GEN->guide_size = 1; 
   GEN->guide = _unur_xrealloc( GEN->guide, GEN->guide_size * sizeof(int) );
 

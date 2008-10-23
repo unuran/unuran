@@ -386,7 +386,7 @@ _unur_pinv_make_guide_table (struct unur_gen *gen)
 
   /* allocate blocks for guide table (if necessary).
      (we allocate blocks for maximal guide table.) */
-  GEN->guide_size = GEN->n_ivs * PINV_GUIDE_FACTOR;
+  GEN->guide_size = (int) (GEN->n_ivs * PINV_GUIDE_FACTOR);
   if (GEN->guide_size <= 0) GEN->guide_size = 1;
   GEN->guide = _unur_xrealloc( GEN->guide, GEN->guide_size * sizeof(int) );
 

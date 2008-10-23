@@ -202,16 +202,16 @@ void compare_free_memory( void );
 void print_distr_name( FILE *LOG, const UNUR_DISTR *distr, const char *genid );
 
 /* check p-value of statistical test and print result */
-int print_pval( FILE *LOG, UNUR_GEN *gen, const UNUR_DISTR *distr, double pval, int trial, char todo );
+int print_pval( FILE *LOG, UNUR_GEN *gen, const UNUR_DISTR *distr, double pval, int trial, int todo );
 
 /* run chi2 test */
-int run_validate_chi2( FILE *LOG, int line, UNUR_GEN *gen, const UNUR_DISTR *distr, char todo );
+int run_validate_chi2( FILE *LOG, int line, UNUR_GEN *gen, const UNUR_DISTR *distr, int todo );
 
 /* run verify hat test */
-int run_validate_verifyhat( FILE *LOG, int line, UNUR_GEN *gen, const UNUR_DISTR *distr, char todo );
+int run_validate_verifyhat( FILE *LOG, int line, UNUR_GEN *gen, const UNUR_DISTR *distr, int todo );
 
 /* print result of verify hat test */
-int print_verifyhat_result( FILE *LOG, UNUR_GEN *gen, const UNUR_DISTR *distr, int failed, char todo );
+int print_verifyhat_result( FILE *LOG, UNUR_GEN *gen, const UNUR_DISTR *distr, int failed, int todo );
 
 /* print result of timings */
 void print_timing_results( FILE *LOG, int line, const UNUR_DISTR *distr,

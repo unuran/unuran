@@ -377,7 +377,7 @@ static int _unur_fstr_find_symbol (const char *symb, int start, int end);
 /* Find symbol in table between position (start+1) and (end-1).              */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_fstr_find_user_defined (struct parser_data *pdata, char *symb, char next_char);
+static int _unur_fstr_find_user_defined (struct parser_data *pdata, char *symb, int next_char);
 /*---------------------------------------------------------------------------*/
 /* Find user defined symbol.                                                 */
 /*---------------------------------------------------------------------------*/

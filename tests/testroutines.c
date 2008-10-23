@@ -1027,7 +1027,8 @@ void print_distr_name( FILE *LOG, const UNUR_DISTR *distr, const char *genid )
 /*---------------------------------------------------------------------------*/
 /* check p-value of statistical test and print result */
 
-int print_pval( FILE *LOG, UNUR_GEN *gen, const UNUR_DISTR *distr, double pval, int trial, char todo )
+int print_pval( FILE *LOG, UNUR_GEN *gen, const UNUR_DISTR *distr, 
+		double pval, int trial, int todo )
 {
   int failed = 0;
   double pval_corrected;
@@ -1147,7 +1148,7 @@ int print_pval( FILE *LOG, UNUR_GEN *gen, const UNUR_DISTR *distr, double pval, 
 /* run chi2 test */
 
 int run_validate_chi2( FILE *LOG, int line ATTRIBUTE__UNUSED, 
-		       UNUR_GEN *gen, const UNUR_DISTR *distr, char todo )
+		       UNUR_GEN *gen, const UNUR_DISTR *distr, int todo )
      /*   UNUR_SUCCESS    ... on success                                        */
      /*   UNUR_ERR_SILENT ... test failed only once                             */
      /*   UNUR_FAILURE    ... serious failure                                   */
@@ -1259,7 +1260,8 @@ int run_validate_chi2( FILE *LOG, int line ATTRIBUTE__UNUSED,
 
 #define VERIFYHAT_SAMPLESIZE 10000
 
-int run_validate_verifyhat( FILE *LOG, int line, UNUR_GEN *gen, const UNUR_DISTR *distr, char todo )
+int run_validate_verifyhat( FILE *LOG, int line, UNUR_GEN *gen, 
+			    const UNUR_DISTR *distr, int todo )
 {
 #define BUFSIZE 128
   const char *distr_name;
@@ -1375,7 +1377,8 @@ int run_validate_verifyhat( FILE *LOG, int line, UNUR_GEN *gen, const UNUR_DISTR
 /*---------------------------------------------------------------------------*/
 /* print result of verify hat test */
 
-int print_verifyhat_result( FILE *LOG, UNUR_GEN *gen, const UNUR_DISTR *distr, int failed, char todo )
+int print_verifyhat_result( FILE *LOG, UNUR_GEN *gen, const UNUR_DISTR *distr,
+			    int failed, int todo )
 {
   int failed_test = 0;
   double failed_ratio = ((double)failed) / VERIFYHAT_SAMPLESIZE;

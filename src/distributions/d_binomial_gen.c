@@ -268,7 +268,7 @@ _unur_stdgen_sample_binomial_bruec( struct unur_gen *gen )
       x = a+h*(uniform()-0.5)/u;
     } while (x < 0 || ((k=(int)x) > b));    /* check, if k is valed candidate */
 
-    if ((labs(m-k)<=15) && ((k>29)||(n-k>29)) ) {
+    if ((abs(m-k)<=15) && ((k>29)||(n-k>29)) ) {
       f = 1.0;                              /* compute f(k) recursively */
       if (m<k) {
 	for (i=m;i<k;) 

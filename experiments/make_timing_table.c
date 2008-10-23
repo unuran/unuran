@@ -82,7 +82,7 @@ static int print_legend ( struct unur_slist *distr_str_list, struct unur_slist *
 static int print_timing_legend ( int samplesize, double unit, int is_default );
 
 /* print label for distribution and methods with index n*/
-static int print_label ( int n, char ltype );
+static int print_label ( int n, int ltype );
 
 #define LABEL_DISTR 'A'  /* label used for distributions */
 #define LABEL_METH  '1'  /* label used for methods */
@@ -416,7 +416,7 @@ print_timing_legend ( int samplesize, double unit, int is_default )
 /*---------------------------------------------------------------------------*/
 
 int
-print_label ( int n, char ltype )
+print_label ( int n, int ltype )
      /* print label for distribution and methods with index n*/
 {
   switch(ltype) {

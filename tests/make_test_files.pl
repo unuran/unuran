@@ -91,6 +91,9 @@ my @othersections = ("new", "set", "get", "chg", "init", "reinit", "sample");
 
 my $test_routines;
 
+my $verify_prototype;
+my $verify_routine;
+
 # ---------------------------------------------------------------------------
 
 #############################################################################
@@ -122,6 +125,11 @@ read_data($file_in);
 
 # scan data and print
 scan_main();
+
+# create verify routine (if necessary)
+make_unur_set_verify_routine();
+
+# print
 print_C_header();
 scan_verbatim();
 foreach my $s (@othersections) {
@@ -129,7 +137,7 @@ foreach my $s (@othersections) {
 scan_validate();
 scan_special();
 print_C_routines();
-add_unur_set_verify_routine();
+print $verify_routine;
 print_C_main();
 
 # ---------------------------------------------------------------------------
@@ -1023,9 +1031,7 @@ static TIMER watch;                 /* stop watch                            */
 
 void run_verify_generator( FILE *LOG, int line, UNUR_PAR *par );
 
-#ifndef unur_$method\_set_verify
-int unur_$method\_set_verify( UNUR_PAR *par, int verify);
-#endif
+$verify_prototype
 
 /*---------------------------------------------------------------------------*/
 
@@ -1200,7 +1206,7 @@ EOM
 
 #############################################################################
 
-sub add_unur_set_verify_routine {
+sub make_unur_set_verify_routine {
     # add a dummy routine when there is no verify routine for the method
 
     my $verify = "unur_$method\_set_verify";
@@ -1215,7 +1221,13 @@ sub add_unur_set_verify_routine {
     }
 
     unless ($have_found) {
-	print "int $verify(UNUR_PAR *par ATTRIBUTE__UNUSED, int verify ATTRIBUTE__UNUSED) {return 0;}\n";
+	$verify_routine = "int $verify(UNUR_PAR *par ATTRIBUTE__UNUSED, int verify ATTRIBUTE__UNUSED) {return 0;}\n";
+	$verify_prototype = "int unur_$method\_set_verify( UNUR_PAR *par, int verify);\n";
+
+    }
+    else {
+	$verify_routine = "";
+	$verify_prototype = "";
     }
 }
 

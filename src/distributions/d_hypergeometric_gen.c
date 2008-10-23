@@ -270,7 +270,7 @@ _unur_stdgen_sample_hypergeometric_hruec( struct unur_gen *gen )
       }
     }
 
-    return (h_util(N,M,n,k));
+    return (h_util((int)N,(int)M,(int)n,k));
   }
 
   for (;;) {                                    /* Ratio of Uniforms */
@@ -279,7 +279,7 @@ _unur_stdgen_sample_hypergeometric_hruec( struct unur_gen *gen )
       x = a + h*(uniform()-0.5) / u;
     } while (x < 0 || ((k=(int)x) > b));        /* check, if k is valid candidate */
 
-    if (m <= 20 || labs(m-k) <= 15) {           /* compute f(k) recursively */
+    if (m <= 20 || abs(m-k) <= 15) {           /* compute f(k) recursively */
       f = 1.0;
       if (m<k) {
 	for (i=m+1;i<=k;i++)
@@ -301,7 +301,7 @@ _unur_stdgen_sample_hypergeometric_hruec( struct unur_gen *gen )
     }
   }
 
-  return (h_util(N,M,n,k));
+  return (h_util((int)N,(int)M,(int)n,k));
 
   /* -X- end of generator code -X- */
 

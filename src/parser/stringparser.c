@@ -536,10 +536,10 @@ unur_str2gen (const char *string)
         token  = strtok(NULL, "&") ) {
     
     /* get type of block */
-    if (!strncmp(token,"method=",7)) {
+    if (!strncmp(token,"method=",(size_t)7)) {
       str_method = token;
     }
-    else if (!strncmp(token,"urng=",5)) {
+    else if (!strncmp(token,"urng=",(size_t)5)) {
       str_urng = token;
     }
     else {
@@ -2585,10 +2585,10 @@ _unur_atoi ( const char *str )
   else if ( !strcmp(str,"false") || !strcmp(str,"off") )
     return 0;
 
-  else if ( !strncmp(str,"inf",3) )
+  else if ( !strncmp(str,"inf",(size_t)3) )
     return INT_MAX;
 
-  else if ( !strncmp(str,"-inf",4) )
+  else if ( !strncmp(str,"-inf",(size_t)4) )
     return INT_MIN;
 
   else
@@ -2638,10 +2638,10 @@ _unur_atod ( const char *str )
      /*   double                                                             */
      /*----------------------------------------------------------------------*/
 {
-  if ( !strncmp(str,"inf",3) )
+  if ( !strncmp(str,"inf",(size_t)3) )
     return INFINITY;
 
-  else if ( !strncmp(str,"-inf",4) )
+  else if ( !strncmp(str,"-inf",(size_t)4) )
     return -INFINITY;
 
   else

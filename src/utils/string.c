@@ -92,7 +92,7 @@ _unur_string_append ( struct unur_string *string, const char *format, ... )
   /* print into string */
 #if HAVE_DECL_VSNPRINTF
   /* this is a GNU extension */
-  len = vsnprintf (string->text+string->length, MAXSTRINGSIZE, format, ap);
+  len = vsnprintf (string->text+string->length, (size_t)MAXSTRINGSIZE, format, ap);
 #else
   /** TODO: this is dangerous, since we have to take care, that
       the generated string text is not longer than MAXSTRINGSIZE-1.  **/

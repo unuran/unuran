@@ -335,7 +335,7 @@ _unur_fstr_find_symbol (const char *symb, int start, int end)
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_fstr_find_user_defined (struct parser_data *pdata, char *symb, char next_char)
+_unur_fstr_find_user_defined (struct parser_data *pdata, char *symb, int next_char)
      /*----------------------------------------------------------------------*/
      /* Find user defined symbol.                                            */
      /* If there are no user defined symbols yet, store it.                  */

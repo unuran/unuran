@@ -698,7 +698,7 @@ _unur_dsrou_sample( struct unur_gen *gen )
      /*   return INT_MAX                                                     */
      /*----------------------------------------------------------------------*/
 { 
-  double U,V;
+  double U,V,X;
   int I;
 
   /* check arguments */
@@ -713,11 +713,14 @@ _unur_dsrou_sample( struct unur_gen *gen )
     U *= (V<0.) ? GEN->ul : GEN->ur;
 
     /* ratio */
-    I = floor(V/U) + DISTR.mode;
+    X = floor(V/U) + DISTR.mode;
 
     /* inside domain ? */
-    if ( (I < DISTR.BD_LEFT) || (I > DISTR.BD_RIGHT) )
+    if ( (X < DISTR.BD_LEFT) || (X > DISTR.BD_RIGHT) )
       continue;
+
+    /* convert to int */
+    I = (int) X;
 
     /* accept or reject */
     if (U*U <= PMF(I))
@@ -742,7 +745,7 @@ _unur_dsrou_sample_check( struct unur_gen *gen )
      /*   return INT_MAX                                                     */
      /*----------------------------------------------------------------------*/
 { 
-  double U,V,pI,VI;
+  double U,V,pI,VI,X;
   double um2, vl, vr;
   int I;
 
@@ -758,11 +761,14 @@ _unur_dsrou_sample_check( struct unur_gen *gen )
     U *= (V<0.) ? GEN->ul : GEN->ur;
 
     /* ratios */
-    I = floor(V/U) + DISTR.mode;
+    X = floor(V/U) + DISTR.mode;
 
     /* inside domain ? */
-    if ( (I < DISTR.BD_LEFT) || (I > DISTR.BD_RIGHT) )
+    if ( (X < DISTR.BD_LEFT) || (X > DISTR.BD_RIGHT) )
       continue;
+
+    /* convert to int */
+    I = (int) X;
 
     /* values of PMF and v-coordinate of point */
     pI = PMF(I);

@@ -1086,7 +1086,7 @@ _unur_dari_hat( struct unur_gen *gen )
 	rep=0;
       else { 
 	setup = 2;
-	d = ((int)t0) / GEN->pm;
+	d = (int) (t0 / GEN->pm);
       }
     }
     else 

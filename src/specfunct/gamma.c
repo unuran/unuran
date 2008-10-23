@@ -205,7 +205,7 @@ if( q > 33.0 )
 			{
 			return( sgngam * INFINITY);
 			}
-		i = p;
+		i = (int) p;
 		if( (i & 1) == 0 )
 			sgngam = -1;
 		z = q - p;
@@ -324,7 +324,7 @@ if( x < -34.0 )
 	p = floor(q);
 	if( _unur_FP_same(p,q) )
 		return (INFINITY);
-	i = p;
+	i = (int) p;
 	if( (i & 1) == 0 )
 		sgngam = -1;
 	else

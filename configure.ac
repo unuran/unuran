@@ -220,13 +220,27 @@ dnl (Valgrind is a GPL'd system for debugging and profiling x86-Linux programs)
 AC_CHECK_PROG(have_valgrind,valgrind,true,false) 
 AM_CONDITIONAL(HAVE_VALGRIND, test x$have_valgrind = xtrue)
 
-dnl Set flags for 
-
 dnl Set flags for compiler
+
+dnl GCC
+EXTRA_GCC_FLAGS=
+##EXTRA_GCC_FLAGS="$EXTRA_GCC_FLAGS -Wbad-function-cast -Wcast-align -Wmissing-declarations -Wmissing-format-attribute -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wredundant-decls -Wstrict-prototypes -Wwrite-strings -Wconversion"
+
+## the following flags raise warnings:
+##EXTRA_GCC_FLAGS="$EXTRA_GCC_FLAGS -Wcast-qual -Wfloat-equal -Wunreachable-code"
+## -Wcast-qual
+##     Warn whenever a pointer is cast so as to remove a type qualifier from the target type.  For example, warn if a
+##     "const char *" is cast to an ordinary "char *".
+## -Wfloat-equal
+##     Warn if floating point values are used in equality comparisons.
+## -Wunreachable-code
+##     Warn if the compiler detects that code will never be executed.
+
 CC_FLAGS=
 if test X"$GCC" = Xyes ; then
-   CC_FLAGS="$CC_FLAGS -Wall -Wextra"
+   CC_FLAGS="$CC_FLAGS -Wall -Wextra $EXTRA_GCC_FLAGS"
 fi
+
 
 case "${host_os}" in
 linux*)

@@ -57,8 +57,8 @@ inline static int poisson_pprsc_init( struct unur_gen *gen );
 
 #define uniform()  _unur_call_urng(gen->urng) /* call for uniform prng       */
 
-#define MAX_gen_params   39    /* maximal number of parameters for generator */
-#define MAX_gen_iparams   5    /* maximal number of integer param. for gen.  */
+#define MAX_gen_params  (39)   /* maximal number of parameters for generator */
+#define MAX_gen_iparams  (5)   /* maximal number of integer param. for gen.  */
 
 /* parameters */
 #define theta  (DISTR.params[0])    /* shape */
@@ -182,7 +182,7 @@ poisson_pdtabl_init( struct unur_gen *gen )
     GEN->n_gen_param = MAX_gen_params;
     GEN->gen_param = _unur_xmalloc(GEN->n_gen_param * sizeof(double));
     GEN->n_gen_iparam = MAX_gen_iparams;
-    GEN->gen_iparam = _unur_xmalloc(GEN->n_gen_param * sizeof(int));
+    GEN->gen_iparam = _unur_xmalloc(GEN->n_gen_iparam * sizeof(int));
   }
 
   /* -X- setup code -X- */
@@ -276,7 +276,7 @@ poisson_pdac_init( struct unur_gen *gen )
     GEN->n_gen_param = MAX_gen_params;
     GEN->gen_param = _unur_xmalloc(GEN->n_gen_param * sizeof(double));
     GEN->n_gen_iparam = MAX_gen_iparams;
-    GEN->gen_iparam = _unur_xmalloc(GEN->n_gen_param * sizeof(int));
+    GEN->gen_iparam = _unur_xmalloc(GEN->n_gen_iparam * sizeof(int));
   }
 
   /* -X- setup code -X- */
@@ -548,7 +548,7 @@ poisson_pprsc_init( struct unur_gen *gen )
     GEN->n_gen_param = MAX_gen_params;
     GEN->gen_param = _unur_xmalloc(GEN->n_gen_param * sizeof(double));
     GEN->n_gen_iparam = MAX_gen_iparams;
-    GEN->gen_iparam = _unur_xmalloc(GEN->n_gen_param * sizeof(int));
+    GEN->gen_iparam = _unur_xmalloc(GEN->n_gen_iparam * sizeof(int));
   }
 
   /* -X- setup code -X- */
@@ -559,8 +559,8 @@ poisson_pprsc_init( struct unur_gen *gen )
   /* mode m, reflection points k2 and k4, and points k1 and k5, which        */
   /* delimit the centre region of h(x)                                       */
   m  = (int) theta;
-  k2 = /* (int) */ ceil(theta - 0.5 - Ds);
-  k4 = (int)     (theta - 0.5 + Ds);
+  k2 = (int) (theta + 0.5 - Ds);
+  k4 = (int) (theta - 0.5 + Ds);
   k1 = k2 + k2 - m + 1;
   k5 = k4 + k4 - m;
 

@@ -52,18 +52,13 @@ static int _unur_stdgen_sample_binomial_bruec( struct unur_gen *gen );
 #define DISTR     gen->distr->data.discr /* data for distribution in generator object */
 
 #define uniform()  _unur_call_urng(gen->urng) /* call for uniform prng       */
-/*TODO max number of param */
-#define MAX_gen_params   11    /* maximal number of parameters for generator */
-#define MAX_gen_iparams   2    /* maximal number of integer param. for gen.  */
 
+#define MAX_gen_params  (11)   /* maximal number of parameters for generator */
+#define MAX_gen_iparams  (3)   /* maximal number of integer param. for gen.  */
 
 /* parameters */
-#define n  (DISTR.params[0])
-#define p  (DISTR.params[1])
-
-/*---------------------------------------------------------------------------*/
-/* init routines for special generators                                      */
-
+#define par_n  (DISTR.params[0])
+#define par_p  (DISTR.params[1])
 
 /*---------------------------------------------------------------------------*/
 
@@ -156,8 +151,12 @@ _unur_stdgen_binomial_init( struct unur_par *par, struct unur_gen *gen )
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-#define b       (GEN->gen_iparam[0])
-#define m       (GEN->gen_iparam[1])
+
+#define p       (DISTR.params[1])
+#define n       (GEN->gen_iparam[0])
+
+#define b       (GEN->gen_iparam[1])
+#define m       (GEN->gen_iparam[2])
 
 #define par     (GEN->gen_param[0])
 #define q1      (GEN->gen_param[1])
@@ -186,12 +185,16 @@ binomial_bruec_init( struct unur_gen *gen )
     GEN->n_gen_param = MAX_gen_params;
     GEN->gen_param = _unur_xmalloc(GEN->n_gen_param * sizeof(double));
     GEN->n_gen_iparam = MAX_gen_iparams;
-    GEN->gen_iparam = _unur_xmalloc(GEN->n_gen_param * sizeof(int));
+    GEN->gen_iparam = _unur_xmalloc(GEN->n_gen_iparam * sizeof(int));
   }
+
+  /* convert integer parameters that are stored in an array of type 'double' */
+  /* into those of type 'int' and store it in working array GEN->gen_iparam. */
+  n = (int) par_n;
 
   /* -X- setup code -X- */
 
-  par = _unur_min(p,1.0-p);
+  par = _unur_min(p, 1.-p);
   q1 = 1.0 - par;
   np = n*par;                                /*np=min(n*p,n*(1-p))*/
 
@@ -296,30 +299,25 @@ _unur_stdgen_sample_binomial_bruec( struct unur_gen *gen )
 } /* end of _unur_stdgen_sample_binomial_bruec() */
 
 /*---------------------------------------------------------------------------*/
-#undef b       
-#undef m       
-#undef b       
 
-#undef par     
-#undef q1      
-#undef np      
-#undef al      
-#undef h       
-#undef g       
-#undef r       
-#undef t       
-#undef r1      
-#undef p0      
+#undef p
+#undef n
+
+#undef m
+#undef b
+
+#undef par
+#undef q1
+#undef np
+#undef al
+#undef h
+#undef g
+#undef r
+#undef t
+#undef r1
+#undef p0
+
+#undef par_n
+#undef par_p
 
 /*---------------------------------------------------------------------------*/
-
-
-
-
-
-
-
-
-
-
-

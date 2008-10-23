@@ -247,7 +247,7 @@ unur_test_timing_total( const UNUR_PAR *par, int samplesize, double avg_duration
   avg_duration = (avg_duration < 1.e-3) ? 1000. : 1.e6 * avg_duration;
 
   /* pilot study */
-  repeat_pilot = 11 - log((double)samplesize)/M_LN2;
+  repeat_pilot = 11 - (int)(log((double)samplesize)/M_LN2);
   if (repeat_pilot<1) repeat_pilot = 1;
 
   size_pilot = _unur_min(samplesize,1000);

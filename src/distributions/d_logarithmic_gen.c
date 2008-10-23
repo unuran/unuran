@@ -210,7 +210,7 @@ _unur_stdgen_sample_logarithmic_lsk( struct unur_gen *gen )
     V = uniform();
     q = 1. - exp(V * h);
     if ( U <= q * q) {
-      K = 1 + log(U) / log(q);
+      K = 1 + (int)(log(U)/log(q));
       return K;
     }
     

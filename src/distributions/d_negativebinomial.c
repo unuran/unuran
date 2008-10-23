@@ -132,7 +132,7 @@ _unur_upd_mode_negativebinomial( UNUR_DISTR *distr )
     DISTR.mode = (int) ((1.+UNUR_EPSILON) * (DISTR.r - 1.) * (1. - DISTR.p) / DISTR.p);
   }
   else { /* r <= 1. */
-    DISTR.mode = 0.;
+    DISTR.mode = 0;
   }
 
   /* mode must be in domain */

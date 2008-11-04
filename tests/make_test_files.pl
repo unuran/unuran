@@ -393,7 +393,7 @@ sub scan_validate {
     print "\tUNUR_DISTR *distr[".($n_distributions?$n_distributions:1)."];\n";
     print "\tUNUR_PAR *par;\n";
     print "\tUNUR_GEN *gen;\n";
-    print "\tint n_tests_failed = 0;\n";
+    print "\tint n_tests_failed;\n";
     print "\tint rcode;\n";
 
     print "\tdouble *darray;\n";
@@ -765,6 +765,8 @@ sub scan_other {
 
 void test_$section (void)
 {
+        int n_tests_failed;          /* number of failed tests */
+
 	/* start test */
 	printf("[$section "); fflush(stdout);
 	fprintf(TESTLOG,"\\n[$section]\\n");
@@ -1021,8 +1023,6 @@ static FILE *TESTLOG;               /* test log file                         */
 static FILE *UNURANLOG;             /* unuran log file                       */
 
 static int test_ok = TRUE;          /* all tests ok (boolean)                */
-static int n_tests_failed;          /* number of failed tests                */
-
 static int fullcheck = FALSE;       /* whether all checks are performed      */ 
 
 static TIMER watch;                 /* stop watch                            */

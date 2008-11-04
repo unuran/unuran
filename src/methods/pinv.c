@@ -392,6 +392,7 @@ static double _unur_pinv_adaptivelobatto5 (struct unur_gen *gen, double x, doubl
 
 static double _unur_pinv_adaptivelobatto5_rec (struct unur_gen *gen, double x, double h, double tol,
 					       double int1, double fl, double fr, double fc,
+					       int *W_accuracy,
 					       struct unur_pinv_CDFtable *CDFtable);
 /*---------------------------------------------------------------------------*/
 /* run recursion for adaptive Lobatto integration.                           */

@@ -79,7 +79,8 @@ _unur_pinv_adaptivelobatto5 (struct unur_gen *gen, double x, double h, double to
      /*----------------------------------------------------------------------*/
 { 
   double fl, fc, fr;  /* values of PDF at x, x+h/2, and x+h */
-  double int1;        /* estimated values for integral */
+  double int1, int2;  /* estimated values for integral */
+  int W_accuracy = FALSE; /* raise flag for printing warning about accuracy */
 
   /* check length of interval */
   if (_unur_iszero(h))
@@ -100,7 +101,13 @@ _unur_pinv_adaptivelobatto5 (struct unur_gen *gen, double x, double h, double to
   int1 = (9*(fl+fr)+49.*(PDF(x+h*W1)+PDF(x+h*W2))+64*fc)*h/180.;
 
   /* run adaptive steps */
-  return _unur_pinv_adaptivelobatto5_rec(gen,x,h,tol,int1,fl,fc,fr,CDFtable);
+  int2 = _unur_pinv_adaptivelobatto5_rec(gen,x,h,tol,int1,fl,fc,fr,&W_accuracy,CDFtable);
+
+  /* return result */
+  if (W_accuracy)
+    _unur_warning(gen->genid,UNUR_ERR_ROUNDOFF,
+		  "numeric integration did not reach full accuracy");
+  return int2;
 
 } /* end of _unur_pinv_adaptivelobatto5() */
 
@@ -109,6 +116,7 @@ _unur_pinv_adaptivelobatto5 (struct unur_gen *gen, double x, double h, double to
 double
 _unur_pinv_adaptivelobatto5_rec (struct unur_gen *gen, double x, double h, double tol,
 				 double int1, double fl, double fc, double fr,
+				 int *W_accuracy,
 				 struct unur_pinv_CDFtable *CDFtable)
      /*----------------------------------------------------------------------*/
      /* run recursion for adaptive Lobatto integration.                      */
@@ -121,6 +129,7 @@ _unur_pinv_adaptivelobatto5_rec (struct unur_gen *gen, double x, double h, doubl
      /*   fl       ... PDF at x                                              */
      /*   fc       ... PDF at x+h/2                                          */
      /*   fr       ... PDF at x+h                                            */
+     /*   W_accuracy.. warning about accuracy                                */
      /*   CDFtable ... table for storing CDF values (may be NULL)            */
      /*                                                                      */
      /* return:                                                              */
@@ -141,23 +150,25 @@ _unur_pinv_adaptivelobatto5_rec (struct unur_gen *gen, double x, double h, doubl
   int2 = intl + intr;
 
   /* check whether accuracy goal is reached */
-  if (fabs(int1-int2) < tol) 
+  if (fabs(int1-int2) < tol)
     /* goal reached; nothing left to do */
     ;
 
   else {
     /* error above tolerance */
-    if (_unur_FP_same(x+h/2.,x)) {
+/*     if (_unur_FP_equal(x+h/2.,x) || _unur_FP_equal(int1,int2) ) { */
+    if (_unur_FP_equal(x+h/2.,x)) {
       /* we cannot decrease length of subintervals any more */
-      _unur_warning(gen->genid,UNUR_ERR_ROUNDOFF,
-		    "numeric integration did not reach full accuracy");
+      *W_accuracy = TRUE;
       /* Remark: Since we are halving intervals, this comparision */
       /* limits the maximal number of iterations to at most 2048. */
     }
     else {
       /* recompute with shorter intervals */
-      return ( _unur_pinv_adaptivelobatto5_rec(gen,x,    h/2,tol,intl,fl,flc,fc,CDFtable) +
-	       _unur_pinv_adaptivelobatto5_rec(gen,x+h/2,h/2,tol,intr,fc,frc,fr,CDFtable) );
+      return ( _unur_pinv_adaptivelobatto5_rec(gen,x,    h/2,tol/1.,intl,fl,flc,fc,
+					       W_accuracy,CDFtable) +
+	       _unur_pinv_adaptivelobatto5_rec(gen,x+h/2,h/2,tol/1.,intr,fc,frc,fr,
+					       W_accuracy,CDFtable) );
     }
   }
 

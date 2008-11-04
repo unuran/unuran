@@ -128,7 +128,7 @@ static int _unur_dss_sample( struct unur_gen *gen );
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 /* the following functions print debugging information on output stream,     */
-/* i.e., into the log file if not specified otherwise.                       */
+/* i.e., into the LOG file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_dss_debug_init( struct unur_gen *gen );
@@ -265,9 +265,8 @@ _unur_dss_init( struct unur_par *par )
   _unur_par_free(par);
   if (!gen) return NULL;
   
-  /* write info into log file */
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (gen->debug) _unur_dss_debug_init(gen);
 #endif
 
@@ -299,7 +298,7 @@ _unur_dss_reinit( struct unur_gen *gen )
   SAMPLE = _unur_dss_getSAMPLE(gen);
 
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
+    /* write info into LOG file */
   if (gen->debug & DSS_DEBUG_REINIT) _unur_dss_debug_init(gen);
 #endif
 
@@ -533,38 +532,38 @@ _unur_dss_sample( struct unur_gen *gen )
 void
 _unur_dss_debug_init( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* write info about generator into logfile                              */
+     /* write info about generator into LOG file                             */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
      /*----------------------------------------------------------------------*/
 {
-  FILE *log;
+  FILE *LOG;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_DSS_GEN,RETURN_VOID);
 
-  log = unur_get_stream();
+  LOG = unur_get_stream();
 
-  fprintf(log,"%s:\n",gen->genid);
-  fprintf(log,"%s: type    = discrete univariate random variates\n",gen->genid);
-  fprintf(log,"%s: method  = sequential search\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
+  fprintf(LOG,"%s: type    = discrete univariate random variates\n",gen->genid);
+  fprintf(LOG,"%s: method  = sequential search\n",gen->genid);
 
   _unur_distr_discr_debug( gen->distr,gen->genid,(gen->debug & DSS_DEBUG_PRINTVECTOR));
 
-  fprintf(log,"%s: sampling routine = _unur_dss_sample()\n",gen->genid);
-  fprintf(log,"%s: variant = ",gen->genid);
+  fprintf(LOG,"%s: sampling routine = _unur_dss_sample()\n",gen->genid);
+  fprintf(LOG,"%s: variant = ",gen->genid);
   switch(gen->variant) {
   case DSS_VARIANT_PV:
-    fprintf(log,"use PV\n");  break;
+    fprintf(LOG,"use PV\n");  break;
   case DSS_VARIANT_PMF:
-    fprintf(log,"use PMF\n"); break;
+    fprintf(LOG,"use PMF\n"); break;
   case DSS_VARIANT_CDF:
-    fprintf(log,"use CDF\n"); break;
+    fprintf(LOG,"use CDF\n"); break;
   default:
     _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
   }
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
 
 } /* end of _unur_dss_debug_init() */
 

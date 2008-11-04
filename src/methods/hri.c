@@ -139,7 +139,7 @@ static double _unur_hri_sample_check( struct unur_gen *gen );
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 /* the following functions print debugging information on output stream,     */
-/* i.e., into the log file if not specified otherwise.                       */
+/* i.e., into the LOG file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_hri_debug_init( const struct unur_gen *gen );
@@ -393,7 +393,7 @@ _unur_hri_init( struct unur_par *par )
   }
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (gen->debug) _unur_hri_debug_init(gen);
 #endif
 
@@ -793,7 +793,7 @@ _unur_hri_sample_check( struct unur_gen *gen )
   /* accept point if not larger than design (split) point */
   if (X <= GEN->p0) {
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
+    /* write info into LOG file */
     if (gen->debug & HRI_DEBUG_SAMPLE)
       _unur_hri_debug_sample( gen, X, X, i0, 0 );
 #endif
@@ -816,7 +816,7 @@ _unur_hri_sample_check( struct unur_gen *gen )
        and this hazard rate constant between p0 and X.
     */
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
+    /* write info into LOG file */
     if (gen->debug & HRI_DEBUG_SAMPLE)
       _unur_hri_debug_sample( gen, X, X, i0, 0 );
 #endif
@@ -866,7 +866,7 @@ _unur_hri_sample_check( struct unur_gen *gen )
   }
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (gen->debug & HRI_DEBUG_SAMPLE)
     _unur_hri_debug_sample( gen, X, p1, i0, i1 );
 #endif
@@ -890,40 +890,40 @@ _unur_hri_sample_check( struct unur_gen *gen )
 void
 _unur_hri_debug_init( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* write info about generator into logfile                              */
+     /* write info about generator into LOG file                             */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
      /*----------------------------------------------------------------------*/
 {
-  FILE *log;
+  FILE *LOG;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_HRI_GEN,RETURN_VOID);
 
-  log = unur_get_stream();
+  LOG = unur_get_stream();
 
-  fprintf(log,"%s:\n",gen->genid);
-  fprintf(log,"%s: type    = continuous univariate random variates\n",gen->genid);
-  fprintf(log,"%s: method  = HRI (Hazard Rate Increasing)\n",gen->genid);
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
+  fprintf(LOG,"%s: type    = continuous univariate random variates\n",gen->genid);
+  fprintf(LOG,"%s: method  = HRI (Hazard Rate Increasing)\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
 
   _unur_distr_cont_debug( gen->distr, gen->genid );
 
-  fprintf(log,"%s: sampling routine = _unur_hri_sample",gen->genid);
+  fprintf(LOG,"%s: sampling routine = _unur_hri_sample",gen->genid);
   if (gen->variant & HRI_VARFLAG_VERIFY)
-    fprintf(log,"_check()\n");
+    fprintf(LOG,"_check()\n");
   else
-    fprintf(log,"()\n");
-  fprintf(log,"%s:\n",gen->genid);
+    fprintf(LOG,"()\n");
+  fprintf(LOG,"%s:\n",gen->genid);
 
-  fprintf(log,"%s: design point p0 = %g  (HR(p0)=%g)",gen->genid,GEN->p0,GEN->hrp0);
+  fprintf(LOG,"%s: design point p0 = %g  (HR(p0)=%g)",gen->genid,GEN->p0,GEN->hrp0);
   _unur_print_if_default(gen,HRI_SET_P0);
-  fprintf(log,"\n%s: left boundary = %g\n",gen->genid,GEN->left_border);
+  fprintf(LOG,"\n%s: left boundary = %g\n",gen->genid,GEN->left_border);
 
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
 
-  fflush(log);
+  fflush(LOG);
 
 } /* end of _unur_hri_debug_init() */
 
@@ -933,7 +933,7 @@ void
 _unur_hri_debug_sample( const struct unur_gen *gen, 
 			double x, double p1, int i0, int i1 )
      /*----------------------------------------------------------------------*/
-     /* write info about generated point into logfile                        */
+     /* write info about generated point into LOG file                       */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
@@ -943,19 +943,19 @@ _unur_hri_debug_sample( const struct unur_gen *gen,
      /*   i1  ... number of iterations in second thinning loop               */
      /*----------------------------------------------------------------------*/
 {
-  FILE *log;
+  FILE *LOG;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_HRI_GEN,RETURN_VOID);
 
-  log = unur_get_stream();
+  LOG = unur_get_stream();
 
-  fprintf(log,"%s: X = %g\t(p1=%g)\t#iterations = %d + %d = %d",gen->genid,
+  fprintf(LOG,"%s: X = %g\t(p1=%g)\t#iterations = %d + %d = %d",gen->genid,
 	  x, p1, i0, i1, i0+i1);
   if (i1) 
-    fprintf(log,"   2nd loop\n");
+    fprintf(LOG,"   2nd loop\n");
   else
-    fprintf(log,"\n");
+    fprintf(LOG,"\n");
 
 } /* end of _unur_hri_debug_init() */
 

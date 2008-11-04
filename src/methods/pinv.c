@@ -489,7 +489,7 @@ static int _unur_pinv_linear_testpoints (int g, double ui[], double utest[]);
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 /* the following functions print debugging information on output stream,     */
-/* i.e., into the log file if not specified otherwise.                       */
+/* i.e., into the LOG file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_pinv_debug_init_start (const struct unur_gen *gen);
@@ -519,7 +519,7 @@ static void _unur_pinv_debug_computational_domain (const struct unur_gen *gen);
 
 static void _unur_pinv_debug_intervals (const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* print starting points or table for algorithms into logfile.               */
+/* print starting points or table for algorithms into LOG file.              */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_pinv_debug_create_table (const struct unur_gen *gen,

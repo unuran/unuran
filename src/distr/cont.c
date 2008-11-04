@@ -2257,21 +2257,21 @@ _unur_distr_cont_find_mode( struct unur_distr *distr )
 void
 _unur_distr_cont_debug( const struct unur_distr *distr, const char *genid )
      /*----------------------------------------------------------------------*/
-     /* write info about distribution into logfile                           */
+     /* write info about distribution into LOG file                          */
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr ... pointer to distribution object                           */
      /*   genid ... pointer to generator id                                  */
      /*----------------------------------------------------------------------*/
 {
-  FILE *log;
+  FILE *LOG;
   int i;
 
   /* check arguments */
   CHECK_NULL(distr,RETURN_VOID);
   COOKIE_CHECK(distr,CK_DISTR_CONT,RETURN_VOID);
 
-  log = unur_get_stream();
+  LOG = unur_get_stream();
 
   /* is this a derived distribution */
   if (distr->base) {
@@ -2287,46 +2287,46 @@ _unur_distr_cont_debug( const struct unur_distr *distr, const char *genid )
       return;
     default:
       /* nothing to do */
-      fprintf(log,"%s: derived distribution.\n",genid);
-      fprintf(log,"%s:\n",genid);
+      fprintf(LOG,"%s: derived distribution.\n",genid);
+      fprintf(LOG,"%s:\n",genid);
     }
   }
 
-  fprintf(log,"%s: distribution:\n",genid);
-  fprintf(log,"%s:\ttype = continuous univariate distribution\n",genid);
-  fprintf(log,"%s:\tname = %s\n",genid,distr->name);
+  fprintf(LOG,"%s: distribution:\n",genid);
+  fprintf(LOG,"%s:\ttype = continuous univariate distribution\n",genid);
+  fprintf(LOG,"%s:\tname = %s\n",genid,distr->name);
 
-  fprintf(log,"%s:\tPDF with %d argument(s)\n",genid,DISTR.n_params);
+  fprintf(LOG,"%s:\tPDF with %d argument(s)\n",genid,DISTR.n_params);
   for( i=0; i<DISTR.n_params; i++ )
-      fprintf(log,"%s:\t\tparam[%d] = %g\n",genid,i,DISTR.params[i]);
+      fprintf(LOG,"%s:\t\tparam[%d] = %g\n",genid,i,DISTR.params[i]);
 
-  fprintf(log,"%s:\tfunctions: ",genid);
-  if (DISTR.cdf) fprintf(log,"CDF ");
-  if (DISTR.logcdf) fprintf(log,"logCDF ");
-  if (DISTR.pdf) fprintf(log,"PDF ");
-  if (DISTR.logpdf) fprintf(log,"logPDF ");
-  if (DISTR.dpdf) fprintf(log,"dPDF ");
-  if (DISTR.dlogpdf) fprintf(log,"dlogPDF ");
-  if (DISTR.hr) fprintf(log,"HR ");
-  fprintf(log,"\n");
+  fprintf(LOG,"%s:\tfunctions: ",genid);
+  if (DISTR.cdf) fprintf(LOG,"CDF ");
+  if (DISTR.logcdf) fprintf(LOG,"logCDF ");
+  if (DISTR.pdf) fprintf(LOG,"PDF ");
+  if (DISTR.logpdf) fprintf(LOG,"logPDF ");
+  if (DISTR.dpdf) fprintf(LOG,"dPDF ");
+  if (DISTR.dlogpdf) fprintf(LOG,"dlogPDF ");
+  if (DISTR.hr) fprintf(LOG,"HR ");
+  fprintf(LOG,"\n");
 
   if (distr->set & UNUR_DISTR_SET_MODE)
-    fprintf(log,"%s:\tmode = %g\n",genid,DISTR.mode);
+    fprintf(LOG,"%s:\tmode = %g\n",genid,DISTR.mode);
   else
-    fprintf(log,"%s:\tmode unknown\n",genid);
+    fprintf(LOG,"%s:\tmode unknown\n",genid);
 
   if (distr->set & UNUR_DISTR_SET_CENTER)
-    fprintf(log,"%s:\tcenter = %g\n",genid,DISTR.center);
+    fprintf(LOG,"%s:\tcenter = %g\n",genid,DISTR.center);
   else
-    fprintf(log,"%s:\tcenter = %g [default]\n",genid,
+    fprintf(LOG,"%s:\tcenter = %g [default]\n",genid,
 	    unur_distr_cont_get_center(distr));
 
-  fprintf(log,"%s:\tdomain = (%g, %g)",genid,DISTR.domain[0],DISTR.domain[1]);
+  fprintf(LOG,"%s:\tdomain = (%g, %g)",genid,DISTR.domain[0],DISTR.domain[1]);
   _unur_print_if_default(distr,UNUR_DISTR_SET_DOMAIN);
 
-  fprintf(log,"\n%s:\tarea below p.d.f. = %g",genid,DISTR.area);
+  fprintf(LOG,"\n%s:\tarea below p.d.f. = %g",genid,DISTR.area);
   _unur_print_if_default(distr,UNUR_DISTR_SET_PDFAREA);
-  fprintf(log,"\n%s:\n",genid);
+  fprintf(LOG,"\n%s:\n",genid);
 
 } /* end of _unur_distr_cont_debug() */
 

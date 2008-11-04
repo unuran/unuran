@@ -81,7 +81,7 @@ _unur_mvtdr_init( struct unur_par *par )
   if (!gen) return NULL;
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (gen->debug) _unur_mvtdr_debug_init_start(gen);
 #endif
 
@@ -95,7 +95,7 @@ _unur_mvtdr_init( struct unur_par *par )
   if(_unur_mvtdr_create_hat(gen) != UNUR_SUCCESS) {
     _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"cannot create hat");
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
+    /* write info into LOG file */
     if (gen->debug) _unur_mvtdr_debug_init_finished(gen, FALSE);
 #endif
     _unur_mvtdr_free(gen); return NULL;
@@ -110,7 +110,7 @@ _unur_mvtdr_init( struct unur_par *par )
       _unur_mvtdr_free(gen); return NULL; }
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (gen->debug) _unur_mvtdr_debug_init_finished(gen, TRUE);
 #endif
 

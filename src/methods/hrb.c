@@ -139,7 +139,7 @@ static double _unur_hrb_sample_check( struct unur_gen *gen );
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 /* the following functions print debugging information on output stream,     */
-/* i.e., into the log file if not specified otherwise.                       */
+/* i.e., into the LOG file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_hrb_debug_init( const struct unur_gen *gen );
@@ -389,7 +389,7 @@ _unur_hrb_init( struct unur_par *par )
   }
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (gen->debug) _unur_hrb_debug_init(gen);
 #endif
 
@@ -685,7 +685,7 @@ _unur_hrb_sample_check( struct unur_gen *gen )
     V =  lambda * _unur_call_urng(gen->urng);
     if( V <= hrx ) {
 #ifdef UNUR_ENABLE_LOGGING
-      /* write info into log file */
+      /* write info into LOG file */
       if (gen->debug & HRB_DEBUG_SAMPLE)
 	_unur_hrb_debug_sample( gen, X, i );
 #endif
@@ -717,41 +717,41 @@ _unur_hrb_sample_check( struct unur_gen *gen )
 void
 _unur_hrb_debug_init( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* write info about generator into logfile                              */
+     /* write info about generator into LOG file                             */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
      /*----------------------------------------------------------------------*/
 {
-  FILE *log;
+  FILE *LOG;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_HRB_GEN,RETURN_VOID);
 
-  log = unur_get_stream();
+  LOG = unur_get_stream();
 
-  fprintf(log,"%s:\n",gen->genid);
-  fprintf(log,"%s: type    = continuous univariate random variates\n",gen->genid);
-  fprintf(log,"%s: method  = HRB (Hazard Rate Bounded)\n",gen->genid);
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
+  fprintf(LOG,"%s: type    = continuous univariate random variates\n",gen->genid);
+  fprintf(LOG,"%s: method  = HRB (Hazard Rate Bounded)\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
 
   _unur_distr_cont_debug( gen->distr, gen->genid );
 
-  fprintf(log,"%s: sampling routine = _unur_hrb_sample",gen->genid);
+  fprintf(LOG,"%s: sampling routine = _unur_hrb_sample",gen->genid);
   if (gen->variant & HRB_VARFLAG_VERIFY)
-    fprintf(log,"_check()\n");
+    fprintf(LOG,"_check()\n");
   else
-    fprintf(log,"()\n");
-  fprintf(log,"%s:\n",gen->genid);
+    fprintf(LOG,"()\n");
+  fprintf(LOG,"%s:\n",gen->genid);
 
-  fprintf(log,"%s: upper bound for hazard rate = %g",gen->genid,GEN->upper_bound);
+  fprintf(LOG,"%s: upper bound for hazard rate = %g",gen->genid,GEN->upper_bound);
   _unur_print_if_default(gen,HRB_SET_UPPERBOUND);
-  fprintf(log,"\n");
+  fprintf(LOG,"\n");
 
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
 
 
-  fflush(log);
+  fflush(LOG);
 
 } /* end of _unur_hrb_debug_init() */
 
@@ -760,7 +760,7 @@ _unur_hrb_debug_init( const struct unur_gen *gen )
 void
 _unur_hrb_debug_sample( const struct unur_gen *gen, double x, int i )
      /*----------------------------------------------------------------------*/
-     /* write info about generated point into logfile                        */
+     /* write info about generated point into LOG file                       */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
@@ -768,14 +768,14 @@ _unur_hrb_debug_sample( const struct unur_gen *gen, double x, int i )
      /*   i   ... number of iterations                                       */
      /*----------------------------------------------------------------------*/
 {
-  FILE *log;
+  FILE *LOG;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_HRB_GEN,RETURN_VOID);
 
-  log = unur_get_stream();
+  LOG = unur_get_stream();
 
-  fprintf(log,"%s: X = %g\t #iterations = %d\n",gen->genid,x,i);
+  fprintf(LOG,"%s: X = %g\t #iterations = %d\n",gen->genid,x,i);
 
 } /* end of _unur_hrb_debug_init() */
 

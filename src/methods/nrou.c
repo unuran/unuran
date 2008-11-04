@@ -182,7 +182,7 @@ static int _unur_nrou_rectangle( struct unur_gen *gen );
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 /* the following functions print debugging information on output stream,     */
-/* i.e., into the log file if not specified otherwise.                       */
+/* i.e., into the LOG file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 static void _unur_nrou_debug_init( const struct unur_gen *gen );
 
@@ -543,7 +543,7 @@ _unur_nrou_init( struct unur_par *par )
   }
 
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
+    /* write info into LOG file */
     if (gen->debug) _unur_nrou_debug_init(gen);
 #endif
 
@@ -1013,45 +1013,45 @@ _unur_nrou_rectangle( struct unur_gen *gen )
 void
 _unur_nrou_debug_init( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* write info about generator into logfile                              */
+     /* write info about generator into LOG file                             */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen       ... pointer to generator object                          */
      /*----------------------------------------------------------------------*/
 {
-  FILE *log;
+  FILE *LOG;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_NROU_GEN,RETURN_VOID);
 
-  log = unur_get_stream();
+  LOG = unur_get_stream();
 
-  fprintf(log,"%s:\n",gen->genid);
-  fprintf(log,"%s: type    = continuous univariate random variates\n",gen->genid);
-  fprintf(log,"%s: method  = nrou (naive ratio-of-uniforms)\n",gen->genid);
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
+  fprintf(LOG,"%s: type    = continuous univariate random variates\n",gen->genid);
+  fprintf(LOG,"%s: method  = nrou (naive ratio-of-uniforms)\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
 
   _unur_distr_cont_debug( gen->distr, gen->genid );
 
-  fprintf(log,"%s: sampling routine = _unur_nrou_sample",gen->genid);
-  if (gen->variant & NROU_VARFLAG_VERIFY) fprintf(log,"_check");
-  fprintf(log,"()\n%s:\n",gen->genid);
+  fprintf(LOG,"%s: sampling routine = _unur_nrou_sample",gen->genid);
+  if (gen->variant & NROU_VARFLAG_VERIFY) fprintf(LOG,"_check");
+  fprintf(LOG,"()\n%s:\n",gen->genid);
 
   /* parameters */
-  fprintf(log,"%s: r-parameter = %g",gen->genid, GEN->r);
+  fprintf(LOG,"%s: r-parameter = %g",gen->genid, GEN->r);
   _unur_print_if_default(gen,NROU_SET_R);
-  fprintf(log,"\n%s:\n",gen->genid);
+  fprintf(LOG,"\n%s:\n",gen->genid);
 
   /* center */
-  fprintf(log,"%s: center = %g\n",gen->genid,GEN->center);
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s: center = %g\n",gen->genid,GEN->center);
+  fprintf(LOG,"%s:\n",gen->genid);
 
   /* bounding rectangle */
-  fprintf(log,"%s: Rectangle:\n",gen->genid);
-  fprintf(log,"%s:    left  upper point = (%g,%g)\n",gen->genid,GEN->umin,GEN->vmax);
-  fprintf(log,"%s:    right upper point = (%g,%g)\n",gen->genid,GEN->umax,GEN->vmax);
+  fprintf(LOG,"%s: Rectangle:\n",gen->genid);
+  fprintf(LOG,"%s:    left  upper point = (%g,%g)\n",gen->genid,GEN->umin,GEN->vmax);
+  fprintf(LOG,"%s:    right upper point = (%g,%g)\n",gen->genid,GEN->umax,GEN->vmax);
 
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
 
 } /* end of _unur_nrou_debug_init() */
 

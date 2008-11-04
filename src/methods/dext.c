@@ -105,7 +105,7 @@ static void _unur_dext_free( struct unur_gen *gen);
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 /* the following functions print debugging information on output stream,     */
-/* i.e., into the log file if not specified otherwise.                       */
+/* i.e., into the LOG file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_dext_debug_init( struct unur_gen *gen );
@@ -391,7 +391,7 @@ _unur_dext_init( struct unur_par *par )
   }
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (gen->debug) _unur_dext_debug_init(gen);
 #endif
 
@@ -588,23 +588,23 @@ _unur_dext_free( struct unur_gen *gen )
 void
 _unur_dext_debug_init( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* write info about generator into logfile                              */
+     /* write info about generator into LOG file                             */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
      /*----------------------------------------------------------------------*/
 {
-  FILE *log;
+  FILE *LOG;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_DEXT_GEN,RETURN_VOID);
 
-  log = unur_get_stream();
+  LOG = unur_get_stream();
 
-  fprintf(log,"%s:\n",gen->genid);
-  fprintf(log,"%s: type    = discrete univariate random variates\n",gen->genid);
-  fprintf(log,"%s: method  = wrapper for external generator\n",gen->genid);
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
+  fprintf(LOG,"%s: type    = discrete univariate random variates\n",gen->genid);
+  fprintf(LOG,"%s: method  = wrapper for external generator\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
 
   /* distribution */
   _unur_distr_discr_debug( gen->distr, gen->genid, FALSE );

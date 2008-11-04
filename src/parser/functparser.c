@@ -594,7 +594,7 @@ static int _unur_fstr_print ( struct unur_string *output, const char *symb, doub
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 /* the following functions print debugging information on output stream,     */
-/* i.e., into the log file if not specified otherwise.                       */
+/* i.e., into the LOG file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_fstr_debug_input ( const char *fstr );

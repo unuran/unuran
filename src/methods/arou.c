@@ -247,7 +247,7 @@ static double _unur_arou_segment_arcmean( struct unur_arou_segment *seg );
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 /* the following functions print debugging information on output stream,     */
-/* i.e., into the log file if not specified otherwise.                       */
+/* i.e., into the LOG file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_arou_debug_init( const struct unur_par *par, const struct unur_gen *gen );
@@ -911,7 +911,7 @@ _unur_arou_init( struct unur_par *par )
     if (gen->debug & AROU_DEBUG_DARS) {
       /* make initial guide table (only necessary for writing debug info) */
       _unur_arou_make_guide_table(gen);
-      /* write info into log file */
+      /* write info into LOG file */
       _unur_arou_debug_init(par,gen);
       _unur_arou_debug_dars_start(gen);
     }
@@ -940,7 +940,7 @@ _unur_arou_init( struct unur_par *par )
     }
 
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
+    /* write info into LOG file */
     if (gen->debug) {
       if (gen->debug & AROU_DEBUG_DARS)
 	_unur_arou_debug_dars(gen);
@@ -955,7 +955,7 @@ _unur_arou_init( struct unur_par *par )
     _unur_arou_make_guide_table(gen);
 
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
+    /* write info into LOG file */
     if (gen->debug) _unur_arou_debug_init(par,gen);
 #endif
 
@@ -1142,7 +1142,7 @@ _unur_arou_free( struct unur_gen *gen )
   /* we cannot use this generator object any more */
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
-  /* write info into log file */
+  /* write info into LOG file */
 #ifdef UNUR_ENABLE_LOGGING
   if (gen->debug) _unur_arou_debug_free(gen);
 #endif
@@ -2001,7 +2001,7 @@ _unur_arou_segment_split( struct unur_gen *gen, struct unur_arou_segment *seg_ol
   CHECK_NULL(seg_oldl,UNUR_ERR_NULL); COOKIE_CHECK(seg_oldl,CK_AROU_SEG,UNUR_ERR_COOKIE);
 
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
+    /* write info into LOG file */
     if (gen->debug & AROU_DEBUG_SPLIT) 
       _unur_arou_debug_split_start( gen,seg_oldl,x,fx );
 #endif
@@ -2078,7 +2078,7 @@ _unur_arou_segment_split( struct unur_gen *gen, struct unur_arou_segment *seg_ol
       /* new construction point not suitable --> do not add */
       _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"Cannot split segment at given point.");
 #ifdef UNUR_ENABLE_LOGGING
-      /* write info into log file */
+      /* write info into LOG file */
       if (gen->debug & AROU_DEBUG_SPLIT)
 	_unur_arou_debug_split_stop( gen,seg_oldl,seg_newr );
 #endif
@@ -2105,7 +2105,7 @@ _unur_arou_segment_split( struct unur_gen *gen, struct unur_arou_segment *seg_ol
   GEN->Atotal += Adiff;
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (gen->debug & AROU_DEBUG_SPLIT) 
     _unur_arou_debug_split_stop( gen,seg_oldl,seg_newr );
 #endif
@@ -2412,83 +2412,83 @@ _unur_arou_segment_arcmean( struct unur_arou_segment *seg )
 void
 _unur_arou_debug_init( const struct unur_par *par, const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* write info about generator after setup into logfile                  */
+     /* write info about generator after setup into LOG file                 */
      /*                                                                      */
      /* parameters:                                                          */
      /*   par ... pointer to parameter for building generator object         */
      /*   gen ... pointer to generator object                                */
      /*----------------------------------------------------------------------*/
 {
-  FILE *log;
+  FILE *LOG;
   int i;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_AROU_GEN,RETURN_VOID);
   CHECK_NULL(par,RETURN_VOID);  COOKIE_CHECK(par,CK_AROU_PAR,RETURN_VOID);
 
-  log = unur_get_stream();
+  LOG = unur_get_stream();
 
-  fprintf(log,"%s:\n",gen->genid);
-  fprintf(log,"%s: type    = continuous univariate random variates\n",gen->genid);
-  fprintf(log,"%s: method  = ratio-of-uniforms method with enveloping polygon\n",gen->genid);
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
+  fprintf(LOG,"%s: type    = continuous univariate random variates\n",gen->genid);
+  fprintf(LOG,"%s: method  = ratio-of-uniforms method with enveloping polygon\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
 
   _unur_distr_cont_debug( gen->distr, gen->genid );
 
-  fprintf(log,"%s: sampling routine = _unur_arou_sample",gen->genid);
+  fprintf(LOG,"%s: sampling routine = _unur_arou_sample",gen->genid);
   if (gen->variant & AROU_VARFLAG_VERIFY)
-    fprintf(log,"_check()\n");
+    fprintf(LOG,"_check()\n");
   else
-    fprintf(log,"()\n");
-  fprintf(log,"%s:\n",gen->genid);
+    fprintf(LOG,"()\n");
+  fprintf(LOG,"%s:\n",gen->genid);
 
-  fprintf(log,"%s: center = %g",gen->genid,GEN->center);
+  fprintf(LOG,"%s: center = %g",gen->genid,GEN->center);
   _unur_print_if_default(gen,AROU_SET_CENTER);
   if (gen->variant & AROU_VARFLAG_USECENTER)
-    fprintf(log,"\n%s: use center as construction point",gen->genid);
-  fprintf(log,"\n%s:\n",gen->genid);
+    fprintf(LOG,"\n%s: use center as construction point",gen->genid);
+  fprintf(LOG,"\n%s:\n",gen->genid);
 
-  fprintf(log,"%s: maximum number of segments         = %d",gen->genid,GEN->max_segs);
+  fprintf(LOG,"%s: maximum number of segments         = %d",gen->genid,GEN->max_segs);
   _unur_print_if_default(gen,AROU_SET_MAX_SEGS);
-  fprintf(log,"\n%s: bound for ratio  Asqueeze / Atotal = %g%%",gen->genid,GEN->max_ratio*100.);
+  fprintf(LOG,"\n%s: bound for ratio  Asqueeze / Atotal = %g%%",gen->genid,GEN->max_ratio*100.);
   _unur_print_if_default(gen,AROU_SET_MAX_SQHRATIO);
-  fprintf(log,"\n%s:\n",gen->genid);
+  fprintf(LOG,"\n%s:\n",gen->genid);
 
   if (gen->variant & AROU_VARFLAG_USEDARS) {
-    fprintf(log,"%s: Derandomized ARS enabled ",gen->genid);
+    fprintf(LOG,"%s: Derandomized ARS enabled ",gen->genid);
     _unur_print_if_default(gen,AROU_SET_USE_DARS);
-    fprintf(log,"\n%s:\tDARS factor = %g",gen->genid,GEN->darsfactor);
+    fprintf(LOG,"\n%s:\tDARS factor = %g",gen->genid,GEN->darsfactor);
     _unur_print_if_default(gen,AROU_SET_DARS_FACTOR);
   }
   else {
-    fprintf(log,"%s: Derandomized ARS disabled ",gen->genid);
+    fprintf(LOG,"%s: Derandomized ARS disabled ",gen->genid);
     _unur_print_if_default(gen,AROU_SET_USE_DARS);
   }
-  fprintf(log,"\n%s:\n",gen->genid);
+  fprintf(LOG,"\n%s:\n",gen->genid);
 
-  fprintf(log,"%s: sampling from list of segments: indexed search (guide table method)\n",gen->genid);
-  fprintf(log,"%s:    relative guide table size = %g%%",gen->genid,100.*GEN->guide_factor);
+  fprintf(LOG,"%s: sampling from list of segments: indexed search (guide table method)\n",gen->genid);
+  fprintf(LOG,"%s:    relative guide table size = %g%%",gen->genid,100.*GEN->guide_factor);
   _unur_print_if_default(gen,AROU_SET_GUIDEFACTOR);
-  fprintf(log,"\n%s:\n",gen->genid);
+  fprintf(LOG,"\n%s:\n",gen->genid);
 
-  fprintf(log,"%s: number of starting points = %d",gen->genid,PAR->n_starting_cpoints);
+  fprintf(LOG,"%s: number of starting points = %d",gen->genid,PAR->n_starting_cpoints);
   _unur_print_if_default(gen,AROU_SET_N_STP);
-  fprintf(log,"\n%s: starting points:",gen->genid);
+  fprintf(LOG,"\n%s: starting points:",gen->genid);
   if (gen->set & AROU_SET_STP)
     for (i=0; i<PAR->n_starting_cpoints; i++) {
-      if (i%5==0) fprintf(log,"\n%s:\t",gen->genid);
-      fprintf(log,"   %#g,",PAR->starting_cpoints[i]);
+      if (i%5==0) fprintf(LOG,"\n%s:\t",gen->genid);
+      fprintf(LOG,"   %#g,",PAR->starting_cpoints[i]);
     }
   else
-    fprintf(log," use \"equidistribution\" rule [default]");
-  fprintf(log,"\n%s:\n",gen->genid);
+    fprintf(LOG," use \"equidistribution\" rule [default]");
+  fprintf(LOG,"\n%s:\n",gen->genid);
   
   _unur_arou_debug_segments(gen);
 
-  fprintf(log,"%s: INIT completed **********************\n",gen->genid);
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s: INIT completed **********************\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
 
-  fflush(log);
+  fflush(LOG);
 
 } /* end of _unur_arou_debug_init() */
 
@@ -2497,26 +2497,26 @@ _unur_arou_debug_init( const struct unur_par *par, const struct unur_gen *gen )
 void 
 _unur_arou_debug_dars_start( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* print header before runniung DARS into logfile                       */
+     /* print header before runniung DARS into LOG file                      */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
      /*----------------------------------------------------------------------*/
 {
-  FILE *log;
+  FILE *LOG;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_AROU_GEN,RETURN_VOID);
 
-  log = unur_get_stream();
+  LOG = unur_get_stream();
 
-  fprintf(log,"%s: DARS started **********************\n",gen->genid);
-  fprintf(log,"%s:\n",gen->genid);
-  fprintf(log,"%s: DARS factor = %g",gen->genid,GEN->darsfactor);
+  fprintf(LOG,"%s: DARS started **********************\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
+  fprintf(LOG,"%s: DARS factor = %g",gen->genid,GEN->darsfactor);
   _unur_print_if_default(gen,AROU_SET_DARS_FACTOR);
-  fprintf(log,"\n%s:\n",gen->genid);
+  fprintf(LOG,"\n%s:\n",gen->genid);
 
-  fflush(log);
+  fflush(LOG);
 } /* end of _unur_arou_debug_dars_start() */
 
 /*---------------------------------------------------------------------------*/
@@ -2524,28 +2524,28 @@ _unur_arou_debug_dars_start( const struct unur_gen *gen )
 void
 _unur_arou_debug_dars( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* print infor after generator has run DARS into logfile                */
+     /* print infor after generator has run DARS into LOG file               */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
      /*----------------------------------------------------------------------*/
 {
-  FILE *log;
+  FILE *LOG;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_AROU_GEN,RETURN_VOID);
 
-  log = unur_get_stream();
+  LOG = unur_get_stream();
 
-  fprintf(log,"%s:\n",gen->genid);
-  fprintf(log,"%s: DARS finished **********************\n",gen->genid);
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
+  fprintf(LOG,"%s: DARS finished **********************\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
   _unur_arou_debug_segments(gen);
-  fprintf(log,"%s:\n",gen->genid);
-  fprintf(log,"%s: DARS completed **********************\n",gen->genid);
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
+  fprintf(LOG,"%s: DARS completed **********************\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
 
-  fflush(log);
+  fflush(LOG);
 } /* end of _unur_arou_debug_dars() */
 
 /*****************************************************************************/
@@ -2553,26 +2553,26 @@ _unur_arou_debug_dars( const struct unur_gen *gen )
 void
 _unur_arou_debug_free( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* write info about generator before destroying into logfile            */
+     /* write info about generator before destroying into LOG file           */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
      /*----------------------------------------------------------------------*/
 {
-  FILE *log;
+  FILE *LOG;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_AROU_GEN,RETURN_VOID);
 
-  log = unur_get_stream();
+  LOG = unur_get_stream();
 
-  fprintf(log,"%s:\n",gen->genid);
-  fprintf(log,"%s: GENERATOR destroyed **********************\n",gen->genid);
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
+  fprintf(LOG,"%s: GENERATOR destroyed **********************\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
   _unur_arou_debug_segments(gen);
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
 
-  fflush(log);
+  fflush(LOG);
 
 } /* end of _unur_arou_debug_free() */
 
@@ -2581,13 +2581,13 @@ _unur_arou_debug_free( const struct unur_gen *gen )
 void
 _unur_arou_debug_segments( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* write list of segments into logfile                                  */
+     /* write list of segments into LOGfile                                  */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
      /*----------------------------------------------------------------------*/
 {
-  FILE *log;
+  FILE *LOG;
   struct unur_arou_segment *seg;
   double sAin, sAout, Atotal;
   int i;
@@ -2595,27 +2595,27 @@ _unur_arou_debug_segments( const struct unur_gen *gen )
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_AROU_GEN,RETURN_VOID);
 
-  log = unur_get_stream();
+  LOG = unur_get_stream();
 
-  fprintf(log,"%s:Segments: %d\n",gen->genid,GEN->n_segs);
+  fprintf(LOG,"%s:Segments: %d\n",gen->genid,GEN->n_segs);
   if ((gen->debug & AROU_DEBUG_SEGMENTS) && GEN->seg != NULL) {
-    fprintf(log,"%s: Nr.\t    left touching point\t\t   intersection point\t\t tangent at left touching point\n",gen->genid);
+    fprintf(LOG,"%s: Nr.\t    left touching point\t\t   intersection point\t\t tangent at left touching point\n",gen->genid);
     for (seg = GEN->seg, i=0; seg->next!=NULL; seg=seg->next, i++) {
       COOKIE_CHECK(seg,CK_AROU_SEG,RETURN_VOID); 
-      fprintf(log,"%s:[%3d]: (%-12.6g,%-12.6g)   (%-12.6g,%-12.6g)   (%-12.6g,%-12.6g,%-12.6g)\n", gen->genid, i,
+      fprintf(LOG,"%s:[%3d]: (%-12.6g,%-12.6g)   (%-12.6g,%-12.6g)   (%-12.6g,%-12.6g,%-12.6g)\n", gen->genid, i,
 	      seg->ltp[0],seg->ltp[1],
 	      seg->mid[0],seg->mid[1],
 	      seg->dltp[0],seg->dltp[1],seg->dltp[2]);
     }
     COOKIE_CHECK(seg,CK_AROU_SEG,RETURN_VOID); 
-    fprintf(log,"%s:[...]: (%-12.6g,%-12.6g)\n", gen->genid,seg->ltp[0],seg->ltp[1]);
+    fprintf(LOG,"%s:[...]: (%-12.6g,%-12.6g)\n", gen->genid,seg->ltp[0],seg->ltp[1]);
   }
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
 
   if (GEN->Atotal <= 0.) {
-    fprintf(log,"%s: Construction of enveloping polygon not successful\n",gen->genid);
-    fprintf(log,"%s: Areas may be meaningless !!!!!!!!!!!!!!!!!!!!!!!!\n",gen->genid);
-    fprintf(log,"%s:\n",gen->genid);
+    fprintf(LOG,"%s: Construction of enveloping polygon not successful\n",gen->genid);
+    fprintf(LOG,"%s: Areas may be meaningless !!!!!!!!!!!!!!!!!!!!!!!!\n",gen->genid);
+    fprintf(LOG,"%s:\n",gen->genid);
     Atotal = -1.;   /* to avoid floating point exceptions */
   }
   else {
@@ -2624,37 +2624,37 @@ _unur_arou_debug_segments( const struct unur_gen *gen )
 
   /* print and sum areas inside and outside of squeeze */
   if ((gen->debug & AROU_DEBUG_SEGMENTS) && GEN->seg != NULL) {
-    fprintf(log,"%s:Areas in segments:\n",gen->genid);
-    fprintf(log,"%s: Nr.\t inside squeeze\t\t   outside squeeze\t     total segment\t\tcumulated\n",gen->genid);
+    fprintf(LOG,"%s:Areas in segments:\n",gen->genid);
+    fprintf(LOG,"%s: Nr.\t inside squeeze\t\t   outside squeeze\t     total segment\t\tcumulated\n",gen->genid);
     sAin = sAout = 0.;
     for (seg = GEN->seg, i=0; seg->next!=NULL; seg=seg->next, i++) {
       COOKIE_CHECK(seg,CK_AROU_SEG,RETURN_VOID); 
       sAin += seg->Ain;
       sAout += seg->Aout;
-      fprintf(log,"%s:[%3d]: %-12.6g(%6.3f%%)  |  %-12.6g(%6.3f%%)  |  %-12.6g(%6.3f%%)  |  %-12.6g(%6.3f%%)\n",
+      fprintf(LOG,"%s:[%3d]: %-12.6g(%6.3f%%)  |  %-12.6g(%6.3f%%)  |  %-12.6g(%6.3f%%)  |  %-12.6g(%6.3f%%)\n",
 	      gen->genid,i,
 	      seg->Ain, seg->Ain * 100. / Atotal,
 	      seg->Aout, seg->Aout * 100. / Atotal,
 	      seg->Ain + seg->Aout, (seg->Ain + seg->Aout) * 100. / Atotal,
 	      seg->Acum, seg->Acum * 100. / Atotal);
     }
-    fprintf(log,"%s:\t----------  ---------  |  ----------  ---------  |  ----------  ---------  +\n",gen->genid);
-    fprintf(log,"%s: Sum : %-12.6g(%6.3f%%)  |  %-12.6g(%6.3f%%)  |  %-11.6g(%6.3f%%)\n",
+    fprintf(LOG,"%s:\t----------  ---------  |  ----------  ---------  |  ----------  ---------  +\n",gen->genid);
+    fprintf(LOG,"%s: Sum : %-12.6g(%6.3f%%)  |  %-12.6g(%6.3f%%)  |  %-11.6g(%6.3f%%)\n",
 	    gen->genid,
 	    sAin, sAin * 100./Atotal,
 	    sAout, sAout * 100./Atotal,
 	    sAin + sAout, (sAin + sAout) * 100./Atotal);
-    fprintf(log,"%s:\n",gen->genid);
+    fprintf(LOG,"%s:\n",gen->genid);
   }
 
   /* summary of areas */
-  fprintf(log,"%s: A(squeeze)     = %-12.6g  (%6.3f%%)\n",gen->genid,
+  fprintf(LOG,"%s: A(squeeze)     = %-12.6g  (%6.3f%%)\n",gen->genid,
 	  GEN->Asqueeze, GEN->Asqueeze * 100./Atotal);
-  fprintf(log,"%s: A(hat\\squeeze) = %-12.6g  (%6.3f%%)\n",gen->genid,
+  fprintf(LOG,"%s: A(hat\\squeeze) = %-12.6g  (%6.3f%%)\n",gen->genid,
 	  GEN->Atotal - GEN->Asqueeze, (Atotal - GEN->Asqueeze) * 100./Atotal);
-  fprintf(log,"%s: A(total)       = %-12.6g\n",gen->genid, Atotal);
+  fprintf(LOG,"%s: A(total)       = %-12.6g\n",gen->genid, Atotal);
 
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
 
 } /* end of _unur_arou_debug_segments() */
 
@@ -2674,34 +2674,34 @@ _unur_arou_debug_split_start( const struct unur_gen *gen,
      /*   fx  ... value of PDF at x                                          */
      /*----------------------------------------------------------------------*/
 {
-  FILE *log;
+  FILE *LOG;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_AROU_GEN,RETURN_VOID);
   CHECK_NULL(seg,RETURN_VOID);  COOKIE_CHECK(seg,CK_AROU_SEG,RETURN_VOID);
 
-  log = unur_get_stream();
+  LOG = unur_get_stream();
 
-  fprintf(log,"%s: split segment at x = %g \t\tf(x) = %g\n",gen->genid,x,fx);
-  fprintf(log,"%s: old segment:\n",gen->genid);
+  fprintf(LOG,"%s: split segment at x = %g \t\tf(x) = %g\n",gen->genid,x,fx);
+  fprintf(LOG,"%s: old segment:\n",gen->genid);
 
-  fprintf(log,"%s:   left  construction point = (%-12.6g,%-12.6g)\t x = v/u = %-12.6g\tf(x) = %-12.6g\n",
+  fprintf(LOG,"%s:   left  construction point = (%-12.6g,%-12.6g)\t x = v/u = %-12.6g\tf(x) = %-12.6g\n",
 	  gen->genid, seg->ltp[0], seg->ltp[1], seg->ltp[0]/seg->ltp[1], sqrt(seg->ltp[1]) );
 
-  fprintf(log,"%s:   intersection point       = (%-12.6g,%-12.6g)\t x = v/u = %-12.6g\n",
+  fprintf(LOG,"%s:   intersection point       = (%-12.6g,%-12.6g)\t x = v/u = %-12.6g\n",
 	  gen->genid, seg->mid[0], seg->mid[1], seg->mid[0]/seg->mid[1]);
 
-  fprintf(log,"%s:   right construction point = (%-12.6g,%-12.6g)\t x = v/u = %-12.6g\tf(x) = %-12.6g\n",
+  fprintf(LOG,"%s:   right construction point = (%-12.6g,%-12.6g)\t x = v/u = %-12.6g\tf(x) = %-12.6g\n",
 	  gen->genid, seg->rtp[0], seg->rtp[1], seg->rtp[0]/seg->rtp[1], sqrt(seg->rtp[1]) );
 
-  fprintf(log,"%s:   A(squeeze)     = %-12.6g\t(%6.3f%%)\n",gen->genid,
+  fprintf(LOG,"%s:   A(squeeze)     = %-12.6g\t(%6.3f%%)\n",gen->genid,
 	  seg->Ain, seg->Ain * 100./GEN->Atotal);
-  fprintf(log,"%s:   A(hat\\squeeze) = %-12.6g\t(%6.3f%%)\n",gen->genid,
+  fprintf(LOG,"%s:   A(hat\\squeeze) = %-12.6g\t(%6.3f%%)\n",gen->genid,
 	  seg->Aout, seg->Aout * 100./GEN->Atotal);
-  fprintf(log,"%s:   A(hat)         = %-12.6g\t(%6.3f%%)\n",gen->genid,
+  fprintf(LOG,"%s:   A(hat)         = %-12.6g\t(%6.3f%%)\n",gen->genid,
 	  (seg->Ain + seg->Aout), (seg->Ain +seg->Aout) * 100./GEN->Atotal);
 
-  fflush(log);
+  fflush(LOG);
 
 } /* end of _unur_arou_debug_split_start() */
 
@@ -2720,7 +2720,7 @@ _unur_arou_debug_split_stop( const struct unur_gen *gen,
      /*   iv_right ... pointer to new right hand segment                     */
      /*----------------------------------------------------------------------*/
 {
-  FILE *log;
+  FILE *LOG;
   int chopped;
 
   /* check arguments */
@@ -2728,65 +2728,65 @@ _unur_arou_debug_split_stop( const struct unur_gen *gen,
   CHECK_NULL(seg_left,RETURN_VOID);   COOKIE_CHECK(seg_left,CK_AROU_SEG,RETURN_VOID);
   CHECK_NULL(seg_right,RETURN_VOID);  COOKIE_CHECK(seg_right,CK_AROU_SEG,RETURN_VOID);
 
-  log = unur_get_stream();
+  LOG = unur_get_stream();
 
   /* whether segment was split or just chopped */
   chopped = (seg_left==seg_right) ? 1 : 0;
 
   if (chopped)
-    fprintf(log,"%s: new segment (chopped):\n",gen->genid);
+    fprintf(LOG,"%s: new segment (chopped):\n",gen->genid);
   else
-    fprintf(log,"%s: new segments:\n",gen->genid);
+    fprintf(LOG,"%s: new segments:\n",gen->genid);
 
-  fprintf(log,"%s:   left  construction point  = (%-12.6g,%-12.6g)\t x = v/u = %-12.6g\tf(x) = %-12.6g\n",
+  fprintf(LOG,"%s:   left  construction point  = (%-12.6g,%-12.6g)\t x = v/u = %-12.6g\tf(x) = %-12.6g\n",
 	  gen->genid, seg_left->ltp[0], seg_left->ltp[1], seg_left->ltp[0]/seg_left->ltp[1], sqrt(seg_left->ltp[1]) );
   
-  fprintf(log,"%s:   intersection point        = (%-12.6g,%-12.6g)\t x = v/u = %-12.6g\n",
+  fprintf(LOG,"%s:   intersection point        = (%-12.6g,%-12.6g)\t x = v/u = %-12.6g\n",
 	  gen->genid, seg_left->mid[0], seg_left->mid[1], seg_left->mid[0]/seg_left->mid[1] );
     
   if (chopped) {
-    fprintf(log,"%s:   right construction point  = (%-12.6g,%-12.6g)\t x = v/u = %-12.6g\tf(x) = %-12.6g\n",
+    fprintf(LOG,"%s:   right construction point  = (%-12.6g,%-12.6g)\t x = v/u = %-12.6g\tf(x) = %-12.6g\n",
 	    gen->genid, seg_left->rtp[0], seg_left->rtp[1], seg_left->rtp[0]/seg_left->rtp[1], sqrt(seg_left->rtp[1]) );
   }
   else {
-    fprintf(log,"%s:   middle construction point = (%-12.6g,%-12.6g)\t x = v/u = %-12.6g\tf(x) = %-12.6g\n",
+    fprintf(LOG,"%s:   middle construction point = (%-12.6g,%-12.6g)\t x = v/u = %-12.6g\tf(x) = %-12.6g\n",
 	    gen->genid, seg_left->rtp[0], seg_left->rtp[1], seg_left->rtp[0]/seg_left->rtp[1], sqrt(seg_left->rtp[1]) );
     
-    fprintf(log,"%s:   intersection point        = (%-12.6g,%-12.6g)\t x = v/u = %-12.6g\n",
+    fprintf(LOG,"%s:   intersection point        = (%-12.6g,%-12.6g)\t x = v/u = %-12.6g\n",
 	    gen->genid, seg_right->mid[0], seg_right->mid[1], seg_right->mid[0]/seg_right->mid[1] );
     
-    fprintf(log,"%s:   right construction point  = (%-12.6g,%-12.6g)\t x = v/u = %-12.6g\tf(x) = %-12.6g\n",
+    fprintf(LOG,"%s:   right construction point  = (%-12.6g,%-12.6g)\t x = v/u = %-12.6g\tf(x) = %-12.6g\n",
 	    gen->genid, seg_right->rtp[0], seg_right->rtp[1], seg_right->rtp[0]/seg_right->rtp[1], sqrt(seg_right->rtp[1]) );
   }
   
   if (!chopped) {
-    fprintf(log,"%s: left segment:\n",gen->genid);
-    fprintf(log,"%s:   A(squeeze)     = %-12.6g\t(%6.3f%%)\n",gen->genid,
+    fprintf(LOG,"%s: left segment:\n",gen->genid);
+    fprintf(LOG,"%s:   A(squeeze)     = %-12.6g\t(%6.3f%%)\n",gen->genid,
 	    seg_left->Ain, seg_left->Ain * 100./GEN->Atotal);
-    fprintf(log,"%s:   A(hat\\squeeze) = %-12.6g\t(%6.3f%%)\n",gen->genid,
+    fprintf(LOG,"%s:   A(hat\\squeeze) = %-12.6g\t(%6.3f%%)\n",gen->genid,
 	    seg_left->Aout, seg_left->Aout * 100./GEN->Atotal);
-    fprintf(log,"%s:   A(hat)         = %-12.6g\t(%6.3f%%)\n",gen->genid,
+    fprintf(LOG,"%s:   A(hat)         = %-12.6g\t(%6.3f%%)\n",gen->genid,
 	    (seg_left->Ain + seg_left->Aout), (seg_left->Ain +seg_left->Aout) * 100./GEN->Atotal);
     
-    fprintf(log,"%s: right segment:\n",gen->genid);
-    fprintf(log,"%s:   A(squeeze)     = %-12.6g\t(%6.3f%%)\n",gen->genid,
+    fprintf(LOG,"%s: right segment:\n",gen->genid);
+    fprintf(LOG,"%s:   A(squeeze)     = %-12.6g\t(%6.3f%%)\n",gen->genid,
 	    seg_right->Ain, seg_right->Ain * 100./GEN->Atotal);
-    fprintf(log,"%s:   A(hat\\squeeze) = %-12.6g\t(%6.3f%%)\n",gen->genid,
+    fprintf(LOG,"%s:   A(hat\\squeeze) = %-12.6g\t(%6.3f%%)\n",gen->genid,
 	    seg_right->Aout, seg_right->Aout * 100./GEN->Atotal);
-    fprintf(log,"%s:   A(hat)         = %-12.6g\t(%6.3f%%)\n",gen->genid,
+    fprintf(LOG,"%s:   A(hat)         = %-12.6g\t(%6.3f%%)\n",gen->genid,
 	    (seg_right->Ain + seg_right->Aout), (seg_right->Ain +seg_right->Aout) * 100./GEN->Atotal);
   }
 
-  fprintf(log,"%s: total areas:\n",gen->genid);
-  fprintf(log,"%s:   A(squeeze)     = %-12.6g\t(%6.3f%%)\n",gen->genid,
+  fprintf(LOG,"%s: total areas:\n",gen->genid);
+  fprintf(LOG,"%s:   A(squeeze)     = %-12.6g\t(%6.3f%%)\n",gen->genid,
 	  GEN->Asqueeze, GEN->Asqueeze * 100./GEN->Atotal);
-  fprintf(log,"%s:   A(hat\\squeeze) = %-12.6g\t(%6.3f%%)\n",gen->genid,
+  fprintf(LOG,"%s:   A(hat\\squeeze) = %-12.6g\t(%6.3f%%)\n",gen->genid,
 	  GEN->Atotal - GEN->Asqueeze, (GEN->Atotal - GEN->Asqueeze) * 100./GEN->Atotal);
-  fprintf(log,"%s:   A(total)       = %-12.6g\n",gen->genid, GEN->Atotal);
+  fprintf(LOG,"%s:   A(total)       = %-12.6g\n",gen->genid, GEN->Atotal);
 
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
 
-  fflush(log);
+  fflush(LOG);
 
 } /* end of _unur_arou_debug_split_stop() */
 

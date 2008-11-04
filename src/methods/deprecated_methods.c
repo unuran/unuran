@@ -194,7 +194,7 @@ unur_dari_chg_domain( struct unur_gen *gen, int left, int right )
   gen->distr->set |= UNUR_DISTR_SET_DOMAIN;
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
 #endif
   
   /* o.k. */
@@ -476,7 +476,7 @@ unur_dsrou_chg_domain( struct unur_gen *gen, int left, int right )
   gen->distr->set |= UNUR_DISTR_SET_DOMAIN;
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
 #endif
   
   /* o.k. */
@@ -764,7 +764,7 @@ unur_srou_chg_domain( struct unur_gen *gen, double left, double right )
   gen->distr->set |= UNUR_DISTR_SET_DOMAIN;
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
 #endif
   
   /* o.k. */
@@ -989,7 +989,7 @@ unur_ssr_chg_domain( struct unur_gen *gen, double left, double right )
   gen->distr->set |= UNUR_DISTR_SET_DOMAIN;
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
 #endif
   
   /* o.k. */
@@ -1212,7 +1212,7 @@ unur_utdr_chg_domain( struct unur_gen *gen, double left, double right )
   gen->distr->set |= UNUR_DISTR_SET_DOMAIN;
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
 #endif
   
   /* o.k. */

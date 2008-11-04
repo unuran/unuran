@@ -534,7 +534,7 @@ static int _unur_tdr_make_guide_table( struct unur_gen *gen );
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 /* the following functions print debugging information on output stream,     */
-/* i.e., into the log file if not specified otherwise.                       */
+/* i.e., into the LOG file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_tdr_debug_init_start( const struct unur_gen *gen );

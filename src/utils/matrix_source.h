@@ -65,16 +65,16 @@ int _unur_matrix_eigensystem (int dim, const double *M, double *values, double *
 /* The eigenvectors are stored consecutively in the array vectors.           */
 
 void _unur_matrix_print_vector ( int dim, const double *vec, const char *info,
-				 FILE *log, const char *genid, const char *indent );
+				 FILE *LOG, const char *genid, const char *indent );
 /* Print elements of vector in a single row enclosed by parenthesis into     */
-/* logfile. The line starts with <genid>: <indent>                           */
+/* LOG file. The line starts with <genid>: <indent>                          */
 /* <info> is printed in a (first) separate line.                             */
 /* A blank line is inserted after the printed vector.                        */
 /* If the NULL pointer is given, the string "[unknown]" is printed.          */
 
 void _unur_matrix_print_matrix ( int dim, const double *mat, const char *info,
-				 FILE *log, const char *genid, const char *indent );
-/* Print elements of the given <dim>x<dim> square matrix into log file.      */
+				 FILE *LOG, const char *genid, const char *indent );
+/* Print elements of the given <dim>x<dim> square matrix into LOG file.      */
 /* The matrix is stored row-wise in <mat>.                                   */
 /* The lines start with <genid>: <indent>                                    */
 /* <info> is printed in a (first) separate line.                             */

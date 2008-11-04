@@ -247,7 +247,7 @@ inline static double _unur_empk_comp_iqrtrange( double *data, int n_data );
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 /* the following functions print debugging information on output stream,     */
-/* i.e., into the log file if not specified otherwise.                       */
+/* i.e., into the LOG file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_empk_debug_init( const struct unur_gen *gen );
@@ -848,7 +848,7 @@ _unur_empk_init( struct unur_par *par )
   GEN->sconst = 1./sqrt(1. + GEN->kernvar * SQU( GEN->bwidth/GEN->stddev_observ ) );
 
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
+    /* write info into LOG file */
     if (gen->debug) _unur_empk_debug_init(gen);
 #endif
 
@@ -1145,67 +1145,67 @@ _unur_empk_comp_iqrtrange( double *data, int n )
 static void
 _unur_empk_debug_init( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* write info about generator into logfile                              */
+     /* write info about generator into LOG file                             */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
      /*----------------------------------------------------------------------*/
 {
-  FILE *log;
+  FILE *LOG;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_EMPK_GEN,RETURN_VOID);
 
-  log = unur_get_stream();
+  LOG = unur_get_stream();
 
-  fprintf(log,"%s:\n",gen->genid);
-  fprintf(log,"%s: type    = continuous univariate random variates\n",gen->genid);
-  fprintf(log,"%s: method  = EMPK (EMPirical distribution with Kernel smoothing)\n",gen->genid);
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
+  fprintf(LOG,"%s: type    = continuous univariate random variates\n",gen->genid);
+  fprintf(LOG,"%s: method  = EMPK (EMPirical distribution with Kernel smoothing)\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
 
   _unur_distr_cemp_debug( gen->distr, gen->genid, (gen->debug & EMPK_DEBUG_PRINTDATA));
 
-  fprintf(log,"%s: sampling routine = _unur_empk_sample()\n",gen->genid);
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s: sampling routine = _unur_empk_sample()\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
 
-  fprintf(log,"%s: smoothing factor = %g",gen->genid, GEN->smoothing);
-  _unur_print_if_default(gen,EMPK_SET_SMOOTHING); fprintf(log,"\n");
+  fprintf(LOG,"%s: smoothing factor = %g",gen->genid, GEN->smoothing);
+  _unur_print_if_default(gen,EMPK_SET_SMOOTHING); fprintf(LOG,"\n");
   if (gen->variant & EMPK_VARFLAG_POSITIVE)
-    fprintf(log,"%s: positive random variable only; use mirroring \n",gen->genid);
+    fprintf(LOG,"%s: positive random variable only; use mirroring \n",gen->genid);
 
   if (gen->variant & EMPK_VARFLAG_VARCOR)
-    fprintf(log,"%s: use variance correction\n",gen->genid);
+    fprintf(LOG,"%s: use variance correction\n",gen->genid);
   else
-    fprintf(log,"%s: no variance correction\n",gen->genid);
+    fprintf(LOG,"%s: no variance correction\n",gen->genid);
 
-  fprintf(log,"%s:\n",gen->genid);
-  fprintf(log,"%s: Kernel:\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
+  fprintf(LOG,"%s: Kernel:\n",gen->genid);
 
-  fprintf(log,"%s:    type = %s  ",gen->genid,GEN->kerngen->distr->name);
+  fprintf(LOG,"%s:    type = %s  ",gen->genid,GEN->kerngen->distr->name);
   if (gen->set & EMPK_SET_KERNGEN)
-    fprintf(log,"[kernel generator set]\n");
+    fprintf(LOG,"[kernel generator set]\n");
   else if (gen->set & EMPK_SET_KERNEL)
-    fprintf(log,"[standard kernel]\n");
+    fprintf(LOG,"[standard kernel]\n");
   else 
-    fprintf(log,"[default kernel]\n");
+    fprintf(LOG,"[default kernel]\n");
 
-  fprintf(log,"%s:    window width = %g\t(opt = %g)\n",gen->genid, GEN->bwidth, GEN->bwidth_opt);
-  fprintf(log,"%s:    alpha = %g",gen->genid, GEN->alpha);
-  _unur_print_if_default(gen,EMPK_SET_ALPHA); fprintf(log,"\n");
+  fprintf(LOG,"%s:    window width = %g\t(opt = %g)\n",gen->genid, GEN->bwidth, GEN->bwidth_opt);
+  fprintf(LOG,"%s:    alpha = %g",gen->genid, GEN->alpha);
+  _unur_print_if_default(gen,EMPK_SET_ALPHA); fprintf(LOG,"\n");
   if (gen->variant & EMPK_VARFLAG_VARCOR) {
-    fprintf(log,"%s:    kernel variance = %g",gen->genid, GEN->kernvar);
-    _unur_print_if_default(gen,EMPK_SET_KERNELVAR); fprintf(log,"\n");
-    fprintf(log,"%s:    variance correction factor = %g\n",gen->genid, GEN->sconst);
+    fprintf(LOG,"%s:    kernel variance = %g",gen->genid, GEN->kernvar);
+    _unur_print_if_default(gen,EMPK_SET_KERNELVAR); fprintf(LOG,"\n");
+    fprintf(LOG,"%s:    variance correction factor = %g\n",gen->genid, GEN->sconst);
   }
 
-  fprintf(log,"%s:\n",gen->genid);
-  fprintf(log,"%s: Data:\n",gen->genid);
-  fprintf(log,"%s:    beta  = %g",gen->genid, GEN->beta);
-  _unur_print_if_default(gen,EMPK_SET_BETA); fprintf(log,"\n");
-  fprintf(log,"%s:    mean (data) = %g\n",gen->genid, GEN->mean_observ);
-  fprintf(log,"%s:    stddev (data) = %g\n",gen->genid, GEN->stddev_observ);
+  fprintf(LOG,"%s:\n",gen->genid);
+  fprintf(LOG,"%s: Data:\n",gen->genid);
+  fprintf(LOG,"%s:    beta  = %g",gen->genid, GEN->beta);
+  _unur_print_if_default(gen,EMPK_SET_BETA); fprintf(LOG,"\n");
+  fprintf(LOG,"%s:    mean (data) = %g\n",gen->genid, GEN->mean_observ);
+  fprintf(LOG,"%s:    stddev (data) = %g\n",gen->genid, GEN->stddev_observ);
 
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
 
 } /* end of _unur_empk_debug_init() */
 

@@ -175,7 +175,7 @@ static double _unur_itdr_find_xt( struct unur_gen *gen, double b );
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 /* the following functions print debugging information on output stream,     */
-/* i.e., into the log file if not specified otherwise.                       */
+/* i.e., into the LOG file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 static void _unur_itdr_debug_init( const struct unur_gen *gen, int error );
 
@@ -645,14 +645,14 @@ _unur_itdr_init( struct unur_par *par )
   /* create hat function */
   if (_unur_itdr_get_hat(gen) != UNUR_SUCCESS) {
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
+    /* write info into LOG file */
     if (gen->debug) _unur_itdr_debug_init(gen,UNUR_FAILURE);
 #endif
     _unur_itdr_free(gen); return NULL;
   }
 
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
+    /* write info into LOG file */
     if (gen->debug) _unur_itdr_debug_init(gen,UNUR_SUCCESS);
 #endif
 
@@ -691,7 +691,7 @@ _unur_itdr_reinit( struct unur_gen *gen )
   SAMPLE = _unur_itdr_getSAMPLE(gen);
 
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
+    /* write info into LOG file */
     if (gen->debug & ITDR_DEBUG_REINIT)
       _unur_itdr_debug_init(gen,rcode);
 #endif
@@ -1558,60 +1558,60 @@ _unur_itdr_find_xt( struct unur_gen *gen, double b )
 void
 _unur_itdr_debug_init( const struct unur_gen *gen, int error )
      /*----------------------------------------------------------------------*/
-     /* write info about generator into logfile                              */
+     /* write info about generator into LOG file                             */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen   ... pointer to generator object                              */
      /*   error ... error code of hat generation                             */
      /*----------------------------------------------------------------------*/
 {
-  FILE *log;
+  FILE *LOG;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_ITDR_GEN,RETURN_VOID);
 
-  log = unur_get_stream();
+  LOG = unur_get_stream();
 
-  fprintf(log,"%s:\n",gen->genid);
-  fprintf(log,"%s: type    = continuous univariate random variates\n",gen->genid);
-  fprintf(log,"%s: method  = itdr (inverse transformed density rejection)\n",gen->genid);
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
+  fprintf(LOG,"%s: type    = continuous univariate random variates\n",gen->genid);
+  fprintf(LOG,"%s: method  = itdr (inverse transformed density rejection)\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
 
   _unur_distr_cont_debug( gen->distr, gen->genid );
 
-  fprintf(log,"%s: sampling routine = _unur_itdr_sample",gen->genid);
-  if (gen->variant & ITDR_VARFLAG_VERIFY) fprintf(log,"_check");
-  fprintf(log,"()\n%s:\n",gen->genid);
+  fprintf(LOG,"%s: sampling routine = _unur_itdr_sample",gen->genid);
+  if (gen->variant & ITDR_VARFLAG_VERIFY) fprintf(LOG,"_check");
+  fprintf(LOG,"()\n%s:\n",gen->genid);
 
   /* parameters */
-  fprintf(log,"%s: sign = %g\n",gen->genid, GEN->sign);
-  fprintf(log,"%s: pole = %g\n",gen->genid, GEN->pole);
-  fprintf(log,"%s: bd_right = %g\n",gen->genid, GEN->bd_right);
-  fprintf(log,"%s: xi = %g",gen->genid, GEN->xi);
-  fprintf(log,"%s\n", (gen->set & ITDR_SET_XI) ? "" : " [computed]");
-  fprintf(log,"%s: bx = %g\n",gen->genid, GEN->bx);
+  fprintf(LOG,"%s: sign = %g\n",gen->genid, GEN->sign);
+  fprintf(LOG,"%s: pole = %g\n",gen->genid, GEN->pole);
+  fprintf(LOG,"%s: bd_right = %g\n",gen->genid, GEN->bd_right);
+  fprintf(LOG,"%s: xi = %g",gen->genid, GEN->xi);
+  fprintf(LOG,"%s\n", (gen->set & ITDR_SET_XI) ? "" : " [computed]");
+  fprintf(LOG,"%s: bx = %g\n",gen->genid, GEN->bx);
 
-  fprintf(log,"%s: pole region:\n",gen->genid);
-  fprintf(log,"%s:\tcp = %g",gen->genid, GEN->cp);
-  fprintf(log,"%s\n", (gen->set & ITDR_SET_CP) ? "" : " [computed]");
-  fprintf(log,"%s:\txp = %g\n",gen->genid, GEN->xp);
-  fprintf(log,"%s:\talphap = %g, betap = %g\n",gen->genid, GEN->alphap, GEN->betap);
-  fprintf(log,"%s:\tby = %g\n",gen->genid, GEN->by);
-  fprintf(log,"%s:\tsy = %g\n",gen->genid, GEN->sy);
+  fprintf(LOG,"%s: pole region:\n",gen->genid);
+  fprintf(LOG,"%s:\tcp = %g",gen->genid, GEN->cp);
+  fprintf(LOG,"%s\n", (gen->set & ITDR_SET_CP) ? "" : " [computed]");
+  fprintf(LOG,"%s:\txp = %g\n",gen->genid, GEN->xp);
+  fprintf(LOG,"%s:\talphap = %g, betap = %g\n",gen->genid, GEN->alphap, GEN->betap);
+  fprintf(LOG,"%s:\tby = %g\n",gen->genid, GEN->by);
+  fprintf(LOG,"%s:\tsy = %g\n",gen->genid, GEN->sy);
 
-  fprintf(log,"%s: tail region:\n",gen->genid);
-  fprintf(log,"%s:\tct = %g",gen->genid, GEN->ct);
-  fprintf(log,"%s\n", (gen->set & ITDR_SET_CT) ? "" : " [computed]");
-  fprintf(log,"%s:\txt = %g\n",gen->genid, GEN->xt);
-  fprintf(log,"%s:\tTfxt = %g, dTfxt = %g\n",gen->genid, GEN->Tfxt, GEN->dTfxt);
+  fprintf(LOG,"%s: tail region:\n",gen->genid);
+  fprintf(LOG,"%s:\tct = %g",gen->genid, GEN->ct);
+  fprintf(LOG,"%s\n", (gen->set & ITDR_SET_CT) ? "" : " [computed]");
+  fprintf(LOG,"%s:\txt = %g\n",gen->genid, GEN->xt);
+  fprintf(LOG,"%s:\tTfxt = %g, dTfxt = %g\n",gen->genid, GEN->Tfxt, GEN->dTfxt);
 
-  fprintf(log,"%s: Area = %g + %g + %g = %g\n",gen->genid,
+  fprintf(LOG,"%s: Area = %g + %g + %g = %g\n",gen->genid,
 	  GEN->Ap, GEN->Ac, GEN->At, GEN->Atot);
 
-  fprintf(log,"%s:\n",gen->genid);
-  fprintf(log,"%s: **** INIT %s ***\n",gen->genid,
+  fprintf(LOG,"%s:\n",gen->genid);
+  fprintf(LOG,"%s: **** INIT %s ***\n",gen->genid,
 	  (error==UNUR_SUCCESS) ? "successful" : "failed" );   
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
 
 } /* end of _unur_itdr_debug_init() */
 

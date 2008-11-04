@@ -655,7 +655,7 @@ _unur_tdr_ps_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv,
   }
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (gen->debug & TDR_DEBUG_SPLIT) 
     _unur_tdr_ps_debug_split_start( gen,oldl,oldr,x,fx );
 #endif
@@ -778,7 +778,7 @@ _unur_tdr_ps_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv,
 		   + ((iv_new) ? iv_new->Asqueeze : 0.) );
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (gen->debug & TDR_DEBUG_SPLIT) 
     _unur_tdr_ps_debug_split_stop( gen,oldl,iv_new,oldr );
 #endif

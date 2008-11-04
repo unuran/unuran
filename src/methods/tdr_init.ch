@@ -76,7 +76,7 @@ _unur_tdr_init( struct unur_par *par )
   _unur_par_free(par);
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (gen->debug) _unur_tdr_debug_init_start(gen);
 #endif
 
@@ -93,7 +93,7 @@ _unur_tdr_init( struct unur_par *par )
   }
 
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
+    /* write info into LOG file */
     if (gen->debug) _unur_tdr_debug_init_finished(gen);
 #endif
 
@@ -145,7 +145,7 @@ _unur_tdr_make_gen( struct unur_gen *gen )
     if (gen->debug & TDR_DEBUG_DARS) {
       /* make initial guide table (only necessary for writing debug info) */
       _unur_tdr_make_guide_table(gen);
-      /* write info into log file */
+      /* write info into LOG file */
       _unur_tdr_debug_dars_start(gen);
     }
 #endif
@@ -170,7 +170,7 @@ _unur_tdr_make_gen( struct unur_gen *gen )
     }
 
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
+    /* write info into LOG file */
     if (gen->debug) _unur_tdr_debug_dars_finished(gen);
 #endif
   }
@@ -362,7 +362,7 @@ _unur_tdr_reinit( struct unur_gen *gen )
   }
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (gen->debug & TDR_DEBUG_REINIT)
     _unur_tdr_debug_reinit_start(gen);
 #endif
@@ -395,7 +395,7 @@ _unur_tdr_reinit( struct unur_gen *gen )
       GEN->n_starting_cpoints = GEN->retry_ncpoints;
       GEN->starting_cpoints = NULL;
 #ifdef UNUR_ENABLE_LOGGING
-      /* write info into log file */
+      /* write info into LOG file */
       if (gen->debug & TDR_DEBUG_REINIT)
 	_unur_tdr_debug_reinit_retry(gen);
 #endif
@@ -421,7 +421,7 @@ _unur_tdr_reinit( struct unur_gen *gen )
   }
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (gen->debug & TDR_DEBUG_REINIT)
     if (gen->debug) _unur_tdr_debug_reinit_finished(gen);
 #endif
@@ -531,7 +531,7 @@ _unur_tdr_free( struct unur_gen *gen )
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (gen->debug) _unur_tdr_debug_free(gen);
 #endif
 

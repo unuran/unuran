@@ -143,7 +143,7 @@ static int _unur_vnrou_rectangle( struct unur_gen *gen );
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 /* the following functions print debugging information on output stream,     */
-/* i.e., into the log file if not specified otherwise.                       */
+/* i.e., into the LOG file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 static void _unur_vnrou_debug_init( const struct unur_gen *gen );
 
@@ -583,7 +583,7 @@ _unur_vnrou_init( struct unur_par *par )
   }
 
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
+    /* write info into LOG file */
     if (gen->debug) _unur_vnrou_debug_init(gen);
 #endif
 
@@ -617,7 +617,7 @@ _unur_vnrou_reinit( struct unur_gen *gen )
   SAMPLE = _unur_vnrou_getSAMPLE(gen);
 
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
+    /* write info into LOG file */
     if (gen->debug & VNROU_DEBUG_REINIT) _unur_vnrou_debug_init(gen);
 #endif
 
@@ -941,59 +941,59 @@ _unur_vnrou_rectangle( struct unur_gen *gen )
 void
 _unur_vnrou_debug_init( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* write info about generator into logfile                              */
+     /* write info about generator into LOG file                             */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen       ... pointer to generator object                          */
      /*----------------------------------------------------------------------*/
 {
-  FILE *log;
+  FILE *LOG;
   int d, dim; /* index used in dimension loops (0 <= d < dim) */
   double vol;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_VNROU_GEN,RETURN_VOID);
 
-  log = unur_get_stream();
+  LOG = unur_get_stream();
   dim = GEN->dim;
 
-  fprintf(log,"%s:\n",gen->genid);
-  fprintf(log,"%s: type    = continuous multivariate random variates\n",gen->genid);
-  fprintf(log,"%s: method  = vnrou (naive ratio-of-uniforms)\n",gen->genid);
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
+  fprintf(LOG,"%s: type    = continuous multivariate random variates\n",gen->genid);
+  fprintf(LOG,"%s: method  = vnrou (naive ratio-of-uniforms)\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
   
   _unur_distr_cvec_debug( gen->distr, gen->genid );
 
-  fprintf(log,"%s: sampling routine = _unur_vnrou_sample",gen->genid);
-  if (gen->variant & VNROU_VARFLAG_VERIFY) fprintf(log,"_check");
-  fprintf(log,"()\n%s:\n",gen->genid);
+  fprintf(LOG,"%s: sampling routine = _unur_vnrou_sample",gen->genid);
+  if (gen->variant & VNROU_VARFLAG_VERIFY) fprintf(LOG,"_check");
+  fprintf(LOG,"()\n%s:\n",gen->genid);
 
   /* parameters */
-  fprintf(log,"%s: r-parameter = %g",gen->genid, GEN->r);
+  fprintf(LOG,"%s: r-parameter = %g",gen->genid, GEN->r);
   _unur_print_if_default(gen,VNROU_SET_R);
-  fprintf(log,"\n%s:\n",gen->genid);
+  fprintf(LOG,"\n%s:\n",gen->genid);
 
   /* print center */
-  _unur_matrix_print_vector( GEN->dim, GEN->center, "center =", log, gen->genid, "\t   ");
+  _unur_matrix_print_vector( GEN->dim, GEN->center, "center =", LOG, gen->genid, "\t   ");
 
   /* print bounding rectangle */
-  fprintf(log,"%s: Rectangle:",gen->genid);
+  fprintf(LOG,"%s: Rectangle:",gen->genid);
   if (!((gen->set & VNROU_SET_U) && (gen->set & VNROU_SET_V)))
-    fprintf(log,"\t[computed]");
+    fprintf(LOG,"\t[computed]");
   else 
-    fprintf(log,"\t[input]");
-  fprintf(log,"\n");
+    fprintf(LOG,"\t[input]");
+  fprintf(LOG,"\n");
 
   vol = GEN->vmax;
-  fprintf(log,"%s:\tvmax = %g\n",gen->genid, GEN->vmax);
+  fprintf(LOG,"%s:\tvmax = %g\n",gen->genid, GEN->vmax);
   for (d=0; d<dim; d++) {
     vol *= (GEN->umax[d]-GEN->umin[d]);
-    fprintf(log,"%s:\tumin[%d],umax[%d] = (%g,%g)\n",gen->genid, 
+    fprintf(LOG,"%s:\tumin[%d],umax[%d] = (%g,%g)\n",gen->genid, 
 	    d, d, GEN->umin[d], GEN->umax[d]);
   }
-  fprintf(log,"%s:\n",gen->genid);
-  fprintf(log,"%s:\tvolume = %g\t(hat = %g)\n",gen->genid, vol, vol*(GEN->r*GEN->dim+1));
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
+  fprintf(LOG,"%s:\tvolume = %g\t(hat = %g)\n",gen->genid, vol, vol*(GEN->r*GEN->dim+1));
+  fprintf(LOG,"%s:\n",gen->genid);
 
 } /* end of _unur_vnrou_debug_init() */
 

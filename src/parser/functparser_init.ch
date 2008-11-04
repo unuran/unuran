@@ -159,7 +159,7 @@ _unur_fstr_2_tree (const char *functstr, int withDefFunct)
   _unur_check_NULL( GENTYPE,functstr,NULL );
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (_unur_default_debugflag)
     _unur_fstr_debug_input(functstr);
 #endif
@@ -175,7 +175,7 @@ _unur_fstr_2_tree (const char *functstr, int withDefFunct)
   _unur_fstr_tokenize(pdata);
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (_unur_default_debugflag)
     _unur_fstr_debug_token(pdata);
 #endif
@@ -199,7 +199,7 @@ _unur_fstr_2_tree (const char *functstr, int withDefFunct)
   }
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if ((_unur_default_debugflag & UNUR_DEBUG_SETUP) && root)
     _unur_fstr_debug_tree(pdata,root);
 #endif

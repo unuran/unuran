@@ -21,18 +21,18 @@ void my_error_handler(
 	const char *reason     /* short description of reason    */
      )   
 {
-  FILE *log = stderr;
+  FILE *LOG = stderr;
   static int n = 0;
 
-  fprintf(log,"\n");
-  fprintf(log,"[[ %d ]] my_error_handler: [ %s ]\n",++n,errortype);
-  fprintf(log,"\tobject = %s\n",objid);
-  fprintf(log,"\tfile   = %s\n",file);
-  fprintf(log,"\tline   = %d\n",line);
-  fprintf(log,"\tcode   = [%#x] %s\n",errorcode,
+  fprintf(LOG,"\n");
+  fprintf(LOG,"[[ %d ]] my_error_handler: [ %s ]\n",++n,errortype);
+  fprintf(LOG,"\tobject = %s\n",objid);
+  fprintf(LOG,"\tfile   = %s\n",file);
+  fprintf(LOG,"\tline   = %d\n",line);
+  fprintf(LOG,"\tcode   = [%#x] %s\n",errorcode,
 	                             unur_get_strerror(errorcode));
-  fprintf(log,"\treason = %s\n",reason);
-  fprintf(log,"\n");
+  fprintf(LOG,"\treason = %s\n",reason);
+  fprintf(LOG,"\n");
 
 } /* end of my_error_handler() */
 

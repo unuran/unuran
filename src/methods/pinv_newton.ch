@@ -179,7 +179,7 @@ _unur_pinv_create_table( struct unur_gen *gen )
   GEN->Umax = GEN->iv[GEN->n_ivs].cdfi;
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (gen->debug & PINV_DEBUG_SEARCHBD)
     _unur_pinv_debug_create_table(gen,iter,n_incr_h,n_decr_h,n_use_linear);
 #endif

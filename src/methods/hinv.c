@@ -234,7 +234,7 @@ static double _unur_hinv_CDF( const struct unur_gen *gen, double x );
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 /* the following functions print debugging information on output stream,     */
-/* i.e., into the log file if not specified otherwise.                       */
+/* i.e., into the LOG file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_hinv_debug_init( const struct unur_gen *gen, int ok);
@@ -244,7 +244,7 @@ static void _unur_hinv_debug_init( const struct unur_gen *gen, int ok);
 
 static void _unur_hinv_debug_intervals( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* print starting points or table for algorithms into logfile.               */
+/* print starting points or table for algorithms into LOG file.              */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_hinv_debug_chg_truncated( const struct unur_gen *gen);
@@ -716,7 +716,7 @@ unur_hinv_chg_truncated( struct unur_gen *gen, double left, double right )
   gen->distr->set |= UNUR_DISTR_SET_TRUNCATED;
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (gen->debug & HINV_DEBUG_CHG) 
     _unur_hinv_debug_chg_truncated( gen );
 #endif
@@ -769,7 +769,7 @@ _unur_hinv_init( struct unur_par *par )
 
   /* compute splines */
   if (_unur_hinv_create_table(gen)!=UNUR_SUCCESS) {
-    /* make entry in log file */
+    /* make entry in LOG file */
 #ifdef UNUR_ENABLE_LOGGING
     if (gen->debug) {
       _unur_hinv_list_to_array( gen );
@@ -798,7 +798,7 @@ _unur_hinv_init( struct unur_par *par )
   _unur_hinv_make_guide_table(gen);
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (gen->debug) _unur_hinv_debug_init(gen,TRUE);
 #endif
 
@@ -850,7 +850,7 @@ _unur_hinv_reinit( struct unur_gen *gen )
   SAMPLE = _unur_hinv_getSAMPLE(gen);
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (gen->debug & HINV_DEBUG_REINIT) _unur_hinv_debug_init(gen,TRUE);
 #endif
 
@@ -1871,66 +1871,66 @@ _unur_hinv_CDF( const struct unur_gen *gen, double x )
 void
 _unur_hinv_debug_init( const struct unur_gen *gen, int ok )
      /*----------------------------------------------------------------------*/
-     /* write info about generator into logfile                              */
+     /* write info about generator into LOG file                             */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
      /*   ok  ... exitcode of init call                                      */
      /*----------------------------------------------------------------------*/
 {
-  FILE *log;
+  FILE *LOG;
   int i;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_HINV_GEN,RETURN_VOID);
 
-  log = unur_get_stream();
+  LOG = unur_get_stream();
 
-  fprintf(log,"%s:\n",gen->genid);
-  fprintf(log,"%s: type    = continuous univariate random variates\n",gen->genid);
-  fprintf(log,"%s: method  = HINV (Hermite approximation of INVerse CDF)\n",gen->genid);
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
+  fprintf(LOG,"%s: type    = continuous univariate random variates\n",gen->genid);
+  fprintf(LOG,"%s: method  = HINV (Hermite approximation of INVerse CDF)\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
 
   _unur_distr_cont_debug( gen->distr, gen->genid );
 
-  fprintf(log,"%s: sampling routine = _unur_hinv_sample\n",gen->genid);
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s: sampling routine = _unur_hinv_sample\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
 
-  fprintf(log,"%s: order of polynomial = %d",gen->genid,GEN->order);
+  fprintf(LOG,"%s: order of polynomial = %d",gen->genid,GEN->order);
   _unur_print_if_default(gen,HINV_SET_ORDER);
 
-  fprintf(log,"\n%s: u-resolution = %g",gen->genid,GEN->u_resolution);
+  fprintf(LOG,"\n%s: u-resolution = %g",gen->genid,GEN->u_resolution);
   _unur_print_if_default(gen,HINV_SET_U_RESOLUTION);
-  fprintf(log,"\n%s: tail cut-off points = ",gen->genid);
-  if (GEN->tailcutoff_left < 0.)  fprintf(log,"none, ");
-  else                            fprintf(log,"%g, ",GEN->tailcutoff_left);
-  if (GEN->tailcutoff_right > 1.) fprintf(log,"none\n");
-  else                            fprintf(log,"1.-%g\n",1.-GEN->tailcutoff_right);
+  fprintf(LOG,"\n%s: tail cut-off points = ",gen->genid);
+  if (GEN->tailcutoff_left < 0.)  fprintf(LOG,"none, ");
+  else                            fprintf(LOG,"%g, ",GEN->tailcutoff_left);
+  if (GEN->tailcutoff_right > 1.) fprintf(LOG,"none\n");
+  else                            fprintf(LOG,"1.-%g\n",1.-GEN->tailcutoff_right);
   
-  fprintf(log,"%s: domain of computation = [%g,%g]\n",gen->genid,GEN->bleft,GEN->bright);
-  fprintf(log,"%s:\tU in (%g,%g)\n",gen->genid,GEN->Umin,GEN->Umax);
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s: domain of computation = [%g,%g]\n",gen->genid,GEN->bleft,GEN->bright);
+  fprintf(LOG,"%s:\tU in (%g,%g)\n",gen->genid,GEN->Umin,GEN->Umax);
+  fprintf(LOG,"%s:\n",gen->genid);
 
   if (GEN->stp && gen->set & HINV_SET_STP) {
-    fprintf(log,"%s: starting points: (%d)",gen->genid,GEN->n_stp);
+    fprintf(LOG,"%s: starting points: (%d)",gen->genid,GEN->n_stp);
     for (i=0; i<GEN->n_stp; i++) {
-      if (i%5==0) fprintf(log,"\n%s:\t",gen->genid);
-      fprintf(log,"   %#g,",GEN->stp[i]);
+      if (i%5==0) fprintf(LOG,"\n%s:\t",gen->genid);
+      fprintf(LOG,"   %#g,",GEN->stp[i]);
     }
-  fprintf(log,"\n%s:\n",gen->genid);
+  fprintf(LOG,"\n%s:\n",gen->genid);
   }
  
-  fprintf(log,"%s: sampling from list of intervals: indexed search (guide table method)\n",gen->genid);
-  fprintf(log,"%s:    relative guide table size = %g%%",gen->genid,100.*GEN->guide_factor);
+  fprintf(LOG,"%s: sampling from list of intervals: indexed search (guide table method)\n",gen->genid);
+  fprintf(LOG,"%s:    relative guide table size = %g%%",gen->genid,100.*GEN->guide_factor);
   _unur_print_if_default(gen,HINV_SET_GUIDEFACTOR);
-  fprintf(log,"\n%s:\n",gen->genid);
+  fprintf(LOG,"\n%s:\n",gen->genid);
 
   _unur_hinv_debug_intervals(gen);
 
-  fprintf(log,"%s: initialization %s\n",gen->genid,((ok)?"successful":"failed")); 
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s: initialization %s\n",gen->genid,((ok)?"successful":"failed")); 
+  fprintf(LOG,"%s:\n",gen->genid);
 
-  fflush(log);
+  fflush(LOG);
 
 } /* end of _unur_hinv_debug_init() */
 
@@ -1939,42 +1939,42 @@ _unur_hinv_debug_init( const struct unur_gen *gen, int ok )
 void
 _unur_hinv_debug_intervals( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* print table of intervals into logfile                                */
+     /* print table of intervals into LOG file                               */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
      /*----------------------------------------------------------------------*/
 {
   int i,n;
-  FILE *log;
+  FILE *LOG;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_HINV_GEN,RETURN_VOID);
 
-  log = unur_get_stream();
+  LOG = unur_get_stream();
 
-  fprintf(log,"%s: Intervals: %d\n",gen->genid,GEN->N-1);
+  fprintf(LOG,"%s: Intervals: %d\n",gen->genid,GEN->N-1);
 
   if (gen->debug & HINV_DEBUG_TABLE) {
-    fprintf(log,"%s:   Nr.      u=CDF(p)     p=spline[0]   spline[1]    ...\n",gen->genid);
+    fprintf(LOG,"%s:   Nr.      u=CDF(p)     p=spline[0]   spline[1]    ...\n",gen->genid);
     for (n=0; n<GEN->N-1; n++) {
       i = n*(GEN->order+2);
-      fprintf(log,"%s:[%4d]: %#12.6g  %#12.6g  %#12.6g", gen->genid, n,
+      fprintf(LOG,"%s:[%4d]: %#12.6g  %#12.6g  %#12.6g", gen->genid, n,
 	      GEN->intervals[i], GEN->intervals[i+1], GEN->intervals[i+2]);
       if (GEN->order>1)
-	fprintf(log,"  %#12.6g  %#12.6g", GEN->intervals[i+3], GEN->intervals[i+4]);
+	fprintf(LOG,"  %#12.6g  %#12.6g", GEN->intervals[i+3], GEN->intervals[i+4]);
       if (GEN->order>3)
-	fprintf(log,"  %#12.6g  %#12.6g", GEN->intervals[i+5], GEN->intervals[i+6]);
-      fprintf(log,"\n");
+	fprintf(LOG,"  %#12.6g  %#12.6g", GEN->intervals[i+5], GEN->intervals[i+6]);
+      fprintf(LOG,"\n");
     }
     /* the following might cause troubles when creating the tables fails. */
     /* so we remove it.                                                   */
     /*     i = n*(GEN->order+2); */
-    /*     fprintf(log,"%s:[%4d]: %#12.6g  %#12.6g  (right boundary)\n", gen->genid, n, */
+    /*     fprintf(LOG,"%s:[%4d]: %#12.6g  %#12.6g  (right boundary)\n", gen->genid, n, */
     /* 	    GEN->intervals[i], GEN->intervals[i+1] ); */
   }
 
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
 
 } /* end of _unur_hinv_debug_intervals() */
 
@@ -1989,16 +1989,16 @@ _unur_hinv_debug_chg_truncated( const struct unur_gen *gen )
      /*   gen ... pointer to generator object                                */
      /*----------------------------------------------------------------------*/
 {
-  FILE *log;
+  FILE *LOG;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_HINV_GEN,RETURN_VOID);
 
-  log = unur_get_stream();
+  LOG = unur_get_stream();
 
-  fprintf(log,"%s: domain of (truncated) distribution changed:\n",gen->genid);
-  fprintf(log,"%s:\tdomain = (%g, %g)\n",gen->genid, DISTR.trunc[0], DISTR.trunc[1]);
-  fprintf(log,"%s:\tU in (%g,%g)\n",gen->genid,GEN->Umin,GEN->Umax);
+  fprintf(LOG,"%s: domain of (truncated) distribution changed:\n",gen->genid);
+  fprintf(LOG,"%s:\tdomain = (%g, %g)\n",gen->genid, DISTR.trunc[0], DISTR.trunc[1]);
+  fprintf(LOG,"%s:\tU in (%g,%g)\n",gen->genid,GEN->Umin,GEN->Umax);
 
 } /* end of _unur_hinv_debug_chg_truncated() */
 

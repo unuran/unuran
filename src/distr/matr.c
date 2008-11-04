@@ -229,28 +229,28 @@ unur_distr_matr_get_dim( const struct unur_distr *distr, int *n_rows, int *n_col
 void
 _unur_distr_matr_debug( const struct unur_distr *distr, const char *genid )
      /*----------------------------------------------------------------------*/
-     /* write info about distribution into logfile                           */
+     /* write info about distribution into LOG file                          */
      /*                                                                      */
      /* parameters:                                                          */
      /*   distr ... pointer to distribution object                           */
      /*   genid ... pointer to generator id                                  */
      /*----------------------------------------------------------------------*/
 {
-  FILE *log;
+  FILE *LOG;
 
   /* check arguments */
   CHECK_NULL(distr,RETURN_VOID);
   COOKIE_CHECK(distr,CK_DISTR_MATR,RETURN_VOID);
 
-  log = unur_get_stream();
+  LOG = unur_get_stream();
 
-  fprintf(log,"%s: distribution:\n",genid);
-  fprintf(log,"%s:\ttype = matrix distribution\n",genid);
-  fprintf(log,"%s:\tname = %s\n",genid,distr->name);
+  fprintf(LOG,"%s: distribution:\n",genid);
+  fprintf(LOG,"%s:\ttype = matrix distribution\n",genid);
+  fprintf(LOG,"%s:\tname = %s\n",genid,distr->name);
 
-  fprintf(log,"%s:\tdimension = %d x %d   (= %d)\n",genid,DISTR.n_rows,DISTR.n_cols,distr->dim);
+  fprintf(LOG,"%s:\tdimension = %d x %d   (= %d)\n",genid,DISTR.n_rows,DISTR.n_cols,distr->dim);
 
-  fprintf(log,"%s:\n",genid);
+  fprintf(LOG,"%s:\n",genid);
 
 } /* end of _unur_distr_matr_debug() */
 

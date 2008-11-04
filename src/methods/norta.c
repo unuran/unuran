@@ -175,7 +175,7 @@ static double _unur_norta_urng_wrapper (void *state) {
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 /* the following functions print debugging information on output stream,     */
-/* i.e., into the log file if not specified otherwise.                       */
+/* i.e., into the LOG file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_norta_debug_init( const struct unur_gen *gen );
@@ -344,7 +344,7 @@ _unur_norta_init( struct unur_par *par )
   }
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (gen->debug) _unur_norta_debug_init(gen);
 #endif
 
@@ -661,7 +661,7 @@ _unur_norta_nortu_setup( struct unur_gen *gen )
   }
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (gen->debug & NORTA_DEBUG_SIGMA_Y) 
     _unur_norta_debug_sigma_y( gen, sigma_y, "NORTU setup:" );
 #endif
@@ -858,24 +858,24 @@ _unur_norta_make_marginalgen( const struct unur_gen *gen,
 void
 _unur_norta_debug_init( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* write info about generator into logfile                              */
+     /* write info about generator into LOG file                             */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
      /*----------------------------------------------------------------------*/
 {
 /*   int i; */
-  FILE *log;
+  FILE *LOG;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_NORTA_GEN,RETURN_VOID);
 
-  log = unur_get_stream();
+  LOG = unur_get_stream();
 
-  fprintf(log,"%s:\n",gen->genid);
-  fprintf(log,"%s: type    = continuous multivariate random variates\n",gen->genid);
-  fprintf(log,"%s: method  = NORTA (Vector Matrix Transformation)\n",gen->genid);
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
+  fprintf(LOG,"%s: type    = continuous multivariate random variates\n",gen->genid);
+  fprintf(LOG,"%s: method  = NORTA (Vector Matrix Transformation)\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
 
   _unur_distr_cvec_debug( gen->distr, gen->genid );
 
@@ -896,17 +896,17 @@ _unur_norta_debug_sigma_y( const struct unur_gen *gen,
      /*   comment ... additional string printed                              */
      /*----------------------------------------------------------------------*/
 {
-  FILE *log;
+  FILE *LOG;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_NORTA_GEN,RETURN_VOID);
 
-  log = unur_get_stream();
+  LOG = unur_get_stream();
 
-  fprintf(log,"%s: %s\n",gen->genid,comment);
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s: %s\n",gen->genid,comment);
+  fprintf(LOG,"%s:\n",gen->genid);
   _unur_matrix_print_matrix( GEN->dim, sigma_y, "\tsigma_y =", 
-			     log, gen->genid, "\t   ");
+			     LOG, gen->genid, "\t   ");
 
 } /* end of _unur_norta_debug_sigma_y() */
 
@@ -925,19 +925,19 @@ _unur_norta_debug_eigensystem( const struct unur_gen *gen,
      /*   eigenvectors ... eigenvalues                                       */
      /*----------------------------------------------------------------------*/
 {
-  FILE *log;
+  FILE *LOG;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_NORTA_GEN,RETURN_VOID);
 
-  log = unur_get_stream();
+  LOG = unur_get_stream();
 
   _unur_matrix_print_vector( GEN->dim, eigenvalues, 
 			     "\teigenvalues of sigma_y =", 
-			     log, gen->genid, "\t   ");
+			     LOG, gen->genid, "\t   ");
   _unur_matrix_print_matrix( GEN->dim, eigenvectors, 
 			     "\teigenvectors of sigma_y [rows] =", 
-			     log, gen->genid, "\t   ");
+			     LOG, gen->genid, "\t   ");
 
 } /* end of _unur_norta_debug_eigensystem() */
 
@@ -952,16 +952,16 @@ _unur_norta_debug_nmgenerator( const struct unur_gen *gen )
      /*   gen          ... pointer to generator object                       */
      /*----------------------------------------------------------------------*/
 {
-  FILE *log;
+  FILE *LOG;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_NORTA_GEN,RETURN_VOID);
 
-  log = unur_get_stream();
+  LOG = unur_get_stream();
 
-  fprintf(log,"%s: generator for multinormal auxiliary distribution = %s\n", gen->genid,
+  fprintf(LOG,"%s: generator for multinormal auxiliary distribution = %s\n", gen->genid,
 	  MNORMAL->genid );
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
 
 } /* end of _unur_norta_debug_nmgenerator() */
 

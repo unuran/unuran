@@ -93,16 +93,16 @@ _unur_error_handler_default( const char *objid, const char *file, int line,
      /*   reason    ... (very) short description of reason for error         */
      /*----------------------------------------------------------------------*/
 {
-  FILE *log = unur_get_stream();
+  FILE *LOG = unur_get_stream();
 
   /* generator identifier known ? */
   if (!objid) objid = "UNURAN";
 
-  fprintf(log,"%s: [%s] %s:%d - %s:\n", objid, errortype, file, line,
+  fprintf(LOG,"%s: [%s] %s:%d - %s:\n", objid, errortype, file, line,
 	  unur_get_strerror(errorcode));
   if (reason && strlen(reason))
-    fprintf(log,"%s: ..>  %s\n", objid, reason);
-  fflush(log);   /* in case of a segmentation fault */
+    fprintf(LOG,"%s: ..>  %s\n", objid, reason);
+  fflush(LOG);   /* in case of a segmentation fault */
 
 } /* end of _unur_error_handler_default() */
 

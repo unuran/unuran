@@ -63,7 +63,7 @@ _unur_fstr_make_derivative ( const struct ftreenode *root )
   deriv = (root) ? (*symbol[root->token].dcalc)(root,&error) : NULL;
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (_unur_default_debugflag)
     _unur_fstr_debug_deriv(root,deriv);
 #endif

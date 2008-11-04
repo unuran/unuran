@@ -297,7 +297,7 @@ _unur_tdr_gw_sample_check( struct unur_gen *gen )
     }
 
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file (in case error) */
+    /* write info into LOG file (in case error) */
     if (error && (gen->debug & TDR_DEBUG_SAMPLE)) 
       _unur_tdr_gw_debug_sample( gen, iv, pt, X, fx, hx, sqx ); 
 #endif

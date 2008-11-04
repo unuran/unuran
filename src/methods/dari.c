@@ -137,7 +137,7 @@ static int _unur_dari_hat( struct unur_gen *gen );
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 /* the following functions print debugging information on output stream,     */
-/* i.e., into the log file if not specified otherwise.                       */
+/* i.e., into the LOG file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_dari_debug_init( struct unur_gen *gen, const char *status );
@@ -508,7 +508,7 @@ _unur_dari_init( struct unur_par *par )
 
   /* hat successfully created */
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (gen->debug) _unur_dari_debug_init(gen,"INIT completed");
 #endif
 
@@ -546,7 +546,7 @@ _unur_dari_reinit( struct unur_gen *gen )
   SAMPLE = _unur_dari_getSAMPLE(gen);
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (gen->debug & DARI_DEBUG_REINIT)
     _unur_dari_debug_init(gen,"REINIT completed");
 #endif
@@ -1095,7 +1095,7 @@ _unur_dari_hat( struct unur_gen *gen )
 
   if (setup == -2 || GEN->vt > 100.*t0 || !(GEN->vt > 0.)) {
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
+    /* write info into LOG file */
     if (gen->debug)
       _unur_dari_debug_init(gen,"RE/INIT failed try again");
 #endif
@@ -1119,50 +1119,50 @@ _unur_dari_hat( struct unur_gen *gen )
 void
 _unur_dari_debug_init( struct unur_gen *gen, const char *status )
      /*----------------------------------------------------------------------*/
-     /* write info about generator into logfile                              */
+     /* write info about generator into LOG file                             */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen    ... pointer to generator object                             */
      /*   status ... status of re/init routine                               */
      /*----------------------------------------------------------------------*/
 {
-  FILE *log;
+  FILE *LOG;
   int i;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_DARI_GEN,RETURN_VOID);
 
-  log = unur_get_stream();
+  LOG = unur_get_stream();
 
-  fprintf(log,"%s:\n",gen->genid);
-  fprintf(log,"%s: type    = discrete univariate random variates\n",gen->genid);
-  fprintf(log,"%s: method  = dari (discrete automatic rejection inversion)\n",gen->genid);
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
+  fprintf(LOG,"%s: type    = discrete univariate random variates\n",gen->genid);
+  fprintf(LOG,"%s: method  = dari (discrete automatic rejection inversion)\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
 
   _unur_distr_discr_debug( gen->distr, gen->genid, FALSE );
 
-  fprintf(log,"%s: sampling routine = _unur_dari_sample",gen->genid);
+  fprintf(LOG,"%s: sampling routine = _unur_dari_sample",gen->genid);
   if (gen->variant & DARI_VARFLAG_VERIFY)
-    fprintf(log,"_check()\n");
+    fprintf(LOG,"_check()\n");
   else
-    fprintf(log,"()\n");
-  fprintf(log,"%s:\n",gen->genid);
+    fprintf(LOG,"()\n");
+  fprintf(LOG,"%s:\n",gen->genid);
 
-  fprintf(log,"%s: Data for hat and squeeze:\n",gen->genid);
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s: Data for hat and squeeze:\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
 
-  fprintf(log,"%s:area below hat: total %f center: %f, left tail %f, right tail %f\n", gen->genid,
+  fprintf(LOG,"%s:area below hat: total %f center: %f, left tail %f, right tail %f\n", gen->genid,
 	  GEN->vt, GEN->vc, GEN->vt-GEN->vcr, GEN->vcr-GEN->vc);
-  fprintf(log,"%s: mode %d and mode probability %f\n",gen->genid, GEN->m, GEN->pm); 
+  fprintf(LOG,"%s: mode %d and mode probability %f\n",gen->genid, GEN->m, GEN->pm); 
   for(i=0;i<=1;i++) {
-    fprintf(log,"%s:i=%d: x=%d; Hat=%f; ac=%f; s=%d;\n", gen->genid,
+    fprintf(LOG,"%s:i=%d: x=%d; Hat=%f; ac=%f; s=%d;\n", gen->genid,
 	    i, GEN->x[i], GEN->Hat[i], GEN->ac[i], GEN->s[i]);
-    fprintf(log,"%s:i=%d: xsq=%f; y=%f; ys=%f; n:=%d (for aux.table)\n", gen->genid,
+    fprintf(LOG,"%s:i=%d: xsq=%f; y=%f; ys=%f; n:=%d (for aux.table)\n", gen->genid,
 	    i, GEN->xsq[i], GEN->y[i], GEN->ys[i], GEN->n[i]);
   }
-  fprintf(log,"%s:\n",gen->genid);
-  fprintf(log,"%s: %s ************\n",gen->genid, status );
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
+  fprintf(LOG,"%s: %s ************\n",gen->genid, status );
+  fprintf(LOG,"%s:\n",gen->genid);
 
 } /* end of _unur_dari_debug_init() */
 

@@ -90,7 +90,7 @@ _unur_str_distr_new( char *distribution )
   n_darray = _unur_parse_dlist(params, &darray );
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
     _unur_str_debug_distr(1,name,darray,n_darray);
 #endif
@@ -216,7 +216,7 @@ _unur_str_par_new( const char *method, const UNUR_DISTR *distr )
   char method_unknown;
   
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
     _unur_str_debug_string(1,"method",method);
 #endif

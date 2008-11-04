@@ -183,7 +183,7 @@ static int _unur_dsrou_rectangle( struct unur_gen *gen );
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 /* the following functions print debugging information on output stream,     */
-/* i.e., into the log file if not specified otherwise.                       */
+/* i.e., into the LOG file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 static void _unur_dsrou_debug_init( const struct unur_gen *gen, int is_reinit );
 
@@ -481,7 +481,7 @@ _unur_dsrou_init( struct unur_par *par )
   }
 
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
+    /* write info into LOG file */
     if (gen->debug) _unur_dsrou_debug_init(gen, FALSE);
 #endif
 
@@ -518,7 +518,7 @@ _unur_dsrou_reinit( struct unur_gen *gen )
   SAMPLE = _unur_dsrou_getSAMPLE(gen);
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (gen->debug & DSROU_DEBUG_REINIT) _unur_dsrou_debug_init(gen,TRUE);
 #endif
 
@@ -862,58 +862,58 @@ _unur_dsrou_rectangle( struct unur_gen *gen )
 static void
 _unur_dsrou_debug_init( const struct unur_gen *gen, int is_reinit )
      /*----------------------------------------------------------------------*/
-     /* write info about generator into logfile                              */
+     /* write info about generator into LOG file                             */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen       ... pointer to generator object                          */
      /*   is_reinit ... if TRUE the generator has been reinitialized         */
      /*----------------------------------------------------------------------*/
 {
-  FILE *log;
+  FILE *LOG;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_DSROU_GEN,RETURN_VOID);
 
-  log = unur_get_stream();
+  LOG = unur_get_stream();
   
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
   if (!is_reinit) {
-    fprintf(log,"%s: type    = discrete univariate random variates\n",gen->genid);
-    fprintf(log,"%s: method  = dsrou (discrete simple universal ratio-of-uniforms)\n",gen->genid);
+    fprintf(LOG,"%s: type    = discrete univariate random variates\n",gen->genid);
+    fprintf(LOG,"%s: method  = dsrou (discrete simple universal ratio-of-uniforms)\n",gen->genid);
   }
   else
-    fprintf(log,"%s: reinit!\n",gen->genid);
-  fprintf(log,"%s:\n",gen->genid);
+    fprintf(LOG,"%s: reinit!\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
  
   _unur_distr_discr_debug( gen->distr, gen->genid, FALSE );
   
-  fprintf(log,"%s: sampling routine = _unur_dsrou_sample",gen->genid);
+  fprintf(LOG,"%s: sampling routine = _unur_dsrou_sample",gen->genid);
   if (gen->variant & DSROU_VARFLAG_VERIFY)
-    fprintf(log,"_check");
-  fprintf(log,"()\n%s:\n",gen->genid);
+    fprintf(LOG,"_check");
+  fprintf(LOG,"()\n%s:\n",gen->genid);
  
   if (gen->set & DSROU_SET_CDFMODE)
-    fprintf(log,"%s: CDF(mode) = %g\n",gen->genid,GEN->Fmode);
+    fprintf(LOG,"%s: CDF(mode) = %g\n",gen->genid,GEN->Fmode);
   else
-    fprintf(log,"%s: CDF(mode) unknown\n",gen->genid);
+    fprintf(LOG,"%s: CDF(mode) unknown\n",gen->genid);
 
-  fprintf(log,"%s: no (universal) squeeze\n",gen->genid);
-  fprintf(log,"%s: no mirror principle\n",gen->genid);
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s: no (universal) squeeze\n",gen->genid);
+  fprintf(LOG,"%s: no mirror principle\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
 
-  fprintf(log,"%s: Rectangles:\n",gen->genid);
+  fprintf(LOG,"%s: Rectangles:\n",gen->genid);
   if (GEN->ul > 0.)
-    fprintf(log,"%s:    left upper point  = (%g,%g) \tarea = %g   (%5.2f%%)\n",
+    fprintf(LOG,"%s:    left upper point  = (%g,%g) \tarea = %g   (%5.2f%%)\n",
 	    gen->genid,GEN->al/GEN->ul,GEN->ul,fabs(GEN->al),100.*fabs(GEN->al)/(-GEN->al+GEN->ar));
   else
-    fprintf(log,"%s:    left upper point  = (0,0) \tarea = 0   (0.00%%)\n",gen->genid);
+    fprintf(LOG,"%s:    left upper point  = (0,0) \tarea = 0   (0.00%%)\n",gen->genid);
 
-  fprintf(log,"%s:    right upper point = (%g,%g) \tarea = %g   (%5.2f%%)\n",
+  fprintf(LOG,"%s:    right upper point = (%g,%g) \tarea = %g   (%5.2f%%)\n",
 	  gen->genid,GEN->ar/GEN->ur,GEN->ur,GEN->ar,100.*GEN->ar/(-GEN->al+GEN->ar));
 
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
 
-  fflush(log);
+  fflush(LOG);
 
 } /* end of _unur_dsrou_debug_init() */
 

@@ -72,7 +72,7 @@ _unur_pinv_init( struct unur_par *par )
   }
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (gen->debug) _unur_pinv_debug_init_start(gen);
 #endif
 
@@ -104,7 +104,7 @@ _unur_pinv_init( struct unur_par *par )
   _unur_pinv_make_guide_table(gen);
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (gen->debug) _unur_pinv_debug_init(gen,TRUE);
 #endif
 

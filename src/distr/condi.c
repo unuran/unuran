@@ -490,47 +490,47 @@ _unur_dlogpdf_condi( double x, const struct unur_distr *condi )
 void
 _unur_distr_condi_debug( const struct unur_distr *condi, const char *genid )
      /*----------------------------------------------------------------------*/
-     /* write info about distribution into logfile                           */
+     /* write info about distribution into LOG file                          */
      /*                                                                      */
      /* parameters:                                                          */
      /*   condi ... pointer to conditional distribution                      */
      /*   genid ... pointer to generator id                                  */
      /*----------------------------------------------------------------------*/
 {
-  FILE *log;
+  FILE *LOG;
 
   /* check arguments */
   CHECK_NULL(condi,RETURN_VOID);
   COOKIE_CHECK(condi,CK_DISTR_CONT,RETURN_VOID);
   CHECK_NULL(condi->base,RETURN_VOID);
 
-  log = unur_get_stream();
+  LOG = unur_get_stream();
 
   /* print data about conditional distribution */
-  fprintf(log,"%s: distribution:\n",genid);
-  fprintf(log,"%s:\ttype = full conditional distribution of continuous multivariate distribution\n",genid);
-  fprintf(log,"%s:\tname = %s\n",genid,condi->name);
-  fprintf(log,"%s:\n",genid);
+  fprintf(LOG,"%s: distribution:\n",genid);
+  fprintf(LOG,"%s:\ttype = full conditional distribution of continuous multivariate distribution\n",genid);
+  fprintf(LOG,"%s:\tname = %s\n",genid,condi->name);
+  fprintf(LOG,"%s:\n",genid);
 
   /* number of the variable for which the conditional distribution 
      is to be shown */
-  fprintf(log,"%s:\tcondition (at time of creation):\n",genid);
+  fprintf(LOG,"%s:\tcondition (at time of creation):\n",genid);
   if (DIRECTION==NULL) {
-    fprintf(log,"%s:\tvariable = %d\n",genid,(int)(K));
-    _unur_matrix_print_vector( condi->base->dim, POSITION, "\tpoint =", log, genid, "\t   ");
+    fprintf(LOG,"%s:\tvariable = %d\n",genid,(int)(K));
+    _unur_matrix_print_vector( condi->base->dim, POSITION, "\tpoint =", LOG, genid, "\t   ");
   }
   else {
-    _unur_matrix_print_vector( condi->base->dim, DIRECTION, "\tdirection =", log, genid, "\t   ");
-    _unur_matrix_print_vector( condi->base->dim, POSITION, "\tpoint =", log, genid, "\t   ");
+    _unur_matrix_print_vector( condi->base->dim, DIRECTION, "\tdirection =", LOG, genid, "\t   ");
+    _unur_matrix_print_vector( condi->base->dim, POSITION, "\tpoint =", LOG, genid, "\t   ");
   }
-  fprintf(log,"%s:\n",genid);
+  fprintf(LOG,"%s:\n",genid);
 
   /* domain */
-  fprintf(log,"%s:\tdomain = (%g, %g)\n",genid,CONDI.domain[0],CONDI.domain[1]);
-  fprintf(log,"%s:\n",genid);
+  fprintf(LOG,"%s:\tdomain = (%g, %g)\n",genid,CONDI.domain[0],CONDI.domain[1]);
+  fprintf(LOG,"%s:\n",genid);
 
   /* print data about underlying distribution */
-  fprintf(log,"%s: Underlying distribution:\n",genid);
+  fprintf(LOG,"%s: Underlying distribution:\n",genid);
   _unur_distr_cvec_debug(condi->base, genid);
 
 } /* end of _unur_distr_condi_debug() */

@@ -151,7 +151,7 @@ static int _unur_utdr_hat( struct unur_gen *gen );
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 /* the following functions print debugging information on output stream,     */
-/* i.e., into the log file if not specified otherwise.                       */
+/* i.e., into the LOG file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_utdr_debug_init( const struct unur_gen *gen, 
@@ -1193,7 +1193,7 @@ _unur_utdr_hat( struct unur_gen *gen )
     }
 
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
+    /* write info into LOG file */
     if (gen->debug) _unur_utdr_debug_init(gen,ttly,ttlys,ttry,ttrys,cfac,setupok,c);
 #endif
 
@@ -1230,44 +1230,44 @@ _unur_utdr_debug_init( const struct unur_gen *gen,
 		       double ttly, double ttlys, double ttry, double ttrys,
 		       double cfac, int setupok, double c )
      /*----------------------------------------------------------------------*/
-     /* write info about generator into logfile                              */
+     /* write info about generator into LOG file                             */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
      /*                                                                      */
      /*----------------------------------------------------------------------*/
 {
-  FILE *log;
+  FILE *LOG;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_UTDR_GEN,RETURN_VOID);
 
-  log = unur_get_stream();
+  LOG = unur_get_stream();
 
-  fprintf(log,"%s:\n",gen->genid);
-  fprintf(log,"%s: type    = continuous univariate random variates\n",gen->genid);
-  fprintf(log,"%s: method  = utdr(transformed density rejection with 3 points of contact)\n",gen->genid);
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
+  fprintf(LOG,"%s: type    = continuous univariate random variates\n",gen->genid);
+  fprintf(LOG,"%s: method  = utdr(transformed density rejection with 3 points of contact)\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
 
   _unur_distr_cont_debug( gen->distr, gen->genid );
 
-  fprintf(log,"%s: sampling routine = _unur_utdr_sample",gen->genid);
+  fprintf(LOG,"%s: sampling routine = _unur_utdr_sample",gen->genid);
   if (gen->variant & UTDR_VARFLAG_VERIFY)
-    fprintf(log,"_check()\n");
+    fprintf(LOG,"_check()\n");
   else
-    fprintf(log,"()\n");
-  fprintf(log,"%s:\n",gen->genid);
+    fprintf(LOG,"()\n");
+  fprintf(LOG,"%s:\n",gen->genid);
 
-  fprintf(log,"%s: Data for hat and squeeze:\n",gen->genid);
-  fprintf(log,"%s:\n",gen->genid);
-  fprintf(log,"%s:\tc_factor=%e delta_factor=%e real c=%e\n",gen->genid,GEN->c_factor,GEN->delta_factor,c);
-  fprintf(log,"%s:\ttlx=%e bl=%e mode=%e\n",gen->genid,GEN->ttlx,GEN->bl,DISTR.mode);
-  fprintf(log,"%s:\tbr=%e trx=%e\n",gen->genid,GEN->br,GEN->ttrx);
-  fprintf(log,"%s:\ttly=%e tlys=%e al=%e \n",gen->genid,ttly,ttlys,GEN->al);
-  fprintf(log,"%s:\ttry=%e trys=%e ar=%e \n",gen->genid,ttry,ttrys,GEN->ar);
-  fprintf(log,"%s:\tcfac=%e setupok=%d volcompl=%e pdf_area=%e\n",gen->genid,cfac,setupok,GEN->volcompl,DISTR.area);
-  fprintf(log,"%s:\n",gen->genid);
-  fprintf(log,"%s: INIT completed **********************\n",gen->genid);
+  fprintf(LOG,"%s: Data for hat and squeeze:\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
+  fprintf(LOG,"%s:\tc_factor=%e delta_factor=%e real c=%e\n",gen->genid,GEN->c_factor,GEN->delta_factor,c);
+  fprintf(LOG,"%s:\ttlx=%e bl=%e mode=%e\n",gen->genid,GEN->ttlx,GEN->bl,DISTR.mode);
+  fprintf(LOG,"%s:\tbr=%e trx=%e\n",gen->genid,GEN->br,GEN->ttrx);
+  fprintf(LOG,"%s:\ttly=%e tlys=%e al=%e \n",gen->genid,ttly,ttlys,GEN->al);
+  fprintf(LOG,"%s:\ttry=%e trys=%e ar=%e \n",gen->genid,ttry,ttrys,GEN->ar);
+  fprintf(LOG,"%s:\tcfac=%e setupok=%d volcompl=%e pdf_area=%e\n",gen->genid,cfac,setupok,GEN->volcompl,DISTR.area);
+  fprintf(LOG,"%s:\n",gen->genid);
+  fprintf(LOG,"%s: INIT completed **********************\n",gen->genid);
 
 } /* end of _unur_utdr_debug_init() */
 

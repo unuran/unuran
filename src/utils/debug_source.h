@@ -47,7 +47,7 @@ extern unsigned _unur_default_debugflag;     /* default debugging flags      */
 /* warnings and error messages                                               */
 
 /* an abbreviation */
-#define _unur_print_if_default(par,flag)   if(!((par)->set & (flag))) fprintf(log,"  [default]")
+#define _unur_print_if_default(par,flag)   if(!((par)->set & (flag))) fprintf(LOG,"  [default]")
 
 /*---------------------------------------------------------------------------*/
 /* Check for NULL pointer                                                    */

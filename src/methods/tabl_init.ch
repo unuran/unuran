@@ -71,7 +71,7 @@ _unur_tabl_init( struct unur_par *par )
   if (!gen) { _unur_par_free(par); return NULL; }
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (gen->debug) _unur_tabl_debug_init_start(par,gen);
 #endif
 
@@ -324,7 +324,7 @@ _unur_tabl_free( struct unur_gen *gen )
   SAMPLE = NULL;   /* make sure to show up a programming error */
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (gen->debug) _unur_tabl_debug_free(gen);
 #endif
 

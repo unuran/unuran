@@ -460,7 +460,7 @@ _unur_tdr_gw_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_
   }
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (gen->debug & TDR_DEBUG_SPLIT) 
     _unur_tdr_gw_debug_split_start( gen,iv_oldl,x,fx );
 #endif
@@ -570,7 +570,7 @@ _unur_tdr_gw_interval_split( struct unur_gen *gen, struct unur_tdr_interval *iv_
 		   + iv_oldl->Asqueeze + ((iv_newr) ? iv_newr->Asqueeze : 0. ) );
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (gen->debug & TDR_DEBUG_SPLIT)
     _unur_tdr_gw_debug_split_stop( gen,iv_oldl,iv_newr );
 #endif

@@ -360,7 +360,7 @@ _unur_tdr_ia_sample_check( struct unur_gen *gen )
     }
 
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file (in case error) */
+    /* write info into LOG file (in case error) */
     if (error && (gen->debug & TDR_DEBUG_SAMPLE)) 
       _unur_tdr_ps_debug_sample( gen, iv, X, fx, hx, sqx ); 
 #endif

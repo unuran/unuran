@@ -399,23 +399,23 @@ static double _unur_atod ( const char *str );
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 /* the following functions print debugging information on output stream,     */
-/* i.e., into the log file if not specified otherwise.                       */
+/* i.e., into the LOG file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_str_debug_string( int level, const char *key, const char *value );
 /*---------------------------------------------------------------------------*/
-/* print key & value info into logfile.                                      */
+/* print key & value info into LOG file.                                     */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_str_debug_distr( int level, const char *name, double *params, int n_params );
 /*---------------------------------------------------------------------------*/
-/* write info about distribution into logfile.                               */
+/* write info about distribution into LOG file.                              */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_str_debug_set( int level, const char *key, const char *type, ... );
 
 /*---------------------------------------------------------------------------*/
-/* write info about set command into logfile.                                */
+/* write info about set command into LOG file.                               */
 /*---------------------------------------------------------------------------*/
 
 #endif
@@ -520,7 +520,7 @@ unur_str2gen (const char *string)
   str = _unur_parser_prepare_string( string );
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (_unur_default_debugflag)
     _unur_str_debug_string(0,"[input]",str);
 #endif
@@ -592,7 +592,7 @@ unur_str2gen (const char *string)
   /*  } */
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (_unur_default_debugflag)
     _unur_str_debug_string(0,"",NULL);
 #endif
@@ -638,7 +638,7 @@ _unur_str2par (const struct unur_distr *distr, const char *string, struct unur_s
   str = _unur_parser_prepare_string( string );
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (_unur_default_debugflag)
     _unur_str_debug_string(0,"[input]",str);
 #endif
@@ -650,7 +650,7 @@ _unur_str2par (const struct unur_distr *distr, const char *string, struct unur_s
   if (str) free(str);
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (_unur_default_debugflag)
     if ( par != NULL )
       _unur_str_debug_string(0,"",NULL);
@@ -691,7 +691,7 @@ unur_str2distr (const char *string)
   str = _unur_parser_prepare_string( string );
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (_unur_default_debugflag)
     _unur_str_debug_string(0,"[input]",str);
 #endif
@@ -703,7 +703,7 @@ unur_str2distr (const char *string)
   if (str) free(str);
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (_unur_default_debugflag)
     if ( distr != NULL )
       _unur_str_debug_string(0,"",NULL);
@@ -759,7 +759,7 @@ unur_makegen_ssu( const char *distrstr, const char *methodstr, UNUR_URNG *urng )
     : NULL;
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (_unur_default_debugflag) {
     _unur_str_debug_string(0,"[input-distr]",str_distr);
     _unur_str_debug_string(0,"[input-method]",
@@ -800,7 +800,7 @@ unur_makegen_ssu( const char *distrstr, const char *methodstr, UNUR_URNG *urng )
   if (str_method) free(str_method);
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (_unur_default_debugflag)
     _unur_str_debug_string(0,"",NULL);
 #endif
@@ -852,7 +852,7 @@ unur_makegen_dsu( const struct unur_distr *distr, const char *methodstr, UNUR_UR
     : NULL;
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (_unur_default_debugflag) {
     _unur_str_debug_string(0,"[input-distr]","(distribution object)");
     _unur_str_debug_string(0,"[input-method]",
@@ -885,7 +885,7 @@ unur_makegen_dsu( const struct unur_distr *distr, const char *methodstr, UNUR_UR
   if (str_method) free(str_method);
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (_unur_default_debugflag)
     _unur_str_debug_string(0,"",NULL);
 #endif
@@ -1045,7 +1045,7 @@ _unur_str_distr_make_os (UNUR_DISTR *distr, const char *key, char *type_args, ch
     /* data list empty (incorrect syntax) */
     _unur_error_args(key);
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
+    /* write info into LOG file */
     if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
       _unur_str_debug_set(2,key,"!");
 #endif
@@ -1055,7 +1055,7 @@ _unur_str_distr_make_os (UNUR_DISTR *distr, const char *key, char *type_args, ch
   /* now make object to order statistics */
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
     _unur_str_debug_set(2,key,"ii",iarray[0],iarray[1] );
 #endif
@@ -1116,7 +1116,7 @@ _unur_str_distr_set_i (UNUR_DISTR *distr, const char *key, char *type_args, char
   else {
     _unur_error_args(key);
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
+    /* write info into LOG file */
     if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
       _unur_str_debug_set(2,key,"!");
 #endif
@@ -1124,7 +1124,7 @@ _unur_str_distr_set_i (UNUR_DISTR *distr, const char *key, char *type_args, char
   }
   
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
     _unur_str_debug_set(2,key,"i",iarg);
 #endif
@@ -1179,7 +1179,7 @@ _unur_str_distr_set_ii (UNUR_DISTR *distr, const char *key, char *type_args, cha
     iarg[1] = _unur_atoi( args[1] );
 
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
+    /* write info into LOG file */
     if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
       _unur_str_debug_set(2,key,"ii",iarg[0],iarg[1]);
 #endif
@@ -1193,7 +1193,7 @@ _unur_str_distr_set_ii (UNUR_DISTR *distr, const char *key, char *type_args, cha
       _unur_error_args(key);
       free (iarray);
 #ifdef UNUR_ENABLE_LOGGING
-      /* write info into log file */
+      /* write info into LOG file */
       if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
 	_unur_str_debug_set(2,key,"!");
 #endif
@@ -1202,7 +1202,7 @@ _unur_str_distr_set_ii (UNUR_DISTR *distr, const char *key, char *type_args, cha
     result = set( distr,iarray[0],iarray[1] );
 
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
+    /* write info into LOG file */
     if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
       _unur_str_debug_set(2,key,"ii",iarray[0],iarray[1] );
 #endif
@@ -1214,7 +1214,7 @@ _unur_str_distr_set_ii (UNUR_DISTR *distr, const char *key, char *type_args, cha
   else {
     _unur_error_args(key);
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
+    /* write info into LOG file */
     if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
       _unur_str_debug_set(2,key,"!");
 #endif
@@ -1260,7 +1260,7 @@ _unur_str_distr_set_d (UNUR_DISTR *distr, const char *key, char *type_args, char
   if ( strcmp(type_args, "t") ) {
     _unur_error_args(key);
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
+    /* write info into LOG file */
     if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
       _unur_str_debug_set(2,key,"!");
 #endif
@@ -1270,7 +1270,7 @@ _unur_str_distr_set_d (UNUR_DISTR *distr, const char *key, char *type_args, char
   darg = _unur_atod( args[0] );
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
     _unur_str_debug_set(2,key,"d",darg);
 #endif
@@ -1325,7 +1325,7 @@ _unur_str_distr_set_dd (UNUR_DISTR *distr, const char *key, char *type_args, cha
     darg[1] = _unur_atod( args[1] );
 
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
+    /* write info into LOG file */
     if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
       _unur_str_debug_set(2,key,"dd",darg[0],darg[1]);
 #endif
@@ -1339,7 +1339,7 @@ _unur_str_distr_set_dd (UNUR_DISTR *distr, const char *key, char *type_args, cha
       _unur_error_args(key);
       free (darray);
 #ifdef UNUR_ENABLE_LOGGING
-      /* write info into log file */
+      /* write info into LOG file */
       if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
 	_unur_str_debug_set(2,key,"!");
 #endif
@@ -1348,7 +1348,7 @@ _unur_str_distr_set_dd (UNUR_DISTR *distr, const char *key, char *type_args, cha
     result = set( distr,darray[0],darray[1] );
 
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
+    /* write info into LOG file */
     if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
       _unur_str_debug_set(2,key,"dd",darray[0],darray[1] );
 #endif
@@ -1360,7 +1360,7 @@ _unur_str_distr_set_dd (UNUR_DISTR *distr, const char *key, char *type_args, cha
   else {
     _unur_error_args(key);
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
+    /* write info into LOG file */
     if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
       _unur_str_debug_set(2,key,"!");
 #endif
@@ -1428,7 +1428,7 @@ _unur_str_distr_set_Di (UNUR_DISTR *distr, const char *key, char *type_args, cha
   if ( !(size>0) ) {
     _unur_error_args(key);
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
+    /* write info into LOG file */
     if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
       _unur_str_debug_set(2,key,"!");
 #endif
@@ -1439,7 +1439,7 @@ _unur_str_distr_set_Di (UNUR_DISTR *distr, const char *key, char *type_args, cha
     /* execute set command */
     result = set( distr,darray,size );
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
+    /* write info into LOG file */
     if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
       _unur_str_debug_set(2,key,"Di",darray,size,size);
 #endif
@@ -1486,7 +1486,7 @@ _unur_str_distr_set_C (UNUR_DISTR *distr, const char *key, char *type_args, char
   if ( strcmp(type_args, "s") ) {
     _unur_error_args(key);
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
+    /* write info into LOG file */
     if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
       _unur_str_debug_set(2,key,"!");
 #endif
@@ -1497,7 +1497,7 @@ _unur_str_distr_set_C (UNUR_DISTR *distr, const char *key, char *type_args, char
   string = args[0];
   
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
     _unur_str_debug_set(2,key,"C",string);
 #endif
@@ -1630,7 +1630,7 @@ _unur_str_par_set_void (UNUR_PAR *par, const char *key,
 {
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
     _unur_str_debug_set(2,key,"v");
 #endif
@@ -1687,7 +1687,7 @@ _unur_str_par_set_i (UNUR_PAR *par, const char *key, char *type_args, char **arg
   else {
     _unur_error_args(key);
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
+    /* write info into LOG file */
     if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
       _unur_str_debug_set(2,key,"!");
 #endif
@@ -1695,7 +1695,7 @@ _unur_str_par_set_i (UNUR_PAR *par, const char *key, char *type_args, char **arg
   }
   
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
     _unur_str_debug_set(2,key,"i",iarg);
 #endif
@@ -1750,7 +1750,7 @@ _unur_str_par_set_ii (UNUR_PAR *par, const char *key, char *type_args, char **ar
     iarg[1] = _unur_atoi( args[1] );
 
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
+    /* write info into LOG file */
     if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
       _unur_str_debug_set(2,key,"ii",iarg[0],iarg[1]);
 #endif
@@ -1764,7 +1764,7 @@ _unur_str_par_set_ii (UNUR_PAR *par, const char *key, char *type_args, char **ar
       _unur_error_args(key);
       free (iarray);
 #ifdef UNUR_ENABLE_LOGGING
-      /* write info into log file */
+      /* write info into LOG file */
       if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
 	_unur_str_debug_set(2,key,"!");
 #endif
@@ -1773,7 +1773,7 @@ _unur_str_par_set_ii (UNUR_PAR *par, const char *key, char *type_args, char **ar
     result = set( par,iarray[0],iarray[1] );
 
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
+    /* write info into LOG file */
     if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
       _unur_str_debug_set(2,key,"ii",iarray[0],iarray[1] );
 #endif
@@ -1785,7 +1785,7 @@ _unur_str_par_set_ii (UNUR_PAR *par, const char *key, char *type_args, char **ar
   else {
     _unur_error_args(key);
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
+    /* write info into LOG file */
     if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
       _unur_str_debug_set(2,key,"!");
 #endif
@@ -1831,7 +1831,7 @@ _unur_str_par_set_u (UNUR_PAR *par, const char *key, char *type_args, char **arg
   if ( strcmp(type_args, "t") ) {
     _unur_error_args(key);
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
+    /* write info into LOG file */
     if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
       _unur_str_debug_set(2,key,"!");
 #endif
@@ -1841,7 +1841,7 @@ _unur_str_par_set_u (UNUR_PAR *par, const char *key, char *type_args, char **arg
   uarg = _unur_atou( args[0] );
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
     _unur_str_debug_set(2,key,"u",uarg);
 #endif
@@ -1887,7 +1887,7 @@ _unur_str_par_set_d (UNUR_PAR *par, const char *key, char *type_args, char **arg
   if ( strcmp(type_args, "t") ) {
     _unur_error_args(key);
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
+    /* write info into LOG file */
     if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
       _unur_str_debug_set(2,key,"!");
 #endif
@@ -1897,7 +1897,7 @@ _unur_str_par_set_d (UNUR_PAR *par, const char *key, char *type_args, char **arg
   darg = _unur_atod( args[0] );
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
     _unur_str_debug_set(2,key,"d",darg);
 #endif
@@ -1952,7 +1952,7 @@ _unur_str_par_set_dd (UNUR_PAR *par, const char *key, char *type_args, char **ar
     darg[1] = _unur_atod( args[1] );
 
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
+    /* write info into LOG file */
     if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
       _unur_str_debug_set(2,key,"dd",darg[0],darg[1]);
 #endif
@@ -1966,7 +1966,7 @@ _unur_str_par_set_dd (UNUR_PAR *par, const char *key, char *type_args, char **ar
       _unur_error_args(key);
       free (darray);
 #ifdef UNUR_ENABLE_LOGGING
-      /* write info into log file */
+      /* write info into LOG file */
       if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
 	_unur_str_debug_set(2,key,"!");
 #endif
@@ -1975,7 +1975,7 @@ _unur_str_par_set_dd (UNUR_PAR *par, const char *key, char *type_args, char **ar
     result = set( par,darray[0],darray[1] );
 
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
+    /* write info into LOG file */
     if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
       _unur_str_debug_set(2,key,"dd",darray[0],darray[1] );
 #endif
@@ -1987,7 +1987,7 @@ _unur_str_par_set_dd (UNUR_PAR *par, const char *key, char *type_args, char **ar
   else {
     _unur_error_args(key);
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
+    /* write info into LOG file */
     if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
       _unur_str_debug_set(2,key,"!");
 #endif
@@ -2073,7 +2073,7 @@ _unur_str_par_set_iD (UNUR_PAR *par, const char *key, char *type_args, char **ar
   if ( !(size>0) ) {
     _unur_error_args(key);
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
+    /* write info into LOG file */
     if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
       _unur_str_debug_set(2,key,"!");
 #endif
@@ -2084,7 +2084,7 @@ _unur_str_par_set_iD (UNUR_PAR *par, const char *key, char *type_args, char **ar
     /* execute set command */
     result = set( par,size,darray );
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
+    /* write info into LOG file */
     if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
       _unur_str_debug_set(2,key,"iD",size,darray,size);
 #endif
@@ -2143,7 +2143,7 @@ _unur_str_par_set_Di (UNUR_PAR *par, const char *key, char *type_args, char **ar
     if (size > 0) {
       result = set( par,darray,t_size );
 #ifdef UNUR_ENABLE_LOGGING
-      /* write info into log file */
+      /* write info into LOG file */
       if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
 	_unur_str_debug_set(2,key,"Di",darray,size,size);
 #endif
@@ -2159,7 +2159,7 @@ _unur_str_par_set_Di (UNUR_PAR *par, const char *key, char *type_args, char **ar
   /* there is a syntax error */
   _unur_error_args(key);
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
     _unur_str_debug_set(2,key,"!");
 #endif
@@ -2239,7 +2239,7 @@ _unur_str2urng( char *str_urng ATTRIBUTE__UNUSED)
 	}
 	else {
 #ifdef UNUR_ENABLE_LOGGING
-	  /* write info into log file */
+	  /* write info into LOG file */
 	  if (_unur_default_debugflag & UNUR_DEBUG_SETUP)
 	    _unur_str_debug_string(1,"urng",value);
 #endif
@@ -2661,7 +2661,7 @@ _unur_atod ( const char *str )
 void 
 _unur_str_debug_string( int level, const char *key, const char *value  )
      /*----------------------------------------------------------------------*/
-     /* print key & value info into logfile                                  */
+     /* print key & value info into LOG file                                 */
      /*                                                                      */
      /* parameters:                                                          */
      /*   level ... level of indentation                                     */
@@ -2669,20 +2669,20 @@ _unur_str_debug_string( int level, const char *key, const char *value  )
      /*   value ... pointer to value string                                  */
      /*----------------------------------------------------------------------*/
 {
-  FILE *log;
+  FILE *LOG;
   
-  log = unur_get_stream();
+  LOG = unur_get_stream();
 
-/*    fprintf(log,"%s: String Interface for UNU.RAN\n",GENTYPE); */
-  fprintf(log,"%s: ",GENTYPE);
+/*    fprintf(LOG,"%s: String Interface for UNU.RAN\n",GENTYPE); */
+  fprintf(LOG,"%s: ",GENTYPE);
   for (; level>0; level--) 
-    fprintf(log,"\t");
-  fprintf(log,"%s",key);
+    fprintf(LOG,"\t");
+  fprintf(LOG,"%s",key);
   if (value)
-    fprintf(log,": %s",value);
-  fprintf(log,"\n");
+    fprintf(LOG,": %s",value);
+  fprintf(LOG,"\n");
 
-/*    fprintf(log,"%s:\n",GENTYPE); */
+/*    fprintf(LOG,"%s:\n",GENTYPE); */
 
 } /* end of _unur_str_debug_string() */
 
@@ -2691,7 +2691,7 @@ _unur_str_debug_string( int level, const char *key, const char *value  )
 void 
 _unur_str_debug_distr( int level, const char *name, double *params, int n_params )
      /*----------------------------------------------------------------------*/
-     /* write info about distribution into logfile                           */
+     /* write info about distribution into LOG file                          */
      /*                                                                      */
      /* parameters:                                                          */
      /*   level    ... level of indentation                                  */
@@ -2700,22 +2700,22 @@ _unur_str_debug_distr( int level, const char *name, double *params, int n_params
      /*   n_params ... number of parameters                                  */
      /*----------------------------------------------------------------------*/
 {
-  FILE *log;
+  FILE *LOG;
   int i;
   
-  log = unur_get_stream();
+  LOG = unur_get_stream();
 
-  fprintf(log,"%s: ",GENTYPE);
+  fprintf(LOG,"%s: ",GENTYPE);
   for (; level>0; level--) 
-    fprintf(log,"\t");
+    fprintf(LOG,"\t");
 
-  fprintf(log,"distribution = %s (",name);
+  fprintf(LOG,"distribution = %s (",name);
   if (n_params >0) {
-    fprintf(log,"%g",params[0]);
+    fprintf(LOG,"%g",params[0]);
     for (i=1; i<n_params; i++)
-      fprintf(log,", %g",params[i]);
+      fprintf(LOG,", %g",params[i]);
   }
-  fprintf(log,")\n");
+  fprintf(LOG,")\n");
 
 } /* end of _unur_str_debug_distr() */
 
@@ -2724,7 +2724,7 @@ _unur_str_debug_distr( int level, const char *name, double *params, int n_params
 void
 _unur_str_debug_set( int level, const char *key, const char *type, ... )
      /*----------------------------------------------------------------------*/
-     /* write info about set command into logfile                            */
+     /* write info about set command into LOG file                           */
      /*                                                                      */
      /* parameters:                                                          */
      /*   level ... level of indentation                                     */
@@ -2734,35 +2734,35 @@ _unur_str_debug_set( int level, const char *key, const char *type, ... )
      /*----------------------------------------------------------------------*/
 {
   va_list ap;
-  FILE *log;
+  FILE *LOG;
   
   va_start(ap, type);
 
-  log = unur_get_stream();
+  LOG = unur_get_stream();
 
   /* print key name */
-  fprintf(log,"%s: ",GENTYPE);
+  fprintf(LOG,"%s: ",GENTYPE);
   for (; level>0; level--) 
-    fprintf(log,"\t");
-  fprintf(log,"%s: ",key);
+    fprintf(LOG,"\t");
+  fprintf(LOG,"%s: ",key);
 
   while (1) {
 
     switch (*type) {
     case 'v':
-      fprintf(log," -none-");
+      fprintf(LOG," -none-");
       break;
     case 'd':
-      fprintf(log," %g",va_arg(ap,double));
+      fprintf(LOG," %g",va_arg(ap,double));
       break;
     case 'i':
-      fprintf(log," %d",va_arg(ap,int));
+      fprintf(LOG," %d",va_arg(ap,int));
       break;
     case 'u':
-      fprintf(log," %x",va_arg(ap,unsigned int));
+      fprintf(LOG," %x",va_arg(ap,unsigned int));
       break;
     case 'C':
-      fprintf(log," %s",va_arg(ap,char *));
+      fprintf(LOG," %s",va_arg(ap,char *));
       break;
     case 'D': {
       int i,size;
@@ -2770,24 +2770,24 @@ _unur_str_debug_set( int level, const char *key, const char *type, ... )
       darray = va_arg(ap,double *);
       size = va_arg(ap,int);
       if (size > 0 && darray != NULL) {
-	fprintf(log," (%g",darray[0]);
+	fprintf(LOG," (%g",darray[0]);
 	for (i=1; i<size; i++)
-	  fprintf(log,",%g",darray[i]);
-	fprintf(log,")");
+	  fprintf(LOG,",%g",darray[i]);
+	fprintf(LOG,")");
       }
       else
-	fprintf(log," (empty)");
+	fprintf(LOG," (empty)");
       break;
     }
     case '!':
     default:
-      fprintf(log," syntax error");
+      fprintf(LOG," syntax error");
       break;
     }
 
     if ( *(++type) != '\0' )
       /* skip. there is a next argument to be processed */
-      fprintf(log,",");
+      fprintf(LOG,",");
     else
       /* done */
       break;
@@ -2795,8 +2795,8 @@ _unur_str_debug_set( int level, const char *key, const char *type, ... )
 
   /* dd, iD, Di */
 
-  fprintf(log,"\n");
-  fflush(log);   /* in case of a segmentation fault */
+  fprintf(LOG,"\n");
+  fflush(LOG);   /* in case of a segmentation fault */
 
   va_end(ap);
 

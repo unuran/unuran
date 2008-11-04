@@ -145,7 +145,7 @@ static void _unur_gibbs_random_unitvector( struct unur_gen *gen, double *directi
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 /* the following functions print debugging information on output stream,     */
-/* i.e., into the log file if not specified otherwise.                       */
+/* i.e., into the LOG file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_gibbs_debug_init_start( const struct unur_gen *gen );
@@ -602,7 +602,7 @@ _unur_gibbs_init( struct unur_par *par )
   if (!gen) return NULL;
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (gen->debug) _unur_gibbs_debug_init_start(gen);
 #endif
 
@@ -656,7 +656,7 @@ _unur_gibbs_init( struct unur_par *par )
   }
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (gen->debug) _unur_gibbs_debug_init_finished(gen,TRUE);
 #endif
 
@@ -720,7 +720,7 @@ _unur_gibbs_coord_init( struct unur_gen *gen )
     /* we do not need a private copy since otherwise we cannot update the generator object */
     unur_set_use_distr_privatecopy( par_condi, FALSE );
     /* debugging messages from the conditional generator should be rare */
-    /* otherwise the size if the log file explodes                      */
+    /* otherwise the size if the LOG file explodes                      */
     unur_set_debug( par_condi, (gen->debug&GIBBS_DEBUG_CONDI)?gen->debug:(gen->debug?1u:0u));
   
     /* we use the same URNG for all auxiliary generators */
@@ -805,7 +805,7 @@ _unur_gibbs_randomdir_init( struct unur_gen *gen )
   /* we do not need a private copy since otherwise we cannot update the generator object */
   unur_set_use_distr_privatecopy( par_condi, FALSE );
   /* debugging messages from the conditional generator should be rare */
-  /* otherwise the size if the log file explodes                      */
+  /* otherwise the size if the LOG file explodes                      */
   unur_set_debug( par_condi, (gen->debug&GIBBS_DEBUG_CONDI)?gen->debug:(gen->debug?1u:0u));
   
   /* we use the same URNG for all auxiliary generators */
@@ -1211,62 +1211,62 @@ _unur_gibbs_random_unitvector( struct unur_gen *gen, double *direction )
 void
 _unur_gibbs_debug_init_start( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* write info about generator into logfile                              */
+     /* write info about generator into LOG file                             */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
      /*----------------------------------------------------------------------*/
 {
-  FILE *log;
+  FILE *LOG;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_GIBBS_GEN,RETURN_VOID);
 
-  log = unur_get_stream();
+  LOG = unur_get_stream();
 
-  fprintf(log,"%s:\n",gen->genid);
-  fprintf(log,"%s: type    = continuous multivariate random variates\n",gen->genid);
-  fprintf(log,"%s: method  = GIBBS (Markov Chain - GIBBS sampler)\n",gen->genid);
-  fprintf(log,"%s: variant = ",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
+  fprintf(LOG,"%s: type    = continuous multivariate random variates\n",gen->genid);
+  fprintf(LOG,"%s: method  = GIBBS (Markov Chain - GIBBS sampler)\n",gen->genid);
+  fprintf(LOG,"%s: variant = ",gen->genid);
   switch (gen->variant & GIBBS_VARMASK_VARIANT) {
   case GIBBS_VARIANT_COORD:
-    fprintf(log,"coordinate sampling (original Gibbs sampler)  [default]\n"); break;
+    fprintf(LOG,"coordinate sampling (original Gibbs sampler)  [default]\n"); break;
   case GIBBS_VARIANT_RANDOMDIR:
-    fprintf(log,"random directions\n"); break;
+    fprintf(LOG,"random directions\n"); break;
   }
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
 
-  fprintf(log,"%s: transformation T_c(x) for TDR method = ",gen->genid);
+  fprintf(LOG,"%s: transformation T_c(x) for TDR method = ",gen->genid);
   switch( gen->variant & GIBBS_VARMASK_T ) {
   case GIBBS_VAR_T_LOG:
-    fprintf(log,"log(x)  ... c = 0");                   break;
+    fprintf(LOG,"log(x)  ... c = 0");                   break;
   case GIBBS_VAR_T_SQRT:
-    fprintf(log,"-1/sqrt(x)  ... c = -1/2");            break;
+    fprintf(LOG,"-1/sqrt(x)  ... c = -1/2");            break;
   case GIBBS_VAR_T_POW:
-    fprintf(log,"-x^(%g)  ... c = %g",GEN->c_T,GEN->c_T); break;
+    fprintf(LOG,"-x^(%g)  ... c = %g",GEN->c_T,GEN->c_T); break;
   }
   _unur_print_if_default(gen,GIBBS_SET_C);
-  fprintf(log,"\n%s:\n",gen->genid);
+  fprintf(LOG,"\n%s:\n",gen->genid);
 
   _unur_distr_cvec_debug( gen->distr, gen->genid );
 
   switch (gen->variant & GIBBS_VARMASK_VARIANT) {
   case GIBBS_VARIANT_COORD:
-    fprintf(log,"%s: sampling routine = _unur_gibbs_coord_sample()\n",gen->genid);
+    fprintf(LOG,"%s: sampling routine = _unur_gibbs_coord_sample()\n",gen->genid);
     break;
   case GIBBS_VARIANT_RANDOMDIR:
-    fprintf(log,"%s: sampling routine = _unur_gibbs_randomdir_sample()\n",gen->genid);
+    fprintf(LOG,"%s: sampling routine = _unur_gibbs_randomdir_sample()\n",gen->genid);
     break;
   }
 
-  fprintf(log,"%s: thinning = %d",gen->genid,GEN->thinning);
+  fprintf(LOG,"%s: thinning = %d",gen->genid,GEN->thinning);
   _unur_print_if_default(gen,GIBBS_SET_THINNING);
-  fprintf(log,"\n%s: burn-in = %d",gen->genid,GEN->burnin);
+  fprintf(LOG,"\n%s: burn-in = %d",gen->genid,GEN->burnin);
   _unur_print_if_default(gen,GIBBS_SET_BURNIN);
-  fprintf(log,"\n%s:\n",gen->genid);
-  _unur_matrix_print_vector( GEN->dim, GEN->x0, "starting point = ", log, gen->genid, "\t   ");
+  fprintf(LOG,"\n%s:\n",gen->genid);
+  _unur_matrix_print_vector( GEN->dim, GEN->x0, "starting point = ", LOG, gen->genid, "\t   ");
 
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
 
 } /* end of _unur_gibbs_debug_init_start() */
 
@@ -1275,24 +1275,24 @@ _unur_gibbs_debug_init_start( const struct unur_gen *gen )
 void
 _unur_gibbs_debug_init_finished( const struct unur_gen *gen, int success )
      /*----------------------------------------------------------------------*/
-     /* write info about generator into logfile                              */
+     /* write info about generator into LOG file                             */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen     ... pointer to generator object                            */
      /*   success ... whether init has failed or not                         */
      /*----------------------------------------------------------------------*/
 {
-  FILE *log;
+  FILE *LOG;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_GIBBS_GEN,RETURN_VOID);
 
-  log = unur_get_stream();
+  LOG = unur_get_stream();
 
   if (success) 
-    fprintf(log,"%s: INIT completed **********************\n",gen->genid);
+    fprintf(LOG,"%s: INIT completed **********************\n",gen->genid);
   else
-    fprintf(log,"%s: INIT failed **********************\n",gen->genid);
+    fprintf(LOG,"%s: INIT failed **********************\n",gen->genid);
 
 } /* end of _unur_gibbs_debug_init_finished() */
 
@@ -1307,15 +1307,15 @@ _unur_gibbs_debug_burnin_failed( const struct unur_gen *gen )
      /*   gen ... pointer to generator object                                */
      /*----------------------------------------------------------------------*/
 {
-  FILE *log;
+  FILE *LOG;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_GIBBS_GEN,RETURN_VOID);
 
-  log = unur_get_stream();
+  LOG = unur_get_stream();
 
-  fprintf(log,"%s: Burn-in failed --> INIT failed **********************\n",gen->genid);
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s: Burn-in failed --> INIT failed **********************\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
 
 } /* end of _unur_gibbs_debug_burnin_failed() */
 
@@ -1324,34 +1324,34 @@ _unur_gibbs_debug_burnin_failed( const struct unur_gen *gen )
 void
 _unur_gibbs_debug_init_condi( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* write list of conditional generators into logfile                    */
+     /* write list of conditional generators into LOG file                   */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen     ... pointer to generator object                            */
      /*----------------------------------------------------------------------*/
 {
   int i;
-  FILE *log;
+  FILE *LOG;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_GIBBS_GEN,RETURN_VOID);
 
-  log = unur_get_stream();
+  LOG = unur_get_stream();
 
   switch (gen->variant & GIBBS_VARMASK_VARIANT) {
   case GIBBS_VARIANT_COORD:
-    fprintf(log,"%s: generators for full conditional distributions = \n",gen->genid);
-    fprintf(log,"%s:\t",gen->genid);
+    fprintf(LOG,"%s: generators for full conditional distributions = \n",gen->genid);
+    fprintf(LOG,"%s:\t",gen->genid);
     for (i=0; i<GEN->dim; i++)
-      fprintf(log,"[%s] ", GEN_CONDI[i]->genid);
-    fprintf(log,"\n%s:\n",gen->genid);
+      fprintf(LOG,"[%s] ", GEN_CONDI[i]->genid);
+    fprintf(LOG,"\n%s:\n",gen->genid);
     break;
   case GIBBS_VARIANT_RANDOMDIR:
-    fprintf(log,"%s: generators for full conditional distributions = [%s]\n",gen->genid,
+    fprintf(LOG,"%s: generators for full conditional distributions = [%s]\n",gen->genid,
 	    GEN_CONDI[0]->genid);
-    fprintf(log,"%s: generator for random directions = [%s]\n",gen->genid,
+    fprintf(LOG,"%s: generator for random directions = [%s]\n",gen->genid,
 	    GEN_NORMAL->genid);
-    fprintf(log,"%s:\n",gen->genid);
+    fprintf(LOG,"%s:\n",gen->genid);
     break;
   }
 

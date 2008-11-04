@@ -140,7 +140,7 @@ static void _unur_dstd_free( struct unur_gen *gen);
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 /* the following functions print debugging information on output stream,     */
-/* i.e., into the log file if not specified otherwise.                       */
+/* i.e., into the LOG file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_dstd_debug_init( const struct unur_gen *gen );
@@ -334,7 +334,7 @@ _unur_dstd_init( struct unur_par *par )
   }
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (gen->debug) _unur_dstd_debug_init(gen);
 #endif
 
@@ -373,7 +373,7 @@ _unur_dstd_reinit( struct unur_gen *gen )
   }
 
 #ifdef UNUR_ENABLE_LOGGING
-    /* write info into log file */
+    /* write info into LOG file */
     if (gen->debug & DSTD_DEBUG_REINIT)
       _unur_dstd_debug_chg_pmfparams( gen );
 #endif
@@ -566,40 +566,40 @@ _unur_dstd_free( struct unur_gen *gen )
 void
 _unur_dstd_debug_init( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* write info about generator into logfile                              */
+     /* write info about generator into LOG file                             */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
      /*----------------------------------------------------------------------*/
 {
-  FILE *log;
+  FILE *LOG;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_DSTD_GEN,RETURN_VOID);
 
-  log = unur_get_stream();
+  LOG = unur_get_stream();
 
-  fprintf(log,"%s:\n",gen->genid);
-  fprintf(log,"%s: type    = discrete univariate random variates\n",gen->genid);
-  fprintf(log,"%s: method  = generator for standard distribution\n",gen->genid);
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
+  fprintf(LOG,"%s: type    = discrete univariate random variates\n",gen->genid);
+  fprintf(LOG,"%s: method  = generator for standard distribution\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
 
   /* distribution */
   _unur_distr_discr_debug( gen->distr, gen->genid, FALSE );
 
   /* sampling routine */
-  fprintf(log,"%s: sampling routine = ",gen->genid);
+  fprintf(LOG,"%s: sampling routine = ",gen->genid);
   if (GEN->sample_routine_name)
-    fprintf(log,"%s()",GEN->sample_routine_name);
+    fprintf(LOG,"%s()",GEN->sample_routine_name);
   else
-    fprintf(log,"(Unknown)");
+    fprintf(LOG,"(Unknown)");
   if (GEN->is_inversion)
-    fprintf(log,"   (Inversion)");
-  fprintf(log,"\n%s:\n",gen->genid);
+    fprintf(LOG,"   (Inversion)");
+  fprintf(LOG,"\n%s:\n",gen->genid);
 
   if (!(gen->distr->set & UNUR_DISTR_SET_STDDOMAIN)) {
-    fprintf(log,"%s: domain has been changed. U in (%g,%g)\n",gen->genid,GEN->umin,GEN->umax);
-    fprintf(log,"%s:\n",gen->genid);
+    fprintf(LOG,"%s: domain has been changed. U in (%g,%g)\n",gen->genid,GEN->umin,GEN->umax);
+    fprintf(LOG,"%s:\n",gen->genid);
   }
 
 } /* end of _unur_dstd_info_init() */
@@ -615,17 +615,17 @@ _unur_dstd_debug_chg_pmfparams( const struct unur_gen *gen )
      /*   gen ... pointer to generator object                                */
      /*----------------------------------------------------------------------*/
 {
-  FILE *log;
+  FILE *LOG;
   int i;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_DSTD_GEN,RETURN_VOID);
 
-  log = unur_get_stream();
+  LOG = unur_get_stream();
 
-  fprintf(log,"%s: parameters of distribution changed:\n",gen->genid);
+  fprintf(LOG,"%s: parameters of distribution changed:\n",gen->genid);
   for( i=0; i<DISTR.n_params; i++ )
-      fprintf(log,"%s:\tparam[%d] = %g\n",gen->genid,i,DISTR.params[i]);
+      fprintf(LOG,"%s:\tparam[%d] = %g\n",gen->genid,i,DISTR.params[i]);
 
 } /* end of _unur_dstd_debug_chg_pmfparams() */
 

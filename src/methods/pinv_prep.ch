@@ -136,7 +136,7 @@ _unur_pinv_relevant_support ( struct unur_gen *gen )
   }
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (gen->debug & PINV_DEBUG_SEARCHBD)
     _unur_pinv_debug_relevant_support(gen);
 #endif
@@ -307,7 +307,7 @@ _unur_pinv_approx_pdfarea (struct unur_gen *gen )
   }
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (gen->debug & PINV_DEBUG_SEARCHBD)
     _unur_pinv_debug_pdfarea(gen,TRUE);
 #endif
@@ -369,7 +369,7 @@ _unur_pinv_pdfarea (struct unur_gen *gen)
   _unur_pinv_CDFtable_resize(&(GEN->CDFtable));
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (gen->debug & PINV_DEBUG_SEARCHBD)
     _unur_pinv_debug_pdfarea(gen,FALSE);
 #endif
@@ -428,7 +428,7 @@ _unur_pinv_computational_domain (struct unur_gen *gen)
   }
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (gen->debug & PINV_DEBUG_SEARCHBD)
     _unur_pinv_debug_computational_domain(gen);
 #endif
@@ -633,7 +633,7 @@ _unur_pinv_computational_domain_CDF (struct unur_gen *gen)
   }
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (gen->debug & PINV_DEBUG_SEARCHBD)
     _unur_pinv_debug_computational_domain(gen);
 #endif

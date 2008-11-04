@@ -934,7 +934,7 @@ unur_tabl_chg_truncated( struct unur_gen *gen, double left, double right )
   gen->distr->set |= UNUR_DISTR_SET_TRUNCATED;
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
 #endif
   
   /* o.k. */

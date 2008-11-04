@@ -125,7 +125,7 @@
 #define TABL_DEBUG_IV        0x00000100u /* show intervals                   */
 #define TABL_DEBUG_IV_START  0x00000200u /* show starting intervals          */
 #define TABL_DEBUG_EAR       0x00000400u /* show intervals after EAR         */
-#define TABL_DEBUG_DARS      0x00000800u /* indicate DARS in log file        */
+#define TABL_DEBUG_DARS      0x00000800u /* indicate DARS in LOG file        */
 
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
@@ -232,7 +232,7 @@ static double _unur_tabl_eval_cdfhat( struct unur_gen *gen, double x );
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 /* the following functions print debugging information on output stream,     */
-/* i.e., into the log file if not specified otherwise.                       */
+/* i.e., into the LOG file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_tabl_debug_init_start( const struct unur_par *par, const struct unur_gen *gen );

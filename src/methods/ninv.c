@@ -196,7 +196,7 @@ static int _unur_ninv_create_table( struct unur_gen *gen );
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 /* the following functions print debugging information on output stream,     */
-/* i.e., into the log file if not specified otherwise.                       */
+/* i.e., into the LOG file if not specified otherwise.                       */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_ninv_debug_init( const struct unur_gen *gen );
@@ -206,7 +206,7 @@ static void _unur_ninv_debug_init( const struct unur_gen *gen );
 
 static void _unur_ninv_debug_start( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* print starting points or table for algorithms into logfile.               */
+/* print starting points or table for algorithms into LOG file               */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_ninv_debug_sample_regula( const struct unur_gen *gen, 
@@ -689,7 +689,7 @@ unur_ninv_chg_table( struct unur_gen *gen, int tbl_pnts )
   result = _unur_ninv_create_table(gen); 
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (gen->debug & NINV_DEBUG_CHG) 
     if (result==UNUR_SUCCESS) _unur_ninv_debug_start( gen );
 #endif
@@ -769,7 +769,7 @@ unur_ninv_chg_truncated( struct unur_gen *gen, double left, double right )
   gen->distr->set |= UNUR_DISTR_SET_TRUNCATED;
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (gen->debug & NINV_DEBUG_CHG) 
     _unur_ninv_debug_chg_truncated( gen );
 #endif
@@ -841,7 +841,7 @@ _unur_ninv_init( struct unur_par *par )
   }
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (gen->debug) _unur_ninv_debug_init(gen);
 #endif
 
@@ -888,7 +888,7 @@ _unur_ninv_reinit( struct unur_gen *gen )
   SAMPLE = _unur_ninv_getSAMPLE(gen);
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file */
+  /* write info into LOG file */
   if (gen->debug & NINV_DEBUG_REINIT) {
     _unur_distr_cont_debug( gen->distr, gen->genid );
     if (rcode==UNUR_SUCCESS) _unur_ninv_debug_start( gen );
@@ -1327,7 +1327,7 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
 	                                              /* absolute x precision eps^2 close to 0 */
        	 || fabs(f2) <= rel_u_resolution ) {          /* relative u precision*/ 
 #ifdef UNUR_ENABLE_LOGGING
-      /* write info into log file (in case error) */
+      /* write info into LOG file (in case error) */
       if (gen->debug & NINV_DEBUG_SAMPLE)
 	_unur_ninv_debug_sample_regula( gen,u,x2,f2,i );
 #endif
@@ -1374,7 +1374,7 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
   }
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file (in case error) */
+  /* write info into LOG file (in case error) */
   if (gen->debug & NINV_DEBUG_SAMPLE)
     _unur_ninv_debug_sample_regula( gen,u,x2,f2,i );
 #endif
@@ -1573,7 +1573,7 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
   x = _unur_min( x, DISTR.trunc[1]);
 
 #ifdef UNUR_ENABLE_LOGGING
-  /* write info into log file (in case error) */
+  /* write info into LOG file (in case error) */
   if (gen->debug & NINV_DEBUG_SAMPLE)
     _unur_ninv_debug_sample_newton(gen, U, x, fx, i);
 #endif
@@ -1759,40 +1759,40 @@ _unur_ninv_compute_start( struct unur_gen *gen )
 void
 _unur_ninv_debug_init( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* write info about generator into logfile                              */
+     /* write info about generator into LOG file                             */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
      /*----------------------------------------------------------------------*/
 {
-  FILE *log;
+  FILE *LOG;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_NINV_GEN,RETURN_VOID);
 
-  log = unur_get_stream();
+  LOG = unur_get_stream();
 
-  fprintf(log,"%s:\n",gen->genid);
-  fprintf(log,"%s: type    = continuous univariate random variates\n",gen->genid);
-  fprintf(log,"%s: method  = ninv (numerical inversion of CDF)\n",gen->genid);
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
+  fprintf(LOG,"%s: type    = continuous univariate random variates\n",gen->genid);
+  fprintf(LOG,"%s: method  = ninv (numerical inversion of CDF)\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
 
   _unur_distr_cont_debug( gen->distr, gen->genid );
 
-  fprintf(log,"%s: sampling routine = _unur_ninv_sample",gen->genid);
+  fprintf(LOG,"%s: sampling routine = _unur_ninv_sample",gen->genid);
   switch (gen->variant) {
   case NINV_VARFLAG_NEWTON:
-    fprintf(log,"_newton\n");
+    fprintf(LOG,"_newton\n");
     break;
   case NINV_VARFLAG_REGULA: default:
-    fprintf(log,"_regula\n");
+    fprintf(LOG,"_regula\n");
     break;
   }
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
 
   _unur_ninv_debug_start(gen);
 
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
 
 } /* end of _unur_ninv_debug_init() */
 
@@ -1801,34 +1801,34 @@ _unur_ninv_debug_init( const struct unur_gen *gen )
 void
 _unur_ninv_debug_start( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* print starting points or table for algorithms into logfile           */
+     /* print starting points or table for algorithms into LOG file          */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen ... pointer to generator object                                */
      /*----------------------------------------------------------------------*/
 {
-  FILE *log;
+  FILE *LOG;
   int i;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_NINV_GEN,RETURN_VOID);
 
-  log = unur_get_stream();
+  LOG = unur_get_stream();
 
   if (GEN->table_on) {
-    fprintf(log,"%s: use table (size = %d)\n",gen->genid,GEN->table_size);
+    fprintf(LOG,"%s: use table (size = %d)\n",gen->genid,GEN->table_size);
     if (gen->debug & NINV_DEBUG_TABLE)
       for (i=0; i<GEN->table_size; i++)
-	fprintf(log,"%s:\tx = %12.6g, F(x) = %10.8f\n",gen->genid,GEN->table[i],GEN->f_table[i]);
+	fprintf(LOG,"%s:\tx = %12.6g, F(x) = %10.8f\n",gen->genid,GEN->table[i],GEN->f_table[i]);
   }
   else { /* no table */
-    fprintf(log,"%s: starting points:\n",gen->genid);
-    fprintf(log,"%s:\ts[0] = %12.6g, F(x) = %10.8f\n",gen->genid,GEN->s[0],GEN->CDFs[0]);
+    fprintf(LOG,"%s: starting points:\n",gen->genid);
+    fprintf(LOG,"%s:\ts[0] = %12.6g, F(x) = %10.8f\n",gen->genid,GEN->s[0],GEN->CDFs[0]);
     if (gen->variant & NINV_VARFLAG_REGULA)
-      fprintf(log,"%s:\ts[1] = %12.6g, F(x) = %10.8f\n",gen->genid,GEN->s[1],GEN->CDFs[1]);
+      fprintf(LOG,"%s:\ts[1] = %12.6g, F(x) = %10.8f\n",gen->genid,GEN->s[1],GEN->CDFs[1]);
   }
 
-  fprintf(log,"%s:\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
 
 } /* end of _unur_ninv_debug_start() */
 
@@ -1843,14 +1843,14 @@ _unur_ninv_debug_sample_regula( const struct unur_gen *gen, double u, double x, 
      /*   gen ... pointer to generator object                                */
      /*----------------------------------------------------------------------*/
 {
-  FILE *log;
+  FILE *LOG;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_NINV_GEN,RETURN_VOID);
 
-  log = unur_get_stream();
+  LOG = unur_get_stream();
 
-  fprintf(log,"%s: u = %8.6f,\t x = %8.6g\t(cdf(x)-u = %8.2g)\t -- %2d iterations [%d]\n",
+  fprintf(LOG,"%s: u = %8.6f,\t x = %8.6g\t(cdf(x)-u = %8.2g)\t -- %2d iterations [%d]\n",
 	  gen->genid,u,x,fx,iter,GEN->max_iter);
 
 } /* end of _unur_ninv_debug_sample_regula() */
@@ -1866,14 +1866,14 @@ _unur_ninv_debug_sample_newton( const struct unur_gen *gen, double u, double x, 
      /*   gen ... pointer to generator object                                */
      /*----------------------------------------------------------------------*/
 {
-  FILE *log;
+  FILE *LOG;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_NINV_GEN,RETURN_VOID);
 
-  log = unur_get_stream();
+  LOG = unur_get_stream();
 
-  fprintf(log,"%s: u = %8.6f,\t x = %8.6g\t(cdf(x)-u = %8.2g)\t -- %2d iterations [%d]\n",
+  fprintf(LOG,"%s: u = %8.6f,\t x = %8.6g\t(cdf(x)-u = %8.2g)\t -- %2d iterations [%d]\n",
 	  gen->genid,u,x,fx,iter,GEN->max_iter);
 
 } /* end of _unur_ninv_debug_sample_newton() */
@@ -1889,16 +1889,16 @@ _unur_ninv_debug_chg_truncated( const struct unur_gen *gen )
      /*   gen ... pointer to generator object                                */
      /*----------------------------------------------------------------------*/
 {
-  FILE *log;
+  FILE *LOG;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_NINV_GEN,RETURN_VOID);
 
-  log = unur_get_stream();
+  LOG = unur_get_stream();
 
-  fprintf(log,"%s: domain of (truncated) distribution changed:\n",gen->genid);
-  fprintf(log,"%s:\tdomain = (%g, %g)\n",gen->genid, DISTR.trunc[0], DISTR.trunc[1]);
-  fprintf(log,"%s:\tU in (%g,%g)\n",gen->genid,GEN->Umin,GEN->Umax);
+  fprintf(LOG,"%s: domain of (truncated) distribution changed:\n",gen->genid);
+  fprintf(LOG,"%s:\tdomain = (%g, %g)\n",gen->genid, DISTR.trunc[0], DISTR.trunc[1]);
+  fprintf(LOG,"%s:\tU in (%g,%g)\n",gen->genid,GEN->Umin,GEN->Umax);
 
 } /* end of _unur_ninv_debug_chg_truncated() */
 

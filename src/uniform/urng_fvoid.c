@@ -41,16 +41,16 @@
 /*---------------------------------------------------------------------------*/
 
 UNUR_URNG *
-unur_urng_fvoid_new( double (*random)(void *state), void (*reset)(void *state) )
+unur_urng_fvoid_new( double (*urand)(void *state), void (*reset)(void *state) )
      /*----------------------------------------------------------------------*/
      /* get new URNG object of type FVOID                                    */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   random  ... pointer to uniform random number generator             */
+     /*   urand   ... pointer to uniform random number generator             */
      /*   reset   ... pointer to reset function for URNG                     */
      /*----------------------------------------------------------------------*/
 {
-  UNUR_URNG *urng = unur_urng_new( random, NULL );
+  UNUR_URNG *urng = unur_urng_new( urand, NULL );
   unur_urng_set_reset( urng, reset );
   return urng;
 } /* end of unur_urng_fvoid_new() */

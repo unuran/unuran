@@ -95,26 +95,26 @@ unur_urng_MRG31k3p (void *dummy ATTRIBUTE__UNUSED)
 # define mask20  65535
  
 
-  register unsigned long y1, y2;  /* For intermediate results */
+  register unsigned long yy1, yy2;  /* For intermediate results */
   
   /* First component */
-  y1 = ( (((x11 & mask11) << 22) + (x11 >> 9))
-	 + (((x12 & mask12) << 7)  + (x12 >> 24)) );
-  if (y1 > m1) y1 -= m1;
-  y1 += x12;
-  if (y1 > m1) y1 -= m1;
-  x12 = x11;  x11 = x10;  x10 = y1;
+  yy1 = ( (((x11 & mask11) << 22) + (x11 >> 9))
+	  + (((x12 & mask12) << 7)  + (x12 >> 24)) );
+  if (yy1 > m1) yy1 -= m1;
+  yy1 += x12;
+  if (yy1 > m1) yy1 -= m1;
+  x12 = x11;  x11 = x10;  x10 = yy1;
  
   /* Second component */
-  y1 = ((x20 & mask20) << 15) + 21069 * (x20 >> 16);
-  if (y1 > m2) y1 -= m2;
-  y2 = ((x22 & mask20) << 15) + 21069 * (x22 >> 16);
-  if (y2 > m2) y2 -= m2;
-  y2 += x22;
-  if (y2 > m2) y2 -= m2;
-  y2 += y1;
-  if (y2 > m2) y2 -= m2;
-  x22 = x21;  x21 = x20;  x20 = y2;
+  yy1 = ((x20 & mask20) << 15) + 21069 * (x20 >> 16);
+  if (yy1 > m2) yy1 -= m2;
+  yy2 = ((x22 & mask20) << 15) + 21069 * (x22 >> 16);
+  if (yy2 > m2) yy2 -= m2;
+  yy2 += x22;
+  if (yy2 > m2) yy2 -= m2;
+  yy2 += yy1;
+  if (yy2 > m2) yy2 -= m2;
+  x22 = x21;  x21 = x20;  x20 = yy2;
 
   /* Combination */
   if (x10 <= x20)

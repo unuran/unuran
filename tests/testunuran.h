@@ -120,7 +120,7 @@ double stopwatch_lap(TIMER *t);
 double stopwatch_stop(TIMER *t);
 
 void stopwatch_init(void);
-void stopwatch_print( FILE *LOG, const char *format, double time );
+void stopwatch_print( FILE *LOG, const char *format, double etime );
 
 /*---------------------------------------------------------------------------*/
 /* set alarm when run time exceeds given limit                               */

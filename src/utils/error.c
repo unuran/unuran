@@ -155,19 +155,19 @@ _unur_error_cookies( const char *file, int line, unsigned observed, unsigned exp
 /*---------------------------------------------------------------------------*/
 
 const char *
-unur_get_strerror ( const int unur_errno )
+unur_get_strerror ( const int errorcode )
      /*----------------------------------------------------------------------*/
      /* return string that describes error                                   */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   unur_error ... error code                                          */
+     /*   errorcode ... error code                                           */
      /*                                                                      */
      /* return:                                                              */
      /*   pointer to charater string                                         */
      /*                                                                      */
      /*----------------------------------------------------------------------*/
 {
-  switch (unur_errno) {
+  switch (errorcode) {
 
     /** procedure executed successfully **/
   case UNUR_SUCCESS:

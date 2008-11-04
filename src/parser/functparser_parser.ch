@@ -956,14 +956,14 @@ _unur_fstr_reorganize (struct ftreenode *node)
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_fstr_next_token (struct parser_data *pdata, int *token, char **symbol)
+_unur_fstr_next_token (struct parser_data *pdata, int *token, char **symb)
      /*----------------------------------------------------------------------*/
      /* Get next token from list.                                            */
      /*                                                                      */
      /* parameters:                                                          */
      /*   pdata  ... pointer to parser object                                */
      /*   token  ... to store token                                          */
-     /*   symbol ... to store symbol for token                               */
+     /*   symb   ... to store symbol for token                               */
      /*                                                                      */
      /* return:                                                              */
      /*   UNUR_SUCCESS ... on success                                        */
@@ -976,7 +976,7 @@ _unur_fstr_next_token (struct parser_data *pdata, int *token, char **symbol)
   if (pdata->tno < pdata->n_tokens) {
     /* return token and increment scan position */
     *token = pdata->token[pdata->tno];
-    *symbol = pdata->tpos[pdata->tno];
+    *symb = pdata->tpos[pdata->tno];
     ++(pdata->tno);
     return UNUR_SUCCESS;
   }

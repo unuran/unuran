@@ -114,29 +114,29 @@ double stopwatch_lap(TIMER *t)
 /* return elapsed time (in ms) since last call to stopwatch_start(),
    stopwatch_stop(), or stopwatch_lap() */
 {
-  double time;
+  double etime;
 
   t->stop = stopwatch_get_time(t->tv);
-  time = t->stop - t->interim;
+  etime = t->stop - t->interim;
 
   t->interim = t->stop;
 
-  return time;
+  return etime;
 }
 
 double stopwatch_stop(TIMER *t)
 /* return elapsed time (in ms) since last call to stopwatch_start() 
    or stopwatch_stop() */
 {
-  double time;
+  double etime;
 
   t->stop = stopwatch_get_time(t->tv);
-  time = t->stop - t->start;
+  etime = t->stop - t->start;
 
   t->interim = t->stop;
   t->start = t->stop;
 
-  return time;
+  return etime;
 }
 
 void stopwatch_init(void)
@@ -147,11 +147,11 @@ void stopwatch_init(void)
   stopwatch_start(&vw);
 }
 
-void stopwatch_print( FILE *LOG, const char *format, double time )
+void stopwatch_print( FILE *LOG, const char *format, double etime )
 /* print time depending whether watch is enabled or not */
 {
   if (stopwatch) 
-    fprintf(LOG,format,time);
+    fprintf(LOG,format,etime);
 }
 
 /*---------------------------------------------------------------------------*/

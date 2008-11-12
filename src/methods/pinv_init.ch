@@ -432,10 +432,8 @@ _unur_pinv_eval_PDF (double x, struct unur_gen *gen)
 {
   struct unur_distr *distr = gen->distr;
 
-
   if (DISTR.logpdf != NULL) {
     return (exp((DISTR.logpdf)(x,distr) - GEN->logPDFconstant));
-/*     return (exp((DISTR.logpdf)(x,distr))); */
   }
   else {
     return ((DISTR.pdf)(x,distr));

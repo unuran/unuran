@@ -13,7 +13,9 @@ LDADD = \
 noinst_PROGRAMS = \
  make_timing_table
 
-## make_correlation_table
+EXTRA_DIST = \
+ timings_chap_8.conf \
+ timings_chap_10.conf
 
 # clean backup files
 CLEANFILES = \

@@ -30,7 +30,7 @@ dnl unuran-1.2.1   9:1:0
 dnl unuran-1.2.2   9:2:0
 dnl unuran-1.2.3   9:3:2
 dnl unuran-1.2.4   9:4:2
-dnl unuran-1.3.0   ?:?:?
+dnl unuran-1.3.0   10:0:0
 
 UNURAN_LT_VERSION="10:0:0"
 AC_SUBST([UNURAN_LT_VERSION])

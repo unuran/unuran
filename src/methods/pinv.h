@@ -52,28 +52,34 @@
 
    =DESCRIPTION
       PINV is a variant of numerical inversion, where the inverse CDF
-      is approximated using Newton's recursion for interpolating
-      polynomials. The interval [0,1] is split into several
-      subintervals and in each subinterval the inverse CDF is
-      approximated by polynomials constructed by means of values of
-      the CDF. If the PDF is given then the CDF is numerically
-      integrated from the given PDF using adaptive Gauss-Lobatto
+      is approximated using Newton's interpolating formula. 
+      The interval [0,1] is split into several subintervals. In each
+      of these the inverse CDF is constructed at nodes 
+      @unurmath{(CDF(x),x)} for some points @i{x} in this subinterval.
+      If the PDF is given then the CDF is computed numerically
+      from the given PDF using adaptive Gauss-Lobatto
       integration with 5 points. Subintervals are splitted until the
       requested accuracy goal is reached.
+
+      The method is not exact, as it only produces random variates of
+      the approximated distribution. Nevertheless, the maximal
+      tolerated approximation error can be set to be the resolution
+      (but of course is bounded by the machine precision).
+      We use the u-error @unurmath{|U-CDF(X)|} to measure the error
+      for @i{X} = "approximate inverse CDF"(@i{U}).
+      Notice that very small values of the u-resolution are possible
+      but increase the cost for the setup step.
+      We call the maximal tolerated u-error the @emph{u-resolution} of
+      the algorithm in the sequel.
+
+      Both the order of the interpolating polynomial and the
+      u-resolution can be selected.
 
       The interpolating polynomials have to be computed in a setup
       step. However, it only works for distributions with bounded
       domain; for distributions with unbounded domain the tails are
-      chopped off such that the probability for the tail regions is
+      cut off such that the probability for the tail regions is
       small compared to the given u-resolution. 
-
-      The method is not exact, as it only produces random variates of
-      the approximated distribution. Nevertheless, the maximal
-      numerical error in "u-direction" (i.e. |U-CDF(X)|, for 
-      X = "approximate inverse CDF"(U) |U-CDF(X)|) can be set to the
-      required resolution (within machine precision).  
-      Notice that very small values of the u-resolution are possible
-      but may increase the cost for the setup step.
 
       The construction of the interpolation polynomial only works when
       the PDF is unimodal or when the PDF does not vanish between two
@@ -90,22 +96,21 @@
       distribution might be truncated.
       @item
       When the PDF is integrated numerically, then the given PDF must
-      be smooth (except on the boundary if the domain). In particular
-      the 8th derivative should be bounded.
+      be continuous and should be smooth.
       @item
       The PDF must be bounded.
       @item
-      The distributions should not have heavy tails, since otherwise
-      the inverse CDF becomes too steep at 0 or 1.
+      The algorithm has problems when the distribution has heavy tails
+      (as then the inverse CDF becomes very steep at 0 or 1)
+      and the requested u-resolution is very small.
       E.g., the Cauchy distribution is likely to show this problem
-      when the requested u-resolution is (very) small.
+      when the requested u-resolution is less then @code{1.e-12}.
       @end itemize
       Regions with very small PDF values or heavy tails might lead to
       an abortion of the set-up or (even worse) the approximation
       error might become larger than requested, since the (computation of the)
       interpolating polynomial becomes numerically unstable.
-      If the PDF or its 8th derivative is not bounded, then the
-      integration error is larger than requested.
+
 
    =HOWTOUSE
       PINV works for continuous univariate distribution objects with
@@ -114,21 +119,21 @@
       is not too small, e.g., (a point near) the mode. 
       It can be set using a unur_distr_cont_set_center() or
       a unur_distr_cont_set_mode() call. (If neither is set, @code{0}
-      is assumed.)
+      is assumed!)
       It is recommended that the domain of the distribution with
-      bounded support (domain) is set using a
-      unur_distr_cont_set_domain() call. Otherwise, the boundary is
-      searched numerically which might be rather expensive, especially
-      when this boundary point equals @code{0}.
+      bounded domain is specified using a unur_distr_cont_set_domain()
+      call. Otherwise, the boundary is searched numerically which
+      might be rather expensive, especially when this boundary point
+      is @code{0}.
       
       When sampling from truncated distributions with extreme
       truncation points, it is recommended to provide the log-density 
       using unur_distr_cont_set_logpdf() and the mode.
-      The the PDF is rescaled such that the PDF at the mode is 1.
+      Then the PDF is rescaled such that the PDF at the mode is 1.
       Thus the algorithm is numerically more stable.
 
       It is also possible to use the CDF of the distribution instead
-      of the PDF. Thus the distribution object must contain a pointer
+      of the PDF. Then the distribution object must contain a pointer
       to the CDF. Moreover, this variant of the algorithmus has to be
       switched on using an unur_pinv_set_usecdf() call.
       Notice, however, that the setup for this variant is numerically
@@ -139,28 +144,27 @@
       The order of this polynomial can be set by means of a
       unur_pinv_set_order() call.
 
-      For distributions with unbounded domains the tails are chopped
+      For distributions with unbounded domains the tails are cut
       off such that the probability for the tail regions is small
       compared to the given u-resulution. For finding these cut points
       the algorithm starts with the region @code{[-1.e100,1.e100]}. For
-      the exceptional case where this does not work it these starting
+      the exceptional case where this does not work these starting
       points can be changed via a unur_pinv_set_boundary() call.
 
       This method is not exact, as it only produces random variates of 
       the approximated distribution. Nevertheless, the numerical error
-      in "u-direction" (i.e. |U-CDF(X)|, for 
+      in "u-direction" (i.e., |U-CDF(X)|, for 
       X = "approximate inverse CDF"(U) |U-CDF(X)|) can be controlled
       by means of unur_pinv_set_u_resolution().
-
-      The maximal error of this approximation is only estimated. For
-      very small u-resolution or when the 8th derivative of the PDF
-      becomes very large, then the actual approximation error might be 
-      (slightly) larger than the requested u-resolution.
-      If this error is crucial for an application we recommend to compute
-      this error using unur_pinv_estimate_error() which runs a small
-      Monte Carlo simulation.
-      See also documentation for function unur_pinv_set_u_resolution()
-      and the remark given there.
+      However, the maximal error of this approximation is only
+      estimated. For very small u-resolutions the actual approximation
+      error might be (slightly) larger than the requested u-resolution.
+      (Of course the size of this value depends on the given PDF.)
+      If this error is crucial for an application we recommend to
+      compute this error using unur_pinv_estimate_error() which runs a
+      small Monte Carlo simulation.
+      See also the documentation for function
+      unur_pinv_set_u_resolution() and the remark given there.
 
       The number of required subintervals heavily depends on the order
       of the interpolating polynomial and the requested u-resolution:
@@ -200,10 +204,10 @@ int unur_pinv_set_order( UNUR_PAR *parameters, int order);
 
 int unur_pinv_set_u_resolution( UNUR_PAR *parameters, double u_resolution);
 /* 
-   Set maximal error in u-direction. Values of @var{u_resolution} must
+   Set maximal tolerated u-error. Values of @var{u_resolution} must
    at least @code{1.e-15} and @code{1.e-5} at most.
    Notice that the resolution of most uniform random number sources is
-   2^(-32) = @code{2.3e-10}. Thus a value of @code{1.e-10} 
+   @unurmath{2^{-32}} = @code{2.3e-10}. Thus a value of @code{1.e-10} 
    leads to an inversion algorithm that could be called exact. For most
    simulations slightly bigger values for the maximal error are enough
    as well. 
@@ -217,14 +221,14 @@ int unur_pinv_set_u_resolution( UNUR_PAR *parameters, double u_resolution);
    @emph{Remark:}
    We ran many experiments and found that the observed u-error was
    always smaller than the given @var{u_resolution} whenever this
-   value was @code{1.e-12}. For values smaller @code{1e-13} the
-   maximal observed u-error was slightly larger. Thus one use
-   @code{1.e-15} if best approximation is required. However, the
-   actual u-error can be as large as @code{1.e-14}.
+   value was @code{1.e-12}. For values smaller than @code{1e-13} the
+   maximal observed u-error was slightly larger. One use @code{1.e-15}
+   if best approximation is required. However, then the actual u-error
+   can be as large as @code{1.e-14}.
 
    @strong{Warning!}
    These figures are based on our experiments (with some tolarence
-   adde to be on the safe side). There is no guarentee for these error
+   added to be on the safe side). There is no guarentee for these error
    estimates for a particular distribution.
 
    Default is @code{1.e-10}.
@@ -272,11 +276,11 @@ int unur_pinv_set_searchboundary( UNUR_PAR *parameters, int left, int right );
    boundary as given by a unur_pinv_set_boundary() call is used
    without any further computations.
    However, these boundary points might cause numerical problems
-   during the setup when PDF returns @code{0.} ``almost everywhere''.
+   during the setup when PDF returns @code{0} ``almost everywhere''.
    If set to TRUE (the default) then the computational interval is
    shortened to a more sensible region by means of a search algorithm.
-   Switching off this search is useful, e.g. for the Gamma(2)
-   distribution where the left border 0 is fixed and finite.
+   Switching off this search is useful, e.g., for the Gamma(2)
+   distribution where the left border @code{0} is fixed and finite.
 
    @emph{Remark:}
    The searching algorithm assumes that the support of the distribution

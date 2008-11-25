@@ -1,0 +1,12 @@
+./INSTALL:
+
+	Version 1.3.x
+	tar zxvf unuran-1.3.x.tar.gz
+	cd unuran-1.3.x
+
+./configure.ac:
+
+	AC_INIT([unuran],[1.3.0],[unuran@statmath.wu-wien.ac.at])
+	AM_INIT_AUTOMAKE([unuran],[1.3.0])
+
+

@@ -44,7 +44,7 @@
 
    =OPTIONAL domain
 
-   =REF [HLD04: FIXME]
+   =REF [DHLa08]
 
    =SPEED Set-up: (very) slow, Sampling: (very) fast
 

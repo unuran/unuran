@@ -86,6 +86,14 @@ Computing 54(2), pp. 127-146.
 @i{On generating random variates from an empirical distribution},
 AIIE Trans. 6, pp. 163-166.
 
+@anchor{bib:DHLa08}
+@item [DHLa08]
+@sc{G. Derflinger, W. H@"ormann, and J. Leydold} (2008).
+@i{Numerical inversion when only the density function is known},
+Research Report Series of the Department of Statistics and Mathematics 78, 
+WU Wien, Augasse 2--6, A-1090 Wien, Austria,
+@uref{http://epub.wu-wien.ac.at/english/}.
+
 @anchor{bib:DLa86}
 @item [DLa86]
 @sc{L. Devroye} (1986).
@@ -128,6 +136,14 @@ ACM TOMACS 13(4), 347-362.
 @sc{W. H@"ormann, J. Leydold, and G. Derflinger} (2007).
 @i{Automatic Random Variate Generation for Unbounded Densities},
 ACM Trans. Model. Comput. Simul. 17(4), pp.18.
+
+@anchor{bib:KLPa05}
+@item [KLPa05]
+@sc{R. Karawatzki, J. Leydold, and K. P@"otzelberger} (2005).
+@i{Automatic Markov chain Monte Carlo procedures for sampling from multivariate distributions},
+Research Report Series of the Department of Statistics and Mathematics 27, 
+WU Wien, Augasse 2--6, A-1090 Wien, Austria,
+@uref{http://epub.wu-wien.ac.at/english/}.
 
 @anchor{bib:LJa98}
 @item [LJa98]

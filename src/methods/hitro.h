@@ -44,6 +44,8 @@
 
    =OPTIONAL mode, center, bounding rectangle for acceptance region
 
+   =REF [KLPa05]
+
    =SPEED Set-up: fast, Sampling: fast
 
    =REINIT not implemented

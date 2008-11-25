@@ -66,7 +66,7 @@ EXAMPLES_EXE := $(EXAMPLES_SRC:.c=.exe)
 
 # Test suite
 UNURANTEST_SRC := $(wildcard $(TESTS_DIR)/testdistributions/*.c) \
-		  $(TESTS_DIR)/testroutines.c
+		  $(TESTS_DIR)/testroutines.c $(TESTS_DIR)/testcounter.c
 UNURANTEST_OBJ := $(UNURANTEST_SRC:.c=.obj)
 
 TESTS_CONF := $(filter-out $(TESTS_DIR)/README.conf \

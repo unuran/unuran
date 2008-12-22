@@ -145,7 +145,7 @@ double _unur_cephes_erfc( double a );
 double _unur_cephes_erf( double x );
 
 /* ndtri.c */
-double _unur_cephes_ndtri( double y0 );
+double _unur_cephes_ndtri( double yval );
 
 /* polevl.c */
 double _unur_cephes_polevl( double x, double coef[], int N );

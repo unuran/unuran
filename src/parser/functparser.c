@@ -514,7 +514,7 @@ static int _unur_fstr_reorganize (struct ftreenode *node);
 /* Auxilliary routines                                                       */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_fstr_next_token (struct parser_data *pdata, int *token, char **symbol);
+static int _unur_fstr_next_token (struct parser_data *pdata, int *token, char **symb);
 /*---------------------------------------------------------------------------*/
 /* Get next token from list.                                                 */
 /*---------------------------------------------------------------------------*/

@@ -92,12 +92,12 @@
 
 /* =ROUTINES */
 
-UNUR_URNG *unur_urng_fvoid_new( double (*random)(void *state), void (*reset)(void *state) );
+UNUR_URNG *unur_urng_fvoid_new( double (*urand)(void *state), void (*reset)(void *state) );
 /*
-   Make a URNG object for a genertor that consists of a single
-   function call.
+   Make a URNG object for a generator that consists of a single
+   function call @var{urand}.
 
-   If there is no reset function use NULL for the second argument.
+   If there is no @var{reset} function use NULL for the second argument.
 */
 
 /* =END */

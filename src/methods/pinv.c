@@ -65,7 +65,7 @@
  *         interpolating polynomial).                                        *
  *            _unur_pinv_computational_domain()                              *
  *            _unur_pinv_cut()                                               *
- *            _unur_pinv_tailprob()                                          *
+ *            _unur_pinv_cut_CDF()                                           *
  *                                                                           *
  *   1d.   Compute area below PDF over relevant domain with requested        *
  *         accuracy and store subinterval boundaries and corresponding       *

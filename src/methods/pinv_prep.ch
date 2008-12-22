@@ -548,7 +548,12 @@ _unur_pinv_cut( struct unur_gen *gen, double dom, double w, double dw, double cr
       return x;
     
     /* compute next point */
-    xnew = x + fx/(lc*df) * ( pow(crit*fabs(df)*(lc+1.)/(fx*fx),lc/(lc+1.)) - 1.);
+    if (_unur_iszero(lc)) {
+      xnew = x + fx/df * log(crit*fabs(df)/(fx*fx));
+    }
+    else {
+      xnew = x + fx/(lc*df) * ( pow(crit*fabs(df)*(lc+1.)/(fx*fx),lc/(lc+1.)) - 1.);
+    }
 
     /* check results */
     if (! _unur_isfinite(xnew)) {

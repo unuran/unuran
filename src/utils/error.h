@@ -154,7 +154,7 @@ void unur_reset_errno ( void );
    (i.e., no errors occured).
 */
 
-const char *unur_get_strerror ( const int unur_errno );
+const char *unur_get_strerror ( const int errnocode );
 /*
   Get a short description for error code value.
 */

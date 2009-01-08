@@ -1,4 +1,12 @@
 
+Version 1.?.?: ???? 2008
+
+	* Methods:
+
+	- AROU: fixed problems with round-off errors when computing
+	  tangents.
+
+
 Version 1.3.0: November 2008
 
 	* Methods:

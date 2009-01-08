@@ -1805,21 +1805,33 @@ _unur_arou_segment_parameter( struct unur_gen *gen, struct unur_arou_segment *se
      /*----------------------------------------------------------------------*/
 {
   double coeff_det, cramer_det[2];
-  double norm_vertex;
-  double det_bound;
+  double norm_vertex;      /* sum of 1-norms of vertices */
+  double diff_tangents;    /* difference between coefficients of tangents */
+  double det_bound;        /* bound for determinant for Cramer's rule */
   double tmp_a, tmp_b;
 
   /* check arguments */
   CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_AROU_GEN,UNUR_ERR_COOKIE);
   CHECK_NULL(seg,UNUR_ERR_NULL);  COOKIE_CHECK(seg,CK_AROU_SEG,UNUR_ERR_COOKIE);
 
+  /* sum of 1-norms of vertices */
+  norm_vertex = fabs(seg->ltp[0]) + fabs(seg->ltp[1]) + fabs(seg->rtp[0]) + fabs(seg->rtp[1]);
+
   /* area inside the squeeze */
   seg->Ain = (seg->ltp[1] * seg->rtp[0] - seg->ltp[0] * seg->rtp[1]) / 2.;
+
   /* due to our ordering of construction points, seg->Ain must be >= 0 ! */
   if( seg->Ain < 0. ) {
-    /* This should not happen:
-       non-ascending ordering of construction points */
-    _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+    /* this could happen by round-off errors when the segment has angle extremely
+       close to 0. Check this.  */
+    if (fabs(seg->Ain) < 1.e-8 * norm_vertex) {
+      seg->Ain = seg->Aout = 0.;
+    }
+    else {
+      /* This should not happen:
+	 non-ascending ordering of construction points */
+      _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+    }
     return UNUR_ERR_SILENT;
   }
 
@@ -1842,30 +1854,34 @@ _unur_arou_segment_parameter( struct unur_gen *gen, struct unur_arou_segment *se
 	    coeff_det == cramer_det[0] == cramer_det[1] == 0.
   */
 
-  /* sum of 1-norms of vertices (notice that u > 0 by assumption) */
-  norm_vertex = fabs(seg->ltp[0]) + seg->ltp[1] + fabs(seg->rtp[0]) + seg->rtp[1];
-
   /* we to not allow that the outer triangles becomes too large.
      so if the 1-norm of intersection point is too large compared
      to norm_vertex we assume that this triangle is unbounded.
      we thus avoid numerical errors.
      (we use the 1-norm here since it much easier to handle.)
 
-     (However this might also happen due to roundoff errors,
+     However, this might also happen due to roundoff errors,
      when the real position is extremely close to the secant.
-     But at least we are on the save side.)
+     But at least we are on the save side.
+     We only make an exception when coeff_det == 0, since otherwise there
+     might be some problems with distributions like U(1,2).
   */
   det_bound = fabs(coeff_det) * norm_vertex * MAX_NORM_OF_INTERSECTION_POINT;
 
-  if ( fabs(cramer_det[0]) > det_bound || fabs(cramer_det[1]) > det_bound ) {
-    /* case: triangle is assumed to be unbounded */	     
-    /*      _unur_warning(gen->genid,UNUR_ERR_GENERIC,"outer triangle assumed unbounded  1"); */
-    seg->Aout = INFINITY;
-    return UNUR_ERR_INF;
-  }
+  /* difference between coefficents of tangents */
+  diff_tangents = ( fabs(seg->dltp[0] - seg->drtp[0]) + fabs(seg->dltp[1] - seg->drtp[1])
+		    + fabs(seg->dltp[2] - seg->drtp[2]) );
 
   /* case: intersection point exists and is unique */
-  if (!_unur_iszero(coeff_det)) {
+  if (!_unur_iszero(coeff_det) && !_unur_iszero(diff_tangents)) {
+
+    /* first check whether we can compute the intersection point */
+    if ( fabs(cramer_det[0]) > det_bound || fabs(cramer_det[1]) > det_bound ) {
+      /* case: triangle is assumed to be unbounded */	     
+      /*      _unur_warning(gen->genid,UNUR_ERR_GENERIC,"outer triangle assumed unbounded  1"); */
+      seg->Aout = INFINITY;
+      return UNUR_ERR_INF;
+    }
 
     /* compute intersection point */
     seg->mid[0] = cramer_det[0] / coeff_det;

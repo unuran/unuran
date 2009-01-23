@@ -192,6 +192,12 @@ _unur_pinv_searchborder (struct unur_gen *gen, double x0, double bound,
   fllim = PDF(x0) * PINV_PDFLLIM;
   fulim = 1.e4 * fllim;
 
+  /* we already have checked PDF(center). but who knowns. */
+  if (fllim <= 0.) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF(center) too small");
+    return INFINITY;
+  }
+
   /* starting point */
   xl = x0; 
   fl = INFINITY;
@@ -207,6 +213,12 @@ _unur_pinv_searchborder (struct unur_gen *gen, double x0, double bound,
   }
   xs = x; fs = fx;
 
+  /* check sign */
+  if (fx < 0.) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF(x) < 0");
+    return INFINITY;
+  }
+
   /* decrease length of bracket if necessary */
   while (!_unur_FP_same(xs,xl)) {
 
@@ -218,6 +230,11 @@ _unur_pinv_searchborder (struct unur_gen *gen, double x0, double bound,
     /* new point */
     x = xs/2. + xl/2.;
     fx = PDF(x);
+
+    if (fx < 0.) {
+      _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF(x) < 0");
+      return INFINITY;
+    }
 
     /* check PDF at new point */
     if (fx < fllim) {

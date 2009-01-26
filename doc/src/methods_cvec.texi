@@ -7,5 +7,5 @@ sample with @command{unur_sample_vec}
 NORTA: Requires rank correlation matrix and marginal distributions. @*
 VNROU: Requires the PDF. @*
 MVSTD: Generator for built-in standard distributions.  @*
-MVSTD: Requires PDF and gradiant of PDF.
+MVTDR: Requires PDF and gradiant of PDF.
 @end cartouche

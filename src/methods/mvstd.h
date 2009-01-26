@@ -37,7 +37,7 @@
  *****************************************************************************/
 
 /* 
-   =newMETHOD  MVSTD   MultiVariate continuous STandarD distributions
+   =METHOD  MVSTD   MultiVariate continuous STandarD distributions
 
    =UP  Methods_for_CVEC
 

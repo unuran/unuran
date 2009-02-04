@@ -49,8 +49,8 @@ struct unur_cstd_gen {
 
   int    flag;            /* sometimes it is convenient to have a flag       */
 
-  double  umin;           /* cdf at left boundary of domain                  */
-  double  umax;           /* cdf at right boundary of domain                 */
+  double  Umin;           /* cdf at left boundary of domain                  */
+  double  Umax;           /* cdf at right boundary of domain                 */
 
   int  is_inversion;      /* indicate whether method is inversion method     */     
   const char *sample_routine_name; /* name of sampling routine               */

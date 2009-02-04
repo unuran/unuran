@@ -428,8 +428,8 @@ _unur_dstd_create( struct unur_par *par )
   GEN->sample_routine_name = NULL ;  /* name of sampling routine  */
 
   /* copy some parameters into generator object */
-  GEN->umin        = 0;    /* cdf at left boundary of domain   */
-  GEN->umax        = 1;    /* cdf at right boundary of domain  */
+  GEN->Umin        = 0;    /* cdf at left boundary of domain   */
+  GEN->Umax        = 1;    /* cdf at right boundary of domain  */
 
 #ifdef UNUR_ENABLE_INFO
   /* set function for creating info string */
@@ -598,7 +598,7 @@ _unur_dstd_debug_init( const struct unur_gen *gen )
   fprintf(LOG,"\n%s:\n",gen->genid);
 
   if (!(gen->distr->set & UNUR_DISTR_SET_STDDOMAIN)) {
-    fprintf(LOG,"%s: domain has been changed. U in (%g,%g)\n",gen->genid,GEN->umin,GEN->umax);
+    fprintf(LOG,"%s: domain has been changed. U in (%g,%g)\n",gen->genid,GEN->Umin,GEN->Umax);
     fprintf(LOG,"%s:\n",gen->genid);
   }
 

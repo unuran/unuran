@@ -50,8 +50,8 @@ struct unur_dstd_gen {
   int    *gen_iparam;     /* integer parameters for generator                */
   int     n_gen_iparam;   /* number of integer parameters for the generator  */
 
-  double  umin;           /* cdf at left boundary of domain                  */
-  double  umax;           /* cdf at right boundary of domain                 */
+  double  Umin;           /* cdf at left boundary of domain                  */
+  double  Umax;           /* cdf at right boundary of domain                 */
   int  is_inversion;      /* indicate whether method is inversion method     */     
   const char *sample_routine_name; /* name of sampling routine               */
 };

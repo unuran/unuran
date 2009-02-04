@@ -383,8 +383,8 @@ unur_cstd_chg_truncated( struct unur_gen *gen, double left, double right )
   /* copy new boundaries into generator object */
   DISTR.trunc[0] = left;
   DISTR.trunc[1] = right;
-  GEN->umin = Umin;
-  GEN->umax = Umax;
+  GEN->Umin = Umin;
+  GEN->Umax = Umax;
 
   /* changelog */
   gen->distr->set |= UNUR_DISTR_SET_TRUNCATED;
@@ -558,8 +558,8 @@ _unur_cstd_create( struct unur_par *par )
   GEN->sample_routine_name = NULL ;  /* name of sampling routine             */
 
   /* copy some parameters into generator object */
-  GEN->umin        = 0;    /* cdf at left boundary of domain                 */
-  GEN->umax        = 1;    /* cdf at right boundary of domain                */
+  GEN->Umin        = 0;    /* cdf at left boundary of domain                 */
+  GEN->Umax        = 1;    /* cdf at right boundary of domain                */
 
   /* GEN->is_inversion is set in _unur_cstd_init() */
 
@@ -607,9 +607,9 @@ _unur_cstd_check_par( struct unur_gen *gen )
       return UNUR_ERR_GEN_DATA;
     }
 
-    /* compute umin and umax */
-    GEN->umin = (DISTR.trunc[0] > -INFINITY) ? CDF(DISTR.trunc[0]) : 0.;
-    GEN->umax = (DISTR.trunc[1] < INFINITY)  ? CDF(DISTR.trunc[1]) : 1.;
+    /* compute Umin and Umax */
+    GEN->Umin = (DISTR.trunc[0] > -INFINITY) ? CDF(DISTR.trunc[0]) : 0.;
+    GEN->Umax = (DISTR.trunc[1] < INFINITY)  ? CDF(DISTR.trunc[1]) : 1.;
   }
 
   return UNUR_SUCCESS;
@@ -718,7 +718,7 @@ _unur_cstd_sample_inv( struct unur_gen *gen )
   if (!DISTR.invcdf) return INFINITY;
 
   /* sample from uniform random number generator */
-  while (_unur_iszero(U = GEN->umin + _unur_call_urng(gen->urng) * (GEN->umax-GEN->umin)));
+  while (_unur_iszero(U = GEN->Umin + _unur_call_urng(gen->urng) * (GEN->Umax-GEN->Umin)));
 
   /* compute inverse CDF */
   X = DISTR.invcdf(U,gen->distr);
@@ -770,7 +770,7 @@ unur_cstd_eval_invcdf( const struct unur_gen *gen, double u )
   if (u>=1.) return DISTR.trunc[1];
 
   /* rescale given u */
-  u = GEN->umin + u * (GEN->umax - GEN->umin);
+  u = GEN->Umin + u * (GEN->Umax - GEN->Umin);
 
   /* compute inverse CDF */
   x = DISTR.invcdf(u,gen->distr);
@@ -876,7 +876,7 @@ _unur_cstd_debug_init( struct unur_gen *gen )
   fprintf(LOG,"\n%s:\n",gen->genid);
 
   if (!(gen->distr->set & UNUR_DISTR_SET_STDDOMAIN)) {
-    fprintf(LOG,"%s: domain has been changed. U in (%g,%g)\n",gen->genid,GEN->umin,GEN->umax);
+    fprintf(LOG,"%s: domain has been changed. U in (%g,%g)\n",gen->genid,GEN->Umin,GEN->Umax);
     fprintf(LOG,"%s:\n",gen->genid);
   }
 
@@ -905,7 +905,7 @@ _unur_cstd_debug_chg_pdfparams( struct unur_gen *gen )
   for( i=0; i<DISTR.n_params; i++ )
       fprintf(LOG,"%s:\tparam[%d] = %g\n",gen->genid,i,DISTR.params[i]);
   if (gen->distr->set & UNUR_DISTR_SET_TRUNCATED)
-    fprintf(LOG,"%s:\tU in (%g,%g)\n",gen->genid,GEN->umin,GEN->umax);
+    fprintf(LOG,"%s:\tU in (%g,%g)\n",gen->genid,GEN->Umin,GEN->Umax);
 
 } /* end of _unur_cstd_debug_chg_pdfparams() */
 
@@ -929,7 +929,7 @@ _unur_cstd_debug_chg_truncated( struct unur_gen *gen )
 
   fprintf(LOG,"%s: domain of truncated distribution changed:\n",gen->genid);
   fprintf(LOG,"%s:\tdomain = (%g, %g)\n",gen->genid, DISTR.trunc[0], DISTR.trunc[1]);
-  fprintf(LOG,"%s:\tU in (%g,%g)\n",gen->genid,GEN->umin,GEN->umax);
+  fprintf(LOG,"%s:\tU in (%g,%g)\n",gen->genid,GEN->Umin,GEN->Umax);
 
 } /* end of _unur_cstd_debug_chg_truncated() */
 

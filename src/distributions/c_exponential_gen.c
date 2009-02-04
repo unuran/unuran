@@ -117,7 +117,7 @@ double _unur_stdgen_sample_exponential_inv( struct unur_gen *gen )
   COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
 
   /* sample from uniform random number generator */
-  U = GEN->umin + uniform() * (GEN->umax-GEN->umin);
+  U = GEN->Umin + uniform() * (GEN->Umax-GEN->Umin);
 
   /* transform to random variate */
   X = - log( 1. - U );

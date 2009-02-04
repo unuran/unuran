@@ -375,17 +375,32 @@ _unur_invcdf_burr( double U, const UNUR_DISTR *distr )
 int
 _unur_set_params_burr( UNUR_DISTR *distr, const double *params, int n_params )
 {
-
-  /* check new parameter for generator */
-  if (n_params < 2) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few"); return UNUR_ERR_DISTR_NPARAMS; }
-  if (n_params > 3) {
-    _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
-    n_params = 3; }
   CHECK_NULL(params,UNUR_ERR_NULL);
 
   /* check number of parameters for == 3 */
   switch (distr->id) {
+  case UNUR_DISTR_BURR_I:
+    if (n_params > 1) {
+      _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
+      n_params = 1;
+    }
+    break;
+
+  case UNUR_DISTR_BURR_II:
+  case UNUR_DISTR_BURR_VII:
+  case UNUR_DISTR_BURR_VIII:
+  case UNUR_DISTR_BURR_X:
+  case UNUR_DISTR_BURR_XI:
+    if (n_params < 2) {
+      _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few");
+      return UNUR_ERR_DISTR_NPARAMS;
+    }
+    if (n_params > 2) {
+      _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
+      n_params = 2;
+    }
+    break;
+
   case UNUR_DISTR_BURR_III:
   case UNUR_DISTR_BURR_IV:
   case UNUR_DISTR_BURR_V:
@@ -394,13 +409,17 @@ _unur_set_params_burr( UNUR_DISTR *distr, const double *params, int n_params )
   case UNUR_DISTR_BURR_XII:
     if (n_params < 3) {
       _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few");
-      free( distr ); return UNUR_ERR_DISTR_NPARAMS;
+      return UNUR_ERR_DISTR_NPARAMS;
     }
-  default: /* all other cases */
-    if (n_params == 3) {
+    if (n_params > 3) {
       _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
-      n_params = 2;
+      n_params = 3;
     }
+    break;
+
+  default:
+    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"unkown type");
+    return UNUR_ERR_DISTR_NPARAMS;
   }
 
   /* check parameters */
@@ -467,6 +486,11 @@ unur_distr_burr( const double *params, int n_params )
 {
   register struct unur_distr *distr;
 
+  if (n_params < 1) {
+    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few"); 
+    return NULL;
+  }
+
   /* get new (empty) distribution object */
   distr = unur_distr_cont_new();
 
@@ -500,7 +524,8 @@ unur_distr_burr( const double *params, int n_params )
   /* DISTR.pdf  = _unur_pdf_burr;  pointer to PDF                  */
   /* DISTR.dpdf = _unur_dpdf_burr; pointer to derivative of PDF    */
   DISTR.cdf     = _unur_cdf_burr;     /* pointer to CDF           */
-  DISTR.invcdf  = _unur_invcdf_burr;  /* pointer to inverse CDF   */
+  if (distr->id != UNUR_DISTR_BURR_XI) 
+    DISTR.invcdf  = _unur_invcdf_burr;  /* pointer to inverse CDF   */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

@@ -71,6 +71,7 @@ static const char distr_name[] = "lomax";
 static double _unur_pdf_lomax( double x, const UNUR_DISTR *distr );
 static double _unur_dpdf_lomax( double x, const UNUR_DISTR *distr );
 static double _unur_cdf_lomax( double x, const UNUR_DISTR *distr );
+static double _unur_invcdf_lomax( double u, const UNUR_DISTR *distr );
 
 static int _unur_upd_mode_lomax( UNUR_DISTR *distr );
 static int _unur_upd_area_lomax( UNUR_DISTR *distr );
@@ -108,6 +109,18 @@ _unur_cdf_lomax( double x, const UNUR_DISTR *distr )
   register const double *params = DISTR.params;
   return ( (x<0.) ? 0. : 1. - pow((C/(x+C)),a) );
 } /* end of _unur_cdf_lomax() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_invcdf_lomax( double U, const UNUR_DISTR *distr )
+{ 
+  register const double *params = DISTR.params;
+  double X;
+
+  X = C * ( pow(1-U, -1/a) - 1. );
+  return X;
+} /* end of _unur_invcdf_lomax() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -216,9 +229,10 @@ unur_distr_lomax( const double *params, int n_params )
   DISTR.init = _unur_stdgen_lomax_init;
 
   /* functions */
-  DISTR.pdf  = _unur_pdf_lomax;  /* pointer to PDF               */
-  DISTR.dpdf = _unur_dpdf_lomax; /* pointer to derivative of PDF */
-  DISTR.cdf  = _unur_cdf_lomax;  /* pointer to CDF               */
+  DISTR.pdf    = _unur_pdf_lomax;    /* pointer to PDF               */
+  DISTR.dpdf   = _unur_dpdf_lomax;   /* pointer to derivative of PDF */
+  DISTR.cdf    = _unur_cdf_lomax;    /* pointer to CDF               */
+  DISTR.invcdf = _unur_invcdf_lomax; /* pointer to inverse CDF       */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

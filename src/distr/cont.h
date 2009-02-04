@@ -140,10 +140,14 @@ int unur_distr_cont_set_dpdf( UNUR_DISTR *distribution, UNUR_FUNCT_CONT *dpdf );
 /* */
 
 int unur_distr_cont_set_cdf( UNUR_DISTR *distribution, UNUR_FUNCT_CONT *cdf );
+/* */
+
+int unur_distr_cont_set_invcdf( UNUR_DISTR *distribution, UNUR_FUNCT_CONT *invcdf );
 /* 
    Set respective pointer to the probability density function (PDF),
-   the derivative of the probability density function (dPDF) and the
-   cumulative distribution function (CDF) of the @var{distribution}.
+   the derivative of the probability density function (dPDF), the
+   cumulative distribution function (CDF), and the inverse CDF of the
+   @var{distribution}.
    Each of these function pointers must be of type
    @code{double funct(double x, const UNUR_DISTR *distr)}.
 
@@ -199,10 +203,13 @@ UNUR_FUNCT_CONT *unur_distr_cont_get_dpdf( const UNUR_DISTR *distribution );
 /* */
 
 UNUR_FUNCT_CONT *unur_distr_cont_get_cdf( const UNUR_DISTR *distribution );
+/* */
+
+UNUR_FUNCT_CONT *unur_distr_cont_get_invcdf( const UNUR_DISTR *distribution );
 /* 
    Get the respective pointer to the PDF, the derivative of the 
-   PDF and the CDF of the @var{distribution}. The pointer is of type
-   @code{double funct(double x, const UNUR_DISTR *distr)}.
+   PDF, the CDF, and the inverse CDF of the @var{distribution}. The
+   pointer is of type @code{double funct(double x, const UNUR_DISTR *distr)}.
    If the corresponding function is not available for the distribution,
    the NULL pointer is returned.
 */
@@ -214,9 +221,12 @@ double unur_distr_cont_eval_dpdf( double x, const UNUR_DISTR *distribution );
 /* */
 
 double unur_distr_cont_eval_cdf( double x, const UNUR_DISTR *distribution );
+/* */
+
+double unur_distr_cont_eval_invcdf( double u, const UNUR_DISTR *distribution );
 /* 
-   Evaluate the PDF, derivative of the PDF and the CDF, respectively,
-   at @var{x}. 
+   Evaluate the PDF, derivative of the PDF, the CDF, and the inverse
+   CDF at @var{x} and @var{u},respectively. 
    Notice that @var{distribution} must not be the NULL pointer.
    If the corresponding function is not available for the distribution,
    @code{UNUR_INFINITY} is returned and @code{unur_errno} is set to

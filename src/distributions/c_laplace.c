@@ -84,6 +84,7 @@ static const char distr_name[] = "laplace";
 static double _unur_pdf_laplace( double x, const UNUR_DISTR *distr );
 static double _unur_dpdf_laplace( double x, const UNUR_DISTR *distr );
 static double _unur_cdf_laplace( double x, const UNUR_DISTR *distr );
+static double _unur_invcdf_laplace( double u, const UNUR_DISTR *distr );
 static double _unur_logpdf_laplace( double x, const UNUR_DISTR *distr );
 static double _unur_dlogpdf_laplace( double x, const UNUR_DISTR *distr );
 
@@ -155,6 +156,19 @@ _unur_cdf_laplace( double x, const UNUR_DISTR *distr )
   z = (x-theta)/phi;
   return ( (x>theta) ? 1.-0.5 * exp(-z) : 0.5*exp(z) );
 } /* end of _unur_cdf_laplace() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_invcdf_laplace( double U, const UNUR_DISTR *distr )
+{ 
+  register const double *params = DISTR.params;
+  double X;
+
+  U *= 2.;
+  X = (U>1.) ? -log(2.-U) : log(U);
+  return ((DISTR.n_params==0) ? X : theta + phi * X );
+} /* end of _unur_invcdf_laplace() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -263,6 +277,7 @@ unur_distr_laplace( const double *params, int n_params )
   DISTR.dpdf    = _unur_dpdf_laplace;    /* pointer to derivative of PDF */
   DISTR.dlogpdf = _unur_dlogpdf_laplace; /* pointer to deriv. of logPDF  */
   DISTR.cdf     = _unur_cdf_laplace;     /* pointer to CDF               */
+  DISTR.invcdf  = _unur_invcdf_laplace;  /* pointer to inverse CDF       */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

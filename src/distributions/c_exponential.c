@@ -86,6 +86,7 @@ static double _unur_logpdf_exponential( double x, const UNUR_DISTR *distr );
 static double _unur_dpdf_exponential( double x, const UNUR_DISTR *distr );
 static double _unur_dlogpdf_exponential( double x, const UNUR_DISTR *distr );
 static double _unur_cdf_exponential( double x, const UNUR_DISTR *distr );
+static double _unur_invcdf_exponential( double u, const UNUR_DISTR *distr );
 
 static int _unur_upd_mode_exponential( UNUR_DISTR *distr );
 static int _unur_upd_area_exponential( UNUR_DISTR *distr );
@@ -171,6 +172,18 @@ _unur_cdf_exponential( double x, const UNUR_DISTR *distr )
   return ( (x<0.) ? 0. : 1.-exp(-x) );
 
 } /* end of _unur_cdf_exponential() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_invcdf_exponential( double U, const UNUR_DISTR *distr )
+{
+  register const double *params = DISTR.params;
+  double X;
+
+  X = - log( 1. - U );
+  return ((DISTR.n_params==0) ? X : theta + sigma * X);
+} /* end of _unur_invcdf_exponential() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -284,6 +297,7 @@ unur_distr_exponential( const double *params, int n_params )
   DISTR.dpdf    = _unur_dpdf_exponential;    /* pointer to derivative of PDF    */
   DISTR.dlogpdf = _unur_dlogpdf_exponential; /* pointer to derivative of logPDF */
   DISTR.cdf     = _unur_cdf_exponential;     /* pointer to CDF                  */
+  DISTR.invcdf  = _unur_invcdf_exponential;  /* pointer to inverse CDF          */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

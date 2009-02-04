@@ -121,7 +121,7 @@ _unur_stdgen_normal_init( struct unur_par *par, struct unur_gen *gen )
 
   case UNUR_STDGEN_INVERSION:   /* inversion method */
     if (gen) GEN->is_inversion = TRUE;
-    _unur_cstd_set_sampling_routine(par,gen,_unur_stdgen_sample_normal_inv); 
+    _unur_cstd_set_sampling_routine(par,gen,_unur_cstd_sample_inv);
     return UNUR_SUCCESS;
 
   default: /* no such generator */
@@ -138,46 +138,6 @@ _unur_stdgen_normal_init( struct unur_par *par, struct unur_gen *gen )
 /**  Special generators                                                     **/
 /**                                                                         **/
 /*****************************************************************************/
-
-/*---------------------------------------------------------------------------*/
-
-/*****************************************************************************
- *                                                                           *
- * Normal Distribution: inversion method (slow)                              *
- *                                                                           *
- *****************************************************************************
- *                                                                           *
- * FUNCTION:   - samples a random number from the                            *
- *               Normal distribution N(mu,sigma).                            *
- *                                                                           *
- *****************************************************************************
- * UNURAN (c) 2000  W. Hoermann & J. Leydold, Institut f. Statistik, WU Wien *
- *****************************************************************************/
-
-double 
-_unur_stdgen_sample_normal_inv( struct unur_gen *gen )
-     /* Inversion method */
-{
-  /* -X- generator code -X- */
-  double U,X;
-
-  /* check arguments */
-  CHECK_NULL(gen,INFINITY);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
-
-  /* sample from uniform random number generator */
-  while (_unur_iszero(U = GEN->umin + uniform() * (GEN->umax-GEN->umin)));
-
-  /* transform to random variate */
-  X = _unur_sf_inv_cdfnormal(U);
-
-  /* -X- end of generator code -X- */
-
-  return ((DISTR.n_params==0) ? X : mu + sigma * X );
-
-} /* end of _unur_stdgen_sample_normal_inv() */
-
-/*---------------------------------------------------------------------------*/
 
 /*****************************************************************************
  *                                                                           *

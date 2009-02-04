@@ -90,7 +90,7 @@ _unur_stdgen_burr_init( struct unur_par *par, struct unur_gen *gen )
       return UNUR_ERR_GEN_CONDITION;
     }
     if (gen) GEN->is_inversion = TRUE;
-    _unur_cstd_set_sampling_routine(par,gen,_unur_stdgen_sample_burr_inv); 
+    _unur_cstd_set_sampling_routine(par,gen,_unur_cstd_sample_inv); 
     return UNUR_SUCCESS;
 
   default: /* no such generator */
@@ -107,81 +107,6 @@ _unur_stdgen_burr_init( struct unur_par *par, struct unur_gen *gen )
 /**  Special generators                                                     **/
 /**                                                                         **/
 /*****************************************************************************/
-
-/*---------------------------------------------------------------------------*/
-
-double _unur_stdgen_sample_burr_inv( struct unur_gen *gen )
-     /* Inversion method                                                     */
-{
-  /* -X- generator code -X- */
-  double U, Y;
-
-  /* check arguments */
-  CHECK_NULL(gen,INFINITY);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
-
-  /* sample from uniform random number generator */
-  while (_unur_iszero(U = GEN->umin + uniform() * (GEN->umax - GEN->umin)));
-
-  /* transform to random variate */
-  switch (burr_type) {
-
-  case UNUR_DISTR_BURR_I:
-    return U;
-
-  case UNUR_DISTR_BURR_II:
-    Y = exp( -log(U)/k );  /* U^(-1/k) */
-    return ( -log( Y - 1. ) );
-
-  case UNUR_DISTR_BURR_III:
-    Y = exp( -log(U)/k );  /* U^(-1/k) */
-    return ( exp( -log( Y - 1. )/c ) );
-
-  case UNUR_DISTR_BURR_IV:
-    Y = exp( -log(U)/k );   /* U^(-1/k) */
-    Y = exp( c * log( Y - 1. )) + 1.;
-    return (c/Y);
-
-  case UNUR_DISTR_BURR_V:
-    Y = exp( -log(U)/k );   /* U^(-1/k) */
-    return atan( -log( (Y - 1.) / c ) );
-
-  case UNUR_DISTR_BURR_VI:
-    Y = exp( -log(U)/k );   /* U^(-1/k) */
-    Y = -log( (Y - 1.) / c)/k;
-    return log( Y + sqrt(Y * Y +1.));
-
-  case UNUR_DISTR_BURR_VII:
-    Y = exp( log(U)/k );    /* U^(1/k) */
-    return ( log(2. * Y / (2. - 2.*Y)) / 2. );
-
-  case UNUR_DISTR_BURR_VIII:
-    Y = exp( log(U)/k );    /* U^(1/k) */
-    return ( log( tan( Y * M_PI/2. ) ) );
-
-  case UNUR_DISTR_BURR_IX:
-    Y = 1. + 2. * U / (c * (1.-U));
-    return log( exp( log(Y) / k) - 1. );
-
-  case UNUR_DISTR_BURR_X:
-  Y = exp( log(U)/k );   /* U^(1/k) */
-    return ( sqrt( -log( 1. - Y ) ) );
-
-  case UNUR_DISTR_BURR_XII:
-    Y = exp( -log(U)/k );   /* U^(-1/k) */
-    return ( exp( log( Y - 1.) / c) );
-
-  case UNUR_DISTR_BURR_XI:
-  default:
-    _unur_error(NULL,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    return INFINITY;
-  }
-
-  /* -X- end of generator code -X- */
-
-} /* end of _unur_stdgen_sample_burr_inv() */
-
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 #undef burr_type

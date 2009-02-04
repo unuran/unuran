@@ -74,6 +74,7 @@ static double _unur_logpdf_cauchy( double x, const UNUR_DISTR *distr );
 static double _unur_dpdf_cauchy( double x, const UNUR_DISTR *distr );
 static double _unur_dlogpdf_cauchy( double x, const UNUR_DISTR *distr );
 static double _unur_cdf_cauchy( double x, const UNUR_DISTR *distr );
+static double _unur_invcdf_cauchy( double u, const UNUR_DISTR *distr );
 
 static int _unur_upd_mode_cauchy( UNUR_DISTR *distr );
 static int _unur_upd_area_cauchy( UNUR_DISTR *distr );
@@ -169,6 +170,18 @@ _unur_cdf_cauchy(double x, const UNUR_DISTR *distr)
   return Fx;
 
 } /* end of _unur_cdf_cauchy() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_invcdf_cauchy(double u, const UNUR_DISTR *distr)
+{
+  register const double *params = DISTR.params;
+  double X;
+
+  X = tan( M_PI * (u - 0.5) );
+  return ((DISTR.n_params==0) ? X : theta + lambda * X );
+} /* end of _unur_invcdf_cauchy() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -280,6 +293,7 @@ unur_distr_cauchy( const double *params, int n_params )
   DISTR.dpdf    = _unur_dpdf_cauchy;    /* pointer to derivative of PDF    */
   DISTR.dlogpdf = _unur_dlogpdf_cauchy; /* pointer to derivative of logPDF */
   DISTR.cdf     = _unur_cdf_cauchy;     /* pointer to CDF                  */
+  DISTR.invcdf  = _unur_invcdf_cauchy;  /* pointer to inverse CDF          */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

@@ -42,6 +42,7 @@ struct unur_distr_cont {
   UNUR_FUNCT_CONT *pdf;         /* pointer to PDF                            */
   UNUR_FUNCT_CONT *dpdf;        /* pointer to derivative of PDF              */
   UNUR_FUNCT_CONT *cdf;         /* pointer to CDF                            */
+  UNUR_FUNCT_CONT *invcdf;      /* pointer to inverse of CDF                 */
   UNUR_FUNCT_CONT *logpdf;      /* pointer to logPDF                         */
   UNUR_FUNCT_CONT *dlogpdf;     /* pointer to derivative of logPDF           */
   UNUR_FUNCT_CONT *logcdf;      /* pointer to logCDF                         */

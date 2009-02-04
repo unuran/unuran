@@ -94,6 +94,7 @@ static const char distr_name[] = "extremeII";
 static double _unur_pdf_extremeII( double x, const UNUR_DISTR *distr );
 static double _unur_dpdf_extremeII( double x, const UNUR_DISTR *distr );
 static double _unur_cdf_extremeII( double x, const UNUR_DISTR *distr );
+static double _unur_invcdf_extremeII( double u, const UNUR_DISTR *distr );
 
 static int _unur_upd_mode_extremeII( UNUR_DISTR *distr );
 static int _unur_upd_area_extremeII( UNUR_DISTR *distr );
@@ -165,6 +166,18 @@ _unur_cdf_extremeII( double x, const UNUR_DISTR *distr )
   return ( exp( -pow( x, -k ) ) );
 
 } /* end of _unur_cdf_extremeII() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_invcdf_extremeII( double U, const UNUR_DISTR *distr )
+{ 
+  register const double *params = DISTR.params;
+  double X;
+
+  X = exp( -log( -log(U) )/k );
+  return ((DISTR.n_params==1) ? X : zeta + theta * X );
+} /* end of _unur_invcdf_extremeII() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -279,9 +292,10 @@ unur_distr_extremeII( const double *params, int n_params )
   DISTR.init = _unur_stdgen_extremeII_init;
 
   /* functions */
-  DISTR.pdf  = _unur_pdf_extremeII;  /* pointer to PDF                  */
-  DISTR.dpdf = _unur_dpdf_extremeII; /* pointer to derivative of PDF    */
-  DISTR.cdf  = _unur_cdf_extremeII;  /* pointer to CDF                  */
+  DISTR.pdf    = _unur_pdf_extremeII;    /* pointer to PDF                */
+  DISTR.dpdf   = _unur_dpdf_extremeII;   /* pointer to derivative of PDF  */
+  DISTR.cdf    = _unur_cdf_extremeII;    /* pointer to CDF                */
+  DISTR.invcdf = _unur_invcdf_extremeII; /* pointer to inverse CDF        */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

@@ -70,6 +70,7 @@ static const char distr_name[] = "triangular";
 static double _unur_pdf_triangular( double x, const UNUR_DISTR *distr );
 static double _unur_dpdf_triangular( double x, const UNUR_DISTR *distr );
 static double _unur_cdf_triangular( double x, const UNUR_DISTR *distr );
+static double _unur_invcdf_triangular( double u, const UNUR_DISTR *distr );
 
 static int _unur_upd_mode_triangular( UNUR_DISTR *distr );
 static int _unur_upd_area_triangular( UNUR_DISTR *distr );
@@ -128,6 +129,24 @@ _unur_cdf_triangular( double x, const UNUR_DISTR *distr )
   /* otherwise */
   return 1.;
 } /* end of _unur_cdf_triangular() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_invcdf_triangular( double U, const UNUR_DISTR *distr )
+{ 
+  const double *params = DISTR.params;
+  double tmp,X;
+
+  if (U<=H) {
+    X = sqrt(H*U);
+  }
+  else {
+    tmp = (1.-H)*(1.-U);
+    X = (tmp>0.) ? (1.-sqrt(tmp)) : 1.;
+  }
+  return X;
+} /* end of _unur_invcdf_triangular() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -228,9 +247,10 @@ unur_distr_triangular( const double *params, int n_params )
   DISTR.init = _unur_stdgen_triangular_init;
 
   /* functions */
-  DISTR.pdf  = _unur_pdf_triangular;  /* pointer to PDF               */
-  DISTR.dpdf = _unur_dpdf_triangular; /* pointer to derivative of PDF */
-  DISTR.cdf  = _unur_cdf_triangular;  /* pointer to CDF               */
+  DISTR.pdf    = _unur_pdf_triangular;    /* pointer to PDF               */
+  DISTR.dpdf   = _unur_dpdf_triangular;   /* pointer to derivative of PDF */
+  DISTR.cdf    = _unur_cdf_triangular;    /* pointer to CDF               */
+  DISTR.invcdf = _unur_invcdf_triangular; /* pointer to inverse CDF       */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

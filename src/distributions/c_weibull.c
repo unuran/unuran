@@ -88,6 +88,7 @@ static const char distr_name[] = "weibull";
 static double _unur_pdf_weibull( double x, const UNUR_DISTR *distr );
 static double _unur_dpdf_weibull( double x, const UNUR_DISTR *distr );
 static double _unur_cdf_weibull( double x, const UNUR_DISTR *distr );
+static double _unur_invcdf_weibull( double u, const UNUR_DISTR *distr );
 
 static int _unur_upd_mode_weibull( UNUR_DISTR *distr );
 static int _unur_upd_area_weibull( UNUR_DISTR *distr );
@@ -169,6 +170,18 @@ _unur_cdf_weibull( double x, const UNUR_DISTR *distr )
   return (1. - exp(-pow (x, c)));
 
 } /* end of _unur_cdf_weibull() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_invcdf_weibull( double U, const UNUR_DISTR *distr )
+{ 
+  register const double *params = DISTR.params;
+  double X;
+
+  X = pow( -log(1.-U), 1./c );
+  return ((DISTR.n_params==1) ? X : zeta + alpha * X );
+} /* end of _unur_invcdf_weibull() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -281,9 +294,10 @@ unur_distr_weibull( const double *params, int n_params )
   DISTR.init = _unur_stdgen_weibull_init;
 
   /* functions */
-  DISTR.pdf  = _unur_pdf_weibull;  /* pointer to PDF               */
-  DISTR.dpdf = _unur_dpdf_weibull; /* pointer to derivative of PDF */
-  DISTR.cdf  = _unur_cdf_weibull;  /* pointer to CDF               */
+  DISTR.pdf    = _unur_pdf_weibull;    /* pointer to PDF               */
+  DISTR.dpdf   = _unur_dpdf_weibull;   /* pointer to derivative of PDF */
+  DISTR.cdf    = _unur_cdf_weibull;    /* pointer to CDF               */
+  DISTR.invcdf = _unur_invcdf_weibull; /* pointer to inverse CDF       */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

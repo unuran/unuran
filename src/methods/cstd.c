@@ -683,9 +683,96 @@ _unur_cstd_free( struct unur_gen *gen )
 **/
 
 /*****************************************************************************/
-/**  Auxilliary Routines                                                    **/
+
+double
+_unur_cstd_sample_inv( struct unur_gen *gen ) 
+     /*----------------------------------------------------------------------*/
+     /* generic inversion method.                                            */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   double (sample from random variate)                                */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return INFINITY                                                    */
+     /*----------------------------------------------------------------------*/
+{
+  double U,X;
+
+  if (!DISTR.invcdf) return INFINITY;
+
+  /* sample from uniform random number generator */
+  while (_unur_iszero(U = GEN->umin + _unur_call_urng(gen->urng) * (GEN->umax-GEN->umin)));
+
+  /* compute inverse CDF */
+  X = DISTR.invcdf(U,gen->distr);
+
+  return X;
+
+} /* _unur_cstd_sample_inv() */
+
 /*****************************************************************************/
 
+double
+unur_cstd_eval_invcdf( const struct unur_gen *gen, double u )
+     /*----------------------------------------------------------------------*/
+     /* evaluate inverse CDF at u.                                           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*   u   ... argument for inverse CDF (0<=u<=1, no validation!)         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   double (inverse CDF)                                               */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return INFINITY                                                    */
+     /*----------------------------------------------------------------------*/
+{
+  double x;
+
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, gen, INFINITY );
+  if ( gen->method != UNUR_METH_CSTD ) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_INVALID,"");
+    return INFINITY;
+  }
+  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
+
+  if (!DISTR.invcdf) {
+    /* no inverse CDF available */
+    _unur_error(gen->genid,UNUR_ERR_NO_QUANTILE,"inversion CDF required");
+    return UNUR_INFINITY;
+  } 
+
+  if ( u<0. || u>1.) {
+    _unur_warning(gen->genid,UNUR_ERR_DOMAIN,"argument u not in [0,1]");
+  }
+
+  /* validate argument */
+  if (u<=0.) return DISTR.trunc[0];
+  if (u>=1.) return DISTR.trunc[1];
+
+  /* rescale given u */
+  u = GEN->umin + u * (GEN->umax - GEN->umin);
+
+  /* compute inverse CDF */
+  x = DISTR.invcdf(u,gen->distr);
+
+  /* validate range */
+  if (x<DISTR.trunc[0]) x = DISTR.trunc[0];
+  if (x>DISTR.trunc[1]) x = DISTR.trunc[1];
+
+  return x;
+
+} /* end of unur_cstd_eval_invcdf() */
+
+
+/*****************************************************************************/
+/**  Auxilliary Routines                                                    **/
+/*****************************************************************************/
 
 /*****************************************************************************/
 /**  Debugging utilities                                                    **/
@@ -822,7 +909,7 @@ _unur_cstd_info( struct unur_gen *gen, int help )
   /*   if (help) { */
   /*     _unur_string_append(info,"\n"); */
   /*   } */
-  
+
   /* method */
   _unur_string_append(info,"method: CSTD (special generator for Continuous STandarD distribution)\n");
   _unur_string_append(info,"   variant = %d  %s\n", gen->variant,

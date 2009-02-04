@@ -112,9 +112,6 @@
 /* initialize special generator                                              */
 int _unur_stdgen_beta_init( UNUR_PAR *parameters, UNUR_GEN *generator );
 
-/* Inversion method                                                          */
-/* double _unur_stdgen_sample_beta_inv( UNUR_GEN *generator ); */
-
 /* Acceptance/Rejection from log-logistic hats                               */
 double _unur_stdgen_sample_beta_bb( UNUR_GEN *generator );
 double _unur_stdgen_sample_beta_bc( UNUR_GEN *generator );
@@ -131,18 +128,12 @@ double _unur_stdgen_sample_beta_b1prs( UNUR_GEN *generator );
 /* initialize special generator                                              */
 int _unur_stdgen_burr_init( UNUR_PAR *parameters, UNUR_GEN *generator );
 
-/* Inversion method                                                          */
-double _unur_stdgen_sample_burr_inv( UNUR_GEN *generator );
-
 
 /*---------------------------------------------------------------------------*/
 /*  Cauchy distribution  [2; ch.16, p.299]                                   */
 
 /* initialize special generator                                              */
 int _unur_stdgen_cauchy_init( UNUR_PAR *parameters, UNUR_GEN *generator );
-
-/* Inversion method                                                          */
-double _unur_stdgen_sample_cauchy_inv( UNUR_GEN *generator );
 
 
 /*---------------------------------------------------------------------------*/
@@ -179,18 +170,12 @@ double _unur_stdgen_sample_exponential_inv( UNUR_GEN *generator );
 /* initialize special generator                                              */
 int _unur_stdgen_extremeI_init( UNUR_PAR *parameters, UNUR_GEN *generator );
 
-/* Inversion method                                                          */
-double _unur_stdgen_sample_extremeI_inv( UNUR_GEN *generator );
-
 
 /*---------------------------------------------------------------------------*/
 /*  Extreme value type II distribution  [3; ch.22, p.2]                      */
 
 /* initialize special generator                                              */
 int _unur_stdgen_extremeII_init( UNUR_PAR *parameters, UNUR_GEN *generator );
-
-/* Inversion method                                                          */
-double _unur_stdgen_sample_extremeII_inv( UNUR_GEN *generator );
 
 
 /*---------------------------------------------------------------------------*/
@@ -202,9 +187,6 @@ double _unur_stdgen_sample_extremeII_inv( UNUR_GEN *generator );
 
 /* initialize special generator                                              */
 int _unur_stdgen_gamma_init( UNUR_PAR *parameters, UNUR_GEN *generator );
-
-/* Inversion method                                                          */
-/* double _unur_stdgen_sample_gamma_inv( UNUR_GEN *generator ); */
 
 /* Rejection with log-logistic envelopes                                     */
 double _unur_stdgen_sample_gamma_gll( UNUR_GEN *generator );
@@ -230,18 +212,12 @@ double _unur_stdgen_sample_gig_gigru( UNUR_GEN *generator );
 /* initialize special generator                                              */
 int _unur_stdgen_laplace_init( UNUR_PAR *parameters, UNUR_GEN *generator );
 
-/* Inversion method                                                          */
-double _unur_stdgen_sample_laplace_inv( UNUR_GEN *generator );
-
 
 /*---------------------------------------------------------------------------*/
 /* Logistic distribution  [3; ch.23, p.115]                                  */
 
 /* initialize special generator                                              */
 int _unur_stdgen_logistic_init( UNUR_PAR *parameters, UNUR_GEN *generator );
-
-/* Inversion method                                                          */
-double _unur_stdgen_sample_logistic_inv( UNUR_GEN *generator );
 
 
 /*---------------------------------------------------------------------------*/
@@ -254,18 +230,12 @@ double _unur_stdgen_sample_logistic_inv( UNUR_GEN *generator );
 /* initialize special generator                                              */
 int _unur_stdgen_lomax_init( UNUR_PAR *parameters, UNUR_GEN *generator );
 
-/* Inversion method                                                          */
-double _unur_stdgen_sample_lomax_inv( UNUR_GEN *generator );
-
 
 /*---------------------------------------------------------------------------*/
 /*  Normal distribution  [2; ch.13, p.80]                                    */
 
 /* initialize special generator                                              */
 int _unur_stdgen_normal_init( UNUR_PAR *parameters, UNUR_GEN *generator );
-
-/* Inversion method                                                          */
-double _unur_stdgen_sample_normal_inv( UNUR_GEN *generator );
 
 /* Box-Muller method                                                         */
 double _unur_stdgen_sample_normal_bm( UNUR_GEN *generator );
@@ -297,8 +267,6 @@ double _unur_stdgen_sample_normal_sum( UNUR_GEN *generator );
 /* initialize special generator                                              */
 int _unur_stdgen_pareto_init( UNUR_PAR *parameters, UNUR_GEN *generator );
 
-/* Inversion method                                                          */
-double _unur_stdgen_sample_pareto_inv( UNUR_GEN *generator );
 
 /*---------------------------------------------------------------------------*/
 /* Pearson VI distribution                                                   */
@@ -359,9 +327,6 @@ double _unur_stdgen_sample_slash_slash( UNUR_GEN *generator );
 /* initialize special generator                                              */
 int _unur_stdgen_triangular_init( UNUR_PAR *parameters, UNUR_GEN *generator );
 
-/* Inversion method                                                          */
-double _unur_stdgen_sample_triangular_inv( UNUR_GEN *generator );
-
 
 /*---------------------------------------------------------------------------*/
 /* Uniform distribution  [3; ch.26, p.276]                                   */
@@ -369,18 +334,12 @@ double _unur_stdgen_sample_triangular_inv( UNUR_GEN *generator );
 /* initialize special generator                                              */
 int _unur_stdgen_uniform_init( UNUR_PAR *parameters, UNUR_GEN *generator );
 
-/* Inversion method                                                          */
-double _unur_stdgen_sample_uniform_inv( UNUR_GEN *generator );
-
 
 /*---------------------------------------------------------------------------*/
 /* Weibull distribution  [2; ch.21, p.628]                                   */
 
 /* initialize special generator                                              */
 int _unur_stdgen_weibull_init( UNUR_PAR *parameters, UNUR_GEN *generator );
-
-/* Inversion method                                                          */
-double _unur_stdgen_sample_weibull_inv( UNUR_GEN *generator );
 
 
 /*---------------------------------------------------------------------------*/

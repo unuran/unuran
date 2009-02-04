@@ -73,6 +73,7 @@ static double _unur_dpdf_uniform( double x, const UNUR_DISTR *distr );
 static double _unur_logpdf_uniform( double x, const UNUR_DISTR *distr );
 static double _unur_dlogpdf_uniform( double x, const UNUR_DISTR *distr );
 static double _unur_cdf_uniform( double x, const UNUR_DISTR *distr );
+static double _unur_invcdf_uniform( double u, const UNUR_DISTR *distr );
 
 static int _unur_upd_mode_uniform( UNUR_DISTR *distr );
 static int _unur_upd_area_uniform( UNUR_DISTR *distr );
@@ -140,6 +141,18 @@ _unur_cdf_uniform( double x, const UNUR_DISTR *distr )
   return x;
 
 } /* end of _unur_cdf_uniform() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_invcdf_uniform( double U, const UNUR_DISTR *distr )
+{ 
+  register const double *params = DISTR.params;
+  double X;
+
+  X = (DISTR.n_params==0) ? U : a + U * (b - a);
+  return X;
+} /* end of _unur_invcdf_uniform() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -247,6 +260,7 @@ unur_distr_uniform( const double *params, int n_params )
   DISTR.dpdf    = _unur_dpdf_uniform;    /* pointer to derivative of PDF */
   DISTR.dlogpdf = _unur_dlogpdf_uniform; /* pointer to deriv. of logPDF  */
   DISTR.cdf     = _unur_cdf_uniform;     /* pointer to CDF               */
+  DISTR.invcdf  = _unur_invcdf_uniform;  /* pointer to inverse CDF       */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

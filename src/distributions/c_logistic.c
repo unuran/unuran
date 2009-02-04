@@ -86,6 +86,7 @@ static const char distr_name[] = "logistic";
 static double _unur_pdf_logistic( double x, const UNUR_DISTR *distr );
 static double _unur_dpdf_logistic( double x, const UNUR_DISTR *distr );
 static double _unur_cdf_logistic( double x, const UNUR_DISTR *distr );
+static double _unur_invcdf_logistic( double u, const UNUR_DISTR *distr );
 
 static int _unur_upd_mode_logistic( UNUR_DISTR *distr );
 static int _unur_upd_area_logistic( UNUR_DISTR *distr );
@@ -152,6 +153,18 @@ _unur_cdf_logistic( double x, const UNUR_DISTR *distr )
   return ( 1. / (1. + exp(-x)) );
 
 } /* end of _unur_cdf_logistic() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_invcdf_logistic( double U, const UNUR_DISTR *distr )
+{ 
+  register const double *params = DISTR.params;
+  double X;
+
+  X = -log(1./U - 1.);
+  return ((DISTR.n_params==0) ? X : alpha + beta * X );
+} /* end of _unur_invcdf_logistic() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -258,9 +271,10 @@ unur_distr_logistic( const double *params, int n_params )
   DISTR.init = _unur_stdgen_logistic_init;
 
   /* functions */
-  DISTR.pdf  = _unur_pdf_logistic;  /* pointer to PDF               */
-  DISTR.dpdf = _unur_dpdf_logistic; /* pointer to derivative of PDF */
-  DISTR.cdf  = _unur_cdf_logistic;  /* pointer to CDF               */
+  DISTR.pdf    = _unur_pdf_logistic;    /* pointer to PDF               */
+  DISTR.dpdf   = _unur_dpdf_logistic;   /* pointer to derivative of PDF */
+  DISTR.cdf    = _unur_cdf_logistic;    /* pointer to CDF               */
+  DISTR.invcdf = _unur_invcdf_logistic; /* pointer to inverse CDF       */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

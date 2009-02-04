@@ -71,6 +71,7 @@ static const char distr_name[] = "pareto";
 static double _unur_pdf_pareto( double x, const UNUR_DISTR *distr );
 static double _unur_dpdf_pareto( double x, const UNUR_DISTR *distr );
 static double _unur_cdf_pareto( double x, const UNUR_DISTR *distr );
+static double _unur_invcdf_pareto( double u, const UNUR_DISTR *distr );
 
 static int _unur_upd_mode_pareto( UNUR_DISTR *distr );
 static int _unur_upd_area_pareto( UNUR_DISTR *distr );
@@ -107,6 +108,19 @@ _unur_cdf_pareto( double x, const UNUR_DISTR *distr )
   register const double *params = DISTR.params;
   return ( (x<k) ? 0. : (1. - pow(k/x,a)) );
 } /* end of _unur_cdf_pareto() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_invcdf_pareto( double U, const UNUR_DISTR *distr )
+{ 
+  register const double *params = DISTR.params;
+  double X;
+
+  X = pow(1-U, -1/a);
+  X *= k;
+  return X;
+} /* end of _unur_invcdf_pareto() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -208,9 +222,10 @@ unur_distr_pareto( const double *params, int n_params )
   DISTR.init = _unur_stdgen_pareto_init;
 
   /* functions */
-  DISTR.pdf  = _unur_pdf_pareto;  /* pointer to PDF               */
-  DISTR.dpdf = _unur_dpdf_pareto; /* pointer to derivative of PDF */
-  DISTR.cdf  = _unur_cdf_pareto;  /* pointer to CDF               */
+  DISTR.pdf    = _unur_pdf_pareto;    /* pointer to PDF               */
+  DISTR.dpdf   = _unur_dpdf_pareto;   /* pointer to derivative of PDF */
+  DISTR.cdf    = _unur_cdf_pareto;    /* pointer to CDF               */
+  DISTR.invcdf = _unur_invcdf_pareto; /* pointer to inverse CDF       */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

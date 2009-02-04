@@ -84,7 +84,7 @@ _unur_stdgen_laplace_init( struct unur_par *par, struct unur_gen *gen )
   case 0:  /* DEFAULT */
   case UNUR_STDGEN_INVERSION:   /* inversion method */
     if (gen) GEN->is_inversion = TRUE;
-    _unur_cstd_set_sampling_routine(par,gen,_unur_stdgen_sample_laplace_inv); 
+    _unur_cstd_set_sampling_routine(par,gen,_unur_cstd_sample_inv);
     return UNUR_SUCCESS;
 
   default: /* no such generator */
@@ -101,29 +101,5 @@ _unur_stdgen_laplace_init( struct unur_par *par, struct unur_gen *gen )
 /**  Special generators                                                     **/
 /**                                                                         **/
 /*****************************************************************************/
-
-/*---------------------------------------------------------------------------*/
-
-double _unur_stdgen_sample_laplace_inv( struct unur_gen *gen )
-     /* Inversion method */
-{
-  /* -X- generator code -X- */
-  double U,X;
-
-  /* check arguments */
-  CHECK_NULL(gen,INFINITY);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
-
-  /* sample from uniform random number generator */
-  while (_unur_iszero(U = 2. * (GEN->umin + uniform() * (GEN->umax-GEN->umin))));
-
-  /* transform to random variate */
-  X = (U>1.) ? -log(2.-U) : log(U);
-
-  /* -X- end of generator code -X- */
-
-  return ((DISTR.n_params==0) ? X : theta + phi * X );
-
-} /* end of _unur_stdgen_sample_laplace_inv() */
 
 /*---------------------------------------------------------------------------*/

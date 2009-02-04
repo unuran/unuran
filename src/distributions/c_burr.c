@@ -228,6 +228,7 @@ static const char distr_name[] = "burr";
 /*  static double _unur_pdf_burr(double x, const UNUR_DISTR *distr);    */
 /*  static double _unur_dpdf_burr(double x, const UNUR_DISTR *distr);   */
 static double _unur_cdf_burr(double x, const UNUR_DISTR *distr);
+static double _unur_invcdf_burr(double u, const UNUR_DISTR *distr);
 
 /*  static int _unur_upd_mode_burr( UNUR_DISTR *distr ); */
 /*  static int _unur_upd_area_burr( UNUR_DISTR *distr ); */
@@ -305,6 +306,69 @@ _unur_cdf_burr( double x, const UNUR_DISTR *distr )
   }
 
 } /* end of _unur_cdf_burr() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_invcdf_burr( double U, const UNUR_DISTR *distr )
+{
+  register const double *params = DISTR.params;
+  double Y;
+
+  switch (distr->id) {
+
+  case UNUR_DISTR_BURR_I:
+    return U;
+
+  case UNUR_DISTR_BURR_II:
+    Y = exp( -log(U)/k );  /* U^(-1/k) */
+    return ( -log( Y - 1. ) );
+
+  case UNUR_DISTR_BURR_III:
+    Y = exp( -log(U)/k );  /* U^(-1/k) */
+    return ( exp( -log( Y - 1. )/c ) );
+
+  case UNUR_DISTR_BURR_IV:
+    Y = exp( -log(U)/k );   /* U^(-1/k) */
+    Y = exp( c * log( Y - 1. )) + 1.;
+    return (c/Y);
+
+  case UNUR_DISTR_BURR_V:
+    Y = exp( -log(U)/k );   /* U^(-1/k) */
+    return atan( -log( (Y - 1.) / c ) );
+
+  case UNUR_DISTR_BURR_VI:
+    Y = exp( -log(U)/k );   /* U^(-1/k) */
+    Y = -log( (Y - 1.) / c)/k;
+    return log( Y + sqrt(Y * Y +1.));
+
+  case UNUR_DISTR_BURR_VII:
+    Y = exp( log(U)/k );    /* U^(1/k) */
+    return ( log(2. * Y / (2. - 2.*Y)) / 2. );
+
+  case UNUR_DISTR_BURR_VIII:
+    Y = exp( log(U)/k );    /* U^(1/k) */
+    return ( log( tan( Y * M_PI/2. ) ) );
+
+  case UNUR_DISTR_BURR_IX:
+    Y = 1. + 2. * U / (c * (1.-U));
+    return log( exp( log(Y) / k) - 1. );
+
+  case UNUR_DISTR_BURR_X:
+    Y = exp( log(U)/k );   /* U^(1/k) */
+    return ( sqrt( -log( 1. - Y ) ) );
+
+  case UNUR_DISTR_BURR_XII:
+    Y = exp( -log(U)/k );   /* U^(-1/k) */
+    return ( exp( log( Y - 1.) / c) );
+
+  case UNUR_DISTR_BURR_XI:
+  default:
+    _unur_error(distr_name,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+    return INFINITY;
+  }
+
+} /* end of _unur_invcdf_burr() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -435,7 +499,8 @@ unur_distr_burr( const double *params, int n_params )
   /* functions */
   /* DISTR.pdf  = _unur_pdf_burr;  pointer to PDF                  */
   /* DISTR.dpdf = _unur_dpdf_burr; pointer to derivative of PDF    */
-  DISTR.cdf  = _unur_cdf_burr;  /* pointer to CDF                  */
+  DISTR.cdf     = _unur_cdf_burr;     /* pointer to CDF           */
+  DISTR.invcdf  = _unur_invcdf_burr;  /* pointer to inverse CDF   */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |
@@ -452,8 +517,8 @@ unur_distr_burr( const double *params, int n_params )
   /* normalization constant: none */
 
   /* mode and area below p.d.f. */
-/*    DISTR.mode = 0.; */
-/*    DISTR.area = 1.; */
+  /*    DISTR.mode = 0.; */
+  /*    DISTR.area = 1.; */
 
   /* function for setting parameters and updating domain */
   DISTR.set_params = _unur_set_params_burr;

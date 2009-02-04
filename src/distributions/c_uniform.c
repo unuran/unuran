@@ -252,7 +252,7 @@ unur_distr_uniform( const double *params, int n_params )
   distr->name = distr_name;
 
   /* how to get special generators */
-  DISTR.init = _unur_stdgen_uniform_init;
+  /* DISTR.init = _unur_stdgen_uniform_init; */
 
   /* functions */
   DISTR.pdf     = _unur_pdf_uniform;     /* pointer to PDF               */

@@ -494,7 +494,7 @@ unur_distr_burr( const double *params, int n_params )
   distr->name = distr_name;
                 
   /* how to get special generators */
-  DISTR.init = _unur_stdgen_burr_init;
+  /* DISTR.init = _unur_stdgen_burr_init; */
 
   /* functions */
   /* DISTR.pdf  = _unur_pdf_burr;  pointer to PDF                  */

@@ -269,7 +269,7 @@ unur_distr_laplace( const double *params, int n_params )
   distr->name = distr_name;
                 
   /* how to get special generators */
-  DISTR.init = _unur_stdgen_laplace_init;
+  /* DISTR.init = _unur_stdgen_laplace_init; */
 
   /* functions */
   DISTR.pdf     = _unur_pdf_laplace;     /* pointer to PDF               */

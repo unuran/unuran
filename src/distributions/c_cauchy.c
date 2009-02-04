@@ -285,7 +285,7 @@ unur_distr_cauchy( const double *params, int n_params )
   distr->name = distr_name;
                 
   /* how to get special generators */
-  DISTR.init = _unur_stdgen_cauchy_init;
+  /* DISTR.init = _unur_stdgen_cauchy_init; */
 
   /* functions */
   DISTR.pdf     = _unur_pdf_cauchy;     /* pointer to PDF                  */

@@ -291,7 +291,7 @@ unur_distr_weibull( const double *params, int n_params )
   distr->name = distr_name;
                 
   /* how to get special generators */
-  DISTR.init = _unur_stdgen_weibull_init;
+  /* DISTR.init = _unur_stdgen_weibull_init; */
 
   /* functions */
   DISTR.pdf    = _unur_pdf_weibull;    /* pointer to PDF               */

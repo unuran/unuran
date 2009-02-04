@@ -268,7 +268,7 @@ unur_distr_extremeI( const double *params, int n_params )
   distr->name = distr_name;
                 
   /* how to get special generators */
-  DISTR.init = _unur_stdgen_extremeI_init;
+  /* DISTR.init = _unur_stdgen_extremeI_init; */
 
   /* functions */
   DISTR.pdf    = _unur_pdf_extremeI;    /* pointer to PDF                */

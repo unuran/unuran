@@ -244,7 +244,7 @@ unur_distr_triangular( const double *params, int n_params )
   distr->name = distr_name;
                 
   /* how to get special generators */
-  DISTR.init = _unur_stdgen_triangular_init;
+  /* DISTR.init = _unur_stdgen_triangular_init; */
 
   /* functions */
   DISTR.pdf    = _unur_pdf_triangular;    /* pointer to PDF               */

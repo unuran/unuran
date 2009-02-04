@@ -219,7 +219,7 @@ unur_distr_pareto( const double *params, int n_params )
   distr->name = distr_name;
                 
   /* how to get special generators */
-  DISTR.init = _unur_stdgen_pareto_init;
+  /* DISTR.init = _unur_stdgen_pareto_init; */
 
   /* functions */
   DISTR.pdf    = _unur_pdf_pareto;    /* pointer to PDF               */

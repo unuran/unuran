@@ -77,6 +77,7 @@
 #include <distr/distr_source.h>
 #include <distr/cont.h>
 #include <distributions/unur_stddistr.h>
+#include <distributions/unur_distributions_source.h>
 #include <urng/urng.h>
 #include "unur_methods_source.h"
 #include "x_gen_source.h"
@@ -146,6 +147,12 @@ static void _unur_cstd_free( struct unur_gen *gen);
 /* Sampling routines are defined in ../distributions/ for each distributions.*/
 /* double _unur_cstd_sample( UNUR_GEN *gen ); does not exist!                */
 /*---------------------------------------------------------------------------*/
+
+static int _unur_cstd_generic_init( struct unur_par *par, struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* Initialize special generator for inversion method.                        */
+/*---------------------------------------------------------------------------*/
+
 
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
@@ -224,7 +231,7 @@ unur_cstd_new( const struct unur_distr *distr )
     _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,"standard distribution");
     return NULL;
   }
-  if (DISTR_IN.init == NULL) {
+  if (DISTR_IN.init == NULL && DISTR_IN.invcdf == NULL) {
     _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"init() for special generators");
     return NULL;
   }
@@ -282,11 +289,12 @@ unur_cstd_set_variant( struct unur_par *par, unsigned variant )
   par->variant = variant;
 
   /* check variant. run special init routine only in test mode */
-  if (par->DISTR_IN.init != NULL && par->DISTR_IN.init(par,NULL)==UNUR_SUCCESS ) {
+  if ( (par->DISTR_IN.init != NULL && par->DISTR_IN.init(par,NULL)==UNUR_SUCCESS) ||
+       _unur_cstd_generic_init(par,NULL)==UNUR_SUCCESS ) {
     par->set |= CSTD_SET_VARIANT;    /* changelog */
     return UNUR_SUCCESS;
   }
-
+  
   /* variant not valid */
   _unur_warning(GENTYPE,UNUR_ERR_PAR_VARIANT,"");
   par->variant = old_variant;
@@ -420,11 +428,6 @@ _unur_cstd_init( struct unur_par *par )
 
   /* check arguments */
   CHECK_NULL(par,NULL);
-  /* check for required data: initializing routine for special generator */
-  if (par->DISTR_IN.init == NULL) {
-    _unur_error(GENTYPE,UNUR_ERR_NULL,"");
-    return NULL;
-  }
 
   /* check input */
   if ( par->method != UNUR_METH_CSTD ) {
@@ -437,6 +440,17 @@ _unur_cstd_init( struct unur_par *par )
   gen = _unur_cstd_create(par);
   _unur_par_free(par);
   if (!gen) return NULL;
+
+  /* check for required data: initializing routine for special generator */
+  if (DISTR.init == NULL) {
+    if (DISTR.invcdf) {
+      DISTR.init = _unur_cstd_generic_init;
+    }
+    else {
+      _unur_error(GENTYPE,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+      _unur_cstd_free(gen); return NULL; 
+    }
+  }
   
   /* run special init routine for generator */
   GEN->is_inversion = FALSE;   /* reset flag for inversion method */
@@ -713,7 +727,7 @@ _unur_cstd_sample_inv( struct unur_gen *gen )
 
 } /* _unur_cstd_sample_inv() */
 
-/*****************************************************************************/
+/*---------------------------------------------------------------------------*/
 
 double
 unur_cstd_eval_invcdf( const struct unur_gen *gen, double u )
@@ -773,6 +787,51 @@ unur_cstd_eval_invcdf( const struct unur_gen *gen, double u )
 /*****************************************************************************/
 /**  Auxilliary Routines                                                    **/
 /*****************************************************************************/
+
+int
+_unur_cstd_generic_init( struct unur_par *par, struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* initialize special generator for inversion method                    */
+     /* when inverse CDF is available for the distribution.                  */
+     /* if gen == NULL then only check existance of variant.                 */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par ... pointer to parameter for building generator object         */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* one of par and gen must not be the NULL pointer */
+  switch ((par) ? par->variant : gen->variant) {
+
+  case 0:  /* DEFAULT */
+  case UNUR_STDGEN_INVERSION:   /* inversion method */
+    if (gen) {
+      if (DISTR.invcdf) {
+	GEN->is_inversion = TRUE;
+	_unur_cstd_set_sampling_routine(par,gen,_unur_cstd_sample_inv);
+	return UNUR_SUCCESS;
+      }
+    }
+    else {
+      if ((par->distr->data.cont).invcdf) {
+	_unur_cstd_set_sampling_routine(par,gen,_unur_cstd_sample_inv);
+	return UNUR_SUCCESS;
+      }
+    }
+
+  default: /* no such generator */
+    if (gen) _unur_warning(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+    return UNUR_FAILURE;
+  }
+  
+} /* end of _unur_cstd_generic_init() */
+
+/*---------------------------------------------------------------------------*/
+
 
 /*****************************************************************************/
 /**  Debugging utilities                                                    **/

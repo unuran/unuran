@@ -92,6 +92,9 @@ static int _unur_upd_mode_logistic( UNUR_DISTR *distr );
 static int _unur_upd_area_logistic( UNUR_DISTR *distr );
 static int _unur_set_params_logistic( UNUR_DISTR *distr, const double *params, int n_params );
 
+int _unur_cstd_generic_init( struct unur_par *par, struct unur_gen *gen );
+
+
 /*---------------------------------------------------------------------------*/
 
 double
@@ -268,7 +271,7 @@ unur_distr_logistic( const double *params, int n_params )
   distr->name = distr_name;
                 
   /* how to get special generators */
-  DISTR.init = _unur_stdgen_logistic_init;
+  /* DISTR.init = _unur_stdgen_logistic_init; */
 
   /* functions */
   DISTR.pdf    = _unur_pdf_logistic;    /* pointer to PDF               */

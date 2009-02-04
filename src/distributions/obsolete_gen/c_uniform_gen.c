@@ -104,24 +104,3 @@ _unur_stdgen_uniform_init( struct unur_par *par, struct unur_gen *gen )
 /*****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
-
-double _unur_stdgen_sample_uniform_inv( struct unur_gen *gen )
-     /* Inversion method */
-{
-  /* -X- generator code -X- */
-  double X;
-
-  /* check arguments */
-  CHECK_NULL(gen,INFINITY);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
-
-  /* sample from uniform random number generator */
-  X = GEN->umin + uniform() * (GEN->umax-GEN->umin);
-
-  /* -X- end of generator code -X- */
-
-  return ((DISTR.n_params==0) ? X : a + X * (b - a));
-
-} /* end of _unur_stdgen_sample_uniform_inv() */
-
-/*---------------------------------------------------------------------------*/

@@ -42,7 +42,8 @@
    =UP  Methods_for_CONT
 
    =REQUIRED standard distribution from UNU.RAN library
-      (@pxref{Stddist,,Standard distributions}).
+      (@pxref{Stddist,,Standard distributions}) or continuous
+      distribution with inverse CDF.
 
    =SPEED Set-up: fast, Sampling: depends on distribution and generator
 
@@ -54,15 +55,18 @@
       distributions in the UNU.RAN library of standard distributions
       (@pxref{Stddist,,Standard distributions}).
       If a distribution object is provided that is build from scratch,
-      or if no special generator for the given standard distribution is
-      provided, the NULL pointer is returned.
+      it must provide the inverse CDF. Then CSTD implements the
+      inversion method. Otherwise, the NULL pointer is returned.
 
       For some distributions more than one special generator
       is possible. 
 
    =HOWTOUSE
       Create a distribution object for a standard distribution
-      from the UNU.RAN library (@pxref{Stddist,,Standard distributions}).
+      from the UNU.RAN library 
+      (@pxref{Stddist,,Standard distributions}),
+      or create a continuous distribution object and set the function
+      for the inverse CDF using unur_distr_cont_set_invcdf().
       For some distributions more than one special generator
       (@emph{variants}) is possible. These can be choosen by a
       unur_cstd_set_variant() call. For possible variants 
@@ -85,7 +89,8 @@
       Sampling from truncated distributions (which can be constructed by 
       changing the default domain of a distribution by means of
       unur_distr_cont_set_domain() or unur_cstd_chg_truncated() calls)
-      is possible but requires the inversion method.
+      is possible but requires the inversion method. Moreover the CDF
+      of the distribution must be implemented.
    
       It is possible to change the parameters and the domain of the chosen 
       distribution and run unur_reinit() to reinitialize the generator object.

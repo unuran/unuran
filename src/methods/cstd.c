@@ -33,15 +33,15 @@
  *                                                                           *
  * CSTD is a wrapper for special generator for Continuous univariate         *
  * STandarD distributions. It only works for distributions in the UNURAN     *
- * library of distributions and will refuse to work otherwise.               *
- * (In detail it rejects a distribution if its id is equal to DISTR_GENERIC, *
- * the id inserted my the unur_distr_cont_new() call.)                       *
+ * library of distributions or those continuous distribution that have       *
+ * the inverse CDF implemented. Otherwise it refuses to work.                *
  *                                                                           *
- * It calls the initialzation routine provided by the distribution object.   *
+ * It calls the initialization routine provided by the distribution object.  *
  * This routine has to do all setup steps for the special generator.         *
- * If no such routine is given, i.e. distr->init==NULL, then unur_cstd_new() *
- * does not work and the NULL pointer is returned instead of the pointer to  *
- * a parameter object.                                                       *
+ * If no such routine is given, i.e. distr->init==NULL but the inverse CDF   *
+ * is avaible, then _unur_cstd_generic_init() is used.                       *
+ * If neither is available, then unur_cstd_new() does not work and the       *
+ * NULL pointer is returned instead of the pointer to a parameter object.    *
  *                                                                           *
  * Notice that using a truncated distribution (this can be constructed by    *
  * changing the default domain of a distribution by means of an              *
@@ -227,12 +227,8 @@ unur_cstd_new( const struct unur_distr *distr )
     _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,""); return NULL; }
   COOKIE_CHECK(distr,CK_DISTR_CONT,NULL);
 
-  if (!(distr->id & UNUR_DISTR_STD) ) {
-    _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,"standard distribution");
-    return NULL;
-  }
   if (DISTR_IN.init == NULL && DISTR_IN.invcdf == NULL) {
-    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"init() for special generators");
+    _unur_error(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"init() for special generators or inverse CDF");
     return NULL;
   }
 

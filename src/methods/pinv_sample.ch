@@ -125,14 +125,15 @@ unur_pinv_eval_approxinvcdf( const struct unur_gen *gen, double u )
   }
   COOKIE_CHECK(gen,CK_PINV_GEN,INFINITY);
 
-  if ( u<0. || u>1.) {
-    _unur_warning(gen->genid,UNUR_ERR_DOMAIN,"argument u not in [0,1]");
+  if ( ! (u>0. && u<1.)) {
+    if ( ! (u>=0. && u<=1.)) {
+      _unur_warning(gen->genid,UNUR_ERR_DOMAIN,"U not in [0,1]");
+    }
+    if (u<=0.) return DISTR.domain[0];
+    if (u>=1.) return DISTR.domain[1];
+    return u;  /* = NaN */
   }
   
-  /* validate argument */
-  if (u<=0.) return DISTR.domain[0];
-  if (u>=1.) return DISTR.domain[1];
-
   /* compute inverse CDF */
   x = _unur_pinv_eval_approxinvcdf(gen,u);
 

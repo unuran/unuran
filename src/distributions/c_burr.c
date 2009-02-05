@@ -159,7 +159,7 @@
  *  distr: Burr distribution Type XI                                         *
  *  first parameter is 11                                                    *
  *                                                                           *
- *  cdf:       F(x) = (x - (pi/2) * sin( 2*pi*x))^k                          *
+ *  cdf:       F(x) = (x - 1/(2*pi) * sin( 2*pi*x))^k                          *
  *  pdf:       f(x) =                                                        *
  *  domain:    0 < x < 1                                                     *
  *  constant:                                                                *
@@ -288,12 +288,12 @@ _unur_cdf_burr( double x, const UNUR_DISTR *distr )
     if (x<=0.) return 0.;
     return pow( 1. - exp(-x*x), k );
 
-  case 11: /* Type XI:  F(x) = (x - (pi/2) * sin( 2*pi*x))^k                 */
+  case 11: /* Type XI:  F(x) = (x - 1/(2*pi) * sin(2*pi*x))^k                */
     if (x<=0.)
       return 0.;
     if (x>=1.)
       return 1.;
-    return pow( x - M_PI/2. * sin( 2. * M_PI * x), k );
+    return pow( x - 1./(2.*M_PI) * sin( 2. * M_PI * x), k );
 
   case 12: /* Type XII: F(x) = 1 - (1 + x^c)^(-k)                            */
     if (x<=0.)

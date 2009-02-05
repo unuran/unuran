@@ -476,6 +476,10 @@ _unur_set_params_burr( UNUR_DISTR *distr, const double *params, int n_params )
     }
   }
 
+  /* pointer to inverse CDF */
+  DISTR.invcdf = ( (distr->id != UNUR_DISTR_BURR_XI) 
+		   ? _unur_invcdf_burr : NULL );
+
   return UNUR_SUCCESS;
 } /* end of _unur_set_params_burr() */
 
@@ -523,9 +527,8 @@ unur_distr_burr( const double *params, int n_params )
   /* functions */
   /* DISTR.pdf  = _unur_pdf_burr;  pointer to PDF                  */
   /* DISTR.dpdf = _unur_dpdf_burr; pointer to derivative of PDF    */
-  DISTR.cdf     = _unur_cdf_burr;     /* pointer to CDF           */
-  if (distr->id != UNUR_DISTR_BURR_XI) 
-    DISTR.invcdf  = _unur_invcdf_burr;  /* pointer to inverse CDF   */
+  DISTR.cdf     = _unur_cdf_burr;     /* pointer to CDF            */
+  DISTR.invcdf  = _unur_invcdf_burr;  /* pointer to inverse CDF    */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

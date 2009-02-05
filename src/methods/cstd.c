@@ -757,14 +757,15 @@ unur_cstd_eval_invcdf( const struct unur_gen *gen, double u )
     return UNUR_INFINITY;
   } 
 
-  if ( u<0. || u>1.) {
-    _unur_warning(gen->genid,UNUR_ERR_DOMAIN,"argument u not in [0,1]");
+  if ( ! (u>0. && u<1.)) {
+    if ( ! (u>=0. && u<=1.)) {
+      _unur_warning(gen->genid,UNUR_ERR_DOMAIN,"U not in [0,1]");
+    }
+    if (u<=0.) return DISTR.domain[0];
+    if (u>=1.) return DISTR.domain[1];
+    return u;  /* = NaN */
   }
-
-  /* validate argument */
-  if (u<=0.) return DISTR.trunc[0];
-  if (u>=1.) return DISTR.trunc[1];
-
+  
   /* rescale given u */
   u = GEN->Umin + u * (GEN->Umax - GEN->Umin);
 

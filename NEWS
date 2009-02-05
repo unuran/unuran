@@ -1,13 +1,29 @@
 
+Version 1.?.?: ??? 2009
+
+	* Methods:
+
+	- unur_quantile() now also supports CSTD with inversion 
+
+        - CSTD: generic inversion method for continuous distribution
+          provided that the inverse CDF is implemented in distribution
+          object.
+
+	* Distributions:
+
+	- CONT (continuous univariate distribution):
+	  support for inverse CDF:
+	     unur_distr_cont_set_invcdf()
+	     unur_distr_cont_get_invcdf()
+	     unur_distr_cont_eval_invcdf()
+
+
 Version 1.3.1: January 2009
 
 	* Methods:
 
 	- AROU: fixed problems with round-off errors when computing
 	  tangents.
-
-        - CSTD: unuran-quantile() now also supports for 
-          method CSTD with inversion.
 
 
 Version 1.3.0: November 2008

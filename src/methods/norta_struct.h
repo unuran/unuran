@@ -48,10 +48,6 @@ struct unur_norta_gen {
   struct unur_distr *normaldistr;      /* standard normal distribution       */
   struct unur_gen **marginalgen_list;  /* list of generators for marginal distributions */
 
-  /* work-around to call inversion method with given U-value.                */
-  UNUR_URNG *marginal_urng;            /* urng used for marginals            */
-  double urng_U[1];                    /* contains U-value for marginal URNG */
-
   /* Remark: We use gen->gen_aux to store the pointer to the                 */
   /*         multinormal generator.                                          */
   /*         It is accessed via the macro 'MNORMAL'.                         */

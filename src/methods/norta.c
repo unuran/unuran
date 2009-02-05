@@ -94,11 +94,6 @@
 #include "norta_struct.h"
 
 /*---------------------------------------------------------------------------*/
-#ifdef UNUR_URNG_UNURAN
-/* This routine does not work with other URNG APIs!                          */
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
 /* Constants                                                                 */
 
 /* smallest eigenvalue allowed for correlation matrix                        */
@@ -164,12 +159,6 @@ static struct unur_gen *_unur_norta_make_marginalgen( const struct unur_gen *gen
 						      const struct unur_distr *marginal );
 /*---------------------------------------------------------------------------*/
 /* make generator for marginal distribution                                  */
-/*---------------------------------------------------------------------------*/
-
-static double _unur_norta_urng_wrapper (void *state) { 
-  return ((double*)state)[0]; }
-/*---------------------------------------------------------------------------*/
-/* work-around to call inversion method with given U-value.                  */
 /*---------------------------------------------------------------------------*/
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -356,9 +345,6 @@ _unur_norta_init( struct unur_par *par )
   /* distribution object for standard normal distribution */
   GEN->normaldistr = unur_distr_normal(NULL,0);
 
-  /* we need a wrapper to call the inversion method with a given U-value */
-  GEN->marginal_urng = unur_urng_new (_unur_norta_urng_wrapper, GEN->urng_U) ;
-
   if (gen->distr->id != UNUR_DISTR_COPULA) {
     /* we have to initialize generator for marginal distributions */
 
@@ -463,8 +449,6 @@ _unur_norta_create( struct unur_par *par )
   MNORMAL = NULL;
   GEN->normaldistr = NULL;
   GEN->marginalgen_list = NULL;
-  GEN->marginal_urng = NULL;
-  GEN->urng_U[0] = 0.;
 
 #ifdef UNUR_ENABLE_INFO
   /* set function for creating info string */
@@ -495,7 +479,6 @@ _unur_norta_clone( const struct unur_gen *gen )
 { 
 #define CLONE  ((struct unur_norta_gen*)clone->datap)
 
-  int i;
   struct unur_gen *clone;
 
   /* check arguments */
@@ -510,17 +493,9 @@ _unur_norta_clone( const struct unur_gen *gen )
   /* clone marginal distribution */
   CLONE->normaldistr = _unur_distr_clone(GEN->normaldistr);
 
-  /* we need a wrapper to call the inversion method with a given U-value */
-  if (GEN->marginal_urng) 
-    CLONE->marginal_urng = unur_urng_new (_unur_norta_urng_wrapper, CLONE->urng_U) ;
-
   /* marginal generators */
-  if (GEN->marginalgen_list) {
+  if (GEN->marginalgen_list)
     CLONE->marginalgen_list = _unur_gen_list_clone( GEN->marginalgen_list, GEN->dim );
-    for (i=0; i<GEN->dim; i++) 
-      /* set urng: use wrapper function */
-      CLONE->marginalgen_list[i]->urng = CLONE->marginal_urng;
-  }
 
   return clone;
 
@@ -553,9 +528,6 @@ _unur_norta_free( struct unur_gen *gen )
 
   /* free normal distribution object */
   if (GEN->normaldistr) _unur_distr_free (GEN->normaldistr);
-
-  /* free urng wrapper */
-  if (GEN->marginal_urng) unur_urng_free(GEN->marginal_urng);
 
   /* free marginal generators */
   if (GEN->marginalgen_list)
@@ -596,22 +568,18 @@ _unur_norta_sample_cvec( struct unur_gen *gen, double *vec )
 
   /* make copula */
   for (j=0; j<GEN->dim; j++)
-    u[j] = unur_distr_cont_eval_cdf( u[j], GEN->normaldistr );
+    vec[j] = unur_distr_cont_eval_cdf( u[j], GEN->normaldistr );
 
-  if (gen->distr->id == UNUR_DISTR_COPULA) {
-    /* we want to have a normal copula --> just copy data */
-    for (j=0; j<GEN->dim; j++) vec[j] = u[j];
+  if (gen->distr->id == UNUR_DISTR_COPULA)
+    /* we want to have a normal copula --> just return data */
     return UNUR_SUCCESS;
-  }
-
+  
   /* else non-uniform marginals */
   for (j=0; j<GEN->dim; j++) {
-    /* set U-value for wrapper urng function */
-    GEN->urng_U[0] = u[j];
     /* call marginal generator (using this U-value) */
-    vec[j] = unur_sample_cont(GEN->marginalgen_list[j]);
+    vec[j] = unur_quantile(GEN->marginalgen_list[j], vec[j]);
   }
-  
+
   return UNUR_SUCCESS;
 
 #undef idx
@@ -838,9 +806,6 @@ _unur_norta_make_marginalgen( const struct unur_gen *gen,
   /* set debugging flags */
   marginalgen->debug = gen->debug;
 
-  /* set urng: use wrapper function */
-  marginalgen->urng = GEN->marginal_urng;
-
   /* return generator object */
   return marginalgen;
 
@@ -1030,8 +995,4 @@ _unur_norta_info( struct unur_gen *gen, int help )
 
 /*---------------------------------------------------------------------------*/
 #endif   /* end UNUR_ENABLE_INFO */
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-#endif   /* UNUR_URNG_UNURAN */
 /*---------------------------------------------------------------------------*/

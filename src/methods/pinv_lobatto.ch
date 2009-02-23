@@ -384,7 +384,7 @@ _unur_pinv_CDFtable_resize (struct unur_pinv_CDFtable **table)
      /*----------------------------------------------------------------------*/
 {
   if (*table) {
-    *table = _unur_xrealloc(*table, (*table)->n_values * sizeof(double));
+    *table = _unur_xrealloc(*table, (*table)->n_values * sizeof(struct unur_pinv_CDFvalues));
     (*table)->size = (*table)->n_values;
   }
   /* else: nothing to do */

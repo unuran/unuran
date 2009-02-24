@@ -91,8 +91,7 @@
  *                                                                           *
  *   Quadrature (Integration):                                               *
  *     Adaptive Gauss-Lobatto integration with 5 points.                     *
- *        _unur_pinv_lobatto5()                                              *
- *        _unur_pinv_adaptivelobatto5()                                      *
+ *        see utils/lobatto.c                                                *
  *                                                                           *
  *   Interpolation:                                                          *
  *     Newton recursion for coefficients of polynomial                       *
@@ -102,35 +101,13 @@
 
 /*---------------------------------------------------------------------------*/
 
-/* These macros allow switching between some alternative versions            */
-
-/* Uncomment the following line if a table for CDFvalues should be used */
-#define PINV_USE_CDFTABLE
-
-#ifndef PINV_USE_CDFTABLE
-/* There are two variants when such a table is not used:                     */
-/*  (1) use simple Lobatto5 integration when creating the Newton polynomial  */
-/*      is computed,                                                         */
-/*  (2) or use adaptive Lobatto integration.                                 */
-/*                                                                           */
-/* The first one is (much) faster, but there is no control of the U-error.   */
-/* The second one checks the integration error, but is (much) slower.        */
-
-/* Uncomment the following line if SIMPLE (non-adaptive) Lobatto5            */
-/* integration should be used.                                               */
-
-/* #define PINV_USE_SIMPLE_LOBATTO */
-
-#endif
-
-/*---------------------------------------------------------------------------*/
-
 #include <unur_source.h>
 #include <distr/distr.h>
 #include <distr/distr_source.h>
 #include <distr/cont.h>
 #include <urng/urng.h>
 #include <tests/unuran_tests.h>
+#include <utils/lobatto_source.h>
 #include "unur_methods_source.h"
 #include "x_gen_source.h"
 #include "pinv.h"
@@ -162,6 +139,8 @@
 /* subintervals for Newton interpolation), since the number of these         */
 /* subintervals does neither depend on the order of the interpolating        */
 /* polynomial nor on the requested u-resolution.                             */
+/*                                                                           */
+/* Remark: This parameter MUST NOT be smaller than 2 !!                      */
 
 /* -- 1. Preprocessing                                                       */
 
@@ -218,6 +197,7 @@
 #define PINV_DEBUG_REINIT    0x00000002u   /* print parameters after reinit  */
 #define PINV_DEBUG_TABLE     0x00000010u   /* print table                    */
 #define PINV_DEBUG_SEARCHBD  0x00010000u   /* trace search boundary          */
+#define PINV_DEBUG_ITABLE    0x00020000u   /* print table of integral values */
 
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
@@ -332,13 +312,11 @@ static int _unur_pinv_approx_pdfarea (struct unur_gen *gen);
 /* 1b. Compute area below PDF over relevant domain approximately.            */
 /*---------------------------------------------------------------------------*/
 
-#ifdef PINV_USE_CDFTABLE
 static int _unur_pinv_pdfarea (struct unur_gen *gen);
 /*---------------------------------------------------------------------------*/
 /* 1d. Compute area below PDF with requested accuracy and                    */
 /*     store intermediate results from adaptive integration.                 */
 /*---------------------------------------------------------------------------*/
-#endif
 
 static int _unur_pinv_computational_domain (struct unur_gen *gen);
 /*---------------------------------------------------------------------------*/
@@ -366,67 +344,11 @@ static double _unur_pinv_cut_CDF( struct unur_gen *gen, double dom, double x0, d
 /*       using CDF.                                                          */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_pinv_Udiff (struct unur_gen *gen, double x, double h, double utol);
+static double _unur_pinv_Udiff (struct unur_gen *gen, double x, double h);
 /*---------------------------------------------------------------------------*/
 /* compute difference CDF(x+h)-CDF(x) (approximately), where CDF is the      */
 /* integral of the given (quasi-) density.                                   */
 /*---------------------------------------------------------------------------*/
-
-
-/*.........................*/
-/*  file: pinv_lobatto.ch  */
-/*.........................*/
-
-static double _unur_pinv_lobatto5 (struct unur_gen *gen, double x, double h);
-/*---------------------------------------------------------------------------*/
-/* numerical integration of the PDF over the interval (x,x+h)                */
-/* using Gauss-Lobatto integration with 5 points. (non-adaptive)             */
-/*---------------------------------------------------------------------------*/
-
-static double _unur_pinv_adaptivelobatto5 (struct unur_gen *gen, double x, double h, double tol,
-					   struct unur_pinv_CDFtable *CDFtable);
-/*---------------------------------------------------------------------------*/
-/* numerical integration of the PDF over the interval (x,x+h) using          */
-/* adaptive Gauss-Lobatto integration with 5 points for each recursion.      */
-/*---------------------------------------------------------------------------*/
-
-static double _unur_pinv_adaptivelobatto5_rec (struct unur_gen *gen, double x, double h, double tol,
-					       double int1, double fl, double fr, double fc,
-					       int *W_accuracy,
-					       struct unur_pinv_CDFtable *CDFtable);
-/*---------------------------------------------------------------------------*/
-/* run recursion for adaptive Lobatto integration.                           */
-/*---------------------------------------------------------------------------*/
-
-static double _unur_pinv_Udiff_lobatto (struct unur_gen *gen, double x, double h, double utol);
-/*---------------------------------------------------------------------------*/
-/* compute difference CDF(x+h)-CDF(x) (approximately), where CDF is the      */
-/* integral of the given (quasi-) density.                                   */
-/*---------------------------------------------------------------------------*/
-
-#ifdef PINV_USE_CDFTABLE
-
-static struct unur_pinv_CDFtable *_unur_pinv_CDFtable_create (int size);
-/*---------------------------------------------------------------------------*/
-/* create table of CDF values.                                               */
-/*---------------------------------------------------------------------------*/
-
-static int _unur_pinv_CDFtable_append (struct unur_pinv_CDFtable *table, double x, double u);
-/*---------------------------------------------------------------------------*/
-/* append entry to table of CDF values.                                      */
-/*---------------------------------------------------------------------------*/
-
-static void _unur_pinv_CDFtable_resize (struct unur_pinv_CDFtable **table);
-/*---------------------------------------------------------------------------*/
-/* resize table of CDF values.                                               */
-/*---------------------------------------------------------------------------*/
-
-static void _unur_pinv_CDFtable_free (struct unur_pinv_CDFtable **table);
-/*---------------------------------------------------------------------------*/
-/* destroy table of CDF values and set pointer to NULL.                      */
-/*---------------------------------------------------------------------------*/
-
-#endif /* defined(PINV_USE_CDFTABLE) */
 
 
 /*........................*/
@@ -444,13 +366,13 @@ static int _unur_pinv_interval( struct unur_gen *gen, int i, double x, double cd
 /*---------------------------------------------------------------------------*/
 
 static int _unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_interval *iv, 
-				     double *xval, double utol);
+				     double *xval);
 /*---------------------------------------------------------------------------*/
 /* 2a. Compute coefficients for Newton interpolation.                        */
 /*---------------------------------------------------------------------------*/
 
 static int _unur_pinv_linear_create (struct unur_gen *gen, struct unur_pinv_interval *iv, 
-				     double *xval, double utol);
+				     double *xval);
 /*---------------------------------------------------------------------------*/
 /* [2a.] Compute coefficients for linear interpolation.                      */
 /*---------------------------------------------------------------------------*/
@@ -466,7 +388,7 @@ static double _unur_pinv_newton_eval (double q, double ui[], double zi[], int or
 /*---------------------------------------------------------------------------*/
 
 static double _unur_pinv_newton_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv, 
-					  double xval[], double utol);
+					  double xval[]);
 /*---------------------------------------------------------------------------*/
 /* 2c. estimate maximal error of Newton interpolation in subinterval         */
 /*---------------------------------------------------------------------------*/
@@ -575,7 +497,6 @@ static void _unur_pinv_info( struct unur_gen *gen, int help );
 #include "pinv_init.ch"
 #include "pinv_sample.ch"
 #include "pinv_prep.ch"
-#include "pinv_lobatto.ch"
 #include "pinv_newton.ch"
 #include "pinv_debug.ch"
 #include "pinv_info.ch"

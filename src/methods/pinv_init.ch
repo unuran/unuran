@@ -94,11 +94,9 @@ _unur_pinv_init( struct unur_par *par )
     _unur_pinv_free(gen); return NULL;
   }
 
-#ifdef PINV_USE_CDFTABLE
   /* we do not need the table with CDF values any more. */
   /* thus we free the allocated memory.                 */
-  _unur_pinv_CDFtable_free(&(GEN->CDFtable));
-#endif
+  _unur_lobatto_free(&(GEN->aCDF));
 
   /* make guide table */
   _unur_pinv_make_guide_table(gen);
@@ -195,15 +193,11 @@ _unur_pinv_create( struct unur_par *par )
   GEN->guide = NULL;
   GEN->area = DISTR.area; /* we use the value in the distribution object as first guess */
   GEN->logPDFconstant = 0.;   /* rescaling constant for logPDF                  */
+  GEN->aCDF = NULL;           /* pointer to approximate CDF */
 
   /* allocate maximal array of intervals */
   /* [ Maybe we could move this into _unur_pinv_interval() ] */
   GEN->iv = _unur_xmalloc(GEN->max_ivs * sizeof(struct unur_pinv_interval) );
-
-#ifdef PINV_USE_CDFTABLE
-  /* allocate maximal array of subintervals for adaptive Gauss-Lobatto integration */
-  GEN->CDFtable = _unur_pinv_CDFtable_create(PINV_MAX_LOBATTO_IVS);
-#endif
 
 #ifdef UNUR_ENABLE_INFO
   /* set function for creating info string */
@@ -291,10 +285,8 @@ _unur_pinv_clone( const struct unur_gen *gen )
   /* create generic clone */
   clone = _unur_generic_clone( gen, GENTYPE );
 
-#ifdef PINV_USE_CDFTABLE
   /* we do not need the table with CDF values */
-  CLONE->CDFtable = NULL;
-#endif
+  CLONE->aCDF = NULL;
 
   /* copy coefficients for Newton polynomial */
   CLONE->iv =  _unur_xmalloc((GEN->n_ivs+1) * sizeof(struct unur_pinv_interval) );
@@ -345,10 +337,8 @@ _unur_pinv_free( struct unur_gen *gen )
   /* free guide table */
   if (GEN->guide) free (GEN->guide);
 
-#ifdef PINV_USE_CDFTABLE
   /* free array for subintervals of adaptive Gauss-Lobatto integration */
-  _unur_pinv_CDFtable_free(&(GEN->CDFtable));
-#endif
+  _unur_lobatto_free(&(GEN->aCDF));
 
   /* free tables of coefficients of interpolating polynomials */
   if (GEN->iv) {

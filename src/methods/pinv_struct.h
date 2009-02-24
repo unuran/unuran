@@ -60,23 +60,6 @@ struct unur_pinv_interval {
 };
 
 /*---------------------------------------------------------------------------*/
-/* store boundaries and integrals of subintervals computed during            */
-/* adaptive Gauss-Lobatto integration.                                       */
-
-struct unur_pinv_CDFvalues {
-  double x;   /* right boundary of subinterval */
-  double u;   /* interval of PDF over subinterval */
-}; 
-
-struct unur_pinv_CDFtable {
-  struct unur_pinv_CDFvalues *values; /* boundaries and integral values      */
-  int n_values;            /* number of stored CDFvalues                     */
-  int cur_iv;              /* position of first entry whose x value is
-			      larger than left boundary of current interval  */
-  int size;                /* size of table                                  */
-}; 
-
-/*---------------------------------------------------------------------------*/
 /* The generator object                                                      */
 
 struct unur_pinv_gen { 
@@ -109,11 +92,7 @@ struct unur_pinv_gen {
   double area;             /* approximate area below PDF                     */ 
   double logPDFconstant;   /* rescaling constant for logPDF                  */
 
-#ifdef PINV_USE_CDFTABLE
-  struct unur_pinv_CDFtable *CDFtable; /* store boundaries and integrals of
-					  subintervals computed during
-					  adaptive Gauss-Lobatto integration. */
-#endif
+  struct unur_lobatto_table *aCDF; /* polynomial approximation of CDF        */
 };
 
 /*---------------------------------------------------------------------------*/

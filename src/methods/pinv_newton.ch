@@ -105,7 +105,7 @@ _unur_pinv_create_table( struct unur_gen *gen )
       /* use higher order polynomial */
 
       /* compute Newton interpolation polynomial */
-      if (_unur_pinv_newton_create(gen,&(GEN->iv[i]),xval,utol) != UNUR_SUCCESS)
+      if (_unur_pinv_newton_create(gen,&(GEN->iv[i]),xval) != UNUR_SUCCESS)
 	/* area below PDF = 0 or serious round-off errors */
 	/* try linear interpolation */
 	use_linear = TRUE;
@@ -115,7 +115,7 @@ _unur_pinv_create_table( struct unur_gen *gen )
       /* use linear interpolation */
       ++n_use_linear;
 
-      if (_unur_pinv_linear_create(gen,&(GEN->iv[i]),xval,utol) != UNUR_SUCCESS) {
+      if (_unur_pinv_linear_create(gen,&(GEN->iv[i]),xval) != UNUR_SUCCESS) {
 
 	/* area below PDF == 0. */
 	if (i==0) { /* left boundary (first interval) */
@@ -139,7 +139,7 @@ _unur_pinv_create_table( struct unur_gen *gen )
     }
 
     /* estimate error of Newton interpolation */
-    maxerror = _unur_pinv_newton_maxerror(gen,&(GEN->iv[i]),xval,utol);
+    maxerror = _unur_pinv_newton_maxerror(gen,&(GEN->iv[i]),xval);
 
     if (!(maxerror <= utol)) {
       /* error too large: reduce step size */
@@ -221,9 +221,6 @@ _unur_pinv_interval( struct unur_gen *gen, int i, double x, double cdfx )
      /*----------------------------------------------------------------------*/
 {
   struct unur_pinv_interval *iv;
-#ifdef PINV_USE_CDFTABLE
-  struct unur_pinv_CDFtable *CDFtable = GEN->CDFtable;
-#endif
 
   /* check arguments */
   COOKIE_CHECK(gen,CK_PINV_GEN,UNUR_FAILURE);
@@ -248,20 +245,8 @@ _unur_pinv_interval( struct unur_gen *gen, int i, double x, double cdfx )
   /* update size of array (number of intervals) */
   GEN->n_ivs = i;
 
-
-#ifdef PINV_USE_CDFTABLE
-  /* set bookmark in table of CDF values */
-  if (CDFtable != NULL) {
-    /* search for first entry in interval. */
-    /* we can continue from the position in the last interval. */
-    /* otherwise, to restart from the first entry uncomment this line */
-    /*    CDFtable->cur_iv = 0; */
-    
-    while (CDFtable->cur_iv < CDFtable->n_values &&
-	   CDFtable->values[CDFtable->cur_iv].x < x) 
-      ++(CDFtable->cur_iv);
-  }
-#endif
+  /* set bookmark in table of integral values */
+  _unur_lobatto_find_linear(GEN->aCDF,x);
 
   /* o.k. */
   return UNUR_SUCCESS;
@@ -272,7 +257,7 @@ _unur_pinv_interval( struct unur_gen *gen, int i, double x, double cdfx )
 
 int
 _unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_interval *iv, 
-			  double *xval, double utol)
+			  double *xval)
      /*----------------------------------------------------------------------*/
      /* 2a. Compute coefficients for Newton interpolation within a           */
      /* subinterval of the domain of the distribution.                       */
@@ -280,9 +265,7 @@ _unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_interval *iv,
      /* parameters:                                                          */
      /*   gen  ... pointer to generator object                               */
      /*   iv   ... pointer to current interval                               */
-     /*   h    ... length of interval                                        */
      /*   xval ... x-values for constructing polynomial                      */
-     /*   utol ... maximal tolerated u-error                                 */
      /*                                                                      */
      /* return:                                                              */
      /*   UNUR_SUCCESS ... on success                                        */
@@ -299,9 +282,6 @@ _unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_interval *iv,
   COOKIE_CHECK(gen,CK_PINV_GEN,UNUR_FAILURE);
   COOKIE_CHECK(iv,CK_PINV_IV,UNUR_FAILURE);
 
-  /* We use a smaller tolerance for the Gauss-Lobatto integral */
-  utol *= PINV_UTOL_CORRECTION;
-
   /* compute tuples (ui,zi) for constructing polynomials */
   for(i=0; i<GEN->order; i++) {
 
@@ -310,7 +290,7 @@ _unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_interval *iv,
     dxi = xval[i+1]-xval[i];
 
     /* compute integral of PDF in interval (xi,xi+dxi) */
-    area = _unur_pinv_Udiff(gen, xi, dxi, utol);
+    area = _unur_pinv_Udiff(gen, xi, dxi);
     if (_unur_iszero(area)) return UNUR_ERR_SILENT;
 
     /* construction points of interpolation polynomial of CDF^{-1} */
@@ -342,7 +322,7 @@ _unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_interval *iv,
 
 int
 _unur_pinv_linear_create (struct unur_gen *gen, struct unur_pinv_interval *iv, 
-			  double *xval, double utol)
+			  double *xval)
      /*----------------------------------------------------------------------*/
      /* [2a.] Compute coefficients for linear interpolation within a         */
      /* subinterval of the domain of the distribution.                       */
@@ -353,10 +333,8 @@ _unur_pinv_linear_create (struct unur_gen *gen, struct unur_pinv_interval *iv,
      /* parameters:                                                          */
      /*   gen  ... pointer to generator object                               */
      /*   iv   ... pointer to current interval                               */
-     /*   h    ... length of interval                                        */
      /*   xval ... x-values for constructing polynomial as used for          */
      /*            _unur_pinv_newton_create                                  */
-     /*   utol ... maximal tolerated u-error                                 */
      /*                                                                      */
      /* return:                                                              */
      /*   UNUR_SUCCESS ... on success                                        */
@@ -369,9 +347,6 @@ _unur_pinv_linear_create (struct unur_gen *gen, struct unur_pinv_interval *iv,
   double area;           /* integral of PDF over subinterval */
   int i;                 /* auxiliary variable */
 
-  /* We use a smaller tolerance for the Gauss-Lobatto integral */
-  utol *= PINV_UTOL_CORRECTION;
-
   /* boundary of interval */
   x0 = xval[0];
   x1 = xval[GEN->order];
@@ -382,7 +357,7 @@ _unur_pinv_linear_create (struct unur_gen *gen, struct unur_pinv_interval *iv,
   }
 
   /* area below PDF */
-  area = _unur_pinv_Udiff(gen, x0, x1-x0, utol);
+  area = _unur_pinv_Udiff(gen, x0, x1-x0);
 
   /* zi[0] contains the slope of the polynomial */
   ui[0] = area;
@@ -457,7 +432,7 @@ _unur_pinv_newton_eval ( double q, double ui[], double zi[], int order )
 
 double
 _unur_pinv_newton_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv,
-			    double xval[], double utol)
+			    double xval[])
      /*----------------------------------------------------------------------*/
      /* 2c. Estimate maximal error of Newton interpolation in subinterval.   */
      /*     In addition it makes a simple check for monotonicity of the      */
@@ -467,7 +442,6 @@ _unur_pinv_newton_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv,
      /*   gen  ... pointer to generator object                               */
      /*   iv   ... pointer to current interval                               */
      /*   xval ... x-values for constructing polynomial                      */
-     /*   utol ... maximal tolerated u-error                                 */
      /*                                                                      */
      /* return:                                                              */
      /*   estimated maximal u-error, or                                      */
@@ -491,9 +465,6 @@ _unur_pinv_newton_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv,
   /* check arguments */
   COOKIE_CHECK(gen,CK_PINV_GEN,UNUR_FAILURE);
   COOKIE_CHECK(iv,CK_PINV_IV,UNUR_FAILURE);
-
-  /* We use a smaller tolerance for the Gauss-Lobatto integral */
-  utol *= PINV_UTOL_CORRECTION;
 
   /* get interpolation type: linear or higher order polynomials.   */
   /* we look at z[1] which cannot be 0. by pure chance when we use */
@@ -525,9 +496,9 @@ _unur_pinv_newton_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv,
 
     /* estimate CDF for interpolated x value */
     if (i==0 || xval==NULL)
-      u = _unur_pinv_Udiff(gen, x0, x, utol);
+      u = _unur_pinv_Udiff(gen, x0, x);
     else
-      u = ui[i-1] + _unur_pinv_Udiff(gen, xval[i], x+x0-xval[i], utol);
+      u = ui[i-1] + _unur_pinv_Udiff(gen, xval[i], x+x0-xval[i]);
 
     /* check u-value */
     if (!_unur_isfinite(u))

@@ -47,12 +47,10 @@ _unur_pinv_preprocessing (struct unur_gen *gen)
     if (_unur_pinv_computational_domain(gen) != UNUR_SUCCESS)
       return UNUR_FAILURE;
 
-#ifdef PINV_USE_CDFTABLE
     /* 1d. Compute area below PDF with requested accuracy and    */
     /*     store intermediate results from adaptive integration. */
     if (_unur_pinv_pdfarea(gen) != UNUR_SUCCESS) 
       return UNUR_FAILURE;
-#endif
     break;
 
   case PINV_VARIANT_CDF:
@@ -295,14 +293,15 @@ _unur_pinv_approx_pdfarea (struct unur_gen *gen )
     tol = PINV_UERROR_AREA_APPROX * GEN->area;
 
     /* check center of distribution */
-    DISTR.center = _unur_max(DISTR.center, GEN->dleft);
-    DISTR.center = _unur_min(DISTR.center, GEN->dright);
+    DISTR.center = _unur_max(DISTR.center, GEN->bleft);
+    DISTR.center = _unur_min(DISTR.center, GEN->bright);
 
-    /* compute area */
-    GEN->area  = _unur_pinv_adaptivelobatto5( gen, GEN->bleft,   DISTR.center - GEN->bleft,
-					      tol, NULL );
-    GEN->area += _unur_pinv_adaptivelobatto5( gen, DISTR.center, GEN->bright - DISTR.center,
-					      tol, NULL );
+    /* compute area approximately */
+    GEN->area  = 
+      _unur_lobatto_adaptive(_unur_pinv_eval_PDF, gen,
+			     GEN->bleft, DISTR.center - GEN->bleft, tol, NULL)
+      + _unur_lobatto_adaptive(_unur_pinv_eval_PDF, gen,
+			       DISTR.center, GEN->bright - DISTR.center, tol, NULL);
 
     /* check estimated area */
     if ( !_unur_isfinite(GEN->area) || _unur_iszero(GEN->area) ) {
@@ -334,8 +333,6 @@ _unur_pinv_approx_pdfarea (struct unur_gen *gen )
 } /* end of _unur_pinv_approx_pdfarea() */
 
 /*---------------------------------------------------------------------------*/
-#ifdef PINV_USE_CDFTABLE
-/*---------------------------------------------------------------------------*/
 
 int
 _unur_pinv_pdfarea (struct unur_gen *gen)
@@ -363,27 +360,22 @@ _unur_pinv_pdfarea (struct unur_gen *gen)
   tol = GEN->u_resolution * GEN->area * PINV_UERROR_CORRECTION * PINV_UTOL_CORRECTION;
 
   /* check center of distribution */
-  DISTR.center = _unur_max(DISTR.center, GEN->dleft);
-  DISTR.center = _unur_min(DISTR.center, GEN->dright);
+  DISTR.center = _unur_max(DISTR.center, GEN->bleft);
+  DISTR.center = _unur_min(DISTR.center, GEN->bright);
 
-  /* before we compute the area we have to reset the array for storing CDF values */
-  if (GEN->CDFtable)
-    _unur_pinv_CDFtable_append(GEN->CDFtable,GEN->bleft,0.);
-  
-  /* compute area. the ordering of the two integrals is important */
-  GEN->area  = _unur_pinv_adaptivelobatto5( gen, GEN->bleft,   DISTR.center - GEN->bleft,
-					    tol, GEN->CDFtable );
-  GEN->area += _unur_pinv_adaptivelobatto5( gen, DISTR.center, GEN->bright - DISTR.center,
-					    tol, GEN->CDFtable );
+  /* create object that contains approximate CDF */
+  GEN->aCDF = _unur_lobatto_init(_unur_pinv_eval_PDF, gen,
+				 GEN->bleft, DISTR.center, GEN->bright,
+				 tol, NULL, PINV_MAX_LOBATTO_IVS);
+
+  /* retrieve area below the PDF */
+  GEN->area = _unur_lobatto_integral(GEN->aCDF);
 
   /* check estimated area */
   if ( !_unur_isfinite(GEN->area) || _unur_iszero(GEN->area) ) {
     _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"cannot estimate area below PDF");
     return UNUR_FAILURE;
   }
-
-  /* reallocate memory for table of CDF values */
-  _unur_pinv_CDFtable_resize(&(GEN->CDFtable));
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into LOG file */
@@ -395,8 +387,6 @@ _unur_pinv_pdfarea (struct unur_gen *gen)
 
 } /* end of _unur_pinv_pdfarea() */
 
-/*---------------------------------------------------------------------------*/
-#endif /* defined(PINV_USE_CDFTABLE) */
 /*---------------------------------------------------------------------------*/
 
 int
@@ -782,7 +772,7 @@ _unur_pinv_cut_CDF( struct unur_gen *gen, double dom, double x0, double ul, doub
 /*****************************************************************************/
 
 double
-_unur_pinv_Udiff (struct unur_gen *gen, double x, double h, double utol)
+_unur_pinv_Udiff (struct unur_gen *gen, double x, double h)
      /*----------------------------------------------------------------------*/
      /* Compute difference CDF(x+h)-CDF(x) (approximately), where CDF is     */
      /* the integral of the given (quasi-) density.                          */
@@ -791,7 +781,6 @@ _unur_pinv_Udiff (struct unur_gen *gen, double x, double h, double utol)
      /*   gen ... pointer to generator object                                */
      /*   x   ... left boundary point of interval                            */
      /*   h   ... length of interval                                         */
-     /*   tol ... tolerated ABSOLUTE error                                   */
      /*                                                                      */
      /* return:                                                              */
      /*    (approximate) difference CDF(x+h) - CDF(x)                        */
@@ -799,7 +788,7 @@ _unur_pinv_Udiff (struct unur_gen *gen, double x, double h, double utol)
 {
   switch (gen->variant) {
   case PINV_VARIANT_PDF:
-    return _unur_pinv_Udiff_lobatto(gen,x,h,utol);
+    return _unur_lobatto_eval_diff(GEN->aCDF, x, h );
 
   case PINV_VARIANT_CDF:
     return CDF(x+h) - CDF(x);

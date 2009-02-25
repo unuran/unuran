@@ -6,9 +6,13 @@ AM_CPPFLAGS = \
  -I$(unuran_srcdir)/src \
  -I$(unuran_srcdir)/src/methods
 
-#lib_LTLIBRARIES = libunurexperimental.la
+lib_LTLIBRARIES = libunurexperimental.la
 
-#libunurexperimental_la_SOURCES = \
+libunurexperimental_la_SOURCES = \
+ ptx.c ptx.h ptx_struct.h \
+       ptx_newset.ch ptx_init.ch ptx_sample.ch \
+       ptx_prep.ch ptx_newton.ch ptx_debug.ch ptx_info.ch
+
 # ball.c    ball.h    ball_struct.h \
 # varou.c   varou.h   varou_struct.h \
 # walk.c    walk.h    walk_struct.h

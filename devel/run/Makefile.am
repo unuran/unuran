@@ -8,14 +8,11 @@ AM_CPPFLAGS = \
  -I$(unuran_srcdir)/src/tests \
  -I$(unuran_srcdir)/tests/testdistributions
 
-#LDADD = \
-# $(unuran_builddir)/tests/testdistributions/libtestdistributions.la \
-# $(top_builddir)/src/libunurexperimental.la \
-# $(unuran_builddir)/src/libunuran.la
-
 LDADD = \
  $(unuran_builddir)/tests/testdistributions/libtestdistributions.la \
- $(unuran_builddir)/src/libunuran.la
+ $(top_builddir)/src/libunurexperimental.la \
+ $(unuran_builddir)/src/libunuran.la \
+ -lRmath
 
 noinst_PROGRAMS = run 
 

@@ -365,6 +365,11 @@ static int _unur_pinv_interval( struct unur_gen *gen, int i, double x, double cd
 /* make a new interval i with left boundary point x and CDF(x).              */
 /*---------------------------------------------------------------------------*/
 
+static int _unur_pinv_lastinterval( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* update size of array and set all uninitialized values to 0 that.          */
+/*---------------------------------------------------------------------------*/
+
 static int _unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_interval *iv, 
 				     double *xval);
 /*---------------------------------------------------------------------------*/

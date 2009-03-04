@@ -171,9 +171,9 @@ _unur_pinv_create_table( struct unur_gen *gen )
     }
   }
 
-  /* update size of array */
-  GEN->iv = _unur_xrealloc( GEN->iv, (GEN->n_ivs+1) * sizeof(struct unur_pinv_interval) );
-  
+  /* update size of array (finish list) */
+  _unur_pinv_lastinterval(gen);
+
   /* set range for uniform random numbers */
   /* Umin = 0, Umax depends on area below PDF, tail cut-off points and round-off errors */
   GEN->Umax = GEN->iv[GEN->n_ivs].cdfi;
@@ -247,6 +247,43 @@ _unur_pinv_interval( struct unur_gen *gen, int i, double x, double cdfx )
 
   /* set bookmark in table of integral values */
   _unur_lobatto_find_linear(GEN->aCDF,x);
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+
+} /* end of _unur_pinv_interval() */
+
+/*---------------------------------------------------------------------------*/
+
+int 
+_unur_pinv_lastinterval( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* update size of array and set all uninitialized values to 0 that.     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  double *ui, *zi;
+  int i;
+
+  /* pointer to last interval */
+  struct unur_pinv_interval *last_iv = GEN->iv + GEN->n_ivs;
+  ui = last_iv->ui;
+  zi = last_iv->zi;
+  
+  /* update size of array */
+  GEN->iv = _unur_xrealloc( GEN->iv, (GEN->n_ivs+1) * sizeof(struct unur_pinv_interval) );
+
+  /* set all entries ui and zi in very last interval to 0 */
+  for (i=0; i<GEN->order; i++) {
+    ui[i] = 0.;
+    zi[i] = 0.;
+  }
 
   /* o.k. */
   return UNUR_SUCCESS;

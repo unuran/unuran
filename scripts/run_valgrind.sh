@@ -16,6 +16,8 @@ echo "run valgrind on ${PROG} ..."
 valgrind --log-file=${LOGFILENAME} ${VALGRINDOPTIONS} ./${PROG}
 
 echo ""; echo "Summary:"; echo ""
-grep ERROR ${LOGFILENAME}*; grep lost ${LOGFILENAME}*
+grep ERROR ${LOGFILENAME}*
+grep lost ${LOGFILENAME}*
+grep "All heap blocks were freed" ${LOGFILENAME}*
 
 exit 0

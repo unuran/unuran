@@ -9,6 +9,9 @@ Version 1.?.?: ??? 2009
           provided that the inverse CDF is implemented in distribution
           object.
 
+	- PINV: slightly fewer PDF evaluations during setup
+
+
 	* Distributions:
 
 	- CONT (continuous univariate distribution):

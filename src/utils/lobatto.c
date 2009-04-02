@@ -43,7 +43,7 @@
 
 static double 
 _unur_lobatto5_simple (UNUR_LOBATTO_FUNCT funct, struct unur_gen *gen,
-		       double x, double h);
+		       double x, double h, double *fx);
 /*---------------------------------------------------------------------------*/
 /* numerical integration of 'funct' over the interval (x,x+h)                */
 /* using Gauss-Lobatto integration with 5 points. (non-adaptive)             */
@@ -94,27 +94,38 @@ _unur_lobatto_table_resize (struct unur_lobatto_table *Itable);
 
 double
 _unur_lobatto5_simple (UNUR_LOBATTO_FUNCT funct, struct unur_gen *gen,
-		       double x, double h)
+		       double x, double h, double *fx)
      /*----------------------------------------------------------------------*/
      /* Numerical integration of 'funct' over the interval (x,x+h)           */
      /* using Gauss-Lobatto integration with 5 points. (non-adaptive)        */
-     /*                                                                      */
-     /* Halfs intervals recursively if error is too large.                   */
-     /*                                                                      */
-     /* The recursion stops when the ABSOLUTE error is less than the         */
-     /* respective given tolerances.                                         */
      /*                                                                      */
      /* parameters:                                                          */
      /*   funct ... integrand                                                */
      /*   gen   ... pointer to generator object                              */
      /*   x     ... left boundary point of interval                          */
      /*   h     ... length of interval                                       */
+     /*   fx    ... funct(x) (ignored if NULL or *fx<0)                      */
+     /*             set *fx <- funct(x+h)                                    */
      /*                                                                      */
      /* return:                                                              */
      /*   integral                                                           */
+     /*                                                                      */
+     /* store:                                                               */
+     /*   funct(x+h) in *fx  if fx!=NULL                                     */
      /*----------------------------------------------------------------------*/
 { 
-  return (9*(FKT(x)+FKT(x+h))+49.*(FKT(x+h*W1)+FKT(x+h*W2))+64*FKT(x+h/2.))*h/180.;
+  double fl, fr;
+
+  if (fx==NULL) {
+    fl = FKT(x);
+    fr = FKT(x+h);
+  }
+  else {
+    fl = (*fx>=0.) ? *fx : FKT(x);
+    fr = *fx = FKT(x+h);
+  }
+
+  return (9*(fl+fr)+49.*(FKT(x+h*W1)+FKT(x+h*W2))+64*FKT(x+h/2.))*h/180.;
 } /* end of _unur_lobatto5_simple() */
 
 /*---------------------------------------------------------------------------*/
@@ -279,7 +290,7 @@ _unur_lobatto5_recursion (UNUR_LOBATTO_FUNCT funct, struct unur_gen *gen,
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_lobatto_eval_diff (struct unur_lobatto_table *Itable, double x, double h )
+_unur_lobatto_eval_diff (struct unur_lobatto_table *Itable, double x, double h, double *fx)
      /*----------------------------------------------------------------------*/
      /* Numerical integration of 'funct' over the interval (x,x+h) using     */
      /* table of integral values together with (adaptive) Gauss-Lobatto      */
@@ -289,15 +300,20 @@ _unur_lobatto_eval_diff (struct unur_lobatto_table *Itable, double x, double h )
      /* integral values with x-value larger than the given 'x'.              */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   gen    ... pointer to generator object                             */
-     /*   funct  ... integrand                                               */
+     /*   Itable ... table for storing integral values (may be NULL)         */
      /*   x      ... left boundary point of interval                         */
      /*   h      ... length of interval                                      */
-     /*   tol    ... tolerated ABSOLUTE error                                */
-     /*   Itable ... table for storing integral values (may be NULL)         */
+     /*   fx     ... funct(x) (ignored if NULL or *fx<0)                     */
+     /*              set *fx <- funct(x+h) if _unur_lobatto5_simple called   */
+     /*              set *fx <- -1.        otherwise                         */
      /*                                                                      */
      /* return:                                                              */
      /*   integral                                                           */
+     /*                                                                      */
+     /* store:                                                               */
+     /*   if (fx!=NULL)                                                      */
+     /*       *fx = funct(x+h)      if _unur_lobatto5_simple is called       */
+     /*       *fx = -1. (=unknown)  if _unur_lobatto5_adaptive is called     */
      /*----------------------------------------------------------------------*/
 {
   int cur;                    /* pointer to current position in table */
@@ -305,6 +321,11 @@ _unur_lobatto_eval_diff (struct unur_lobatto_table *Itable, double x, double h )
   double Q;                   /* value of integral */
   struct unur_lobatto_nodes *values;
   int n_values;
+
+  /* clear function values if it does not contain the correct value. */
+  /* this is in particular necessary whenever we call                */
+  /* _unur_lobatto5_adaptive instead if _unur_lobatto5_simple !!     */
+#define clear_fx() if(fx!=NULL){*fx=-1.;}
 
   /* check for invalid NULL pointer */
   CHECK_NULL(Itable,INFINITY);
@@ -316,11 +337,13 @@ _unur_lobatto_eval_diff (struct unur_lobatto_table *Itable, double x, double h )
   /* arguments which are not finite (inf or NaN) cause infinite recursions */
   if (!_unur_isfinite(x+h)) {
     /* _unur_warning(gen->genid,UNUR_ERR_INF,"boundaries of integration domain not finite"); */
+    clear_fx();
     return INFINITY;
   }
 
   /* check for boundaries of integration table */
   if (x < Itable->bleft || x+h > Itable->bright) {
+    clear_fx();
     return _unur_lobatto5_adaptive(Itable->funct, Itable->gen, x, h, 
 				   Itable->tol, Itable->uerror, NULL);
   }
@@ -336,6 +359,7 @@ _unur_lobatto_eval_diff (struct unur_lobatto_table *Itable, double x, double h )
   if (cur >= n_values) {
     /* we must use adaptive Lobatto integration if the table for  */
     /* integral values was too small.                             */
+    clear_fx();
     return _unur_lobatto5_adaptive(Itable->funct, Itable->gen, x, h, 
 				   Itable->tol, Itable->uerror, NULL);
   }
@@ -349,7 +373,7 @@ _unur_lobatto_eval_diff (struct unur_lobatto_table *Itable, double x, double h )
       values[cur].x > x+h) {
     /* there is at most one entry in the interval [x,x+h]. */
     /* thus we (can) use simple Lobatto integration.       */
-    return _unur_lobatto5_simple(Itable->funct, Itable->gen, x, h);
+    return _unur_lobatto5_simple(Itable->funct, Itable->gen, x, h, fx);
   }
 
   /* else:                                                         */
@@ -359,13 +383,15 @@ _unur_lobatto_eval_diff (struct unur_lobatto_table *Itable, double x, double h )
   /* for the remaining two subintervals at the boundary [x,x+h]    */
   /* we use simple Lobatto integration.                            */
 
-  Q = _unur_lobatto5_simple(Itable->funct, Itable->gen, x, x1-x);
+  Q = _unur_lobatto5_simple(Itable->funct, Itable->gen, x, x1-x, fx);
   do {
     Q += values[cur].u;
     /*      = _unur_lobatto5(gen, funct, x1, x2-x1) */
     x1 = values[cur].x;
     ++cur;
   } while (cur < n_values && values[cur].x <= x+h);
+  /* now *fx does not hold PDF(x1). so we have to clear it */
+  clear_fx();
 
   /* We have to distinguish two cases: */
   if (cur >= n_values) {
@@ -375,13 +401,14 @@ _unur_lobatto_eval_diff (struct unur_lobatto_table *Itable, double x, double h )
   }
   else {
     /* the table is not too small but x+h is outside the computational domain */
-    Q += _unur_lobatto5_simple(Itable->funct, Itable->gen, x1, x+h-x1);
+    Q += _unur_lobatto5_simple(Itable->funct, Itable->gen, x1, x+h-x1, fx);
   }
       
   return Q;
 
-} /* end of _unur_lobatto_eval() */
+#undef clear_fx
 
+} /* end of _unur_lobatto_eval_diff() */
 
 /*---------------------------------------------------------------------------*/
 

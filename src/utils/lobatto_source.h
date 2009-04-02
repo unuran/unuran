@@ -65,7 +65,7 @@ int _unur_lobatto_find_linear (struct unur_lobatto_table *Itable, double x);
 /* find first subinterval where left boundary is not less than x.            */ 
 /*---------------------------------------------------------------------------*/
 
-double _unur_lobatto_eval_diff (struct unur_lobatto_table *Itable, double x, double h );
+double _unur_lobatto_eval_diff (struct unur_lobatto_table *Itable, double x, double h, double *fx);
 /*---------------------------------------------------------------------------*/
 /* evaluate integration object over the interval (x,x+h).                    */
 /*---------------------------------------------------------------------------*/

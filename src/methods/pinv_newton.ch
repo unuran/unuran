@@ -309,6 +309,7 @@ _unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_interval *iv,
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
+  double fx = -1.;       /* PDF at x  (-1. --> PDF unknown) */
   double *ui = iv->ui;   /* u-values for Newton interpolation */
   double *zi = iv->zi;   /* coefficients of Newton interpolation */
   double xi, dxi;        /* boundary and length of i-th subinterval */
@@ -327,7 +328,7 @@ _unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_interval *iv,
     dxi = xval[i+1]-xval[i];
 
     /* compute integral of PDF in interval (xi,xi+dxi) */
-    area = _unur_pinv_Udiff(gen, xi, dxi);
+    area = _unur_pinv_Udiff(gen, xi, dxi, &fx);
     if (_unur_iszero(area)) return UNUR_ERR_SILENT;
 
     /* construction points of interpolation polynomial of CDF^{-1} */
@@ -394,7 +395,7 @@ _unur_pinv_linear_create (struct unur_gen *gen, struct unur_pinv_interval *iv,
   }
 
   /* area below PDF */
-  area = _unur_pinv_Udiff(gen, x0, x1-x0);
+  area = _unur_pinv_Udiff(gen, x0, x1-x0, NULL);
 
   /* zi[0] contains the slope of the polynomial */
   ui[0] = area;
@@ -533,9 +534,9 @@ _unur_pinv_newton_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv,
 
     /* estimate CDF for interpolated x value */
     if (i==0 || xval==NULL)
-      u = _unur_pinv_Udiff(gen, x0, x);
+      u = _unur_pinv_Udiff(gen, x0, x, NULL);
     else
-      u = ui[i-1] + _unur_pinv_Udiff(gen, xval[i], x+x0-xval[i]);
+      u = ui[i-1] + _unur_pinv_Udiff(gen, xval[i], x+x0-xval[i], NULL);
 
     /* check u-value */
     if (!_unur_isfinite(u))

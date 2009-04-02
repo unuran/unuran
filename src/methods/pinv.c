@@ -344,7 +344,7 @@ static double _unur_pinv_cut_CDF( struct unur_gen *gen, double dom, double x0, d
 /*       using CDF.                                                          */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_pinv_Udiff (struct unur_gen *gen, double x, double h);
+static double _unur_pinv_Udiff (struct unur_gen *gen, double x, double h, double *fx);
 /*---------------------------------------------------------------------------*/
 /* compute difference CDF(x+h)-CDF(x) (approximately), where CDF is the      */
 /* integral of the given (quasi-) density.                                   */

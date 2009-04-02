@@ -772,7 +772,7 @@ _unur_pinv_cut_CDF( struct unur_gen *gen, double dom, double x0, double ul, doub
 /*****************************************************************************/
 
 double
-_unur_pinv_Udiff (struct unur_gen *gen, double x, double h)
+_unur_pinv_Udiff (struct unur_gen *gen, double x, double h, double *fx)
      /*----------------------------------------------------------------------*/
      /* Compute difference CDF(x+h)-CDF(x) (approximately), where CDF is     */
      /* the integral of the given (quasi-) density.                          */
@@ -781,14 +781,21 @@ _unur_pinv_Udiff (struct unur_gen *gen, double x, double h)
      /*   gen ... pointer to generator object                                */
      /*   x   ... left boundary point of interval                            */
      /*   h   ... length of interval                                         */
+     /*   fx  ... PDF(x) (ignored if NULL or *fx<0)                          */
+     /*           set *fx <- PDF(x+h)                                        */
      /*                                                                      */
      /* return:                                                              */
      /*    (approximate) difference CDF(x+h) - CDF(x)                        */
+     /*                                                                      */
+     /* store:                                                               */
+     /*   if (fx!=NULL)                                                      */
+     /*       *fx = PDF(x+h)        if computed in _unur_lobatto_eval_diff   */
+     /*       *fx = -1. (=unknown)  otherwise                                */
      /*----------------------------------------------------------------------*/
 {
   switch (gen->variant) {
   case PINV_VARIANT_PDF:
-    return _unur_lobatto_eval_diff(GEN->aCDF, x, h );
+    return _unur_lobatto_eval_diff(GEN->aCDF, x, h, fx);
 
   case PINV_VARIANT_CDF:
     return CDF(x+h) - CDF(x);

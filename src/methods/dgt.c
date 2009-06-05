@@ -17,7 +17,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2009 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -635,6 +635,61 @@ _unur_dgt_sample( struct unur_gen *gen )
   return (j + DISTR.domain[0]);
 
 } /* end of _unur_dgt_sample() */
+
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_dgt_eval_invcdf( const struct unur_gen *gen, double u )
+     /*----------------------------------------------------------------------*/
+     /* evaluate inverse CDF at u.                                           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*   u   ... argument for inverse CDF (0<=u<=1, no validation!)         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   integer (inverse CDF)                                              */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return INT_MAX                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  int j;
+
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, gen, INT_MAX );
+  if ( gen->method != UNUR_METH_DGT ) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_INVALID,"");
+    return INT_MAX;
+  }
+  COOKIE_CHECK(gen,CK_DGT_GEN,INT_MAX);
+
+  /* check range of u */
+  if ( ! (u>0. && u<1.)) {
+    if ( ! (u>=0. && u<=1.)) {
+      _unur_warning(gen->genid,UNUR_ERR_DOMAIN,"U not in [0,1]");
+    }
+    if (u<=0.) return DISTR.domain[0];
+    if (u>=1.) return DISTR.domain[1];
+    return INT_MAX;  /* u == NaN */
+  }
+
+  /* look up in guide table ... */
+  j = GEN->guide_table[(int)(u * GEN->guide_size)];
+  /* ... and search */
+  u *= GEN->sum;
+  while (GEN->cumpv[j] < u) j++;
+
+  j+=DISTR.domain[0];
+
+  /* validate range */
+  if (j<DISTR.domain[0]) j = DISTR.domain[0];
+  if (j>DISTR.domain[1]) j = DISTR.domain[1];
+
+  return j;
+
+} /* end of unur_dgt_eval_invcdf() */
 
 /*****************************************************************************/
 /**  Auxilliary Routines                                                    **/

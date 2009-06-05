@@ -151,12 +151,19 @@ double unur_quantile ( UNUR_GEN *generator, double U );
    NINV, @pxref{NINV}.
    @item
    PINV, @pxref{PINV}.
+   @item
+   CSTD, @pxref{CSTD}. @*
+   This requires that @var{generator} implements an inversion method.
+   @item
+   DGT, @pxref{DGT}. @*
+   The return value is (of course) type casted to @code{double}.
    @end itemize
 
    @strong{Important:} This routine does @strong{not} check whether 
    @var{generator} is an invalid NULL pointer.
 
-   In case of an error UNUR_INFINITY is returned.
+   In case of an error UNUR_INFINITY or INT_MAX 
+   (depending on the type of @var{generator}) is returned.
 */
 
 /*---------------------------------------------------------------------------*/

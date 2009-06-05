@@ -145,3 +145,15 @@ int unur_dgt_set_variant( UNUR_PAR *parameters, unsigned variant );
 /* =END */
 
 /*---------------------------------------------------------------------------*/
+
+/** NOT IN MANUAL **/
+int unur_dgt_eval_invcdf( const UNUR_GEN *generator, double u );
+/*
+   Compute the @var{U} quantile of the discrete distribution in
+   @var{generator}, i.e., the largest integer I such that P(X<=I) <= U.
+   If @var{u} is out of the domain (0,1) then @code{unur_errno} is set
+   to @code{UNUR_ERR_DOMAIN} and the respective bound of
+   the domain of the distribution are returned.
+*/
+
+/*---------------------------------------------------------------------------*/

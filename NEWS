@@ -4,6 +4,7 @@ Version 1.?.?: ??? 2009
 	* Methods:
 
 	- unur_quantile() now also supports CSTD with inversion 
+          and DGT (for discrete distribution).
 
         - CSTD: generic inversion method for continuous distribution
           provided that the inverse CDF is implemented in distribution

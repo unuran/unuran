@@ -35,7 +35,7 @@ _unur_pinv_init( struct unur_par *par )
      /*----------------------------------------------------------------------*/
 { 
   struct unur_gen *gen;
-  double lfm;
+  double lfc;
 
   /* check arguments */
   _unur_check_NULL( GENTYPE,par,NULL );
@@ -51,24 +51,28 @@ _unur_pinv_init( struct unur_par *par )
   _unur_par_free(par);
   if (!gen) return NULL;
 
-  /* compute rescaling factor for PDF */
-  /* (only used when logPDF is given) */
-  if (DISTR.logpdf != NULL &&
-      (gen->distr->set & UNUR_DISTR_SET_MODE) &&
-      ! (gen->variant & PINV_VARIANT_CDF) &&
-      !_unur_FP_less(DISTR.mode,DISTR.domain[0]) &&
-      !_unur_FP_greater(DISTR.mode,DISTR.domain[1]) ) {
-    lfm = (DISTR.logpdf)(DISTR.mode,gen->distr);
-    /* rescaling results in more evaluations of the logPDF, */
-    /* when the logPDF is approximately 0.                  */
-    /* so we only rescale the logPDF when it is too small.  */
-    if (lfm < -3.)
-      GEN->logPDFconstant = (DISTR.logpdf)(DISTR.mode,gen->distr);
-  }
-
   /* check parameters */
   if (_unur_pinv_check_par(gen) != UNUR_SUCCESS) {
     _unur_pinv_free(gen); return NULL;
+  }
+
+  /* compute rescaling factor for PDF */
+  /* (only used when logPDF is given) */
+  if (DISTR.logpdf != NULL && ! (gen->variant & PINV_VARIANT_CDF) ) {
+    /* use mode if available */
+    if ( (gen->distr->set & UNUR_DISTR_SET_MODE) &&
+	 !_unur_FP_less(DISTR.mode,DISTR.domain[0]) &&
+	 !_unur_FP_greater(DISTR.mode,DISTR.domain[1]) ) {
+      lfc = (DISTR.logpdf)(DISTR.mode,gen->distr);
+    }
+    else { /* use center */
+      lfc = (DISTR.logpdf)(DISTR.center,gen->distr);
+    }
+    /* rescaling results in more evaluations of the logPDF, */
+    /* when the logPDF is approximately 0.                  */
+    /* so we only rescale the logPDF when it is too small.  */
+    if (lfc < -3.)
+      GEN->logPDFconstant = lfc;
   }
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -239,8 +243,8 @@ _unur_pinv_check_par( struct unur_gen *gen )
   /* center of distribution */
   DISTR.center = unur_distr_cont_get_center(gen->distr);
   if (DISTR.center < GEN->dleft || DISTR.center > GEN->dright) {
-    _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,
-		"center must be in given domain of distribution");
+    _unur_warning(gen->genid,UNUR_ERR_GENERIC,
+		"center moved into domain of distribution");
     DISTR.center = _unur_max(DISTR.center,GEN->dleft);
     DISTR.center = _unur_min(DISTR.center,GEN->dright);
   }

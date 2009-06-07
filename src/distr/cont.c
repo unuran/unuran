@@ -1874,6 +1874,8 @@ unur_distr_cont_set_domain( struct unur_distr *distr, double left, double right 
      /*   the new boundary points may be +/- INFINITY                        */
      /*----------------------------------------------------------------------*/
 {
+  int unsigned is_set = 0u;
+
   /* check arguments */
   _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
   _unur_check_distr_object( distr, CONT, UNUR_ERR_DISTR_INVALID );
@@ -1885,14 +1887,20 @@ unur_distr_cont_set_domain( struct unur_distr *distr, double left, double right 
   }
 
   /* we have to deal with the mode */
-  if ( (distr->set & UNUR_DISTR_SET_MODE) &&
-       (left  >= DISTR.domain[0]) &&
-       (right <= DISTR.domain[1]) ) {
-    /* mode has been set and new domain is subset of old domain */
+  if ( distr->set & UNUR_DISTR_SET_MODE ) {
+    is_set |= UNUR_DISTR_SET_MODE;
+    /* mode has been set and new domain might be subset of old domain */
     /* we assume the density is unimodal and thus monotone on
        either side of the mode!! */
     if ( DISTR.mode < left)       DISTR.mode = left;
     else if ( DISTR.mode > right) DISTR.mode = right;
+  }
+
+  /* we have to deal with the mode */
+  if ( distr->set & UNUR_DISTR_SET_CENTER ) {
+    is_set |= UNUR_DISTR_SET_CENTER;
+    if ( DISTR.center < left)       DISTR.center = left;
+    else if ( DISTR.center > right) DISTR.center = right;
   }
 
   /* store data */
@@ -1902,22 +1910,15 @@ unur_distr_cont_set_domain( struct unur_distr *distr, double left, double right 
   /* changelog */
   distr->set |= UNUR_DISTR_SET_DOMAIN;
 
-  /* if distr is an object for a standard distribution, this   */
-  /* not the original domain of it. (not a "standard domain")  */
-  /* However, since we have changed the domain, we assume      */
-  /* that this is not a truncated distribution.                */
-  /* At last we have to mark all derived parameters as unknown */
-  if (distr->set & UNUR_DISTR_SET_MODE) {
-    distr->set &= ~(UNUR_DISTR_SET_STDDOMAIN |
-		    UNUR_DISTR_SET_TRUNCATED | 
-		    UNUR_DISTR_SET_MASK_DERIVED );
-    distr->set |= UNUR_DISTR_SET_MODE;
-  }
-  else {
-    distr->set &= ~(UNUR_DISTR_SET_STDDOMAIN |
-		    UNUR_DISTR_SET_TRUNCATED | 
-		    UNUR_DISTR_SET_MASK_DERIVED );
-  }
+  /* if distr is an object for a standard distribution, this     */
+  /* is not the original domain of it. (not a "standard domain") */
+  /* However, since we have changed the domain, we assume        */
+  /* that this is not a truncated distribution.                  */
+  /* At last we have to mark all derived parameters as unknown.  */
+  distr->set &= ~(UNUR_DISTR_SET_STDDOMAIN |
+		  UNUR_DISTR_SET_TRUNCATED | 
+		  UNUR_DISTR_SET_MASK_DERIVED );
+  distr->set |= is_set;
 
   if (distr->base) {
     /* for derived distributions (e.g. order statistics)

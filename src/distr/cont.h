@@ -408,7 +408,7 @@ int unur_distr_cont_set_domain( UNUR_DISTR *distribution, double left, double ri
    mode is set to the corresponding boundary of the new domain.
    If this result is not the desired it must be changed by using a 
    unur_distr_cont_set_mode() call (or a unur_distr_cont_upd_mode()
-   call).
+   call). The same holds for the center of the distribution.
 */
 
 int unur_distr_cont_get_domain( const UNUR_DISTR *distribution, double *left, double *right );
@@ -547,8 +547,7 @@ int unur_distr_cont_set_center( UNUR_DISTR *distribution, double center );
    round-off error. If not given explicitly a default is used.
 
    @emph{Important:} This call does not check whether the center is
-   contained in the given domain. Similarly
-   unur_distr_cont_set_domain() does not adjust the center properly.
+   contained in the given domain. 
 
    Default: The mode, if set by a unur_distr_cont_set_mode() or 
    unur_distr_cont_upd_mode() call; otherwise @code{0}.

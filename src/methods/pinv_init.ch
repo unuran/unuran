@@ -59,15 +59,19 @@ _unur_pinv_init( struct unur_par *par )
   /* compute rescaling factor for PDF */
   /* (only used when logPDF is given) */
   if (DISTR.logpdf != NULL && ! (gen->variant & PINV_VARIANT_CDF) ) {
+    lfc = UNUR_INFINITY;
+
     /* use mode if available */
     if ( (gen->distr->set & UNUR_DISTR_SET_MODE) &&
 	 !_unur_FP_less(DISTR.mode,DISTR.domain[0]) &&
 	 !_unur_FP_greater(DISTR.mode,DISTR.domain[1]) ) {
       lfc = (DISTR.logpdf)(DISTR.mode,gen->distr);
     }
-    else { /* use center */
+
+    /* use center otherwise (or if logPDF(mode)==INFINITY) */ 
+    if (!_unur_isfinite(lfc))
       lfc = (DISTR.logpdf)(DISTR.center,gen->distr);
-    }
+
     /* rescaling results in more evaluations of the logPDF, */
     /* when the logPDF is approximately 0.                  */
     /* so we only rescale the logPDF when it is too small.  */
@@ -415,6 +419,8 @@ double
 _unur_pinv_eval_PDF (double x, struct unur_gen *gen)
      /*----------------------------------------------------------------------*/
      /* call to PDF.                                                         */
+     /* if PDF(x) == INFINITY (i.e., x is a pole of the PDF)                 */
+     /* we compute PDF(x+dx) for a small dx instead.                         */
      /*                                                                      */
      /* parameters:                                                          */
      /*   x   ... argument of PDF                                            */
@@ -425,14 +431,32 @@ _unur_pinv_eval_PDF (double x, struct unur_gen *gen)
      /*----------------------------------------------------------------------*/
 {
   struct unur_distr *distr = gen->distr;
+  double fx, dx;
+  int i;
 
-  if (DISTR.logpdf != NULL) {
-    return (exp((DISTR.logpdf)(x,distr) - GEN->logPDFconstant));
-  }
-  else {
-    return ((DISTR.pdf)(x,distr));
+  for (i=1; i<=2; i++) {
+    /* we try two times:                               */
+    /* one time for given x, the second time for x+dx. */
+
+    /* compute PDF(x) */
+    if (DISTR.logpdf != NULL)
+      fx = exp((DISTR.logpdf)(x,distr) - GEN->logPDFconstant);
+    else
+      fx = (DISTR.pdf)(x,distr);
+
+    /* check for pole (i.e., PDF(x)==INFINITY) */
+    if (fx >= INFINITY) {
+      /* pole at x --> move x slightly */
+      dx = 2.*fabs(x)*DBL_EPSILON;
+      dx = _unur_max(dx,2.*DBL_MIN);
+      x += ((x - GEN->bleft) < (GEN->bright - x)) ? dx : -dx; 
+    }
+
+    else /* not a pole */
+      break;
   }
 
+  return fx;
 } /* end of _unur_pinv_eval_PDF() */
 
 /*---------------------------------------------------------------------------*/

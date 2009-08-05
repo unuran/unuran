@@ -92,9 +92,6 @@ static int _unur_upd_mode_logistic( UNUR_DISTR *distr );
 static int _unur_upd_area_logistic( UNUR_DISTR *distr );
 static int _unur_set_params_logistic( UNUR_DISTR *distr, const double *params, int n_params );
 
-int _unur_cstd_generic_init( struct unur_par *par, struct unur_gen *gen );
-
-
 /*---------------------------------------------------------------------------*/
 
 double

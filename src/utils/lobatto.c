@@ -266,10 +266,11 @@ _unur_lobatto5_recursion (UNUR_LOBATTO_FUNCT funct, struct unur_gen *gen,
     }
     else {
       /* recompute with shorter intervals */
-      return ( _unur_lobatto5_recursion(funct,gen,x,h/2,tol/1.,uerror,
-					intl,fl,flc,fc, W_accuracy,Itable) +
-	       _unur_lobatto5_recursion(funct,gen,x+h/2,h/2,tol/1.,uerror,
-					intr,fc,frc,fr, W_accuracy,Itable) );
+      int2  = _unur_lobatto5_recursion(funct,gen,x,h/2,tol/1.,uerror,
+				      intl,fl,flc,fc, W_accuracy,Itable);
+      int2 += _unur_lobatto5_recursion(funct,gen,x+h/2,h/2,tol/1.,uerror,
+				       intr,fc,frc,fr, W_accuracy,Itable);
+      return int2;
     }
   }
 
@@ -488,7 +489,8 @@ _unur_lobatto_init (UNUR_LOBATTO_FUNCT funct, struct unur_gen *gen,
   /* compute integral over whole domain               */
   /* (the ordering of the two integrals is important) */
   Itable->integral = 
-    _unur_lobatto5_adaptive(funct, gen, left, center-left, tol, uerror, Itable ) +
+    _unur_lobatto5_adaptive(funct, gen, left, center-left, tol, uerror, Itable );
+  Itable->integral += 
     _unur_lobatto5_adaptive(funct, gen, center, right-center, tol, uerror, Itable );
 
   /* possibly shrink memory block for table of integral values */

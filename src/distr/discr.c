@@ -1551,10 +1551,10 @@ _unur_distr_discr_find_mode(struct unur_distr *distr )
   }   /* --- end while(1) --- */
 
   /* changelog */
-  distr->set |= UNUR_DISTR_SET_MODE | UNUR_DISTR_SET_MODE_APPROX ; 
+  /*   distr->set |= UNUR_DISTR_SET_MODE | UNUR_DISTR_SET_MODE_APPROX ;  */
 
   /* o.k. */
-  return UNUR_SUCCESS;
+  /*   return UNUR_SUCCESS; */
 
 } /* end of _unur_distr_discr_find_mode() */
 

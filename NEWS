@@ -1,4 +1,12 @@
 
+Version 1.?.?: ???? 2009
+
+	* Methods:
+
+	- PINV: fixed bug that occured when SunStudio compiler with
+          flag -xO5 was used (initialization failed).
+
+
 Version 1.4.0: June 2009
 
 	* Methods:

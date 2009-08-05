@@ -606,7 +606,6 @@ _unur_pinv_computational_domain_CDF (struct unur_gen *gen)
      /*----------------------------------------------------------------------*/
 {
   double tailcut_error;    /* threshold values for cut-off points */
-  double range;            /* length of current working domain */
   double fl, fr;
 
   /* first we have to chech the domain of the distribution */
@@ -623,9 +622,6 @@ _unur_pinv_computational_domain_CDF (struct unur_gen *gen)
   tailcut_error = _unur_min( tailcut_error, PINV_TAILCUTOFF_MAX );
   tailcut_error = _unur_max( tailcut_error, 2*DBL_EPSILON );
   tailcut_error *= GEN->area * PINV_UERROR_CORRECTION;
-
-  /* length of current working domain */
-  range = GEN->bright-GEN->bleft;
 
   /* compute cut-off points for tails */
   if(GEN->sleft) {

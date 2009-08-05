@@ -164,15 +164,13 @@ unur_pinv_estimate_error( const UNUR_GEN *gen, int samplesize, double *max_error
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 { 
-  double score;
-
   /* check arguments */
   _unur_check_NULL(GENTYPE, gen, UNUR_ERR_NULL);  
   COOKIE_CHECK(gen,CK_PINV_GEN,UNUR_ERR_COOKIE);
 
   /* run test */
-  score = unur_test_inverror(gen, max_error, MAE, 1.e-20, samplesize, 
-			     FALSE, FALSE, FALSE, NULL);
+  unur_test_inverror(gen, max_error, MAE, 1.e-20, samplesize, 
+		     FALSE, FALSE, FALSE, NULL);
 
   /* o.k. */
   return UNUR_SUCCESS;

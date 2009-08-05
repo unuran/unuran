@@ -1425,14 +1425,14 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
   struct unur_arou_segment *seg, *seg_new;
   double left_angle, right_angle, diff_angle, angle;
   double x, x_last, fx, fx_last;
-  int i, use_center, is_center, was_center, is_increasing;
+  int i, use_center, is_center, is_increasing;
 
   /* check arguments */
   CHECK_NULL(par,UNUR_ERR_NULL);  COOKIE_CHECK(par,CK_AROU_PAR,UNUR_ERR_COOKIE);
   CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_AROU_GEN,UNUR_ERR_COOKIE);
 
   /* initialize boolean */
-  is_center = was_center = FALSE;
+  is_center = FALSE;
 
   /* use center as construction point ? */
   use_center = (gen->variant & AROU_VARFLAG_USECENTER) ? TRUE : FALSE;
@@ -1463,7 +1463,6 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
 
   /* now all the other points */
   for( i=0; i<=PAR->n_starting_cpoints; i++ ) {
-    was_center = is_center;
 
     /* starting point */
     if (i < PAR->n_starting_cpoints) {
@@ -2009,7 +2008,6 @@ _unur_arou_segment_split( struct unur_gen *gen, struct unur_arou_segment *seg_ol
 {
   struct unur_arou_segment *seg_newr;    /* pointer to newly created segment */
   struct unur_arou_segment seg_bak;      /* space for saving data of segment */
-  double backup;
   double Adiff;
 
   /* check arguments */
@@ -2041,14 +2039,12 @@ _unur_arou_segment_split( struct unur_gen *gen, struct unur_arou_segment *seg_ol
       /* just chop off the right part of segment */
       /* we only have to change tangent line v/u = x
 	 at the right hand vertex */
-      backup = seg_oldl->drtp[1];
       seg_oldl->drtp[1] = x;    /* du */
     }
     else if (seg_oldl->ltp[1] <= 0. && seg_oldl->ltp[0] <= 0. ) {
       /* just chop off the left part of segment */
       /* we only have to change tangent line v/u = x
 	 at the left hand vertex */
-      backup = seg_oldl->dltp[1];
       seg_oldl->dltp[1] = x;    /* du */
     }
     else {

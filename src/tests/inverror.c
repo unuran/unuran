@@ -79,7 +79,6 @@ unur_test_inverror( const UNUR_GEN *gen,
 {
 #define DISTR   gen->distr->data.cont
   
-  UNUR_FUNCT_CONT *cdf;      /* pointer to CDF */
   double CDFmin, CDFmax;     /* minimum and maximum of CDF in given domain */
 
   double (*quantile)(const UNUR_GEN *, double);  /* pointer to quantile function */
@@ -119,7 +118,6 @@ unur_test_inverror( const UNUR_GEN *gen,
     _unur_error(test_name,UNUR_ERR_GENERIC,"CDF required");
     return -2.;
   }
-  cdf = DISTR.cdf;
 
   /* range of CDF */
   CDFmin = (DISTR.trunc[0] > -INFINITY) ? _unur_cont_CDF((DISTR.trunc[0]),(gen->distr)) : 0.;

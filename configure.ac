@@ -33,8 +33,9 @@ dnl unuran-1.2.4   9:4:2
 dnl unuran-1.3.0   10:0:0
 dnl unuran-1.3.1   10:0:0
 dnl unuran-1.4.0   11:0:1
+dnl unuran-1.4.1   11:1:1
 
-UNURAN_LT_VERSION="11:0:1"
+UNURAN_LT_VERSION="11:1:1"
 AC_SUBST([UNURAN_LT_VERSION])
 
 dnl use maintainer mode

@@ -266,6 +266,13 @@ _unur_lobatto5_recursion (UNUR_LOBATTO_FUNCT funct, struct unur_gen *gen,
     }
     else {
       /* recompute with shorter intervals */
+      /* Remark: it is important that the two calls to
+	 _unur_lobatto5_recursion() must be done in exactly this order!
+	 Otherwise 'Itable' gets corrupted.
+	 So we need to two seperate statements and store the results
+	 in the temporary variabel 'int2' to prevent the compiler to
+	 revert this order.
+       */
       int2  = _unur_lobatto5_recursion(funct,gen,x,h/2,tol/1.,uerror,
 				      intl,fl,flc,fc, W_accuracy,Itable);
       int2 += _unur_lobatto5_recursion(funct,gen,x+h/2,h/2,tol/1.,uerror,
@@ -486,8 +493,13 @@ _unur_lobatto_init (UNUR_LOBATTO_FUNCT funct, struct unur_gen *gen,
   /* store left boundary point in table */
   _unur_lobatto_table_append(Itable,left,0.);
 
-  /* compute integral over whole domain               */
-  /* (the ordering of the two integrals is important) */
+  /* compute integral over whole domain                */
+  /* Remark: it is important that the two calls to
+     _unur_lobatto5_adaptive() must be done in exactly this order!
+     Otherwise 'Itable' gets corrupted.
+     So we need two seperate statements to prevent the compiler to
+     revert this order.
+  */
   Itable->integral = 
     _unur_lobatto5_adaptive(funct, gen, left, center-left, tol, uerror, Itable );
   Itable->integral += 

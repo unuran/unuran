@@ -311,6 +311,11 @@ UnurTestDistrResultFile["F", isCONT, datafile, fparams, RunSampleSize, FRatioDis
 fparams = {{1/2,10}, {1/100,100}};
 UnurTestDistrResultFile["gamma", isCONT, datafile, fparams, RunSampleSize];
 
+(* InverseGaussianDistribution *)
+(* Remark: the CDF values differ for mu < 0 *)
+fparams = {{1,100}, {1/100,10}};
+UnurTestDistrResultFile["ig", isCONT, datafile, fparams, RunSampleSize, InverseGaussianDistribution];
+
 (* Laplace *)
 (* Remark: dPDF is computed incorrectly! *)
 fparams = {{-100,100}, {1/100,100}};

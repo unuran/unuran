@@ -51,16 +51,9 @@ RunSampleSize = 10000;
 isCONT = 1;
 isDISCR = 2;
 
-(* === Load statistics packages =============================================*)
-<<Statistics`ContinuousDistributions`
-<<Statistics`DiscreteDistributions`
-
 (* === Declare additional distributions ==================================== *)
 
 (* --- Defaults (to avoid error with C program) ---------------------------- *)
-
-CDF[___] := 0.;
-PDF[___] := 0.;
 
 (* --- Extreme Value II Distribution --------------------------------------- *)
 
@@ -83,32 +76,6 @@ ExtremeValueIIDistribution/: CDF[ExtremeValueIIDistribution[k_,zeta_,theta_], x_
 
 ExtremeValueIIDistribution/: Random[ExtremeValueIIDistribution[k_,zeta_,theta_]] :=
 	zeta + theta * Exp[ -Log[ -Log[Random[]] ]/k ];
-
-(* --- Laplace Distribution ------------------------------------------------ *)
-
-(* Mathematica.s implementation of the Laplace Distribution is wrong!!       *)
-(* We have to fix it!                                                        *)
-
-Unprotect[LaplaceDistribution];
-Clear[LaplaceDistribution];
-
-LaplaceDistribution/: Domain[LaplaceDistribution[___]] := 
-	Interval[{-Infinity, Infinity}];
-
-LaplaceDistribution/: PDF[LaplaceDistribution[m_,s_], x_] :=
-	If [ x-m < 0,
-		Exp[(x-m)/s] / (2 s),
-	(* Else *)
-		Exp[(-x+m)/s] / (2 s) ];
-
-LaplaceDistribution/: CDF[LaplaceDistribution[m_,s_], x_] :=
-	If [ x-m < 0,
-		Exp[(-m + x)/s]/2,
-	(* Else *)
-		1 - Exp[(m - x)/s]/2 ];
-
-LaplaceDistribution/: Random[LaplaceDistribution[m_,s_]] := 
-	m + If[ Random[]>0.5, 1,-1 ] * s * Log[Random[]];
 
 (* --- Lomax Distribution -------------------------------------------------- *)
 
@@ -148,6 +115,10 @@ PowerexponentialDistribution/: Random[PowerexponentialDistribution[r_]] :=
 	If[ Random[] < 0.5, 1, -1] * If[ Random[] < Max[0.3,(1-1/r)], Random[], 1-Log[Random[]]/r ];
 
 (* --- Triangular Distribution --------------------------------------------- *)
+
+(* We use our own version of the triangular distribution.                    *)
+Unprotect[TriangularDistribution];
+Clear[TriangularDistribution];
 
 TriangularDistribution/: Domain[TriangularDistribution[___]] := 
 	Interval[{0,1}];
@@ -213,7 +184,7 @@ UnurTestDistrResultLine[stream_, distr_, dtype_, fparams__, x_] := Module [
 	(* derivative of PDF *)
 	Switch [ dtype,
 		isCONT,
-			Fx = N[ 0. + D[ PDF[ Apply[distr,fparams], t ], t] /. t->x],
+		        Fx = N[ 0. + D[ PDF[ Apply[distr,fparams], t ], t] /. t->x],
 		isDISCR, (* discrete distribution: no derivative *)
 			Fx = 0,
 		_, (* default: should not happen *)
@@ -341,6 +312,7 @@ fparams = {{1/2,10}, {1/100,100}};
 UnurTestDistrResultFile["gamma", isCONT, datafile, fparams, RunSampleSize];
 
 (* Laplace *)
+(* Remark: dPDF is computed incorrectly! *)
 fparams = {{-100,100}, {1/100,100}};
 UnurTestDistrResultFile["laplace", isCONT, datafile, fparams, RunSampleSize];
 

@@ -17,8 +17,8 @@
  *                                                                           *
  *  distr: Inverse Gaussian (Wald) distribution [2; ch.15, p.259]            *
  *                                                                           *
- *  pdf:       f(x) = sqrt( lambda/2*pi*x^3 )                                *
- *                     * exp( -lambda*(x-mu)^2 / 2*mu^2*x )                  *
+ *  pdf:       f(x) = sqrt( lambda/(2*pi*x^3) )                              *
+ *                     * exp( -lambda*(x-mu)^2 / (2*mu^2*x) )                *
  *  domain:    0 < x < infinity                                              *
  *  constant:  1                                                             *
  *                                                                           *
@@ -81,6 +81,7 @@ static double _unur_dlogpdf_ig( double x, const UNUR_DISTR *distr );
 static double _unur_cdf_ig( double x, const UNUR_DISTR *distr );
 
 static int _unur_upd_mode_ig( UNUR_DISTR *distr );
+static int _unur_upd_area_ig( UNUR_DISTR *distr );
 static int _unur_set_params_ig( UNUR_DISTR *distr, const double *params, int n_params );
 
 /*---------------------------------------------------------------------------*/
@@ -191,6 +192,25 @@ _unur_upd_mode_ig( UNUR_DISTR *distr )
 /*---------------------------------------------------------------------------*/
 
 int
+_unur_upd_area_ig( UNUR_DISTR *distr )
+{
+  /* log of normalization constant */
+  LOGNORMCONSTANT = 0.;
+
+  if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
+    DISTR.area = 1.;
+    return UNUR_SUCCESS;
+  }
+
+  /* else */
+  DISTR.area = ( _unur_cdf_ig( DISTR.domain[1],distr) 
+		 - _unur_cdf_ig( DISTR.domain[0],distr) );
+  return UNUR_SUCCESS;
+} /* end of _unur_upd_area_ig() */
+
+/*---------------------------------------------------------------------------*/
+
+int
 _unur_set_params_ig( UNUR_DISTR *distr, const double *params, int n_params )
 {
   /* check number of parameters for distribution */
@@ -290,7 +310,7 @@ unur_distr_ig( const double *params, int n_params )
 
   /* function for updating derived parameters */
   DISTR.upd_mode  = _unur_upd_mode_ig; /* funct for computing mode */
-  /* DISTR.upd_area  = _unur_upd_area_ig;  funct for computing area */
+  DISTR.upd_area  = _unur_upd_area_ig; /* funct for computing area */
                 
   /* return pointer to object */
   return distr;

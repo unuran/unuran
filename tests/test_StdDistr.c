@@ -59,9 +59,6 @@
 /* name of data file */
 static const char datafile[] = "t_StdDistr.data";
 
-/* number of failed tests */
-static int n_failed = 0;    
-
 /* file handles */
 static FILE *DATA;            /* file with data    */
 static FILE *UNURANLOG;       /* unuran log file   */
@@ -69,7 +66,7 @@ static FILE *TESTLOG;         /* test log file     */
 
 /*---------------------------------------------------------------------------*/
 
-static int _unur_test_StdDistr (void);
+static int _unur_test_StdDistr (int *n_failed);
 /* main loop for testing standard distributions */
 
 static int test_cdf_pdf( UNUR_DISTR *distr, char *datafile );
@@ -88,6 +85,9 @@ static int modetest_discr( UNUR_DISTR *distr);
 
 int main()                                                                     
 {                                                                              
+  /* number of failed tests */
+  int n_failed = 0;    
+
   /* open log file for unuran and set output stream for unuran messages */    
   if ( (UNURANLOG = fopen( "t_StdDistr_unuran.log","w" )) == NULL )
     exit (EXIT_FAILURE);
@@ -115,7 +115,7 @@ int main()
   }
   
   /* run tests on all distributions */
-  while (_unur_test_StdDistr()==TRUE);
+  while (_unur_test_StdDistr(&n_failed)==TRUE);
   
   /* close files */
   fclose (UNURANLOG);
@@ -136,7 +136,7 @@ int main()
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_test_StdDistr (void)
+_unur_test_StdDistr (int *n_failed)
 {
 #define BUFSIZE      1024       /* size of line buffer */
 
@@ -167,7 +167,7 @@ _unur_test_StdDistr (void)
 
   /* now run test */
   if (test_cdf_pdf( distr,dstr ) == UNUR_FAILURE)
-    n_failed++;
+    (*n_failed)++;
 
   /* free memory */
   unur_distr_free(distr);

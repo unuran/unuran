@@ -239,6 +239,24 @@ UNUR_DISTR *unur_distr_gig(const double *params, int n_params);
 /** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
+/* Inverse Gaussian (Wald) distribution  [2; ch.15, p.259]                   */
+/*
+   =DISTR    ig  Inverse Gaussian distribution
+   =UP       Stddist_CONT
+   =REF      [JKBb94: Ch.15, p.259]
+   =PDF      sqrt( \frac{lambda}{2*pi*x^3} ) * exp( -\frac{lambda*(x-mu)^2}{2*mu^2*x} )
+   =CONST    1
+   =DOMAIN   0 < x <infinity
+   =FPARAM   0 : mu     : > 0 :  : shape, location :
+             1 : lambda : > 0 :  : shape           :
+   =EON
+ */
+/** TODO: STDGEN **/
+
+UNUR_DISTR *unur_distr_ig(const double *params, int n_params);
+
+
+/*---------------------------------------------------------------------------*/
 /*  Laplace distribution  [3; ch.24, p.164]                                  */
 /* 
    =DISTR    laplace  Laplace distribution

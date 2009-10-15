@@ -207,6 +207,10 @@ double _unur_stdgen_sample_gig_gigru( UNUR_GEN *generator );
 
 
 /*---------------------------------------------------------------------------*/
+/* Inverse Gaussian (Wald) distribution  [2; ch.15, p.259]                   */
+
+
+/*---------------------------------------------------------------------------*/
 /*  Laplace distribution  [3; ch.24, p.164]                                  */
 
 /* initialize special generator                                              */

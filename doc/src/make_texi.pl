@@ -602,7 +602,7 @@ sub texify_string {
     $string =~ s/(exp|max|min|sqrt)/\\$1/g;
 
     # small greek letters
-    $string =~ s/(alpha|beta|eta|gamma|lambda|mu|nu|omega|pi|phi|sigma|tau|theta|zeta)/\\$1/g;
+    $string =~ s/(alpha|beta|chi|eta|gamma|lambda|mu|nu|omega|pi|phi|psi|sigma|tau|theta|zeta)/\\$1/g;
 
     # capital greek letters
     $string =~ s/(Gamma|Sigma)/\\$1/g;

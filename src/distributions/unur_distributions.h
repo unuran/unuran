@@ -239,17 +239,36 @@ UNUR_DISTR *unur_distr_gamma(const double *params, int n_params);
   =DISTR    gig  Generalized Inverse Gaussian distribution
   =UP       Stddist_CONT
   =REF      [JKBb94: Ch.15, p.84]
-  =PDF      x^{(theta-1)} * exp( -\frac{1}{2} * omega * (\frac{x}{eta} + \frac{eta}{x}))
+  =PDF      x^{theta-1} * exp( -\frac{1}{2} * omega * (\frac{x}{eta} + \frac{eta}{x}))
   =CONST    @text{not implemented!}
   =CDF      @text{not implemented!}
   =DOMAIN   0 < x <infinity
   =FPARAM   0  : theta :     :   : shape :
             1  : omega : > 0 :   : scale :
            [2] : eta   : > 0 : 1 : shape :
+  =STDGEN   DEF  Ratio-of-Uniforms method [Dag89]
+  =EON
+*/
+UNUR_DISTR *unur_distr_gig(const double *params, int n_params);
+
+/*---------------------------------------------------------------------------*/
+/* Generalized inverse Gaussian distribution  [2; ch.15, p.284]              */
+/* (Alternative parametrization.)                                            */
+/*
+  =DISTR    gig2  Generalized Inverse Gaussian distribution
+  =UP       Stddist_CONT
+  =REF      [JKBb94: Ch.15, p.84]
+  =PDF      x^{theta-1} * exp( -\frac{1}{2} * (\frac{chi}{x} + psi*x))
+  =CONST    @text{not implemented!}
+  =CDF      @text{not implemented!}
+  =DOMAIN   0 < x <infinity
+  =FPARAM   0  : theta :     :   : shape :
+            1  : psi   : > 0 :   : shape :
+            2  : chi   : > 0 :   : shape :
   =EON
 */
 /** TODO: STDGEN **/
-UNUR_DISTR *unur_distr_gig(const double *params, int n_params);
+UNUR_DISTR *unur_distr_gig2(const double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
 /* Inverse Gaussian (Wald) distribution  [2; ch.15, p.259]                   */

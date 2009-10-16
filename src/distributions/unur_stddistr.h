@@ -60,6 +60,7 @@ enum {
   UNUR_DISTR_F                = 0x00000901u,  /*    X     X     X     X     X     .      */
   UNUR_DISTR_GAMMA            = 0x00000a01u,  /*    X     X     X     X     X     .      */
   UNUR_DISTR_GIG              = 0x00000b01u,  /*    X     X     .     .     X     .      */
+  UNUR_DISTR_GIG2             = 0x00002201u,  /*    X     X     .     .     X     .      */
   UNUR_DISTR_IG               = 0x00002101u,  /*    X     X     X     .     .     .      */
   UNUR_DISTR_LAPLACE          = 0x00000c01u,  /*    X     X     X     X     X     .      */
   UNUR_DISTR_LOGISTIC         = 0x00000d01u,  /*    X     X     X     X     X     .      */

@@ -4,7 +4,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   FILE:      c_gig.c                                                      *
+ *   FILE:      c_gig2.c                                                     *
  *                                                                           *
  *   REFERENCES:                                                             *
  *                                                                           *
@@ -17,9 +17,11 @@
  *                                                                           *
  *  distr: Generalized Inverse Gaussian (GIG) distribution [2; ch.15, p.284] *
  *                                                                           *
- *  pdf:       f(x) = x^(theta-1) * exp( -1/2 * omega * (x/eta + eta/x))     *
+ *  Alternative parametrization.                                             *
+ *                                                                           *
+ *  pdf:       f(x) = x^(theta-1) * exp( -1/2 * (chi/x + psi*x))             *
  *  domain:    0 < x < infinity                                              *
- *  constant:  1 / (2 * eta^theta K_theta(omega))                            *
+ *  constant:  (psi/chi)^(theta/2) / (2*K_theta(sqrt(psi*chi)))              *
  *             [K_theta(.) ... modified Bessel function of third kind]       *
  * K_theta(x) = 1/2 * int_-inf^inf  cosh(theta*u) * exp(-x*cosh(u)) du       *
  *                                                                           *
@@ -33,29 +35,15 @@
  *                                                                           *
  *                                                                           *
  *  parameters: 3                                                            *
- *     0:  theta            ... shape                                        *
- *     1:  omega > 0        ... scale                                        *
- *     2:  eta   > 0   (1)  ... shape                                        *
+ *     0:  theta         ... shape                                           *
+ *     1:  psi   > 0     ... shape                                           *
+ *     2:  chi   > 0     ... shape                                           *
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *  Reparametrization from "gig2":                                           *
+ *  Reparametrization towards "gig":                                         *
  *     omega = sqrt(psi*chi)                                                 *
  *     eta   = sqrt(chi/psi)                                                 *
- *                                                                           *
- *****************************************************************************
- *                                                                           *
- *  Standard form:                                                           *
- *                                                                           *
- *  pdf:       f(x) = x^(theta-1) * exp( -1/2 * omega * (x + 1/x))           *
- *  domain:    0 < x < infinity                                              *
- *  constant:  2 * K_theta(omega)                                            *
- *                                                                           *
- *  parameters: 2                                                            *
- *     0:  theta       ... shape                                             *
- *     1:  omega > 0   ... scale                                             *
- *                                                                           *
- *     2:  eta   = 1                                                         *
  *                                                                           *
  *****************************************************************************
  *                                                                           *
@@ -91,30 +79,30 @@
 
 /*---------------------------------------------------------------------------*/
 
-static const char distr_name[] = "gig";
+static const char distr_name[] = "gig2";
 
 /* parameters */
 #define theta  params[0]    /* shape */
-#define omega  params[1]    /* scale */
-#define eta    params[2]    /* shape */
+#define psi    params[1]    /* shape */
+#define chi    params[2]    /* shape */
 
 #define DISTR distr->data.cont
 /* #define NORMCONSTANT (distr->data.cont.norm_constant) */
 
 /* function prototypes                                                       */
-static double _unur_pdf_gig( double x, const UNUR_DISTR *distr );
-static double _unur_logpdf_gig( double x, const UNUR_DISTR *distr );
-static double _unur_dpdf_gig( double x, const UNUR_DISTR *distr );
-static double _unur_dlogpdf_gig( double x, const UNUR_DISTR *distr );
-/* static double _unur_cdf_gig( double x, const UNUR_DISTR *distr ); */
+static double _unur_pdf_gig2( double x, const UNUR_DISTR *distr );
+static double _unur_logpdf_gig2( double x, const UNUR_DISTR *distr );
+static double _unur_dpdf_gig2( double x, const UNUR_DISTR *distr );
+static double _unur_dlogpdf_gig2( double x, const UNUR_DISTR *distr );
+/* static double _unur_cdf_gig2( double x, const UNUR_DISTR *distr ); */
 
-static int _unur_upd_mode_gig( UNUR_DISTR *distr );
-static int _unur_set_params_gig( UNUR_DISTR *distr, const double *params, int n_params );
+static int _unur_upd_mode_gig2( UNUR_DISTR *distr );
+static int _unur_set_params_gig2( UNUR_DISTR *distr, const double *params, int n_params );
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_pdf_gig(double x, const UNUR_DISTR *distr)
+_unur_pdf_gig2(double x, const UNUR_DISTR *distr)
 { 
   register const double *params = DISTR.params;
 
@@ -122,14 +110,14 @@ _unur_pdf_gig(double x, const UNUR_DISTR *distr)
     /* out of support */
     return 0.;
 
-  return (exp( (theta-1.) * log(x) - 0.5 * omega * (x/eta + eta/x) ));
+  return (exp( (theta-1.) * log(x) - 0.5 * (chi/x + psi*x) ));
 
-} /* end of _unur_pdf_gig() */
+} /* end of _unur_pdf_gig2() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_logpdf_gig(double x, const UNUR_DISTR *distr)
+_unur_logpdf_gig2(double x, const UNUR_DISTR *distr)
 { 
   register const double *params = DISTR.params;
 
@@ -137,14 +125,14 @@ _unur_logpdf_gig(double x, const UNUR_DISTR *distr)
     /* out of support */
     return -INFINITY;
 
-  return ( (theta-1.) * log(x) - 0.5 * omega * (x/eta + eta/x) );
+  return ( (theta-1.) * log(x) - 0.5 * (chi/x + psi*x) );
 
-} /* end of _unur_logpdf_gig() */
+} /* end of _unur_logpdf_gig2() */
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_dpdf_gig(double x, const UNUR_DISTR *distr)
+_unur_dpdf_gig2(double x, const UNUR_DISTR *distr)
 { 
   register const double *params = DISTR.params;
 
@@ -152,16 +140,16 @@ _unur_dpdf_gig(double x, const UNUR_DISTR *distr)
     /* out of support */
     return 0.;
 
-  return ( exp( (theta-3.) * log(x) - 0.5 * omega * (x/eta + eta/x) )
-	   * (eta*eta*omega + 2.*eta*(theta-1.)*x - omega*x*x) / (2*eta) );
+  return ( 0.5 * exp( (theta-3.) * log(x) - (chi + psi*x*x)/(2*x) )
+	   * (chi - x*(2 - 2*theta + psi*x)) );
 
-} /* end of _unur_dpdf_gig() */
+} /* end of _unur_dpdf_gig2() */
 
 
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_dlogpdf_gig(double x, const UNUR_DISTR *distr)
+_unur_dlogpdf_gig2(double x, const UNUR_DISTR *distr)
 { 
   register const double *params = DISTR.params;
 
@@ -169,19 +157,19 @@ _unur_dlogpdf_gig(double x, const UNUR_DISTR *distr)
     /* out of support */
     return 0.;
 
-  return ( -0.5*(omega*(1/eta - eta/(x*x))) + (theta-1.)/x );
+  return ( -0.5*(psi - chi/(x*x)) + (theta-1.)/x ) ;
 
-} /* end of _unur_dlogpdf_gig() */
+} /* end of _unur_dlogpdf_gig2() */
 
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_upd_mode_gig( UNUR_DISTR *distr )
+_unur_upd_mode_gig2( UNUR_DISTR *distr )
 {
   register const double *params = DISTR.params;
 
   DISTR.mode =
-    (eta*(-1. + sqrt(omega*omega + (theta-1.)*(theta-1.)) + theta))/omega;
+    ((theta-1.)+sqrt((theta-1.)*theta-1.) + psi*chi) / psi;
 
   /* mode must be in domain */
   if (DISTR.mode < DISTR.domain[0]) 
@@ -190,45 +178,43 @@ _unur_upd_mode_gig( UNUR_DISTR *distr )
     DISTR.mode = DISTR.domain[1];
 
   return UNUR_SUCCESS;
-} /* end of _unur_upd_mode_gig() */
+} /* end of _unur_upd_mode_gig2() */
 
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_set_params_gig( UNUR_DISTR *distr, const double *params, int n_params )
+_unur_set_params_gig2( UNUR_DISTR *distr, const double *params, int n_params )
 {
   /* check number of parameters for distribution */
-  if (n_params < 2) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few"); return UNUR_ERR_DISTR_NPARAMS; }
+  if (n_params < 3) {
+    _unur_error(distr_name,UNUR_ERR_DISTR_NPARAMS,"too few"); 
+    return UNUR_ERR_DISTR_NPARAMS; }
   if (n_params > 3) {
     _unur_warning(distr_name,UNUR_ERR_DISTR_NPARAMS,"too many");
     n_params = 3; }
   CHECK_NULL(params,UNUR_ERR_NULL);
 
   /* check parameter omega */
-  if (omega <= 0.) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"omega <= 0");
+  if (psi <= 0.) {
+    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"psi <= 0");
     return UNUR_ERR_DISTR_DOMAIN;
   }
 
   /* check parameter eta */
-  if (n_params == 3 && eta <= 0.) {
-    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"eta <= 0");
+  if (chi <= 0.) {
+    _unur_error(distr_name,UNUR_ERR_DISTR_DOMAIN,"chi <= 0");
     return UNUR_ERR_DISTR_DOMAIN;
   }
 
 
   /* copy parameters for standard form */
   DISTR.theta = theta;
-  DISTR.omega = omega;
+  DISTR.psi = psi;
+  DISTR.chi = chi;
 
-  /* default parameters */
-  DISTR.eta  = 1.;
+  /* default parameters: none */
 
-  /* copy optional parameters */
-  if (n_params > 2)
-    DISTR.eta = eta;
-  n_params = 3;
+  /* copy optional parameters: none */
 
   /* store number of parameters */
   DISTR.n_params = n_params;
@@ -240,12 +226,12 @@ _unur_set_params_gig( UNUR_DISTR *distr, const double *params, int n_params )
   }
 
   return UNUR_SUCCESS;
-} /* end of _unur_set_params_gig() */
+} /* end of _unur_set_params_gig2() */
 
 /*---------------------------------------------------------------------------*/
 
 struct unur_distr *
-unur_distr_gig( const double *params, int n_params )
+unur_distr_gig2( const double *params, int n_params )
 {
   register struct unur_distr *distr;
 
@@ -253,20 +239,20 @@ unur_distr_gig( const double *params, int n_params )
   distr = unur_distr_cont_new();
 
   /* set distribution id */
-  distr->id = UNUR_DISTR_GIG;
+  distr->id = UNUR_DISTR_GIG2;
 
   /* name of distribution */
   distr->name = distr_name;
              
   /* how to get special generators */
-  DISTR.init = _unur_stdgen_gig_init;
+  /* DISTR.init = _unur_stdgen_gig2_init; */
    
   /* functions */
-  DISTR.pdf     = _unur_pdf_gig;     /* pointer to PDF                  */
-  DISTR.logpdf  = _unur_logpdf_gig;  /* pointer to logPDF               */
-  DISTR.dpdf    = _unur_dpdf_gig;    /* pointer to derivative of PDF    */
-  DISTR.dlogpdf = _unur_dlogpdf_gig; /* pointer to derivative of logPDF */
-  DISTR.cdf  = NULL;                 /* _unur_cdf_gig; pointer to CDF   */
+  DISTR.pdf     = _unur_pdf_gig2;     /* pointer to PDF                  */
+  DISTR.logpdf  = _unur_logpdf_gig2;  /* pointer to logPDF               */
+  DISTR.dpdf    = _unur_dpdf_gig2;    /* pointer to derivative of PDF    */
+  DISTR.dlogpdf = _unur_dlogpdf_gig2; /* pointer to derivative of logPDF */
+  DISTR.cdf  = NULL;                 /* _unur_cdf_gig2; pointer to CDF   */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |
@@ -275,7 +261,7 @@ unur_distr_gig( const double *params, int n_params )
 		 /* UNUR_DISTR_SET_PDFAREA ); */
                 
   /* set parameters for distribution */
-  if (_unur_set_params_gig(distr,params,n_params)!=UNUR_SUCCESS) {
+  if (_unur_set_params_gig2(distr,params,n_params)!=UNUR_SUCCESS) {
     free(distr);
     return NULL;
   }
@@ -284,24 +270,24 @@ unur_distr_gig( const double *params, int n_params )
   /*    DISTR.LOGNORMCONSTANT = ? */
 
   /* mode and area below p.d.f. */
-  _unur_upd_mode_gig(distr);
+  _unur_upd_mode_gig2(distr);
   /*    DISTR.area = ? */
 
   /* function for setting parameters and updating domain */
-  DISTR.set_params = _unur_set_params_gig;
+  DISTR.set_params = _unur_set_params_gig2;
 
   /* function for updating derived parameters */
-  DISTR.upd_mode  = _unur_upd_mode_gig; /* funct for computing mode */
-  /* DISTR.upd_area  = _unur_upd_area_gig; funct for computing area */
+  DISTR.upd_mode  = _unur_upd_mode_gig2; /* funct for computing mode */
+  /* DISTR.upd_area  = _unur_upd_area_gig2; funct for computing area */
 
   /* return pointer to object */
   return distr;
 
-} /* end of unur_distr_gig() */
+} /* end of unur_distr_gig2() */
 
 /*---------------------------------------------------------------------------*/
 #undef theta
-#undef omega
-#undef eta
+#undef psi
+#undef chi
 #undef DISTR
 /*---------------------------------------------------------------------------*/

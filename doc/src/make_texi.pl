@@ -598,11 +598,11 @@ sub texify_string {
     # replace '*' by space 
     $string =~ s/\*/\\, /g;
 
-    # name of funktions
+    # name of functions
     $string =~ s/(exp|max|min|sqrt)/\\$1/g;
 
     # small greek letters
-    $string =~ s/(alpha|beta|gamma|lambda|mu|nu|pi|phi|sigma|tau|theta|zeta)/\\$1/g;
+    $string =~ s/(alpha|beta|eta|gamma|lambda|mu|nu|omega|pi|phi|sigma|tau|theta|zeta)/\\$1/g;
 
     # capital greek letters
     $string =~ s/(Gamma|Sigma)/\\$1/g;

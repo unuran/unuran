@@ -97,9 +97,12 @@ static const char distr_name[] = "gig";
 
 /* function prototypes                                                       */
 static double _unur_pdf_gig( double x, const UNUR_DISTR *distr );
+static double _unur_logpdf_gig( double x, const UNUR_DISTR *distr );
 static double _unur_dpdf_gig( double x, const UNUR_DISTR *distr );
+static double _unur_dlogpdf_gig( double x, const UNUR_DISTR *distr );
 /* static double _unur_cdf_gig( double x, const UNUR_DISTR *distr ); */
 
+static int _unur_upd_mode_gig( UNUR_DISTR *distr );
 static int _unur_set_params_gig( UNUR_DISTR *distr, const double *params, int n_params );
 
 /*---------------------------------------------------------------------------*/
@@ -120,6 +123,21 @@ _unur_pdf_gig(double x, const UNUR_DISTR *distr)
 /*---------------------------------------------------------------------------*/
 
 double
+_unur_logpdf_gig(double x, const UNUR_DISTR *distr)
+{ 
+  register const double *params = DISTR.params;
+
+  if (x <= 0.)
+    /* out of support */
+    return -INFINITY;
+
+  return ( (theta-1.) * log(x) - 0.5 * omega * (x/eta + eta/x) );
+
+} /* end of _unur_logpdf_gig() */
+
+/*---------------------------------------------------------------------------*/
+
+double
 _unur_dpdf_gig(double x, const UNUR_DISTR *distr)
 { 
   register const double *params = DISTR.params;
@@ -132,6 +150,41 @@ _unur_dpdf_gig(double x, const UNUR_DISTR *distr)
 	   * (eta*eta*omega + 2.*eta*(theta-1.)*x - omega*x*x) / (2*eta) );
 
 } /* end of _unur_dpdf_gig() */
+
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_dlogpdf_gig(double x, const UNUR_DISTR *distr)
+{ 
+  register const double *params = DISTR.params;
+
+  if (x <= 0.)
+    /* out of support */
+    return 0.;
+
+  return ( -0.5*(omega*(1/eta - eta/(x*x))) + (theta-1.)/x );
+
+} /* end of _unur_dlogpdf_gig() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_upd_mode_gig( UNUR_DISTR *distr )
+{
+  register const double *params = DISTR.params;
+
+  DISTR.mode =
+    (eta*(-1. + sqrt(omega*omega + (theta-1.)*(theta-1.)) + theta))/omega;
+
+  /* mode must be in domain */
+  if (DISTR.mode < DISTR.domain[0]) 
+    DISTR.mode = DISTR.domain[0];
+  else if (DISTR.mode > DISTR.domain[1]) 
+    DISTR.mode = DISTR.domain[1];
+
+  return UNUR_SUCCESS;
+} /* end of _unur_upd_mode_gig() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -203,9 +256,11 @@ unur_distr_gig( const double *params, int n_params )
   DISTR.init = _unur_stdgen_gig_init;
    
   /* functions */
-  DISTR.pdf  = _unur_pdf_gig;   /* pointer to PDF                */
-  DISTR.dpdf = _unur_dpdf_gig;  /* pointer to derivative of PDF  */
-  DISTR.cdf  = NULL;            /* _unur_cdf_gig; pointer to CDF */
+  DISTR.pdf     = _unur_pdf_gig;     /* pointer to PDF                  */
+  DISTR.logpdf  = _unur_logpdf_gig;  /* pointer to logPDF               */
+  DISTR.dpdf    = _unur_dpdf_gig;    /* pointer to derivative of PDF    */
+  DISTR.dlogpdf = _unur_dlogpdf_gig; /* pointer to derivative of logPDF */
+  DISTR.cdf  = NULL;                 /* _unur_cdf_gig; pointer to CDF   */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |
@@ -223,14 +278,14 @@ unur_distr_gig( const double *params, int n_params )
   /*    DISTR.LOGNORMCONSTANT = ? */
 
   /* mode and area below p.d.f. */
-  /*    DISTR.mode = ? */
+  _unur_upd_mode_gig(distr);
   /*    DISTR.area = ? */
 
   /* function for setting parameters and updating domain */
   DISTR.set_params = _unur_set_params_gig;
 
   /* function for updating derived parameters */
-  /* DISTR.upd_mode  = _unur_upd_mode_gig; funct for computing mode */
+  DISTR.upd_mode  = _unur_upd_mode_gig; /* funct for computing mode */
   /* DISTR.upd_area  = _unur_upd_area_gig; funct for computing area */
 
   /* return pointer to object */
@@ -239,6 +294,8 @@ unur_distr_gig( const double *params, int n_params )
 } /* end of unur_distr_gig() */
 
 /*---------------------------------------------------------------------------*/
-#undef nu
+#undef theta
+#undef omega
+#undef eta
 #undef DISTR
 /*---------------------------------------------------------------------------*/

@@ -6,7 +6,7 @@
  *                                                                           *
  *   file: inverror.c                                                        *
  *                                                                           *
- *   Estimate U-error for inversion methods                                  *
+ *   Estimate u and x-errors for inversion methods                           *
  *                                                                           *
  *****************************************************************************
  *                                                                           *
@@ -50,10 +50,10 @@ static double qrng (int i, int samplesize);
 /*---------------------------------------------------------------------------*/
 
 double
-unur_test_inverror( const UNUR_GEN *gen, 
-		    double *max_error, double *MAE, double threshold,
-		    int samplesize, int randomized, int testtails, 
-		    int verbosity, FILE *out )
+unur_test_u_error( const UNUR_GEN *gen, 
+		   double *max_error, double *MAE, double threshold,
+		   int samplesize, int randomized, int testtails, 
+		   int verbosity, FILE *out )
      /*----------------------------------------------------------------------*/
      /* Estimate maximal u-error and mean absolute error (MAE) by means of   */
      /* (Quasi-) Monte-Carlo simulation.                                     */
@@ -175,7 +175,7 @@ unur_test_inverror( const UNUR_GEN *gen,
   return penalty/samplesize;
 
 #undef DISTR
-} /* end of unur_test_estimate_inverror() */
+} /* end of unur_test_estimate_u_error() */
 
 /*---------------------------------------------------------------------------*/
 

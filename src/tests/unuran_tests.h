@@ -292,10 +292,10 @@ int unur_test_quartiles( UNUR_GEN *generator,
    stream @var{out}.
 */
 
-double unur_test_inverror( const UNUR_GEN *generator, 
-			   double *max_error, double *MAE, double threshold,
-			   int samplesize, int randomized, int testtails,
-			   int verbosity, FILE *out );
+double unur_test_u_error( const UNUR_GEN *generator, 
+			  double *max_error, double *MAE, double threshold,
+			  int samplesize, int randomized, int testtails,
+			  int verbosity, FILE *out );
 /*
    Estimate U-error of an inversion method, i.e. 
    @unurmath{error = | CDF^{-1}(U) - U |}, by means of a simple Monte

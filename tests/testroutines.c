@@ -1497,12 +1497,12 @@ void print_timing_results( FILE *LOG, int line ATTRIBUTE__UNUSED, const UNUR_DIS
 } /* end of print_timing_results() */
 
 /*---------------------------------------------------------------------------*/
-/* run inversion error test and print results */
+/* run test for u-error of inversion method and print results                */
 
-int run_validate_inverror( FILE *LOG, UNUR_GEN *gen, const UNUR_DISTR *distr,
-			   double uerror, int samplesize )
+int run_validate_u_error( FILE *LOG, UNUR_GEN *gen, const UNUR_DISTR *distr,
+			  double u_resolution, int samplesize )
 {
-  double maxerror, MAE;  /* maximum observed and mean absolute uerror */
+  double maxerror, MAE;  /* maximum observed and mean absolute u-error */
   double score;          /* penalty score of inversion error test */
   const char *genid;
 
@@ -1517,7 +1517,7 @@ int run_validate_inverror( FILE *LOG, UNUR_GEN *gen, const UNUR_DISTR *distr,
   genid = unur_get_genid(gen);
 
   /* run test */
-  score = unur_test_inverror(gen, &maxerror, &MAE, uerror, samplesize, 
+  score = unur_test_u_error(gen, &maxerror, &MAE, u_resolution, samplesize, 
 			     FALSE, TEST_INVERROR_TAILS, TRUE, LOG);
 
   /* check score */
@@ -1530,12 +1530,12 @@ int run_validate_inverror( FILE *LOG, UNUR_GEN *gen, const UNUR_DISTR *distr,
 
   /* print result into log file */
   fprintf(LOG,"%s:   result: max u-error = %g, MAE = %g  ",genid,maxerror,MAE);
-  if (maxerror > uerror) {
-     fprintf(LOG,"(NOT <= %g)\n",uerror);
+  if (maxerror > u_resolution) {
+     fprintf(LOG,"(NOT <= %g)\n",u_resolution);
      fprintf(LOG,"%s: Warning: precision problem, maxerror > u_resolution\n",genid);
   }
   else {
-     fprintf(LOG,"(<= %g)\n",uerror);
+     fprintf(LOG,"(<= %g)\n",u_resolution);
   }
 
   fprintf(LOG,"%s:           score = %5.2f %%\t--> %s\n", genid,
@@ -1555,6 +1555,6 @@ int run_validate_inverror( FILE *LOG, UNUR_GEN *gen, const UNUR_DISTR *distr,
     return 2;
   }
 
-} /* end of run_validate_inverror() */
+} /* end of run_validate_u_error() */
 
 /*---------------------------------------------------------------------------*/

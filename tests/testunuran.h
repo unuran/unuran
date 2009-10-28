@@ -217,8 +217,8 @@ int print_verifyhat_result( FILE *LOG, UNUR_GEN *gen, const UNUR_DISTR *distr, i
 void print_timing_results( FILE *LOG, int line, const UNUR_DISTR *distr,
 			   double *timing_setup, double *timing_marginal, int n_results );
 
-/* run inversion error test and print results */
-int run_validate_inverror( FILE *LOG, UNUR_GEN *gen, const UNUR_DISTR *distr,
-			   double uerror, int samplesize );
+/* run test for u-error of inversion method and print results */
+int run_validate_u_error( FILE *LOG, UNUR_GEN *gen, const UNUR_DISTR *distr,
+			  double u_resolution, int samplesize );
 
 /*---------------------------------------------------------------------------*/

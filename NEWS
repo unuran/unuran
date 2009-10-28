@@ -6,6 +6,10 @@ Version 1.5.0: ???
 
 	- added Generalized Inverse Gaussian distribution ("GIG")
 
+	* Tests:
+
+        - unur_test_inverror() has been renamed to unur_test_u_error().
+
 
 Version 1.4.1: August 2009
 

@@ -38,6 +38,7 @@
 #include <methods/x_gen.h>
 #include <methods/x_gen_source.h>
 #include <methods/hinv.h>
+#include <methods/ninv.h>
 #include <methods/pinv.h>
 #include "unuran_tests.h"
 
@@ -102,6 +103,10 @@ unur_test_u_error( const UNUR_GEN *gen,
   switch (gen->method) {
   case UNUR_METH_HINV:
     quantile = unur_hinv_eval_approxinvcdf;
+    break;
+
+  case UNUR_METH_NINV:
+    quantile = unur_ninv_eval_approxinvcdf;
     break;
 
   case UNUR_METH_PINV:

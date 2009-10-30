@@ -37,7 +37,8 @@
 
 struct unur_ninv_par { 
   int     max_iter;          /* maximal number of iterations                 */
-  double  rel_x_resolution;  /* maximal relative error in x                  */
+  double  x_resolution;      /* maximal tolerated relative x-error           */
+  double  u_resolution;      /* maximal tolerated (absolute) u-error         */
   double  s[2];              /* interval boundaries at start (left/right)    */
   int     table_on;          /* if TRUE a table for starting points is used  */
   int     table_size;        /* size of table                                */
@@ -48,7 +49,8 @@ struct unur_ninv_par {
 
 struct unur_ninv_gen { 
   int     max_iter;          /* maximal number of iterations                 */
-  double  rel_x_resolution;  /* maximal relative error in x                  */
+  double  x_resolution;      /* maximal tolerated relative x-error           */
+  double  u_resolution;      /* maximal tolerated (absolute) u-error         */
   double *table;             /* table with possible starting values for NINV */
   double *f_table;	     /* function values of points stored in table    */
   int     table_on;          /* if TRUE a table for starting points is used  */

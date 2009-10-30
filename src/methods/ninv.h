@@ -55,15 +55,15 @@
       bisectioning). The regula falsi requires only the CDF while
       Newton's method also requires the PDF.
       To speed up the marginal generation time a table with suitable
-      starting points can be computed in the setup. 
-      The performance of the algorithm can adjusted by desired
+      starting points can be computed during the setup. 
+      The performance of the algorithm can adjusted by the desired
       accuracy of the method.
       It is possible to use this method for generating from truncated
       distributions. The truncated domain can be changed for an
       existing generator object.
 
    =HOWTOUSE
-      The method works generates random variates by numerical
+      The method generates random variates by numerical
       inversion and requires a continuous univariate distribution
       objects with given CDF. Two methods are available:
       @itemize @minus
@@ -104,9 +104,9 @@
       @i{x} with unur_ninv_set_x_resolution() and
       unur_ninv_chg_x_resolution(), respectively.
       
-      NINV tries to use proper starting values for both the regala falsi
+      NINV tries to use proper starting values for both the regula falsi
       and Newton's method. Of course the user might have more knowledge
-      about the properties of the underlying distribution and is able
+      about the properties of the target distribution and is able
       to share his wisdom with NINV using the respective commands
       unur_ninv_set_start() and unur_ninv_chg_start()
       
@@ -176,9 +176,24 @@ int unur_ninv_set_x_resolution( UNUR_PAR *parameters, double x_resolution);
 /* */
 
 int unur_ninv_chg_x_resolution(UNUR_GEN *generator, double x_resolution);
-/*
-   Set and change the maximal relative error in x.
+/* 
+   Set and change the maximal tolerated relative x-error.
+   If @var{x_resolution} is negative then checking of the x-error is
+   disabled.
+
    Default is @code{1.e-8}.
+*/
+
+int unur_ninv_set_u_resolution( UNUR_PAR *parameters, double u_resolution);
+/* */
+
+int unur_ninv_chg_u_resolution(UNUR_GEN *generator, double u_resolution);
+/*
+   Set and change the maximal tolerated (abolute) u-error.
+   If @var{u_resolution} is negative then checking of the u-error is
+   disabled.
+
+   Default is @code{-1} (disabled).
 */
 
 int unur_ninv_set_start( UNUR_PAR *parameters, double left, double right);
@@ -253,7 +268,7 @@ int unur_ninv_chg_truncated(UNUR_GEN *gen, double left, double right);
    boundaries of the truncated distribution.
 */
 
-double unur_ninv_eval_approxinvcdf( UNUR_GEN *generator, double u );
+double unur_ninv_eval_approxinvcdf( const UNUR_GEN *generator, double u );
 /*
    Get approximate approximate value of inverse CDF at @var{u}.
    If @var{u} is out of the domain [0,1] then @code{unur_errno} is set

@@ -128,8 +128,9 @@
 /* Flags for logging set calls                                               */
 
 #define NINV_SET_MAX_ITER     0x001u   /* number of maximal iterations       */
-#define NINV_SET_X_RESOLUTION 0x002u   /* maximal relative error in x        */
-#define NINV_SET_START        0x004u   /* intervals at start (left/right)    */
+#define NINV_SET_X_RESOLUTION 0x002u   /* maximal tolerated relative x-error */
+#define NINV_SET_U_RESOLUTION 0x004u   /* maximal tolerated (abs.) u-error   */
+#define NINV_SET_START        0x008u   /* intervals at start (left/right)    */
 
 /*---------------------------------------------------------------------------*/
 
@@ -173,12 +174,12 @@ static double _unur_ninv_sample_newton( struct unur_gen *gen );
 /* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_ninv_regula( struct unur_gen *gen, double u );
+static double _unur_ninv_regula( const struct unur_gen *gen, double u );
 /*---------------------------------------------------------------------------*/
 /* algorithm: regula falsi                                                   */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_ninv_newton( struct unur_gen *gen, double u);
+static double _unur_ninv_newton( const struct unur_gen *gen, double u);
 /*---------------------------------------------------------------------------*/
 /* algorithm: newton method                                                  */
 /*---------------------------------------------------------------------------*/
@@ -306,8 +307,9 @@ unur_ninv_new( const struct unur_distr *distr )
   par->distr   = distr;            /* pointer to distribution object         */
 
   /* set default values */
-  PAR->max_iter  = 40;             /* maximal number of iterations           */
-  PAR->rel_x_resolution = 1.0e-8;  /* maximal relative error allowed in x    */
+  PAR->max_iter  = 100;            /* maximal number of iterations           */
+  PAR->x_resolution = 1.0e-8;      /* maximal tolerated relative x-error     */
+  PAR->u_resolution = -1.;         /* maximal tolerated u-error -- DISABLED  */
 
   /* starting points for numerical inversion */
   PAR->s[0]      = 0.0;     /* regula falsi: left boundary of starting interval
@@ -473,11 +475,11 @@ unur_ninv_chg_max_iter( struct unur_gen *gen, int max_iter )
 int
 unur_ninv_set_x_resolution( struct unur_par *par, double x_resolution )
      /*----------------------------------------------------------------------*/
-     /* set maximal relative error in x                                      */
+     /* set maximal tolerated relative x-error                               */
      /*                                                                      */
      /* parameters:                                                          */
      /*   par          ... pointer to parameter for building generator object*/
-     /*   x_resolution ... maximal relative error in x                       */
+     /*   x_resolution ... x-error                                           */
      /*                                                                      */
      /* return:                                                              */
      /*   UNUR_SUCCESS ... on success                                        */
@@ -489,13 +491,13 @@ unur_ninv_set_x_resolution( struct unur_par *par, double x_resolution )
   _unur_check_par_object( par, NINV );
 
   /* check new parameter for generator */
-  if (x_resolution < DBL_EPSILON) {
-    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"x resolution");
-    return UNUR_ERR_PAR_SET;
+  if (x_resolution > 0. && x_resolution < 2.*DBL_EPSILON) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"x-resolution too small");
+    x_resolution = 2.*DBL_EPSILON;
   }
 
   /* store date */
-  PAR->rel_x_resolution = x_resolution;
+  PAR->x_resolution = x_resolution;
 
   /* changelog */
   par->set |= NINV_SET_X_RESOLUTION;
@@ -509,11 +511,11 @@ unur_ninv_set_x_resolution( struct unur_par *par, double x_resolution )
 int
 unur_ninv_chg_x_resolution( struct unur_gen *gen, double x_resolution )
      /*----------------------------------------------------------------------*/
-     /* set maximal relative error in x                                      */
+     /* set maximal tolerated relative x-error                               */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen          ... pointer to generator object                       */
-     /*   x_resolution ... maximal relative error in x                       */
+     /*   x_resolution ... x-error                                           */
      /*                                                                      */
      /* return:                                                              */
      /*   UNUR_SUCCESS ... on success                                        */
@@ -525,13 +527,13 @@ unur_ninv_chg_x_resolution( struct unur_gen *gen, double x_resolution )
   _unur_check_gen_object( gen, NINV, UNUR_ERR_GEN_INVALID );
 
   /* check new parameter for generator */
-  if (x_resolution < DBL_EPSILON) {
-    _unur_warning(gen->genid,UNUR_ERR_PAR_SET,"x resolution");
-    return UNUR_ERR_PAR_SET;
+  if (x_resolution > 0. && x_resolution < DBL_EPSILON) {
+    _unur_warning(gen->genid,UNUR_ERR_PAR_SET,"x-resolution too small");
+    x_resolution = 2.*DBL_EPSILON;
   }
 
   /* store date */
-  GEN->rel_x_resolution = x_resolution;
+  GEN->x_resolution = x_resolution;
 
   /* changelog */
   gen->set |= NINV_SET_X_RESOLUTION;
@@ -539,6 +541,78 @@ unur_ninv_chg_x_resolution( struct unur_gen *gen, double x_resolution )
   return UNUR_SUCCESS;
 
 } /* end of unur_ninv_chg_x_resolutuion() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_ninv_set_u_resolution( struct unur_par *par, double u_resolution )
+     /*----------------------------------------------------------------------*/
+     /* set maximal tolerated u-error                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par          ... pointer to parameter for building generator object*/
+     /*   u_resolution ... u-error                                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, NINV );
+
+  /* check new parameter for generator */
+  if (u_resolution > 0. && u_resolution < 5*DBL_EPSILON) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"u-resolution too small");
+    u_resolution = 1.e-15;
+  }
+
+  /* store date */
+  PAR->u_resolution = u_resolution;
+
+  /* changelog */
+  par->set |= NINV_SET_U_RESOLUTION;
+
+  return UNUR_SUCCESS;
+
+} /* end of unur_ninv_set_u_resolutuion() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_ninv_chg_u_resolution( struct unur_gen *gen, double u_resolution )
+     /*----------------------------------------------------------------------*/
+     /* set maximal tolerated u-error                                        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen          ... pointer to generator object                       */
+     /*   u_resolution ... u-error                                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(gen, UNUR_ERR_NULL);
+  _unur_check_gen_object( gen, NINV, UNUR_ERR_GEN_INVALID );
+
+  /* check new parameter for generator */
+  if (u_resolution > 0. && u_resolution < 5*DBL_EPSILON) {
+    _unur_warning(gen->genid,UNUR_ERR_PAR_SET,"u-resolution too small");
+    u_resolution = 1.e-15;
+  }
+
+  /* store date */
+  GEN->u_resolution = u_resolution;
+
+  /* changelog */
+  gen->set |= NINV_SET_U_RESOLUTION;
+
+  return UNUR_SUCCESS;
+
+} /* end of unur_ninv_chg_u_resolutuion() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -937,7 +1011,8 @@ _unur_ninv_create( struct unur_par *par )
 
   /* copy parameters into generator object */
   GEN->max_iter = PAR->max_iter;      /* maximal number of iterations          */
-  GEN->rel_x_resolution = PAR->rel_x_resolution; /* maximal relative error in x*/
+  GEN->x_resolution = PAR->x_resolution; /* maximal tolerated relative x-error */
+  GEN->u_resolution = PAR->u_resolution; /* maximal tolerated u-error          */
   GEN->table_on = PAR->table_on;      /* useage of table for starting points   */
   GEN->table_size = PAR->table_size;  /* number of points for table            */
   GEN->s[0] = PAR->s[0];              /* starting points                       */
@@ -972,6 +1047,12 @@ _unur_ninv_check_par( struct unur_gen *gen )
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
+  /* checking x-error or checking u-error must be enabled */
+  if ( GEN->x_resolution < 0. && GEN->u_resolution < 0. ) {
+    _unur_warning(gen->genid,UNUR_ERR_GEN_DATA,"both x-resolution and u-resolution negativ. using defaults.");
+    GEN->x_resolution = 1.e-8;
+  }
+
   /* domain not truncated at init */
   DISTR.trunc[0] = DISTR.domain[0];
   DISTR.trunc[1] = DISTR.domain[1];
@@ -1101,7 +1182,7 @@ _unur_ninv_sample_newton( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 double
-unur_ninv_eval_approxinvcdf( struct unur_gen *gen, double u )
+unur_ninv_eval_approxinvcdf( const struct unur_gen *gen, double u )
      /*----------------------------------------------------------------------*/
      /* get approximate value of inverse CDF at u approximately              */
      /* (user call)                                                          */
@@ -1155,14 +1236,15 @@ unur_ninv_eval_approxinvcdf( struct unur_gen *gen, double u )
 
 } /* end of unur_hinv_eval_approxinvcdf() */
 
+
 /*****************************************************************************/
 /**  Auxilliary Routines                                                    **/
 /*****************************************************************************/
 
 double 
-_unur_ninv_regula( struct unur_gen *gen, double u )
+_unur_ninv_regula( const struct unur_gen *gen, double u )
      /*---------------------------------------------------------------------*/
-     /*   algorithm: regula falsi                                           */
+     /*   algorithm: regula falsi with bisection steps                      */
      /*                                                                     */
      /*   parameters:                                                       */
      /*      gen ... pointer to generator object                            */
@@ -1172,34 +1254,46 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
      /*                                                                     */
      /*   error:                                                            */
      /*     return INFINITY                                                 */
+     /*                                                                     */
+     /*   Remark:                                                           */
+     /*     The routine computes the root of CDF(x)-u                       */
      /*---------------------------------------------------------------------*/
 { 
-  double x1, x2, a, xtmp;/* points for RF                                   */
-  double x2abs;          /* absolute value of x2                            */
+  double x1, x2, a, xtmp;/* points for regular falsi                        */
   double f1, f2,fa, ftmp;/* function values at x1, x2, xtmp                 */
   double length;         /* oriented length of the interval with sign change*/
   double lengthabs;      /* absolute length of interval                     */
   double lengthsgn;      /* orientation of the Intervalls                   */
   double step;           /* enlarges interval til sign change found         */
   double dx;             /* RF-stepsize                                     */
-  int count = 0;         /* counter for  "no sign change"                   */
+  int count_nosc = 0;    /* counter for  "no sign change occured"           */
   int i;                 /* loop variable, index                            */
   int step_count;        /* counts number of steps finding sign change      */
-  double rel_u_resolution;  /* relative u precesion                         */
+  double min_step_size;  /* minimal step size for regula falsi              */
+  double rel_u_resolution; /* relative u resolution                         */
+  double abs_x_resolution; /* absolute x resolution                         */
+  int x_goal, u_goal;    /* whether precision goal is reached               */
 
   /* check arguments */
   CHECK_NULL(gen, INFINITY);  COOKIE_CHECK(gen, CK_NINV_GEN, INFINITY);
 
   /* compute relative u resolution */
-  rel_u_resolution = (GEN->Umax - GEN->Umin) * GEN->rel_x_resolution;
+  rel_u_resolution = ( (GEN->u_resolution > 0.) ? 
+		       (GEN->Umax - GEN->Umin) * GEN->u_resolution :
+		       INFINITY );
+
+  /* compute absolute x resolution eps^2 used close to 0 */
+  abs_x_resolution = GEN->x_resolution * GEN->x_resolution;
   
-  /* initialize starting interval */
+  /* -- 1. initialize starting interval -- */
+
   if (GEN->table_on) {
+    /* -- 1a. use table -- */
 
     /* 0 <= i <= table_size-2  */
     if ( _unur_FP_same(GEN->CDFmin, GEN->CDFmax) ) {
-      /* CDF values in table too close, so we use median point since 
-	 there is no difference between CDF values.  */
+      /* CDF values in table too close, so we use median point since */
+      /* there is no difference between CDF values.  */
       i = GEN->table_size/2;
     }
     else {
@@ -1228,20 +1322,25 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
     }
   }
 
-  else { /* no table    */
-   x1 =  GEN->s[0];      /* left boudary of interval */
-   f1 =  GEN->CDFs[0];
-   x2 =  GEN->s[1];      /* right boudary of interval*/   
-   f2 =  GEN->CDFs[1];
-  }   /* end of if()    */
+  else { 
+    /* 1b. -- no table available -- */
+    x1 =  GEN->s[0];      /* left boudary of interval */
+    f1 =  GEN->CDFs[0];
+    x2 =  GEN->s[1];      /* right boudary of interval*/   
+    f2 =  GEN->CDFs[1];
+  }
+
+  /*  -- 1c. check for ordering of starting points -- */
 
   if ( x1 >= x2 ) { 
     xtmp = x1; ftmp = f1;
     x1   = x2; f1   = f2;
-    x2 = xtmp + DBL_EPSILON;
+    x2 = xtmp + fabs(xtmp)*DBL_EPSILON;
     f2 = CDF(x2); 
   }
 
+  /* -- 1d. check for boundary of truncated domain -- */
+ 
   /* in case of truncated domain there might be better starting points */
   /* ! no problems with INFINITY !  */
   if ( x1 < DISTR.trunc[0] || x1 >= DISTR.trunc[1] ){
@@ -1253,27 +1352,27 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
     f2 = GEN->Umax;    /* = CDF(x2) */
   }
 
-  /* compute function value at interval boundaries */
-  f1 -= u;
-  f2 -= u;
+  /* -- 1z. compute function values at interval boundaries -- */
+  f1 -= u;  f2 -= u;
 
 
-  /* search for interval with changing signs */
-  /* step = 1.;  interval too small -> make it bigger ( + 2^n * gap ) */
+  /* -- 2. search for enclosing bracket (interval where f changes signs) -- */
+ 
   step = (GEN->s[1]-GEN->s[0]) * STEPFAC;
   step_count = 0;
   while ( f1*f2 > 0. ) {
+    /* interval too small -> make it bigger ( + 2^n * gap ) -- */
     if ( f1 > 0. ) { /* lower boundary too big */    
       x2  = x1;  
       f2  = f1;
       x1 -= step;   
-      f1 = CDF(x1) - u;
+      f1  = CDF(x1) - u;
     }
     else {         /* upper boundary too small */
       x1  = x2;
       f1  = f2;
       x2 += step;
-      f2 = CDF(x2) - u;
+      f2  = CDF(x2) - u;
     }
 
     /* increase step width */
@@ -1285,94 +1384,133 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
     }
     else {
       _unur_error(gen->genid,UNUR_ERR_GEN_SAMPLING,
-		  "Regula Falsi can't find interval with sign change");
-      x2 = 0.5*x1 + 0.5*x2;
-      x2 = _unur_max( x2, DISTR.trunc[0]);
-      x2 = _unur_min( x2, DISTR.trunc[1]);
-      return x2;
+                  "Regula Falsi cannot find interval with sign change");
+      return ( (f1>0.) ? DISTR.trunc[0] : DISTR.trunc[1] );
     }
-  }  /* while end -- interval found */ 
+  }
+
+  /* -- 2a. sign changes always within [a, x2] -- */
+  a = x1; fa = f1; 
 
 
-  a  = x1;       /* always sign change between a and x2 */
-  fa = f1;
+  /* -- 3. secant step, preserve sign change -- */
 
   /* secant step, preserve sign change */
-  for (i=0; TRUE ; i++) {
-    count++;
-     
-    /* f2 always less (better), otherwise change */
-    if ( f1*f2<0. && fabs(f1) < fabs(f2) ) {   /* change only when f1 and f2 have different signs*/
-      xtmp = x1; ftmp = f1;
-      x1 = x2;   f1 = f2;
-      x2 = xtmp; f2 = ftmp;
+  for (i=0; TRUE; i++) {
+
+    /* -- 3a. check sign of f1 and f2 -- */
+
+    if ( f1*f2 < 0.) { 
+      /* sign change found     */
+      count_nosc = 0;   /* reset counter */
+      /* f2 always less (better), otherwise exchange */
+      if ( fabs(f1) < fabs(f2) ) {
+	xtmp = x1; ftmp = f1;
+	x1 = x2;   f1 = f2;
+	x2 = xtmp; f2 = ftmp;
+      }
+      /* sign changes within [a, x2] */
+      a = x1; fa = f1;
+    }
+    else {
+      /* increment counter for "no sign change occured" */
+      count_nosc++;
+      /* must not update 'a' */
     }
 
-    x2abs = fabs(x2);   /* absolute value of x2  */
-
-    if ( f1*f2 < 0.) {  /* sign change found     */
-      count = 0;   /* reset bisection counter    */
-      a  = x1;     /* sign change within [a, x2] */
-      fa = f1;
-    }
-    
-    length = x2 - a;  /* oriented length  */
-    lengthabs = fabs(length);
+    /* length of enclosing bracket */
+    length = x2 - a;                       /* oriented length */
+    lengthabs = fabs(length);              /* absolute length */
     lengthsgn = (length < 0.) ? -1. : 1.;
 
-    /* breaking condition */
-    if ( _unur_iszero(f2)                             /* exact hit */ 
-	 || _unur_FP_same(fa, f2)                      /* flat region  */
-	 || lengthabs <= GEN->rel_x_resolution * x2abs /* relative x precision reached */
-	 || lengthabs <= GEN->rel_x_resolution * GEN->rel_x_resolution
-	                                              /* absolute x precision eps^2 close to 0 */
-       	 || fabs(f2) <= rel_u_resolution ) {          /* relative u precision*/ 
-#ifdef UNUR_ENABLE_LOGGING
-      /* write info into LOG file (in case error) */
-      if (gen->debug & NINV_DEBUG_SAMPLE)
-	_unur_ninv_debug_sample_regula( gen,u,x2,f2,i );
-#endif
-      /*finished*/
-      return x2;
-    }
+    /* -- 3b. check stopping criterions -- */
 
     if (i >= GEN->max_iter)
-      /* abort iteration */
+      /* maximum number of iterations reached --> abort */
       break;
-  
-    /* secant or bisection step   */
+
+    if ( GEN->x_resolution > 0. ) {
+      /* check x-error */
+      if ( _unur_iszero(f2) ||                          /* exact hit */ 
+	   lengthabs <= GEN->x_resolution * fabs(x2) || /* relative x resolution reached */
+	   lengthabs <= abs_x_resolution ) {            /* absolute x resolution reached close to 0 */
+	x_goal = TRUE;
+      }
+      else if ( _unur_FP_same(fa, f2) ) {
+	/* flat region  */
+	_unur_warning(gen->genid,UNUR_ERR_GEN_SAMPLING,
+		      "flat region: accuracy goal in x cannot be reached");
+	x_goal = TRUE;
+      }
+      else
+	x_goal = FALSE;
+    }
+    else {
+      /* no check */
+      x_goal = TRUE;
+    }
+
+    if ( GEN->u_resolution > 0. ) {
+      /* check u-error */
+      u_goal = (fabs(f2) <= rel_u_resolution);    /* relative u resolution */
+      if ( _unur_FP_same(a, x2) ) {
+	/* sharp peak or pole */
+	_unur_warning(gen->genid,UNUR_ERR_GEN_SAMPLING,
+		      "sharp peak or pole: accuracy goal in u cannot be reached");
+	u_goal = TRUE;
+      }
+    }
+    else {
+      u_goal = TRUE;
+    }
+
+    /* goal reached ? */
+    if (x_goal && u_goal)
+      /*finished*/
+      break;
+
+    /* -- 3c. try secant step -- */
+
+    /* step size: secant or bisection step */
     dx = (_unur_FP_same(f1,f2)) ? length/2. : f2*(x2-x1)/(f2-f1) ;  
-    
-    /* minimal step */
-    if ( fabs(dx) < GEN->rel_x_resolution * x2abs ){
-      dx = lengthsgn * 0.99 * GEN->rel_x_resolution * x2abs;
+
+    /* minimal step size */
+    if (GEN->u_resolution < 0.) 
+      /* we only look at the x-error, so we do not need shorter steps */
+      min_step_size = fabs(x2) * GEN->x_resolution;
+    else
+      min_step_size = lengthabs * DBL_EPSILON; 
+
+    if ( fabs(dx) < min_step_size ) {
+      dx = lengthsgn * 0.99 * min_step_size;
+
       while ( x2 == x2 - dx ){ /* dx too small  */
-	if ( dx != 2.*dx)    /* near limit of calculations */
-	  dx = 2.*dx;
+        if ( dx != 2.*dx)    /* near limit of calculations */
+          dx = 2.*dx;
         else
-	  dx = length/2.;    /* bisection step   */
+          dx = length/2.;    /* bisection step   */
       }
     }
 
     /* bisection step if:                             */  
     /* no sign change   || step leads out of interval */
-    if ( count > 1 || i > I_CHANGE_TO_BISEC ||
-        (lengthabs-GEN->rel_x_resolution*x2abs)/(dx*lengthsgn) <= 1. )
+    if ( count_nosc > 1 || i > I_CHANGE_TO_BISEC ||
+	 (lengthabs-GEN->x_resolution*fabs(x2))/(dx*lengthsgn) <= 1. )
       dx = length/2.; /* bisection step        */
   
-
-    /* point update  */    
+    /* -- 3c. update point -- */    
     x1 = x2;       f1 = f2;
     x2 = x2-dx;    f2 = CDF(x2) - u; 
     
-  }  /* for-loop  end */
+  }  /* end of for-loop */
 
-  if (i >= GEN->max_iter) {
+  if (i >= GEN->max_iter)
     _unur_warning(gen->genid,UNUR_ERR_GEN_SAMPLING,
-		  "max number of iterations exceeded");
-    x2 = _unur_max( x2, DISTR.trunc[0]);
-    x2 = _unur_min( x2, DISTR.trunc[1]);
-  }
+		  "max number of iterations exceeded: accuracy goal might not be reached");
+ 
+  /* ensure location within given (truncated) domain */
+  x2 = _unur_max( x2, DISTR.trunc[0]);
+  x2 = _unur_min( x2, DISTR.trunc[1]);
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into LOG file (in case error) */
@@ -1380,15 +1518,16 @@ _unur_ninv_regula( struct unur_gen *gen, double u )
     _unur_ninv_debug_sample_regula( gen,u,x2,f2,i );
 #endif
 
-  /* finished (case of error!) */
+  /* finished */
   return x2;
 
 } /* end of _unur_ninv_sample_regula()  */
 
+
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_ninv_newton( struct unur_gen *gen, double U )
+_unur_ninv_newton( const struct unur_gen *gen, double U )
      /*----------------------------------------------------------------------*/
      /* sample from generator (use Newton's method)                          */
      /*                                                                      */
@@ -1409,12 +1548,14 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
   double fxabs;       /* absolute valuo of fx                         */
   double xtmp, fxtmp; /* temprary variables for x and fx              */
   double xold;        /* remember last values for stopping criterion  */
-  /* double fxold;    /\* remember last values for stopping criterion  *\/ */
   double fxtmpabs;    /* fabs of fxtmp                                */
   double damp;        /* damping factor                               */
   double step;        /* helps to escape from flat regions of the cdf */
   int i;              /* counter for for-loop, index                  */
   int flat_count;     /* counter of steps in flat region              */
+  double rel_u_resolution; /* relative u resolution                   */
+  double abs_x_resolution; /* absolute x resolution                   */
+  int x_goal, u_goal; /* whether precision goal is reached            */
 
   /* maximal number of steps to leave flat region */
   const int MAX_FLAT_COUNT = 40;
@@ -1422,13 +1563,23 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
   /* check arguments */
   CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_NINV_GEN,INFINITY);
 
-  /* initialize starting point */
+  /* compute relative u resolution */
+  rel_u_resolution = ( (GEN->u_resolution > 0.) ? 
+                       (GEN->Umax - GEN->Umin) * GEN->u_resolution :
+                       INFINITY );
+
+  /* compute absolute x resolution eps^2 used close to 0 */
+  abs_x_resolution = GEN->x_resolution * GEN->x_resolution;
+  
+  /* -- 1. initialize starting interval -- */
+
   if (GEN->table_on) {
+    /* -- 1a. use table -- */
 
     /* 0 <= i <= table_size-2  */
     if ( _unur_FP_same(GEN->CDFmin,GEN->CDFmax) ) {
-      /* CDF values in table too close, so we use median point since 
-	 there is no difference between CDF values.  */
+      /* CDF values in table too close, so we use median point since */
+      /* there is no difference between CDF values.                  */
       i = GEN->table_size/2;
     }
     else {
@@ -1448,13 +1599,14 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
 
   }
 
-  else { /* no table */
+  else { 
+    /* 1b. -- no table available -- */
     x  = GEN->s[0];
     fx = GEN->CDFs[0];
   }
 
-  /* in case of truncated domain there might be a better starting point */
-  /* ! no problem with INFINITY ! */
+  /* -- 1c. check for boundary of truncated domain -- */
+
   if ( x < DISTR.trunc[0] ){
     x  = DISTR.trunc[0];
     fx = GEN->Umin;    /* = CDF(x) */
@@ -1464,16 +1616,18 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
     fx = GEN->Umax;    /* = CDF(x) */
   }
 
+  /* -- 1z. compute values for starting point -- */
+
   fx   -= U;
   dfx   = PDF(x);
   fxabs = fabs(fx);
   xold  = x;    /* there is no old value yet */
-  /* fxold = fx;   /\* there is no old value yet *\/  */
 
   damp = 2.;        /* to be halved at least once */  
   step = 1.;
 
-  /* begin for-loop:  newton-iteration  */
+  /* -- 2. Newton iteration -- */
+
   for (i=0; i < GEN->max_iter; i++) {
 
     flat_count = 0;
@@ -1517,7 +1671,7 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
 	flat_count++;
       else {
 	_unur_error(gen->genid,UNUR_ERR_GEN_SAMPLING,
-		    "Newton's method can't leave flat region");
+		    "Newton's method cannot leave flat region");
 	x = _unur_max( x, DISTR.trunc[0]);
 	x = _unur_min( x, DISTR.trunc[1]);
 	return x;
@@ -1538,7 +1692,7 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
 	xtmp = _unur_min( xtmp, DISTR.trunc[1] );
 	xtmp = _unur_max( xtmp, DISTR.trunc[0] );
 	fxtmp = CDF(xtmp) - U;
-      } while (fabs(fxtmp) > fxabs * (1.+GEN->rel_x_resolution));   /* no improvement */
+      } while (fabs(fxtmp) > fxabs * (1.+UNUR_SQRT_DBL_EPSILON));   /* no improvement */
     }
     else {
       /* we cannot use Newton's rule if the derivative is not finite. */
@@ -1551,23 +1705,57 @@ _unur_ninv_newton( struct unur_gen *gen, double U )
     /* updation variables according to newton-step      */
     damp  = 2.;       /* set back factor for damping    */
     xold  = x;        /* remember last value of x       */
-    /* fxold = fx;       /\* remember last value of fx      *\/ */
     x     = xtmp;     /* update x                       */
     fx    = fxtmp;    /* update function value at x     */
     dfx   = PDF(x);   /* update derivative sof fx at x  */
     fxabs = fabs(fx); /* update absolute value of fx    */
  
-    /* stopping criterion */
-    if ( fabs(x-xold) <= fabs(x) * GEN->rel_x_resolution 
-         && fabs(fx) < GEN->rel_x_resolution ) {
-      break;   /* no improvement with newton-step -> finished */
+    /* -- 2z. check stopping criterions -- */
+
+    if ( GEN->x_resolution > 0. ) {
+      /* check x-error */
+      if ( _unur_iszero(fx) ||                            /* exact hit */ 
+	   fabs(x-xold) <= GEN->x_resolution * fabs(x) || /* relative x resolution reached */
+           fabs(x-xold) <= abs_x_resolution ) {           /* absolute x resolution reached close to 0 */
+ 	x_goal = TRUE;
+      }
+      else
+        x_goal = FALSE;
+    }
+    else {
+      /* no check */
+      x_goal = TRUE;
     }
 
+    if ( GEN->u_resolution > 0. ) {
+      /* check u-error */
+      if ( fabs(fx) <= rel_u_resolution ) {    /* relative u resolution */
+      	u_goal = TRUE;
+      }
+      else if ( _unur_FP_same(xold, x) ) {
+        /* sharp peak or pole */
+        _unur_warning(gen->genid,UNUR_ERR_GEN_SAMPLING,
+                      "sharp peak or pole: accuracy goal in u cannot be reached");
+        u_goal = TRUE;
+      }
+      else
+        u_goal = FALSE;
+
+    }
+    else {
+      u_goal = TRUE;
+    }
+
+    /* goal reached ? */
+    if (x_goal && u_goal)
+      /*finished*/
+      break;
   }  /* end of for-loop  (MAXITER reached -> finished) */
+
 
   if (i >= GEN->max_iter)
     _unur_warning(gen->genid,UNUR_ERR_GEN_SAMPLING,
-		  "max number of iterations exceeded");
+		  "max number of iterations exceeded: accuracy goal might not be reached");
 
   /* make sure that result is within boundaries of (truncated) domain */
   x = _unur_max( x, DISTR.trunc[0]);
@@ -1984,7 +2172,7 @@ _unur_ninv_info( struct unur_gen *gen, int help )
     else
       _unur_string_append(info,"   useregula  [default]\n");
 
-    _unur_string_append(info,"   x_resolution = %g  %s\n", GEN->rel_x_resolution,
+    _unur_string_append(info,"   x_resolution = %g  %s\n", GEN->x_resolution,
 			(gen->set & NINV_SET_X_RESOLUTION) ? "" : "[default]");
 
     _unur_string_append(info,"   max_iter = %d  %s\n", GEN->max_iter,

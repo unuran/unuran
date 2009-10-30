@@ -168,7 +168,8 @@ int unur_ninv_set_max_iter( UNUR_PAR *parameters, int max_iter );
 
 int unur_ninv_chg_max_iter(UNUR_GEN *generator, int max_iter);
 /* 
-   Set and change number of maximal iterations.  Default is @code{40}.
+   Set and change number of maximal iterations.
+   Default is @code{100}.
 */
 
 

@@ -38,8 +38,18 @@
  *****************************************************************************
  *                                                                           *
  *   REFERENCES:                                                             *
- *   [1] Neumaier A. (to be published): Introduction to numerical analysis,  *
- *       Cambridge University Press                                          *
+ *   [1] Neumaier A. (to be published):                                      *
+ *       Introduction to numerical analysis,                                 *
+ *       Cambridge University Press.                                         *
+ *                                                                           *
+ *   [2] Dahlquist, G. and Bj{\"o}rck, {\AA} (2008):                         *
+ *       Numerical methods in scientific computing, Vol 1.,                  *
+ *       SIAM, Philadelphia, PA.                                             *
+ *                                                                           *
+ *   [3] Brent, R. (1973):                                                   *
+ *       Algorithms for Minimizing without Derivatives,                      *
+ *       Prentice-Hall, Englewood Cliffs, NJ.                                *
+ *       Republished by Dover Publications, Mineola, NY, 2002.               *
  *                                                                           *
  *****************************************************************************
  *                                                                           *

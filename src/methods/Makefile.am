@@ -50,6 +50,9 @@ libmethods_la_SOURCES = \
           mvtdr_newset.ch mvtdr_init.ch mvtdr_sample.ch \
           mvtdr_info.ch mvtdr_debug.ch \
  ninv.c   ninv.h   ninv_struct.h \
+          ninv_newset.ch ninv_init.ch ninv_sample.ch \
+          ninv_newton.ch ninv_regula.ch \
+          ninv_debug.ch ninv_info.ch \
  norta.c  norta.h  norta_struct.h \
  nrou.c   nrou.h   nrou_struct.h \
  pinv.c   pinv.h   pinv_struct.h \

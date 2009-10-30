@@ -13,11 +13,31 @@
  *   Copyright (c) 2000-2009 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ *   REFERENCES:                                                             *
+ *   [1] Neumaier A. (to be published): Introduction to numerical analysis,  *
+ *       Cambridge University Press                                          *
+ *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ *  For a given U find X with F(X) - U = 0.                                  *
+ *                                                                           *
+ *  Method: damped Newton method.                                            *
+ *                                                                           *
  *****************************************************************************/
 
 /*****************************************************************************/
 /**  Newton method                                                          **/
 /*****************************************************************************/
+
+/*---------------------------------------------------------------------------*/
+/* Constants                                                                 */
+
+/* maximal number of steps to leave flat region */
+#define MAX_FLAT_COUNT  (40)
+
+/*---------------------------------------------------------------------------*/
 
 double
 _unur_ninv_newton( const struct unur_gen *gen, double U )
@@ -50,9 +70,6 @@ _unur_ninv_newton( const struct unur_gen *gen, double U )
   double abs_x_resolution; /* absolute x resolution                   */
   int x_goal, u_goal; /* whether precision goal is reached            */
 
-  /* maximal number of steps to leave flat region */
-  const int MAX_FLAT_COUNT = 40;
-    
   /* check arguments */
   CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_NINV_GEN,INFINITY);
 
@@ -263,5 +280,9 @@ _unur_ninv_newton( const struct unur_gen *gen, double U )
   return x;
 
 } /* end of _unur_ninv_sample_newton() */
+
+/*---------------------------------------------------------------------------*/
+
+#undef MAX_FLAT_COUNT
 
 /*---------------------------------------------------------------------------*/

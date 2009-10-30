@@ -13,6 +13,19 @@
  *   Copyright (c) 2000-2009 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ *   REFERENCES:                                                             *
+ *   [1] Neumaier A. (to be published): Introduction to numerical analysis,  *
+ *       Cambridge University Press                                          *
+ *                                                                           *
+ *****************************************************************************
+ *                                                                           *
+ *  For a given U find X with F(X) - U = 0.                                  *
+ *                                                                           *
+ *  Method: stabilized regula falsi preserving sign change;                  *
+ *          bisection if slow convergence is detected.                       *
+ *                                                                           *
  *****************************************************************************/
 
 /*****************************************************************************/

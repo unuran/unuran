@@ -67,7 +67,6 @@ _unur_ninv_newton( const struct unur_gen *gen, double U )
   int i;              /* counter for for-loop, index                  */
   int flat_count;     /* counter of steps in flat region              */
   double rel_u_resolution; /* relative u resolution                   */
-  double abs_x_resolution; /* absolute x resolution                   */
   int x_goal, u_goal; /* whether precision goal is reached            */
 
   /* check arguments */
@@ -78,9 +77,6 @@ _unur_ninv_newton( const struct unur_gen *gen, double U )
                        (GEN->Umax - GEN->Umin) * GEN->u_resolution :
                        INFINITY );
 
-  /* compute absolute x resolution eps^2 used close to 0 */
-  abs_x_resolution = GEN->x_resolution * GEN->x_resolution;
-  
   /* -- 1. initialize starting interval -- */
 
   if (GEN->table_on) {
@@ -224,9 +220,10 @@ _unur_ninv_newton( const struct unur_gen *gen, double U )
 
     if ( GEN->x_resolution > 0. ) {
       /* check x-error */
+      /* we use a combination of absolute and relative x-error: */
+      /*    x-error < x-resolution * fabs(x) + x-resolution^2   */
       if ( _unur_iszero(fx) ||                            /* exact hit */ 
-	   fabs(x-xold) <= GEN->x_resolution * fabs(x) || /* relative x resolution reached */
-           fabs(x-xold) <= abs_x_resolution ) {           /* absolute x resolution reached close to 0 */
+           fabs(x-xold) < GEN->x_resolution * (fabs(x) + GEN->x_resolution) ) {
  	x_goal = TRUE;
       }
       else
@@ -239,7 +236,8 @@ _unur_ninv_newton( const struct unur_gen *gen, double U )
 
     if ( GEN->u_resolution > 0. ) {
       /* check u-error */
-      if ( fabs(fx) <= rel_u_resolution ) {    /* relative u resolution */
+      /* (we use a slightly smaller maximal tolerated error than given by user) */
+      if ( fabs(fx) < 0.9 * rel_u_resolution ) {    /* relative u resolution */
       	u_goal = TRUE;
       }
       else if ( _unur_FP_same(xold, x) ) {

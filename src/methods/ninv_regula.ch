@@ -455,14 +455,13 @@ _unur_ninv_accuracy( const struct unur_gen *gen,
      /*----------------------------------------------------------------------*/
 { 
   int x_goal, u_goal;     /* whether precision goal is reached               */
-  double dx;
 
   if ( x_resol > 0. ) {
     /* check x-error */
-    dx = fabs(x1-x0);
+    /* we use a combination of absolute and relative x-error: */
+    /*    x-error < x-resolution * fabs(x) + x-resolution^2   */
     if ( _unur_iszero(f0) ||          /* exact hit */
-  	 dx < x_resol * fabs(x0) ||  /* relative x resolution reached */
-  	 dx < x_resol * x_resol ) {  /* absolute x resolution reached close to 0 */
+  	 fabs(x1-x0) < x_resol * (fabs(x0) + x_resol) ) {
       x_goal = TRUE;
     }
     else if ( _unur_FP_same(f0,f1) ) {

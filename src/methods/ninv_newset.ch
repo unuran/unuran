@@ -150,6 +150,32 @@ unur_ninv_set_useregula( struct unur_par *par )
 /*---------------------------------------------------------------------------*/
 
 int
+unur_ninv_set_usebisect( struct unur_par *par )
+     /*----------------------------------------------------------------------*/
+     /* use bisection method                                                 */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par      ... pointer to parameter for building generator object    */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, NINV );
+
+  /* store date */
+  par->variant = NINV_VARFLAG_BISECT;
+
+  return UNUR_SUCCESS;
+
+} /* end of unur_ninv_set_usebisect() */
+
+/*---------------------------------------------------------------------------*/
+
+int
 unur_ninv_set_max_iter( struct unur_par *par, int max_iter )
      /*----------------------------------------------------------------------*/
      /* set number of maximal iterations                                     */
@@ -371,7 +397,7 @@ unur_ninv_set_start( struct unur_par *par, double s1, double s2 )
      /*----------------------------------------------------------------------*/
      /* set starting points.                                                 */
      /*   Newton:        s1           starting point                         */
-     /*   regular falsi: s1, s2       boundary of starting interval          */
+     /*   other methods: s1, s2       boundary of starting interval          */
      /* arguments that are not used by method are ignored.                   */
      /*                                                                      */
      /*                                                                      */

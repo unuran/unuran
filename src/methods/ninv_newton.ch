@@ -274,7 +274,7 @@ _unur_ninv_newton( const struct unur_gen *gen, double U )
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into LOG file (in case error) */
   if (gen->debug & NINV_DEBUG_SAMPLE)
-    _unur_ninv_debug_sample_newton(gen, U, x, fx, i);
+    _unur_ninv_debug_sample(gen, U, x, fx, i);
 #endif
   
   return x;

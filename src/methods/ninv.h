@@ -162,6 +162,11 @@ int unur_ninv_set_usenewton( UNUR_PAR *parameters );
    using the result of the sampling routine.
 */
 
+int unur_ninv_set_usebisect( UNUR_PAR *parameters );
+/* 
+   Switch to bisection method. This is a slow algorithm and it is only
+   recommended as a last resort.
+*/
 
 int unur_ninv_set_max_iter( UNUR_PAR *parameters, int max_iter );
 /* */

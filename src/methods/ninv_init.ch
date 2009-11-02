@@ -426,6 +426,7 @@ _unur_ninv_compute_start( struct unur_gen *gen )
 
   switch (gen->variant) {
 
+  case NINV_VARFLAG_BISECT:
   case NINV_VARFLAG_REGULA:
 
     /* get arbitrary points */

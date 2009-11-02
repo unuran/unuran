@@ -51,6 +51,9 @@ _unur_ninv_debug_init( const struct unur_gen *gen )
   case NINV_VARFLAG_NEWTON:
     fprintf(LOG,"_newton\n");
     break;
+  case NINV_VARFLAG_BISECT:
+    fprintf(LOG,"_bisect\n");
+    break;
   case NINV_VARFLAG_REGULA: default:
     fprintf(LOG,"_regula\n");
     break;
@@ -91,7 +94,7 @@ _unur_ninv_debug_start( const struct unur_gen *gen )
   else { /* no table */
     fprintf(LOG,"%s: starting points:\n",gen->genid);
     fprintf(LOG,"%s:\ts[0] = %12.6g, F(x) = %10.8f\n",gen->genid,GEN->s[0],GEN->CDFs[0]);
-    if (gen->variant & NINV_VARFLAG_REGULA)
+    if (! (gen->variant & NINV_VARFLAG_NEWTON))
       fprintf(LOG,"%s:\ts[1] = %12.6g, F(x) = %10.8f\n",gen->genid,GEN->s[1],GEN->CDFs[1]);
   }
 
@@ -102,7 +105,7 @@ _unur_ninv_debug_start( const struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 void
-_unur_ninv_debug_sample_regula( const struct unur_gen *gen, double u, double x, double fx, int iter )
+_unur_ninv_debug_sample( const struct unur_gen *gen, double u, double x, double fx, int iter )
      /*----------------------------------------------------------------------*/
      /* trace sampling (regula falsi)                                       */
      /*                                                                      */
@@ -121,29 +124,6 @@ _unur_ninv_debug_sample_regula( const struct unur_gen *gen, double u, double x, 
 	  gen->genid,u,x,fx,iter,GEN->max_iter);
 
 } /* end of _unur_ninv_debug_sample_regula() */
-
-/*---------------------------------------------------------------------------*/
-
-void
-_unur_ninv_debug_sample_newton( const struct unur_gen *gen, double u, double x, double fx, int iter )
-     /*----------------------------------------------------------------------*/
-     /* trace sampling (newton's method)                                     */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*----------------------------------------------------------------------*/
-{
-  FILE *LOG;
-
-  /* check arguments */
-  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_NINV_GEN,RETURN_VOID);
-
-  LOG = unur_get_stream();
-
-  fprintf(LOG,"%s: u = %8.6f,\t x = %8.6g\t(cdf(x)-u = %8.2g)\t -- %2d iterations [%d]\n",
-	  gen->genid,u,x,fx,iter,GEN->max_iter);
-
-} /* end of _unur_ninv_debug_sample_newton() */
 
 /*---------------------------------------------------------------------------*/
 

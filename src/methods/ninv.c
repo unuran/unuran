@@ -111,7 +111,8 @@
 /* Variants: none                                                            */
 
 #define NINV_VARFLAG_NEWTON   0x1u   /* use Newton's method                  */
-#define NINV_VARFLAG_REGULA   0x2u   /* use regula falsi (default)           */
+#define NINV_VARFLAG_REGULA   0x2u   /* use regula falsi [default]           */
+#define NINV_VARFLAG_BISECT   0x4u   /* use bisection method                 */
 
 /*---------------------------------------------------------------------------*/
 /* Debugging flags                                                           */
@@ -195,8 +196,9 @@ static int _unur_ninv_compute_start( struct unur_gen *gen );
 /*  file: ninv_sample.ch  */
 /*........................*/
 
-static double _unur_ninv_sample_regula( struct unur_gen *gen );
 static double _unur_ninv_sample_newton( struct unur_gen *gen );
+static double _unur_ninv_sample_regula( struct unur_gen *gen );
+static double _unur_ninv_sample_bisect( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 /* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/
@@ -221,6 +223,24 @@ static double _unur_ninv_regula( const struct unur_gen *gen, double u );
 /* algorithm: regula falsi                                                   */
 /*---------------------------------------------------------------------------*/
 
+static double _unur_ninv_bisect( const struct unur_gen *gen, double u );
+/*---------------------------------------------------------------------------*/
+/* algorithm: bisection method                                               */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_ninv_bracket( const struct unur_gen *gen, double u, 
+			       double *xl, double *fl, double *xu, double *fu );
+/*---------------------------------------------------------------------------*/
+/* find a bracket (enclosing interval) for root of CDF(x)-u.                 */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_ninv_accuracy( const struct unur_gen *gen,
+				double x_resol, double u_resol,
+				double x0, double f0, double x1, double f1 );
+/*---------------------------------------------------------------------------*/
+/* check accuracy goal for approximate root.                                 */
+/*---------------------------------------------------------------------------*/
+
 
 /*.......................*/
 /*  file: ninv_debug.ch  */
@@ -242,16 +262,10 @@ static void _unur_ninv_debug_start( const struct unur_gen *gen );
 /* print starting points or table for algorithms into LOG file               */
 /*---------------------------------------------------------------------------*/
 
-static void _unur_ninv_debug_sample_regula( const struct unur_gen *gen, 
-					    double u, double x, double fx, int iter );
+static void _unur_ninv_debug_sample( const struct unur_gen *gen, 
+				     double u, double x, double fx, int iter );
 /*---------------------------------------------------------------------------*/
-/* trace sampling (regula falsi).                                            */
-/*---------------------------------------------------------------------------*/
-
-static void _unur_ninv_debug_sample_newton( const struct unur_gen *gen, 
-					    double u, double x, double fx, int iter );
-/*---------------------------------------------------------------------------*/
-/* trace sampling (newton's method).                                         */
+/* trace sampling.                                                           */
 /*---------------------------------------------------------------------------*/
 
 static void _unur_ninv_debug_chg_truncated( const struct unur_gen *gen);
@@ -295,6 +309,8 @@ _unur_ninv_getSAMPLE( struct unur_gen *gen )
   switch (gen->variant) {
   case NINV_VARFLAG_NEWTON:
     return _unur_ninv_sample_newton;
+  case NINV_VARFLAG_BISECT:
+    return _unur_ninv_sample_bisect;
   case NINV_VARFLAG_REGULA:
   default:
     return _unur_ninv_sample_regula;

@@ -56,6 +56,24 @@ _unur_ninv_sample_regula( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 double
+_unur_ninv_sample_bisect( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* sample from generator (use bisection method)                         */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   double (sample from random variate)                                */
+     /*----------------------------------------------------------------------*/
+{
+  return _unur_ninv_bisect( gen, 
+         GEN->Umin + (_unur_call_urng(gen->urng)) * (GEN->Umax - GEN->Umin) );
+} /* end of _unur_ninv_sample_bisect() */
+
+/*---------------------------------------------------------------------------*/
+
+double
 unur_ninv_eval_approxinvcdf( const struct unur_gen *gen, double u )
      /*----------------------------------------------------------------------*/
      /* get approximate value of inverse CDF at u approximately              */
@@ -95,6 +113,9 @@ unur_ninv_eval_approxinvcdf( const struct unur_gen *gen, double u )
   switch (gen->variant) {
   case NINV_VARFLAG_NEWTON:
     x = _unur_ninv_newton(gen,u);
+    break;
+  case NINV_VARFLAG_BISECT:
+    x = _unur_ninv_bisect(gen,u);
     break;
   case NINV_VARFLAG_REGULA:
   default:

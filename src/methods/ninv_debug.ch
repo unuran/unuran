@@ -60,6 +60,22 @@ _unur_ninv_debug_init( const struct unur_gen *gen )
   }
   fprintf(LOG,"%s:\n",gen->genid);
 
+  fprintf(LOG,"%s: u-resolution = ",gen->genid);
+  if (GEN->u_resolution < 0.) 
+    fprintf(LOG,"[disabled]");
+  else
+  fprintf(LOG,"%g",GEN->u_resolution);
+  _unur_print_if_default(gen,NINV_SET_U_RESOLUTION);
+
+  fprintf(LOG,"\n%s: x-resolution = ",gen->genid);
+  if (GEN->x_resolution < 0.) 
+    fprintf(LOG,"[disabled]");
+  else
+  fprintf(LOG,"%g",GEN->x_resolution);
+  _unur_print_if_default(gen,NINV_SET_X_RESOLUTION);
+
+  fprintf(LOG,"\n%s:\n",gen->genid);
+
   _unur_ninv_debug_start(gen);
 
   fprintf(LOG,"%s:\n",gen->genid);

@@ -117,7 +117,7 @@
 /* automatically selected generator */
 #define UNUR_METH_AUTO     0x00a00000u   /* can be any type of distribution  */
 
-/* to indicate unkown type */
+/* to indicate unknown type */
 #define UNUR_METH_UNKNOWN  0xff000000u
 
 /*****************************************************************************/

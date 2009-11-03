@@ -78,16 +78,40 @@
    beta-distributions), comparatively difficult and slow. Often no
    such routines are available in standard programming libraries. 
    Then numerical methods for inverting the CDF are necessary, e.g.
-   Newton's method. Such procedures, however, have the disadvantage
-   that they may be slow or not exact, i.e. they compute approximate
-   values. The methods NINV (@pxref{NINV}) and HINV (@pxref{HINV}) of UNU.RAN are 
-   numerical inversion methods. Both require the CDF of the desired
-   distribution. As the CDF is quite complicated and slow for many
-   distributions this implies either that the generation is very slow
-   (NINV) or a very slow setup step and large tables are necessary
-   (HINV). Sometimes the CDF of a distribution is not available and
-   alternative methods like the rejection method (@pxref{Rejection})
-   must be used. 
+   Newton's method or (polynomial or rational) approximations of the
+   inverse CDF. Such procedures, however, have the disadvantage that
+   they are not exact and/or slow.
+   UNU.RAN implements several methods:
+   NINV (@pxref{NINV}), HINV (@pxref{HINV}) and PINV (@pxref{PINV}).
+   
+   For such approximate inversion methods the approximation error is
+   important for the quality of the generated point set.
+   Let @unurmath{X=G^{-1}(U)} denote the approximate inverse CDF,
+   and let @unurmath{F} and @unurmath{F^{-1}} be the exact CDF and
+   inverse CDF of the distribution, resp.
+   We use two measures for the approximation error:
+
+   @table @emph   
+   @item u-error
+   is given by
+   @unurmathdisplay{uerror = |U-F(G^{-1}(U))|}
+   Goodness-of-fit tests like the Kolmogorov-Smirnov test or the
+   chi-squared test look at this type of error.
+   We are also convinced that it is the most suitable error measure for
+   Monte Carlo simulations as pseudo-random numbers and points of low
+   discrepancy sets are located on a grid of restricted resolution.
+
+   @item x-error
+   is given by 
+   @unurmathdisplay{xerror = |F^{-1}(U)-G^{-1}(U)|}
+   The x-error measure the deviation of @unurmath{G^{-1}(U)}
+   from the exact result. This measure is suitable when the inverse
+   CDF is used as a quantile function in some computations.
+
+   @end table
+   
+   We use the terms @emph{u-resolution} and @emph{x-resolution} as the
+   maximal tolerated u-error and x-error, resp.
 
 =EON
 */

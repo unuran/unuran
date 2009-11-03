@@ -8,10 +8,10 @@
 @table @strong
 
 @item CDF
-cumulative distribution function
+cumulative distribution function.
 
 @item HR
-hazard rate (or failure rate)
+hazard rate (or failure rate).
 
 @item inverse local concavity
 local concavity of inverse PDF @unurmath{f^{-1}(y)} expressed in term of 
@@ -25,22 +25,22 @@ Is is given by
 @unurmath{lc_f(x) = 1 - f''(x)\,f(x) / f'(x)^2}
 
 @item PDF
-probability density function
+probability density function.
 
 @item dPDF
-derivative (gradient) of probability density function
+derivative (gradient) of probability density function.
 
 @item PMF
-probability mass function
+probability mass function.
 
 @item PV
-(finite) probability vector
+(finite) probability vector.
 
 @item URNG
-uniform random number generator
+uniform random number generator.
 
 @item @math{U(a,b)}
-continuous uniform distribution on the interval @unurmath{(a,b)}
+continuous uniform distribution on the interval @unurmath{(a,b).}
 
 @item T-concave
 a function @i{f(x)} is called @i{T}-convace if the transformed function
@@ -54,6 +54,28 @@ We only deal with transformations @unurmath{T_c,} where
 @item @i{c} != 0
 @unurmath{T(x) = sign(x) \cdot x^c}
 @end table
+
+@item u-error
+for a given approximate inverse CDF @unurmath{X=G^{-1}(U)}
+the u-error is given as 
+@unurmathdisplay{uerror = |U-F(G^{-1}(U))|}
+where @unurmath{F} denotes the exact CDF.
+Goodness-of-fit tests like the Kolmogorov-Smirnov test or the
+chi-squared test look at this type of error.
+
+@item u-resolution
+the maximal tolerated u-error for an approximate inverse CDF.
+
+@item x-error
+for a given approximate inverse CDF @unurmath{X=G^{-1}(U)}
+the x-error is given as 
+@unurmathdisplay{xerror = |F^{-1}(U)-G^{-1}(U)|}
+where @unurmath{F^{-1}} denotes the exact inverse CDF.
+The x-error measure the deviation of @unurmath{G^{-1}(U)}
+from the exact result.
+
+@item x-resolution
+the maximal tolerated x-error for an approximate inverse CDF.
 
 @end table
 

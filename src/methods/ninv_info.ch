@@ -54,10 +54,17 @@ _unur_ninv_info( struct unur_gen *gen, int help )
       
   /* method */
   _unur_string_append(info,"method: NINV (Numerical INVersion)\n");
-  if (use_newton) 
+  switch (gen->variant) {
+  case NINV_VARFLAG_NEWTON:
     _unur_string_append(info,"   Newton method\n");
-  else
+    break;
+  case NINV_VARFLAG_BISECT:
+    _unur_string_append(info,"   Bisection method\n");
+    break;
+  case NINV_VARFLAG_REGULA: default:
     _unur_string_append(info,"   Regula falsi\n");
+    break;
+  }
   _unur_string_append(info,"\n");
 
   /* performance */
@@ -87,10 +94,20 @@ _unur_ninv_info( struct unur_gen *gen, int help )
   /* parameters */
   if (help) {
     _unur_string_append(info,"parameters:\n");
-    if (use_newton) 
+    switch (gen->variant) {
+    case NINV_VARFLAG_NEWTON:
       _unur_string_append(info,"   usenewton\n");
-    else
+      break;
+    case NINV_VARFLAG_BISECT:
+      _unur_string_append(info,"   usebisect\n");
+      break;
+    case NINV_VARFLAG_REGULA: default:
       _unur_string_append(info,"   useregula  [default]\n");
+      break;
+    }
+
+    _unur_string_append(info,"   u_resolution = %g  %s\n", GEN->u_resolution,
+			(gen->set & NINV_SET_U_RESOLUTION) ? "" : "[default]");
 
     _unur_string_append(info,"   x_resolution = %g  %s\n", GEN->x_resolution,
 			(gen->set & NINV_SET_X_RESOLUTION) ? "" : "[default]");

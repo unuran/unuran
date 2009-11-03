@@ -62,6 +62,7 @@ the u-error is given as
 where @unurmath{F} denotes the exact CDF.
 Goodness-of-fit tests like the Kolmogorov-Smirnov test or the
 chi-squared test look at this type of error.
+See @ref{Inversion} for more details.
 
 @item u-resolution
 the maximal tolerated u-error for an approximate inverse CDF.
@@ -73,6 +74,10 @@ the x-error is given as
 where @unurmath{F^{-1}} denotes the exact inverse CDF.
 The x-error measure the deviation of @unurmath{G^{-1}(U)}
 from the exact result.
+Notice that we have to distinguish between @emph{absolute} and
+@emph{relative} x-error. In UNU.RAN we use the absolute x-error near 0
+and the relative x-error otherwise.
+See @ref{Inversion} for more details.
 
 @item x-resolution
 the maximal tolerated x-error for an approximate inverse CDF.

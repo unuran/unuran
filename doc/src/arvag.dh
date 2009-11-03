@@ -89,7 +89,7 @@
    Let @unurmath{X=G^{-1}(U)} denote the approximate inverse CDF,
    and let @unurmath{F} and @unurmath{F^{-1}} be the exact CDF and
    inverse CDF of the distribution, resp.
-   We use two measures for the approximation error:
+   There are three measures for the approximation error:
 
    @table @emph   
    @item u-error
@@ -103,15 +103,49 @@
 
    @item x-error
    is given by 
-   @unurmathdisplay{xerror = |F^{-1}(U)-G^{-1}(U)|}
+   @unurmathdisplay{absolute xerror = |F^{-1}(U)-G^{-1}(U)|}
+   @unurmathdisplay{relative xerror = |F^{-1}(U)-G^{-1}(U)|\cdot |F^{-1}(U)|}
    The x-error measure the deviation of @unurmath{G^{-1}(U)}
    from the exact result. This measure is suitable when the inverse
    CDF is used as a quantile function in some computations.
+   The main problem with the x-error is that we have to use the
+   @emph{absolute x-error} for @unurmath{X=F^{-1}(U)} close to zero
+   and the @emph{relative x-error} in the tails.
 
    @end table
    
    We use the terms @emph{u-resolution} and @emph{x-resolution} as the
    maximal tolerated u-error and x-error, resp.
+
+   In UNU.RAN allows to set u-resolution and x-resolution
+   independently. Both requirements must be fulfilled.
+   We use the following strategy for checking whether the
+   precision goal is reached:
+
+   @table @emph   
+   @item checking u-error:
+   The u-error must be slightly smaller than the given u-resolution:
+   @unurmathdisplay{|U-F(G^{-1}(U))| < 0.9\cdot uresolution.}
+   There is no necessity to consinder the relative u-error as we have
+   @unurmath{0 < U < 1.}
+
+   @item checking x-error:
+   We combine absoute and relative x-error and use the criterion
+   @unurmathdisplay{|F^{-1}(U)-G^{-1}(U)| < 
+   xresolution \cdot (|G^{-1}(U)| + xresolution).}
+
+   @end table
+
+   @strong{Remark:}
+   It should be noted here that the criterion based on the u-error is
+   too stringent whereever the CDF is extremely steep (and thus the
+   PDF has a pole or a high and narrow peak). This is in particular a
+   problem for distributions with a pole (e.g., the gamma distribution
+   with shape parameter less than 0.5).
+   On the other hand using a criterion based on the x-error causes
+   problems whereever the CDF is extremly flat. This is in particular
+   the case in the (far) tails of heavy-tailed distributions (e.g.,
+   for the Cauchy distribution).
 
 =EON
 */

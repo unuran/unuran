@@ -73,6 +73,19 @@ _unur_ninv_info( struct unur_gen *gen, int help )
   if (!use_newton) n_iter *= 2.;
   _unur_string_append(info,"   average number of iterations = %.2f  [approx.]\n", n_iter);
 
+  if (gen->set & NINV_SET_U_RESOLUTION) {
+    if (DISTR.cdf) {
+      double max_error=1.; double MAE=1.;
+      unur_test_u_error(gen, &max_error, &MAE, 1.e-20, 1000, 
+		     FALSE, FALSE, FALSE, NULL);
+      _unur_string_append(info,"   u-error         <= %g  (mean = %g)  [rough estimate]\n", max_error, MAE);
+    }
+    else {
+      _unur_string_append(info,"   u-error            NA  [requires CDF]\n");
+    }
+    _unur_string_append(info,  "     [ u-resolution = %g ]\n",GEN->u_resolution);
+  }
+
   if (GEN->table_on) {
     _unur_string_append(info,"   starting points = table of size %d\n", GEN->table_size);
   }
@@ -106,10 +119,12 @@ _unur_ninv_info( struct unur_gen *gen, int help )
       break;
     }
 
-    _unur_string_append(info,"   u_resolution = %g  %s\n", GEN->u_resolution,
+    _unur_string_append(info,"   u_resolution = %g  %s  %s\n", GEN->u_resolution,
+			(GEN->u_resolution > 0.) ? "" : "[disabled]", 
 			(gen->set & NINV_SET_U_RESOLUTION) ? "" : "[default]");
 
-    _unur_string_append(info,"   x_resolution = %g  %s\n", GEN->x_resolution,
+    _unur_string_append(info,"   x_resolution = %g  %s  %s\n", GEN->x_resolution,
+			(GEN->x_resolution > 0.) ? "" : "[disabled]", 
 			(gen->set & NINV_SET_X_RESOLUTION) ? "" : "[default]");
 
     _unur_string_append(info,"   max_iter = %d  %s\n", GEN->max_iter,

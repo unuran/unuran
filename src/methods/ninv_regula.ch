@@ -490,6 +490,8 @@ _unur_ninv_accuracy( const struct unur_gen *gen,
   		    "sharp peak or pole: accuracy goal in u cannot be reached");
       u_goal = TRUE;
     }
+    else
+      u_goal = FALSE;
   }
   else {
     u_goal = TRUE;

@@ -481,8 +481,10 @@ _unur_ninv_accuracy( const struct unur_gen *gen,
   if ( GEN->u_resolution > 0. ) {
     /* check u-error */
     /* (we use a slightly smaller maximal tolerated error than given by user) */
-    u_goal = (fabs(f0) < 0.9 * u_resol);
-    if ( _unur_FP_same(x0,x1) ) {
+    if (fabs(f0) < 0.9 * u_resol) {
+      u_goal = TRUE;
+    }
+    else if ( _unur_FP_same(x0,x1) ) {
       /* sharp peak or pole */
       _unur_warning(gen->genid,UNUR_ERR_GEN_SAMPLING,
   		    "sharp peak or pole: accuracy goal in u cannot be reached");

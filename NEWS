@@ -1,10 +1,28 @@
 Version 1.5.0: ??? 
 
+	* Methods:
+
+	- NINV: changed evaluation of accuracy goal of algorithms.
+          Now checking for the maximal tolerated x-error and maximal
+          tolerated u-error can be set (or disabled) independently.
+          [This changes the generated pseudo-random sequence
+          slightly!] 
+	  By default, the u-error remains unchecked.
+
+	  New variant: bisection method.
+          This is a very slow method and should only be considered as
+          a last resort.
+
+        - NORTA: now use method PINV for sampling from marginal
+          distribution.
+
+
 	* Distributions:
 
 	- added Inverse Gaussian distribution ("IG")
 
 	- added Generalized Inverse Gaussian distribution ("GIG")
+
 
 	* Tests:
 

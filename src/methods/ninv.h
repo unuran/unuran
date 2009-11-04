@@ -15,7 +15,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2009 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -49,13 +49,13 @@
    =REINIT supported
 
    =DESCRIPTION
-      NINV is the implementation of numerical inversion.
-      For finding the root it is possible to choose between
-      Newton's method and the regula falsi (combined with interval
-      bisectioning). The regula falsi requires only the CDF while
+      NINV implementations of some methods for numerical inversion: 
+      Newton's method, regula falsi (combined with interval
+      bisectioning), and bisection method.
+      Regula falsi and bisection method require only the CDF while
       Newton's method also requires the PDF.
-      To speed up the marginal generation time a table with suitable
-      starting points can be computed during the setup. 
+      To speed up marginal generation times a table with suitable
+      starting points can be created during the setup. 
       The performance of the algorithm can adjusted by the desired
       accuracy of the method.
       It is possible to use this method for generating from truncated
@@ -63,52 +63,69 @@
       existing generator object.
 
    =HOWTOUSE
-      The method generates random variates by numerical
+      Method NINV generates random variates by numerical
       inversion and requires a continuous univariate distribution
-      objects with given CDF. Two methods are available:
+      objects with given CDF. Three variants are available:
+
       @itemize @minus
       @item Regula falsi  [default]
       @item Newton's method
+      @item Interval bisectioning
       @end itemize
+
       Newton's method additionally requires the PDF of the
       distribution and cannot be used otherwise (NINV automatically
-      switches to regula falsi then.
+      switches to regula falsi then).
       Default algorithm is regula falsi. It is slightly slower but
       numerically much more stable than Newton's algorithm.
+      Interval bisectioning is the slowest method and should only be
+      considered as a last resort when the other methods fails.
 
-      It is possible to use this method for generating from truncated
-      distributions. It even can be changed for an existing generator
+      It is possible to draw samples from truncated distributions. 
+      The truncated domain can even be changed for an existing generator
       object by an unur_ninv_chg_truncated() call.
       
-      To speed up the marginal generation time a table with suitable
-      starting points can be computed in the setup. Using such a table can be 
-      switched on by means of a unur_ninv_set_table() call where the table
-      size is given as a parameter. The table is still useful when the
-      (truncated) domain is changed often, since it is computed for the
+      Marginal generation times can be sped up by means of a table
+      with suitable starting points which can be created during the
+      setup. Using such a table can be switched on by means of a
+      unur_ninv_set_table() call where the table size is given as a
+      parameter. The table is still useful when the (truncated) domain
+      is changed often, since it is computed for the 
       domain of the given distribution. (It is not possible to enlarge
       this domain.) If it is necessary to recalculate the table during
       sampling, the command unur_ninv_chg_table() can be used.
-      As a rule of thumb using such a table is appropriate when the number of
-      generated points exceeds the table size by a factor of 100.
+      As a rule of thumb using such a table is appropriate when the
+      number of generated points exceeds the table size by a factor of
+      100.
   
       The default number of iterations of NINV should be enough for all
       reasonable cases. Nevertheless, it is possible to adjust the maximal
       number of iterations with the commands
       unur_ninv_set_max_iter() and unur_ninv_chg_max_iter().
-      In particular this might be necessary when the PDF has a pole
-      (where it is not bounded from below).
+      In particular this might be necessary when the PDF has a pole or
+      the distribution has extremely heavy tails.
 
       It is also possible to set/change the accuracy of the method
       (which also heavily influencies the generation time).
-      For this it is possible to change the maximum error allowed in
-      @i{x} with unur_ninv_set_x_resolution() and
-      unur_ninv_chg_x_resolution(), respectively.
+      We use two measures for the approximation error which can be
+      used independently: x-error and u-error
+      (@pxref{Inversion} for more details).
+      It is possible to set the maximal tolerated error using
+      with unur_ninv_set_x_resolution() and 
+      with unur_ninv_set_u_resolution(), resp., and change it with the
+      respective calls unur_ninv_chg_x_resolution() and
+      unur_ninv_chg_x_resolution().
+      The algorithm tries to satisfy @emph{both} accuracy goals (and 
+      raises an error flag it this fails).
+      One of these accuracy checks can be disabled by setting the
+      accuracy goal to a negative value.
       
-      NINV tries to use proper starting values for both the regula falsi
-      and Newton's method. Of course the user might have more knowledge
-      about the properties of the target distribution and is able
-      to share his wisdom with NINV using the respective commands
-      unur_ninv_set_start() and unur_ninv_chg_start()
+      NINV tries to use proper starting values for both the regula
+      falsi and bisection method, and for Newton's method. Of course
+      the user might have more knowledge about the properties of the
+      target distribution and is able to share his wisdom with NINV
+      using the respective commands 
+      unur_ninv_set_start() and unur_ninv_chg_start().
       
       It is possible to change the parameters and the domain of the chosen 
       distribution and run unur_reinit() to reinitialize the generator object.
@@ -164,8 +181,8 @@ int unur_ninv_set_usenewton( UNUR_PAR *parameters );
 
 int unur_ninv_set_usebisect( UNUR_PAR *parameters );
 /* 
-   Switch to bisection method. This is a slow algorithm and it is only
-   recommended as a last resort.
+   Switch to bisection method. This is a slow algorithm and should
+   only be used as a last resort.
 */
 
 int unur_ninv_set_max_iter( UNUR_PAR *parameters, int max_iter );

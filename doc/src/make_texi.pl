@@ -602,7 +602,7 @@ sub texify_string {
     $string =~ s/(exp|max|min|sqrt)/\\$1/g;
 
     # small greek letters
-    $string =~ s/(alpha|beta|chi|eta|gamma|lambda|mu|nu|omega|pi|phi|psi|sigma|tau|theta|zeta)/\\$1/g;
+    $string =~ s/(alpha|beta|delta|chi|eta|gamma|lambda|mu|nu|omega|pi|phi|psi|sigma|tau|theta|zeta)/\\$1/g;
 
     # capital greek letters
     $string =~ s/(Gamma|Sigma)/\\$1/g;
@@ -793,7 +793,7 @@ sub scan_FPARAM {
     # make TeX output
     $texout =~ s/<=/\\leq/g;
     $texout =~ s/>=/\\geq/g;
-    $texout =~ s/(alpha|beta|gamma|lambda|mu|nu|pi|phi|sigma|tau|theta|zeta)(\W)/\\$1$2/g;
+    $texout =~ s/(alpha|beta|delta|gamma|lambda|mu|nu|pi|phi|sigma|tau|theta|zeta)(\W)/\\$1$2/g;
 
     my $texout_header  = "\@iftex\n";
     $texout_header .= "\@item parameters $n_required ($n_total): \@r{$flist}\n\@sp 1\n";
@@ -1585,7 +1585,7 @@ sub next_tex_token {
 	    $$info .= " $1 ";
 	    return;
 	}
-	if ($value =~ /^\\(alpha|beta|gamma|delta|lambda|mu|nu|pi|phi|sigma|tau|theta|zeta)(\s*)$/) {
+	if ($value =~ /^\\(alpha|beta|delta|gamma|delta|lambda|mu|nu|pi|phi|sigma|tau|theta|zeta)(\s*)$/) {
 	    # greek letters
 	    $$tex .= $value;
 	    $$html .= " $1$2";

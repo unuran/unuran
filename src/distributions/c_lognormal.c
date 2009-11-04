@@ -73,7 +73,8 @@ static const char distr_name[] = "lognormal";
 static double _unur_pdf_lognormal( double x, const UNUR_DISTR *distr );
 static double _unur_dpdf_lognormal( double x, const UNUR_DISTR *distr );
 
-static int _unur_set_params_logistic( UNUR_DISTR *distr, const double *params, int n_params );
+static int _unur_upd_mode_lognormal( UNUR_DISTR *distr );
+static int _unur_set_params_lognormal( UNUR_DISTR *distr, const double *params, int n_params );
 
 /*---------------------------------------------------------------------------*/
 
@@ -111,7 +112,26 @@ _unur_dpdf_lognormal( double x, const UNUR_DISTR *distr )
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_set_params_logistic( UNUR_DISTR *distr, const double *params, int n_params )
+_unur_upd_mode_lognormal( UNUR_DISTR *distr )
+{
+  register const double *params = DISTR.params;
+
+  DISTR.mode = 
+    exp(-sigma*sigma) * ( exp(zeta) + theta*exp(sigma*sigma) );
+
+  /* mode must be in domain */
+  if (DISTR.mode < DISTR.domain[0]) 
+    DISTR.mode = DISTR.domain[0];
+  else if (DISTR.mode > DISTR.domain[1]) 
+    DISTR.mode = DISTR.domain[1];
+
+  return UNUR_SUCCESS;
+} /* end of _unur_upd_mode_lognormal() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_set_params_lognormal( UNUR_DISTR *distr, const double *params, int n_params )
 {
   /* check number of parameters for distribution */
   if (n_params < 2) {
@@ -152,7 +172,7 @@ _unur_set_params_logistic( UNUR_DISTR *distr, const double *params, int n_params
   }
 
   return UNUR_SUCCESS;
-} /* end of _unur_set_params_logistic() */
+} /* end of _unur_set_params_lognormal() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -181,12 +201,12 @@ unur_distr_lognormal( const double *params, int n_params )
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |
 		 UNUR_DISTR_SET_STDDOMAIN |
-/*  		 UNUR_DISTR_SET_MODE   | */
+ 		 UNUR_DISTR_SET_MODE   |
   		 UNUR_DISTR_SET_PDFAREA );
 
 
   /* set parameters for distribution */
-  if (_unur_set_params_logistic(distr,params,n_params)!=UNUR_SUCCESS) {
+  if (_unur_set_params_lognormal(distr,params,n_params)!=UNUR_SUCCESS) {
     free(distr);
     return NULL;
   }
@@ -195,15 +215,15 @@ unur_distr_lognormal( const double *params, int n_params )
   NORMCONSTANT = DISTR.sigma * sqrt(2.*M_PI);
 
   /* mode and area below p.d.f. */
-  /* DISTR.mode = unur_mode_lognormal(DISTR.params,DISTR.n_params); */
+  _unur_upd_mode_lognormal(distr);
   DISTR.area = 1.;
 
   /* function for setting parameters and updating domain */
-  DISTR.set_params = _unur_set_params_logistic;
+  DISTR.set_params = _unur_set_params_lognormal;
 
   /* function for updating derived parameters */
-  /* DISTR.upd_mode  = _unur_upd_mode_logistic;    funct for computing mode */
-  /* DISTR.upd_area  = _unur_upd_area_logistic;    funct for computing area */
+  DISTR.upd_mode  = _unur_upd_mode_lognormal;   /* funct for computing mode */
+  /* DISTR.upd_area  = _unur_upd_area_lognormal;    funct for computing area */
 
   /* return pointer to object */
   return distr;

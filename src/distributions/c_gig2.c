@@ -169,7 +169,7 @@ _unur_upd_mode_gig2( UNUR_DISTR *distr )
   register const double *params = DISTR.params;
 
   DISTR.mode =
-    ((theta-1.)+sqrt((theta-1.)*theta-1.) + psi*chi) / psi;
+    ((theta-1.)+sqrt((theta-1.)*(theta-1.) + psi*chi)) / psi;
 
   /* mode must be in domain */
   if (DISTR.mode < DISTR.domain[0]) 
@@ -256,8 +256,8 @@ unur_distr_gig2( const double *params, int n_params )
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |
-		 UNUR_DISTR_SET_STDDOMAIN );
-		 /* UNUR_DISTR_SET_MODE   |  */
+		 UNUR_DISTR_SET_STDDOMAIN |
+		 UNUR_DISTR_SET_MODE   );
 		 /* UNUR_DISTR_SET_PDFAREA ); */
                 
   /* set parameters for distribution */

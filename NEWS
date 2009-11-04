@@ -13,8 +13,7 @@ Version 1.5.0: ???
           This is a very slow method and should only be considered as
           a last resort.
 
-        - NORTA: now use method PINV for sampling from marginal
-          distribution.
+        - NORTA: try method PINV for sampling from marginal distribution.
 
 
 	* Distributions:

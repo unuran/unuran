@@ -89,6 +89,7 @@
 #include "cstd.h"
 #include "hinv.h"
 #include "ninv.h"
+#include "pinv.h"
 #include "mvstd.h"
 #include "norta.h"
 #include "norta_struct.h"
@@ -785,6 +786,11 @@ _unur_norta_make_marginalgen( const struct unur_gen *gen,
     else {
       _unur_par_free(par);
     }
+
+    /* PINV (Polynomial interpolation based INVersion of CDF) */
+    par = unur_pinv_new( marginal );
+    if ( (marginalgen = _unur_init(par)) != NULL )
+      break;
 
     /* HINV (Hermite interpolation based INVersion of CDF) */
     par = unur_hinv_new( marginal );

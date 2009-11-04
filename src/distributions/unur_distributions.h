@@ -271,6 +271,24 @@ UNUR_DISTR *unur_distr_gig(const double *params, int n_params);
 UNUR_DISTR *unur_distr_gig2(const double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
+/* Hyperbolic distribution                                                   */
+/*
+   =DISTR    hyperbolic  Hyperbolic distribution
+   =UP       Stddist_CONT
+   =PDF      exp( -alpha * sqrt(delta^2 + (x - mu)^2) + beta*(x-mu) )
+   =CONST    @text{not implemented!}
+   =CDF      @text{not implemented!}
+   =DOMAIN   -infinity < x <infinity
+   =FPARAM   0 : mu    :         :   : location         :
+             1 : alpha : >|beta| :   : shape (tail)     :
+             2 : beta  :         :   : shape (asymmetry):
+             3 : delta : > 0     :   : scale            :
+   =EON
+ */
+UNUR_DISTR *unur_distr_hyperbolic(const double *params, int n_params);
+/** TODO: STDGEN **/
+
+/*---------------------------------------------------------------------------*/
 /* Inverse Gaussian (Wald) distribution  [2; ch.15, p.259]                   */
 /*
    =DISTR    ig  Inverse Gaussian distribution
@@ -278,6 +296,7 @@ UNUR_DISTR *unur_distr_gig2(const double *params, int n_params);
    =REF      [JKBb94: Ch.15, p.259]
    =PDF      sqrt( \frac{lambda}{2*pi*x^3} ) * exp( -\frac{lambda*(x-mu)^2}{2*mu^2*x} )
    =CONST    1
+   =CDF      @text{not implemented!}
    =DOMAIN   0 < x <infinity
    =FPARAM   0 : mu     : > 0 :  : shape, location :
              1 : lambda : > 0 :  : shape           :

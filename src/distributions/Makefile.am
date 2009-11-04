@@ -19,6 +19,7 @@ libdistributions_la_SOURCES = \
  c_gamma.c       c_gamma_gen.c \
  c_gig.c         c_gig_gen.c \
  c_gig2.c \
+ c_hyperbolic.c \
  c_ig.c \
  c_laplace.c \
  c_logistic.c \

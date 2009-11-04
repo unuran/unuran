@@ -283,10 +283,8 @@ UNUR_DISTR *unur_distr_gig2(const double *params, int n_params);
              1 : lambda : > 0 :  : shape           :
    =EON
  */
-/** TODO: STDGEN **/
-
 UNUR_DISTR *unur_distr_ig(const double *params, int n_params);
-
+/** TODO: STDGEN **/
 
 /*---------------------------------------------------------------------------*/
 /*  Laplace distribution  [3; ch.24, p.164]                                  */
@@ -418,10 +416,6 @@ UNUR_DISTR *unur_distr_powerexponential(const double *params, int n_params);
 */
 UNUR_DISTR *unur_distr_rayleigh(const double *params, int n_params);
 /** TODO: STDGEN **/
-
-/*---------------------------------------------------------------------------*/
-/* Snedecor's F distribution                                                 */
-/* not implemented */
 
 /*---------------------------------------------------------------------------*/
 /* Slash distribution  [2; ch.12, p.63]                                      */

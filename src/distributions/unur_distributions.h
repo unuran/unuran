@@ -85,7 +85,7 @@
    =UP       Stddist_CONT
    =REF      [JKBc95: Ch.25, p.210]
    =PDF      (x-a)^{p-1} * (b-x)^{q-1}
-   =CONST    1 / (Beta(p,q) * (b-a)^{p+q-1})
+   =CONST    1 / (B(p,q) * (b-a)^{p+q-1})
    =DOMAIN   a < x < b
    =FPARAM    0  : p : > 0 :   : scale    :
               1  : q : > 0 :   : scale    :
@@ -101,14 +101,16 @@ UNUR_DISTR *unur_distr_beta(const double *params, int n_params);
 UNUR_DISTR *unur_distr_burr(const double *params, int n_params);
 /** under construction **/
 
+/* FIXME */
+
 /*---------------------------------------------------------------------------*/
 /* Cauchy distribution  [2; ch.16, p.299]                                    */
 /* 
    =DISTR    cauchy Cauchy distribution
    =UP       Stddist_CONT
    =REF      [JKBb94: Ch.16, p.299]
-   =PDF      \frac{1}{1 + ((x-theta)/lambda)^2}
-   =CONST    \frac{1}{pi * lambda}
+   =PDF      1/(1 + ((x-theta)/lambda)^2)
+   =CONST    1/(pi * lambda)
    =DOMAIN   -infinity < x < infinity 
    =FPARAM    [0]   : theta  :     : 0 : location :
              [[1]]  : lambda : > 0 : 1 : scale    :
@@ -157,8 +159,8 @@ UNUR_DISTR *unur_distr_chisquare(const double *params, int n_params);
    =DISTR    exponential Exponential distribution
    =UP       Stddist_CONT
    =REF      [JKBb94: Ch.19, p.494]
-   =PDF      exp( -\frac{x-theta}{sigma})
-   =CONST    \frac{1}{sigma}
+   =PDF      exp( -(x-theta)/sigma)
+   =CONST    1/sigma
    =DOMAIN   theta <= x < infinity 
    =FPARAM    [0]  : sigma : > 0 : 1 : scale    :
 	     [[1]] : theta :     : 0 : location :
@@ -174,7 +176,7 @@ UNUR_DISTR *unur_distr_exponential(const double *params, int n_params);
    =UP       Stddist_CONT
    =REF      [JKBc95: Ch.22, p.2]
    =PDF      exp( -exp( -\frac{x-zeta}{theta} ) - \frac{x-zeta}{theta} )
-   =CONST    \frac{1}{theta}
+   =CONST    1/theta
    =DOMAIN   -infinity < x <infinity
    =FPARAM    [0]  : zeta  :     : 0 : location :
 	     [[1]] : theta : > 0 : 1 : scale    :
@@ -190,7 +192,7 @@ UNUR_DISTR *unur_distr_extremeI(const double *params, int n_params);
    =UP       Stddist_CONT
    =REF      [JKBc95: Ch.22, p.2]
    =PDF      exp( -(\frac{x-zeta}{theta})^{-k}) * (\frac{x-zeta}{theta})^{-k-1}
-   =CONST    \frac{k}{theta}
+   =CONST    k/theta
    =DOMAIN   zeta < x <infinity
    =FPARAM     0   : k     : > 0 :   : shape    :
               [1]  : zeta  :     : 0 : location :
@@ -207,10 +209,10 @@ UNUR_DISTR *unur_distr_extremeII(const double *params, int n_params);
    =UP       Stddist_CONT
    =REF      [JKBc95: Ch.27, p.322]
    =PDF      (x^{nu_1/2-1}) / (1+nu_1/nu_2 x)^{(nu_1+nu_2)/2}
-   =CONST    (nu_1/nu_2)^{nu_1/2} / Beta(nu_1/2,nu_2/2)
+   =CONST    (nu_1/nu_2)^{nu_1/2} / B(nu_1/2,nu_2/2)
    =DOMAIN   0 < x < infinity
    =FPARAM    0 : nu_1 : > 0 : : scale :
-                 1 : nu_2 : > 0 : : scale :
+              1 : nu_2 : > 0 : : scale :
    =EON
 */
 UNUR_DISTR *unur_distr_F(const double *params, int n_params);
@@ -275,7 +277,7 @@ UNUR_DISTR *unur_distr_gig2(const double *params, int n_params);
 /*
    =DISTR    hyperbolic  Hyperbolic distribution
    =UP       Stddist_CONT
-   =PDF      exp( -alpha * sqrt(delta^2 + (x - mu)^2) + beta*(x-mu) )
+   =PDF      exp( -alpha * sqrt{delta^2 + (x - mu)^2} + beta*(x-mu) )
    =CONST    @text{not implemented!}
    =CDF      @text{not implemented!}
    =DOMAIN   -infinity < x <infinity
@@ -294,7 +296,7 @@ UNUR_DISTR *unur_distr_hyperbolic(const double *params, int n_params);
    =DISTR    ig  Inverse Gaussian distribution
    =UP       Stddist_CONT
    =REF      [JKBb94: Ch.15, p.259]
-   =PDF      sqrt( \frac{lambda}{2*pi*x^3} ) * exp( -\frac{lambda*(x-mu)^2}{2*mu^2*x} )
+   =PDF      sqrt{ \frac{lambda}{2*pi*x^3} } * exp( -\frac{lambda*(x-mu)^2}{2*mu^2*x} )
    =CONST    1
    =CDF      @text{not implemented!}
    =DOMAIN   0 < x <infinity
@@ -311,8 +313,8 @@ UNUR_DISTR *unur_distr_ig(const double *params, int n_params);
    =DISTR    laplace  Laplace distribution
    =UP       Stddist_CONT
    =REF      [JKBc95: Ch.24, p.164]
-   =PDF      exp( -\frac{|x-theta|}{phi} )
-   =CONST    \frac{1}{2 * phi}
+   =PDF      exp( -|x-theta| / phi )
+   =CONST    1/(2 * phi)
    =DOMAIN   -infinity < x <infinity
    =FPARAM    [0]  : theta :     : 0 : location :
 	     [[1]] : phi   : > 0 : 1 : scale    :
@@ -328,7 +330,7 @@ UNUR_DISTR *unur_distr_laplace(const double *params, int n_params);
    =UP       Stddist_CONT
    =REF      [JKBc95: Ch.23, p.115]
    =PDF      exp(-\frac{x-alpha}{beta}) * (1 + exp(-\frac{x-alpha}{beta}))^{-2}
-   =CONST    \frac{1}{beta}
+   =CONST    1/beta
    =DOMAIN   -infinity < x <infinity
    =FPARAM    [0]  : alpha :     : 0 : location :
 	     [[1]] : beta  : > 0 : 1 : scale    :
@@ -339,6 +341,19 @@ UNUR_DISTR *unur_distr_logistic(const double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
 /*  Lognormal distribution  [2; ch.14, p.208]                                */
+/* 
+   =DISTR    lognormal  Log-Normal distribution
+   =UP       Stddist_CONT
+   =REF      [JKBb94: Ch.14, p. 208]
+   =PDF      1/(x-theta) * exp( -(log(x-theta)-zeta)^2/(2 sigma^2) )
+   =CONST    1/(sigma * sqrt{2 pi})
+   =CDF      @text{not implemented!}
+   =DOMAIN   theta <= x < infinity 
+   =FPARAM    0   : zeta  :     :   : shape    :
+              1   : sigma : > 0 :   : shape    :
+             [2]  : theta :     : 0 : location :
+   =EON
+*/
 UNUR_DISTR *unur_distr_lognormal(const double *params, int n_params);
 /** TODO: STDGEN **/
 
@@ -365,7 +380,7 @@ UNUR_DISTR *unur_distr_lomax(const double *params, int n_params);
    =UP       Stddist_CONT
    =REF      [JKBb94: Ch.13, p.80]
    =PDF      exp( -\frac{1}{2} * (\frac{x-mu}{sigma})^2 )
-   =CONST    \frac{1}{sigma * sqrt{2 pi}}
+   =CONST    1 / (sigma * sqrt{2 pi})
    =DOMAIN   -infinity < x < infinity 
    =FPARAM    [0]   : mu    :     : 0 : location :
              [[1]]  : sigma : > 0 : 1 : scale    :
@@ -428,7 +443,7 @@ UNUR_DISTR *unur_distr_powerexponential(const double *params, int n_params);
    =UP       Stddist_CONT
    =REF      [JKBb94: Ch.18, p.456]
    =PDF      x * exp( -1/2 * (\frac{x}{sigma})^2 )
-   =CONST    \frac{1}{sigma^2}
+   =CONST    1 / sigma^2
    =DOMAIN   0 <= x < infinity
    =FPARAM   0 : sigma : > 0 : : scale :
    =EON
@@ -441,6 +456,8 @@ UNUR_DISTR *unur_distr_rayleigh(const double *params, int n_params);
 UNUR_DISTR *unur_distr_slash(const double *params, int n_params);
 /** TODO: STDGEN **/
 
+/* FIXME */
+
 /*---------------------------------------------------------------------------*/
 /* Student's t distribution  [3; ch. 28; p. 362]                             */
 /* 
@@ -448,7 +465,7 @@ UNUR_DISTR *unur_distr_slash(const double *params, int n_params);
    =UP       Stddist_CONT
    =REF      [JKBc95: Ch.28, p.362]
    =PDF      (1+\frac{t^2}{nu})^{-(nu+1)/2}
-   =CONST    \frac{1}{sqrt{nu}*B(1/2,nu/2)}
+   =CONST    1 / (sqrt{nu} * B(1/2,nu/2))
    =CDF      @text{not implemented!}
    =DOMAIN   -infinity < x < infinity 
    =FPARAM   0 : nu : > 0 : : shape :
@@ -478,7 +495,7 @@ UNUR_DISTR *unur_distr_triangular(const double *params, int n_params);
    =DISTR    uniform  Uniform distribution
    =UP       Stddist_CONT
    =REF      [JKBc95: Ch.26, p.276]
-   =PDF      \frac{1}{b-a}
+   =PDF      1 / (b-a)
    =CONST    1
    =DOMAIN   a < x < b
    =FPARAM   [0] : a :     : 0 : location :
@@ -495,7 +512,7 @@ UNUR_DISTR *unur_distr_uniform(const double *params, int n_params);
    =UP       Stddist_CONT
    =REF      [JKBb94: Ch.21, p.628]
    =PDF      (\frac{x-zeta}{alpha})^{c-1} * exp( -(\frac{x-zeta}{alpha})^c )
-   =CONST    \frac{c}{alpha}
+   =CONST    c / alpha
    =DOMAIN   zeta < x < infinity 
    =FPARAM     0    : c     : > 0 :   : shape    :
               [1]   : alpha : > 0 : 1 : scale    :

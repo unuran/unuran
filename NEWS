@@ -18,9 +18,12 @@ Version 1.5.0: ???
 
 	* Distributions:
 
-	- added Inverse Gaussian distribution ("IG")
+	- added new distributions:
 
-	- added Generalized Inverse Gaussian distribution ("GIG")
+     	    hyperbolic ... Hyperbolic distribution           
+            IG         ... Inverse Gaussian distribution
+	    GIG        ... Generalized Inverse Gaussian distribution
+	    lognormal  ... Log-Normal distribution
 
 
 	* Tests:

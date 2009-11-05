@@ -64,7 +64,7 @@ static const char distr_name[] = "hyperbolic";
 #define mu     params[0]    /* location */
 #define alpha  params[1]    /* shape (tail) */
 #define beta   params[2]    /* shape (asymmetry) */
-#define delta  params[2]    /* scale */
+#define delta  params[3]    /* scale */
 
 #define DISTR distr->data.cont
 /* #define NORMCONSTANT (distr->data.cont.norm_constant) */

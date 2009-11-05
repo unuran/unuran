@@ -76,6 +76,15 @@
 #endif
 
 /*---------------------------------------------------------------------------*/
+/* optional libraries                                                        */
+
+/* Rmath standalone library from R project. */
+#ifdef HAVE_LIBRMATH
+#define MATHLIB_STANDALONE
+#include <Rmath.h>
+#endif
+
+/*---------------------------------------------------------------------------*/
 /* globally used types                                                       */
 
 #include <unur_typedefs.h>

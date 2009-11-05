@@ -48,6 +48,14 @@ my $LISTOFCALLS = 1;
 
 my $DEP_file = "./src/.dep-unuran_src_texi";
 
+my $greeks = 
+    # small greek letters
+    "alpha|beta|gamma|delta|epsilon|zeta|eta|theta|iota|kappa|lambda|".
+    "mu|nu|xi|omikron|pi|rho|sigma|tau|ypsilon|phi|chi|psi|omega|".
+    # capital greek letters
+    "Gamma|Delta|Theta|Lambda|Xi|Pi|Sigma|Phi|Psi|Omega";
+
+
 ############################################################
 # $Id$
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -599,13 +607,10 @@ sub texify_string {
     $string =~ s/\*/\\, /g;
 
     # name of functions
-    $string =~ s/(exp|max|min|sqrt)/\\$1/g;
+    $string =~ s/(exp|log|max|min|sqrt|det)/\\$1/g;
 
-    # small greek letters
-    $string =~ s/(alpha|beta|delta|chi|eta|gamma|lambda|mu|nu|omega|pi|phi|psi|sigma|tau|theta|zeta)/\\$1/g;
-
-    # capital greek letters
-    $string =~ s/(Gamma|Sigma)/\\$1/g;
+    # greek letters
+    $string =~ s/($greeks)/\\$1/g;
 
     # <, <=, etc.
     $string =~ s/<=/\\leq/g;
@@ -793,7 +798,7 @@ sub scan_FPARAM {
     # make TeX output
     $texout =~ s/<=/\\leq/g;
     $texout =~ s/>=/\\geq/g;
-    $texout =~ s/(alpha|beta|delta|gamma|lambda|mu|nu|pi|phi|sigma|tau|theta|zeta)(\W)/\\$1$2/g;
+    $texout =~ s/($greeks)(\W|\_)/\\$1$2/g;
 
     my $texout_header  = "\@iftex\n";
     $texout_header .= "\@item parameters $n_required ($n_total): \@r{$flist}\n\@sp 1\n";
@@ -1428,7 +1433,7 @@ sub parse_tex {
 	if ($entry =~ s/^([0-9]+)//) {
 	    # number
 	    push @token, {type=>"number", value=>"$1"}; next; }
-	if ($entry =~ s/^(\[|\]|\(|\)|\'|\,|\;|\.|\=|\/|\+|\-|\<|\>|\|)//) {
+	if ($entry =~ s/^(\[|\]|\(|\)|\_|\'|\,|\;|\.|\=|\/|\+|\-|\<|\>|\|)//) {
 	    # other printable symbols
 	    push @token, {type=>"symbol", value=>"$1"}; next; }
 
@@ -1571,7 +1576,7 @@ sub next_tex_token {
 	    $$info .= $value;
 	    return;
 	}
-	if ($value =~ /^\\(inf|sup|min|max|log|exp)\s*$/) {
+	if ($value =~ /^\\(inf|sup|min|max|log|exp|det)\s*$/) {
 	    # macros that are printed as is in non-TeX formats
 	    $$tex .= $value;
 	    $$html .= " $1";
@@ -1585,7 +1590,7 @@ sub next_tex_token {
 	    $$info .= " $1 ";
 	    return;
 	}
-	if ($value =~ /^\\(alpha|beta|delta|gamma|delta|lambda|mu|nu|pi|phi|sigma|tau|theta|zeta)(\s*)$/) {
+	if ($value =~ /^\\($greeks)(\s*)$/) {
 	    # greek letters
 	    $$tex .= $value;
 	    $$html .= " $1$2";

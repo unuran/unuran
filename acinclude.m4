@@ -72,10 +72,7 @@ AC_ARG_WITH(Rmath,
 	esac],
 	[with_Rmath=no])
 AS_IF([test "x$with_Rmath" != xno],
-	[AC_CHECK_LIB([Rmath], [rwilcox],
-	   [AC_SUBST(UNURAN_SUPPORTS_RMATH,-DUNURAN_SUPPORTS_RMATH)
-	    AC_DEFINE_UNQUOTED([UNURAN_HAS_RMATH], [1], 
-                               [Define to 1 if you use Rmath library from R project.])],
+	[AC_CHECK_LIB([Rmath], [rwilcox],[],
 	   [AC_MSG_FAILURE(
 	      [PRINT_WITH_FRAME([--with-Rmath given, but 'libRmath' not found])
 	   ]) ]) ], [])

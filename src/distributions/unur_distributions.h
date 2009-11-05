@@ -300,8 +300,8 @@ UNUR_DISTR *unur_distr_hyperbolic(const double *params, int n_params);
    =CONST    1
    =CDF      @text{not implemented!}
    =DOMAIN   0 < x <infinity
-   =FPARAM   0 : mu     : > 0 :  : shape, location :
-             1 : lambda : > 0 :  : shape           :
+   =FPARAM   0 : mu     : > 0 :  : mean  :
+             1 : lambda : > 0 :  : shape :
    =EON
  */
 UNUR_DISTR *unur_distr_ig(const double *params, int n_params);

@@ -2,7 +2,7 @@ dnl Process this file with autoconf to produce a configure script.
 dnl $Id$
 
 dnl Initialize.
-AC_PREREQ(2.59)
+AC_PREREQ(2.63)
 AC_INIT([unuran],[1.4.devel],[unuran@statmath.wu-wien.ac.at])
 AC_CONFIG_AUX_DIR(autoconf)
 AM_INIT_AUTOMAKE([unuran],[1.4.devel])
@@ -55,7 +55,7 @@ AC_CHECK_TOOL(AR, ar, :)
 # AC_CHECK_TOOL(RANLIB, ranlib, :)
 # AC_PROG_RANLIB
 AC_DISABLE_SHARED
-AC_PROG_LIBTOOL
+LT_INIT
 
 dnl Checks for libraries.
 dnl libm: the standard math library

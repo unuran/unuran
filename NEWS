@@ -24,6 +24,7 @@ Version 1.5.0: ???
             IG         ... Inverse Gaussian distribution
 	    GIG        ... Generalized Inverse Gaussian distribution
 	    lognormal  ... Log-Normal distribution
+	    slash      ... Slash distribution
 
 
 	* Tests:

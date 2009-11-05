@@ -453,10 +453,18 @@ UNUR_DISTR *unur_distr_rayleigh(const double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
 /* Slash distribution  [2; ch.12, p.63]                                      */
+/* 
+   =DISTR    slash  Slash distribution
+   =UP       Stddist_CONT
+   =REF      [JKBb94: Ch.12, p.63]
+   =PDF      (1 - exp(-x^2/2)) / x^2
+   =CONST    1 / sqrt{2 pi}
+   =CDF      @text{not implemented!}
+   =DOMAIN   -infinity < x < infinity 
+   =STDGEN   DEF  Ratio of normal and uniform random variates
+   =EON
+*/
 UNUR_DISTR *unur_distr_slash(const double *params, int n_params);
-/** TODO: STDGEN **/
-
-/* FIXME */
 
 /*---------------------------------------------------------------------------*/
 /* Student's t distribution  [3; ch. 28; p. 362]                             */

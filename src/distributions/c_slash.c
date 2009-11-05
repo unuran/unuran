@@ -71,6 +71,7 @@ static double _unur_pdf_slash( double x, const UNUR_DISTR *distr );
 static double _unur_dpdf_slash( double x, const UNUR_DISTR *distr );
 /*  static double _unur_cdf_slash( double x, const UNUR_DISTR *distr ); */
 
+static int _unur_upd_mode_slash( UNUR_DISTR *distr );
 static int _unur_set_params_slash( UNUR_DISTR *distr, const double *params, int n_params );
 
 /*---------------------------------------------------------------------------*/
@@ -94,11 +95,25 @@ _unur_dpdf_slash(double x, const UNUR_DISTR *distr ATTRIBUTE__UNUSED)
   if (_unur_iszero(x))
     return 0.;
   else
-    return ((-2. + exp(-xsq/2.) * (2. + xsq)) / (xsq * x));
-
-  /** TODO: NORMCONSTANT ?? **/
+    return (NORMCONSTANT * ((-2. + exp(-xsq/2.) * (2. + xsq)) / (xsq * x)));
 
 } /* end of _unur_dpdf_slash() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_upd_mode_slash( UNUR_DISTR *distr )
+{
+  DISTR.mode = 0.;
+
+  /* mode must be in domain */
+  if (DISTR.mode < DISTR.domain[0]) 
+    DISTR.mode = DISTR.domain[0];
+  else if (DISTR.mode > DISTR.domain[1]) 
+    DISTR.mode = DISTR.domain[1];
+
+  return UNUR_SUCCESS;
+} /* end of _unur_upd_mode_slash() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -172,7 +187,7 @@ unur_distr_slash( const double *params, int n_params )
   DISTR.set_params = _unur_set_params_slash;
 
   /* function for updating derived parameters */
-  /* DISTR.upd_mode  = _unur_upd_mode_slash;   funct for computing mode */
+  DISTR.upd_mode  = _unur_upd_mode_slash;   /* funct for computing mode */
   /* DISTR.upd_area  = _unur_upd_area_slash;   funct for computing area */
 
   /* return pointer to object */

@@ -1250,7 +1250,7 @@ _unur_ars_sample( struct unur_gen *gen )
      /*      U ~ U(- area below right hat,0)                                 */
      /*----------------------------------------------------------------------*/
 { 
-  struct unur_ars_interval *iv, *pt;
+  struct unur_ars_interval *iv, *cp;
   double U, logV;                   /* (log of) uniform random number        */
   double X;                         /* generated point                       */
   double logfx, logsqx, loghx;      /* log of density, squeeze, and hat at X */
@@ -1285,18 +1285,18 @@ _unur_ars_sample( struct unur_gen *gen )
 
     /* l.h.s. or r.h.s. of hat */
     if (-U < (scaled_area(iv) * iv->Ahatr_fract)) { /* right */
-      pt = iv->next;
+      cp = iv->next;
       /* U unchanged */
     }
     else {                /* left */
-      pt = iv;
+      cp = iv;
       U += scaled_area(iv);
     }
 
     /* PDF at x0 */
-    x0 = pt->x;
-    logfx0 = pt->logfx;
-    dlogfx0 = pt->dlogfx;
+    x0 = cp->x;
+    logfx0 = cp->logfx;
+    dlogfx0 = cp->dlogfx;
     fx0 = exp(rescaled_logf(logfx0));
 
     /* random variate */
@@ -1373,7 +1373,7 @@ _unur_ars_sample_check( struct unur_gen *gen )
      /*   return INFINITY                                                    */
      /*----------------------------------------------------------------------*/
 { 
-  struct unur_ars_interval *iv, *pt;
+  struct unur_ars_interval *iv, *cp;
   double U, logV;                   /* (log of) uniform random number        */
   double X;                         /* generated point                       */
   double logfx, logsqx, loghx;      /* log of density, squeeze, and hat at X */
@@ -1408,18 +1408,18 @@ _unur_ars_sample_check( struct unur_gen *gen )
 
     /* l.h.s. or r.h.s. of hat */
     if (-U < (scaled_area(iv) * iv->Ahatr_fract)) { /* right */
-      pt = iv->next;
+      cp = iv->next;
       /* U unchanged */
     }
     else {                /* left */
-      pt = iv;
+      cp = iv;
       U += scaled_area(iv);
     }
 
     /* PDF at x0 */
-    x0 = pt->x;
-    logfx0 = pt->logfx;
-    dlogfx0 = pt->dlogfx;
+    x0 = cp->x;
+    logfx0 = cp->logfx;
+    dlogfx0 = cp->dlogfx;
     fx0 = exp(rescaled_logf(logfx0));
 
     /* random variate */
@@ -1505,7 +1505,7 @@ unur_ars_eval_invcdfhat( const struct unur_gen *gen, double U )
      /*   inverse of hat CDF.                                                */
      /*----------------------------------------------------------------------*/
 { 
-  struct unur_ars_interval *iv, *pt;
+  struct unur_ars_interval *iv, *cp;
   double X;                         /* generated point                       */
   double x0, logfx0, dlogfx0, fx0;  /* construction point and logPDF at x0   */
 
@@ -1544,18 +1544,18 @@ unur_ars_eval_invcdfhat( const struct unur_gen *gen, double U )
   
   /* l.h.s. or r.h.s. of hat */
   if (-U < (scaled_area(iv) * iv->Ahatr_fract)) { /* right */
-    pt = iv->next;
+    cp = iv->next;
     /* U unchanged */
   }
   else {                /* left */
-    pt = iv;
+    cp = iv;
     U += scaled_area(iv);
   }
   
   /* PDF at x0 */
-  x0 = pt->x;
-  logfx0 = pt->logfx;
-  dlogfx0 = pt->dlogfx;
+  x0 = cp->x;
+  logfx0 = cp->logfx;
+  dlogfx0 = cp->dlogfx;
   fx0 = exp(rescaled_logf(logfx0));
   
   /* X = H^{-1}(U) in interval*/

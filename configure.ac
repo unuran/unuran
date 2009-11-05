@@ -100,6 +100,8 @@ AS_IF([test "x$with_urng_default" == xrngstream],
                 [Define to 1 if you use RNGSTREAM as global URNG.])]), 
       [])
 
+dnl Optional support for Rmath standalone library
+AX_ADD_RMATH()
 
 dnl Checks for header files.
 AC_HEADER_STDC
@@ -301,6 +303,7 @@ AC_MSG_RESULT([
 *  Enable runtime checks:      ${enable_check_struct}
 *  Enable logging of data:     ${enable_logging}
 *  Enable info routine:        ${enable_info}
+*  Use Rmath library:          ${with_Rmath}
 *
 *  Support for external uniform random number generators
 *    Rngstream:                ${with_urng_rngstream}

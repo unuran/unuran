@@ -55,6 +55,34 @@ AS_IF([test "x$with_urng_$1" != xno],
 
 
 dnl
+dnl AX_ADD_RMATH()
+dnl Add support for Rmath standalone library from R project
+dnl via configure flag and check existance of library 
+dnl (Remark: AC_CHECK_HEADERS cannot be used as is. I have skipped the
+dnl test for header file Rmath.h.)
+dnl -------------------------------------------------------------------------
+AC_DEFUN([AX_ADD_RMATH],
+[
+AC_ARG_WITH(Rmath,
+	[AS_HELP_STRING([--with-Rmath],
+	   [use Rmath library from R project @<:@default=no@:>@])],
+	[case "${withval}" in
+	   yes) ;; no) ;; 
+	   *) AC_MSG_ERROR(bad value '${withval}' for --with-Rmath) ;;
+	esac],
+	[with_Rmath=no])
+AS_IF([test "x$with_Rmath" != xno],
+	[AC_CHECK_LIB([Rmath], [rwilcox],
+	   [AC_SUBST(UNURAN_SUPPORTS_RMATH,-DUNURAN_SUPPORTS_RMATH)
+	    AC_DEFINE_UNQUOTED([UNURAN_HAS_RMATH], [1], 
+                               [Define to 1 if you use Rmath library from R project.])],
+	   [AC_MSG_FAILURE(
+	      [PRINT_WITH_FRAME([--with-Rmath given, but 'libRmath' not found])
+	   ]) ]) ], [])
+])
+
+
+dnl
 dnl PRINT_WITH_FRAME([STRING)]
 dnl Print 'string' inside framed box
 dnl -------------------------------------------------------------------------

@@ -31,6 +31,11 @@ Version 1.5.0: ???
 
         - unur_test_inverror() has been renamed to unur_test_u_error().
 
+	
+	* ?????
+
+	- New configure flag: --with-Rmath .............
+
 
 Version 1.4.1: August 2009
 

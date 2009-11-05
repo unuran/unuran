@@ -9,7 +9,7 @@
  *   PURPOSE:                                                                *
  *     Function prototypes for using uniform of type PRNG:                   *
  *     Otmar Lendl's prng package,                                           *
- *     see http://statistik.wu-wien.ac.at/prng/ or                           *
+ *     see http://statmath.wu.ac.at/prng/ or                                 *
  *     http://random.mat.sbg.ac.at/.                                         *
  *                                                                           *
  *   USAGE:                                                                  *
@@ -58,7 +58,7 @@
       This library has been developed by the pLab group at the university
       of Salzburg (Austria, EU) and implemented by Otmar Lendl.
       It is available from
-      @uref{http://statistik.wu-wien.ac.at/prng/}
+      @uref{http://statmath.wu.ac.at/prng/}
       or from the pLab site at
       @uref{http://random.mat.sbg.ac.at/}.
 
@@ -114,7 +114,7 @@ UNUR_URNG *unur_urng_prng_new( const char *prngstr );
    university of Salzburg (Austria, EU). 
 
    It is available via anonymous ftp from
-   @uref{http://statistik.wu-wien.ac.at/prng/}
+   @uref{http://statmath.wu.ac.at/prng/}
    or from the pLab site at
    @uref{http://random.mat.sbg.ac.at/}.
 */

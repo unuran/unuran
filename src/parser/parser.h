@@ -381,7 +381,7 @@ UNUR_PAR *_unur_str2par( const UNUR_DISTR *distribution, const char *string, str
       @xref{Top,,Overview,prng,PRNG Manual}.
    @end ifinfo
    @ifnotinfo
-      @uref{http://statistik.wu-wien.ac.at/prng/manual/,PRNG manual}
+      @uref{http://statmath.wu.ac.at/prng/manual/,PRNG manual}
    @end ifnotinfo
    for details).
    However it only works when using the PRNG library is enabled, 

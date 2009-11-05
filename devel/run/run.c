@@ -28,14 +28,13 @@ int main()
   UNUR_GEN *gen;
   int i;
 
+  double fpar[] = {3.,1.,1.};
+
   unur_set_default_debug(~0U);
 
-  distr = unur_distr_normal(NULL,0);
-  par = unur_ninv_new(distr);
-  unur_ninv_set_u_resolution(par,1.e-10);
-  unur_ninv_set_x_resolution(par,-1);
-  gen = unur_init(par);
-  /* unur_run_tests(par,UNUR_TEST_N_PDF|UNUR_TEST_TIME,stdout); */
+  distr = unur_distr_gig2(fpar,3);
+  par = unur_pinv_new(distr);
+  unur_run_tests(par,UNUR_TEST_N_PDF|UNUR_TEST_TIME,stdout);
 
   /* gen = unur_str2gen("normal & method=ninv; u_resolution=1e-10"); */
   /* for (i=0; i<1e1; i++)  */

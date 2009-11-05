@@ -94,17 +94,17 @@ Date: @value{UPDATED}
 This document describes how to use Microsoft Visual Studio to
 create a C or C++ project and link the target with UNU.RAN.
 
-@uref{http://statmath.wu-wien.ac.at/unuran,UNU.RAN}
+@uref{http://statmath.wu.ac.at/unuran,UNU.RAN}
 (Universal Non-Uniform RAndom Number generator) is
 a collection of algorithms for generating non-uniform
 pseudorandom variates as a library of C functions
 designed and implemented by the 
-@uref{http://statmath.wu-wien.ac.at/arvag,ARVAG}
+@uref{http://statmath.wu.ac.at/arvag,ARVAG}
 (Automatic Random VAriate Generation) project group in Vienna, and
 released under the GNU Public License (GPL).
 
 This binary distribution also has support for Pierre L'Ecuyers
-@uref{http://statmath.wu-wien.ac.at/software/RngStreams,RngStreams}
+@uref{http://statmath.wu.ac.at/software/RngStreams,RngStreams}
 library. This library is already compiled into the distributed DLL,
 the corresponding header file is included in this package.
 
@@ -124,7 +124,7 @@ manual.
 @enumerate
 @item
 Download @value{ZIPFILENAME} from the UNU.RAN 
-@uref{http://statmath.wu-wien.ac.at/unuran/download.html,download}
+@uref{http://statmath.wu.ac.at/unuran/download.html,download}
 page.
 
 @item
@@ -194,7 +194,7 @@ when it is started.
 @section  Uniform Random Number Generator
 
 This binary distribution uses Pierre L'Ecuyers
-@uref{http://statmath.wu-wien.ac.at/software/RngStreams,RngStreams}
+@uref{http://statmath.wu.ac.at/software/RngStreams,RngStreams}
 library as its default uniform random number generator.
 This library uses a package seed. Thus you should add the 
 following piece of code at the beginning of your application (at least
@@ -407,13 +407,13 @@ Here we give small examples. These show
 @itemize
 @item
 How to seed the seed for the 
-@uref{http://statmath.wu-wien.ac.at/software/RngStreams,RngStreams}
+@uref{http://statmath.wu.ac.at/software/RngStreams,RngStreams}
 library.
 
 @item
 How to create an UNU.RAN generator for a given target distribution.
 For more detailed information we refer to the 
-@uref{http://statmath.wu-wien.ac.at/unuran/doc/unuran.html,UNU.RAN manual}.
+@uref{http://statmath.wu.ac.at/unuran/doc/unuran.html,UNU.RAN manual}.
 
 @item
 How to use an independent stream of uniform random numbers for one of

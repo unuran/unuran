@@ -19,7 +19,7 @@ Uniform random number generator
 
    UNU.RAN can be used with any uniform random number generator but (at
 the moment) some features work best with Pierre L'Ecuyer's RngStreams
-library (see <http://statistik.wu-wien.ac.at/software/RngStreams/> for
+library (see <http://statmath.wu.ac.at/software/RngStreams/> for
 a description and downloading).
 
    Install the requires libraries first.

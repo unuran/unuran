@@ -80,10 +80,10 @@
 extern const double INFINITY;
 
 /* #    error */
-/* #    error +--------------------------------------------------+ */
-/* #    error ! Sorry, Cannot define INFINITY correctly! ....... ! */
-/* #    error ! Please contact <unuran@statistik.wu-wien.ac.at>. ! */
-/* #    error +--------------------------------------------------+ */
+/* #    error +--------------------------------------------+ */
+/* #    error ! Sorry, Cannot define INFINITY correctly!   ! */
+/* #    error ! Please contact <unuran@statmath.wu.ac.at>. ! */
+/* #    error +--------------------------------------------+ */
 /* #    error */
 #  endif
 #endif

@@ -113,7 +113,7 @@
       This library has been developed by the pLab group at the university
       of Salzburg (Austria, EU) and implemented by Otmar Lendl.
       It is available from
-      @uref{http://statistik.wu-wien.ac.at/prng/}
+      @uref{http://statmath.wu.ac.at/prng/}
       or from the pLab site at
       @uref{http://random.mat.sbg.ac.at/}.
       
@@ -126,7 +126,7 @@
       Pierre L'Ecuyer's @code{RngStream} library for multiple 
       independent streams of pseudo-random numbers. 
       A GNU-style package is available from
-      @uref{http://statistik.wu-wien.ac.at/software/RngStreams/}.
+      @uref{http://statmath.wu.ac.at/software/RngStreams/}.
 
       This interface must be compiled into UNU.RAN using the
       configure flag @code{--with-urng-rngstream}.

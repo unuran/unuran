@@ -14,7 +14,7 @@
 
    UNU.RAN can be used with any uniform random number generator but (at the 
    moment) some features work best with Pierre L'Ecuyer's RngStreams library
-   (see @url{http://statistik.wu-wien.ac.at/software/RngStreams/} for a 
+   (see @url{http://statmath.wu.ac.at/software/RngStreams/} for a 
    description and downloading.
    For details on using uniform random number in UNU.RAN
    see @ref{URNG,,Using uniform random number generators}.

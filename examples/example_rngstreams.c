@@ -5,7 +5,7 @@
 /* ------------------------------------------------------------- */
 /* This example makes use of the RNGSTREAM library for           */
 /* for generating uniform random numbers.                        */
-/* (see http://statmath.wu-wien.ac.at/software/RngStreams/)      */
+/* (see http://statmath.wu.ac.at/software/RngStreams/)           */
 /* To compile this example you must have set                     */
 /*   ./configure --with-urng-rngstream                           */
 /* (Of course the executable has to be linked against the        */
@@ -39,7 +39,7 @@ int main(void)
   /* RngStreams only:                                            */
   /* Make a object for uniform random number generator.          */
   /* For details see                                             */
-  /* http://statmath.wu-wien.ac.at/software/RngStreams/          */
+  /* http://statmath.wu.ac.at/software/RngStreams/               */
   urng1 = unur_urng_rngstream_new("urng-1");
   if (urng1 == NULL) exit (EXIT_FAILURE);
 

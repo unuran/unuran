@@ -14,9 +14,9 @@ distributions.
 
 The library and an extensive online documentation are available at:
 
-          -------------------------------------------
-             http://statistik.wu-wien.ac.at/unuran/ 
-          -------------------------------------------
+          ------------------------------------------
+               http://statmath.wu.ac.at/unuran/ 
+          ------------------------------------------
 
 
 ---------------------------------------------------------
@@ -73,7 +73,7 @@ Of course a uniform random number generator is necessary to use
 UNU.RAN. We provide an interface to use the PRNG uniform package from
 the pLab team from the University of Salzburg (Austria),
 available at http://random.mat.ac.at/ or from
-http://statistik.wu-wien.ac.at/prng/.
+http://statmath.wu.ac.at/prng/.
 It is also no problem to include any other uniform random number
 generator.
 
@@ -115,7 +115,7 @@ standard method for the distribution I am interested in?
 
 March 31st, 2001
 
-Josef Leydold     (leydold@statistik.wu-wien.ac.at)
+Josef Leydold     (leydold@statmath.wu.ac.at)
 Wolfgang Hoermann (hormannw@boun.edu.tr)
 
 

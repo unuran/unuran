@@ -55,7 +55,7 @@
       substreams. It is available from
       @uref{http://www.iro.umontreal.ca/~lecuyer/myftp/streams00/c/}.
       A GNU-style package is available from
-      @uref{http://statistik.wu-wien.ac.at/software/RngStreams/}.
+      @uref{http://statmath.wu.ac.at/software/RngStreams/}.
 
       The interface to the RngStream library must be compiled into UNU.RAN using the
       configure flag @code{--with-urng-rngstream}.
@@ -77,7 +77,7 @@
       Notice that the @file{rngstream} library uses a package seed,
       that means one should seed the uniform random number generator
       only once in an application using the routine
-      @uref{http://statmath.wu-wien.ac.at/software/RngStreams/doc/rngstreams.html#index-RngStream_005fSetPackageSeed-2,,@code{RngStream_SetPackageSeed}}:
+      @uref{http://statmath.wu.ac.at/software/RngStreams/doc/rngstreams.html#index-RngStream_005fSetPackageSeed-2,,@code{RngStream_SetPackageSeed}}:
 
       @smallexample
         unsigned long seed[] = @{111u, 222u, 333u, 444u, 555u, 666u@};

@@ -5,7 +5,7 @@
 /* ------------------------------------------------------------- */
 /* This example makes use of the PRNG library for generating     */
 /* uniform random numbers.                                       */
-/* (see http://statistik.wu-wien.ac.at/prng/)                    */
+/* (see http://statmath.wu.ac.at/prng/)                          */
 /* To compile this example you must have set                     */
 /*   ./configure --with-urng-prng                                */
 /* (Of course the executable has to be linked against the        */
@@ -34,7 +34,7 @@ int main(void)
 
   /* PRNG only:                                                  */
   /* Make a object for uniform random number generator.          */
-  /* For details see http://statistik.wu-wien.ac.at/prng/        */
+  /* For details see http://statmath.wu.ac.at/prng/              */
   /* We use the Mersenne Twister.                                */
   urng1 = unur_urng_prng_new("mt19937(1237)");
   if (urng1 == NULL) exit (EXIT_FAILURE);

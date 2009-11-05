@@ -7,7 +7,7 @@
  *   FILE: urng_prng.c                                                       *
  *                                                                           *
  *   routines to get new URNG object with sampling routine of type PRNG.     *
- *   (Lendl's prng package, see http://statistik.wu-wien.ac.at/prng/ or      *
+ *   (Lendl's prng package, see http://statmath.wu.ac.at/prng/ or            *
  *   http://random.mat.sbg.ac.at/.                                           *
  *                                                                           *
  *****************************************************************************

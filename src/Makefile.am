@@ -36,8 +36,9 @@ include_HEADERS = unuran.h
 noinst_HEADERS = \
  unuran_config.h \
  unuran.h.in \
- unur_source.h \
  unur_cookies.h \
+ unur_Rmath.h \
+ unur_source.h \
  unur_struct.h \
  unur_typedefs.h
 

@@ -236,6 +236,12 @@ UNUR_DISTR *unur_distr_F(const double *params, int n_params);
 UNUR_DISTR *unur_distr_gamma(const double *params, int n_params);
 
 /*---------------------------------------------------------------------------*/
+/* Generalized hyperbolic distribution                                       */
+
+/*  Only pdf is implemented when macro 'HAVE_LIBRMATH' is defined!           */
+UNUR_DISTR *unur_distr_ghyp(const double *params, int n_params);
+
+/*---------------------------------------------------------------------------*/
 /* Generalized inverse Gaussian distribution  [2; ch.15, p.284]              */
 /*
   =DISTR    gig  Generalized Inverse Gaussian distribution

@@ -17,6 +17,7 @@ libdistributions_la_SOURCES = \
  c_extremeII.c \
  c_F.c \
  c_gamma.c       c_gamma_gen.c \
+ c_ghyp.c \
  c_gig.c         c_gig_gen.c \
  c_gig2.c \
  c_hyperbolic.c \

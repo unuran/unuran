@@ -65,7 +65,7 @@ AC_DEFUN([AX_ADD_RMATH],
 [
 AC_ARG_WITH(Rmath,
 	[AS_HELP_STRING([--with-Rmath],
-	   [use Rmath library from R project @<:@default=no@:>@])],
+	   [use Rmath library from R project @<:@EXPERIMENTAL@:>@ @<:@default=no@:>@])],
 	[case "${withval}" in
 	   yes) ;; no) ;; 
 	   *) AC_MSG_ERROR(bad value '${withval}' for --with-Rmath) ;;

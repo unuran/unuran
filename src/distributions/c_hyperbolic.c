@@ -19,10 +19,10 @@
  *             [K_theta(.) ... modified Bessel function of second kind]      *
  *                                                                           *
  *  parameters: 4                                                            *
- *     0 : mu                ... location                                    *
- *     1 : alpha >|beta|     ... shape (tail)                                *
- *     2 : beta              ... shape (asymmetry)                           *
- *     3 : delta > 0         ... scale                                       *
+ *     0 : alpha >|beta|     ... shape (tail)                                *
+ *     1 : beta              ... shape (asymmetry)                           *
+ *     2 : delta > 0         ... scale                                       *
+ *     3 : mu                ... location                                    *
  *                                                                           *
  *****************************************************************************
  *                                                                           *
@@ -61,10 +61,10 @@
 static const char distr_name[] = "hyperbolic";
 
 /* parameters */
-#define mu     params[0]    /* location */
-#define alpha  params[1]    /* shape (tail) */
-#define beta   params[2]    /* shape (asymmetry) */
-#define delta  params[3]    /* scale */
+#define alpha  params[0]    /* shape (tail) */
+#define beta   params[1]    /* shape (asymmetry) */
+#define delta  params[2]    /* scale */
+#define mu     params[3]    /* location */
 
 #define DISTR distr->data.cont
 /* #define NORMCONSTANT (distr->data.cont.norm_constant) */

@@ -287,10 +287,10 @@ UNUR_DISTR *unur_distr_gig2(const double *params, int n_params);
    =CONST    @text{not implemented!}
    =CDF      @text{not implemented!}
    =DOMAIN   -infinity < x <infinity
-   =FPARAM   0 : mu    :         :   : location         :
-             1 : alpha : >|beta| :   : shape (tail)     :
-             2 : beta  :         :   : shape (asymmetry):
-             3 : delta : > 0     :   : scale            :
+   =FPARAM   0 : alpha : >|beta| :   : shape (tail)     :
+             1 : beta  :         :   : shape (asymmetry):
+             2 : delta : > 0     :   : scale            :
+             3 : mu    :         :   : location         :
    =EON
  */
 UNUR_DISTR *unur_distr_hyperbolic(const double *params, int n_params);

@@ -87,7 +87,7 @@ static const char distr_name[] = "gig2";
 #define chi    params[2]    /* shape */
 
 #define DISTR distr->data.cont
-/* #define NORMCONSTANT (distr->data.cont.norm_constant) */
+#define NORMCONSTANT (distr->data.cont.norm_constant)
 
 /* function prototypes                                                       */
 static double _unur_pdf_gig2( double x, const UNUR_DISTR *distr );
@@ -97,6 +97,7 @@ static double _unur_dlogpdf_gig2( double x, const UNUR_DISTR *distr );
 /* static double _unur_cdf_gig2( double x, const UNUR_DISTR *distr ); */
 
 static int _unur_upd_mode_gig2( UNUR_DISTR *distr );
+static double _unur_normconstant_gig2( const double *params, int n_params );
 static int _unur_set_params_gig2( UNUR_DISTR *distr, const double *params, int n_params );
 
 /*---------------------------------------------------------------------------*/
@@ -110,7 +111,7 @@ _unur_pdf_gig2(double x, const UNUR_DISTR *distr)
     /* out of support */
     return 0.;
 
-  return (exp( (theta-1.) * log(x) - 0.5 * (chi/x + psi*x) ));
+  return (NORMCONSTANT * exp( (theta-1.) * log(x) - 0.5 * (chi/x + psi*x) ));
 
 } /* end of _unur_pdf_gig2() */
 
@@ -125,7 +126,7 @@ _unur_logpdf_gig2(double x, const UNUR_DISTR *distr)
     /* out of support */
     return -INFINITY;
 
-  return ( (theta-1.) * log(x) - 0.5 * (chi/x + psi*x) );
+  return ( (theta-1.) * log(x) - 0.5 * (chi/x + psi*x) + log(NORMCONSTANT) );
 
 } /* end of _unur_logpdf_gig2() */
 
@@ -140,7 +141,7 @@ _unur_dpdf_gig2(double x, const UNUR_DISTR *distr)
     /* out of support */
     return 0.;
 
-  return ( 0.5 * exp( (theta-3.) * log(x) - (chi + psi*x*x)/(2*x) )
+  return ( NORMCONSTANT * 0.5 * exp( (theta-3.) * log(x) - (chi + psi*x*x)/(2*x) )
 	   * (chi - x*(2 - 2*theta + psi*x)) );
 
 } /* end of _unur_dpdf_gig2() */
@@ -157,7 +158,7 @@ _unur_dlogpdf_gig2(double x, const UNUR_DISTR *distr)
     /* out of support */
     return 0.;
 
-  return ( -0.5*(psi - chi/(x*x)) + (theta-1.)/x ) ;
+  return ( -0.5*(psi - chi/(x*x)) + (theta-1.)/x  + log(NORMCONSTANT) ) ;
 
 } /* end of _unur_dlogpdf_gig2() */
 
@@ -179,6 +180,22 @@ _unur_upd_mode_gig2( UNUR_DISTR *distr )
 
   return UNUR_SUCCESS;
 } /* end of _unur_upd_mode_gig2() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_normconstant_gig2(const double *params ATTRIBUTE__UNUSED, int n_params ATTRIBUTE__UNUSED)
+{ 
+#ifdef HAVE_BESSEL_K
+  /*
+   *  constant:  (psi/chi)^(theta/2) / (2*K_theta(sqrt(psi*chi)))
+   */
+
+  return ( pow(psi/chi, theta/2.) / (2. * _unur_sf_bessel_k(sqrt(psi*chi),theta)) );
+#else
+  return 1.;
+#endif
+} /* end of _unur_normconstant_gig2() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -266,8 +283,8 @@ unur_distr_gig2( const double *params, int n_params )
     return NULL;
   }
 
-  /* log of normalization constant */
-  /*    DISTR.LOGNORMCONSTANT = ? */
+  /* normalization constant */
+  NORMCONSTANT = _unur_normconstant_gig2(params,n_params);
 
   /* mode and area below p.d.f. */
   _unur_upd_mode_gig2(distr);

@@ -1,12 +1,23 @@
 
-#if defined(HAVE_LIBRMATH)
-/* Rmath standalone library from R project. */
-#  define MATHLIB_STANDALONE
+/*---------------------------------------------------------------------------*/
+/*                                                                           */
+/*  Use Rmath library from R project.                                        */
+/*                                                                           */
+/*---------------------------------------------------------------------------*/
+
+#ifdef HAVE_LIBRMATH
+
+/* we have to distinguish between two cases:                                 */
+#  ifdef R_UNURAN
+/*   Rmath for 'Runuran': nothin special to do. */
+#  else
+/*   Rmath standalone library. */
+#    define MATHLIB_STANDALONE
+#  endif
+
+/* include header file */
 #  include <Rmath.h>
-#  define HAVE_R_FUNCTIONS
-#elif defined(R_UNURAN)
-/* Rmath for 'Runuran' */
-#  include <Rmath.h>
-#  define HAVE_R_FUNCTIONS
+
 #endif
 
+/*---------------------------------------------------------------------------*/

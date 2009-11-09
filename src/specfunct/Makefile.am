@@ -19,10 +19,13 @@ CEPHES = \
  ndtri.c \
  polevl.c
 
+RMATH = \
+ besselK.c
+
 OTHER = \
  log1p.c
 
-libspecfunct_la_SOURCES = $(CEPHES) $(OTHER)
+libspecfunct_la_SOURCES = $(CEPHES) $(RMATH) $(OTHER)
 
 noinst_HEADERS = \
  unur_specfunct_source.h

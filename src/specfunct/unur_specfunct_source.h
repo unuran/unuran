@@ -85,6 +85,26 @@ double _unur_cephes_ndtri(double x);
 /* end: CEPHES library                                                       */
 /*---------------------------------------------------------------------------*/
 
+/*---------------------------------------------------------------------------*/
+/* Routines from the Rmath library (R project).                              */
+/*---------------------------------------------------------------------------*/
+
+#ifdef HAVE_LIBRMATH
+
+#define HAVE_BESSEL_K 1
+
+/* modified Bessel function K_nu of second kind (AKA third kind)             */
+double _unur_sf_bessel_k(double x, double nu);
+
+/* rescaled modified Bessel function K_nu of second kind (AKA third kind):   */
+/*   exp(x) * bessel_k(x,nu)                                                 */
+double _unur_sf_bessel_k_expo(double x, double nu);
+#endif
+
+/*---------------------------------------------------------------------------*/
+/* end: Rmath library (R project)                                            */
+/*---------------------------------------------------------------------------*/
+
 /*****************************************************************************
  *                                                                           *
  *   Replacement for missing (system) functions                              *

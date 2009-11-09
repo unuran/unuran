@@ -15,8 +15,8 @@
  *  pdf:   f(x) = exp( -alpha * sqrt(delta^2 + (x - mu)^2) + beta*(x-mu) )   *
  *  domain:    infinity < x < infinity                                       *
  *  constant:  gamma / (2 * alpha * delta * K_1(delta * gamma)               *
- *             [gamma = sqrt(alpha^2 - beta^2)                        ]      *
- *             [K_theta(.) ... modified Bessel function of second kind]      *
+ *          [gamma = sqrt(alpha^2 - beta^2)                        ]         *
+ *          [K_theta(.) ... modified Bessel function of second (third) kind] *
  *                                                                           *
  *  parameters: 4                                                            *
  *     0 : alpha >|beta|     ... shape (tail)                                *
@@ -67,7 +67,7 @@ static const char distr_name[] = "hyperbolic";
 #define mu     params[3]    /* location */
 
 #define DISTR distr->data.cont
-/* #define NORMCONSTANT (distr->data.cont.norm_constant) */
+#define NORMCONSTANT (distr->data.cont.norm_constant)
 
 /* function prototypes                                                       */
 static double _unur_pdf_hyperbolic( double x, const UNUR_DISTR *distr );
@@ -77,6 +77,7 @@ static double _unur_dlogpdf_hyperbolic( double x, const UNUR_DISTR *distr );
 /* static double _unur_cdf_hyperbolic( double x, const UNUR_DISTR *distr ); */
 
 static int _unur_upd_mode_hyperbolic( UNUR_DISTR *distr );
+static double _unur_normconstant_hyperbolic( const double *params, int n_params );
 static int _unur_set_params_hyperbolic( UNUR_DISTR *distr, const double *params, int n_params );
 
 /*---------------------------------------------------------------------------*/
@@ -86,7 +87,7 @@ _unur_pdf_hyperbolic(double x, const UNUR_DISTR *distr)
 { 
   register const double *params = DISTR.params;
 
-  return exp(-alpha * sqrt(delta*delta + (x-mu)*(x-mu)) + beta*(x-mu) );
+  return (NORMCONSTANT * exp(-alpha * sqrt(delta*delta + (x-mu)*(x-mu)) + beta*(x-mu) ) );
 } /* end of _unur_pdf_hyperbolic() */
 
 /*---------------------------------------------------------------------------*/
@@ -96,7 +97,7 @@ _unur_logpdf_hyperbolic(double x, const UNUR_DISTR *distr)
 { 
   register const double *params = DISTR.params;
 
-  return (-alpha * sqrt(delta*delta + (x-mu)*(x-mu)) + beta*(x-mu) );
+  return (-alpha * sqrt(delta*delta + (x-mu)*(x-mu)) + beta*(x-mu) + log(NORMCONSTANT) );
 } /* end of _unur_logpdf_hyperbolic() */
 
 /*---------------------------------------------------------------------------*/
@@ -104,7 +105,7 @@ _unur_logpdf_hyperbolic(double x, const UNUR_DISTR *distr)
 double
 _unur_dpdf_hyperbolic(double x, const UNUR_DISTR *distr)
 { 
-  return (_unur_pdf_hyperbolic(x,distr) * _unur_dlogpdf_hyperbolic(x,distr));
+  return (NORMCONSTANT * _unur_pdf_hyperbolic(x,distr) * _unur_dlogpdf_hyperbolic(x,distr));
 } /* end of _unur_dpdf_hyperbolic() */
 
 /*---------------------------------------------------------------------------*/
@@ -114,7 +115,7 @@ _unur_dlogpdf_hyperbolic(double x, const UNUR_DISTR *distr)
 { 
   register const double *params = DISTR.params;
 
-  return (beta - (alpha*(x-mu))/sqrt(delta*delta + (x-mu)*(x-mu)) );
+  return (beta - (alpha*(x-mu))/sqrt(delta*delta + (x-mu)*(x-mu)) + log(NORMCONSTANT));
 } /* end of _unur_dlogpdf_hyperbolic() */
 
 /*---------------------------------------------------------------------------*/
@@ -135,6 +136,26 @@ _unur_upd_mode_hyperbolic( UNUR_DISTR *distr )
 
   return UNUR_SUCCESS;
 } /* end of _unur_upd_mode_hyperbolic() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_normconstant_hyperbolic(const double *params ATTRIBUTE__UNUSED, int n_params ATTRIBUTE__UNUSED)
+{ 
+#ifdef HAVE_BESSEL_K
+  double gamm = sqrt(alpha*alpha-beta*beta);
+
+  /*
+   *  constant:  gamma / (2 * alpha * delta * K_1(delta * gamma)               *
+   *             [gamma = sqrt(alpha^2 - beta^2)                        ]      *
+   *             [K_theta(.) ... modified Bessel function of second kind]      *
+   */
+
+  return ( gamm / ( 2 * alpha * delta * _unur_sf_bessel_k(delta*gamm, 1) ) );
+#else
+  return 1.;
+#endif
+} /* end of _unur_normconstant_hyperbolic() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -218,8 +239,8 @@ unur_distr_hyperbolic( const double *params, int n_params )
     return NULL;
   }
 
-  /* log of normalization constant */
-  /*    DISTR.LOGNORMCONSTANT = ? */
+  /* normalization constant */
+  NORMCONSTANT = _unur_normconstant_hyperbolic(params,n_params);
 
   /* mode and area below p.d.f. */
   _unur_upd_mode_hyperbolic(distr);

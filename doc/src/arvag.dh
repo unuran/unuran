@@ -117,7 +117,7 @@
    We use the terms @emph{u-resolution} and @emph{x-resolution} as the
    maximal tolerated u-error and x-error, resp.
 
-   In UNU.RAN allows to set u-resolution and x-resolution
+   UNU.RAN allows to set u-resolution and x-resolution
    independently. Both requirements must be fulfilled.
    We use the following strategy for checking whether the
    precision goal is reached:

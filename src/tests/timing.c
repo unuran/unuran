@@ -219,8 +219,7 @@ unur_test_timing( struct unur_par *par,
 
 double 
 unur_test_timing_R( struct unur_par *par, const char *distrstr, const char *methodstr,
-		    double log10_samplesize, 
-		    double *time_setup, double *time_marginal )
+		    double log10_samplesize, double *time_setup, double *time_marginal )
      /*----------------------------------------------------------------------*/
      /*  setup time and marginal generation time via linear regression.      */
      /*                                                                      */
@@ -239,8 +238,8 @@ unur_test_timing_R( struct unur_par *par, const char *distrstr, const char *meth
      /*   return -100.                                                       */
      /*----------------------------------------------------------------------*/
 {
-  const int n_steps = 5;    /* number of sample sizes                        */
-  const int n_reps = 5;     /* number of repetitions for each sample size    */
+  const int n_steps = 2;    /* number of sample sizes                        */
+  const int n_reps = 10;    /* number of repetitions for each sample size    */
 
   struct unur_distr *distr_tmp = NULL; /* temporary distribution object      */
   struct unur_par   *par_tmp   = NULL; /* working copy of parameter object   */
@@ -269,7 +268,7 @@ unur_test_timing_R( struct unur_par *par, const char *distrstr, const char *meth
   Rsq = -100.;
 
   /* check parameter */
-  if (log10_samplesize < 3) log10_samplesize = 3;
+  if (log10_samplesize < 2) log10_samplesize = 2;
 
   /* create parameter object (if necessary) */
   if (par == NULL) {
@@ -333,7 +332,7 @@ unur_test_timing_R( struct unur_par *par, const char *distrstr, const char *meth
     qsort( time_gen, (size_t)n_reps, sizeof(double), compare_doubles);
 
     /* update sums for linear regression */
-    for (rep=0; rep<n_reps-2; rep++) {
+    for (rep=2; rep<n_reps-3; rep++) {
       sx += samplesize;
       sy += time_gen[rep];
       sxx += ((double)samplesize) * ((double)samplesize);
@@ -343,7 +342,7 @@ unur_test_timing_R( struct unur_par *par, const char *distrstr, const char *meth
   }
 
   /* compute simple linear regression */
-  n = n_steps * (n_reps-2);
+  n = n_steps * (n_reps-5);
   *time_marginal = ( n*sxy - sx*sy ) / ( n*sxx - sx*sx );
   *time_setup = sy/n - *time_marginal * sx/n;
   Rsq = ( n*sxy - sx*sy ) / sqrt( (n*sxx - sx*sx) * (n*syy - sy*sy) );

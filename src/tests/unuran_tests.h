@@ -126,8 +126,7 @@ UNUR_GEN *unur_test_timing( UNUR_PAR *parameters, int log10_samplesize,
 */
 
 double unur_test_timing_R( UNUR_PAR *parameters, const char *distrstr, const char *methodstr,
-			   double log10_samplesize, 
-			   double *time_setup, double *time_marginal );
+			   double log10_samplesize, double *time_setup, double *time_marginal );
 /* 
    Timing. @var{parameters} is an parameter object for which setup
    time and marginal generation times have to be measured. The results
@@ -140,17 +139,14 @@ double unur_test_timing_R( UNUR_PAR *parameters, const char *distrstr, const cha
 
    The results are more accurate than those of function
    unur_test_timing() as the timings are computed using linear
-   regression. The coefficient of determination @unurmath{R^2} is
-   returned (and should be very close 1).
-   The regression is performed in the following ways.
-   We have 5 sample sizes which are equidistributed on the common
-   logarithmic (log10) scale between 1 and @var{log10_samplesize}.
+   regression with several timings for sample size 1 and
+   10^@var{log10_samplesize}.
    For each sample size total generation time (including setup) is
-   measured 5 times. Since the these timings can be influenced by
-   external effects (like disc sync or handling of interupts) only the
-   3 best results for each sample size are then used for simple linear
-   regression. Intercept and slope are than stored and @unurmath{R^2}
-   is returned.
+   measured 10 times. Since the these timings can be influenced by
+   external effects (like disc sync or handling of interupts) the 2
+   fastest and the 3 slowest timings are discarded.
+   Intercept and slope for simple linear regression are than stored
+   and @unurmath{R^2} is returned.
 
    In case of an error @code{-100.} is returned.
 

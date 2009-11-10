@@ -125,7 +125,8 @@ UNUR_GEN *unur_test_timing( UNUR_PAR *parameters, int log10_samplesize,
    the source code can cause changes in such timings up to 25 percent.
 */
 
-double unur_test_timing_R( UNUR_PAR *parameters, double log10_samplesize, 
+double unur_test_timing_R( UNUR_PAR *parameters, const char *distrstr, const char *methodstr,
+			   double log10_samplesize, 
 			   double *time_setup, double *time_marginal );
 /* 
    Timing. @var{parameters} is an parameter object for which setup
@@ -133,6 +134,9 @@ double unur_test_timing_R( UNUR_PAR *parameters, double log10_samplesize,
    are written into @var{time_setup} and @var{time_marginal},
    respectively. @var{log10_samplesize} is the common logarithm of the
    sample size that is used for timing. 
+   
+   Alternatively, one could provide the "parameter object" using
+   strings @var{distrstr} and @var{methodstr} as used for unur_makegen_ssu().
 
    The results are more accurate than those of function
    unur_test_timing() as the timings are computed using linear

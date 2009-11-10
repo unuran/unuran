@@ -40,6 +40,7 @@
 #include <methods/unif.h>
 #include <distr/distr.h>
 #include <distributions/unur_distributions.h>
+#include <parser/parser.h>
 #include <urng/urng.h>
 #include "unuran_tests.h"
 
@@ -127,7 +128,7 @@ unur_test_timing( struct unur_par *par,
   time_exponential = unur_test_timing_exponential( par,log10_samplesize );
 
   /* we need an array for the vector */
-  if (_unur_gen_is_vec(par))
+  if (par->distr && _unur_gen_is_vec(par))
     vec = _unur_xmalloc( par->distr->dim * sizeof(double) );
 
   /* initialize generator (and estimate setup time) */
@@ -217,13 +218,16 @@ unur_test_timing( struct unur_par *par,
 /*---------------------------------------------------------------------------*/
 
 double 
-unur_test_timing_R( struct unur_par *par, double log10_samplesize, 
+unur_test_timing_R( struct unur_par *par, const char *distrstr, const char *methodstr,
+		    double log10_samplesize, 
 		    double *time_setup, double *time_marginal )
      /*----------------------------------------------------------------------*/
      /*  setup time and marginal generation time via linear regression.      */
      /*                                                                      */
      /* parameters:                                                          */
      /*   par              ... pointer to parameters for generator object    */
+     /*   distrstr         ... distribution described by a string            */
+     /*   methodstr        ... chosen method described by a string           */
      /*   log10_samplesize ... common log of maximal sample size             */
      /*   time_setup       ... time for setup                                */
      /*   time_marginal    ... marginal generation time (i.e. for one r.n.)  */
@@ -238,14 +242,16 @@ unur_test_timing_R( struct unur_par *par, double log10_samplesize,
   const int n_steps = 5;    /* number of sample sizes                        */
   const int n_reps = 5;     /* number of repetitions for each sample size    */
 
-  struct unur_par *par_tmp;    /* temporary working copy of parameter object */
-  struct unur_gen *gen_tmp;    /* temporary generator object                 */
+  struct unur_distr *distr_tmp = NULL; /* temporary distribution object      */
+  struct unur_par   *par_tmp   = NULL; /* working copy of parameter object   */
+  struct unur_gen   *gen_tmp   = NULL; /* temporary generator object         */
+  struct unur_slist *mlist     = NULL; /* auxiliary table for _unur_str2par()*/
 
   int k;
   double x;
   double *vec = NULL;
 
-  double time_start, *time_gen;
+  double time_start, *time_gen = NULL;
   int sample, rep;
   long samplesize, n;
 
@@ -257,15 +263,27 @@ unur_test_timing_R( struct unur_par *par, double log10_samplesize,
 
   double Rsq = -100.;     /* coefficient of determination */
 
+  /* set initial values */
+  *time_setup = -100.;
+  *time_marginal = -100.;
+  Rsq = -100.;
+
   /* check parameter */
-  _unur_check_NULL(test_name,par,-100.);
   if (log10_samplesize < 3) log10_samplesize = 3;
+
+  /* create parameter object (if necessary) */
+  if (par == NULL) {
+    distr_tmp = unur_str2distr(distrstr);
+    if (distr_tmp == NULL) goto error;
+    par = _unur_str2par( distr_tmp, methodstr, &mlist );
+    if (par == NULL) goto error;
+  }
 
   /* we need an array for storing timing results */
   time_gen = _unur_xmalloc( n_reps * sizeof(double) );
 
   /* we need an array for a random vector */
-  if (_unur_gen_is_vec(par))
+  if (par->distr && _unur_gen_is_vec(par))
     vec = _unur_xmalloc( par->distr->dim * sizeof(double) );
 
   /* measure timings for various sample sizes */
@@ -284,10 +302,7 @@ unur_test_timing_R( struct unur_par *par, double log10_samplesize,
 
       /* make generator object (init) */
       gen_tmp = _unur_init(par_tmp);
-      if (!gen_tmp) {  
-	/* init failed */
-	Rsq = -100.; goto error;
-      }
+      if (!gen_tmp) goto error;  /* init failed */
 
       /* run generator */
       switch (gen_tmp->method & UNUR_MASK_TYPE) {
@@ -335,12 +350,14 @@ unur_test_timing_R( struct unur_par *par, double log10_samplesize,
   
  error:
   /* free memory */
-  if (vec) free(vec);
-  free(time_gen);
-  _unur_par_free(par);
+  if (distr_tmp) unur_distr_free(distr_tmp);
+  if (par)       _unur_par_free(par);
+  if (mlist)     _unur_slist_free(mlist);
+  if (time_gen)  free(time_gen);
+  if (vec)       free(vec);
 
   /* return result */
-  return -100.;
+  return Rsq;
 
 } /* end of unur_test_timing_R() */
 
@@ -478,7 +495,7 @@ double unur_test_timing_total_run( const struct unur_par *par, int samplesize, i
   time = _unur_xmalloc( n_repeat * sizeof(double) );
 
   /* we need an array for a random vector */
-  if (_unur_gen_is_vec(par))
+  if (par->distr && _unur_gen_is_vec(par))
     vec = _unur_xmalloc( par->distr->dim * sizeof(double) );
 
   /* make samples */

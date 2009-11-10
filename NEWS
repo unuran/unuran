@@ -31,6 +31,9 @@ Version 1.5.0: ???
 
         - unur_test_inverror() has been renamed to unur_test_u_error().
 
+        - new test function unur_test_timing_R() for (hopefully) more
+	  robust timing results.
+
 	
 	* ?????
 

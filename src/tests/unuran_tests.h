@@ -95,14 +95,14 @@ void unur_test_printsample( UNUR_GEN *generator, int n_rows, int n_cols, FILE *o
    @var{out} is the output stream to which all results are written.
 */
 
-UNUR_GEN *unur_test_timing( UNUR_PAR *parameters, int log_samplesize, 
+UNUR_GEN *unur_test_timing( UNUR_PAR *parameters, int log10_samplesize, 
 			    double *time_setup, double *time_sample,
 			    int verbosity, FILE *out );
 /* 
    Timing. @var{parameters} is an parameter object for which setup
    time and marginal generation times have to be measured. The results
    are written into @var{time_setup} and @var{time_sample},
-   respectively. @var{log_samplesize} is the common logarithm of the
+   respectively. @var{log10_samplesize} is the common logarithm of the
    sample size that is used for timing. 
 
    If @var{verbosity} is TRUE then a small table is printed to
@@ -125,10 +125,40 @@ UNUR_GEN *unur_test_timing( UNUR_PAR *parameters, int log_samplesize,
    the source code can cause changes in such timings up to 25 percent.
 */
 
-double unur_test_timing_uniform( const UNUR_PAR *parameters, int log_samplesize );
+double unur_test_timing_R( UNUR_PAR *parameters, double log10_samplesize, 
+			   double *time_setup, double *time_marginal );
+/* 
+   Timing. @var{parameters} is an parameter object for which setup
+   time and marginal generation times have to be measured. The results
+   are written into @var{time_setup} and @var{time_marginal},
+   respectively. @var{log10_samplesize} is the common logarithm of the
+   sample size that is used for timing. 
+
+   The results are more accurate than those of function
+   unur_test_timing() as the timings are computed using linear
+   regression. The coefficient of determination @unurmath{R^2} is
+   returned (and should be very close 1).
+   The regression is performed in the following ways.
+   We have 5 sample sizes which are equidistributed on the common
+   logarithmic (log10) scale between 1 and @var{log10_samplesize}.
+   For each sample size total generation time (including setup) is
+   measured 5 times. Since the these timings can be influenced by
+   external effects (like disc sync or handling of interupts) only the
+   3 best results for each sample size are then used for simple linear
+   regression. Intercept and slope are than stored and @unurmath{R^2}
+   is returned.
+
+   In case of an error @code{-100.} is returned.
+
+   Notice: All timing results are subject to heavy changes. Reruning
+   timings usually results in different results. Minor changes in 
+   the source code can cause changes in such timings up to 25 percent.
+*/
+
+double unur_test_timing_uniform( const UNUR_PAR *parameters, int log10_samplesize );
 /* */
 
-double unur_test_timing_exponential( const UNUR_PAR *parameters, int log_samplesize );
+double unur_test_timing_exponential( const UNUR_PAR *parameters, int log10_samplesize );
 /* 
    Marginal generation times for the underlying uniform random number
    (using the UNIF interface) and an exponential distributed 

@@ -111,10 +111,10 @@ UNUR_GEN *unur_makegen_dsu( const UNUR_DISTR *distribution, const char *methodst
 /*...........................................................................*/
 
 
-UNUR_PAR *_unur_str2par( const UNUR_DISTR *distribution, const char *string, struct unur_slist **mlist );
+UNUR_PAR *_unur_str2par( const UNUR_DISTR *distribution, const char *method, struct unur_slist **mlist );
 /*
    Get a parameter object for the given distribution object and for the 
-   method described in @var{string}. 
+   method described in @var{method}. 
    See @ref{StringSyntax,,Syntax of String Interface},
    and @ref{StringMethod,,Method String},
    for details. However, only the block for the method is allowed.

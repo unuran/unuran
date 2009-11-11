@@ -527,6 +527,15 @@ _unur_pinv_cut( struct unur_gen *gen, double dom, double w, double dw, double cr
     /* derivative */
     df = (fr-fl)/(2.*dx);
 
+    /* check derivative */
+    if (! _unur_isfinite(df)) {
+      /* df too large --> we cannot compute the next point */
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,
+		  "numerical problems with cut-off point, PDF too steep");
+      return INFINITY;
+    }
+    
+	   
     /* local concavity */
     lc = fl/(fl-fx)+fr/(fr-fx) - 1;
 
@@ -553,7 +562,7 @@ _unur_pinv_cut( struct unur_gen *gen, double dom, double w, double dw, double cr
     /* check accuracy of computation */
     if (fabs(area/crit-1.) < 1.e-4)
       return x;
-    
+
     /* compute next point */
     if (_unur_iszero(lc)) {
       xnew = x + fx/df * log(crit*fabs(df)/(fx*fx));
@@ -565,8 +574,8 @@ _unur_pinv_cut( struct unur_gen *gen, double dom, double w, double dw, double cr
     /* check results */
     if (! _unur_isfinite(xnew)) {
       /* we cannot compute the next point */
-      _unur_warning(gen->genid,UNUR_ERR_NAN,"numerical problems with cut-off point");
-      return x;
+      _unur_error(gen->genid,UNUR_ERR_NAN,"numerical problems with cut-off point");
+      return INFINITY;
     }
     
     if (sgn*dom < sgn*x) {

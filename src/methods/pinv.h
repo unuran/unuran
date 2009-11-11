@@ -116,7 +116,9 @@
       PINV works for continuous univariate distribution objects with
       given PDF. The corresponding distribution object must contain a
       typical point of the distribution, i.e., a point where the PDF
-      is not too small, e.g., (a point near) the mode. 
+      is not too small, e.g., (a point near) the mode.
+      However, it is important that the center is @strong{not} the
+      pole of the distribution (or a point too close to the pole).
       It can be set using a unur_distr_cont_set_center() or
       a unur_distr_cont_set_mode() call. (If neither is set, @code{0}
       is assumed!)

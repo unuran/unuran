@@ -77,6 +77,8 @@
 #include "unur_distributions_source.h"
 #include "unur_stddistr.h"
 
+/* #include <gsl/gsl_integration.h> */
+
 /*---------------------------------------------------------------------------*/
 
 static const char distr_name[] = "gig2";
@@ -161,6 +163,36 @@ _unur_dlogpdf_gig2(double x, const UNUR_DISTR *distr)
   return ( -0.5*(psi - chi/(x*x)) + (theta-1.)/x  + log(NORMCONSTANT) ) ;
 
 } /* end of _unur_dlogpdf_gig2() */
+
+/*---------------------------------------------------------------------------*/
+
+/* double */
+/* _unur_cdf_gig2(double x, const UNUR_DISTR *distr) */
+/* {  */
+/*   double bound = 0.; */
+/*   double epsabs = 1.e-24; */
+/*   double epsrel = 1.e-12; */
+/*   double result, abserr; */
+/*   size_t limit = 1000; */
+/*   gsl_integration_workspace *work = gsl_integration_workspace_alloc (1000); */
+
+/*   gsl_function F; */
+/*   F.function = _unur_pdf_gig2; */
+/*   F.params = distr; */
+
+/*   if (x <= 0.) */
+/*     /\* out of support *\/ */
+/*     return 0.; */
+
+/*   /\* use GSL function *\/ */
+/*   gsl_integration_qagiu(&F, bound, epsabs, epsrel, limit, */
+/* 			work, &result, &abserr); */
+
+/*   gsl_integration_workspace_free (work); */
+
+/*   return result; */
+
+/* } /\* end of _unur_cdf_gig2() *\/ */
 
 /*---------------------------------------------------------------------------*/
 
@@ -269,7 +301,7 @@ unur_distr_gig2( const double *params, int n_params )
   DISTR.logpdf  = _unur_logpdf_gig2;  /* pointer to logPDF               */
   DISTR.dpdf    = _unur_dpdf_gig2;    /* pointer to derivative of PDF    */
   DISTR.dlogpdf = _unur_dlogpdf_gig2; /* pointer to derivative of logPDF */
-  DISTR.cdf  = NULL;                 /* _unur_cdf_gig2; pointer to CDF   */
+  /* DISTR.cdf     = _unur_cdf_gig2;     pointer to CDF                  */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

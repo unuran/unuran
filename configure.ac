@@ -61,6 +61,10 @@ dnl Checks for libraries.
 dnl libm: the standard math library
 AC_CHECK_LIB([m], [sqrt])
 
+dnl libmgsl: the GNU Scientific library 
+dnl (only used for experimental code)
+AC_CHECK_LIB([gsl], [gsl_integration_qagiu])
+
 dnl Optional support for external uniform random number generators
 
 dnl RngStream: Pierre L'Ecuyer's multiple random stream generator

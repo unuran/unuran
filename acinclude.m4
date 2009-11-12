@@ -72,7 +72,7 @@ AC_ARG_WITH(Rmath,
 	esac],
 	[with_Rmath=no])
 AS_IF([test "x$with_Rmath" != xno],
-	[AC_CHECK_LIB([Rmath], [rwilcox],[],
+	[AC_CHECK_LIB([Rmath], [bessel_k],[],
 	   [AC_MSG_FAILURE(
 	      [PRINT_WITH_FRAME([--with-Rmath given, but 'libRmath' not found])
 	   ]) ]) ], [])

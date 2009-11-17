@@ -7,7 +7,7 @@
 
                Installation instructions for the UNU.RAN library.
 
-                              Version 1.4.x
+                              Version 1.5.x
 
 
 While the code is plain ANSI C and thus quite portable, the following
@@ -29,8 +29,8 @@ Installing UNU.RAN
 ..................
 
   1. First unzip and untar the package and change to the directory:
-          tar zxvf unuran-1.4.x.tar.gz
-          cd unuran-1.4.x
+          tar zxvf unuran-1.5.x.tar.gz
+          cd unuran-1.5.x
 
 
   2. Optional: Edit the file `src/unuran_config.h'.

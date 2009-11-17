@@ -1,12 +1,11 @@
-Version 1.5.0: ??? 
+Version 1.5.0: December 2009
 
 	* Methods:
 
 	- NINV: changed evaluation of accuracy goal of algorithms.
           Now checking for the maximal tolerated x-error and maximal
           tolerated u-error can be set (or disabled) independently.
-          [This changes the generated pseudo-random sequence
-          slightly!] 
+          [This slightly changes the generated pseudo-random sequence!]
 	  By default, the u-error remains unchecked.
 
 	  New variant: bisection method.
@@ -35,9 +34,13 @@ Version 1.5.0: ???
 	  robust timing results.
 
 	
-	* ?????
+	* configure:
 
-	- New configure flag: --with-Rmath .............
+	- New exprimental configure flag '--with-Rmath':
+          enables usage of the Rmath stand alone library from the
+	  R project for statistical computing. This makes some special
+          functions (in particular Bessel functions) available for 
+	  PDFs and CDFs of some distributions (e.g. GIG).
 
 
 Version 1.4.1: August 2009

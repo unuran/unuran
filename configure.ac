@@ -3,9 +3,9 @@ dnl $Id$
 
 dnl Initialize.
 AC_PREREQ(2.63)
-AC_INIT([unuran],[1.5.0],[unuran@statmath.wu.ac.at])
+AC_INIT([unuran],[1.6.devel],[unuran@statmath.wu.ac.at])
 AC_CONFIG_AUX_DIR(autoconf)
-AM_INIT_AUTOMAKE([unuran],[1.5.0])
+AM_INIT_AUTOMAKE([unuran],[1.6.devel])
 AC_CONFIG_SRCDIR([src/unuran_config.h])
 AC_CONFIG_HEADER([config.h])
 
@@ -36,7 +36,7 @@ dnl unuran-1.4.0   11:0:1
 dnl unuran-1.4.1   11:1:1
 dnl unuran-1.5.0   12:0:0
 
-UNURAN_LT_VERSION="12:0:0"
+UNURAN_LT_VERSION="13:0:0"
 AC_SUBST([UNURAN_LT_VERSION])
 
 dnl use maintainer mode

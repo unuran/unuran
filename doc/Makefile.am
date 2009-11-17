@@ -73,7 +73,9 @@ noinst_DATA =
 EXTRA_DIST = \
  unuran.html \
  unuran.txt \
- unuran.pdf
+ unuran.pdf \
+ unuran_win32.html \
+ unuran_win32.pdf
 
 
 # Generated texi files ...

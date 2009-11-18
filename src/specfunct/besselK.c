@@ -50,12 +50,5 @@ _unur_sf_bessel_k_expo(double x, double nu)
 } /* end of _unur_sf_bessel_k_expo() */
 
 /*---------------------------------------------------------------------------*/
-#else
-/*---------------------------------------------------------------------------*/
-double _unur_sf_bessel_k(double x ATTRIBUTE__UNUSED, double nu ATTRIBUTE__UNUSED) 
-{ /* dummy function to satisfy ISO C compiler */
-  return 0./0.; 
-}
-/*---------------------------------------------------------------------------*/
 #endif /* end HAVE_LIBRMATH */
 /*---------------------------------------------------------------------------*/

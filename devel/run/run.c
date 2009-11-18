@@ -28,11 +28,12 @@ int main()
   UNUR_GEN *gen;
   int i;
 
-  double fpar[] = {3.,1.,1.};
+  double fpar[] = {1.1,3.2};
 
   unur_set_default_debug(~0U);
 
-  distr = unur_distr_gig2(fpar,3);
+  distr = unur_distr_F(fpar,2);
+  unur_distr_cont_set_center(distr,1);
   par = unur_pinv_new(distr);
   unur_run_tests(par,UNUR_TEST_N_PDF|UNUR_TEST_TIME,stdout);
 

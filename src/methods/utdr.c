@@ -1314,7 +1314,7 @@ _unur_utdr_info( struct unur_gen *gen, int help )
 
   /* performance */
   _unur_string_append(info,"performance characteristics:\n");
-  _unur_string_append(info,"   rejection constant = %.2f  [approx]\n",
+  _unur_string_append(info,"   rejection constant = %.2f  [approx.]\n",
 		      unur_test_count_urn(gen,samplesize,0,NULL)/(2.*samplesize));
   _unur_string_append(info,"\n");
 

@@ -22,7 +22,7 @@ int main(void)
   int    i;            /* loop variable                          */
   double x;            /* will hold the random number            */
 
-  /* create generators for components                            */
+  /* Create generators for components                            */
   distr = unur_distr_normal(NULL,0);   /* Gaussian distribution  */
   par = unur_pinv_new(distr);          /* choose method PINV     */
   comp[0] = unur_init(par);            /* initialize             */
@@ -33,12 +33,15 @@ int main(void)
   comp[1] = unur_init(par);            /* initialize             */
   unur_distr_free(distr);              /* free distribution obj. */
 
-  /* probabilities for components (need not sum to 1)            */
+  /* Probabilities for components (need not sum to 1)            */
   prob[0] = 0.4;    
   prob[1] = 0.3;
 
-  /* create mixture */
-  gen = unur_mixt_new(2,prob,comp);
+  /* Create mixture */
+  par = unur_mixt_new(2,prob,comp);
+
+  /* Initialize generator object                                 */
+  gen = unur_init(gen);
 
   /* we do not need the components any more */
   for (i=0; i<2; i++)

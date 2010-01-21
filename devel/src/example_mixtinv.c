@@ -23,7 +23,7 @@ int main(void)
   int    i;            /* loop variable                          */
   double x;            /* will hold the random number            */
 
-  /* create generators for components                            */
+  /* Create generators for components                            */
   distr = unur_distr_normal(NULL,0);   /* Gaussian distribution  */
   unur_distr_cont_set_domain(distr,-UNUR_INFINITY,0);
   par = unur_pinv_new(distr);          /* choose method PINV     */
@@ -35,14 +35,21 @@ int main(void)
   comp[1] = unur_init(par);            /* initialize             */
   unur_distr_free(distr);              /* free distribution obj. */
 
-  /* probabilities for components (need not sum to 1)            */
+  /* Probabilities for components (need not sum to 1)            */
   prob[0] = 0.5;    
   prob[1] = 0.5;
 
-  /* create mixture */
-  gen = unur_mixt_new(2,prob,comp);
+  /* Create mixture */
+  par = unur_mixt_new(2,prob,comp);
 
-  /* we do not need the components any more */
+  /* We want to use inversion for the mixture as well.           */
+  /* (Thus the above order of the components is important!)      */
+  unur_mixt_set_userecycle(par);
+
+  /* Initialize generator object                                 */
+  gen = unur_init(gen);
+
+  /* We do not need the components any more */
   for (i=0; i<2; i++)
     unur_free(comp[i]);
 

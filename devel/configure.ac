@@ -2,7 +2,7 @@ dnl Process this file with autoconf to produce a configure script.
 dnl $Id$
 
 dnl Initialize.
-AC_PREREQ(2.60)
+AC_PREREQ(2.63)
 AC_INIT([UNURAN-DEVEL],[99],[unuran@statmath.wu.ac.at])
 AC_CONFIG_AUX_DIR(autoconf)
 AM_INIT_AUTOMAKE([UNURAN-DEVEL],[99])
@@ -15,6 +15,9 @@ AC_SUBST([unuran_srcdir])
 unuran_builddir="\$(top_builddir)/.."
 AC_SUBST([unuran_builddir])
 
+dnl use maintainer mode
+AM_MAINTAINER_MODE
+
 dnl Check for which system.
 AC_CANONICAL_HOST
 
@@ -26,10 +29,8 @@ AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_CHECK_TOOL(AR, ar, :)
-# AC_CHECK_TOOL(RANLIB, ranlib, :)
-AC_PROG_RANLIB
 AC_DISABLE_SHARED
-AC_PROG_LIBTOOL
+LT_INIT
 
 dnl Checks for libraries.
 dnl libm: the standard math library
@@ -112,7 +113,7 @@ AX_IEEE_COMP
 dnl Some routines are deprecated.
 dnl Compiling and linking these into the library can be controlled
 dnl by a configure flag. 
-dnl default is disabled.
+dnl Default is disabled.
 AC_ARG_ENABLE(deprecated,
 	[AS_HELP_STRING([--enable-deprecated],
 		[enable support for deprecated routines @<:@default=use both@:>@])],

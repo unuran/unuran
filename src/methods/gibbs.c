@@ -896,6 +896,7 @@ _unur_gibbs_create( struct unur_par *par )
   /* generator(s) for conditional distributions */
   GEN->distr_condi = NULL;
   GEN_CONDI = _unur_xmalloc( GEN->dim * sizeof(struct unur_gen *) );
+  gen->n_gen_aux_list = GEN->dim;   /* size of array GEN_CONDI */
   for (i=0; i<GEN->dim; i++) GEN_CONDI[i] = NULL;
 
   /* allocate memory for random direction */

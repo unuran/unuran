@@ -134,6 +134,7 @@ struct unur_gen {
 
   struct unur_gen *gen_aux;   /* pointer to auxiliary generator object       */
   struct unur_gen **gen_aux_list; /* list of pointers to auxiliary generator objects */
+  int n_gen_aux_list;         /* length of this list                         */
 
   size_t s_datap;             /* size of data structure                      */
   unsigned debug;             /* debugging flags                             */

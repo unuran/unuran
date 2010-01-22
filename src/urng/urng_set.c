@@ -127,9 +127,9 @@ unur_chg_urng( struct unur_gen *gen, UNUR_URNG *urng )
   if (gen->gen_aux)
     unur_chg_urng(gen->gen_aux,urng);
 
-  if (gen->gen_aux_list && gen->distr) {
+  if (gen->gen_aux_list && gen->n_gen_aux_list) {
     int i;
-    for (i=0; i<gen->distr->dim; i++) {
+    for (i=0; i<gen->n_gen_aux_list; i++) {
       if (gen->gen_aux_list[i])
 	unur_chg_urng(gen->gen_aux_list[i],urng);
     }
@@ -236,9 +236,9 @@ unur_chg_urng_aux( struct unur_gen *gen, UNUR_URNG *urng_aux )
   if (gen->gen_aux)
     unur_chg_urng_aux(gen->gen_aux,urng_aux);
 
-  if (gen->gen_aux_list && gen->distr) {
+  if (gen->gen_aux_list && gen->n_gen_aux_list) {
     int i;
-    for (i=0; i<gen->distr->dim; i++) {
+    for (i=0; i<gen->n_gen_aux_list; i++) {
       if (gen->gen_aux_list[i])
 	unur_chg_urng_aux(gen->gen_aux_list[i],urng_aux);
     }

@@ -293,7 +293,7 @@ _unur_vmt_reinit( struct unur_gen *gen )
 
   /* free list of (old) marginal generators */
   if (gen->gen_aux_list)
-    _unur_gen_list_free( gen->gen_aux_list, gen->distr->dim );
+    _unur_gen_list_free( gen->gen_aux_list, gen->n_gen_aux_list );
 
   /* initialize generators for marginal distribution */
   return _unur_vmt_make_marginal_gen(gen);
@@ -480,10 +480,11 @@ _unur_vmt_make_marginal_gen( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   if (_unur_distr_cvec_marginals_are_equal(DISTR.stdmarginals, GEN->dim)) {
-    /* we can use the same generator object for all marginal distribuitons */
+    /* we can use the same generator object for all marginal distributions */
     struct unur_gen *marginalgen = unur_init( unur_auto_new( DISTR.stdmarginals[0] ) );
     if (marginalgen)
       gen->gen_aux_list = _unur_gen_list_set(marginalgen,GEN->dim);
+      gen->n_gen_aux_list = GEN->dim;
   }
 
   else {
@@ -500,8 +501,10 @@ _unur_vmt_make_marginal_gen( struct unur_gen *gen )
       for (j=0; j<i; j++) _unur_free(marginalgens[j]);
       free (marginalgens);
     }
-    else
+    else {
       gen->gen_aux_list = marginalgens;
+      gen->n_gen_aux_list = GEN->dim;
+    }
   }
 
   /* the marginal generator is an auxiliary generator for method VMT, of course */

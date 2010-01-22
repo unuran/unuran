@@ -519,6 +519,7 @@ _unur_generic_create( struct unur_par *par, size_t s )
 
   gen->gen_aux = NULL;              /* no auxilliary generator objects       */
   gen->gen_aux_list = NULL;         /* no auxilliary generator objects       */
+  gen->n_gen_aux_list = 0;
 
   /* status of generator object */
   gen->status = UNUR_FAILURE;       /* not successfully created yet          */
@@ -577,8 +578,10 @@ _unur_generic_clone( const struct unur_gen *gen, const char *type )
   /* auxiliary generators */
   if (gen->gen_aux)
     clone->gen_aux = _unur_gen_clone( gen->gen_aux );
-  if (gen->gen_aux_list && gen->distr) 
-    clone->gen_aux_list = _unur_gen_list_clone( gen->gen_aux_list, gen->distr->dim );
+  if (gen->gen_aux_list && gen->n_gen_aux_list) {
+    clone->gen_aux_list = _unur_gen_list_clone( gen->gen_aux_list, gen->n_gen_aux_list );
+    clone->n_gen_aux_list = gen->n_gen_aux_list;
+  }
 
   /* finished clone */
   return clone;
@@ -598,8 +601,8 @@ _unur_generic_free( struct unur_gen *gen )
   if (gen->gen_aux)
     _unur_free(gen->gen_aux);
 
-  if (gen->gen_aux_list && gen->distr)
-    _unur_gen_list_free( gen->gen_aux_list, gen->distr->dim );
+  if (gen->gen_aux_list && gen->n_gen_aux_list)
+    _unur_gen_list_free( gen->gen_aux_list, gen->n_gen_aux_list );
 
   if (gen->distr_is_privatecopy && gen->distr)
     _unur_distr_free( gen->distr );

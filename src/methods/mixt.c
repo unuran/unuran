@@ -58,8 +58,8 @@
 /* #  include <tests/unuran_tests.h> */
 /* #endif */
 
-/* /\*---------------------------------------------------------------------------*\/ */
-/* /\* Variants: none                                                            *\/ */
+/*---------------------------------------------------------------------------*/
+/* Variants: none                                                            */
 
 /* #define MIXT_VARFLAG_VERIFY   0x002u    /\* run verify mode                    *\/ */
 /* #define MIXT_VARFLAG_SQUEEZE  0x004u    /\* use universal squeeze if possible  *\/ */
@@ -147,40 +147,21 @@ static void _unur_mixt_debug_init( const struct unur_gen *gen );
 /* /\*---------------------------------------------------------------------------*\/ */
 /* #endif */
 
-/* /\*---------------------------------------------------------------------------*\/ */
-/* /\* abbreviations *\/ */
-
-/* #define DISTR_IN  distr->data.cont      /\* data for distribution object      *\/ */
+/*---------------------------------------------------------------------------*/
+/* abbreviations */
 
 #define PAR       ((struct unur_mixt_par*)par->datap) /* data for parameter object */
 #define GEN       ((struct unur_mixt_gen*)gen->datap) /* data for generator object */
-/* #define DISTR     gen->distr->data.cont /\* data for distribution in generator object *\/ */
-
-/* #define BD_LEFT   domain[0]             /\* left boundary of domain of distribution *\/ */
-/* #define BD_RIGHT  domain[1]             /\* right boundary of domain of distribution *\/ */
-
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */
 
-/* #define PDF(x)    _unur_cont_PDF((x),(gen->distr))    /\* call to PDF         *\/ */
-
+/* shortcuts for auxiliary generators */
 #define INDEX     gen_aux
 
 #define PROB      gen_aux->distr->data.discr.pv
 #define COMP      gen_aux_list
 #define N_COMP    n_gen_aux_list
 
-/* /\*---------------------------------------------------------------------------*\/ */
-
-/* #define _unur_mixt_getSAMPLE(gen) \ */
-/*    ( ((gen)->variant & MIXT_VARFLAG_VERIFY) \ */
-/*      ? _unur_mixt_sample_check : _unur_mixt_sample ) */
-
-/* /\*---------------------------------------------------------------------------*\/ */
-/* /\* constants                                                                 *\/ */
-
-/* #define SQRT2    1.4142135623731 */
-
-/* /\*---------------------------------------------------------------------------*\/ */
+/*---------------------------------------------------------------------------*/
 
 /*****************************************************************************/
 /**  Public: User Interface (API)                                           **/
@@ -508,22 +489,29 @@ _unur_mixt_sample( struct unur_gen *gen )
      /*   return INFINITY                                                    */
      /*----------------------------------------------------------------------*/
 {
-/*   double U,V,X,xx,y; */
+  struct unur_gen *comp;
   int J;
-  double X;
 
   /* check arguments */
   CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_MIXT_GEN,INFINITY);
 
   /* sample index */
   J = unur_sample_discr(gen->INDEX);
+  
+  /* get component */
+  comp = gen->COMP[J];
 
   /* sample from selected component */
-  X = unur_sample_cont(gen->COMP[J]);
+  switch(gen->COMP[J]->method & UNUR_MASK_TYPE) {
+  case UNUR_METH_DISCR:
+    return ((double) comp->sample.discr(comp));
+    return ;
+  case UNUR_METH_CONT:
+  case UNUR_METH_CEMP:
+  default:
+    return (comp->sample.cont(comp));
+  }
 
-  /* FIXME: discrete ? */
-
-  return X;
 } /* end of _unur_mixt_sample() */
 
 /*---------------------------------------------------------------------------*/

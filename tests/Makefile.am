@@ -69,6 +69,7 @@ check_PROGRAMS = \
  t_hri \
  t_itdr \
  t_mcorr \
+ t_mixt \
  t_mvstd \
  t_mvtdr \
  t_ninv \

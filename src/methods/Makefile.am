@@ -45,6 +45,7 @@ libmethods_la_SOURCES = \
  hri.c    hri.h    hri_struct.h \
  itdr.c   itdr.h   itdr_struct.h \
  mcorr.c  mcorr.h  mcorr_struct.h \
+ mixt.c   mixt.h   mixt_struct.h \
  mvstd.c  mvstd.h  mvstd_struct.h \
  mvtdr.c  mvtdr.h  mvtdr_struct.h \
           mvtdr_newset.ch mvtdr_init.ch mvtdr_sample.ch \

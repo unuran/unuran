@@ -15,7 +15,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2010 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -102,6 +102,9 @@
 #define CK_EMPL_GEN      0x00100111u
 #define CK_HIST_PAR      0x00100120u
 #define CK_HIST_GEN      0x00100121u
+/* meta generators */
+#define CK_MIXT_PAR      0x00110130u
+#define CK_MIXT_GEN      0x00110131u
 
 /* generators multivariate continuous distributions */
 #define CK_MVTDR_PAR     0x00200010u

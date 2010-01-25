@@ -74,6 +74,9 @@
 #define UNUR_METH_UNIF     0x02000e00u
 #define UNUR_METH_UTDR     0x02000f00u
 
+/* univariate meta distributions */
+#define UNUR_METH_MIXT     0x02001000u
+
 /* univariate continuous empirical distributions */
 #define UNUR_METH_CEMP     0x04000000u
 

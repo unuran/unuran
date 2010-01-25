@@ -48,7 +48,7 @@
 
       Let @unurmath{f_1,\ldots,f_n} be PDFs of various distributions
       and @unurmath{(p_1,\ldots,p_n)} be a probability vector.
-      Then by @unurmath{f(x) = \sum_{i=1}^n p_i\cdot f_i(x)}
+      Then by @unurmath{f(x) = sum_{i=1}^n p_i\cdot f_i(x)}
       get the PDF of the so called mixture of these distributions.
 
       The methods takes generator objects for these distributions as

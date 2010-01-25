@@ -314,7 +314,7 @@ _unur_mixt_init( struct unur_par *par )
   gen->N_COMP = PAR->n_comp;    /* number of components                         */
   gen->COMP = _unur_xmalloc( gen->N_COMP * sizeof(struct unur_gen *));
   for (i=0; i<gen->N_COMP; i++)
-    gen->COMP[i] = _unur_gen_clone(PAR->comp[i]);
+    gen->COMP[i] = unur_gen_clone(PAR->comp[i]);
 
   /* free parameters */
   _unur_par_free(par);
@@ -397,6 +397,7 @@ _unur_mixt_check_par( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   int i;
+  int type;
 
   /* check probabilities */
   if (gen->INDEX == NULL) {
@@ -407,10 +408,11 @@ _unur_mixt_check_par( struct unur_gen *gen )
   /* check generator objects */
   for (i=0; i<gen->N_COMP; i++) {
     /* all generators must sample from univariate distributions */
-    if ( gen->COMP[i] == NULL ||
-	 ( (gen->method & UNUR_MASK_TYPE) != UNUR_METH_DISCR &&
-	   (gen->method & UNUR_MASK_TYPE) != UNUR_METH_CONT  &&
-	   (gen->method & UNUR_MASK_TYPE) != UNUR_METH_CEMP  ) ) {
+    _unur_check_NULL( gen->genid, gen->COMP[i], UNUR_ERR_NULL);
+    type = gen->COMP[i]->method & UNUR_MASK_TYPE;
+    if ( type != UNUR_METH_DISCR && 
+	 type != UNUR_METH_CONT  &&
+	 type != UNUR_METH_CEMP  ) {
       _unur_error(gen->genid,UNUR_ERR_GEN_INVALID,"component not univariate");
       return UNUR_ERR_GEN_INVALID;
     }

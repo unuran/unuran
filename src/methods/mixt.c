@@ -44,7 +44,7 @@
 #include <unur_source.h>
 #include <distr/distr.h>
 /* #include <distr/distr_source.h> */
-/* #include <distr/cont.h> */
+#include <distr/cont.h>
 #include <distr/discr.h>
 #include <urng/urng.h>
 #include <methods/dgt.h>
@@ -128,17 +128,17 @@ static struct unur_gen *_unur_mixt_indexgen( const double *prob, int n_prob );
 /* create generator for index.                                               */
 /*---------------------------------------------------------------------------*/
 
-/* #ifdef UNUR_ENABLE_LOGGING */
-/* /\*---------------------------------------------------------------------------*\/ */
-/* /\* the following functions print debugging information on output stream,     *\/ */
-/* /\* i.e., into the LOG file if not specified otherwise.                       *\/ */
-/* /\*---------------------------------------------------------------------------*\/ */
+#ifdef UNUR_ENABLE_LOGGING
+/*---------------------------------------------------------------------------*/
+/* the following functions print debugging information on output stream,     */
+/* i.e., into the LOG file if not specified otherwise.                       */
+/*---------------------------------------------------------------------------*/
 
-/* static void _unur_mixt_debug_init( const struct unur_gen *gen, int is_reinit ); */
-/* /\*---------------------------------------------------------------------------*\/ */
-/* /\* print after generator has been initialized has completed.                 *\/ */
-/* /\*---------------------------------------------------------------------------*\/ */
-/* #endif */
+static void _unur_mixt_debug_init( const struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* print after generator has been initialized has completed.                 */
+/*---------------------------------------------------------------------------*/
+#endif
 
 /* #ifdef UNUR_ENABLE_INFO */
 /* static void _unur_mixt_info( struct unur_gen *gen, int help ); */
@@ -165,6 +165,7 @@ static struct unur_gen *_unur_mixt_indexgen( const double *prob, int n_prob );
 
 #define INDEX     gen_aux
 
+#define PROB      gen_aux->distr->data.discr.pv
 #define COMP      gen_aux_list
 #define N_COMP    n_gen_aux_list
 
@@ -324,10 +325,10 @@ _unur_mixt_init( struct unur_par *par )
     _unur_mixt_free(gen); return NULL;
   }
 
-/* #ifdef UNUR_ENABLE_LOGGING */
-/*     /\* write info into LOG file *\/ */
-/*     if (gen->debug) _unur_mixt_debug_init(gen, FALSE); */
-/* #endif */
+#ifdef UNUR_ENABLE_LOGGING
+    /* write info into LOG file */
+    if (gen->debug) _unur_mixt_debug_init(gen);
+#endif
 
   return gen;
 } /* end of _unur_mixt_init() */
@@ -362,6 +363,10 @@ _unur_mixt_create( struct unur_par *par )
 
   /* set generator identifier */
   gen->genid = _unur_set_genid(GENTYPE);
+
+  /* object 'par' does not contain a distribution object */
+  /* so we create one.                                   */
+  gen->distr = unur_distr_cont_new();
 
   /* routines for sampling and destroying generator */
   SAMPLE = _unur_mixt_sample;
@@ -408,6 +413,10 @@ _unur_mixt_check_par( struct unur_gen *gen )
   /* check generator objects */
   for (i=0; i<gen->N_COMP; i++) {
     /* all generators must sample from univariate distributions */
+    if (gen->COMP[i] == NULL) {
+      _unur_error(gen->genid,UNUR_ERR_NULL,"component is NULL");
+      return UNUR_ERR_NULL;
+    }
     _unur_check_NULL( gen->genid, gen->COMP[i], UNUR_ERR_NULL);
     type = gen->COMP[i]->method & UNUR_MASK_TYPE;
     if ( type != UNUR_METH_DISCR && 
@@ -556,88 +565,80 @@ _unur_mixt_indexgen( const double *prob, int n_prob )
 
 } /* end of _unur_mixt_indexgen() */
 
-/* /\*****************************************************************************\/ */
-/* /\**  Debugging utilities                                                    **\/ */
-/* /\*****************************************************************************\/ */
 
-/* /\*---------------------------------------------------------------------------*\/ */
-/* #ifdef UNUR_ENABLE_LOGGING */
-/* /\*---------------------------------------------------------------------------*\/ */
+/*****************************************************************************/
+/**  Debugging utilities                                                    **/
+/*****************************************************************************/
 
-/* static void */
-/* _unur_mixt_debug_init( const struct unur_gen *gen, int is_reinit ) */
-/*      /\*----------------------------------------------------------------------*\/ */
-/*      /\* write info about generator into LOG file                             *\/ */
-/*      /\*                                                                      *\/ */
-/*      /\* parameters:                                                          *\/ */
-/*      /\*   gen ... pointer to generator object                                *\/ */
-/*      /\*   is_reinit ... if TRUE the generator has been reinitialized         *\/ */
-/*      /\*----------------------------------------------------------------------*\/ */
-/* { */
-/*   FILE *LOG; */
+/*---------------------------------------------------------------------------*/
+#ifdef UNUR_ENABLE_LOGGING
+/*---------------------------------------------------------------------------*/
 
-/*   /\* check arguments *\/ */
-/*   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_MIXT_GEN,RETURN_VOID); */
+void
+_unur_mixt_debug_init( const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* write info about generator into LOG file                             */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*----------------------------------------------------------------------*/
+{
+  FILE *LOG;
+  struct unur_gen *comp;
+  int i;
 
-/*   LOG = unur_get_stream(); */
+  /* check arguments */
+  CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_MIXT_GEN,RETURN_VOID);
 
-/*   fprintf(LOG,"%s:\n",gen->genid); */
-/*   if (!is_reinit) { */
-/*     fprintf(LOG,"%s: type    = continuous univariate random variates\n",gen->genid); */
-/*     fprintf(LOG,"%s: method  = mixt (simple universal transformed density rection)\n",gen->genid); */
-/*   } */
-/*   else */
-/*     fprintf(LOG,"%s: reinit!\n",gen->genid); */
-/*   fprintf(LOG,"%s:\n",gen->genid); */
+  LOG = unur_get_stream();
 
-/*   _unur_distr_cont_debug( gen->distr, gen->genid ); */
+  fprintf(LOG,"%s:\n",gen->genid);
+  fprintf(LOG,"%s: type    = continuous univariate random variates\n",gen->genid);
+  fprintf(LOG,"%s: method  = MIXT (MIXTure of distributions -- meta method)\n",gen->genid);
+  fprintf(LOG,"%s:\n",gen->genid);
 
-/*   fprintf(LOG,"%s: sampling routine = _unur_mixt_sample",gen->genid); */
+  fprintf(LOG,"%s: sampling routine = _unur_mixt_sample\n",gen->genid);
 /*   if (gen->variant & MIXT_VARFLAG_VERIFY) */
 /*     fprintf(LOG,"_check"); */
 /*   /\* else if (gen->variant & MIXT_VARFLAG_MIRROR)     not implemented *\/ */
 /*   /\*   fprintf(LOG,"_mirror"); *\/ */
 /*   fprintf(LOG,"()\n%s:\n",gen->genid); */
+  fprintf(LOG,"%s:\n",gen->genid);
 
-/*   if (gen->set & MIXT_SET_CDFMODE) */
-/*     fprintf(LOG,"%s: CDF at mode = %g\n",gen->genid,GEN->Fmode); */
-/*   else */
-/*     fprintf(LOG,"%s: CDF at mode unknown\n",gen->genid); */
+  /* probabilities */
+  fprintf(LOG,"%s: probabilities (%d) = \n",gen->genid, gen->N_COMP);
+  fprintf(LOG,"%s:   %g",gen->genid, (gen->PROB)[0]);
+  for (i=1; i<gen->N_COMP; i++)
+    fprintf(LOG,", %g", (gen->PROB)[i]);
+  fprintf(LOG,"\n%s:\n",gen->genid);
 
-/*   if (gen->variant & MIXT_VARFLAG_SQUEEZE) */
-/*     fprintf(LOG,"%s: use universal squeeze\n",gen->genid); */
-/*   else */
-/*     fprintf(LOG,"%s: no (universal) squeeze\n",gen->genid); */
+  /* components */
+  fprintf(LOG,"%s: components (%d):\n",gen->genid, gen->N_COMP);
+  for (i=0; i<gen->N_COMP; i++) {
+    comp = gen->COMP[i];
+    fprintf(LOG,"%s:   [%d]: %s\n",gen->genid, i, comp->genid);
+    fprintf(LOG,"%s:\t type = ",gen->genid); 
+    switch (comp->distr->type) {
+    case UNUR_DISTR_CONT:
+    case UNUR_DISTR_CEMP:
+      fprintf(LOG,"continuous\n");
+      break;
+    case UNUR_DISTR_DISCR:
+      fprintf(LOG,"discrete\n");
+      break;
+    default:
+      fprintf(LOG,"[unknown]\n");
+    }
+    fprintf(LOG,"%s:\t name = %s\n",gen->genid, comp->distr->name);
+  }
+  fprintf(LOG,"%s:\n",gen->genid);
+  
 
-/*   /\*   if (gen->variant & MIXT_VARFLAG_MIRROR) *\/ */
-/*   /\*     fprintf(LOG,"%s: use mirror principle\n",gen->genid); *\/ */
+} /* end of _unur_mixt_debug_init() */
 
-/*   fprintf(LOG,"%s:\n",gen->genid); */
-
-/*   fprintf(LOG,"%s: parts:\n",gen->genid); */
-/*   fprintf(LOG,"%s:\txl = %g\n",gen->genid,GEN->xl); */
-/*   fprintf(LOG,"%s:\txr = %g\n",gen->genid,GEN->xr); */
-/*   fprintf(LOG,"%s:\n",gen->genid); */
-
-/*   fprintf(LOG,"%s: PDF at mode:\n",gen->genid); */
-/*   fprintf(LOG,"%s:\tfm = %g\n",gen->genid,GEN->fm); */
-/*   fprintf(LOG,"%s:\tum = %g\n",gen->genid,GEN->um); */
-/*   fprintf(LOG,"%s:\n",gen->genid); */
-
-/*   fprintf(LOG,"%s: areas:\n",gen->genid); */
-/*   fprintf(LOG,"%s:\t    al = %g\n",gen->genid,GEN->al); */
-/*   fprintf(LOG,"%s:\t    ar = %g\n",gen->genid,GEN->ar); */
-/*   fprintf(LOG,"%s:\t Aleft = %g\n",gen->genid,GEN->Aleft); */
-/*   fprintf(LOG,"%s:\t   Ain = %g\n",gen->genid,GEN->Ain); */
-/*   fprintf(LOG,"%s:\tAtotal = %g\n",gen->genid,GEN->A); */
-
-/*   fprintf(LOG,"%s:\n",gen->genid); */
-
-/* } /\* end of _unur_mixt_debug_init() *\/ */
-
-/* /\*---------------------------------------------------------------------------*\/ */
-/* #endif   /\* end UNUR_ENABLE_LOGGING *\/ */
-/* /\*---------------------------------------------------------------------------*\/ */
+/*---------------------------------------------------------------------------*/
+#endif   /* end UNUR_ENABLE_LOGGING */
+/*---------------------------------------------------------------------------*/
 
 
 /* /\*---------------------------------------------------------------------------*\/ */

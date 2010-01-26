@@ -74,6 +74,7 @@ struct unur_par *_unur_par_clone( const struct unur_par *par );
 
 /*---------------------------------------------------------------------------*/
 /* create (new) generic generator object                                     */
+
 struct unur_gen *_unur_generic_create( struct unur_par *par, size_t s );
 
 /*---------------------------------------------------------------------------*/
@@ -87,6 +88,11 @@ struct unur_gen *_unur_generic_clone( const struct unur_gen *gen, const char *ty
 /* free generic generator object                                             */
 
 void _unur_generic_free( struct unur_gen *gen );
+
+/*---------------------------------------------------------------------------*/
+/* check for type of generator object                                        */
+
+int _unur_gen_is_inversion ( struct unur_gen *gen );
 
 /*---------------------------------------------------------------------------*/
 /* set and clone arrays of generator objects                                 */

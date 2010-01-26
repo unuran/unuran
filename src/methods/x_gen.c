@@ -136,6 +136,9 @@ unur_sample_matr( struct unur_gen *gen, double *matrix )
 double
 unur_quantile ( struct unur_gen *gen, double U )
 {
+  /* check arguments */
+  CHECK_NULL(gen,FALSE);
+
   /* Remark:
    * We DO NOT check the argument U here 
    * (i.e. whether 0<=U<=1 holds)
@@ -164,6 +167,34 @@ unur_quantile ( struct unur_gen *gen, double U )
     return UNUR_INFINITY;
   }
 } /* end of unur_quantile() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_gen_is_inversion ( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* check for type of generator object                                   */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(gen,FALSE);
+
+  switch (gen->method) {
+  case UNUR_METH_HINV:
+  case UNUR_METH_NINV:
+  case UNUR_METH_PINV:
+  case UNUR_METH_DGT:
+    return TRUE;
+
+  case UNUR_METH_CSTD:
+#define GEN ((struct unur_cstd_gen*)gen->datap) /* data for generator object */
+    return (GEN->is_inversion);
+#undef GEN
+
+  default:
+    return FALSE;
+  }
+} /* end of _unur_gen_is_inversion() */
 
 /*---------------------------------------------------------------------------*/
 /* aux routines when no sampling routine is available                         */
@@ -371,6 +402,7 @@ unur_set_use_distr_privatecopy( struct unur_par *par, int use_privatecopy )
   par->distr_is_privatecopy = use_privatecopy;
   return UNUR_SUCCESS;
 } /* end of unur_set_use_distr_privatecopy() */
+
 
 /*****************************************************************************/
 /**                                                                         **/

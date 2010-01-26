@@ -505,7 +505,6 @@ _unur_mixt_sample( struct unur_gen *gen )
   switch(gen->COMP[J]->method & UNUR_MASK_TYPE) {
   case UNUR_METH_DISCR:
     return ((double) comp->sample.discr(comp));
-    return ;
   case UNUR_METH_CONT:
   case UNUR_METH_CEMP:
   default:

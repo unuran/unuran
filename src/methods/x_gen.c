@@ -160,7 +160,7 @@ unur_quantile ( struct unur_gen *gen, double U )
 #undef GEN
 
   case UNUR_METH_DGT:
-    return ((double) unur_dgt_eval_invcdf(gen,U));
+    return ((double) unur_dgt_eval_invcdf(gen,U,NULL));
 
   default:
     _unur_error(gen->genid,UNUR_ERR_NO_QUANTILE,"");

@@ -640,13 +640,14 @@ _unur_dgt_sample( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_dgt_eval_invcdf( const struct unur_gen *gen, double u )
+unur_dgt_eval_invcdf( const struct unur_gen *gen, double u, double *recycle )
      /*----------------------------------------------------------------------*/
      /* evaluate inverse CDF at u.                                           */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*   u   ... argument for inverse CDF (0<=u<=1, no validation!)         */
+     /*   gen     ... pointer to generator object                            */
+     /*   u       ... argument for inverse CDF (0<=u<=1)                     */
+     /*   recycle ... if not NULL then store recycled 'u'                    */
      /*                                                                      */
      /* return:                                                              */
      /*   integer (inverse CDF)                                              */
@@ -656,6 +657,9 @@ unur_dgt_eval_invcdf( const struct unur_gen *gen, double u )
      /*----------------------------------------------------------------------*/
 {
   int j;
+
+  /* set default */
+  if (recycle) *recycle = 0.;
 
   /* check arguments */
   _unur_check_NULL( GENTYPE, gen, INT_MAX );
@@ -680,6 +684,10 @@ unur_dgt_eval_invcdf( const struct unur_gen *gen, double u )
   /* ... and search */
   u *= GEN->sum;
   while (GEN->cumpv[j] < u) j++;
+
+  if (recycle) {
+    *recycle = (u - GEN->cumpv[j]) / DISTR.pv[j];
+  }
 
   j+=DISTR.domain[0];
 

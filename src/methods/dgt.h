@@ -56,7 +56,7 @@
       @item
       Generate a random number U ~ U(0,1).
       @item
-      Find largest integer I such that F(I) = P(X<=I) <= U.
+      Find smallest integer I such that F(I) = P(X<=I) >= U.
       @end enumerate
 
       Step (2) is the crucial step. Using sequential search requires
@@ -147,13 +147,17 @@ int unur_dgt_set_variant( UNUR_PAR *parameters, unsigned variant );
 /*---------------------------------------------------------------------------*/
 
 /** NOT IN MANUAL **/
-int unur_dgt_eval_invcdf( const UNUR_GEN *generator, double u );
+int unur_dgt_eval_invcdf( const UNUR_GEN *generator, double u, double *recycle );
 /*
    Compute the @var{U} quantile of the discrete distribution in
-   @var{generator}, i.e., the largest integer I such that P(X<=I) <= U.
+   @var{generator}, i.e., the smallest integer I such that P(X<=I) >= U.
    If @var{u} is out of the domain (0,1) then @code{unur_errno} is set
    to @code{UNUR_ERR_DOMAIN} and the respective bound of
    the domain of the distribution are returned.
+
+   If @var{recycle} is not NULL then @var{u} is recycled, i.e., 
+   the value of [ P(X<=I) - U] / [ P(X<=I) - P(X<=I-1) ]
+   is stored in @var{recycle}.
 */
 
 /*---------------------------------------------------------------------------*/

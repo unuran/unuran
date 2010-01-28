@@ -58,7 +58,7 @@
       @item
       Generate a random number U ~ U(0,1).
       @item
-      Find largest integer I such that F(I) = P(X<=I) <= U.
+      Find smallest integer I such that F(I) = P(X<=I) >= U.
       @end enumerate
 
       Step (2) is the crucial step. Using sequential search requires

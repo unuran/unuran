@@ -48,9 +48,9 @@ int _unur_FP_cmp( double x1, double x2, double eps);
 /*   +1 if x1 > x2                                                           */
 
 /* macros for different levels of accuracy                                   */
-#define _unur_FP_cmp_same(a,b) (_unur_FP_cmp(a,b,DBL_EPSILON))
-#define _unur_FP_cmp_equal(a,b) (_unur_FP_cmp(a,b,UNUR_EPSILON))
-#define _unur_FP_cmp_approx(a,b) (_unur_FP_cmp(a,b,UNUR_SQRT_DBL_EPSILON))
+#define _unur_FP_cmp_same(a,b) (_unur_FP_cmp((a),(b),DBL_EPSILON))
+#define _unur_FP_cmp_equal(a,b) (_unur_FP_cmp((a),(b),UNUR_EPSILON))
+#define _unur_FP_cmp_approx(a,b) (_unur_FP_cmp((a),(b),UNUR_SQRT_DBL_EPSILON))
 
 /* a == b (except precision bit) */
 #define _unur_FP_same(a,b) (_unur_FP_cmp((a),(b),DBL_EPSILON)==0)
@@ -62,10 +62,10 @@ int _unur_FP_cmp( double x1, double x2, double eps);
 #define _unur_FP_approx(a,b) (_unur_FP_cmp((a),(b),UNUR_SQRT_DBL_EPSILON)==0)
 
 /* a < b */
-#define _unur_FP_less(a,b) ((_unur_FP_cmp(a,b,UNUR_EPSILON)<0) ? TRUE : FALSE)
+#define _unur_FP_less(a,b) ((_unur_FP_cmp((a),(b),UNUR_EPSILON)<0) ? TRUE : FALSE)
 
 /* a > b */
-#define _unur_FP_greater(a,b) ((_unur_FP_cmp(a,b,UNUR_EPSILON)>0) ? TRUE : FALSE)
+#define _unur_FP_greater(a,b) ((_unur_FP_cmp((a),(b),UNUR_EPSILON)>0) ? TRUE : FALSE)
 
 /*---------------------------------------------------------------------------*/
 /* Comparing floating point with == or != is unsafe.                         */

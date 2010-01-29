@@ -1,5 +1,5 @@
 /* ------------------------------------------------------------- */
-/* File: example_mixtinv.c                                          */
+/* File: example_mixt_inv.c                                      */
 /* ------------------------------------------------------------- */
 
 /* Include UNURAN header file.                                   */
@@ -7,7 +7,7 @@
 
 /* ------------------------------------------------------------- */
 /* Mixture of truncated Gaussian on (-INFINITY,0] and            */
-/* Exponential distribution  on [0,INFINITY)                     */
+/* Exponential distribution on [0,INFINITY)                      */
 /* ------------------------------------------------------------- */
 
 int main(void)
@@ -15,7 +15,7 @@ int main(void)
   /* Declare the three UNURAN objects.                           */
   UNUR_DISTR *distr;   /* distribution object                    */
   UNUR_PAR   *par;     /* parameter object                       */
-  UNUR_GEN   *comp[2]  /* array of generator objects (components)*/
+  UNUR_GEN   *comp[2]; /* array of generator objects (components)*/
   UNUR_GEN   *gen;     /* generator object for mixture           */
 
   double prob[2];      /* array of probabilities                 */
@@ -36,20 +36,20 @@ int main(void)
   unur_distr_free(distr);              /* free distribution obj. */
 
   /* Probabilities for components (need not sum to 1)            */
-  prob[0] = 0.5;    
-  prob[1] = 0.5;
+  prob[0] = 0.4;    
+  prob[1] = 0.3;
 
   /* Create mixture */
   par = unur_mixt_new(2,prob,comp);
 
   /* We want to use inversion for the mixture as well.           */
   /* (Thus the above order of the components is important!)      */
-  unur_mixt_set_userecycle(par);
+  unur_mixt_set_useinversion(par,TRUE);
 
   /* Initialize generator object                                 */
-  gen = unur_init(gen);
+  gen = unur_init(par);
 
-  /* We do not need the components any more */
+  /* we do not need the components any more */
   for (i=0; i<2; i++)
     unur_free(comp[i]);
 
@@ -60,7 +60,6 @@ int main(void)
      fprintf(stderr, "ERROR: cannot create generator object\n");
      exit (EXIT_FAILURE);
   }
-
 
   /* Now you can use the generator object `gen' to sample from   */
   /* the distribution. Eg.:                                      */

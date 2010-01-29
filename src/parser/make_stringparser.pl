@@ -96,7 +96,7 @@ my %SUBST_COMMANDS =
 my %IGNORED_METHODS =
     ( 'cext' => 1,
       'dext' => 1,
-      'mixt' => 1
+      'mixt' => 1,
       );
 
 # Commands ignored by string parser
@@ -111,7 +111,8 @@ my %IGNORED_COMMANDS =
       'unur_distr_cont_set_hr'      => 1,
       'unur_distr_discr_set_pmf'    => 1,
       'unur_distr_discr_set_cdf'    => 1,
-      'unur_distr_discr_set_logcdf' => 1
+      'unur_distr_discr_set_logcdf' => 1,
+      'unur_mixt_set_useinversion'  => 1,
     );
 
 # distributions ignored by string parser

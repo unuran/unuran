@@ -26,7 +26,7 @@ EXAMPLES = \
  example_vemp  \
  example_FuncStr \
  example_mcorr \
- example_mixt \
+ example_mixt  example_mixt_inv \
  example_cpp \
  example_gsl \
  example_rngstreams \

@@ -202,5 +202,26 @@ time until the sequence has converged to the given target distribution.
 =EON
 
 /*---------------------------------------------------------------------------*/
+
+=NODEX  Meta_Methods    Meta Methods for univariate distributions
+=UP Methods [80]
+
+=DESCRIPTION
+
+@subheading Example
+
+@smallexample
+@include ref_example_mixt.texi
+@end smallexample
+
+@subheading Example (Inversion)
+
+@smallexample
+@include ref_example_mixt_inv.texi
+@end smallexample
+
+=EON
+
+/*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

@@ -43,14 +43,15 @@
 
 #include <unur_source.h>
 #include <distr/distr.h>
-/* #include <distr/distr_source.h> */
+#include <distr/distr_source.h>
 #include <distr/cont.h>
 #include <distr/discr.h>
 #include <urng/urng.h>
-#include <methods/dgt.h>
+#include <utils/unur_fp_source.h>
 #include "unur_methods_source.h"
 #include "x_gen.h"
 #include "x_gen_source.h"
+#include "dgt.h"
 #include "mixt.h"
 #include "mixt_struct.h"
 
@@ -59,28 +60,21 @@
 /* #endif */
 
 /*---------------------------------------------------------------------------*/
-/* Variants: none                                                            */
+/* Variants:                                                                 */
 
-/* #define MIXT_VARFLAG_VERIFY   0x002u    /\* run verify mode                    *\/ */
-/* #define MIXT_VARFLAG_SQUEEZE  0x004u    /\* use universal squeeze if possible  *\/ */
+#define MIXT_VARFLAG_INVERSION   0x004u    /* use inversion method (if possible) */
 
-/* #define MIXT_VARFLAG_MIRROR   0x008u    /\* use mirror principle               *\/ */
-/* /\* not implemented yet! *\/ */
+/*---------------------------------------------------------------------------*/
+/* Debugging flags                                                           */
+/*    bit  01    ... pameters and structure of generator (do not use here)   */
+/*    bits 02-12 ... setup                                                   */
+/*    bits 13-24 ... adaptive steps                                          */
+/*    bits 25-32 ... trace sampling                                          */
 
-/* /\*---------------------------------------------------------------------------*\/ */
-/* /\* Debugging flags                                                           *\/ */
-/* /\*    bit  01    ... pameters and structure of generator (do not use here)   *\/ */
-/* /\*    bits 02-12 ... setup                                                   *\/ */
-/* /\*    bits 13-24 ... adaptive steps                                          *\/ */
-/* /\*    bits 25-32 ... trace sampling                                          *\/ */
+/*---------------------------------------------------------------------------*/
+/* Flags for logging set calls                                               */
 
-/* #define MIXT_DEBUG_REINIT    0x00000010u   /\* print parameters after reinit  *\/ */
-
-/* /\*---------------------------------------------------------------------------*\/ */
-/* /\* Flags for logging set calls                                               *\/ */
-
-/* #define MIXT_SET_CDFMODE      0x001u    /\* CDF at mode is known               *\/ */
-/* #define MIXT_SET_PDFMODE      0x002u    /\* PDF at mode is set                 *\/ */
+#define MIXT_SET_USEINVERSION     0x001u    /* use inverion method            */
 
 /*---------------------------------------------------------------------------*/
 
@@ -92,11 +86,6 @@ static struct unur_gen *_unur_mixt_init( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
 /* Initialize new generator.                                                 */
 /*---------------------------------------------------------------------------*/
-
-/* static int _unur_mixt_reinit( struct unur_gen *gen ); */
-/* /\*---------------------------------------------------------------------------*\/ */
-/* /\* Reinitialize generator.                                                   *\/ */
-/* /\*---------------------------------------------------------------------------*\/ */
 
 static struct unur_gen *_unur_mixt_create( struct unur_par *par );
 /*---------------------------------------------------------------------------*/
@@ -123,9 +112,19 @@ static double _unur_mixt_sample( struct unur_gen *gen );
 /* sample from generator                                                     */
 /*---------------------------------------------------------------------------*/
 
+static double _unur_mixt_sample_inv( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* sample from generator by inversion                                        */
+/*---------------------------------------------------------------------------*/
+
 static struct unur_gen *_unur_mixt_indexgen( const double *prob, int n_prob );
 /*---------------------------------------------------------------------------*/
 /* create generator for index.                                               */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_mixt_get_boundary( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* compute boundary of mixture and check for overlapping domains.            */
 /*---------------------------------------------------------------------------*/
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -152,7 +151,12 @@ static void _unur_mixt_debug_init( const struct unur_gen *gen );
 
 #define PAR       ((struct unur_mixt_par*)par->datap) /* data for parameter object */
 #define GEN       ((struct unur_mixt_gen*)gen->datap) /* data for generator object */
+#define DISTR     gen->distr->data.cont /* data for distribution in generator object */
+
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */
+
+#define BD_LEFT   domain[0]             /* left boundary of domain of distribution */
+#define BD_RIGHT  domain[1]             /* right boundary of domain of distribution */
 
 /* shortcuts for auxiliary generators */
 #define INDEX     gen_aux
@@ -160,6 +164,12 @@ static void _unur_mixt_debug_init( const struct unur_gen *gen );
 #define PROB      gen_aux->distr->data.discr.pv
 #define COMP      gen_aux_list
 #define N_COMP    n_gen_aux_list
+
+/*---------------------------------------------------------------------------*/
+
+#define _unur_mixt_getSAMPLE(gen) \
+   ( ((gen)->variant & MIXT_VARFLAG_INVERSION) \
+     ? _unur_mixt_sample_inv : _unur_mixt_sample )
 
 /*---------------------------------------------------------------------------*/
 
@@ -222,36 +232,39 @@ unur_mixt_new( int n, const double *prob, struct unur_gen **comp )
 
 /*****************************************************************************/
 
-/* int  */
-/* unur_mixt_set_usesqueeze( struct unur_par *par, int usesqueeze ) */
-/*      /\*----------------------------------------------------------------------*\/ */
-/*      /\* set flag for using universal squeeze (default: off)                  *\/ */
-/*      /\*                                                                      *\/ */
-/*      /\* parameters:                                                          *\/ */
-/*      /\*   par    ... pointer to parameter for building generator object      *\/ */
-/*      /\*   usesqueeze ... 0 = no squeeze,  !0 = use squeeze                   *\/ */
-/*      /\*                                                                      *\/ */
-/*      /\* return:                                                              *\/ */
-/*      /\*   UNUR_SUCCESS ... on success                                        *\/ */
-/*      /\*   error code   ... on error                                          *\/ */
-/*      /\*                                                                      *\/ */
-/*      /\* comment:                                                             *\/ */
-/*      /\*   no squeeze is the default                                          *\/ */
-/*      /\*----------------------------------------------------------------------*\/ */
-/* { */
-/*   /\* check arguments *\/ */
-/*   _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL ); */
-/*   _unur_check_par_object( par, MIXT ); */
+int
+unur_mixt_set_useinversion( struct unur_par *par, int useinversion )
+     /*----------------------------------------------------------------------*/
+     /* set flag for using inversion method (default: off)                   */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par    ... pointer to parameter for building generator object      */
+     /*   useinversion ... !0 = try inversion method,  0 = no inversion      */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*                                                                      */
+     /* comment:                                                             */
+     /*   no squeeze is the default                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, MIXT );
 
-/*   /\* we use a bit in variant *\/ */
-/*   par->variant = (usesqueeze)  */
-/*     ? (par->variant | MIXT_VARFLAG_SQUEEZE)  */
-/*     : (par->variant & (~MIXT_VARFLAG_SQUEEZE)); */
+  /* we use a bit in 'variant' */
+  par->variant = (useinversion)
+    ? (par->variant | MIXT_VARFLAG_INVERSION)
+    : (par->variant & (~MIXT_VARFLAG_INVERSION));
 
-/*   /\* o.k. *\/ */
-/*   return UNUR_SUCCESS; */
+  /* changelog */
+  par->set |= MIXT_SET_USEINVERSION;
 
-/* } /\* end of unur_mixt_set_usesqueeze() *\/ */
+  /* o.k. */
+  return UNUR_SUCCESS;
+
+} /* end of unur_mixt_set_useinversion() */
 
 
 /*****************************************************************************/
@@ -306,6 +319,14 @@ _unur_mixt_init( struct unur_par *par )
     _unur_mixt_free(gen); return NULL;
   }
 
+  /* compute boundary of mixture and check for overlapping domains */
+  if ( _unur_mixt_get_boundary(gen) != UNUR_SUCCESS ) {
+    _unur_mixt_free(gen); return NULL;
+  }
+
+  /* set name of distribution */
+  unur_distr_set_name(gen->distr, "mixture");
+
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into LOG file */
     if (gen->debug) _unur_mixt_debug_init(gen);
@@ -350,10 +371,13 @@ _unur_mixt_create( struct unur_par *par )
   gen->distr = unur_distr_cont_new();
 
   /* routines for sampling and destroying generator */
-  SAMPLE = _unur_mixt_sample;
+  SAMPLE = _unur_mixt_getSAMPLE(gen);
   gen->destroy = _unur_mixt_free;
   gen->clone = _unur_mixt_clone;
   gen->reinit = NULL;    /* reinit not implemented ! */
+
+  /* copy some parameters into generator object */
+  GEN->useinversion = (gen->variant & MIXT_VARFLAG_INVERSION) ? TRUE : FALSE;
 
   /* initialize parameters: none */
 
@@ -393,17 +417,25 @@ _unur_mixt_check_par( struct unur_gen *gen )
 
   /* check generator objects */
   for (i=0; i<gen->N_COMP; i++) {
-    /* all generators must sample from univariate distributions */
+
+    /* generators must not be NULL */
     if (gen->COMP[i] == NULL) {
       _unur_error(gen->genid,UNUR_ERR_NULL,"component is NULL");
       return UNUR_ERR_NULL;
     }
-    _unur_check_NULL( gen->genid, gen->COMP[i], UNUR_ERR_NULL);
+
+    /* all generators must sample from univariate distributions */
     type = gen->COMP[i]->method & UNUR_MASK_TYPE;
     if ( type != UNUR_METH_DISCR && 
 	 type != UNUR_METH_CONT  &&
 	 type != UNUR_METH_CEMP  ) {
       _unur_error(gen->genid,UNUR_ERR_GEN_INVALID,"component not univariate");
+      return UNUR_ERR_GEN_INVALID;
+    }
+
+    /* we only can use inversion method if all generators use inversion method */
+    if (GEN->useinversion && (! _unur_gen_is_inversion (gen->COMP[i]))) {
+      _unur_error(gen->genid,UNUR_ERR_GEN_INVALID,"component does not implement inversion");
       return UNUR_ERR_GEN_INVALID;
     }
   }
@@ -502,7 +534,7 @@ _unur_mixt_sample( struct unur_gen *gen )
   comp = gen->COMP[J];
 
   /* sample from selected component */
-  switch(gen->COMP[J]->method & UNUR_MASK_TYPE) {
+  switch(comp->method & UNUR_MASK_TYPE) {
   case UNUR_METH_DISCR:
     return ((double) comp->sample.discr(comp));
   case UNUR_METH_CONT:
@@ -512,6 +544,44 @@ _unur_mixt_sample( struct unur_gen *gen )
   }
 
 } /* end of _unur_mixt_sample() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_mixt_sample_inv( struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* sample from generator by inversion                                   */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   double (sample from random variate)                                */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return INFINITY                                                    */
+     /*----------------------------------------------------------------------*/
+{
+  double U, recycle;
+  int J;
+
+  /* check arguments */
+  CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_MIXT_GEN,INFINITY);
+
+  /* sample index */
+  U = _unur_call_urng(gen->urng);
+  J =unur_dgt_eval_invcdf( gen->INDEX, U, &recycle );
+
+  /* the resolution of recycle is less than that of U. */
+  /* the values 0. and 1. may be result in INFINITY.   */
+  /* thus we make a small perturbation in this case.   */
+  if (_unur_iszero(recycle)) recycle = DBL_MIN;
+  if (_unur_isone(recycle))  recycle = 1. - DBL_EPSILON;
+
+  /* sample form component */
+  return unur_quantile(gen->COMP[J], recycle);
+
+} /* end of _unur_mixt_sample_inv() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -552,6 +622,77 @@ _unur_mixt_indexgen( const double *prob, int n_prob )
 
 } /* end of _unur_mixt_indexgen() */
 
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_mixt_get_boundary( struct unur_gen *gen )
+/*---------------------------------------------------------------------------*/
+/* compute boundary of mixture and check for overlapping domains.            */
+/*                                                                           */
+/* parameters:                                                               */
+/*   gen ... pointer to generator object                                     */
+/*                                                                           */
+/* return:                                                                   */
+/*   UNUR_SUCCESS ... when everything is o.k.                                */
+/*   UNUR_NULL    ... when a component is NULL (which should not happen)     */
+/*   UNUR_ERR_GEN_INVALID .. if domains of components overlap or not ordered */
+/*---------------------------------------------------------------------------*/
+{
+  int i;
+  int overlap = FALSE;
+  double comp_left, comp_right;
+  double bd_left, bd_right;
+  struct unur_gen *comp;
+
+  /* initialize boundary values for mixture */
+  bd_left = INFINITY;
+  bd_right = -INFINITY;
+
+  for (i=0; i<gen->N_COMP; i++) {
+    comp = gen->COMP[i];
+
+    /* comp has already been check. but we want to be on the safe side. */
+    CHECK_NULL(comp,UNUR_ERR_NULL);
+
+    /* domain of component [i] */
+    switch (comp->method & UNUR_MASK_TYPE) {
+    case UNUR_METH_CONT:
+      comp_left  = comp->distr->data.cont.BD_LEFT;
+      comp_right = comp->distr->data.cont.BD_RIGHT;
+      break;
+
+    case UNUR_METH_DISCR:
+      comp_left  = (double) (comp->distr->data.discr.BD_LEFT);
+      comp_right = (double) (comp->distr->data.discr.BD_RIGHT);
+      break;
+      
+    default:
+      /* cannot estimate boundary */
+      comp_left = -INFINITY;
+      comp_right = INFINITY;
+    }
+
+    /* check for overlapping domains */
+    if ( _unur_FP_less(comp_left,bd_right) )
+      overlap = TRUE;
+
+    /* update domain of mixture */
+    bd_left = _unur_min(bd_left, comp_left);
+    bd_right = _unur_max(bd_right, comp_right);
+  }
+
+  /* store boundary */
+  unur_distr_cont_set_domain(gen->distr, bd_left, bd_right);
+
+  if (GEN->useinversion && overlap) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_INVALID,"domains of components overlap or are unsorted");
+    return UNUR_ERR_GEN_INVALID;
+  }
+
+  /* o.k. */
+  return UNUR_SUCCESS;
+} /* end of _unur_mixt_get_boundary() */
+
 
 /*****************************************************************************/
 /**  Debugging utilities                                                    **/
@@ -584,13 +725,16 @@ _unur_mixt_debug_init( const struct unur_gen *gen )
   fprintf(LOG,"%s: method  = MIXT (MIXTure of distributions -- meta method)\n",gen->genid);
   fprintf(LOG,"%s:\n",gen->genid);
 
-  fprintf(LOG,"%s: sampling routine = _unur_mixt_sample\n",gen->genid);
-/*   if (gen->variant & MIXT_VARFLAG_VERIFY) */
-/*     fprintf(LOG,"_check"); */
-/*   /\* else if (gen->variant & MIXT_VARFLAG_MIRROR)     not implemented *\/ */
-/*   /\*   fprintf(LOG,"_mirror"); *\/ */
-/*   fprintf(LOG,"()\n%s:\n",gen->genid); */
-  fprintf(LOG,"%s:\n",gen->genid);
+  _unur_distr_cont_debug( gen->distr, gen->genid );
+
+  fprintf(LOG,"%s: sampling routine = _unur_mixt_sample",gen->genid);
+  if (GEN->useinversion) fprintf(LOG,"_inv");
+  fprintf(LOG,"()\n%s:\n",gen->genid);
+
+  fprintf(LOG,"%s: use inversion = %s",gen->genid,
+	  (GEN->useinversion) ? "on" : "off");
+  _unur_print_if_default(gen,MIXT_SET_USEINVERSION);
+  fprintf(LOG,"\n%s:\n",gen->genid);
 
   /* probabilities */
   fprintf(LOG,"%s: probabilities (%d) = \n",gen->genid, gen->N_COMP);
@@ -619,7 +763,6 @@ _unur_mixt_debug_init( const struct unur_gen *gen )
     fprintf(LOG,"%s:\t name = %s\n",gen->genid, comp->distr->name);
   }
   fprintf(LOG,"%s:\n",gen->genid);
-  
 
 } /* end of _unur_mixt_debug_init() */
 

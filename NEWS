@@ -1,3 +1,10 @@
+Version 1.6.0: ??? 2010
+
+	* Methods:
+
+	- new method MIXT (MIXTure of distributions)
+
+
 Version 1.5.1: November 2009
 
         * fixed a minor problem with MS Visual Studio compiler

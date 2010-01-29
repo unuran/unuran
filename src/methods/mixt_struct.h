@@ -39,13 +39,14 @@ struct unur_mixt_par {
   int n_comp;                   /* number of components                      */
   const double *prob;           /* probabilities for components              */
   struct unur_gen **comp; /* array of pointers to components (generators) */
-  /* int recycle;               /\* whether uniform random numbers are recycled  *\/ */
 };
 
 /*---------------------------------------------------------------------------*/
 /* The generator object                                                      */
 
 struct unur_mixt_gen { 
+  int useinversion;             /* whether we use inversion or not           */
+
   /* int n_comp;                /\* number of components                         *\/ */
   /* double *prob;              /\* probabilities for components                 *\/ */
   /* struct unur_gen **comp;    /\* array of pointers to components (generators) *\/ */

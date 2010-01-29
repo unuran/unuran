@@ -32,8 +32,9 @@ unuran_examples = \
  ./src/ref_example_cont.texi	./src/ref_example_cont_str.texi \
  ./src/ref_example_dext.texi \
  ./src/ref_example_discr.texi	./src/ref_example_discr_str.texi \
- ./src/ref_example_emp.texi		./src/ref_example_emp_str.texi \
- ./src/ref_example_vemp.texi	./src/ref_example_FuncStr.texi
+ ./src/ref_example_emp.texi	./src/ref_example_emp_str.texi \
+ ./src/ref_example_vemp.texi	./src/ref_example_FuncStr.texi \
+ ./src/ref_example_mixt.texi    ./src/ref_example_mixt_inv.texi
 
 # Sources for UNU.RAN manual
 unuran_TEXINFOS = \

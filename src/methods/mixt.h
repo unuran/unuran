@@ -38,7 +38,9 @@
 /*
    =METHOD  MIXT  MIXTure of distributions
 
-   =UP Meta_Methods [xy]
+   =UP Meta_Methods
+
+   =SPEED Set-up: fast, Sampling: depends on components
 
    =REINIT not implemented
 
@@ -47,40 +49,38 @@
       distributions.
 
       Let @unurmath{f_1,\ldots,f_n} be PDFs of various distributions
-      and @unurmath{(p_1,\ldots,p_n)} be a probability vector.
-      Then by @unurmath{f(x) = sum_{i=1}^n p_i\cdot f_i(x)}
-      get the PDF of the so called mixture of these distributions.
+      called the components and @unurmath{(p_1,\ldots,p_n)} be a
+      probability vector. Then
+      @unurmath{f(x) = p_1\cdot f_1(x) + \ldots + p_n\cdot f_n(x)}
+      is the PDF of the so called mixture of these distributions.
 
-      The methods takes generator objects for these distributions as
-      well as probability vector and creates a generator object for
+      Method MIXT takes generator objects for the components and 
+      a probability vector and creates a generator object for
       this mixture.
 
       The sampling part works as follows:
+
       @enumerate
       @item
       Generate an index @i{J} as the realisation of a discrete
-      random variate with given probability vector.
+      random variate with the given probability vector.
       @item
       Generate a random variate @i{X} with PDF @unurmath{f_J.}
       @end enumerate
    
-      It is possible to recycle the uniform random number used for
-      sampling index @i{J}. It is then used as the first uniform
-      random number required for the sampling from the corresponding 
-      distribution.
-      This can be used for sampling from the mixture by inversion.
-      However, for this feature the following conditions must be
-      satisfied:
-      @itemized
+      When the (interior of the) domains of the the components are
+      disjoint then it is possible to sample from the mixture by
+      inversion, provided that the following conditions are met:
+
+      @itemize @minus
       @item
-      An algorithm that implements the inversion method must be used
-      for all distributions.
+      The generator objects must use an inversion method for each
+      component.
       @item
       The domain of the PDFs @unurmath{f_i} must be non-overlapping.
       @item
-      The distributions must be order with respect to their domains.
+      The components must be order with respect to their domains.
       @end itemize
-      (However, these conditions are never verified.)
       
    =HOWTOUSE
       Create generator objects for the components of the mixture and
@@ -88,10 +88,11 @@
       Store all probabilities an a double array of the same size.
       Create the parameter object for the generator of the mixture
       distribution by means of unur_mixt_new().
-      Recycling of uniform random random numbers can be enabled by
-      means of unur_mixt_set_userecycle().
-      However, we do not recommend recycling except for enabling
-      inversion.
+
+      The inversion method can be switched on by means of
+      unur_mixt_set_useinversion() call.
+      However, the conditions for this method must then be met. 
+      Otherwise, initialization of the mixture object fails.
       
    =END
 */
@@ -104,29 +105,34 @@
 UNUR_PAR *unur_mixt_new( int n, const double *prob, UNUR_GEN **comp );
 /* 
    Get default parameters for the generator for a mixture of the
-   distributions given in the array @var{comp} (componenta) of length @var{n}.
-   The probabilities are given by @var{prob}.
+   distributions given in the array @var{comp} (components) of length
+   @var{n}. The probabilities are given by @var{prob}.
 
-   The generators in @var{comp} must be objects for univariate
-   distributions (continuous or discrete).
+   The generators in @var{comp} must be objects for (continuous or
+   discrete) univariate distributions 
 */
 
 /*...........................................................................*/
 
-/*---------------------------------------------------------------------------*/
-
-/* =END */
-
-
-/* int unur_mixt_set_userecycle( UNUR_PAR *parameters, int recycle ); */
+int unur_mixt_set_useinversion( UNUR_PAR *parameters, int useinv );
 /* 
-   If @var{recycle} is TRUE, then the uniform random number used for
-   sampling index @i{J} is recycled and used as the first uniform
-   random number required for the sampling from the corresponding 
-   distribution.
-   This can be used for sampling from the mixture by inversion.
+   If @var{useinv} is TRUE, then the inversion method is used for
+   sampling from the mixture distribution.
 
-   We do not recommend recycling except for enabling inversion.
+   However, the following conditions must be satisfied:
+
+   @itemize @minus
+   @item
+   The generator objects must use an inversion method for each
+   component.
+   @item
+   The domain of components must be non-overlapping.
+   @item
+   The components must be order with respect to their domains.
+   @end itemize
+
+   If one of these conditions is violated, then initialization of the
+   mixture object fails.
 
    Default is FALSE.
 */

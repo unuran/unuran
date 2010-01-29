@@ -55,7 +55,6 @@ int main(void)
      exit (EXIT_FAILURE);
   }
 
-
   /* Now you can use the generator object `gen' to sample from   */
   /* the distribution. Eg.:                                      */
   for (i=0; i<10; i++) {

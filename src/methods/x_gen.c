@@ -39,6 +39,8 @@
 #include <methods/cstd_struct.h>
 #include <methods/dgt.h>
 #include <methods/hinv.h>
+#include <methods/mixt.h>
+#include <methods/mixt_struct.h>
 #include <methods/ninv.h>
 #include <methods/pinv.h>
 #include "unur_methods_source.h"
@@ -154,18 +156,23 @@ unur_quantile ( struct unur_gen *gen, double U )
     return unur_pinv_eval_approxinvcdf(gen,U);
 
   case UNUR_METH_CSTD:
-#define GEN ((struct unur_cstd_gen*)gen->datap) /* data for generator object */
-    if (GEN->is_inversion)
+    if (((struct unur_cstd_gen*)gen->datap)->is_inversion)
       return unur_cstd_eval_invcdf(gen,U);
-#undef GEN
+    break;
+
+  case UNUR_METH_MIXT:
+    if (((struct unur_mixt_gen*)gen->datap)->is_inversion)
+      return unur_mixt_eval_invcdf(gen,U);
+    break;
 
   case UNUR_METH_DGT:
     return ((double) unur_dgt_eval_invcdf(gen,U,NULL));
-
-  default:
-    _unur_error(gen->genid,UNUR_ERR_NO_QUANTILE,"");
-    return UNUR_INFINITY;
   }
+  
+  /* default: */
+  _unur_error(gen->genid,UNUR_ERR_NO_QUANTILE,"");
+  return UNUR_INFINITY;
+
 } /* end of unur_quantile() */
 
 /*---------------------------------------------------------------------------*/
@@ -187,9 +194,10 @@ _unur_gen_is_inversion ( struct unur_gen *gen )
     return TRUE;
 
   case UNUR_METH_CSTD:
-#define GEN ((struct unur_cstd_gen*)gen->datap) /* data for generator object */
-    return (GEN->is_inversion);
-#undef GEN
+    return (((struct unur_cstd_gen*)gen->datap)->is_inversion);
+
+  case UNUR_METH_MIXT:
+    return (((struct unur_mixt_gen*)gen->datap)->is_inversion);
 
   default:
     return FALSE;

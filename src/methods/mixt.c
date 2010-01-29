@@ -575,12 +575,63 @@ _unur_mixt_sample_inv( struct unur_gen *gen )
   if (_unur_iszero(recycle)) recycle = DBL_MIN;
   if (_unur_isone(recycle))  recycle = 1. - DBL_EPSILON;
 
-  /* sample form component */
+  /* sample from component */
   return unur_quantile(gen->COMP[J], recycle);
 
 } /* end of _unur_mixt_sample_inv() */
 
 /*---------------------------------------------------------------------------*/
+
+double
+unur_mixt_eval_invcdf( const struct unur_gen *gen, double u )
+     /*----------------------------------------------------------------------*/
+     /* evaluate inverse CDF at u.                                           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*   u   ... argument for inverse CDF                                   */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   double (inverse CDF)                                               */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return INFINITY                                                    */
+     /*----------------------------------------------------------------------*/
+{
+  double recycle;
+  int J;
+  
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, gen, INFINITY );
+  if ( ! (gen->method == UNUR_METH_MIXT && GEN->is_inversion) ) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_INVALID,"");
+    return INFINITY;
+  }
+  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
+
+  if ( ! (u>0. && u<1.)) {
+    if ( ! (u>=0. && u<=1.)) {
+      _unur_warning(gen->genid,UNUR_ERR_DOMAIN,"U not in [0,1]");
+    }
+    if (u<=0.) return DISTR.domain[0];
+    if (u>=1.) return DISTR.domain[1];
+    return u;  /* = NaN */
+  }
+
+  /* get index */
+  J =unur_dgt_eval_invcdf( gen->INDEX, u, &recycle );
+
+  /* the resolution of recycle is less than that of U. */
+  /* the values 0. and 1. may be result in INFINITY.   */
+  /* thus we make a small perturbation in this case.   */
+  if (_unur_iszero(recycle)) recycle = DBL_MIN;
+  if (_unur_isone(recycle))  recycle = 1. - DBL_EPSILON;
+
+  /* get from component */
+  return unur_quantile(gen->COMP[J], recycle);
+
+} /* end of unur_mixt_eval_invcdf() */
+
 
 /*****************************************************************************/
 /**  Auxilliary Routines                                                    **/

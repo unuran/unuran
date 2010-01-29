@@ -145,3 +145,18 @@ int unur_mixt_set_useinversion( UNUR_PAR *parameters, int useinv );
 /* =END */
 
 /*---------------------------------------------------------------------------*/
+
+/* Yet not documented! */
+
+double unur_mixt_eval_invcdf( const UNUR_GEN *generator, double u );
+/*
+   Evaluate inverse CDF at @var{u}. However, this requires that
+   @var{generator} implements an inversion method.
+   If @var{u} is out of the domain [0,1] then @code{unur_errno} is set
+   to @code{UNUR_ERR_DOMAIN} and the respective bound of
+   the domain of the distribution are returned (which is
+   @code{-UNUR_INFINITY} or @code{UNUR_INFINITY} in the case of
+   unbounded domains).
+*/
+
+/*---------------------------------------------------------------------------*/

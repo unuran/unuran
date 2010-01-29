@@ -37,8 +37,8 @@
 
 struct unur_mixt_par { 
   int n_comp;                   /* number of components                      */
-  const double *prob;           /* probabilities for components              */
-  struct unur_gen **comp; /* array of pointers to components (generators) */
+  const double *prob;           /* probabilities (weights) for components    */
+  struct unur_gen **comp;       /* array of pointers to components           */
 };
 
 /*---------------------------------------------------------------------------*/
@@ -47,14 +47,8 @@ struct unur_mixt_par {
 struct unur_mixt_gen { 
   int useinversion;             /* whether we use inversion or not           */
 
-  /* int n_comp;                /\* number of components                         *\/ */
-  /* double *prob;              /\* probabilities for components                 *\/ */
-  /* struct unur_gen **comp;    /\* array of pointers to components (generators) *\/ */
-  /* int recycle;               /\* whether uniform random numbers are recycled  *\/ */
-
-  /* components stored in slot 'gen_aux_list' */
-  /* probabilities stored in slot 'gen_aux' as generator with method DGT */
-
+  /* components are stored in slot 'gen_aux_list'                            */
+  /* probabilities are stored in slot 'gen_aux' as generator with method DGT */
 };
 
 /*---------------------------------------------------------------------------*/

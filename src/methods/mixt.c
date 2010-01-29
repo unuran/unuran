@@ -52,12 +52,9 @@
 #include "x_gen.h"
 #include "x_gen_source.h"
 #include "dgt.h"
+#include "dgt_struct.h"
 #include "mixt.h"
 #include "mixt_struct.h"
-
-/* #ifdef UNUR_ENABLE_INFO */
-/* #  include <tests/unuran_tests.h> */
-/* #endif */
 
 /*---------------------------------------------------------------------------*/
 /* Variants:                                                                 */
@@ -139,12 +136,12 @@ static void _unur_mixt_debug_init( const struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
 #endif
 
-/* #ifdef UNUR_ENABLE_INFO */
-/* static void _unur_mixt_info( struct unur_gen *gen, int help ); */
-/* /\*---------------------------------------------------------------------------*\/ */
-/* /\* create info string.                                                       *\/ */
-/* /\*---------------------------------------------------------------------------*\/ */
-/* #endif */
+#ifdef UNUR_ENABLE_INFO
+static void _unur_mixt_info( struct unur_gen *gen, int help );
+/*---------------------------------------------------------------------------*/
+/* create info string.                                                       */
+/*---------------------------------------------------------------------------*/
+#endif
 
 /*---------------------------------------------------------------------------*/
 /* abbreviations */
@@ -381,10 +378,10 @@ _unur_mixt_create( struct unur_par *par )
 
   /* initialize parameters: none */
 
-/* #ifdef UNUR_ENABLE_INFO */
-/*   /\* set function for creating info string *\/ */
-/*   gen->info = _unur_mixt_info; */
-/* #endif */
+#ifdef UNUR_ENABLE_INFO
+  /* set function for creating info string */
+  gen->info = _unur_mixt_info;
+#endif
 
   /* return pointer to (almost empty) generator object */
   return gen;
@@ -771,100 +768,85 @@ _unur_mixt_debug_init( const struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 
-/* /\*---------------------------------------------------------------------------*\/ */
-/* #ifdef UNUR_ENABLE_INFO */
-/* /\*---------------------------------------------------------------------------*\/ */
+/*---------------------------------------------------------------------------*/
+#ifdef UNUR_ENABLE_INFO
+/*---------------------------------------------------------------------------*/
 
-/* void */
-/* _unur_mixt_info( struct unur_gen *gen, int help ) */
-/*      /\*----------------------------------------------------------------------*\/ */
-/*      /\* create character string that contains information about the          *\/ */
-/*      /\* given generator object.                                              *\/ */
-/*      /\*                                                                      *\/ */
-/*      /\* parameters:                                                          *\/ */
-/*      /\*   gen  ... pointer to generator object                               *\/ */
-/*      /\*   help ... whether to print additional comments                      *\/ */
-/*      /\*----------------------------------------------------------------------*\/ */
-/* { */
-/*   struct unur_string *info = gen->infostr; */
-/*   struct unur_distr *distr = gen->distr; */
-/*   int samplesize = 10000; */
-/*   double rc, rc_approx; */
+void
+_unur_mixt_info( struct unur_gen *gen, int help )
+     /*----------------------------------------------------------------------*/
+     /* create character string that contains information about the          */
+     /* given generator object.                                              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*   help ... whether to print additional comments                      */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_string *info = gen->infostr;
+  struct unur_gen *comp;
+  int i;
+  double sum;
 
-/*   /\* generator ID *\/ */
-/*   _unur_string_append(info,"generator ID: %s\n\n", gen->genid); */
+  /* generator ID */
+  _unur_string_append(info,"generator ID: %s\n\n", gen->genid);
   
-/*   /\* distribution *\/ */
-/*   _unur_string_append(info,"distribution:\n"); */
-/*   _unur_distr_info_typename(gen); */
-/*   _unur_string_append(info,"   functions = PDF\n"); */
-/*   _unur_string_append(info,"   domain    = (%g, %g)\n", DISTR.domain[0],DISTR.domain[1]); */
-/*   _unur_string_append(info,"   mode      = %g   %s\n", DISTR.mode, */
-/* 		      (distr->set & UNUR_DISTR_SET_MODE_APPROX) ? "[numeric.]" : ""); */
-/*   _unur_string_append(info,"   area(PDF) = %g\n", DISTR.area); */
-/*   if (gen->set & MIXT_SET_CDFMODE) */
-/*     _unur_string_append(info,"   F(mode)   = %g\n", GEN->Fmode);  */
-/*   else */
-/*     _unur_string_append(info,"   F(mode)   = [unknown]\n");  */
+  /* distribution */
+  _unur_string_append(info,"distribution:\n");
+  _unur_distr_info_typename(gen);
+  _unur_string_append(info,"   domain    = (%g, %g)\n", DISTR.domain[0],DISTR.domain[1]);
+  _unur_string_append(info,"   # components = %d\n", gen->N_COMP);
 
-/*   if (help) { */
-/*     if ( distr->set & UNUR_DISTR_SET_MODE_APPROX )  */
-/*       _unur_string_append(info,"\n[ Hint: %s ]\n", */
-/* 			  "You may provide the \"mode\""); */
-/*   } */
-/*   _unur_string_append(info,"\n"); */
+  if (help) {
+    sum = ((struct unur_dgt_gen*)gen->INDEX->datap)->sum;
+    _unur_string_append(info,"   probabilities = (%g", gen->PROB[0] / sum);
+    for (i=1; i<gen->N_COMP; i++)
+      _unur_string_append(info,", %g", gen->PROB[i] / sum);
+    _unur_string_append(info,")\n");
+    
+    _unur_string_append(info,"   components = \n");
+    for (i=0; i<gen->N_COMP; i++) {
+      comp = gen->COMP[i];
+      _unur_string_append(info,"\t[%d] %s - ",i, comp->genid);
+      switch (comp->distr->type) {
+      case UNUR_DISTR_CONT:
+      case UNUR_DISTR_CEMP:
+	_unur_string_append(info,"continuous");
+	break;
+      case UNUR_DISTR_DISCR:
+	_unur_string_append(info,"discrete");
+	break;
+      default:
+	_unur_string_append(info,"[unknown]");
+      }
+      _unur_string_append(info,": %s\n",comp->distr->name);
+    }
+  }
+  _unur_string_append(info,"\n");
 
-/*   /\* method *\/ */
-/*   _unur_string_append(info,"method: MIXT (Simple Ratio-Of-Uniforms)\n"); */
-/*   if (gen->set & MIXT_SET_CDFMODE) */
-/*     _unur_string_append(info,"   use CDF at mode\n"); */
-/*   if (gen->variant & MIXT_VARFLAG_SQUEEZE) */
-/*     _unur_string_append(info,"   use squeeze\n"); */
-/*   _unur_string_append(info,"\n"); */
+  /* method */
+  _unur_string_append(info,"method: MIXT (MIXTure of distributions -- meta method)\n");
+  _unur_string_append(info,"   select component = method DGT\n");
+  _unur_string_append(info,"   inversion method = %s\n",
+		      (GEN->useinversion) ? "enabled" : "disabled");
+  _unur_string_append(info,"\n");
 
-/*   /\* performance *\/ */
-/*   _unur_string_append(info,"performance characteristics:\n"); */
-/*   rc = (gen->set & MIXT_SET_CDFMODE) ? 2. : 4.; */
-/*   if (_unur_isfinite(DISTR.BD_RIGHT) || _unur_isfinite(DISTR.BD_LEFT)) { */
-/*     rc_approx = unur_test_count_urn(gen,samplesize,0,NULL)/(2.*samplesize); */
-/*     _unur_string_append(info,"   rejection constant <= %g  [approx. = %.2f]\n", rc,rc_approx); */
-/*   } */
-/*   else { */
-/*     _unur_string_append(info,"   rejection constant = %g\n", rc); */
-/*   } */
-/*   _unur_string_append(info,"\n"); */
+  /* performance */
+  _unur_string_append(info,"performance characteristics: depends on components\n");
+  _unur_string_append(info,"\n");
 
-/*   /\* parameters *\/ */
-/*   if (help) { */
-/*     _unur_string_append(info,"parameters:\n"); */
-/*     if (gen->set & MIXT_SET_CDFMODE) */
-/*       _unur_string_append(info,"   cdfatmode = %g\n", GEN->Fmode);  */
-/*     else */
-/*       _unur_string_append(info,"   cdfatmode = [not set]\n");  */
+  /* parameters */
+  if (help) {
+    _unur_string_append(info,"parameters:\n");
+    _unur_string_append(info,"   useinversion = ");
+    if (gen->variant & MIXT_VARFLAG_INVERSION)
+      _unur_string_append(info,"on\n");
+    else
+      _unur_string_append(info,"off  [default]\n");
+  }
 
-/*     if (gen->variant & MIXT_VARFLAG_SQUEEZE) */
-/*       _unur_string_append(info,"   usesqueeze\n"); */
+} /* end of _unur_mixt_info() */
 
-/*     if (gen->variant & MIXT_VARFLAG_VERIFY) */
-/*       _unur_string_append(info,"   verify = on\n"); */
-
-/*     _unur_string_append(info,"\n"); */
-
-/*     /\* Not displayed: */
-/*        int unur_mixt_set_pdfatmode( UNUR_PAR *parameters, double fmode ); */
-/*     *\/ */
-/*   } */
-
-/*   /\* Hints *\/ */
-/*   if (help) { */
-/*     if ( !(gen->set & MIXT_SET_CDFMODE)) */
-/*       _unur_string_append(info,"[ Hint: %s ]\n", */
-/* 			  "You can set \"cdfatmode\" to reduce the rejection constant."); */
-/*     _unur_string_append(info,"\n"); */
-/*   } */
-
-/* } /\* end of _unur_mixt_info() *\/ */
-
-/* /\*---------------------------------------------------------------------------*\/ */
-/* #endif   /\* end UNUR_ENABLE_INFO *\/ */
-/* /\*---------------------------------------------------------------------------*\/ */
+/*---------------------------------------------------------------------------*/
+#endif   /* end UNUR_ENABLE_INFO */
+/*---------------------------------------------------------------------------*/

@@ -686,7 +686,7 @@ unur_dgt_eval_invcdf( const struct unur_gen *gen, double u, double *recycle )
   while (GEN->cumpv[j] < u) j++;
 
   if (recycle) {
-    *recycle = (u - GEN->cumpv[j]) / DISTR.pv[j];
+    *recycle = 1. - (GEN->cumpv[j] - u) / DISTR.pv[j];
   }
 
   j+=DISTR.domain[0];

@@ -89,6 +89,11 @@
       Create the parameter object for the generator of the mixture
       distribution by means of unur_mixt_new().
 
+      @emph{Remark:}
+      The components of the mixture can be continuous or discrete
+      distributions. The resulting mixture, however, is always a
+      continuous distribution and thus unur_sample_cont() must be used!
+
       The inversion method can be switched on by means of
       unur_mixt_set_useinversion() call.
       However, the conditions for this method must then be met. 

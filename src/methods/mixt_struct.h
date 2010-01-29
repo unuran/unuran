@@ -45,7 +45,7 @@ struct unur_mixt_par {
 /* The generator object                                                      */
 
 struct unur_mixt_gen { 
-  int useinversion;             /* whether we use inversion or not           */
+  int is_inversion;             /* whether inversion is used                 */
 
   /* components are stored in slot 'gen_aux_list'                            */
   /* probabilities are stored in slot 'gen_aux' as generator with method DGT */

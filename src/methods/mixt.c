@@ -374,7 +374,7 @@ _unur_mixt_create( struct unur_par *par )
   gen->reinit = NULL;    /* reinit not implemented ! */
 
   /* copy some parameters into generator object */
-  GEN->useinversion = (gen->variant & MIXT_VARFLAG_INVERSION) ? TRUE : FALSE;
+  GEN->is_inversion = (gen->variant & MIXT_VARFLAG_INVERSION) ? TRUE : FALSE;
 
   /* initialize parameters: none */
 
@@ -431,7 +431,7 @@ _unur_mixt_check_par( struct unur_gen *gen )
     }
 
     /* we only can use inversion method if all generators use inversion method */
-    if (GEN->useinversion && (! _unur_gen_is_inversion (gen->COMP[i]))) {
+    if (GEN->is_inversion && (! _unur_gen_is_inversion (gen->COMP[i]))) {
       _unur_error(gen->genid,UNUR_ERR_GEN_INVALID,"component does not implement inversion");
       return UNUR_ERR_GEN_INVALID;
     }
@@ -681,7 +681,7 @@ _unur_mixt_get_boundary( struct unur_gen *gen )
   /* store boundary */
   unur_distr_cont_set_domain(gen->distr, bd_left, bd_right);
 
-  if (GEN->useinversion && overlap) {
+  if (GEN->is_inversion && overlap) {
     _unur_error(gen->genid,UNUR_ERR_GEN_INVALID,"domains of components overlap or are unsorted");
     return UNUR_ERR_GEN_INVALID;
   }
@@ -725,11 +725,11 @@ _unur_mixt_debug_init( const struct unur_gen *gen )
   _unur_distr_cont_debug( gen->distr, gen->genid );
 
   fprintf(LOG,"%s: sampling routine = _unur_mixt_sample",gen->genid);
-  if (GEN->useinversion) fprintf(LOG,"_inv");
+  if (GEN->is_inversion) fprintf(LOG,"_inv");
   fprintf(LOG,"()\n%s:\n",gen->genid);
 
   fprintf(LOG,"%s: use inversion = %s",gen->genid,
-	  (GEN->useinversion) ? "on" : "off");
+	  (GEN->is_inversion) ? "on" : "off");
   _unur_print_if_default(gen,MIXT_SET_USEINVERSION);
   fprintf(LOG,"\n%s:\n",gen->genid);
 
@@ -828,7 +828,7 @@ _unur_mixt_info( struct unur_gen *gen, int help )
   _unur_string_append(info,"method: MIXT (MIXTure of distributions -- meta method)\n");
   _unur_string_append(info,"   select component = method DGT\n");
   _unur_string_append(info,"   inversion method = %s\n",
-		      (GEN->useinversion) ? "enabled" : "disabled");
+		      (GEN->is_inversion) ? "TRUE" : "FALSE");
   _unur_string_append(info,"\n");
 
   /* performance */

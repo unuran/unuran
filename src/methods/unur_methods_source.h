@@ -74,9 +74,6 @@
 #define UNUR_METH_UNIF     0x02000e00u
 #define UNUR_METH_UTDR     0x02000f00u
 
-/* univariate meta distributions */
-#define UNUR_METH_MIXT     0x02001000u
-
 /* univariate continuous empirical distributions */
 #define UNUR_METH_CEMP     0x04000000u
 
@@ -112,6 +109,9 @@
 #define UNUR_METH_CSTD     0x0200f100u   /* is of type UNUR_METH_CONT !!     */
 #define UNUR_METH_DSTD     0x0100f200u   /* is of type UNUR_METH_DISCR !!    */
 #define UNUR_METH_MVSTD    0x0800f300u   /* is of type UNUR_METH_CVEC !!     */
+
+/* meta distributions */
+#define UNUR_METH_MIXT     0x0200e100u   /* univariate continuous            */
 
 /* wrapper for external generators */
 #define UNUR_METH_CEXT     0x0200f400u   /* is of type UNUR_METH_CONT !!     */

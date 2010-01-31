@@ -322,7 +322,7 @@ _unur_mixt_init( struct unur_par *par )
   }
 
   /* set name of distribution */
-  unur_distr_set_name(gen->distr, "mixture");
+  unur_distr_set_name(gen->distr, "(mixture)");
 
 #ifdef UNUR_ENABLE_LOGGING
     /* write info into LOG file */
@@ -607,7 +607,7 @@ unur_mixt_eval_invcdf( const struct unur_gen *gen, double u )
     _unur_error(gen->genid,UNUR_ERR_GEN_INVALID,"");
     return INFINITY;
   }
-  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
+  COOKIE_CHECK(gen,CK_MIXT_GEN,INFINITY);
 
   if ( ! (u>0. && u<1.)) {
     if ( ! (u>=0. && u<=1.)) {
@@ -729,13 +729,14 @@ _unur_mixt_get_boundary( struct unur_gen *gen )
     bd_right = _unur_max(bd_right, comp_right);
   }
 
-  /* store boundary */
-  unur_distr_cont_set_domain(gen->distr, bd_left, bd_right);
-
+  /* overlap or unordered domains? */
   if (GEN->is_inversion && overlap) {
     _unur_error(gen->genid,UNUR_ERR_GEN_INVALID,"domains of components overlap or are unsorted");
     return UNUR_ERR_GEN_INVALID;
   }
+
+  /* store boundary */
+  unur_distr_cont_set_domain(gen->distr, bd_left, bd_right);
 
   /* o.k. */
   return UNUR_SUCCESS;

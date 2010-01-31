@@ -64,6 +64,8 @@
       @item
       Generate an index @i{J} as the realisation of a discrete
       random variate with the given probability vector.
+      This is done by means of method DGT 
+      (@pxref{DGT,Guide Table method}).
       @item
       Generate a random variate @i{X} with PDF @unurmath{f_J.}
       @end enumerate
@@ -77,7 +79,7 @@
       The generator objects must use an inversion method for each
       component.
       @item
-      The domain of the PDFs @unurmath{f_i} must be non-overlapping.
+      The domains of the PDFs @unurmath{f_i} must not overlap.
       @item
       The components must be order with respect to their domains.
       @end itemize
@@ -88,6 +90,11 @@
       Store all probabilities an a double array of the same size.
       Create the parameter object for the generator of the mixture
       distribution by means of unur_mixt_new().
+
+      The components of the mixture can be any continuous or discrete
+      univariate distributions. This also includes generators for
+      empirical distributions and mixtures of distributions.
+      In particular, mixtures can also be defined recursively.
 
       @emph{Remark:}
       The components of the mixture can be continuous or discrete
@@ -131,7 +138,7 @@ int unur_mixt_set_useinversion( UNUR_PAR *parameters, int useinv );
    The generator objects must use an inversion method for each
    component.
    @item
-   The domain of components must be non-overlapping.
+   The domains of the components must not overlap.
    @item
    The components must be order with respect to their domains.
    @end itemize

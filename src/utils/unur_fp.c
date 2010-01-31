@@ -55,6 +55,8 @@ _unur_FP_cmp( double x1, double x2, double eps)
      /* remark:                                                              */
      /*   This is similar to Knuth's algorithm. However, we use              */
      /*   instead of max(|x1|,|x2).                                          */
+     /*   We also have to deal with +-INFINITY correctly.                    */
+     /*                                                                      */
      /*   (For an implementation of Knuth's algorithm see                    */
      /*    fcmp 1.2.2 Copyright (c) 1998-2000 Theodore C. Belding            */
      /*    University of Michigan Center for the Study of Complex Systems    */
@@ -65,6 +67,11 @@ _unur_FP_cmp( double x1, double x2, double eps)
   double fx2 = (x2>=0.) ? x2 : -x2;
   double delta = eps * _unur_min(fx1,fx2);
   double difference = x1 - x2;
+
+  /* we have to take care about INFINITY */
+  if (_unur_isinf(delta)) {
+    delta = eps * DBL_MAX;
+  }
 
   /* denormalized numbers (close to zero) may cause problems. */
   /* so we check this special case.                           */

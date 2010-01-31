@@ -53,8 +53,7 @@ AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_CHECK_TOOL(AR, ar, :)
-AC_DISABLE_SHARED
-LT_INIT
+LT_INIT([disable-shared])
 
 dnl Checks for libraries.
 dnl libm: the standard math library
@@ -301,6 +300,9 @@ AC_MSG_RESULT([
 *  Source directory:           ${srcdir}
 *  Installation directory:     ${prefix}
 *  C Compiler:                 ${CC}
+*
+*  Build shared library:       ${enable_shared}
+*  Build static library:       ${enable_static}
 *
 *  Use deprecated code:        ${enable_deprecated}
 *  Enable runtime checks:      ${enable_check_struct}

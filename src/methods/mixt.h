@@ -81,7 +81,7 @@
       @item
       The domains of the PDFs @unurmath{f_i} must not overlap.
       @item
-      The components must be order with respect to their domains.
+      The components must be ordered with respect to their domains.
       @end itemize
       
    =HOWTOUSE
@@ -140,7 +140,7 @@ int unur_mixt_set_useinversion( UNUR_PAR *parameters, int useinv );
    @item
    The domains of the components must not overlap.
    @item
-   The components must be order with respect to their domains.
+   The components must be ordered with respect to their domains.
    @end itemize
 
    If one of these conditions is violated, then initialization of the

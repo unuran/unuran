@@ -64,9 +64,10 @@ unur_pinv_new( const struct unur_distr *distr )
   PAR->max_ivs = PINV_DEFAULT_MAX_IVS; /* maximum number of subintervals     */
 
   par->method   = UNUR_METH_PINV; /* method                                  */
-  par->variant  = ( (DISTR_IN.pdf != NULL)  /* default variant:              */
-		    ? PINV_VARIANT_PDF      /*   use PDF                     */
-		    : PINV_VARIANT_CDF );   /*   use CDF                     */
+  par->variant  = 0u;             /* default variant:                        */
+  if (DISTR_IN.pdf != NULL)
+    par->variant |= PINV_VARIANT_PDF;  /*   use PDF                          */
+  /* else:                                  use CDF                          */
 
   par->set      = 0u;                      /* inidicate default parameters   */
   par->urng     = unur_get_default_urng(); /* use default urng               */
@@ -161,6 +162,39 @@ unur_pinv_set_u_resolution( struct unur_par *par, double u_resolution )
 /*---------------------------------------------------------------------------*/
 
 int
+unur_pinv_set_use_upoints( struct unur_par *par, int use_upoints )
+     /*----------------------------------------------------------------------*/
+     /* if TRUE, use Chebyshev points in u-scale.                            */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par         ... pointer to parameter for building generator object */
+     /*   use_upoints ... boolean                                            */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, PINV );
+
+  /* store variant */
+  if (use_upoints)
+    par->variant |= PINV_VARIANT_UPOINTS;
+  else
+    par->variant &= ~PINV_VARIANT_UPOINTS;
+
+  /* changelog */
+  par->set |= PINV_SET_UPOINTS;
+
+  return UNUR_SUCCESS;
+
+} /* end of unur_pinv_set_use_upoints() */
+
+/*---------------------------------------------------------------------------*/
+
+int
 unur_pinv_set_usepdf( struct unur_par *par )
      /*----------------------------------------------------------------------*/
      /* Use PDF (if available) to compute approximate inverse CDF.           */
@@ -183,8 +217,8 @@ unur_pinv_set_usepdf( struct unur_par *par )
     return UNUR_ERR_PAR_SET;
   }
 
-  /* store variant */
-  par->variant = PINV_VARIANT_PDF;
+  /* store variant (set USE_PDF flag) */
+  par->variant |= PINV_VARIANT_PDF;
 
   /* changelog */
   par->set |= PINV_SET_VARIANT;
@@ -219,8 +253,8 @@ unur_pinv_set_usecdf( struct unur_par *par )
     return UNUR_ERR_PAR_SET;
   }
 
-  /* store variant */
-  par->variant = PINV_VARIANT_CDF;
+  /* store variant (remove USE_PDF flag) */
+  par->variant &= ~PINV_VARIANT_PDF;
 
   /* changelog */
   par->set |= PINV_SET_VARIANT;

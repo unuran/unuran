@@ -32,9 +32,7 @@ _unur_pinv_preprocessing (struct unur_gen *gen)
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
-  switch (gen->variant) {
-  case PINV_VARIANT_PDF:
-
+  if (gen->variant & PINV_VARIANT_PDF) {
     /* 1a. Estimate computationally relevant domain (support) of PDF */
     if (_unur_pinv_relevant_support(gen) != UNUR_SUCCESS)
       return UNUR_FAILURE;
@@ -51,18 +49,13 @@ _unur_pinv_preprocessing (struct unur_gen *gen)
     /*     store intermediate results from adaptive integration. */
     if (_unur_pinv_pdfarea(gen) != UNUR_SUCCESS) 
       return UNUR_FAILURE;
-    break;
-
-  case PINV_VARIANT_CDF:
+  }
+  
+  else { /* use CDF */
 
     /* 1c. Compute computational domain where inverse CDF is approximated */
     if (_unur_pinv_computational_domain_CDF(gen) != UNUR_SUCCESS)
       return UNUR_FAILURE;
-    break;
-
-  default:
-    _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    return UNUR_FAILURE;
   }
 
   /* o.k. */
@@ -798,17 +791,10 @@ _unur_pinv_Udiff (struct unur_gen *gen, double x, double h, double *fx)
      /*       *fx = -1. (=unknown)  otherwise                                */
      /*----------------------------------------------------------------------*/
 {
-  switch (gen->variant) {
-  case PINV_VARIANT_PDF:
+  if (gen->variant & PINV_VARIANT_PDF) 
     return _unur_lobatto_eval_diff(GEN->aCDF, x, h, fx);
-
-  case PINV_VARIANT_CDF:
+  else  /* use CDF */
     return CDF(x+h) - CDF(x);
-
-  default:
-    _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    return INFINITY;
-  }
 
 } /* end of _unur_pinv_Udiff() */
 

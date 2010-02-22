@@ -55,14 +55,18 @@ _unur_pinv_debug_init_start( const struct unur_gen *gen )
   _unur_print_if_default(gen,PINV_SET_U_RESOLUTION);
   fprintf(LOG,"\n%s: maximum number of subintervals = %d",gen->genid,GEN->max_ivs);
   _unur_print_if_default(gen,PINV_SET_MAX_IVS);
+
   fprintf(LOG,"\n%s: variant = ",gen->genid);
-  switch (gen->variant) {
-  case PINV_VARIANT_PDF:
-    fprintf(LOG,"use PDF + Lobatto integration"); break;
-  case PINV_VARIANT_CDF:
-    fprintf(LOG,"use CDF"); break;
-  }
+  if (gen->variant & PINV_VARIANT_PDF)
+    fprintf(LOG,"use PDF + Lobatto integration");
+  else
+    fprintf(LOG,"use CDF");
   _unur_print_if_default(gen,PINV_SET_VARIANT);
+  fprintf(LOG,"\n");
+
+  fprintf(LOG,"%s: use Chebyshev points in %s scale",gen->genid,
+	  (gen->variant & PINV_VARIANT_UPOINTS) ? "u" : "x");
+  _unur_print_if_default(gen,PINV_SET_UPOINTS);
   fprintf(LOG,"\n");
 
   fprintf(LOG,"%s:\n",gen->genid);

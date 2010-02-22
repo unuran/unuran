@@ -42,6 +42,7 @@ _unur_pinv_create_table( struct unur_gen *gen )
 
   int use_linear;            /* whether we use linear interpolation instead of polynomials */
   int right_bd;              /* whether we have reach right boundary */
+  int use_upoints;           /* whether we use Chebyshev points in u-scale */
 
   double chebyshev[MAX_ORDER+1]; /* Chebyshev points */
   double xval[MAX_ORDER+1];  /* x-values for construction points for Newton polynomial */
@@ -74,6 +75,10 @@ _unur_pinv_create_table( struct unur_gen *gen )
   cont = TRUE;          /* there is at least one iteration */
   use_linear = FALSE;   /* do not use linear interpolation; use polynomial */
 
+  use_upoints = FALSE;  /* do not use Chebyshev points in u-scale.
+			 * we use this variable to toggle between 
+			 * Chebyshev points in x-scale and u-scale. */
+
   /* compute intervals and coefficients of Newton polynomials */
   for (iter=0; cont ; iter++) {
 
@@ -85,7 +90,7 @@ _unur_pinv_create_table( struct unur_gen *gen )
     }
 
     /* right boundary reached ? */
-    if(GEN->iv[i].xi+h > GEN->bright) {
+    if(!_unur_FP_less(GEN->iv[i].xi+h,GEN->bright)) {
       h = GEN->bright - GEN->iv[i].xi;
       cont = FALSE;    /* we probably can stop after this iteration */
       right_bd = TRUE; /* we have reached right boundary */
@@ -95,9 +100,19 @@ _unur_pinv_create_table( struct unur_gen *gen )
     }
 
     /* construction points for Newton interpolation polynomial: */
-    /* uses Chebyshev points for x values.                      */
-    for(k=0; k<=GEN->order; k++)
-      xval[k] = GEN->iv[i].xi + h * chebyshev[k];
+    if (use_upoints) {
+      /* FIXME: check monotone and != */
+      /* use Chebyshev points in u-scale. */
+      double hu = GEN->iv[i].ui[GEN->order-1]; 
+      for(k=0; k<=GEN->order; k++)
+      	xval[k] = GEN->iv[i].xi + 
+	  _unur_pinv_newton_eval(hu * chebyshev[k], GEN->iv[i].ui, GEN->iv[i].zi, GEN->order);
+    }
+    else {
+      /* use Chebyshev points in x-scale. */
+      for(k=0; k<=GEN->order; k++)
+	xval[k] = GEN->iv[i].xi + h * chebyshev[k];
+    }
 
     /* compute interpolating polynomial */
 
@@ -146,29 +161,43 @@ _unur_pinv_create_table( struct unur_gen *gen )
       h *= (maxerror > 4.*utol) ? 0.81 : 0.9;
       cont = TRUE;  /* we need another iteration */
       ++n_decr_h;
+      use_upoints = FALSE;
+      continue;
     }
 
-    else {
-      /* create next interval */
-      if ( _unur_pinv_interval( gen, i+1, GEN->iv[i].xi+h, 
-				GEN->iv[i].cdfi +(GEN->iv)[i].ui[GEN->order-1])
-	   /* cdfi holds CDF value at the left border of the interval,                  */
-	   /* ui[order-1] holds area below PDF in interval, i.e. CDF(right) - CDF(left) */
-      	   != UNUR_SUCCESS )
-	return UNUR_ERR_GEN_CONDITION;
+    /* error is below threshold */
 
-      /* increase step size for very small errors */
-      if (maxerror < 0.3*utol) {
-	h *= (maxerror < 0.1*utol) ? 2. : 1.2;
-	++n_incr_h;
+    if (gen->variant & PINV_VARIANT_UPOINTS) {
+      /* compute polynomial again with (approximate) Chebyshev points in u-scale */
+      if (!use_upoints && !use_linear ) {
+	use_upoints = TRUE;
+	cont = TRUE;
+	continue;
       }
-      
-      /* continue with next interval */
-      i++;
-
-      /* we try higher order polynomial again */
-      use_linear = FALSE;
+      use_upoints = FALSE;
     }
+
+    /* error is below threshold --> continue with next interval */
+    
+    /* create next interval */
+    if ( _unur_pinv_interval( gen, i+1, GEN->iv[i].xi+h, 
+			      GEN->iv[i].cdfi +(GEN->iv)[i].ui[GEN->order-1])
+	 /* cdfi holds CDF value at the left border of the interval,                  */
+	 /* ui[order-1] holds area below PDF in interval, i.e. CDF(right) - CDF(left) */
+	 != UNUR_SUCCESS )
+      return UNUR_ERR_GEN_CONDITION;
+
+    /* increase step size for very small errors */
+    if (maxerror < 0.3*utol) {
+      h *= (maxerror < 0.1*utol) ? 2. : 1.2;
+      ++n_incr_h;
+    }
+      
+    /* continue with next interval */
+    i++;
+
+    /* we try higher order polynomial again */
+    use_linear = FALSE;
   }
 
   /* update size of array (finish list) */
@@ -258,7 +287,7 @@ _unur_pinv_interval( struct unur_gen *gen, int i, double x, double cdfx )
 int 
 _unur_pinv_lastinterval( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
-     /* update size of array and set all uninitialized values to 0 that.     */
+     /* update size of array and set all uninitialized values to 0.          */
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen  ... pointer to generator object                               */

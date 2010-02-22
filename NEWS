@@ -1,6 +1,10 @@
 
 Version 1.7.0: ???? 2010
 
+	* Methods:
+
+	- PINV: added function unur_pinv_set_use_upoints().
+
 
 Version 1.6.0: February 2010
 

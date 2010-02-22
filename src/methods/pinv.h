@@ -236,6 +236,17 @@ int unur_pinv_set_u_resolution( UNUR_PAR *parameters, double u_resolution);
    Default is @code{1.e-10}.
 */
 
+int unur_pinv_set_use_upoints( UNUR_PAR *parameters, int use_upoints );
+/* 
+   If @var{use_upoints} is TRUE, then the nodes of the interpolating
+   polynomial are constructed by means of Chebyshev points in u-scale
+   not in x-scale. This results is a better approximation but almost
+   doubles the number of PDF or CDF evaluations during the setup.
+   (This is an experimental feature.)
+   
+   Default: FALSE
+*/
+
 int unur_pinv_set_usepdf( UNUR_PAR *parameters );
 /* 
    Use PDF (if available) to compute approximate inverse CDF.

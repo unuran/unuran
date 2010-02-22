@@ -58,7 +58,7 @@ _unur_pinv_init( struct unur_par *par )
 
   /* compute rescaling factor for PDF */
   /* (only used when logPDF is given) */
-  if (DISTR.logpdf != NULL && ! (gen->variant & PINV_VARIANT_CDF) ) {
+  if (DISTR.logpdf != NULL && (gen->variant & PINV_VARIANT_PDF) ) {
     lfc = UNUR_INFINITY;
 
     /* use mode if available */
@@ -254,7 +254,7 @@ _unur_pinv_check_par( struct unur_gen *gen )
   }
 
   /* check center of distribution */
-  if (gen->variant == PINV_VARIANT_PDF) {
+  if (gen->variant & PINV_VARIANT_PDF) {
     if (PDF(DISTR.center)<=0.) {
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,
 		  "PDF(center) <= 0.");

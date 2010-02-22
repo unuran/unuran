@@ -184,8 +184,9 @@
 /*---------------------------------------------------------------------------*/
 /* Variants                                                                  */
 
-#define PINV_VARIANT_PDF      0x0010u   /* use PDF and Lobatto integration   */
-#define PINV_VARIANT_CDF      0x0020u   /* use CDF                           */
+#define PINV_VARIANT_PDF      0x0010u   /* use PDF and Lobatto integration
+	                                   [ if not present, use CDF ]       */
+#define PINV_VARIANT_UPOINTS  0x0040u   /* use Chebyshev points in u scale   */
 
 /*---------------------------------------------------------------------------*/
 /* Debugging flags                                                           */
@@ -204,6 +205,7 @@
 
 #define PINV_SET_ORDER          0x001u  /* order of polynomial               */
 #define PINV_SET_U_RESOLUTION   0x002u  /* maximal error in u                */
+#define PINV_SET_UPOINTS        0x004u  /* use Chebyshev points in u scale   */
 #define PINV_SET_BOUNDARY       0x008u  /* boundary of computational region  */
 #define PINV_SET_SEARCHBOUNDARY 0x010u  /* search for boundary               */
 #define PINV_SET_VARIANT        0x020u  /* variant of algorithm              */
@@ -367,7 +369,7 @@ static int _unur_pinv_interval( struct unur_gen *gen, int i, double x, double cd
 
 static int _unur_pinv_lastinterval( struct unur_gen *gen );
 /*---------------------------------------------------------------------------*/
-/* update size of array and set all uninitialized values to 0 that.          */
+/* update size of array and set all uninitialized values to 0.               */
 /*---------------------------------------------------------------------------*/
 
 static int _unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_interval *iv, 

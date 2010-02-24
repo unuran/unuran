@@ -10,7 +10,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2008 Wolfgang Hoermann and Josef Leydold                  *
+ *   Copyright (c) 2008-2010 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *****************************************************************************/
@@ -317,7 +317,7 @@ _unur_pinv_lastinterval( struct unur_gen *gen )
   /* o.k. */
   return UNUR_SUCCESS;
 
-} /* end of _unur_pinv_interval() */
+} /* end of _unur_pinv_lastinterval() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -349,25 +349,46 @@ _unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_interval *iv,
   COOKIE_CHECK(gen,CK_PINV_GEN,UNUR_FAILURE);
   COOKIE_CHECK(iv,CK_PINV_IV,UNUR_FAILURE);
 
-  /* compute tuples (ui,zi) for constructing polynomials */
+  /* compute coefficients of interpolating polynomial */
+
+  /* first step: 
+   * compute values u_i of nodes and first differences, i.e.,
+   * ( CDF^{-1}(u[i]) - CDF^{-1}(u[i-1]) ) / (u[i] - u[i-1])
+   * = (x[i] - x[i-1]) / (u[i] - u[i-1])
+   */
   for(i=0; i<GEN->order; i++) {
 
     /* left boundary and length of subinterval for integration */
     xi = xval[i];
-    dxi = xval[i+1]-xval[i];
 
-    /* compute integral of PDF in interval (xi,xi+dxi) */
-    area = _unur_pinv_Udiff(gen, xi, dxi, &fx);
-    if (_unur_iszero(area)) return UNUR_ERR_SILENT;
+    if (!_unur_FP_same(xval[i],xval[i+1])) {
+      /* use differences */
+      dxi = xval[i+1]-xval[i];
 
-    /* construction points of interpolation polynomial of CDF^{-1} */
-    ui[i] = (i>0) ? (ui[i-1]+area) : area;
-    /* rescaled corresponding values of CDF^{-1} */ 
-    zi[i] = dxi/area;
+      /* compute integral of PDF in interval (xi,xi+dxi) */
+      area = _unur_pinv_Udiff(gen, xi, dxi, &fx);
+      
+      if (_unur_iszero(area)) return UNUR_ERR_SILENT;
+      
+      /* construction points of interpolation polynomial of CDF^{-1} */
+      ui[i] = (i>0) ? (ui[i-1]+area) : area;
+      /* rescaled corresponding values of CDF^{-1} */ 
+      zi[i] = dxi/area;
+    }
+    else {
+      /* use derivative */
+      ui[i] = (i>0) ? ui[i-1] : 0.;
+      zi[i] = 1./PDF(xi);
+      /* Remark: we should check that no three consecutive entries in
+       * xval have the same value. However, when this happens then 
+       * the below computations of zi fails anyway.
+       */
+    }
   }
   /* Remark: ui[GEN->order-1] is the probability of the interval */
 
-  /* compute coefficients of interpolation polynomial */
+  /* compute all other divided differences and               */
+  /* thus get the coefficients of interpolating polynomials. */
   for(k=1; k<GEN->order; k++) {
     for(i=GEN->order-1; i>k; i--) {
       zi[i] = (zi[i]-zi[i-1]) / (ui[i]-ui[i-(k+1)]);

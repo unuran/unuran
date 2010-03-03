@@ -47,7 +47,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2010 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -69,6 +69,10 @@
 
 /*---------------------------------------------------------------------------*/
 
+/* #define USE_EXPERIMENTAL_CODE */
+
+/*---------------------------------------------------------------------------*/
+
 #include <unur_source.h>
 #include <distr/distr_source.h>
 #include <distr/cont.h>
@@ -77,7 +81,9 @@
 #include "unur_distributions_source.h"
 #include "unur_stddistr.h"
 
-/* #include <gsl/gsl_integration.h> */
+#ifdef USE_EXPERIMENTAL_CODE
+#include <gsl/gsl_integration.h>
+#endif
 
 /*---------------------------------------------------------------------------*/
 
@@ -96,7 +102,9 @@ static double _unur_pdf_gig2( double x, const UNUR_DISTR *distr );
 static double _unur_logpdf_gig2( double x, const UNUR_DISTR *distr );
 static double _unur_dpdf_gig2( double x, const UNUR_DISTR *distr );
 static double _unur_dlogpdf_gig2( double x, const UNUR_DISTR *distr );
-/* static double _unur_cdf_gig2( double x, const UNUR_DISTR *distr ); */
+#ifdef USE_EXPERIMENTAL_CODE
+static double _unur_cdf_gig2( double x, const UNUR_DISTR *distr );
+#endif
 
 static int _unur_upd_mode_gig2( UNUR_DISTR *distr );
 static double _unur_normconstant_gig2( const double *params, int n_params );
@@ -166,33 +174,52 @@ _unur_dlogpdf_gig2(double x, const UNUR_DISTR *distr)
 
 /*---------------------------------------------------------------------------*/
 
-/* double */
-/* _unur_cdf_gig2(double x, const UNUR_DISTR *distr) */
-/* {  */
-/*   double bound = 0.; */
-/*   double epsabs = 1.e-24; */
-/*   double epsrel = 1.e-12; */
-/*   double result, abserr; */
-/*   size_t limit = 1000; */
-/*   gsl_integration_workspace *work = gsl_integration_workspace_alloc (1000); */
+#ifdef USE_EXPERIMENTAL_CODE
 
-/*   gsl_function F; */
-/*   F.function = _unur_pdf_gig2; */
-/*   F.params = distr; */
+#ifndef HAVE_BESSEL_K
+#error run ./configure with flag --with-Rmath
+#endif 
 
-/*   if (x <= 0.) */
-/*     /\* out of support *\/ */
-/*     return 0.; */
+double
+_unur_cdf_gig2(double x, const UNUR_DISTR *distr)
+{
+  double epsabs = 1.e-13;
+  double epsrel = 1.e-13;
+  double result, abserr;
+  size_t limit = 1000;
+  gsl_integration_workspace *work;
 
-/*   /\* use GSL function *\/ */
-/*   gsl_integration_qagiu(&F, bound, epsabs, epsrel, limit, */
-/* 			work, &result, &abserr); */
+  if (x <= 0.)
+    /* out of support */
+    return 0.;
 
-/*   gsl_integration_workspace_free (work); */
+  /* use GSL function */
+  work = gsl_integration_workspace_alloc (limit);
+  gsl_function F;
+  F.function = _unur_pdf_gig2;
+  F.params = distr;
 
-/*   return result; */
+  gsl_integration_qag (&F, 0, x, epsabs, epsrel, limit, /* key = */ GSL_INTEG_GAUSS61,
+		       work, &result, &abserr);
 
-/* } /\* end of _unur_cdf_gig2() *\/ */
+  /* The integration rule is determined by the value of 'key', 
+   * which should be chosen from the following symbolic names,
+   * 
+   *   GSL_INTEG_GAUSS15  (key = 1)
+   *   GSL_INTEG_GAUSS21  (key = 2)
+   *   GSL_INTEG_GAUSS31  (key = 3)
+   *   GSL_INTEG_GAUSS41  (key = 4)
+   *   GSL_INTEG_GAUSS51  (key = 5)
+   *   GSL_INTEG_GAUSS61  (key = 6)
+   */
+
+  gsl_integration_workspace_free (work);
+
+  return result;
+
+} /* end of _unur_cdf_gig2() */
+
+#endif
 
 /*---------------------------------------------------------------------------*/
 
@@ -301,7 +328,9 @@ unur_distr_gig2( const double *params, int n_params )
   DISTR.logpdf  = _unur_logpdf_gig2;  /* pointer to logPDF               */
   DISTR.dpdf    = _unur_dpdf_gig2;    /* pointer to derivative of PDF    */
   DISTR.dlogpdf = _unur_dlogpdf_gig2; /* pointer to derivative of logPDF */
-  /* DISTR.cdf     = _unur_cdf_gig2;     pointer to CDF                  */
+#ifdef USE_EXPERIMENTAL_CODE
+  DISTR.cdf     = _unur_cdf_gig2;     /* pointer to CDF                  */
+#endif
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

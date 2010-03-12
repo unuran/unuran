@@ -204,6 +204,21 @@ AS_IF([test "x$enable_info" = xyes],
 	           [Define to 1 if you want to use the info routine for printing informations about UNU.RAN objects])], 
 	[])
 
+
+dnl UNU.RAN contains some experimental code that can be enabled
+dnl by means of the '--enable-experimental' flag.
+AC_ARG_ENABLE(experimental,
+	[AS_HELP_STRING([--enable-experimental],
+		[Experimental code (not documented) @<:@default=no@:>@])],
+	[],
+	[enable_experimental=no])
+AS_IF([test "x$enable_experimental" = xyes],
+	[AC_DEFINE([USE_EXPERIMENTAL_CODE], [1], 
+	           [Define to 1 if you want to use experimental code])], 
+	[])
+AM_CONDITIONAL(ENABLE_EXPERIMENTAL, test x$enable_experimental = xyes)
+
+
 dnl Some tests compare the return values of PDFs, CDFs and of
 dnl the function parser with the output of corresponding
 dnl Mathematica(R) scripts.
@@ -309,6 +324,7 @@ AC_MSG_RESULT([
 *  Enable runtime checks:      ${enable_check_struct}
 *  Enable logging of data:     ${enable_logging}
 *  Enable info routine:        ${enable_info}
+*  Experimenal code:           ${enable_experimental}
 *  Use Rmath library:          ${with_Rmath}
 *
 *  Support for external uniform random number generators

@@ -69,7 +69,7 @@ unur_pinv_new( const struct unur_distr *distr )
     par->variant |= PINV_VARIANT_PDF;  /*   use PDF                          */
   /* else:                                  use CDF                          */
 
-  par->set      = 0u;                      /* inidicate default parameters   */
+  par->set      = 0u;                      /* indicate default parameters    */
   par->urng     = unur_get_default_urng(); /* use default urng               */
   par->urng_aux = NULL;                    /* no auxilliary URNG required    */
 

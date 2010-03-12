@@ -101,6 +101,11 @@
 
 /*---------------------------------------------------------------------------*/
 
+/* enable additional code for development */
+/* #define PINV_DEBUG */
+
+/*---------------------------------------------------------------------------*/
+
 #include <unur_source.h>
 #include <distr/distr.h>
 #include <distr/distr_source.h>

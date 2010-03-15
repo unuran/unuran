@@ -56,6 +56,7 @@ unur_pinv_new( const struct unur_distr *distr )
 
   /* set default values */
   PAR->order = 5;                /* order of polynomial                      */
+  PAR->smooth = 0;               /* smoothness parameter                     */
   PAR->u_resolution = 1.0e-10;   /* maximal error allowed in u-direction     */
   PAR->bleft = -1.e100;          /* left border of the computational domain  */
   PAR->bright = 1.e100;          /* right border of the computational domain */
@@ -104,7 +105,7 @@ unur_pinv_set_order( struct unur_par *par, int order)
 
   /* check new parameter for generator */
   if (order<3 || order>MAX_ORDER) {
-    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"order <3 or >12");
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"order <3 or >17");
     return UNUR_ERR_PAR_SET;
   }
 
@@ -117,6 +118,42 @@ unur_pinv_set_order( struct unur_par *par, int order)
   return UNUR_SUCCESS;
 
 } /* end of unur_pinv_set_order() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_pinv_set_smoothness( struct unur_par *par, int smooth)
+     /*----------------------------------------------------------------------*/
+     /* set smoothness of interpolation polynomial.                          */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par    ... pointer to parameter for building generator object      */
+     /*   smooth ... smoothness parameter                                    */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, PINV );
+
+  /* check new parameter for generator */
+  if (smooth<0 || smooth>2) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"smoothness must be 0, 1, or 2");
+    return UNUR_ERR_PAR_SET;
+  }
+
+  /* store date */
+  PAR->smooth = smooth;
+
+  /* changelog */
+  par->set |= PINV_SET_SMOOTH;
+
+  return UNUR_SUCCESS;
+
+} /* end of unur_pinv_set_smoothness() */
 
 /*---------------------------------------------------------------------------*/
 

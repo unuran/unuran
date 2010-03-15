@@ -37,6 +37,7 @@
 
 struct unur_pinv_par { 
   int order;               /* order of interpolating polynomial              */
+  int smooth;              /* smoothness parameter                           */
   double u_resolution;     /* maximal error in u                             */
   double bleft;            /* left boundary of the computational domain      */
   double bright;           /* right boundary of the computational domain     */
@@ -72,6 +73,7 @@ struct unur_pinv_gen {
 			      [ Umin = 0. ]                                  */
 
   double  u_resolution;    /* maximal error in u                             */
+  int smooth;              /* smoothness parameter                           */
   double  bleft;           /* left border of the computational domain        */
   double  bright;          /* right border of the computational domain       */
 

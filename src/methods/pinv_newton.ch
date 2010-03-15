@@ -66,7 +66,7 @@ _unur_pinv_create_table( struct unur_gen *gen )
   /* initialize step size for subintervals */
   h = (GEN->bright-GEN->bleft)/128.;
 
-  /* initialize array of interval: starting interval */
+  /* initialize array of intervals: starting interval */
   if (_unur_pinv_interval( gen, 0, GEN->bleft, 0.) != UNUR_SUCCESS) 
     return UNUR_ERR_GEN_CONDITION;
 
@@ -370,9 +370,9 @@ _unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_interval *iv,
       
       if (_unur_iszero(area)) return UNUR_ERR_SILENT;
       
-      /* construction points of interpolation polynomial of CDF^{-1} */
+      /* construction points for interpolating polynomial for CDF^{-1} */
       ui[i] = (i>0) ? (ui[i-1]+area) : area;
-      /* rescaled corresponding values of CDF^{-1} */ 
+      /* divided differences of values of CDF^{-1} */ 
       zi[i] = dxi/area;
     }
     else {

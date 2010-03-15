@@ -64,6 +64,12 @@ _unur_pinv_info( struct unur_gen *gen, int help )
   /* method */
   _unur_string_append(info,"method: PINV (Polynomial interpolation based INVerse CDF)\n");
   _unur_string_append(info,"   order of polynomial = %d\n", GEN->order);
+  _unur_string_append(info,"   smoothness = %d  ", GEN->smooth);
+  switch (GEN->smooth) {
+  case 0: _unur_string_append(info,"[continuous]\n"); break;
+  case 1: _unur_string_append(info,"[differentiable]\n"); break;
+  case 2: _unur_string_append(info,"[twice differentiable]\n"); break;
+  }
   if (gen->variant & PINV_VARIANT_PDF)
     _unur_string_append(info,"   use PDF + Lobatto integration  %s\n",
 			(gen->set & PINV_SET_VARIANT) ? "" : "[default]");
@@ -97,8 +103,20 @@ _unur_pinv_info( struct unur_gen *gen, int help )
   /* parameters */
   if (help) {
     _unur_string_append(info,"parameters:\n");
-    _unur_string_append(info,"   order = %d  %s\n", GEN->order,
- 			(gen->set & PINV_SET_ORDER) ? "" : "[default]");
+
+    _unur_string_append(info,"   order = %d  ", GEN->order);
+    if (!(gen->set & PINV_SET_ORDER)) 
+      _unur_string_append(info,"[default]");
+    if (gen->set & PINV_SET_ORDER_COR) 
+      _unur_string_append(info,"[corrected]");
+    _unur_string_append(info,"\n");
+
+    _unur_string_append(info,"   smoothness = %d  ", GEN->smooth);
+    if (!(gen->set & PINV_SET_SMOOTH)) 
+      _unur_string_append(info,"[default]");
+    if (gen->set & PINV_SET_SMOOTH_COR) 
+      _unur_string_append(info,"[corrected]");
+    _unur_string_append(info,"\n");
 
     _unur_string_append(info,"   u_resolution = %g  %s\n", GEN->u_resolution,
  			(gen->set & PINV_SET_U_RESOLUTION) ? "" : "[default]");

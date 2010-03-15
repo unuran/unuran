@@ -123,7 +123,7 @@
 /* Constants                                                                 */
 
 /* -- Global parameters                                                      */
-#define MAX_ORDER   (12)
+#define MAX_ORDER   (17)
 /* Maximum order of Newton interpolation polynomial */
 
 #define PINV_UERROR_CORRECTION  (0.9)
@@ -208,13 +208,16 @@
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
 
-#define PINV_SET_ORDER          0x001u  /* order of polynomial               */
-#define PINV_SET_U_RESOLUTION   0x002u  /* maximal error in u                */
-#define PINV_SET_UPOINTS        0x004u  /* use Chebyshev points in u scale   */
-#define PINV_SET_BOUNDARY       0x008u  /* boundary of computational region  */
-#define PINV_SET_SEARCHBOUNDARY 0x010u  /* search for boundary               */
-#define PINV_SET_VARIANT        0x020u  /* variant of algorithm              */
-#define PINV_SET_MAX_IVS        0x040u  /* maximum number of subintervals    */
+#define PINV_SET_ORDER          0x0001u  /* order of polynomial              */
+#define PINV_SET_ORDER_COR      0x1000u  /* ... corrected                    */
+#define PINV_SET_SMOOTH         0x0002u  /* smoothness of interpolant        */
+#define PINV_SET_SMOOTH_COR     0x2000u  /* ... corrected                    */
+#define PINV_SET_U_RESOLUTION   0x0004u  /* maximal error in u               */
+#define PINV_SET_UPOINTS        0x0008u  /* use Chebyshev points in u scale  */
+#define PINV_SET_BOUNDARY       0x0010u  /* boundary of computational region */
+#define PINV_SET_SEARCHBOUNDARY 0x0020u  /* search for boundary              */
+#define PINV_SET_VARIANT        0x0040u  /* variant of algorithm             */
+#define PINV_SET_MAX_IVS        0x0080u  /* maximum number of subintervals   */
 
 /*---------------------------------------------------------------------------*/
 

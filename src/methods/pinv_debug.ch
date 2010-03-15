@@ -51,6 +51,10 @@ _unur_pinv_debug_init_start( const struct unur_gen *gen )
 
   fprintf(LOG,"%s: order of polynomial = %d",gen->genid,GEN->order);
   _unur_print_if_default(gen,PINV_SET_ORDER);
+  if(gen->set & PINV_SET_ORDER_COR) fprintf(LOG,"  [corrected]");
+  fprintf(LOG,"\n%s: smoothness = %d",gen->genid,GEN->smooth);
+  _unur_print_if_default(gen,PINV_SET_SMOOTH);
+  if(gen->set & PINV_SET_SMOOTH_COR) fprintf(LOG,"  [corrected]");
   fprintf(LOG,"\n%s: u-resolution = %g",gen->genid,GEN->u_resolution);
   _unur_print_if_default(gen,PINV_SET_U_RESOLUTION);
   fprintf(LOG,"\n%s: maximum number of subintervals = %d",gen->genid,GEN->max_ivs);

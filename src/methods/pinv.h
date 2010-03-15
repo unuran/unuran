@@ -198,7 +198,7 @@ UNUR_PAR *unur_pinv_new( const UNUR_DISTR *distribution );
 int unur_pinv_set_order( UNUR_PAR *parameters, int order);
 /* 
    Set order of interpolation. Valid orders are between @code{3} and
-   @code{12}. Higher orders result in fewer intervals for the
+   @code{17}. Higher orders result in fewer intervals for the
    approximations. 
 
    Default: @code{5}.
@@ -338,6 +338,22 @@ int unur_pinv_estimate_error( const UNUR_GEN *generator, int samplesize, double 
    The results are stored in @var{max_error} and @var{MAE}, respectively.
 
    It returns @code{UNUR_SUCCESS} if successful. 
+*/
+
+/*---------------------------------------------------------------------------*/
+/* FIXME */
+
+int unur_pinv_set_smoothness( UNUR_PAR *parameters, int smoothness);
+/* 
+   Set smoothness of interpolant. 
+   Values for @var{smoothness}:
+   0 ... continuous
+   1 ... differentiable (order must be odd)
+   2 ... twice differentiable (order must be 5,8,11,14,17)
+   If the order of the polynomial does not satisfy condition it set
+   the next larger possible value.
+
+   Default: @code{0}.
 */
 
 /* =END */

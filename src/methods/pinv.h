@@ -42,7 +42,7 @@
 
    =REQUIRED PDF or CDF, center
 
-   =OPTIONAL domain
+   =OPTIONAL domain, derivative of PDF
 
    =REF [DHLa08]
 

@@ -20,6 +20,7 @@
  *      pointer to the PDF, center of distribution                           *
  *                                                                           *
  *   OPTIONAL:                                                               *
+ *      pointer to CDF, pointer to derivative of PDF                         *
  *                                                                           *
  *****************************************************************************
  *                                                                           *
@@ -44,6 +45,18 @@
  *****************************************************************************
  *                                                                           *
  *   REFERENCES:                                                             *
+ *                                                                           *
+ *   [1] Derflinger, Gerhard, H{\"o}rmann, Wolfgang, and Leydold, Josef:     *
+ *       Random Variate Generation by Numerical Inversion when only the      *
+ *       Density Is Known. ACM Trans. Model. Comput. Simul. (2010),          *
+ *       to appear.                                                          *
+ *       See also Research Report Series of the Department of                *
+ *       Statistics and Mathematics at WU Vienna, No. 90, June 2009.         *
+ *       http://epub.wu.ac.at/, oai:epub.wu-wien.ac.at:epub-wu-01_f41        *
+ *                                                                           *
+ *   [2] H{\"o}rmann, Wolfgang and Leydold, Josef:                           *
+ *       Continuous Random Variate Generation by Fast Numerical Inversion,   *
+ *       ACM Trans. Model. Comput. Simul. 13(4), pp. 347--362, 2003.         *
  *                                                                           *
  *****************************************************************************
  *                                                                           *
@@ -97,6 +110,9 @@
  *   Interpolation:                                                          *
  *     Newton recursion for coefficients of polynomial                       *
  *     ("Newton interpolation").                                             *
+ *                                                                           *
+ *     Hermite interpolation [2] (as the limit case with double and          *
+ *     tripple nodes).                                                       *
  *                                                                           *
  *****************************************************************************/
 

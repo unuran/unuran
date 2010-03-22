@@ -213,12 +213,12 @@ int unur_pinv_set_order( UNUR_PAR *parameters, int order);
 int unur_pinv_set_smoothness( UNUR_PAR *parameters, int smoothness);
 /* 
    Set smoothness of interpolant. By construction the interpolant is
-   piecewise polynomial and thus smooth for each of the intervals
+   piecewise polynomial and thus smooth on each of the intervals
    where these polynomials are constructed. At the intverval
    boundaries, however, it need not be differentiable unless the
-   derivatives of these polynomials is not controlled.
+   derivatives of these polynomials is controlled.
    Method PINV also implements versions of Newton interpolation where
-   the first (or second) derviative the interpolating
+   the first (or second) derivative of the interpolating
    polynomial coincides with the respective derivative of the inverse
    CDF at the nodes. These versions are also known as Hermite
    interpolation.
@@ -234,7 +234,7 @@ int unur_pinv_set_smoothness( UNUR_PAR *parameters, int smoothness);
    @item @code{1} 
    @tab differentiable
    @tab requires PDF (optional: CDF), @*
-   order must be odd
+   order of polynomial must be odd
 
    @item @code{2} 
    @tab twice differentiable
@@ -245,13 +245,19 @@ int unur_pinv_set_smoothness( UNUR_PAR *parameters, int smoothness);
    If the order of the polynomial does not satisfy the given
    condition, then it is increased to the next larger possible value.
 
-   @emph{Remark:} If the interpolating polynomial cannot be
-   constructed for the requested smoothness on a particular interval,
-   then the smoothness parameter is reduced for the interval.
+   @emph{Remark:}
+   A higher smoothness parameter usually results in a higher number of
+   intervals and thus a higher setup time and memory consumption.
 
-   @emph{Remark:} For order @code{3} and smoothness @code{1} (cubic
-   Hermite interpolation) monotonicity is guaranteed by a inspecting
-   the coefficients of the polymials.
+   @emph{Remark:}
+   If the interpolating polynomial cannot be constructed for the
+   requested smoothness on a particular interval, 
+   then the smoothness parameter is reduced for that interval.
+
+   @emph{Remark:}
+   For order @code{3} and smoothness @code{1} (cubic Hermite
+   interpolation) monotonicity is guaranteed by checking a simple
+   montonicity condition for the coefficients of the polynomials.
 
    Default: @code{0}.
 */

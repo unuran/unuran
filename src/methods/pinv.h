@@ -248,6 +248,8 @@ int unur_pinv_set_smoothness( UNUR_PAR *parameters, int smoothness);
    @emph{Remark:}
    A higher smoothness parameter usually results in a higher number of
    intervals and thus a higher setup time and memory consumption.
+   We also observed that higher smoothness parameters make the
+   algorithm more sensible for round-off error. Then the setup fails.
 
    @emph{Remark:}
    If the interpolating polynomial cannot be constructed for the

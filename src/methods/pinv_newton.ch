@@ -576,6 +576,13 @@ _unur_pinv_newton_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv,
     if (uerror>maxerror) maxerror = uerror;
   }
 
+  /* we have an analytical test for cubic Hermite interpolation */
+  if (GEN->order == 3 && GEN->smooth==1 && 
+      ! _unur_pinv_cubic_hermite_is_monotone(gen,ui,zi,xval))
+    /* not monotone */
+    return 1000.;
+  
+  /* return maximal observed u-error */
   return maxerror;
 } /* end of _unur_pinv_newton_maxerror() */
 
@@ -655,6 +662,52 @@ _unur_pinv_linear_testpoints (double *utest, double *ui, int order)
 
   return UNUR_SUCCESS;
 } /* end of _unur_pinv_linear_testpoints() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_pinv_cubic_hermite_is_monotone(struct unur_gen *gen, double *ui, double *zi, double *xval)
+     /*----------------------------------------------------------------------*/
+     /* [2c.] check monotonicity of cubic Hermite interpolation              */
+     /*       (order = 3, smoothness = 1)                                    */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer generator object                                  */
+     /*   ui   ... u-values of interpolation                                 */ 
+     /*   zi   ... coefficients of polynomial (increasing order)             */
+     /*   xval ... x-values for constructing polynomial                      */
+     /*                                                                      */
+     /* Cubic Hermite interpolation is monotonically increasing if           */
+     /*   1/f'(x0) <= 3 * (x1-x0) / (u1 - u0)   and                          */
+     /*   1/f'(x1) <= 3 * (x1-x0) / (u1 - u0)                                */
+     /* where (u0,u1) is the interval for the polynomial and                 */
+     /* xi = F^{-1}(ui) are the values of the inverse CDF at the boundary    */
+     /* and f denotes the PDF.                                               */
+     /*                                                                      */
+     /* Notice that u0=0, u1=ui[2], x0=xval[0], and x1=xval[2].              */
+     /* 1/f'(x0) = zi[0]                                                     */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   TRUE  ... if cubic is monotone                                     */
+     /*   FALSE ... otherwise                                                */
+     /*----------------------------------------------------------------------*/
+{
+  double f0,f1,dq;
+
+  /* we skip the test if computing the bound has too many round-off errors */
+  if (_unur_iszero(ui[2])) return TRUE;
+
+  /* difference quotient */
+  dq = (xval[2] - xval[0]) / ui[2];
+
+  /* derivative of inverse CDF at boundary points */
+  f0 = zi[0];
+  f1 = 1./PDF(xval[2]);
+
+  /* test condition */
+  return (f0 <= 3. * dq && f1 <= 3. * dq) ? TRUE : FALSE;
+
+} /* end of _unur_pinv_cubic_hermite_is_monotone() */
 
 /*---------------------------------------------------------------------------*/
 

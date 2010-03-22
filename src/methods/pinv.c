@@ -99,6 +99,7 @@
  *   2c.   Estimate approximation error for given interpolating polynomial.  *
  *            _unur_pinv_newton_maxerror()                                   *
  *            _unur_pinv_newton_testpoints()                                 *
+ *            _unur_pinv_cubic_hermite_monotone()                            *
  *                                                                           *
  *                                                                           *
  *   Currently the following methods are implemented:                        *
@@ -429,6 +430,11 @@ static int _unur_pinv_newton_testpoints (double *utest, double ui[], int order);
 static int _unur_pinv_linear_testpoints (double *utest, double *ui, int order);
 /*---------------------------------------------------------------------------*/
 /* [2c.] create table of test points for linear interpolation                */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_pinv_cubic_hermite_is_monotone();
+/*---------------------------------------------------------------------------*/
+/* [2c.] check monotonicity of cubic Hermite interpolation                   */
 /*---------------------------------------------------------------------------*/
 
 static int _unur_pinv_interval( struct unur_gen *gen, int i, double x, double cdfx );

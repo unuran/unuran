@@ -4,7 +4,7 @@ Version 1.7.0: ???? 2010
 	* Methods:
 
 	- PINV: 
-	  added function unur_pinv_set_use_upoints().
+	  added experimantal function unur_pinv_set_use_upoints().
 	  increased maximal order to 17
           added smoothness parameter
 

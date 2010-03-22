@@ -73,7 +73,9 @@
       the algorithm in the sequel.
 
       Both the order of the interpolating polynomial and the
-      u-resolution can be selected.
+      u-resolution can be selected.n Moreover, it is possible to 
+      set a smoothness parameter that controlls whether the interpolant
+      is (one or two times) differentiable at interval boundaries.
 
       The interpolating polynomials have to be computed in a setup
       step. However, it only works for distributions with bounded
@@ -145,6 +147,10 @@
       The inverse CDF is interpolated using Newton polymials.
       The order of this polynomial can be set by means of a
       unur_pinv_set_order() call.
+      
+      The smoothness of the interpolant at interval boundaries can be
+      controlled using a unur_pinv_set_smoothness() call. 
+      Thus it can be forced to be (twice) differentiable.
 
       For distributions with unbounded domains the tails are cut
       off such that the probability for the tail regions is small
@@ -202,6 +208,52 @@ int unur_pinv_set_order( UNUR_PAR *parameters, int order);
    approximations. 
 
    Default: @code{5}.
+*/
+
+int unur_pinv_set_smoothness( UNUR_PAR *parameters, int smoothness);
+/* 
+   Set smoothness of interpolant. By construction the interpolant is
+   piecewise polynomial and thus smooth for each of the intervals
+   where these polynomials are constructed. At the intverval
+   boundaries, however, it need not be differentiable unless the
+   derivatives of these polynomials is not controlled.
+   Method PINV also implements versions of Newton interpolation where
+   the first (or second) derviative the interpolating
+   polynomial coincides with the respective derivative of the inverse
+   CDF at the nodes. These versions are also known as Hermite
+   interpolation.
+
+   Possible values for @var{smoothness}:
+
+   @multitable @columnfractions .1 .25 .60
+   @headitem Value @tab Effect @tab Requirements
+   @item @code{0} 
+   @tab continuous
+   @tab requires PDF or CDF
+
+   @item @code{1} 
+   @tab differentiable
+   @tab requires PDF (optional: CDF), @*
+   order must be odd
+
+   @item @code{2} 
+   @tab twice differentiable
+   @tab requires PDF and its derivative (optional: CDF), @*
+   order must be 5, 8, 11, 14 or 17
+   @end multitable
+
+   If the order of the polynomial does not satisfy the given
+   condition, then it is increased to the next larger possible value.
+
+   @emph{Remark:} If the interpolating polynomial cannot be
+   constructed for the requested smoothness on a particular interval,
+   then the smoothness parameter is reduced for the interval.
+
+   @emph{Remark:} For order @code{3} and smoothness @code{1} (cubic
+   Hermite interpolation) monotonicity is guaranteed by a inspecting
+   the coefficients of the polymials.
+
+   Default: @code{0}.
 */
 
 int unur_pinv_set_u_resolution( UNUR_PAR *parameters, double u_resolution);
@@ -338,22 +390,6 @@ int unur_pinv_estimate_error( const UNUR_GEN *generator, int samplesize, double 
    The results are stored in @var{max_error} and @var{MAE}, respectively.
 
    It returns @code{UNUR_SUCCESS} if successful. 
-*/
-
-/*---------------------------------------------------------------------------*/
-/* FIXME */
-
-int unur_pinv_set_smoothness( UNUR_PAR *parameters, int smoothness);
-/* 
-   Set smoothness of interpolant. 
-   Values for @var{smoothness}:
-   0 ... continuous
-   1 ... differentiable (order must be odd)
-   2 ... twice differentiable (order must be 5,8,11,14,17)
-   If the order of the polynomial does not satisfy condition it set
-   the next larger possible value.
-
-   Default: @code{0}.
 */
 
 /* =END */

@@ -78,6 +78,7 @@
  *         fixed (sub-) interval.                                            *
  *            _unur_pinv_newton_create()                                     *
  *            _unur_pinv_chebyshev_points()                                  *
+ *            _unur_pinv_newton_cpoints()                                    *
  *                                                                           *
  *   2b.   Evaluate interpolating polynomial.                                *
  *            _unur_pinv_newton_eval()                                       *
@@ -370,14 +371,15 @@ static int _unur_pinv_create_table( struct unur_gen *gen );
 /* create table for Newton interpolation                                     */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_pinv_interval( struct unur_gen *gen, int i, double x, double cdfx );
+static int _unur_pinv_chebyshev_points (double *pt, int order, int smooth);
 /*---------------------------------------------------------------------------*/
-/* make a new interval i with left boundary point x and CDF(x).              */
+/* [2a.] Compute Chebyshev points.                                           */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_pinv_lastinterval( struct unur_gen *gen );
+static int _unur_pinv_newton_cpoints (double *xval, int order, struct unur_pinv_interval *iv, 
+				      double h, double *chebyshev, int smooth, int use_upoints);
 /*---------------------------------------------------------------------------*/
-/* update size of array and set all uninitialized values to 0.               */
+/* [2a.] Compute points for construct interpolating polynomial.              */
 /*---------------------------------------------------------------------------*/
 
 static int _unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_interval *iv, 
@@ -392,30 +394,35 @@ static int _unur_pinv_linear_create (struct unur_gen *gen, struct unur_pinv_inte
 /* [2a.] Compute coefficients for linear interpolation.                      */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_pinv_chebyshev_points (int order, double *pt);
-/*---------------------------------------------------------------------------*/
-/* [2a.] Compute Chebyshev points.                                           */
-/*---------------------------------------------------------------------------*/
-
-static double _unur_pinv_newton_eval (double q, double ui[], double zi[], int order);
+static double _unur_pinv_newton_eval (double q, double *ui, double *zi, int order);
 /*---------------------------------------------------------------------------*/
 /* 2b. evaluate Newton polynomial.                                           */
 /*---------------------------------------------------------------------------*/
 
 static double _unur_pinv_newton_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv, 
-					  double xval[]);
+					  double *xval, int use_linear);
 /*---------------------------------------------------------------------------*/
 /* 2c. estimate maximal error of Newton interpolation in subinterval         */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_pinv_newton_testpoints (int g, double ui[], double utest[]);
+static int _unur_pinv_newton_testpoints (double *utest, double ui[], int order);
 /*---------------------------------------------------------------------------*/
 /* [2c.] calculate the local maxima of the interpolation polynomial          */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_pinv_linear_testpoints (int g, double ui[], double utest[]);
+static int _unur_pinv_linear_testpoints (double *utest, double *ui, int order);
 /*---------------------------------------------------------------------------*/
 /* [2c.] create table of test points for linear interpolation                */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_pinv_interval( struct unur_gen *gen, int i, double x, double cdfx );
+/*---------------------------------------------------------------------------*/
+/* make a new interval i with left boundary point x and CDF(x).              */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_pinv_lastinterval( struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* update size of array and set all uninitialized values to 0.               */
 /*---------------------------------------------------------------------------*/
 
 
@@ -491,6 +498,7 @@ static void _unur_pinv_info( struct unur_gen *gen, int help );
 #define SAMPLE    gen->sample.cont      /* pointer to sampling routine       */
 
 #define PDF(x)  (_unur_pinv_eval_PDF((x),(gen)))      /* call to PDF         */
+#define dPDF(x) (_unur_cont_dPDF((x),(gen->distr)))   /* call to derivate of PDF */
 #define CDF(x)  (_unur_cont_CDF((x),(gen->distr)))    /* call to CDF         */
 
 /*---------------------------------------------------------------------------*/

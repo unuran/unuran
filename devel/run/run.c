@@ -50,14 +50,9 @@ int main()
 
   unur_set_default_debug(~0U);
 
-  distr = unur_distr_cont_new();
-  unur_distr_cont_set_logpdf( distr, mylogpdf );
-  unur_distr_cont_set_dlogpdf( distr, mydlogpdf );
-  unur_distr_cont_set_domain( distr, 0., 0.5);
-  unur_distr_cont_set_mode( distr, 0.);
-
-  par = unur_itdr_new(distr);
-  unur_itdr_set_cp(par,-0.999);
+  distr = unur_distr_normal(NULL,0);
+  par = unur_pinv_new(distr);
+  unur_pinv_set_smoothness(par,2);
 
   gen = unur_init(par);
 
@@ -66,7 +61,7 @@ int main()
      exit (EXIT_FAILURE);
   }
 
-  for (i=1; i<100; i++)
+  for (i=1; i<10; i++)
     printf("%g\n",unur_sample_cont(gen));
 
   return 0;

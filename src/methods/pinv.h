@@ -1,6 +1,6 @@
 /*****************************************************************************
  *                                                                           *
- *          UNURAN -- Universal Non-Uniform Random number generator          *
+ *          UNU.RAN -- Universal Non-Uniform Random number generator         *
  *                                                                           *
  *****************************************************************************
  *                                                                           *
@@ -15,7 +15,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2008 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2010 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -40,9 +40,9 @@
 
    =UP  Methods_for_CONT
 
-   =REQUIRED PDF or CDF, center
+   =REQUIRED PDF, center
 
-   =OPTIONAL domain, derivative of PDF
+   =OPTIONAL domain, CDF, derivative of PDF
 
    =REF [DHLa08]
 
@@ -58,7 +58,7 @@
       @unurmath{(CDF(x),x)} for some points @i{x} in this subinterval.
       If the PDF is given then the CDF is computed numerically
       from the given PDF using adaptive Gauss-Lobatto
-      integration with 5 points. Subintervals are splitted until the
+      integration with 5 points. Subintervals are split until the
       requested accuracy goal is reached.
 
       The method is not exact, as it only produces random variates of
@@ -73,9 +73,7 @@
       the algorithm in the sequel.
 
       Both the order of the interpolating polynomial and the
-      u-resolution can be selected.n Moreover, it is possible to 
-      set a smoothness parameter that controlls whether the interpolant
-      is (one or two times) differentiable at interval boundaries.
+      u-resolution can be selected.
 
       The interpolating polynomials have to be computed in a setup
       step. However, it only works for distributions with bounded
@@ -112,6 +110,33 @@
       an abortion of the set-up or (even worse) the approximation
       error might become larger than requested, since the (computation of the)
       interpolating polynomial becomes numerically unstable.
+      
+      @emph{Remark:}
+      We also have implemented experimental variants.
+      However, we observed that these variants are more sensitive to
+      round-off errors, especially in the right hand tail and we
+      @emph{do not recommend} their usage unless there are severe
+      reasons.
+
+      @itemize @minus
+      @item
+      Use a function that implements the CDF instead of numerical
+      integration of the PDF. 
+      
+      @item
+      Use Hermite interpolation instead of Newton interpolation.
+      Thus the first (and second) derivative of the interpolating
+      polynomial coincides with that of the inverse CDF.
+      Consequently the interpolant is also (twice) differentiable even
+      at the interval boundaries.
+      This variant can be seen as limiting case of Newton
+      interpolation with double (or triple) points as nodes.
+
+      We have used a @emph{smoothness} parameter to control this
+      feature. However, besides numerical problems we observed that
+      this variant requires more intervals and thus larger setup times
+      and higher memory consumptions.
+      @end itemize
 
 
    =HOWTOUSE
@@ -136,25 +161,22 @@
       Then the PDF is rescaled such that the PDF at the mode is 1.
       Thus the algorithm is numerically more stable.
 
-      It is also possible to use the CDF of the distribution instead
-      of the PDF. Then the distribution object must contain a pointer
-      to the CDF. Moreover, this variant of the algorithmus has to be
-      switched on using an unur_pinv_set_usecdf() call.
-      Notice, however, that the setup for this variant is numerically
-      less stable than using integration of the PDF (the default
-      variant).
-
-      The inverse CDF is interpolated using Newton polymials.
+      The inverse CDF is interpolated using Newton polynomials.
       The order of this polynomial can be set by means of a
       unur_pinv_set_order() call.
       
       The smoothness of the interpolant at interval boundaries can be
       controlled using a unur_pinv_set_smoothness() call. 
-      Thus it can be forced to be (twice) differentiable.
+      Then Hermite interpolation instead of Newton interpolation is
+      used. (The former can be seen as a limiting case of Newton
+      interpolation with double (or triple) points.)
+      However, using higher smoothness is @emph{not recommended}
+      unless differentiability at the interval boundaries is
+      important.
 
       For distributions with unbounded domains the tails are cut
       off such that the probability for the tail regions is small
-      compared to the given u-resulution. For finding these cut points
+      compared to the given u-resolution. For finding these cut points
       the algorithm starts with the region @code{[-1.e100,1.e100]}. For
       the exceptional case where this does not work these starting
       points can be changed via a unur_pinv_set_boundary() call.
@@ -182,6 +204,14 @@
       increased using a unur_pinv_set_max_intervals() call.
       If this maximum number is too small then the set-up aborts with
       a corresponding error message.
+
+      It is also possible to use the CDF of the distribution instead
+      of the PDF. Then the distribution object must contain a pointer
+      to the CDF. Moreover, this variant of the algorithm has to be
+      switched on using an unur_pinv_set_usecdf() call.
+      Notice, however, that the setup for this variant is numerically
+      less stable than using integration of the PDF (the default
+      variant). Thus using the CDF is @emph{not recommended}.
 
    =END
 */
@@ -214,13 +244,15 @@ int unur_pinv_set_smoothness( UNUR_PAR *parameters, int smoothness);
 /* 
    Set smoothness of interpolant. By construction the interpolant is
    piecewise polynomial and thus smooth on each of the intervals
-   where these polynomials are constructed. At the intverval
-   boundaries, however, it need not be differentiable unless the
-   derivatives of these polynomials is controlled.
-   Method PINV also implements versions of Newton interpolation where
+   where these polynomials are constructed. At the interval
+   boundaries, however, it usually not be differentiable.
+   Method PINV also implements variants of Newton interpolation where
    the first (or second) derivative of the interpolating
    polynomial coincides with the respective derivative of the inverse
-   CDF at the nodes. These versions are also known as Hermite
+   CDF at the nodes. The the interpolant is (twice) differentiable
+   even at the interval boundaries.
+   These variants can be seen as limiting case of Newton interpolation
+   with double (or triple) points as nodes and are known as Hermite
    interpolation.
 
    Possible values for @var{smoothness}:
@@ -229,7 +261,7 @@ int unur_pinv_set_smoothness( UNUR_PAR *parameters, int smoothness);
    @headitem Value @tab Effect @tab Requirements
    @item @code{0} 
    @tab continuous
-   @tab requires PDF or CDF
+   @tab requires PDF (or CDF)
 
    @item @code{1} 
    @tab differentiable
@@ -259,7 +291,12 @@ int unur_pinv_set_smoothness( UNUR_PAR *parameters, int smoothness);
    @emph{Remark:}
    For order @code{3} and smoothness @code{1} (cubic Hermite
    interpolation) monotonicity is guaranteed by checking a simple
-   montonicity condition for the coefficients of the polynomials.
+   monotonicity condition for the coefficients of the polynomials.
+
+   @emph{Remark:}
+   Using @var{smoothness} larger than @code{0} is 
+   @emph{not recommended} unless differentiability at the interval
+   boundaries is important for ones application.
 
    Default: @code{0}.
 */
@@ -289,8 +326,8 @@ int unur_pinv_set_u_resolution( UNUR_PAR *parameters, double u_resolution);
    can be as large as @code{1.e-14}.
 
    @strong{Warning!}
-   These figures are based on our experiments (with some tolarence
-   added to be on the safe side). There is no guarentee for these error
+   These figures are based on our experiments (with some tolerance
+   added to be on the safe side). There is no guarantee for these error
    estimates for a particular distribution.
 
    Default is @code{1.e-10}.
@@ -317,12 +354,17 @@ int unur_pinv_set_usepdf( UNUR_PAR *parameters );
 int unur_pinv_set_usecdf( UNUR_PAR *parameters );
 /* 
    Use CDF (if available) to compute approximate inverse CDF.
+   This variant is intend for running experiments with method PINV.
 
    @emph{Remark:}
    We ran many experiments and found that for small values of the
    given @var{u_resolution} (less than @code{1.e-12}) the setup fails
    for distributions with heavy tails. We found that using the PDF
    (instead of the CDF) is numerically more stable.
+   This is especially the case when the smoothness parameter is set
+   to @code{1} or @code{2}.
+
+   Using the CDF is @strong{not recommended}.
 */
 
 int unur_pinv_set_boundary( UNUR_PAR *parameters, double left, double right );

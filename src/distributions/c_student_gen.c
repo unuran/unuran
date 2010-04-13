@@ -90,7 +90,7 @@ _unur_stdgen_student_init( struct unur_par *par, struct unur_gen *gen )
     return UNUR_SUCCESS;
 
   case 2:  /* Ratio of Uniforms */
-    if (par->distr->data.cont.params[0] < 1.) {   /* nu < 1 */
+    if (par!=NULL && par->distr->data.cont.params[0] < 1.) {   /* nu < 1 */
       _unur_error(NULL,UNUR_ERR_GEN_CONDITION,"");
       return UNUR_ERR_GEN_CONDITION;
     }

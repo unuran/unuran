@@ -88,7 +88,7 @@ _unur_stdgen_gig_init( struct unur_par *par, struct unur_gen *gen )
 
   case 0:  /* DEFAULT */
   case 1:  /* Ratio of Uniforms */
-    if (par->distr->data.cont.params[0] <= 0.) {    /* theta <= 0 */
+    if (par!=NULL && par->distr->data.cont.params[0] <= 0.) {    /* theta <= 0 */
       _unur_error(NULL,UNUR_ERR_GEN_CONDITION,"");
       return UNUR_ERR_GEN_CONDITION;
     }

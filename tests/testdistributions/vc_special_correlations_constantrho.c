@@ -180,7 +180,7 @@ unur_distr_multinormal_constantrho(int dim, const double *mean, double rho)
   /* set the correlation matrix and its inverse */
   if (_unur_vc_set_corrmatrix_constantrho(distr, dim, rho) != UNUR_SUCCESS) {
     /* error */
-    unur_distr_free(distr); distr = NULL; 
+    unur_distr_free(distr); distr = NULL; return NULL;
   }
   
   /* compute normalization constant */
@@ -216,7 +216,7 @@ unur_distr_multicauchy_constantrho(int dim, const double *mean, double rho)
   /* set the correlation matrix and its inverse */
   if (_unur_vc_set_corrmatrix_constantrho(distr, dim, rho) != UNUR_SUCCESS) {
     /* error */
-    unur_distr_free(distr); distr = NULL; 
+    unur_distr_free(distr); distr = NULL; return NULL;
   }
 
   /* compute normalization constant */
@@ -253,7 +253,7 @@ unur_distr_multistudent_constantrho(int dim, double df, const double *mean, doub
   /* set the correlation matrix and its inverse */
   if (_unur_vc_set_corrmatrix_constantrho(distr, dim, rho) != UNUR_SUCCESS) {
     /* error */
-    unur_distr_free(distr); distr = NULL; 
+    unur_distr_free(distr); distr = NULL; return NULL;
   }
 
   /* compute normalization constant */

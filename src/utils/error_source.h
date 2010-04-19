@@ -49,6 +49,17 @@ void _unur_error_x( const char *objid, const char *file, int line,
 /* like _unur_error_x but used a template for more sophisticated messages.   */
 /*---------------------------------------------------------------------------*/
 
+void _unur_error_handler_default( const char *objid, const char *file, int line, 
+				  const char *errortype, int errorcode, const char *reason );
+/*---------------------------------------------------------------------------*/
+/* unuran default error handler                                              */
+/*---------------------------------------------------------------------------*/
+
+void _unur_error_handler_off( const char *objid, const char *file, int line, 
+			      const char *errortype, int errorcode, const char *reason );
+/*---------------------------------------------------------------------------*/
+/* disabled error handler (suppress all warnings and error messages          */
+/*---------------------------------------------------------------------------*/
 
 #ifdef UNUR_COOKIES
 void _unur_error_cookies( const char *file, int line, unsigned observed, unsigned expected );

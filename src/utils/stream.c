@@ -91,18 +91,16 @@ _unur_log_printf( const char *genid ATTRIBUTE__UNUSED,
 #else
   return;
 #endif
-} /* end of unur_log_printf() */
+} /* end of _unur_log_printf() */
 
 /*---------------------------------------------------------------------------*/
 
-void
-_unur_log_printf_simple( const char *format ATTRIBUTE__UNUSED, ... )
+void _unur_log_debug( const char *format ATTRIBUTE__UNUSED, ... )
      /*----------------------------------------------------------------------*/
-     /* write messages on output stream(s)                                   */
+     /* write debugging messages on output stream(s)                         */
      /* (same as _unur_stream_printf() but without file and line number)     */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   genid     ... identifier of generator object (NULL if not known)   */
      /*   format    ... format for fprintf()                                 */
      /*   ...       ... (optional) arguments to be be printed                */
      /*----------------------------------------------------------------------*/
@@ -121,7 +119,7 @@ _unur_log_printf_simple( const char *format ATTRIBUTE__UNUSED, ... )
 #else
   return;
 #endif
-} /* end of unur_log_printf_simple() */
+} /* end of _unur_log_debug() */
 
 /*---------------------------------------------------------------------------*/
 

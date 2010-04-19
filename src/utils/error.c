@@ -38,15 +38,6 @@
 #include <stdarg.h>
 
 /*---------------------------------------------------------------------------*/
-/* prototypes for unuran error handlers                                      */
-
-static void _unur_error_handler_default( const char *objid, const char *file, int line, 
-					 const char *errortype, int errorcode, const char *reason );
-
-static void _unur_error_handler_off( const char *objid, const char *file, int line, 
-				     const char *errortype, int errorcode, const char *reason );
-
-/*---------------------------------------------------------------------------*/
 /* global variables                                                          */
 
 /* global variable used to record errors   */

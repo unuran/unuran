@@ -33,14 +33,14 @@
 
 /*---------------------------------------------------------------------------*/
 /* Function prototypes                                                       */
-void _unur_log_printf( const char *genid, const char *filename, int line, const char *format, ... )
-     ATTRIBUTE__FORMAT(4,5);
-void _unur_log_printf_simple( const char *format, ... )
-     ATTRIBUTE__FORMAT(1,2);
+void _unur_log_printf (const char *genid, const char *filename, int line, const char *format, ...)
+  ATTRIBUTE__FORMAT(4,5);
+void _unur_log_debug (const char *format, ...)
+  ATTRIBUTE__FORMAT(1,2);
 
 /*---------------------------------------------------------------------------*/
 
 /* Read data from file into double array.                                    */
-int _unur_read_data( const char *file, int no_of_entries, double **array );
+int _unur_read_data (const char *file, int no_of_entries, double **array);
 
 /*---------------------------------------------------------------------------*/

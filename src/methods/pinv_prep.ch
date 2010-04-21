@@ -10,7 +10,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2008 Wolfgang Hoermann and Josef Leydold                  *
+ *   Copyright (c) 2008-2010 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *****************************************************************************/
@@ -32,6 +32,8 @@ _unur_pinv_preprocessing (struct unur_gen *gen)
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
+  double area_approx;
+
   if (gen->variant & PINV_VARIANT_PDF) {
     /* 1a. Estimate computationally relevant domain (support) of PDF */
     if (_unur_pinv_relevant_support(gen) != UNUR_SUCCESS)
@@ -40,7 +42,8 @@ _unur_pinv_preprocessing (struct unur_gen *gen)
     /* 1b. Compute area below PDF over relevant domain approximately. */
     if (_unur_pinv_approx_pdfarea(gen) != UNUR_SUCCESS)
       return UNUR_FAILURE;
-    
+    area_approx = GEN->area; /* store for checking domain */
+
     /* 1c. Compute computational domain where inverse CDF is approximated */
     if (_unur_pinv_computational_domain(gen) != UNUR_SUCCESS)
       return UNUR_FAILURE;
@@ -49,6 +52,12 @@ _unur_pinv_preprocessing (struct unur_gen *gen)
     /*     store intermediate results from adaptive integration. */
     if (_unur_pinv_pdfarea(gen) != UNUR_SUCCESS) 
       return UNUR_FAILURE;
+
+    /* check area below PDF: it should not be (much) smaller than the approximate one */
+    if (GEN->area < 0.99 * area_approx) {
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"integration of pdf: numerical problems with cut-off points");
+      return UNUR_FAILURE;
+    }
   }
   
   else { /* use CDF */
@@ -162,8 +171,8 @@ _unur_pinv_searchborder (struct unur_gen *gen, double x0, double bound,
      /*   bound  ... stop searching at this point                            */
      /*   dom    ... pointer to boundary of domain / support of distribution */
      /*   search ... pointer to boolean that indicates whether we have to    */
-     /*              for cut-off points. The boolean is set to FALSE if a    */
-     /*              discontinuity is found at the boundary.                 */
+     /*              search for cut-off points. The boolean is set to FALSE  */
+     /*              if a discontinuity is found at the boundary.            */
      /*                                                                      */
      /* return:                                                              */
      /*   boundary point                                                     */
@@ -195,7 +204,7 @@ _unur_pinv_searchborder (struct unur_gen *gen, double x0, double bound,
   x = _unur_arcmean(x0,bound);
 
   /* find points where PDF values bracket threshold: */
-  /*   fs = PDF(xs) <= fllim <= PDF(xl) = fl           */
+  /*   fs = PDF(xs) <= fllim <= PDF(xl) = fl         */
   while ( (fx=PDF(x)) > fllim ) {
     if (_unur_FP_same(x,bound))
       return bound;
@@ -412,7 +421,7 @@ _unur_pinv_computational_domain (struct unur_gen *gen)
 
   /* compute cut-off points for tails */
   if(GEN->sleft) {
-    GEN->bleft = _unur_pinv_cut( gen, GEN->dleft, GEN->bleft, -range, tailcut_error);
+    GEN->bleft = _unur_pinv_cut( gen, GEN->bleft, -range, tailcut_error);
     if ( !_unur_isfinite(GEN->bleft) ) {
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"cannot find left boundary for computational domain");
       return UNUR_FAILURE;
@@ -420,7 +429,7 @@ _unur_pinv_computational_domain (struct unur_gen *gen)
   }
 
   if(GEN->sright) {
-    GEN->bright = _unur_pinv_cut( gen, GEN->dright, GEN->bright, range, tailcut_error);
+    GEN->bright = _unur_pinv_cut( gen, GEN->bright, range, tailcut_error);
     if ( !_unur_isfinite(GEN->bright) ) {
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"cannot find right boundary for computational domain");
       return UNUR_FAILURE;
@@ -441,7 +450,7 @@ _unur_pinv_computational_domain (struct unur_gen *gen)
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_pinv_cut( struct unur_gen *gen, double dom, double w, double dw, double crit )
+_unur_pinv_cut( struct unur_gen *gen, double w, double dw, double crit )
      /*----------------------------------------------------------------------*/
      /* [1c.] Calculate cut-off points for computational domain of           */
      /* distribution.                                                        */
@@ -449,7 +458,6 @@ _unur_pinv_cut( struct unur_gen *gen, double dom, double w, double dw, double cr
      /*                                                                      */
      /* parameters:                                                          */
      /*   gen  ... pointer to generator object                               */
-     /*   dom  ... boundary of domain / support of distribution              */
      /*   w    ... starting point for searching cut-off point                */
      /*   dw   ... initial step size for searching,                          */
      /*            sign of dw gives searching direction:                     */
@@ -464,8 +472,6 @@ _unur_pinv_cut( struct unur_gen *gen, double dom, double w, double dw, double cr
      /*   return INFINITY                                                    */
      /*----------------------------------------------------------------------*/
 {
-  double sgn = (dw>0) ? 1. : -1.; /* searching direction */
-
   double fl,fx,fr;  /* value of PDF at x-dx, x, and x+dx */
   double x = w;     /* current point */
   double dx;        /* step length for calculation of derivative and local concavity */                                   
@@ -482,11 +488,21 @@ _unur_pinv_cut( struct unur_gen *gen, double dom, double w, double dw, double cr
 
   /* starting point and step size for search */
   x = w;
+  fx = PDF(x);
+
+#ifdef PINV_DEVEL
+  _unur_log_debug("%s: Find cut-off points on %s hand side near %g:\n",
+		  gen->genid, (dw>0)?"right":"left", x);
+#endif
 
   /* iteratively search for cut-off point with tail probability approximately 'crit'ical value */
   for (i=1; i<100; i++) {
 
-    /* we need step size 'dx' for computing derivative 'df' and local concavity 'lc' */
+#ifdef PINV_DEVEL
+    _unur_log_debug("%s: (% 2d): x=%g, fx=%g\n", gen->genid, i, x, fx);
+#endif
+
+    /* -- we need step size 'dx' for computing derivative 'df' and local concavity 'lc' -- */
 
     /* first try */
     dx = (fabs(dw) + fabs(x-w)) * 1.e-3;
@@ -504,11 +520,14 @@ _unur_pinv_cut( struct unur_gen *gen, double dom, double w, double dw, double cr
       /* check length and protect against infinite loops */
       if (dx < 128.*DBL_EPSILON*fabs(dw)) {
 	/* we are too close to the boundary. So we just return the last value. */
+#ifdef PINV_DEVEL
+	_unur_log_debug("%s:\tclose to the boundary: dx=%g, dw=%g --> return %g\n",
+			gen->genid, dx, dw, x);
+#endif
 	return x;
       }
 
       /* compute PDF values */
-      fx = PDF(x);
       fl = PDF(x-dx);
       fr = PDF(x+dx);
 
@@ -517,25 +536,39 @@ _unur_pinv_cut( struct unur_gen *gen, double dom, double w, double dw, double cr
 	break;
     }
 
+    /* -- compute paramters -- */
+
     /* derivative */
     df = (fr-fl)/(2.*dx);
 
-    /* check derivative */
+    /* local concavity */
+    lc = fl/(fl-fx)+fr/(fr-fx) - 1;
+
+    /* estimate for tail probability (Gerhard's formula) */
+    area = fabs(fx*fx / ((lc+1.) * df));
+    
+#ifdef PINV_DEVEL
+    _unur_log_debug("%s:\tdx=%g, fl=%g, fr=%g, df=%g\n", gen->genid, dx,fl,fr,df);
+    _unur_log_debug("%s:\tlc = fl/(fl-fx)+fr/(fr-fx) - 1 = %g\n", gen->genid, lc);
+    _unur_log_debug("%s:\tarea = |fx^2/((lc+1.)*df)| = %g\n", gen->genid, area);
+#endif
+
+    /* check for invalid derivative */
     if (! _unur_isfinite(df)) {
       /* df too large --> we cannot compute the next point */
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,
 		  "numerical problems with cut-off point, PDF too steep");
       return INFINITY;
     }
-    
-	   
-    /* local concavity */
-    lc = fl/(fl-fx)+fr/(fr-fx) - 1;
-
-    /* tail probability */
-    area = fabs(fx*fx / ((lc+1.) * df));
-
-    /* check results */
+    if (  ((dw>0)?1.:-1.) * df > 0.) {
+      /* f increasing towards boundary in [fl,fr]. */
+      _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF increasing towards boundary");
+      /* Let us try boundary point */
+      xnew = (dw>0) ? GEN->dright : GEN->dleft;
+      return _unur_pinv_cut_bisect(gen, x, xnew);
+    }
+    	   
+    /* check for invalid area */
     if (_unur_isnan(area)) {
       /* When the PDF is extremely flat than NaN might occur. There are two possibilities: 
        * (1) We are far away from the center. Then the tail probabilty is almost 0.
@@ -543,18 +576,19 @@ _unur_pinv_cut( struct unur_gen *gen, double dom, double w, double dw, double cr
        * We assume (1).
        */
       _unur_warning(gen->genid,UNUR_ERR_NAN,"tail probability gives NaN --> assume 0.");
-      return x;
-    }
-
-    if (sgn * df > 0.) {
-      /* There is a maximum of the PDF in [fl,fr]. */
-      _unur_warning(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF not monotone at boundary");
+#ifdef PINV_DEVEL
+      _unur_log_debug("%s:\treturn %g\n",gen->genid, x);
+#endif
       return x;
     }
 
     /* check accuracy of computation */
-    if (fabs(area/crit-1.) < 1.e-4)
+    if (fabs(area/crit-1.) < 1.e-4) {
+#ifdef PINV_DEVEL
+      _unur_log_debug("%s:\taccuracy goal reached --> return %g\n",gen->genid, x);
+#endif
       return x;
+    }
 
     /* compute next point */
     if (_unur_iszero(lc)) {
@@ -564,27 +598,103 @@ _unur_pinv_cut( struct unur_gen *gen, double dom, double w, double dw, double cr
       xnew = x + fx/(lc*df) * ( pow(crit*fabs(df)*(lc+1.)/(fx*fx),lc/(lc+1.)) - 1.);
     }
 
-    /* check results */
+    /* check new point */
     if (! _unur_isfinite(xnew)) {
       /* we cannot compute the next point */
       _unur_error(gen->genid,UNUR_ERR_NAN,"numerical problems with cut-off point");
       return INFINITY;
     }
-    
-    if (sgn*dom < sgn*x) {
+
+   /* check whehter new point is inside domain */
+    if (xnew < GEN->dleft || xnew > GEN->dright) {
       /* boundary exceeded */
-      return dom;
+      if ( (dw > 0 && xnew < GEN->dleft) ||
+    	   (dw < 0 && xnew > GEN->dright) ) {
+	/* we are on the wrong side --> abort */
+	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,
+		    "numerical problems with cut-off point, out of domain");
+	return INFINITY;
+      }
+      else {
+	/* boundary exceeded into search direction */
+	xnew = (xnew < GEN->dleft) ? GEN->dleft : GEN->dright;
+#ifdef PINV_DEVEL
+	_unur_log_debug("%s:\tboundary exceeded --> return boundary %g\n",gen->genid, xnew);
+#endif
+	return _unur_pinv_cut_bisect(gen, x, xnew);
+      }
     }
-    
+
+    /* PDF at new point */
+    fx = PDF(xnew);
+
+    /* check support of PDF */
+    if (_unur_iszero(fx))
+      return _unur_pinv_cut_bisect(gen, x, xnew);
+
     /* update point */
     x = xnew;
-    
   }
 
   /* maximum number of iterations exceeded */
+#ifdef PINV_DEVEL
+  _unur_log_debug("%s:\tmaximum number of iterations exceeded --> return %g\n",gen->genid, x);
+#endif
   return x;
 
 } /* end of _unur_pinv_cut() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_pinv_cut_bisect (struct unur_gen *gen, double x0, double x1)
+     /*----------------------------------------------------------------------*/
+     /* [1c.] Calculate cut-off points as boudary of bounded support of PDF. */
+     /*       Thus be use bisection method.                                  */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*   x0   ... point in support of PDF                                   */
+     /*   x1   ... point outside of support of PDF                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   cut-off point                                                      */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return INFINITY                                                    */
+     /*----------------------------------------------------------------------*/
+{
+  double x,fx;
+
+  /* check starting points */
+  if (! (_unur_isfinite(x0) && _unur_isfinite(x1)) )
+    return INFINITY;
+
+  /* check sign of PDF */
+  x = x1;
+  fx = PDF(x);
+  if (fx > 0.) return x;
+
+#ifdef PINV_DEVEL
+  _unur_log_debug("%s:\tpoint out of support --> find boundary by bisectioning\n",gen->genid);
+#endif
+
+  /* interval bisectioning */
+  while ( !_unur_FP_equal(x0,x1) ) {
+    x = _unur_arcmean(x0,x1);
+    fx = PDF(x);
+    if (fx > 0.)
+      x0 = x;
+    else
+      x1 = x;
+  }
+
+#ifdef PINV_DEVEL
+  _unur_log_debug("%s:\treturn boundary of support = %g\n",gen->genid,x);
+#endif
+
+  return x;
+} /* end of _unur_pinv_cut_bisect() */
 
 
 /*****************************************************************************/

@@ -78,6 +78,7 @@
  *         interpolating polynomial).                                        *
  *            _unur_pinv_computational_domain()                              *
  *            _unur_pinv_cut()                                               *
+ *            _unur_pinv_cut_bisect()                                        *
  *            _unur_pinv_cut_CDF()                                           *
  *                                                                           *
  *   1d.   Compute area below PDF over relevant domain with requested        *
@@ -120,7 +121,7 @@
 /*---------------------------------------------------------------------------*/
 
 /* enable additional code for development */
-/* #define PINV_DEBUG */
+/* #define PINV_DEVEL */
 
 /*---------------------------------------------------------------------------*/
 
@@ -353,9 +354,14 @@ static int _unur_pinv_computational_domain (struct unur_gen *gen);
 /*     interpolating polynomial).                                            */
 /*---------------------------------------------------------------------------*/
 
-static double _unur_pinv_cut (struct unur_gen *gen, double dom, double w, double dw, double crit);
+static double _unur_pinv_cut (struct unur_gen *gen, double w, double dw, double crit);
 /*---------------------------------------------------------------------------*/
 /* [1c.] calculate cut-off points for computational domain of distribution.  */
+/*---------------------------------------------------------------------------*/
+
+static double _unur_pinv_cut_bisect (struct unur_gen *gen, double x0, double x1);
+/*---------------------------------------------------------------------------*/
+/* [1c.] calculate cut-off points as boudary of bounded support of PDF.      */
 /*---------------------------------------------------------------------------*/
 
 static int _unur_pinv_computational_domain_CDF (struct unur_gen *gen);

@@ -227,7 +227,7 @@ _unur_pinv_debug_intervals( const struct unur_gen *gen )
       fprintf(LOG,"%s: [%3d] xi = %.14g, cdfi = %.14g\n",gen->genid,
 	      n, GEN->iv[n].xi, GEN->iv[n].cdfi);
 
-#ifdef PINV_DEBUG
+#ifdef PINV_DEVEL
       { 
 	int j;
 	/* coefficients for constructing Newton interpolation */

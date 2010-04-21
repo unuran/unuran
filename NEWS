@@ -3,10 +3,11 @@ Version 1.7.0: ???? 2010
 
 	* Methods:
 
-	- PINV: 
-	  added experimantal function unur_pinv_set_use_upoints().
-	  increased maximal order to 17
-          added smoothness parameter
+	- PINV:
+	  . estimation of computational domain is now more robust.
+	  . added experimental function unur_pinv_set_use_upoints().
+	  . increased maximal order to 17
+          . added smoothness parameter, new function unur_pinv_set_smoothness().
 
 
 Version 1.6.0: February 2010

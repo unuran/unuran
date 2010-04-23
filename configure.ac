@@ -3,14 +3,14 @@ dnl $Id$
 
 dnl Initialize.
 AC_PREREQ(2.63)
-AC_INIT([unuran],[1.7.devel],[unuran@statmath.wu.ac.at])
+AC_INIT([unuran],[1.7.0],[unuran@statmath.wu.ac.at])
 AC_CONFIG_AUX_DIR(autoconf)
-AM_INIT_AUTOMAKE([unuran],[1.7.devel])
+AM_INIT_AUTOMAKE([unuran],[1.7.0])
 AC_CONFIG_SRCDIR([src/unuran_config.h])
 AC_CONFIG_HEADER([config.h])
 
 dnl Library versioning (current:revision:age)
-dnl See the libtool manual  for an explanation of the numbers
+dnl See the libtool manual for an explanation of the numbers
 dnl 
 dnl unuran-0.4.0   0:0:0
 dnl unuran-0.4.2   1:1:0
@@ -36,6 +36,7 @@ dnl unuran-1.4.0   11:0:1
 dnl unuran-1.4.1   11:1:1
 dnl unuran-1.5.0   12:0:0
 dnl unuran-1.6.0   13:0:0
+dnl unuran-1.7.0   14:0:0
 
 UNURAN_LT_VERSION="14:0:0"
 AC_SUBST([UNURAN_LT_VERSION])

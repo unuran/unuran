@@ -359,7 +359,7 @@ _unur_invcdf_burr( double U, const UNUR_DISTR *distr )
     return ( sqrt( -log( 1. - Y ) ) );
 
   case UNUR_DISTR_BURR_XII:
-    Y = exp( -log(U)/k );   /* U^(-1/k) */
+    Y = exp( -log(1-U)/k );   /* (1-U)^(-1/k) */
     return ( exp( log( Y - 1.) / c) );
 
   case UNUR_DISTR_BURR_XI:

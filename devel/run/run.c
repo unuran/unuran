@@ -51,8 +51,11 @@ int main()
   unur_set_default_debug(~0U);
 
   distr = unur_distr_normal(NULL,0);
+  unur_distr_cont_set_domain(distr,3.,UNUR_INFINITY);
   par = unur_pinv_new(distr);
-  unur_pinv_set_smoothness(par,2);
+  unur_pinv_set_usecdf(par);
+  unur_pinv_set_order(par,5);
+  unur_pinv_set_smoothness(par,1);
 
   gen = unur_init(par);
 

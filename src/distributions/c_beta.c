@@ -419,7 +419,7 @@ unur_distr_beta( const double *params, int n_params )
   DISTR.dpdf    = _unur_dpdf_beta;    /* pointer to derivative of PDF    */
   DISTR.dlogpdf = _unur_dlogpdf_beta; /* pointer to derivative of logPDF */
   DISTR.cdf     = _unur_cdf_beta;     /* pointer to CDF                  */
-  DISTR.cdf     = _unur_cdf_beta;     /* pointer to CDF                  */
+  /* DISTR.invcdf  = NULL;            /\* pointer to inverse CDF     *\/ */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

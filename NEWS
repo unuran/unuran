@@ -1,6 +1,13 @@
 
 Version 1.8.0: ???? 2010
 
+Version 1.7.1: April 2010
+
+	* Methods:
+
+	- PINV:
+	  fixed setup for smoothness parameters 1 and 2.
+	  It failed on x86 (32-bit) platforms.
 
 
 Version 1.7.0: April 2010

@@ -139,7 +139,6 @@ _unur_pinv_create_table( struct unur_gen *gen )
       /* use linear interpolation */
       ++n_use_linear;
 
-      /* if (_unur_pinv_linear_create(gen,&(GEN->iv[i]),xval) != UNUR_SUCCESS) { */
       if (_unur_pinv_linear_create(gen,GEN->iv+i,xval) != UNUR_SUCCESS) {
 
 	/* area below PDF == 0. */
@@ -516,7 +515,7 @@ _unur_pinv_newton_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv,
      /*                                                                      */
      /* return:                                                              */
      /*   estimated maximal u-error, or                                      */
-     /*   1000 whenever the inverse CDF is not monotone                      */
+     /*   >1000 whenever the inverse CDF is not monotone                     */
      /*----------------------------------------------------------------------*/
 {
   double x0 = iv->xi;    /* left boundary point of interval */
@@ -538,7 +537,7 @@ _unur_pinv_newton_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv,
   /* check for monotonicity (linear case) */
   if (is_linear && zi[0] < 0.)
     /* not monotone */
-    return 1000.;
+    return 1001.;
 
   /* get U values for test (points with maximal worst case error) */
   if (is_linear) 
@@ -553,11 +552,12 @@ _unur_pinv_newton_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv,
     x = _unur_pinv_newton_eval(testu[i], ui, zi, GEN->order);
 
     /* check for monotonicity (non-linear case) */
-    if (!is_linear)
-      if (! (xval[i] <= x0+x && x0+x <=xval[i+1]) ) {
-	/* not monotone */
-	return 1000.;
-      }
+    if (!is_linear) {
+      if (! (xval[i] <= x0+x && x0+x <= xval[i+1]) )
+	if (! _unur_FP_same(xval[i], xval[i+1]))
+	  /* not monotone */
+	  return 1002.;
+    }
     
     /* estimate CDF for interpolated x value */
     if (i==0 || xval==NULL)
@@ -580,7 +580,7 @@ _unur_pinv_newton_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv,
   if (GEN->order == 3 && GEN->smooth==1 && 
       ! _unur_pinv_cubic_hermite_is_monotone(gen,ui,zi,xval))
     /* not monotone */
-    return 1000.;
+    return 1003.;
   
   /* return maximal observed u-error */
   return maxerror;

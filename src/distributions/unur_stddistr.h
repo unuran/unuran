@@ -66,7 +66,7 @@ enum {
   UNUR_DISTR_IG               = 0x00002101u,  /*    X     X     X     .     .     .      */
   UNUR_DISTR_LAPLACE          = 0x00000c01u,  /*    X     X     X     X     X     .      */
   UNUR_DISTR_LOGISTIC         = 0x00000d01u,  /*    X     X     X     X     X     .      */
-  UNUR_DISTR_LOGNORMAL        = 0x00000e01u,  /*    X     .     .     X     .     .      */
+  UNUR_DISTR_LOGNORMAL        = 0x00000e01u,  /*    X     X     .     X     .     .      */
   UNUR_DISTR_LOMAX            = 0x00000f01u,  /*    X     X     X     X     .     .      */
   UNUR_DISTR_NORMAL           = 0x00001001u,  /*    X     X     X     X     X     .      */
    UNUR_DISTR_GAUSSIAN        = 0x00001001u,  /*    same as NORMAL                       */

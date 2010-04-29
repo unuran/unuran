@@ -28,7 +28,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2010  Wolfgang Hoermann and Josef Leydold            *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -69,9 +69,11 @@ static const char distr_name[] = "lognormal";
 #define DISTR distr->data.cont
 #define NORMCONSTANT (distr->data.cont.norm_constant)
 
-/* function prototypes                                                       */
+/* function prototypes */
 static double _unur_pdf_lognormal( double x, const UNUR_DISTR *distr );
 static double _unur_dpdf_lognormal( double x, const UNUR_DISTR *distr );
+static double _unur_cdf_lognormal( double x, const UNUR_DISTR *distr );
+static double _unur_invcdf_lognormal( double x, const UNUR_DISTR *distr );
 
 static int _unur_upd_mode_lognormal( UNUR_DISTR *distr );
 static int _unur_set_params_lognormal( UNUR_DISTR *distr, const double *params, int n_params );
@@ -89,7 +91,6 @@ _unur_pdf_lognormal( double x, const UNUR_DISTR *distr )
 
   z = log(x-theta)-zeta;
   return ( 1./(x-theta) * exp( -z*z/(2.*sigma*sigma) ) / NORMCONSTANT );
-
 } /* end of _unur_pdf_lognormal() */
 
 /*---------------------------------------------------------------------------*/
@@ -108,6 +109,31 @@ _unur_dpdf_lognormal( double x, const UNUR_DISTR *distr )
 
   return ( 1/((x-theta)*(x-theta)) * exp( -z*z/(2*sigmasqu) ) * (1.+z/sigmasqu) / NORMCONSTANT );
 } /* end of _unur_dpdf_lognormal() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_cdf_lognormal( double x, const UNUR_DISTR *distr )
+{ 
+  const double *params = DISTR.params;
+  double z;
+
+  if (x <= theta)
+    return 0.;
+
+  z = (log(x-theta)-zeta) / sigma;
+  return _unur_SF_cdf_normal(z);
+} /* end of _unur_cdf_lognormal() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_invcdf_lognormal( double x, const UNUR_DISTR *distr )
+{ 
+  const double *params = DISTR.params;
+
+  return (theta + exp( _unur_SF_invcdf_normal(x) * sigma + zeta));
+} /* end of _unur_invcdf_lognormal() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -191,12 +217,13 @@ unur_distr_lognormal( const double *params, int n_params )
   distr->name = distr_name;
 
   /* how to get special generators */
-  DISTR.init = NULL;         /* _unur_stdgen_lognormal_init; */
+  /* DISTR.init = _unur_stdgen_lognormal_init; */
 
   /* functions */
-  DISTR.pdf  = _unur_pdf_lognormal;  /* pointer to PDF               */
-  DISTR.dpdf = _unur_dpdf_lognormal; /* pointer to derivative of PDF */
-  /* DISTR.cdf = _unur_cdf_lognormal; pointer to CDF                 */
+  DISTR.pdf    = _unur_pdf_lognormal;     /* pointer to PDF               */
+  DISTR.dpdf   = _unur_dpdf_lognormal;    /* pointer to derivative of PDF */
+  DISTR.cdf    = _unur_cdf_lognormal;     /* pointer to CDF               */
+  DISTR.invcdf = _unur_invcdf_lognormal;  /* pointer to inverse CDF       */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

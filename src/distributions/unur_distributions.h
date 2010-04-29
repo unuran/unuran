@@ -43,7 +43,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2010 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -353,7 +353,6 @@ UNUR_DISTR *unur_distr_logistic(const double *params, int n_params);
    =REF      [JKBb94: Ch.14, p. 208]
    =PDF      1/(x-theta) * exp( -(log(x-theta)-zeta)^2/(2 sigma^2) )
    =CONST    1/(sigma * sqrt{2 pi})
-   =CDF      @text{not implemented!}
    =DOMAIN   theta <= x < infinity 
    =FPARAM    0   : zeta  :     :   : shape    :
               1   : sigma : > 0 :   : shape    :

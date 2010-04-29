@@ -10,7 +10,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2010 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -91,7 +91,7 @@ _unur_stdgen_binomial_init( struct unur_par *par, struct unur_gen *gen )
   case 0:  /* DEFAULT */
   case 1:  /* Ratio of Uniforms/Inversion */
      if (gen==NULL) return UNUR_SUCCESS; /* test existence only  */
-     _unur_dstd_set_sampling_routine( par,gen,_unur_stdgen_sample_binomial_bruec );
+     _unur_dstd_set_sampling_routine(gen, _unur_stdgen_sample_binomial_bruec );
      return binomial_bruec_init( gen );
 
   case UNUR_STDGEN_INVERSION:   /* inversion method */
@@ -110,7 +110,7 @@ _unur_stdgen_binomial_init( struct unur_par *par, struct unur_gen *gen )
 /**                                                                         **/
 /*****************************************************************************/
 
-#define flogfak(k) _unur_sf_ln_factorial(k)
+#define flogfak(k) _unur_SF_ln_factorial(k)
 
 /*****************************************************************************
  *                                                                           *

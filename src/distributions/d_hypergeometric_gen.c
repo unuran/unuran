@@ -10,7 +10,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2010 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -95,7 +95,7 @@ _unur_stdgen_hypergeometric_init( struct unur_par *par, struct unur_gen *gen )
 
   case 0:  /* DEFAULT */
   case 1:  /* HRUEC  method */
-     _unur_dstd_set_sampling_routine( par,gen,_unur_stdgen_sample_hypergeometric_hruec );
+     _unur_dstd_set_sampling_routine(gen, _unur_stdgen_sample_hypergeometric_hruec );
      return hypergeometric_hruec_init( gen );
 
   case UNUR_STDGEN_INVERSION:   /* inversion method */
@@ -153,7 +153,7 @@ _unur_stdgen_hypergeometric_init( struct unur_par *par, struct unur_gen *gen )
  *    WinRand (c) 1995 Ernst Stadlober, Institut fuer Statistitk, TU Graz    *
  *****************************************************************************/
 
-#define flogfak(k) (_unur_sf_ln_factorial(k))
+#define flogfak(k) (_unur_SF_ln_factorial(k))
 #define delta(k) (flogfak(k)+flogfak(Mc-k)+flogfak(nc-k)+flogfak(NMn+k))
 
 #define N       (GEN->gen_iparam[0])

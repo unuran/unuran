@@ -89,7 +89,7 @@ _unur_stdgen_zipf_init( struct unur_par *par, struct unur_gen *gen )
 
   case 0:  /* DEFAULT */
   case 1:  /* Acceptance Rejection */
-    _unur_dstd_set_sampling_routine( par,gen,_unur_stdgen_sample_zipf_zet );
+    _unur_dstd_set_sampling_routine(gen, _unur_stdgen_sample_zipf_zet );
     return zipf_zet_init( gen );
 
   case UNUR_STDGEN_INVERSION:   /* inversion method */

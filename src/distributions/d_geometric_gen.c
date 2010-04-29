@@ -10,7 +10,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2010 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -84,7 +84,7 @@ _unur_stdgen_geometric_init( struct unur_par *par, struct unur_gen *gen )
   case 0:  /* DEFAULT */
   case UNUR_STDGEN_INVERSION:   /* inversion method */
     if (gen) GEN->is_inversion = TRUE;
-    _unur_dstd_set_sampling_routine( par,gen,_unur_stdgen_sample_geometric_inv );
+    _unur_dstd_set_sampling_routine(gen, _unur_stdgen_sample_geometric_inv );
     return UNUR_SUCCESS;
 
   default: /* no such generator */

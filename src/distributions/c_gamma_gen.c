@@ -10,7 +10,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2010 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -95,23 +95,22 @@ _unur_stdgen_gamma_init( struct unur_par *par, struct unur_gen *gen )
   case 1:  /* Acceptance Rejection combined with Acceptance Complement */
     if (gen==NULL) return UNUR_SUCCESS; /* test existence only  */
     if (alpha < 1.) {
-      _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_gamma_gs );
+      _unur_cstd_set_sampling_routine(gen, _unur_stdgen_sample_gamma_gs );
       return gamma_gs_init( gen );
     }
     else {
-      _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_gamma_gd );
+      _unur_cstd_set_sampling_routine(gen, _unur_stdgen_sample_gamma_gd );
       return gamma_gd_init( gen );
 
     }
 
   case 2:  /* Rejection with log-logistic envelopes */
-    _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_gamma_gll );
+    _unur_cstd_set_sampling_routine(gen, _unur_stdgen_sample_gamma_gll );
     return gamma_gll_init( gen );
 
   case UNUR_STDGEN_INVERSION:   /* inversion method */
   default: /* no such generator */
-    if (gen) _unur_warning(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    return UNUR_FAILURE;
+    return _unur_cstd_generic_init(par,gen);
   }
 
 } /* end of _unur_stdgen_gamma_init() */

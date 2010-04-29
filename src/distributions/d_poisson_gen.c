@@ -10,7 +10,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2010 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -96,12 +96,12 @@ _unur_stdgen_poisson_init( struct unur_par *par, struct unur_gen *gen )
     if (gen==NULL) return UNUR_SUCCESS; /* test existence only  */
     if (theta < 10.) {
       /* CASE B: Tabulated Inversion */
-      _unur_dstd_set_sampling_routine( par,gen,_unur_stdgen_sample_poisson_pdtabl );
+      _unur_dstd_set_sampling_routine(gen, _unur_stdgen_sample_poisson_pdtabl );
       return poisson_pdtabl_init( gen );
     }
     else { /* theta >= 10. */
       /* CASE A: acceptance complement */
-      _unur_dstd_set_sampling_routine( par,gen,_unur_stdgen_sample_poisson_pdac );
+      _unur_dstd_set_sampling_routine(gen, _unur_stdgen_sample_poisson_pdac );
       return poisson_pdac_init( gen );
     }
 
@@ -109,12 +109,12 @@ _unur_stdgen_poisson_init( struct unur_par *par, struct unur_gen *gen )
     if (gen==NULL) return UNUR_SUCCESS; /* test existence only  */
     if (theta < 10.) {
       /* CASE: Tabulated Inversion --> same as case 1 !! */
-      _unur_dstd_set_sampling_routine( par,gen,_unur_stdgen_sample_poisson_pdtabl );
+      _unur_dstd_set_sampling_routine(gen, _unur_stdgen_sample_poisson_pdtabl );
       return poisson_pdtabl_init( gen );
     }
     else { /* theta >= 10. */
       /* CASE: Patchwork Rejection */
-      _unur_dstd_set_sampling_routine( par,gen,_unur_stdgen_sample_poisson_pprsc );
+      _unur_dstd_set_sampling_routine(gen, _unur_stdgen_sample_poisson_pprsc );
       return poisson_pprsc_init( gen );
     }
 
@@ -502,7 +502,7 @@ _unur_stdgen_sample_poisson_pdac( struct unur_gen *gen )
 
 inline static double f(int k, double l_nu, double c_pm)
 {
-  return  exp(k * l_nu - _unur_sf_ln_factorial(k) - c_pm);
+  return  exp(k * l_nu - _unur_SF_ln_factorial(k) - c_pm);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -580,7 +580,7 @@ poisson_pprsc_init( struct unur_gen *gen )
 
   /* Poisson constants, necessary for computing function values f(k)         */
   l_theta = log(theta);
-  c_pm = m * l_theta - _unur_sf_ln_factorial(m);
+  c_pm = m * l_theta - _unur_SF_ln_factorial(m);
 
   /* function values f(k) = p(k)/p(m) at k = k2, k4, k1, k5                  */
   f2 = f(k2, l_theta, c_pm);
@@ -704,7 +704,7 @@ _unur_stdgen_sample_poisson_pprsc( struct unur_gen *gen )
     /* acceptance-rejection test of candidate X from the original area       */
     /* test, whether  W <= f(k),    with  W = U*h(x)  and  U -- U(0, 1)      */
     /* log f(X) = (X - m)*log(theta) - log X! + log m!                       */
-    if (log(W) <= X * l_theta - _unur_sf_ln_factorial(X) - c_pm)
+    if (log(W) <= X * l_theta - _unur_SF_ln_factorial(X) - c_pm)
       return X;
 
   }

@@ -75,7 +75,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2010 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -463,7 +463,7 @@ int _unur_stdgen_sample_zipf_zet( UNUR_GEN *generator );
 
 /*---------------------------------------------------------------------------*/
 /* set routine for sampling                                                  */
-#define _unur_cstd_set_sampling_routine(par,gen,routine) \
+#define _unur_cstd_set_sampling_routine(gen,routine) \
    do { \
      if ((gen)==NULL) return UNUR_SUCCESS;           /* test existence only  */ \
      (gen)->sample.cont = (routine);                 /* set pointer        */ \
@@ -471,7 +471,7 @@ int _unur_stdgen_sample_zipf_zet( UNUR_GEN *generator );
    } while (0)
 
 
-#define _unur_dstd_set_sampling_routine(par,gen,routine) \
+#define _unur_dstd_set_sampling_routine(gen,routine) \
    do { \
      if ((gen)==NULL) return UNUR_SUCCESS;           /* test existence only  */ \
      (gen)->sample.discr = (routine);                /* set pointer        */ \

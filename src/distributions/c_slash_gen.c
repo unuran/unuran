@@ -10,7 +10,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2010  Wolfgang Hoermann and Josef Leydold            *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -85,13 +85,12 @@ _unur_stdgen_slash_init( struct unur_par *par, struct unur_gen *gen )
 
   case 0:  /* DEFAULT */
   case 1:  /* Ratio of normal and uniform random variates */
-    _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_slash_slash );
+    _unur_cstd_set_sampling_routine(gen, _unur_stdgen_sample_slash_slash );
     return slash_slash_init( gen );
 
   case UNUR_STDGEN_INVERSION:   /* inversion method */
   default: /* no such generator */
-    if (gen) _unur_warning(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    return UNUR_FAILURE;
+    return _unur_cstd_generic_init(par,gen);
   }
   
 } /* end of _unur_stdgen_slash_init() */

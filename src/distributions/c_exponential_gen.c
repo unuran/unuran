@@ -10,7 +10,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2010 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -84,9 +84,9 @@ _unur_stdgen_exponential_init( struct unur_par *par, struct unur_gen *gen )
   case 0:  /* DEFAULT */
   case UNUR_STDGEN_INVERSION:   /* inversion method */
     if (gen) GEN->is_inversion = TRUE;
-    _unur_cstd_set_sampling_routine(par,gen,_unur_stdgen_sample_exponential_inv);
+    _unur_cstd_set_sampling_routine(gen, _unur_stdgen_sample_exponential_inv);
     /** Remark: We use sampling from exponential distribution as timing unit **/
-    /* _unur_cstd_set_sampling_routine(par,gen,_unur_cstd_sample_inv); */
+    /* _unur_cstd_set_sampling_routine(gen, _unur_cstd_sample_inv); */
     return UNUR_SUCCESS;
 
   default: /* no such generator */

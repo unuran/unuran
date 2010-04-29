@@ -10,7 +10,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2010  Wolfgang Hoermann and Josef Leydold            *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -87,46 +87,41 @@ _unur_stdgen_normal_init( struct unur_par *par, struct unur_gen *gen )
   switch ((par) ? par->variant : gen->variant) {
 
   case 1:    /* Box-Muller method */
-    _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_normal_bm );
+    _unur_cstd_set_sampling_routine(gen, _unur_stdgen_sample_normal_bm );
     return normal_bm_init( gen );
 
   case 2:    /* Polarmethod with rejection */
-    _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_normal_pol );
+    _unur_cstd_set_sampling_routine(gen, _unur_stdgen_sample_normal_pol );
     return normal_pol_init( gen );
 
   case 3:    /* Kindermann-Ramage method */
-    _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_normal_kr );
+    _unur_cstd_set_sampling_routine(gen, _unur_stdgen_sample_normal_kr );
     return UNUR_SUCCESS;
 
   case 0:    /* DEFAULT */
   case 4:    /* Acceptance-complement ratio */
-    _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_normal_acr );
+    _unur_cstd_set_sampling_routine(gen, _unur_stdgen_sample_normal_acr );
     return UNUR_SUCCESS;
 
   case 5:    /* "Naive" ratio-of-uniforms */
-    _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_normal_nquo );
+    _unur_cstd_set_sampling_routine(gen, _unur_stdgen_sample_normal_nquo );
     return UNUR_SUCCESS;
 
   case 6:    /* Ratio-of-uniforms with squeeze */
-    _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_normal_quo );
+    _unur_cstd_set_sampling_routine(gen, _unur_stdgen_sample_normal_quo );
     return UNUR_SUCCESS;
 
   case 7:    /* Ratio-of-uniforms with quadratic bounding curves */
-    _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_normal_leva );
+    _unur_cstd_set_sampling_routine(gen, _unur_stdgen_sample_normal_leva );
     return UNUR_SUCCESS;
 
   case 99:   /* infamous sum-of-12-uniforms method. DO NOT USE */
-    _unur_cstd_set_sampling_routine( par,gen,_unur_stdgen_sample_normal_sum );
+    _unur_cstd_set_sampling_routine(gen, _unur_stdgen_sample_normal_sum );
     return UNUR_SUCCESS;
 
   case UNUR_STDGEN_INVERSION:   /* inversion method */
-    if (gen) GEN->is_inversion = TRUE;
-    _unur_cstd_set_sampling_routine(par,gen,_unur_cstd_sample_inv);
-    return UNUR_SUCCESS;
-
   default: /* no such generator */
-    if (gen) _unur_warning(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    return UNUR_FAILURE;
+    return _unur_cstd_generic_init(par,gen);
   }
 
 } /* end of _unur_stdgen_normal_init() */

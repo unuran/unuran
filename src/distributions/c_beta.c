@@ -44,7 +44,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2010 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -98,6 +98,9 @@ static double _unur_logpdf_beta( double x, const UNUR_DISTR *distr );
 static double _unur_dpdf_beta( double x, const UNUR_DISTR *distr );
 static double _unur_dlogpdf_beta( double x, const UNUR_DISTR *distr );
 static double _unur_cdf_beta( double x, const UNUR_DISTR *distr );
+#ifdef _unur_SF_invcdf_beta
+static double _unur_invcdf_beta( double x, const UNUR_DISTR *distr );
+#endif
 
 static int _unur_upd_mode_beta( UNUR_DISTR *distr );
 static int _unur_upd_area_beta( UNUR_DISTR *distr );
@@ -262,9 +265,26 @@ _unur_cdf_beta(double x, const UNUR_DISTR *distr)
   if (x <= 0.) return 0.;
   if (x >= 1.) return 1.;
 
-  return _unur_sf_incomplete_beta(x,p,q);
+  return _unur_SF_incomplete_beta(x,p,q);
 
 } /* end of _unur_cdf_beta() */
+
+/*---------------------------------------------------------------------------*/
+
+#ifdef _unur_SF_invcdf_beta
+
+double
+_unur_invcdf_beta(double x, const UNUR_DISTR *distr)
+{
+  const double *params = DISTR.params;
+  
+  if (DISTR.n_params == 2)
+    return _unur_SF_invcdf_beta(x,p,q);
+  else
+    return (a + _unur_SF_invcdf_beta(x,p,q))*(b-a);
+
+} /* end of _unur_invcdf_beta() */
+#endif
 
 /*---------------------------------------------------------------------------*/
 
@@ -329,12 +349,12 @@ _unur_lognormconstant_beta(const double *params, int n_params)
   if (n_params > 2)
     /* non-standard form */
     /* log( Beta(p,q) * (b-a) ) */
-    return (_unur_sf_ln_gamma(p) + _unur_sf_ln_gamma(q) - _unur_sf_ln_gamma(p+q) + log(b-a) );
+    return (_unur_SF_ln_gamma(p) + _unur_SF_ln_gamma(q) - _unur_SF_ln_gamma(p+q) + log(b-a) );
 
   else
     /* standard form */
     /* log( Beta(p,q) ) */
-    return (_unur_sf_ln_gamma(p) + _unur_sf_ln_gamma(q) - _unur_sf_ln_gamma(p+q));
+    return (_unur_SF_ln_gamma(p) + _unur_SF_ln_gamma(q) - _unur_SF_ln_gamma(p+q));
 
 } /* end of _unur_lognormconstant_beta() */
 
@@ -419,7 +439,9 @@ unur_distr_beta( const double *params, int n_params )
   DISTR.dpdf    = _unur_dpdf_beta;    /* pointer to derivative of PDF    */
   DISTR.dlogpdf = _unur_dlogpdf_beta; /* pointer to derivative of logPDF */
   DISTR.cdf     = _unur_cdf_beta;     /* pointer to CDF                  */
-  /* DISTR.invcdf  = NULL;            /\* pointer to inverse CDF     *\/ */
+#ifdef _unur_SF_invcdf_beta
+  DISTR.invcdf  = _unur_invcdf_beta;  /* pointer to inverse CDF          */
+#endif
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

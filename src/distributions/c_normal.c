@@ -41,7 +41,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2010  Wolfgang Hoermann and Josef Leydold            *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -180,7 +180,7 @@ _unur_cdf_normal( double x, const UNUR_DISTR *distr )
 
   /* standard form */
 
-  return _unur_sf_cdfnormal(x);
+  return _unur_SF_cdf_normal(x);
 
 } /* end of _unur_cdf_normal() */
 
@@ -192,7 +192,7 @@ _unur_invcdf_normal( double u, const UNUR_DISTR *distr )
   register const double *params = DISTR.params;
   double X;
 
-  X = _unur_sf_inv_cdfnormal(u);
+  X = _unur_SF_invcdf_normal(u);
   return ((DISTR.n_params==0) ? X : mu + sigma * X );
 
 } /* end of _unur_invcdf_normal() */

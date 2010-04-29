@@ -27,7 +27,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2010  Wolfgang Hoermann and Josef Leydold            *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -107,8 +107,8 @@ _unur_cdf_student(double x, const UNUR_DISTR *distr)
   double xx;
   if (_unur_iszero(DISTR.nu)) return 0; /* maybe we could return the Heaviside step-function here ... */
   xx=1./(1.+x*x/DISTR.nu);
-  if (x>0) return 1-.5*_unur_sf_incomplete_beta(xx,.5*DISTR.nu,.5)/_unur_sf_incomplete_beta(1.,.5*DISTR.nu,.5);
-  else     return   .5*_unur_sf_incomplete_beta(xx,.5*DISTR.nu,.5)/_unur_sf_incomplete_beta(1.,.5*DISTR.nu,.5);
+  if (x>0) return 1-.5*_unur_SF_incomplete_beta(xx,.5*DISTR.nu,.5)/_unur_SF_incomplete_beta(1.,.5*DISTR.nu,.5);
+  else     return   .5*_unur_SF_incomplete_beta(xx,.5*DISTR.nu,.5)/_unur_SF_incomplete_beta(1.,.5*DISTR.nu,.5);
 } /* end of _unur_cdf_student() */
 
 /*---------------------------------------------------------------------------*/
@@ -152,7 +152,7 @@ _unur_upd_area_student( UNUR_DISTR *distr )
 double
 _unur_normconstant_student( const double *params, int n_params ATTRIBUTE__UNUSED )
 {
-  return( sqrt(M_PI * nu) * exp(_unur_sf_ln_gamma(0.5*nu) - _unur_sf_ln_gamma(0.5*(nu+1.))) );
+  return( sqrt(M_PI * nu) * exp(_unur_SF_ln_gamma(0.5*nu) - _unur_SF_ln_gamma(0.5*(nu+1.))) );
 } /* end of _unur_normconstant_student() */
 
 

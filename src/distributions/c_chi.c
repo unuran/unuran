@@ -27,7 +27,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2010 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -120,7 +120,7 @@ _unur_cdf_chi(double x, const UNUR_DISTR *distr)
     /* out of support of p.d.f. */
     return 0.;
 
-  return _unur_sf_incomplete_gamma(x*x/2.,nu/2.);
+  return _unur_SF_incomplete_gamma(x*x/2.,nu/2.);
 } /* end of _unur_cdf_chi() */
 
 /*---------------------------------------------------------------------------*/
@@ -145,7 +145,7 @@ int
 _unur_upd_area_chi( UNUR_DISTR *distr )
 {
   /* normalization constant */
-  LOGNORMCONSTANT = _unur_sf_ln_gamma(DISTR.nu/2.) + M_LN2 * (DISTR.nu/2. - 1.);
+  LOGNORMCONSTANT = _unur_SF_ln_gamma(DISTR.nu/2.) + M_LN2 * (DISTR.nu/2. - 1.);
 
   if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
     DISTR.area = 1.;
@@ -232,7 +232,7 @@ unur_distr_chi( const double *params, int n_params )
   }
 
   /* log of normalization constant */
-  LOGNORMCONSTANT = _unur_sf_ln_gamma(DISTR.nu/2.) + M_LN2 * (DISTR.nu/2. - 1.);
+  LOGNORMCONSTANT = _unur_SF_ln_gamma(DISTR.nu/2.) + M_LN2 * (DISTR.nu/2. - 1.);
 
   /* mode and area below p.d.f. */
   DISTR.mode = (DISTR.nu >= 1.) ? sqrt(DISTR.nu - 1.) : 0.;

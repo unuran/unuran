@@ -27,7 +27,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2010 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -92,7 +92,7 @@ _unur_pmf_binomial(int k, const UNUR_DISTR *distr)
 
   else
     return exp( k * log(p) + (n-k) * log(1.-p) +
-		_unur_sf_ln_factorial(n) - _unur_sf_ln_factorial(k) - _unur_sf_ln_factorial(n-k) ) ;
+		_unur_SF_ln_factorial(n) - _unur_SF_ln_factorial(k) - _unur_SF_ln_factorial(n-k) ) ;
 
 } /* end of _unur_pmf_binomial() */
 
@@ -113,7 +113,7 @@ _unur_cdf_binomial(int k, const UNUR_DISTR *distr)
     return 1.;
 
   /* else */
-  return(_unur_sf_incomplete_beta(1.-p, n-k, k+1.));
+  return(_unur_SF_incomplete_beta(1.-p, n-k, k+1.));
 
 } /* end of _unur_cdf_binomial() */
 

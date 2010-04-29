@@ -12,7 +12,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2010 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -46,64 +46,111 @@
  *   (available from NETLIB, http://www.netlib.org/cephes/                   *
  *   Copyright 1984 - 1994 by Stephen L. Moshier                             *
  *                                                                           *
+ *   Alternatively, we also can use the functions from the Rmath library     *
+ *   from the R project for statistical computing, http://www.R-project.org/ *
+ *                                                                           *
  *****************************************************************************/
 
-/*---------------------------------------------------------------------------*/
-/* Routines from the CEPHES library.                                         */
-/*---------------------------------------------------------------------------*/
+/* We define macros for special functions.
+ *
+ * The following macros must be defined:
+ *
+ *   _unur_SF_incomplete_beta   ... incomplete beta integral
+ *   _unur_SF_ln_gamma          ... logarithm of gamma function
+ *   _unur_SF_ln_factorial      ... logarithm of factorial
+ *   _unur_SF_incomplete_gamma  ... incomplete gamma function
+ *   _unur_SF_cdf_normal        ... CDF of normal distribution
+ *   _unur_SF_invcdf_normal     ... inverse CDF of normal distribution
+ *
+ *---------------------------------------------------------------------------*/
 
-/** functions related to beta distribution **/
-
-/* incomplete beta integral */
-double _unur_cephes_incbet(double a, double b, double x);
-#define _unur_sf_incomplete_beta(x,a,b)   _unur_cephes_incbet((a),(b),(x))
-
-/** functions related to gamma distribution **/
-
-/* logarithm of gamma function */
-double _unur_cephes_lgam(double x);
-#define _unur_sf_ln_gamma(x)   _unur_cephes_lgam(x)
-
-/* logarithm of factorial */
-#define _unur_sf_ln_factorial(x)   _unur_sf_ln_gamma((x)+1.)
-
-/* incomplete gamma function */
-double _unur_cephes_igam(double a, double x);
-#define _unur_sf_incomplete_gamma(x,a)  _unur_cephes_igam((a),(x))
-
-/** functions related to normal distribution **/
-
-/* normal distribution function */
-double _unur_cephes_ndtr(double x);
-#define _unur_sf_cdfnormal(x)   _unur_cephes_ndtr(x)
-
-/* inverse of normal distribution function */
-double _unur_cephes_ndtri(double x);
-#define _unur_sf_inv_cdfnormal(x)   _unur_cephes_ndtri(x)
-
-/*---------------------------------------------------------------------------*/
-/* end: CEPHES library                                                       */
-/*---------------------------------------------------------------------------*/
+#ifdef HAVE_LIBRMATH
 
 /*---------------------------------------------------------------------------*/
 /* Routines from the Rmath library (R project).                              */
 /*---------------------------------------------------------------------------*/
 
-#ifdef HAVE_LIBRMATH
+/* we have to distinguish between two cases: */
+#  ifdef R_UNURAN
+/*   Rmath for 'Runuran': nothing special to do. */
+#  else
+/*   Rmath standalone library. */
+#    define MATHLIB_STANDALONE
+#  endif
 
-#define HAVE_BESSEL_K 1
+/* include Rmath header file */
+#  include <Rmath.h>
 
-/* modified Bessel function K_nu of second kind (AKA third kind)             */
-double _unur_sf_bessel_k(double x, double nu);
+/* we have to #undef some macros from Rmath.h */
+#undef trunc
 
-/* rescaled modified Bessel function K_nu of second kind (AKA third kind):   */
-/*   exp(x) * bessel_k(x,nu)                                                 */
-double _unur_sf_bessel_k_expo(double x, double nu);
-#endif
+/* ......................................................................... */
+
+/* incomplete beta integral */
+#define _unur_SF_incomplete_beta(x,a,b)   pbeta((x),(a),(b),TRUE,FALSE)
+
+/* logarithm of gamma function */
+#define _unur_SF_ln_gamma(x)              lgammafn(x)
+
+/* logarithm of factorial */
+#define _unur_SF_ln_factorial(x)          lgammafn((x)+1.)
+
+/* incomplete gamma function */
+#define _unur_SF_incomplete_gamma(x,a)    pgamma(x,a,1.,TRUE,FALSE)
+
+/* modified Bessel function K_nu of second kind (AKA third kind) */
+#define _unur_SF_bessel_k(x,nu)           bessel_k((x),(nu),1)
+
+/* Normal distribution */
+#define _unur_SF_cdf_normal(x)            pnorm((x),0.,1.,TRUE,FALSE)
+#define _unur_SF_invcdf_normal(x)         qnorm((x),0.,1.,TRUE,FALSE)
+
+/* ..........................................................................*/
+
+/* Beta Distribution */
+#define _unur_SF_invcdf_beta(x,p,q)       qbeta((x),(p),(q),TRUE,FALSE)
+
+/* Gamma Distribution */
+#define _unur_SF_invcdf_gamma(x,shape,scale)  qgamma((x),(shape),(scale),TRUE,FALSE)
 
 /*---------------------------------------------------------------------------*/
 /* end: Rmath library (R project)                                            */
 /*---------------------------------------------------------------------------*/
+
+#else
+
+/*---------------------------------------------------------------------------*/
+/* Routines from the CEPHES library.                                         */
+/*---------------------------------------------------------------------------*/
+
+/* incomplete beta integral */
+double _unur_cephes_incbet(double a, double b, double x);
+#define _unur_SF_incomplete_beta(x,a,b)   _unur_cephes_incbet((a),(b),(x))
+
+/* logarithm of gamma function */
+double _unur_cephes_lgam(double x);
+#define _unur_SF_ln_gamma(x)              _unur_cephes_lgam(x)
+
+/* logarithm of factorial */
+#define _unur_SF_ln_factorial(x)          _unur_cephes_lgam((x)+1.)
+
+/* incomplete gamma function */
+double _unur_cephes_igam(double a, double x);
+#define _unur_SF_incomplete_gamma(x,a)    _unur_cephes_igam((a),(x))
+
+/* normal distribution function */
+double _unur_cephes_ndtr(double x);
+#define _unur_SF_cdf_normal(x)            _unur_cephes_ndtr(x)
+
+/* inverse of normal distribution function */
+double _unur_cephes_ndtri(double x);
+#define _unur_SF_invcdf_normal(x)         _unur_cephes_ndtri(x)
+
+/*---------------------------------------------------------------------------*/
+/* end: CEPHES library                                                       */
+/*---------------------------------------------------------------------------*/
+
+#endif
 
 /*****************************************************************************
  *                                                                           *

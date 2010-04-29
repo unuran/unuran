@@ -40,7 +40,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2010 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -274,7 +274,7 @@ _unur_upd_volume_multicauchy( UNUR_DISTR *distr )
   /* log of normalization constant */
   det_covar = (DISTR.covar == NULL)
     ? 1. : _unur_matrix_determinant(distr->dim, DISTR.covar);
-  LOGNORMCONSTANT = _unur_sf_ln_gamma((distr->dim+1)/2.) 
+  LOGNORMCONSTANT = _unur_SF_ln_gamma((distr->dim+1)/2.) 
                   - ( (distr->dim+1) * log(M_PI) + log(det_covar) ) / 2.;
 
   return UNUR_SUCCESS;
@@ -365,7 +365,7 @@ unur_distr_multicauchy( int dim, const double *mean, const double *covar )
   /* log of normalization constant */
   /* constant:  Gamma((dim+1)/2) / ( pi^((dim+1)/2) * sqrt(det(Sigma)) )  */
   det_covar = (DISTR.covar == NULL) ? 1. : _unur_matrix_determinant(dim, DISTR.covar);
-  LOGNORMCONSTANT = _unur_sf_ln_gamma((distr->dim+1)/2.) 
+  LOGNORMCONSTANT = _unur_SF_ln_gamma((distr->dim+1)/2.) 
                   - ( (distr->dim+1) * log(M_PI) + log(det_covar) ) / 2.;
 
   /* mode */

@@ -26,7 +26,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2010 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -142,7 +142,7 @@ _unur_upd_mode_hyperbolic( UNUR_DISTR *distr )
 double
 _unur_normconstant_hyperbolic(const double *params ATTRIBUTE__UNUSED, int n_params ATTRIBUTE__UNUSED)
 { 
-#ifdef HAVE_BESSEL_K
+#ifdef _unur_SF_bessel_k
   double gamm = sqrt(alpha*alpha-beta*beta);
 
   /*
@@ -151,7 +151,7 @@ _unur_normconstant_hyperbolic(const double *params ATTRIBUTE__UNUSED, int n_para
    *             [K_theta(.) ... modified Bessel function of second kind]      *
    */
 
-  return ( gamm / ( 2 * alpha * delta * _unur_sf_bessel_k(delta*gamm, 1) ) );
+  return ( gamm / ( 2 * alpha * delta * _unur_SF_bessel_k(delta*gamm, 1) ) );
 #else
   return 1.;
 #endif

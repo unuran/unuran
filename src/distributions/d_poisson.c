@@ -26,7 +26,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2010 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -82,7 +82,7 @@ double
 _unur_pmf_poisson(int k, const UNUR_DISTR *distr)
 { 
   if (k>=0)
-    return exp( -DISTR.theta + k * log(DISTR.theta) - _unur_sf_ln_factorial(k) );
+    return exp( -DISTR.theta + k * log(DISTR.theta) - _unur_SF_ln_factorial(k) );
   else
     return 0.;
 } /* end of _unur_pmf_poisson() */
@@ -93,7 +93,7 @@ double
 _unur_cdf_poisson(int k, const UNUR_DISTR *distr)
 { 
   if (k>=0)
-    return (1.-_unur_sf_incomplete_gamma(DISTR.theta,k+1.));
+    return (1.-_unur_SF_incomplete_gamma(DISTR.theta,k+1.));
   else
     return 0.;
 } /* end of _unur_cdf_poisson() */

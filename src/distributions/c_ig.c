@@ -28,7 +28,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2009 Wolfgang Hoermann and Josef Leydold                  *
+ *   Copyright (c) 2009-2010  Wolfgang Hoermann and Josef Leydold            *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -158,7 +158,7 @@ _unur_cdf_ig( double x, const UNUR_DISTR *distr )
 {
   register const double *params = DISTR.params;
 
-#define Phi(x)   (_unur_sf_cdfnormal(x))
+#define Phi(x)   (_unur_SF_cdf_normal(x))
 
   if (x<=0.)
     return 0.;

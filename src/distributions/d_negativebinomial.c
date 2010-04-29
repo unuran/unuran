@@ -27,7 +27,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2010 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -98,7 +98,7 @@ _unur_pmf_negativebinomial(int k, const UNUR_DISTR *distr)
 
   else
     return exp( k*log(1-p) 
-		+ _unur_sf_ln_gamma(k+r) - _unur_sf_ln_gamma(k+1.) - LOGNORMCONSTANT ) ;
+		+ _unur_SF_ln_gamma(k+r) - _unur_SF_ln_gamma(k+1.) - LOGNORMCONSTANT ) ;
 
 } /* end of _unur_pmf_negativebinomial() */
 
@@ -151,7 +151,7 @@ int
 _unur_upd_sum_negativebinomial( UNUR_DISTR *distr )
 {
   /* log of normalization constant */
-  LOGNORMCONSTANT = - DISTR.r * log(DISTR.p) + _unur_sf_ln_gamma(DISTR.r);
+  LOGNORMCONSTANT = - DISTR.r * log(DISTR.p) + _unur_SF_ln_gamma(DISTR.r);
 
   if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
     DISTR.sum = 1.;

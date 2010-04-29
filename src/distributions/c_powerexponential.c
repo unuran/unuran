@@ -30,7 +30,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2010  Wolfgang Hoermann and Josef Leydold            *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -143,7 +143,7 @@ _unur_cdf_powerexponential( double x, const UNUR_DISTR *distr )
   register double cdf;
 
   /* compute cdf(abs(x)) - cdf(0) */
-  cdf = _unur_sf_incomplete_gamma(pow(fabs(x),tau),1./tau) / 2.;
+  cdf = _unur_SF_incomplete_gamma(pow(fabs(x),tau),1./tau) / 2.;
   return ((x<0.) ? 0.5 - cdf : 0.5 + cdf);
 
 } /* end of _unur_cdf_powerexponential() */
@@ -170,7 +170,7 @@ int
 _unur_upd_area_powerexponential( UNUR_DISTR *distr )
 {
   /* log of normalization constant */
-  LOGNORMCONSTANT = _unur_sf_ln_gamma(1. + 1./DISTR.tau) + M_LN2;
+  LOGNORMCONSTANT = _unur_SF_ln_gamma(1. + 1./DISTR.tau) + M_LN2;
   
   if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
     DISTR.area = 1.;
@@ -260,7 +260,7 @@ unur_distr_powerexponential( const double *params, int n_params )
   }
 
   /* log of normalization constant */
-  LOGNORMCONSTANT = _unur_sf_ln_gamma(1. + 1./DISTR.tau) + M_LN2;
+  LOGNORMCONSTANT = _unur_SF_ln_gamma(1. + 1./DISTR.tau) + M_LN2;
 
   /* mode and area below p.d.f. */
   DISTR.mode = 0;

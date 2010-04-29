@@ -19,8 +19,7 @@ CEPHES = \
  ndtri.c \
  polevl.c
 
-RMATH = \
- besselK.c
+RMATH =
 
 OTHER = \
  log1p.c

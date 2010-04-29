@@ -35,7 +35,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2010 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -291,8 +291,8 @@ _unur_upd_volume_multistudent( UNUR_DISTR *distr )
   /* log of normalization constant */
   det_covar = (DISTR.covar == NULL) 
     ? 1. : _unur_matrix_determinant(distr->dim, DISTR.covar);
-  LOGNORMCONSTANT = _unur_sf_ln_gamma((distr->dim+DISTR.nu)/2.) 
-    - _unur_sf_ln_gamma(DISTR.nu/2.)
+  LOGNORMCONSTANT = _unur_SF_ln_gamma((distr->dim+DISTR.nu)/2.) 
+    - _unur_SF_ln_gamma(DISTR.nu/2.)
     - ( distr->dim * log(DISTR.nu*M_PI) + log(det_covar) ) / 2.;
 
   return UNUR_SUCCESS;
@@ -380,7 +380,7 @@ unur_distr_multistudent( int dim, double df, const double *mean, const double *c
  /*  constant:  Gamma((dim+df)/2)                                          */
  /*          / ( Gamma(df/2) (df*pi)^(dim/2) * sqrt(det(Sigma)) )          */
   det_covar = (DISTR.covar == NULL) ? 1. : _unur_matrix_determinant(dim, DISTR.covar);
-  LOGNORMCONSTANT = _unur_sf_ln_gamma((distr->dim+df)/2.) - _unur_sf_ln_gamma(df/2.)
+  LOGNORMCONSTANT = _unur_SF_ln_gamma((distr->dim+df)/2.) - _unur_SF_ln_gamma(df/2.)
                   - ( distr->dim * log(df*M_PI) + log(det_covar) ) / 2.;
 
   /* mode */

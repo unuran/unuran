@@ -28,7 +28,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2010 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -99,8 +99,8 @@ _unur_pmf_hypergeometric(int k, const UNUR_DISTR *distr)
     return 0.;
 
   else
-    return exp( LOGNORMCONSTANT - _unur_sf_ln_factorial(k) - _unur_sf_ln_factorial(M-k) -
-                _unur_sf_ln_factorial(n-k) - _unur_sf_ln_factorial(N-M-n+k) );
+    return exp( LOGNORMCONSTANT - _unur_SF_ln_factorial(k) - _unur_SF_ln_factorial(M-k) -
+                _unur_SF_ln_factorial(n-k) - _unur_SF_ln_factorial(N-M-n+k) );
 
 } /* end of _unur_pmf_hypergeometric() */
 
@@ -143,8 +143,8 @@ _unur_upd_sum_hypergeometric( UNUR_DISTR *distr )
   register double *params = DISTR.params;
 
   /* log of normalization constant: none */
-  LOGNORMCONSTANT = _unur_sf_ln_factorial(M) + _unur_sf_ln_factorial(N-M) + _unur_sf_ln_factorial(n) +
-    _unur_sf_ln_factorial(N-n) - _unur_sf_ln_factorial(N);
+  LOGNORMCONSTANT = _unur_SF_ln_factorial(M) + _unur_SF_ln_factorial(N-M) + _unur_SF_ln_factorial(n) +
+    _unur_SF_ln_factorial(N-n) - _unur_SF_ln_factorial(N);
 
   if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
     DISTR.sum = 1.;

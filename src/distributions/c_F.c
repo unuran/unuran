@@ -27,7 +27,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2010 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -196,9 +196,9 @@ _unur_cdf_F(double x, const UNUR_DISTR *distr)
     return 0.;
 
   if (nua * x > nub)
-    return 1. - _unur_sf_incomplete_beta(nub / (nub + nua * x), nub/2., nua/2.);
+    return 1. - _unur_SF_incomplete_beta(nub / (nub + nua * x), nub/2., nua/2.);
   else
-    return _unur_sf_incomplete_beta(nua * x / (nub + nua * x), nua/2., nub/2.);
+    return _unur_SF_incomplete_beta(nua * x / (nub + nua * x), nua/2., nub/2.);
 
 } /* end of _unur_cdf_chisquare() */
 
@@ -247,7 +247,7 @@ double
 _unur_lognormconstant_F(const double *params, int n_params ATTRIBUTE__UNUSED)
 { 
   /* log( Beta(nu1/2, nu2/2) ) - (nu1/2) * log(nu1 / nu2) */
-  return ((_unur_sf_ln_gamma(nua/2.) + _unur_sf_ln_gamma(nub/2.) - _unur_sf_ln_gamma((nua+nub)/2.))
+  return ((_unur_SF_ln_gamma(nua/2.) + _unur_SF_ln_gamma(nub/2.) - _unur_SF_ln_gamma((nua+nub)/2.))
 	  - 0.5 * nua * log(nua/nub));
 } /* end of _unur_lognormconstant_F() */
 

@@ -221,7 +221,7 @@ unur_distr_multicauchy_constantrho(int dim, const double *mean, double rho)
 
   /* compute normalization constant */
   det_covar = _unur_matrix_determinant(distr->dim, distr->data.cvec.covar);
-  LOGNORMCONSTANT = _unur_sf_ln_gamma((distr->dim+1)/2.) 
+  LOGNORMCONSTANT = _unur_SF_ln_gamma((distr->dim+1)/2.) 
                   - ( (distr->dim+1) * log(M_PI) + log(det_covar) ) / 2.;
 
   /* return pointer to object */
@@ -258,7 +258,7 @@ unur_distr_multistudent_constantrho(int dim, double df, const double *mean, doub
 
   /* compute normalization constant */
   det_covar = _unur_matrix_determinant(distr->dim, distr->data.cvec.covar);
-  LOGNORMCONSTANT = _unur_sf_ln_gamma((distr->dim+df)/2.) - _unur_sf_ln_gamma(df/2.)
+  LOGNORMCONSTANT = _unur_SF_ln_gamma((distr->dim+df)/2.) - _unur_SF_ln_gamma(df/2.)
                   - ( distr->dim * log(df*M_PI) + log(det_covar) ) / 2.;
 
   /* return pointer to object */

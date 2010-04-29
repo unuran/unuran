@@ -37,7 +37,6 @@ noinst_HEADERS = \
  unuran_config.h \
  unuran.h.in \
  unur_cookies.h \
- unur_Rmath.h \
  unur_source.h \
  unur_struct.h \
  unur_typedefs.h

@@ -42,7 +42,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2010 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -94,6 +94,9 @@ static double _unur_logpdf_gamma( double x, const UNUR_DISTR *distr );
 static double _unur_dpdf_gamma( double x, const UNUR_DISTR *distr );
 static double _unur_dlogpdf_gamma( double x, const UNUR_DISTR *distr );
 static double _unur_cdf_gamma( double x, const UNUR_DISTR *distr );
+#ifdef _unur_SF_invcdf_gamma
+static double _unur_invcdf_gamma( double x, const UNUR_DISTR *distr );
+#endif
 
 static int _unur_upd_mode_gamma( UNUR_DISTR *distr );
 static int _unur_upd_area_gamma( UNUR_DISTR *distr );
@@ -228,9 +231,27 @@ _unur_cdf_gamma( double x, const UNUR_DISTR *distr )
   if (_unur_isinf(x)==1)
     return 1.;
 
-  return _unur_sf_incomplete_gamma(x,alpha);
+  return _unur_SF_incomplete_gamma(x,alpha);
 
 } /* end of _unur_cdf_gamma() */
+
+/*---------------------------------------------------------------------------*/
+
+#ifdef _unur_SF_invcdf_gamma
+
+double
+_unur_invcdf_gamma( double x, const UNUR_DISTR *distr )
+{ 
+  const double *params = DISTR.params;
+
+  if (DISTR.n_params == 1)
+    return _unur_SF_invcdf_gamma(x, alpha, 1.);
+  else
+    return (gamma + _unur_SF_invcdf_gamma(x, alpha, beta));
+
+} /* end of _unur_invcdf_gamma() */
+
+#endif
 
 /*---------------------------------------------------------------------------*/
 
@@ -290,11 +311,11 @@ _unur_lognormconstant_gamma( const double *params, int n_params )
 {
   if (n_params > 1)
     /* non-standard form */
-    return ( _unur_sf_ln_gamma(alpha) + log(beta) );
+    return ( _unur_SF_ln_gamma(alpha) + log(beta) );
 
   else
     /* standard form */
-    return (_unur_sf_ln_gamma(alpha));
+    return (_unur_SF_ln_gamma(alpha));
 
 } /* end of _unur_lognormconstant_gamma() */
 
@@ -386,6 +407,9 @@ unur_distr_gamma( const double *params, int n_params )
   DISTR.dpdf    = _unur_dpdf_gamma;    /* pointer to derivative of PDF    */
   DISTR.dlogpdf = _unur_dlogpdf_gamma; /* pointer to derivative of logPDF */
   DISTR.cdf     = _unur_cdf_gamma;     /* pointer to CDF                  */
+#ifdef _unur_SF_invcdf_gamma
+  DISTR.invcdf  = _unur_invcdf_gamma;  /* pointer to inverse CDF          */
+#endif
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

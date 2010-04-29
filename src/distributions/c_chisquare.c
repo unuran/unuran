@@ -26,7 +26,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2010 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -74,6 +74,9 @@ static const char distr_name[] = "chisquare";
 static double _unur_pdf_chisquare( double x, const UNUR_DISTR *distr );
 static double _unur_dpdf_chisquare( double x, const UNUR_DISTR *distr );
 static double _unur_cdf_chisquare( double x, const UNUR_DISTR *distr );
+#ifdef _unur_SF_invcdf_gamma
+static double _unur_invcdf_chisquare( double x, const UNUR_DISTR *distr );
+#endif
 
 static int _unur_upd_mode_chisquare( UNUR_DISTR *distr );
 static int _unur_upd_area_chisquare( UNUR_DISTR *distr );
@@ -126,8 +129,22 @@ _unur_cdf_chisquare(double x, const UNUR_DISTR *distr)
     /* out of support of p.d.f. */
     return 0.;
 
-  return _unur_sf_incomplete_gamma(x/2.,nu/2.);
+  return _unur_SF_incomplete_gamma(x/2.,nu/2.);
 } /* end of _unur_cdf_chisquare() */
+
+/*---------------------------------------------------------------------------*/
+
+#ifdef _unur_SF_invcdf_gamma
+
+double
+_unur_invcdf_chisquare( double x, const UNUR_DISTR *distr )
+{ 
+  const double *params = DISTR.params;
+
+  return _unur_SF_invcdf_gamma(x, 0.5*nu, 2.);
+} /* end of _unur_invcdf_chisquare() */
+
+#endif
 
 /*---------------------------------------------------------------------------*/
 
@@ -151,7 +168,7 @@ int
 _unur_upd_area_chisquare( UNUR_DISTR *distr )
 {
   /* normalization constant */
-  LOGNORMCONSTANT = _unur_sf_ln_gamma(DISTR.nu/2.) + M_LN2 * (DISTR.nu/2.);
+  LOGNORMCONSTANT = _unur_SF_ln_gamma(DISTR.nu/2.) + M_LN2 * (DISTR.nu/2.);
 
   if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
     DISTR.area = 1.;
@@ -225,6 +242,9 @@ unur_distr_chisquare( const double *params, int n_params )
   DISTR.pdf  = _unur_pdf_chisquare;   /* pointer to PDF               */
   DISTR.dpdf = _unur_dpdf_chisquare;  /* pointer to derivative of PDF */
   DISTR.cdf  = _unur_cdf_chisquare;   /* pointer to CDF               */
+#ifdef _unur_SF_invcdf_gamma
+  DISTR.invcdf = _unur_invcdf_chisquare;  /* pointer to inverse CDF   */
+#endif
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |
@@ -239,7 +259,7 @@ unur_distr_chisquare( const double *params, int n_params )
   }
 
   /* log of normalization constant */
-  LOGNORMCONSTANT = _unur_sf_ln_gamma(DISTR.nu/2.) + M_LN2 * (DISTR.nu/2.);
+  LOGNORMCONSTANT = _unur_SF_ln_gamma(DISTR.nu/2.) + M_LN2 * (DISTR.nu/2.);
 
   /* mode and area below p.d.f. */
   DISTR.mode = (DISTR.nu >= 2.) ? (DISTR.nu - 2.) : 0.;

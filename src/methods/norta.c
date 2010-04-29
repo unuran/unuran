@@ -775,8 +775,13 @@ _unur_norta_make_marginalgen( const struct unur_gen *gen,
     _unur_error(GENTYPE,UNUR_ERR_DISTR_INVALID,""); return NULL; }
   COOKIE_CHECK(marginal,CK_DISTR_CONT,NULL);
 
-  /* try CSTD+Inversion, HINV, and NINV */
+  /* try PINV, CSTD+Inversion, HINV, and NINV */
   do {
+    /* PINV (Polynomial interpolation based INVersion of CDF) */
+    par = unur_pinv_new( marginal );
+    if ( (marginalgen = _unur_init(par)) != NULL )
+      break;
+
     /* CSTD + inversion */
     par = unur_cstd_new( marginal );
     if (unur_cstd_set_variant( par, UNUR_STDGEN_INVERSION)==UNUR_SUCCESS) {
@@ -786,11 +791,6 @@ _unur_norta_make_marginalgen( const struct unur_gen *gen,
     else {
       _unur_par_free(par);
     }
-
-    /* PINV (Polynomial interpolation based INVersion of CDF) */
-    par = unur_pinv_new( marginal );
-    if ( (marginalgen = _unur_init(par)) != NULL )
-      break;
 
     /* HINV (Hermite interpolation based INVersion of CDF) */
     par = unur_hinv_new( marginal );

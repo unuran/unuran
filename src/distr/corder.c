@@ -14,7 +14,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2010  Wolfgang Hoermann and Josef Leydold            *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -394,7 +394,7 @@ _unur_cdf_corder( double x, const struct unur_distr *os )
   q = OS.params[0] - OS.params[1] + 1.;   /* n-k+1 */
 
   /* CDF(x) = B(F(x)) */
-  return _unur_sf_incomplete_beta(Fx,p,q);
+  return _unur_SF_incomplete_beta(Fx,p,q);
 
 } /* end of _unur_cdf_corder() */
 
@@ -405,10 +405,10 @@ _unur_upd_area_corder( UNUR_DISTR *os )
 {
 
   /* log of normalization constant */
-  /* LOGNORMCONSTANT = _unur_sf_ln_gamma(k) + _unur_sf_ln_gamma(n-k+1) - _unur_sf_ln_gamma(n+1); */
-  LOGNORMCONSTANT = ( _unur_sf_ln_gamma(OS.params[1]) 
-		      + _unur_sf_ln_gamma(OS.params[0] - OS.params[1] + 1.) 
-		      - _unur_sf_ln_gamma(OS.params[0] + 1.) );
+  /* LOGNORMCONSTANT = _unur_SF_ln_gamma(k) + _unur_SF_ln_gamma(n-k+1) - _unur_SF_ln_gamma(n+1); */
+  LOGNORMCONSTANT = ( _unur_SF_ln_gamma(OS.params[1]) 
+		      + _unur_SF_ln_gamma(OS.params[0] - OS.params[1] + 1.) 
+		      - _unur_SF_ln_gamma(OS.params[0] + 1.) );
 
   /* we assume that the PDF is the derivative of the given CDF ! */
 

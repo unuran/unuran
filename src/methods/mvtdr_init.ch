@@ -881,7 +881,7 @@ _unur_mvtdr_cone_logH( struct unur_gen *gen, CONE *c )
     if (c->height < 1.e-50) 
       return -INFINITY;
     else
-      logH += log(_unur_sf_incomplete_gamma(c->beta*c->height,(double)GEN->dim));
+      logH += log(_unur_SF_incomplete_gamma(c->beta*c->height,(double)GEN->dim));
   }
 
   /* check for numerical errors (alpha or beta too small) */
@@ -1031,7 +1031,7 @@ _unur_mvtdr_cone_height( struct unur_gen *gen, CONE *c )
  
   int i,j,row,ipc,ipr;
   double pc,pr,ratio;
-  double sign;
+  double sgn;
 
   /* bounded domain ? */
   if (! GEN->has_domain)
@@ -1053,21 +1053,21 @@ _unur_mvtdr_cone_height( struct unur_gen *gen, CONE *c )
     /* loop over all coordinate directions */
     
     /* get sign of coordinates (these must be either all nonnegative or nonpositive)  */
-    for( j=0, sign=0.; j<dim; j++ ) {
+    for( j=0, sgn=0.; j<dim; j++ ) {
       if( (c->v[j])->coord[i] > 0. ) {
-	sign = +1.; break;
+	sgn = +1.; break;
       }
       if( (c->v[j])->coord[i] < 0. ) {
-	sign = -1.; break;
+	sgn = -1.; break;
       }
     }
     /* check sign */
-    if (_unur_iszero(sign)) continue;
+    if (_unur_iszero(sgn)) continue;
 
     /* coefficients of inequalities */
     for( j=0; j<dim; j++ )
-      A(row,j) = sign * (c->v[j])->coord[i];
-    A(row,dim) = (sign > 0.) ? ur(i) : -(ll(i));
+      A(row,j) = sgn * (c->v[j])->coord[i];
+    A(row,dim) = (sgn > 0.) ? ur(i) : -(ll(i));
     row++;
   }
 

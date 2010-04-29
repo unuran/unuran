@@ -82,7 +82,13 @@
 #  include <Rmath.h>
 
 /* we have to #undef some macros from Rmath.h */
+#ifdef trunc
 #undef trunc
+#endif
+
+#ifdef beta
+#undef beta
+#endif
 
 /* ......................................................................... */
 

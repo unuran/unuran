@@ -148,12 +148,6 @@ static void _unur_cstd_free( struct unur_gen *gen);
 /* double _unur_cstd_sample( UNUR_GEN *gen ); does not exist!                */
 /*---------------------------------------------------------------------------*/
 
-static int _unur_cstd_generic_init( struct unur_par *par, struct unur_gen *gen );
-/*---------------------------------------------------------------------------*/
-/* Initialize special generator for inversion method.                        */
-/*---------------------------------------------------------------------------*/
-
-
 #ifdef UNUR_ENABLE_LOGGING
 /*---------------------------------------------------------------------------*/
 /* the following functions print debugging information on output stream,     */
@@ -809,13 +803,13 @@ _unur_cstd_generic_init( struct unur_par *par, struct unur_gen *gen )
     if (gen) {
       if (DISTR.invcdf) {
 	GEN->is_inversion = TRUE;
-	_unur_cstd_set_sampling_routine(par,gen,_unur_cstd_sample_inv);
+	_unur_cstd_set_sampling_routine(gen,_unur_cstd_sample_inv);
 	return UNUR_SUCCESS;
       }
     }
     else {
       if ((par->distr->data.cont).invcdf) {
-	_unur_cstd_set_sampling_routine(par,gen,_unur_cstd_sample_inv);
+	_unur_cstd_set_sampling_routine(gen,_unur_cstd_sample_inv);
 	return UNUR_SUCCESS;
       }
     }

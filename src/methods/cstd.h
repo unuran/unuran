@@ -193,4 +193,10 @@ double _unur_cstd_sample_inv( struct unur_gen *gen );
    Generic inversion method.
 */
 
+int _unur_cstd_generic_init( struct unur_par *par, struct unur_gen *gen );
+/* 
+   Initialize special generator for inversion method.
+*/
+
 /*---------------------------------------------------------------------------*/
+

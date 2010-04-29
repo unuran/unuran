@@ -1,6 +1,18 @@
 
 Version 1.8.0: ???? 2010
 
+	* Methods:
+
+	- NORTA: use method PINV as first choice for generator of
+          marginal distribution.
+
+	* Distributions:
+
+	- When configure flag '--with-Rmath' is used, then all special
+          functions (like beta and gamma function) are now taken from
+          Rmath library.
+
+
 Version 1.7.1: April 2010
 
 	* Methods:

@@ -143,7 +143,7 @@ static void _unur_cstd_free( struct unur_gen *gen);
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
-/* There are sampling routines, since every distribution has its own.        */
+/* There are no sampling routines, since every distribution has its own.     */
 /* Sampling routines are defined in ../distributions/ for each distributions.*/
 /* double _unur_cstd_sample( UNUR_GEN *gen ); does not exist!                */
 /*---------------------------------------------------------------------------*/
@@ -809,7 +809,6 @@ _unur_cstd_generic_init( struct unur_par *par, struct unur_gen *gen )
     }
     else {
       if ((par->distr->data.cont).invcdf) {
-	_unur_cstd_set_sampling_routine(gen,_unur_cstd_sample_inv);
 	return UNUR_SUCCESS;
       }
     }

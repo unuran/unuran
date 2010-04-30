@@ -194,6 +194,14 @@ int unur_distr_discr_set_cdf( UNUR_DISTR *distribution, UNUR_FUNCT_DISCR *cdf );
    removed (and recomputed using unur_distr_discr_make_pv() when required).
 */
 
+int unur_distr_discr_set_invcdf( UNUR_DISTR *distribution, UNUR_FUNCT_CONT *invcdf );
+/* 
+   Set inverse CDF of the @var{distribution}.
+   @var{invcdf} must be a pointer must be of type
+   @code{double funct(double x, const UNUR_DISTR *distr)},
+   i.e., it should return a @code{double}.
+*/
+
 
 UNUR_FUNCT_DISCR *unur_distr_discr_get_pmf( const UNUR_DISTR *distribution );
 /* */
@@ -204,6 +212,15 @@ UNUR_FUNCT_DISCR *unur_distr_discr_get_cdf( const UNUR_DISTR *distribution );
    @var{distribution}. The pointer is of type
    @code{double funct(int k, const UNUR_DISTR *distr)}.
    If the corresponding function is not available for the @var{distribution},
+   the NULL pointer is returned.
+*/
+
+UNUR_FUNCT_CONT *unur_distr_discr_get_invcdf( const UNUR_DISTR *distribution );
+/* 
+   Get pointer to the inverse CDF of the @var{distribution}. 
+   The pointer is of type
+   @code{double funct(double x, const UNUR_DISTR *distr)}.
+   If the corresponding function is not available for the distribution,
    the NULL pointer is returned.
 */
 
@@ -222,6 +239,19 @@ double unur_distr_discr_eval_cdf( int k, const UNUR_DISTR *distribution );
    unur_distr_discr_eval_pv() behaves like unur_distr_discr_eval_pmf().
    If the corresponding function is not available for the @var{distribution},
    @code{UNUR_INFINITY} is returned and @code{unur_errno} is set to
+   @code{UNUR_ERR_DISTR_DATA}.
+
+   @emph{IMPORTANT:}
+   In the case of a truncated standard distribution these calls always
+   return the respective values of the @emph{untruncated} distribution!
+*/
+
+int unur_distr_discr_eval_invcdf( double u, const UNUR_DISTR *distribution );
+/* 
+   Evaluate the inverse CDF at @var{u}.
+   Notice that @var{distribution} must not be the NULL pointer.
+   If the corresponding function is not available for the distribution,
+   @code{INT_MAX} is returned and @code{unur_errno} is set to
    @code{UNUR_ERR_DISTR_DATA}.
 
    @emph{IMPORTANT:}

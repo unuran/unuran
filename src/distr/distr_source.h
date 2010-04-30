@@ -92,6 +92,7 @@
 
 #define _unur_discr_PMF(x,distr)    ((*((distr)->data.discr.pmf))((x),(distr)))
 #define _unur_discr_CDF(x,distr)    ((*((distr)->data.discr.cdf))((x),(distr)))
+#define _unur_discr_invCDF(u,distr) ((int) (*((distr)->data.discr.invcdf)) ((u),(distr)))
 
 /* #define _unur_cvec_PDF(x,distr)        ((*((distr)->data.cvec.pdf)) ((x),(distr))) */
 /* #define _unur_cvec_dPDF(r,x,distr)     ((*((distr)->data.cvec.dpdf)) ((r),(x),(distr))) */

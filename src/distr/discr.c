@@ -135,6 +135,7 @@ unur_distr_discr_new( void )
   /* probability mass function */
   DISTR.pmf       = NULL;          /* pointer to PMF                         */
   DISTR.cdf       = NULL;          /* pointer to CDF                         */
+  DISTR.invcdf    = NULL;          /* pointer to inverse CDF                 */
 
   DISTR.init      = NULL;          /* pointer to special init routine        */
 
@@ -597,6 +598,44 @@ unur_distr_discr_set_cdf( struct unur_distr *distr, UNUR_FUNCT_DISCR *cdf )
 
 /*---------------------------------------------------------------------------*/
 
+int
+unur_distr_discr_set_invcdf( struct unur_distr *distr, UNUR_FUNCT_CONT *invcdf )
+     /*----------------------------------------------------------------------*/
+     /* set inverse CDF of distribution                                      */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr  ... pointer to distribution object                          */
+     /*   invcdf ... pointer to inverse CDF                                  */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  _unur_check_NULL( distr->name, invcdf,UNUR_ERR_NULL );
+  _unur_check_distr_object( distr, DISCR, UNUR_ERR_DISTR_INVALID );
+  
+  /* we do not allow overwriting an inverse cdf */
+  if (DISTR.invcdf != NULL) {
+    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of inverse CDF not allowed");
+    return UNUR_ERR_DISTR_SET;
+  }
+
+  /* for derived distributions (e.g. order statistics) not possible */
+  if (distr->base) return UNUR_ERR_DISTR_INVALID;
+
+  /* changelog */
+  distr->set &= ~UNUR_DISTR_SET_MASK_DERIVED;
+  /* derived parameters like mode, area, etc. might be wrong now! */
+
+  DISTR.invcdf = invcdf;
+  return UNUR_SUCCESS;
+} /* end of unur_distr_discr_set_invcdf() */
+
+/*---------------------------------------------------------------------------*/
+
 UNUR_FUNCT_DISCR *
 unur_distr_discr_get_pmf( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
@@ -636,6 +675,27 @@ unur_distr_discr_get_cdf( const struct unur_distr *distr )
 
   return DISTR.cdf;
 } /* end of unur_distr_discr_get_cdf() */
+
+/*---------------------------------------------------------------------------*/
+
+UNUR_FUNCT_CONT *
+unur_distr_discr_get_invcdf( const struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* get pointer to inverse CDF of distribution                           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   pointer to inverse CDF                                             */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, NULL );
+  _unur_check_distr_object( distr, DISCR, NULL );
+
+  return DISTR.invcdf;
+} /* end of unur_distr_discr_get_invcdf() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -690,6 +750,40 @@ unur_distr_discr_eval_cdf( int k, const struct unur_distr *distr )
 
   return _unur_discr_CDF(k,distr);
 } /* end of unur_distr_discr_eval_cdf() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_distr_discr_eval_invcdf( double u, const struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* evaluate inverse CDF of distribution at u                            */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   u     ... argument for inverse CDF                                 */
+     /*   distr ... pointer to distribution object                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   invcdf(u)                                                          */
+     /*   INT_MAX    ... on error                                            */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( NULL, distr, INT_MAX );
+  _unur_check_distr_object( distr, DISCR, INT_MAX );
+
+  if (DISTR.invcdf == NULL) {
+    _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"");
+    return INT_MAX;
+  }
+
+  if (u<=0.)
+    return DISTR.domain[0];
+  if (u>=1.)
+    return DISTR.domain[1];
+  else
+    return _unur_discr_invCDF(u,distr);
+
+} /* end of unur_distr_discr_eval_invcdf() */
 
 /*---------------------------------------------------------------------------*/
 

@@ -144,6 +144,7 @@ struct unur_distr_discr {
   /* probability mass function */
   UNUR_FUNCT_DISCR *pmf;        /* pointer to probability mass function      */
   UNUR_FUNCT_DISCR *cdf;        /* pointer to CDF                            */
+  UNUR_FUNCT_CONT  *invcdf;     /* pointer to inverse of CDF                 */
   double params[UNUR_DISTR_MAXPARAMS];  /* parameters of the PMF             */
   int    n_params;              /* number of parameters of the PMF           */
 

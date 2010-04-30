@@ -116,8 +116,16 @@
 /* Beta Distribution */
 #define _unur_SF_invcdf_beta(x,p,q)       qbeta((x),(p),(q),TRUE,FALSE)
 
+/* F Distribution */
+#define _unur_SF_cdf_F(x,nua,nub)         pf((x),(nua),(nub),TRUE,FALSE)
+#define _unur_SF_invcdf_F(x,nua,nub)      qf((x),(nua),(nub),TRUE,FALSE)
+
 /* Gamma Distribution */
 #define _unur_SF_invcdf_gamma(x,shape,scale)  qgamma((x),(shape),(scale),TRUE,FALSE)
+
+/* Student t Distribution */
+#define _unur_SF_cdf_student(x,nu)         pt((x),(nu),TRUE,FALSE)
+#define _unur_SF_invcdf_student(x,nu)      qt((x),(nu),TRUE,FALSE)
 
 /*---------------------------------------------------------------------------*/
 /* end: Rmath library (R project)                                            */

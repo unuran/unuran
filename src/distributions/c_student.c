@@ -75,6 +75,9 @@ static const char distr_name[] = "student";
 static double _unur_pdf_student( double x, const UNUR_DISTR *distr );
 static double _unur_dpdf_student( double x, const UNUR_DISTR *distr );
 static double _unur_cdf_student( double x, const UNUR_DISTR *distr );
+#ifdef _unur_SF_invcdf_student
+static double _unur_invcdf_student( double x, const UNUR_DISTR *distr );
+#endif
 
 static int _unur_upd_mode_student( UNUR_DISTR *distr );
 static int _unur_upd_area_student( UNUR_DISTR *distr );
@@ -86,7 +89,7 @@ static int _unur_set_params_student( UNUR_DISTR *distr, const double *params, in
 double
 _unur_pdf_student( double x, const UNUR_DISTR *distr )
 {
-  register const double *params = DISTR.params;
+  const double *params = DISTR.params;
   return pow( (1. + x*x/nu), (-nu-1.)*0.5 ) / NORMCONSTANT;
 }  /* end of _unur_pdf_student() */
 
@@ -95,7 +98,7 @@ _unur_pdf_student( double x, const UNUR_DISTR *distr )
 double
 _unur_dpdf_student( double x, const UNUR_DISTR *distr )
 {
-  register const double *params = DISTR.params;
+  const double *params = DISTR.params;
   return ( (-nu-1.)*x/nu * pow( (1. + x*x/nu), (-nu-3.)*0.5 ) / NORMCONSTANT );
 } /* end of _unur_dpdf_student() */
 
@@ -104,12 +107,32 @@ _unur_dpdf_student( double x, const UNUR_DISTR *distr )
 double
 _unur_cdf_student(double x, const UNUR_DISTR *distr)
 {
+#ifdef _unur_SF_cdf_student
+  return _unur_SF_cdf_student(x,DISTR.nu);
+#else
+  const double *params = DISTR.params;
   double xx;
-  if (_unur_iszero(DISTR.nu)) return 0; /* maybe we could return the Heaviside step-function here ... */
-  xx=1./(1.+x*x/DISTR.nu);
-  if (x>0) return 1-.5*_unur_SF_incomplete_beta(xx,.5*DISTR.nu,.5)/_unur_SF_incomplete_beta(1.,.5*DISTR.nu,.5);
-  else     return   .5*_unur_SF_incomplete_beta(xx,.5*DISTR.nu,.5)/_unur_SF_incomplete_beta(1.,.5*DISTR.nu,.5);
+
+  if (_unur_iszero(nu))
+    return 0.; /* maybe we could return the Heaviside step-function here ... */
+
+  xx=1./(1.+x*x/nu);
+  if (x>0)
+    return 1-0.5*_unur_SF_incomplete_beta(xx,0.5*nu,0.5)/_unur_SF_incomplete_beta(1.,0.5*nu,0.5);
+  else
+    return   0.5*_unur_SF_incomplete_beta(xx,0.5*nu,0.5)/_unur_SF_incomplete_beta(1.,0.5*nu,0.5);
+#endif
 } /* end of _unur_cdf_student() */
+
+/*---------------------------------------------------------------------------*/
+
+#ifdef _unur_SF_invcdf_student
+double
+_unur_invcdf_student(double x, const UNUR_DISTR *distr)
+{
+  return _unur_SF_invcdf_student(x,DISTR.nu);
+} /* end of _unur_invcdf_student() */
+#endif
 
 /*---------------------------------------------------------------------------*/
 
@@ -216,6 +239,9 @@ unur_distr_student( const double *params, int n_params )
   DISTR.pdf  = _unur_pdf_student;  /* pointer to PDF               */
   DISTR.dpdf = _unur_dpdf_student; /* pointer to derivative of PDF */
   DISTR.cdf  = _unur_cdf_student;  /* pointer to CDF               */
+#ifdef _unur_SF_invcdf_student
+  DISTR.invcdf  = _unur_invcdf_student;  /* pointer to inverse CDF */
+#endif
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

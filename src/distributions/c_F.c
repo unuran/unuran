@@ -78,6 +78,9 @@ static double _unur_logpdf_F( double x, const UNUR_DISTR *distr );
 static double _unur_dpdf_F( double x, const UNUR_DISTR *distr );
 static double _unur_dlogpdf_F( double x, const UNUR_DISTR *distr );
 static double _unur_cdf_F( double x, const UNUR_DISTR *distr );
+#ifdef _unur_SF_invcdf_F
+static double _unur_invcdf_F( double x, const UNUR_DISTR *distr );
+#endif
 
 static int _unur_upd_mode_F( UNUR_DISTR *distr );
 static int _unur_upd_area_F( UNUR_DISTR *distr );
@@ -189,7 +192,10 @@ _unur_dlogpdf_F(double x, const UNUR_DISTR *distr)
 double
 _unur_cdf_F(double x, const UNUR_DISTR *distr)
 { 
-  register const double *params = DISTR.params;
+#ifdef _unur_SF_cdf_F
+  return _unur_SF_cdf_F(x,DISTR.nua,DISTR.nub);
+#else
+  const double *params = DISTR.params;
 
   if (x <= 0.)
     /* out of support of p.d.f. */
@@ -199,8 +205,18 @@ _unur_cdf_F(double x, const UNUR_DISTR *distr)
     return 1. - _unur_SF_incomplete_beta(nub / (nub + nua * x), nub/2., nua/2.);
   else
     return _unur_SF_incomplete_beta(nua * x / (nub + nua * x), nua/2., nub/2.);
-
+#endif
 } /* end of _unur_cdf_chisquare() */
+
+/*---------------------------------------------------------------------------*/
+
+#ifdef _unur_SF_invcdf_F
+double
+_unur_invcdf_F(double x, const UNUR_DISTR *distr)
+{
+  return _unur_SF_invcdf_F(x,DISTR.nua,DISTR.nub);
+} /* end of _unur_invcdf_F() */
+#endif
 
 /*---------------------------------------------------------------------------*/
 
@@ -314,6 +330,9 @@ unur_distr_F( const double *params, int n_params )
   DISTR.dpdf    = _unur_dpdf_F;          /* pointer to derivative of PDF    */
   DISTR.dlogpdf = _unur_dlogpdf_F;       /* pointer to derivative of logPDF */
   DISTR.cdf     = _unur_cdf_F;           /* pointer to CDF                  */
+#ifdef _unur_SF_invcdf_student
+  DISTR.invcdf  = _unur_invcdf_F;        /* pointer to inverse CDF          */
+#endif
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

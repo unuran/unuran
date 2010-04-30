@@ -8,6 +8,12 @@ Version 1.8.0: ???? 2010
 
 	* Distributions:
 
+	- DISCRete distribution objects: added slot 'invCDF' for
+	  inverse CDF. New functions
+	  . unur_distr_discr_set_invcdf()
+	  . unur_distr_discr_get_invcdf()
+	  . unur_distr_discr_eval_invcdf()
+
 	- When configure flag '--with-Rmath' is used, then all special
           functions (like beta and gamma function) are now taken from
           Rmath library.

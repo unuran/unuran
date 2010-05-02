@@ -53,7 +53,8 @@
       CSTD is a wrapper for special generators for continuous
       univariate standard distributions. It only works for
       distributions in the UNU.RAN library of standard distributions
-      (@pxref{Stddist,,Standard distributions}).
+      (@pxref{Stddist,,Standard distributions})
+      or for continuous distributions where the inverse CDF is given.
       If a distribution object is provided that is build from scratch,
       it must provide the inverse CDF. Then CSTD implements the
       inversion method. Otherwise, the NULL pointer is returned.

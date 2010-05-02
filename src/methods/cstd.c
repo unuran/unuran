@@ -33,7 +33,7 @@
  *                                                                           *
  * CSTD is a wrapper for special generator for Continuous univariate         *
  * STandarD distributions. It only works for distributions in the UNURAN     *
- * library of distributions or those continuous distribution that have       *
+ * library of distributions or those continuous distributions that have      *
  * the inverse CDF implemented. Otherwise it refuses to work.                *
  *                                                                           *
  * It calls the initialization routine provided by the distribution object.  *
@@ -270,8 +270,6 @@ unur_cstd_set_variant( struct unur_par *par, unsigned variant )
   /* check arguments */
   _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
   _unur_check_NULL( GENTYPE, par->distr, UNUR_ERR_NULL );
-
-  /* check input */
   _unur_check_par_object( par, CSTD );
 
   /* store date */
@@ -548,10 +546,10 @@ _unur_cstd_create( struct unur_par *par )
   GEN->sample_routine_name = NULL ;  /* name of sampling routine             */
 
   /* copy some parameters into generator object */
-  GEN->Umin        = 0;    /* cdf at left boundary of domain                 */
-  GEN->Umax        = 1;    /* cdf at right boundary of domain                */
+  GEN->Umin = 0.;               /* cdf at left boundary of domain            */
+  GEN->Umax = 1.;               /* cdf at right boundary of domain           */
 
-  /* GEN->is_inversion is set in _unur_cstd_init() */
+  /* GEN->is_inversion is set in _unur_cstd_init() and _unur_cstd_generic_init() */
 
 #ifdef UNUR_ENABLE_INFO
   /* set function for creating info string */
@@ -703,7 +701,7 @@ _unur_cstd_sample_inv( struct unur_gen *gen )
      /*   return INFINITY                                                    */
      /*----------------------------------------------------------------------*/
 {
-  double U,X;
+  double U;
 
   if (!DISTR.invcdf) return INFINITY;
 
@@ -711,9 +709,7 @@ _unur_cstd_sample_inv( struct unur_gen *gen )
   while (_unur_iszero(U = GEN->Umin + _unur_call_urng(gen->urng) * (GEN->Umax-GEN->Umin)));
 
   /* compute inverse CDF */
-  X = DISTR.invcdf(U,gen->distr);
-
-  return X;
+  return (DISTR.invcdf(U,gen->distr));
 
 } /* _unur_cstd_sample_inv() */
 

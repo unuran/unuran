@@ -42,7 +42,8 @@
    =UP  Methods_for_DISCR
 
    =REQUIRED standard distribution from UNU.RAN library
-      (@pxref{Stddist,,Standard distributions}).
+      (@pxref{Stddist,,Standard distributions}) or discrete
+      distribution with inverse CDF.
 
    =SPEED Set-up: fast, Sampling: depends on distribution and generator
 
@@ -52,17 +53,21 @@
       DSTD is a wrapper for special generators for discrete univariate
       standard distributions. It only works for distributions in the 
       UNU.RAN library of standard distributions
-      (@pxref{Stddist,,Standard distributions}).
+      (@pxref{Stddist,,Standard distributions})
+      or for discrete distributions where the inverse CDF is given.
       If a distribution object is provided that is build from scratch,
-      or no special generator for the given standard distribution is
-      provided, the NULL pointer is returned.
+      it must provide the inverse CDF. Then CSTD implements the
+      inversion method. Otherwise, the NULL pointer is returned.
 
       For some distributions more than one special generator
       is possible. 
       
    =HOWTOUSE
       Create a distribution object for a standard distribution
-      from the UNU.RAN library (@pxref{Stddist,,Standard distributions}).
+      from the UNU.RAN library 
+      (@pxref{Stddist,,Standard distributions}),
+      or create a discrete distribution object and set the function
+      for the inverse CDF using unur_distr_discr_set_invcdf().
       For some distributions more than one special generator
       (@emph{variants}) is possible. These can be choosen by a
       unur_dstd_set_variant() call. For possible variants 
@@ -73,7 +78,7 @@
       @item UNUR_STDGEN_DEFAULT
       the default generator.                      
       @item UNUR_STDGEN_FAST
-      the fasted available special generator.
+      the fastest available special generator.
       @item UNUR_STDGEN_INVERSION
       the inversion method (if available).
       @end table
@@ -81,11 +86,12 @@
       Notice that the variant @code{UNUR_STDGEN_FAST} for a special
       generator might be slower than one of the universal algorithms!
       Additional variants may exist for particular distributions.
-      
+
       Sampling from truncated distributions (which can be constructed by 
       changing the default domain of a distribution by means of
-      unur_distr_discr_set_domain() call)
-      is possible but requires the inversion method.
+      unur_distr_discr_set_domain() or unur_dstd_chg_truncated calls)
+      is possible but requires the inversion method. Moreover the CDF
+      of the distribution must be implemented.
 
       It is possible to change the parameters and the domain of the chosen 
       distribution and run unur_reinit() to reinitialize the generator object.
@@ -126,7 +132,34 @@ int unur_dstd_set_variant( UNUR_PAR *parameters, unsigned variant );
    @code{UNUR_STDGEN_FAST} for (one of the) fastest implemented
    special generators, and @code{UNUR_STDGEN_INVERSION} for the
    inversion method (if available). 
-   If the selected variant number is not implemented, this call has no effect.
+   If the selected variant number is not implemented, then an error code is
+   returned and the variant is not changed.
+*/
+
+/*...........................................................................*/
+
+int unur_dstd_chg_truncated( UNUR_GEN *generator, int left, int right );
+/* 
+   Change left and right border of the domain of the (truncated) distribution.
+   This is only possible if the inversion method is used.
+   Otherwise this call has no effect and an error code is returned.
+
+   Notice that the given truncated domain must be a subset of the
+   domain of the given distribution. The generator always uses the
+   intersection of the domain of the distribution and the truncated
+   domain given by this call.
+
+   It is not required to run unur_reinit() after this call has been used.
+
+   @emph{Important:} If the CDF is (almost) the same for @var{left} and 
+   @var{right} and (almost) equal to @code{0} or @code{1}, then the truncated 
+   domain is not chanced and the call returns an error code.
+
+   @emph{Notice:} If the parameters of the distribution has been changed
+   it is recommended to set the truncated domain again, since the
+   former call might change the domain of the distribution but not
+   update the values for the boundaries of the truncated
+   distribution.
 */
 
 /*
@@ -134,3 +167,18 @@ int unur_dstd_set_variant( UNUR_PAR *parameters, unsigned variant );
 */
 
 /*---------------------------------------------------------------------------*/
+
+
+/* Internal function */
+int _unur_dstd_sample_inv( struct unur_gen *gen ); 
+/* 
+   Generic inversion method.
+*/
+
+int _unur_dstd_generic_init( struct unur_par *par, struct unur_gen *gen );
+/* 
+   Initialize special generator for inversion method.
+*/
+
+/*---------------------------------------------------------------------------*/
+

@@ -3,6 +3,10 @@ Version 1.8.0: ???? 2010
 
 	* Methods:
 
+	- DSTD: new function unur_dstd_chg_truncated()
+	  that allows to truncate the domain of generator object that
+	  implements the inversion method.
+
 	- NORTA: use method PINV as first choice for generator of
           marginal distribution.
 

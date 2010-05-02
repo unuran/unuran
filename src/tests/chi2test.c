@@ -239,7 +239,7 @@ _unur_test_chi2_discr( struct unur_gen *gen,
     /* shift vector */
     j -= DISTR.domain[0];
     /* check range of random variates !! */
-    if (j < n_pv)
+    if (j >= 0 && j < n_pv) 
       ++observed[j];
     /* else: ignore number --> chop off tail */
   }

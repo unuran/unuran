@@ -36,7 +36,7 @@ libdistributions_la_SOURCES = \
  c_uniform.c \
  c_weibull.c \
  d_binomial.c    d_binomial_gen.c \
- d_geometric.c   d_geometric_gen.c \
+ d_geometric.c \
  d_hypergeometric.c d_hypergeometric_gen.c \
  d_logarithmic.c d_logarithmic_gen.c \
  d_negativebinomial.c \

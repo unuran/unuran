@@ -71,6 +71,7 @@ static const char distr_name[] = "geometric";
 /* function prototypes                                                       */
 static double _unur_pmf_geometric( int k, const UNUR_DISTR *distr );
 static double _unur_cdf_geometric( int k, const UNUR_DISTR *distr ); 
+static double _unur_invcdf_geometric( double u, const UNUR_DISTR *distr ); 
 
 static int _unur_upd_mode_geometric( UNUR_DISTR *distr );
 static int _unur_upd_sum_geometric( UNUR_DISTR *distr );
@@ -91,6 +92,19 @@ _unur_cdf_geometric(int k, const UNUR_DISTR *distr)
 { 
   return ((k<0) ? 0. : (1. - pow(1. - DISTR.p, k+1.)) );
 } /* end of _unur_cdf_geometric() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_invcdf_geometric(double u, const UNUR_DISTR *distr)
+{ 
+  if (_unur_isone(DISTR.p))
+    return 0.;
+  else
+    /* add a fuzz to ensure left continuity */
+    return ceil(log(u) / log1p(-DISTR.p) - 1. - 1.e-7);
+
+} /* end of _unur_invcdf_geometric() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -180,11 +194,12 @@ unur_distr_geometric( const double *params, int n_params )
   distr->name = distr_name;
              
   /* how to get special generators */
-  DISTR.init = _unur_stdgen_geometric_init;
+  /* DISTR.init = _unur_stdgen_geometric_init; */
    
   /* functions */
-  DISTR.pmf  = _unur_pmf_geometric;   /* pointer to PMF */
-  DISTR.cdf  = _unur_cdf_geometric;   /* pointer to CDF */
+  DISTR.pmf     = _unur_pmf_geometric;    /* pointer to PMF */
+  DISTR.cdf     = _unur_cdf_geometric;    /* pointer to CDF */
+  DISTR.invcdf  = _unur_invcdf_geometric; /* pointer to invsere of CDF */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

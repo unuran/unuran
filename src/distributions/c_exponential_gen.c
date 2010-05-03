@@ -30,6 +30,13 @@
  *                                                                           *
  *****************************************************************************/
 
+/*****************************************************************************
+ * We use the marginal generation time for inversion from the                *
+ * exponential distribution as time unit for timings.                        *
+ * Thus we do not use the inverse CDF but have the particular method         *
+ * implemented.                                                              *
+ *****************************************************************************/
+
 /*---------------------------------------------------------------------------*/
 
 #include <unur_source.h>

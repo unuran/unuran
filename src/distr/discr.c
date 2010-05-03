@@ -599,7 +599,7 @@ unur_distr_discr_set_cdf( struct unur_distr *distr, UNUR_FUNCT_DISCR *cdf )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_distr_discr_set_invcdf( struct unur_distr *distr, UNUR_FUNCT_CONT *invcdf )
+unur_distr_discr_set_invcdf( struct unur_distr *distr, UNUR_IFUNCT_DISCR *invcdf )
      /*----------------------------------------------------------------------*/
      /* set inverse CDF of distribution                                      */
      /*                                                                      */
@@ -678,7 +678,7 @@ unur_distr_discr_get_cdf( const struct unur_distr *distr )
 
 /*---------------------------------------------------------------------------*/
 
-UNUR_FUNCT_CONT *
+UNUR_IFUNCT_DISCR *
 unur_distr_discr_get_invcdf( const struct unur_distr *distr )
      /*----------------------------------------------------------------------*/
      /* get pointer to inverse CDF of distribution                           */

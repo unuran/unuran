@@ -57,8 +57,9 @@ typedef struct unur_urng  UNUR_URNG;
 /*---------------------------------------------------------------------------*/
 /* functions for continuous univariate PDF, CDF, and their derivatives       */
 
-typedef double UNUR_FUNCT_CONT(double x, const struct unur_distr *distr);
-typedef double UNUR_FUNCT_DISCR(int x, const struct unur_distr *distr);
+typedef double UNUR_FUNCT_CONT  (double x, const struct unur_distr *distr);
+typedef double UNUR_FUNCT_DISCR (int x, const struct unur_distr *distr);
+typedef int    UNUR_IFUNCT_DISCR(double x, const struct unur_distr *distr);
 
 /*---------------------------------------------------------------------------*/
 /* functions for continuous multivariate PDF, CDF, and their gradients       */
@@ -67,8 +68,8 @@ typedef double UNUR_FUNCT_DISCR(int x, const struct unur_distr *distr);
 /* computed "on the fly" when they are needed and stored in the              */
 /* distribution object.                                                      */
 
-typedef double UNUR_FUNCT_CVEC(const double *x, struct unur_distr *distr);
-typedef int UNUR_VFUNCT_CVEC(double *result, const double *x, struct unur_distr *distr);
+typedef double UNUR_FUNCT_CVEC (const double *x, struct unur_distr *distr);
+typedef int    UNUR_VFUNCT_CVEC(double *result, const double *x, struct unur_distr *distr);
 typedef double UNUR_FUNCTD_CVEC(const double *x, int coord, struct unur_distr *distr);
 
 /*---------------------------------------------------------------------------*/

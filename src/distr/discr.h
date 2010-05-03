@@ -194,11 +194,11 @@ int unur_distr_discr_set_cdf( UNUR_DISTR *distribution, UNUR_FUNCT_DISCR *cdf );
    removed (and recomputed using unur_distr_discr_make_pv() when required).
 */
 
-int unur_distr_discr_set_invcdf( UNUR_DISTR *distribution, UNUR_FUNCT_CONT *invcdf );
+int unur_distr_discr_set_invcdf( UNUR_DISTR *distribution, UNUR_IFUNCT_DISCR *invcdf );
 /* 
    Set inverse CDF of the @var{distribution}.
    @var{invcdf} must be a pointer must be of type
-   @code{double funct(double x, const UNUR_DISTR *distr)},
+   @code{int funct(double x, const UNUR_DISTR *distr)},
    i.e., it should return a @code{double}.
 */
 
@@ -215,11 +215,11 @@ UNUR_FUNCT_DISCR *unur_distr_discr_get_cdf( const UNUR_DISTR *distribution );
    the NULL pointer is returned.
 */
 
-UNUR_FUNCT_CONT *unur_distr_discr_get_invcdf( const UNUR_DISTR *distribution );
+UNUR_IFUNCT_DISCR *unur_distr_discr_get_invcdf( const UNUR_DISTR *distribution );
 /* 
    Get pointer to the inverse CDF of the @var{distribution}. 
    The pointer is of type
-   @code{double funct(double x, const UNUR_DISTR *distr)}.
+   @code{int funct(double x, const UNUR_DISTR *distr)}.
    If the corresponding function is not available for the distribution,
    the NULL pointer is returned.
 */

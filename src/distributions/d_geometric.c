@@ -71,7 +71,7 @@ static const char distr_name[] = "geometric";
 /* function prototypes                                                       */
 static double _unur_pmf_geometric( int k, const UNUR_DISTR *distr );
 static double _unur_cdf_geometric( int k, const UNUR_DISTR *distr ); 
-static double _unur_invcdf_geometric( double u, const UNUR_DISTR *distr ); 
+static int    _unur_invcdf_geometric( double u, const UNUR_DISTR *distr ); 
 
 static int _unur_upd_mode_geometric( UNUR_DISTR *distr );
 static int _unur_upd_sum_geometric( UNUR_DISTR *distr );
@@ -95,15 +95,19 @@ _unur_cdf_geometric(int k, const UNUR_DISTR *distr)
 
 /*---------------------------------------------------------------------------*/
 
-double
+int
 _unur_invcdf_geometric(double u, const UNUR_DISTR *distr)
 { 
-  if (_unur_isone(DISTR.p))
-    return 0.;
-  else
-    /* add a fuzz to ensure left continuity */
-    return ceil(log(u) / log1p(-DISTR.p) - 1. - 1.e-7);
+  double x;
 
+  if (_unur_isone(DISTR.p))
+    return 0;
+  
+  /* else */
+  /* add a fuzz to ensure left continuity */
+  x = ceil(log(u) / log1p(-DISTR.p) - 1. - 1.e-7);
+  
+  return ((x>=INT_MAX) ? INT_MAX : ((int) x));
 } /* end of _unur_invcdf_geometric() */
 
 /*---------------------------------------------------------------------------*/

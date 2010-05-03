@@ -104,8 +104,7 @@ _unur_invcdf_geometric(double u, const UNUR_DISTR *distr)
     return 0;
   
   /* else */
-  /* add a fuzz to ensure left continuity */
-  x = ceil(log(u) / log1p(-DISTR.p) - 1. - 1.e-7);
+  x = ceil(log1p(-u) / log1p(-DISTR.p) - 1.);
   
   return ((x>=INT_MAX) ? INT_MAX : ((int) x));
 } /* end of _unur_invcdf_geometric() */

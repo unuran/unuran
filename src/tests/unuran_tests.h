@@ -11,7 +11,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2010 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -337,7 +337,7 @@ double unur_test_u_error( const UNUR_GEN *generator,
    might occasionally trigger such an event.
    Thus the function returns a penalty score. It is @code{0.} when the
    U-error never exceed the @var{threshold} value. It roughly gives the
-   portion of praticular test where the U-error is too larger.
+   portion of particular test points where the U-error is too larger.
    However, each such event is weighted with 
    @unurmath{1 + 10 \times (uerror - threshold) / threshold}.
 
@@ -357,6 +357,12 @@ double unur_test_u_error( const UNUR_GEN *generator,
    the observed u-errors are corrected by the corresponding rescaling
    factor.
 
+   The test also works for discrete distributions albeit with some
+   restrictions: 
+   It does not work correctly with truncated distributions and the
+   @var{testtails} flag is ignored.
+   Moreover, the value stored in @var{MAE} is rather useless.
+   
    In case of an error a negative value is returned. 
 */
 

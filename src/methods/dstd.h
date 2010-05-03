@@ -16,7 +16,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2010 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -168,17 +168,21 @@ int unur_dstd_chg_truncated( UNUR_GEN *generator, int left, int right );
 
 /*---------------------------------------------------------------------------*/
 
+/* Yet not documented! */
 
-/* Internal function */
-int _unur_dstd_sample_inv( struct unur_gen *gen ); 
-/* 
-   Generic inversion method.
-*/
+int unur_dstd_eval_invcdf( const UNUR_GEN *generator, double u );
+/*
+   Evaluate inverse CDF at @var{u}. However, this requires that
+   @var{generator} implements an inversion method.
+   If @var{u} is out of the domain [0,1] then @code{unur_errno} is set
+   to @code{UNUR_ERR_DOMAIN} and the respective bound of
+   the domain of the distribution are returned (which is
+   @code{INT_MIN} or @code{INT_MAX} in the case of
+   unbounded domains).
 
-int _unur_dstd_generic_init( struct unur_par *par, struct unur_gen *gen );
-/* 
-   Initialize special generator for inversion method.
+   @emph{Notice}: When the domain has been truncated by a  
+   unur_dstd_chg_truncated() call then the inverse CDF of the
+   truncated distribution is returned.
 */
 
 /*---------------------------------------------------------------------------*/
-

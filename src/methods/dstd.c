@@ -11,7 +11,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2010 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -38,8 +38,9 @@
  *                                                                           *
  * It calls the initialization routine provided by the distribution object.  *
  * This routine has to do all setup steps for the special generator.         *
- * If no such routine is given, i.e. distr->init==NULL but the inverse CDF   *
- * is avaible, then _unur_dstd_generic_init() is used.                       *
+ * If no such routine is given (i.e. distr->init==NULL) or when it does not  *
+ * implement the inversion method then the inverse CDF stored in the         *
+ * distribution object (if available) is used.                               *
  * If neither is available, then unur_dstd_new() does not work and the       *
  * NULL pointer is returned instead of the pointer to a parameter object.    *
  *                                                                           *
@@ -147,6 +148,16 @@ static void _unur_dstd_free( struct unur_gen *gen);
 /* There are no sampling routines, since every distribution has its own.     */
 /* Sampling routines are defined in ../distributions/ for each distributions.*/
 /* double _unur_dstd_sample( UNUR_GEN *gen ); does not exist!                */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_dstd_sample_inv( struct unur_gen *gen ); 
+/*---------------------------------------------------------------------------*/
+/* Generic inversion method.                                                 */
+/*---------------------------------------------------------------------------*/
+
+static int _unur_dstd_inversion_init( struct unur_par *par, struct unur_gen *gen );
+/*---------------------------------------------------------------------------*/
+/* Initialize special generator for inversion method.                        */
 /*---------------------------------------------------------------------------*/
 
 #ifdef UNUR_ENABLE_LOGGING
@@ -278,16 +289,19 @@ unur_dstd_set_variant( struct unur_par *par, unsigned variant )
   par->variant = variant;
 
   /* check variant. run special init routine only in test mode */
-  if ( (par->DISTR_IN.init != NULL && par->DISTR_IN.init(par,NULL)==UNUR_SUCCESS) ||
-       _unur_dstd_generic_init(par,NULL)==UNUR_SUCCESS ) {
-    par->set |= DSTD_SET_VARIANT;    /* changelog */
-    return UNUR_SUCCESS;
+  if ( (par->DISTR_IN.init == NULL || par->DISTR_IN.init(par,NULL)!=UNUR_SUCCESS) &&
+       _unur_dstd_inversion_init(par,NULL)!=UNUR_SUCCESS ) {
+    /* variant not valid */
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_VARIANT,"");
+    par->variant = old_variant;
+    return UNUR_ERR_PAR_VARIANT;
   }
 
-  /* variant not valid */
-  _unur_warning(GENTYPE,UNUR_ERR_PAR_VARIANT,"");
-  par->variant = old_variant;
-  return UNUR_ERR_PAR_VARIANT;
+  /* changelog */
+  par->set |= DSTD_SET_VARIANT;
+
+  /* o.k. */
+  return UNUR_SUCCESS;
 
 } /* end of unur_dstd_set_variant() */
 
@@ -347,9 +361,9 @@ unur_dstd_chg_truncated( struct unur_gen *gen, int left, int right )
     return UNUR_ERR_DISTR_SET;
   }
 
-  /* compute umin and umax FIXME */
-  Umin = (left > -INFINITY) ? CDF(left) : 0.;
-  Umax = (right < INFINITY) ? CDF(right) : 1.;
+  /* compute umin and umax */
+  Umin = (left <= INT_MIN) ? 0. : CDF(left-1);
+  Umax = CDF(right);
 
   /* check result */
   if (Umin > Umax) {
@@ -430,20 +444,10 @@ _unur_dstd_init( struct unur_par *par )
   _unur_par_free(par);
   if (!gen) return NULL;
 
-  /* check for required data: initializing routine for special generator */
-  if (DISTR.init == NULL) {
-    if (DISTR.invcdf) {
-      DISTR.init = _unur_dstd_generic_init;
-    }
-    else {
-      _unur_error(GENTYPE,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-      _unur_dstd_free(gen); return NULL; 
-    }
-  }
-  
   /* run special init routine for generator */
   GEN->is_inversion = FALSE;   /* reset flag for inversion method */
-  if ( DISTR.init(NULL,gen)!=UNUR_SUCCESS ) {
+  if ( (DISTR.init == NULL || DISTR.init(NULL,gen)!=UNUR_SUCCESS) &&
+       _unur_dstd_inversion_init(NULL,gen)!=UNUR_SUCCESS ) {
     /* init failed --> could not find a sampling routine */
     _unur_error(GENTYPE,UNUR_ERR_GEN_DATA,"variant for special generator");
     _unur_dstd_free(gen); return NULL; 
@@ -483,7 +487,8 @@ _unur_dstd_reinit( struct unur_gen *gen )
 
   /* run special init routine for generator */
   GEN->is_inversion = FALSE;   /* reset flag for inversion method */
-  if ( DISTR.init(NULL,gen)!=UNUR_SUCCESS ) {
+  if ( (DISTR.init == NULL || DISTR.init(NULL,gen)!=UNUR_SUCCESS) &&
+       _unur_dstd_inversion_init(NULL,gen)!=UNUR_SUCCESS ) {
     /* init failed --> could not find a sampling routine */
     _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"parameters");
     return UNUR_ERR_GEN_DATA;
@@ -552,7 +557,7 @@ _unur_dstd_create( struct unur_par *par )
   GEN->Umin = 0.;               /* cdf at left boundary of domain            */
   GEN->Umax = 1.;               /* cdf at right boundary of domain           */
 
-  /* GEN->is_inversion is set in _unur_dstd_init() and _unur_dstd_generic_init() */
+  /* GEN->is_inversion is set in _unur_dstd_inversion_init() */
 
 #ifdef UNUR_ENABLE_INFO
   /* set function for creating info string */
@@ -599,7 +604,7 @@ _unur_dstd_check_par( struct unur_gen *gen )
     }
 
     /* compute Umin and Umax */
-    GEN->Umin = CDF(DISTR.trunc[0]-1);
+    GEN->Umin = (DISTR.trunc[0] <= INT_MIN) ? 0. : CDF(DISTR.trunc[0]-1);
     GEN->Umax = CDF(DISTR.trunc[1]);
   }
 
@@ -722,12 +727,68 @@ _unur_dstd_sample_inv( struct unur_gen *gen )
 
 /*---------------------------------------------------------------------------*/
 
+int
+unur_dstd_eval_invcdf( const struct unur_gen *gen, double u )
+     /*----------------------------------------------------------------------*/
+     /* evaluate inverse CDF at u.                                           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*   u   ... argument for inverse CDF (0<=u<=1, no validation!)         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   int (inverse CDF)                                                  */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return INT_MAX                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  int k;
+
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, gen, INT_MAX );
+  if ( gen->method != UNUR_METH_DSTD ) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_INVALID,"");
+    return INT_MAX;
+  }
+  COOKIE_CHECK(gen,CK_DSTD_GEN,INT_MAX);
+
+  if (!DISTR.invcdf) {
+    /* no inverse CDF available */
+    _unur_error(gen->genid,UNUR_ERR_NO_QUANTILE,"inversion CDF required");
+    return INT_MAX;
+  } 
+
+  if ( ! (u>0. && u<1.)) {
+    if ( ! (u>=0. && u<=1.)) {
+      _unur_warning(gen->genid,UNUR_ERR_DOMAIN,"U not in [0,1]");
+    }
+    if (u<=0.) return DISTR.trunc[0];
+    if (u>=1.) return DISTR.trunc[1];
+    return INT_MAX;  /* u == NaN */
+  }
+  
+  /* rescale given u */
+  u = GEN->Umin + u * (GEN->Umax - GEN->Umin);
+
+  /* compute inverse CDF */
+  k = DISTR.invcdf(u,gen->distr);
+
+  /* validate range */
+  if (k<DISTR.trunc[0]) k = DISTR.trunc[0];
+  if (k>DISTR.trunc[1]) k = DISTR.trunc[1];
+
+  return k;
+
+} /* end of unur_dstd_eval_invcdf() */
+
+
 /*****************************************************************************/
 /**  Auxilliary Routines                                                    **/
 /*****************************************************************************/
 
 int
-_unur_dstd_generic_init( struct unur_par *par, struct unur_gen *gen )
+_unur_dstd_inversion_init( struct unur_par *par, struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* initialize special generator for inversion method                    */
      /* when inverse CDF is available for the distribution.                  */
@@ -765,7 +826,7 @@ _unur_dstd_generic_init( struct unur_par *par, struct unur_gen *gen )
     return UNUR_FAILURE;
   }
   
-} /* end of _unur_dstd_generic_init() */
+} /* end of _unur_dstd_inversion_init() */
 
 /*---------------------------------------------------------------------------*/
 

@@ -88,9 +88,8 @@ _unur_stdgen_slash_init( struct unur_par *par, struct unur_gen *gen )
     _unur_cstd_set_sampling_routine(gen, _unur_stdgen_sample_slash_slash );
     return slash_slash_init( gen );
 
-  case UNUR_STDGEN_INVERSION:   /* inversion method */
   default: /* no such generator */
-    return _unur_cstd_generic_init(par,gen);
+    return UNUR_FAILURE;
   }
   
 } /* end of _unur_stdgen_slash_init() */

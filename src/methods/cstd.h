@@ -16,7 +16,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2010 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -186,17 +186,6 @@ double unur_cstd_eval_invcdf( const UNUR_GEN *generator, double u );
    @emph{Notice}: When the domain has been truncated by a  
    unur_cstd_chg_truncated() call then the inverse CDF of the
    truncated distribution is returned.
-*/
-
-/* Internal function */
-double _unur_cstd_sample_inv( struct unur_gen *gen ); 
-/* 
-   Generic inversion method.
-*/
-
-int _unur_cstd_generic_init( struct unur_par *par, struct unur_gen *gen );
-/* 
-   Initialize special generator for inversion method.
 */
 
 /*---------------------------------------------------------------------------*/

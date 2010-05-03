@@ -567,7 +567,7 @@ _unur_mixt_sample_inv( struct unur_gen *gen )
 
   /* sample index */
   U = _unur_call_urng(gen->urng);
-  J =unur_dgt_eval_invcdf( gen->INDEX, U, &recycle );
+  J =unur_dgt_eval_invcdf_recycle( gen->INDEX, U, &recycle );
 
   /* the resolution of recycle is less than that of U. */
   /* the values 0. and 1. may be result in INFINITY.   */
@@ -619,7 +619,7 @@ unur_mixt_eval_invcdf( const struct unur_gen *gen, double u )
   }
 
   /* get index */
-  J =unur_dgt_eval_invcdf( gen->INDEX, u, &recycle );
+  J =unur_dgt_eval_invcdf_recycle( gen->INDEX, u, &recycle );
 
   /* the resolution of recycle is less than that of U. */
   /* the values 0. and 1. may be result in INFINITY.   */

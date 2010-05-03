@@ -38,6 +38,8 @@
 #include <methods/cstd.h>
 #include <methods/cstd_struct.h>
 #include <methods/dgt.h>
+#include <methods/dstd.h>
+#include <methods/dstd_struct.h>
 #include <methods/hinv.h>
 #include <methods/mixt.h>
 #include <methods/mixt_struct.h>
@@ -166,7 +168,12 @@ unur_quantile ( struct unur_gen *gen, double U )
     break;
 
   case UNUR_METH_DGT:
-    return ((double) unur_dgt_eval_invcdf(gen,U,NULL));
+    return ((double) unur_dgt_eval_invcdf(gen,U));
+
+  case UNUR_METH_DSTD:
+    if (((struct unur_dstd_gen*)gen->datap)->is_inversion)
+      return unur_dstd_eval_invcdf(gen,U);
+    break;
   }
   
   /* default: */

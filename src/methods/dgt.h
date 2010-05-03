@@ -147,7 +147,7 @@ int unur_dgt_set_variant( UNUR_PAR *parameters, unsigned variant );
 /*---------------------------------------------------------------------------*/
 
 /** NOT IN MANUAL **/
-int unur_dgt_eval_invcdf( const UNUR_GEN *generator, double u, double *recycle );
+int unur_dgt_eval_invcdf_recycle( const UNUR_GEN *generator, double u, double *recycle );
 /*
    Compute the @var{U} quantile of the discrete distribution in
    @var{generator}, i.e., the smallest integer I such that P(X<=I) >= U.
@@ -159,5 +159,10 @@ int unur_dgt_eval_invcdf( const UNUR_GEN *generator, double u, double *recycle )
    the value of [ P(X<=I) - U] / [ P(X<=I) - P(X<=I-1) ]
    is stored in @var{recycle}.
 */
+
+int unur_dgt_eval_invcdf( const UNUR_GEN *generator, double u );
+/* 
+   Short for  unur_dgt_eval_invcdf_recycle( generator, u, NULL).
+ */
 
 /*---------------------------------------------------------------------------*/

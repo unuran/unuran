@@ -640,7 +640,7 @@ _unur_dgt_sample( struct unur_gen *gen )
 /*---------------------------------------------------------------------------*/
 
 int
-unur_dgt_eval_invcdf( const struct unur_gen *gen, double u, double *recycle )
+unur_dgt_eval_invcdf_recycle( const struct unur_gen *gen, double u, double *recycle )
      /*----------------------------------------------------------------------*/
      /* evaluate inverse CDF at u.                                           */
      /*                                                                      */
@@ -697,6 +697,27 @@ unur_dgt_eval_invcdf( const struct unur_gen *gen, double u, double *recycle )
 
   return j;
 
+} /* end of unur_dgt_eval_invcdf_recycle() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_dgt_eval_invcdf( const struct unur_gen *gen, double u )
+     /*----------------------------------------------------------------------*/
+     /* evaluate inverse CDF at u.                                           */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen     ... pointer to generator object                            */
+     /*   u       ... argument for inverse CDF (0<=u<=1)                     */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   integer (inverse CDF)                                              */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return INT_MAX                                                     */
+     /*----------------------------------------------------------------------*/
+{
+  return unur_dgt_eval_invcdf_recycle(gen,u,NULL);
 } /* end of unur_dgt_eval_invcdf() */
 
 /*****************************************************************************/

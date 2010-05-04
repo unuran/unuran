@@ -98,9 +98,7 @@ _unur_stdgen_hypergeometric_init( struct unur_par *par, struct unur_gen *gen )
      _unur_dstd_set_sampling_routine(gen, _unur_stdgen_sample_hypergeometric_hruec );
      return hypergeometric_hruec_init( gen );
 
-  case UNUR_STDGEN_INVERSION:   /* inversion method */
   default: /* no such generator */
-    if (gen) _unur_warning(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
     return UNUR_FAILURE;
   }
   

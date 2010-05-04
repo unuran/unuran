@@ -109,23 +109,37 @@
 
 /* Normal distribution */
 #define _unur_SF_cdf_normal(x)            pnorm((x),0.,1.,TRUE,FALSE)
-#define _unur_SF_invcdf_normal(x)         qnorm((x),0.,1.,TRUE,FALSE)
+#define _unur_SF_invcdf_normal(u)         qnorm((u),0.,1.,TRUE,FALSE)
 
 /* ..........................................................................*/
 
 /* Beta Distribution */
-#define _unur_SF_invcdf_beta(x,p,q)       qbeta((x),(p),(q),TRUE,FALSE)
+#define _unur_SF_invcdf_beta(u,p,q)       qbeta((u),(p),(q),TRUE,FALSE)
 
 /* F Distribution */
 #define _unur_SF_cdf_F(x,nua,nub)         pf((x),(nua),(nub),TRUE,FALSE)
-#define _unur_SF_invcdf_F(x,nua,nub)      qf((x),(nua),(nub),TRUE,FALSE)
+#define _unur_SF_invcdf_F(u,nua,nub)      qf((u),(nua),(nub),TRUE,FALSE)
 
 /* Gamma Distribution */
-#define _unur_SF_invcdf_gamma(x,shape,scale)  qgamma((x),(shape),(scale),TRUE,FALSE)
+#define _unur_SF_invcdf_gamma(u,shape,scale)  qgamma((u),(shape),(scale),TRUE,FALSE)
 
 /* Student t Distribution */
 #define _unur_SF_cdf_student(x,nu)         pt((x),(nu),TRUE,FALSE)
-#define _unur_SF_invcdf_student(x,nu)      qt((x),(nu),TRUE,FALSE)
+#define _unur_SF_invcdf_student(u,nu)      qt((u),(nu),TRUE,FALSE)
+
+/* Binomial Distribution */
+#define _unur_SF_invcdf_binomial(u,n,p)   qbinom((u),(n),(p),TRUE,FALSE)
+
+/* Hypergeometric Distribution */
+#define _unur_SF_cdf_hypergeometric(x,N,M,n)  phyper((x),(M),(N)-(M),(n),TRUE,FALSE)
+#define _unur_SF_invcdf_hypergeometric(u,N,M,n)  qhyper((u),(M),(N)-(M),(n),TRUE,FALSE)
+
+/* Negative Binomial Distribution */
+#define _unur_SF_cdf_negativebinomial(x,n,p)      pnbinom((x),(n),(p),TRUE,FALSE)
+#define _unur_SF_invcdf_negativebinomial(u,n,p)   qnbinom((u),(n),(p),TRUE,FALSE)
+
+/* Poisson Distribution */
+#define _unur_SF_invcdf_poisson(u,theta)   qpois((u),(theta),TRUE,FALSE)
 
 /*---------------------------------------------------------------------------*/
 /* end: Rmath library (R project)                                            */

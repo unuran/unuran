@@ -75,6 +75,9 @@ static const char distr_name[] = "binomial";
 /* function prototypes                                                       */
 static double _unur_pmf_binomial( int k, const UNUR_DISTR *distr );
 static double _unur_cdf_binomial( int k, const UNUR_DISTR *distr ); 
+#ifdef _unur_SF_invcdf_binomial
+static int    _unur_invcdf_binomial( double u, const UNUR_DISTR *distr ); 
+#endif
 
 static int _unur_upd_mode_binomial( UNUR_DISTR *distr );
 static int _unur_upd_sum_binomial( UNUR_DISTR *distr );
@@ -85,7 +88,7 @@ static int _unur_set_params_binomial( UNUR_DISTR *distr, const double *params, i
 double
 _unur_pmf_binomial(int k, const UNUR_DISTR *distr)
 { 
-  register const double *params = DISTR.params;
+  const double *params = DISTR.params;
 
   if ( k<0 || k>(n+0.5) )
     return 0.;
@@ -101,7 +104,7 @@ _unur_pmf_binomial(int k, const UNUR_DISTR *distr)
 double
 _unur_cdf_binomial(int k, const UNUR_DISTR *distr)
 { 
-  register const double *params = DISTR.params;
+  const double *params = DISTR.params;
 
   if (k<0)
     return 0.;
@@ -117,6 +120,20 @@ _unur_cdf_binomial(int k, const UNUR_DISTR *distr)
 
 } /* end of _unur_cdf_binomial() */
 
+/*---------------------------------------------------------------------------*/
+#ifdef _unur_SF_invcdf_binomial
+
+int
+_unur_invcdf_binomial(double u, const UNUR_DISTR *distr)
+{ 
+  const double *params = DISTR.params;
+  double x;
+
+  x = _unur_SF_invcdf_binomial(u,n,p);
+  return ((x>=INT_MAX) ? INT_MAX : ((int) x));
+} /* end of _unur_invcdf_binomial() */
+
+#endif
 /*---------------------------------------------------------------------------*/
 
 int
@@ -220,6 +237,9 @@ unur_distr_binomial( const double *params, int n_params )
   /* functions */
   DISTR.pmf  = _unur_pmf_binomial;   /* pointer to PMF */
   DISTR.cdf  = _unur_cdf_binomial;   /* pointer to CDF */
+#ifdef _unur_SF_invcdf_binomial
+  DISTR.invcdf = _unur_invcdf_binomial;  /* pointer to inverse CDF */
+#endif
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

@@ -71,6 +71,9 @@ static const char distr_name[] = "poisson";
 /* function prototypes                                                       */
 static double _unur_pmf_poisson( int k, const UNUR_DISTR *distr );
 static double _unur_cdf_poisson( int k, const UNUR_DISTR *distr );      
+#ifdef _unur_SF_invcdf_binomial
+static int    _unur_invcdf_poisson( double u, const UNUR_DISTR *distr ); 
+#endif
 
 static int _unur_upd_mode_poisson( UNUR_DISTR *distr );
 static int _unur_upd_sum_poisson( UNUR_DISTR *distr );
@@ -98,6 +101,20 @@ _unur_cdf_poisson(int k, const UNUR_DISTR *distr)
     return 0.;
 } /* end of _unur_cdf_poisson() */
 
+/*---------------------------------------------------------------------------*/
+#ifdef _unur_SF_invcdf_poisson
+
+int
+_unur_invcdf_poisson(double u, const UNUR_DISTR *distr)
+{ 
+  const double *params = DISTR.params;
+  double x;
+
+  x = _unur_SF_invcdf_poisson(u,theta);
+  return ((x>=INT_MAX) ? INT_MAX : ((int) x));
+} /* end of _unur_invcdf_poisson() */
+
+#endif
 /*---------------------------------------------------------------------------*/
 
 int
@@ -192,6 +209,9 @@ unur_distr_poisson( const double *params, int n_params )
   /* functions */
   DISTR.pmf  = _unur_pmf_poisson;   /* pointer to PMF */
   DISTR.cdf  = _unur_cdf_poisson;   /* pointer to CDF */
+#ifdef _unur_SF_invcdf_poisson
+  DISTR.invcdf = _unur_invcdf_poisson;  /* pointer to inverse CDF */
+#endif
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

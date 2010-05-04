@@ -74,14 +74,13 @@ static const char distr_name[] = "hypergeometric";
 #define LOGNORMCONSTANT (distr->data.discr.norm_constant)
 
 /*---------------------------------------------------------------------------*/
-/** In Cephes there is no CDF for the hypergeometric distribution**/
-#undef HAVE_CDF
-
-/*---------------------------------------------------------------------------*/
 /* function prototypes                                                       */
 static double _unur_pmf_hypergeometric( int k, const UNUR_DISTR *distr );
-#ifdef HAVE_CDF
+#ifdef _unur_SF_cdf_hypergeometric
 static double _unur_cdf_hypergeometric( int k, const UNUR_DISTR *distr ); 
+#endif
+#ifdef _unur_SF_invcdf_hypergeometric
+static int    _unur_invcdf_hypergeometric( double u, const UNUR_DISTR *distr ); 
 #endif
 
 static int _unur_upd_mode_hypergeometric( UNUR_DISTR *distr );
@@ -105,21 +104,32 @@ _unur_pmf_hypergeometric(int k, const UNUR_DISTR *distr)
 } /* end of _unur_pmf_hypergeometric() */
 
 /*---------------------------------------------------------------------------*/
-
-#ifdef HAVE_CDF
+#ifdef _unur_SF_cdf_hypergeometric
 
 double
 _unur_cdf_hypergeometric(int k, const UNUR_DISTR *distr)
 { 
+  const double *params = DISTR.params;
 
-  /* Not included in CEPHES-library !!*/
-
+  return _unur_SF_cdf_hypergeometric(k,N,M,n);
 } /* end of _unur_cdf_hypergeometric() */
 
 #endif
-
 /*---------------------------------------------------------------------------*/
+#ifdef _unur_SF_invcdf_hypergeometric
 
+int
+_unur_invcdf_hypergeometric(double u, const UNUR_DISTR *distr)
+{ 
+  const double *params = DISTR.params;
+  double x;
+
+  x = _unur_SF_invcdf_hypergeometric(u,N,M,n);
+  return ((x>=INT_MAX) ? INT_MAX : ((int) x));
+} /* end of _unur_invcdf_hypergeometric() */
+
+#endif
+/*---------------------------------------------------------------------------*/
 int
 _unur_upd_mode_hypergeometric( UNUR_DISTR *distr )
 {
@@ -151,7 +161,7 @@ _unur_upd_sum_hypergeometric( UNUR_DISTR *distr )
     return UNUR_SUCCESS;
   }
   
-#ifdef HAVE_CDF
+#ifdef _unur_SF_cdf_hypergeometric
   /* else */
   DISTR.sum = ( _unur_cdf_hypergeometric( DISTR.domain[1],distr) 
 		 - _unur_cdf_hypergeometric( DISTR.domain[0]-1,distr) );
@@ -236,8 +246,11 @@ unur_distr_hypergeometric( const double *params, int n_params )
    
   /* functions */
   DISTR.pmf  = _unur_pmf_hypergeometric;   /* pointer to PMF */
-#ifdef HAVE_CDF
+#ifdef _unur_SF_cdf_hypergeometric
   DISTR.cdf  = _unur_cdf_hypergeometric;   /* pointer to CDF */
+#endif
+#ifdef _unur_SF_invcdf_hypergeometric
+  DISTR.invcdf = _unur_invcdf_hypergeometric;  /* pointer to inverse CDF */
 #endif
 
   /* indicate which parameters are set */
@@ -277,12 +290,3 @@ unur_distr_hypergeometric( const double *params, int n_params )
 #undef n
 #undef DISTR
 /*---------------------------------------------------------------------------*/
-
-
-
-
-
-
-
-
-

@@ -72,14 +72,14 @@ static const char distr_name[] = "negativebinomial";
 #define LOGNORMCONSTANT (distr->data.discr.norm_constant)
 
 /*---------------------------------------------------------------------------*/
-/* no CDF */
-#undef HAVE_CDF
-
-/*---------------------------------------------------------------------------*/
 /* function prototypes                                                       */
+
 static double _unur_pmf_negativebinomial( int k, const UNUR_DISTR *distr );
-#ifdef HAVE_CDF
+#ifdef _unur_SF_cdf_negativebinomial
 static double _unur_cdf_negativebinomial( int k, const UNUR_DISTR *distr ); 
+#endif
+#ifdef _unur_SF_invcdf_negativebinomial
+static int    _unur_invcdf_negativebinomial( double u, const UNUR_DISTR *distr ); 
 #endif
 
 static int _unur_upd_mode_negativebinomial( UNUR_DISTR *distr );
@@ -91,7 +91,7 @@ static int _unur_set_params_negativebinomial( UNUR_DISTR *distr, const double *p
 double
 _unur_pmf_negativebinomial(int k, const UNUR_DISTR *distr)
 { 
-  register const double *params = DISTR.params;
+  const double *params = DISTR.params;
 
   if (k<0)
     return 0.;
@@ -103,24 +103,36 @@ _unur_pmf_negativebinomial(int k, const UNUR_DISTR *distr)
 } /* end of _unur_pmf_negativebinomial() */
 
 /*---------------------------------------------------------------------------*/
-
-#ifdef HAVE_CDF
+#ifdef _unur_SF_cdf_negativebinomial
 
 double
 _unur_cdf_negativebinomial(int k, const UNUR_DISTR *distr)
 { 
-  register const double *params = DISTR.params;
+  const double *params = DISTR.params;
 
   if (k<0)
     return 0.;
 
   else
-    return 1.;  /** TODO **/
+    return _unur_SF_cdf_negativebinomial(k,r,p);
 
 } /* end of _unur_cdf_negativebinomial() */
 
 #endif
+/*---------------------------------------------------------------------------*/
+#ifdef _unur_SF_invcdf_negativebinomial
 
+int
+_unur_invcdf_negativebinomial(double u, const UNUR_DISTR *distr)
+{ 
+  const double *params = DISTR.params;
+  double x;
+
+  x = _unur_SF_invcdf_negativebinomial(u,r,p);
+  return ((x>=INT_MAX) ? INT_MAX : ((int) x));
+} /* end of _unur_invcdf_negativebinomial() */
+
+#endif
 /*---------------------------------------------------------------------------*/
 
 int
@@ -158,7 +170,7 @@ _unur_upd_sum_negativebinomial( UNUR_DISTR *distr )
     return UNUR_SUCCESS;
   }
   
-#ifdef HAVE_CDF
+#ifdef _unur_SF_cdf_negativebinomial
   /* else */
   DISTR.sum = ( _unur_cdf_negativebinomial( DISTR.domain[1],distr) 
 		 - _unur_cdf_negativebinomial( DISTR.domain[0]-1,distr) );
@@ -228,8 +240,11 @@ unur_distr_negativebinomial( const double *params, int n_params )
    
   /* functions */
   DISTR.pmf  = _unur_pmf_negativebinomial;   /* pointer to PMF */
-#ifdef HAVE_CDF
+#ifdef _unur_SF_cdf_negativebinomial
   DISTR.cdf  = _unur_cdf_negativebinomial;   /* pointer to CDF */
+#endif
+#ifdef _unur_SF_invcdf_negativebinomial
+  DISTR.invcdf = _unur_invcdf_negativebinomial;  /* pointer to inverse CDF */
 #endif
 
   /* indicate which parameters are set */

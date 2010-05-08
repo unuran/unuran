@@ -1401,7 +1401,7 @@ _unur_mvtdr_tp_search( struct unur_gen *gen ATTRIBUTE__UNUSED, TP_ARG *a )
   }
 
   /* no proper touching point found */
-  return UNUR_FAILURE;
+  /* return UNUR_FAILURE; */
 
 #undef N_STEPS
 } /* end of _unur_mvtdr_tp_search() */

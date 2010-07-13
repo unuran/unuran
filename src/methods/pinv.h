@@ -40,9 +40,9 @@
 
    =UP  Methods_for_CONT
 
-   =REQUIRED PDF, center
+   =REQUIRED PDF
 
-   =OPTIONAL domain, CDF, derivative of PDF
+   =OPTIONAL domain, center, CDF, derivative of PDF
 
    =REF [DHLa08]
 
@@ -141,14 +141,16 @@
 
    =HOWTOUSE
       PINV works for continuous univariate distribution objects with
-      given PDF. The corresponding distribution object must contain a
+      given PDF. The corresponding distribution object should contain a
       typical point of the distribution, i.e., a point where the PDF
       is not too small, e.g., (a point near) the mode.
       However, it is important that the center is @strong{not} the
       pole of the distribution (or a point too close to the pole).
       It can be set using a unur_distr_cont_set_center() or
-      a unur_distr_cont_set_mode() call. (If neither is set, @code{0}
-      is assumed!)
+      a unur_distr_cont_set_mode() call. If neither is set, or if the 
+      given center cannot be used, then a simple search routine tries
+      to find an appropriate point for the center. 
+
       It is recommended that the domain of the distribution with
       bounded domain is specified using a unur_distr_cont_set_domain()
       call. Otherwise, the boundary is searched numerically which

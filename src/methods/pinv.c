@@ -295,6 +295,11 @@ static double _unur_pinv_eval_PDF (double x, struct unur_gen *gen);
 /* call to PDF.                                                              */
 /*---------------------------------------------------------------------------*/
 
+static int _unur_pinv_search_center (struct unur_gen *gen);
+/*---------------------------------------------------------------------------*/
+/* search for an appropriate point for center.                               */
+/*---------------------------------------------------------------------------*/
+
 
 /*........................*/
 /*  file: pinv_sample.ch  */

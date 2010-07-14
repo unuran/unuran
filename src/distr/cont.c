@@ -2164,20 +2164,26 @@ unur_distr_cont_get_center( const struct unur_distr *distr )
      /*   center of distribution                                             */
      /*----------------------------------------------------------------------*/
 {
+  double center;
+
   /* check arguments */
   _unur_check_NULL( NULL, distr, 0. );
   _unur_check_distr_object( distr, CONT, 0. );
 
   /* center given */
   if ( distr->set & UNUR_DISTR_SET_CENTER )
-    return DISTR.center;
+    center = DISTR.center;
 
   /* else try mode */
-  if ( distr->set & UNUR_DISTR_SET_MODE ) 
-    return DISTR.mode;
+  else if ( distr->set & UNUR_DISTR_SET_MODE ) 
+    center = DISTR.mode;
 
-  /* otherwise use 0 */
-  return 0.;
+  /* else unknown: use default */
+  else
+    center = 0.;
+
+  /* return result 0 */
+  return center;
 
 } /* end of unur_distr_cont_get_center() */
 
@@ -2342,6 +2348,69 @@ _unur_distr_cont_find_mode( struct unur_distr *distr )
 
 } /* end of _unur_distr_cont_find_mode() */
 
+/*---------------------------------------------------------------------------*/
+
+int
+_unur_distr_cont_find_center( struct unur_distr *distr )
+     /*----------------------------------------------------------------------*/
+     /* search for an appropriate point for center.                          */
+     /* if such a point is found, then it is stored in 'distr'.              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+#define PDF(x)     _unur_cont_PDF((x),(distr))     /* call to PDF */
+#define logPDF(x)  _unur_cont_logPDF((x),(distr))  /* call to logPDF */
+
+  double center, fc;   /* given center and PDF at center */
+  double x, fx;        /* auxiliary point and PDF at point */
+  int i,d;
+
+  /* given center of distribution */
+  center = DISTR.center;
+  fc = (DISTR.logpdf!=NULL) ? exp(logPDF(center)) : PDF(center);
+
+  /* check given center */
+  if (fc>0. && _unur_isfinite(fc)) return UNUR_SUCCESS;
+
+  /* search */
+  for (d=0; d<2; d++) {
+    /* left and right boundary of truncated domain, resp. */
+    x = DISTR.trunc[d];
+
+    /* Do x and the given center differ? */
+    if (_unur_FP_equal(center,x))
+      continue;
+
+    /* search from boundary towards given center */
+    for (i=0; i<50; i++) {
+      x = _unur_arcmean(x,center);
+      fx = (DISTR.logpdf!=NULL) ? exp(logPDF(x)) : PDF(x);
+
+      if (fx>0. && _unur_isfinite(fx)) {
+	/* successfull */
+  	DISTR.center = x;
+	/* changelog */
+	distr->set |= UNUR_DISTR_SET_CENTER | UNUR_DISTR_SET_CENTER_APPROX ;
+	/* o.k. */
+  	return UNUR_SUCCESS;
+      }
+    }
+  }
+
+  /* could not find appropriate point */
+  return UNUR_FAILURE;
+
+#undef PDF
+#undef logPDF
+} /* end of _unur_distr_cont_find_center() */
+
+
 /*****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
@@ -2408,12 +2477,13 @@ _unur_distr_cont_debug( const struct unur_distr *distr, const char *genid )
     fprintf(LOG,"%s:\tmode = %g\n",genid,DISTR.mode);
   else
     fprintf(LOG,"%s:\tmode unknown\n",genid);
-
+  
+  fprintf(LOG,"%s:\tcenter = ",genid);
   if (distr->set & UNUR_DISTR_SET_CENTER)
-    fprintf(LOG,"%s:\tcenter = %g\n",genid,DISTR.center);
+    fprintf(LOG,"%g%s\n", DISTR.center,
+	    (distr->set & UNUR_DISTR_SET_CENTER_APPROX) ? " [guess]" : "");
   else
-    fprintf(LOG,"%s:\tcenter = %g [default]\n",genid,
-	    unur_distr_cont_get_center(distr));
+    fprintf(LOG,"%g [default]\n", unur_distr_cont_get_center(distr));
 
   fprintf(LOG,"%s:\tdomain = (%g, %g)",genid,DISTR.domain[0],DISTR.domain[1]);
   _unur_print_if_default(distr,UNUR_DISTR_SET_DOMAIN);

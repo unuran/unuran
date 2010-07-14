@@ -43,15 +43,12 @@ _unur_pinv_info( struct unur_gen *gen, int help )
 		      (gen->variant & PINV_VARIANT_PDF) ? "PDF" : "CDF");
   _unur_string_append(info,"   domain    = (%g, %g)\n", DISTR.trunc[0],DISTR.trunc[1]);
   _unur_string_append(info,"   center    = %g", unur_distr_cont_get_center(distr));
-  if ( !(distr->set & UNUR_DISTR_SET_CENTER) ) {
-    if ( distr->set & UNUR_DISTR_SET_MODE )
-      _unur_string_append(info,"  [= mode]\n");
-    else 
-      _unur_string_append(info,"  [default]\n");
-  }
-  else {
-    _unur_string_append(info,"\n");
-  }
+  if (distr->set & UNUR_DISTR_SET_CENTER)
+    _unur_string_append(info, (distr->set & UNUR_DISTR_SET_CENTER_APPROX)
+			? "  [guess]\n" : "\n");
+  else
+    _unur_string_append(info,(distr->set & UNUR_DISTR_SET_MODE )
+			? "  [= mode]\n" : "  [default]\n");
 
   if (help) {
     if ( !(distr->set & (UNUR_DISTR_SET_CENTER | UNUR_DISTR_SET_MODE )) ) 

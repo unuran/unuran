@@ -10,6 +10,10 @@ Version 1.8.0: ???? 2010
 	- NORTA: use method PINV as first choice for generator of
           marginal distribution.
 
+	- PINV: when no 'center' is provided by the user, or when the
+	  PDF vanishes for the given 'center' or is not finite, then
+	  the method tries to "guess" an appropriate point for the 'center'.
+
 	* Distributions:
 
 	- DISCRete distribution objects: added slot 'invCDF' for

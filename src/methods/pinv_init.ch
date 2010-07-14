@@ -301,7 +301,9 @@ _unur_pinv_check_par( struct unur_gen *gen )
   }
 
   /* check center of distribution */
-  if (_unur_pinv_search_center(gen) != UNUR_SUCCESS) {
+  if ( (gen->variant & PINV_VARIANT_PDF ) &&
+       /* (_unur_pinv_search_center(gen) != UNUR_SUCCESS) ) { */
+       (_unur_distr_cont_find_center(gen->distr) != UNUR_SUCCESS) ) {
     _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,
 		"PDF(center) <= 0.");
     return UNUR_ERR_GEN_CONDITION;
@@ -505,57 +507,3 @@ _unur_pinv_eval_PDF (double x, struct unur_gen *gen)
 } /* end of _unur_pinv_eval_PDF() */
 
 /*---------------------------------------------------------------------------*/
-
-int
-_unur_pinv_search_center (struct unur_gen *gen)
-     /*----------------------------------------------------------------------*/
-     /* search for an appropriate point for center.                          */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*   gen ... pointer to generator object                                */
-     /*                                                                      */
-     /* return:                                                              */
-     /*   UNUR_SUCCESS ... on success                                        */
-     /*   error code   ... on error                                          */
-     /*----------------------------------------------------------------------*/
-{
-  double domain[2];    /* domain */
-  double center, fc;   /* center and PDF at center */
-  double x, fx;        /* auxiliary point and PDF at point */
-  int i,d;
-  
-  /* do we need the center ? */
-  if ( !(gen->variant & PINV_VARIANT_PDF) )
-    /* nothing to do */
-    return UNUR_SUCCESS;
-
-  /* given center of distribution and domain */
-  center = DISTR.center;
-  fc = PDF(center);
-  domain[0] = GEN->dleft;
-  domain[1] = GEN->dright;
-
-  /* check given center */
-  if (fc>0. && _unur_isfinite(fc)) return UNUR_SUCCESS;
-
-  /* search */
-  for (d=0; d<2; d++) {
-    x = domain[d];
-    if (_unur_FP_equal(center,domain[d]))
-      continue;
-    for (i=0; i<10; i++) {
-      x = _unur_arcmean(x,center);
-      fx = PDF(x);
-      if (fx>0. && _unur_isfinite(fx)) {
-	DISTR.center = x;
-	return UNUR_SUCCESS;
-      }
-    }
-  }
-
-  return UNUR_FAILURE;
-} /* end of _unur_pinv_search_center() */
-
-/*---------------------------------------------------------------------------*/
-
-

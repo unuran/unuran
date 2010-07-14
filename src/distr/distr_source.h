@@ -73,6 +73,7 @@
 #define UNUR_DISTR_SET_MODE           0x00000001u
 #define UNUR_DISTR_SET_MODE_APPROX    0x00000020u /* flag for approximate computation of mode */
 #define UNUR_DISTR_SET_CENTER         0x00000002u
+#define UNUR_DISTR_SET_CENTER_APPROX  0x00000040u /* flag for approximate computation of center */
 #define UNUR_DISTR_SET_PDFAREA        0x00000004u
 #define UNUR_DISTR_SET_PMFSUM         0x00000008u
 #define UNUR_DISTR_SET_PDFVOLUME      0x00000010u
@@ -194,6 +195,11 @@ void _unur_distr_cvec_info_domain( struct unur_gen *gen );
 #endif
 /*---------------------------------------------------------------------------*/
 /* auxiliary routines                                                        */
+
+int _unur_distr_cont_find_center( struct unur_distr *distr );
+/* search for an appropriate point for center.                               */
+/* if such a point is found, then it is stored in 'distr'.                   */
+
 
 /* test whether all marginals are equal or not  (returns TRUE or FALSE)      */
 /* for dimesion 1, TRUE is returned.                                         */

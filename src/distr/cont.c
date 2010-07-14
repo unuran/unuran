@@ -329,7 +329,7 @@ unur_distr_cont_set_pdf( struct unur_distr *distr, UNUR_FUNCT_CONT *pdf )
 
   /* we do not allow overwriting a pdf */
   if (DISTR.pdf != NULL || DISTR.logpdf != NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of PDF not allowed");
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of PDF not allowed");
     return UNUR_ERR_DISTR_SET;
   }
 
@@ -368,7 +368,7 @@ unur_distr_cont_set_dpdf( struct unur_distr *distr, UNUR_FUNCT_CONT *dpdf )
   
   /* we do not allow overwriting a dpdf */
   if (DISTR.dpdf != NULL || DISTR.dlogpdf != NULL ) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of dPDF not allowed");
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of dPDF not allowed");
     return UNUR_ERR_DISTR_SET;
   }
 
@@ -406,7 +406,7 @@ unur_distr_cont_set_logpdf( struct unur_distr *distr, UNUR_FUNCT_CONT *logpdf )
 
   /* we do not allow overwriting a pdf */
   if (DISTR.pdf != NULL || DISTR.logpdf != NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of logPDF not allowed");
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of logPDF not allowed");
     return UNUR_ERR_DISTR_SET;
   }
 
@@ -441,7 +441,7 @@ _unur_distr_cont_eval_pdf_from_logpdf( double x, const struct unur_distr *distr 
      /*----------------------------------------------------------------------*/
 {
   if (DISTR.logpdf == NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"");
+    _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
     return INFINITY;
   }
 
@@ -471,7 +471,7 @@ unur_distr_cont_set_dlogpdf( struct unur_distr *distr, UNUR_FUNCT_CONT *dlogpdf 
   
   /* we do not allow overwriting a dpdf */
   if (DISTR.dpdf != NULL || DISTR.dlogpdf != NULL ) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of dlogPDF not allowed");
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of dlogPDF not allowed");
     return UNUR_ERR_DISTR_SET;
   }
 
@@ -506,7 +506,7 @@ _unur_distr_cont_eval_dpdf_from_dlogpdf( double x, const struct unur_distr *dist
      /*----------------------------------------------------------------------*/
 {
   if (DISTR.logpdf == NULL || DISTR.dlogpdf == NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"");
+    _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
     return INFINITY;
   }
 
@@ -536,7 +536,7 @@ unur_distr_cont_set_cdf( struct unur_distr *distr, UNUR_FUNCT_CONT *cdf )
   
   /* we do not allow overwriting a cdf */
   if (DISTR.cdf != NULL || DISTR.logcdf != NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of CDF not allowed");
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of CDF not allowed");
     return UNUR_ERR_DISTR_SET;
   }
 
@@ -574,7 +574,7 @@ unur_distr_cont_set_invcdf( struct unur_distr *distr, UNUR_FUNCT_CONT *invcdf )
   
   /* we do not allow overwriting an inverse cdf */
   if (DISTR.invcdf != NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of inverse CDF not allowed");
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of inverse CDF not allowed");
     return UNUR_ERR_DISTR_SET;
   }
 
@@ -612,7 +612,7 @@ unur_distr_cont_set_logcdf( struct unur_distr *distr, UNUR_FUNCT_CONT *logcdf )
 
   /* we do not allow overwriting a cdf */
   if (DISTR.cdf != NULL || DISTR.logcdf != NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of logCDF not allowed");
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of logCDF not allowed");
     return UNUR_ERR_DISTR_SET;
   }
 
@@ -647,7 +647,7 @@ _unur_distr_cont_eval_cdf_from_logcdf( double x, const struct unur_distr *distr 
      /*----------------------------------------------------------------------*/
 {
   if (DISTR.logcdf == NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"");
+    _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
     return INFINITY;
   }
 
@@ -677,7 +677,7 @@ unur_distr_cont_set_hr( struct unur_distr *distr, UNUR_FUNCT_CONT *hr )
   
   /* we do not allow overwriting a cdf */
   if (DISTR.hr != NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of HR not allowed");
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of HR not allowed");
     return UNUR_ERR_DISTR_SET;
   }
 
@@ -730,7 +730,7 @@ unur_distr_cont_set_pdfstr( struct unur_distr *distr, const char *pdfstr )
 
   /* we do not allow overwriting a PDF */
   if (DISTR.pdf != NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of PDF not allowed");
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of PDF not allowed");
     return UNUR_ERR_DISTR_SET;
   }
 
@@ -794,7 +794,7 @@ unur_distr_cont_set_logpdfstr( struct unur_distr *distr, const char *logpdfstr )
 
   /* we do not allow overwriting a PDF */
   if (DISTR.pdf != NULL || DISTR.logpdf != NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of logPDF not allowed");
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of logPDF not allowed");
     return UNUR_ERR_DISTR_SET;
   }
 
@@ -845,7 +845,7 @@ unur_distr_cont_set_cdfstr( struct unur_distr *distr, const char *cdfstr )
 
   /* we do not allow overwriting a CDF */
   if (DISTR.cdf != NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of CDF not allowed");
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of CDF not allowed");
     return UNUR_ERR_DISTR_SET;
   }
 
@@ -901,7 +901,7 @@ unur_distr_cont_set_logcdfstr( struct unur_distr *distr, const char *logcdfstr )
 
   /* we do not allow overwriting a CDF */
   if (DISTR.cdf != NULL || DISTR.logcdf != NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of logCDF not allowed");
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of logCDF not allowed");
     return UNUR_ERR_DISTR_SET;
   }
 
@@ -949,7 +949,7 @@ unur_distr_cont_set_hrstr( struct unur_distr *distr, const char *hrstr )
 
   /* we do not allow overwriting a CDF */
   if (DISTR.hr != NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of CDF not allowed");
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of CDF not allowed");
     return UNUR_ERR_DISTR_SET;
   }
 
@@ -1469,7 +1469,7 @@ unur_distr_cont_eval_pdf( double x, const struct unur_distr *distr )
   _unur_check_distr_object( distr, CONT, INFINITY );
 
   if (DISTR.pdf == NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"");
+    _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
     return INFINITY;
   }
 
@@ -1496,7 +1496,7 @@ unur_distr_cont_eval_dpdf( double x, const struct unur_distr *distr )
   _unur_check_distr_object( distr, CONT, INFINITY );
 
   if (DISTR.dpdf == NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"");
+    _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
     return INFINITY;
   }
 
@@ -1523,7 +1523,7 @@ unur_distr_cont_eval_logpdf( double x, const struct unur_distr *distr )
   _unur_check_distr_object( distr, CONT, INFINITY );
 
   if (DISTR.logpdf == NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"");
+    _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
     return INFINITY;
   }
 
@@ -1550,7 +1550,7 @@ unur_distr_cont_eval_dlogpdf( double x, const struct unur_distr *distr )
   _unur_check_distr_object( distr, CONT, INFINITY );
 
   if (DISTR.dlogpdf == NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"");
+    _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
     return INFINITY;
   }
 
@@ -1577,7 +1577,7 @@ unur_distr_cont_eval_cdf( double x, const struct unur_distr *distr )
   _unur_check_distr_object( distr, CONT, INFINITY );
 
   if (DISTR.cdf == NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"");
+    _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
     return INFINITY;
   }
 
@@ -1604,7 +1604,7 @@ unur_distr_cont_eval_invcdf( double u, const struct unur_distr *distr )
   _unur_check_distr_object( distr, CONT, INFINITY );
 
   if (DISTR.invcdf == NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"");
+    _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
     return INFINITY;
   }
 
@@ -1637,7 +1637,7 @@ unur_distr_cont_eval_logcdf( double x, const struct unur_distr *distr )
   _unur_check_distr_object( distr, CONT, INFINITY );
 
   if (DISTR.logcdf == NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"");
+    _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
     return INFINITY;
   }
 
@@ -1664,7 +1664,7 @@ unur_distr_cont_eval_hr( double x, const struct unur_distr *distr )
   _unur_check_distr_object( distr, CONT, INFINITY );
 
   if (DISTR.hr == NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"");
+    _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
     return INFINITY;
   }
 

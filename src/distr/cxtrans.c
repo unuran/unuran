@@ -186,7 +186,7 @@ unur_distr_cxtrans_get_distribution( const struct unur_distr *cxt )
 
   /* check distribution */
   if (cxt->id != UNUR_DISTR_CXTRANS) {
-    _unur_warning(distr_name,UNUR_ERR_DISTR_INVALID,"");
+    _unur_error(distr_name,UNUR_ERR_DISTR_INVALID,"");
     return NULL;
   }
 

@@ -346,7 +346,7 @@ unur_distr_cvec_set_pdf( struct unur_distr *distr, UNUR_FUNCT_CVEC *pdf )
 
   /* we do not allow overwriting a PDF */
   if (DISTR.pdf != NULL || DISTR.logpdf != NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of PDF not allowed");
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of PDF not allowed");
     return UNUR_ERR_DISTR_SET;
   }
 
@@ -382,7 +382,7 @@ unur_distr_cvec_set_dpdf( struct unur_distr *distr, UNUR_VFUNCT_CVEC *dpdf )
   
   /* we do not allow overwriting a dPDF */
   if (DISTR.dpdf != NULL || DISTR.dlogpdf != NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of dPDF not allowed");
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of dPDF not allowed");
     return UNUR_ERR_DISTR_SET;
   }
 
@@ -417,7 +417,7 @@ unur_distr_cvec_set_pdpdf( struct unur_distr *distr, UNUR_FUNCTD_CVEC *pdpdf )
 
   /* we do not allow overwriting a pdPDF */
   if (DISTR.pdpdf != NULL || DISTR.pdlogpdf != NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of pdPDF not allowed");
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of pdPDF not allowed");
     return UNUR_ERR_DISTR_SET;
   }
 
@@ -513,7 +513,7 @@ unur_distr_cvec_eval_pdf( const double *x, struct unur_distr *distr )
   _unur_check_distr_object( distr, CVEC, INFINITY );
 
   if (DISTR.pdf == NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"");
+    _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
     return INFINITY;
   }
 
@@ -542,7 +542,7 @@ unur_distr_cvec_eval_dpdf( double *result, const double *x, struct unur_distr *d
   _unur_check_distr_object( distr, CVEC, UNUR_ERR_DISTR_INVALID );
 
   if (DISTR.dpdf == NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"");
+    _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
     return UNUR_ERR_DISTR_DATA;
   }
 
@@ -571,12 +571,12 @@ unur_distr_cvec_eval_pdpdf( const double *x, int coord, struct unur_distr *distr
   _unur_check_distr_object( distr, CVEC, INFINITY );
 
   if (DISTR.pdpdf == NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"");
+    _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
     return INFINITY;
   }
 
   if (coord < 0 || coord >= distr->dim) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_DOMAIN,"invalid coordinate");
+    _unur_error(distr->name,UNUR_ERR_DISTR_DOMAIN,"invalid coordinate");
     return INFINITY;
   }
 
@@ -606,7 +606,7 @@ unur_distr_cvec_set_logpdf( struct unur_distr *distr, UNUR_FUNCT_CVEC *logpdf )
 
   /* we do not allow overwriting a PDF */
   if (DISTR.pdf != NULL || DISTR.logpdf != NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of logPDF not allowed");
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of logPDF not allowed");
     return UNUR_ERR_DISTR_SET;
   }
 
@@ -638,7 +638,7 @@ _unur_distr_cvec_eval_pdf_from_logpdf( const double *x, struct unur_distr *distr
      /*----------------------------------------------------------------------*/
 {
   if (DISTR.logpdf == NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"");
+    _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
     return INFINITY;
   }
 
@@ -668,7 +668,7 @@ unur_distr_cvec_set_dlogpdf( struct unur_distr *distr, UNUR_VFUNCT_CVEC *dlogpdf
   
   /* we do not allow overwriting a dlogPDF */
   if (DISTR.dpdf != NULL || DISTR.dlogpdf != NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of dlogPDF not allowed");
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of dlogPDF not allowed");
     return UNUR_ERR_DISTR_SET;
   }
 
@@ -704,7 +704,7 @@ _unur_distr_cvec_eval_dpdf_from_dlogpdf( double *result, const double *x, struct
   double fx;
 
   if (DISTR.logpdf == NULL || DISTR.dlogpdf == NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"");
+    _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
     return UNUR_ERR_DISTR_DATA;
   }
 
@@ -741,7 +741,7 @@ unur_distr_cvec_set_pdlogpdf( struct unur_distr *distr, UNUR_FUNCTD_CVEC *pdlogp
 
   /* we do not allow overwriting a PDF */
   if (DISTR.pdpdf != NULL || DISTR.pdlogpdf != NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of pdlogPDF not allowed");
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of pdlogPDF not allowed");
     return UNUR_ERR_DISTR_SET;
   }
 
@@ -775,12 +775,12 @@ _unur_distr_cvec_eval_pdpdf_from_pdlogpdf( const double *x, int coord, struct un
   double fx;
 
   if (DISTR.logpdf == NULL || DISTR.pdlogpdf == NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"");
+    _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
     return INFINITY;
   }
 
   if (coord < 0 || coord >= distr->dim) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_DOMAIN,"invalid coordinate");
+    _unur_error(distr->name,UNUR_ERR_DISTR_DOMAIN,"invalid coordinate");
     return INFINITY;
   }
 
@@ -873,7 +873,7 @@ unur_distr_cvec_eval_logpdf( const double *x, struct unur_distr *distr )
   _unur_check_distr_object( distr, CVEC, INFINITY );
 
   if (DISTR.logpdf == NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"");
+    _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
     return INFINITY;
   }
 
@@ -902,7 +902,7 @@ unur_distr_cvec_eval_dlogpdf( double *result, const double *x, struct unur_distr
   _unur_check_distr_object( distr, CVEC, UNUR_ERR_DISTR_INVALID );
 
   if (DISTR.dlogpdf == NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"");
+    _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
     return UNUR_ERR_DISTR_DATA;
   }
 
@@ -931,12 +931,12 @@ unur_distr_cvec_eval_pdlogpdf( const double *x, int coord, struct unur_distr *di
   _unur_check_distr_object( distr, CVEC, INFINITY );
 
   if (DISTR.pdlogpdf == NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"");
+    _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
     return INFINITY;
   }
 
   if (coord < 0 || coord >= distr->dim) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_DOMAIN,"invalid coordinate");
+    _unur_error(distr->name,UNUR_ERR_DISTR_DOMAIN,"invalid coordinate");
     return INFINITY;
   }
 
@@ -1153,7 +1153,7 @@ unur_distr_cvec_get_mean( const struct unur_distr *distr )
 
   /* mean vector known ? */
   if ( !(distr->set & UNUR_DISTR_SET_MEAN) ) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_GET,"mean");
+    _unur_error(distr->name,UNUR_ERR_DISTR_GET,"mean");
     return NULL;
   }
 
@@ -1348,7 +1348,7 @@ unur_distr_cvec_get_covar( const struct unur_distr *distr )
 
   /* covariance matrix known ? */
   if ( !(distr->set & UNUR_DISTR_SET_COVAR) ) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_GET,"covariance matrix");
+    _unur_error(distr->name,UNUR_ERR_DISTR_GET,"covariance matrix");
     return NULL;
   }
 
@@ -1376,7 +1376,7 @@ unur_distr_cvec_get_cholesky( const struct unur_distr *distr )
 
   /* covariance matrix known ? */
   if ( !(distr->set & UNUR_DISTR_SET_CHOLESKY) ) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_GET,"covariance matrix");
+    _unur_error(distr->name,UNUR_ERR_DISTR_GET,"covariance matrix");
     return NULL;
   }
 
@@ -1410,7 +1410,7 @@ unur_distr_cvec_get_covar_inv ( struct unur_distr *distr )
 
   /* covariance matrix known ? */
   if ( !(distr->set & UNUR_DISTR_SET_COVAR) ) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_GET,"covariance matrix not known");
+    _unur_error(distr->name,UNUR_ERR_DISTR_GET,"covariance matrix not known");
     return NULL;
   }
 
@@ -1545,7 +1545,7 @@ unur_distr_cvec_get_rankcorr( const struct unur_distr *distr )
 
   /* rankcorriance matrix known ? */
   if ( !(distr->set & UNUR_DISTR_SET_RANKCORR) ) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_GET,"rank-correlation matrix");
+    _unur_error(distr->name,UNUR_ERR_DISTR_GET,"rank-correlation matrix");
     return NULL;
   }
 
@@ -1573,7 +1573,7 @@ unur_distr_cvec_get_rk_cholesky( const struct unur_distr *distr )
 
   /* covariance matrix known ? */
   if ( !(distr->set & UNUR_DISTR_SET_RK_CHOLESKY) ) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_GET,"rank correlation matrix");
+    _unur_error(distr->name,UNUR_ERR_DISTR_GET,"rank correlation matrix");
     return NULL;
   }
 
@@ -1773,7 +1773,7 @@ unur_distr_cvec_get_marginal( const struct unur_distr *distr, int n )
 
   /* marginal distributions known ? */
   if ( !(distr->set & UNUR_DISTR_SET_MARGINAL) ) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_GET,"marginals");
+    _unur_error(distr->name,UNUR_ERR_DISTR_GET,"marginals");
     return NULL;
   }
 
@@ -1914,14 +1914,14 @@ _unur_distr_cvec_duplicate_firstmarginal( struct unur_distr *distr )
 
   /* marginal distributions known ? */
   if ( !(distr->set & UNUR_DISTR_SET_MARGINAL) || marginal==NULL ) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"marginals");
+    _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"marginals");
     return UNUR_ERR_DISTR_DATA;
   }
 
   /* marginal distribution are equal ? */
   if (!_unur_distr_cvec_marginals_are_equal(DISTR.marginals,distr->dim)) {
     /* nothing to do */
-    _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"marginals not equal");
+    _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"marginals not equal");
     return UNUR_ERR_DISTR_DATA;
   }
 

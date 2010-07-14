@@ -508,7 +508,7 @@ unur_distr_discr_eval_pv( int k, const struct unur_distr *distr )
   }
 
   /* else: data missing */
-  _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"");
+  _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
   return INFINITY;
 
 } /* end of unur_distr_discr_eval_pv() */
@@ -542,7 +542,7 @@ unur_distr_discr_set_pmf( struct unur_distr *distr, UNUR_FUNCT_DISCR *pmf )
 
   /* we do not allow overwriting a PMF */
   if (DISTR.pmf != NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of PMF not allowed");
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of PMF not allowed");
     return UNUR_ERR_DISTR_SET;
   }
 
@@ -584,7 +584,7 @@ unur_distr_discr_set_cdf( struct unur_distr *distr, UNUR_FUNCT_DISCR *cdf )
 
   /* we do not allow overwriting a CDF */
   if (DISTR.cdf != NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of CDF not allowed");
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of CDF not allowed");
     return UNUR_ERR_DISTR_SET;
   }
 
@@ -619,7 +619,7 @@ unur_distr_discr_set_invcdf( struct unur_distr *distr, UNUR_IFUNCT_DISCR *invcdf
   
   /* we do not allow overwriting an inverse cdf */
   if (DISTR.invcdf != NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of inverse CDF not allowed");
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of inverse CDF not allowed");
     return UNUR_ERR_DISTR_SET;
   }
 
@@ -717,7 +717,7 @@ unur_distr_discr_eval_pmf( int k, const struct unur_distr *distr )
   _unur_check_distr_object( distr, DISCR, INFINITY );
 
   if (DISTR.pmf == NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"");
+    _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
     return INFINITY;
   }
 
@@ -744,7 +744,7 @@ unur_distr_discr_eval_cdf( int k, const struct unur_distr *distr )
   _unur_check_distr_object( distr, DISCR, INFINITY );
 
   if (DISTR.cdf == NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"");
+    _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
     return INFINITY;
   }
 
@@ -772,7 +772,7 @@ unur_distr_discr_eval_invcdf( double u, const struct unur_distr *distr )
   _unur_check_distr_object( distr, DISCR, INT_MAX );
 
   if (DISTR.invcdf == NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_DATA,"");
+    _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
     return INT_MAX;
   }
 
@@ -814,7 +814,7 @@ unur_distr_discr_set_pmfstr( struct unur_distr *distr, const char *pmfstr )
 
   /* we do not allow overwriting a PMF */
   if (DISTR.pmf != NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of PMF not allowed");
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of PMF not allowed");
     return UNUR_ERR_DISTR_SET;
   }
 
@@ -858,7 +858,7 @@ unur_distr_discr_set_cdfstr( struct unur_distr *distr, const char *cdfstr )
 
   /* we do not allow overwriting a CDF */
   if (DISTR.cdf != NULL) {
-    _unur_warning(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of CDF not allowed");
+    _unur_error(distr->name,UNUR_ERR_DISTR_SET,"Overwriting of CDF not allowed");
     return UNUR_ERR_DISTR_SET;
   }
 

@@ -95,6 +95,9 @@ _unur_pinv_info( struct unur_gen *gen, int help )
 
   _unur_string_append(info,"   area below PDF   = %18.17g\n", GEN->area);
   _unur_string_append(info,"   # intervals      = %d\n", GEN->n_ivs);
+  if (gen->variant & PINV_VARIANT_KEEPCDF)
+    _unur_string_append(info,"   # CDF table size = %d\n", _unur_lobatto_size_table(GEN->aCDF));
+
   _unur_string_append(info,"\n");
 
   /* parameters */
@@ -131,6 +134,10 @@ _unur_pinv_info( struct unur_gen *gen, int help )
 
     _unur_string_append(info,"   maximum number of interval = %d  %s\n", GEN->max_ivs,
 			(gen->set & PINV_SET_MAX_IVS) ? "" : "[default]");
+
+    _unur_string_append(info,"   keep table of CDF values = %s  %s\n", 
+			(gen->variant & PINV_VARIANT_KEEPCDF) ? "TRUE" : "FALSE",
+			(gen->set & PINV_SET_KEEPCDF) ? "" : "[default]");
 
     _unur_string_append(info,"\n");
   }

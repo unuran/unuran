@@ -73,6 +73,11 @@ _unur_pinv_debug_init_start( const struct unur_gen *gen )
   _unur_print_if_default(gen,PINV_SET_UPOINTS);
   fprintf(LOG,"\n");
 
+  fprintf(LOG,"%s: keep table of CDF values = %s",gen->genid,
+	  (gen->variant & PINV_VARIANT_KEEPCDF) ? "on" : "off");
+  _unur_print_if_default(gen,PINV_SET_KEEPCDF);
+  fprintf(LOG,"\n");
+
   fprintf(LOG,"%s:\n",gen->genid);
   fflush(LOG);
 } /* end of _unur_pinv_debug_init_start() */

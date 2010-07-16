@@ -56,7 +56,7 @@
       The interval [0,1] is split into several subintervals. In each
       of these the inverse CDF is constructed at nodes 
       @unurmath{(CDF(x),x)} for some points @i{x} in this subinterval.
-      If the PDF is given then the CDF is computed numerically
+      If the PDF is given, then the CDF is computed numerically
       from the given PDF using adaptive Gauss-Lobatto
       integration with 5 points. Subintervals are split until the
       requested accuracy goal is reached.
@@ -423,6 +423,20 @@ int unur_pinv_get_n_intervals( const UNUR_GEN *generator );
    Get number of intervals used for interpolation in 
    the generator object.
    It returns @code{0} in case of an error.
+*/
+
+int unur_pinv_set_keepcdf( UNUR_PAR *parameters, int keepcdf);
+/* 
+   If the PDF is given, then the CDF is computed numerically
+   from the given PDF using adaptive Gauss-Lobatto integration.
+   Thus a table of CDF points is stored to keep the number of 
+   evaluations of the PDF minimal. Usually this table is discarded
+   when the setup is completed.
+   If @var{keepcdf} is TRUE, then this table is kept and can be used
+   to compute the CDF of the underlying distribution.
+   This option is ignored when unur_pinv_set_usecdf() is called.
+   
+   Default: FALSE
 */
 
 double unur_pinv_eval_approxinvcdf( const UNUR_GEN *generator, double u );

@@ -103,8 +103,9 @@ _unur_pinv_init( struct unur_par *par )
   }
 
   /* we do not need the table with CDF values any more. */
-  /* thus we free the allocated memory.                 */
-  _unur_lobatto_free(&(GEN->aCDF));
+  /* thus we may free the allocated memory.             */
+  if (! (gen->variant & PINV_VARIANT_KEEPCDF))
+    _unur_lobatto_free(&(GEN->aCDF));
 
   /* make guide table */
   _unur_pinv_make_guide_table(gen);
@@ -309,6 +310,11 @@ _unur_pinv_check_par( struct unur_gen *gen )
     return UNUR_ERR_GEN_CONDITION;
   }
 
+  /* there is no table of CDF values when the CDF is given */
+  if (! (gen->variant & PINV_VARIANT_PDF))
+    gen->variant &= ~PINV_VARIANT_KEEPCDF;
+
+  /* o.k. */
   return UNUR_SUCCESS;
 } /* end of _unur_pinv_check_par() */
 

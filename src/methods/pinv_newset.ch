@@ -434,4 +434,37 @@ unur_pinv_get_n_intervals( const struct unur_gen *gen )
   return GEN->n_ivs;
 } /* end of unur_pinv_get_n_intervals() */
 
+/*---------------------------------------------------------------------------*/
+
+int
+unur_pinv_set_keepcdf( struct unur_par *par, int keepcdf)
+     /*----------------------------------------------------------------------*/
+     /* if TRUE, use do not discard table for integration.                   */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par     ... pointer to parameter for building generator object     */
+     /*   keepcdf ... boolean                                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, PINV );
+
+  /* store variant */
+  if (keepcdf)
+    par->variant |= PINV_VARIANT_KEEPCDF;
+  else
+    par->variant &= ~PINV_VARIANT_KEEPCDF;
+
+  /* changelog */
+  par->set |= PINV_SET_KEEPCDF;
+
+  return UNUR_SUCCESS;
+
+} /* end of unur_pinv_set_keepcdf() */
+
 /*****************************************************************************/

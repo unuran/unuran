@@ -211,6 +211,7 @@
 #define PINV_VARIANT_PDF      0x0010u   /* use PDF and Lobatto integration
 	                                   [ if not present, use CDF ]       */
 #define PINV_VARIANT_UPOINTS  0x0040u   /* use Chebyshev points in u scale   */
+#define PINV_VARIANT_KEEPCDF  0x0080u   /* keep table for integration        */
 
 /*---------------------------------------------------------------------------*/
 /* Debugging flags                                                           */
@@ -237,6 +238,7 @@
 #define PINV_SET_SEARCHBOUNDARY 0x0020u  /* search for boundary              */
 #define PINV_SET_VARIANT        0x0040u  /* variant of algorithm             */
 #define PINV_SET_MAX_IVS        0x0080u  /* maximum number of subintervals   */
+#define PINV_SET_KEEPCDF        0x0100u  /* keep table for integration       */
 
 /*---------------------------------------------------------------------------*/
 

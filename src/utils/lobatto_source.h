@@ -83,6 +83,11 @@ void _unur_lobatto_free (struct unur_lobatto_table **Itable);
 void _unur_lobatto_debug_table (struct unur_lobatto_table *Itable,
 				const struct unur_gen *gen, int print_Itable );
 /*---------------------------------------------------------------------------*/
-/* print size size and entries of table of integral values.                  */
+/* print size and entries of table of integral values.                       */
+/*---------------------------------------------------------------------------*/
+
+int _unur_lobatto_size_table (struct unur_lobatto_table *Itable);
+/*---------------------------------------------------------------------------*/
+/* size of table of integral values.                                         */
 /*---------------------------------------------------------------------------*/
 

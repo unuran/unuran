@@ -145,6 +145,54 @@ unur_pinv_eval_approxinvcdf( const struct unur_gen *gen, double u )
 
 } /* end of unur_pinv_eval_approxinvcdf() */
 
+/*---------------------------------------------------------------------------*/
+
+double
+unur_pinv_eval_approxcdf( const struct unur_gen *gen, double x )
+     /*----------------------------------------------------------------------*/
+     /* evaluate (approximate) CDF at x.                                     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*   x   ... argument for CDF                                           */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   double (approximate CDF)                                           */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return INFINITY                                                    */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, gen, INFINITY );
+  if ( gen->method != UNUR_METH_PINV ) {
+    _unur_error(gen->genid,UNUR_ERR_GEN_INVALID,"");
+    return INFINITY;
+  }
+  COOKIE_CHECK(gen,CK_PINV_GEN,INFINITY);
+
+  /* we need the table of CDF values */
+  if ( (gen->variant & PINV_VARIANT_PDF) && GEN->aCDF == NULL) {
+    _unur_error(gen->genid,UNUR_ERR_GENERIC,"'keepcdf' not set");
+    return INFINITY;
+  }
+
+  /* argument inside domain ? */
+  if (x <= DISTR.domain[0]) return 0.;
+  if (x >= DISTR.domain[1]) return 1.;
+
+  /* compute CDF */
+  if (gen->variant & PINV_VARIANT_PDF) {
+    /* case: PDF given */
+    return _unur_lobatto_eval_CDF(GEN->aCDF,x);
+  }
+  else {
+    /* case: CDF given */
+    return (CDF(x));
+  }
+
+} /* end of unur_pinv_eval_approxcdf() */
+
 /*****************************************************************************/
 
 int

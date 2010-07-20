@@ -433,7 +433,8 @@ int unur_pinv_set_keepcdf( UNUR_PAR *parameters, int keepcdf);
    evaluations of the PDF minimal. Usually this table is discarded
    when the setup is completed.
    If @var{keepcdf} is TRUE, then this table is kept and can be used
-   to compute the CDF of the underlying distribution.
+   to compute the CDF of the underlying distribution by means of 
+   function unur_pinv_eval_approxcdf().
    This option is ignored when unur_pinv_set_usecdf() is called.
    
    Default: FALSE
@@ -447,6 +448,16 @@ double unur_pinv_eval_approxinvcdf( const UNUR_GEN *generator, double u );
    the domain of the distribution are returned (which is
    @code{-UNUR_INFINITY} or @code{UNUR_INFINITY} in the case of
    unbounded domains).
+*/
+
+double unur_pinv_eval_approxcdf( const UNUR_GEN *generator, double x );
+/*
+   Evaluate (approximate) CDF at @var{x}. If the PDF of the
+   distribution is given, then adaptive Gauss-Lobatto integration is
+   used to compute the CDF.
+   If the PDF is used to create the generator object, then the
+   table of integral values must not removed at the end of setup and thus 
+   unur_pinv_set_keepcdf() must be called.
 */
 
 int unur_pinv_estimate_error( const UNUR_GEN *generator, int samplesize, double *max_error, double *MAE );

@@ -14,6 +14,10 @@ Version 1.8.0: ???? 2010
 	  PDF vanishes for the given 'center' or is not finite, then
 	  the method tries to "guess" an appropriate point for the 'center'.
 
+	  new function unur_pinv_eval_approxcdf() for computing
+	  approximate CDF. This requires to keep the table of
+	  CDF values by means of call unur_pinv_set_keepcdf().
+
 	* Distributions:
 
 	- DISCRete distribution objects: added slot 'invCDF' for

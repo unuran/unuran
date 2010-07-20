@@ -389,7 +389,7 @@ _unur_lobatto_eval_diff (struct unur_lobatto_table *Itable, double x, double h, 
   /* thus there is at least one subinterval from adapative Lobatto */
   /* integration within [x,x+h]. we reuse the stored values.       */
   /* for the remaining two subintervals at the boundary [x,x+h]    */
-  /* we use simple Lobatto integration.                            */
+  /* we use simple Gauss-Lobatto integration.                      */
 
   Q = _unur_lobatto5_simple(Itable->funct, Itable->gen, x, x1-x, fx);
   do {
@@ -421,8 +421,83 @@ _unur_lobatto_eval_diff (struct unur_lobatto_table *Itable, double x, double h, 
 /*---------------------------------------------------------------------------*/
 
 double
+_unur_lobatto_eval_CDF (struct unur_lobatto_table *Itable, double x)
+     /*----------------------------------------------------------------------*/
+     /* Numerical integration of 'funct' over the interval (-INFINITY, x)    */
+     /* using a table of integral values together with                       */
+     /* (adaptive) Gauss-Lobatto integration with 5 points.                  */
+     /* It is important, that the integration object 'Itable' already exists.*/
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   Itable ... table for storing integral values (may be NULL)         */
+     /*   x      ... left boundary point of interval                         */
+     /*   h      ... length of interval                                      */
+     /*   fx     ... funct(x) (ignored if NULL or *fx<0)                     */
+     /*              set *fx <- funct(x+h) if _unur_lobatto5_simple called   */
+     /*              set *fx <- -1.        otherwise                         */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   integral                                                           */
+     /*----------------------------------------------------------------------*/
+{
+  struct unur_lobatto_nodes *values;
+  int n_values;          /* table size */
+  double area;           /* integral over (-INFINITY, INFINITY) */
+  double xr;             /* most right point from table */
+  double cdf;            /* cdf at x */
+  int cur;               /* current interval (position in table) */
+
+  /* check for invalid NULL pointer */
+  CHECK_NULL(Itable,INFINITY);
+
+  /* check boundary */
+  if (x <= Itable->bleft)  return 0.;
+  if (x >= Itable->bright) return 1.;
+
+  /* read data from table */
+  values = Itable->values;
+  n_values = Itable->n_values;
+  area = Itable->integral;
+
+  /* the area must not equal 0 (this should not happen anyway) */
+  if (area <= 0.) {
+    _unur_error(Itable->gen->genid,UNUR_ERR_NAN,"area below PDF 0.");
+    return INFINITY;
+  }
+
+  /* sum values over all intervals that are on the l.h.s. of x */
+  cdf = 0;
+  xr = Itable->bleft;
+  for (cdf=0, cur=0; cur < n_values && x > values[cur].x; cur++) {
+    cdf += values[cur].u;
+    xr = values[cur].x;
+  }
+
+  /* integrate from xr to x */
+  if (cur >= n_values) {
+    cdf += _unur_lobatto5_adaptive(Itable->funct, Itable->gen, xr, x-xr,
+				   Itable->tol, Itable->uerror, NULL);
+  }
+  else {
+    cdf += _unur_lobatto5_simple(Itable->funct, Itable->gen, xr, x-xr, NULL);
+  }
+
+  /* compute CDF */
+  cdf /= area;
+  cdf = _unur_max(0., cdf);
+  cdf = _unur_min(1., cdf);
+
+  /* return CDF */
+  return cdf;
+
+} /* end of _unur_lobatto_eval_CDF() */
+
+/*---------------------------------------------------------------------------*/
+
+double
 _unur_lobatto_integral (struct unur_lobatto_table *Itable)
      /*----------------------------------------------------------------------*/
+     /* Get value of integral from Lobatto object.                           */
      /* Get integration from Lobatto object.                                 */
      /*                                                                      */
      /* parameters:                                                          */

@@ -70,9 +70,15 @@ double _unur_lobatto_eval_diff (struct unur_lobatto_table *Itable, double x, dou
 /* evaluate integration object over the interval (x,x+h).                    */
 /*---------------------------------------------------------------------------*/
 
+double _unur_lobatto_eval_CDF (struct unur_lobatto_table *Itable, double x);
+/*---------------------------------------------------------------------------*/
+/* evaluate integration object over the interval (-INFINITY, x).             */
+/* it is important, that the integration object 'Itable' already exists.     */
+/*---------------------------------------------------------------------------*/
+
 double _unur_lobatto_integral (struct unur_lobatto_table *Itable );
 /*---------------------------------------------------------------------------*/
-/* get integration from Lobatto object.                                      */
+/* get value of integral from Lobatto object.                                */
 /*---------------------------------------------------------------------------*/
 
 void _unur_lobatto_free (struct unur_lobatto_table **Itable);

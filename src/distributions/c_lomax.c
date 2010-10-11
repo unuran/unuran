@@ -190,12 +190,8 @@ _unur_set_params_lomax( UNUR_DISTR *distr, const double *params, int n_params )
   DISTR.C = 1.; 
 
   /* copy optional parameters */
-  switch (n_params) {
-  case 2:
+  if (n_params == 2)
     DISTR.C = C;
-  default:
-    n_params = 2;
-  }
 
   /* store number of parameters */
   DISTR.n_params = n_params;

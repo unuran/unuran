@@ -215,12 +215,9 @@ _unur_set_params_uniform( UNUR_DISTR *distr, const double *params, int n_params 
   DISTR.b = 1.;
 
   /* copy optional parameters */
-  switch (n_params) {
-  case 2:
+  if (n_params == 2) {
     DISTR.a = a;
     DISTR.b = b;
-  default:
-    n_params = 2;
   }
 
   /* store number of parameters */

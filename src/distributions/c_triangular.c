@@ -208,12 +208,8 @@ _unur_set_params_triangular( UNUR_DISTR *distr, const double *params, int n_para
   DISTR.H = 0.5;   /* default is symmetric triangular distribution */
 
   /* copy optional parameters */
-  switch (n_params) {
-  case 1:
+  if (n_params == 1)
     DISTR.H = H;
-  default:
-    n_params = 1;           /* number of parameters for non-standard form */
-  }
 
   /* store number of parameters */
   DISTR.n_params = n_params;

@@ -188,12 +188,8 @@ _unur_set_params_zipf( UNUR_DISTR *distr, const double *params, int n_params )
   DISTR.tau = 0.;
 
   /* copy optional parameters */
-  switch (n_params) {
-  case 2:
+  if (n_params == 2)
     DISTR.tau = tau;
-  default:
-    n_params = 2;
-  }
 
   /* store number of parameters */
   DISTR.n_params = n_params;

@@ -163,6 +163,8 @@ unur_test_timing( struct unur_par *par,
       break;
     default: /* unknown ! */
       _unur_error(test_name,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+      free(time_gen);
+      if (vec) free(vec);
       return NULL;
     }
 

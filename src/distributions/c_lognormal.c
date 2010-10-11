@@ -181,12 +181,8 @@ _unur_set_params_lognormal( UNUR_DISTR *distr, const double *params, int n_param
   DISTR.theta = 0.;        /* default for theta */
 
   /* copy optional parameters */
-  switch (n_params) {
-  case 3:
+  if (n_params == 3)
     DISTR.theta = theta;
-  default:
-    n_params = 3;
-  }
 
   /* store number of parameters */
   DISTR.n_params = n_params;

@@ -407,7 +407,7 @@ _unur_tdr_ps_eval_invcdfhat( const struct unur_gen *gen, double U,
   }
 
   /** -4- Evaluate squeeze at X **/
-  if (sqx != NULL) {
+  if (sqx != NULL && hx != NULL) {
     *sqx = *hx * iv->sq;
   }
 

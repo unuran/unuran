@@ -60,7 +60,7 @@ _unur_fstr_make_derivative ( const struct ftreenode *root )
   _unur_check_NULL( GENTYPE,root,NULL );
   COOKIE_CHECK(root,CK_FSTR_TNODE,NULL);
 
-  deriv = (root) ? (*symbol[root->token].dcalc)(root,&error) : NULL;
+  deriv = (*symbol[root->token].dcalc)(root,&error);
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into LOG file */

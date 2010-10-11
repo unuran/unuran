@@ -75,7 +75,7 @@ _unur_fstr_parser_init ( const char *fstr )
   if (pdata->len_fstr <= 0) {
     /* empty, there is nothing to do */
     _unur_error(GENTYPE,UNUR_ERR_STR,"empty string"); 
-    if (pdata->fstr) free (pdata->fstr);
+    free (pdata->fstr);
     free(pdata);
     return NULL;
   }

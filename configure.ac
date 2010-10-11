@@ -130,7 +130,7 @@ AH_BOTTOM([#if !HAVE_DECL_LOG1P
 #endif])
 
 dnl Checks for GNU extensions
-AC_CHECK_DECLS([getopt, vsnprintf])
+AC_CHECK_DECLS([getopt, snprintf, vsnprintf])
 
 dnl Check for C99 functions */
 AC_CHECK_DECLS(isfinite,,,[#include <math.h>])

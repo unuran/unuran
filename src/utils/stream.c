@@ -316,11 +316,15 @@ _unur_read_data( const char *filename, int no_of_entries, double **ar )
       if (chktoline == toline) {
 	_unur_error("read_data",UNUR_ERR_GEN_DATA,"data file not valid");
 	free(data);
+	fclose(fp);
 	return 0;    /* terminate routine */
       }  
 
     } /* end of for -- read data from line */
   }   /* end of for -- read lines of file  */ 
+
+  /* close input stream */
+  fclose(fp);
 
   /* allocate exactly the memory needed */
   data = _unur_xrealloc( data, (i+1) * sizeof(double) );

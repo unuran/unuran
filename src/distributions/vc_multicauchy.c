@@ -123,13 +123,17 @@ _unur_logpdf_multicauchy( const double *x, UNUR_DISTR *distr )
   
   dim = distr->dim;
   
-  if (DISTR.mean == NULL && DISTR.covar == NULL) {
+  if (DISTR.mean == NULL) {
+    if (DISTR.covar != NULL) {
+      _unur_warning(distr->name,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
+    }
     /* standard form */
     xx=0.;
     for (i=0; i<dim; i++) { xx += x[i]*x[i]; }
     return ( - (dim+1)/2. * log(1+xx) + LOGNORMCONSTANT);  
   }
 
+  /* mean vector */
   mean = DISTR.mean;
 
   /* get inverse of covariance matrix */
@@ -256,7 +260,8 @@ _unur_upd_mode_multicauchy( UNUR_DISTR *distr )
 {
   /* TODO: checking if mode is inside domain */
 
-  if (DISTR.mode == NULL) _unur_xmalloc( distr->dim * sizeof(double) );
+  if (DISTR.mode == NULL) 
+    DISTR.mode = _unur_xmalloc( distr->dim * sizeof(double) );
   memcpy( DISTR.mode, DISTR.mean, distr->dim * sizeof(double) );
 
   return UNUR_SUCCESS;

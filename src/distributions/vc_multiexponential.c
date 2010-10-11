@@ -139,7 +139,7 @@ _unur_logpdf_multiexponential( const double *x, UNUR_DISTR *distr )
   theta = DISTR.param_vecs[INDEX_THETA];
   
   /* TODO : reconsider logic concerning NULL pointers ? */
-  if ( sigma || theta ) {
+  if ( sigma==NULL || theta==NULL ) {
     /* standard form */
     for (i=0; i<dim; i++) { 
       dx = (i==0) ? ((x[i]<0)? INFINITY: x[i]) : ((x[i]<x[i-1])? INFINITY: x[i]-x[i-1]);  
@@ -250,7 +250,8 @@ _unur_upd_mode_multiexponential( UNUR_DISTR *distr )
   /* TODO: checking if mode is inside domain */
   int i;
 
-  if (DISTR.mode == NULL) _unur_xmalloc( distr->dim * sizeof(double) );
+  if (DISTR.mode == NULL) 
+    DISTR.mode = _unur_xmalloc( distr->dim * sizeof(double) );
   for (i=0; i<distr->dim; i++)  DISTR.mode[i]=0.;
 
   return UNUR_SUCCESS;

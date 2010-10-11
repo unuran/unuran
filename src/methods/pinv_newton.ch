@@ -577,7 +577,7 @@ _unur_pinv_newton_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv,
   }
 
   /* we have an analytical test for cubic Hermite interpolation */
-  if (GEN->order == 3 && GEN->smooth==1 && 
+  if (GEN->order == 3 && GEN->smooth==1 && xval!=NULL &&
       ! _unur_pinv_cubic_hermite_is_monotone(gen,ui,zi,xval))
     /* not monotone */
     return 1003.;

@@ -127,13 +127,22 @@ _unur_make_genid( const char *gentype )
 {
   static int count = 0;   /* counter for identifiers */
   char *genid;
+  size_t len;
 
   /* allocate memory for identifier */
-  genid = _unur_xmalloc(sizeof(char)*(strlen(gentype) + 6));
+  len = strlen(gentype);
+  genid = _unur_xmalloc(sizeof(char)*(len+5));
 
   /* make new identifier */
-  ++count; count %= 1000;      /* 1000 different generators should be enough */
-  sprintf(genid,"%s.%03d",gentype,count);
+  ++count; count %= 1000;      
+  /* 1000 different generators should be enough */
+
+#if HAVE_DECL_SNPRINTF
+  /* this is a GNU extension */
+  snprintf(genid, len+5, "%s.%03d", gentype, count);
+#else
+  sprintf(genid, "%s.%03d", gentype, count);
+#endif
 
   return genid;
 

@@ -184,8 +184,8 @@ _unur_set_params_lognormal( UNUR_DISTR *distr, const double *params, int n_param
   if (n_params == 3)
     DISTR.theta = theta;
 
-  /* store number of parameters */
-  DISTR.n_params = n_params;
+  /* store total number of parameters */
+  DISTR.n_params = 3;
 
   /* set (standard) domain */
   if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {

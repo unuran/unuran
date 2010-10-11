@@ -220,8 +220,8 @@ _unur_set_params_uniform( UNUR_DISTR *distr, const double *params, int n_params 
     DISTR.b = b;
   }
 
-  /* store number of parameters */
-  DISTR.n_params = n_params;
+  /* store total number of parameters */
+  DISTR.n_params = 2;
 
   /* set (standard) domain */
   if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {

@@ -211,8 +211,8 @@ _unur_set_params_triangular( UNUR_DISTR *distr, const double *params, int n_para
   if (n_params == 1)
     DISTR.H = H;
 
-  /* store number of parameters */
-  DISTR.n_params = n_params;
+  /* store total number of parameters */
+  DISTR.n_params = 1;
 
   /* set (standard) domain */
   if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {

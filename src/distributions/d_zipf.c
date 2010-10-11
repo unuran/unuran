@@ -191,8 +191,8 @@ _unur_set_params_zipf( UNUR_DISTR *distr, const double *params, int n_params )
   if (n_params == 2)
     DISTR.tau = tau;
 
-  /* store number of parameters */
-  DISTR.n_params = n_params;
+  /* store total number of parameters */
+  DISTR.n_params = 2;
 
   /* set (standard) domain: [1, infinity] */
   if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {

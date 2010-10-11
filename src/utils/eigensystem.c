@@ -144,11 +144,11 @@ int _unur_matrix_eigensystem(int dim, const double *M, double *values, double *v
   
 free_memory:
 
-  if (A) free(A);
-  if (diag) free(diag);
-  if (codiag) free(codiag);
-  if (wk) free(wk);
-  if (in) free(in);
+  free(A);
+  free(diag);
+  free(codiag);
+  free(wk);
+  free(in);
 
   return ret; 
 } /* end of _unur_matrix_eigensystem() */

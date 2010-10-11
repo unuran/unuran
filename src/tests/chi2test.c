@@ -769,10 +769,6 @@ _unur_test_chi2_cvemp ( struct unur_gen *gen,
   CHECK_NULL(gen,-1.);
   /* we do not check magic cookies here */
 
-  /* CDF for standard normal distribution */
-  distr_normal = unur_distr_normal( NULL, 0 );
-  cdf = distr_normal->data.cont.cdf;
-
   /* check given number of intervals */
   if (n_intervals <= 2)
     n_intervals = CHI2_INTERVALS_DEFAULT;
@@ -787,6 +783,10 @@ _unur_test_chi2_cvemp ( struct unur_gen *gen,
     _unur_error(test_name,UNUR_ERR_GENERIC,"distribution dimension < 1 ?");
     return -1.;
   }
+
+  /* we need the CDF for the standard normal distribution */
+  distr_normal = unur_distr_normal( NULL, 0 );
+  cdf = distr_normal->data.cont.cdf;
 
   /* allocate working space memory */
   X   = _unur_xmalloc( dim * sizeof(double));

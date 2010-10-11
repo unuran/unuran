@@ -136,7 +136,7 @@ _unur_string_appendtext ( struct unur_string *string, const char *text )
   }
 
   /* copy text into string */
-  strcpy( string->text+string->length, text );
+  strncpy( string->text+string->length, text, len+1 );
 
   /* update length of string */
   string->length += len;

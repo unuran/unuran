@@ -675,6 +675,10 @@ _unur_fstr_simplification (const char *symb, int token,
      /* return:                                                              */
      /*   Pointer to simplified node                                         */
      /*   NULL if no simplication is possible                                */
+     /*                                                                      */
+     /* Side effects:                                                        */
+     /*   'left' or 'right' may be freed when the node is simplified.        */
+     /*   This cannot happen if NULL is returned.                            */
      /*----------------------------------------------------------------------*/
 {
   /* some booleans */

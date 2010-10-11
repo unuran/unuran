@@ -563,7 +563,7 @@ _unur_FunctDesignator (struct parser_data *pdata)
        symbol[funct].type != S_SFUNCT )
     return _unur_fstr_error_parse(pdata,ERR_EXPECT_FUNCT,__LINE__);
 
-  /* get number of parameter for this function */
+  /* get number of parameters for this function */
   n_params = symbol[funct].info;
 
   /* read opening parenthesis '(' */
@@ -627,16 +627,21 @@ _unur_ActualParameterlist (struct parser_data *pdata, int n_params)
 
     /* update counter for parameters */
     c_params++; 
-    if (c_params > n_params)
+    if (c_params > n_params) {
+      _unur_fstr_free(node);
       return _unur_fstr_error_parse(pdata,ERR_INVALID_N_PARAMS,__LINE__);
+    }
 
     /* old node becomes left node of `,' node */
     left = node; 
 
     /* make node for next variable (becomes right node) */
     right = _unur_Expression(pdata);
-    if (pdata->perrno) return NULL;
-    
+    if (pdata->perrno) {
+      _unur_fstr_free(node);
+      return NULL;
+    }
+
     /* make node for `,' separator */
     node = _unur_fstr_create_node(",",0.,s_comma,left,right); 
   }
@@ -645,8 +650,10 @@ _unur_ActualParameterlist (struct parser_data *pdata, int n_params)
   --(pdata->tno);
 
   /* check number of parameters */
-  if (c_params < n_params)
+  if (c_params < n_params) {
+    _unur_fstr_free(node);
     return _unur_fstr_error_parse(pdata,ERR_INVALID_N_PARAMS,__LINE__);
+  }
 
   /* return pointer to parameter list */
   return node; 

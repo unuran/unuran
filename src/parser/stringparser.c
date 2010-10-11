@@ -2472,7 +2472,7 @@ _unur_parse_ilist( char *liststr, int **iarray )
     if (n_iarray >= n_alloc) {
       /* no --> allocate memory */
       n_alloc += 100;
-      iarr = _unur_xrealloc( iarr, n_alloc * sizeof(double) );
+      iarr = _unur_xrealloc( iarr, n_alloc * sizeof(int) );
     }
     
     /* get int */

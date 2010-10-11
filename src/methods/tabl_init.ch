@@ -379,7 +379,7 @@ _unur_tabl_get_intervals_from_slopes( struct unur_par *par, struct unur_gen *gen
 
   /* init counter of intervals */
   GEN->n_ivs = 0;
-  iv = NULL;
+  iv = GEN->iv = NULL;
 
   /* boundary of computational interval are reset by boundaries of slopes */
   GEN->bleft = INFINITY;
@@ -505,7 +505,7 @@ _unur_tabl_get_intervals_from_cpoints( struct unur_par *par, struct unur_gen *ge
 
   /* init counter of intervals */
   GEN->n_ivs = 0;
-  iv = NULL;
+  iv = GEN->iv = NULL;
 
   /* the left boudary of computational domain */
   sr = GEN->bleft;

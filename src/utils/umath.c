@@ -66,6 +66,7 @@ _unur_arcmean( double x0, double x1 )
      /*----------------------------------------------------------------------*/
 {
   double a0,a1;
+  double r;
 
   /* we need x0 < x1 */
   if (x0>x1) {double tmp = x0; x0=x1; x1=tmp;}
@@ -79,12 +80,13 @@ _unur_arcmean( double x0, double x1 )
 
   if (fabs(a0-a1) < ARCMEAN_ARITHMETIC)
     /* use arithmetic mean */
-    return (0.5*x0 + 0.5*x1);
+    r = 0.5*x0 + 0.5*x1;
 
   else
     /* use "arc mean" */
-    return tan((a0 + a1)/2.);
+    r = tan((a0 + a1)/2.);
 
+  return r;
 } /* end of _unur_arcmean() */
 
 /*---------------------------------------------------------------------------*/

@@ -69,8 +69,10 @@ _unur_FunctDefinition (struct parser_data *pdata)
 
   /* next token must be "=" sign */
   if ( _unur_fstr_next_token(pdata,&token,&symb) != UNUR_SUCCESS ||
-       strcmp(symb,"=") != 0 )
+       strcmp(symb,"=") != 0 ) {
+    _unur_fstr_free(left);
     return _unur_fstr_error_parse(pdata,ERR_EXPECT_EQUAL,__LINE__); 
+  }
 
   /* right hand side: function term */
   right = _unur_Expression(pdata);
@@ -123,12 +125,17 @@ _unur_DefFunctDesignator (struct parser_data *pdata)
 
   /* read the parameter list */
   params = _unur_DefParameterlist(pdata,&n_params);
-  if (pdata->perrno) return NULL;
+  if (pdata->perrno) {
+    _unur_fstr_free(params);
+    return NULL;
+  }
 
   /* read closing parenthesis ')' */
   if ( _unur_fstr_next_token(pdata,&token,&symb) != UNUR_SUCCESS ||
-       symb[0] != ')' )
+       symb[0] != ')' ) {
+    _unur_fstr_free(params);
     return _unur_fstr_error_parse(pdata,ERR_EXPECT_CLOSE_P,__LINE__); 
+  }
 
   /* store function header in node */
   node = _unur_fstr_create_node(fsymb,0.,funct,NULL,params); 
@@ -180,13 +187,15 @@ _unur_DefParameterlist(struct parser_data *pdata, int *n_params)
   while ( _unur_fstr_next_token(pdata,&token,&symb) != UNUR_SUCCESS ||
 	  symb[0] == ',' ) {
 
-    /* old node becomes left node of `,' node */
-    left = node; 
-
     /* get next variable */
     if ( _unur_fstr_next_token(pdata,&token,&symb) != UNUR_SUCCESS ||
-	 symbol[token].type != S_UIDENT )
+	 symbol[token].type != S_UIDENT ) {
+      _unur_fstr_free(node);
       return _unur_fstr_error_parse(pdata,ERR_EXPECT_VAR,__LINE__);
+    }
+
+    /* old node becomes left node of `,' node */
+    left = node; 
 
     /* make node for next variable (becomes right node) */
     /* and update counter for parameters                */

@@ -341,7 +341,10 @@ _unur_STerm (struct parser_data *pdata)
     /* thus "0" is added in front of it         */
     left = _unur_fstr_create_node(NULL,0.,s_uconst,NULL,NULL); 
     right = _unur_Term(pdata);
-    if (pdata->perrno) return NULL; 
+    if (pdata->perrno) {
+      _unur_fstr_free(left);
+      return NULL; 
+    }
 
     node = _unur_fstr_create_node(symb,0.,token,left,right); 
   }
@@ -443,7 +446,10 @@ _unur_Factor (struct parser_data *pdata)
        symb[0] == '^' ) {
     /* get exponent of factor */
     right = _unur_Bas_Exp(pdata);
-    if (pdata->perrno) return NULL;
+    if (pdata->perrno) {
+      _unur_fstr_free(left);
+      return NULL;
+    }
 
     /* and create node for '^' operator */
     node = _unur_fstr_create_node(symb,0.,token,left,right); 
@@ -577,9 +583,11 @@ _unur_FunctDesignator (struct parser_data *pdata)
 
   /* read closing parenthesis ')' */
   if ( _unur_fstr_next_token(pdata,&token,&symb) != UNUR_SUCCESS ||
-       symb[0] != ')' )
+       symb[0] != ')' ) {
+    _unur_fstr_free(params);
     return _unur_fstr_error_parse(pdata,ERR_EXPECT_CLOSE_P,__LINE__);
-  
+  }
+
   /* store function in new node */
   node = _unur_fstr_create_node(fsymb,0.,funct,NULL,params); 
 

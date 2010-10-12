@@ -1162,6 +1162,7 @@ $test_routines
 	/* free memory */
 	compare_free_memory();
 	unur_urng_free(unur_get_default_urng());
+	unur_urng_free(unur_get_default_urng_aux());
 
 	/* exit */
 	exit( (test_ok) ? EXIT_SUCCESS : EXIT_FAILURE );

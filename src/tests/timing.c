@@ -139,6 +139,7 @@ unur_test_timing( struct unur_par *par,
   /* init successful ? */
   if (!gen) {
     free (time_gen);
+    if (vec) free(vec);
     return NULL;
   }
 

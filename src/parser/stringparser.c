@@ -963,6 +963,11 @@ _unur_str_distr( char *str_distr )
       }
 
       /* get new distribution object */
+      if (distr != NULL) {
+	_unur_error(GENTYPE,UNUR_ERR_SHOULD_NOT_HAPPEN,""); 
+	_unur_distr_free(distr);
+      }
+
       distr = _unur_str_distr_new(value);
       if (distr == NULL) {
 	/* error */

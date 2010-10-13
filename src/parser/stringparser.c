@@ -958,6 +958,7 @@ _unur_str_distr( char *str_distr )
       else {
 	if (*key != 'd') {
 	  _unur_error(GENTYPE,UNUR_ERR_STR_SYNTAX,"key for distribution does not start with 'd'"); 
+	  _unur_distr_free(distr);  /* remark: added for ROOT to make coverity integrity manager happy */ 
 	  return NULL;
 	}
       }

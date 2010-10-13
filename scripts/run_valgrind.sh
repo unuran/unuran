@@ -21,5 +21,6 @@ echo ""; echo "Summary:"; echo ""
 grep ERROR ${LOGFILENAME}*
 grep lost ${LOGFILENAME}*
 grep "All heap blocks were freed" ${LOGFILENAME}*
+echo ""; echo "========================="; echo ""
 
 exit 0

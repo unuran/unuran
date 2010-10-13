@@ -300,7 +300,10 @@ _unur_SimpleExpression (struct parser_data *pdata)
     left = node; 
 
     right = _unur_Term(pdata);
-    if (pdata->perrno) return NULL; 
+    if (pdata->perrno) {
+      _unur_fstr_free(node);
+      return NULL;
+    }
 
     node = _unur_fstr_create_node(symb,0.,token,left,right); 
   }
@@ -409,7 +412,10 @@ _unur_Term (struct parser_data *pdata)
      left = node; 
 
      right = _unur_Factor(pdata);
-     if (pdata->perrno) return NULL;
+     if (pdata->perrno) {
+       _unur_fstr_free(node);
+       return NULL;
+     }
 
      node = _unur_fstr_create_node(symb,0.,token,left,right); 
   }

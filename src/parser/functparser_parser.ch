@@ -1,6 +1,6 @@
 /*****************************************************************************
  *                                                                           *
- *          UNURAN -- Universal Non-Uniform Random number generator          *
+ *          UNU.RAN -- Universal Non-Uniform Random number generator         *
  *                                                                           *
  *****************************************************************************
  *                                                                           *
@@ -10,7 +10,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2010 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -65,7 +65,9 @@ _unur_FunctDefinition (struct parser_data *pdata)
 
   /* left hand side: DefFunctDesignator */
   left = _unur_DefFunctDesignator(pdata);
-  if (pdata->perrno) return NULL;
+  if (pdata->perrno) {
+    _unur_fstr_free(left); return NULL;
+  }
 
   /* next token must be "=" sign */
   if ( _unur_fstr_next_token(pdata,&token,&symb) != UNUR_SUCCESS ||
@@ -76,7 +78,10 @@ _unur_FunctDefinition (struct parser_data *pdata)
 
   /* right hand side: function term */
   right = _unur_Expression(pdata);
-  if (pdata->perrno) return NULL;
+  if (pdata->perrno) {
+    _unur_fstr_free(left); _unur_fstr_free(right);
+    return NULL;
+  }
 
   /* store function in node */
   node = _unur_fstr_create_node(symb,0.,token,left,right); 
@@ -240,14 +245,19 @@ _unur_Expression (struct parser_data *pdata)
 
   /* read simple expression from function string */
   left = _unur_SimpleExpression(pdata);
-  if (pdata->perrno) return NULL; 
+  if (pdata->perrno) {
+    _unur_fstr_free(left); return NULL; 
+  }
 
   /* get next token */
   if ( _unur_fstr_next_token(pdata,&token,&symb) == UNUR_SUCCESS &&
        symbol[token].type == S_REL_OP ) {
     /* relation operator  --> read r.h.s.*/
     right = _unur_SimpleExpression(pdata);
-    if (pdata->perrno) return NULL; 
+    if (pdata->perrno) {
+      _unur_fstr_free(left); _unur_fstr_free(right);
+      return NULL;
+    } 
     /* create a new node */
     node = _unur_fstr_create_node(symb,0.,token,left,right); 
   }
@@ -290,7 +300,9 @@ _unur_SimpleExpression (struct parser_data *pdata)
 
   /* get next Term in string */
   node = _unur_STerm(pdata);
-  if (pdata->perrno) return NULL;
+  if (pdata->perrno) {
+    _unur_fstr_free(node); return NULL;
+  }
 
   /* get next token */
   while ( _unur_fstr_next_token(pdata,&token,&symb) == UNUR_SUCCESS &&
@@ -301,7 +313,7 @@ _unur_SimpleExpression (struct parser_data *pdata)
 
     right = _unur_Term(pdata);
     if (pdata->perrno) {
-      _unur_fstr_free(node);
+      _unur_fstr_free(left); _unur_fstr_free(right);
       return NULL;
     }
 
@@ -354,7 +366,7 @@ _unur_STerm (struct parser_data *pdata)
     left = _unur_fstr_create_node(NULL,0.,s_uconst,NULL,NULL); 
     right = _unur_Term(pdata);
     if (pdata->perrno) {
-      _unur_fstr_free(left);
+      _unur_fstr_free(left); _unur_fstr_free(right);
       return NULL; 
     }
 
@@ -368,8 +380,10 @@ _unur_STerm (struct parser_data *pdata)
       --(pdata->tno);
     }
     node = _unur_Term(pdata);
-    if (pdata->perrno) return NULL; 
-  } 
+    if (pdata->perrno) {
+      _unur_fstr_free(node); return NULL; 
+    }
+  }
 
   /* return pointer to term */
   return node; 
@@ -402,7 +416,9 @@ _unur_Term (struct parser_data *pdata)
 
   /* get next factor of multiplication */
   node = _unur_Factor(pdata);
-  if (pdata->perrno) return NULL;
+  if (pdata->perrno) {
+    _unur_fstr_free(node); return NULL;
+  }
 
   /* get next token */
   while ( _unur_fstr_next_token(pdata,&token,&symb) == UNUR_SUCCESS &&
@@ -413,7 +429,7 @@ _unur_Term (struct parser_data *pdata)
 
      right = _unur_Factor(pdata);
      if (pdata->perrno) {
-       _unur_fstr_free(node);
+       _unur_fstr_free(left); _unur_fstr_free(right);
        return NULL;
      }
 
@@ -454,15 +470,17 @@ _unur_Factor (struct parser_data *pdata)
 
   /* get base of factor */
   left = _unur_Bas_Exp(pdata);
-  if (pdata->perrno) return NULL;
-
+  if (pdata->perrno) {
+    _unur_fstr_free(left); return NULL;
+  }
+  
   /* get next token */
   if ( _unur_fstr_next_token(pdata,&token,&symb) == UNUR_SUCCESS &&
        symb[0] == '^' ) {
     /* get exponent of factor */
     right = _unur_Bas_Exp(pdata);
     if (pdata->perrno) {
-      _unur_fstr_free(left);
+      _unur_fstr_free(left); _unur_fstr_free(right);
       return NULL;
     }
 
@@ -529,14 +547,18 @@ _unur_Bas_Exp (struct parser_data *pdata)
     --(pdata->tno);
     /* and get function */
     node = _unur_FunctDesignator(pdata);
-    if (pdata->perrno) return NULL;
+    if (pdata->perrno) {
+      _unur_fstr_free(node); return NULL;
+    }
   }
   
   else if( symb[0] == '(' ) {
     /* opening parenthesis  --> read expression in side parenthesis */
     node = _unur_Expression(pdata); 
-    if (pdata->perrno) return NULL;
-
+    if (pdata->perrno) {
+      _unur_fstr_free(node); return NULL;
+    }
+    
     /* next symbol must be closing parenthesis */
     if ( _unur_fstr_next_token(pdata,&token,&symb) != UNUR_SUCCESS ||
 	 symb[0] != ')' )
@@ -594,7 +616,9 @@ _unur_FunctDesignator (struct parser_data *pdata)
 
   /* read the parameter list */
   params = _unur_ActualParameterlist(pdata,n_params);
-  if (pdata->perrno) return NULL;
+  if (pdata->perrno) {
+    _unur_fstr_free(params); return NULL;
+  }
 
   /* read closing parenthesis ')' */
   if ( _unur_fstr_next_token(pdata,&token,&symb) != UNUR_SUCCESS ||
@@ -639,7 +663,9 @@ _unur_ActualParameterlist (struct parser_data *pdata, int n_params)
 
   /* read first parameter from string ...  */
   node = _unur_Expression(pdata);
-  if (pdata->perrno) return NULL;
+  if (pdata->perrno) {
+    _unur_fstr_free(node); return NULL;
+  }
 
   /* .. and set counter for parameters to 1 */
   c_params = 1; 
@@ -661,7 +687,7 @@ _unur_ActualParameterlist (struct parser_data *pdata, int n_params)
     /* make node for next variable (becomes right node) */
     right = _unur_Expression(pdata);
     if (pdata->perrno) {
-      _unur_fstr_free(node);
+      _unur_fstr_free(left); _unur_fstr_free(right);
       return NULL;
     }
 
@@ -750,7 +776,7 @@ _unur_fstr_simplification (const char *symb, int token,
     right->type  = S_UCONST;
     right->left  = NULL; 
     right->right = NULL;
-    if (left) free(left);
+    _unur_fstr_free(left);
     return right; 
   } 
 
@@ -761,7 +787,7 @@ _unur_fstr_simplification (const char *symb, int token,
   if ( (l_0 && s=='+' ) || (l_1 && s=='*') ) { 
     CHECK_NULL(left,NULL);  COOKIE_CHECK(left,CK_FSTR_TNODE,NULL);
     CHECK_NULL(right,NULL); COOKIE_CHECK(right,CK_FSTR_TNODE,NULL);
-    free(left);
+    _unur_fstr_free(left);
     return right;
   } 
 
@@ -781,7 +807,7 @@ _unur_fstr_simplification (const char *symb, int token,
        (r_1 && (s=='*' || s=='/' || s=='^')) ) {
     CHECK_NULL(left,NULL);  COOKIE_CHECK(left,CK_FSTR_TNODE,NULL);
     CHECK_NULL(right,NULL); COOKIE_CHECK(right,CK_FSTR_TNODE,NULL);
-    free(right);
+    _unur_fstr_free(right);
     return left;
   }
 
@@ -842,7 +868,7 @@ _unur_fstr_simplification (const char *symb, int token,
 	 strcmp(left->symbol,right->symbol)== 0 ) ) {
     CHECK_NULL(left,NULL);  COOKIE_CHECK(left,CK_FSTR_TNODE,NULL);
     CHECK_NULL(right,NULL); COOKIE_CHECK(right,CK_FSTR_TNODE,NULL);
-    free(left);
+    _unur_fstr_free(left);
     right->token = s_uconst;
     right->symbol= symbol[s_uconst].name; 
     right->val   = 1.;

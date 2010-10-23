@@ -1138,7 +1138,12 @@ _unur_fstr_error_parse ( struct parser_data *pdata, int perrno, int line )
   _unur_string_append( reason, "%s: ", _unur_fstr_error_code(perrno) );
   for (i=0; i<pdata->tno-1; i++)
     _unur_string_append( reason, "%s ", pdata->tpos[i]);
-  _unur_string_append( reason, " -->%s<--  ", pdata->tpos[i]);
+
+  if (i<pdata->n_tokens)
+    _unur_string_append( reason, " -->%s<--  ", pdata->tpos[i]);
+  else
+    _unur_string_append( reason, " <--  ");
+
   for (i++; i<pdata->n_tokens; i++)
     _unur_string_append( reason, "%s ",pdata->tpos[i]);
   

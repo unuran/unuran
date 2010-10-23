@@ -595,7 +595,7 @@ _unur_fstr_error_scan (const struct parser_data *pdata, const char *symb, int li
     _unur_string_append( reason, "%c", *c );
 
   /* print remaining part of function string including unknown symbol */
-  _unur_string_append( reason, "    %s", pdata->fstr + pdata->lastpos);
+  _unur_string_append( reason, "    --> %s", pdata->fstr + pdata->lastpos);
 
   /* report error */
   _unur_error_x( GENTYPE, __FILE__, line, "error", UNUR_ERR_FSTR_SYNTAX,reason->text);

@@ -1,5 +1,5 @@
 
-Version 1.8.0: ???? 2010
+Version 1.8.0: October 2010
 
 	* Methods:
 
@@ -31,6 +31,11 @@ Version 1.8.0: ???? 2010
           Rmath library.
 
         - geometric distribution: fixed special random variate generator
+
+	* Other:
+
+        - Fixed errors detect by static analysis tools by the ROOT team 
+	  at CERN (thanks to R. Brun and L. Moneta)
 
 
 Version 1.7.1: April 2010

@@ -38,6 +38,7 @@ dnl unuran-1.5.0   12:0:0
 dnl unuran-1.6.0   13:0:0
 dnl unuran-1.7.0   14:0:0
 dnl unuran-1.8.0   15:0:0
+dnl unuran-1.8.1   15:0:0
 dnl unuran-1.9.0   16:0:0
 
 UNURAN_LT_VERSION="16:0:0"
@@ -63,9 +64,12 @@ dnl Checks for libraries.
 dnl libm: the standard math library
 AC_CHECK_LIB([m], [sqrt])
 
-dnl libmgsl: the GNU Scientific library 
-dnl (only used for experimental code)
-AC_CHECK_LIB([gsl], [gsl_integration_qagiu])
+dnl libgsl: the GNU Scientific library 
+dnl (used for experimental code or 
+dnl when the GSL uniform random number generators are used, see below)
+AC_CHECK_LIB([gslcblas],[cblas_dgemm])
+AC_CHECK_LIB([gsl],[gsl_blas_dgemm])
+
 
 dnl Optional support for external uniform random number generators
 

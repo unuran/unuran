@@ -274,7 +274,7 @@ uerror_discr( const UNUR_GEN *gen,
 {
 #define DISTR   gen->distr->data.discr
   
-  double CDFmin, CDFmax;     /* minimum and maximum of CDF in given domain */
+  /* double CDFmin, CDFmax;     /\* minimum and maximum of CDF in given domain *\/ */
 
   int (*quantile)(const UNUR_GEN *, double);  /* pointer to quantile function */
 
@@ -311,8 +311,8 @@ uerror_discr( const UNUR_GEN *gen,
   }
 
   /* range of CDF */
-  CDFmin = (DISTR.trunc[0] <= INT_MIN) ? 0. : _unur_discr_CDF((DISTR.trunc[0]),(gen->distr));
-  CDFmax = _unur_discr_CDF((DISTR.trunc[1]),(gen->distr));
+  /* CDFmin = (DISTR.trunc[0] <= INT_MIN) ? 0. : _unur_discr_CDF((DISTR.trunc[0]),(gen->distr)); */
+  /* CDFmax = _unur_discr_CDF((DISTR.trunc[1]),(gen->distr)); */
 
   /* initialize variables */
   umax = 0.;

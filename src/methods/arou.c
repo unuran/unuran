@@ -1425,14 +1425,14 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
   struct unur_arou_segment *seg, *seg_new;
   double left_angle, right_angle, diff_angle, angle;
   double x, x_last, fx, fx_last;
-  int i, use_center, is_center, is_increasing;
+  int i, use_center, is_increasing; /* is_center,*/ 
 
   /* check arguments */
   CHECK_NULL(par,UNUR_ERR_NULL);  COOKIE_CHECK(par,CK_AROU_PAR,UNUR_ERR_COOKIE);
   CHECK_NULL(gen,UNUR_ERR_NULL);  COOKIE_CHECK(gen,CK_AROU_GEN,UNUR_ERR_COOKIE);
 
   /* initialize boolean */
-  is_center = FALSE;
+  /* is_center = FALSE; */
 
   /* use center as construction point ? */
   use_center = (gen->variant & AROU_VARFLAG_USECENTER) ? TRUE : FALSE;
@@ -1494,7 +1494,7 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
     /* insert center ? */
     if (use_center && x >= GEN->center) {
       use_center = FALSE;   /* we use the center only once (of course) */
-      is_center = TRUE;     /* the next construction point is the center */
+      /* is_center = TRUE;     /\* the next construction point is the center *\/ */
       if (x>GEN->center) {
 	x = GEN->center;   /* use the center now ... */
 	--i;              /* and push the orignal starting point back on stack */
@@ -1503,8 +1503,8 @@ _unur_arou_get_starting_cpoints( struct unur_par *par, struct unur_gen *gen )
       }
       /* else: x == GEN->center --> nothing to do */
     }
-    else
-      is_center = FALSE;
+    /* else */
+    /*   is_center = FALSE; */
 
     /* value of PDF at starting point */
     fx = (x >= INFINITY) ? 0. : PDF(x);

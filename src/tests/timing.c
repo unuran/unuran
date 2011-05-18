@@ -579,7 +579,7 @@ unur_test_timing_uniform( const struct unur_par *par, int log10_samplesize )
   struct unur_gen *gen_urng;
   static double uniform_time = -1.;
   double time[TIMING_REPETITIONS];
-  double x;
+  double x ATTRIBUTE__UNUSED;
   int j,n;
 
   if (uniform_time <= 0.) {  

@@ -789,7 +789,6 @@ _unur_pinv_cut_CDF( struct unur_gen *gen, double dom, double x0, double ul, doub
   double x;         /* current and previous searching point */
   double xs, xl;    /* point where CDF is less than and larger than threshold */
   double fx;        /* CDF at x */
-  double fs, fl;    /* CDF at xs and xl */
   double f0, fdom;  /* CDF at x0 and dom */
   double dx;        /* step size for searching for relevant point */
 
@@ -843,11 +842,12 @@ _unur_pinv_cut_CDF( struct unur_gen *gen, double dom, double x0, double ul, doub
 
   /* bracket */
   if (x0 > dom) {
-    xs = dom; fs = fdom;
-    xl = x0; fl = f0; }
+    xs = dom;
+    xl = x0;
+  }
   else {
-    xs = x0; fs = f0;
-    xl = dom; fl = fdom;
+    xs = x0;
+    xl = dom;
   }    
   x = x0;
 
@@ -865,10 +865,10 @@ _unur_pinv_cut_CDF( struct unur_gen *gen, double dom, double x0, double ul, doub
 
     /* update bracket */
     if (fx < ul) {
-      xs = x; fs = fx;
+      xs = x;
     }
     else {
-      xl = x; fl = fx;
+      xl = x;
     }
   }
 

@@ -314,7 +314,7 @@ _unur_ninv_bracket( const struct unur_gen *gen, double u,
 { 
   int i;                 /* loop variable, index                             */
   double x1, x2, xtmp;   /* points for bracket                               */
-  double f1, f2, ftmp;   /* function values at x1, x2, xtmp                  */
+  double f1, f2;         /* function values at x1, x2                        */
   double step;           /* enlarges interval til sign change found          */
   int step_count;        /* counts number of steps finding sign change       */
 
@@ -366,7 +366,7 @@ _unur_ninv_bracket( const struct unur_gen *gen, double u,
   /*  -- 1c. check for ordering of starting points -- */
 
   if ( x1 >= x2 ) { 
-    xtmp = x1; ftmp = f1;
+    xtmp = x1;
     x1   = x2; f1   = f2;
     x2 = xtmp + fabs(xtmp)*DBL_EPSILON;
     f2 = CDF(x2); 

@@ -153,7 +153,6 @@ For details see @ref{Methods}.
 
 /*---------------------------------------------------------------------------*/
 
-
 =NODEX  Example_3_str  Change parameters of the method (String API)
 =UP Examples [31]
 
@@ -193,6 +192,29 @@ modified accordingly.
 
 @smallexample
 @include ref_example_rngstreams.texi
+@end smallexample
+
+=EON
+
+/*---------------------------------------------------------------------------*/
+
+=NODEX  Example_reinit  Change parameters of underlying distribution
+=UP Examples [43]
+
+=DESCRIPTION
+
+One a generator object has been created it allows to draw samples from
+the distribution with the given parameters.
+However, some methods allow to change the parameters of the underlying
+distribution and reinitialize the generator object again.
+Thus when the parameters of the distribution vary for each draw we
+save overhead for destroying the old object and creating a new one.
+
+The following example shows how the parameters of a GIG distribution
+can be changed when method CSTD is used.
+
+@smallexample
+@include ref_example_reinit.texi
 @end smallexample
 
 =EON

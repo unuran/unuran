@@ -18,6 +18,7 @@ EXAMPLES = \
  example1 example1_str \
  example2 example2_str \
  example3 example3_str \
+ example_reinit \
  example_cext \
  example_cont  example_cont_str \
  example_dext \

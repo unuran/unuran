@@ -57,7 +57,7 @@ inline static int beta_b1prs_init( struct unur_gen *gen );
 
 #define uniform()  _unur_call_urng(gen->urng) /* call for uniform prng       */
 
-#define MAX_gen_params 22      /* maximal number of parameters for generator */
+/* #define MAX_gen_params (22)    maximal number of parameters for generator */
 
 #define p     (DISTR.params[0])   /* shape parameter */
 #define q     (DISTR.params[1])   /* shape parameter */
@@ -167,15 +167,15 @@ _unur_stdgen_beta_init( struct unur_par *par, struct unur_gen *gen )
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
+#define GEN_N_PARAMS (8)
 #define am      (GEN->gen_param[0])
 #define bm      (GEN->gen_param[1])
 #define al      (GEN->gen_param[2])
 #define alnam   (GEN->gen_param[3])
 #define be      (GEN->gen_param[4])
-#define ga      (GEN->gen_param[5])
-#define si      (GEN->gen_param[6])
-#define rk1     (GEN->gen_param[7])
-#define rk2     (GEN->gen_param[8])
+#define si      (GEN->gen_param[5])
+#define rk1     (GEN->gen_param[6])
+#define rk2     (GEN->gen_param[7])
 /*---------------------------------------------------------------------------*/
 
 inline static int
@@ -186,9 +186,9 @@ beta_bc_init( struct unur_gen *gen )
   CHECK_NULL(gen,UNUR_ERR_NULL);
   COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_ERR_COOKIE);
 
-  if (GEN->gen_param == NULL) {
-    GEN->n_gen_param = MAX_gen_params;
-    GEN->gen_param = _unur_xmalloc(GEN->n_gen_param * sizeof(double));
+  if (GEN->gen_param == NULL || GEN->n_gen_param != GEN_N_PARAMS) {
+    GEN->n_gen_param = GEN_N_PARAMS;
+    GEN->gen_param = _unur_xrealloc(GEN->gen_param, GEN->n_gen_param * sizeof(double));
   }
 
   /* -X- setup code -X- */
@@ -293,6 +293,23 @@ _unur_stdgen_sample_beta_bc(  struct unur_gen *gen )
 } /* end of _unur_stdgen_sample_beta_bc() */
 
 /*---------------------------------------------------------------------------*/
+#undef GEN_N_PARAMS
+#undef am
+#undef bm
+#undef al
+#undef alnam
+#undef be
+#undef si
+#undef rk1
+#undef rk2
+/*---------------------------------------------------------------------------*/
+#define GEN_N_PARAMS (5)
+#define am      (GEN->gen_param[0])
+#define bm      (GEN->gen_param[1])
+#define al      (GEN->gen_param[2])
+#define be      (GEN->gen_param[3])
+#define ga      (GEN->gen_param[4])
+/*---------------------------------------------------------------------------*/
 
 inline static int
 beta_bb_init( struct unur_gen *gen )
@@ -302,9 +319,9 @@ beta_bb_init( struct unur_gen *gen )
   CHECK_NULL(gen,UNUR_ERR_NULL);
   COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_ERR_COOKIE);
 
-  if (GEN->gen_param == NULL) {
-    GEN->n_gen_param = MAX_gen_params;
-    GEN->gen_param = _unur_xmalloc(GEN->n_gen_param * sizeof(double));
+  if (GEN->gen_param == NULL || GEN->n_gen_param != GEN_N_PARAMS) {
+    GEN->n_gen_param = GEN_N_PARAMS;
+    GEN->gen_param = _unur_xrealloc(GEN->gen_param, GEN->n_gen_param * sizeof(double));
   }
 
   /* -X- setup code -X- */
@@ -362,15 +379,12 @@ _unur_stdgen_sample_beta_bb(  struct unur_gen *gen )
 } /* end of _unur_stdgen_sample_beta_bb() */
 
 /*---------------------------------------------------------------------------*/
+#undef GEN_N_PARAMS
 #undef am
 #undef bm
 #undef al
-#undef alnam
 #undef be
 #undef ga
-#undef si
-#undef rk1
-#undef rk2
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
@@ -416,6 +430,7 @@ _unur_stdgen_sample_beta_bb(  struct unur_gen *gen )
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
+#define GEN_N_PARAMS (8)
 #define p_      (GEN->gen_param[0])
 #define q_      (GEN->gen_param[1])
 #define c       (GEN->gen_param[2])
@@ -434,9 +449,9 @@ beta_b00_init( struct unur_gen *gen )
   CHECK_NULL(gen,UNUR_ERR_NULL);
   COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_ERR_COOKIE);
 
-  if (GEN->gen_param == NULL) {
-    GEN->n_gen_param = MAX_gen_params;
-    GEN->gen_param = _unur_xmalloc(GEN->n_gen_param * sizeof(double));
+  if (GEN->gen_param == NULL || GEN->n_gen_param != GEN_N_PARAMS) {
+    GEN->n_gen_param = GEN_N_PARAMS;
+    GEN->gen_param = _unur_xrealloc(GEN->gen_param, GEN->n_gen_param * sizeof(double));
   }
 
   /* -X- setup code -X- */
@@ -504,6 +519,7 @@ _unur_stdgen_sample_beta_b00(  struct unur_gen *gen )
 } /* end of _unur_stdgen_sample_beta_b00() */
 
 /*---------------------------------------------------------------------------*/
+#undef GEN_N_PARAMS
 #undef p_
 #undef q_
 #undef c
@@ -513,6 +529,7 @@ _unur_stdgen_sample_beta_b00(  struct unur_gen *gen )
 #undef p1
 #undef p2
 /*---------------------------------------------------------------------------*/
+#define GEN_N_PARAMS (11)
 #define pint    (GEN->gen_param[0])
 #define qint    (GEN->gen_param[1])
 #define p_      (GEN->gen_param[2])
@@ -534,9 +551,9 @@ beta_b01_init( struct unur_gen *gen )
   CHECK_NULL(gen,UNUR_ERR_NULL);
   COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_ERR_COOKIE);
 
-  if (GEN->gen_param == NULL) {
-    GEN->n_gen_param = MAX_gen_params;
-    GEN->gen_param = _unur_xmalloc(GEN->n_gen_param * sizeof(double));
+  if (GEN->gen_param == NULL || GEN->n_gen_param != GEN_N_PARAMS) {
+    GEN->n_gen_param = GEN_N_PARAMS;
+    GEN->gen_param = _unur_xrealloc(GEN->gen_param, GEN->n_gen_param * sizeof(double));
   }
 
   /* -X- setup code -X- */
@@ -625,6 +642,7 @@ _unur_stdgen_sample_beta_b01(  struct unur_gen *gen )
 } /* end of _unur_stdgen_sample_beta_b01() */
 
 /*---------------------------------------------------------------------------*/
+#undef GEN_N_PARAMS
 #undef pint
 #undef qint
 #undef p_
@@ -637,6 +655,7 @@ _unur_stdgen_sample_beta_b01(  struct unur_gen *gen )
 #undef p1
 #undef p2
 /*---------------------------------------------------------------------------*/
+#define GEN_N_PARAMS (22)
 #define p_      (GEN->gen_param[0])
 #define q_      (GEN->gen_param[1])
 #define s       (GEN->gen_param[2])
@@ -669,9 +688,9 @@ beta_b1prs_init( struct unur_gen *gen )
   CHECK_NULL(gen,UNUR_ERR_NULL);
   COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_ERR_COOKIE);
 
-  if (GEN->gen_param == NULL) {
-    GEN->n_gen_param = MAX_gen_params;
-    GEN->gen_param = _unur_xmalloc(GEN->n_gen_param * sizeof(double));
+  if (GEN->gen_param == NULL || GEN->n_gen_param != GEN_N_PARAMS) {
+    GEN->n_gen_param = GEN_N_PARAMS;
+    GEN->gen_param = _unur_xrealloc(GEN->gen_param, GEN->n_gen_param * sizeof(double));
   }
 
   /* -X- setup code -X- */
@@ -854,6 +873,7 @@ _unur_stdgen_sample_beta_b1prs(  struct unur_gen *gen )
 } /* end of _unur_stdgen_sample_beta_b1prs() */
 
 /*---------------------------------------------------------------------------*/
+#undef GEN_N_PARAMS
 #undef p_
 #undef q_
 #undef s 

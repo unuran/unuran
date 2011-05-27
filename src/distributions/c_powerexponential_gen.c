@@ -50,7 +50,7 @@ inline static int powerexponential_epd_init( struct unur_gen *gen );
 #define GEN       ((struct unur_cstd_gen*)gen->datap) /* data for generator object */
 #define DISTR     gen->distr->data.cont /* data for distribution in generator object */
 
-#define MAX_gen_params  2      /* maximal number of parameters for generator */
+/* #define MAX_gen_params (2)     maximal number of parameters for generator */
 
 #define uniform()  _unur_call_urng(gen->urng) /* call for uniform prng       */
 
@@ -134,6 +134,7 @@ _unur_stdgen_powerexponential_init( struct unur_par *par, struct unur_gen *gen )
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
+#define GEN_N_PARAMS (2)
 #define s    GEN->gen_param[0]
 #define sm1  GEN->gen_param[1]
 /*---------------------------------------------------------------------------*/
@@ -145,9 +146,9 @@ powerexponential_epd_init( struct unur_gen *gen )
   CHECK_NULL(gen,UNUR_ERR_NULL);
   COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_ERR_COOKIE);
 
-  if (GEN->gen_param == NULL) {
-    GEN->n_gen_param = MAX_gen_params;
-    GEN->gen_param = _unur_xmalloc(GEN->n_gen_param * sizeof(double));
+  if (GEN->gen_param == NULL || GEN->n_gen_param != GEN_N_PARAMS) {
+    GEN->n_gen_param = GEN_N_PARAMS;
+    GEN->gen_param = _unur_xrealloc(GEN->gen_param, GEN->n_gen_param * sizeof(double));
   }
 
   /* -X- setup code -X- */
@@ -196,6 +197,7 @@ _unur_stdgen_sample_powerexponential_epd( struct unur_gen *gen )
 } /* end of _unur_stdgen_sample_powerexponential_epd() */
 
 /*---------------------------------------------------------------------------*/
+#undef GEN_N_PARAMS
 #undef s
 #undef sm1
 /*---------------------------------------------------------------------------*/

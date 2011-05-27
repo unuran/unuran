@@ -99,8 +99,9 @@
 /*    bits 13-24 ... adaptive steps                                          */
 /*    bits 25-32 ... trace sampling                                          */
 
-#define CSTD_DEBUG_REINIT    0x00000010u   /* print parameters after reinit  */
-#define CSTD_DEBUG_CHG       0x00001000u   /* print changed parameters       */
+#define CSTD_DEBUG_GEN       0x00000005u   /* print constants for generator  */
+#define CSTD_DEBUG_REINIT    0x00000010u   /* print params of distr after reinit */
+#define CSTD_DEBUG_CHG       0x00001000u   /* print changed params of distr  */
 
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
@@ -842,6 +843,7 @@ _unur_cstd_debug_init( struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   FILE *LOG;
+  int i;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_CSTD_GEN,RETURN_VOID);
@@ -866,10 +868,26 @@ _unur_cstd_debug_init( struct unur_gen *gen )
     fprintf(LOG,"   (Inversion)");
   fprintf(LOG,"\n%s:\n",gen->genid);
 
+  /* parameters for special generators */
+  if (gen->debug & CSTD_DEBUG_GEN) {
+    fprintf(LOG,"%s: parameters for routine: ",gen->genid);
+    if (GEN->gen_param) {
+      fprintf(LOG,"%d\n",GEN->n_gen_param);
+      for (i=0; i < GEN->n_gen_param; i++)
+	fprintf(LOG,"%s:\t[%d] = %g\n",gen->genid,i,GEN->gen_param[i]);
+    }
+    else {
+      fprintf(LOG,"none\n");
+    }
+    fprintf(LOG,"%s:\n",gen->genid);
+  }
+
+  /* truncated domain ? */
   if (!(gen->distr->set & UNUR_DISTR_SET_STDDOMAIN)) {
     fprintf(LOG,"%s: domain has been changed. U in (%g,%g)\n",gen->genid,GEN->Umin,GEN->Umax);
     fprintf(LOG,"%s:\n",gen->genid);
   }
+
 
 } /* end of _unur_cstd_debug_init() */
 

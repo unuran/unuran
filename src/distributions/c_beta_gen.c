@@ -49,7 +49,7 @@ inline static int beta_b01_init( struct unur_gen *gen );
 inline static int beta_b1prs_init( struct unur_gen *gen );
 
 /*---------------------------------------------------------------------------*/
- /* abbreviations */
+/* abbreviations */
 
 #define PAR       ((struct unur_cstd_par*)par->datap) /* data for parameter object */
 #define GEN       ((struct unur_cstd_gen*)gen->datap) /* data for generator object */
@@ -106,24 +106,22 @@ _unur_stdgen_beta_init( struct unur_par *par, struct unur_gen *gen )
 
   case 2:  /* Stratified Rejection/Patchwork Rejection */
     if (gen==NULL) return UNUR_SUCCESS; /* test existence only  */ 
-    if (p>1.)
-      if (q>1.) {    /* p > 1 && q > 1 */
-	_unur_cstd_set_sampling_routine(gen, _unur_stdgen_sample_beta_b1prs );
-	return beta_b1prs_init( gen );
-      }
-      else {         /* p > 1 && q <= 1 */
-	_unur_cstd_set_sampling_routine(gen, _unur_stdgen_sample_beta_b01 );
-	return beta_b01_init( gen );
-      }
-    else
-      if (q>1.) {    /* p <= 1 && q > 1 */
-	_unur_cstd_set_sampling_routine(gen, _unur_stdgen_sample_beta_b01 );
-	return beta_b01_init( gen );
-      }
-      else {         /* p <= 1 && q <= 1 */
-	_unur_cstd_set_sampling_routine(gen, _unur_stdgen_sample_beta_b00 );
-	return beta_b00_init( gen );
-      }
+    if (p > 1. && q > 1.) {
+      _unur_cstd_set_sampling_routine(gen, _unur_stdgen_sample_beta_b1prs );
+      return beta_b1prs_init( gen );
+    }
+    else if (p < 1. && q < 1.) {
+      _unur_cstd_set_sampling_routine(gen, _unur_stdgen_sample_beta_b00 );
+      return beta_b00_init( gen );
+    }
+    else if (_unur_isone(p) || _unur_isone(q)) { /* p==1 || q==1 */
+      _unur_cstd_set_sampling_routine(gen, _unur_stdgen_sample_beta_binv );
+      return UNUR_SUCCESS;
+    }
+    else { /* (p > 1 && q < 1) || (p < 1 && q > 1) */
+      _unur_cstd_set_sampling_routine(gen, _unur_stdgen_sample_beta_b01 );
+      return beta_b01_init( gen );
+    }
 
   default: /* no such generator */
     return UNUR_FAILURE;
@@ -313,7 +311,7 @@ _unur_stdgen_sample_beta_bc(  struct unur_gen *gen )
 
 inline static int
 beta_bb_init( struct unur_gen *gen )
-     /* p > 1. && q > 1 */ 
+     /* p > 1. && q > 1. */ 
 {
   /* check arguments */
   CHECK_NULL(gen,UNUR_ERR_NULL);
@@ -338,7 +336,7 @@ beta_bb_init( struct unur_gen *gen )
 
 double 
 _unur_stdgen_sample_beta_bb(  struct unur_gen *gen )
-     /* p > 1. && q > 1 */ 
+     /* p > 1. && q > 1. */ 
 {
   /* -X- generator code -X- */
   double X;
@@ -443,7 +441,7 @@ _unur_stdgen_sample_beta_bb(  struct unur_gen *gen )
 
 inline static int
 beta_b00_init( struct unur_gen *gen )
-     /* p < 1. && q < 1 */ 
+     /* p < 1. && q < 1. */ 
 {
   /* check arguments */
   CHECK_NULL(gen,UNUR_ERR_NULL);
@@ -472,7 +470,7 @@ beta_b00_init( struct unur_gen *gen )
 
 double 
 _unur_stdgen_sample_beta_b00(  struct unur_gen *gen )
-     /* p < 1. && q < 1 */
+     /* p < 1. && q < 1. */
 {
   /* -X- generator code -X- */
   double U, V, X, Z;
@@ -896,4 +894,32 @@ _unur_stdgen_sample_beta_b1prs(  struct unur_gen *gen )
 #undef p2
 #undef p3
 #undef p4
+/*---------------------------------------------------------------------------*/
+double 
+_unur_stdgen_sample_beta_binv(  struct unur_gen *gen )
+     /* p == 1. || q == 1. */ 
+{
+  /* -X- generator code -X- */
+  double X;
+
+  /* check arguments */
+  CHECK_NULL(gen,INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
+
+  if (_unur_isone(p) && _unur_isone(q)) {
+    X = uniform();
+  }
+  else if (_unur_isone(p)) {
+    X = 1. - pow(1.-uniform(), 1/q);
+  }
+  else { /* _unur_isone(q) */
+    X = pow(uniform(), 1/p);
+  }
+
+  /* -X- end of generator code -X- */
+
+  return ((DISTR.n_params==2) ? X : a + (b-a) * X);
+
+} /* end of _unur_stdgen_sample_beta_binv() */
+
 /*---------------------------------------------------------------------------*/

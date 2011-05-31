@@ -5,6 +5,8 @@ Version 1.9.0: ?????
 
 	- CSTD: print constants computed in init step into log file
 
+	- beta: fixed a problem with CSTD special generator '2'.
+
 
 Version 1.8.1: April 2011
 

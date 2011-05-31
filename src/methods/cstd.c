@@ -888,6 +888,7 @@ _unur_cstd_debug_init( struct unur_gen *gen )
     fprintf(LOG,"%s:\n",gen->genid);
   }
 
+  fflush(LOG);
 
 } /* end of _unur_cstd_debug_init() */
 

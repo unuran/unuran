@@ -10,7 +10,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2011 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -67,6 +67,9 @@ static FILE *TESTLOG = NULL;
 #endif
 
 /*---------------------------------------------------------------------------*/
+
+/* draw sample */
+static int draw_sample_and_discard ( FILE *LOG, int line, UNUR_GEN *gen, int sample_size );
 
 /* compare two doubles */
 static int compare_doubles ( double x1, double x2 );
@@ -478,6 +481,46 @@ int check_expected_no_reinit( FILE *LOG, int line, int rcode )
     return UNUR_SUCCESS;
   }
 } /* end of check_expected_no_reinit() */
+
+
+/*---------------------------------------------------------------------------*/
+/* draw sample */
+
+int draw_sample_and_discard ( FILE *LOG, int line, UNUR_GEN *gen, int sample_size )
+{
+  int J;
+  double X;
+  double *vec;
+
+  switch (unur_distr_get_type(unur_get_distr(gen)) ) {
+
+  case UNUR_DISTR_DISCR:
+    for( ; sample_size>0; --sample_size) 
+      J = unur_sample_discr(gen);
+    return UNUR_SUCCESS;
+
+  case UNUR_DISTR_CONT:
+  case UNUR_DISTR_CEMP:
+    for( ; sample_size>0; --sample_size) 
+      X = unur_sample_cont(gen);
+    return UNUR_SUCCESS;
+
+  case UNUR_DISTR_CVEC:
+  case UNUR_DISTR_CVEMP:
+    /* we need an array for the vector */
+    vec = malloc( unur_get_dimension(gen) * sizeof(double) );
+    abort_if_NULL(LOG, line, vec);
+    for( ; sample_size>0; --sample_size) 
+      unur_sample_vec(gen,vec);
+    free(vec);
+    return UNUR_SUCCESS;
+
+  default: /* unknown ! */
+    fprintf(stderr,"\ncannot handle distribution type! ... aborted\n");
+    exit (EXIT_FAILURE);
+  }
+
+} /* end of unur_test_printsample() */
 
 /*---------------------------------------------------------------------------*/
 /* compare two doubles */
@@ -1216,6 +1259,17 @@ int run_validate_chi2( FILE *LOG, int line ATTRIBUTE__UNUSED,
       print_pval(LOG,gen,distr,-0.5,10,todo);
       return UNUR_FAILURE;
     }
+  }
+
+  if (todo == '%') {
+    /* initialize generator and draw small sample.          */
+    /* (for memory debugging when the CDF is not available) */
+    printf("%%");  fflush(stdout);
+    draw_sample_and_discard(LOG, line, gen, 100);
+    fprintf(LOG,"   not performed (sample only)\t");
+    print_distr_name( LOG, distr, gen ? unur_get_genid(gen):"???\t" );
+    fprintf(LOG,"\n");
+    return UNUR_SUCCESS;
   }
 
   /* init successful */

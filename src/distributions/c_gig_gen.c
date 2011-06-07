@@ -10,7 +10,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2010 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2011 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -190,6 +190,9 @@ gig_gigru_init( struct unur_gen *gen )
     /* c = 1/log{sqrt[hx(xm)]} */
     c = -d * log(xm) - e * r;
     /* vminus = 0 */
+
+    /* initialize remaining (unused) variables */
+    hm12 = b2 = vdiff = vminus = linvmax = m = 0.;
   }
   else {
     /* SHIFT BY m */
@@ -221,6 +224,9 @@ gig_gigru_init( struct unur_gen *gen )
 		  - b2*(invy2 + m + 1./(invy2 + m)));
     vdiff = vplus - vminus;
     /* uplus = 1 */
+
+    /* initialize remaining (unused) variables */
+    c = e = d = a = 0.;
   }
 
   /* -X- end of setup code -X- */

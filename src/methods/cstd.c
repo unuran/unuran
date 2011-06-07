@@ -11,7 +11,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2010 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2011 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -868,9 +868,9 @@ _unur_cstd_debug_init( struct unur_gen *gen )
     fprintf(LOG,"   (Inversion)");
   fprintf(LOG,"\n%s:\n",gen->genid);
 
-  /* parameters for special generators */
+  /* table of precomputed constants for special generators */
   if (gen->debug & CSTD_DEBUG_GEN) {
-    fprintf(LOG,"%s: parameters for routine: ",gen->genid);
+    fprintf(LOG,"%s: precomputed constants for routine: ",gen->genid);
     if (GEN->gen_param) {
       fprintf(LOG,"%d\n",GEN->n_gen_param);
       for (i=0; i < GEN->n_gen_param; i++)
@@ -965,6 +965,7 @@ _unur_cstd_info( struct unur_gen *gen, int help )
 {
   struct unur_string *info = gen->infostr;
   int samplesize = 10000;
+  int i;
 
   /* generator ID */
   _unur_string_append(info,"generator ID: %s\n\n", gen->genid);
@@ -996,6 +997,20 @@ _unur_cstd_info( struct unur_gen *gen, int help )
     _unur_string_append(info,"parameters:\n");
     _unur_string_append(info,"   variant = %d  %s\n", gen->variant,
 			(gen->set & CSTD_SET_VARIANT) ? "" : "[default]");
+    _unur_string_append(info,"\n");
+  }
+
+  /* tables */
+  if (help) {
+    _unur_string_append(info,"table of precomputed constants: ");
+    if (GEN->gen_param) {
+      _unur_string_append(info,"%d\n",GEN->n_gen_param);
+      for (i=0; i < GEN->n_gen_param; i++)
+	_unur_string_append(info,"   [%d] = %g\n",i,GEN->gen_param[i]);
+    }
+    else  {
+      _unur_string_append(info,"none\n");
+    }
     _unur_string_append(info,"\n");
   }
 

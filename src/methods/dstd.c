@@ -11,7 +11,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2010 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2011 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -100,8 +100,9 @@
 /*    bits 13-24 ... adaptive steps                                          */
 /*    bits 25-32 ... trace sampling                                          */
 
-#define DSTD_DEBUG_REINIT    0x00000010u   /* print parameters after reinit  */
-#define DSTD_DEBUG_CHG       0x00001000u   /* print changed parameters       */
+#define DSTD_DEBUG_GEN       0x00000005u   /* print constants for generator  */
+#define DSTD_DEBUG_REINIT    0x00000010u   /* print params of distr after reinit */
+#define DSTD_DEBUG_CHG       0x00001000u   /* print changed params of distr  */
 
 /*---------------------------------------------------------------------------*/
 /* Flags for logging set calls                                               */
@@ -849,6 +850,7 @@ _unur_dstd_debug_init( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   FILE *LOG;
+  int i;
 
   /* check arguments */
   CHECK_NULL(gen,RETURN_VOID);  COOKIE_CHECK(gen,CK_DSTD_GEN,RETURN_VOID);
@@ -873,10 +875,37 @@ _unur_dstd_debug_init( const struct unur_gen *gen )
     fprintf(LOG,"   (Inversion)");
   fprintf(LOG,"\n%s:\n",gen->genid);
 
+  /* table of precomputed constants for special generators */
+  if (gen->debug & DSTD_DEBUG_GEN) {
+    fprintf(LOG,"%s: precomputed double constants for routine: ",gen->genid);
+    if (GEN->gen_param) {
+      fprintf(LOG,"%d\n",GEN->n_gen_param);
+      for (i=0; i < GEN->n_gen_param; i++)
+     	fprintf(LOG,"%s:\t[%d] = %g\n",gen->genid,i,GEN->gen_param[i]);
+    }
+    else {
+      fprintf(LOG,"none\n");
+    }
+
+    fprintf(LOG,"%s: precomputed integer constants for routine: ",gen->genid);
+    if (GEN->gen_iparam) {
+      fprintf(LOG,"%d\n",GEN->n_gen_iparam);
+      for (i=0; i < GEN->n_gen_iparam; i++)
+   	fprintf(LOG,"%s:\t[%d] = %d\n",gen->genid,i,GEN->gen_iparam[i]);
+    }
+    else {
+      fprintf(LOG,"none\n");
+    }
+    fprintf(LOG,"%s:\n",gen->genid);
+  }
+
+  /* truncated domain ? */
   if (!(gen->distr->set & UNUR_DISTR_SET_STDDOMAIN)) {
     fprintf(LOG,"%s: domain has been changed. U in (%g,%g)\n",gen->genid,GEN->Umin,GEN->Umax);
     fprintf(LOG,"%s:\n",gen->genid);
   }
+
+  fflush(LOG);
 
 } /* end of _unur_dstd_debug_init() */
 

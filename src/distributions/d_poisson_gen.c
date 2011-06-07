@@ -10,7 +10,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2010 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2011 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -57,8 +57,8 @@ inline static int poisson_pprsc_init( struct unur_gen *gen );
 
 #define uniform()  _unur_call_urng(gen->urng) /* call for uniform prng       */
 
-#define MAX_gen_params  (39)   /* maximal number of parameters for generator */
-#define MAX_gen_iparams  (5)   /* maximal number of integer param. for gen.  */
+/* #define MAX_gen_params  (39)   maximal number of parameters for generator */
+/* #define MAX_gen_iparams  (5)   maximal number of integer param. for gen.  */
 
 /* parameters */
 #define theta  (DISTR.params[0])    /* shape */
@@ -159,6 +159,9 @@ _unur_stdgen_poisson_init( struct unur_par *par, struct unur_gen *gen )
  *****************************************************************************/
 
 /*---------------------------------------------------------------------------*/
+#define GEN_N_IPARAMS (2)
+#define GEN_N_PARAMS  (39)
+
 #define m    (GEN->gen_iparam[0])
 #define ll   (GEN->gen_iparam[1])
 
@@ -172,21 +175,26 @@ int
 poisson_pdtabl_init( struct unur_gen *gen )
      /* theta < 10: Tabulated inversion */
 {
+  int i;
+
   /* check arguments */
   CHECK_NULL(gen,UNUR_ERR_NULL);
   COOKIE_CHECK(gen,CK_DSTD_GEN,UNUR_ERR_COOKIE);
 
-  if (GEN->gen_param == NULL) {
-    GEN->n_gen_param = MAX_gen_params;
-    GEN->gen_param = _unur_xmalloc(GEN->n_gen_param * sizeof(double));
-    GEN->n_gen_iparam = MAX_gen_iparams;
-    GEN->gen_iparam = _unur_xmalloc(GEN->n_gen_iparam * sizeof(int));
+  if (GEN->gen_param == NULL || GEN->n_gen_param != GEN_N_PARAMS) {
+    GEN->n_gen_param = GEN_N_PARAMS;
+    GEN->gen_param = _unur_xrealloc(GEN->gen_param, GEN->n_gen_param * sizeof(double));
+  }
+  if (GEN->gen_iparam == NULL || GEN->n_gen_iparam != GEN_N_IPARAMS) {
+    GEN->n_gen_iparam = GEN_N_IPARAMS;
+    GEN->gen_iparam = _unur_xrealloc(GEN->gen_iparam, GEN->n_gen_iparam * sizeof(int));
   }
 
   /* -X- setup code -X- */
   m = (theta > 1.) ? ((int) theta) : 1;
   ll = 0;
   p0 = q = p = exp(-theta);
+  for (i=0; i<36; i++) pp[i]=0.;
   /* -X- end of setup code -X- */
 
   return UNUR_SUCCESS;
@@ -238,6 +246,9 @@ _unur_stdgen_sample_poisson_pdtabl( struct unur_gen *gen )
 } /* end of _unur_stdgen_sample_poisson_pdtabl() */
 
 /*---------------------------------------------------------------------------*/
+#undef GEN_N_IPARAMS
+#undef GEN_N_PARAMS
+
 #undef m 
 #undef ll
 #undef p0
@@ -246,6 +257,9 @@ _unur_stdgen_sample_poisson_pdtabl( struct unur_gen *gen )
 #undef pp
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+#define GEN_N_IPARAMS (1)
+#define GEN_N_PARAMS  (10)
+
 #define l     (GEN->gen_iparam[0])
 
 #define s     (GEN->gen_param[0])
@@ -270,11 +284,13 @@ poisson_pdac_init( struct unur_gen *gen )
   CHECK_NULL(gen,UNUR_ERR_NULL);
   COOKIE_CHECK(gen,CK_DSTD_GEN,UNUR_ERR_COOKIE);
 
-  if (GEN->gen_param == NULL) {
-    GEN->n_gen_param = MAX_gen_params;
-    GEN->gen_param = _unur_xmalloc(GEN->n_gen_param * sizeof(double));
-    GEN->n_gen_iparam = MAX_gen_iparams;
-    GEN->gen_iparam = _unur_xmalloc(GEN->n_gen_iparam * sizeof(int));
+  if (GEN->gen_param == NULL || GEN->n_gen_param != GEN_N_PARAMS) {
+    GEN->n_gen_param = GEN_N_PARAMS;
+    GEN->gen_param = _unur_xrealloc(GEN->gen_param, GEN->n_gen_param * sizeof(double));
+  }
+  if (GEN->gen_iparam == NULL || GEN->n_gen_iparam != GEN_N_IPARAMS) {
+    GEN->n_gen_iparam = GEN_N_IPARAMS;
+    GEN->gen_iparam = _unur_xrealloc(GEN->gen_iparam, GEN->n_gen_iparam * sizeof(int));
   }
 
   /* -X- setup code -X- */
@@ -450,6 +466,9 @@ _unur_stdgen_sample_poisson_pdac( struct unur_gen *gen )
 #undef  a8
 #undef  a9
 
+#undef GEN_N_IPARAMS
+#undef GEN_N_PARAMS
+
 #undef l
 #undef s
 #undef d
@@ -504,6 +523,9 @@ inline static double f(int k, double l_nu, double c_pm)
 }
 
 /*---------------------------------------------------------------------------*/
+#define GEN_N_IPARAMS (5)
+#define GEN_N_PARAMS  (20)
+
 #define m       (GEN->gen_iparam[0])
 #define k2      (GEN->gen_iparam[1])
 #define k4      (GEN->gen_iparam[2])
@@ -542,11 +564,13 @@ poisson_pprsc_init( struct unur_gen *gen )
   CHECK_NULL(gen,UNUR_ERR_NULL);
   COOKIE_CHECK(gen,CK_DSTD_GEN,UNUR_ERR_COOKIE);
 
-  if (GEN->gen_param == NULL) {
-    GEN->n_gen_param = MAX_gen_params;
-    GEN->gen_param = _unur_xmalloc(GEN->n_gen_param * sizeof(double));
-    GEN->n_gen_iparam = MAX_gen_iparams;
-    GEN->gen_iparam = _unur_xmalloc(GEN->n_gen_iparam * sizeof(int));
+  if (GEN->gen_param == NULL || GEN->n_gen_param != GEN_N_PARAMS) {
+    GEN->n_gen_param = GEN_N_PARAMS;
+    GEN->gen_param = _unur_xrealloc(GEN->gen_param, GEN->n_gen_param * sizeof(double));
+  }
+  if (GEN->gen_iparam == NULL || GEN->n_gen_iparam != GEN_N_IPARAMS) {
+    GEN->n_gen_iparam = GEN_N_IPARAMS;
+    GEN->gen_iparam = _unur_xrealloc(GEN->gen_iparam, GEN->n_gen_iparam * sizeof(int));
   }
 
   /* -X- setup code -X- */
@@ -712,6 +736,9 @@ _unur_stdgen_sample_poisson_pprsc( struct unur_gen *gen )
 } /* end of _unur_stdgen_sample_poisson_pprsc() */
 
 /*---------------------------------------------------------------------------*/
+#undef GEN_N_IPARAMS
+#undef GEN_N_PARAMS
+
 #undef m 
 #undef k2
 #undef k4

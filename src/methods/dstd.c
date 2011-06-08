@@ -980,6 +980,7 @@ _unur_dstd_info( struct unur_gen *gen, int help )
 {
   struct unur_string *info = gen->infostr;
   int samplesize = 10000;
+  int i;
 
   /* generator ID */
   _unur_string_append(info,"generator ID: %s\n\n", gen->genid);
@@ -1011,6 +1012,31 @@ _unur_dstd_info( struct unur_gen *gen, int help )
     _unur_string_append(info,"parameters:\n");
     _unur_string_append(info,"   variant = %d  %s\n", gen->variant,
 			(gen->set & DSTD_SET_VARIANT) ? "" : "[default]");
+    _unur_string_append(info,"\n");
+  }
+
+  /* tables */
+  if (help) {
+    _unur_string_append(info,"table of precomputed double constants: ");
+    if (GEN->gen_param) {
+      _unur_string_append(info,"%d\n",GEN->n_gen_param);
+      for (i=0; i < GEN->n_gen_param; i++)
+  	_unur_string_append(info,"   [%d] = %g\n",i,GEN->gen_param[i]);
+    }
+    else  {
+      _unur_string_append(info,"none\n");
+    }
+
+    _unur_string_append(info,"table of precomputed integer constants: ");
+    if (GEN->gen_iparam) {
+      _unur_string_append(info,"%d\n",GEN->n_gen_iparam);
+      for (i=0; i < GEN->n_gen_iparam; i++)
+  	_unur_string_append(info,"   [%d] = %d\n",i,GEN->gen_iparam[i]);
+    }
+    else  {
+      _unur_string_append(info,"none\n");
+    }
+
     _unur_string_append(info,"\n");
   }
 

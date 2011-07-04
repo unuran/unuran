@@ -1,11 +1,17 @@
 
 Version 1.9.0: ?????
 
-	- added example 'example_reinit.c'
+	* Methods:
 
 	- CSTD: print constants computed in init step into log file and info string
 
+	- PINV: check pointer dPDF before using it.
+
+	* Distributions:
+
 	- beta: fixed a problem with CSTD special generator '2'.
+
+	- added example 'example_reinit.c'
 
 
 Version 1.8.1: April 2011

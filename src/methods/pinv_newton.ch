@@ -393,7 +393,8 @@ _unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_interval *iv,
       /* use second derivative:
        *   [F^{-1}(u)]" = -f'(x) / f(x)^3  where x=F^{-1}(u)
        */
-      zi[i] = -0.5 * dPDF(xval[i]) * pow(zi[i],3);
+      /* however, this requires the derivative of the PDF */
+      zi[i] = (DISTR.dpdf != NULL) ? (-0.5 * dPDF(xval[i]) * pow(zi[i],3)) : INFINITY;
   }
 
   /* compute all other divided differences. */

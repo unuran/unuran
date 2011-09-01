@@ -1,0 +1,94 @@
+## Create list of exported routines for DLLs 
+## Experimental!
+##
+## Do the following from the top source directory:
+##
+## 1. run './autogen.sh'
+## 2. run 'make -f ./scripts/win32/Makefile.linux'
+##
+## all files should be in directory 'unuran-win32'
+##
+## --------------------------------------------------------------------------
+
+# --- Switches --------------------------------------------------------------
+
+## uncomment the following line if the rngstreams library is used
+USE_RNGSTREAM = true
+
+## uncomment the following line if internal routines have to be exported
+##USE_PRIVATE = true
+
+# --- Definitions -----------------------------------------------------------
+
+# directory for windows files
+WINDIST_DIR=$(TOP_SRCDIR)/unuran-win32
+
+# Where to find source files
+TOP_SRCDIR := .
+SCRIPTS_DIR=$(TOP_SRCDIR)/scripts
+TESTS_DIR=$(TOP_SRCDIR)/tests
+
+# UNU.RAN version: major.minor
+UNURAN_VERSION=$(shell \
+	grep PACKAGE_VERSION $(TOP_SRCDIR)/config.h | \
+	sed -e 's/.*_VERSION\s*\"\(.*\)\..*\"/\1/')
+
+# UNU.RAN library name
+UNURAN_LIBNAME=libunuran$(shell echo $(UNURAN_VERSION) | sed 's/\.//')
+
+# UNURAN files 
+UNURAN_H   := $(TOP_SRCDIR)/src/unuran.h.in \
+	      $(TOP_SRCDIR)/src/tests/unuran_tests.h
+UNURAN_SOURCE_H := $(wildcard $(TOP_SRCDIR)/src/*/*_source.h)
+
+
+# Files for RngStreams libary
+RNGSTREAM_DIR := $(TOP_SRCDIR)/../rngstreams
+UNURAN_RNGSTREAM_H := $(TOP_SRCDIR)/src/uniform/unuran_urng_rngstreams.h
+
+# DLL files
+UNURAN_DEF=$(WINDIST_DIR)/$(UNURAN_LIBNAME).def
+
+# Header files for creating .DEF file
+DEF_H := $(UNURAN_H) \
+	 $(shell test -z ${USE_PRIVATE} || echo "$(UNURAN_SOURCE_H)") \
+	 $(shell test -z ${USE_RNGSTREAM} || echo "$(UNURAN_RNGSTREAM_H)" )
+
+INT=$(shell test -z ${USE_PRIVATE} || echo "-I")
+
+# --- Create list exported routines -----------------------------------------
+
+all: $(WINDIST_DIR)  header $(UNURAN_DEF)
+
+## create directory for windows files
+$(WINDIST_DIR):
+	@echo "Create $(WINDIST_DIR) ..."
+	@mkdir $(WINDIST_DIR)
+
+## Create list exported routines
+$(UNURAN_DEF): $(DEF_H) $(UNURAN_RNGSTREAM_H)
+	$(SCRIPTS_DIR)/win32/make_dll_def.pl -V $(UNURAN_VERSION) $(INT) \
+		-L $(UNURAN_LIBNAME) $(DEF_H) > $(UNURAN_DEF)
+
+## copy all required header files 
+header:
+	(cd src/parser; make stringparser_lists.ch)
+	(cd src; make unuran.h; cp -v unuran.h ../${WINDIST_DIR})
+	(cd src/uniform; make unuran_urng_rngstreams.h)
+	if [[ -n "${USE_RNGSTREAM}" ]]; then \
+		cp -v $(RNGSTREAM_DIR)/src/RngStream.h ${WINDIST_DIR}; \
+		cp -v $(UNURAN_RNGSTREAM_H) ${WINDIST_DIR}; \
+	fi
+
+# --- Clear working space --------------------------------------------------
+
+# Remove created files
+clean:
+	rm -rfv $(WINDIST_DIR)
+#	rm -rf $(UNURANWIN_DIR)
+#	rm -f $(UNURANTEST_OBJ)
+#	rm -f $(RNGSTREAM_SRC) $(RNGSTREAM_H)
+
+.PHONY: clean header
+
+# --- End ------------------------------------------------------------------

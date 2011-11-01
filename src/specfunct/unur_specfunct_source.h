@@ -194,7 +194,7 @@ double _unur_bessel_k_nuasympt (double x, double nu, int islog, int expon_scaled
   _unur_bessel_k_nuasympt((x),(nu),(islog),(exponscaled))
 
 /* logarithm of complex gamma function                                       */
-double _unur_Relcgamma (double x, double y);
+double _unur_SF_Relcgamma (double x, double y);
 #define _unur_SF_ln_Relcgamma(x,y)  _unur_Relcgamma((x),(y))
 
 

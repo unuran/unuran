@@ -189,10 +189,12 @@ double _unur_cephes_ndtri(double x);
 /* modified Bessel function K_nu of second kind (AKA third kind)             */
 /* when BOTH nu and x are large.                                             */
 /* [ Experimental function! ]                                                */
+double _unur_bessel_k_nuasympt (double x, double nu, int islog, int expon_scaled);
 #define _unur_SF_bessel_k_nuasympt(x,nu,islog,exponscaled) \
   _unur_bessel_k_nuasympt((x),(nu),(islog),(exponscaled))
 
 /* logarithm of complex gamma function                                       */
+double _unur_Relcgamma (double x, double y);
 #define _unur_SF_ln_Relcgamma(x,y)  _unur_Relcgamma((x),(y))
 
 

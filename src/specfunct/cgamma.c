@@ -29,6 +29,8 @@
 //  or 0 or exceeds 171.
 //
 
+// FORTRAN code in R package 'fAsianOptions'
+
 
 #include <utils/unur_fp_source.h>
 #include <utils/unur_math_source.h>
@@ -84,12 +86,15 @@ _unur_Relcgamma (double x, double y)
 /*                                                                           */
 /* Modified by Josef Leydold on Tue Nov  1 13:22:09 CET 2011                 */
 /*                                                                           */
+
+// We do not need imaginary part.
+
 /*---------------------------------------------------------------------------*/
 {
-  double x0,q1,q2,th,th1,th2,gr1,gi1;
-  double t,x1,y1,sr,si;
-  int j,k,na;
-  double logq1;
+  double t, x0, x1;
+  double q1, logq1, q2, th, th1, th2;
+  double gr1, /* gi1, */ sr, si;
+  int j, k, na;
 
   static const double a[] = {
     8.333333333333333e-02, -2.777777777777778e-03,
@@ -99,9 +104,8 @@ _unur_Relcgamma (double x, double y)
     1.796443723688307e-01, -1.39243221690590 };
 
   /* real part and imaginary part of Gamma(z) */
-  double gr, gi;
+  double gr; /* gi; */
 
-  y1 = 0.0;
   x1 = 0.0;
   na = 0;
 
@@ -109,7 +113,6 @@ _unur_Relcgamma (double x, double y)
     return UNUR_INFINITY;
   else if (x < 0.0) {
     x1 = x;
-    y1 = y;
     x = -x;
     y = -y;
   }
@@ -124,23 +127,23 @@ _unur_Relcgamma (double x, double y)
   th = atan(y/x0);
   logq1 = log(q1);
   gr = (x0-0.5)*logq1-th*y-x0+0.5*log(2.0*M_PI);
-  gi = th*(x0-0.5)+y*logq1-y;
+  /* gi = th*(x0-0.5)+y*logq1-y; */
 
   for (k=0; k<10; k++){
     t = pow(q1,-1.0-2.0*k);
     gr += (a[k]*t*cos((2.0*k+1.0)*th));
-    gi -= (a[k]*t*sin((2.0*k+1.0)*th));
+    /* gi -= (a[k]*t*sin((2.0*k+1.0)*th)); */
   }
 
   if (x <= 7.0) {
     gr1 = 0.0;
-    gi1 = 0.0;
+    /* gi1 = 0.0; */
     for (j=0; j<na; j++) {
       gr1 += (0.5*log((x+j)*(x+j)+y*y));
-      gi1 += atan(y/(x+j));
+      /* gi1 += atan(y/(x+j)); */
     }
     gr -= gr1;
-    gi -= gi1;
+    /* gi -= gi1; */
   }
   
   if (x1 < 0.0) {
@@ -152,9 +155,7 @@ _unur_Relcgamma (double x, double y)
     th2 = atan(si/sr);
     if (sr < 0.0) th2 += M_PI;
     gr = log(M_PI/(q1*q2))-gr;
-    gi = -th1-th2-gi;
-    x = x1;
-    y = y1;
+    /* gi = -th1-th2-gi; */
   }
 
   /* For the case that we once need Gamma(z): */

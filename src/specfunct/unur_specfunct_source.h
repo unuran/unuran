@@ -193,7 +193,7 @@ double _unur_cephes_ndtri(double x);
   _unur_bessel_k_nuasympt((x),(nu),(islog),(exponscaled))
 
 /* logarithm of complex gamma function                                       */
-#define _unur_SF_ln_clgamma(x,y)  _unur_clgamma((x),(y))
+#define _unur_SF_ln_Relcgamma(x,y)  _unur_Relcgamma((x),(y))
 
 
 /*****************************************************************************

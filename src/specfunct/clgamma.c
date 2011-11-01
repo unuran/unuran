@@ -12,6 +12,23 @@
 //      Functions", Zhang and Jin, John Wiley and Sons, 1996.
 // It is the same as the fortran code of the R package 'fAsianOptions' 
 
+//  cgamma.cpp -- Complex gamma function.
+//      Algorithms and coefficient values from "Computation of Special
+//      Functions", Zhang and Jin, John Wiley and Sons, 1996.
+//
+//  (C) 2003, C. Bond. All rights reserved.
+//
+//  Returns gamma function or log(gamma) for complex argument 'z'.
+
+//  OPT value       function
+//  ---------       --------
+//      0           complex gamma
+//      1           complex log(gamma)
+//
+//  Returns (1e308,0) if the real part of the argument is a negative integer
+//  or 0 or exceeds 171.
+//
+
 
 #include <utils/unur_fp_source.h>
 #include <utils/unur_math_source.h>
@@ -20,9 +37,10 @@
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_clgamma (double x, double y)
+_unur_Relcgamma (double x, double y)
 /*---------------------------------------------------------------------------*/
-/* Logarithm of complex gamma function: log(Gamma(|z|)) = Re(log(Gamma(z))   */
+/* Real part of logarithm of complex gamma function:                         */
+/*    log(Gamma(|z|)) = Re(log(Gamma(z))                                     */
 /*                                                                           */
 /* parameters:                                                               */
 /*   x ... real part of argument z                                           */

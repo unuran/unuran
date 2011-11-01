@@ -26,7 +26,7 @@
  *     0 : lambda > 0    ... shape                                           *
  *     1 : alpha >|beta| ... shape                                           *
  *     2 : beta          ... shape (asymmetry)                               *
- *     4 : mu            ... location                                        *
+ *     3 : mu            ... location                                        *
  *                                                                           *
  *****************************************************************************
  *                                                                           *

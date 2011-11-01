@@ -190,7 +190,7 @@ double _unur_cephes_ndtri(double x);
 /* when BOTH nu and x are large.                                             */
 /* [ Experimental function! ]                                                */
 #define _unur_SF_bessel_k_nuasympt(x,nu,islog,exponscaled) \
-  _unur_bessel_K_nuasympt((x),(nu),(islog),(exponscaled))
+  _unur_bessel_k_nuasympt((x),(nu),(islog),(exponscaled))
 
 
 /*****************************************************************************

@@ -115,7 +115,7 @@ _unur_pdf_vg(double x, const UNUR_DISTR *distr)
       /* threshold value 50 is selected by experiments */
       res += log(_unur_SF_bessel_k(alpha*absy, nu));
     else
-      res += _unur_SF_bessel_k_nuasympt(alpha*absy, nu, 1, 0);
+      res += _unur_SF_bessel_k_nuasympt(alpha*absy, nu, TRUE, FALSE);
   }
 
   return exp(res);

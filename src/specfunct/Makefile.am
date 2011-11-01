@@ -22,6 +22,7 @@ CEPHES = \
 RMATH =
 
 OTHER = \
+ bessel_asympt.c \
  hypot.c \
  log1p.c
 

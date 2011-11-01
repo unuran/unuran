@@ -36,7 +36,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2009-2010 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2009-2011 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -83,12 +83,12 @@ static const char distr_name[] = "ghyp";
 /* function prototypes                                                       */
 #ifdef _unur_SF_bessel_k
 static double _unur_pdf_ghyp( double x, const UNUR_DISTR *distr );
+static double _unur_normconstant_ghyp( const double *params, int n_params );
 /* static double _unur_dpdf_ghyp( double x, const UNUR_DISTR *distr ); */
 /* static double _unur_cdf_ghyp( double x, const UNUR_DISTR *distr ); */
 #endif
 
 static int _unur_upd_center_ghyp( UNUR_DISTR *distr );
-static double _unur_normconstant_ghyp( const double *params, int n_params );
 static int _unur_set_params_ghyp( UNUR_DISTR *distr, const double *params, int n_params );
 
 /*---------------------------------------------------------------------------*/
@@ -138,10 +138,10 @@ _unur_upd_center_ghyp( UNUR_DISTR *distr )
 
 /*---------------------------------------------------------------------------*/
 
+#ifdef _unur_SF_bessel_k
 double
 _unur_normconstant_ghyp(const double *params ATTRIBUTE__UNUSED, int n_params ATTRIBUTE__UNUSED)
 { 
-#ifdef _unur_SF_bessel_k
   double gamm = sqrt(alpha*alpha-beta*beta);
 
   /* ( (gamma/delta)^lambda ) / ( sqrt(2*pi) * alpha^(lambda-1/2) * K_{lambda}(delta*gamma) ) */
@@ -149,10 +149,8 @@ _unur_normconstant_ghyp(const double *params ATTRIBUTE__UNUSED, int n_params ATT
   return ( pow(gamm/delta, lambda ) 
 	   / ( (M_SQRTPI*M_SQRT2) * pow(alpha, lambda-0.5)
 	       * _unur_SF_bessel_k( delta*gamm, lambda ) ) );
-#else
-  return 1.;
-#endif
 } /* end of _unur_normconstant_ghyp() */
+#endif
 
 /*---------------------------------------------------------------------------*/
 
@@ -179,11 +177,11 @@ _unur_set_params_ghyp( UNUR_DISTR *distr, const double *params, int n_params )
   }
 
   /* copy parameters for standard form */
-  DISTR.mu = mu;
+  DISTR.lambda = lambda;
   DISTR.alpha = alpha;
   DISTR.beta = beta;
   DISTR.delta = delta;
-  DISTR.lambda = lambda;
+  DISTR.mu = mu;
 
   /* default parameters: none */
 
@@ -227,8 +225,8 @@ unur_distr_ghyp( const double *params, int n_params)
 #ifdef _unur_SF_bessel_k
   distr->set = ( UNUR_DISTR_SET_DOMAIN |
 		 UNUR_DISTR_SET_STDDOMAIN |
-		 UNUR_DISTR_SET_CENTER );
-		 /* UNUR_DISTR_SET_PDFAREA ); */
+		 UNUR_DISTR_SET_CENTER |
+		 UNUR_DISTR_SET_PDFAREA );
 #else
   distr->set = ( UNUR_DISTR_SET_DOMAIN | UNUR_DISTR_SET_STDDOMAIN );
 #endif
@@ -240,7 +238,11 @@ unur_distr_ghyp( const double *params, int n_params)
   }
 
   /* normalization constant */
+#ifdef _unur_SF_bessel_k
   NORMCONSTANT = _unur_normconstant_ghyp(params,n_params);
+#else
+  NORMCONSTANT = 1.;
+#endif
 
   /* we need the center of the distribution */
   if (_unur_upd_center_ghyp(distr)!=UNUR_SUCCESS) {
@@ -250,7 +252,9 @@ unur_distr_ghyp( const double *params, int n_params)
 
   /* mode and area below p.d.f. */
   /* DISTR.mode = ? */
-  /* DISTR.area = ? */
+#ifdef _unur_SF_bessel_k
+  DISTR.area = 1;
+#endif
 
   /* function for setting parameters and updating domain */
   DISTR.set_params = _unur_set_params_ghyp;

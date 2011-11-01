@@ -23,7 +23,7 @@ RMATH =
 
 OTHER = \
  bessel_asympt.c \
- clgamma.c \
+ cgamma.c \
  hypot.c \
  log1p.c
 

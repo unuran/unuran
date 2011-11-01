@@ -78,6 +78,7 @@ enum {
   UNUR_DISTR_TRIANGULAR       = 0x00001601u,  /*    X     X     X     X     X     .      */
   UNUR_DISTR_UNIFORM          = 0x00002001u,  /*    X     X     X     X     .     .      */
    UNUR_DISTR_BOXCAR          = 0x00002001u,  /*    same as UNIFORM                      */
+  UNUR_DISTR_VG               = 0x00002501u,  /*    X     .     .     .     .     .      */
   UNUR_DISTR_WEIBULL          = 0x00001801u,  /*    X     X     X     X     X     .      */
 
   UNUR_DISTR_BURR_I           = 0x0000b001u,  /*    .     X     .     .     X     .      */

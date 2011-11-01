@@ -34,6 +34,7 @@ libdistributions_la_SOURCES = \
  c_student.c     c_student_gen.c \
  c_triangular.c \
  c_uniform.c \
+ c_vg.c \
  c_weibull.c \
  d_binomial.c    d_binomial_gen.c \
  d_geometric.c \

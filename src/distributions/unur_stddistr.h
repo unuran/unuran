@@ -68,6 +68,7 @@ enum {
   UNUR_DISTR_LOGISTIC         = 0x00000d01u,  /*    X     X     X     X     X     .      */
   UNUR_DISTR_LOGNORMAL        = 0x00000e01u,  /*    X     X     .     X     .     .      */
   UNUR_DISTR_LOMAX            = 0x00000f01u,  /*    X     X     X     X     .     .      */
+  UNUR_DISTR_MEIXNER          = 0x00002601u,  /*    X     .     .     X     .     .      */
   UNUR_DISTR_NORMAL           = 0x00001001u,  /*    X     X     X     X     X     .      */
    UNUR_DISTR_GAUSSIAN        = 0x00001001u,  /*    same as NORMAL                       */
   UNUR_DISTR_PARETO           = 0x00001101u,  /*    X     X     X     X     .     .      */

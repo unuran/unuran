@@ -26,6 +26,7 @@ libdistributions_la_SOURCES = \
  c_logistic.c \
  c_lognormal.c \
  c_lomax.c \
+ c_meixner.c \
  c_normal.c      c_normal_gen.c \
  c_pareto.c \
  c_powerexponential.c c_powerexponential_gen.c \

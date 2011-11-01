@@ -241,6 +241,10 @@ int _unur_stdgen_lomax_init( UNUR_PAR *parameters, UNUR_GEN *generator );
 
 
 /*---------------------------------------------------------------------------*/
+/* Meixner distribution                                                      */
+
+
+/*---------------------------------------------------------------------------*/
 /*  Normal distribution  [2; ch.13, p.80]                                    */
 
 /* initialize special generator                                              */

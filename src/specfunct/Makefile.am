@@ -22,6 +22,7 @@ CEPHES = \
 RMATH =
 
 OTHER = \
+ hypot.c \
  log1p.c
 
 libspecfunct_la_SOURCES = $(CEPHES) $(RMATH) $(OTHER)

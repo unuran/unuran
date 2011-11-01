@@ -182,6 +182,19 @@ double _unur_cephes_ndtri(double x);
 
 /*****************************************************************************
  *                                                                           *
+ *   Special functions implemented in UNU.RAN                                *
+ *                                                                           *
+ *****************************************************************************/
+
+/* modified Bessel function K_nu of second kind (AKA third kind)             */
+/* when BOTH nu and x are large.                                             */
+/* [ Experimental function! ]                                                */
+#define _unur_SF_bessel_k_nuasympt(x,nu,islog,exponscaled) \
+  _unur_bessel_K_nuasympt((x),(nu),(islog),(exponscaled))
+
+
+/*****************************************************************************
+ *                                                                           *
  *   Replacement for missing (system) functions                              *
  *                                                                           *
  *****************************************************************************/
@@ -192,6 +205,14 @@ double _unur_cephes_ndtri(double x);
 double _unur_log1p(double x);
 #endif
 
+#if !HAVE_DECL_HYPOT
+/* sqrt(x^2 + y^2) */
+/* (replacement for missing C99 function hypot) */
+double _unur_hypot(const double x, const double y);
+#endif
+
 /*---------------------------------------------------------------------------*/
 #endif  /* UNUR_SPECFUNCT_SOURCE_H_SEEN */
 /*---------------------------------------------------------------------------*/
+
+/* _unur_besselK_nuasympt */

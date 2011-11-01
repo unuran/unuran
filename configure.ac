@@ -127,11 +127,16 @@ dnl Checks for library functions.
 AC_CHECK_FUNCS([floor gettimeofday pow sqrt strcasecmp strchr strtol strtoul])
 
 dnl For the following function replacements exist
-AH_BOTTOM([/* Substitute UNU.RAN functions for missing system functions */])
+AH_BOTTOM([/* Substitute UNU.RAN functions for C99 functions */])
 
 AC_CHECK_DECLS(log1p,,,[#include <math.h>])
 AH_BOTTOM([#if !HAVE_DECL_LOG1P
 #define log1p _unur_log1p
+#endif])
+
+AC_CHECK_DECLS(hypot,,,[#include <math.h>])
+AH_BOTTOM([#if !HAVE_DECL_HYPOT
+#define hypot _unur_hypot
 #endif])
 
 dnl Checks for GNU extensions

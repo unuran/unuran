@@ -12,12 +12,12 @@ noinst_LTLIBRARIES = libspecfunct.la
 # [ See also README.cephes ]
 CEPHES = \
  cephes_source.h \
- gamma.c \
- igam.c \
- incbet.c \
- ndtr.c \
- ndtri.c \
- polevl.c
+ cephes_gamma.c \
+ cephes_igam.c \
+ cephes_incbet.c \
+ cephes_ndtr.c \
+ cephes_ndtri.c \
+ cephes_polevl.c
 
 RMATH =
 

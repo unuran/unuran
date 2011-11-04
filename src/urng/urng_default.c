@@ -89,8 +89,12 @@ unur_get_default_urng( void )
     if( urng_default == NULL ) {
       /* some parameters invalid! */
       _unur_error("URNG",UNUR_ERR_NULL,"Cannot set default URNG. EXIT !!!");
+#ifndef R_UNURAN
       /* we cannot recover from this error */
       exit(EXIT_FAILURE);
+#endif
+      /* Remark: When the library is used in R package 'Runuran', */
+      /*         then this case should not happen.                */
     }
   }
 
@@ -152,8 +156,12 @@ unur_get_default_urng_aux( void )
     if( urng_aux_default == NULL ) {
       /* some parameters invalid! */
       _unur_error("URNG",UNUR_ERR_NULL,"Cannot set default auxilliary URNG. EXIT !!!");
+#ifndef R_UNURAN
       /* we cannot recover from this error */
       exit(EXIT_FAILURE);
+#endif
+      /* Remark: When the library is used in R package 'Runuran', */
+      /*         then this case should not happen.                */
     }
   }
 

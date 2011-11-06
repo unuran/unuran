@@ -4,34 +4,6 @@
 /*                                                                           */
 /*---------------------------------------------------------------------------*/
 
-// Complex log-gamma function
-// It returns log(|w|)=Re(log(w)) for w=gamma(z) with complex argument z=x+iy
-// Taken from C++ code 
-//  cgamma.cpp -- Complex gamma function.
-//      Algorithms and coefficient values from "Computation of Special
-//      Functions", Zhang and Jin, John Wiley and Sons, 1996.
-// It is the same as the fortran code of the R package 'fAsianOptions' 
-
-//  cgamma.cpp -- Complex gamma function.
-//      Algorithms and coefficient values from "Computation of Special
-//      Functions", Zhang and Jin, John Wiley and Sons, 1996.
-//
-//  (C) 2003, C. Bond. All rights reserved.
-//
-//  Returns gamma function or log(gamma) for complex argument 'z'.
-
-//  OPT value       function
-//  ---------       --------
-//      0           complex gamma
-//      1           complex log(gamma)
-//
-//  Returns (1e308,0) if the real part of the argument is a negative integer
-//  or 0 or exceeds 171.
-//
-
-// FORTRAN code in R package 'fAsianOptions'
-
-
 #include <utils/unur_fp_source.h>
 #include <utils/unur_math_source.h>
 #include <utils/umath.h>
@@ -51,16 +23,7 @@ _unur_Relcgamma (double x, double y)
 /*                                                                           */
 /* references:                                                               */
 /*   S. Zhang & J. Jin: "Computation of Special Functions" (Wiley, 1996).    */
-/*   online: http://iris-lee3.ece.uiuc.edu/~jjin/routines/routines.html      */
 /*                                                                           */
-
-/* // Complex log-gamma function */
-/* // It returns log(|w|)=Re(log(w)) for w=gamma(z) with complex argument z=x+iy */
-/* // Taken from C++ code  */
-/* //  cgamma.cpp -- Complex gamma function. */
-/* //      Algorithms and coefficient values from "Computation of Special */
-/* //      Functions", Zhang and Jin, John Wiley and Sons, 1996. */
-/* // It is the same as the fortran code of the R package 'fAsianOptions'  */
 /*---------------------------------------------------------------------------*/
 /*                                                                           */
 /* Original FORTRAN code by S. Zhang and J. Jin.                             */
@@ -82,17 +45,37 @@ _unur_Relcgamma (double x, double y)
 /* C 1406 West Green Street                                                  */
 /* C Urbana, IL 61801-2991                                                   */
 /*                                                                           */
-/* Translated into C code by ????                                            */
+/* We found the code in R package 'fAsiaOptions', Version: 2100.76           */
 /*                                                                           */
+/* ......................................................................... */
+/*                                                                           */
+/* Translation into C code found in                                          */
+/*                                                                           */
+/*  cgamma.cpp -- Complex gamma function.                                    */
+/*      Algorithms and coefficient values from "Computation of Special       */
+/*      Functions", Zhang and Jin, John Wiley and Sons, 1996.                */
+/*                                                                           */
+/* (C) 2003, C. Bond. All rights reserved.                                   */
+/*                                                                           */
+/* See http:// www.crbond.com/                                               */
+/*                                                                           */
+/* This website contains a variety of materials related to technology and    */
+/* engineering. Downloadable software,  much of it original, is available    */
+/* from some of the pages.                                                   */
+/* All downloadable software is offered freely and without restriction --    */
+/* although in most cases the files should be considered as works in         */
+/* progress (alpha or beta level).                                           */
+/* Source code is also included for some applications.                       */
+/*                                                                           */
+/* ......................................................................... */
+/*                                                                           */
+/* Modified by Kemal Dingic Oct 2011.                                        */
 /* Modified by Josef Leydold on Tue Nov  1 13:22:09 CET 2011                 */
 /*                                                                           */
-
-// We do not need imaginary part.
-
 /*---------------------------------------------------------------------------*/
 {
   double t, x0, x1;
-  double q1, logq1, q2, th, th1, th2;
+  double q1, logq1, q2, th /* , th1, th2 */;
   double gr1, /* gi1, */ sr, si;
   int j, k, na;
 
@@ -148,12 +131,12 @@ _unur_Relcgamma (double x, double y)
   
   if (x1 < 0.0) {
     q1 = hypot(x,y);    /* = sqrt(x*x+y*y) */
-    th1 = atan(y/x);
+    /* th1 = atan(y/x); */
     sr = -sin(M_PI*x)*cosh(M_PI*y);
     si = -cos(M_PI*x)*sinh(M_PI*y);
     q2 = hypot(sr,si);  /* = sqrt(sr*sr+si*si) */
-    th2 = atan(si/sr);
-    if (sr < 0.0) th2 += M_PI;
+    /* th2 = atan(si/sr); */
+    /* if (sr < 0.0) th2 += M_PI; */
     gr = log(M_PI/(q1*q2))-gr;
     /* gi = -th1-th2-gi; */
   }

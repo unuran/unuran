@@ -71,6 +71,7 @@ static const char distr_name[] = "meixner";
 
 /* function prototypes                                                       */
 static double _unur_pdf_meixner( double x, const UNUR_DISTR *distr );
+static double _unur_logpdf_meixner( double x, const UNUR_DISTR *distr );
 /* static double _unur_dpdf_meixner( double x, const UNUR_DISTR *distr ); */
 /* static double _unur_cdf_meixner( double x, const UNUR_DISTR *distr ); */
 
@@ -86,6 +87,14 @@ _unur_pdf_meixner(double x, const UNUR_DISTR *distr)
   /* Original implementation by Kemal Dingic */
   /*  f(x) = exp(beta*(x-mu)/alpha) * |Gamma(delta+ i*(x-mu)/alpha)|^2 */
 
+  return exp(_unur_logpdf_meixner(x,distr));
+} /* end of _unur_pdf_meixner() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_logpdf_meixner(double x, const UNUR_DISTR *distr)
+{
   const double *params = DISTR.params;
   double res;           /* result of computation */
   double y;             /* auxiliary variables   */
@@ -93,8 +102,8 @@ _unur_pdf_meixner(double x, const UNUR_DISTR *distr)
   y = (x-mu) / alpha;
   res = LOGNORMCONSTANT + beta*y + 2*_unur_SF_Relcgamma(delta, y);
 
-  return exp(res);
-} /* end of _unur_pdf_meixner() */
+  return res;
+} /* end of _unur_logpdf_meixner() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -195,7 +204,8 @@ unur_distr_meixner( const double *params, int n_params)
    
   /* functions */
   DISTR.pdf     = _unur_pdf_meixner;     /* pointer to PDF                  */
-
+  DISTR.logpdf  = _unur_logpdf_meixner;  /* pointer to logPDF               */
+ 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |
 		 UNUR_DISTR_SET_STDDOMAIN |

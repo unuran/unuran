@@ -80,6 +80,7 @@ static const char distr_name[] = "vg";
 /* function prototypes                                                       */
 #ifdef _unur_SF_bessel_k
 static double _unur_pdf_vg( double x, const UNUR_DISTR *distr );
+static double _unur_logpdf_vg( double x, const UNUR_DISTR *distr );
 /* static double _unur_dpdf_vg( double x, const UNUR_DISTR *distr ); */
 /* static double _unur_cdf_vg( double x, const UNUR_DISTR *distr ); */
 #endif
@@ -93,6 +94,17 @@ static int _unur_set_params_vg( UNUR_DISTR *distr, const double *params, int n_p
 #ifdef _unur_SF_bessel_k
 double
 _unur_pdf_vg(double x, const UNUR_DISTR *distr)
+{
+  /* Original implementation by Kemal Dingic */
+  /* f(x) = |x-mu|^(lambda-1/2) * exp(beta*(x-mu)) * K_{lambda-1/2}(alpha*|x-mu|)} */
+
+  return exp(_unur_logpdf_vg(x,distr));
+} /* end of _unur_pdf_vg() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_logpdf_vg(double x, const UNUR_DISTR *distr)
 {
   /* Original implementation by Kemal Dingic */
   /* f(x) = |x-mu|^(lambda-1/2) * exp(beta*(x-mu)) * K_{lambda-1/2}(alpha*|x-mu|)} */
@@ -118,8 +130,8 @@ _unur_pdf_vg(double x, const UNUR_DISTR *distr)
       res += _unur_SF_bessel_k_nuasympt(alpha*absy, nu, TRUE, FALSE);
   }
 
-  return exp(res);
-} /* end of _unur_pdf_vg() */
+  return res;
+} /* end of _unur_logpdf_vg() */
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -221,10 +233,11 @@ unur_distr_vg( const double *params, int n_params)
              
   /* how to get special generators */
   /* DISTR.init = _unur_stdgen_vg_init; */
-   
+
   /* functions */
 #ifdef _unur_SF_bessel_k
   DISTR.pdf     = _unur_pdf_vg;     /* pointer to PDF                  */
+  DISTR.logpdf  = _unur_logpdf_vg;  /* pointer to log-PDF              */
 #endif
 
   /* indicate which parameters are set */

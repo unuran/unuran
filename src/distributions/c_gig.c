@@ -182,8 +182,16 @@ _unur_upd_mode_gig( UNUR_DISTR *distr )
 {
   register const double *params = DISTR.params;
 
-  DISTR.mode =
-    (eta*(-1. + sqrt(omega*omega + (theta-1.)*(theta-1.)) + theta))/omega;
+  /* if (TRUE || theta >= 1.) { */
+    /* mode of PDF(x) */
+    DISTR.mode =
+      eta * (sqrt(omega*omega + (theta-1.)*(theta-1.)) + (theta-1.))/omega;
+  /* } */
+  /* else { */
+  /*   /\* inverse of mode of PDF(1/x) *\/ */
+  /*   DISTR.mode = */
+  /*     eta * omega / (sqrt((1.-theta)*(1.-theta) + omega*omega)+(1.-theta)); */
+  /* } */
 
   /* mode must be in domain */
   if (DISTR.mode < DISTR.domain[0]) 
@@ -204,7 +212,7 @@ _unur_lognormconstant_gig(const double *params, int n_params ATTRIBUTE__UNUSED)
 
   if (theta < 50) 
     /* threshold value 50 is selected by experiments */
-    logconst -= log(_unur_SF_bessel_k(omega, theta));
+    logconst -= _unur_SF_ln_bessel_k(omega, theta);
   else 
     logconst -= _unur_SF_bessel_k_nuasympt(omega, theta, TRUE, FALSE);
 
@@ -286,7 +294,7 @@ unur_distr_gig( const double *params, int n_params )
   DISTR.logpdf  = _unur_logpdf_gig;  /* pointer to logPDF               */
   DISTR.dpdf    = _unur_dpdf_gig;    /* pointer to derivative of PDF    */
   DISTR.dlogpdf = _unur_dlogpdf_gig; /* pointer to derivative of logPDF */
-  DISTR.cdf  = NULL;                 /* _unur_cdf_gig; pointer to CDF   */
+  DISTR.cdf     = NULL;              /* _unur_cdf_gig; pointer to CDF   */
 
   /* indicate which parameters are set */
   distr->set = ( UNUR_DISTR_SET_DOMAIN |

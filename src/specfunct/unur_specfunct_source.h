@@ -107,6 +107,9 @@
 /* modified Bessel function K_nu of second kind (AKA third kind) */
 #define _unur_SF_bessel_k(x,nu)           bessel_k((x),(nu),1)
 
+/* logarithm of modified Bessel function K_nu of second kind (AKA third kind)*/
+#define _unur_SF_ln_bessel_k(x,nu)        (log(bessel_k((x),(nu),2)) - (x))
+
 /* Normal distribution */
 #define _unur_SF_cdf_normal(x)            pnorm((x),0.,1.,TRUE,FALSE)
 #define _unur_SF_invcdf_normal(u)         qnorm((u),0.,1.,TRUE,FALSE)

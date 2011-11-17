@@ -299,10 +299,12 @@ _unur_pinv_approx_pdfarea (struct unur_gen *gen )
     DISTR.center = _unur_min(DISTR.center, GEN->bright);
 
     /* compute area approximately */
-    GEN->area  = 
+    GEN->area = 
       _unur_lobatto_adaptive(_unur_pinv_eval_PDF, gen,
-			     GEN->bleft, DISTR.center - GEN->bleft, tol, NULL)
-      + _unur_lobatto_adaptive(_unur_pinv_eval_PDF, gen,
+			     GEN->bleft, DISTR.center - GEN->bleft, tol, NULL);
+    if (_unur_isfinite(GEN->area))
+      GEN->area += 
+	_unur_lobatto_adaptive(_unur_pinv_eval_PDF, gen,
 			       DISTR.center, GEN->bright - DISTR.center, tol, NULL);
 
     /* check estimated area */

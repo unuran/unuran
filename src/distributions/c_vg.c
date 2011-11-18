@@ -125,7 +125,7 @@ _unur_logpdf_vg(double x, const UNUR_DISTR *distr)
     res += log(absy)*nu + beta*y;
     if (lambda < 50) 
       /* threshold value 50 is selected by experiments */
-      res += log(_unur_SF_bessel_k(alpha*absy, nu));
+      res += _unur_SF_ln_bessel_k(alpha*absy, nu);
     else
       res += _unur_SF_bessel_k_nuasympt(alpha*absy, nu, TRUE, FALSE);
   }

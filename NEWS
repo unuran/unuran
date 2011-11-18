@@ -7,6 +7,10 @@ Version 1.9.0: ?????
 
 	- PINV: check pointer dPDF before using it.
                 disabled internal rescaling of PDF.
+		abort computation of area below PDF when an almost
+                infinite loop occurs.
+		do not immediately stop computation of relevant domain
+                when INF or NaN occurs.
 
 	* Distributions:
 

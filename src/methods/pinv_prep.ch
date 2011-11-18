@@ -465,7 +465,7 @@ _unur_pinv_cut( struct unur_gen *gen, double w, double dw, double crit )
      /*            sign of dw gives searching direction:                     */
      /*               dw < 0 ... left hand side cut-off point                */
      /*               dw > 0 ... right hand side cut-off point               */
-     /*   crit ... u-error criterium for tail cut off                        */
+     /*   crit ... u-error criterium for tail cut-off                        */
      /*                                                                      */
      /* return:                                                              */
      /*   cut-off point                                                      */
@@ -591,7 +591,7 @@ _unur_pinv_cut( struct unur_gen *gen, double w, double dw, double crit )
 #endif
       return x;
     }
-
+    
     /* compute next point */
     if (_unur_iszero(lc)) {
       xnew = x + fx/df * log(crit*fabs(df)/(fx*fx));
@@ -599,15 +599,14 @@ _unur_pinv_cut( struct unur_gen *gen, double w, double dw, double crit )
     else {
       xnew = x + fx/(lc*df) * ( pow(crit*fabs(df)*(lc+1.)/(fx*fx),lc/(lc+1.)) - 1.);
     }
-
+    
     /* check new point */
     if (! _unur_isfinite(xnew)) {
-      /* we cannot compute the next point */
-      _unur_error(gen->genid,UNUR_ERR_NAN,"numerical problems with cut-off point");
-      return INFINITY;
+      /* try smaller step topwards boundary */
+      xnew = (dw > 0) ? _unur_arcmean(x,GEN->dright) : _unur_arcmean(x,GEN->dleft);
     }
 
-   /* check whehter new point is inside domain */
+    /* check whether new point is inside domain */
     if (xnew < GEN->dleft || xnew > GEN->dright) {
       /* boundary exceeded */
       if ( (dw > 0 && xnew < GEN->dleft) ||

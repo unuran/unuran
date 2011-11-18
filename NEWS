@@ -6,6 +6,7 @@ Version 1.9.0: ?????
 	- CSTD: print constants computed in init step into log file and info string
 
 	- PINV: check pointer dPDF before using it.
+                disabled internal rescaling of PDF.
 
 	* Distributions:
 

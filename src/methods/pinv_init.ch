@@ -35,7 +35,6 @@ _unur_pinv_init( struct unur_par *par )
      /*----------------------------------------------------------------------*/
 { 
   struct unur_gen *gen;
-  double lfc;
 
   /* check arguments */
   _unur_check_NULL( GENTYPE,par,NULL );
@@ -56,28 +55,30 @@ _unur_pinv_init( struct unur_par *par )
     _unur_pinv_free(gen); return NULL;
   }
 
-  /* compute rescaling factor for PDF */
-  /* (only used when logPDF is given) */
-  if (DISTR.logpdf != NULL && (gen->variant & PINV_VARIANT_PDF) ) {
-    lfc = UNUR_INFINITY;
+  /* compute rescaling factor for PDF          */
+  /* (only used when logPDF is given)          */
+  /* Disabled!                                 */
+  /* We found that it is not such a good idea. */
+  /* if (DISTR.logpdf != NULL && (gen->variant & PINV_VARIANT_PDF) ) { */
+  /*   double lfc = UNUR_INFINITY; */
 
-    /* use mode if available */
-    if ( (gen->distr->set & UNUR_DISTR_SET_MODE) &&
-	 !_unur_FP_less(DISTR.mode,DISTR.domain[0]) &&
-	 !_unur_FP_greater(DISTR.mode,DISTR.domain[1]) ) {
-      lfc = (DISTR.logpdf)(DISTR.mode,gen->distr);
-    }
+  /*   /\* use mode if available *\/ */
+  /*   if ( (gen->distr->set & UNUR_DISTR_SET_MODE) && */
+  /* 	 !_unur_FP_less(DISTR.mode,DISTR.domain[0]) && */
+  /* 	 !_unur_FP_greater(DISTR.mode,DISTR.domain[1]) ) { */
+  /*     lfc = (DISTR.logpdf)(DISTR.mode,gen->distr); */
+  /*   } */
 
-    /* use center otherwise (or if logPDF(mode)==INFINITY) */ 
-    if (!_unur_isfinite(lfc))
-      lfc = (DISTR.logpdf)(DISTR.center,gen->distr);
+  /*   /\* use center otherwise (or if logPDF(mode)==INFINITY) *\/ */
+  /*   if (!_unur_isfinite(lfc)) */
+  /*     lfc = (DISTR.logpdf)(DISTR.center,gen->distr); */
 
-    /* rescaling results in more evaluations of the logPDF, */
-    /* when the logPDF is approximately 0.                  */
-    /* so we only rescale the logPDF when it is too small.  */
-    if (lfc < -3.)
-      GEN->logPDFconstant = lfc;
-  }
+  /*   /\* rescaling results in more evaluations of the logPDF, *\/ */
+  /*   /\* when the logPDF is approximately 0.                  *\/ */
+  /*   /\* so we only rescale the logPDF when it is too small.  *\/ */
+  /*   if (lfc < -3.) */
+  /*     GEN->logPDFconstant = lfc; */
+  /* } */
 
 #ifdef UNUR_ENABLE_LOGGING
   /* write info into LOG file */
@@ -202,7 +203,7 @@ _unur_pinv_create( struct unur_par *par )
   GEN->guide_size = 0; 
   GEN->guide = NULL;
   GEN->area = DISTR.area; /* we use the value in the distribution object as first guess */
-  GEN->logPDFconstant = 0.;   /* rescaling constant for logPDF                  */
+  /* GEN->logPDFconstant = 0.; rescaling constant for logPDF: Disabled */
   GEN->aCDF = NULL;           /* pointer to approximate CDF */
 
   /* allocate maximal array of intervals */
@@ -492,8 +493,11 @@ _unur_pinv_eval_PDF (double x, struct unur_gen *gen)
     /* one time for given x, the second time for x+dx. */
 
     /* compute PDF(x) */
-    if (DISTR.logpdf != NULL)
-      fx = exp((DISTR.logpdf)(x,distr) - GEN->logPDFconstant);
+    if (DISTR.logpdf != NULL) {
+      fx = exp((DISTR.logpdf)(x,distr));
+      /* scaling factor Disabled! */
+      /* fx = exp((DISTR.logpdf)(x,distr) - GEN->logPDFconstant); */
+    }
     else
       fx = (DISTR.pdf)(x,distr);
 

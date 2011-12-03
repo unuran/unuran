@@ -309,7 +309,7 @@ _unur_pinv_approx_pdfarea (struct unur_gen *gen )
 
     /* check estimated area */
     if ( !_unur_isfinite(GEN->area) || _unur_iszero(GEN->area) ) {
-      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"cannot estimate area below PDF");
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"cannot approximate area below PDF");
       res = UNUR_FAILURE;
       break;
     }
@@ -377,7 +377,7 @@ _unur_pinv_pdfarea (struct unur_gen *gen)
 
   /* check estimated area */
   if ( !_unur_isfinite(GEN->area) || _unur_iszero(GEN->area) ) {
-    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"cannot estimate area below PDF");
+    _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"cannot compute area below PDF");
     return UNUR_FAILURE;
   }
 

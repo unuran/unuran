@@ -141,12 +141,13 @@ _unur_upd_center_vg( UNUR_DISTR *distr )
 {
   const double *params = DISTR.params;
 
-  /* we simply use parameter 'mu' */
-  DISTR.center = mu;
+  /* we use the mean of the distribution: */
+  double gam = sqrt(alpha*alpha-beta*beta);
+  DISTR.center = mu + 2*beta*lambda / (gam*gam);
 
-  /* an alternative approach would be the mean of the distribution:          */
-  /* double gamma = sqrt(alpha*alpha-beta*beta);                             */
-  /* DISTR.center = mu + 2*beta*lambda / (gamma*gamma);                      */
+  /* there is some change of overflow. then we simply use 'mu' */
+  if (!_unur_isfinite(DISTR.center))
+      DISTR.center = mu;
 
   /* center must be in domain */
   if (DISTR.center < DISTR.domain[0])

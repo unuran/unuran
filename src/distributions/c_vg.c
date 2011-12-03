@@ -146,7 +146,7 @@ _unur_upd_center_vg( UNUR_DISTR *distr )
 
   /* an alternative approach would be the mean of the distribution:          */
   /* double gamma = sqrt(alpha*alpha-beta*beta);                             */
-  /* DISTR.center = mu + 2*beta*lambda / (gamma*gamma)                       */
+  /* DISTR.center = mu + 2*beta*lambda / (gamma*gamma);                      */
 
   /* center must be in domain */
   if (DISTR.center < DISTR.domain[0])

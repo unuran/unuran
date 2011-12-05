@@ -129,34 +129,64 @@ _unur_logpdf_vg(double x, const UNUR_DISTR *distr)
       /* first simply compute Bessel K_nu and compute logarithm. */
       double besk;
 
-      /* we currently use two algorithms */
-      if (nu < 50) 
+      /* we currently use two algorithms based on our experiences
+       * with the functions in the Rmath library.
+       * (Maybe we could change this when we link against
+       * other libraries.)
+       */
+      if (nu < 100) 
+	/* the "standard implementation" using log(bessel_k) */
 	besk = _unur_SF_ln_bessel_k(alpha*absy, nu);
       else
+	/* an algorithm for large nu */
 	besk = _unur_SF_bessel_k_nuasympt(alpha*absy, nu, TRUE, FALSE);
 
-      /* Bessel function K_nu can overflow for small values of y. */
+      /* there can be numerical problems with the Bessel function K_nu. */
       if (_unur_isfinite(besk)) {
+	/* o.k. */
 	res = LOGNORMCONSTANT + besk + log(absy)*nu + beta*y;
 	break;
       }
     }
 
-    /* Case :Bessel function K_nu overflows.
-     * (this in particular happens when y=0.)
-     * The following code is inspired by gsl_sf_bessel_lnKnu_e() from
-     * the GSL (GNU Scientific Library).
-     */
+      /* /\* there can be numerical problems with the Bessel function K_nu. *\/ */
+      /* if (_unur_isfinite(besk)) { */
+      /* 	if (absy < 1.) */
+      /* 	  /\* Case: Bessel function K_nu overflows for small values of y. *\/ */
+      /* 	  res = LOGNORMCONSTANT + besk + log(absy)*nu + beta*y; */
+      /* 	else */
+      /* 	  /\* Case: Bessel function K_nu underflows for very large values of y. *\/ */
+      /* 	  res = -INFINITY; */
+      /* 	break; */
+      /* } */
 
-    res = LOGNORMCONSTANT + beta*y;
-    res += -M_LN2 + _unur_SF_ln_gamma(nu) + nu*log(2./alpha);
 
-    if (nu > 1.0) {
-      double xi = 0.25*x*x;
-      double sum = 1.0 - xi/(nu-1.0);
-      if(nu > 2.0) sum += (xi/(nu-1.0)) * (xi/(nu-2.0));
-      res += log(sum);
+    /* Case: numrical problems with Bessel function K_nu. */
+
+    if (absy < 1.0) {
+      /* Case: Bessel function K_nu overflows for small values of y.
+       * The following code is inspired by gsl_sf_bessel_lnKnu_e() from
+       * the GSL (GNU Scientific Library).
+       */
+
+      res = LOGNORMCONSTANT + beta*y;
+      res += -M_LN2 + _unur_SF_ln_gamma(nu) + nu*log(2./alpha);
+      
+      if (nu > 1.0) {
+	double xi = 0.25*x*x;
+	double sum = 1.0 - xi/(nu-1.0);
+	if(nu > 2.0) sum += (xi/(nu-1.0)) * (xi/(nu-2.0));
+	res += log(sum);
+      }
     }
+
+    else {
+      /* Case: Bessel function K_nu underflows for very large values of y
+       * and we get NaN. 
+       * However, then the PDF of the Variance Gamma distribution is 0.
+       */
+      res = -INFINITY;
+    } 
 
   } while(0);
 

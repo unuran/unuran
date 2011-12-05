@@ -107,28 +107,79 @@ double
 _unur_logpdf_vg(double x, const UNUR_DISTR *distr)
 {
   /* Original implementation by Kemal Dingic */
-  /* f(x) = |x-mu|^(lambda-1/2) * exp(beta*(x-mu)) * K_{lambda-1/2}(alpha*|x-mu|)} */
+  /* f(x) = |x-mu|^(lambda-1/2) * exp(beta*(x-mu)) * K_{lambda-1/2}(alpha*|x-mu|) */
 
   const double *params = DISTR.params;
   double nu = lambda - 0.5;   /* order of modified Bessel function K()       */
   double res;                 /* result of computation                       */
   double y, absy;             /* auxiliary variables                         */
 
-  res = LOGNORMCONSTANT;
-
+  // res = LOGNORMCONSTANT;
   y = x - mu;
-  if (_unur_iszero(y)) {
+  absy = fabs(y);
+
+  /* Using nu and y we find:
+   *   f(x) = |y|^nu * exp(beta*y) * K_nu(alpha*|y|)
+   * and
+   *   log(f(x)) = nu*log(|y|)+ beta*y + log(K_nu(alpha*|y|)
+   */
+
+  do {
+    if (absy>0) {
+      /* first simply compute Bessel K_nu and compute logarithm. */
+      double besk;
+
+      /* we currently use two algorithms */
+      if (nu < 50) 
+	besk = _unur_SF_ln_bessel_k(alpha*absy, nu);
+      else
+	besk = _unur_SF_bessel_k_nuasympt(alpha*absy, nu, TRUE, FALSE);
+
+      /* Bessel function K_nu can overflow for small values of y. */
+      if (_unur_isfinite(besk)) {
+	res = LOGNORMCONSTANT + besk + log(absy)*nu + beta*y;
+	break;
+      }
+    }
+
+    /* Case :Bessel function K_nu overflows.
+     * (this in particular happens when y=0.)
+     * The following code is inspired by gsl_sf_bessel_lnKnu_e() from
+     * the GSL (GNU Scientific Library).
+     */
+
+    res = LOGNORMCONSTANT + beta*y;
     res += -M_LN2 + _unur_SF_ln_gamma(nu) + nu*log(2./alpha);
-  }
-  else {
-    absy = fabs(y);
-    res += log(absy)*nu + beta*y;
-    if (lambda < 50) 
-      /* threshold value 50 is selected by experiments */
-      res += _unur_SF_ln_bessel_k(alpha*absy, nu);
-    else
-      res += _unur_SF_bessel_k_nuasympt(alpha*absy, nu, TRUE, FALSE);
-  }
+
+    if (nu > 1.0) {
+      double xi = 0.25*x*x;
+      double sum = 1.0 - xi/(nu-1.0);
+      if(nu > 2.0) sum += (xi/(nu-1.0)) * (xi/(nu-2.0));
+      res += log(sum);
+    }
+
+  } while(0);
+
+  /*
+    Remark: a few references
+
+    NIST Digital Library of Mathematical Functions
+
+    http://dlmf.nist.gov/10.27.E3
+    K_{-nu}(z) = K_nu(z)
+
+    http://dlmf.nist.gov/10.32.E10
+    K_nu(z) = 0.5*(0.5*z)^nu * \int_0^\infty exp(-t-z^2/(4*t)) * t^(-nu-1) dt
+
+    This implies
+    K_nu(z) = K_{-nu}(z)
+     = 0.5*(0.5*z)^(-nu) * \int_0^\infty exp(-t-z^2/(4*t)) * t^(nu-1) dt
+    <=  0.5*(0.5*z)^(-nu) * \int_0^\infty exp(-t) * t^(nu-1) dt
+     =  0.5*(0.5*z)^(-nu) * Gamma(z)
+
+    http://dlmf.nist.gov/10.30.E2
+    K_nu(z) ~ 0.5*Gamma(nu)*(0.5*z)^(-nu) for z->0
+  */
 
   return res;
 } /* end of _unur_logpdf_vg() */
@@ -147,7 +198,7 @@ _unur_upd_center_vg( UNUR_DISTR *distr )
 
   /* there is some change of overflow. then we simply use 'mu' */
   if (!_unur_isfinite(DISTR.center))
-      DISTR.center = mu;
+    DISTR.center = mu;
 
   /* center must be in domain */
   if (DISTR.center < DISTR.domain[0])

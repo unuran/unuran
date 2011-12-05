@@ -142,24 +142,12 @@ _unur_logpdf_vg(double x, const UNUR_DISTR *distr)
 	besk = _unur_SF_bessel_k_nuasympt(alpha*absy, nu, TRUE, FALSE);
 
       /* there can be numerical problems with the Bessel function K_nu. */
-      if (_unur_isfinite(besk)) {
+      if (_unur_isfinite(besk) && besk < MAXLOG - 20.0) {
 	/* o.k. */
 	res = LOGNORMCONSTANT + besk + log(absy)*nu + beta*y;
 	break;
       }
     }
-
-      /* /\* there can be numerical problems with the Bessel function K_nu. *\/ */
-      /* if (_unur_isfinite(besk)) { */
-      /* 	if (absy < 1.) */
-      /* 	  /\* Case: Bessel function K_nu overflows for small values of y. *\/ */
-      /* 	  res = LOGNORMCONSTANT + besk + log(absy)*nu + beta*y; */
-      /* 	else */
-      /* 	  /\* Case: Bessel function K_nu underflows for very large values of y. *\/ */
-      /* 	  res = -INFINITY; */
-      /* 	break; */
-      /* } */
-
 
     /* Case: numrical problems with Bessel function K_nu. */
 

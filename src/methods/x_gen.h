@@ -215,6 +215,14 @@ unsigned int unur_get_method( const UNUR_GEN *generator );
 
 /*---------------------------------------------------------------------------*/
 
+int unur_gen_is_inversion ( const UNUR_GEN *gen );
+/* 
+   Return TRUE if the generator object implements an inversion method,
+   and FALSE otherwise.
+*/
+
+/*---------------------------------------------------------------------------*/
+
 UNUR_DISTR *unur_get_distr( const UNUR_GEN *generator );
 /* 
    Get pointer to distribution object from generator object. 

@@ -185,7 +185,7 @@ unur_quantile ( struct unur_gen *gen, double U )
 /*---------------------------------------------------------------------------*/
 
 int
-_unur_gen_is_inversion ( struct unur_gen *gen )
+unur_gen_is_inversion ( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
      /* check for type of generator object                                   */
      /*----------------------------------------------------------------------*/
@@ -209,7 +209,7 @@ _unur_gen_is_inversion ( struct unur_gen *gen )
   default:
     return FALSE;
   }
-} /* end of _unur_gen_is_inversion() */
+} /* end of unur_gen_is_inversion() */
 
 /*---------------------------------------------------------------------------*/
 /* aux routines when no sampling routine is available                         */
@@ -377,7 +377,7 @@ unur_get_method( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(gen,0L);
+  CHECK_NULL(gen,0U);
 
   return gen->method;
 } /* end of unur_get_method() */

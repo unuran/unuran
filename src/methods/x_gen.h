@@ -193,16 +193,23 @@ const char *unur_gen_info( UNUR_GEN *generator, int help );
 /* Get dimension of generator for (multivariate) distribution                */
 
 int unur_get_dimension( const UNUR_GEN *generator );
-/*
-  Get the number of dimension of a (multivariate) distribution.
-  For a univariate distribution @code{1} is return.
+/* 
+   Get the number of dimension of a (multivariate) distribution.
+   For a univariate distribution @code{1} is return.
 */
 
 /*---------------------------------------------------------------------------*/
 
 const char *unur_get_genid( const UNUR_GEN *generator );
-/*
-  Get identifier string for generator.
+/* 
+   Get identifier string for generator.
+*/
+
+/*---------------------------------------------------------------------------*/
+
+unsigned int unur_get_method( const UNUR_GEN *generator );
+/* 
+   Get identifier for generating method.
 */
 
 /*---------------------------------------------------------------------------*/

@@ -361,6 +361,29 @@ unur_get_genid( const struct unur_gen *gen )
 
 /*---------------------------------------------------------------------------*/
 
+unsigned int
+unur_get_method( const struct unur_gen *gen )
+     /*----------------------------------------------------------------------*/
+     /* get identifier for generating method.                                */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen ... pointer to generator object                                */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   ID for method (see unur_method.h)                                  */
+     /*                                                                      */
+     /* error:                                                               */
+     /*   return 0U                                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(gen,0L);
+
+  return gen->method;
+} /* end of unur_get_method() */
+
+/*---------------------------------------------------------------------------*/
+
 struct unur_distr *
 unur_get_distr( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/

@@ -11,6 +11,9 @@ Version 1.9.0: ?????
                 infinite loop occurs.
 		do not immediately stop computation of relevant domain
                 when INF or NaN occurs.
+		
+        - added new function unur_get_method().
+
 
 	* Distributions:
 

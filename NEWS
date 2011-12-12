@@ -3,7 +3,8 @@ Version 1.9.0: ?????
 
 	* Methods:
 
-	- CSTD: print constants computed in init step into log file and info string
+	- CSTD: print constants computed in init step into log file and 
+                info string.
 
 	- PINV: check pointer dPDF before using it.
                 disabled internal rescaling of PDF.
@@ -12,7 +13,9 @@ Version 1.9.0: ?????
 		do not immediately stop computation of relevant domain
                 when INF or NaN occurs.
 		
-        - added new function unur_get_method().
+        - added new function unur_get_method():
+	  it returns the identifier for the generating method.
+          these identifiers are declared in 'src/methods/unur_metthods.h'.
 
 
 	* Distributions:

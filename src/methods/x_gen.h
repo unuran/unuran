@@ -210,6 +210,7 @@ const char *unur_get_genid( const UNUR_GEN *generator );
 unsigned int unur_get_method( const UNUR_GEN *generator );
 /* 
    Get identifier for generating method.
+   These identifiers are declared in @file{src/methods/unur_metthods.h}.
 */
 
 /*---------------------------------------------------------------------------*/

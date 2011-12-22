@@ -13,6 +13,11 @@ AM_MAKEINFOFLAGS = \
  -I $(top_srcdir)/doc/src \
  --no-split
 
+AM_MAKEINFOHTMLFLAGS = \
+ -I $(top_srcdir)/doc \
+ -I $(top_srcdir)/doc/src \
+ --css-include=$(top_srcdir)/doc/src/unuran.css \
+ --no-split
 
 # Automatically created part of manual
 unuran_src = ./src/unuran_src.texi

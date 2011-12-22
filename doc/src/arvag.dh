@@ -49,9 +49,7 @@
    The following figure shows how the inversion method works for
    the exponential distribution.
 
-   @sp 1
    @unurimage{figures/inversion}
-   @sp 1
 
    This algorithm is so simple that inversion is certainly the method
    of choice if the inverse CDF is available in closed form. This is

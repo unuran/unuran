@@ -22,9 +22,9 @@ density or CDF for a particular distribution object as done with
 (e.g.) the call unur_distr_cont_set_pdfstr().
 Here is an example for the latter case:
 
-@smallexample
+@example
   unur_distr_cont_set_pdfstr(distr,"1-x*x");
-@end smallexample
+@end example
 
 
 @subheading Syntax
@@ -45,7 +45,6 @@ The first unknown symbol (letter or word) is interpreted as the
 variable of the function. It is recommended to use @code{x}.
 Only one variable can be used.
 
-@sp 1
 @noindent
 @emph{Important}: The symbol @code{e} is used twice, for Euler's
 constant (= 2.7182@dots{}) and as exponent.
@@ -59,11 +58,11 @@ in a syntax error).
 @cartouche
 @noindent
 @b{Numbers}
-@sp 1
+
 @noindent
 Numbers are composed using digits and, optionally, a sign, 
 a decimal point, and an exponent indicated by @code{e}.
-@sp 1
+
 @multitable {xxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx} 
 @item Symbol        @tab Explanation              @tab Examples 
 @item @code{0@dots{}9} @tab @i{digits}            @tab @code{2343}
@@ -73,11 +72,10 @@ a decimal point, and an exponent indicated by @code{e}.
 @end multitable
 @end cartouche
 
-@sp 1
 @cartouche
 @noindent
 @b{Constants}
-@sp 1
+
 @multitable {xxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx} 
 @item @code{pi}     @tab @i{pi = 3.1415@dots{}}   @tab @code{3*pi+2}
 @item @code{e}      @tab @i{Euler's constant}     @tab @code{3*e+2} (= 10.15@dots{};
@@ -86,11 +84,10 @@ a decimal point, and an exponent indicated by @code{e}.
 @end multitable
 @end cartouche
 
-@sp 1
 @cartouche
 @noindent
 @b{Special symbols}
-@sp 1
+
 @multitable {xxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx} 
 @item @code{(}      @tab @i{opening parenthesis}  @tab @code{2*(3+x)}      
 @item @code{)}      @tab @i{closing parenthesis}  @tab @code{2*(3+x)}
@@ -98,11 +95,10 @@ a decimal point, and an exponent indicated by @code{e}.
 @end multitable
 @end cartouche
 
-@sp 1
 @cartouche
 @noindent
 @b{Relation operators (Indicator functions)}
-@sp 1
+
 @multitable {xxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx} 
 @item @code{<}      @tab @i{less than}            @tab @code{(x<1)}
 @item @code{=}      @tab @i{equal}                @tab @code{(2=x)}
@@ -115,11 +111,10 @@ a decimal point, and an exponent indicated by @code{e}.
 @end multitable
 @end cartouche
 
-@sp 1
 @cartouche
 @noindent
 @b{Arithmetic operators}
-@sp 1
+
 @multitable {xxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx} 
 @item @code{+}      @tab @i{addition}             @tab @code{2+x}
 @item @code{-}      @tab @i{subtraction}          @tab @code{2-x}
@@ -129,11 +124,10 @@ a decimal point, and an exponent indicated by @code{e}.
 @end multitable
 @end cartouche
 
-@sp 1
 @cartouche
 @noindent
 @b{Functions}
-@sp 1
+
 @multitable {xxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx} 
 @item @code{mod}    @tab @code{mod(m,n)} @i{remainder of devision m over n} @tab mod(x,2)   
 @item @code{exp}    @tab @i{exponential function 
@@ -149,11 +143,10 @@ a decimal point, and an exponent indicated by @code{e}.
 @end multitable
 @end cartouche
 
-@sp 1
 @cartouche
 @noindent
 @b{Variable}
-@sp 1
+
 @multitable {xxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx} 
 @item @code{x}      @tab @i{variable}             @tab @code{3*x^2}
 @end multitable
@@ -163,13 +156,9 @@ a decimal point, and an exponent indicated by @code{e}.
 @subheading Examples
 
 @example
-
 1.231+7.9876*x-1.234e-3*x^2+3.335e-5*x^3
-
 sin(2*pi*x)+x^2
-
 exp(-((x-3)/2.1)^2)
-
 @end example
 
 @noindent

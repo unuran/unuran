@@ -323,7 +323,7 @@ sub make_list_of_distributions {
     $code .= "\t }\n\n";
 
     # print docu
-    $distr_doc_string .= "\@end itemize\n\n\@sp 1\n";
+    $distr_doc_string .= "\@end itemize\n\n";
 
     print STDERR "\n\n";
 
@@ -368,7 +368,7 @@ sub make_list_of_distributions {
     $code .= "\t }\n\n";
 
     # print docu
-    $distr_doc_string .= "\@end itemize\n\n\@sp 1\n";
+    $distr_doc_string .= "\@end itemize\n\n";
 
     # add comment for order statistics ...
     $distr_doc_string .= comment_for_corder();
@@ -686,7 +686,7 @@ sub make_distr_set_calls {
     }
 
     # end of table
-    $distr_doc_string .= "\@end table\n\n\@sp 1\n";
+    $distr_doc_string .= "\@end table\n\n";
 
     # Return result
     return $code;
@@ -1017,7 +1017,7 @@ sub make_list_of_par_sets {
 	$code .= "\t\t break;\n";
 
 	# print docu
-	$method_doc_string .= "\@end table\n\n\@sp 1\n";
+	$method_doc_string .= "\@end table\n\n";
     }
 
     # end of switch for methods
@@ -1066,8 +1066,6 @@ sub comment_for_corder {
 Order statistics for continuous distributions (\@pxref{CORDER}) are
 supported by using the key \@code{orderstatistics} for distributions
 of type \@code{CONT}.
-
-\@sp 1
 
 EOS
 

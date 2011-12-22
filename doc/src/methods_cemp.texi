@@ -2,7 +2,7 @@
 @noindent
 Methods for @b{continuous empirical univariate distributions}@*
 sample with @command{unur_sample_cont}
-@sp 1
+
 @noindent
 EMPK:  Requires an observed sample. @*
 EMPL:  Requires an observed sample.

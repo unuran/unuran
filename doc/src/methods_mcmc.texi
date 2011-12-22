@@ -2,7 +2,7 @@
 @noindent
 Markov Chain Methods for @b{continuous multivariate distributions}@*
 sample with @command{unur_sample_vec}
-@sp 1
+
 @noindent
 GIBBS: T-concave logPDF and derivatives of logPDF. @*
 HITRO: Requires PDF.

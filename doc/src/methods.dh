@@ -18,7 +18,7 @@ Select a method and create a parameter object.
 
 @item
 Initizialize the generator object using unur_init().
-@sp 1
+
 @emph{Important}: Initialization of the generator object might fail.
 unur_init() returns a NULL pointer then, which @strong{must} not be
 used for sampling.

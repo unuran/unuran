@@ -68,19 +68,19 @@
 
    If you want to use the library you must include the UNU.RAN header
    file
-   @smallexample
+   @example
    #include <unuran.h>
-   @end smallexample
+   @end example
    If you also need the test routines then also add
-   @smallexample
+   @example
    #include <unuran_tests.h>
-   @end smallexample
+   @end example
    If wrapper functions for external sources of uniform random number
    generators are used, the corresponding header files must also be
    included, e.g.,
-   @smallexample
+   @example
    #include <unuran_urng_rngstream.h>
-   @end smallexample
+   @end example
 
    @noindent
    If these header files are not installed on the standard search path
@@ -90,9 +90,9 @@
    command for a source file @file{app.c} with the GNU C compiler
    @code{gcc} is,
 
-   @smallexample
+   @example
    gcc -I/usr/local/include -c app.c
-   @end smallexample
+   @end example
 
    @noindent
    This results in an object file @file{app.o}.	 The default include
@@ -108,9 +108,9 @@
    an application with the library (and the the RNGSTREAMS library if you
    decide to use this source of uniform pseudo-random numbers), 
 
-   @smallexample
+   @example
    gcc app.o -lunuran -lrngstreams -lm
-   @end smallexample
+   @end example
 
 
    @subsubheading Shared Libraries
@@ -120,16 +120,16 @@
    @code{LD_LIBRARY_PATH} to include the directory where the library
    is installed.  For example, 
 
-   @smallexample
+   @example
    LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
-   @end smallexample
+   @end example
    @noindent
    To compile a statically linked version of the program instead, use the
    @code{-static} flag in @code{gcc},
 
-   @smallexample
+   @example
    gcc -static app.o -lunuran -lrngstreams -lm
-   @end smallexample
+   @end example
 
 
    @subsubheading Compatibility with C++
@@ -274,28 +274,19 @@
    that only an approximation must be provided.
    See @ref{Glossary}, for unfamiliar terms.
 
-   @sp 1
    @include methods_cont.texi
 
-   @sp 1
    @include methods_cemp.texi
 
-   @sp 1
    @include methods_cvec.texi
 
-   @sp 1
    @include methods_cvemp.texi
 
-   @sp 1
    @include methods_discr.texi
 
-   @sp 1
    @include methods_matr.texi
 
-   @sp 1
    @include methods_mcmc.texi
-
-   @sp 2
 
    Because of tremendous variety of possible problems, UNU.RAN provides many
    methods. All information for creating a generator object has to be
@@ -350,7 +341,6 @@
    Moreover, it is recommended to call unur_init() immediately after
    the parameter object @code{par} has created and modified.
 
-   @sp 1
    An existing generator object is a rather static construct.
    Nevertheless, some of the parameters can still be modified by
    @command{chg} calls, e.g.
@@ -358,7 +348,6 @@
      unur_ninv_chg_max_iteration(gen, 30);
    @end example
   
-   @sp 1
    Notice that it is important @emph{when} parameters are
    changed because different functions must be used:
 

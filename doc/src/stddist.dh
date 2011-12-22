@@ -20,9 +20,9 @@ The syntax to get a distribuion object for distributions
 
 @noindent
 E.g. to get an object for the gamma distribution (with shape parameter) use
-@smallexample
+@example
 unur_distr_gamma( params, 1 );
-@end smallexample
+@end example
 
 Distributions may have default parameters with need not be given
 explicitely.
@@ -31,8 +31,7 @@ shape, scale and location parameter. Only the (first) shape parameter
 is required. The others can be omitted and are then set by default
 values.
 
-@sp 1
-@smallexample
+@example
 @cc_start alpha = 5; default: beta = 1, gamma = 0 @cc_stop
 double fpar[] = @{5.@};
 unur_distr_gamma( fpar, 1 );
@@ -44,9 +43,8 @@ unur_distr_gamma( fpar, 2 );
 @cc_start alpha = 5, beta = 3, gamma = -2
 double fpar[] = @{5., 3., -2.@};
 unur_distr_gamma( fpar, 3 );
-@end smallexample
+@end example
 
-@sp 1
 @strong{Important:} Naturally the computational accuracy
 limits the possible parameters. There shouldn't be problems
 when the parameters of a distribution are in a ``reasonable'' range but

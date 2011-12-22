@@ -65,9 +65,9 @@
    =HOWTOUSE
       When using this interface @file{unuran_urng_rngstream.h} must be included
       in the corresponding C file, i.e., one must add the line
-      @smallexample
+      @example
       #include <unuran_urng_rngstream.h>
-      @end smallexample
+      @end example
 
       Moreover, one must not forget to link the executable against the
       @file{RngStream} library (i.e., when using the GNU-style package
@@ -79,10 +79,10 @@
       only once in an application using the routine
       @uref{http://statmath.wu.ac.at/software/RngStreams/doc/rngstreams.html#index-RngStream_005fSetPackageSeed-2,,@code{RngStream_SetPackageSeed}}:
 
-      @smallexample
+      @example
         unsigned long seed[] = @{111u, 222u, 333u, 444u, 555u, 666u@};
         RngStream_SetPackageSeed(seed);
-      @end smallexample
+      @end example
 
       The following routines are supported for URNG objects of this
       type:

@@ -499,7 +499,7 @@ sub texi_node {
 	    if ($IN->{$node}->{"=REF"}) {
 		$TEXI .= "\@item Reference:\n".$IN->{$node}->{"=REF"}."\n";
 	    }
-	    $TEXI .= "\@end table\n\@sp 1\n\n";
+	    $TEXI .= "\@end table\n\n";
 	}
     }
 
@@ -801,7 +801,7 @@ sub scan_FPARAM {
     $texout =~ s/($greeks)(\W|\_)/\\$1$2/g;
 
     my $texout_header  = "\@iftex\n";
-    $texout_header .= "\@item parameters $n_required ($n_total): \@r{$flist}\n\@sp 1\n";
+    $texout_header .= "\@item parameters $n_required ($n_total): \@r{$flist}\n\n";
     $texout_header .= "\@multitable {No.} {namex} {999999999999} {defaultx} {xxxxxxxxxxxxxxxxxxxxxxxx}\n";
     $texout_header .= "\@item No. \@tab name \@tab \@tab default\n";
 
@@ -1195,7 +1195,7 @@ sub scan_ROUTINES {
     if ($listhtml) {
 	$listproc = "\@ifhtml\n\@itemize\n".$listhtml."\@end itemize\n\@end ifhtml\n";
 	## Currently we only display list of calls in HTML output
-	## $listproc .= "\@ifnothtml\n\@itemize\n".$listinfo."\@end itemize\n\n\@sp 1\n\@end ifnothtml\n";
+	## $listproc .= "\@ifnothtml\n\@itemize\n".$listinfo."\@end itemize\n\n\@end ifnothtml\n";
     }
     
     # store new lines
@@ -1303,7 +1303,7 @@ sub process_unur_macros {
 	  }
 
 	  if ($macro =~ /\@unurimage\s*$/) {
-	      $replacement = "\n\@sp 1\n\@image{$body}\n\@sp 1\n";
+	      $replacement = "\n\n\@image{$body}\n\n";
 	      last MACRO;
 	  }
 

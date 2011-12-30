@@ -9,9 +9,11 @@
    UNU.RAN. Assuming that UNU.RAN as well as the PRNG libraries 
    have been installed properly (@pxref{Installation}) each
    of these can be compiled (using the GCC in this example) with
+
    @example
       gcc -Wall -O2 -o example example.c -lunuran -lprng -lm
    @end example 
+
    @noindent
    @emph{Remark:} @code{-lprng} must be omitted when the PRNG library
    is not installed. Then however some of the examples might not work.

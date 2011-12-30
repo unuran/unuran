@@ -20,10 +20,12 @@ The syntax to get a distribuion object for distributions
 
 @noindent
 E.g. to get an object for the gamma distribution (with shape parameter) use
+
 @example
-unur_distr_gamma( params, 1 );
+   unur_distr_gamma( params, 1 );
 @end example
 
+@noindent
 Distributions may have default parameters with need not be given
 explicitely.
 E.g. The gamma distribution has three parameters: the
@@ -32,17 +34,17 @@ is required. The others can be omitted and are then set by default
 values.
 
 @example
-@cc_start alpha = 5; default: beta = 1, gamma = 0 @cc_stop
-double fpar[] = @{5.@};
-unur_distr_gamma( fpar, 1 );
+   @cc_start alpha = 5; default: beta = 1, gamma = 0 @cc_stop
+   double fpar[] = @{5.@};
+   unur_distr_gamma( fpar, 1 );
 
-@cc_start alpha = 5, beta = 3; default: gamma = 0 @cc_stop
-double fpar[] = @{5., 3.@};
-unur_distr_gamma( fpar, 2 );
+   @cc_start alpha = 5, beta = 3; default: gamma = 0 @cc_stop
+   double fpar[] = @{5., 3.@};
+   unur_distr_gamma( fpar, 2 );
 
-@cc_start alpha = 5, beta = 3, gamma = -2
-double fpar[] = @{5., 3., -2.@};
-unur_distr_gamma( fpar, 3 );
+   @cc_start alpha = 5, beta = 3, gamma = -2
+   double fpar[] = @{5., 3., -2.@};
+   unur_distr_gamma( fpar, 3 );
 @end example
 
 @strong{Important:} Naturally the computational accuracy

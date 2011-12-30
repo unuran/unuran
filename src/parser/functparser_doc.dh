@@ -23,7 +23,7 @@ density or CDF for a particular distribution object as done with
 Here is an example for the latter case:
 
 @example
-  unur_distr_cont_set_pdfstr(distr,"1-x*x");
+   unur_distr_cont_set_pdfstr(distr,"1-x*x");
 @end example
 
 
@@ -156,9 +156,9 @@ a decimal point, and an exponent indicated by @code{e}.
 @subheading Examples
 
 @example
-1.231+7.9876*x-1.234e-3*x^2+3.335e-5*x^3
-sin(2*pi*x)+x^2
-exp(-((x-3)/2.1)^2)
+   1.231+7.9876*x-1.234e-3*x^2+3.335e-5*x^3
+   sin(2*pi*x)+x^2
+   exp(-((x-3)/2.1)^2)
 @end example
 
 @noindent
@@ -172,7 +172,7 @@ For example to define the density of triangular distribution
 with domain (-1,1) and mode 0 use
 
 @example
-(x>-1)*(x<0)*(1+x) + (x>=0)*(x<1)*(1-x)
+   (x>-1)*(x<0)*(1+x) + (x>=0)*(x<1)*(1-x)
 @end example
 
 =EON

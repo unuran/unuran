@@ -70,10 +70,12 @@
    =HOWTOUSE
       When using this interface @file{unuran_urng_prng.h} must be included
       in the corresponding C file, i.e., one must add the line
+
       @example
-      #include <unuran_urng_prng.h>
+         #include <unuran_urng_prng.h>
       @end example
 
+      @noindent
       Moreover, one must not forget to link the executable against
       @file{libprng}.
 

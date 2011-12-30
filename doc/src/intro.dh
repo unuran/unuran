@@ -68,18 +68,25 @@
 
    If you want to use the library you must include the UNU.RAN header
    file
+
    @example
-   #include <unuran.h>
+      #include <unuran.h>
    @end example
+
+   @noindent
    If you also need the test routines then also add
+
    @example
-   #include <unuran_tests.h>
+      #include <unuran_tests.h>
    @end example
+
+   @noindent
    If wrapper functions for external sources of uniform random number
    generators are used, the corresponding header files must also be
    included, e.g.,
+
    @example
-   #include <unuran_urng_rngstream.h>
+      #include <unuran_urng_rngstream.h>
    @end example
 
    @noindent
@@ -91,7 +98,7 @@
    @code{gcc} is,
 
    @example
-   gcc -I/usr/local/include -c app.c
+      gcc -I/usr/local/include -c app.c
    @end example
 
    @noindent
@@ -109,7 +116,7 @@
    decide to use this source of uniform pseudo-random numbers), 
 
    @example
-   gcc app.o -lunuran -lrngstreams -lm
+      gcc app.o -lunuran -lrngstreams -lm
    @end example
 
 
@@ -121,14 +128,15 @@
    is installed.  For example, 
 
    @example
-   LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+      LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
    @end example
+
    @noindent
    To compile a statically linked version of the program instead, use the
    @code{-static} flag in @code{gcc},
 
    @example
-   gcc -static app.o -lunuran -lrngstreams -lm
+      gcc -static app.o -lunuran -lrngstreams -lm
    @end example
 
 
@@ -195,9 +203,11 @@
    Once a generator object has been created sampling (from the
    univariate continuous distribution) can be done by
    the following command:
+
    @example
       double x = unur_sample_cont(generator);
    @end example
+
    @noindent
    Analogous commands exist for discrete and multivariate
    distributions.
@@ -230,9 +240,11 @@
    @noindent
    Distribution objects can be
    created from scratch by the following call
+
    @example
       distr = unur_distr_<type>_new();
    @end example
+
    @noindent
    where @code{<type>} is one of the five possible types from the
    above table.
@@ -243,9 +255,11 @@
    The naming scheme of these functions is designed to indicate the
    corresponding type of the distribution object and the task to be
    performed. It is demonstated on the following example.
+
    @example
      unur_distr_cont_set_pdf(distr, mypdf);
    @end example
+
    @noindent
    This command stores a PDF named @code{mypdf} in the distribution
    object @code{distr} which must have the type @code{cont}.
@@ -256,10 +270,12 @@
    objects for standard distribution can be created by a single call.
    Eg. to get an object for the normal distribution with mean 2 and
    standard deviation 5 use
+
    @example
-   double parameter[2] = @{2.0 ,5.0@};
-   UNUR_DISTR *distr = unur_distr_normal(parameter, 2);
+      double parameter[2] = @{2.0 ,5.0@};
+      UNUR_DISTR *distr = unur_distr_normal(parameter, 2);
    @end example
+
    @noindent
    For a list of standard distributions
    see @ref{Stddist,,Standard distributions}.
@@ -293,18 +309,22 @@
    collected in a parameter object first.
    For example, if the task is to sample from a continuous distribution
    the method AROU might be a good choice. Then the call
+
    @example
-     UNUR_PAR *par = unur_arou_new(distribution);
+      UNUR_PAR *par = unur_arou_new(distribution);
    @end example
+
    @noindent
    creates an parameter object @code{par} with a pointer to the
    distribution object and default values for all necessary parameters
    for method AROU.
    Other methods can be used by replacing @code{arou} with the name
    of the desired methods (in lower case letters):
+
    @example
-     UNUR_PAR *par = unur_<method>_new(distribution);
+      UNUR_PAR *par = unur_<method>_new(distribution);
    @end example
+
    @noindent
    This sets the default values for all necessary parameters for the
    chosen method. These are suitable for almost all
@@ -315,9 +335,12 @@
    perforence of the algorithm.
    The following example demonstrates how to change the maximum
    number of iterations for method NINV to the value 50:
+
    @example
-    unur_ninv_set_max_iteration(par, 50);
+      unur_ninv_set_max_iteration(par, 50);
    @end example
+
+   @noindent
    All available methods are described in details in 
    @ref{Methods}.
   
@@ -325,9 +348,10 @@
    @subheading Creating a generator object
 
    Now it is possible to create a generator object:
+
    @example
-     UNUR_GEN *generator = unur_init(par);
-     if (generator == NULL) exit(EXIT_FAILURE);
+      UNUR_GEN *generator = unur_init(par);
+      if (generator == NULL) exit(EXIT_FAILURE);
    @end example
 
    @noindent
@@ -344,10 +368,12 @@
    An existing generator object is a rather static construct.
    Nevertheless, some of the parameters can still be modified by
    @command{chg} calls, e.g.
+
    @example
-     unur_ninv_chg_max_iteration(gen, 30);
+      unur_ninv_chg_max_iteration(gen, 30);
    @end example
   
+   @noindent
    Notice that it is important @emph{when} parameters are
    changed because different functions must be used:
 
@@ -391,8 +417,9 @@
 
    When you do not need your generator object any more, you should
    destroy it:
+
    @example
-     unur_free(generator);
+      unur_free(generator);
    @end example
 
    
@@ -403,14 +430,18 @@
    When created a parameter object the pointer for the uniform random
    number generator is set to the default generator. However, it can be
    changed at any time to any other generator:
+
    @example
-     unur_set_urng(par, urng);
+      unur_set_urng(par, urng);
    @end example
+
    @noindent
    or
+
    @example
-     unur_chg_urng(generator, urng);
+      unur_chg_urng(generator, urng);
    @end example
+
    @noindent
    respectively.
    See @ref{URNG,,Using uniform random number generators},

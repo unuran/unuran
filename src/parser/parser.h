@@ -169,9 +169,12 @@ UNUR_PAR *_unur_str2par( const UNUR_DISTR *distribution, const char *method, str
    For details see the following description of each block.
 
    In the following example
+
    @example
-   distr = normal(3.,0.75); domain = (0,inf) & method = tdr; c = 0 
+      distr = normal(3.,0.75); domain = (0,inf) & method = tdr; c = 0 
    @end example
+
+   @noindent
    we have a distribution block for the truncated normal distribution
    with mean 3 and standard deviation 0.75 on domain (0,infinity);
    and block for choosing method TDR with parameter c set to 0.
@@ -304,12 +307,14 @@ UNUR_PAR *_unur_str2par( const UNUR_DISTR *distribution, const char *method, str
    between the name of the standard distribution and the opening
    parenthesis @code{(} of this list. E.g., to get a beta distribution,
    use
+
    @example
       distr = beta(2,4)
    @end example
 
    To get an object for a discrete distribution with probability
    vector (0.5,0.2,0.3), use 
+
    @example
       distr = discr; pv = (0.5,0.2,0.3)
    @end example
@@ -317,12 +322,16 @@ UNUR_PAR *_unur_str2par( const UNUR_DISTR *distribution, const char *method, str
    It is also possible to set a PDF, PMF, or CDF using a string.
    E.g., to create a continuous distribution with PDF proportional to 
    @code{exp(-sqrt(2+(x-1)^2) + (x-1))} and domain (0,inf) use
+
    @example
       distr = cont; pdf = "exp(-sqrt(2+(x-1)^2) + (x-1))"
    @end example
+
+   @noindent
    Notice: If this string is used in an unur_str2distr() or
    unur_str2gen() call the double quotes @code{"} must be protected by
    @code{\"}. Alternatively, single quotes may be used instead 
+
    @example
       distr = cont; pdf = 'exp(-sqrt(2+(x-1)^2) + (x-1))'
    @end example
@@ -345,6 +354,7 @@ UNUR_PAR *_unur_str2par( const UNUR_DISTR *distribution, const char *method, str
    The key @code{method} is obligatory, it must be the first key and its
    value is the name of a method suitable for the choosen standard
    distribution. E.g., if method AROU is chosen, use
+
    @example
       method = arou
    @end example
@@ -356,9 +366,12 @@ UNUR_PAR *_unur_str2par( const UNUR_DISTR *distribution, const char *method, str
    @command{unur_arou_set_max_sqhratio} to set a parameter of method AROU.
    To call this function via the string-interface, the
    key @code{max_sqhratio} can be used:
+
    @example
       max_sqhratio = 0.9
    @end example
+
+   @noindent
    Additionally the keyword @code{debug} can be used to set debugging
    flags (see @ref{Debug,,Debugging}, for details).
    

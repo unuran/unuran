@@ -119,8 +119,9 @@
       @item
       In the case that the unknown underlying distribution is not continuous
       but discrete you should "turn off" the adding of the noise by setting:
+
       @example
-      unur_empk_set_smoothing(par, 0.)
+         unur_empk_set_smoothing(par, 0.)
       @end example
 
       @item

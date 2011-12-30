@@ -27,7 +27,8 @@
    @enumerate 
 
    @item First unzip and untar the package and change to the directory:
-	 @example
+
+   	 @example
 	    tar zxvf unuran-@value{VERSION}.tar.gz
 	    cd unuran-@value{VERSION}
 	 @end example
@@ -35,10 +36,12 @@
    @item Optional: Edit the file @file{src/unuran_config.h}
 
    @item Run a configuration script:
+
 	 @example
 	    sh ./configure --prefix=<prefix>
 	 @end example
 
+	 @noindent
 	 where @code{<prefix>} is the root of the installation tree.
 	 When omitted @file{/usr/local} is used.
 
@@ -70,8 +73,9 @@
          @end table
 
          We strongly recommend to use RngStreams library: 
+
 	 @example
-         sh ./configure --with-urng-rngstream --with-urng-default=rngstream
+            sh ./configure --with-urng-rngstream --with-urng-default=rngstream
 	 @end example
      
          @emph{Important:} You must install the respective libraries
@@ -126,25 +130,32 @@
 
 
    @item Compile and install the libray:
+
 	 @example
 	    make
 	    make install
 	 @end example
 
+	 @noindent
 	 Obviously @code{$(prefix)/include} and @code{$(prefix)/lib}
 	 must be in the search path of your compiler. You can use environment
 	 variables to add these directories to the search path. If you
 	 are using the bash type (or add to your profile):
+
 	 @example
 	    export LIBRARY_PATH="<prefix>/lib"
 	    export C_INCLURE_PATH="<prefix>/include"
 	 @end example
 
+	 @noindent
 	 If you want to make a shared library, then making such
 	 a library can be enabled using
+
 	 @example
 	    sh ./configure --enable-shared
 	 @end example
+
+	 @noindent
 	 If you want to link against the shared library make sure that 
 	 it can be found when executing the binary that links to the 
 	 library. If it is not installed in the usual path, then the
@@ -157,19 +168,23 @@
          text) can be found in directory @file{doc}.
 
    @item You can run some tests by
+
 	 @example
 	    make check
 	 @end example
 
+	 @noindent
 	 However, some of these tests requires the usage of the PRNG or 
 	 RngStreams library and are only executed if these are installed
 	 enabled by the corresponding configure flag.
 
 	 An extended set of tests is run by 
+
 	 @example
 	    make fullcheck
 	 @end example
 
+	 @noindent
 	 However some of these might fail occasionally due to 
 	 roundoff errors or the mysteries of floating point arithmetic,
 	 since we have used some extreme settings to test the library.
@@ -201,8 +216,9 @@
 
 	 Writting logging information into the logfile must now be
 	 enabled when running the configure script:
+
 	 @example
-               sh ./configure --enable-logging
+            sh ./configure --enable-logging
 	 @end example
 
    @item Upgrading UNU.RAN from version 0.7.x or earlier:
@@ -211,10 +227,12 @@
 	 underlying distributions and running a reinitialization
 	 routine has been simplified. The old routines can be compiled
 	 into the library using the following configure flag: 
+
 	 @example
-	       sh ./configure --enable-deprecated
+	    sh ./configure --enable-deprecated
 	 @end example
 
+	 @noindent
          Notice: Using these deprecated routines is not supported any
          more and this strong discouraged. 
 

@@ -74,6 +74,7 @@ libmethods_la_SOURCES = \
  vnrou.c  vnrou.h  vnrou_struct.h 
 
 noinst_HEADERS = \
+ unur_methods.h \
  unur_methods_source.h
 
 # clean backup files

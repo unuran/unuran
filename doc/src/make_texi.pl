@@ -11,7 +11,7 @@
 #                                                                            #
 ##############################################################################
 #                                                                            #
-#   Copyright (c) 2000-2006 Wolfgang Hoermann and Josef Leydold              #
+#   Copyright (c) 2000-2011 Wolfgang Hoermann and Josef Leydold              #
 #   Department of Statistics and Mathematics, WU Wien, Austria               #
 #                                                                            #
 #   This program is free software; you can redistribute it and/or modify     #
@@ -1046,8 +1046,11 @@ sub scan_ROUTINES {
     # deftypefn block closed
     my $defblock_open = 0;
     
-    # process blocks
+    # Store fuunction and anchor
     my $fkt_block = '';
+    my $anchor_block = '';
+
+    # process blocks
     foreach my $block (@blocks) {
 
 	# remove anyting that starts with an #
@@ -1121,7 +1124,7 @@ sub scan_ROUTINES {
 	    $listinfo .= "\@item $fn_name\n";
 
 	    # make anchor
-	    $fkt_block .= "\@anchor{funct:$fn_name}\n";
+	    $anchor_block .= "\@anchor{funct:$fn_name}\n";
 	    # make texinfo tag
 	    $fkt_block .= (($defblock_open) ? "\@deftypefnx" : "\@deftypefn");
 	    $fkt_block .= " %%%Function%%% \{$fn_type\} $fn_name (";
@@ -1156,7 +1159,7 @@ sub scan_ROUTINES {
 	    $listinfo .= "\@item $fn_name\n";
 
 	    # make anchor
-	    $fkt_block .= "\@anchor{var:$fn_name}\n";
+	    $anchor_block .= "\@anchor{var:$fn_name}\n";
 	    # make texinfo tag
 	    $fkt_block .= (($defblock_open) ? "\@deftypevarx" : "\@deftypevar");
 	    $fkt_block .= " \{$fn_type\} $fn_name\n";
@@ -1171,17 +1174,18 @@ sub scan_ROUTINES {
 		$fkt_block .= "\@end deftypevar\n"; }
 	    $defblock_open = 0;
 	    # for info file
-	    my $fkt_string = $fkt_block;
+	    my $fkt_string = $anchor_block . $fkt_block;
 	    process_unur_macros("have_info",\$fkt_string);
 	    $fkt_string =~ s/%%%Function%%%/Function/g;
 	    $proc .= "\@ifinfo\n$fkt_string\@end ifinfo\n";
 	    # for other output formats
-	    $fkt_string = $fkt_block;
+	    $fkt_string = $anchor_block . $fkt_block;
 	    process_unur_macros("tex|html",\$fkt_string);
 	    $fkt_string =~ s/%%%Function%%%/{}/g;
 	    $proc .= "\@ifnotinfo\n$fkt_string\@end ifnotinfo\n\n";
-	    # clear block
+	    # clear blocks
 	    $fkt_block = '';
+	    $anchor_block = '';
 	}
 	else { 
 	    $defblock_open = 1;

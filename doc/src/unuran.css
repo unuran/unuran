@@ -18,11 +18,11 @@ body {
 }
 
 a:link {
-color: #0790c0;
+color: #1e426e;
 }
 
 a:visited {
-color: #5cc8e0;
+color: #3069dc;
 }
 
 .code {
@@ -51,7 +51,7 @@ background-color: #ffffff;
 display: block;
 padding: 0.2em 0.5em 0.2em 0.5em ;
 text-decoration: none;
-color: #0790c0;
+color: #1e426e;
 }
 
 div#nav a:hover {
@@ -65,7 +65,7 @@ border-left-width: 1px;
 border-top-width: 1px;
 border-bottom-width: 1px;
 border-right-width: 1px;
-border-color: #0790c0;
+border-color: #1e426e;
 display: block;
 padding: 0.2em 0.5em 0.2em 0.5em ;
 text-align: right;
@@ -100,9 +100,9 @@ clear: both;
 
 div#title h1 {
 background-color: #ffffff;
-border-bottom: 5px solid #0790c0;
+border-bottom: 5px solid #1e426e;
 font-size: xx-large;
-color: #0790c0;
+color: #1e426e;
 padding: 0;
 margin: 0;
 }
@@ -111,12 +111,12 @@ margin: 0;
 
 .header {
 color: #ffffff;
-background-color: #0790c0;
+background-color: #1e426e;
 font-family: arial,sans-serif;
 padding: 0;
 font-size: medium;
 font-weight: bold;
-border: 3px solid #0790c0;
+border: 3px solid #1e426e;
 }
 
 /* For the download page */
@@ -146,15 +146,15 @@ text-align: left;
 /* Changes for Octave Wiki */
 
 h1 {
-background-color: #0790c0;
-color: #ffffff;
+background-color: #bcd2ee;
+color: #1e426e;
 font-size: xx-large;
 padding: 2em;
-margin: 8em;
+margin: 2em;
 }
 
 h2 {
-background-color: #0790c0;
+background-color: #1e426e;
 color: #ffffff;
 font-size: 1.2em;
 padding: 2px;
@@ -162,7 +162,7 @@ margin-top: 5px;
 }
 
 h3 {
-background-color: #0790c0;
+background-color: #1e426e;
 color: #ffffff;
 font-size: 1.1em;
 padding: 2px;
@@ -219,7 +219,7 @@ padding: 0.5em;
 margin-left: 1em;
 margin-right: 2em;
 white-space: pre;
-background-color: #e6e6e6;
+background-color: #f8f993;
 color: black;
 }
 

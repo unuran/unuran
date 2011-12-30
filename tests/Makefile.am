@@ -147,7 +147,7 @@ EXTRA_DIST = \
  t_ninv.conf \
  t_norta.conf \
  t_nrou.conf \
- t_pinv \
+ t_pinv.conf \
  t_srou.conf \
  t_ssr.conf \
  t_tabl.conf \

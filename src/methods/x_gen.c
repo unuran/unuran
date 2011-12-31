@@ -191,7 +191,7 @@ unur_gen_is_inversion ( const struct unur_gen *gen )
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
-  CHECK_NULL(gen,FALSE);
+  if (gen==NULL) return FALSE;
 
   switch (gen->method) {
   case UNUR_METH_HINV:
@@ -330,10 +330,7 @@ unur_get_dimension( const struct unur_gen *gen )
      /*   return 0                                                           */
      /*----------------------------------------------------------------------*/
 {
-  /* check arguments */
-  CHECK_NULL(gen,0);
-
-  return (gen->distr->dim);
+  return ((gen) ? gen->distr->dim : 0);
 } /* end of unur_get_dimension() */
 
 /*---------------------------------------------------------------------------*/
@@ -353,10 +350,7 @@ unur_get_genid( const struct unur_gen *gen )
      /*   return NULL                                                        */
      /*----------------------------------------------------------------------*/
 {
-  /* check arguments */
-  CHECK_NULL(gen,NULL);
-
-  return gen->genid;
+  return ((gen) ? gen->genid : NULL);
 } /* end of unur_get_genid() */
 
 /*---------------------------------------------------------------------------*/
@@ -376,10 +370,7 @@ unur_get_method( const struct unur_gen *gen )
      /*   return 0U                                                          */
      /*----------------------------------------------------------------------*/
 {
-  /* check arguments */
-  CHECK_NULL(gen,0U);
-
-  return gen->method;
+  return ((gen) ? gen->method : 0U);
 } /* end of unur_get_method() */
 
 /*---------------------------------------------------------------------------*/
@@ -399,10 +390,7 @@ unur_get_distr( const struct unur_gen *gen )
      /*   return NULL                                                        */
      /*----------------------------------------------------------------------*/
 {
-  /* check arguments */
-  CHECK_NULL(gen,NULL);
-
-  return gen->distr;
+  return ((gen) ? gen->distr : NULL);
 } /* end of unur_get_distr() */
 
 /*---------------------------------------------------------------------------*/

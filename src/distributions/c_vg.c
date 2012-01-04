@@ -114,7 +114,6 @@ _unur_logpdf_vg(double x, const UNUR_DISTR *distr)
   double res;                 /* result of computation                       */
   double y, absy;             /* auxiliary variables                         */
 
-  // res = LOGNORMCONSTANT;
   y = x - mu;
   absy = fabs(y);
 
@@ -149,7 +148,7 @@ _unur_logpdf_vg(double x, const UNUR_DISTR *distr)
       }
     }
 
-    /* Case: numrical problems with Bessel function K_nu. */
+    /* Case: numerical problems with Bessel function K_nu. */
 
     if (absy < 1.0) {
       /* Case: Bessel function K_nu overflows for small values of y.

@@ -136,7 +136,8 @@ _unur_lognormconstant_meixner(const double *params, int n_params ATTRIBUTE__UNUS
     (2*cos(beta/2))^(2*delta) / (2*alpha*pi*Gamma(2*delta))
   */
 
-  return (2.*delta*log(2.*cos(beta/2.))-log(2.*alpha*M_PI)-lgamma(2.*delta));
+  return ( 2.*delta*log(2.*cos(beta/2.))
+	   - (log(2.*alpha*M_PI) + _unur_SF_ln_gamma(2.*delta)));
 } /* end of _unur_normconstant_meixner() */
 
 /*---------------------------------------------------------------------------*/

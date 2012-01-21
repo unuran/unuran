@@ -62,6 +62,11 @@
  *   _unur_SF_cdf_normal        ... CDF of normal distribution
  *   _unur_SF_invcdf_normal     ... inverse CDF of normal distribution
  *
+ * Additional functions:
+ *
+ *   _unur_SF_bessel_k          ... modified Bessel function K_nu of second kind
+ *   _unur_SF_ln_bessel_k       ... logarithm of K_n
+ *
  *---------------------------------------------------------------------------*/
 
 #ifdef HAVE_LIBRMATH
@@ -222,5 +227,3 @@ double _unur_hypot(const double x, const double y);
 /*---------------------------------------------------------------------------*/
 #endif  /* UNUR_SPECFUNCT_SOURCE_H_SEEN */
 /*---------------------------------------------------------------------------*/
-
-/* _unur_besselK_nuasympt */

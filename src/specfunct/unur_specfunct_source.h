@@ -159,6 +159,8 @@
 /* Routines from the CEPHES library.                                         */
 /*---------------------------------------------------------------------------*/
 
+#define COMPILE_CEPHES
+
 /* incomplete beta integral */
 double _unur_cephes_incbet(double a, double b, double x);
 #define _unur_SF_incomplete_beta(x,a,b)   _unur_cephes_incbet((a),(b),(x))

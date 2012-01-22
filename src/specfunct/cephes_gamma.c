@@ -114,8 +114,6 @@ Copyright 1984, 1987, 1989, 1992, 2000 by Stephen L. Moshier
 */
 
 #include "cephes_source.h"
-#include <utils/unur_fp_source.h>
-#include <utils/umath.h>
 
 /*---------------------------------------------------------------------------*/
 

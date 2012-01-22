@@ -27,9 +27,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-#include <config.h>
-#include <math.h>
-#include "unur_specfunct_source.h"
+#include <unur_source.h>
 
 #if !HAVE_DECL_HYPOT
 double _unur_hypot (const double x, const double y)
@@ -38,7 +36,7 @@ double _unur_hypot (const double x, const double y)
   double yabs = fabs(y) ;
   double min, max;
 
-  xxif (xabs < yabs) {
+  if (xabs < yabs) {
     min = xabs ;
     max = yabs ;
   } else {

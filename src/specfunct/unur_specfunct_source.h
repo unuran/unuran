@@ -216,12 +216,14 @@ double _unur_Relcgamma (double x, double y);
 /* log(1+x) */
 /* (replacement for missing C99 function log1p) */
 double _unur_log1p(double x);
+#define log1p _unur_log1p
 #endif
 
 #if !HAVE_DECL_HYPOT
 /* sqrt(x^2 + y^2) */
 /* (replacement for missing C99 function hypot) */
 double _unur_hypot(const double x, const double y);
+#define hypot _unur_hypot
 #endif
 
 /*---------------------------------------------------------------------------*/

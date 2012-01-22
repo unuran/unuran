@@ -4,9 +4,7 @@
 /*                                                                           */
 /*---------------------------------------------------------------------------*/
 
-#include <utils/umath.h>
-#include <utils/unur_fp_source.h>
-#include <utils/unur_math_source.h>
+#include <unur_source.h>
 
 /*---------------------------------------------------------------------------*/
 

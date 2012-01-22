@@ -37,7 +37,6 @@
 /*---------------------------------------------------------------------------*/
 
 #include <unur_source.h>
-#include <specfunct/unur_specfunct_source.h>
 #include <distributions/unur_stddistr.h>
 #include "distr.h"
 #include "cont.h"

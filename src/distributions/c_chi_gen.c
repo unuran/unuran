@@ -36,7 +36,6 @@
 #include <unur_source.h>
 #include <methods/cstd.h>
 #include <methods/cstd_struct.h>
-#include <specfunct/unur_specfunct_source.h>
 #include "unur_distributions_source.h"
 
 /*---------------------------------------------------------------------------*/

@@ -35,7 +35,6 @@
 #include <unur_source.h>
 #include <methods/cstd.h>   /* for the definition of `UNUR_STDGEN_INVERSION' */
 #include <methods/dstd_struct.h>
-#include <specfunct/unur_specfunct_source.h>
 #include "unur_distributions_source.h"
 
 /*---------------------------------------------------------------------------*/

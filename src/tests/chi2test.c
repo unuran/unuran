@@ -45,7 +45,6 @@
 #include <distr/discr.h>
 #include <distr/distr_source.h>
 #include <distributions/unur_distributions.h>
-#include <specfunct/unur_specfunct_source.h>
 #include <utils/matrix_source.h>
 #include "unuran_tests.h"
 

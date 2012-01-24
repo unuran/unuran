@@ -77,11 +77,12 @@ static const char distr_name[] = "ghyp";
 #define mu      params[4]    /* location */
 
 #define DISTR distr->data.cont
-#define NORMCONSTANT (distr->data.cont.norm_constant)
+#define LOGNORMCONSTANT (distr->data.cont.norm_constant)
 
 /* function prototypes                                                       */
 #ifdef _unur_SF_bessel_k
 static double _unur_pdf_ghyp( double x, const UNUR_DISTR *distr );
+static double _unur_logpdf_ghyp( double x, const UNUR_DISTR *distr );
 static double _unur_normconstant_ghyp( const double *params, int n_params );
 /* static double _unur_dpdf_ghyp( double x, const UNUR_DISTR *distr ); */
 /* static double _unur_cdf_ghyp( double x, const UNUR_DISTR *distr ); */
@@ -96,18 +97,31 @@ static int _unur_set_params_ghyp( UNUR_DISTR *distr, const double *params, int n
 double
 _unur_pdf_ghyp(double x, const UNUR_DISTR *distr)
 { 
+  /* f(x) = (delta^2+(x-mu)^2)^(1/2*(lambda-1/2)) * exp(beta*(x-mu))    */
+  /*          * K_{lambda-1/2}(alpha*sqrt(delta^2+(x-mu)^2))            */
+
+  return exp(_unur_logpdf_ghyp(x,distr));
+} /* end of _unur_pdf_ghyp() */
+
+/*---------------------------------------------------------------------------*/
+
+double
+_unur_logpdf_ghyp(double x, const UNUR_DISTR *distr)
+{
   register const double *params = DISTR.params;
   double tmp = delta*delta + (x-mu)*(x-mu);
 
   /* f(x) = (delta^2+(x-mu)^2)^(1/2*(lambda-1/2)) * exp(beta*(x-mu))    */
   /*          * K_{lambda-1/2}(alpha*sqrt(delta^2+(x-mu)^2))            */
 
-  return ( NORMCONSTANT 
-	   * pow( tmp, 0.5*lambda-0.25 ) 
-	   * exp(beta*(x-mu))
-	   * _unur_SF_bessel_k( alpha * sqrt(tmp), lambda-0.5 ) );
+  double res = LOGNORMCONSTANT;
+  res += (0.5*lambda-0.25) * log(tmp) + beta*(x-mu);
+  res += _unur_SF_ln_bessel_k( alpha * sqrt(tmp), lambda-0.5 );
 
-} /* end of _unur_pdf_ghyp() */
+  return res;
+
+} /* end of _unur_logpdf_ghyp() */
+
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -143,11 +157,18 @@ _unur_normconstant_ghyp(const double *params ATTRIBUTE__UNUSED, int n_params ATT
 { 
   double gamm = sqrt(alpha*alpha-beta*beta);
 
-  /* ( (gamma/delta)^lambda ) / ( sqrt(2*pi) * alpha^(lambda-1/2) * K_{lambda}(delta*gamma) ) */
+  /* ( (gamm/delta)^lambda ) / ( sqrt(2*pi) * alpha^(lambda-1/2) * K_{lambda}(delta*gamm) ) */
 
-  return ( pow(gamm/delta, lambda ) 
-	   / ( (M_SQRTPI*M_SQRT2) * pow(alpha, lambda-0.5)
-	       * _unur_SF_bessel_k( delta*gamm, lambda ) ) );
+  double logconst =  -0.5*(M_LNPI+M_LN2) + lambda * log(gamm/delta);
+  logconst -= (lambda-0.5) * log(alpha);
+
+  if (lambda < 50)
+    /* threshold value 50 is selected by experiments */
+    logconst -= _unur_SF_ln_bessel_k( delta*gamm, lambda );
+  else
+    logconst -= _unur_SF_bessel_k_nuasympt( delta*gamm, lambda, TRUE, FALSE );
+
+  return logconst;
 } /* end of _unur_normconstant_ghyp() */
 #endif
 
@@ -218,6 +239,7 @@ unur_distr_ghyp( const double *params, int n_params)
   /* functions */
 #ifdef _unur_SF_bessel_k
   DISTR.pdf     = _unur_pdf_ghyp;     /* pointer to PDF                  */
+  DISTR.logpdf  = _unur_logpdf_ghyp;  /* pointer to log-PDF              */
 #endif
 
   /* indicate which parameters are set */
@@ -238,9 +260,9 @@ unur_distr_ghyp( const double *params, int n_params)
 
   /* normalization constant */
 #ifdef _unur_SF_bessel_k
-  NORMCONSTANT = _unur_normconstant_ghyp(params,n_params);
+  LOGNORMCONSTANT = _unur_normconstant_ghyp(params,n_params);
 #else
-  NORMCONSTANT = 1.;
+  LOGNORMCONSTANT = 0.;
 #endif
 
   /* we need the center of the distribution */

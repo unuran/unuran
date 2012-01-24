@@ -108,15 +108,79 @@ _unur_pdf_ghyp(double x, const UNUR_DISTR *distr)
 double
 _unur_logpdf_ghyp(double x, const UNUR_DISTR *distr)
 {
-  register const double *params = DISTR.params;
-  double tmp = delta*delta + (x-mu)*(x-mu);
-
   /* f(x) = (delta^2+(x-mu)^2)^(1/2*(lambda-1/2)) * exp(beta*(x-mu))    */
   /*          * K_{lambda-1/2}(alpha*sqrt(delta^2+(x-mu)^2))            */
 
-  double res = LOGNORMCONSTANT;
-  res += (0.5*lambda-0.25) * log(tmp) + beta*(x-mu);
-  res += _unur_SF_ln_bessel_k( alpha * sqrt(tmp), lambda-0.5 );
+  register const double *params = DISTR.params;
+  double res = 0.;            /* result of computation                 */
+  double nu = lambda - 0.5;   /* order of modified Bessel function K() */
+  double y;                   /* auxiliary variable                    */
+
+  y = sqrt(delta*delta + (x-mu)*(x-mu));
+
+  /* Using nu and y we find:
+   *   f(x) = y^nu * exp(beta*(x-mu) * K_nu(alpha*y)
+   * and
+   *   log(f(x)) =  nu*log(y) + beta*(x-mu) + log(K_nu(alpha*y)
+   */
+
+  /* see also c_vg.c */
+
+  do {
+
+    if (y>0.) {
+      /* first simply compute Bessel K_nu and compute logarithm. */
+      double besk;
+
+      /* we currently use two algorithms based on our experiences
+       * with the functions in the Rmath library.
+       * (Maybe we could change this when we link against
+       * other libraries.)
+       */
+      if (nu < 100)
+        /* the "standard implementation" using log(bessel_k) */
+        besk = _unur_SF_ln_bessel_k(alpha*y, nu);
+      else
+        /* an algorithm for large nu */
+        besk = _unur_SF_bessel_k_nuasympt(alpha*y, nu, TRUE, FALSE);
+
+      /* there can be numerical problems with the Bessel function K_nu. */
+      if (_unur_isfinite(besk) && besk < MAXLOG - 20.0) {
+        /* o.k. */
+        res = LOGNORMCONSTANT + besk + nu*log(y) + beta*(x-mu);
+        break;
+      }
+    }
+
+    /* Case: numerical problems with Bessel function K_nu. */
+
+    if (y < 1.0) {
+      /* Case: Bessel function K_nu overflows for small values of y.
+       * The following code is inspired by gsl_sf_bessel_lnKnu_e() from
+       * the GSL (GNU Scientific Library).
+       */
+
+      res = LOGNORMCONSTANT + beta*(x-mu);
+      res += -M_LN2 + _unur_SF_ln_gamma(nu) + nu*log(2./alpha);
+
+      if (nu > 1.0) {
+        double xi = 0.25*(alpha*y)*(alpha*y);
+        double sum = 1.0 - xi/(nu-1.0);
+        if(nu > 2.0) sum += (xi/(nu-1.0)) * (xi/(nu-2.0));
+        res += log(sum);
+      }
+    }
+
+    else {
+      /* Case: Bessel function K_nu underflows for very large values of y
+       * and we get NaN.
+       * However, then the PDF of the Generalized Hyperbolic distribution is 0.
+       */
+      res = -INFINITY;
+    }
+  } while(0);
+
+  /* see also c_vg.c */
 
   return res;
 

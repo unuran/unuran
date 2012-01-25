@@ -159,7 +159,7 @@ _unur_logpdf_vg(double x, const UNUR_DISTR *distr)
       res += -M_LN2 + _unur_SF_ln_gamma(nu) + nu*log(2./alpha);
       
       if (nu > 1.0) {
-	double xi = 0.25*x*x;
+	double xi = 0.25*(alpha*absy)*(alpha*absy);
 	double sum = 1.0 - xi/(nu-1.0);
 	if(nu > 2.0) sum += (xi/(nu-1.0)) * (xi/(nu-2.0));
 	res += log(sum);

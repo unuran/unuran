@@ -186,6 +186,27 @@ _unur_logpdf_ghyp(double x, const UNUR_DISTR *distr)
 
 } /* end of _unur_logpdf_ghyp() */
 
+  /*
+    Remark: a few references
+
+    NIST Digital Library of Mathematical Functions
+
+    http://dlmf.nist.gov/10.27.E3
+    K_{-nu}(z) = K_nu(z)
+
+    http://dlmf.nist.gov/10.32.E10
+    K_nu(z) = 0.5*(0.5*z)^nu * \int_0^\infty exp(-t-z^2/(4*t)) * t^(-nu-1) dt
+
+    This implies
+    K_nu(z) = K_{-nu}(z)
+     = 0.5*(0.5*z)^(-nu) * \int_0^\infty exp(-t-z^2/(4*t)) * t^(nu-1) dt
+    <=  0.5*(0.5*z)^(-nu) * \int_0^\infty exp(-t) * t^(nu-1) dt
+     =  0.5*(0.5*z)^(-nu) * Gamma(z)
+
+    http://dlmf.nist.gov/10.30.E2
+    K_nu(z) ~ 0.5*Gamma(nu)*(0.5*z)^(-nu) for z->0
+  */
+
 #endif
 
 /*---------------------------------------------------------------------------*/

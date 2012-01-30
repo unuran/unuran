@@ -58,8 +58,7 @@ AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_CHECK_TOOL(AR, ar, :)
-dnl LT_INIT([disable-shared])
-LT_INIT
+LT_INIT([disable-shared])
 
 dnl Checks for libraries.
 dnl libm: the standard math library

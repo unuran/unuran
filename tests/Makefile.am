@@ -1,5 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 
+AUTOMAKE_OPTIONS = parallel-tests color-tests
+
 SUBDIRS = testdistributions .
 
 AM_CPPFLAGS = \

@@ -139,6 +139,7 @@ AC_CHECK_DECLS(isinf,,,[#include <math.h>])
 AC_CHECK_DECLS(isnan,,,[#include <math.h>])
 AC_CHECK_DECLS(INFINITY,,,[#include <math.h>])
 AC_CHECK_DECLS(HUGE_VAL,,,[#include <math.h>])
+AC_CHECK_DECLS(DBL_MAX,,,[#include <float.h>])
 
 dnl Check for alarm and signal handler
 AC_CHECK_DECLS(alarm,,,[#include <unistd.h>])

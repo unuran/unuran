@@ -39,7 +39,30 @@
 /* If the macro INFINITY is not already defined we store infinity in the     */
 /* global variable INFINITY.                                                 */
 #ifndef INFINITY
-const double INFINITY = 1.0 / 0.0;
+
+#  if defined(HAVE_DECL_HUGE_VAL)
+
+      const double INFINITY = HUGE_VAL;
+
+#  elif defined(HAVE_DIVIDE_BY_ZERO)
+
+      const double INFINITY = 1.0 / 0.0;
+
+#  elif defined(HAVE_DECL_DBL_MAX)
+
+      const double INFINITY = DBL_MAX;
+
+#  else
+
+#     error
+#     error +--------------------------------------------+
+#     error ! Sorry, Cannot define INFINITY correctly!.. !
+#     error ! Please contact <unuran@statmath.wu.ac.at>. !
+#     error +--------------------------------------------+
+#     error
+
+#  endif
+
 #endif
 
 /*---------------------------------------------------------------------------*/

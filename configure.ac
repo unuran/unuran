@@ -141,13 +141,15 @@ AC_CHECK_DECLS(INFINITY,,,[#include <math.h>])
 AC_CHECK_DECLS(HUGE_VAL,,,[#include <math.h>])
 AC_CHECK_DECLS(DBL_MAX,,,[#include <float.h>])
 
+dnl Check IEEE comparisons, whether "x != x" is true for NaNs
+AX_IEEE_COMP
+dnl Check whether 1./0. works and results in "infinity"
+AX_DIVIDE_BY_ZERO
+
 dnl Check for alarm and signal handler
 AC_CHECK_DECLS(alarm,,,[#include <unistd.h>])
 AC_CHECK_DECLS(signal,,,[#include <signal.h>])
 AC_CHECK_FUNCS([alarm signal])
-
-dnl Check IEEE comparisons, whether "x != x" is true for NaNs
-AX_IEEE_COMP
 
 dnl Some routines are deprecated.
 dnl Compiling and linking these into the library can be controlled

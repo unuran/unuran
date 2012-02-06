@@ -29,6 +29,35 @@ fi
 
 
 dnl
+dnl AX_DIVIDE_BY_ZERO
+dnl Check whether 1./0. works and results in "infinity"
+dnl -------------------------------------------------------------------------
+AC_DEFUN([AX_DIVIDE_BY_ZERO],
+[
+AC_CACHE_CHECK([for divide-by-zero], ac_cv_c_divide_by_zero,
+[AC_RUN_IFELSE([AC_LANG_SOURCE([[
+#include <math.h>
+#include <float.h>
+int main (void) 
+{
+   double x = 0.0;
+   double inf = 1.0 / x;
+   int status = (inf < DBL_MAX/2.);
+   exit (status);
+}]])],
+[ac_cv_c_divide_by_zero="yes"],
+[ac_cv_c_divide_by_zero="no"],
+[ac_cv_c_divide_by_zero="yes"])
+])
+if test "$ac_cv_c_divide_by_zero" != no ; then
+  AC_DEFINE([HAVE_DIVIDE_BY_ZERO], [1], 
+      [Define to 1 if "1.0/0.0" results in INFINITY])
+  AC_SUBST(HAVE_DIVIDE_BY_ZERO)
+fi
+]) # end of AX_DIVIDE_BY_ZERO
+
+
+dnl
 dnl AX_ADD_URNG_LIB([TAG],[UTAG],[NAME],[LIB],[PROG],[HEADER])
 dnl Add support for library providing uniform random number generators
 dnl via configure flag and check existance of library and header file

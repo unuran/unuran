@@ -26,7 +26,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2011 Wolfgang Hoermann and Josef Leydold                  *
+ *   Copyright (c) 2011-2012 Wolfgang Hoermann and Josef Leydold             *
  *   Institute for Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -219,7 +219,7 @@ unur_distr_meixner( const double *params, int n_params)
   }
 
   /* normalization constant */
-  LOGNORMCONSTANT = _unur_lognormconstant_meixner(params,n_params);
+  LOGNORMCONSTANT = _unur_lognormconstant_meixner(DISTR.params,DISTR.n_params);
 
   /* we need the center of the distribution */
   if (_unur_upd_center_meixner(distr)!=UNUR_SUCCESS) {

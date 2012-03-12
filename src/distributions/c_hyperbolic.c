@@ -26,7 +26,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2010 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2012 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -239,7 +239,7 @@ unur_distr_hyperbolic( const double *params, int n_params )
   }
 
   /* normalization constant */
-  NORMCONSTANT = _unur_normconstant_hyperbolic(params,n_params);
+  NORMCONSTANT = _unur_normconstant_hyperbolic(DISTR.params,DISTR.n_params);
 
   /* mode and area below p.d.f. */
   _unur_upd_mode_hyperbolic(distr);

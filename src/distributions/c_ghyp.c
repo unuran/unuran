@@ -36,7 +36,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2009-2011 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2009-2012 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -345,7 +345,7 @@ unur_distr_ghyp( const double *params, int n_params)
 
   /* normalization constant */
 #ifdef _unur_SF_bessel_k
-  LOGNORMCONSTANT = _unur_normconstant_ghyp(params,n_params);
+  LOGNORMCONSTANT = _unur_normconstant_ghyp(DISTR.params,DISTR.n_params);
 #else
   LOGNORMCONSTANT = 0.;
 #endif

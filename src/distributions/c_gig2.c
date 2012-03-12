@@ -47,7 +47,7 @@
  *                                                                           *
  *****************************************************************************
  *                                                                           *
- *   Copyright (c) 2000-2010 Wolfgang Hoermann and Josef Leydold             *
+ *   Copyright (c) 2000-2012 Wolfgang Hoermann and Josef Leydold             *
  *   Department of Statistics and Mathematics, WU Wien, Austria              *
  *                                                                           *
  *   This program is free software; you can redistribute it and/or modify    *
@@ -341,7 +341,7 @@ unur_distr_gig2( const double *params, int n_params )
   }
 
   /* normalization constant */
-  NORMCONSTANT = _unur_normconstant_gig2(params,n_params);
+  NORMCONSTANT = _unur_normconstant_gig2(DISTR.params,DISTR.n_params);
 
   /* mode and area below p.d.f. */
   _unur_upd_mode_gig2(distr);

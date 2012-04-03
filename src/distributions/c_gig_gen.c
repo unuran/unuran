@@ -240,8 +240,8 @@ _unur_stdgen_sample_gig_gigru( struct unur_gen *gen )
   double U,V,X,Z;
 
   /* check arguments */
-  CHECK_NULL(gen,INFINITY);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
+  CHECK_NULL(gen,UNUR_INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_INFINITY);
 
   /* -X- generator code -X- */
   if (theta<=1. && omega<=1.) {

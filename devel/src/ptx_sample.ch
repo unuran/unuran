@@ -31,15 +31,15 @@ _unur_ptx_sample( struct unur_gen *gen )
      /*   double (sample from random variate)                                */
      /*                                                                      */
      /* error:                                                               */
-     /*   return INFINITY                                                    */
+     /*   return UNUR_INFINITY                                               */
      /*----------------------------------------------------------------------*/
 { 
   /* check arguments */
-  CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_PTX_GEN,INFINITY);
+  CHECK_NULL(gen,UNUR_INFINITY);  COOKIE_CHECK(gen,CK_PTX_GEN,UNUR_INFINITY);
 
   /** FIXME: error: this function is not available **/
 
-  return INFINITY;
+  return UNUR_INFINITY;
 
 } /* end of _unur_ptx_sample() */
 
@@ -59,7 +59,7 @@ _unur_ptx_eval_approxinvcdf( const struct unur_gen *gen, double t )
      /*   double (approximate inverse CDF)                                   */
      /*                                                                      */
      /* error:                                                               */
-     /*   return INFINITY                                                    */
+     /*   return UNUR_INFINITY                                               */
      /*----------------------------------------------------------------------*/
 {
   int i;
@@ -68,7 +68,7 @@ _unur_ptx_eval_approxinvcdf( const struct unur_gen *gen, double t )
   int bsmin, bsmax;   /* boundaries for binary search */
 
   /* check arguments */
-  CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_PTX_GEN,INFINITY);
+  CHECK_NULL(gen,UNUR_INFINITY);  COOKIE_CHECK(gen,CK_PTX_GEN,UNUR_INFINITY);
 
   /* look up in guide table and search for interval */
   /*   i = GEN->guide[(int)(u * GEN->guide_size)]; */
@@ -123,18 +123,18 @@ unur_ptx_eval_approxinvcdf( const struct unur_gen *gen, double t )
      /*   double (approximate inverse CDF)                                   */
      /*                                                                      */
      /* error:                                                               */
-     /*   return INFINITY                                                    */
+     /*   return UNUR_INFINITY                                               */
      /*----------------------------------------------------------------------*/
 {
   double x;
 
   /* check arguments */
-  _unur_check_NULL( GENTYPE, gen, INFINITY );
+  _unur_check_NULL( GENTYPE, gen, UNUR_INFINITY );
   if ( gen->method != UNUR_METH_PTX ) {
     _unur_error(gen->genid,UNUR_ERR_GEN_INVALID,"");
-    return INFINITY;
+    return UNUR_INFINITY;
   }
-  COOKIE_CHECK(gen,CK_PTX_GEN,INFINITY);
+  COOKIE_CHECK(gen,CK_PTX_GEN,UNUR_INFINITY);
 
   
   if (t<GEN->Tmin || t>GEN->Tmax) {

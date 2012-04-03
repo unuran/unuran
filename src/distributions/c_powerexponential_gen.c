@@ -166,8 +166,8 @@ _unur_stdgen_sample_powerexponential_epd( struct unur_gen *gen )
   double U,u1,V,X,y;
 
   /* check arguments */
-  CHECK_NULL(gen,INFINITY);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
+  CHECK_NULL(gen,UNUR_INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_INFINITY);
 
   do {
     U = 2. * uniform() - 1.;                                  /* U(-1.0/1.0) */

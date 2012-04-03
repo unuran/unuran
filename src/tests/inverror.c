@@ -197,8 +197,10 @@ uerror_cont( const UNUR_GEN *gen,
   }
 
   /* range of CDF */
-  CDFmin = (DISTR.trunc[0] > -INFINITY) ? _unur_cont_CDF((DISTR.trunc[0]),(gen->distr)) : 0.;
-  CDFmax = (DISTR.trunc[1] < INFINITY)  ? _unur_cont_CDF((DISTR.trunc[1]),(gen->distr)) : 1.;
+  CDFmin = ((DISTR.trunc[0] > -UNUR_INFINITY) 
+	    ? _unur_cont_CDF((DISTR.trunc[0]),(gen->distr)) : 0.);
+  CDFmax = ((DISTR.trunc[1] < UNUR_INFINITY)
+	    ? _unur_cont_CDF((DISTR.trunc[1]),(gen->distr)) : 1.);
 
   /* initialize variables */
   umax = 0.;

@@ -323,7 +323,7 @@ unur_cstd_chg_truncated( struct unur_gen *gen, double left, double right )
      /*   error code   ... on error                                          */
      /*                                                                      */
      /* comment:                                                             */
-     /*   the new boundary points may be +/- INFINITY                        */
+     /*   the new boundary points may be +/- UNUR_INFINITY                   */
      /*----------------------------------------------------------------------*/
 {
   double Umin, Umax;
@@ -362,8 +362,8 @@ unur_cstd_chg_truncated( struct unur_gen *gen, double left, double right )
   }
 
   /* compute umin and umax */
-  Umin = (left > -INFINITY) ? CDF(left) : 0.;
-  Umax = (right < INFINITY) ? CDF(right) : 1.;
+  Umin = (left > -UNUR_INFINITY) ? CDF(left) : 0.;
+  Umax = (right < UNUR_INFINITY) ? CDF(right) : 1.;
 
   /* check result */
   if (Umin > Umax) {
@@ -602,8 +602,8 @@ _unur_cstd_check_par( struct unur_gen *gen )
     }
 
     /* compute Umin and Umax */
-    GEN->Umin = (DISTR.trunc[0] > -INFINITY) ? CDF(DISTR.trunc[0]) : 0.;
-    GEN->Umax = (DISTR.trunc[1] < INFINITY)  ? CDF(DISTR.trunc[1]) : 1.;
+    GEN->Umin = (DISTR.trunc[0] > -UNUR_INFINITY) ? CDF(DISTR.trunc[0]) : 0.;
+    GEN->Umax = (DISTR.trunc[1] < UNUR_INFINITY)  ? CDF(DISTR.trunc[1]) : 1.;
   }
 
   return UNUR_SUCCESS;
@@ -704,12 +704,12 @@ _unur_cstd_sample_inv( struct unur_gen *gen )
      /*   double (sample from random variate)                                */
      /*                                                                      */
      /* error:                                                               */
-     /*   return INFINITY                                                    */
+     /*   return UNUR_INFINITY                                               */
      /*----------------------------------------------------------------------*/
 {
   double U;
 
-  if (!DISTR.invcdf) return INFINITY;
+  if (!DISTR.invcdf) return UNUR_INFINITY;
 
   /* sample from uniform random number generator */
   while (_unur_iszero(U = GEN->Umin + _unur_call_urng(gen->urng) * (GEN->Umax-GEN->Umin)));
@@ -734,18 +734,18 @@ unur_cstd_eval_invcdf( const struct unur_gen *gen, double u )
      /*   double (inverse CDF)                                               */
      /*                                                                      */
      /* error:                                                               */
-     /*   return INFINITY                                                    */
+     /*   return UNUR_INFINITY                                               */
      /*----------------------------------------------------------------------*/
 {
   double x;
 
   /* check arguments */
-  _unur_check_NULL( GENTYPE, gen, INFINITY );
+  _unur_check_NULL( GENTYPE, gen, UNUR_INFINITY );
   if ( gen->method != UNUR_METH_CSTD ) {
     _unur_error(gen->genid,UNUR_ERR_GEN_INVALID,"");
-    return INFINITY;
+    return UNUR_INFINITY;
   }
-  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_INFINITY);
 
   if (!DISTR.invcdf) {
     /* no inverse CDF available */

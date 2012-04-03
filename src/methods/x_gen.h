@@ -94,8 +94,8 @@ int unur_reinit( UNUR_GEN *generator );
    @end table
 
    @emph{Important}: When reinitialization fails then sampling routines
-   always return INFINITY (for continuous distributions) or @code{0} (for
-   discrete distributions), respectively.
+   always return @code{UNUR_INFINITY} (for continuous distributions) 
+   or @code{0} (for discrete distributions), respectively.
    However, it is still possible to change the underlying distribution
    and try to reinitialize again.
 

@@ -101,7 +101,7 @@ _unur_logpdf_uniform( double x, const UNUR_DISTR *distr )
   register const double *params = DISTR.params;
 
   if (x < a || x > b)
-    return -INFINITY;
+    return -UNUR_INFINITY;
   /* else */
   return -log(b-a);
 

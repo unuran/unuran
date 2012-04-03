@@ -742,7 +742,7 @@ unur_srou_chg_domain( struct unur_gen *gen, double left, double right )
      /*   right ... right boundary point                                     */
      /*                                                                      */
      /* comment:                                                             */
-     /*   the new boundary points may be +/- INFINITY                        */
+     /*   the new boundary points may be +/- UNUR_INFINITY                   */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
@@ -967,7 +967,7 @@ unur_ssr_chg_domain( struct unur_gen *gen, double left, double right )
      /*   right ... right boundary point                                     */
      /*                                                                      */
      /* comment:                                                             */
-     /*   the new boundary points may be +/- INFINITY                        */
+     /*   the new boundary points may be +/- UNUR_INFINITY                   */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */
@@ -1189,7 +1189,7 @@ unur_utdr_chg_domain( struct unur_gen *gen, double left, double right )
      /*   right ... right boundary point                                     */
      /*                                                                      */
      /* comment:                                                             */
-     /*   the new boundary points may be +/- INFINITY                        */
+     /*   the new boundary points may be +/- UNUR_INFINITY                   */
      /*----------------------------------------------------------------------*/
 {
   /* check arguments */

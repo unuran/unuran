@@ -46,7 +46,7 @@ see the description of the particular method (keyword @i{Reinit}).
 Thus one @strong{must} check the return code of the unur_reinit() call.
 
 @emph{Important}: When reinitialization fails then sampling routines
-always return INFINITY (for continuous distributions) or @code{0} (for
+always return @code{UNUR_INFINITY} (for continuous distributions) or @code{0} (for
 discrete distributions), respectively.
 However, it is still possible to change the underlying distribution
 and try to reinitialize again.

@@ -544,7 +544,7 @@ _unur_ptx_newton_maxerror (struct unur_gen *gen, struct unur_ptx_interval *iv,
 
     /* check u-value */
     if (!_unur_isfinite(u))
-      return INFINITY;
+      return UNUR_INFINITY;
 
     /* compute u-error */
     uerror = fabs(u-uin);

@@ -51,7 +51,7 @@ _unur_tdr_ia_sample( struct unur_gen *gen )
      /*   double (sample from random variate)                                */
      /*                                                                      */
      /* error:                                                               */
-     /*   return INFINITY                                                    */
+     /*   return UNUR_INFINITY                                               */
      /*                                                                      */
      /*======================================================================*/
      /* comment:                                                             */
@@ -92,11 +92,11 @@ _unur_tdr_ia_sample( struct unur_gen *gen )
   double fx, hx, Thx;
 
   /* check arguments */
-  CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_TDR_GEN,INFINITY);
+  CHECK_NULL(gen,UNUR_INFINITY);  COOKIE_CHECK(gen,CK_TDR_GEN,UNUR_INFINITY);
 
   if (GEN->iv == NULL) {
     _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"empty generator object");
-    return INFINITY;
+    return UNUR_INFINITY;
   } 
 
   /* main URNG */
@@ -233,7 +233,7 @@ _unur_tdr_ia_sample_check( struct unur_gen *gen )
      /*   double (sample from random variate)                                */
      /*                                                                      */
      /* error:                                                               */
-     /*   return INFINITY                                                    */
+     /*   return UNUR_INFINITY                                               */
      /*                                                                      */
      /*----------------------------------------------------------------------*/
 {
@@ -247,11 +247,11 @@ _unur_tdr_ia_sample_check( struct unur_gen *gen )
 #endif
 
   /* check arguments */
-  CHECK_NULL(gen,INFINITY);  COOKIE_CHECK(gen,CK_TDR_GEN,INFINITY);
+  CHECK_NULL(gen,UNUR_INFINITY);  COOKIE_CHECK(gen,CK_TDR_GEN,UNUR_INFINITY);
 
   if (GEN->iv == NULL) {
     _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"empty generator object");
-    return INFINITY;
+    return UNUR_INFINITY;
   } 
 
   /* main URNG */

@@ -324,7 +324,7 @@ unur_dstd_chg_truncated( struct unur_gen *gen, int left, int right )
      /*   error code   ... on error                                          */
      /*                                                                      */
      /* comment:                                                             */
-     /*   the new boundary points may be +/- INFINITY                        */
+     /*   the new boundary points may be +/- UNUR_INFINITY                   */
      /*----------------------------------------------------------------------*/
 {
   double Umin, Umax;
@@ -711,7 +711,7 @@ _unur_dstd_sample_inv( struct unur_gen *gen )
      /*   double (sample from random variate)                                */
      /*                                                                      */
      /* error:                                                               */
-     /*   return INFINITY                                                    */
+     /*   return INT_MAX                                                     */
      /*----------------------------------------------------------------------*/
 {
   double U;

@@ -108,7 +108,7 @@ _unur_urng_randomshift_sample( struct unur_urng_randomshift *rs )
      /*   next coordinate                                                    */
      /*                                                                      */
      /* error:                                                               */
-     /*   return INFINITY                                                    */
+     /*   return UNUR_INFINITY                                               */
      /*----------------------------------------------------------------------*/
 {
   int i;

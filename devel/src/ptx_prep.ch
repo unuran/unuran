@@ -176,7 +176,7 @@ _unur_ptx_searchborder (struct unur_gen *gen, double x0, double bound,
      /*   boundary point                                                     */
      /*                                                                      */
      /* error:                                                               */
-     /*   return INFINITY                                                    */
+     /*   return UNUR_INFINITY                                               */
      /*----------------------------------------------------------------------*/
 {
   double x;         /* current and previous searching point */
@@ -193,12 +193,12 @@ _unur_ptx_searchborder (struct unur_gen *gen, double x0, double bound,
   /* we already have checked PDF(center). but who knowns. */
   if (fllim <= 0.) {
     _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF(center) too small");
-    return INFINITY;
+    return UNUR_INFINITY;
   }
 
   /* starting point */
   xl = x0; 
-  fl = INFINITY;
+  fl = UNUR_INFINITY;
   x = _unur_arcmean(x0,bound);
 
   /* find points where PDF values bracket threshold: */
@@ -214,7 +214,7 @@ _unur_ptx_searchborder (struct unur_gen *gen, double x0, double bound,
   /* check sign */
   if (fx < 0.) {
     _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF(x) < 0");
-    return INFINITY;
+    return UNUR_INFINITY;
   }
 
   /* decrease length of bracket if necessary */
@@ -231,7 +231,7 @@ _unur_ptx_searchborder (struct unur_gen *gen, double x0, double bound,
 
     if (fx < 0.) {
       _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF(x) < 0");
-      return INFINITY;
+      return UNUR_INFINITY;
     }
 
     /* check PDF at new point */
@@ -476,7 +476,7 @@ _unur_ptx_cut( struct unur_gen *gen, double dom, double w, double dw, double cri
      /*   cut-off point                                                      */
      /*                                                                      */
      /* error:                                                               */
-     /*   return INFINITY                                                    */
+     /*   return UNUR_INFINITY                                               */
      /*----------------------------------------------------------------------*/
 {
   double sgn = (dw>0) ? 1. : -1.; /* searching direction */
@@ -683,7 +683,7 @@ _unur_ptx_cut_CDF( struct unur_gen *gen, double dom, double x0, double ul, doubl
      /*   cut-off point                                                      */
      /*                                                                      */
      /* error:                                                               */
-     /*   return INFINITY                                                    */
+     /*   return UNUR_INFINITY                                               */
      /*----------------------------------------------------------------------*/
 {
   double x;         /* current and previous searching point */
@@ -713,7 +713,7 @@ _unur_ptx_cut_CDF( struct unur_gen *gen, double dom, double x0, double ul, doubl
       x0 += dx;
       f0 = CDF(x0);
       if (!_unur_isfinite(x0))
-	return INFINITY;
+	return UNUR_INFINITY;
     }
   }
   if (_unur_isone(f0)) {
@@ -722,7 +722,7 @@ _unur_ptx_cut_CDF( struct unur_gen *gen, double dom, double x0, double ul, doubl
       x0 -= dx;
       f0 = CDF(x0);
       if (!_unur_isfinite(x0))
-	return INFINITY;
+	return UNUR_INFINITY;
     }
   }
 
@@ -738,7 +738,7 @@ _unur_ptx_cut_CDF( struct unur_gen *gen, double dom, double x0, double ul, doubl
   if ( (x0 < dom && _unur_FP_greater(f0,fdom)) ||
        (x0 > dom && _unur_FP_less(f0,fdom)) ) {
     /* there is something wrong */
-    return INFINITY;
+    return UNUR_INFINITY;
   }
 
   /* bracket */
@@ -806,7 +806,7 @@ _unur_ptx_Udiff (struct unur_gen *gen, double x, double h, double utol)
 
   default:
     _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    return INFINITY;
+    return UNUR_INFINITY;
   }
 
 } /* end of _unur_ptx_Udiff() */
@@ -839,7 +839,7 @@ _unur_ptx_Tdiff (struct unur_gen *gen, double x, double h, double utol)
 
   default:
     _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    return INFINITY;
+    return UNUR_INFINITY;
   }
 
 } /* end of _unur_ptx_Udiff() */

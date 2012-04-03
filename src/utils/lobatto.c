@@ -195,7 +195,7 @@ _unur_lobatto5_adaptive (UNUR_LOBATTO_FUNCT funct, struct unur_gen *gen,
   /* arguments which are not finite (inf or NaN) cause infinite recursions */
   if (!_unur_isfinite(x+h)) {
     _unur_error(gen->genid,UNUR_ERR_INF,"boundaries of integration domain not finite");
-    return INFINITY;
+    return UNUR_INFINITY;
   }
 
   /* compute function values */
@@ -264,7 +264,7 @@ _unur_lobatto5_recursion (UNUR_LOBATTO_FUNCT funct, struct unur_gen *gen,
     /* Remark: this may happen, when the initial guess */
     /*         for the integral is too small.          */
     *W_accuracy = 2;
-    return INFINITY;
+    return UNUR_INFINITY;
   }
 
   /* compute function values */
@@ -364,7 +364,7 @@ _unur_lobatto_eval_diff (struct unur_lobatto_table *Itable, double x, double h, 
 #define clear_fx() if(fx!=NULL){*fx=-1.;}
 
   /* check for invalid NULL pointer */
-  CHECK_NULL(Itable,INFINITY);
+  CHECK_NULL(Itable,UNUR_INFINITY);
 
   /* read data from table */
   values = Itable->values;
@@ -374,7 +374,7 @@ _unur_lobatto_eval_diff (struct unur_lobatto_table *Itable, double x, double h, 
   if (!_unur_isfinite(x+h)) {
     /* _unur_warning(gen->genid,UNUR_ERR_INF,"boundaries of integration domain not finite"); */
     clear_fx();
-    return INFINITY;
+    return UNUR_INFINITY;
   }
 
   /* check for boundaries of integration table */
@@ -451,7 +451,7 @@ _unur_lobatto_eval_diff (struct unur_lobatto_table *Itable, double x, double h, 
 double
 _unur_lobatto_eval_CDF (struct unur_lobatto_table *Itable, double x)
      /*----------------------------------------------------------------------*/
-     /* Numerical integration of 'funct' over the interval (-INFINITY, x)    */
+     /* Numerical integration of 'funct' over the interval (-UNUR_INFINITY,x)*/
      /* using a table of integral values together with                       */
      /* (adaptive) Gauss-Lobatto integration with 5 points.                  */
      /* It is important, that the integration object 'Itable' already exists.*/
@@ -470,13 +470,13 @@ _unur_lobatto_eval_CDF (struct unur_lobatto_table *Itable, double x)
 {
   struct unur_lobatto_nodes *values;
   int n_values;          /* table size */
-  double area;           /* integral over (-INFINITY, INFINITY) */
+  double area;           /* integral over (-UNUR_INFINITY, UNUR_INFINITY) */
   double xr;             /* most right point from table */
   double cdf;            /* cdf at x */
   int cur;               /* current interval (position in table) */
 
   /* check for invalid NULL pointer */
-  CHECK_NULL(Itable,INFINITY);
+  CHECK_NULL(Itable, UNUR_INFINITY);
 
   /* check boundary */
   if (x <= Itable->bleft)  return 0.;
@@ -490,7 +490,7 @@ _unur_lobatto_eval_CDF (struct unur_lobatto_table *Itable, double x)
   /* the area must not equal 0 (this should not happen anyway) */
   if (area <= 0.) {
     _unur_error(Itable->gen->genid,UNUR_ERR_NAN,"area below PDF 0.");
-    return INFINITY;
+    return UNUR_INFINITY;
   }
 
   /* sum values over all intervals that are on the l.h.s. of x */
@@ -535,7 +535,7 @@ _unur_lobatto_integral (struct unur_lobatto_table *Itable)
      /*   integral                                                           */
      /*----------------------------------------------------------------------*/
 {
-  CHECK_NULL(Itable,INFINITY);
+  CHECK_NULL(Itable, UNUR_INFINITY);
   return Itable->integral;
 } /* end of _unur_lobatto_eval_integral() */
 

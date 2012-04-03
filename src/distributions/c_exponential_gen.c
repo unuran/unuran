@@ -119,8 +119,8 @@ double _unur_stdgen_sample_exponential_inv( struct unur_gen *gen )
   double U,X;
 
   /* check arguments */
-  CHECK_NULL(gen,INFINITY);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
+  CHECK_NULL(gen,UNUR_INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_INFINITY);
 
   /* sample from uniform random number generator */
   U = GEN->Umin + uniform() * (GEN->Umax-GEN->Umin);

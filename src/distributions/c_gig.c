@@ -137,7 +137,7 @@ _unur_logpdf_gig(double x, const UNUR_DISTR *distr)
 
   if (x <= 0.)
     /* out of support */
-    return -INFINITY;
+    return -UNUR_INFINITY;
 
   return ( LOGNORMCONSTANT + (theta-1.) * log(x) - 0.5 * omega * (x/eta + eta/x) );
 
@@ -262,8 +262,8 @@ _unur_set_params_gig( UNUR_DISTR *distr, const double *params, int n_params )
 
   /* set (standard) domain */
   if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
-    DISTR.domain[0] = 0.;          /* left boundary  */
-    DISTR.domain[1] = INFINITY;    /* right boundary */
+    DISTR.domain[0] = 0.;             /* left boundary  */
+    DISTR.domain[1] = UNUR_INFINITY;  /* right boundary */
   }
 
   return UNUR_SUCCESS;

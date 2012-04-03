@@ -60,7 +60,7 @@ _unur_pinv_init( struct unur_par *par )
   /* Disabled!                                 */
   /* We found that it is not such a good idea. */
   /* if (DISTR.logpdf != NULL && (gen->variant & PINV_VARIANT_PDF) ) { */
-  /*   double lfc = UNUR_INFINITY; */
+  /*   double lfc = UNUR_UNUR_INFINITY; */
 
   /*   /\* use mode if available *\/ */
   /*   if ( (gen->distr->set & UNUR_DISTR_SET_MODE) && */
@@ -69,7 +69,7 @@ _unur_pinv_init( struct unur_par *par )
   /*     lfc = (DISTR.logpdf)(DISTR.mode,gen->distr); */
   /*   } */
 
-  /*   /\* use center otherwise (or if logPDF(mode)==INFINITY) *\/ */
+  /*   /\* use center otherwise (or if logPDF(mode)==UNUR_INFINITY) *\/ */
   /*   if (!_unur_isfinite(lfc)) */
   /*     lfc = (DISTR.logpdf)(DISTR.center,gen->distr); */
 
@@ -195,8 +195,8 @@ _unur_pinv_create( struct unur_par *par )
   /* initialize variables */
   GEN->bleft = GEN->bleft_par;
   GEN->bright = GEN->bright_par;
-  GEN->dleft = -INFINITY;
-  GEN->dright = INFINITY;
+  GEN->dleft = -UNUR_INFINITY;
+  GEN->dright = UNUR_INFINITY;
   GEN->Umax = 1.;
   GEN->iv = NULL;
   GEN->n_ivs = -1;        /* -1 indicates that there are no intervals at all */
@@ -473,7 +473,7 @@ double
 _unur_pinv_eval_PDF (double x, struct unur_gen *gen)
      /*----------------------------------------------------------------------*/
      /* call to PDF.                                                         */
-     /* if PDF(x) == INFINITY (i.e., x is a pole of the PDF)                 */
+     /* if PDF(x) == UNUR_INFINITY (i.e., x is a pole of the PDF)            */
      /* we compute PDF(x+dx) for a small dx instead.                         */
      /*                                                                      */
      /* parameters:                                                          */
@@ -501,8 +501,8 @@ _unur_pinv_eval_PDF (double x, struct unur_gen *gen)
     else
       fx = (DISTR.pdf)(x,distr);
 
-    /* check for pole (i.e., PDF(x)==INFINITY) */
-    if (fx >= INFINITY) {
+    /* check for pole (i.e., PDF(x)==UNUR_INFINITY) */
+    if (fx >= UNUR_INFINITY) {
       /* pole at x --> move x slightly */
       dx = 2.*fabs(x)*DBL_EPSILON;
       dx = _unur_max(dx,2.*DBL_MIN);

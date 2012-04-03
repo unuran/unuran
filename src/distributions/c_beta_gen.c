@@ -212,8 +212,8 @@ _unur_stdgen_sample_beta_bc(  struct unur_gen *gen )
   double u1,u2,v,w,y,z;
 
   /* check arguments */
-  CHECK_NULL(gen,INFINITY);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
+  CHECK_NULL(gen,UNUR_INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_INFINITY);
 
   while (1) {
     /* Step 1 */
@@ -342,8 +342,8 @@ _unur_stdgen_sample_beta_bb(  struct unur_gen *gen )
   double u1,u2,v,w,z,r,s,t;
 
   /* check arguments */
-  CHECK_NULL(gen,INFINITY);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
+  CHECK_NULL(gen,UNUR_INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_INFINITY);
 
   while (1) {
     /* Step 1 */
@@ -475,8 +475,8 @@ _unur_stdgen_sample_beta_b00(  struct unur_gen *gen )
   double U, V, X, Z;
 
   /* check arguments */
-  CHECK_NULL(gen,INFINITY);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
+  CHECK_NULL(gen,UNUR_INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_INFINITY);
 
   while (1) {
     U = uniform() * p2;
@@ -597,8 +597,8 @@ _unur_stdgen_sample_beta_b01(  struct unur_gen *gen )
   double U, V, X, Z;
 
   /* check arguments */
-  CHECK_NULL(gen,INFINITY);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
+  CHECK_NULL(gen,UNUR_INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_INFINITY);
 
   while (1) {
     U = uniform() * p2;
@@ -757,8 +757,8 @@ _unur_stdgen_sample_beta_b1prs(  struct unur_gen *gen )
   double U, V, W, X, Y;
 
   /* check arguments */
-  CHECK_NULL(gen,INFINITY);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
+  CHECK_NULL(gen,UNUR_INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_INFINITY);
 
   while (1) {
     U = uniform() * p4;
@@ -902,8 +902,8 @@ _unur_stdgen_sample_beta_binv(  struct unur_gen *gen )
   double X;
 
   /* check arguments */
-  CHECK_NULL(gen,INFINITY);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
+  CHECK_NULL(gen,UNUR_INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_INFINITY);
 
   if (_unur_isone(p) && _unur_isone(q)) {
     X = uniform();

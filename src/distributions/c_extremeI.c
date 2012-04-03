@@ -243,8 +243,8 @@ _unur_set_params_extremeI( UNUR_DISTR *distr, const double *params, int n_params
 
   /* set (standard) domain */
   if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
-    DISTR.domain[0] = -INFINITY;   /* left boundary  */
-    DISTR.domain[1] = INFINITY;    /* right boundary */
+    DISTR.domain[0] = -UNUR_INFINITY;   /* left boundary  */
+    DISTR.domain[1] = UNUR_INFINITY;    /* right boundary */
   }
 
   return UNUR_SUCCESS;
@@ -291,8 +291,8 @@ unur_distr_extremeI( const double *params, int n_params )
   LOGNORMCONSTANT = log(DISTR.theta);
 
   /* domain */
-  DISTR.domain[0] = -INFINITY;       /* left boundary  */
-  DISTR.domain[1] = INFINITY;        /* right boundary */
+  DISTR.domain[0] = -UNUR_INFINITY;       /* left boundary  */
+  DISTR.domain[1] = UNUR_INFINITY;        /* right boundary */
 
   /* mode and area below p.d.f. */
   DISTR.mode = DISTR.zeta;

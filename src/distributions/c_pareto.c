@@ -195,7 +195,7 @@ _unur_set_params_pareto( UNUR_DISTR *distr, const double *params, int n_params )
   /* set (standard) domain */
   if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
     DISTR.domain[0] = DISTR.k;         /* left boundary  */
-    DISTR.domain[1] = INFINITY;        /* right boundary */
+    DISTR.domain[1] = UNUR_INFINITY;   /* right boundary */
   }
 
   return UNUR_SUCCESS;

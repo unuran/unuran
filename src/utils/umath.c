@@ -98,8 +98,8 @@ _unur_arcmean( double x0, double x1 )
     /* use harmonic mean */
     return (2./(1./x0 + 1./x1));
 
-  a0 = (x0<=-INFINITY) ? -M_PI/2. : atan(x0);
-  a1 = (x1>= INFINITY) ?  M_PI/2. : atan(x1);
+  a0 = (x0<=-UNUR_INFINITY) ? -M_PI/2. : atan(x0);
+  a1 = (x1>= UNUR_INFINITY) ?  M_PI/2. : atan(x1);
 
   if (fabs(a0-a1) < ARCMEAN_ARITHMETIC)
     /* use arithmetic mean */

@@ -394,7 +394,7 @@ _unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_interval *iv,
        *   [F^{-1}(u)]" = -f'(x) / f(x)^3  where x=F^{-1}(u)
        */
       /* however, this requires the derivative of the PDF */
-      zi[i] = (DISTR.dpdf != NULL) ? (-0.5 * dPDF(xval[i]) * pow(zi[i],3)) : INFINITY;
+      zi[i] = (DISTR.dpdf != NULL) ? (-0.5 * dPDF(xval[i]) * pow(zi[i],3)) : UNUR_INFINITY;
   }
 
   /* compute all other divided differences. */
@@ -568,7 +568,7 @@ _unur_pinv_newton_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv,
 
     /* check u-value */
     if (!_unur_isfinite(u))
-      return INFINITY;
+      return UNUR_INFINITY;
 
     /* compute u-error */
     uerror = fabs(u - testu[i]);

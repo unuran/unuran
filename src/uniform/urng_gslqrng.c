@@ -101,7 +101,7 @@ _unur_urng_gslqrng_sample( struct unur_urng_gslqrng *qrng )
      /*   next coordinate                                                    */
      /*                                                                      */
      /* error:                                                               */
-     /*   return INFINITY                                                    */
+     /*   return UNUR_INFINITY                                               */
      /*----------------------------------------------------------------------*/
 {
   int n = qrng->n;

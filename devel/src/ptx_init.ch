@@ -204,8 +204,8 @@ _unur_ptx_create( struct unur_par *par )
   /* initialize variables */
   GEN->bleft = GEN->bleft_par;
   GEN->bright = GEN->bright_par;
-  GEN->dleft = -INFINITY;
-  GEN->dright = INFINITY;
+  GEN->dleft = -UNUR_INFINITY;
+  GEN->dright = UNUR_INFINITY;
   GEN->Umax = 1.;
   GEN->iv = NULL;
   GEN->n_ivs = -1;        /* -1 indicates that there are no intervals at all */

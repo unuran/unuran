@@ -183,8 +183,8 @@ _unur_stdgen_sample_chi_chru( struct unur_gen *gen )
   double u,v,z,zz,r;
 
   /* check arguments */
-  CHECK_NULL(gen,INFINITY);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
+  CHECK_NULL(gen,UNUR_INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_INFINITY);
 
   if (_unur_isone(nu)) {
     while (1) {

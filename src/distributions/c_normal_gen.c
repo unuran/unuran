@@ -188,8 +188,8 @@ _unur_stdgen_sample_normal_bm( struct unur_gen *gen )
   double u,v,s;
 
   /* check arguments */
-  CHECK_NULL(gen,INFINITY);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
+  CHECK_NULL(gen,UNUR_INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_INFINITY);
 
   do {
     flag = -flag;
@@ -264,8 +264,8 @@ _unur_stdgen_sample_normal_pol( struct unur_gen *gen )
   double s,x,y,tmp;
 
   /* check arguments */
-  CHECK_NULL(gen,INFINITY);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
+  CHECK_NULL(gen,UNUR_INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_INFINITY);
 
   do {
     flag = -flag;
@@ -320,8 +320,8 @@ _unur_stdgen_sample_normal_nquo( struct unur_gen *gen )
   double u,v;
 
   /* check arguments */
-  CHECK_NULL(gen,INFINITY);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
+  CHECK_NULL(gen,UNUR_INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_INFINITY);
 
   while (1) {
     u = uniform();
@@ -363,8 +363,8 @@ _unur_stdgen_sample_normal_quo( struct unur_gen *gen )
   double r,w;
 
   /* check arguments */
-  CHECK_NULL(gen,INFINITY);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
+  CHECK_NULL(gen,UNUR_INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_INFINITY);
 
   while (1) {
     r = uniform();
@@ -418,8 +418,8 @@ _unur_stdgen_sample_normal_leva( struct unur_gen *gen )
   double u,v,x,y,q;
 
   /* check arguments */
-  CHECK_NULL(gen,INFINITY);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
+  CHECK_NULL(gen,UNUR_INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_INFINITY);
 
   while (1) {
     u = uniform();
@@ -483,8 +483,8 @@ _unur_stdgen_sample_normal_kr( struct unur_gen *gen )
   double t, z;
   
   /* check arguments */
-  CHECK_NULL(gen,INFINITY);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
+  CHECK_NULL(gen,UNUR_INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_INFINITY);
   
   U = uniform();
   
@@ -605,8 +605,8 @@ _unur_stdgen_sample_normal_acr( struct unur_gen *gen )
   double rn,x,y,z;
 
   /* check arguments */
-  CHECK_NULL(gen,INFINITY);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
+  CHECK_NULL(gen,UNUR_INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_INFINITY);
 
   do {
     y = uniform();
@@ -690,8 +690,8 @@ _unur_stdgen_sample_normal_sum( struct unur_gen *gen )
   double X;
 
   /* check arguments */
-  CHECK_NULL(gen,INFINITY);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
+  CHECK_NULL(gen,UNUR_INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_INFINITY);
 
   X = ( uniform() + uniform() + uniform() + uniform() + uniform() + uniform() +
 	uniform() + uniform() + uniform() + uniform() + uniform() + uniform()

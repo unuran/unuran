@@ -211,8 +211,8 @@ _unur_set_params_chisquare( UNUR_DISTR *distr, const double *params, int n_param
 
   /* set (standard) domain */
   if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
-    DISTR.domain[0] = 0.;          /* left boundary  */
-    DISTR.domain[1] = INFINITY;    /* right boundary */
+    DISTR.domain[0] = 0.;            /* left boundary  */
+    DISTR.domain[1] = UNUR_INFINITY; /* right boundary */
   }
 
   return UNUR_SUCCESS;

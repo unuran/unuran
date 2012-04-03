@@ -178,8 +178,8 @@ _unur_stdgen_sample_gamma_gll( struct unur_gen *gen )
   double u1,u2,v,r,z;
 
   /* check arguments */
-  CHECK_NULL(gen,INFINITY);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
+  CHECK_NULL(gen,UNUR_INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_INFINITY);
 
   while (1) {
     u1 = uniform();
@@ -261,8 +261,8 @@ _unur_stdgen_sample_gamma_gs( struct unur_gen *gen )
   double X, p;
 
   /* check arguments */
-  CHECK_NULL(gen,INFINITY);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
+  CHECK_NULL(gen,UNUR_INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_INFINITY);
 
   while (1) {
     p = b * uniform();
@@ -397,8 +397,8 @@ _unur_stdgen_sample_gamma_gd( struct unur_gen *gen )
   double q,sign_U,t,v,w,x;
 
   /* check arguments */
-  CHECK_NULL(gen,INFINITY);
-  COOKIE_CHECK(gen,CK_CSTD_GEN,INFINITY);
+  CHECK_NULL(gen,UNUR_INFINITY);
+  COOKIE_CHECK(gen,CK_CSTD_GEN,UNUR_INFINITY);
 
   do {
 

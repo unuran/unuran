@@ -132,8 +132,8 @@ _unur_set_params_slash( UNUR_DISTR *distr, const double *params ATTRIBUTE__UNUSE
 
   /* set (standard) domain */
   if (distr->set & UNUR_DISTR_SET_STDDOMAIN) {
-    DISTR.domain[0] = -INFINITY;       /* left boundary  */
-    DISTR.domain[1] = INFINITY;        /* right boundary */
+    DISTR.domain[0] = -UNUR_INFINITY;       /* left boundary  */
+    DISTR.domain[1] = UNUR_INFINITY;        /* right boundary */
   }
 
   return UNUR_SUCCESS;

@@ -178,7 +178,7 @@ _unur_pinv_searchborder (struct unur_gen *gen, double x0, double bound,
      /*   boundary point                                                     */
      /*                                                                      */
      /* error:                                                               */
-     /*   return INFINITY                                                    */
+     /*   return UNUR_INFINITY                                               */
      /*----------------------------------------------------------------------*/
 {
   double x;         /* current and previous searching point */
@@ -195,12 +195,12 @@ _unur_pinv_searchborder (struct unur_gen *gen, double x0, double bound,
   /* we already have checked PDF(center). but who knowns. */
   if (fllim <= 0.) {
     _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"PDF(center) too small");
-    return INFINITY;
+    return UNUR_INFINITY;
   }
 
   /* starting point */
   xl = x0; 
-  fl = INFINITY;
+  fl = UNUR_INFINITY;
   x = _unur_arcmean(x0,bound);
 
   /* find points where PDF values bracket threshold: */
@@ -216,7 +216,7 @@ _unur_pinv_searchborder (struct unur_gen *gen, double x0, double bound,
   /* check sign */
   if (fx < 0.) {
     _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF(x) < 0");
-    return INFINITY;
+    return UNUR_INFINITY;
   }
 
   /* decrease length of bracket if necessary */
@@ -233,7 +233,7 @@ _unur_pinv_searchborder (struct unur_gen *gen, double x0, double bound,
 
     if (fx < 0.) {
       _unur_error(gen->genid,UNUR_ERR_GEN_DATA,"PDF(x) < 0");
-      return INFINITY;
+      return UNUR_INFINITY;
     }
 
     /* check PDF at new point */
@@ -471,7 +471,7 @@ _unur_pinv_cut( struct unur_gen *gen, double w, double dw, double crit )
      /*   cut-off point                                                      */
      /*                                                                      */
      /* error:                                                               */
-     /*   return INFINITY                                                    */
+     /*   return UNUR_INFINITY                                               */
      /*----------------------------------------------------------------------*/
 {
   double fl,fx,fr;  /* value of PDF at x-dx, x, and x+dx */
@@ -560,7 +560,7 @@ _unur_pinv_cut( struct unur_gen *gen, double w, double dw, double crit )
       /* df too large --> we cannot compute the next point */
       _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,
 		  "numerical problems with cut-off point, PDF too steep");
-      return INFINITY;
+      return UNUR_INFINITY;
     }
     if (  ((dw>0)?1.:-1.) * df > 0.) {
       /* f increasing towards boundary in [fl,fr]. */
@@ -614,7 +614,7 @@ _unur_pinv_cut( struct unur_gen *gen, double w, double dw, double crit )
 	/* we are on the wrong side --> abort */
 	_unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,
 		    "numerical problems with cut-off point, out of domain");
-	return INFINITY;
+	return UNUR_INFINITY;
       }
       else {
 	/* boundary exceeded into search direction */
@@ -662,14 +662,14 @@ _unur_pinv_cut_bisect (struct unur_gen *gen, double x0, double x1)
      /*   cut-off point                                                      */
      /*                                                                      */
      /* error:                                                               */
-     /*   return INFINITY                                                    */
+     /*   return UNUR_INFINITY                                               */
      /*----------------------------------------------------------------------*/
 {
   double x,fx;
 
   /* check starting points */
   if (! (_unur_isfinite(x0) && _unur_isfinite(x1)) )
-    return INFINITY;
+    return UNUR_INFINITY;
 
   /* check sign of PDF */
   x = x1;
@@ -784,7 +784,7 @@ _unur_pinv_cut_CDF( struct unur_gen *gen, double dom, double x0, double ul, doub
      /*   cut-off point                                                      */
      /*                                                                      */
      /* error:                                                               */
-     /*   return INFINITY                                                    */
+     /*   return UNUR_INFINITY                                               */
      /*----------------------------------------------------------------------*/
 {
   double x;         /* current and previous searching point */
@@ -813,7 +813,7 @@ _unur_pinv_cut_CDF( struct unur_gen *gen, double dom, double x0, double ul, doub
       x0 += dx;
       f0 = CDF(x0);
       if (!_unur_isfinite(x0))
-	return INFINITY;
+	return UNUR_INFINITY;
     }
   }
   if (_unur_isone(f0)) {
@@ -822,7 +822,7 @@ _unur_pinv_cut_CDF( struct unur_gen *gen, double dom, double x0, double ul, doub
       x0 -= dx;
       f0 = CDF(x0);
       if (!_unur_isfinite(x0))
-	return INFINITY;
+	return UNUR_INFINITY;
     }
   }
 
@@ -838,7 +838,7 @@ _unur_pinv_cut_CDF( struct unur_gen *gen, double dom, double x0, double ul, doub
   if ( (x0 < dom && _unur_FP_greater(f0,fdom)) ||
        (x0 > dom && _unur_FP_less(f0,fdom)) ) {
     /* there is something wrong */
-    return INFINITY;
+    return UNUR_INFINITY;
   }
 
   /* bracket */

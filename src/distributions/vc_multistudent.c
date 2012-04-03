@@ -136,7 +136,7 @@ _unur_logpdf_multistudent( const double *x, UNUR_DISTR *distr )
   covar_inv = unur_distr_cvec_get_covar_inv(distr);
   if (covar_inv==NULL) 
     /* inverse of covariance matrix not available */
-    return INFINITY;
+    return UNUR_INFINITY;
 
   xx=0.; /* resetting exponential function argument */
   for (i=0; i<dim; i++) {
@@ -218,14 +218,14 @@ _unur_pdlogpdf_multistudent( const double *x, int coord, UNUR_DISTR *distr )
   /* check arguments */
   if (coord < 0 || coord >= dim) {
     _unur_warning(distr->name,UNUR_ERR_DISTR_DOMAIN,"invalid coordinate");
-    return INFINITY;
+    return UNUR_INFINITY;
   }
 
   /* get inverse of covariance matrix */
   covar_inv = unur_distr_cvec_get_covar_inv(distr);
   if (covar_inv==NULL) 
     /* inverse of covariance matrix not available */
-    return INFINITY;
+    return UNUR_INFINITY;
 
   /* calculating (x-mean)' Sigma^-1 (x-mean) */  
   xx=0.; 

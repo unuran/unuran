@@ -358,10 +358,10 @@ int main(int argc, char *argv[])
     printf("\n");
     distr = unur_distr_multistudent(DIM,NU,mean,covar);
     for (d=0; d<DIM; d++) {
-      moments_expected[im(d,1)] = INFINITY;
-      moments_expected[im(d,2)] = INFINITY;
-      moments_expected[im(d,3)] = INFINITY;
-      moments_expected[im(d,4)] = INFINITY;
+      moments_expected[im(d,1)] = UNUR_INFINITY;
+      moments_expected[im(d,2)] = UNUR_INFINITY;
+      moments_expected[im(d,3)] = UNUR_INFINITY;
+      moments_expected[im(d,4)] = UNUR_INFINITY;
     
       if (NU>=2) moments_expected[im(d,1)]=0;
       if (NU>=3) moments_expected[im(d,2)]=NU/(NU-2.);
@@ -375,10 +375,10 @@ int main(int argc, char *argv[])
     printf("DISTRIBUTION='CAUCHY_BALL'\n");
     distr = unur_distr_multicauchy_RoU_ball(DIM);
     for (d=0; d<DIM; d++) {
-      moments_expected[im(d,1)] = INFINITY;
-      moments_expected[im(d,2)] = INFINITY;
-      moments_expected[im(d,3)] = INFINITY;
-      moments_expected[im(d,4)] = INFINITY;    
+      moments_expected[im(d,1)] = UNUR_INFINITY;
+      moments_expected[im(d,2)] = UNUR_INFINITY;
+      moments_expected[im(d,3)] = UNUR_INFINITY;
+      moments_expected[im(d,4)] = UNUR_INFINITY;    
     }
   }
   

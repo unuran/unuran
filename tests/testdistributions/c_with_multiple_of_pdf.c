@@ -131,9 +131,9 @@ double
 _unur_cdf_mult( double x, const struct unur_distr *q )
 {
   /* check arguments */
-  CHECK_NULL( q, INFINITY );
-  CHECK_NULL( q->base, INFINITY );
-  CHECK_NULL( q->base->data.cont.pdf, INFINITY );
+  CHECK_NULL( q, UNUR_INFINITY );
+  CHECK_NULL( q->base, UNUR_INFINITY );
+  CHECK_NULL( q->base->data.cont.pdf, UNUR_INFINITY );
 
   return CDF(x);
 
@@ -145,9 +145,9 @@ double
 _unur_logcdf_mult( double x, const struct unur_distr *q )
 {
   /* check arguments */
-  CHECK_NULL( q, INFINITY );
-  CHECK_NULL( q->base, INFINITY );
-  CHECK_NULL( q->base->data.cont.pdf, INFINITY );
+  CHECK_NULL( q, UNUR_INFINITY );
+  CHECK_NULL( q->base, UNUR_INFINITY );
+  CHECK_NULL( q->base->data.cont.pdf, UNUR_INFINITY );
 
   return logCDF(x);
 
@@ -159,9 +159,9 @@ double
 _unur_pdf_mult( double x, const struct unur_distr *q )
 {
   /* check arguments */
-  CHECK_NULL( q, INFINITY );
-  CHECK_NULL( q->base, INFINITY );
-  CHECK_NULL( q->base->data.cont.pdf, INFINITY );
+  CHECK_NULL( q, UNUR_INFINITY );
+  CHECK_NULL( q->base, UNUR_INFINITY );
+  CHECK_NULL( q->base->data.cont.pdf, UNUR_INFINITY );
 
   return q->data.cont.MULT * PDF(x);
 
@@ -173,9 +173,9 @@ double
 _unur_dpdf_mult( double x, const struct unur_distr *q )
 {
   /* check arguments */
-  CHECK_NULL( q, INFINITY );
-  CHECK_NULL( q->base, INFINITY );
-  CHECK_NULL( q->base->data.cont.dpdf, INFINITY );
+  CHECK_NULL( q, UNUR_INFINITY );
+  CHECK_NULL( q->base, UNUR_INFINITY );
+  CHECK_NULL( q->base->data.cont.dpdf, UNUR_INFINITY );
 
   return q->data.cont.MULT * dPDF(x);
 
@@ -187,9 +187,9 @@ double
 _unur_logpdf_mult( double x, const struct unur_distr *q )
 {
   /* check arguments */
-  CHECK_NULL( q, INFINITY );
-  CHECK_NULL( q->base, INFINITY );
-  CHECK_NULL( q->base->data.cont.logpdf, INFINITY );
+  CHECK_NULL( q, UNUR_INFINITY );
+  CHECK_NULL( q->base, UNUR_INFINITY );
+  CHECK_NULL( q->base->data.cont.logpdf, UNUR_INFINITY );
 
   return log(q->data.cont.MULT) + logPDF(x);
 
@@ -201,9 +201,9 @@ double
 _unur_dlogpdf_mult( double x, const struct unur_distr *q )
 {
   /* check arguments */
-  CHECK_NULL( q, INFINITY );
-  CHECK_NULL( q->base, INFINITY );
-  CHECK_NULL( q->base->data.cont.dlogpdf, INFINITY );
+  CHECK_NULL( q, UNUR_INFINITY );
+  CHECK_NULL( q->base, UNUR_INFINITY );
+  CHECK_NULL( q->base->data.cont.dlogpdf, UNUR_INFINITY );
 
   return dlogPDF(x);
 

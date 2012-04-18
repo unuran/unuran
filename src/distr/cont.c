@@ -1886,6 +1886,16 @@ unur_distr_cont_set_domain( struct unur_distr *distr, double left, double right 
     return UNUR_ERR_DISTR_SET;
   }
 
+#if defined(R_UNURAN)
+  /* in Runuran we always set the domain, even if we just use the defaults */
+  if (_unur_FP_same(left, DISTR.domain[0]) &&
+      _unur_FP_same(right, DISTR.domain[1])) {
+    /* nothing to do */
+    distr->set |= UNUR_DISTR_SET_DOMAIN;
+    return UNUR_SUCCESS;
+  }
+#endif
+
   /* we have to deal with the mode */
   if ( distr->set & UNUR_DISTR_SET_MODE ) {
     is_set |= UNUR_DISTR_SET_MODE;

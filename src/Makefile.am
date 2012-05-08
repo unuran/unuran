@@ -1,6 +1,13 @@
 ## Process this file with automake to produce Makefile.in
 ## $Id$
 
+if HAVE_MINGW
+no_undefined = -no-undefined
+else
+no_undefined =
+endif
+
+
 SUBDIRS = \
  utils \
  methods \
@@ -29,7 +36,7 @@ SUBLIBS = \
 lib_LTLIBRARIES = libunuran.la
 libunuran_la_SOURCES = 
 libunuran_la_LIBADD = $(SUBLIBS)
-libunuran_la_LDFLAGS = -version-info $(UNURAN_LT_VERSION)
+libunuran_la_LDFLAGS = -version-info $(UNURAN_LT_VERSION) $(no_undefined)
 
 include_HEADERS = unuran.h
 

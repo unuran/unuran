@@ -271,7 +271,6 @@ if test X"$GCC" = Xyes ; then
    CC_FLAGS="$CC_FLAGS -Wall -Wextra $EXTRA_GCC_FLAGS"
 fi
 
-
 case "${host_os}" in
 linux*)
 	case  "${CC}" in
@@ -285,6 +284,16 @@ linux*)
 esac
 
 AC_SUBST(AM_CFLAGS,[$CC_FLAGS])
+
+dnl MinGW (Win32)
+case "${host}" in
+  *-*-mingw*)
+    have_mingw=yes
+    ;;
+  *)
+    have_mingw=no
+esac
+AM_CONDITIONAL(HAVE_MINGW, test "$have_mingw" = "yes")
 
 
 dnl create Makefiles for source
@@ -344,7 +353,3 @@ AC_MSG_RESULT([
 ])
 
 dnl -----------------------------------------
-
-
-
-

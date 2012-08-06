@@ -458,11 +458,7 @@ _unur_lobatto_eval_CDF (struct unur_lobatto_table *Itable, double x)
      /*                                                                      */
      /* parameters:                                                          */
      /*   Itable ... table for storing integral values (may be NULL)         */
-     /*   x      ... left boundary point of interval                         */
-     /*   h      ... length of interval                                      */
-     /*   fx     ... funct(x) (ignored if NULL or *fx<0)                     */
-     /*              set *fx <- funct(x+h) if _unur_lobatto5_simple called   */
-     /*              set *fx <- -1.        otherwise                         */
+     /*   x      ... argument                                                */
      /*                                                                      */
      /* return:                                                              */
      /*   integral                                                           */

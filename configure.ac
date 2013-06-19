@@ -5,9 +5,9 @@ dnl Initialize.
 AC_PREREQ(2.63)
 AC_INIT([unuran],[1.9.devel],[unuran@statmath.wu.ac.at])
 AC_CONFIG_AUX_DIR(autoconf)
-AM_INIT_AUTOMAKE([unuran],[1.9.devel])
 AC_CONFIG_SRCDIR([src/unuran_config.h])
-AC_CONFIG_HEADER([config.h])
+AC_CONFIG_HEADERS([config.h])
+AM_INIT_AUTOMAKE([-Wall -Wno-extra-portability foreign])
 
 dnl Library versioning (current:revision:age)
 dnl See the libtool manual for an explanation of the numbers

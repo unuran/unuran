@@ -55,6 +55,7 @@ AC_PROG_MAKE_SET
 AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_CPP
+AC_PROG_RANLIB
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_CHECK_TOOL(AR, ar, :)
@@ -124,7 +125,7 @@ AC_TYPE_SIZE_T
 AC_HEADER_TIME
 
 dnl Checks for library functions.
-AC_CHECK_FUNCS([floor gettimeofday pow sqrt strcasecmp strchr strtol strtoul])
+AC_CHECK_FUNCS([alarm floor gettimeofday memset pow sqrt strcasecmp strchr strtol strtoul])
 
 dnl For the following function replacements exist
 AC_CHECK_DECLS(log1p,,,[#include <math.h>])

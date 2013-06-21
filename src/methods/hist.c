@@ -595,7 +595,7 @@ _unur_hist_info( struct unur_gen *gen, int help )
   /*   } */
   
   /* method */
-  _unur_string_append(info,"method: HIST (HISTogramm of empirical distribution)\n");
+  _unur_string_append(info,"method: HIST (HISTogram of empirical distribution)\n");
   _unur_string_append(info,"\n");
 
   /* performance */

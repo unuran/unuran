@@ -47,8 +47,8 @@ this permission notice are preserved on all copies.
 @c 
 
 @titlepage
-@title{Using UNU.RAN with Microsoft Visual C}
-@subtitle{UNU.RAN -- Universal Non-Uniform RANdom number generators}
+@title Using UNU.RAN with Microsoft Visual C
+@subtitle UNU.RAN -- Universal Non-Uniform RANdom number generators
 @subtitle Version @value{VERSION}, @value{UPDATED}
 
 @author Josef Leydold
@@ -63,10 +63,9 @@ this permission notice are preserved on all copies.
 @c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 @c 
 @c Table of contents 
-@c [ disabled ]
 @c 
 
-@c @contents
+@contents
 
 @c ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 @c 
@@ -119,7 +118,7 @@ manual.
 @c --------------------------------------------------------------------
 
 @node Installation, URNG, TOP, TOP
-@section  Installation of Binary Distribution
+@chapter Installation of Binary Distribution
 
 @enumerate
 @item
@@ -191,7 +190,7 @@ when it is started.
 @c --------------------------------------------------------------------
 
 @node URNG, IDE, Installation, TOP
-@section  Uniform Random Number Generator
+@chapter  Uniform Random Number Generator
 
 This binary distribution uses Pierre L'Ecuyers
 @uref{http://statmath.wu.ac.at/software/RngStreams,RngStreams}
@@ -221,7 +220,7 @@ library.
 @c --------------------------------------------------------------------
 
 @node IDE, CLI, URNG, TOP
-@section  Building Your Own Project in Visual Studio
+@chapter  Building Your Own Project in Visual Studio
 
 @emph{Note:} 
 The information below applies to the Visual C++ .NET 2005.
@@ -366,7 +365,7 @@ environment variable for the DLL (@pxref{Installation}).
 @c --------------------------------------------------------------------
 
 @node CLI, Examples, IDE, TOP
-@section  Building Your Own Project on the Command Line  
+@chapter  Building Your Own Project on the Command Line  
 
 First you have to set the appropriate environment variables to enable
 32-bit command-line builds by means of the @file{vcvars32.bat} file:
@@ -400,7 +399,7 @@ When you want to run @file{example} then the location of the DLL
 @c --------------------------------------------------------------------
 
 @node Examples, Example1, CLI, TOP
-@section  Two Examples
+@chapter  Two Examples
 
 Here we give small examples. These show
 

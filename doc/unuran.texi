@@ -46,7 +46,7 @@ this permission notice are preserved on all copies.
 @c 
 
 @titlepage
-@title{UNU.RAN User Manual}
+@title UNU.RAN User Manual
 @subtitle Generating non-uniform random numbers
 @subtitle Version @value{VERSION}, @value{UPDATED}
 

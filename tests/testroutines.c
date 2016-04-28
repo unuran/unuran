@@ -488,21 +488,23 @@ int check_expected_no_reinit( FILE *LOG, int line, int rcode )
 
 int draw_sample_and_discard ( FILE *LOG, int line, UNUR_GEN *gen, int sample_size )
 {
-  int J;
-  double X;
+  /* int J; */
+  /* double X; */
   double *vec;
 
   switch (unur_distr_get_type(unur_get_distr(gen)) ) {
 
   case UNUR_DISTR_DISCR:
     for( ; sample_size>0; --sample_size) 
-      J = unur_sample_discr(gen);
+      /* J = unur_sample_discr(gen); */
+      unur_sample_discr(gen);
     return UNUR_SUCCESS;
 
   case UNUR_DISTR_CONT:
   case UNUR_DISTR_CEMP:
     for( ; sample_size>0; --sample_size) 
-      X = unur_sample_cont(gen);
+      /* X = unur_sample_cont(gen); */
+      unur_sample_cont(gen);
     return UNUR_SUCCESS;
 
   case UNUR_DISTR_CVEC:

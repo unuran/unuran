@@ -88,19 +88,23 @@ CLEANFILES = *~
 
 # clean generated files
 MAINTAINERCLEANFILES = \
- Makefile.in \
- aclocal.m4 \
- configure \
- config.h.in \
- autoconf/compile \
- autoconf/config.guess \
- autoconf/config.sub \
- autoconf/depcomp \
- autoconf/install-sh \
- autoconf/ltmain.sh \
- autoconf/mdate-sh \
- autoconf/missing \
- autoconf/mkinstalldirs
+ $(srcdir)/Makefile.in \
+ $(srcdir)/autoconf/compile \
+ $(srcdir)/autoconf/config.guess \
+ $(srcdir)/autoconf/config.sub \
+ $(srcdir)/autoconf/depcomp \
+ $(srcdir)/autoconf/install-sh \
+ $(srcdir)/autoconf/ltmain.sh \
+ $(srcdir)/autoconf/mdate-sh \
+ $(srcdir)/autoconf/missing \
+ $(srcdir)/autoconf/test-driver
+
+# Remark: the three files
+#   $(top_srcdir)/aclocal.m4
+#   $(top_srcdir)/config.h.in
+#    $(top_srcdir)/configure
+# are removed in doc/Makefile.am.
+# It cannot be done here as this breaks the cleaning process.
 
 # auxiliary directories
 maintainer-clean-local:

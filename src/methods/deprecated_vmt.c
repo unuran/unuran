@@ -482,9 +482,10 @@ _unur_vmt_make_marginal_gen( struct unur_gen *gen )
   if (_unur_distr_cvec_marginals_are_equal(DISTR.stdmarginals, GEN->dim)) {
     /* we can use the same generator object for all marginal distributions */
     struct unur_gen *marginalgen = unur_init( unur_auto_new( DISTR.stdmarginals[0] ) );
-    if (marginalgen)
+    if (marginalgen) {
       gen->gen_aux_list = _unur_gen_list_set(marginalgen,GEN->dim);
       gen->n_gen_aux_list = GEN->dim;
+    }
   }
 
   else {

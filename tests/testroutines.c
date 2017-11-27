@@ -617,7 +617,10 @@ compare_sequence_par_start( FILE *LOG, int line, UNUR_PAR *par, int sample_size 
 
   /* reset uniform RNG */
   if (unur_urng_reset(unur_get_default_urng()) != UNUR_SUCCESS) {
-    if (par) free(par); return UNUR_SUCCESS;
+    if (par) {
+      free(par);
+    }
+    return UNUR_SUCCESS;
   }
 
   /* init generator */
@@ -639,7 +642,10 @@ compare_sequence_par ( FILE *LOG, int line, UNUR_PAR *par, int sample_size )
 
   /* reset uniform RNG */
   if (unur_urng_reset(unur_get_default_urng()) != UNUR_SUCCESS) {
-    if (par) free(par); return cannot_compare_sequence(LOG);
+    if (par) {
+      free(par);
+    }
+    return cannot_compare_sequence(LOG);
   }
 
   /* init generator */

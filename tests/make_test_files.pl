@@ -390,16 +390,17 @@ sub scan_validate {
     print "/* [$section] */\n\n";
     print "void test_validate (void)\n{\n";
 
+    print "\t/* suppress GCC compiler warning */\n";
+    print "GCC_DIAG_OFF(unused-variable)\n\n";
+    
     print "\tUNUR_DISTR *distr[".($n_distributions?$n_distributions:1)."];\n";
     print "\tUNUR_PAR *par;\n";
     print "\tUNUR_GEN *gen;\n";
-    print "\tint n_tests_failed;\n";
-    print "\tint rcode;\n";
-
     print "\tdouble *darray;\n";
     print "\tdouble fpm[10];\n";
 
-    print "\n\trcode = 0;\n";
+    print "\tint n_tests_failed;\n";
+    print "\tint rcode;\n";
 
     print "\n\t/* start test */\n";
     print "\tprintf(\"[validate \"); fflush(stdout);\n";
@@ -658,14 +659,9 @@ sub scan_validate {
     print "\t/* we accept CHI2_FAILURES_TOLERATED failures */\n";
     print "\t(n_tests_failed>CHI2_FAILURES_TOLERATED) ? printf(\" ==> failed] \") : printf(\" ==> ok] \");\n";
 
-    print "\n\t/* prevent compiler from making useless annoying warnings */\n";
-    print "\tdistr[0] = NULL;\n";
-    print "\tpar = NULL;\n";
-    print "\tgen = NULL;\n";
-    print "\tdarray = NULL;\n";
-    print "\tfpm[0] = 0.;\n";
-
     print "\n} /* end of test_validate */\n\n";
+    print "/* enable GCC compiler warning */\n";
+    print "GCC_DIAG_ON(unused-variable)\n\n";
 
     # mark as read
     undef $DATA{"validate"};

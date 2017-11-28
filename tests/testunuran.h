@@ -49,28 +49,18 @@
 #include <utils/unur_fp_const_source.h>
 
 /*---------------------------------------------------------------------------*/
-/* define macros for GCC attributes                                          */
-
-#ifdef __GNUC__
-#  define ATTRIBUTE__UNUSED        __attribute__ ((unused))
-#else
-#  define ATTRIBUTE__UNUSED
-#endif
-
-/*---------------------------------------------------------------------------*/
-
-#define CHI_TEST_INTERVALS 100  /* number of intervals for chi^2 test        */
-#define CHI_TEST_VERBOSITY 0    /* verbosity level for chi^2 test: 0 | 1 | 2 */
-
-/*---------------------------------------------------------------------------*/
 /* global variables                                                          */
 
 /* tresholds */
 #define PVAL_LIMIT (1.e-3)                  /* treshold for p-value for stat. test */
 #define DEFAULT_CHI2_FAILURES_TOLERATED (3) /* tolerated number of failed tests    */
 
+/* chisquare test */
+#define CHI_TEST_INTERVALS 100  /* number of intervals for chi^2 test        */
+#define CHI_TEST_VERBOSITY 0    /* verbosity level for chi^2 test: 0 | 1 | 2 */
+
 /*---------------------------------------------------------------------------*/
-/* True and false                                                            */
+/* constants                                                                 */
 
 #ifndef TRUE
 #define TRUE   (1)
@@ -82,6 +72,38 @@
 
 #ifndef M_LN10
 #define M_LN10  2.302585092994046
+#endif
+
+/*---------------------------------------------------------------------------*/
+/* define macros for GCC attributes                                          */
+
+#ifdef __GNUC__
+#  define ATTRIBUTE__UNUSED        __attribute__ ((unused))
+#else
+#  define ATTRIBUTE__UNUSED
+#endif
+
+/*---------------------------------------------------------------------------*/
+/* suppress GCC warnings                                                     */
+/* from Jonathan Wakely (copied from Patrick Horgan                          */ 
+/*   http://dbp-consulting.com/tutorials/SuppressingGCCWarnings.html )       */
+
+#if ((__GNUC__ * 100) + __GNUC_MINOR__) >= 402
+#define GCC_DIAG_STR(s) #s
+#define GCC_DIAG_JOINSTR(x,y) GCC_DIAG_STR(x ## y)
+#  define GCC_DIAG_DO_PRAGMA(x) _Pragma (#x)
+#  define GCC_DIAG_PRAGMA(x) GCC_DIAG_DO_PRAGMA(GCC diagnostic x)
+#  if ((__GNUC__ * 100) + __GNUC_MINOR__) >= 406
+#    define GCC_DIAG_OFF(x) GCC_DIAG_PRAGMA(push) \
+        GCC_DIAG_PRAGMA(ignored GCC_DIAG_JOINSTR(-W,x))
+#    define GCC_DIAG_ON(x) GCC_DIAG_PRAGMA(pop)
+#  else
+#    define GCC_DIAG_OFF(x) GCC_DIAG_PRAGMA(ignored GCC_DIAG_JOINSTR(-W,x))
+#    define GCC_DIAG_ON(x) GCC_DIAG_PRAGMA(warning GCC_DIAG_JOINSTR(-W,x))
+#  endif
+#else
+#  define GCC_DIAG_OFF(x)
+#  define GCC_DIAG_ON(x)
 #endif
 
 /*---------------------------------------------------------------------------*/

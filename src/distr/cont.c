@@ -2248,13 +2248,36 @@ unur_distr_cont_upd_pdfarea( struct unur_distr *distr )
      /*   error code   ... on error                                          */
      /*----------------------------------------------------------------------*/
 {
-  /* check arguments */
   _unur_check_NULL( NULL, distr, UNUR_ERR_NULL );
+  return _unur_distr_cont_upd_pdfarea(distr, FALSE);
+} /* end of unur_distr_cont_upd_pdfarea() */
+
+/*...........................................................................*/
+
+int 
+_unur_distr_cont_upd_pdfarea( struct unur_distr *distr, int silent_check_updfunc )
+     /*----------------------------------------------------------------------*/
+     /* (re-) compute area below p.d.f. of distribution (if possible)        */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   distr                ... pointer to distribution object            */
+     /*   silent_check_updfunc ... whether a error message is shown          */
+     /*                            when the update does not exist            */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  CHECK_NULL(distr, UNUR_ERR_NULL);
   _unur_check_distr_object( distr, CONT, UNUR_ERR_DISTR_INVALID );
 
   if (DISTR.upd_area == NULL) {
     /* no function to compute mode available */
-    _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
+    if (! silent_check_updfunc) {
+      _unur_error(distr->name,UNUR_ERR_DISTR_DATA,"");
+    }
     return UNUR_ERR_DISTR_DATA;
   }
 
@@ -2271,7 +2294,7 @@ unur_distr_cont_upd_pdfarea( struct unur_distr *distr )
   distr->set |= UNUR_DISTR_SET_PDFAREA;
 
   return UNUR_SUCCESS;
-} /* end of unur_distr_cont_upd_pdfarea() */
+} /* end of _unur_distr_cont_upd_pdfarea() */
   
 /*---------------------------------------------------------------------------*/
 

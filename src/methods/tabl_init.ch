@@ -182,7 +182,7 @@ _unur_tabl_create( struct unur_par *par )
 
   /* check for required data: area */
   if (!(gen->distr->set & UNUR_DISTR_SET_PDFAREA))
-    if (unur_distr_cont_upd_pdfarea(gen->distr)!=UNUR_SUCCESS)
+    if (_unur_distr_cont_upd_pdfarea(gen->distr, TRUE)!=UNUR_SUCCESS)
       _unur_warning(GENTYPE,UNUR_ERR_DISTR_REQUIRED,"area below PDF, use default instead");
 
   /* set generator identifier */
@@ -469,7 +469,7 @@ _unur_tabl_get_intervals_from_slopes( struct unur_par *par, struct unur_gen *gen
 
   /* reset area below distribution */
   gen->distr->set &= ~UNUR_DISTR_SET_PDFAREA;
-  unur_distr_cont_upd_pdfarea( gen->distr );
+  _unur_distr_cont_upd_pdfarea( gen->distr, TRUE );
 
   /* o.k. */
   return UNUR_SUCCESS;
@@ -587,7 +587,7 @@ _unur_tabl_get_intervals_from_cpoints( struct unur_par *par, struct unur_gen *ge
 
   /* reset area below distribution */
   gen->distr->set &= ~UNUR_DISTR_SET_PDFAREA;
-  unur_distr_cont_upd_pdfarea( gen->distr );
+  _unur_distr_cont_upd_pdfarea( gen->distr, TRUE );
 
   /* o.k. */
   return UNUR_SUCCESS;

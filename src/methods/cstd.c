@@ -815,6 +815,7 @@ _unur_cstd_inversion_init( struct unur_par *par, struct unur_gen *gen )
       }
     }
 
+    /* FALLTHROUGH */
   default: /* no such generator */
     if (gen) _unur_warning(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
     return UNUR_FAILURE;

@@ -252,9 +252,11 @@ _unur_set_params_extremeII( UNUR_DISTR *distr, const double *params, int n_param
   switch (n_params) {
   case 3:
     DISTR.theta = theta;
+    /* FALLTHROUGH */
   case 2:
     DISTR.zeta = zeta;
     n_params = 3;           /* number of parameters for non-standard form */
+    /* FALLTHROUGH */
   default:
     break;
   }

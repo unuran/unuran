@@ -112,6 +112,7 @@ _unur_pinv_create_table( struct unur_gen *gen )
 	break;
 
       smooth = 1;
+      /* FALLTHROUGH */
 
     case 1:
       if (GEN->order % 2 == 1) {
@@ -121,6 +122,7 @@ _unur_pinv_create_table( struct unur_gen *gen )
 	  break;
       }
       smooth = 0;
+      /* FALLTHROUGH */
 
     case 0:
     default:
@@ -128,6 +130,7 @@ _unur_pinv_create_table( struct unur_gen *gen )
       _unur_pinv_newton_cpoints(xval, GEN->order, GEN->iv+i, h, chebyshev[smooth], smooth, use_upoints);
       if (_unur_pinv_newton_create(gen,GEN->iv+i,xval) == UNUR_SUCCESS)
 	break;
+      /* FALLTHROUGH */
 
     case -1:
       /* area below PDF = 0 or serious round-off errors */

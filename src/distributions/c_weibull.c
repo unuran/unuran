@@ -254,9 +254,11 @@ _unur_set_params_weibull( UNUR_DISTR *distr, const double *params, int n_params 
   switch (n_params) {
   case 3:
     DISTR.zeta = zeta;
+    /* FALLTHROUGH */
   case 2:
     DISTR.alpha = alpha;
     n_params = 3;           /* number of parameters for non-standard form */
+    /* FALLTHROUGH */
   default:
     break;
   }

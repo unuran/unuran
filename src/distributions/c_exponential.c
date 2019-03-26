@@ -251,9 +251,11 @@ _unur_set_params_exponential( UNUR_DISTR *distr, const double *params, int n_par
   switch (n_params) {
   case 2:
     DISTR.theta = theta;
+    /* FALLTHROUGH */
   case 1:
     DISTR.sigma = sigma;
     n_params = 2;           /* number of parameters for non-standard form */
+    /* FALLTHROUGH */
   default:
     break;
   }

@@ -1448,8 +1448,10 @@ _unur_hinv_interval_new( struct unur_gen *gen, double p, double u )
   switch (GEN->order) {
   case 5:
     iv->df = dPDF(p);
+    /* FALLTHROUGH */
   case 3:
     iv->f = PDF(p);
+    /* FALLTHROUGH */
   case 1:
     iv->p = p;
     iv->u = u;
@@ -1674,6 +1676,7 @@ _unur_hinv_interval_parameter( struct unur_gen *gen, struct unur_hinv_interval *
       iv->spline[4] = 0.;
       iv->spline[5] = 0.;
     }
+    /* FALLTHROUGH */
 
   case 3:    /* cubic Hermite interpolation */
     if (iv->f > 0. && iv->next->f > 0.) {
@@ -1688,6 +1691,7 @@ _unur_hinv_interval_parameter( struct unur_gen *gen, struct unur_hinv_interval *
       iv->spline[2] = 0.;
       iv->spline[3] = 0.;
     }
+    /* FALLTHROUGH */
 
   case 1:    /* linear interpolation */
     iv->spline[0] = iv->p;

@@ -248,9 +248,11 @@ _unur_set_params_cauchy( UNUR_DISTR *distr, const double *params, int n_params )
   switch (n_params) {
   case 2:
     DISTR.lambda = lambda;
+    /* FALLTHROUGH */
   case 1:
     DISTR.theta  = theta;
     n_params = 2;           /* number of parameters for non-standard form */
+    /* FALLTHROUGH */
   default:
     break;
   }

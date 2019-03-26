@@ -432,8 +432,10 @@ _unur_set_params_burr( UNUR_DISTR *distr, const double *params, int n_params )
   switch (n_params) {
   case 3:
     DISTR.c = c;
+    /* FALLTHROUGH */
   case 2:
     DISTR.k = k;
+    /* FALLTHROUGH */
   default:
     break;
   }

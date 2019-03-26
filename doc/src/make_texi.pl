@@ -695,7 +695,7 @@ sub scan_PDF {
 	# format other output
 	$entry =~ s/\\over\s+/\//g;
 
-	$entry =~ s/\\hbox{\s*(\w+)\s*}/ $1 /g;
+	$entry =~ s/\\hbox\{\s*(\w+)\s*\}/ $1 /g;
 	$entry =~ s/\\hfil+\\break/\n\n/g;
 
 	$entry =~ s/\\frac\{([^\}]+[\s\+\-]+[^\}]+)\}\{([^\}]+[\s\+\-]+[^\}]+)\}/\($1\)\/\($2\)/g;
@@ -1421,8 +1421,8 @@ sub parse_tex {
     $entry =~ s/\s*:\s*/\\colon /g;         # :
     $entry =~ s/\s*<=\s*/\\leq /g;          # <=
     $entry =~ s/\s*>=\s*/\\geq /g;          # >=
-    $entry =~ s/\s*\\{\s*/\\lbrace /g;      # {
-    $entry =~ s/\s*\\}\s*/\\rbrace /g;      # }
+    $entry =~ s/\s*\\\{\s*/\\lbrace /g;     # {
+    $entry =~ s/\s*\\\}\s*/\\rbrace /g;     # }
 
     # scan TeX
     my @token;

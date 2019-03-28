@@ -69,9 +69,16 @@ my $content = '';
 while (<IN>) { $content .= $_; }
 close IN;
 
+# some comments must not be removed.
+# so we first masks them
+$content =~ s {/\*\s*FALLTHROUGH\s*\*/} [\@\@FALLTHROUGH\@\@]gsx;
+
 # remove all comments and empty lines ...
 $content =~ s {/\*.*?\*/} []gsx;
 $content =~ s /\n\s*\n/\n/gsx;
+
+# now unmask these special comments
+$content =~ s {\@\@FALLTHROUGH\@\@} [/\* FALLTHROUGH \*/]gsx;
 
 # copyright statment
 my $copyright =

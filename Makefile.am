@@ -80,7 +80,7 @@ endif
 
 # run checks in fullcheck mode
 fullcheck:
-	UNURANFULLCHECK=true make check
+	UNURANFULLCHECK=true $(MAKE) check
 
 
 # clean backup files

@@ -204,7 +204,7 @@ endif
 
 # run tests in fullcheck mode
 fullcheck:
-	UNURANFULLCHECK=true make check
+	UNURANFULLCHECK=true $(MAKE) check
 
 # clean log files and backup files
 CLEANFILES = \

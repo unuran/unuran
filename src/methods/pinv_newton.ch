@@ -111,6 +111,7 @@ _unur_pinv_create_table( struct unur_gen *gen )
       if (_unur_pinv_newton_create(gen,GEN->iv+i,xval) == UNUR_SUCCESS)
 	break;
 
+      /* failed: try less smooth interpolation */
       smooth = 1;
       /* FALLTHROUGH */
 
@@ -121,6 +122,8 @@ _unur_pinv_create_table( struct unur_gen *gen )
 	if (_unur_pinv_newton_create(gen,GEN->iv+i,xval) == UNUR_SUCCESS)
 	  break;
       }
+
+      /* failed: try less smooth interpolation */
       smooth = 0;
       /* FALLTHROUGH */
 
@@ -130,6 +133,8 @@ _unur_pinv_create_table( struct unur_gen *gen )
       _unur_pinv_newton_cpoints(xval, GEN->order, GEN->iv+i, h, chebyshev[smooth], smooth, use_upoints);
       if (_unur_pinv_newton_create(gen,GEN->iv+i,xval) == UNUR_SUCCESS)
 	break;
+
+      /* failed: try linear interpolation */
       /* FALLTHROUGH */
 
     case -1:

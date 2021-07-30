@@ -189,7 +189,7 @@ endif
 
 # Generate C sources for tests
 SUFFIXES = .c
-.conf.c: make_test_files.pl
+.conf.c:
 	./make_test_files.pl $(top_srcdir) $< > $@
 
 t_*.c: make_test_files.pl

@@ -279,10 +279,10 @@ _unur_pinv_debug_create_table (const struct unur_gen *gen,
   LOG = unur_get_stream();
 
   fprintf(LOG,"%s: Create interpolating polynomials:\n",gen->genid);
-  fprintf(LOG,"%s:\t# iterations   = %d\n",gen->genid,iter);
-  fprintf(LOG,"%s:\t# increasing h = %d  (%g%%)\n",gen->genid,n_incr_h,(100.*n_incr_h)/iter);
-  fprintf(LOG,"%s:\t# decreasing h = %d  (%g%%)\n",gen->genid,n_decr_h,(100.*n_decr_h)/iter);
-  fprintf(LOG,"%s:\t# linear       = %d  (%g%%)\n",gen->genid,n_use_linear,(100.*n_use_linear)/iter);
+  fprintf(LOG,"%s:\t# iterations          = %d\n",gen->genid,iter);
+  fprintf(LOG,"%s:\t# step size increased = %d  (%g%%)\n",gen->genid,n_incr_h,(100.*n_incr_h)/iter);
+  fprintf(LOG,"%s:\t# step size decreased = %d  (%g%%)\n",gen->genid,n_decr_h,(100.*n_decr_h)/iter);
+  fprintf(LOG,"%s:\t# linear              = %d  (%g%%)\n",gen->genid,n_use_linear,(100.*n_use_linear)/iter);
   fprintf(LOG,"%s:\n",gen->genid);
 
   fflush(LOG);

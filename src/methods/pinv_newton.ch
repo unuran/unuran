@@ -104,6 +104,7 @@ _unur_pinv_create_table( struct unur_gen *gen )
 
     /* compute interpolating polynomial */
     use_linear = FALSE;
+
     switch (smooth) {
 
     case 2:
@@ -144,6 +145,7 @@ _unur_pinv_create_table( struct unur_gen *gen )
     }
     
     if (use_linear) {
+
       /* use linear interpolation */
       ++n_use_linear;
 
@@ -171,8 +173,13 @@ _unur_pinv_create_table( struct unur_gen *gen )
     }
 
     /* estimate error of Newton interpolation */
-    maxerror = _unur_pinv_newton_maxerror(gen,&(GEN->iv[i]),xval,use_linear);
-
+    if (use_linear) {
+      maxerror = _unur_pinv_linear_maxerror(gen,&(GEN->iv[i]));
+    }
+    else {
+      maxerror = _unur_pinv_newton_maxerror(gen,&(GEN->iv[i]),xval);
+    }
+    
     if (!(maxerror <= utol)) {
       /* error too large: reduce step size */
       h *= (maxerror > 4.*utol) ? 0.81 : 0.9;
@@ -372,8 +379,10 @@ _unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_interval *iv,
       /* compute integral of PDF in interval (xi,xi+dxi) */
       area = _unur_pinv_Udiff(gen, xi, dxi, &fx);
       
-      if (_unur_iszero(area)) return UNUR_ERR_SILENT;
-      
+      if (_unur_iszero(area)) {
+	return UNUR_ERR_SILENT;
+      }
+	
       /* construction points for interpolating polynomial for CDF^{-1} */
       ui[i] = (i>0) ? (ui[i-1]+area) : area;
       /* divided differences of values of CDF^{-1} */ 
@@ -392,17 +401,19 @@ _unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_interval *iv,
   /* compute second divided differences. */
   /*   k = 1; */
   for(i=GEN->order-1; i>=1; i--) {
-    if (!_unur_FP_same(zi[i],zi[i-1]))
+    if (!_unur_FP_same(zi[i],zi[i-1])) {
       /* use differences */
       zi[i] = (i>1) 
 	? (zi[i]-zi[i-1]) / (ui[i]-ui[i-2])
 	: (zi[1]-zi[0]) / ui[1];
-    else
+    }
+    else {
       /* use second derivative:
        *   [F^{-1}(u)]" = -f'(x) / f(x)^3  where x=F^{-1}(u)
        */
       /* however, this requires the derivative of the PDF */
       zi[i] = (DISTR.dpdf != NULL) ? (-0.5 * dPDF(xval[i]) * pow(zi[i],3)) : UNUR_INFINITY;
+    }
   }
 
   /* compute all other divided differences. */
@@ -415,8 +426,9 @@ _unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_interval *iv,
 
   /* check result */
   for (i=0; i<GEN->order; i++) {
-    if (!_unur_isfinite(zi[i])) 
+    if (!_unur_isfinite(zi[i])) { 
       return UNUR_ERR_SILENT;
+    }
   }
 
   /* o.k. */
@@ -457,7 +469,7 @@ _unur_pinv_linear_create (struct unur_gen *gen, struct unur_pinv_interval *iv,
   x1 = xval[GEN->order];
 
   /* set all coefficents of the Newton polynomial to 0. */
-  for (i=1; i<GEN->order; i++) {
+  for (i=0; i<GEN->order; i++) {
     ui[i] = zi[i] = 0.;
   }
 
@@ -465,7 +477,6 @@ _unur_pinv_linear_create (struct unur_gen *gen, struct unur_pinv_interval *iv,
   area = _unur_pinv_Udiff(gen, x0, x1-x0, NULL);
 
   /* zi[0] contains the slope of the polynomial */
-  ui[0] = area;
   zi[0] = (x1 - x0) / area;
 
   /* ui[GEN->order-1] stores the probability of the interval */
@@ -509,8 +520,7 @@ _unur_pinv_newton_eval ( double q, double *ui, double *zi, int order )
 /*---------------------------------------------------------------------------*/
 
 double
-_unur_pinv_newton_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv,
-			    double *xval, int is_linear)
+_unur_pinv_newton_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv, double *xval)
      /*----------------------------------------------------------------------*/
      /* 2c. Estimate maximal error of Newton interpolation in subinterval.   */
      /*     In addition it makes a simple check for monotonicity of the      */
@@ -520,7 +530,6 @@ _unur_pinv_newton_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv,
      /*   gen  ... pointer to generator object                               */
      /*   iv   ... pointer to current interval                               */
      /*   xval ... x-values for constructing polynomial                      */
-     /*   is_linear ... whether we have linear interpolation                 */
      /*                                                                      */
      /* return:                                                              */
      /*   estimated maximal u-error, or                                      */
@@ -543,16 +552,8 @@ _unur_pinv_newton_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv,
   COOKIE_CHECK(gen,CK_PINV_GEN,UNUR_FAILURE);
   COOKIE_CHECK(iv,CK_PINV_IV,UNUR_FAILURE);
 
-  /* check for monotonicity (linear case) */
-  if (is_linear && zi[0] < 0.)
-    /* not monotone */
-    return 1001.;
-
   /* get U values for test (points with maximal worst case error) */
-  if (is_linear) 
-    _unur_pinv_linear_testpoints(testu,ui,GEN->order);
-  else
-    _unur_pinv_newton_testpoints(testu,ui,GEN->order);
+  _unur_pinv_newton_testpoints(testu,ui,GEN->order);
 
   /* calculate the max u-error at the test points */
   for(i=0; i<GEN->order; i++) {
@@ -561,12 +562,10 @@ _unur_pinv_newton_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv,
     x = _unur_pinv_newton_eval(testu[i], ui, zi, GEN->order);
 
     /* check for monotonicity (non-linear case) */
-    if (!is_linear) {
-      if (! (xval[i] <= x0+x && x0+x <= xval[i+1]) )
-	if (! _unur_FP_same(xval[i], xval[i+1]))
-	  /* not monotone */
-	  return 1002.;
-    }
+    if (! (xval[i] <= x0+x && x0+x <= xval[i+1]) )
+      if (! _unur_FP_same(xval[i], xval[i+1]))
+	/* not monotone */
+	return 1002.;
     
     /* estimate CDF for interpolated x value */
     if (i==0 || xval==NULL)
@@ -594,6 +593,81 @@ _unur_pinv_newton_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv,
   /* return maximal observed u-error */
   return maxerror;
 } /* end of _unur_pinv_newton_maxerror() */
+
+/*---------------------------------------------------------------------------*/
+
+
+double
+_unur_pinv_linear_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv)
+     /*----------------------------------------------------------------------*/
+     /* 2c. Estimate maximal error of _linear_ interpolation in subinterval. */
+     /*     In addition it makes a simple check for monotonicity of the      */
+     /*     inverse CDF.                                                     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*   iv   ... pointer to current interval                               */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   estimated maximal u-error, or                                      */
+     /*   >1000 whenever the inverse CDF is not monotone                     */
+     /*----------------------------------------------------------------------*/
+{
+  double x0 = iv->xi;    /* left boundary point of interval */
+  double *ui = iv->ui;   /* u-values for Newton interpolation  */
+  double *zi = iv->zi;   /* coefficient of Newton interpolation  */
+
+  double maxerror = 0.;  /* maximum error */
+  double uerror;         /* error for given U value */
+  double du, tu;         /* points (in u-scale) for estimating u-error */
+  double x;              /* x = CDF^{-1}(U) */
+  double u;              /* u = CDF(x) */
+
+  int i;                 /* aux variable */
+
+  /* check arguments */
+  COOKIE_CHECK(gen,CK_PINV_GEN,UNUR_FAILURE);
+  COOKIE_CHECK(iv,CK_PINV_IV,UNUR_FAILURE);
+
+  /* check for monotonicity (linear case) */
+  if (zi[0] < 0.) {
+    /* not monotone */
+    return 1001.;
+  }
+
+  /* get distance between test points for test */
+  /* we use equidistributed points */
+  du = ui[(GEN->order)-1] / (GEN->order+1);  /* distance between points */
+  
+  /* calculate the max u-error at the test points */
+  for(i=0; i<GEN->order; i++) {
+
+    /* test point */
+    tu = (i+0.5) * du;
+
+    /* inverse CDF for U test point */
+    x = _unur_pinv_newton_eval(tu, ui, zi, GEN->order);
+
+    /* estimate CDF for interpolated x value */
+    /* if (i==0 || xval==NULL) */
+      u = _unur_pinv_Udiff(gen, x0, x, NULL);
+    /* else */
+    /*   u = ui[i-1] + _unur_pinv_Udiff(gen, xval[i], x+x0-xval[i], NULL); */
+
+    /* check u-value */
+    if (!_unur_isfinite(u))
+      return UNUR_INFINITY;
+
+    /* compute u-error */
+    uerror = fabs(u - tu);
+
+    /* update maximal error */
+    if (uerror>maxerror) maxerror = uerror;
+  }
+
+  /* return maximal observed u-error */
+  return maxerror;
+} /* end of _unur_pinv_linear_maxerror() */
 
 /*---------------------------------------------------------------------------*/
 
@@ -645,32 +719,6 @@ _unur_pinv_newton_testpoints (double *utest, double *ui, int order)
   
   return UNUR_SUCCESS;
 } /* end of _unur_pinv_newton_testpoints() */
-
-/*---------------------------------------------------------------------------*/
-
-int
-_unur_pinv_linear_testpoints (double *utest, double *ui, int order)
-     /*----------------------------------------------------------------------*/
-     /* [2c.] create table of test points for linear interpolation.          */
-     /*                                                                      */
-     /* parameters:                                                          */
-     /*    utest ... pointer to array for storing control points             */
-     /*    ui    ... u-values of interpolation                               */ 
-     /*    order ... order of interpolation polynomial                       */
-     /*                                                                      */
-     /* return:                                                              */
-     /*    u-values of control points in the array utest                     */
-     /*----------------------------------------------------------------------*/
-{
-  int k;
-  double dx = ui[order-1] / order;  /* distance between points */
-
-  /* use equidistributed points */
-  for(k=0; k<order; k++)
-    utest[k] = (k+0.5) * dx;
-
-  return UNUR_SUCCESS;
-} /* end of _unur_pinv_linear_testpoints() */
 
 /*---------------------------------------------------------------------------*/
 

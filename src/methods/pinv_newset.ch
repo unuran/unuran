@@ -55,8 +55,8 @@ unur_pinv_new( const struct unur_distr *distr )
   par->distr   = distr;           /* pointer to distribution object          */
 
   /* set default values */
-  PAR->order = 5;                /* order of polynomial                      */
-  PAR->smooth = 0;               /* smoothness parameter                     */
+  PAR->order = 5L;               /* order of polynomial                      */
+  PAR->smooth = 0L;              /* smoothness parameter                     */
   PAR->u_resolution = 1.0e-10;   /* maximal error allowed in u-direction     */
   PAR->bleft = -1.e100;          /* left border of the computational domain  */
   PAR->bright = 1.e100;          /* right border of the computational domain */
@@ -140,7 +140,7 @@ unur_pinv_set_smoothness( struct unur_par *par, int smooth)
   _unur_check_par_object( par, PINV );
 
   /* check new parameter for generator */
-  if (smooth<0 || smooth>2) {
+  if (smooth < 0L || smooth > 2L) {
     _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"smoothness must be 0, 1, or 2");
     return UNUR_ERR_PAR_SET;
   }

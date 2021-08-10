@@ -408,7 +408,7 @@ static int _unur_pinv_newton_cpoints (double *xval, int order, struct unur_pinv_
 /*---------------------------------------------------------------------------*/
 
 static int _unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_interval *iv, 
-				     double *xval);
+				     double *xval, int smooth);
 /*---------------------------------------------------------------------------*/
 /* 2a. Compute coefficients for Newton interpolation.                        */
 /*---------------------------------------------------------------------------*/

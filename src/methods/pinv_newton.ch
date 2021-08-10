@@ -109,7 +109,7 @@ _unur_pinv_create_table( struct unur_gen *gen )
 
     case 2:
       _unur_pinv_newton_cpoints(xval, GEN->order, GEN->iv+i, h, chebyshev[smooth], smooth, use_upoints);
-      if (_unur_pinv_newton_create(gen,GEN->iv+i,xval) == UNUR_SUCCESS)
+      if (_unur_pinv_newton_create(gen,GEN->iv+i,xval,smooth) == UNUR_SUCCESS)
 	break;
 
       /* failed: try less smooth interpolation */
@@ -120,7 +120,7 @@ _unur_pinv_create_table( struct unur_gen *gen )
       if (GEN->order % 2 == 1) {
 	/* order must be odd when smoothness equals 1 */
 	_unur_pinv_newton_cpoints(xval, GEN->order, GEN->iv+i, h, chebyshev[smooth], smooth, use_upoints);
-	if (_unur_pinv_newton_create(gen,GEN->iv+i,xval) == UNUR_SUCCESS)
+	if (_unur_pinv_newton_create(gen,GEN->iv+i,xval,smooth) == UNUR_SUCCESS)
 	  break;
       }
 
@@ -132,7 +132,7 @@ _unur_pinv_create_table( struct unur_gen *gen )
     default:
       /* compute Newton interpolation polynomial */
       _unur_pinv_newton_cpoints(xval, GEN->order, GEN->iv+i, h, chebyshev[smooth], smooth, use_upoints);
-      if (_unur_pinv_newton_create(gen,GEN->iv+i,xval) == UNUR_SUCCESS)
+      if (_unur_pinv_newton_create(gen,GEN->iv+i,xval,smooth) == UNUR_SUCCESS)
 	break;
 
       /* failed: try linear interpolation */
@@ -334,15 +334,16 @@ _unur_pinv_newton_cpoints (double *xval, int order, struct unur_pinv_interval *i
 
 int
 _unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_interval *iv, 
-			  double *xval)
+			  double *xval, int smooth)
      /*----------------------------------------------------------------------*/
      /* 2a. Compute coefficients for Newton interpolation within a           */
      /* subinterval of the domain of the distribution.                       */
      /*                                                                      */
      /* parameters:                                                          */
-     /*   gen  ... pointer to generator object                               */
-     /*   iv   ... pointer to current interval                               */
-     /*   xval ... x-values for constructing polynomial                      */
+     /*   gen    ... pointer to generator object                             */
+     /*   iv     ... pointer to current interval                             */
+     /*   xval   ... x-values for constructing polynomial                    */
+     /*   smooth ... smoothness parameter                                    */
      /*                                                                      */
      /* return:                                                              */
      /*   UNUR_SUCCESS ... on success                                        */
@@ -372,7 +373,7 @@ _unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_interval *iv,
     /* left boundary and length of subinterval for integration */
     xi = xval[i];
 
-    if (!_unur_FP_same(xval[i],xval[i+1])) {
+    if (smooth < 1L || !_unur_FP_same(xval[i],xval[i+1])) {
       /* use differences */
       dxi = xval[i+1]-xval[i];
 
@@ -401,13 +402,13 @@ _unur_pinv_newton_create (struct unur_gen *gen, struct unur_pinv_interval *iv,
   /* compute second divided differences. */
   /*   k = 1; */
   for(i=GEN->order-1; i>=1; i--) {
-    if (!_unur_FP_same(zi[i],zi[i-1])) {
+    if (smooth < 2L || !_unur_FP_same(zi[i],zi[i-1])) {
       /* use differences */
       zi[i] = (i>1) 
 	? (zi[i]-zi[i-1]) / (ui[i]-ui[i-2])
 	: (zi[1]-zi[0]) / ui[1];
     }
-    else {
+    else {   /* smooth >= 2L */
       /* use second derivative:
        *   [F^{-1}(u)]" = -f'(x) / f(x)^3  where x=F^{-1}(u)
        */

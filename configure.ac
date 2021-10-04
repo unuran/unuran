@@ -2,7 +2,7 @@ dnl Process this file with autoconf to produce a configure script.
 dnl $Id$
 
 dnl Initialize.
-AC_PREREQ(2.63)
+AC_PREREQ([2.71])
 AC_INIT([unuran],[1.9.devel],[unuran@statmath.wu.ac.at])
 AC_CONFIG_AUX_DIR(autoconf)
 AC_CONFIG_SRCDIR([src/unuran_config.h])
@@ -115,14 +115,14 @@ dnl Optional support for Rmath standalone library
 AX_ADD_RMATH()
 
 dnl Checks for header files.
-AC_HEADER_STDC
-AC_CHECK_HEADERS([float.h limits.h stdlib.h string.h sys/time.h unistd.h])
+AC_CHECK_HEADERS([float.h limits.h stdlib.h string.h unistd.h])
+AC_CHECK_HEADERS_ONCE([sys/time.h])
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_C_INLINE
 AC_TYPE_SIZE_T
-AC_HEADER_TIME
+
 
 dnl Checks for library functions.
 AC_CHECK_FUNCS([alarm floor gettimeofday memset pow sqrt strcasecmp strchr strtol strtoul])

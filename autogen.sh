@@ -10,7 +10,7 @@ cd $srcdir
 PROJECT=unuran
 TEST_TYPE=-f
 FILE=src/unuran_config.h          # a file that should exist in the source dir
-export WANT_AUTOMAKE=1.15
+export WANT_AUTOMAKE=1.16
 
 # Check for required programs
 (libtoolize --version) < /dev/null > /dev/null 2>&1 || {

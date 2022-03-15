@@ -1,12 +1,18 @@
 
-Version 1.9.0: ?????
+Version 1.9.0: March 2022
 
 	* Methods:
 
-	- CSTD: print constants computed in init step into log file and 
-                info string.
+	- CSTD:
+	  print constants computed in init step into log file and 
+          info string.
 
-	- PINV: check pointer dPDF before using it.
+	- PINV:
+	  . now also works for distributions with PDFs with constant
+	    part
+
+	  . internal:  
+	        check pointer dPDF before using it.
                 disabled internal rescaling of PDF.
 		abort computation of area below PDF when an almost
                 infinite loop occurs.
@@ -22,7 +28,7 @@ Version 1.9.0: ?????
           inversion method.
 
 	- get rid of confusing error message for method TABL when the
-	  the update function for the pdf area is not available.
+	  the update function for the PDF area is not available.
 
 	* Distributions:
 
@@ -40,14 +46,17 @@ Version 1.8.0: October 2010
 
 	* Methods:
 
-	- DSTD: new function unur_dstd_chg_truncated()
+	- DSTD:
+	  new function unur_dstd_chg_truncated()
 	  that allows to truncate the domain of generator object that
 	  implements the inversion method.
 
-	- NORTA: use method PINV as first choice for generator of
-          marginal distribution.
+	- NORTA:
+	  use method PINV as first choice for generator of marginal
+	  distribution.
 
-	- PINV: when no 'center' is provided by the user, or when the
+	- PINV:
+	  when no 'center' is provided by the user, or when the
 	  PDF vanishes for the given 'center' or is not finite, then
 	  the method tries to "guess" an appropriate point for the 'center'.
 

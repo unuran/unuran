@@ -7,6 +7,5 @@
 ./configure.ac:
 
 	AC_INIT([unuran],[1.3.0],[unuran@statmath.wu.ac.at])
-	AM_INIT_AUTOMAKE([unuran],[1.3.0])
 
 

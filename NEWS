@@ -1,4 +1,11 @@
 
+Version 1.10.0: ????
+
+	* Distributions:
+
+	- GIG: improved numerical accuracy of computation of mode
+
+
 Version 1.9.0: March 2022
 
 	* Methods:

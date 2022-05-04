@@ -223,9 +223,17 @@ _unur_upd_mode_gig2( UNUR_DISTR *distr )
 {
   register const double *params = DISTR.params;
 
-  DISTR.mode =
-    ((theta-1.)+sqrt((theta-1.)*(theta-1.) + psi*chi)) / psi;
-
+  if (theta >= 1.) {
+    /* Use mode of pdf(x) */
+    DISTR.mode =
+      ((theta-1.)+sqrt((theta-1.)*(theta-1.) + psi*chi)) / psi;
+  }
+  else { /* theta < 1. */
+    /* Use reciprocal of mode of pdf(1/x) */
+    DISTR.mode = chi /
+      ((1.-theta)+sqrt((1.-theta)*(1.-theta) + psi*chi));
+  }
+  
   /* mode must be in domain */
   if (DISTR.mode < DISTR.domain[0]) 
     DISTR.mode = DISTR.domain[0];

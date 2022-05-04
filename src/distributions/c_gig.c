@@ -187,7 +187,7 @@ _unur_upd_mode_gig( UNUR_DISTR *distr )
       eta * (sqrt(omega*omega + (theta-1.)*(theta-1.)) + (theta-1.))/omega;
   }
   else {
-    /* inverse of mode of PDF(1/x) */
+    /* reciprocal of mode of PDF(1/x) */
     DISTR.mode =
       eta * omega / (sqrt((1.-theta)*(1.-theta) + omega*omega)+(1.-theta));
   }

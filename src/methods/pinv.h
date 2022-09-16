@@ -157,12 +157,6 @@
       might be rather expensive, especially when this boundary point
       is @code{0}.
       
-      When sampling from truncated distributions with extreme
-      truncation points, it is recommended to provide the log-density 
-      using unur_distr_cont_set_logpdf() and the mode.
-      Then the PDF is rescaled such that the PDF at the mode is 1.
-      Thus the algorithm is numerically more stable.
-
       The inverse CDF is interpolated using Newton polynomials.
       The order of this polynomial can be set by means of a
       unur_pinv_set_order() call.

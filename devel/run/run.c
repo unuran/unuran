@@ -23,20 +23,14 @@
 
 double mylogpdf( double x, const UNUR_DISTR *distr )
 {
-  double bs = 0.001;
-  double bn = 0.001/3.;
-  double s  = 12.;
-
-  return ((bs-1.)*log(x)+log(1.-x)*(bn-1.)+s*(1.-x));
+  /* return fmin (1.-x*x/2, 0.); */
+  /* return fmin (1.-x*x, 0.); */
+  return fmin (-x*x, 0.);
 }
 
-double mydlogpdf( double x, const UNUR_DISTR *distr )
+double mypdf2( double x, const UNUR_DISTR *distr )
 {
-  double bs = 0.001;
-  double bn = 0.001/3.;
-  double s  = 12.;
-
-  return ((bs-1.)/x - (bn-1.)/(1.-x)-s);
+  return (x <= 1e-5)  ? exp(-x*x) : 3. * exp(-x*x);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -50,12 +44,19 @@ int main()
 
   unur_set_default_debug(~0U);
 
-  distr = unur_distr_normal(NULL,0);
-  unur_distr_cont_set_domain(distr,3.,UNUR_INFINITY);
+  /* Get empty distribution object for a continuous distribution */
+  distr = unur_distr_cont_new();
+
+  /* Fill the distribution object -- the provided information    */
+  /* must fulfill the requirements of the method choosen below.  */
+  /* unur_distr_cont_set_logpdf(distr,  mylogpdf);     /\* PDF             *\/ */
+  unur_distr_cont_set_pdf(distr,  mypdf2);     /* PDF             */
+  unur_distr_cont_set_domain(distr,-1.5,2.);
+
+  
   par = unur_pinv_new(distr);
-  unur_pinv_set_usecdf(par);
+  /* unur_pinv_set_usecdf(par); */
   unur_pinv_set_order(par,5);
-  unur_pinv_set_smoothness(par,1);
 
   gen = unur_init(par);
 

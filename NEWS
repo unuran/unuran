@@ -5,6 +5,10 @@ Version 1.10.0: ????
 
 	- GIG: improved numerical accuracy of computation of mode
 
+	* Internal:
+
+	- Fixed some compiler warnings
+
 
 Version 1.9.0: March 2022
 

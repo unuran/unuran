@@ -51,7 +51,7 @@ struct unur_pinv_par {
 
 struct unur_pinv_interval {
   double *ui;  /* points for constructing Newton interpolation */
-  double *zi;  /* values of inverse CDF at these U values */
+  double *zi;  /* coefficients of Newton polynomial */
   double xi;   /* left point of interval */
   double cdfi; /* CDF at left point of interval */
 

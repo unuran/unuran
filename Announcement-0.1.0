@@ -13,16 +13,16 @@ distributions.
 
 The library and an extensive online documentation are available at:
 
-          -------------------------------------------
-             http://statistik.wu-wien.ac.at/unuran/ 
-          -------------------------------------------
+          ---------------------------------------
+             https://statmath.wu.ac.at/unuran/ 
+          ---------------------------------------
 
 April 4th, 2001
 
-Josef Leydold     (leydold@statistik.wu-wien.ac.at)
+Josef Leydold     (jose.leydold@wu.ac.at)
 Wolfgang Hoermann (hormannw@boun.edu.tr)
-Erich Janka       (janka@statistik.wu-wien.ac.at)
-Guenter Tirler    (tirler@statistik.wu-wien.ac.at)
+Erich Janka
+Guenter Tirler
 
 
 
@@ -80,7 +80,7 @@ Of course a uniform random number generator is necessary to use
 UNURAN. We provide an interface to use the PRNG uniform package from
 the pLab team from the University of Salzburg (Austria),
 available at http://random.mat.ac.at/ or from
-http://statistik.wu-wien.ac.at/prng/.
+https://statmath.wu.ac.at/prng/.
 It is also no problem to include any other uniform random number
 generator.
 

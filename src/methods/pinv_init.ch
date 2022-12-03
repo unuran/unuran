@@ -85,7 +85,7 @@ _unur_pinv_init( struct unur_par *par )
   if (gen->debug) _unur_pinv_debug_init_start(gen);
 #endif
 
-  /* 1. Preprocessing:                                     */
+  /* 1. Preprocessing:                                                      */
   /*   find interval for computing Newton interpolation */
   if (_unur_pinv_preprocessing(gen) != UNUR_SUCCESS) {
     /* preprocessing failed */
@@ -95,6 +95,7 @@ _unur_pinv_init( struct unur_par *par )
     _unur_pinv_free(gen); return NULL;
   }
   
+  /* 2. Interpolation:                                                       */
   /* compute table for Newton interpolation */
   if (_unur_pinv_create_table(gen) != UNUR_SUCCESS) {
 #ifdef UNUR_ENABLE_LOGGING

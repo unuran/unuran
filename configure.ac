@@ -3,7 +3,7 @@ dnl $Id$
 
 dnl Initialize.
 AC_PREREQ([2.71])
-AC_INIT([unuran],[1.9.99],[unuran@statmath.wu.ac.at])
+AC_INIT([unuran],[1.10.0],[unuran@statmath.wu.ac.at])
 AC_CONFIG_AUX_DIR(autoconf)
 AC_CONFIG_SRCDIR([src/unuran_config.h])
 AC_CONFIG_HEADERS([config.h])
@@ -12,36 +12,37 @@ AM_INIT_AUTOMAKE([-Wall -Wno-extra-portability foreign])
 dnl Library versioning (current:revision:age)
 dnl See the libtool manual for an explanation of the numbers
 dnl 
-dnl unuran-0.4.0   0:0:0
-dnl unuran-0.4.2   1:1:0
-dnl unuran-0.4.4   1:2:0
-dnl unuran-0.5.0   2:0:0
-dnl unuran-0.6.0   3:0:0
-dnl unuran-0.7.0   4:0:0
-dnl unuran-0.7.1   4:1:0
-dnl unuran-0.7.2   4:2:0
-dnl unuran-0.8.1   5:0:0
-dnl unuran-0.9.0   6:0:0
-dnl unuran-1.0.0   7:0:0
-dnl unuran-1.0.1   7:1:0
-dnl unuran-1.1.0   8:0:1
-dnl unuran-1.2.0   9:0:0
-dnl unuran-1.2.1   9:1:0
-dnl unuran-1.2.2   9:2:0
-dnl unuran-1.2.3   9:3:2
-dnl unuran-1.2.4   9:4:2
-dnl unuran-1.3.0   10:0:0
-dnl unuran-1.3.1   10:0:0
-dnl unuran-1.4.0   11:0:1
-dnl unuran-1.4.1   11:1:1
-dnl unuran-1.5.0   12:0:0
-dnl unuran-1.6.0   13:0:0
-dnl unuran-1.7.0   14:0:0
-dnl unuran-1.8.0   15:0:0
-dnl unuran-1.8.1   15:0:0
-dnl unuran-1.9.0   16:0:0
+dnl unuran-0.4.0     0:0:0
+dnl unuran-0.4.2     1:1:0
+dnl unuran-0.4.4     1:2:0
+dnl unuran-0.5.0     2:0:0
+dnl unuran-0.6.0     3:0:0
+dnl unuran-0.7.0     4:0:0
+dnl unuran-0.7.1     4:1:0
+dnl unuran-0.7.2     4:2:0
+dnl unuran-0.8.1     5:0:0
+dnl unuran-0.9.0     6:0:0
+dnl unuran-1.0.0     7:0:0
+dnl unuran-1.0.1     7:1:0
+dnl unuran-1.1.0     8:0:1
+dnl unuran-1.2.0     9:0:0
+dnl unuran-1.2.1     9:1:0
+dnl unuran-1.2.2     9:2:0
+dnl unuran-1.2.3     9:3:2
+dnl unuran-1.2.4     9:4:2
+dnl unuran-1.3.0    10:0:0
+dnl unuran-1.3.1    10:0:0
+dnl unuran-1.4.0    11:0:1
+dnl unuran-1.4.1    11:1:1
+dnl unuran-1.5.0    12:0:0
+dnl unuran-1.6.0    13:0:0
+dnl unuran-1.7.0    14:0:0
+dnl unuran-1.8.0    15:0:0
+dnl unuran-1.8.1    15:0:0
+dnl unuran-1.9.0    16:0:0
+dnl unuran-1.10.0   16:1:0
 
-UNURAN_LT_VERSION="16:0:0"
+UNURAN_LT_VERSION="16:1:0"
 AC_SUBST([UNURAN_LT_VERSION])
 
 dnl use maintainer mode

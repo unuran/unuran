@@ -1,5 +1,5 @@
 
-Version 1.10.0: ????
+Version 1.10.0: December 2022
 
 	* Distributions:
 
@@ -9,6 +9,8 @@ Version 1.10.0: ????
 
 	- Fixed some compiler warnings
 
+	- Update configure script
+	
 
 Version 1.9.0: March 2022
 

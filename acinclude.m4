@@ -14,7 +14,7 @@ int main (void)
    nan = inf / inf;
    /* nan = 0.0 / 0.0; */
    status = (nan == nan);
-   exit (status);
+   return status;
 }]])],
 [ac_cv_c_ieee_comparisons="yes"],
 [ac_cv_c_ieee_comparisons="no"],
@@ -43,7 +43,7 @@ int main (void)
    double x = 0.0;
    double inf = 1.0 / x;
    int status = (inf < DBL_MAX/2.);
-   exit (status);
+   return status;
 }]])],
 [ac_cv_c_divide_by_zero="yes"],
 [ac_cv_c_divide_by_zero="no"],

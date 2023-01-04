@@ -2,7 +2,7 @@ dnl Process this file with autoconf to produce a configure script.
 dnl $Id$
 
 dnl Initialize.
-AC_PREREQ(2.71)
+AC_PREREQ([2.71])
 AC_INIT([UNURAN-DEVEL],[99],[unuran@statmath.wu.ac.at])
 AC_CONFIG_AUX_DIR(autoconf)
 AM_INIT_AUTOMAKE([-Wall -Wno-extra-portability foreign])

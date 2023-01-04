@@ -2,12 +2,12 @@ dnl Process this file with autoconf to produce a configure script.
 dnl $Id$
 
 dnl Initialize.
-AC_PREREQ(2.63)
+AC_PREREQ(2.71)
 AC_INIT([UNURAN-DEVEL],[99],[unuran@statmath.wu.ac.at])
 AC_CONFIG_AUX_DIR(autoconf)
-AM_INIT_AUTOMAKE([UNURAN-DEVEL],[99])
+AM_INIT_AUTOMAKE([-Wall -Wno-extra-portability foreign])
 AC_CONFIG_SRCDIR([run/run.c])
-AC_CONFIG_HEADER([config.h])
+AC_CONFIG_HEADERS([config.h])
 
 # Main source of unuran
 unuran_srcdir="\$(top_srcdir)/.."
@@ -77,14 +77,12 @@ AS_IF([test "x$with_urng_default" == xrngstream],
 
 
 dnl Checks for header files.
-AC_HEADER_STDC
 AC_CHECK_HEADERS([float.h limits.h stdlib.h string.h sys/time.h unistd.h])
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_C_INLINE
 AC_TYPE_SIZE_T
-AC_HEADER_TIME
 
 dnl Checks for library functions.
 AC_CHECK_FUNCS([floor gettimeofday pow sqrt strcasecmp strchr strtol strtoul])

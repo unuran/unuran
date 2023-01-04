@@ -10,7 +10,7 @@ cd $srcdir
 PROJECT=unuran-devel
 TEST_TYPE=-f
 FILE=run/run.c          # a file that should exist in the source dir
-# export WANT_AUTOMAKE=1.10
+export WANT_AUTOMAKE=1.16
 
 # Check for required programs
 (libtoolize --version) < /dev/null > /dev/null 2>&1 || {

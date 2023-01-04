@@ -5,9 +5,9 @@ dnl Initialize.
 AC_PREREQ([2.71])
 AC_INIT([UNURAN-DEVEL],[99],[unuran@statmath.wu.ac.at])
 AC_CONFIG_AUX_DIR(autoconf)
-AM_INIT_AUTOMAKE([-Wall -Wno-extra-portability foreign])
 AC_CONFIG_SRCDIR([run/run.c])
 AC_CONFIG_HEADERS([config.h])
+AM_INIT_AUTOMAKE([-Wall -Wno-extra-portability foreign])
 
 # Main source of unuran
 unuran_srcdir="\$(top_srcdir)/.."
@@ -26,11 +26,11 @@ AC_PROG_MAKE_SET
 AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_CPP
+AC_PROG_RANLIB
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_CHECK_TOOL(AR, ar, :)
-AC_DISABLE_SHARED
-LT_INIT
+LT_INIT([disable-shared])
 
 dnl Checks for libraries.
 dnl libm: the standard math library
@@ -77,7 +77,8 @@ AS_IF([test "x$with_urng_default" == xrngstream],
 
 
 dnl Checks for header files.
-AC_CHECK_HEADERS([float.h limits.h stdlib.h string.h sys/time.h unistd.h])
+AC_CHECK_HEADERS([float.h limits.h stdlib.h string.h unistd.h])
+AC_CHECK_HEADERS_ONCE([sys/time.h])
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST

@@ -83,7 +83,4 @@ echo
 echo "Now type 'make' to compile $PROJECT."
 echo 
 
-
-
-
-
+exit 0

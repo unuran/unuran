@@ -3,7 +3,9 @@
 
 AUTOMAKE_OPTIONS = foreign
 
-SUBDIRS = . src run tests
+SUBDIRS = . run
+
+## SUBDIRS = . src run tests
 
 # compile with almost all GCC warnings enabled
 setgccWflags:
@@ -17,19 +19,28 @@ CLEANFILES = *~
 
 # clean generated files
 MAINTAINERCLEANFILES = \
- Makefile.in \
- aclocal.m4 \
- configure \
- config.h.in \
- COPYING \
- INSTALL \
- autoconf/compile \
- autoconf/config.guess \
- autoconf/config.sub \
- autoconf/depcomp \
- autoconf/install-sh \
- autoconf/ltmain.sh \
- autoconf/mdate-sh \
- autoconf/missing \
- autoconf/mkinstalldirs
+ $(srcdir)/Makefile.in \
+ $(srcdir)/autoconf/compile \
+ $(srcdir)/autoconf/config.guess \
+ $(srcdir)/autoconf/config.sub \
+ $(srcdir)/autoconf/depcomp \
+ $(srcdir)/autoconf/install-sh \
+ $(srcdir)/autoconf/ltmain.sh \
+ $(srcdir)/autoconf/mdate-sh \
+ $(srcdir)/autoconf/missing \
+ $(srcdir)/autoconf/test-driver
+
+# Remark: the three files
+#   $(srcdir)/aclocal.m4
+#   $(srcdir)/config.h.in
+#   $(srcdir)/configure
+# are removed in run/Makefile.am.
+# It cannot be done here as this breaks the cleaning process.
+
+
+
+#MAINTAINERCLEANFILES = \
+# $(srcdir)/aclocal.m4 \
+# $(srcdir)/configure \
+# $(srcdir)/config.h.in
 

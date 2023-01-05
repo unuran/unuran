@@ -17,5 +17,13 @@ CLEANFILES = *~ *.log valgrind-*
 
 # clean generated files
 MAINTAINERCLEANFILES = \
- Makefile.in
+ Makefile.in \
+ \
+ $(top_srcdir)/aclocal.m4 \
+ $(top_srcdir)/config.h.in \
+ $(top_srcdir)/configure
 
+# Remark: the last three lines are an ugly hack
+# to remove these files in the top source directory.
+# It cannot be done in $(top_srcdir)/Makefile.am as
+# this breaks the cleaning process.

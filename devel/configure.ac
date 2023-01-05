@@ -192,8 +192,9 @@ dnl create Makefiles for source
 AC_CONFIG_FILES([\
 	Makefile \
 	run/Makefile \
-	src/Makefile \
-	tests/Makefile ] )
+	] )
+dnl do not create: src/Makefile \
+dnl do not create: tests/Makefile \
 
 AC_OUTPUT
 

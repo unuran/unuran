@@ -8,7 +8,7 @@ AM_CPPFLAGS = \
  -I$(unuran_srcdir)/src/tests
 
 LDADD = \
- $(top_builddir)/src/libunuran.la
+ $(unuran_builddir)/src/libunuran.la
  
 noinst_PROGRAMS = run 
 

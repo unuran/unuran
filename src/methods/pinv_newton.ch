@@ -40,7 +40,7 @@ _unur_pinv_create_table( struct unur_gen *gen )
   int iter;                  /* number of iterations */
   int cont;                  /* whether we have to continue or loop */
 
-  int smooth;                /* temporary smoothness parameter */
+  int smooth;                /* local smoothness parameter */
   int use_linear;            /* whether we use linear interpolation instead of polynomials */
   int right_bd;              /* whether we have reach right boundary */
   int use_upoints;           /* whether we use Chebyshev points in u-scale */
@@ -99,10 +99,12 @@ _unur_pinv_create_table( struct unur_gen *gen )
       right_bd = FALSE;
     }
 
-    /* set temporary smoothness parameter */
+    /** --- compute interpolating polynomial --- **/
+
+    /* set local smoothness parameter */
     smooth = GEN->smooth;
 
-    /* compute interpolating polynomial */
+    /* we do not use linar interpolation unless everything else fails */
     use_linear = FALSE;
 
     switch (smooth) {
@@ -143,7 +145,7 @@ _unur_pinv_create_table( struct unur_gen *gen )
       /*   --> try linear interpolation                 */
       use_linear = TRUE;
     }
-    
+
     if (use_linear) {
 
       /* use linear interpolation */
@@ -172,6 +174,8 @@ _unur_pinv_create_table( struct unur_gen *gen )
       }
     }
 
+    /** --- check u-error for interpolating polynomial --- **/
+
     /* estimate error of Newton interpolation */
     if (use_linear) {
       maxerror = _unur_pinv_linear_maxerror(gen,&(GEN->iv[i]));
@@ -179,7 +183,7 @@ _unur_pinv_create_table( struct unur_gen *gen )
     else {
       maxerror = _unur_pinv_newton_maxerror(gen,&(GEN->iv[i]),xval);
     }
-    
+
     if (!(maxerror <= utol)) {
       /* error too large: reduce step size */
       h *= (maxerror > 4.*utol) ? 0.81 : 0.9;
@@ -564,9 +568,9 @@ _unur_pinv_newton_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv,
 
     /* check for monotonicity (non-linear case) */
     if (! (xval[i] <= x0+x && x0+x <= xval[i+1]) )
-      if (! _unur_FP_same(xval[i], xval[i+1]))
+      if (! _unur_FP_equal(xval[i], xval[i+1]))
 	/* not monotone */
-	return 1002.;
+	return DBL_MAX;
     
     /* estimate CDF for interpolated x value */
     if (i==0 || xval==NULL)

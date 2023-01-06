@@ -91,7 +91,9 @@ _unur_pinv_create_table( struct unur_gen *gen )
 
     /* right boundary reached ? */
     if(!_unur_FP_less(GEN->iv[i].xi+h,GEN->bright)) {
-      h = GEN->bright - GEN->iv[i].xi;
+      if (! (GEN->iv[i].xi+h < GEN->bright)) {
+	h = GEN->bright - GEN->iv[i].xi;
+      }
       cont = FALSE;    /* we probably can stop after this iteration */
       right_bd = TRUE; /* we have reached right boundary */
     }
@@ -568,7 +570,7 @@ _unur_pinv_newton_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv,
 
     /* check for monotonicity (non-linear case) */
     if (! (xval[i] <= x0+x && x0+x <= xval[i+1]) )
-      if (! _unur_FP_equal(xval[i], xval[i+1]))
+      if (! _unur_FP_same(xval[i], xval[i+1]))
 	/* not monotone */
 	return DBL_MAX;
     

@@ -1,4 +1,11 @@
 
+Version 1.11.0: ????
+
+	- PINV:
+	  Fixed issue with PDFs that almost vanish at the boundary of
+	  the domain
+	  
+
 Version 1.10.0: December 2022
 
 	* Distributions:

@@ -2,8 +2,14 @@
 Version 1.11.0: ????
 
 	- PINV:
-	  Fixed issue with PDFs that almost vanish at the boundary of
-	  the domain
+	  . Optionally improved estimate of u-error of the approximation
+	    at the expense of considerably higher setup time.
+	    This can be switched on by means of ...
+
+	  . new function unur_pinv_set_extra_test_points()
+
+	  . Fixed issue with PDFs that almost vanish at the boundary of
+	    the domain
 	  
 
 Version 1.10.0: December 2022

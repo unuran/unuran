@@ -564,6 +564,11 @@ _unur_pinv_newton_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv,
 
   /* calculate the max u-error at the test points */
   for(i=0; i<GEN->order; i++) {
+
+    if (_unur_FP_is_infinity(testu[i])) {
+      /* there is no need to run the test at such a point */
+      continue;
+    }
     
     /* inverse CDF for U test point */
     x = _unur_pinv_newton_eval(testu[i], ui, zi, GEN->order);
@@ -691,6 +696,10 @@ _unur_pinv_newton_testpoints (double *utest, double *ui, int order)
      /*                                                                      */
      /* return:                                                              */
      /*    u-values of control points in the array utest                     */
+     /*                                                                      */
+     /* remark:                                                              */
+     /*    a test point is set to INFINITY if there is no need to use        */
+     /*    the corresponding point                                           */
      /*----------------------------------------------------------------------*/
 {
   int k,j,i;
@@ -702,7 +711,9 @@ _unur_pinv_newton_testpoints (double *utest, double *ui, int order)
     /* check for multiple points */
     if ( (k==0 && _unur_iszero(ui[0])) ||
     	 (k>0  && _unur_FP_same(ui[k-1],ui[k])) ) {
-      utest[k] = ui[k]; 
+      /* utest[k] = ui[k];  */
+      /* there is no u-error at the nodes of the Newton interpolation */
+      utest[k] = UNUR_INFINITY;
       continue;
     }
 

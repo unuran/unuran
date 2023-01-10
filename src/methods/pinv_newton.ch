@@ -601,6 +601,12 @@ _unur_pinv_newton_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv,
       ! _unur_pinv_cubic_hermite_is_monotone(gen,ui,zi,xval))
     /* not monotone */
     return 1003.;
+
+  /* compute u-error at extra test points */
+  if (GEN->n_extra_test_points > 0) {
+    uerror = _unur_pinv_maxerror_extra(gen, iv, xval);
+    if (uerror>maxerror) maxerror = uerror;
+  }
   
   /* return maximal observed u-error */
   return maxerror;
@@ -608,6 +614,88 @@ _unur_pinv_newton_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv,
 
 /*---------------------------------------------------------------------------*/
 
+double
+_unur_pinv_maxerror_extra (struct unur_gen *gen, struct unur_pinv_interval *iv, double *xval)
+     /*----------------------------------------------------------------------*/
+     /* 2c. Estimate maximal error of Newton interpolation in subinterval.   */
+     /*     In addition it makes a simple check for monotonicity of the      */
+     /*     inverse CDF.                                                     */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   gen  ... pointer to generator object                               */
+     /*   iv   ... pointer to current interval                               */
+     /*   xval ... x-values for constructing polynomial                      */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   estimated maximal u-error, or                                      */
+     /*   >1000 whenever the inverse CDF is not monotone                     */
+     /*----------------------------------------------------------------------*/
+{
+  double x0 = iv->xi;    /* left boundary point of interval */
+  double *ui = iv->ui;   /* u-values for Newton interpolation  */
+  double *zi = iv->zi;   /* coefficient of Newton interpolation  */
+
+  double maxerror = 0.;  /* maximum error */
+  double uerror;         /* error for given U value */
+  double x;              /* x = CDF^{-1}(U) */
+  double u;              /* u = CDF(x) */
+
+  int i,j;               /* aux variables */
+
+  /* for generating equidistributed points */
+  double u0, du;
+  int n_testu;
+  double testu;
+  
+  /* check arguments */
+  COOKIE_CHECK(gen,CK_PINV_GEN,UNUR_FAILURE);
+  COOKIE_CHECK(iv,CK_PINV_IV,UNUR_FAILURE);
+
+  /* calculate the max u-error in subinterval */
+  for(i=0; i<GEN->order; i++) {
+
+    /* check for subintervals of length 0 */
+    if ( (i==0 && _unur_iszero(ui[0])) ||
+	 (i>0  && _unur_FP_same(ui[i-1],ui[i])) ) {
+      /* nothing to do */
+      continue;
+    }
+
+    /* we use equidistributed points */
+    n_testu = GEN->n_extra_test_points;
+    u0 = (i==0) ? 0. : ui[i-1];
+    du = (ui[i] - u0) / (n_testu + 1.);
+
+    /* check for each of the equidistributed points */ 
+    for(j=1; j < n_testu; j++) {
+
+      /* test ppint */
+      testu = u0 + j * du;
+
+      /* inverse CDF for U test point */
+      x = _unur_pinv_newton_eval(testu, ui, zi, GEN->order);
+
+      /* estimate CDF for interpolated x value */
+      u = u0 + _unur_pinv_Udiff(gen, xval[i], x+x0-xval[i], NULL);
+      
+      /* check u-value */
+      if (!_unur_isfinite(u))
+	return UNUR_INFINITY;
+
+      /* compute u-error */
+      uerror = fabs(u - testu);
+
+      /* update maximal error */
+      if (uerror>maxerror) maxerror = uerror;
+    }
+  }
+
+  /* return maximal observed u-error */
+  return maxerror;
+
+} /* end of _unur_pinv_maxerror_extra() */
+
+/*---------------------------------------------------------------------------*/
 
 double
 _unur_pinv_linear_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv)

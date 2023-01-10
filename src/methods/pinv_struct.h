@@ -44,6 +44,7 @@ struct unur_pinv_par {
   int sleft;               /* whether to search for left boundary point      */
   int sright;              /* whether to search for right boundary point     */
   int max_ivs;             /* maximum number of subintervals                 */
+  int n_extra_test_points; /* number of extra test points for error estimate */
 };
 
 /*---------------------------------------------------------------------------*/
@@ -73,6 +74,7 @@ struct unur_pinv_gen {
 			      [ Umin = 0. ]                                  */
 
   double  u_resolution;    /* maximal error in u                             */
+  int n_extra_test_points; /* number of extra test points for error estimate */
   int smooth;              /* smoothness parameter                           */
   double  bleft;           /* left border of the computational domain        */
   double  bright;          /* right border of the computational domain       */

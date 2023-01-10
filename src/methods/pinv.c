@@ -239,6 +239,7 @@
 #define PINV_SET_VARIANT        0x0040u  /* variant of algorithm             */
 #define PINV_SET_MAX_IVS        0x0080u  /* maximum number of subintervals   */
 #define PINV_SET_KEEPCDF        0x0100u  /* keep table for integration       */
+#define PINV_SET_N_EXTRA_TP     0x4000u  /* number of extra test points      */
 
 /*---------------------------------------------------------------------------*/
 
@@ -426,6 +427,7 @@ static double _unur_pinv_newton_eval (double q, double *ui, double *zi, int orde
 
 static double _unur_pinv_newton_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv, double *xval);
 static double _unur_pinv_linear_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv);
+static double _unur_pinv_maxerror_extra (struct unur_gen *gen, struct unur_pinv_interval *iv, double *xval);
 /*---------------------------------------------------------------------------*/
 /* 2c. estimate maximal error of Newton interpolation in subinterval         */
 /*---------------------------------------------------------------------------*/

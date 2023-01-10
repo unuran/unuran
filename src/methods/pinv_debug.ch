@@ -57,6 +57,8 @@ _unur_pinv_debug_init_start( const struct unur_gen *gen )
   if(gen->set & PINV_SET_SMOOTH_COR) fprintf(LOG,"  [corrected]");
   fprintf(LOG,"\n%s: u-resolution = %g",gen->genid,GEN->u_resolution);
   _unur_print_if_default(gen,PINV_SET_U_RESOLUTION);
+  fprintf(LOG,"\n%s: # extra test points = %d",gen->genid,GEN->n_extra_test_points);
+  _unur_print_if_default(gen,PINV_SET_N_EXTRA_TP);
   fprintf(LOG,"\n%s: maximum number of subintervals = %d",gen->genid,GEN->max_ivs);
   _unur_print_if_default(gen,PINV_SET_MAX_IVS);
 

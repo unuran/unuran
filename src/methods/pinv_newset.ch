@@ -63,6 +63,7 @@ unur_pinv_new( const struct unur_distr *distr )
   PAR->sleft = TRUE;             /* whether to search for left boundary      */
   PAR->sright = TRUE;            /* whether to search for right boundary     */
   PAR->max_ivs = PINV_DEFAULT_MAX_IVS; /* maximum number of subintervals     */
+  PAR->n_extra_test_points = 0L; /* number of extra test points for error estimate */
 
   par->method   = UNUR_METH_PINV; /* method                                  */
   par->variant  = 0u;             /* default variant:                        */
@@ -195,6 +196,42 @@ unur_pinv_set_u_resolution( struct unur_par *par, double u_resolution )
   return UNUR_SUCCESS;
 
 } /* end of unur_pinv_set_u_resolutuion() */
+
+/*---------------------------------------------------------------------------*/
+
+int
+unur_pinv_set_extra_test_points( struct unur_par *par, int n_points)
+     /*----------------------------------------------------------------------*/
+     /* set number of additional test points for error estimate              */
+     /*                                                                      */
+     /* parameters:                                                          */
+     /*   par      ... pointer to parameter for building generator object    */
+     /*   n_points ... number of test points                                 */
+     /*                                                                      */
+     /* return:                                                              */
+     /*   UNUR_SUCCESS ... on success                                        */
+     /*   error code   ... on error                                          */
+     /*----------------------------------------------------------------------*/
+{
+  /* check arguments */
+  _unur_check_NULL( GENTYPE, par, UNUR_ERR_NULL );
+  _unur_check_par_object( par, PINV );
+
+  /* check new parameter for generator */
+  if (n_points < 0) {
+    _unur_warning(GENTYPE,UNUR_ERR_PAR_SET,"number of extra test point < 0");
+    return UNUR_ERR_PAR_SET;
+  }
+
+  /* store date */
+  PAR->n_extra_test_points = n_points;
+
+  /* changelog */
+  par->set |= PINV_SET_N_EXTRA_TP;
+
+  return UNUR_SUCCESS;
+
+} /* end of unur_pinv_set_extra_test_points() */
 
 /*---------------------------------------------------------------------------*/
 

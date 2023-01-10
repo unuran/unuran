@@ -189,6 +189,8 @@
       If this error is crucial for an application we recommend to
       compute this error using unur_pinv_estimate_error() which runs a
       small Monte Carlo simulation.
+      It is also possible to improve the error estimate during setup
+      by means of unur_pinv_set_extra_test_points().
       See also the documentation for function
       unur_pinv_set_u_resolution() and the remark given there.
 
@@ -321,12 +323,31 @@ int unur_pinv_set_u_resolution( UNUR_PAR *parameters, double u_resolution);
    if best approximation is required. However, then the actual u-error
    can be as large as @code{1.e-14}.
 
+   Consider calling unur_pinv_set_extra_test_points() in order to
+   reduce the risk of larger approximation errors.
+
    @strong{Warning!}
    These figures are based on our experiments (with some tolerance
    added to be on the safe side). There is no guarantee for these error
    estimates for a particular distribution.
 
    Default is @code{1.e-10}.
+*/
+
+int unur_pinv_set_extra_test_points( UNUR_PAR *parameters, int n_points);
+/*
+   During setup method PINV checks the current u-error by means of
+   carefully selected test points and improves the approximation where
+   necessary. However, it nevertheless may happen, that the
+   maximal approximation error is larger than estimated in some
+   interval (which usually is hit with a very small probability).
+   This estimate can be improved by using extra test points
+   which can be added by means of this call.
+   However, this increases the setup time considerably.
+   Note that these additional points are selected equidistributed
+   in each subinterval.
+
+   Default is @code{0} (i.e., no additional test points are used).
 */
 
 int unur_pinv_set_use_upoints( UNUR_PAR *parameters, int use_upoints );

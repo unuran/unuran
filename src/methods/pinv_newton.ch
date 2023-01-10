@@ -572,7 +572,7 @@ _unur_pinv_newton_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv,
     if (! (xval[i] <= x0+x && x0+x <= xval[i+1]) )
       if (! _unur_FP_same(xval[i], xval[i+1]))
 	/* not monotone */
-	return DBL_MAX;
+	return 1002;;
     
     /* estimate CDF for interpolated x value */
     if (i==0 || xval==NULL)

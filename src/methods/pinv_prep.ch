@@ -55,7 +55,7 @@ _unur_pinv_preprocessing (struct unur_gen *gen)
 
     /* check area below PDF: it should not be (much) smaller than the approximate one */
     if (GEN->area < 0.99 * area_approx) {
-      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"integration of pdf: numerical problems with cut-off points");
+      _unur_error(gen->genid,UNUR_ERR_GEN_CONDITION,"integration of pdf: numerical problems with cut-off points of computational domain");
       return UNUR_FAILURE;
     }
   }

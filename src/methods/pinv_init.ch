@@ -187,7 +187,7 @@ _unur_pinv_create( struct unur_par *par )
   GEN->order = PAR->order;            /* order of polynomial                 */
   GEN->smooth = PAR->smooth;          /* smoothness parameter                */
   GEN->u_resolution = PAR->u_resolution; /* maximal error in u-direction     */
-  GEN->n_extra_test_points = PAR->n_extra_test_points; /* number of extra test points for error estimate */
+  GEN->n_extra_testpoints = PAR->n_extra_testpoints; /* number of extra test points for error estimate */
   GEN->bleft_par  = PAR->bleft;          /* border of computational domain   */
   GEN->bright_par = PAR->bright;
   GEN->sleft  = PAR->sleft;              /* whether to search for boundary   */

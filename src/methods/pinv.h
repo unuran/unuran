@@ -190,7 +190,7 @@
       compute this error using unur_pinv_estimate_error() which runs a
       small Monte Carlo simulation.
       It is also possible to improve the error estimate during setup
-      by means of unur_pinv_set_extra_test_points().
+      by means of unur_pinv_set_extra_testpoints().
       See also the documentation for function
       unur_pinv_set_u_resolution() and the remark given there.
 
@@ -323,7 +323,7 @@ int unur_pinv_set_u_resolution( UNUR_PAR *parameters, double u_resolution);
    if best approximation is required. However, then the actual u-error
    can be as large as @code{1.e-14}.
 
-   Consider calling unur_pinv_set_extra_test_points() in order to
+   Consider calling unur_pinv_set_extra_testpoints() in order to
    reduce the risk of larger approximation errors.
 
    @strong{Warning!}
@@ -334,7 +334,7 @@ int unur_pinv_set_u_resolution( UNUR_PAR *parameters, double u_resolution);
    Default is @code{1.e-10}.
 */
 
-int unur_pinv_set_extra_test_points( UNUR_PAR *parameters, int n_points);
+int unur_pinv_set_extra_testpoints( UNUR_PAR *parameters, int n_points);
 /*
    During setup method PINV checks the current u-error by means of
    carefully selected test points and improves the approximation where

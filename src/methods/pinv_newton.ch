@@ -603,7 +603,7 @@ _unur_pinv_newton_maxerror (struct unur_gen *gen, struct unur_pinv_interval *iv,
     return 1003.;
 
   /* compute u-error at extra test points */
-  if (GEN->n_extra_test_points > 0) {
+  if (GEN->n_extra_testpoints > 0) {
     uerror = _unur_pinv_maxerror_extra(gen, iv, xval);
     if (uerror>maxerror) maxerror = uerror;
   }
@@ -662,7 +662,7 @@ _unur_pinv_maxerror_extra (struct unur_gen *gen, struct unur_pinv_interval *iv, 
     }
 
     /* we use equidistributed points */
-    n_testu = GEN->n_extra_test_points;
+    n_testu = GEN->n_extra_testpoints;
     u0 = (i==0) ? 0. : ui[i-1];
     du = (ui[i] - u0) / (n_testu + 1.);
 

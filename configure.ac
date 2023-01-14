@@ -256,7 +256,7 @@ dnl Set flags for compiler
 dnl GCC
 EXTRA_GCC_FLAGS=
 EXTRA_GCC_FLAGS="$EXTRA_GCC_FLAGS -Wshadow -Wstrict-prototypes"
-##EXTRA_GCC_FLAGS="$EXTRA_GCC_FLAGS -Wbad-function-cast -Wcast-align -Wmissing-declarations -Wmissing-format-attribute -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wredundant-decls -Wstrict-prototypes -Wwrite-strings -Wconversion"
+##EXTRA_GCC_FLAGS="$EXTRA_GCC_FLAGS  -Wdeprecated-declarations -Wbad-function-cast -Wcast-align -Wmissing-declarations -Wmissing-format-attribute -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wredundant-decls -Wstrict-prototypes -Wwrite-strings -Wconversion"
 
 ## the following flags raise warnings:
 ##EXTRA_GCC_FLAGS="$EXTRA_GCC_FLAGS -Wcast-qual -Wfloat-equal -Wunreachable-code"

@@ -138,7 +138,7 @@ _unur_make_genid( const char *gentype )
   /* 1000 different generators should be enough */
 
 #if HAVE_DECL_SNPRINTF
-  /* this is a GNU extension */
+  /* this is part of ISO C99 */
   snprintf(genid, len+5, "%s.%03d", gentype, count);
 #else
   sprintf(genid, "%s.%03d", gentype, count);

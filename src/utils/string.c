@@ -94,13 +94,15 @@ _unur_string_append ( struct unur_string *string, const char *format, ... )
   /* this is part of ISO C99 */
   len = vsnprintf (string->text+string->length, (size_t)MAXSTRINGSIZE, format, ap);
 #else
+  #error Function vsnprintf() required.
+  /* Fallback: */
   /** TODO: this is dangerous, since we have to take care, that
       the generated string text is not longer than MAXSTRINGSIZE-1.  **/
-  len = vsprintf (string->text+string->length, format, ap);
-  if (len >= MAXSTRINGSIZE) {
-    _unur_error("UTIL",UNUR_ERR_SHOULD_NOT_HAPPEN,"string too long");
-    exit (-1);   /* fatal error */
-  }
+  /* len = vsprintf (string->text+string->length, format, ap); */
+  /* if (len >= MAXSTRINGSIZE) { */
+  /*   _unur_error("UTIL",UNUR_ERR_SHOULD_NOT_HAPPEN,"string too long"); */
+  /*   exit (-1);   /\* fatal error *\/ */
+  /* } */
 #endif
 
   /* update length of string */

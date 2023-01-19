@@ -141,7 +141,9 @@ _unur_make_genid( const char *gentype )
   /* this is part of ISO C99 */
   snprintf(genid, len+5, "%s.%03d", gentype, count);
 #else
-  sprintf(genid, "%s.%03d", gentype, count);
+  #error Function snprintf() required.
+  /* Fallback: */
+  /* sprintf(genid, "%s.%03d", gentype, count); */
 #endif
 
   return genid;

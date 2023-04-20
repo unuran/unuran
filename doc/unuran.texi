@@ -1,7 +1,5 @@
 \input texinfo   @c -*-texinfo-*-
 
-@c $Id$
-
 @c %**start of header
 @setfilename unuran.info
 @settitle    UNU.RAN User Manual

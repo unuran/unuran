@@ -1,7 +1,5 @@
 \input texinfo   @c -*-texinfo-*-
 
-@c $Id: unuran.texi 3564 2007-04-18 06:32:53Z leydold $
-
 @c %**start of header
 @setfilename unuran_win32.info
 @settitle    Using UNU.RAN with Microsoft Visual C

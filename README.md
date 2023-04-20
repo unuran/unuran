@@ -125,6 +125,8 @@ The __UNU.RAN__ is also accessible from other languages:
 
 > `./configure`
 
+> `./configure`
+
 > `make`
 
 Run `./configure --help` for building options.

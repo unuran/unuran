@@ -121,12 +121,8 @@ The __UNU.RAN__ is also accessible from other languages:
 ## Build and check
 
 
-> `./autogen.sh` (or download the tar ball from <https://statmath.wu.ac.at/unuran/>)
-
-> `./configure`
-
-> `./configure`
-
+> `./autogen.sh` (or download the tar ball from <https://statmath.wu.ac.at/unuran/>)  
+> `./configure`  
 > `make`
 
 Run `./configure --help` for building options.

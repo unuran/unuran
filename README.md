@@ -84,7 +84,7 @@ standard method for the distribution I am interested in?
   distribution, and switch to an empirical distribution later.
 
 - The library contains reliable and fast generation algorithms. The
-  characteristics of some these algorithms (like speed, expected
+  characteristics of some of these algorithms (like speed, expected
   number of uniforms required etc, ...) are only slightly influenced
   by the chosen distribution. (However numerical inversion is included
   as a (very slow) brute force algorithm for the rare cases where the

@@ -1,8 +1,6 @@
 
 # UNU.RAN - Universal Non-Uniform Random number generator
 
--------------------------------------------------------------------------------
-
 __UNU.RAN__ is an ANSI C library licensed under GPL. 
 It contains universal (also called automatic or black-box) algorithms
 that can generate random numbers from large classes of continuous or
@@ -14,7 +12,6 @@ The library and an extensive
 are available at:
 > <https://statmath.wu.ac.at/unuran/>
 
----------------------------------------------------------
 
 ## A short overview
 
@@ -63,10 +60,8 @@ to the GSL library and a library Rngstream
 It is also no problem to include any other uniform random number
 generator.
 
----------------------------------------------------------
 
 ## Advantages of UNU.RAN
-
 
 Why can it be worth the time to download __UNU.RAN__ and to understand the
 concept of its interface? Isn't it much faster to implement a simple
@@ -89,7 +84,7 @@ standard method for the distribution I am interested in?
   distribution, and switch to an empirical distribution later.
 
 - The library contains reliable and fast generation algorithms. The
-  characteristics of some these algorithms (like speed, expected
+  characteristics of some of these algorithms (like speed, expected
   number of uniforms required etc, ...) are only slightly influenced
   by the chosen distribution. (However numerical inversion is included
   as a (very slow) brute force algorithm for the rare cases where the
@@ -97,7 +92,6 @@ standard method for the distribution I am interested in?
 
 - Correlation induction facilities are included. 
 
----------------------------------------------------------
 
 ## Packages
 
@@ -116,10 +110,10 @@ The __UNU.RAN__ is also accessible from other languages:
   __[MATLAB](https://de.mathworks.com/products/matlab.html)__ do exist
   but are not released yet.
   
----------------------------------------------------------
 
 ## Build and check
 
+Build the library:
 
 > `./autogen.sh` (or download the tar ball from <https://statmath.wu.ac.at/unuran/>)  
 > `./configure`  
@@ -127,7 +121,12 @@ The __UNU.RAN__ is also accessible from other languages:
 
 Run `./configure --help` for building options.
 
----------------------------------------------------------
+Create the tar ball for distribution:
+
+> `./autogen.sh` (or download the tar ball from <https://statmath.wu.ac.at/unuran/>)  
+> `make distcheck` (build and run unit tests)  
+or  
+> `make dist` (just build)
 
 ## References
 

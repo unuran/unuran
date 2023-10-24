@@ -1,4 +1,12 @@
 
+Version 1.12.0: ????
+
+	* Methods:
+
+	- DAU:
+	  . fixed numerical issue with discrete uniform distribution.
+
+
 Version 1.11.0: April 2023
 
 	* Methods:

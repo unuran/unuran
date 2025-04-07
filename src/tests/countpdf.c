@@ -305,6 +305,7 @@ int
 unur_test_par_count_pdf( struct unur_par *par, int samplesize, int verbosity, FILE *out )
      /*----------------------------------------------------------------------*/
      /* count evaluations of PDF and similar functions                       */
+     /* (including setup)                                                    */
      /*                                                                      */
      /* parameters:                                                          */
      /*   par        ... pointer to parameter object                         */
@@ -517,9 +518,9 @@ unur_test_par_count_pdf( struct unur_par *par, int samplesize, int verbosity, FI
   _unur_distr_free(distr);
 
   /* return total number of evaluations */
-  return count;
+  return count_total;
 
-} /* end of unur_test_count_pdf() */
+} /* end of unur_test_par_count_pdf() */
 
 /*---------------------------------------------------------------------------*/
 

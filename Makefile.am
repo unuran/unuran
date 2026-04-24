@@ -69,15 +69,13 @@ else
 endif
 
 # compile with almost all GCC warnings enabled
-if MAINTAINER_MODE
-setgccWflags:
-	export CFLAGS="`cat $(top_srcdir)/scripts/gccWflags`"; \
-	./configure --enable-maintainer-mode
-
-setgccWflags-ansi:
-	export CFLAGS="-ansi -pedantic `cat $(top_srcdir)/scripts/gccWflags`"; \
-	./configure --enable-maintainer-mode
-endif
+#setgccWflags:
+#	export CFLAGS="`cat $(top_srcdir)/scripts/gccWflags`"; \
+#	./configure --enable-maintainer-mode
+#
+#setgccWflags-ansi:
+#	export CFLAGS="-ansi -pedantic `cat $(top_srcdir)/scripts/gccWflags`"; \
+#	./configure --enable-maintainer-mode
 
 # run checks in fullcheck mode
 fullcheck:

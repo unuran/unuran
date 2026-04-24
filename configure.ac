@@ -46,9 +46,6 @@ dnl unuran-1.11.devel   18:0:0
 UNURAN_LT_VERSION="18:0:0"
 AC_SUBST([UNURAN_LT_VERSION])
 
-dnl use maintainer mode
-AM_MAINTAINER_MODE
-
 dnl Check for which system.
 AC_CANONICAL_HOST
 

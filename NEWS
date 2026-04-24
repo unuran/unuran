@@ -10,6 +10,10 @@ Version 1.12.0: ????
 
 	- unur_test_par_count_pdf: Fixed total counts
 
+	* Build:
+
+	- removed configure flag --enable-maintainer-mode
+
 
 Version 1.11.0: April 2023
 

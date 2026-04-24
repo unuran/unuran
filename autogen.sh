@@ -10,7 +10,7 @@ cd $srcdir
 PROJECT=unuran
 TEST_TYPE=-f
 FILE=src/unuran_config.h          # a file that should exist in the source dir
-export WANT_AUTOMAKE=1.16
+## export WANT_AUTOMAKE=1.16
 
 # Check for required programs
 (libtoolize --version) < /dev/null > /dev/null 2>&1 || {
@@ -76,7 +76,7 @@ cd $ORIGDIR
 
 # Run ./configure script
 echo; echo "Running configure ..."
-$srcdir/configure --enable-maintainer-mode --enable-deprecated --enable-check-struct --enable-logging "$@"
+$srcdir/configure --enable-deprecated --enable-check-struct --enable-logging "$@"
 
 # End
 echo 

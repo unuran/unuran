@@ -252,6 +252,12 @@ dnl (Valgrind is a GPL'd system for debugging and profiling x86-Linux programs)
 AC_CHECK_PROG(have_valgrind,valgrind,true,false) 
 AM_CONDITIONAL(HAVE_VALGRIND, test x$have_valgrind = xtrue)
 
+
+dnl target 'dist-root' is not needed any more.
+dnl we keep it in $(src_dir)/Makefile.am
+dnl but disable it by means of an automake conditional.
+AM_CONDITIONAL(ROOT_DIST_ENABLED, false)
+
 dnl Set flags for compiler
 
 dnl GCC

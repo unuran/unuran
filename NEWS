@@ -1,4 +1,20 @@
 
+Version 1.12.0: June 2026
+
+	* Methods:
+
+	- DAU:
+	  . fixed numerical issue with discrete uniform distribution.
+
+	* Tests:
+
+	- unur_test_par_count_pdf: Fixed total counts
+
+	* Build:
+
+	- removed configure flag --enable-maintainer-mode
+
+
 Version 1.11.0: April 2023
 
 	* Methods:

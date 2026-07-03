@@ -181,6 +181,10 @@ my $msg_ignored_methods;
 ##############################################################################
 # Read template C file from STDIN and insert C code for string interpreter 
 #
+
+# First add comment that the file is automatically generated
+print "/** File automatically created by src/parser/make_stringparser.pl           **/\n\n";
+
 while ( <STDIN> ){
 
     unless (/^s*=INPUT\s*(\w*)/){
@@ -231,13 +235,15 @@ if ($msg_unsupported) {
 # Print documentation.
 open DOC, ">$doc_file" or die "Cannot open file $doc_file for writing";
 print DOC
+    "/** File automatically created by src/parser/make_stringparser.pl           **/\n\n",
     "/*\n",
     "=NODE  KeysDistr   Keys for Distribution String\n",
     "=UP StringDistr [10]\n\n",
     "=DESCRIPTION\n\n",
     $distr_doc_string,
-    "\n=EON\n*/\n";
+    "\n=EON\n*/\n\n";
 print DOC
+    "/** File automatically created by src/parser/make_stringparser.pl           **/\n\n",
     "/*\n",
     "=NODE  KeysMethod   Keys for Method String\n",
     "=UP StringMethod [10]\n\n",

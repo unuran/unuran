@@ -13,6 +13,7 @@ EXTRA_DIST = \
  autogen.sh
 
 
+if ROOT_DIST_ENABLED
 # make special distribution for ROOT
 rootdir = tmp-unuran-root
 distrootfile = $(PACKAGE)-$(VERSION)-root.tar.gz
@@ -21,9 +22,10 @@ remove_rootdir = \
   { test ! -d $(rootdir) \
     || { find $(rootdir) -type d ! -perm -200 -exec chmod u+w {} ';' \
          && rm -fr $(rootdir); }; }
+endif
 
 dist-root:
-if MAINTAINER_MODE
+if ROOT_DIST_ENABLED
 	@echo "Create tar ball for ROOT" | \
           sed 'h;s/./=/g;p;x;p;x'
 	$(remove_rootdir)
@@ -61,21 +63,19 @@ if MAINTAINER_MODE
 	@echo "$(distrootfile) is ready for distribution" | \
           sed 'h;s/./=/g;p;x;p;x'
 else
-	@echo "You must enable maintainer mode using"
-	@echo "   sh ./configure --enable-maintainer-mode"
-	@echo "first to run 'make dist-root'!"
+	@echo "Target 'dist-root' has been permanantly disabled."
+	@echo "For enabling it again please change the value of"
+	@echo "conditional 'ROOT_DIST_ENABLED' in file 'configure.ac' to 'true'."
 endif
 
 # compile with almost all GCC warnings enabled
-if MAINTAINER_MODE
-setgccWflags:
-	export CFLAGS="`cat $(top_srcdir)/scripts/gccWflags`"; \
-	./configure --enable-maintainer-mode
-
-setgccWflags-ansi:
-	export CFLAGS="-ansi -pedantic `cat $(top_srcdir)/scripts/gccWflags`"; \
-	./configure --enable-maintainer-mode
-endif
+#setgccWflags:
+#	export CFLAGS="`cat $(top_srcdir)/scripts/gccWflags`"; \
+#	./configure --enable-maintainer-mode
+#
+#setgccWflags-ansi:
+#	export CFLAGS="-ansi -pedantic `cat $(top_srcdir)/scripts/gccWflags`"; \
+#	./configure --enable-maintainer-mode
 
 # run checks in fullcheck mode
 fullcheck:

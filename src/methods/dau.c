@@ -716,16 +716,8 @@ _unur_dau_make_urntable( struct unur_gen *gen )
     ++poor;
   }
 
-  /* there must be at least one rich strip */
-  if (rich == begin + GEN->urn_size + 1 ) {
-    /* this must not happen:
-       no rich strips found for Robin Hood algorithm. */
-    _unur_error(gen->genid,UNUR_ERR_SHOULD_NOT_HAPPEN,"");
-    free (begin);
-    return UNUR_ERR_SHOULD_NOT_HAPPEN;
-  }
-
-  /* rich must point to the first rich strip yet */
+  /* rich must point to the first rich strip yet. */
+  /* it could happen that we could not find a rich strip if pv is a constant vector. */
   ++rich;
 
   /* now make the "squared histogram" with Robin Hood algorithm (Marsaglia) */

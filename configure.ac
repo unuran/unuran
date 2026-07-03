@@ -2,7 +2,7 @@ dnl Process this file with autoconf to produce a configure script.
 
 dnl Initialize.
 AC_PREREQ([2.71])
-AC_INIT([unuran],[1.11.0],[unuran@statmath.wu.ac.at])
+AC_INIT([unuran],[1.12.0],[unuran@statmath.wu.ac.at])
 AC_CONFIG_AUX_DIR(autoconf)
 AC_CONFIG_SRCDIR([src/unuran_config.h])
 AC_CONFIG_HEADERS([config.h])
@@ -41,12 +41,10 @@ dnl unuran-1.8.1    15:0:0
 dnl unuran-1.9.0    16:0:0
 dnl unuran-1.10.0   16:1:0
 dnl unuran-1.11.0   17:0:0
+dnl unuran-1.11.devel   18:0:0
 
-UNURAN_LT_VERSION="16:1:0"
+UNURAN_LT_VERSION="18:0:0"
 AC_SUBST([UNURAN_LT_VERSION])
-
-dnl use maintainer mode
-AM_MAINTAINER_MODE
 
 dnl Check for which system.
 AC_CANONICAL_HOST
@@ -250,6 +248,12 @@ dnl check for Valgrind
 dnl (Valgrind is a GPL'd system for debugging and profiling x86-Linux programs)
 AC_CHECK_PROG(have_valgrind,valgrind,true,false) 
 AM_CONDITIONAL(HAVE_VALGRIND, test x$have_valgrind = xtrue)
+
+
+dnl target 'dist-root' is not needed any more.
+dnl we keep it in $(src_dir)/Makefile.am
+dnl but disable it by means of an automake conditional.
+AM_CONDITIONAL(ROOT_DIST_ENABLED, false)
 
 dnl Set flags for compiler
 

@@ -61,14 +61,15 @@ my $out = '';
 
 # copyright statment
 my $copyright =
-    "/*******************************************************************\\\n".
-    " *                                                                 *\n".
-    " *   UNU.RAN -- Universal Non-Uniform Random number generator      *\n".
-    " *                                                                 *\n".
-    " *******************************************************************\n".
-    " *   Copyright (c) 2000-$year Wolfgang Hoermann and Josef Leydold   *\n".
-    " *   Department of Statistics and Mathematics, WU Wien, Austria    *\n".
-    "\\*******************************************************************/\n";
+    "/** File automatically created by scripts/compute_machine_constants         **/\n\n".
+    "/*****************************************************************************\n".
+    " *                                                                           *\n".
+    " *   UNU.RAN -- Universal Non-Uniform Random number generator                *\n".
+    " *                                                                           *\n".
+    " *****************************************************************************\n".
+    " *   Copyright (c) 2000-$year Wolfgang Hoermann and Josef Leydold             *\n".
+    " *   Department of Statistics and Mathematics, WU Wien, Austria              *\n".
+    " *****************************************************************************/\n\n";
 
 my $CPP_header =
     "#undef __BEGIN_DECLS\n".
